@@ -6,14 +6,15 @@ which this folder's tools read as data only.
 
 | Tool | What it does |
 | --- | --- |
-| `worlds.py` | The sheet's A1 and A1-M's fifteen worlds, at any potential set; FR-38's release worlds R1 (with its labelled pair), R2 (with the addendum's development check) and R1S |
+| `worlds.py` | The sheet's A1 and A1-M's fifteen worlds, at any potential set; FR-38's release worlds R1 (with R1L, its fate rows labelled by FR-42's shares), R2 (with the addendum's development check) and R1S |
 | `engine_run.py` | Runs worlds, exporting the sheet's §6 readouts per cell by ID, except each move's ΔG and A1's u(t) (below), with a receipt of the source |
 | `compare.py` | An engine run against G2's interface at G2's required times |
-| `cohort.py` | Window survivors from the counters: one well-mixed pool, loss independent of age; a fate row's inflow is its release's (FR-38, §9.8's route 2) |
-| `release_check.py` | FR-38's checks of R1, R2 and R1S runs: the requester's limit, the identities, energy and both cohort routes |
+| `cohort.py` | Window survivors from the counters: one well-mixed pool, loss independent of age; a fate row's inflow is its release's (FR-38, §9.8's route 2); and the survival readout by both routes. A row its cell exports is refused by `read`; `series` reads the cohort through the export (amendment T, erratum H) |
+| `release_check.py` | FR-38's checks of R1, R2 and R1S runs: the requester's limit, the identities, energy, both cohort routes (route 1 on shares) and the survival readout |
 | `optin_check.py` | The release opt-in's before/after dump of every registered FR-25 definition, and its D148 verdict |
 | `rna_readouts.py` | Per-cell RNA readouts and FR-25's two controls |
 | `restart_example.py` | A restart at a rate change |
+| `replace_restart.py` | FR-38's step 5: a producer replaced midway through a chase, then a restart |
 | `kernel.py` | The operator's own half-steps in NumPy, used by the tests |
 | `plants.py` | The sheet's plants |
 
@@ -39,6 +40,31 @@ At each output, per cell by ID, under G2's interface names:
   `n_<release>_<fate>`, and its heat class `H_rel_<release>_<fate>`. `E_<chain>` counts a held hold
   among the engaged machines; a fate row other than its chain's product has its own loss class,
   `H_deg_<row>` (§9.12); and `G_minus_G0` includes the hold's standard term.
+- **FR-42's labels** (D289), only in a world that declares `neutral_arrival_labels@1`: each
+  labelled row's amount carrying each of its labels, `label_<row>_<label>`, the row times the
+  label's share, by the species' and label's IDs. The labels are the owner's derived list, so a
+  producer's labels (amendment G, §9.20) are exported with the declared ones. A label changes no
+  physical readout.
+  - In R1L, `label_R_cohort` and `label_R_s_cohort` are §9.8's route 1 on shares (errata C and
+    F): the releases of R1's window still present, with no blank, marked on transcription's own
+    label schedule, so a molecule re-synthesised from monomers is not a member.
+  - **Limits:** a labelled species carries at most the label owner's MAX_LABELS labels, so
+    producer identity crossed with the window labels must fit within it. RNA that leaves its cell
+    by the operator's export (amendment T, §9.17) keeps its label at the node: the export reports
+    its two one-way parts as transfers carrying their sources' shares (erratum H).
+- **The export** (amendment T, §9.17; erratum H, §9.21), only where the exported cell's own exports
+  feed nodes, at each such node by its ID:
+  - each row the operator writes there (the exported rows, and the outside degradations' polymers
+    and monomers), `n_<row>_<node>`, and with FR-42's labels `label_<row>_<label>_<node>`;
+  - each export's one-way parts, `int_E_<export>_forward` and `int_E_<export>_backward`;
+  - each outside degradation's `int_D_route_<route>`, and their sum per polymer and node,
+    `int_D_<polymer>_<node>`;
+  - the heat classes `H_exp` (each export's whole heat, booked at its cell) and `H_odeg` (the
+    outside degradations', booked at their node), with each route's `H_route_<route>`.
+
+  `G_minus_G0`, `H_total` and the routes' sum then cover the cell and its nodes, the checks name
+  the nodes (`exported_nodes`), and an exported row is no lossless product (D265). A node that
+  another cell's export also feeds is refused, since G over one cell and the node would not close.
 
 **Not exported**, though G2 publishes them:
 - each move's ΔG, `dG_tx`, `dG_tl`, `dG_rel_R`, `dG_rel_P`, `dG_deg_R`, `dG_deg_P` and `dG_rc`;
@@ -108,3 +134,37 @@ machines, complexes per stage, and every counter).
 Run: `PYTHONPATH=src:. JAX_ENABLE_X64=1 python -m validation.gene_regulation.restart_example --out
 DIR`, with `--world`, `--route`, `--join`, `--factor` and `--window-steps` to vary it. The join
 must fall on a window's end.
+
+## A producer replaced midway through a chase, then a restart (`replace_restart.py`)
+
+**What it shows** (FR-38's step 5, the requester's acceptance; the sheet's §9.16 and §9.18): the
+readout distinguishes the two generations' RNA, and a run restarted after the replacement
+reproduces the uninterrupted run's cohort counts. Development, not judged.
+- **The world:** R1 at p = 0.75 with A1's transcription. Its fate rows R and R_s are labelled by
+  FR-42's shares and both declare transcription as their producer with the window [0, 1,200 s)
+  (amendment G, §9.20, option (a)). The label owner derives the labels from replacement@1's
+  events, the species' own first, then per generation `cell_0-g<k>-tx` and `cell_0-g<k>-tx-cohort`,
+  and transcription's schedule: g0's cohort label for releases in [0, 1,200 s), g0's after it, and
+  g1's from the replacement at 3,000 s. No schedule is written by hand. A newcomer from template T,
+  the founder's state and values, takes the slot then. The cell exports R into a finite node,
+  driven by NTP, where R decays at its outside degradation's rate (amendment T, §9.17). Restarted
+  from snapshot files at 3,600 s; ends at 4,800 s.
+- **What stays where:** the departing occupant's rows, chains in progress and hold leave with it,
+  so g0's RNA in the cell at the replacement is read from the removal record (`label_removed_fmol`
+  for its rows, `label_pool_removed_fmol` for its hold, by label). The node is not replaced, so
+  **g0's exported RNA stays there with its label** (amendment T's retention). It is read by two
+  routes: the node's row times g0's shares, and g0's net exports over its life carried at the
+  outside degradation's gross rate k_o (erratum H, §9.21). g1's RNA is read from the rows by share.
+- **The checks:**
+  - labels change no physics;
+  - the resume reproduces every step and readout bit for bit;
+  - no g1 share before the event, and no g0 in the cell after it but what the export's
+    backward part returns from the node;
+  - the removal records equal replacement@1's removed rows and the operator's H_rem;
+  - each generation's per-producer identity, its net exports included, holds at rounding;
+  - g0's RNA is retained at the node, the node's label amounts sum to its row, and the two routes
+    agree;
+  - the producer labels are the owner's derivation.
+
+Run: `PYTHONPATH=src:. JAX_ENABLE_X64=1 python -m validation.gene_regulation.replace_restart --out
+DIR`. It writes `replace_restart.json` with the verdicts and readouts.

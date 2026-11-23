@@ -9,8 +9,8 @@ The share update alone, in NumPy (no world; about 2 s):
 - its order when the rates vary within an application: the split between old and new material is
   off by (a' k - a k') h^3 / 12, halving by 8 with h;
 - carried material arriving with its source's shares (stage 2's transfers), at second order;
-- a reporter's pools and sources (D296), and a replaced cell's rows and pool entries taking the
-  newcomer label (replacement@1).
+- a reporter's pools and sources (D296); at an event (erratum E), a replaced cell's rows taking
+  the newcomer label and an emptied pool the base, what left recorded by label.
 
 Host rows on parsed worlds (no compile; a few seconds): exchange's export and a passive reaction
 route report the material they move (stage 3), and a replaced slot takes the newcomer label.
@@ -33,11 +33,18 @@ bit. It holds:
 Its resume through a snapshot is in tests/unit/test_neutral_labels_resume.py, and the routes' rows
 (stage 2) in tests/unit/test_neutral_labels_transport.py.
 
-Definitions refused (parses only): a transporter kind's role and finite fuel beside labels (until
-the kinds' hook), a bath schedule, a retired label family (D300), a second owner, an arrival off the
-grid, an undeclared label, shares that do not sum to one and a held bath node.
+Beside a replacing event, a pool reporter whose event reports nothing is refused (erratum E;
+planted declarations, no world).
+
+Definitions refused (parses only): what the kinds' hook (D303 item 6) refuses, a transporter's
+finite or held fuel (changed at one end only), a rectifier's row, a net-flow population's row,
+unequal counts at a crossing's two ends, a kind with a rates hook and no label_refusals
+(fail-closed) and a closure's held row; a bath schedule, a retired label family (D300), a second
+owner, an arrival off the grid, an undeclared label, shares that do not sum to one and a held bath
+node. What the hook admits is in tests/unit/test_neutral_labels_kinds.py.
 """
 
+import contextlib
 import copy
 import math
 
@@ -97,6 +104,8 @@ def same_physics(labelled, plain):
         "label_outside_share",
         "label_closure_relative",
         "label_pool_share",
+        "label_removed_fmol",  # Erratum E's records: zero-size without a replacing event.
+        "label_pool_removed_fmol",
     }
 
 
@@ -257,13 +266,16 @@ POOL_STATE = (
     "label_outside_share",
     "label_closure_relative",
     "label_pool_share",
+    "label_removed_fmol",
+    "label_pool_removed_fmol",
 )
 
 
-def pool_half_step(made, released, degraded, *, pool0=0.5, pool_shares=(0.4, 0.6)):
+def pool_half_step(made, released, degraded, *, pool0=0.5, pool_shares=(0.4, 0.6), events=False):
     """One labelled row R (base, cohort) at one cell and a reporter's one pool entry (a hold) of
     R in it: made enters the pool at the cohort label (a completion marked at completion), released
-    is carried from the pool to the row, degraded leaves the row. (start, end, moves, layout)."""
+    is carried from the pool to the row, degraded leaves the row. (start, end, moves, layout).
+    events: a replacing event is declared, so the records of what leaves are sized (erratum E)."""
     from collections import namedtuple
     from types import SimpleNamespace
 
@@ -274,6 +286,8 @@ def pool_half_step(made, released, degraded, *, pool0=0.5, pool_shares=(0.4, 0.6
         np.zeros((1, 2, 0)),
         np.zeros(1),
         np.array([[[pool_shares[0]], [pool_shares[1]]]]),
+        np.zeros((1 if events else 0, 2, 1)),
+        np.zeros((1 if events else 0, 2, 1)),
     )
     layout = SimpleNamespace(
         label_rows=np.array([0]),
@@ -322,23 +336,48 @@ def test_a_pool_carries_its_shares_and_takes_its_new_material_by_label():
     assert new.label_closure_relative[0] <= 4 * EPS
 
 
-def test_a_replaced_cells_pool_takes_the_newcomer_label():
-    """D296 (the gene regulation lane's request), in NumPy: at a replaced cell the label owner sets
-    the rows' and the pool entries' shares to the label in force, the newcomer's; elsewhere they
-    are kept bit for bit."""
+def test_an_event_records_what_leaves_and_relabels_what_it_replaced():
+    """D296 and erratum E (TEMPLATED_POLYMERISATION_LAWS §9.18), in NumPy: each event reports only
+    its own material. replacement@1's report (the replaced slots): every labelled row there leaves
+    whole, recorded by label as its amount before the event times its shares just before it, and
+    its shares become the label in force, the newcomer's; the pools are not touched. A pool
+    reporter's report (the amounts its event emptied): each emptied entry's amount times its shares
+    is recorded and the entry takes the base label. Nothing else changes, bit for bit; without a
+    replacing event the records are zero-size and the relabelling alone runs."""
     from types import SimpleNamespace
 
     from cells.operators import species_labels as labels
 
-    start, _, _, layout = pool_half_step(made=0.0, released=0.0, degraded=0.0)
-    layout.label_pool_cells = np.array([[0]])
+    start, _, _, layout = pool_half_step(
+        made=0.0, released=0.0, degraded=0.0, pool_shares=(0.25, 0.75), events=True
+    )
+    start = start._replace(label_share=np.array([[[0.4], [0.6]]]))  # R: 0.4 base, 0.6 cohort.
+    before = start._replace(amount_increment=np.array([[0.5]]))  # R's 1.5 fmol at the event.
+    after = start._replace(amount_increment=np.array([[1.0]]))  # The template's, after the swap.
     arrival = SimpleNamespace(label_arrival=np.array([[0.0, 1.0]]))  # "cohort" is in force.
-    kept = labels.advance_event(start, np.array([False]), arrival, layout, xp=np)
-    assert bits(kept.label_share) == bits(start.label_share)
-    assert bits(kept.label_pool_share) == bits(start.label_pool_share)
-    new = labels.advance_event(start, np.array([True]), arrival, layout, xp=np)
-    assert new.label_share[0, :, 0].tolist() == [0.0, 1.0]
-    assert new.label_pool_share[0, :, 0].tolist() == [0.0, 1.0]
+    kept = labels.advance_event(before, after, np.array([False]), arrival, layout, xp=np)
+    assert all(bits(a) == bits(b) for a, b in zip(kept, after, strict=True))
+    rows = labels.advance_event(before, after, np.array([True]), arrival, layout, xp=np)
+    assert rows.label_share[0, :, 0].tolist() == [0.0, 1.0]  # The newcomer's label.
+    assert rows.label_removed_fmol[0, :, 0].tolist() == [1.5 * 0.4, 1.5 * 0.6]
+    assert bits(rows.label_pool_share) == bits(after.label_pool_share)  # Its pools: not its own.
+    assert bits(rows.label_pool_removed_fmol) == bits(after.label_pool_removed_fmol)
+    held = labels.advance_event(before, after, np.array([0.0]), arrival, layout, xp=np, pool=0)
+    assert all(bits(a) == bits(b) for a, b in zip(held, after, strict=True))  # It emptied none.
+    pools = labels.advance_event(before, after, np.array([0.3]), arrival, layout, xp=np, pool=0)
+    assert pools.label_pool_share[0, :, 0].tolist() == [1.0, 0.0]  # Emptied: the base label.
+    assert pools.label_pool_removed_fmol[0, :, 0].tolist() == [0.3 * 0.25, 0.3 * 0.75]
+    assert bits(pools.label_share) == bits(after.label_share)  # Its rows: not its own.
+    assert bits(pools.label_removed_fmol) == bits(after.label_removed_fmol)
+    again = labels.advance_event(before, pools, np.array([0.3]), arrival, layout, xp=np, pool=0)
+    twice = [0.3 * 0.25 + 0.3 * 0.25, 0.3 * 0.75 + 0.3 * 0.75]  # Cumulative.
+    assert again.label_pool_removed_fmol[0, :, 0].tolist() == twice
+    bare = [s._replace(label_removed_fmol=np.zeros((0, 2, 1)), label_pool_removed_fmol=np.zeros(
+        (0, 2, 1))) for s in (before, after)]  # fmt: skip
+    plain = labels.advance_event(*bare, np.array([True]), arrival, layout, xp=np)
+    assert plain.label_share[0, :, 0].tolist() == [0.0, 1.0] and plain.label_removed_fmol.size == 0
+    plain = labels.advance_event(*bare, np.array([0.3]), arrival, layout, xp=np, pool=0)
+    assert plain.label_pool_share[0, :, 0].tolist() == [1.0, 0.0]
 
 
 def test_each_source_takes_its_own_schedule_or_its_species(monkeypatch):
@@ -444,7 +483,8 @@ def test_stage_three_reports_follow_the_material(kind):
 def test_a_replaced_slot_takes_the_newcomer_label():
     """D296 (the lead's leave for replacement@1's event, in NumPy, no world compiled): with labels
     the event's state and validity are bit for bit the unlabelled call's, it reports the slot it
-    replaced, and the owner gives that slot's S the label in force at the event, the newcomer's."""
+    replaced, and the owner gives that slot's S the label in force at the event, the newcomer's,
+    recording what left by label (erratum E); the records are zero-size without a replacement."""
     from cells.definitions import pump_composite_spec as cs
     from cells.registry.models import get_model
 
@@ -460,8 +500,16 @@ def test_a_replaced_slot_takes_the_newcomer_label():
     assert all(bits(a) == bits(b) for a, b in zip(plain, new, strict=True))
     owner = model.label_owner
     assert np.asarray(state.label_share)[0, :, 0].tolist() == [1.0, 0.0]
-    after = owner.advance_event(new, replaced, control, p, xp=np)
+    after = owner.advance_event(state, new, replaced, control, p, xp=np)
     assert np.asarray(after.label_share)[0, :, 0].tolist() == [0.0, 1.0]
+    s = list(spec.model.species_ids).index("S")  # What left (erratum E): S's 1 fmol, all base.
+    leaving = float(p.amount_reference[s, 0] + state.amount_increment[s, 0])
+    assert np.asarray(after.label_removed_fmol)[0, :, 0].tolist() == [leaving, 0.0]
+    assert np.asarray(state.label_pool_removed_fmol).shape[0] == 0  # No pool reporter.
+    unreplaced = get_model(parse_spec(labelled_s(face_free())).model).initial_values(
+        parse_spec(labelled_s(face_free()))
+    )[0]
+    assert np.asarray(unreplaced.label_removed_fmol).shape[0] == 0  # Zero-size: no event.
 
 
 # ------------------------------------------------------------------ one compiled world
@@ -627,29 +675,118 @@ def labelled_s(raw, labels=("base", "new"), initial=None, arrivals=()):
     return with_labels(raw, [("S", list(labels), initial or {})], arrivals)
 
 
-def mover(kind):
-    """A transporter kind's moved role Y, or its finite fuel's ATP, labelled
-    (tests/unit/test_transporter_kind.py's held world): kinds report from their hook, after @3's
-    side."""
+def mover(kind, *, finite=True):
+    """A transporter kind's moved role Y, or its fuel's ATP, labelled (tests/unit/
+    test_transporter_kind.py's held world; finite fuel takes the population axis): the kinds'
+    hook (D303 item 6) admits the role, which crosses, and refuses the fuel, which its law changes
+    at one end only."""
     from cells.definitions import pump_composite_spec as cs
     from cells.kinds import transporter
     from tests.unit import test_transporter_kind as tk
 
-    fuel = dict(tk.population()["fuel"], kind=transporter.FINITE)
+    fuel = dict(tk.population()["fuel"], kind=transporter.FINITE if finite else transporter.HELD)
     raw = cs.frozen_definition(tk.held_world(tk.population(fuel=fuel)))
     return with_labels(raw, [("Y" if kind == "role" else "ATP", ["base"], {})])
 
 
+def kinds_case(case):
+    """(a labelled definition, the registry scope it parses in) refused by the kinds' hook (D303
+    item 6): a kind's own label_refusals, the fail-closed rule or the central closure rule."""
+    import dataclasses
+
+    from cells.definitions import pump_composite_spec as cs
+    from cells.kinds import passive_routes
+    from cells.registry import kind_registry
+    from tests.unit import test_cycle_kind as ck
+    from tests.unit import test_neutral_labels_kinds as nk
+    from validation.compartment_ph_engine import definitions as fr
+
+    if case == "rectifier":
+        raw = nk.kinds_world(labelled=False)
+        raw["model"][passive_routes.MODEL_KEY].append(nk.RECTIFIER_NA)
+        return with_labels(raw, [("Na", ["base"], {})]), contextlib.nullcontext()
+    if case in ("net flow", "unequal"):
+        entry = ck.exchanger(law="seamtest.net_exchange@1") if case == "net flow" else nk.UNEQUAL
+        raw = cs.frozen_definition(ck.exchange_world(entry))
+        return with_labels(raw, [("W", ["base"], {})]), nk.cycle_scope()
+    if case == "fail-closed":
+        kinds = kind_registry.KindRegistry()
+        kinds.register(
+            dataclasses.replace(
+                passive_routes.PASSIVE_ROUTES, label_refusals=None, label_transfers=None
+            )
+        )
+        return nk.face_world(), kind_registry.scope(kinds)
+    if case == "closure":  # FR-4's world without FR-1's compartment operator, as a composite.
+        raw = cs.frozen_definition(fr.development_world(fr.fr4_world()))
+        return with_labels(raw, [("H", ["base"], {})]), contextlib.nullcontext()
+    raise ValueError(case)
+
+
+def producer_case(case):
+    """FR-38's step-5 world with its producer derived (amendment G), changed to be refused."""
+    from tests.unit.test_neutral_labels_events import chase
+
+    raw = chase("derived")
+    owner = next(o for o in raw["model"]["operators"] if o["law"] == LAW)
+    producer = owner["species"][0]["producers"][0]
+    if case == "hand-written":
+        raw["experiment"]["label_arrivals"].append(
+            dict(species="R", source="tx", schedule=[dict(time=0.0, label="base")])
+        )
+    elif case == "unknown":
+        for entry in owner["species"]:
+            entry["producers"][0]["source"] = "nope"
+    else:
+        producer["windows"].append({"label": "late", "from": 600.0, "to": 1800.0})
+    return raw
+
+
 REFUSED = {
-    "a kind moves its role (until the kinds' hook)": (
-        lambda: mover("role"),
-        r"Y is moved inside the inner step by cells.transporter@1 .*beside declared kinds, "
-        "until their hook",
+    "a producer source's schedule written by hand (amendment G: one authority)": (
+        lambda: producer_case("hand-written"),
+        r"label_arrivals gives source tx's schedule by hand, and tx is a producer source",
     ),
-    "a kind moves its finite fuel (until the kinds' hook)": (
+    "a producer that is no source reporter's chain (amendment G)": (
+        lambda: producer_case("unknown"),
+        r"R's producer nope is no source reporter's chain at a cell",
+    ),
+    "a producer's windows overlapping (amendment G)": (
+        lambda: producer_case("overlap"),
+        r"producer tx's windows are distinct, inside the horizon, increasing and disjoint",
+    ),
+    "a transporter changes its finite fuel at one end only (the kinds' hook)": (
         lambda: mover("fuel"),
-        r"ATP is moved inside the inner step by cells.transporter@1 .*beside declared kinds, "
-        "until their hook",
+        r"cells.transporter@1: transporter_0's mode cycle changes the labelled ATP at its N end "
+        r"only \(chemistry there, not a crossing\)",
+    ),
+    "a transporter changes its held fuel (the kinds' hook)": (
+        lambda: mover("fuel", finite=False),
+        r"cells.transporter@1: transporter_0's law changes the labelled ATP at its N end, a held "
+        r"row \(its maintenance's new material is not reported\)",
+    ),
+    "an inward rectifier moves its row (the kinds' hook)": (
+        lambda: kinds_case("rectifier"),
+        r"cells.passive_routes@1: rectifier_Na runs inward_rectifier_linear_driving_force@1, "
+        r"whose flux has no one-way form",
+    ),
+    "a net-flow population changes its row (the kinds' hook)": (
+        lambda: kinds_case("net flow"),
+        r"exchanger_0 runs seamtest.net_exchange@1, a net-flow form with no one-way cycle rates, "
+        "and changes the labelled W",
+    ),
+    "a crossing's counts differ at its two ends (the kinds' hook)": (
+        lambda: kinds_case("unequal"),
+        r"p_unequal's mode cyc changes the labelled W by -2 at N and 1 at P, unequal counts",
+    ),
+    "a kind with a rates hook and no label_refusals (the kinds' hook, fail-closed)": (
+        lambda: kinds_case("fail-closed"),
+        r"cells.passive_routes@1 has a rates hook and no label_refusals, so it is refused while "
+        r"any row is labelled \(fail-closed\)",
+    ),
+    "a closure holds the labelled row (the kinds' hook)": (
+        lambda: kinds_case("closure"),
+        r"H is held by cells.rapid_proton_buffer@1's closure at cell_0, lumen",
     ),
     "a bath schedule changes amounts": (
         lambda: labelled_s(
@@ -691,8 +828,44 @@ REFUSED = {
 }
 
 
+def test_a_pool_reporter_whose_event_reports_nothing_is_refused_beside_a_replacement(monkeypatch):
+    """Erratum E, fail-closed (the owner's operator check on planted declarations, no world):
+    beside a replacing event (one that swaps slots' amounts and reports them), a pool reporter
+    whose event takes no labels could empty its pools unreported, so it is refused; one whose
+    event takes labels= reports them, and without a replacing event neither is refused."""
+    from types import SimpleNamespace
+
+    from cells.operators import species_labels as labels
+
+    def part(law, **over):
+        base = dict(
+            LAW_ID=law, LABEL_OWNER=False, LABEL_POOLS=False, EVENT=False, SPLIT=False,
+            RETIRES=False, CLOSES=False, EVENT_REPLACES={}, STATE_RESETS=(), ENTITY_WRITES=(),
+            VIEW_FIELDS=(), event=lambda state, control, p, *, xp: None,
+        )  # fmt: skip
+        return SimpleNamespace(**(base | over))
+
+    def labelled_event(state, control, p, *, xp, labels=None):
+        return None
+
+    swap = part("tests.swap@1", EVENT=True, EVENT_REPLACES={"amount_increment": ()},
+                event=labelled_event)  # fmt: skip
+    pools = part("tests.pools@1", LABEL_POOLS=True, EVENT=True)
+    message = "tests.pools@1 beside neutral_arrival_labels@1 and a replacing event"
+    for declared, refused in (
+        ((swap, pools), True),
+        ((swap, part("tests.pools@1", LABEL_POOLS=True, EVENT=True, event=labelled_event)), False),
+        ((pools,), False),
+    ):
+        entries = tuple((op, None, None) for op in declared)
+        monkeypatch.setattr(labels.composite_spec, "entries", lambda spec, e=entries: e)
+        assert any(message in e for e in labels.operator_errors(None)) == refused, declared
+
+
 @pytest.mark.parametrize("case", sorted(REFUSED))
 def test_a_labelled_definition_is_refused_where_labels_cannot_follow_it(case):
     make, message = REFUSED[case]
-    with pytest.raises(ConfigError, match=message):
-        parse_spec(make())
+    made = make()  # A definition, or (a definition, the registry scope it parses in).
+    raw, scope = made if isinstance(made, tuple) else (made, contextlib.nullcontext())
+    with scope, pytest.raises(ConfigError, match=message):
+        parse_spec(raw)

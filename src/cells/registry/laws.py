@@ -187,6 +187,9 @@ class Law:
     qualified: object = None
 
     interface: ClassVar[str | None] = None
+    # D175's four fields stay reserved, except on an interface that declares itself a level of
+    # detail: D304 makes OL6's cells.assembly_representation@1 their first consumer.
+    LEVEL_OF_DETAIL: ClassVar[bool] = False
     UNITS: ClassVar = MappingProxyType({})  # {own field: unit}
     SIGNS: ClassVar = MappingProxyType({})  # {own field: its sign convention}
 
@@ -219,7 +222,7 @@ class Law:
             for name in ("represents", "preserves", "supports", "qualified")
             if getattr(self, name) is not None
         ]
-        if reserved:
+        if reserved and not type(self).LEVEL_OF_DETAIL:
             out.append(
                 f"{', '.join(reserved)}: B8's fields are reserved until their first consumer (D175)"
             )
@@ -494,6 +497,9 @@ class RouteLaw(Law):
     charge_bound: str | None = None  # Its definition-time bound on a charged row.
     material_bound: str | None = None  # Its definition-time bound on a neutral row.
     forms: str | None = None  # "base": it moves base forms (CORE_SEAMS §5.2), or None.
+    # The stage reads it reads its rows through, as a cycle law's reads: () for every route law but
+    # one that reads a closure's free forms (MT-1b's leak @2 reads rapid_binding@1; host side).
+    reads: tuple = ()
 
     interface: ClassVar[str] = ROUTE_LAW
 
@@ -503,6 +509,8 @@ class RouteLaw(Law):
             out.append("its hosts name the entities its routes sit on")
         if not _named(self.basis):
             out.append("its basis says what it is")
+        if not (isinstance(self.reads, tuple) and all(map(_named, self.reads))):
+            out.append("its reads are a tuple of stage-read IDs")
         return out + _named_or_none(self, *STEP_TERMS) + _forms_errors(self)
 
 

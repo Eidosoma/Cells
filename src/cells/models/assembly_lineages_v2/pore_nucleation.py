@@ -26,11 +26,20 @@ composition (D287). ν_A is in m⁻²·s⁻¹·(N/m)^(−1/2)·K^(3/2), Γ in N,
 T is the world's temperature. Refused with it (Phase A; the lead's rulings of 22 November 2026):
 - a world without cells.bilayer_geometry@1, so with no geometry or with FR-21's prescribed shell:
   the vesicle's area is the bilayer's, A = q·W/2;
-- any step that changes a membrane place's count (its net change, not the membrane's total): the
-  area then stays fixed, so each vesicle's rate is constant through a hold;
+- under a hold, any step that changes a membrane place's count (its net change, not the
+  membrane's total): the area then stays fixed, so each vesicle's rate is constant through the
+  hold (`phase_a_refusals`, which spec.parse's exact branch calls under a hold, and
+  cells.rate_equations@1's T2). With no hold the tension comes from F and such steps are admitted
+  in both representations (OL6 S3 and S4; exact events carry the clock on the device,
+  pore_device.py);
 - a membrane or lumen species without a pool place to return to at a rupture (as §0.2c rule 8
   refuses it in a world that can lyse).
 The experiment's hold and the cross-checks with it are tension_hold.py's (spec.parse).
+
+**The rate at real area and tension** (`rate_at`, OL6 S3): the same closed form, traceable, for
+cells.rate_equations@1, whose vesicles have real areas and, with an osmotic lumen, a tension from F
+(the design note's §3.5). It is 0 where σ ≤ 0 (a floppy vesicle), with the logarithms guarded so
+that its gradient is finite on both sides.
 """
 
 import math
@@ -73,6 +82,23 @@ def log_rate(area_m2, sigma_n_per_m, temperature_k, log_nu_a, gamma_n, e_a_j_per
     return math.log(area_m2) + log_rate_per_area(
         sigma_n_per_m, temperature_k, log_nu_a, gamma_n, e_a_j_per_mol
     )
+
+
+def rate_at(area_m2, sigma_n_per_m, temperature_k, log_nu_a, gamma_n, e_a_j_per_mol, xp):
+    """k_v (1/s) at real areas and tensions (arrays, traceable): exp of log_rate's closed form where
+    σ > 0 and A > 0, and 0 elsewhere, each logarithm taken at 1 there (the double-where form)."""
+    t = temperature_k
+    live = (sigma_n_per_m > 0) & (area_m2 > 0)
+    sigma = xp.where(live, sigma_n_per_m, 1.0)
+    area = xp.where(live, area_m2, 1.0)
+    log_k = xp.log(area) + (
+        log_nu_a
+        + 0.5 * xp.log(sigma)
+        - 1.5 * math.log(t)
+        - e_a_j_per_mol / (R * t)
+        - math.pi * gamma_n**2 / (sigma * K_B * t)
+    )
+    return xp.where(live, xp.exp(log_k), 0.0)
 
 
 def dlog_rate_dt(sigma_n_per_m, temperature_k, gamma_n, e_a_j_per_mol):
@@ -153,6 +179,20 @@ def parse_data(raw, world):
             f"/ 2, so the world declares {BILAYER_GEOMETRY}"
             + ("; a prescribed shell has no tension (FR-21)" if world.geometry is not None else "")
         )
+    pool = {p.species for p in world.places if p.phase == "pool"}
+    homeless = sorted({p.species for p in world.places if p.phase in ("membrane", "lumen")} - pool)
+    if homeless:
+        raise ConfigError(
+            "world: hazard: a pore's rupture is a lysis, so every membrane and lumen species has a "
+            f"pool place to return to; {', '.join(homeless)} has none (§0.2c rule 8)"
+        )
+    return {name: _value(raw[name], name) for name in KEYS}
+
+
+def phase_a_refusals(world):
+    """Exact events' refusal of a pore world whose areas change (spec.parse's exact branch, right
+    after the world parses, where parse_data refused it before OL6 S3): the host clock's rate is
+    constant through a hold only while no step changes a membrane place's count."""
     changed = membrane_changes(world)
     if changed:
         step, place = changed[0]
@@ -162,14 +202,6 @@ def parse_data(raw, world):
             "law declares no step that changes a membrane place's count (the lead's ruling of 22 "
             "November 2026)"
         )
-    pool = {p.species for p in world.places if p.phase == "pool"}
-    homeless = sorted({p.species for p in world.places if p.phase in ("membrane", "lumen")} - pool)
-    if homeless:
-        raise ConfigError(
-            "world: hazard: a pore's rupture is a lysis, so every membrane and lumen species has a "
-            f"pool place to return to; {', '.join(homeless)} has none (§0.2c rule 8)"
-        )
-    return {name: _value(raw[name], name) for name in KEYS}
 
 
 def data_to_dict(data):

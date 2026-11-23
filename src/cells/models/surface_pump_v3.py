@@ -51,6 +51,7 @@ process: it must add no membrane conductance the family's bound does not cover
 
 import re
 import sys
+from contextlib import contextmanager
 from dataclasses import make_dataclass, replace
 from functools import cache, cached_property, partial
 from types import MappingProxyType, SimpleNamespace
@@ -84,6 +85,8 @@ from cells.laws.junctions.selective import selective_flux
 from cells.laws.pumps import calcium_atpase
 from cells.laws.pumps import kinetic_pump as pump
 from cells.laws.pumps import kinetic_pump_binding as pumps
+from cells.laws.reactions import rapid_binding as binding_law
+from cells.laws.routes import logmean_electrodiffusion_forms as forms_law
 from cells.laws.routes import passive_permeation as exact_kernel
 from cells.laws.routes import patch_electrodiffusion as constant_field_route
 from cells.models import inner_laws
@@ -143,6 +146,37 @@ FLOOR_LAYOUT_TYPE = NamedTuple(  # Declared field solver surface_field.FLOOR_SOL
         )
     ],
 )
+# The forms faces (logmean_electrodiffusion_forms@1; MITOCHONDRIA_DESIGN's face note, its build
+# plan's item 1): their own entity set, with their own state and layout fields, present only in a
+# structure that declares forms faces (InnerStructure.forms_faces, _kind_types), so no other
+# world's types, layouts or programs carry anything of them (D148 case 2). A mover is a row moving
+# as itself or a binder's form (laws/routes/logmean_electrodiffusion_forms.Movers).
+FORMS_STATE_AXES = {
+    "forms_face_transferred": ["face_mover", "forms_face_slot"],  # Per mover, sender -> receiver.
+    "forms_face_dissipated_energy_pJ": ["forms_face_slot"],
+}
+FORMS_LAYOUT_FIELDS = (
+    "forms_face_active",  # [forms face]
+    "forms_face_sender",  # [forms face] outside node
+    "forms_face_receiver",  # [forms face] outside node
+    "forms_face_factor",  # [mover, forms face] D A / L (m^3/s)
+    "forms_face_valence",  # [mover, 1]
+    "forms_face_stoichiometry",  # [mover, species]
+    "forms_face_row",  # [mover] the species row a row mover reads (-1 for a binder form)
+    "forms_face_binder",  # [mover] a binder form's binder in the general closure (-1 for a row)
+    "forms_face_form",  # [mover] a binder form's index among its binder's forms (-1 for a row)
+    "forms_face_form_movers",  # [form mover] the binder forms' movers; its size is static
+    "forms_face_incidence",  # [floating component, forms face] (field.bind's face_incidence's form)
+)
+FORMS_STRUCTURE_REFUSAL = (
+    f"{forms_law.LAW_ID} runs in @3 through its structure's implementation (registry.get_model), "
+    "which holds the forms faces' own entity set; a path without that structure would drop them, "
+    "so it refuses them (version 1)"
+)
+FORMS_PROJECTIVE_REFUSAL = (
+    f"{forms_law.LAW_ID} runs on the fine engine in version 1: execution.projective's settling "
+    "test reads no forms face"
+)
 ENERGY_RTOL = first.ENERGY_RTOL
 EXPLICIT_STEP_BOUND = first.EXPLICIT_STEP_BOUND
 # The ledger protocol (docs/INNER_MODEL_V4_DESIGN.md §7.4 (p)): @1's lists, which the shared
@@ -198,11 +232,16 @@ def working_size(spec):
     series = (
         series_gates.GATE_COUNT * x.edge_capacity if declares_series_junctions(spec.model) else 0
     )
+    forms = 0
+    if getattr(spec.model, "forms_faces", ()):  # Each mover's transfer and each face's heat.
+        faces = len(spec.model.forms_faces)
+        forms = faces * (forms_law.mover_count(spec.model, forms_of_binders(spec.model)) + 1)
     return (
         second.working_size(projection(spec))
         + 2 * (2 + 2 * s) * x.channel_capacity
         + 2 * kind_row_values(spec)
         + 2 * series
+        + 2 * forms
     )
 
 
@@ -254,8 +293,12 @@ def initial_values(spec, *, structure=None):
     series = series_junctions(structure)
     if structure is None and declares_series_junctions(spec.model):
         raise ConfigError(SERIES_STRUCTURE_REFUSAL)  # Fail closed: no one-gate path runs it.
-    state, layout = _todays_initial_values(spec)
-    if (structure is None or not structure.kinds) and not series:
+    declared_forms = getattr(spec.model, "forms_faces", ())
+    if bool(declared_forms) != forms_faces_declared(structure):
+        raise ConfigError(FORMS_STRUCTURE_REFUSAL)  # Fail closed: a path without them drops them.
+    with forms_return_paths(spec.model):  # Left before anything else runs.
+        state, layout = _todays_initial_values(spec)
+    if (structure is None or not structure.kinds) and not series and not declared_forms:
         return state, layout
     # Schema A (§7.4 (j), (k)): each declared kind adds its state and layout fields, by name, in
     # canonical order, into its structure's types.
@@ -276,6 +319,10 @@ def initial_values(spec, *, structure=None):
             kind, "initial values", own_layout, kind.layout_fields, "layout"
         )
         kind_registry.refuse_misshapen(kind, "initial values", own_state, own_layout, sizes)
+        fields |= own_state
+        entries |= own_layout
+    if declared_forms:  # The forms faces' own entity set, after the kinds (their closure's arrays).
+        own_state, own_layout = forms_initial_values(spec, entries)
         fields |= own_state
         entries |= own_layout
     floor = "field_current_floor" in entries
@@ -325,6 +372,131 @@ def _todays_initial_values(spec):
     )
     kind = FLOOR_LAYOUT_TYPE if "field_current_floor" in v else LAYOUT_TYPE
     return STATE_TYPE(**(state._asdict() | channel)), kind(**v)
+
+
+@contextmanager
+def forms_return_paths(model):
+    """field.bind's return paths for the model's forms faces, around one base binding: bind (their
+    one reader) counts each forms face as a charged path between its two outside nodes, so a
+    floating component whose only path to a clamp is a forms face binds. Nothing is set for a model
+    without forms faces, and the context is left with the block."""
+    faces = getattr(model, "forms_faces", ())
+    if not faces:
+        yield
+        return
+    oids = [o.id for o in model.extracellular]
+    with field.return_paths([(oids.index(f.sender), oids.index(f.receiver)) for f in faces]):
+        yield
+
+
+def forms_of_binders(model):
+    """{binder row: its forms, base first ((form ID, ((ligand, n), ...), mu°/RT), ...)} from the
+    species registry (species_registry.forms_of), for each binder some forms face moves as its
+    forms; {} without one. The law module takes them as data (laws/ import the registry only
+    through cells.modules)."""
+    rows = forms_law.form_binders(model)
+    if not rows:
+        return {}
+    from cells.registry import species_registry  # Host side; the registry imports this module.
+
+    spec = SimpleNamespace(model=model)
+    return {row: species_registry.forms_of(spec, row) for row in rows}
+
+
+def forms_faces_declared(structure):
+    """Whether the structure declares forms faces (InnerStructure.forms_faces; static)."""
+    return structure is not None and bool(structure.forms_faces)
+
+
+def _has_forms(p):
+    """Static: the layout of a world that declares forms faces (its type holds their fields)."""
+    return "forms_face_active" in type(p)._fields
+
+
+def forms_initial_values(spec, layout):
+    """(state fields, layout fields) of the forms faces (FORMS_STATE_AXES, FORMS_LAYOUT_FIELDS),
+    from the definition and the layout's fields (a mapping: its outside nodes and floating basis,
+    and the general closure's arrays where a binder moves as its forms). One slot per declared
+    forms face; the movers are the law's table (forms_law.movers)."""
+    m = spec.model
+    oids = [o.id for o in m.extracellular]
+    network = None
+    if "binding_rows" in layout:  # The general closure's arrays (its kind's initial values).
+        network = (
+            np.asarray(layout["binding_rows"]),
+            np.asarray(layout["binding_counts"]),
+            np.asarray(layout["binding_present"]),
+            np.asarray(layout["binding_held"]).shape[0],
+        )
+    table = forms_law.movers(m, network, forms_of_binders(m))
+    charge = np.asarray(table.stoichiometry) @ np.asarray(m.valence, dtype=float)
+    if not np.array_equal(charge, np.asarray(table.valence, dtype=float)):  # Exact: integers.
+        bad = table.names[int(np.flatnonzero(charge != np.asarray(table.valence))[0])]
+        raise ConfigError(
+            f"Forms face mover {bad} changes its rows' charge by other than its valence: a bound "
+            "form carries its ligands, and the field books the rows' charge"
+        )
+    faces = len(m.forms_faces)
+    sender = np.asarray([oids.index(f.sender) for f in m.forms_faces], dtype=np.int64)
+    receiver = np.asarray([oids.index(f.receiver) for f in m.forms_faces], dtype=np.int64)
+    n = np.asarray(layout["active"]).size
+    basis = np.asarray(layout["field_floating_basis"])
+    own = dict(
+        forms_face_active=np.ones(faces, dtype=bool),
+        forms_face_sender=sender,
+        forms_face_receiver=receiver,
+        forms_face_factor=forms_law.face_factors(m, table),
+        forms_face_valence=np.asarray(table.valence, dtype=float)[:, None],
+        forms_face_stoichiometry=np.asarray(table.stoichiometry, dtype=float),
+        forms_face_row=np.asarray(table.row, dtype=np.int64),
+        forms_face_binder=np.asarray(table.binder, dtype=np.int64),
+        forms_face_form=np.asarray(table.form, dtype=np.int64),
+        forms_face_form_movers=np.flatnonzero(np.asarray(table.binder) >= 0).astype(np.int64),
+        forms_face_incidence=(basis[n + sender] - basis[n + receiver]).T,
+    )
+    state = dict(
+        forms_face_transferred=np.zeros((len(table.names), faces)),
+        forms_face_dissipated_energy_pJ=np.zeros(faces),
+    )
+    return state, own
+
+
+def forms_faces_of(p):
+    """The layout's forms faces as numerics/surface_transport.FormsFaces."""
+    return surface.FormsFaces(
+        p.forms_face_active,
+        p.forms_face_sender,
+        p.forms_face_receiver,
+        p.forms_face_factor,
+        p.forms_face_valence,
+        p.forms_face_stoichiometry,
+    )
+
+
+def forms_ends(co, p, *, xp=jnp):
+    """(left, right) [mover, forms face]: each mover's concentration (mM) at each forms face's
+    sender and receiver, from the outside nodes' concentrations co [species, outside node] (the
+    stage read's, or the predictor's at the predicted totals): a row mover reads its row (a ligand
+    row's free amount at a closure node, its stored amount elsewhere); a binder's form is the
+    closure's c_f = c_base beta_f prod x_L^n_L (rapid_binding.forms_from_free, the binding
+    owner's export) at the read's free ligands and free base form. Static: without a binder form
+    (the size of forms_face_form_movers) only the rows are read."""
+    c = co[xp.maximum(p.forms_face_row, 0)]
+    if p.forms_face_form_movers.shape[0]:
+        nl, rows = p.binding_held.shape[0], p.binding_rows
+        forms = binding_law.forms_from_free(
+            xp.log(co[rows[:nl]]), co[rows[nl:]], p.binding_log_beta, p.binding_counts,
+            p.binding_present, xp=xp,
+        )  # fmt: skip
+        gathered = forms[xp.maximum(p.forms_face_binder, 0), xp.maximum(p.forms_face_form, 0)]
+        c = xp.where((p.forms_face_binder >= 0)[:, None], gathered, c)
+    return c[:, p.forms_face_sender], c[:, p.forms_face_receiver]
+
+
+def forms_field(co, p, *, xp=jnp):
+    """field.solve's forms argument at outside concentrations co (the stage read's)."""
+    left, right = forms_ends(co, p, xp=xp)
+    return field.FormsField(forms_faces_of(p), left, right, p.forms_face_incidence)
 
 
 def channel_kinetics(voltage, codes, *, xp=jnp, structure=None):
@@ -700,6 +872,7 @@ def presence_gated(p, structure, *, xp=jnp):
 
 
 KindRates = kind_registry.KindRates  # The kind contract's (§8.5 of docs/CORE_SEAMS_DESIGN.md).
+LabelView = kind_registry.LabelView  # The kind contract's too: FR-42's end of a step.
 OWN_SINK = kind_registry.qualified(MODEL_ID)  # @3 as the sink of its channel field (B1's door).
 # FR-34's record of the effective availability: recorded only where the door routes into @3's
 # channels (routes_into_channels), the one place it differs from channel_availability.
@@ -839,15 +1012,21 @@ def _stage_read(state, p, kinds, *, xp):
 def _field_values(state, read, control, p, *, xp):
     """tissue.field_values with the stage read's concentrations and the stored rows' charges: a
     read changes the concentrations the rates see, never a node's charge (§7.4 (k); FR-4's H_eq
-    and buffer totals carry the charge). Today's call, unchanged, when nothing is read."""
-    if read is state:
+    and buffer totals carry the charge). Today's call, unchanged, when nothing is read and no
+    forms face is declared; the forms faces' movers join the offsets' current balance (static)."""
+    forms = _has_forms(p)
+    if read is state and not forms:
         return tissue.field_values(state, control, p, xp=xp)
     ci, co = physical_amounts(read, p)
     q = tissue.charge_increment(state, p, xp=xp)
     n = p.active.size
+    # Today's operation order (crossrev compares the program text): the cells' concentrations,
+    # then the outside nodes'.
+    ci = xp.where(p.active, ci / p.volume, 1.0)
+    co = xp.where(p.outside_active, co / p.extracellular_volume, 1.0)
     return field.solve(
-        xp.where(p.active, ci / p.volume, 1.0),
-        xp.where(p.outside_active, co / p.extracellular_volume, 1.0),
+        ci,
+        co,
         p.initial_cell_charge_C + q[:n],
         p.initial_outside_charge_C + q[n:],
         control.membrane,
@@ -855,7 +1034,24 @@ def _field_values(state, read, control, p, *, xp):
         p.boundary_V,
         tissue.field_layout(p),
         xp=xp,
+        **({"forms": forms_field(co, p, xp=xp)} if forms else {}),
     )
+
+
+def forms_rates(read, potential, p, *, xp):
+    """The forms faces' point law at a state's read and its node potentials: (their rates
+    (surface_transport.FormsRates), each outside node's inflow [species, outside node])."""
+    n = p.active.size
+    _, co = physical_amounts(read, p)
+    co = xp.where(p.outside_active, co / p.extracellular_volume, 1.0)
+    faces = forms_faces_of(p)
+    left, right = forms_ends(co, p, xp=xp)
+    outside = potential[n:]
+    rates = surface.forms_face_transport(
+        left, right, outside[faces.sender] - outside[faces.receiver], p.temperature, faces, xp=xp
+    )
+    _, inflow = surface.forms_row_rates(rates.flux_fmol_s, faces, p.outside_active.size, xp=xp)
+    return rates, inflow
 
 
 def _stage_checks(kinds, read, cell, outside, p, *, xp):
@@ -1055,6 +1251,11 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None
     out_extra = scatter(extra, r.outside_rate_fmol_s, (p.membrane_outside,), xp=xp)
     outside = r.outside_rate_fmol_s + xp.where(p.reservoir, 0.0, out_extra)
     supplied = r.reservoir_supply_fmol_s - xp.where(p.reservoir, out_extra, 0.0)
+    forms = None
+    if forms_faces_declared(structure):  # The forms faces' rates, at the read (static).
+        forms, forms_inflow = forms_rates(read, v.potential_V, p, xp=xp)
+        outside = outside + xp.where(p.reservoir, 0.0, forms_inflow)
+        supplied = supplied - xp.where(p.reservoir, forms_inflow, 0.0)
     gated = presence_gated(p, structure, xp=xp)  # Q2: entities on closed hosts absent (static).
     kind_rates = _kind_rates(kinds, read, v.potential_V, control, gated, xp=xp)
     for kr in kind_rates:  # §7.4 (k), rates: into the shared inventory (rule (c)).
@@ -1102,6 +1303,8 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None
         + entity_sum(r.junction_dissipation_pJ_s, axis=None, xp=xp)
         + entity_sum(r.face_dissipation_pJ_s, axis=None, xp=xp)
     )
+    if forms is not None:
+        dissipation = dissipation + entity_sum(forms.dissipation_pJ_s, axis=None, xp=xp)
     for kr in kind_rates:  # The kinds' heat and work, by role (rule (a)).
         dissipation = dissipation + entity_sum(kr.heat_pJ_s, axis=None, xp=xp)
     energy = (
@@ -1141,10 +1344,15 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None
         ca_d,
         ca_metabolic,
     )
-    if kinds or series_rate is not None:
+    if kinds or series_rate is not None or forms is not None:
         extra = {} if series_rate is None else {SERIES_GATES: series_rate}
+        if forms is not None:
+            extra["forms_face_transferred"] = forms.flux_fmol_s
+            extra["forms_face_dissipated_energy_pJ"] = forms.dissipation_pJ_s
         result = _with_kind_derivatives(result, kind_rates, structure, state, xp=xp, extra=extra)
     valid = v.converged
+    if forms is not None:
+        valid &= forms.valid
     if args is not None:  # The Na/K pump's domain, where its law is declared.
         valid = valid & xp.all(pump.domain_valid(*args, xp=xp))
     if ca_args is not None:
@@ -1253,6 +1461,10 @@ def domain_valid(state, p, active, *, xp=jnp, structure=None):
     valid &= xp.all(xp.where(route > 0, True, state.channel_dissipated_energy_pJ == 0))
     valid &= xp.all(xp.where(p.pump_capacity > 0, True, state.pump_cycles == 0))
     valid &= xp.all(xp.where(p.calcium_pump_capacity > 0, True, state.calcium_pump_cycles == 0))
+    if forms_faces_declared(structure):  # The forms faces: finite, and nothing on an absent mover.
+        moved, heat = state.forms_face_transferred, state.forms_face_dissipated_energy_pJ
+        valid &= xp.all(xp.isfinite(moved)) & xp.all(xp.isfinite(heat))
+        valid &= xp.all(xp.where(p.forms_face_factor > 0, True, moved == 0))
     if structure is not None and structure.kinds:  # Each declared kind's own domain (§7.4 (k)).
         kinds = _kinds(structure)
         _, read_valid = _stage_read(state, p, kinds, xp=xp)  # The reads hold at this state too.
@@ -1382,6 +1594,13 @@ def explicit_rates(
         - scatter(diffusion, zero, (p.face_sender,), xp=xp)
         + scatter(diffusion, zero, (p.face_receiver,), xp=xp)
     )
+    forms_diffusion = None
+    if forms_faces_declared(structure):  # The forms faces' diffusion, explicit as the faces'.
+        faces = forms_faces_of(p)
+        forms_weight, forms_log = imex.forms_face_weights(*forms_ends(co, p, xp=xp), faces, xp=xp)
+        forms_diffusion = forms_weight * forms_log
+        _, forms_inflow = surface.forms_row_rates(forms_diffusion, faces, co.shape[1], xp=xp)
+        inflow = inflow + forms_inflow
     series_rate = None  # FR-30 (S2): each series gate's own rate, where the law is declared.
     if conductances is not None:  # N2 ((a), static): imex_step sets the junction gates by their
         # exponential update.
@@ -1425,8 +1644,10 @@ def explicit_rates(
         ca_d,
         ca_metabolic,
     )
-    if kinds or series_rate is not None:
+    if kinds or series_rate is not None or forms_diffusion is not None:
         extra = {} if series_rate is None else {SERIES_GATES: series_rate}
+        if forms_diffusion is not None:  # Their heat is the step's (imex_step).
+            extra["forms_face_transferred"] = forms_diffusion
         rates = _with_kind_derivatives(rates, kind_rates, structure, state, xp=xp, extra=extra)
     if conductances is not None:  # N2 (static): the remainder, J - W dv, at these potentials.
         rates = explicit_remainder(rates, conductances, potential, r, p, xp=xp)
@@ -1470,12 +1691,13 @@ def explicit_rates(
     return rates, valid
 
 
-def implicit_rates(weight, potential, state, p, *, xp=jnp, conductances=None):
+def implicit_rates(weight, potential, state, p, *, xp=jnp, conductances=None, forms_weight=None):
     """Face electromigration rates with frozen face weights; zero elsewhere.
 
     Under N2 (conductances, the step's frozen ConductanceWeights) the membranes', channels' and
     junctions' linear parts at the same potentials join them (linear_route_fluxes), with their
-    amounts on both sides; their heat is set at the stage (implicit_route_heat)."""
+    amounts on both sides; their heat is set at the stage (implicit_route_heat). With forms faces
+    (forms_weight, their movers' frozen weights; static) their electromigration joins the faces'."""
     s, n = tissue.field_layout(p).surface, p.active.size
     flux = imex.drift_flux(weight, potential[n:], s, xp=xp)
     zero = xp.zeros_like(state.extracellular_amount_increment)
@@ -1483,6 +1705,12 @@ def implicit_rates(weight, potential, state, p, *, xp=jnp, conductances=None):
         flux, zero, (p.face_sender,), xp=xp
     )
     rates = type(state)(*(xp.zeros_like(v) for v in state))  # The state's own type (schema A).
+    if forms_weight is not None:
+        faces = forms_faces_of(p)
+        forms_flux = imex.forms_drift_flux(forms_weight, potential[n:], p.temperature, faces, xp=xp)
+        _, forms_inflow = surface.forms_row_rates(forms_flux, faces, zero.shape[1], xp=xp)
+        inflow = inflow + forms_inflow
+        rates = rates._replace(forms_face_transferred=forms_flux)
     if conductances is None:
         return rates._replace(
             extracellular_amount_increment=xp.where(p.reservoir, 0.0, inflow),
@@ -1963,18 +2191,33 @@ def stage_junction_gates(
 # (O(dt^3)) on the side its sign gives: forward - backward is the booked net at rounding, both stay
 # >= 0 and second order. ARS(2,2,2)'s explicit weights (delta, 1 - delta, 0), delta < 0, would make
 # a stage-weighted one-way amount negative where a flux falls by more than 59% within a step.
+# Declared kinds report theirs through their own hook (D303 item 6, kind_registry.Kind's
+# label_transfers, the same rule on their own one-way fluxes and booked nets), appended after the
+# core's; their refusals are their label_refusals (kind_registry.label_refusal_errors).
 
 FR42_REFUSAL = "FR-42 (labelled rows inside @3's step)"
 
 
-def label_errors(p, rows, *, structure=None, solver=None):
+def label_errors(p, rows, *, structure=None, solver=None, model=None):
     """FR-42's refusals at the definition (host side, the layout's values): the reasons the
-    labelled rows `rows` cannot be carried, or []."""
+    labelled rows `rows` cannot be carried, or []. Declared kinds give their own reasons
+    (label_refusals, read from their declarations in `model`, the parsed inner model); without
+    the model they stay refused."""
     errors = []
     if solver == "rk4" or getattr(p, "imex_explicit", np.zeros((1,))).shape[0] == 0:
         errors.append(f"{FR42_REFUSAL}: RK4 refuses labels in version 1")
     if structure is not None and structure.kinds:
-        errors.append(f"{FR42_REFUSAL}: declared kinds are refused until their one-way hook lands")
+        if model is None:
+            errors.append(
+                f"{FR42_REFUSAL}: declared kinds give their refusals from their declarations, "
+                "which need the parsed model"
+            )
+        else:
+            species = tuple(model.species_ids[int(r)] for r in rows)
+            errors += [
+                f"{FR42_REFUSAL}: {reason}"
+                for reason in kind_registry.label_refusal_errors(model.kinds, species)
+            ]
     rows = list(rows)
     s = tissue.field_layout(p).surface
     valence = np.asarray(p.valence).reshape(len(p.valence), -1)[:, 0]
@@ -2006,13 +2249,28 @@ def label_errors(p, rows, *, structure=None, solver=None):
                 if np.any(moved):
                     errors.append(f"{FR42_REFUSAL}: row {r} is moved by a pump")
                     break
+        # A forms face moves row r where a mover it carries (a positive factor on an active face)
+        # changes the row: as itself, as a binder's form, or as a ligand a form carries. FR-42's
+        # face term assumes one face factor per row, so version 1 refuses it (the build plan's
+        # item 1; the face builder's line, landing after FR-42's hook).
+        if _has_forms(p):
+            changes = np.asarray(p.forms_face_stoichiometry)[:, r] != 0  # [mover]
+            carried = (np.asarray(p.forms_face_factor) > 0) & np.asarray(
+                p.forms_face_active, dtype=bool
+            )[None, :]
+            if np.any(changes[:, None] & carried):
+                errors.append(
+                    f"{FR42_REFUSAL}: row {r} is moved by a forms face ({forms_law.LAW_ID}), "
+                    "whose one-way term is not built (version 1)"
+                )
     return errors
 
 
-def one_way_fluxes(state, potential, control, p, rows, *, xp=jnp):
-    """FR-42: the labelled rows' one-way fluxes (fmol/s) at a state and its potentials, as
-    (forward, backward) per entity kind [m, entity], in the transport law's own directions: faces
-    sender to receiver, membranes cell to outside, junctions sender to receiver. Faces carry
+def one_way_fluxes(view, p, rows, *, xp=jnp):
+    """FR-42: the labelled rows' one-way fluxes (fmol/s) at one end of a step (a LabelView: its
+    read's amounts, its potentials and its control), as (forward, backward) per entity kind
+    [m, entity], in the transport law's own directions: faces sender to receiver, membranes cell
+    to outside, junctions sender to receiver. Faces carry
     uncharged rows (W ln(a/b) = c (a - b), c = face_factor / MOL_PER_FMOL, so c a and c b);
     membranes and junctions the constant-field law's two terms, opening x B(-x) c_from and
     B(x) c_to (laws/junctions/selective)."""
@@ -2021,12 +2279,12 @@ def one_way_fluxes(state, potential, control, p, rows, *, xp=jnp):
     idx = xp.asarray(rows)
     s = tissue.field_layout(p).surface
     n = p.active.size
-    ci, co = physical_amounts(state, p)
+    ci, co = physical_amounts(view.read, p)
     ci = xp.where(p.active, ci / p.volume, 1.0)
     co = xp.where(p.outside_active, co / p.extracellular_volume, 1.0)
     z = p.valence[idx]
     rt = R * p.temperature
-    cell, outside = potential[:n], potential[n:]
+    cell, outside = view.potentials[:n], view.potentials[n:]
 
     def route(c_from, c_to, dv, area, permeability, opening, active):
         x = z * F * xp.where(active, dv, 0.0) / rt
@@ -2042,7 +2300,7 @@ def one_way_fluxes(state, potential, control, p, rows, *, xp=jnp):
         cell[s.membrane_cell] - outside[s.membrane_outside],
         s.membrane_area,
         s.membrane_permeability,
-        control.membrane,
+        view.control.membrane,
         s.membrane_active,
     )
     junction = route(
@@ -2051,7 +2309,7 @@ def one_way_fluxes(state, potential, control, p, rows, *, xp=jnp):
         cell[s.junction_sender] - cell[s.junction_receiver],
         s.junction_area,
         s.junction_permeability,
-        control.junction * state.junction_gate,
+        view.control.junction * view.state.junction_gate,
         s.junction_active,
     )
     c = xp.where(s.face_active, s.face_factor[idx] / MOL_PER_FMOL, 0.0)
@@ -2062,17 +2320,17 @@ def one_way_fluxes(state, potential, control, p, rows, *, xp=jnp):
     return dict(face=face, membrane=membrane, junction=junction)
 
 
-def step_transfers(start_state, start_potential, end_state, end_potential, control, p, dt, rows,
-                   *, xp=jnp, direct=None):  # fmt: skip
-    """FR-42: the step's transfers (module comment above): the trapezoid of the start and end
-    one-way fluxes (or `direct`, the Euler IMEX's combined stage terms), plus the gap to the booked
-    net on the side its sign gives."""
+def step_transfers(start, end, p, dt, rows, *, xp=jnp, direct=None):
+    """FR-42: the step's transfers (module comment above) between its two ends (LabelViews): the
+    trapezoid of the start and end one-way fluxes (or `direct`, the Euler IMEX's combined stage
+    terms, the end then carrying only its state), plus the gap to the booked net (the end state's
+    accumulators less the start's) on the side its sign gives."""
     idx = xp.asarray(rows)
     s = tissue.field_layout(p).surface
     n = p.active.size
     if direct is None:
-        a = one_way_fluxes(start_state, start_potential, control, p, rows, xp=xp)
-        b = one_way_fluxes(end_state, end_potential, control, p, rows, xp=xp)
+        a = one_way_fluxes(start, p, rows, xp=xp)
+        b = one_way_fluxes(end, p, rows, xp=xp)
         sums = {k: tuple(0.5 * dt * (a[k][i] + b[k][i]) for i in (0, 1)) for k in a}
     else:
         sums = direct
@@ -2086,7 +2344,7 @@ def step_transfers(start_state, start_potential, end_state, end_potential, contr
     transfers = []
     for kind in ("face", "membrane", "junction"):
         forward, backward = sums[kind]
-        net = (getattr(end_state, booked[kind]) - getattr(start_state, booked[kind]))[idx]
+        net = (getattr(end.state, booked[kind]) - getattr(start.state, booked[kind]))[idx]
         gap = net - (forward - backward)
         source, destination = nodes[kind]
         transfers.append((forward + xp.maximum(gap, 0.0), source, destination))
@@ -2100,13 +2358,9 @@ def crosses_floating(structure):
     return structure is not None and bool(structure.crossing_junctions)
 
 
-def crossing_potential(state, control, p, *, xp=jnp, kinds=(), structure=None):
-    """Fix (A) (D273): a stage state's quasi-static potentials and their validity, solved as
-    readouts solves the step start's: the field at the state's charges, with the stage read and the
-    routing door, and each floating component's offset by current balance at the state's own
-    junction openings. Where a junction joins capacitor components and one floats, the stage solve's
-    offsets follow from current balance with a lagged junction current, and its junction converges
-    at first order; the explicit rates (and N2's stage junction gates) read these instead."""
+def crossing_view(state, control, p, *, xp=jnp, kinds=(), structure=None):
+    """(LabelView, valid): crossing_potential's solve with the read and the routed control it
+    solves at, so FR-42's end of a step reads what the stage rates read."""
     from cells.execution.schedule import SurfaceControl
 
     read = _stage_read(state, p, kinds, xp=xp)[0] if kinds else state
@@ -2120,7 +2374,19 @@ def crossing_potential(state, control, p, *, xp=jnp, kinds=(), structure=None):
         xp=xp,
     )
     potential = values.potential_V
-    return potential, xp.all(xp.isfinite(potential)) & values.converged
+    valid = xp.all(xp.isfinite(potential)) & values.converged
+    return LabelView(state, read, potential, control), valid
+
+
+def crossing_potential(state, control, p, *, xp=jnp, kinds=(), structure=None):
+    """Fix (A) (D273): a stage state's quasi-static potentials and their validity, solved as
+    readouts solves the step start's: the field at the state's charges, with the stage read and the
+    routing door, and each floating component's offset by current balance at the state's own
+    junction openings. Where a junction joins capacitor components and one floats, the stage solve's
+    offsets follow from current balance with a lagged junction current, and its junction converges
+    at first order; the explicit rates (and N2's stage junction gates) read these instead."""
+    view, valid = crossing_view(state, control, p, xp=xp, kinds=kinds, structure=structure)
+    return view.potentials, valid
 
 
 def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure=None, labels=None):
@@ -2135,8 +2401,17 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
     hook["structure"] = structure
     processes = []
     kinds = _kinds(structure)
-    if labels is not None and kinds:  # FR-42 (static): kinds wait for their one-way hook.
-        raise ConfigError(f"{FR42_REFUSAL}: declared kinds are refused until their hook lands")
+    if labels is not None and forms_faces_declared(structure):  # Version 1 (label_errors' line).
+        raise ConfigError(
+            f"{FR42_REFUSAL}: {forms_law.LAW_ID}'s faces have no one-way term (version 1)"
+        )
+    if labels is not None:  # FR-42 (static, D303 item 6): a kind's moves need its refusals.
+        for kind in kinds:
+            if kind.rates is not None and kind.label_refusals is None:
+                raise ConfigError(
+                    f"{FR42_REFUSAL}: kind {kind.kind_id} has a rates hook and no label_refusals, "
+                    "so it is refused beside labels (fail-closed)"
+                )
     f = tissue.field_layout(p)
     s, explicit_matrix, implicit_matrix = f.surface, p.imex_explicit, p.imex_implicit
     stages = explicit_matrix.shape[0]
@@ -2173,7 +2448,17 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
     # today's program text (crossrev compares it).
     coefficient = implicit_matrix[-1, -1] * dt
     laplacian = imex.face_laplacian(weight, s, xp=xp)
+    forms_weight = None
+    if forms_faces_declared(structure):  # The forms faces' movers, frozen as the faces' (static).
+        faces = forms_faces_of(p)
+        ends = forms_ends(xp.where(predicted > 0, predicted, 1.0), p, xp=xp)
+        forms_weight, _ = imex.forms_face_weights(*ends, faces, xp=xp)
+        laplacian = laplacian + imex.forms_face_laplacian(
+            forms_weight, p.temperature, laplacian.shape[0], p.active.size, faces, xp=xp
+        )
     n2 = implicit_conductances(p)  # N2 (D235, static): the routes' slopes join the operator.
+    if n2 and forms_weight is not None:  # Version 1 (the parse refuses it first).
+        raise ConfigError(forms_law.LAW_ID + " is refused under N2 in version 1")
     crossing = crosses_floating(structure)  # Fix (A) (D273, static): () for every other world.
     if n2:
         conductances, ok = operator_time_conductances(
@@ -2233,6 +2518,8 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
                 drift, stage, conductances, potential, p, xp=xp, kinds=kinds
             )
             valid &= ok
+        elif forms_weight is not None:  # The forms faces' electromigration beside the faces'.
+            drift = implicit_rates(weight, potential, state, p, xp=xp, forms_weight=forms_weight)
         else:
             drift = implicit_rates(weight, potential, state, p, xp=xp)
         implicit.append(drift)
@@ -2329,6 +2616,24 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
             xp.where(weight > 0, flux * flux / xp.where(weight > 0, weight, 1.0), 0.0), xp=xp
         )
     )
+    if forms_weight is not None:  # Each mover's dissipation, J^2 RT / W >= 0, as the faces'.
+        forms_flux = applied("forms_face_transferred")
+        forms_heat = (
+            1e-3
+            * R
+            * p.temperature
+            * species_sum(
+                xp.where(
+                    forms_weight > 0,
+                    forms_flux * forms_flux / xp.where(forms_weight > 0, forms_weight, 1.0),
+                    0.0,
+                ),
+                xp=xp,
+            )
+        )
+        stage = stage._replace(
+            forms_face_dissipated_energy_pJ=state.forms_face_dissipated_energy_pJ + dt * forms_heat
+        )
     electrode = first.electrode_increment(state, stage, p, xp=xp)
     co = xp.where(p.outside_active, p.extracellular_amount_reference / p.extracellular_volume, 1.0)
     mu = R * p.temperature * xp.log(co) + p.valence * F * p.boundary_V
@@ -2400,15 +2705,25 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
         valid &= xp.all(xp.isfinite(value))
     extra = ()
     if labels is not None:  # FR-42 (static): the labelled rows' transfers; nothing else changes.
+        routed = control
+        if kinds and structure.routes:  # The routing door at the start, as readouts opens it.
+            routed = _route(structure, kinds, read, control, p, xp=xp)[0]
+        begin = LabelView(state, read, start, routed)
         if stages == 2 and not n2:  # The Euler IMEX: its one explicit stage, weights >= 0.
-            terms = one_way_fluxes(state, start, control, p, labels, xp=xp)
+            terms = one_way_fluxes(begin, p, labels, xp=xp)
             weight = dt * explicit_matrix[last, 0]
             direct = {k: (weight * f, weight * b) for k, (f, b) in terms.items()}
-            transfers = step_transfers(state, start, stage, None, control, p, dt, labels, xp=xp,
-                                       direct=direct)  # fmt: skip
+            end, weighted = LabelView(stage), dict(weight=weight)
+            transfers = step_transfers(begin, end, p, dt, labels, xp=xp, direct=direct)
         else:
-            end, _ = crossing_potential(stage, control, p, xp=xp, kinds=kinds, structure=structure)
-            transfers = step_transfers(state, start, stage, end, control, p, dt, labels, xp=xp)
+            end, _ = crossing_view(stage, control, p, xp=xp, kinds=kinds, structure=structure)
+            transfers, weighted = step_transfers(begin, end, p, dt, labels, xp=xp), {}
+        gated = presence_gated(p, structure, xp=xp)  # The layout the kinds' rates see (Q2).
+        for kind in kinds:  # D303 item 6: each reporting kind's transfers, after the core's.
+            if kind.label_transfers is not None:
+                transfers += tuple(
+                    kind.label_transfers(begin, end, gated, dt, labels, xp=xp, **weighted)
+                )
         extra = (transfers,)
     if membrane_process is None:
         kept = jax.tree.map(lambda old, new: xp.where(valid, new, old), state, stage)
@@ -2507,7 +2822,16 @@ def check_definition(spec, *, structure=None):
             "one, so it refuses them"
         )
     if exact_faces(structure):  # D280: the faces' exact booking's scope (version 1).
+        if getattr(m, "forms_faces", ()):
+            raise ConfigError(
+                f"{EXACT_FREE_ENERGY_HEAT} books today's faces' neutral rows; a world with "
+                f"{forms_law.LAW_ID} faces books the tableau (version 1)"
+            )
         _check_exact_faces(m)
+    if getattr(m, "forms_faces", ()):  # The forms law's carriage (a one-ended binder, v1).
+        problems = forms_law.carriage(m)[1]
+        if problems:
+            raise ConfigError(problems[0])
     kinds = _kinds(structure)
     for kind in kinds:  # §7.4 (k): a kind's definition checks, ahead of @3's.
         if kind.check_definition is not None:
@@ -2769,6 +3093,7 @@ def moved_nodes(model):
     ends = {m.id: (m.inside, m.outside) for m in model.membranes}
     ends |= {j.id: (j.sender, j.receiver) for j in model.junctions}
     ends |= {f.id: (f.sender, f.receiver) for f in model.faces}
+    ends |= {f.id: (f.sender, f.receiver) for f in getattr(model, "forms_faces", ())}
     ends |= {c.id: ends[c.membrane_id] for c in model.channels}
     out = {}
     for species, movers in moved_rows(model).items():
@@ -2994,6 +3319,10 @@ def free_outside_nodes(p, *, xp=jnp):
     named = scatter(faced, zero, (p.face_sender,), xp=xp) + scatter(
         faced, zero, (p.face_receiver,), xp=xp
     )
+    if _has_forms(p):  # A forms face's ends are faced too: its electromigration is implicit.
+        forms = xp.where(p.forms_face_active, 1.0, 0.0)
+        named = named + scatter(forms, zero, (p.forms_face_sender,), xp=xp)
+        named = named + scatter(forms, zero, (p.forms_face_receiver,), xp=xp)
     fixed = p.field_fixed[n:] if hasattr(p, "field_fixed") else xp.zeros(o, dtype=bool)
     return p.outside_active & ~p.reservoir & (named == 0) & ~p.field_gauge_mask & ~fixed
 
@@ -3210,6 +3539,28 @@ def implicit_conductance_rate_bound(spec):
     return max(face, material)
 
 
+def forms_rate_bound(spec):
+    """The forms faces' explicit diffusion bound (1/s), the face term of
+    surface_pump.explicit_rate_bound with the forms faces: 2 max over rows and finite outside nodes
+    of the D A / (L V) of every face that moves the row there, today's and the forms faces'. A
+    binder's forms move at its row's diffusivity (one class), so each form's term is its row's (the
+    face note's §4: the face's explicit bound joins the per-stage bound per form)."""
+    m = spec.model
+    oids = [o.id for o in m.extracellular]
+    volume = np.asarray([np.inf if o.reservoir else o.volume_pL * 1e-15 for o in m.extracellular])
+    plain = np.zeros((len(m.species_ids), len(oids)))
+    for face in m.faces:
+        factor = np.asarray(face.diffusivity_m2_per_s) * face.area_m2 / face.length_m
+        plain[:, oids.index(face.sender)] += factor
+        plain[:, oids.index(face.receiver)] += factor
+    rows = np.zeros_like(plain)  # Each row's forms faces, as itself or as its forms (one class).
+    for face in m.forms_faces:
+        factor = np.asarray(face.diffusivity_m2_per_s) * face.area_m2 / face.length_m
+        rows[:, oids.index(face.sender)] += factor
+        rows[:, oids.index(face.receiver)] += factor
+    return 2 * float(np.max((rows + plain) / volume, initial=0.0))
+
+
 def bind_step_checks(spec):
     """check_steps bound to one definition, for every chunk of its clock (StepChecks)."""
     return StepChecks(spec)
@@ -3234,11 +3585,16 @@ class StepChecks(first.StepChecks):
     def explicit_rate(self):
         if self.spec.execution.solver in imex.IMPLICIT_CONDUCTANCE_IDS:  # N2: what stays explicit.
             return implicit_conductance_rate_bound(self.base)
+        if getattr(self.spec.model, "forms_faces", ()):  # The forms faces' per-mover term too.
+            with forms_return_paths(self.spec.model):  # The projection's binding sees them.
+                base = first.explicit_rate_bound(self.base)
+            return max(base, forms_rate_bound(self.spec))
         return first.explicit_rate_bound(self.base)
 
     @cached_property
     def calcium_rate(self):
-        return second.calcium_rate_bound(self.base)
+        with forms_return_paths(self.spec.model):  # Nothing set without forms faces.
+            return second.calcium_rate_bound(self.base)
 
     @cached_property
     def gated_laws(self):
@@ -3281,6 +3637,11 @@ class StepChecks(first.StepChecks):
                 raise ConfigError(SERIES_RK4_REFUSAL)
             if getattr(spec, "projective", None) is not None:
                 raise ConfigError(SERIES_PROJECTIVE_REFUSAL)
+        if getattr(spec.model, "forms_faces", ()):  # The forms law, version 1.
+            if getattr(spec, "projective", None) is not None:
+                raise ConfigError(FORMS_PROJECTIVE_REFUSAL)
+            if spec.execution.solver not in (imex.EULER_ID, imex.ARS222_ID):
+                raise ConfigError(forms_law.LAW_ID + " runs on the plain IMEX tableaux (v1)")
         if spec.execution.solver == "rk4":
             tissue.check_steps(spec, steps, None)
             laws, bound = self.gated_laws, self.rk4_bound
@@ -3322,11 +3683,36 @@ def balances(state, p, *, structure=None):
     result["energy"] += entity_sum(
         species_sum(state.channel_dissipated_energy_pJ, xp=np), axis=None, xp=np
     )
+    if forms_faces_declared(structure):
+        _fold_forms_ledgers(result, state, p, xp=np)
     if structure is not None and structure.kinds:
         _fold_kind_ledgers(
             result, state, p, _kinds(structure), xp=np, ledgers=structure.kind_ledgers
         )
     return result
+
+
+def forms_row_transfers(state, p, *, xp):
+    """[species, forms face] each forms face's cumulative row transfer, sender -> receiver: its
+    movers' cumulative transfers through their stoichiometry, folded over the movers in order."""
+    moved = p.forms_face_stoichiometry[:, :, None] * state.forms_face_transferred[:, None, :]
+    return species_sum(moved, xp=xp)
+
+
+def _fold_forms_ledgers(result, state, p, *, xp):
+    """The forms faces' terms in today's ledgers, as the faces' (surface_tissue.balances): their
+    rows' cumulative transfers close each outside node's material ledger (out of the sender, into
+    the receiver; a held bath's through its supply, which the step books), and their heat joins the
+    energy ledger's dissipation."""
+    rows = forms_row_transfers(state, p, xp=xp)
+    zero = xp.zeros_like(state.extracellular_amount_increment)
+    into = scatter(rows, zero, (p.forms_face_receiver,), xp=xp) - scatter(
+        rows, zero, (p.forms_face_sender,), xp=xp
+    )
+    result["outside"] = result["outside"] - into
+    result["energy"] = result["energy"] + entity_sum(
+        state.forms_face_dissipated_energy_pJ, axis=None, xp=xp
+    )
 
 
 def _fold_kind_ledgers(result, state, p, kinds, *, xp, ledgers=()):
@@ -3380,6 +3766,21 @@ def channel_magnitudes(row, p, *, xp=np, structure=None):
         )
     )
     magnitudes = first.ledger_magnitudes(row, p, membrane, metabolic, xp=xp)
+    if forms_faces_declared(structure):  # The forms faces' row transfers, at both their ends.
+        moved = species_sum(
+            xp.abs(p.forms_face_stoichiometry)[:, :, None]
+            * xp.abs(row.forms_face_transferred)[:, None, :],
+            xp=xp,
+        )
+        zero = xp.zeros_like(row.extracellular_amount_increment)
+        index = ledger_lists(structure).LEDGERS.index("outside")
+        magnitudes = list(magnitudes)
+        magnitudes[index] = (
+            magnitudes[index]
+            + scatter(moved, zero, (p.forms_face_sender,), xp=xp)
+            + scatter(moved, zero, (p.forms_face_receiver,), xp=xp)
+        )
+        magnitudes = tuple(magnitudes)
     if structure is None or not structure.kinds:
         return magnitudes
     magnitudes = list(magnitudes)  # Rule (a): the kinds' terms join their ledgers' magnitudes.
@@ -3553,7 +3954,7 @@ def exact_face_heat(start, end, p, *, xp=jnp):
 def check_values(state, spec, steps=None, *, structure=None):
     """The family's host checks (surface_pump.checked_rows) with the channel ledgers."""
     _, p = initial_values(spec, structure=structure)
-    kinds = structure is not None and bool(structure.kinds)
+    kinds = structure is not None and bool(structure.kinds or structure.forms_faces)
     return first.checked_rows(
         state,
         spec,
@@ -3576,9 +3977,9 @@ def dissipation_fields(structure):
     §6.1: a declaration, else today's suffix rule, kind_registry.energy_role). A heat declared
     non-monotone stays among the energy flows but leaves this check; a stored field is a level,
     in neither."""
-    if structure is None or not structure.kinds:
+    if structure is None or not (structure.kinds or structure.forms_faces):
         return DISSIPATION_FIELDS
-    own = set(STATE_AXES)
+    own = set(STATE_AXES) | set(FORMS_STATE_AXES)  # The forms faces' heat is @3's own.
     roles = {}
     for kind in _kinds(structure):
         for name in kind.state_fields:
@@ -3669,6 +4070,8 @@ def device_balances(state, p, *, structure=None):
     result["energy"] += entity_sum(
         species_sum(state.channel_dissipated_energy_pJ, xp=jnp), axis=None, xp=jnp
     )
+    if forms_faces_declared(structure):
+        _fold_forms_ledgers(result, state, p, xp=jnp)
     if structure is not None and structure.kinds:
         _fold_kind_ledgers(
             result, state, p, _kinds(structure), xp=jnp, ledgers=structure.kind_ledgers
@@ -3684,7 +4087,7 @@ def device_checks(previous, row, p, constants, steps, *, structure=None, margins
     """
     from cells.models.surface_pump_checks import row_checks
 
-    kinds = structure is not None and bool(structure.kinds)
+    kinds = structure is not None and bool(structure.kinds or structure.forms_faces)
     return row_checks(
         previous,
         row,
@@ -4222,6 +4625,7 @@ def structure(model):
         kind_ledgers=_kind_ledgers(model),  # E (§7.3): () by default.
         junction_series_kinds=_series_kinds(model),  # FR-30 (D262): () by default.
         crossing_junctions=crossing_junctions(model),  # Fix (A) (D273): () by default.
+        forms_faces=tuple(sorted(f.id for f in getattr(model, "forms_faces", ()))),  # () default.
     )
 
 
@@ -4413,6 +4817,9 @@ def moved_rows(model):
     no fuel row; a species absent from the mapping is moved by nothing in the step.
     """
     movers = {s: [] for s in model.species_ids}
+    forms_moved = {}
+    if getattr(model, "forms_faces", ()):  # Each forms face's rows, its forms' ligands included.
+        forms_moved = forms_law.moved_rows_of(model, forms_of_binders(model))
 
     def add(species, kind, law, entities):
         if entities:
@@ -4427,6 +4834,12 @@ def moved_rows(model):
             "face",
             inner_laws.FACE_ROUTE_LAW_ID,
             [f.id for f in model.faces if f.diffusivity_m2_per_s[row]],
+        )
+        add(  # The forms faces (their own entity set): each row they carry or a form carries.
+            s,
+            "face",
+            inner_laws.FORMS_FACE_ROUTE_LAW_ID,
+            [f.id for f in getattr(model, "forms_faces", ()) if s in forms_moved.get(f.id, ())],
         )
     for law in structure(model).declared_channel_laws:
         for s in model.species_ids:
@@ -4490,14 +4903,16 @@ TODAYS_TYPES = KindTypes(
 
 
 @cache
-def _kind_types(fields, registry, series=False):
+def _kind_types(fields, registry, series=False, forms=False):
     """fields: ((kind ID, the bound kind's KindFields), ...) in canonical order. Classes are cached
     by field set (§7.4 (j); (n) 5): structures whose kinds carry the same fields share them, and a
     kind bound to fields other than its static ones (a declaration-dependent variant) names its
     extra fields in the classes' deterministic names. series (FR-30, D262): the structure's
     junctions take junction_series_gates@1, whose gates are a state field (SERIES_GATES, after the
-    kinds' state fields) and whose parameters a layout field (SERIES_PARAMETERS)."""
-    if not fields and not series:
+    kinds' state fields) and whose parameters a layout field (SERIES_PARAMETERS). forms: the
+    structure declares forms faces, whose state fields (FORMS_STATE_AXES) follow those and whose
+    layout fields (FORMS_LAYOUT_FIELDS) follow the others."""
+    if not fields and not series and not forms:
         return TODAYS_TYPES
 
     def label(kind_id, own):
@@ -4515,6 +4930,7 @@ def _kind_types(fields, registry, series=False):
 
     suffix = "".join(label(kind_id, own) for kind_id, own in fields)  # Deterministic.
     suffix += "_" + SERIES_GATES if series else ""
+    suffix += "_forms_faces" if forms else ""
     axes = dict(STATE_AXES)
     for kind_id, own in fields:
         for name, name_axes in own.state_axes:  # Not `field`: the field-solver module's name.
@@ -4524,9 +4940,13 @@ def _kind_types(fields, registry, series=False):
     series_state = (SERIES_GATES,) if series else ()
     if series:
         axes[SERIES_GATES] = list(SERIES_GATES_AXES)
+    forms_state = tuple(FORMS_STATE_AXES) if forms else ()
+    for name in forms_state:
+        axes[name] = list(FORMS_STATE_AXES[name])
     state = NamedTuple("SurfacePumpChannelState" + suffix, [(k, object) for k in axes])
     layout_extra = [name for _, own in fields for name in own.layout_fields]
     layout_extra += [SERIES_PARAMETERS] if series else []
+    layout_extra += list(FORMS_LAYOUT_FIELDS) if forms else []
     layout = NamedTuple(
         "SurfacePumpChannelLayout" + suffix,
         [(k, object) for k in (*LAYOUT_TYPE._fields, *layout_extra)],
@@ -4550,6 +4970,7 @@ def _kind_types(fields, registry, series=False):
         *OBSERVATION_FIELDS[:today_state],
         *(name for _, own in fields for name, _ in own.state_axes),
         *series_state,
+        *forms_state,
         *OBSERVATION_FIELDS[today_state:],
         *(column for _, own in fields for column in own.readout_columns),
     )
@@ -4573,15 +4994,16 @@ def kind_types(structure):
         )
         fields.append((kind_id, own))
     series = series_junctions(structure)
+    forms = forms_faces_declared(structure)
     if routes_into_channels(structure):
-        return _routed_kind_types(tuple(fields), registry, series)
-    return _kind_types(tuple(fields), registry, series)
+        return _routed_kind_types(tuple(fields), registry, series, forms)
+    return _kind_types(tuple(fields), registry, series, forms)
 
 
 @cache
-def _routed_kind_types(fields, registry, series=False):
+def _routed_kind_types(fields, registry, series=False, forms=False):
     """_kind_types' classes with one more observation column, EFFECTIVE_AVAILABILITY, last."""
-    types = _kind_types(fields, registry, series)
+    types = _kind_types(fields, registry, series, forms)
     columns = (*types.OBSERVATION_FIELDS, EFFECTIVE_AVAILABILITY)
     observations = make_dataclass(
         types.Observations.__name__ + "_" + EFFECTIVE_AVAILABILITY,
@@ -4709,7 +5131,17 @@ def structured_batch_signature(model):
     share theirs, as one passive route and two do, while their arrays differ in shape (the fourth
     review's finding 4). Where no kind has an own axis, the signature is today's."""
     sizes = kind_axis_sizes(model)
-    return (*batch_signature(model), structure(model), *((sizes,) if sizes else ()))
+    forms = getattr(model, "forms_faces", ())
+    shapes = ()
+    if forms:  # The forms faces' static shapes: no mixed batch.
+        count = forms_law.mover_count(model, forms_of_binders(model))
+        shapes = ((("forms_faces", len(forms)), ("face_mover", count)),)
+    return (
+        *batch_signature(model),
+        structure(model),
+        *((sizes,) if sizes else ()),
+        *shapes,
+    )
 
 
 def kind_axis_sizes(model):

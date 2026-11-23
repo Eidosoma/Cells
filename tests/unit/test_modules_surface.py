@@ -56,6 +56,7 @@ HOMES = {  # Each name's own module: where it is defined.
         "KindFields",
         "KindView",
         "KindRates",
+        "LabelView",
         "Schedule",
         "EnergyRole",
         "PartitionRole",
@@ -130,6 +131,9 @@ def test_kind_rates_lives_in_the_kind_contract():
     assert kind_registry.KindRates.__module__ == "cells.registry.kind_registry"
     assert surface_pump_v3.KindRates is kind_registry.KindRates
     assert "KindRates" in kind_registry.__all__
+    assert kind_registry.LabelView.__module__ == "cells.registry.kind_registry"  # FR-42's too.
+    assert surface_pump_v3.LabelView is kind_registry.LabelView
+    assert "LabelView" in kind_registry.__all__
 
 
 SRC = Path(surface.__file__).resolve().parents[2]

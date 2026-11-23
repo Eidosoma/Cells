@@ -340,7 +340,28 @@
   "/mnt/workspaces/Cells/pores-phase-a-20261122/tiers-f5bdb371/out/measure/measured.json",
   "/mnt/workspaces/Cells/mito-refs-r2-20261122/tiers-6ff9372981d2-cpu23/measured.json/measured.json",
   "/mnt/workspaces/Cells/core-pass-kinds-20261118/measure-98da063b/measure/measured.json",
-  "/mnt/workspaces/Cells/gene-regulation-20261120/fr38/replacement-refusal/timed-db21a62e/measure/measured.json"
+  "/mnt/workspaces/Cells/gene-regulation-20261120/fr38/replacement-refusal/timed-db21a62e/measure/measured.json",
+  "/mnt/workspaces/Cells/gene-regulation-20261120/fr42/runs/timed-924fb120/measure/measured.json",
+  "/mnt/workspaces/Cells/pores-endpoint-20261122/tiers-14c87f3c/measure/measured.json",
+  "/mnt/workspaces/Cells/lead-tools/mass-action-mask/measure-497cf333/measured.json",
+  "/mnt/workspaces/Cells/kinds-hook-20261122/measure-dc124c61/measured.json",
+  "/mnt/workspaces/Cells/kinds-hook-20261122/measure-8dce3dde/measured.json",
+  "/mnt/workspaces/Cells/kinds-hook-20261122/measure-32657ff7/measured.json",
+  "/mnt/workspaces/Cells/gene-regulation-20261120/fr38/step4/timed-c90f1f5c/measure/measured.json",
+  "/mnt/workspaces/Cells/gene-regulation-20261120/fr38/step5/lead/measure90/measured.json",
+  "/mnt/workspaces/Cells/ol6-20261122/tiers-b74ffb39/measure/measured.json",
+  "/mnt/workspaces/Cells/kinds-hook-20261122/measure-296c10ed/measured.json",
+  "/mnt/workspaces/Cells/kinds-hook-20261122/measure-ab8162ae/measured.json",
+  "/mnt/workspaces/Cells/global-charge-bound-20261122/tiers-measured-2a8b2bd9/measured.json",
+  "/mnt/workspaces/Cells/gene-regulation-20261120/fr38/erratumf/timed-2b09985a/measured.json",
+  "/mnt/workspaces/Cells/mt1b-face-20261122/measure-245f9cc1/measured.json",
+  "/mnt/workspaces/Cells/gene-regulation-20261120/fr38/routedp/timed-91da47b3/measured.json",
+  "/mnt/workspaces/Cells/ol6-20261122/tiers-24f0887c/measure/measured.json",
+  "/mnt/workspaces/Cells/ol6-20261122/tiers-ef7dae2f/measure/measured.json",
+  "/mnt/workspaces/Cells/ol6-20261122/tiers-d4afedc3/measure/measured.json",
+  "/mnt/workspaces/Cells/ol6-20261122/tiers-8df9b012/measure/measured.json",
+  "/mnt/workspaces/Cells/gene-regulation-20261120/fr38/export/timed-9e17faf8/measured.json",
+  "/mnt/workspaces/Cells/kinds-hook-20261122/measure-833feaae/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2888,6 +2909,174 @@
    "root": "/mnt/workspaces/Cells/gene-regulation-20261120/fr38/replacement-refusal/snapshot-db21a62e",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-22T18:21:09+00:00"
+  },
+  {
+   "git_revision": "924fb120e1060c087d9c7e27136e7ee0a83e3369",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/gene-regulation-20261120/fr42/runs/snapshot-924fb120",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-22T21:02:20+00:00"
+  },
+  {
+   "git_revision": "14c87f3ce741e791351761a5458dd7ed8430d24c",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/pores-endpoint-20261122/snapshot-14c87f3c",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-22T21:23:25+00:00"
+  },
+  {
+   "git_revision": "497cf3338497727d4524e042b8b84cb1385318d0",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/lead-tools/mass-action-mask/snapshot-497cf333",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-22T23:52:55+00:00"
+  },
+  {
+   "git_revision": "dc124c61ccac019e4db7cd5fc39b84b2d4705251",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/kinds-hook-20261122/snapshot-dc124c61",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-22T22:04:18+00:00"
+  },
+  {
+   "git_revision": "8dce3ddefc8137d33e0d604af9ca17555c5c51be",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/kinds-hook-20261122/snapshot-8dce3dde",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-22T22:33:06+00:00"
+  },
+  {
+   "git_revision": "32657ff725ff9e7d2b139a22d182ad8c2b4dcdd8",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/kinds-hook-20261122/snapshot-32657ff7",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-22T22:43:11+00:00"
+  },
+  {
+   "git_revision": "c90f1f5c91b69cdc1fa8eeec577c1d71e7800814",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/gene-regulation-20261120/fr38/step4/snapshot-c90f1f5c",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-22T23:07:17+00:00"
+  },
+  {
+   "git_revision": "8e484fd7708ec496f678e02c2339c16dc0c901d8",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/gene-regulation-20261120/fr38/step5/lead/snapshot-8e484fd7",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-23T00:56:22+00:00"
+  },
+  {
+   "git_revision": "b74ffb39fed57e34dee4a0aa8aaf44f8b96a7727",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/ol6-20261122/snapshot-b74ffb39",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-22T22:22:35+00:00"
+  },
+  {
+   "git_revision": "296c10ed7482d84fadd4d9c183fa5db5f0250e3a",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/kinds-hook-20261122/snapshot-296c10ed",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-23T02:34:55+00:00"
+  },
+  {
+   "git_revision": "ab8162ae78421a98b470df453d8d8e12587f8e44",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/kinds-hook-20261122/snapshot-ab8162ae",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-23T02:38:09+00:00"
+  },
+  {
+   "git_revision": "2a8b2bd99cec4c5d84a1914fa5ad5b069ec87be8",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/global-charge-bound-20261122/snapshots/head-2a8b2bd9",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-22T23:57:14+00:00"
+  },
+  {
+   "git_revision": "2b09985a80a9e898e141fd5d583b002a7934dcb2",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/gene-regulation-20261120/fr38/erratumf/snapshot-head-2b09985a",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-23T02:45:12+00:00"
+  },
+  {
+   "git_revision": "245f9cc1fe36d4cc33f98b2b7f78eb84b28f3219",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/mt1b-face-20261122/snapshots/head-245f9cc1",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-23T00:59:15+00:00"
+  },
+  {
+   "git_revision": "91da47b3114bcff2eb1fe969960e9673b6a8ff4c",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/gene-regulation-20261120/fr38/routedp/snapshot-head-91da47b3",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-23T04:37:38+00:00"
+  },
+  {
+   "git_revision": "24f0887cd21448be777fbfca281684158023c2f8",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/ol6-20261122/snapshot-24f0887c",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-22T23:54:24+00:00"
+  },
+  {
+   "git_revision": "ef7dae2f94c00fb6b7534b2bffdd8582a4c7798e",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/ol6-20261122/snapshot-ef7dae2f",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-23T03:08:05+00:00"
+  },
+  {
+   "git_revision": "d4afedc30ee63660479ed86b6a213b41927278a7",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/ol6-20261122/snapshot-d4afedc3",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-23T03:51:54+00:00"
+  },
+  {
+   "git_revision": "8df9b012b0828db928e779276ad94d57d2fbdb41",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/ol6-20261122/snapshot-8df9b012",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-23T04:18:31+00:00"
+  },
+  {
+   "git_revision": "9e17faf89f358b0f6b42556d393b200f1e1757cc",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/gene-regulation-20261120/fr38/export/snapshot-head-9e17faf8",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-23T05:49:23+00:00"
+  },
+  {
+   "git_revision": "833feaaed691a324cb9f6923d53d935fe409892f",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/kinds-hook-20261122/snapshot-833feaae",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-23T04:53:58+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -3250,7 +3439,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_registration.py",
-    "seconds": 8.59,
+    "seconds": 8.55,
     "exit_code": 0,
     "counts": {
      "passed": 6
@@ -3697,10 +3886,10 @@
    },
    {
     "file": "tests/unit/test_component_net_charge.py",
-    "seconds": 2.62,
+    "seconds": 13.81,
     "exit_code": 0,
     "counts": {
-     "passed": 8
+     "passed": 11
     }
    },
    {
@@ -4429,10 +4618,10 @@
    },
    {
     "file": "tests/unit/test_gene_regulation_compare.py",
-    "seconds": 15.91,
+    "seconds": 17.22,
     "exit_code": 0,
     "counts": {
-     "passed": 39
+     "passed": 45
     }
    },
    {
@@ -4587,7 +4776,7 @@
    },
    {
     "file": "tests/unit/test_inner_view_declarations.py",
-    "seconds": 4.43,
+    "seconds": 4.63,
     "exit_code": 0,
     "counts": {
      "passed": 9
@@ -4691,7 +4880,7 @@
    },
    {
     "file": "tests/unit/test_kind_contract_hooks.py",
-    "seconds": 3.03,
+    "seconds": 3.02,
     "exit_code": 0,
     "counts": {
      "passed": 13
@@ -4811,7 +5000,7 @@
    },
    {
     "file": "tests/unit/test_law_modules.py",
-    "seconds": 1.77,
+    "seconds": 1.67,
     "exit_code": 0,
     "counts": {
      "passed": 3
@@ -5613,6 +5802,14 @@
     }
    },
    {
+    "file": "tests/unit/test_rosenbrock_dense.py",
+    "seconds": 6.94,
+    "exit_code": 0,
+    "counts": {
+     "passed": 5
+    }
+   },
+   {
     "file": "tests/unit/test_row_checks_program.py",
     "seconds": 7.84,
     "exit_code": 0,
@@ -5967,10 +6164,10 @@
    },
    {
     "file": "tests/unit/test_species_regulated_availability.py",
-    "seconds": 11.8,
+    "seconds": 13.96,
     "exit_code": 0,
     "counts": {
-     "passed": 114
+     "passed": 115
     }
    },
    {
@@ -6251,14 +6448,6 @@
     "exit_code": 0,
     "counts": {
      "passed": 7
-    }
-   },
-   {
-    "file": "tests/unit/test_templated_polymerisation.py",
-    "seconds": 6.13,
-    "exit_code": 0,
-    "counts": {
-     "passed": 33
     }
    },
    {
@@ -6699,7 +6888,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_kernel.py",
-    "seconds": 61.7,
+    "seconds": 88.98,
     "exit_code": 0,
     "counts": {
      "passed": 10
@@ -6715,7 +6904,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_lumen.py",
-    "seconds": 41.54,
+    "seconds": 42.31,
     "exit_code": 0,
     "counts": {
      "passed": 13
@@ -6731,10 +6920,58 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_pores.py",
-    "seconds": 63.16,
+    "seconds": 65.94,
     "exit_code": 0,
     "counts": {
-     "passed": 34
+     "passed": 37
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_lineages_v2_pores_device.py",
+    "seconds": 45.81,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_lineages_v2_pores_device_population.py",
+    "seconds": 52.22,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_lineages_v2_rate_equations.py",
+    "seconds": 37.9,
+    "exit_code": 0,
+    "counts": {
+     "passed": 12
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_lineages_v2_rate_equations_population.py",
+    "seconds": 43.01,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_lineages_v2_rate_equations_pores.py",
+    "seconds": 48.13,
+    "exit_code": 0,
+    "counts": {
+     "passed": 9
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_lineages_v2_rate_equations_vesicles.py",
+    "seconds": 38.85,
+    "exit_code": 0,
+    "counts": {
+     "passed": 6
     }
    },
    {
@@ -6929,7 +7166,7 @@
    },
    {
     "file": "tests/unit/test_cycle_kind.py",
-    "seconds": 42.3,
+    "seconds": 40.11,
     "exit_code": 0,
     "counts": {
      "passed": 50
@@ -7234,7 +7471,7 @@
    },
    {
     "file": "tests/unit/test_law_registry.py",
-    "seconds": 23.09,
+    "seconds": 21.61,
     "exit_code": 0,
     "counts": {
      "passed": 9
@@ -7346,10 +7583,26 @@
    },
    {
     "file": "tests/unit/test_neutral_arrival_labels.py",
-    "seconds": 54.26,
+    "seconds": 60.31,
     "exit_code": 0,
     "counts": {
-     "passed": 26
+     "passed": 35
+    }
+   },
+   {
+    "file": "tests/unit/test_neutral_labels_events.py",
+    "seconds": 22.18,
+    "exit_code": 0,
+    "counts": {
+     "passed": 4
+    }
+   },
+   {
+    "file": "tests/unit/test_neutral_labels_kinds.py",
+    "seconds": 64.27,
+    "exit_code": 0,
+    "counts": {
+     "passed": 25
     }
    },
    {
@@ -7498,10 +7751,10 @@
    },
    {
     "file": "tests/unit/test_rapid_binding_world.py",
-    "seconds": 24.28,
+    "seconds": 32.54,
     "exit_code": 0,
     "counts": {
-     "passed": 23
+     "passed": 46
     }
    },
    {
@@ -7944,6 +8197,14 @@
     "counts": {
      "passed": 33,
      "skipped": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_templated_polymerisation.py",
+    "seconds": 25.49,
+    "exit_code": 0,
+    "counts": {
+     "passed": 53
     }
    },
    {
@@ -8519,6 +8780,12 @@
    {
     "file": "tests/unit/test_field_propagation.py",
     "seconds": 90.27,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_fr38_replace_restart.py",
+    "seconds": 90.12,
     "exit_code": null,
     "counts": {}
    },

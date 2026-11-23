@@ -9,6 +9,12 @@ owner's, called here and never edited:
   valence +1 on a membrane patch, reading free h through the stage read (B4) at buffered nodes;
   tableau-booked (charged), with its slope conductance in the stage rule (B7) and its flux in the
   membrane current;
+- `proton_constant_field_leak@2` (laws/transport/proton_leak_v2.py; MT-1b's face plan, item 3):
+  @1's kernel declared as a law that reads the general closure (rapid_binding@1), whose stage read
+  writes free h into the held H row. It runs through @1's mask and fields (`passive_leak`), so it
+  adds no field and gives @1's arithmetic on the same read. Its own refusal: an end at a node of
+  B4's version-1 closure, whose free h @1 reads. At the general closure's rows the species
+  registry's admission reads its declared read;
 - `inward_rectifier_linear_driving_force@1` (laws/routes/inward_rectifier_linear_driving_force.py,
   the kinds owner's; D228 item 2): an instantaneous inward rectifier at valence +1 on a membrane
   patch, I = m A g_ref (c_o/K_ref)^(1/2) q(V - E) (V - E); tableau-booked as the leak is, with
@@ -92,6 +98,12 @@ refuses any other route law it hosts.
   (slope_bound_S), and the charged law's max-side slope (its conductance_S). The charged law's
   material slope at each end (its material_slope_per_s, at the stage's amounts and potentials)
   is the kind's material_term, which membrane_rate's material counterpart holds to the same bound.
+- **FR-42's labels (D303 item 6; docs/NEUTRAL_LABELS_DESIGN.md §11):** the neutral, leak and
+  charged kernels are linear in their two ends at a fixed voltage, so a route's one-way fluxes
+  are its kernel with c_in = 0 (inward) and minus its kernel with c_out = 0 (outward)
+  (one_way_fluxes). label_transfers reports them over the step, the trapezoid of its two ends
+  plus the gap to passive_transferred; label_refusals refuses a labelled row a rectifier moves.
+  Neither is traced without labels.
 """
 
 from types import MappingProxyType
@@ -104,6 +116,7 @@ from cells.laws.routes import constant_field_permeation as charged_law
 from cells.laws.routes import inward_rectifier_linear_driving_force as rectifier
 from cells.laws.routes import passive_permeation as passive
 from cells.laws.transport import proton_leak as leak
+from cells.laws.transport import proton_leak_v2 as leak_v2
 from cells.numerics.extracellular_field import scatter
 from cells.numerics.species_sums import entity_sum, species_sum
 from cells.registry import laws as law_registry
@@ -113,14 +126,17 @@ KIND_ID = "cells.passive_routes@1"
 MODEL_KEY = "passive_routes"
 LAW_ID = passive.LAW_ID  # The neutral law.
 LEAK_LAW_ID = leak.LAW_ID  # The charged proton leak.
+LEAK_V2_LAW_ID = leak_v2.LAW_ID  # Its version reading the general closure (MT-1b, item 3).
+LEAK_LAWS = (LEAK_LAW_ID, LEAK_V2_LAW_ID)  # One kernel, one mask (passive_leak).
 RECTIFIER_LAW_ID = rectifier.LAW_ID  # The inward rectifier (D228 item 2).
 CHARGED_LAW_ID = charged_law.LAW_ID  # A charged species' constant-field route (FR-15 P2).
 # Version 1 runs each by name (Route.law's dispatch).
-VERSION_1_LAWS = (LAW_ID, LEAK_LAW_ID, RECTIFIER_LAW_ID, CHARGED_LAW_ID)
+VERSION_1_LAWS = (LAW_ID, LEAK_LAW_ID, RECTIFIER_LAW_ID, CHARGED_LAW_ID, LEAK_V2_LAW_ID)
 # The kind's laws, each declared in its own module (CORE_SEAMS §8.2), where the law registry's
 # loader registers them for the kind to find by interface and host.
 NEUTRAL = passive.LAW
 LEAK = leak.LAW
+LEAK_V2 = leak_v2.LAW
 RECTIFIER = rectifier.LAW
 CHARGED = charged_law.LAW
 DEFAULT_PROTON = "H"
@@ -320,7 +336,7 @@ def parse(entries, base):
                 raise ConfigError(f"{MODEL_KEY} {rid}: unknown membrane patch {host!r}")
             inside, outside = patches[host].inside, patches[host].outside
         else:
-            if law == LEAK_LAW_ID:
+            if law in LEAK_LAWS:
                 raise ConfigError(f"{MODEL_KEY} {rid}: the proton leak sits on a membrane patch")
             if law == CHARGED_LAW_ID:
                 raise ConfigError(
@@ -330,7 +346,7 @@ def parse(entries, base):
             if host not in junctions:
                 raise ConfigError(f"{MODEL_KEY} {rid}: unknown junction {host!r}")
             inside, outside = junctions[host].sender, junctions[host].receiver
-        species = raw.get("species", DEFAULT_PROTON if law == LEAK_LAW_ID else None)
+        species = raw.get("species", DEFAULT_PROTON if law in LEAK_LAWS else None)
         if species not in m.species_ids:
             raise ConfigError(f"{MODEL_KEY} {rid}: unknown species {species!r}")
         value = raw["permeability_m_per_s"]
@@ -514,7 +530,7 @@ def initial(spec, declaration, layout):
             [junctions.index(r.host) if r.host_kind == "junction" else 0 for r in declaration]
         ),
         passive_on_junction=np.asarray([r.host_kind == "junction" for r in declaration]),
-        passive_leak=np.asarray([r.law == LEAK_LAW_ID for r in declaration]),
+        passive_leak=np.asarray([r.law in LEAK_LAWS for r in declaration]),
         passive_exact=_exact(spec, declaration),
     )
     if any(isinstance(route, RectifierRoute) for route in declaration):  # declared_fields' test.
@@ -671,6 +687,80 @@ def rates(state, potentials, control, p, *, xp):
         work_pJ_s=xp.zeros(()),
         membrane_flux=patch_flux,
     )
+
+
+def one_way_fluxes(view, p, rows, *, xp):
+    """FR-42 (D303 item 6): each route's one-way fluxes of the labelled rows at one end of a step
+    (a LabelView: its read's amounts, its node potentials and its routed control), as (inward,
+    outward) [m, route] in fmol/s, each >= 0. The neutral, proton-leak and charged constant-field
+    kernels are linear in their two end concentrations at a fixed voltage, so the inward flux is
+    the kernel's with c_in = 0 and the outward one minus the kernel's with c_out = 0: inward less
+    outward is the kernel's own flux, at rounding, from the same kernels (no new law). A rectifier
+    route reports 0: its flux is not linear in its ends, and label_refusals refuses a labelled row
+    it moves."""
+    c_in, c_out = _ends(view.read, p, xp)
+    opening = _opening(view.read, view.control, p, xp)
+    voltage = view.potentials[p.passive_inside] - view.potentials[p.passive_outside]
+
+    def kernel(at_in, at_out):  # Each route's own law, inward-positive [species, route].
+        flux = xp.where(
+            p.passive_leak,
+            leak.flux_fmol_s(
+                at_in, at_out, voltage, p.temperature, p.passive_area, p.passive_permeability,
+                opening, xp=xp,
+            ),
+            passive.flux_fmol_s(
+                at_in, at_out, p.passive_area, p.passive_permeability, opening, xp=xp
+            ),
+        )  # fmt: skip
+        if _charged(p):  # Static, as in _flux.
+            moved = charged_law.flux_fmol_s(
+                at_in, at_out, voltage, p.valence, p.temperature, p.passive_area,
+                p.passive_permeability, opening, xp=xp,
+            )  # fmt: skip
+            flux = xp.where(p.passive_charged, moved, flux)
+        if _rectified(p):  # Static: never the rectifier's kernel (it reads both ends' logs).
+            flux = xp.where(p.passive_rectifier, 0.0, flux)
+        return flux
+
+    zero = xp.zeros_like(c_in)
+    idx = xp.asarray(rows)
+    return kernel(zero, c_out)[idx], -kernel(c_in, zero)[idx]
+
+
+def label_transfers(start, end, p, dt, rows, *, weight=None, xp):
+    """FR-42's kinds hook (D303 item 6; the contract in kind_registry.Kind): the routes' one-way
+    amounts of the labelled rows over one step, (inward [m, route], outside end, inside end) and
+    (outward, inside end, outside end), fmol, each >= 0, ends on the combined node axis. Each is
+    the trapezoid of the start's and end's one-way fluxes, or under the Euler IMEX `weight` times
+    the start's, plus the gap to the booked net passive_transferred (end less start, inward) on the
+    side its sign gives."""
+    inward, outward = one_way_fluxes(start, p, rows, xp=xp)
+    if weight is None:
+        at_end = one_way_fluxes(end, p, rows, xp=xp)
+        inward, outward = 0.5 * dt * (inward + at_end[0]), 0.5 * dt * (outward + at_end[1])
+    else:
+        inward, outward = weight * inward, weight * outward
+    moved = end.state.passive_transferred - start.state.passive_transferred
+    gap = moved[xp.asarray(rows)] - (inward - outward)
+    inward, outward = inward + xp.maximum(gap, 0.0), outward + xp.maximum(-gap, 0.0)
+    return (
+        (inward, p.passive_outside, p.passive_inside),
+        (outward, p.passive_inside, p.passive_outside),
+    )
+
+
+def label_refusals(declaration, species):
+    """FR-42 (D303 item 6): the labelled species (IDs) these routes cannot carry. Of its moved
+    rows (moved_rows: a route that moves its row), only an inward rectifier's: its flux
+    q(V - E)(V - E) reads both ends through E, so it has no one-way form. Every other route's law
+    is linear in its ends."""
+    return [
+        f"{route.id} runs {RECTIFIER_LAW_ID}, whose flux has no one-way form (its driving force "
+        f"reads both ends), and moves the labelled {route.species}"
+        for route in declaration
+        if isinstance(route, RectifierRoute) and _moves(route) and route.species in species
+    ]
 
 
 def readouts(state, read, potentials, control, p, *, xp):
@@ -942,13 +1032,14 @@ def bound_rate(spec, declaration):
 
 
 def check_definition(spec):
-    """Admission: the neutral law carries a valence-0 row, the leak a valence +1 row (B4's proton
-    row where B4 is declared), the rectifier a valence +1 row (its E reads both ends, whose
-    initial amounts the host's parse admits only positive), the charged law a charged row; the host
-    route's own permeability for the carried row is zero; route IDs are unique among the
-    definition's entity IDs. A row a declared closure holds is refused on the charged law by the
-    species registry (check_amount_reading_routes, beside its other closure rules: FR-15 P2,
-    fail-closed), so this kind does no registry lookup."""
+    """Admission: the neutral law carries a valence-0 row, the leak (either version) a valence +1
+    row (the closure's proton row where a closure is declared), and @2 no end at a buffered node of
+    B4's version-1 closure (it reads the general closure's free h), the rectifier a valence +1 row
+    (its E reads both ends, whose initial amounts the host's parse admits only positive), the
+    charged law a charged row; the host route's own permeability for the carried row is zero;
+    route IDs are unique among the definition's entity IDs. A row a declared closure holds is
+    refused on the charged law by the species registry (check_amount_reading_routes, beside its
+    other closure rules: FR-15 P2, fail-closed), so this kind does no registry lookup."""
     m = spec.model
     kinds = dict(m.kinds)
     declaration = kinds[KIND_ID]
@@ -966,15 +1057,24 @@ def check_definition(spec):
                 f"{MODEL_KEY} {route.id}: {LAW_ID} carries neutral species only, not "
                 f"{route.species}"
             )
-        if route.law == LEAK_LAW_ID:
+        if route.law in LEAK_LAWS:
             if m.valence[row] != leak.VALENCE:
                 raise ConfigError(
-                    f"{MODEL_KEY} {route.id}: {LEAK_LAW_ID} carries a valence +1 proton row"
+                    f"{MODEL_KEY} {route.id}: {route.law} carries a valence +1 proton row"
                 )
             if closure is not None and closure.proton != route.species:
                 raise ConfigError(
                     f"{MODEL_KEY} {route.id}: the leak's row {route.species} is not the closure's "
                     f"proton row {closure.proton or '(none: the closure declares no proton_row)'}"
+                )
+        if route.law == LEAK_V2_LAW_ID and closure is not None:
+            buffered = () if hasattr(closure, "closure_rows") else dict(closure.buffers)
+            at = [end for end in (route.inside, route.outside) if end in buffered]
+            if at:  # B4's version 1: its free h is @1's read, not rapid_binding@1's.
+                raise ConfigError(
+                    f"{MODEL_KEY} {route.id}: {LEAK_V2_LAW_ID} reads {leak_v2.CLOSURE_READ_ID}'s "
+                    f"free h, and {at[0]} is a buffered node of B4's version-1 closure; "
+                    f"{LEAK_LAW_ID} reads that closure"
                 )
         if isinstance(route, RectifierRoute) and m.valence[row] != rectifier.VALENCE:
             raise ConfigError(
@@ -1074,6 +1174,7 @@ KIND_WORDS = MappingProxyType(
     {
         LAW_ID: "permeation",
         LEAK_LAW_ID: "leak",
+        LEAK_V2_LAW_ID: "leak",
         RECTIFIER_LAW_ID: "rectifier",
         CHARGED_LAW_ID: "charged permeation",
     }
@@ -1127,5 +1228,7 @@ PASSIVE_ROUTES = BUILTIN.register(
         routed_controls=routed_controls,
         view=VIEW,
         view_sets=view_sets,
+        label_refusals=label_refusals,  # FR-42's hook (D303 item 6): traced only with labels.
+        label_transfers=label_transfers,
     )
 )

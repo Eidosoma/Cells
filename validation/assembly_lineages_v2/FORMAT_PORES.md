@@ -58,6 +58,18 @@ work role: an applied protocol, a pipette's, so it lives in the experiment, not 
   counter 0. E = −ln u.
 - **The rupture time.** t* = start_s + E/k_v(σ), when t* ≤ end_s; otherwise the vesicle does not
   rupture in the hold. A t* past the horizon is no event of the run.
+- **Exact endpoints.** Both comparisons are decided exactly, as rationals of the binary64 values of
+  E, k_v (the `rate_per_s` an event records), start_s and the cutoff:
+  - t* ≤ end_s as E/k_v ≤ end_s − start_s, and t* ≤ the horizon as E/k_v ≤ horizon − start_s;
+  - the t* the host schedules and records stays the float64 value of start_s + E/k_v;
+  - from one start (Phase A's one hold), rounding never carries a crossing across a cutoff. It can
+    only round it onto the cutoff, and only there does the exact rule decide otherwise than
+    t* ≤ cutoff: a t* equal to its cutoff is an event when the exact crossing is at or before it,
+    and not when the crossing lies beyond;
+  - a vesicle that the hold's end decides this way does not rupture in the hold: its `t_star` is
+    null and its `pore_draw_time` inf;
+  - the case is the Lean lane's finding of 22 November 2026: a founder ruptured at a hold end that
+    its exact crossing passes by 2.4 × 10⁻¹⁷ s.
 - **The stop.** t* is a stop of the host:
   - the chemistry draw that crosses it is discarded and counted, as at a schedule stop;
   - a device that ends `inert` before t* is advanced to it;
@@ -66,7 +78,14 @@ work role: an applied protocol, a pipette's, so it lives in the experiment, not 
   `complete` at the horizon, never `inert`. A population whose vesicles have all ruptured may end
   `inert`.
 - **Same-time stops** are refused at the run's start: a t* equal to another vesicle's, or to a
-  schedule stop's time (FR-20's rule).
+  schedule stop's time (FR-20's rule). The times are compared as recorded, in float64, with exact
+  equality:
+  - Relations read the recorded times, so two crossings that round to one t* are one time there.
+    An exact tie also rounds to one t*, so this refuses it too.
+  - Rounding never reverses two crossings from one start, so stops that are not refused run in
+    their exact order.
+  - D283's same-instant band (4 ulps) is not used. It is for declared times on a fixed step's
+    grid, and this clock has no grid.
 - **The stream identity** of a pore world adds `domains.pore = 7` and `carriers.pore` to the
   identity its mode would state. Every other run's identity is unchanged.
 
@@ -150,3 +169,29 @@ before its first event if either fails:
   at a lysing event is.
 - **Joining two segments.** Each segment's ruptures (`pores.events`) are its own. The threshold
   draws (`pore_draw_*`) are the first segment's, since a vesicle draws when the run first holds it.
+
+## The device clock: a tension from F (OL6 S4, L1)
+
+A pore world with no hold takes its tension from F: `lumen_volume: osmotic` is then required, with
+σ_max ≤ σ_β/4 (refused otherwise: "with sigma from F the tension reaches sigma_max"), and steps that
+change a membrane place's count are admitted (under a hold they stay refused, with Phase A's words:
+T2). Its clock is on the device (`pore_device.py`); Phase A's hold worlds keep the host clock above,
+and their records, unchanged.
+- **The clock.** Each vesicle draws E as above, a founder at the start and a daughter at its birth
+  (H = 0 then). Between events the state holds, so each committed event adds k_v(n)·τ to H, with
+  k_v at the state before it (σ from the lumen's exact (N_L, W), A = q·W/2). The candidate opening
+  t_c = t + max(0, E − H)/k_v bounds the device's horizon: the chemistry draw that would land past
+  it is not committed, and the pore fires at t_c (fate `discarded_at_pore`; a device that halted
+  inert is advanced to it). A t_c at a schedule stop's time, or two slots' at one time, is
+  refused (FR-20's rule).
+- **The booking.** The opening has no hold: w = 0 and ΔF = σ_β/σ − ln(A·n_s) (the sheet's §7, "where
+  σ comes from F"), so q_open = ln(A·n_s) − σ_β/σ as under a hold; then the release from the open
+  state, so ΔF cancels in the event's total.
+- **The records.** No `tension_hold_work_kT` column and no `tension_hold` holds. `pores.events` adds
+  `clock_H` (H at t_c) and `delta_F_kT`, with `hold` null, σ the lumen's at t_c and `work_kT` 0;
+  `pores.draws` (and the diagnostic's `pore_draw_*`) hold one row per vesicle drawn, founders then
+  daughters in birth order, its t* the rupture time or inf. relations@2 names no payer for such a
+  rupture (`source` empty). `ssa.pore_clock` states the device's rule.
+- **Checkpoints (a population).** The host document adds `pore_clocks`: each living slot's `{slot,
+  key, H, threshold_E, rate_per_s, t_c}` as the device left it; a restart takes them as they are,
+  and refuses a checkpoint whose living vesicle's key or threshold is not its definition's draw.

@@ -61,6 +61,7 @@ from cells.models.assembly_lineages_v2 import (
     MODES,
     PHASE_EXCHANGE,
     POPULATION,
+    PORE_NUCLEATION,
     PRESCRIBED_SHELL,
     RATE_FACTOR_INTERFACE,
     REACTION_INTERFACE,
@@ -662,6 +663,20 @@ def parse(data):
     if type(raw["schema_version"]) is not int or raw["schema_version"] != 1:
         raise ConfigError("Only schema_version 1 is supported")
     model = parse_model(raw["model"])
+    if isinstance(raw["execution"], dict) and "representation" in raw["execution"]:
+        from cells.models.assembly_lineages_v2 import rate_equations  # OL6 (D304)
+
+        execution = rate_equations.parse_execution(raw["execution"], model)
+        experiment = parse_experiment(raw["experiment"], model.world)
+        rate_equations.refusals(model.world, experiment, execution)
+        return SimulationSpec(model, experiment, execution)
+    held = isinstance(raw["experiment"], dict) and "tension_holds" in raw["experiment"]
+    if model.world.hazard is not None and model.world.hazard[0] == PORE_NUCLEATION and held:
+        from cells.models.assembly_lineages_v2 import pore_nucleation  # FR-31 Phase A (OL6 S3)
+
+        # exact events under a hold: areas fixed under the host clock (T2; OL6 S4 lifts it with no
+        # hold, where σ comes from F and the clock is on the device)
+        pore_nucleation.phase_a_refusals(model.world)
     execution = parse_execution(raw["execution"], model)
     _mode_refusals(model.world, execution.mode)
     experiment = parse_experiment(raw["experiment"], model.world)
@@ -675,6 +690,15 @@ def parse(data):
 
 def to_dict(spec):
     m, e, x = spec.model, spec.experiment, spec.execution
+    out = _to_dict(m, e, x)
+    from cells.models.assembly_lineages_v2 import rate_equations  # OL6 (D304)
+
+    if isinstance(x, rate_equations.RepresentationExecution):
+        out["execution"] = rate_equations.execution_to_dict(x)
+    return out
+
+
+def _to_dict(m, e, x):
     return {
         "schema_version": 1,
         "model": {"id": MODEL_ID, "world": world_to_dict(m.world)},

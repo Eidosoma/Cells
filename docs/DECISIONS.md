@@ -9540,3 +9540,176 @@ from the checker's read-only inventories (/mnt/workspaces/Cells/arch-inventories
   checker, not the builder. The representation's contract is written so that it can serve as the
   first instance of the general level-of-detail contract (D299 item 4).
 
+## D305: D302's cost corrected, and MT-1b's long runs refused by a fixed global-charge bound (an engine gap)
+
+2026-11-22, about 22:19 UTC. The robustness agent's successor reconciled D302 and D303 on Step 0's
+world: state 4, a steady start, faceless and event-free, at 16 µs. Evidence:
+`/mnt/workspaces/Cells/mito-step0-20261122/RECONCILE.md` and `reconcile/`.
+1. **X2 costs about 20 ms per step at length, not 57.**
+   - Today's check alone costs 7.3–8.0 ms per step, so X2 costs about 2.6 times as much, not 8.
+   - A 300 s world at 16 µs (1.875e7 steps) takes about 100–110 core-hours with X2, against 38–42
+     without. D302's 300 is withdrawn, and so is the lead's later statement that the timing table
+     confirmed it.
+   - **The cause:** D302's 57 ms and the table's 59 and 68 ms each included a one-time recompile of
+     78–100 s. `energy_check.doubled_step` caches the doubled step under the whole definition's
+     digest, which includes the end time and max_steps, so each new run length recompiles X2's rollout.
+     Keying that cache on what the step reads is a small engine fix, on the backlog.
+   - **Four measurements agree:**
+     - 19.7 ms per step, the median over 251 windows of a 64,756-step replay;
+     - 20.2 ms, the marginal between warm runs;
+     - 19.4 ms over the long run's fast windows;
+     - 19.6 ms from growth_x2's 1,280→2,560 marginal.
+   - **Two side findings:**
+     - D302's "growth with length" was the same artefact.
+     - A window with any ledger above half its bound is re-checked on the host, at about 180 ms per
+       step.
+   - **Caveats:**
+     - No run has passed 64,756 steps, 0.35% of a 300 s world.
+     - x2/breakdown.json's 52 ms for the doubled step is unexplained, so a cheaper X2 is not designed
+       from it until it is.
+2. **The long run was refused by the global charge ledger at step 64,756 (1.04 s)**, with every material
+   floor at the parse cap.
+   - **The mechanism:** MT-1b's bath is a held reservoir behind host P's closed plasma patch, so no
+     charge crosses the boundary. The global charge residual is then the bath electrode's charge, which
+     carries the zero-mean rounding fluctuation of the matrix and IMS net ionic charge, up to 2.8e-25 C.
+   - **The bound:** 3e-25 C plus an allowance on the charge moved through the boundary. That charge is
+     the residual itself, so the bound never rises.
+   - **It refuses whatever X2 or the floors do.** Today's check takes the bit-identical trajectory. Long
+     runs of any world with a held bath behind a closed patch meet the same fixed bound.
+   - **This is an engine gap:** surface_field's component rule of 9 November gives a floating component
+     a rounding allowance, under which this residual stays at most 0.1% of it. A component grounded
+     through a held bath was never given the same allowance.
+   - The bound is a tolerance, so the fix is the user's decision (asked now).
+3. **The material floors fit a 300 s world at the parse cap of 1e-10 fmol.**
+   - The per-row residual maxima grow as n^0.67–n^0.83, reaching 7.2e-15 fmol at 6.4e4 steps. They
+     extrapolate to about 1e-12 fmol at 300 s, at most 1% of the cap; the cap fails only for growth of
+     n^1.68 or faster.
+   - Head 2's floors (1e-16 fmol for H) refuse at step 28,438, very probably H where its magnitude
+     dips. That was very probably the first long run's refusal.
+   - A 1e6-step check under today's check (about 2 h) follows once item 2 is fixed.
+4. **D303's item 1 is settled:**
+   - "about 19 ms" is confirmed;
+   - the floors do not reopen the implicit block, since they fit at the cap;
+   - the global charge refuses whichever block runs (an inference).
+
+## D306: FR-42's kinds, pools and sources and FR-38's steps 4 and 5 accepted; FR-38's cohort follows the requester's words
+
+2026-11-23, about 02:13 UTC. An independent checker, blind to the builders' tests and drivers, ran an
+acceptance written from the requesters' words, on main 529a8bd9. Its evidence is in
+`/mnt/workspaces/Cells/review-check-20261123/`. Its criteria were set after the results, from order
+arguments (a dt-halving ratio near 4, and exact zeros and bit patterns where the design says exact),
+never from the builders' numbers. That is disclosed.
+1. **Passed:**
+   - **FR-42 through kinds:** routes and the transporter, each labelled against unlabelled bit for
+     bit. The one-way splits match closed forms at second order, where a net-only split would be 0.03
+     off in share. Shares are a partition to 3.3e-16, and the rectifier is refused.
+   - **FR-42's pools and sources:** R1's 80 chains, survival 0.7071 and 0.2500, and a restart mid-hold
+     bit for bit.
+   - **FR-38's replacement (step 4):** removal by label exactly the pre-event row times its shares, the
+     counters at birth and death bit for bit, and per-producer identities closing to 1e-15.
+   - **FR-38's replace-then-restart (step 5):** restarts through snapshots bit for bit.
+   - **Planted failures:** all six were caught (shifted one-way amounts on a route and on the
+     transporter, an ulp per step, a skipped relabel, a skipped removal record, completion marks at
+     the base).
+2. **Unmet, in the requester's words:** RNA retained in an extracellular compartment keeping its
+   producer ID. Amendment T's export is tagged and not built. It is next.
+3. **The lead's ruling on a split the checker found.** Near the degradation's domain edge (e^y_f about
+   0.34), RNA re-synthesised from monomers takes the label in force, and a cohort decays at the gross
+   one-way rate.
+   - **The finding:** a cohort windowed on the species' own arrivals then counts re-synthesised
+     molecules, 18% more at 240 s. A cohort windowed on the chain's source schedule, which marks at
+     release from the template, matches the requester's words: "detaches from its template" and "the
+     same molecules".
+   - **The ruling:** FR-38's cohort is defined on the chain's source schedule, and re-synthesised
+     molecules are not members.
+   - **An erratum F to the sheet's section 9.8** is tagged before FR-38's rule. It states:
+     - the definition;
+     - that route 2 uses the gross one-way loss, not the net;
+     - that the species-window and source-schedule readings agree only where e^y_f << 1.
+
+     At the sheet's own state the two differ by 4e-9.
+   - The rule (fr38-rule, untagged) is not yet registered, so no registered result moves.
+4. **A risk, to be closed by design: producer identity is a declared name.**
+   - A producer label schedule that does not switch at the replacement event is admitted, and so is
+     one that switches early. The newcomer's copies then sit under the founder's label.
+   - The requester defines a producer as cell, occupant generation and expression chain, preserved
+     across restart and cell reordering.
+   - So the producer label is to be derived by the engine from the replacement events, or an
+     inconsistent schedule refused. This is a sheet amendment first, with options.
+5. **Stated, not changed:** under release-marking, a hold emptied at a replacement is recorded at the
+   base label (erratum E), and is booked to the departing generation through the counters only. Under
+   completion-marking it carries its labels.
+
+## D307: The global charge's grounded allowance takes the larger of the two terms; producer labels are derived (amendment G, option a)
+
+2026-11-23, about 02:22 UTC. The lead's rulings within the user's decisions. The user can overrule either.
+1. **The global charge (D305, the user's "extend the rule"): option (M).**
+   - The bound is 3e-25 + 256 eps × moved + max(2.5 eps n × moved, 2.5 eps n × the grounded
+     component's summed |z F dn|).
+   - It solves the gap: MT-1b's Step 0 world runs to 131,072 steps (2.1 s) under today's check, its
+     global charge at most 9.2e-5 of the bound after 1 s.
+   - It is bit for bit unchanged wherever the moved charge's term dominates. It is within twice the
+     strict sum (S), and stays the tighter of the two; a planted supply leak at twice the bound is still
+     refused. (Z), the allowance only where nothing has crossed, would bring the refusal back with any
+     tiny leak.
+   - It moves only the diagnostic `max_global_charge_bound_ratio`, always lower: in 26 of G1's 113
+     worlds, and in FR's set. Both frozen baselines are renewed in the same landing, each with a
+     renewal record, as fix (A) renewed G1's (D273). Frozen evidence that stores the ratio stays as
+     recorded, and MG0b's ≤ 1 still holds.
+2. **FR-38's producer identity (D306 item 4): amendment G's option (a).** The label owner derives each
+   producer label, <cell>-g<k>-<chain>, and its source's schedule from replacement@1's occupants.
+   - A hand-written schedule for a producer source is refused.
+   - The derived schedules equal a correct hand-written one, so programs stay bitwise.
+   - Restart and cell reordering leave the labels unchanged.
+   - Option (b), refusing an inconsistent schedule, is cheaper but leaves the burden on every
+     definition.
+   - Price: the kinds owner 0.75–1 day, the gene-regulation lane 0.25–0.5.
+3. **Erratum F** (tag gr1-sheet-fr38-erratum-f-2026-11-23, main f802d0ea) settles D306 item 3. FR-38's
+   cohort is the molecules released from their template, marked on the chain's own label schedule.
+   Route 2 runs at the gross one-way rate. The rule follows it before its tag.
+
+## D308: FR-38's rule was tagged without its reader; a rule erratum supplies it before any judged run
+
+2026-11-23, about 06:03 UTC. The independent judge of FR-38's registered comparison (tag
+fr38-rule-registered-2026-11-23) stopped before any run.
+- **The gap:** the rule names "the comparison's reader" and a name mapping "that the comparison's reader
+  states at the tag", and none exists. G4/FR-25's compare.py reads only G2's files, and FR-25's
+  registration.py cannot judge this rule's quantities (route 1's labels, the hold's class, survivors,
+  route 2). The lead tagged the rule without checking that its reader existed.
+- **The fix:** rule erratum 1, tagged before any judged run.
+  - The judge writes the reader from the interface files' keys and array shapes only, never their
+    values, and states the name mapping per world.
+  - The erratum also states:
+    - the route agreement's bound, section 9.8's (route 2's grid error plus route 1's split), reported
+      with the verdicts and changing no verdict;
+    - route 2's error and scale per sample time;
+    - the retry's support runs (the matched blanks at the retry steps, and R1L's unlabelled twin),
+      not judged themselves;
+    - FR-25's precedence. Within a run, an out-of-window order makes it inconclusive. Overall, any
+      failed run makes the comparison failed, else any inconclusive makes it inconclusive.
+- **Disclosed:** the judge saw reference figures printed in the references' tag messages (679fe885,
+  05725b23) before any run. No tolerance is the judge's, so the exposure cannot move one, and it is
+  recorded in the verdict's not_blind.
+- **For later rules:** a registration names a reader that exists at its tag, or the rule is not
+  tagged.
+
+## D309: OL6's pore clock takes a relative error bound (the user)
+
+2026-11-23, about 10:41 UTC. The user chose "Accept the relative bound", on Protocol D's section 7.3
+proposal (tag ol6-protocol-d-registered-2026-11-23).
+- **The bound:** a deterministic-representation step is accepted when the pore clock's embedded error
+  estimate satisfies |U^H| <= 1e-10 + 2e-3 |dH|, where dH is the step's own clock increment. This replaces
+  the absolute 1e-10 per step (the lead's ruling (a), D304).
+- **Why:**
+  - the absolute bound refuses D7, vesicles opening a pore at 50 and 100 nm, even at rtol 1e-13,
+    because H takes no part in step selection;
+  - the order-3 estimate overstates H's error about 200-fold;
+  - over the registered seeds the largest (estimate - 1e-10)/dH is 5.3e-4, a 3.8-fold margin;
+  - t* moves at most 1.1e-8 relative between rtol 1e-12 and 1e-13.
+  All of this was found from runs of the deterministic representation alone, with no comparison read.
+- **The guarantee it changes:** the crossing time's error is bounded by 2e-3 relative by the estimate.
+  That is inside the envelope's 2/n_min for n_min up to 1000.
+- **Next, both before D7 runs:** an engine follow-up to S3, which implements the bound with its rows,
+  gated, and Protocol D's erratum 1, which makes D7 runnable under it. Protocol D's other worlds (D0-D6)
+  and Protocol G's scope 1 can run now.
+

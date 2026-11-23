@@ -1,6 +1,6 @@
 # Neutral arrival-time labels (FR-42): desk assessment
 
-**Status: option A chosen (D289); stage 1 built (§7), 22 November 2026, by the kinds owner.**
+**Status: option A chosen (D289); stage 1 built (§7), 22 November 2026, by the kinds owner; stages 2 and 3 (§8, §9) and the kinds' hook (§11, D303 item 6) the same day.**
 Sections 0 to 6 are the desk assessment, written before any code at main 184fc81c. **S** marks
 this note's own reading or proposal.
 
@@ -324,8 +324,7 @@ tests/unit/test_neutral_labels_transport.py; @3's side merged).
   routes (a junction and patches), exchange's export and a passive S ↔ P route. Each was run with
   and without the label owner. Every history field, observation and diagnostic is bit for bit
   equal, and the closure diagnostic reads at most 1e-16. The routes' twin is a test row.
-- **Inner reporting** stays off beside declared kinds: @3's step refuses `labels` there until the
-  kinds' hook lands.
+- **Inner reporting** beside declared kinds: off until the kinds' hook, now on (§11).
 
 **Pools and sources** (D296, operators/contract.py).
 - **Reporter flags:** a reporter flags `LABEL_POOLS` or `LABEL_SOURCES` (static). It declares its
@@ -358,6 +357,18 @@ tests/unit/test_neutral_labels_transport.py; @3's side merged).
   species at the event step, the newcomer label.
   - The departing material leaves with its own shares.
   - A donor copy's material is newcomer material too. It does not inherit the donor's shares.
+- **What leaves is recorded** (erratum E, TEMPLATED_POLYMERISATION_LAWS §9.18; FR-38's step 5).
+  - Each event reports only its own material, so the two still commute: replacement@1 the slots
+    whose rows it swapped, and a pool reporter's event the amounts it emptied from its pools
+    (`removed [P]`, in label_pools order).
+  - The owner records by label the amount before the event times its shares just before it,
+    cumulative from t = 0: `label_removed_fmol` [labelled species, label, cell] for the rows,
+    `label_pool_removed_fmol` [pool reporter, label, pool] for the pools. An emptied pool entry
+    takes the base label. replacement@1's report no longer touches the pools.
+  - Both records are zero-size unless a replacing event is declared (D148 case 2), and restart
+    carries them as state. Beside a replacing event, a pool reporter whose event takes no labels
+    is refused (fail-closed).
+  - The gene unit's `removed` report comes with FR-38's step 4 branch.
 - **Producer identity across generations:** a source's schedule may switch its label at the event
   time.
 - **Still refused:** replacement@2 (its event does not report). So is a template that would make a
@@ -393,7 +404,7 @@ resume across this change.
 unlabelled calls'. Without labels nothing of theirs is traced. The owner's closure diagnostic reads
 rounding for both.
 
-**Kinds** (transporters, passive-route kinds) report after the @3 owner's stage hook lands.
+**Kinds** (transporters, passive-route kinds) report through their own hook (§11).
 
 ## 10. D1's label families retired (D300)
 
@@ -414,3 +425,104 @@ even at alpha."
   owner as moving no amount.
 
 **No registered world declared a family:** no definition in the repository names `label_families`.
+
+## 11. The kinds' hook (D303 item 6)
+
+Declared kinds report their labelled rows' one-way moves through two optional hooks of the kind
+contract (registry/kind_registry.Kind). @3's half is in models/surface_pump_v3.py, under the lead's
+leave for the kinds owner.
+
+**The contract.**
+- `label_refusals(declaration, species)` -> reasons: host side, at the definition, judged on the
+  kind's moved rows and only for the labelled species given.
+- `label_transfers(start, end, p, dt, rows, *, weight=None, xp)`: the labelled rows' one-way amounts
+  over the step, each >= 0, on the core's combined node axis.
+  - `start` and `end` are LabelViews: the state, the kinds' stage read, the node potentials and the
+    routed control. `p` is the presence-gated layout the kind's rates see.
+  - Under ARS(2,2,2), N2 and other tableaux: the trapezoid of the kind's one-way fluxes at the two
+    ends. Under the Euler IMEX: weight = dt a[last, 0] times the start's.
+  - Either way, the gap to the kind's own booked net (its cumulative field, end less start) is added
+    on the side its sign gives. So forward less backward is the booked move at rounding, both stay
+    >= 0, and nothing is stage-weighted.
+- **Static:** @3 calls a kind's hook only where rows are labelled, after its own transfers. KindRates,
+  the per-stage programs and every unlabelled trace are unchanged (D148 case 2), at two evaluations
+  per labelled step.
+
+**What each kind does.**
+- **Passive routes:** the neutral, leak and charged constant-field kernels are linear in their two
+  ends at a fixed voltage. So the inward flux is the kernel with c_in = 0, and the outward one is
+  minus the kernel with c_out = 0: no new kernel, and the FR-4 and FR-5 law files unedited. The
+  booked net is `passive_transferred`. A labelled row a rectifier moves is refused.
+- **Transporter,** both layouts: every flux-force form runs J = J+ (1 - e^x), so each mode's one-way
+  cycle rates are J+ = k a S and J- = J+ e^x (Hill's). A crossing row moves |nu| J+ from the end
+  where it is consumed to the end where it is made, and |nu| J- back: version 1's from the patch's
+  cell to its outside node, the population axis's between N and P. The booked nets are
+  `transporter_cycles` and `cycle_count`. Refused, reading each population through its general form:
+  - a net-flow form, which has no one-way rates;
+  - a species changed at one end only (chemistry there);
+  - a held row the law changes (held fuel: its maintenance's new material is not reported);
+  - unequal counts at the two ends.
+- **Patch damage** moves no row, so its label_refusals give none. Kinds without rates (the stage
+  read, the pH condition) need neither hook.
+
+**Central refusals** (operators/species_labels.in_step_errors; kind_registry.label_refusal_errors):
+- a kind with a rates hook and no label_refusals, while any row is labelled (fail-closed; @3's
+  labelled step refuses it statically too);
+- a kind's move of a labelled row without its label_transfers;
+- a labelled species a closure holds at some node (a kind's stage_rows: B4's proton row and buffers
+  at buffered nodes, rapid_binding@1's closure rows), whatever moves it.
+
+The composite's inner step now reports beside declared kinds (`inner_reports_labels`). MT-1b's forms
+face is not on main yet, so its refusal line in `label_errors` comes with the face builder's branch
+(docs/MITOCHONDRIA_DESIGN.md §7: whichever lands second adds it).
+
+**Measured** (tests/unit/test_neutral_labels_kinds.py; the refusals are rows of
+tests/unit/test_neutral_arrival_labels.py).
+- **The compiled twin:** a neutral passive route and a neutral transporter crossing, labelled against
+  unlabelled. Every history field, observation and diagnostic is bit for bit equal, and the closure
+  diagnostic reads rounding.
+- **Zero net flux:** S's labels exchange at the route's one-way rate P A c, at rounding of the closed
+  form (2.2e-16). The update's predictor-corrector gives the two nodes' difference e^(-2u) per step
+  exactly.
+- **The split, which the closure cannot see:**
+  - each kernel's two terms are its law's own, and J- / J+ = e^x;
+  - a planted halving of the one-way amounts leaves the closure exact and misses the zero-net closed
+    form by 0.074.
+- **The gap** is O(dt^3): it falls 8.000 times per halving for a route and 8.005 to 8.009 for the
+  pump.
+- **Beside a face:** a kind carrying Q leaves labelled face-moved S admitted, with S's face
+  transfers the kind-free twin's bit for bit.
+
+**What moves:** no registered world, since worlds without labels keep their programs (crossrev and
+G1). Labelled worlds beside kinds, refused before, are admitted where the kinds report.
+
+## 12. Producer labels derived from the replacement events (amendment G, D307)
+
+TEMPLATED_POLYMERISATION_LAWS §9.20 chose option (a): the label owner derives each producer's label
+and schedule, so a schedule can no longer disagree with the events (operators/species_labels.py,
+`derived`).
+- **The declaration:** a species' entry names its chain sources, `producers: [{source, windows:
+  [{label, from, to}, ...]}]`. Window times are on the clock's grid inside the horizon, increasing
+  and disjoint.
+- **The derivation,** at the definition and on the host:
+  - the chain's cell comes from a source reporter's `label_sources`, and that cell's occupants from
+    replacement@1 (species_common.occupants), keyed by cell ID;
+  - the labels are `<cell>-g<k>-<chain>` for each generation k (the founder 0, then each newcomer
+    in event order) and `<cell>-g<k>-<chain>-<window>` for each window, after the species' own,
+    within MAX_LABELS;
+  - the source's schedule is the generation's label from its birth, its window's inside each
+    window, and the next generation's from the next event's step.
+- **One authority:** a hand-written schedule for a producer source is refused, and so is a producer
+  that is no source reporter's chain at a cell.
+- **Bitwise:** on FR-38's step-5 world the derived definition binds to a correct hand-written one's
+  types, initial state, layout and every control array bit for bit (tests/unit/
+  test_neutral_labels_events.py).
+- **Identity:** the definition keeps `producers`, not the derived labels. So a restart derives the
+  same, and so does a reordering of the cells, since names follow cell IDs and generations the
+  event order.
+- **Batches:** the derived label count follows a cell's replacement events, which a declaration
+  does not hold, and the batch check compares declarations' signatures only. So version 1 batches
+  a definition that declares producers with no other world: its signature holds a part equal to
+  nothing (fail-closed; a batch of one runs).
+- **The gene unit's check** compares a release's two fate rows' declared labels. Each fate row
+  should declare the same producers, so their derived lists agree.

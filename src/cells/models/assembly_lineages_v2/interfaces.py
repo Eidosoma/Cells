@@ -36,6 +36,7 @@ from cells.models.assembly_lineages_v2 import (
     POPULATION_INTERFACE,
     RATE_FACTOR_INTERFACE,
     REACTION_INTERFACE,
+    REPRESENTATION_INTERFACE,
 )
 from cells.modules import FamilyOperator, Law
 from cells.registry import laws as law_registry
@@ -67,6 +68,16 @@ def _callables(law, names):
     return [f"its {name} is callable" for name in names if not callable(getattr(law, name))]
 
 
+def _limit_errors(law):
+    """OL6's hook (H1): a declared limit is callable and states its formulas."""
+    if law.limit is None:
+        return [] if law.limit_formulas is None else ["its limit_formulas come with a limit"]
+    out = [] if callable(law.limit) else ["its limit is callable"]
+    if not isinstance(law.limit_formulas, dict) or not law.limit_formulas:
+        out.append("its limit states its formulas in words and symbols")
+    return out
+
+
 @dataclass(frozen=True)
 class ReactionLaw(Law):
     """cells.reaction_law@1: a step's kinetics (θ⁺ and the locus extent); never a reverse rate."""
@@ -80,6 +91,10 @@ class ReactionLaw(Law):
     # the world's exchange_encounter token to it; and the extent's kind (EXTENTS).
     rate_key: object = "forward_rate_per_s"
     extent: str = "locus"
+    # OL6 (H1, D304): the law's large-count limit for cells.rate_equations@1, or None (refused
+    # there); and its formulas, written only into that representation's records.
+    limit: Callable | None = None
+    limit_formulas: dict | None = None
 
     interface: ClassVar[str] = REACTION_INTERFACE
 
@@ -94,6 +109,7 @@ class ReactionLaw(Law):
             out.append("its rate key is a name, or a mapping from encounter tokens to names")
         if self.extent not in EXTENTS:
             out.append(f"its extent is one of {', '.join(EXTENTS)}")
+        out += _limit_errors(self)
         return out
 
 
@@ -158,6 +174,10 @@ class RateFactorLaw(Law):
     update: Callable  # (state, layout, places, delta, xp) -> the state after a step.
     log_factor: Callable  # (state, layout, view, xp) -> ln g at each step's common state.
     formulas: dict
+    # OL6 (H1, D304): the law's large-count limit for cells.rate_equations@1, or None (refused
+    # there); and its formulas, written only into that representation's records.
+    limit: Callable | None = None
+    limit_formulas: dict | None = None
 
     interface: ClassVar[str] = RATE_FACTOR_INTERFACE
 
@@ -171,6 +191,7 @@ class RateFactorLaw(Law):
                 f"its catalysing phases are among {', '.join(CATALYSING)} (OL1: the condensed "
                 "phase only; a dilute phase's fraction would have to include the solvent)"
             )
+        out += _limit_errors(self)
         return out
 
 
@@ -189,6 +210,10 @@ class FreeEnergyTerm(Law):
     value: Callable  # Host: F_term(counts) exactly, for the ledger and the check.
     delta: Callable  # (state, layout, view, delta, xp) -> F_term(n + delta) - F_term(n), per step.
     formulas: dict
+    # OL6 (H1, D304): the law's large-count limit for cells.rate_equations@1, or None (refused
+    # there); and its formulas, written only into that representation's records.
+    limit: Callable | None = None
+    limit_formulas: dict | None = None
 
     interface: ClassVar[str] = FREE_ENERGY_INTERFACE
 
@@ -199,6 +224,7 @@ class FreeEnergyTerm(Law):
             out.append(f"its part is one of {', '.join(PARTS)}")
         if not self.phases:
             out.append("it names the phases it reads")
+        out += _limit_errors(self)
         return out
 
 
@@ -275,3 +301,48 @@ class AssemblyOperator(FamilyOperator):
         from cells.models.assembly_lineages.lineage_operators import LineageOperator
 
         return LineageOperator.record(self)
+
+
+@dataclass(frozen=True)
+class AssemblyRepresentation(Law):
+    """cells.assembly_representation@1: a declared level of detail of the family's worlds (OL6,
+    D304; docs/OL6_DETERMINISTIC_REPRESENTATION_DESIGN.md §1.1). The first instance of a general
+    level-of-detail contract (D299 item 4), in three parts:
+
+    - **what a level declares:** Law's four reserved fields, each required here: `represents` (the
+      detailed form it stands in for, its scope and its reduction), `preserves` (what it keeps
+      exactly, and what to a tolerance), `supports` (the readouts it answers) and `qualified` (its
+      envelope, its error budget and the record that qualified it); plus the numerical methods it
+      admits, its refused readouts and its lifecycle;
+    - **what a pair agrees on** (`pair`): the quantities both levels expose at the interface, the
+      same world id, the same declared laws, units and streams for what stays stochastic;
+    - **how a pair is qualified** (`qualified`): a registered protocol, run at its tag by an
+      independent checker, against the detailed form where both run.
+
+    A world chooses the level at definition, never at run time; the detailed form is the default."""
+
+    methods: tuple  # the numerical methods it admits (each declared apart from the representation)
+    readouts: tuple  # what can be asked of it
+    refused_readouts: tuple  # what it refuses by name
+    statuses: tuple  # its own lifecycle (never the detailed form's tables)
+    pair: dict  # what the two levels of one world agree on
+    formulas: dict
+
+    interface: ClassVar[str] = REPRESENTATION_INTERFACE
+    LEVEL_OF_DETAIL: ClassVar[bool] = True  # D175's fields' first consumer (D304)
+
+    def errors(self):
+        out = super().errors()
+        if law_registry.qualified(self.host) != law_registry.qualified(MODEL_ID):
+            out.append(f"a law of {type(self).interface} is hosted by {MODEL_ID}")
+        for name in ("represents", "preserves", "supports", "qualified"):
+            if getattr(self, name) is None:
+                out.append(f"a level of detail declares `{name}` (Law's reserved field)")
+        for name in ("methods", "readouts", "refused_readouts", "statuses"):
+            if not isinstance(getattr(self, name), tuple) or not getattr(self, name):
+                out.append(f"its {name} is a non-empty tuple")
+        if not isinstance(self.pair, dict) or not self.pair:
+            out.append("its pair states what the two levels agree on")
+        if not isinstance(self.formulas, dict) or not self.formulas:
+            out.append("its formulas state its equations in words and symbols")
+        return out

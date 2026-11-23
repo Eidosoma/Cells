@@ -1339,7 +1339,84 @@ def _autoregulated_transcription(monkeypatch):
     assert max(orders((1, 2, 4))) < 1.2
 
 
-@pytest.mark.parametrize("target", ["scheduled_species_turnover@1", "templated_polymerisation@1"])
+def _routed_release_fraction(monkeypatch):
+    """The row templated_polymerisation@1's durable fraction (FR-38's routed p, the sheet's §9.4,
+    source 3): R1 to 10 s at k_I = 0, its release's p = 0.75 routed by a Hill activation on R, the
+    durable fate row that the release itself fills inside each of transcription's half-steps; R
+    starts at the activation's K, 1e-10 mM, and rises about threefold, so p's factor u, between b =
+    0.2 and 1, moves through the run. The composite evaluates u at the half-step's midpoint, so the
+    cumulative durable releases converge at order 2, and u < 1 applies: the durable share of the
+    releases lies below the scheduled p. Planted, the midpoint off: a left-endpoint rule, order 1.
+    NumPy half-steps of the operator alone, about 3 s with the world's build, no world compiled."""
+    from validation.gene_regulation import kernel, worlds
+
+    raw = kernel.truncated(worlds.r1(0.75), 10.0)
+    raw["model"]["operators"].insert(
+        0,
+        dict(
+            law=LAW_V2,
+            species=[dict(id="R", catalogue=None, evidence=None)],
+            states=[],
+            couplings=[
+                dict(
+                    id="c_release",
+                    target=dict(
+                        operator=worlds.POLYMERISATION,
+                        control="polymerisation_release_fraction",
+                        ids=[worlds.RELEASE],
+                        evaluation="target_half_steps",
+                        operating_range=[0.0, 1e-6],
+                    ),
+                    source={"species": "R"},
+                    law="hill_activation",
+                    half_saturation_mM=1e-10,
+                    hill_coefficient=2.0,
+                    basal=0.2,
+                )
+            ],
+        ),
+    )
+    raw["experiment"].update(
+        coupling_controls=[dict(coupling_id="c_release", schedule=[dict(time=0.0, enabled=1)])],
+        regulatory_writes=[],
+    )
+    raw["model"]["cells"][0]["initial_amount_fmol"]["R"] = 1e-10  # 1e-10 mM in its 1 pL.
+    spec = parse_spec(raw)
+    target = worlds.POLYMERISATION
+    assert pump_composite.self_moved_targets(spec.model) == {target}
+    model = get_model(spec.model)
+    assert model.structure_key[3:] == (("midpoint", (target,)),)
+    state, p = model.initial_values(spec)
+    operator = next(o for o in model.operators if o.LAW_ID == target)
+    control = model.CONTROL_TYPE(*(v[0] for v in cs.control_values(spec, [0.0])))
+
+    def orders(per_second):
+        made, share = [], None
+        for n in per_second:
+            current = state
+            for _ in range(20 * n):
+                current, ok = model._half_step(operator, current, 1 / (2 * n), control, p, xp=np)
+                assert bool(ok)
+            released = np.asarray(current.poly_hold_released_fmol)[0, 0]  # [fate]
+            made.append(float(released[0]))
+            share = float(released[0] / released.sum())
+        gaps = [abs(a - b) for a, b in zip(made, made[1:], strict=False)]
+        return [np.log2(a / b) for a, b in zip(gaps, gaps[1:], strict=False)], share
+
+    found, share = orders((1, 2, 4, 8))
+    assert min(found) >= 1.9 and 0.2 * 0.75 < share < 0.75  # p u, with u in (b, 1).
+    monkeypatch.setattr(model, "midpoint", frozenset())
+    assert max(orders((1, 2, 4))[0]) < 1.2
+
+
+@pytest.mark.parametrize(
+    "target",
+    [
+        "scheduled_species_turnover@1",
+        "templated_polymerisation@1",
+        "templated_polymerisation@1-release_fraction",
+    ],
+)
 def test_version_2_evaluates_a_route_its_target_moves_at_the_half_steps_midpoint(
     monkeypatch, target
 ):
@@ -1350,9 +1427,12 @@ def test_version_2_evaluates_a_route_its_target_moves_at_the_half_steps_midpoint
     by nothing else), under 1 s, no world compiled. Four refinements of the one-second ramp
     converge at order at least 1.9; the record holds the midpoint's factor; the S route keeps its
     booking; a composition without such a route (routed) keeps its key. Planted: the midpoint off,
-    order 1. The second row is _autoregulated_transcription's."""
+    order 1. The second row is _autoregulated_transcription's, the third
+    _routed_release_fraction's."""
     if target == "templated_polymerisation@1":
         return _autoregulated_transcription(monkeypatch)
+    if target == "templated_polymerisation@1-release_fraction":
+        return _routed_release_fraction(monkeypatch)
     spec = parse_spec(routed())
     assert pump_composite.self_moved_targets(spec.model) == frozenset()
     assert get_model(spec.model).structure_key[3:] == ()

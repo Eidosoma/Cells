@@ -391,9 +391,11 @@ SURVIVAL = [
 def test_the_survival_check_fails_closed(case, every, inflow, loss, ok, status, tmp_path):
     """release_check.survival on synthetic counters of R1's short-lived fate R_s (a trace of 10
     copies, the window's releases at `inflow`, first-order loss), against e^(-k_s 3600 s) = 1/4,
-    no world compiled. Outputs too far apart for a grid error are insufficient resolution, not a
-    pass (a lossless ratio of 1 passed before); an empty cohort is reported, not raised (it was a
-    ZeroDivisionError); a resolved lossless cohort fails as compared; a first-order one passes."""
+    no world compiled. Route 2 carries the releases at the definition's gross k_s (erratum F).
+    Outputs too far apart for a grid error are insufficient resolution, not a pass (a lossless
+    ratio of 1 passed before); an empty cohort is reported, not raised (it was a
+    ZeroDivisionError); a resolved lossless record fails as compared, since its booked net loss
+    disagrees with the declared k_s; a first-order one passes."""
     from cells.operators.templated_polymerisation import COPY_FMOL
 
     t1, t2 = worlds.R1_WINDOW
@@ -597,6 +599,14 @@ LOSSLESS = [
     # The Lean lane's finding (22 November 2026): a release's fate row without a loss route
     # read as a product's does, its zero series exported.
     ("release fate", _release_world, "R_s", _release_world, "R"),
+    # And with FR-42's labels on the fate rows: the label owner moves nothing (about 1 s).
+    (
+        "labelled fate",
+        lambda: worlds.with_share_labels(_release_world(), window=(0.0, 30.0)),
+        "R_s",
+        _release_world,
+        "R",
+    ),
 ]
 
 

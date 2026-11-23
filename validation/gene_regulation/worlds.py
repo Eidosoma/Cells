@@ -495,12 +495,13 @@ def ribosome_limited(n_R, *, dt=0.5, symbols=None):
 # ------------------------------------------------------------------ R1 (§9.9, FR-38)
 
 RELEASE = "tx_release"
-LABEL = "tx_label"
 R1_ROWS = ("N", "M", "Pi", "R", "R_s")
-R1_LABEL_ROWS = ("R_c2", "R_s_c2")  # Class 2's fate rows: the window's releases (§9.12).
 R1_DT = 2.0  # s: dt kappa_tx = 2/3 <= 1; the hold's and fates' rates times dt are below 1e-3.
 R1_EVERY = 60.0  # s: outputs every minute, the sheet's five among them (the cohort's grid).
-R1_WINDOW = (0.0, 3600.0)  # The release-window cohort's [t1, t2] (§9.9).
+R1_WINDOW = (0.0, 3600.0)  # The release-window cohort's [t1, t2) (§9.9).
+SHARE_LABELS = "neutral_arrival_labels@1"  # FR-42's label owner (D289).
+R1_LABELLED = ("R", "R_s")  # Route 1's labelled rows: the two fates (erratum C).
+R1_LABELS = ("base", "cohort")  # Each fate row's labels: the base, then the window's.
 
 
 def _release(p, machine, copies, fates, label=None):
@@ -516,6 +517,53 @@ def _release(p, machine, copies, fates, label=None):
     )
 
 
+def _source_row(raw, chain):
+    """The row whose labels a chain's new material takes (templated_polymerisation's
+    label_sources): its durable fate row with a release, else its product."""
+    (block,) = [o for o in raw["model"]["operators"] if o["law"] == POLYMERISATION]
+    (entry,) = [c for c in block["chains"] if c["id"] == chain]
+    release = entry.get("release")
+    return entry["product"] if release is None else release["fates"][0]["durable"]
+
+
+def with_share_labels(
+    raw, rows=R1_LABELLED, window=R1_WINDOW, labels=R1_LABELS, sources=(), chain=None
+):
+    """raw with FR-42's label owner (neutral_arrival_labels@1, D289) on `rows`, each with
+    `labels` (the base first, then the window's, then any others), every node starting at the
+    base. The window [t1, t2) marks:
+    - with chain None, the species' own arrivals: every arrival into the rows during it joins the
+      window's label (erratum C), a degradation's re-synthesis from monomers among them;
+    - with a chain's ID, that chain's own label schedule (a label source's, D296): its products,
+      or with a release its fate releases, during it join the window's label, and each species'
+      own label is the base throughout. This is FR-38's cohort (erratum F, §9.19): the molecules
+      that detach from their template in the window. A molecule re-synthesised from monomers
+      takes its species' label, the base, so it is not a member.
+    sources: ((chain, species, ((time, label), ...)), ...), a chain's own label schedule (D296: a
+    producer's label, its cell, generation and chain); none of them for `chain`, whose schedule is
+    the window's. The rows' physics is unchanged: no law reads a share."""
+    out = copy.deepcopy(raw)
+    base, marked = labels[:2]
+    t1, t2 = window
+    out["model"]["operators"].append(
+        dict(law=SHARE_LABELS, species=[dict(id=r, labels=list(labels), initial=[]) for r in rows])
+    )
+    changes = ([] if t1 == 0 else [(0.0, base)]) + [(t1, marked), (t2, base)]
+    own = {r: changes for r in rows}
+    if chain is not None:
+        if any(name == chain for name, _, _ in sources):
+            raise ValueError(f"chain {chain}'s own schedule is the window's: name it once")
+        own = {r: [(0.0, base)] for r in rows}
+        sources = ((chain, _source_row(out, chain), tuple(changes)), *sources)
+    out["experiment"]["label_arrivals"] = [
+        dict(species=r, schedule=[dict(time=float(t), label=x) for t, x in own[r]]) for r in rows
+    ] + [
+        dict(species=row, source=name, schedule=[dict(time=float(t), label=x) for t, x in times])
+        for name, row, times in sources
+    ]
+    return out
+
+
 def r1(
     p, *, machine="returned", blank=False, labelled=False, initiation=0.0, dt=R1_DT, symbols=None
 ):
@@ -524,12 +572,16 @@ def r1(
     the durable row R and the short-lived row R_s, H(0) = 80 copies (0 in the matched blank), M_pol
     = A1's; R and R_s at the sheet's trace c_R, each degraded at its own rate; N, M and Pi at A1's
     initial state, at a potential set (the test instance by default); outputs every R1_EVERY s to
-    14,400 s. labelled: §9.8's route 1, a second class of fate rows (R_c2, R_s_c2) that the
-    releases in R1_WINDOW enter, the label marking the release. initiation: transcription's k_I
-    (mM^-1 s^-1), 0 in R1; the tests set A1's, so that completions arrive in the hold."""
+    14,400 s.
+    - labelled: §9.8's route 1 on shares (errata C and F): FR-42's labels on R and R_s, the label
+      marking the release. Transcription's releases in R1_WINDOW join the window's label on its
+      own label schedule, and each row's own label is the base throughout, so a molecule
+      re-synthesised from monomers is not a member (with_share_labels, chain "tx").
+    - initiation: transcription's k_I (mM^-1 s^-1), 0 in R1; the tests set A1's, so that
+      completions arrive in the hold."""
     a, r = sheet.A1, sheet.RELEASE
     symbols = test_instance() if symbols is None else symbols
-    rows = R1_ROWS + (R1_LABEL_ROWS if labelled else ())
+    rows = R1_ROWS
     start = {row: _f(a, f"c_{row}") for row in ("N", "M", "Pi")}
     start |= dict.fromkeys(rows[3:], _f(a, "c_R"))
     end = float(r["t_out"][-1])
@@ -539,8 +591,8 @@ def r1(
     mu = potentials_RT(symbols, {row: ("R_res", L_R) for row in polymers})
     raw = cs.frozen_definition(_with_registry(raw, mu, _moieties(rows, polymers)))
     E_pd_kJ = symbols["E_pd"] * sheet.RT
-    fates = [("R", "R_s")] + ([R1_LABEL_ROWS] if labelled else [])
-    label = dict(id=LABEL, at="release") if labelled else None
+    fates = [("R", "R_s")]
+    label = None
     chain = _transcription("tx", "R", a["T_copies"], L_R)
     chain["release"] = _release(p, machine, [0 if blank else r["H0"]], fates, label)
     rates = {"tx": [(0.0, float(initiation))]}
@@ -549,49 +601,105 @@ def r1(
         degradations.append(_degradation(f"deg_{row}", row, L_R, "M", E_pd_kJ))
         rates[f"deg_{row}"] = [(0.0, float(r[fate]))]
     block = _block(mu, rows, {"pol": a["M_pol"]}, [chain], degradations, [])
-    if labelled:
-        t1, t2 = R1_WINDOW
-        rates[LABEL] = [(0.0, 2.0), (t2, 1.0)] if t1 == 0 else [(0.0, 1.0), (t1, 2.0), (t2, 1.0)]
-    return _finish(raw, block, rates)
+    out = _finish(raw, block, rates)
+    return with_share_labels(out, chain="tx") if labelled else out
 
 
-R1S_TIMES = (600.0, 900.0, 1800.0)  # psi's switch, p's change and the end, s.
+R1S_TIMES = (600.0, 900.0, 1800.0)  # The window's end, p's change and the end, s.
 
 
-def r1s(machine, *, dt=R1_DT, symbols=None):
-    """A compiled check of the class axis labelled at completion and of a scheduled p, each changed
-    mid-run (development; not one of §9.9's worlds): R1 with A1's k_I, so that completions arrive,
-    its hold in two classes with class 1 holding R1's 80 copies; psi = 2 until R1S_TIMES[0], then
-    1; p = 0.75 until R1S_TIMES[1], then 0.25; to R1S_TIMES[2], outputs every R1_EVERY s."""
+def r1s(machine, *, dt=R1_DT, symbols=None, labelled=True):
+    """A compiled check of labels marked at completion and of a scheduled p, each changed mid-run
+    (development; not one of §9.9's worlds): R1 with A1's k_I, so that completions arrive, its
+    hold holding R1's 80 copies at the base; FR-42's labels on R and R_s (base, cohort), the hold
+    carrying them (label at completion, D296), transcription's completions in [0, R1S_TIMES[0])
+    joining the cohort on its own label schedule, each row's own label the base throughout
+    (erratum F); p = 0.75 until R1S_TIMES[1], then 0.25; to R1S_TIMES[2], outputs every R1_EVERY s.
+    labelled False: the same world without the label owner, physically the same run."""
     switch, change, end = R1S_TIMES
     k_I = _f(sheet.A1, "k_I_tx")
-    raw = r1(0.75, machine=machine, labelled=True, initiation=k_I, dt=dt, symbols=symbols)
+    raw = r1(0.75, machine=machine, initiation=k_I, dt=dt, symbols=symbols)
     chain = next(c for c in raw["model"]["operators"][-1]["chains"] if "release" in c)
-    chain["release"].update(
-        label=dict(id=LABEL, at="completion"),
-        initial_copies=[float(sheet.RELEASE["H0"]), 0.0],
-        durable_fraction="scheduled",
-    )
-    controls = raw["experiment"]["polymerisation_controls"]
-    next(c for c in controls if c["route_id"] == LABEL)["schedule"] = _schedule(
-        [(0.0, 2.0), (switch, 1.0)], "value"
-    )
+    chain["release"].update(label=dict(at="completion"), durable_fraction="scheduled")
     fraction = _schedule([(0.0, 0.75), (change, 0.25)], "value")
-    controls.append(dict(route_id=RELEASE, schedule=fraction))
+    raw["experiment"]["polymerisation_controls"].append(dict(route_id=RELEASE, schedule=fraction))
     e = raw["experiment"]
     e["end_time"] = end
     e["observation_times"] = [t for t in e["observation_times"] if t <= end]
     raw["execution"]["max_steps"] = int(math.ceil(end / dt)) + 8
-    return raw
+    return with_share_labels(raw, window=(0.0, switch), chain="tx") if labelled else raw
+
+
+# ------------------------------------------------------------------ the export (§9.17, FR-38)
+
+SPACE, EXPORT_PATCH = "space_0", "patch_export"  # The finite node and the patch into it.
+EXPORT_RATE = math.log(2) / 7200.0  # s^-1: k_E, an export half-life of 2 h (a development value).
+OUTSIDE_RATE = math.log(2) / 14400.0  # s^-1: k_o, a retention half-life of 4 h (likewise).
+# One NTP to NMP and 2 Pi per molecule exported (R1's rows: the NTP lump N; §9.17.2's coupling).
+EXPORT_COUPLING = {"N": -1, "M": 1, "Pi": 2}
+
+
+def with_export(raw, *, node=SPACE, cell=CELL, row="R", volume=1.0, k_E=EXPORT_RATE,
+                k_o=OUTSIDE_RATE, ident=None, outside=True):  # fmt: skip
+    """raw with amendment T's export (§9.17.2): a finite extracellular node `node` of `volume` pL
+    (K+ and Y- at the bath's 140 mM, the listed rows at the trace) behind its own patch from
+    `cell`, with no permeability, and the operator's export of `row` across it, driven by one NTP
+    to NMP and 2 Pi (EXPORT_COUPLING, K the transcription's K_N), with `row`'s loss at the node,
+    its outside degradation, deg_R's law and cited dG with its monomers at the node. k_E and k_o
+    are development values, not the requester's. ident names the export and the loss (default
+    the row's); outside False adds no loss route (a second producer into a node that has one)."""
+    out = copy.deepcopy(raw)
+    m, e, x = out["model"], out["experiment"], out["execution"]
+    block = next(o for o in m["operators"] if o["law"] == POLYMERISATION)
+    listed = [s["id"] for s in block["species"]]
+    patch = f"{EXPORT_PATCH}_{cell}_{node}"
+    if all(n["id"] != node for n in m["extracellular"]):
+        amounts = {"K": BACKGROUND_mM * volume, "Y": BACKGROUND_mM * volume}
+        amounts |= {r: TRACE_mM * volume for r in listed}
+        m["extracellular"].append(
+            dict(id=node, volume_pL=volume, initial_amount_fmol=amounts,
+                 fixed_charge_equivalent_fmol=0.0, initial_charge_C=0.0, reservoir=False,
+                 boundary_potential_V=0.0)
+        )  # fmt: skip
+        x["extracellular_capacity"] = len(m["extracellular"])
+    m["membranes"].append(
+        dict(id=patch, inside=cell, outside=node, area_m2=AREA_M2,
+             capacitance_F=CAPACITANCE_F_PER_M2 * AREA_M2,
+             permeability_m_per_s={"K": 0.0, "Y": 0.0, **dict.fromkeys(listed, 0.0)},
+             law="constant_field@1", pump=None, calcium_pump=None)
+    )  # fmt: skip
+    x["membrane_capacity"] = len(m["membranes"])
+    e["membrane_controls"].append(
+        dict(membrane_id=patch, schedule=_schedule([(0, 1)], "availability"))
+    )
+    name = ident or row
+    deg = next(d for d in block["degradations"] if d["polymer"] == row and d["cell"] == cell)
+    block.setdefault("exports", []).append(
+        dict(id=f"export_{name}", row=row, patch=patch, coupling=dict(EXPORT_COUPLING),
+             saturation_mM={"N": _f(sheet.A1, "K_N_tx")})
+    )  # fmt: skip
+    controls = e["polymerisation_controls"]
+    controls.append(dict(route_id=f"export_{name}", schedule=_schedule([(0.0, k_E)], "value")))
+    if outside:
+        block.setdefault("outside_degradations", []).append(
+            dict(id=f"deg_{name}_{node}", node=node, polymer=row, residues=deg["residues"],
+                 monomers=dict(deg["monomers"]),
+                 standard_free_energy=dict(deg["standard_free_energy"]))
+        )  # fmt: skip
+        controls.append(
+            dict(route_id=f"deg_{name}_{node}", schedule=_schedule([(0.0, k_o)], "value"))
+        )
+    return out
 
 
 def release_names():
     """R1's runs (§9.9): the four fractions with each machine option, the matched blanks, and the
-    labelled pair of the release-window cohort's route 1 at p = 0.75."""
+    release-window cohort's route 1 at p = 0.75, labelled by shares, which needs no blank
+    (erratum C)."""
     out = []
     for machine in ("returned", "held"):
         out += [f"R1 p={_p(p)} {machine}" for p in sheet.RELEASE["p_cases"]]
-        out += [f"R1 blank {machine}", f"R1L p=0.75 {machine}", f"R1L blank {machine}"]
+        out += [f"R1 blank {machine}", f"R1L p=0.75 {machine}"]
     return out
 
 
@@ -623,8 +731,9 @@ def world(name, *, dt=0.5, symbols=None, end=None):
         return a1(dt=dt, end=end, symbols=symbols)
     if name.startswith(("R1 ", "R1L ")) and end is None:
         return _r1_world(name, dt, symbols)
-    if name.startswith("R1S ") and end is None:
-        return r1s(name.split(" ")[1], dt=dt, symbols=symbols)
+    if name.startswith(("R1S ", "R1SU ")) and end is None:
+        kind, machine = name.split(" ")
+        return r1s(machine, dt=dt, symbols=symbols, labelled=kind == "R1S")
     if name.startswith("R2 "):
         return r2(name.split(" ")[1], dt=dt, end=end, symbols=symbols)
     if name.startswith("R2A "):

@@ -233,6 +233,15 @@ Declarations (class attributes):
     amounts it replaced. The departing material leaves with its shares; the owner gives each
     replaced slot's labelled material the label in force for its species at that step (the
     newcomer label).
+  - **A pool reporter's event that empties its pools** (erratum E,
+    TEMPLATED_POLYMERISATION_LAWS §9.18) reports them too: its ``event`` with ``labels=rows``
+    returns ``(state, valid, removed [P])``, the amounts it removed from its label_pools' entries,
+    in order, taken from its state before the event (0 where it removed none). The owner gives
+    each emptied entry the base label. Each event reports only its own material, rows or pools,
+    so the two still commute. Beside a replacing event the owner records what leaves by label,
+    the amount before the event times its shares just before it, cumulative from t = 0, rows
+    (``label_removed_fmol``) and pools (``label_pool_removed_fmol``) apart; a pool reporter
+    whose event takes no labels is refused there.
 * The run view (docs/RUN_VIEW_DESIGN.md §3; cells/records/run_view.py reads them, host side only):
   - ``VIEW_LAYERS``: its layers, each {"id", "label", "representation"}; None: undeclared,
     which the run-view writer refuses;

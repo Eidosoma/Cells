@@ -81,6 +81,64 @@ class ReservoirReset(NamedTuple):
     valid: object
 
 
+class FormsFaces(NamedTuple):
+    """The forms faces of logmean_electrodiffusion_forms@1 (laws/routes), their own entity set
+    beside the faces above: each joins two outside nodes and moves movers (a row as itself, or a
+    binder's form), each at its own valence, by the faces' log-mean expression. A mover's unit
+    changes the stored rows by its stoichiometry. The kernels below know nothing of a closure:
+    the caller gives each mover's concentration at both ends."""
+
+    active: object  # [forms face]
+    sender: object  # [forms face] outside node
+    receiver: object  # [forms face] outside node
+    factor: object  # [mover, forms face] D A / L (m^3/s); 0 where the face does not carry it
+    valence: object  # [mover, 1]
+    stoichiometry: object  # [mover, species]
+
+
+class FormsRates(NamedTuple):
+    flux_fmol_s: object  # [mover, forms face], sender -> receiver
+    delta_mu_J_mol: object  # [mover, forms face]
+    current_A: object  # [forms face]
+    dissipation_pJ_s: object  # [forms face]
+    valid: object
+
+
+def forms_face_transport(left, right, dv, temperature, forms, *, xp=jnp):
+    """The forms faces' point law (transport's face expression, per mover): left and right are
+    each mover's concentration (mM) at each face's sender and receiver [mover, forms face], dv
+    the faces' sender less receiver potentials (V)."""
+    rt, z = R * temperature, forms.valence
+    active = forms.active
+    left, right = xp.where(active, left, 1.0), xp.where(active, right, 1.0)
+    dv = xp.where(active, dv, 0.0)
+    mu = rt * (xp.log(left) - xp.log(right)) + z * F * dv
+    mean, _ = logmean(left, right, xp=xp)
+    flux = forms.factor * mean * mu / (rt * MOL_PER_FMOL)
+    flux, mu = xp.where(active, flux, 0.0), xp.where(active, mu, 0.0)
+    current = CHARGE_PER_FMOL * xp.sum(z * flux, axis=0)
+    dissipation = 1e-3 * xp.sum(flux * mu, axis=0)
+    valid = (
+        xp.all(xp.isfinite(left) & (left > 0))
+        & xp.all(xp.isfinite(right) & (right > 0))
+        & xp.all(xp.abs(z * F * dv / rt) <= MAX_ABS_X)
+        & xp.all(xp.isfinite(flux))
+        & xp.all(xp.isfinite(dissipation))
+    )
+    return FormsRates(flux, mu, current, dissipation, valid)
+
+
+def forms_row_rates(flux, forms, outside_size, *, xp=jnp):
+    """(each forms face's row transfer [species, forms face], each outside node's inflow
+    [species, outside node]) of a mover flux [mover, forms face]: rows by the movers'
+    stoichiometry, sender -> receiver."""
+    rows = xp.einsum("ms,mf->sf", forms.stoichiometry, flux)
+    inflow = _sum(rows, forms.receiver, outside_size, xp=xp) - _sum(
+        rows, forms.sender, outside_size, xp=xp
+    )
+    return rows, inflow
+
+
 def validate_layout(layout):
     """Validate immutable host ownership before JIT; no implicit geometry repair."""
     p = Layout(*(np.asarray(v) for v in layout))

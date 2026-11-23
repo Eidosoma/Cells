@@ -27,7 +27,11 @@ second output as well and differencing (`grid_error`).
 spread evenly over each output interval, through expm1 and with its zero-rate limit (everything
 survives), so small and zero rates hold. On the engine's A1 export (revision f96a9606), minutes
 60–90 and sampled at minute 90, both reproduce the reviewer's figures: 2.01673e-5 fmol completed
-and 1.32977e-5 fmol surviving, while the pool grew by 2.70386e-6 fmol.
+and 1.32977e-5 fmol surviving, while the pool grew by 2.70386e-6 fmol. Its grid error is stated as
+grid_error's is (`known_rate_error`). FR-38's cohort is this form at each fate's gross one-way loss
+(the sheet's erratum F, §9.19): its members leave at the declared k, while the booked net loss,
+k (1 - e^y), also counts re-synthesis, which returns molecules that are not members. The two agree
+only where e^y << 1. `known_survival` is FR-38's survival readout in this form.
 
 **Which chain completes the product** (`producing_chain`; the review's finding 2). An engine_run.py
 record's own definition names the chain that makes each product row, so the completions are that
@@ -35,7 +39,9 @@ chain's: for the mRNA R in A1, transcription's (tx), not translation's (tl). A c
 does not make the product is refused, and so is a product that no chain or several chains make,
 unless one of them is named. The A1 export's CSV holds tx (making R) and tl (making P). With a
 release (the sheet's §9, FR-38), a fate row's inflow is the release's into it, not the chain's
-completions, which join the hold (`producers`): this is §9.8's route 2, per fate pool.
+completions, which join the hold (`producers`): this is §9.8's route 2, per fate pool. A row its
+cell exports (amendment T, §9.17) is refused: it leaves by export as well as by its loss, so one
+pool's reading does not apply, and `series` reads the cohort through the export.
 
 **The check.** FR-25's turnover control: 100 copies at steady state, a one-hour half-life and
 production of 100 ln 2 copies per hour. Of the 69.31 copies completed in the first hour, 50 remain
@@ -50,6 +56,12 @@ import csv
 import json
 import math
 from pathlib import Path
+
+import numpy as np
+
+# D283: the window edges' predicate is the clock's one same-instant predicate (it was a seam here,
+# equal times, until D283 landed), as templated_polymerisation.grid_time reads on_grid.
+from cells.numerics.clock_instants import same_instant
 
 
 def _integral(t, n, i, j):
@@ -72,13 +84,6 @@ def _spread(x):
 
 
 BOUND_ROUNDING = 1e-12  # Relative: the survivors' allowance above the pool from rounding alone.
-
-
-def same_instant(a, b):
-    """Whether two times name one instant of the clock: the window edges' predicate, a seam like
-    templated_polymerisation.grid_time's for D283's same-instant snap. Until it lands, equal
-    times; D283 widens both to the clock's predicate."""
-    return a == b
 
 
 def _window(t, t1, t2, ts):
@@ -179,6 +184,84 @@ def known_rate(t, Q, k, t1, t2, ts=None):
     return out
 
 
+def known_rate_error(t, Q, k, t1, t2, ts=None):
+    """|known_rate on every output - known_rate on every second output|: the known-rate form's
+    error on the coarser grid, an upper estimate of its error on the given one, as grid_error's.
+    None where the window holds no output to drop: the time resolution is then insufficient to
+    estimate it, which is never reported as a zero error."""
+    ts = t2 if ts is None else ts
+    check_counters(t, Q=Q)
+    i1, i2, i3 = _window(t, t1, t2, ts)
+    keep = [i for i in range(len(t)) if i % 2 == 0 or i in (i1, i2, i3)]
+    if all(i in keep for i in range(i1, i3 + 1)):
+        return None
+    fine = known_rate(t, Q, k, t1, t2, ts)
+    return abs(fine - known_rate([t[i] for i in keep], [Q[i] for i in keep], k, t1, t2, ts))
+
+
+def known_survival(t, Q, k, t1, t2, ts):
+    """FR-38's survival readout at a known constant per-molecule rate k >= 0 (erratum F, §9.19: a
+    member leaves its fate row at the loss's gross one-way rate, whatever re-synthesis returns to
+    the row): of the releases during [t1, t2), the members alive at t2, the same molecules alive at
+    ts >= t2, and their ratio, None at a zero denominator; each count with its grid error
+    (known_rate_error, None where it cannot be estimated). The ratio is e^(-k (ts - t2)) by
+    construction, so the counts are the readout, not the ratio."""
+    alive, later = known_rate(t, Q, k, t1, t2, t2), known_rate(t, Q, k, t1, t2, ts)
+    return dict(
+        alive_at_window_end=alive,
+        alive_at_sample=later,
+        ratio=None if alive == 0 else later / alive,
+        grid_error_at_window_end=known_rate_error(t, Q, k, t1, t2, t2),
+        grid_error_at_sample=known_rate_error(t, Q, k, t1, t2, ts),
+    )
+
+
+def series(t, Q, k_f, forward, n_c, backward, n_o, k_o, t1, t2, ts):
+    """FR-38's release-marked cohort through an export (the sheet's §9.17.5, second readout, as
+    erratum H, §9.21, item 2, reads it): (in the fate row, at the node) at ts, two pools in series
+    on the output grid. The window's releases (Q, released during [t1, t2), spread evenly over
+    each interval) join the row; its members leave the row at the fate's gross k_f and by the
+    export's forward part, and return by its backward part; at the node they leave at the outside
+    loss's gross k_o and by the backward part. Each interval's per-molecule export rates are its
+    forward and backward counters' increments over the integral of the row and of the node (the
+    trapezoid), held constant over it, and each interval's linear system is solved exactly (the
+    matrix exponential of its augmented form). Exact for constant rates in well-mixed pools, up to
+    its grid error (series_error)."""
+    from scipy.linalg import expm
+
+    check_counters(t, Q=Q)
+    i1, i2, i3 = _window(t, t1, t2, ts)
+    state = np.zeros(2)
+    for i in range(i1, i3):
+        h = t[i + 1] - t[i]
+        held_c = _integral(t, n_c, i, i + 1)
+        held_o = _integral(t, n_o, i, i + 1)
+        r_e = (forward[i + 1] - forward[i]) / held_c if held_c > 0 else 0.0
+        r_b = (backward[i + 1] - backward[i]) / held_o if held_o > 0 else 0.0
+        made = (Q[i + 1] - Q[i]) / h if i < i2 else 0.0
+        system = np.array([
+            [-(k_f + r_e), r_b, made],
+            [r_e, -(k_o + r_b), 0.0],
+            [0.0, 0.0, 0.0],
+        ])  # fmt: skip
+        state = (expm(system * h) @ np.array([state[0], state[1], 1.0]))[:2]
+    return float(state[0]), float(state[1])
+
+
+def series_error(t, Q, k_f, forward, n_c, backward, n_o, k_o, t1, t2, ts):
+    """|series on every output - series on every second output| at the node: the series form's
+    error on the coarser grid, an upper estimate on the given one (grid_error's form); None where
+    the window holds no output to drop."""
+    i1, i2, i3 = _window(t, t1, t2, ts)
+    keep = [i for i in range(len(t)) if i % 2 == 0 or i in (i1, i2, i3)]
+    if all(i in keep for i in range(i1, i3 + 1)):
+        return None
+    fine = series(t, Q, k_f, forward, n_c, backward, n_o, k_o, t1, t2, ts)[1]
+    pick = [[seq[i] for i in keep] for seq in (t, Q, forward, n_c, backward, n_o)]
+    coarse = series(pick[0], pick[1], k_f, pick[2], pick[3], pick[4], pick[5], k_o, t1, t2, ts)[1]
+    return abs(fine - coarse)
+
+
 def grid_error(t, n, Q, D, t1, t2, ts=None):
     """|survivors on every output - survivors on every second output|: the calculation's error on
     the coarser grid, an upper estimate of its error on the given one. None where the window holds
@@ -211,6 +294,23 @@ def survival(t, n, Q, D, t1, t2, ts):
         ratio=None if alive == 0 else later / alive,
         grid_error_at_window_end=grid_error(t, n, Q, D, t1, t2, t2),
         grid_error_at_sample=grid_error(t, n, Q, D, t1, t2, ts),
+    )
+
+
+def label_survival(t, labelled, t2, ts):
+    """FR-38's survival readout by route 1 (erratum C, D289): from an engine series of the amount
+    one label marks on the output grid (engine_run's label_<row>_<label>, the window's label,
+    whose window closes at t2), the members alive at t2, the same molecules alive at ts >= t2, and
+    their ratio, None at a zero denominator. The label must receive no arrivals in [t2, ts], as a
+    window's label used once does not: the engine's labels follow the molecules, so no grid error
+    enters. Refused on an invalid series or window."""
+    check_counters(t, n=labelled)
+    _, i2, i3 = _window(t, t2, t2, ts)
+    alive, later = labelled[i2], labelled[i3]
+    return dict(
+        alive_at_window_end=alive,
+        alive_at_sample=later,
+        ratio=None if alive == 0 else later / alive,
     )
 
 
@@ -296,6 +396,15 @@ def read(path, product="P", chain=None):
         r = json.loads(path.read_text())
         (block,) = [o for o in r["definition"]["model"]["operators"] if o["law"] == POLYMERISATION]
         cell = exported_cell(r, block)
+        inside = {m["id"]: m["inside"] for m in r["definition"]["model"].get("membranes", ())}
+        exports = [e["id"] for e in block.get("exports", ())
+                   if e["row"] == product and inside.get(e["patch"]) == cell]  # fmt: skip
+        if exports:
+            raise ValueError(
+                f"{product} at {cell} leaves by export {exports[0]} as well as by its loss "
+                "(amendment T, §9.17), so one pool's reading does not apply; the cohort through "
+                "an export is series'"
+            )
         pool_cell = {q["id"]: q["cell"] for q in block["pools"]}
         here = [c for c in block["chains"] if pool_cell[c["pool"]] == cell]
         local, counters = producers(here)
