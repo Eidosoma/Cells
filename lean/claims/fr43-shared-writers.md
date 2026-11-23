@@ -40,20 +40,20 @@ Proof sources [Imported Mathlib telescoping sum specialized to a saved interval]
 
 **Open.** A finite nucleotide pool, its upstream reserve and its consumption product measured together. For a changing-volume amount balance, each concentration also needs a matched volume.
 
-A five-metabolite time course permits reconstruction of the UTP concentration from the other four pools. The experiment resolves net supply and spending. Gross fluxes and the uncertainty of the full residual remain open.
+Under a common-volume assumption, the five archived metabolite means allow a check of net UTP supply and spending. Measurement independence, uncertainty of the full residual and gross reaction rates remain open.
 
 **Unit** mM UTP
 
 ### huber2026_shared_UTP
 
-The stock calculation assumes a common volume and that all uridine remains in the five measured pools. It uses upstream depletion and downstream product accumulation. No kinetic parameters were fitted for this readout. Figure 8 validation batch, 40_TO7h mean and SD tables. The archived samples span 0 to 24 h. [Huber et al. (2026), Fig. 8](https://doi.org/10.1016/j.mec.2026.e00287)
+The reconstruction assumes a common volume and that all uridine remains in the five measured pools. It uses upstream depletion, product accumulation and the initial UTP, with no fitted rates. The Figure 8 code reads processed means. The public files do not document the conversion from chromatographic peaks to those means. [Figure 8 data reader](https://github.com/klamt-lab/MoRSel_UDP-GalNAc_Paper/blob/3a6ae20eb9c33bf667f4af9c1942cc4f4fce2963/process_optimization/visualize_selected_predictions.py#L19-L123) Figure 8 validation batch, 40_TO7h mean and SD tables. The archived samples span 0 to 24 h. [Huber et al. (2026), Fig. 8](https://doi.org/10.1016/j.mec.2026.e00287)
 
 - **Evidence role** held out from fitting
 - **Evaluation** All nine UTP means from 0.5 to 24 h, with the 7 h measurement reported below
 - **Observed** 0.954545 mM UTP
 - **Predicted** 0.822089 mM UTP
 
-Reported UTP SD at 7 h is 0.350096 mM. The upstream and product measurements also carry uncertainty. The archive gives no paired covariance for the reconstructed residual.
+Reported UTP SD at 7 h is 0.350096 mM. The three archived replicate pairs contain baseline uridine and 7 h product. The other contributors to the residual have marginal SDs, leaving the uncertainty of the full balance unresolved. [Paired measurements](https://github.com/klamt-lab/MoRSel_UDP-GalNAc_Paper/blob/3a6ae20eb9c33bf667f4af9c1942cc4f4fce2963/process_optimization/exp_val_data/UDP-GalNAc40_TO7h_biol_repl_data.txt)
 
 At 7 h the upstream pools supplied a net 38.101943 mM and product accumulation spent 37.279854 mM. Predicted minus observed UTP ranged from −0.284381 to +0.276418 mM across the nine samples. At 24 h the reconstruction gave 0.697341 mM against 0.525149 mM observed with a UTP SD of 0.021942 mM. This SD covers only the measured UTP channel. [Dataset manifest](../checks/data/fr43_uridine_pool.json) · [Comparison verdict](../PROGRESS.md#fr43-two-writers)
 
