@@ -1,8 +1,10 @@
 # Charged trace species on junctions (FR-15 F2): design note
 
-**Status: proposed, 23 November 2026, by the FR-15 F2 builder, for the lead.** Desk only: no code
-was written or run. The code was read at main db54d0f5. **S** marks this note's own reading or
-proposal; everything else is read from the code or the records cited.
+**Status: proposed, 23 November 2026, by the FR-15 F2 builder, for the lead.** Desk only: no engine
+code was written. The code was read at main db54d0f5. What ran: the guard set and
+`scripts/library_pages.py --check` on this note's head, and one host-side parse probe (§2). **S**
+marks this note's own reading or proposal; everything else is read from the code or the records
+cited.
 
 **What is left of F2.** S1 (charged rows in `local_species_reactions@1`, each reaction conserving
 charge; ddb52790) and P2 (`passive_constant_field_permeation@1` on the passive-routes kind, on
@@ -59,18 +61,24 @@ which of its needs this build meets.
 | Need | microRNA (z = −1) | butyrate (z = −1) |
 | --- | --- | --- |
 | Made or consumed | S1 source ∅ → miR⁻ + K⁺, K⁺ a covered counter-ion, with Hill factors as in the EMT world (on main) | S1 (on main) |
-| First-order decay | **S:** a closed conversion miR⁻ → D⁻, with D an impermeant product row sharing a declared moiety. Its rate is first order in c_miR, integrated by SSPRK(3,3). A sink miR⁻ + K⁺ → ∅ is not first order, since mass action reads every reactant. `scheduled_species_turnover@2` is needed only for exact exponential clearance | as for the microRNA |
+| First-order decay | **S:** a closed conversion miR⁻ → D⁻ under the driven `mass_action` law, with D an impermeant product row sharing a declared moiety. The parser admits it (`_kind` returns "closed" for any law, only the passive law demands it, and moieties may be shared; `test_species_reactions_runs.py` runs the neutral S → P with moiety X). Its rate is first order in c_miR, integrated by SSPRK(3,3). The charged version was not run. A sink miR⁻ + K⁺ → ∅ is not first order, since mass action reads every reactant. `scheduled_species_turnover@2` is needed only for exact exponential clearance | as for the microRNA |
 | Membrane transport | none | `na_anion_symport_factored@1` on the transporter kind (on main). It has no @3 route, so `check_impermeant` passes |
-| Leak permeation | none | P2 on patches (on main). Its `check_counter_ion` margin scales as c V/C. At the comment's scale (1 µM gives 0.4) the line is near 0.25 mM in a pL cell, so the lane's 75 µM bath dose is a trace row there |
+| Leak permeation | none | P2 on patches (on main). Its `check_counter_ion` margin scales as c V/C. At the comment's scale (1 µM gives 0.4) the line is near 0.25 mM in a pL cell, so a dose below that is a trace row there and keeps P2 |
 | Junction drift | **this build** | not needed |
 | Its charge in the closure | automatic (§4) | automatic |
 | Dose | — | bath schedule, as Na-butyrate (on main) |
-| Binding | — | HDAC binding: `site_occupancy@1` refuses a charged ligand. This stays (§6); it is G-L8's design |
+| Binding | — | HDAC binding: `site_occupancy@1` refuses a charged ligand. This stays (§6); it belongs to the lane's occupancy-to-state read (G-L8 in its gap register; [GENE_REGULATION_DESIGN](GENE_REGULATION_DESIGN.md)) |
 | Material bound when moved | the kind's `material_term` (this build) | missing in the transporter for a trace charged row it moves (§6; the kinds owner) |
 
 **So:** junction hosting serves the microRNA. Butyrate needs no junction. Its remaining F2-side
 items lie outside this build: the transporter's material term, and charged ligands in site
 occupancy. The microRNA world adds two rows (X and D) under the 16-row cap.
+
+**Run, host side only:** S1 and P2 compose at parse today. `rfx.charge_neutral_source()` (a trace
+X⁻ made with K⁺ by `local_species_reactions@1`), given the charged law for X on its patch
+`contact_0`, is admitted by `parse_spec` (probe and output in
+`/mnt/workspaces/Cells/fr15-f2-junctions-20261123/probes/parse_s1_p2.*`). No step has run with both;
+§8's row 3 is the first.
 
 ## 3. The options
 
@@ -219,8 +227,8 @@ counts under `explicit_only`. RK4 refuses kinds.
   reason. **S:** count a population's charged crossing rows in its material term, as P2's does.
 - **Adjacent, for the lead.** P2's patch material term is each end's own slope, D4's positivity
   form. On a patch facing a finite node of comparable volume, the mode is the two-end sum, up to
-  twice that. It is unchanged here unless ruled; P2 is unqualified, and only two test files declare
-  the law.
+  twice that. It is unchanged here unless ruled; P2 is unqualified, and no registered world
+  declares the law (§7).
 
 ## 7. Bitwise for unchanged worlds (D148 case 2: statically absent unless declared)
 
@@ -231,15 +239,23 @@ counts under `explicit_only`. RK4 refuses kinds.
   - `declared_fields` adds the field, and only the terms read it.
   - P2's patch worlds, and every world without the charged law, keep their entry, fields and
     programs.
-- **No registered world declares the charged law.** It appears only in
-  `tests/unit/test_passive_routes_kind.py` and `test_cell_owned_compartments.py`.
-- **The ID.** The law keeps its ID (C4). Its hosts tuple is host-side metadata, and no library
-  page lists the law.
+- **No registered world declares the charged law;** nothing under `validation/` or `scripts/`
+  names it. Five test files do:
+  - `test_passive_routes_kind.py`: its "junction host" refusal row (line 332) asserts today's
+    blanket refusal. Its expectation changes by design (§8 row 5). This is the one edit to an
+    existing test body, for the lead to sanction.
+  - `test_law_registry.py` (the law's step-term names and registration),
+    `test_cell_owned_compartments.py` (its held step terms), `test_fr45_proton_laws.py` (its kernel
+    at any valence) and `test_neutral_labels_kinds.py` (a patch route): unchanged as read.
+  - No test asserts the law's hosts tuple. `registry/model_table.py` lists its module, unchanged.
+- **The ID.** The law keeps its ID (C4). Its hosts tuple is read host-side only: the species
+  registry's two-ended check (`_route_mover_errors`) admits "junction". No library page lists the
+  law.
 - **Proof at landing (not run):**
   - crossrev's 11 sets identical;
   - G1's 113 worlds bitwise;
   - FR's landing set bitwise;
-  - tiers 1+2 changed 0, apart from the edited and added rows;
+  - tiers 1+2 changed 0, apart from the one edited row and the added rows;
   - IDs with no addition or removal;
   - P2's patch test worlds' jaxprs identical at base and head.
 
@@ -251,7 +267,8 @@ X.
 
 1. **The junction's closed form (constant-field Nernst–Planck).**
    - Setup: a trace anion X (z = −1) at a held junction voltage of about 50 mV, set by the
-     anchors with every ion impermeant, so that the sign plants have power.
+     anchors with every ion impermeant, so that the sign plants have power. The junction gate
+     is pinned open (minimum open fraction 1, initial gate 1).
    - The relaxation: dn_a/dt = k_b n_b − k_a n_a, with k_a = A P B(−x)/V_a, k_b = A P B(x)/V_b and
      x = z F (φ_a − φ_b)/RT.
    - It must reach that exponential and the Nernst ratio c_a/c_b = e^(−x). Material is
@@ -274,6 +291,9 @@ X.
      - The kind's junction route carries X.
    - The steady state must match the 2×2 linear closed form at the held potentials. The material,
      node charge and energy ledgers stay within their bounds.
+   - K⁺ on the junction shorts the junction voltage, so this row runs at V_j ≈ 0. It tests the
+     composition (operator writes beside the kind's junction route, and the ledgers), not drift;
+     rows 1 and 2 test drift.
 4. **Plants, each failing a row above:**
    - the valence's sign;
    - the junction voltage's orientation;
@@ -283,8 +303,9 @@ X.
    - a closure-blind reference (row 2 with z = 0 in the charge), shown to differ from the engine by
      more than the row's tolerance.
 5. **Refusal rows** (the existing parametrized test):
-   - the junction-host row now admits;
-   - new rows refuse a crossing junction and a neutral row on a junction.
+   - the "junction host" row becomes the crossing-junction refusal (§7: the one edited existing
+     row);
+   - a new row refuses a neutral row on a junction.
 
 **Seconds (estimates, measured and stated at landing).** Rows 1 and 2 share one compile; P2's pair
 took about 11 s. Row 3 is one composite compile, about 30–60 s.
