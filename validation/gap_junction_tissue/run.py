@@ -24,10 +24,16 @@ Parts (the default runs all but fixture):
   control, every junction permeability x1.01, judged against the unperturbed reference.
 * aswritten: the same networks as the preprint writes them (worlds.as_written): a source and a
   decay in each cell (local_species_reactions@1) and a passive junction route
-  (passive_neutral_permeation@1), each run at the step rule's dt and at half of it (the dt study).
+  (passive_neutral_permeation@1), each run at the step rule's dt, dt/2 and dt/4 (the dt study),
+  with the planted control as written (aw-control-planted). Figure 5a at 10 G_eq runs through the
+  windowed execution and record path (WINDOWED).
 * fixture: two 60 s format fixtures (Norton and as written) for the viewer's tests; no verdict.
 
-Criteria, fixed before any run (CRITERIA):
+The judged comparison (docs/GJ_LINEAR_REGISTRATION.md) is judged by
+validation/gap_junction_tissue/linear_judge.py from this driver's results.json, against
+code-blind references; the criteria below are the development runs' (dev-01 to dev-06), kept as
+their diagnostics against paper.py's own dense solve.
+Development criteria, fixed before any development run (CRITERIA):
   E1 Norton network against the dense solve of the same network: relative error <= 1e-9;
   E2 steady state: relative change over the last SETTLE_S seconds <= 1e-12 in every cell;
   E3 the probe flux from the engine's own ledger against G_probe (c - held): relative <= 1e-9;
@@ -60,7 +66,7 @@ packages (OUTDIR/viewer/<arm id>/) with a recording subset; viewer/index.json li
 2 MB per layer. A refused view is recorded and the run written without one.
 
 Usage (from a snapshot root, PYTHONPATH=src:. JAX_ENABLE_X64=1 JAX_PLATFORMS=cpu):
-    python -B validation/gap_junction_tissue/run.py OUTDIR [part ...] [--no-dt-study]
+    python -B validation/gap_junction_tissue/run.py OUTDIR [part ...] [--no-dt-study] [--end S]
 results.json is rewritten after every arm. --no-dt-study runs the as-written arms at the step
 rule's dt only, for a rerun that writes their records (with views) and nothing more.
 """  # noqa: E501
@@ -179,9 +185,19 @@ VIEWER_MAX = 64
 # local_species_reactions@1 declares its run view; the lead, 17 November).
 SUMMARY_FORMAT = "cells.experiment_summary@1"
 SUMMARY_KINDS = (NORTON,)
-# The as-written dt study (each arm again at half its step). `--no-dt-study` leaves it out, for a
-# rerun that only writes the as-written records (the dt study is dev-04's).
+# The as-written dt study: each arm again at these fractions of its step, the registered triple dt,
+# dt/2 and dt/4 (docs/GJ_LINEAR_REGISTRATION.md; dev-04 ran dt and dt/2). `--no-dt-study` leaves
+# it out, for a rerun that only writes the as-written records.
 DT_STUDY = True
+DT_STUDY_FRACTIONS = (0.5, 0.25)
+# Every arm's horizon: worlds.END_S, the registered 600 s. `--end S` shortens it for a smoke run of
+# the code paths, whose arms are not steady and carry no verdict.
+HORIZON_S = worlds.END_S
+# Arms whose full trace exceeds the runner's 2 GB budget run through the windowed execution
+# (cells.execution.windows) and its record writer (cells.records.window_io), at every step of
+# their dt study: Figure 5a at 10 G_eq as written (2.6 GB at its step, 1/128 s; dev-04 refused it).
+WINDOWED = frozenset({"aw-figure5-network-g10"})
+WINDOW_STEPS = 1024
 EQUATION_2 = dict(
     label="Equation 2",
     source=(
@@ -292,6 +308,43 @@ def write_record(result, arm_id, label, kind):
             out[target] = dict(directory=str(directory), view="refused", refusal=str(error))
         write_run_json(directory, arm_id, kind, result.run.spec, provenance, experiment=None)
     return out
+
+
+def write_windowed_record(spec, network, arm_id, label, kind):
+    """A WINDOWED arm's run record, written by the engine's windowed writer
+    (cells.records.window_io.write_windowed_run: windows.jsonl and its chunks, with the run view
+    and run.json), from a second, identical windowed run. No viewer package: the windowed record
+    has its own layout."""
+    if RECORDS is None:
+        return None
+    from cells.execution.windows import WindowPolicy
+    from cells.records.window_io import write_windowed_run
+
+    labels = dict(id=arm_id, experiment=EXPERIMENT, arm=arm_id, label=label)
+    provenance = dict(
+        operation="fresh",
+        driver="validation/gap_junction_tissue/run.py",
+        experiment=EXPERIMENT,
+        arm=arm_id,
+        kind=kind,
+        citation=paper.CITATION,
+        **source_identity(),
+    )
+    source = (
+        "validation/gap_junction_tissue/worlds.py: touching spheres after the preprint's "
+        "drawings (Figures 3a, 5a, 7)"
+    )
+    request = run_view.Request(labels, geometry=worlds.geometry(network, source))
+    directory = RECORDS / arm_id
+    policy = WindowPolicy(WINDOW_STEPS, "observations", "device")
+    try:
+        write_windowed_run(directory, spec, policy, provenance=provenance, view=request)
+        out = dict(directory=str(directory), view="written", execution="windowed")
+    except run_view.ViewRefused as error:
+        write_windowed_run(directory, spec, policy, provenance=provenance)
+        out = dict(directory=str(directory), view="refused", refusal=str(error))
+    write_run_json(directory, arm_id, kind, spec, provenance, experiment=None)
+    return dict(record=out)
 
 
 QUANTITY_FORMAT = "cells.experiment_quantity@1"
@@ -641,16 +694,52 @@ class Outcome(NamedTuple):
     network: object
 
 
+def _windowed_rows(spec, times):
+    """The amount increments at `times` (each an observation time) from the windowed execution
+    (cells.execution.windows, observations kept, device row checks; every engine check runs),
+    with the final layout, the diagnostics' largest values and the accepted step count."""
+    from cells.execution.windows import WindowPolicy, iter_windows
+
+    wanted, found, diagnostics, last = set(times), {}, {}, None
+    for window in iter_windows(spec, WindowPolicy(WINDOW_STEPS, "observations", "device")):
+        last = window.final
+        for k, v in window.diagnostics.items():
+            if _number(v):
+                diagnostics[k] = max(diagnostics.get(k, -math.inf), float(v))
+        obs = window.observations
+        if obs is None or not hasattr(obs, "amount_increment"):
+            continue
+        for row, when in enumerate(np.asarray(obs.times, dtype=float)):
+            for t in wanted:
+                if abs(when - t) <= TIME_MATCH_RTOL * max(1.0, abs(t)):
+                    found[t] = np.asarray(obs.amount_increment)[row]
+    missing = sorted(wanted - set(found))
+    if missing:
+        raise ValueError(f"No observed row at {missing}")
+    return found, last.layout, diagnostics, int(last.step_index)
+
+
 def run_network(
-    network, *, kind=NORTON, junction_scale=1.0, end=worlds.END_S, dt=None, arm_id=None, label=""
+    network,
+    *,
+    kind=NORTON,
+    junction_scale=1.0,
+    end=None,
+    dt=None,
+    arm_id=None,
+    label="",
+    windowed_arm=None,
 ):
     """Run one network to steady state; return the engine's readouts and the dense reference.
 
     kind NORTON builds worlds.linear_network, AS_WRITTEN worlds.as_written (amounts in uM,
     reported in the preprint's units). The probe's exit flux is read from the engine's own
     ledger: the probe membrane's (NORTON, cell to held) or the probe route's (AS_WRITTEN,
-    inward)."""
+    inward). windowed_arm (an arm of WINDOWED) runs the windowed execution instead of the full
+    trace, reading the concentrations from its observed rows; its record, when one is written,
+    comes from the windowed writer (write_windowed_record)."""
     cells_, probes = network.cells, network.probes
+    end = HORIZON_S if end is None else end
     if kind == NORTON:
         raw = worlds.linear_network(
             cells_, network.edges, probes, junction_scale=junction_scale, end=end, dt=dt
@@ -663,18 +752,26 @@ def run_network(
     row_species = list(spec.model.species_ids).index(
         worlds.SPECIES if kind == NORTON else worlds.AS_WRITTEN_SPECIES
     )
+    windowed = windowed_arm is not None
     started = time.perf_counter()
-    result = runner.run(spec)
-    seconds = time.perf_counter() - started
-    times = np.asarray(result.times)
     end, before = spec.experiment.end_time, spec.experiment.end_time - worlds.SETTLE_S
-    rows = {t: _row(times, t) for t in (before, end)}
-    layout, history = result.final.layout, result.history
+    if windowed:
+        if probes:
+            raise ValueError("The windowed path reads concentrations only; this arm has a probe")
+        increments, layout, diagnostics, accepted = _windowed_rows(spec, (before, end))
+    else:
+        result = runner.run(spec)
+        times = np.asarray(result.times)
+        rows = {t: _row(times, t) for t in (before, end)}
+        layout, history, accepted = result.final.layout, result.history, int(times.size)
+        increments = {t: np.asarray(history.amount_increment[rows[t]]) for t in (before, end)}
+        diagnostics = result.diagnostics
+    seconds = time.perf_counter() - started
     volume = np.asarray(layout.volume)[: len(cells_)]
     reference_amount = np.asarray(layout.amount_reference)[row_species, : len(cells_)]
 
     def concentration(t):
-        increment = np.asarray(history.amount_increment[rows[t]])[row_species, : len(cells_)]
+        increment = increments[t][row_species, : len(cells_)]
         return (reference_amount + increment) / volume / scale  # the preprint's units
 
     c_end, c_before = concentration(end), concentration(before)
@@ -683,13 +780,15 @@ def run_network(
         kind=kind,
         dt_s=spec.execution.dt,
         steps=int(round(end / spec.execution.dt)),
-        accepted_rows=int(times.size),
+        accepted_rows=accepted,
         seconds=seconds,
+        execution="windowed" if windowed else "full trace",
         concentration_mM=c_end.tolist(),
         reference_mM=c_ref.tolist(),
         engine_rel_error=float(np.max(np.abs(c_end - c_ref) / np.abs(c_ref))),
         steady_rel_change=float(np.max(np.abs(c_end - c_before) / np.abs(c_end))),
-        diagnostics={k: float(v) for k, v in result.diagnostics.items() if _number(v)},
+        diagnostics={k: float(v) for k, v in diagnostics.items() if _number(v)},
+        definition_sha256=spec.fingerprint,
     )
     if probes:
         _, i, held, g = probes[-1]
@@ -717,7 +816,10 @@ def run_network(
             ledger_rel_error=float(abs(ledger - formula) / abs(formula)),
         )
     if arm_id is not None:
-        out["record"] = write_record(Outcome(result, network), arm_id, label, kind)
+        if windowed:
+            out["record"] = write_windowed_record(spec, network, arm_id, label, kind)
+        else:
+            out["record"] = write_record(Outcome(result, network), arm_id, label, kind)
     return out
 
 
@@ -840,7 +942,7 @@ def _arm_id(kind, base):
     return base if kind == NORTON else f"aw-{base}"
 
 
-def _figure3(out, save, kind, *, gs=FIGURE3_G, end=worlds.END_S, prefix=""):
+def _figure3(out, save, kind, *, gs=FIGURE3_G, end=None, prefix=""):
     rep = paper.REPORTED["figure3b"]
     out.setdefault("figure3", [])
     for g in gs:
@@ -895,13 +997,15 @@ def _figure5(out, save, kind, gs=FIGURE5_G):
         result.update(g=g, eq2=list(paper.eq2(ua, ub, g, g / rep["size_ratio"])))
         out["figure5_lumped"].append(result)
         save()
+        arm_id = _arm_id(kind, f"figure5-network-g{g:g}")
         result = arm(
             worlds.figure5_network(g, (ua, ub)),
             kind=kind,
-            arm_id=_arm_id(kind, f"figure5-network-g{g:g}"),
+            arm_id=arm_id,
             label=f"Figure 5a: A with two backups, B with three, G_GJ = {g:g} G_eq ({kind})",
+            windowed_arm=arm_id if arm_id in WINDOWED else None,
         )
-        result.update(g=g)
+        result.update(g=g, windowed_arm=arm_id if arm_id in WINDOWED else None)
         out["figure5_network"].append(result)
         save()
 
@@ -988,70 +1092,100 @@ def part_control(out, save):
     save()
 
 
-def _half_step(network, result):
-    """The dt study's second run: the same as-written world at half the arm's step (none when
-    the run leaves the dt study out)."""
+def _dt_study(network, result, *, junction_scale=1.0):
+    """The dt study's further runs: the same as-written world at DT_STUDY_FRACTIONS of the arm's
+    step (dt/2 and dt/4, the registered triple with the arm's own run), each with every readout
+    the judge reads (validation/gap_junction_tissue/linear_judge.py); none when the run leaves
+    the dt study out or the arm failed."""
     if result.get("status") != "done" or not DT_STUDY:
         return None
-    half = arm(network, kind=AS_WRITTEN, dt=result["dt_s"] / 2.0)
-    e0, e1 = result["engine_rel_error"], half.get("engine_rel_error")
-    study = dict(
-        dt_s=half.get("dt_s"),
-        status=half.get("status"),
-        error=half.get("error"),
-        engine_rel_error=e1,
-        steady_rel_change=half.get("steady_rel_change"),
-    )
-    if half.get("status") == "done":
-        low, high = CRITERIA["W3_as_written_order"]
-        floor = CRITERIA["W3_as_written_order_floor"]
-        order = math.log2(e0 / e1) if e0 > floor and e1 > 0 else None
-        study.update(
-            order=order,
-            W1=result["E2"] and half["E2"],
-            W2=e1 <= CRITERIA["W2_as_written_half_step_rtol"],
-            W3=True if order is None else low <= order <= high,
+    steps = []
+    for fraction in DT_STUDY_FRACTIONS:
+        run = arm(
+            network,
+            kind=AS_WRITTEN,
+            dt=result["dt_s"] * fraction,
+            junction_scale=junction_scale,
+            windowed_arm=result.get("windowed_arm"),
         )
-        if "exit_flux_mol_s" in half:
-            study.update(port_mM=half["port_mM"], exit_flux_mol_s=half["exit_flux_mol_s"])
-    return study
+        entry = dict(fraction=fraction, dt_s=run.get("dt_s"), status=run["status"])
+        for key in (
+            "error",
+            "steps",
+            "seconds",
+            "execution",
+            "concentration_mM",
+            "steady_rel_change",
+            "engine_rel_error",
+            "port_mM",
+            "exit_flux_mol_s",
+            "exit_flux_formula_mol_s",
+            "ledger_rel_error",
+            "definition_sha256",
+            "diagnostics",
+        ):
+            if key in run:
+                entry[key] = run[key]
+        steps.append(entry)
+    return steps
+
+
+def _study(result, network, **kwargs):
+    """The arm's dt study, stored as `dt_study` (each step) and `half_step` (its dt/2 entry, which
+    the viewer's summary reads)."""
+    steps = _dt_study(network, result, **kwargs)
+    result["dt_study"] = steps
+    result["half_step"] = steps[0] if steps else None
 
 
 def part_aswritten(out, save):
     """The linear model as written, each arm at the step rule's dt (its run of record) and at
-    half of it (the dt study)."""
+    dt/2 and dt/4 (the dt study, the registered triple); the planted control as written
+    (aw-control-planted, every junction route x PLANTED_SCALE), with its own triple."""
     _figure3(out, save, AS_WRITTEN, gs=AS_WRITTEN_FIGURE3_G)
     for result in out["figure3"]:
-        result["half_step"] = _half_step(worlds.figure3(result["g"]), result)
+        _study(result, worlds.figure3(result["g"]))
         save()
+    planted = arm(
+        worlds.figure3(1.0),
+        kind=AS_WRITTEN,
+        junction_scale=PLANTED_SCALE,
+        arm_id="aw-control-planted",
+        label="Planted control as written: Figure 3 at G_GJ = G_eq with every junction route x1.01",
+    )
+    planted.update(g=1.0, junction_scale=PLANTED_SCALE)
+    _study(planted, worlds.figure3(1.0), junction_scale=PLANTED_SCALE)
+    out["control_planted"] = planted
+    save()
     _figure5(out, save, AS_WRITTEN, gs=AS_WRITTEN_FIGURE5_G)
     rep = paper.REPORTED["figure5"]
     for result in out["figure5_lumped"]:
         network = worlds.figure5_lumped(
             result["g"], rep["size_ratio"], (rep["unloaded"]["A"], rep["unloaded"]["B"])
         )
-        result["half_step"] = _half_step(network, result)
+        _study(result, network)
         save()
     for result in out["figure5_network"]:
         network = worlds.figure5_network(result["g"], (rep["unloaded"]["A"], rep["unloaded"]["B"]))
-        result["half_step"] = _half_step(network, result)
+        _study(result, network)
         save()
     _chains(out, save, AS_WRITTEN)
     for entry in out["chains"]:
-        halves = [
-            _half_step(worlds.chain(entry["n"], held), load)
-            for held, load in zip(FIGURE8_LOADS, entry["loads"], strict=True)
-        ]
-        entry["half_step_loads"] = halves
-        if all(h and h.get("status") == "done" and "exit_flux_mol_s" in h for h in halves):
-            points = [(h["exit_flux_mol_s"], h["port_mM"]) for h in halves]
-            ratio = paper.norton_from_two_loads(points)[0] / worlds.G_EQ1_M3_S
-            entry.update(
-                half_step_g_eq_ratio=ratio,
-                half_step_vs_direct_rel=float(
-                    abs(ratio - entry["direct_ratio"]) / entry["direct_ratio"]
-                ),
-            )
+        for held, load in zip(FIGURE8_LOADS, entry["loads"], strict=True):
+            _study(load, worlds.chain(entry["n"], held))
+        entry["dt_study_g_eq_ratio"] = []
+        for k, fraction in enumerate(DT_STUDY_FRACTIONS if DT_STUDY else ()):
+            steps = [(load.get("dt_study") or [None] * (k + 1))[k] for load in entry["loads"]]
+            if all(x and x.get("status") == "done" and "exit_flux_mol_s" in x for x in steps):
+                points = [(x["exit_flux_mol_s"], x["port_mM"]) for x in steps]
+                g_m3_s, unloaded = paper.norton_from_two_loads(points)
+                entry["dt_study_g_eq_ratio"].append(
+                    dict(
+                        fraction=fraction, g_eq_ratio=g_m3_s / worlds.G_EQ1_M3_S, unloaded=unloaded
+                    )
+                )
+            else:
+                entry["dt_study_g_eq_ratio"].append(dict(fraction=fraction, status="failed"))
         save()
 
 
@@ -1085,6 +1219,11 @@ def main(argv):
     if "--no-dt-study" in argv:
         argv = [a for a in argv if a != "--no-dt-study"]
         DT_STUDY = False
+    global HORIZON_S
+    if "--end" in argv:  # A smoke run's short horizon: its arms are not steady (no verdict).
+        k = argv.index("--end")
+        HORIZON_S = float(argv[k + 1])
+        argv = argv[:k] + argv[k + 2 :]
     out_dir = Path(argv[1])
     parts = argv[2:] or list(DEFAULT_PARTS)
     unknown = set(parts) - set(PARTS)
@@ -1111,7 +1250,8 @@ def main(argv):
             radius_m=worlds.R_CELL_M,
             k_dec_per_s=worlds.K_DEC_PER_S,
             g_eq1_m3_s=worlds.G_EQ1_M3_S,
-            end_s=worlds.END_S,
+            end_s=HORIZON_S,
+            registered_end_s=worlds.END_S,
             settle_s=worlds.SETTLE_S,
             observe_every_s=worlds.OBSERVE_EVERY_S,
             base_dt_s=worlds.BASE_DT_S,

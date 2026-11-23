@@ -1,0 +1,114 @@
+{
+ "format": "gap_junction_tissue.neither_spec@1",
+ "registration": "docs/GJ_NEITHER_REGISTRATION.md",
+ "model": {
+  "species": {
+   "u": "miR200 (total)",
+   "m": "Zeb mRNA (total)",
+   "z": "ZEB protein"
+  },
+  "units": "scaled units: one unit is 1 uM in the engine's world; time in s (BITSEY's unit)",
+  "equations": [
+   "du/dt = g_u H(z; K_u, n_u, lambda_u) - k_u u + (junction terms, u only)",
+   "dm/dt = g_m H(z; K_m, n_m, lambda_m) - k_m m",
+   "dz/dt = g_z m sum_{i=0..6} C(6, i) l_i X^i / (1 + X)^6 - k_z z, X = u / x0",
+   "H(z; K, n, lambda) = (1 + lambda (z/K)^n) / (1 + (z/K)^n)",
+   "junction (a, b): its flux G (u_a - u_b) leaves a and enters b; G / V = D A_cell / (L_GJ V_cell) = 3 D / (r L_GJ)"
+  ],
+  "constants": {
+   "g_u": 4.199999999999999,
+   "K_u": 11.11111111111111,
+   "n_u": 3.0,
+   "lambda_u": 0.1,
+   "k_u": 0.05,
+   "g_m": 2.291666666666667,
+   "K_m": 2.7777777777777777,
+   "n_m": 2.0,
+   "lambda_m": 15.0,
+   "k_m": 0.5,
+   "g_z": 0.16666666666666666,
+   "x0": 40.0,
+   "l": [
+    1.0,
+    0.5,
+    0.2,
+    0.02,
+    0.02,
+    0.02,
+    0.02
+   ],
+   "k_z": 0.1,
+   "radius_m": 5e-06,
+   "junction_length_m": 1e-07,
+   "g_over_v_per_d": 6000000000000.0
+  },
+  "constants_source": "BITSEY's cancer_GJ_sims/GRN_miRNA.py at b2cb370 (numbers only, D208), scaled as it scales them, with Snail = 72 folded into g_u = 6 (1 + 0.4)/2 and g_m = (5/12)(1 + 10)/2; ITERATE = False, so the binding uses total miR200",
+  "seeds": {
+   "tumor": {
+    "u": 1e-06,
+    "m": 100.0,
+    "z": 100.0
+   },
+   "healthy": {
+    "u": 100.0,
+    "m": 1e-06,
+    "z": 1e-06
+   },
+   "note": "BITSEY seeds 0 where these are 1e-6 (the engine needs positive amounts)"
+  },
+  "stages": {
+   "uncoupled_s": 500.0,
+   "coupled_s": 20000.0,
+   "rule": "stage 1: one tumor cell and one healthy cell, no junctions, 500 s from the seeds, once; every tumor cell of stage 2 starts at stage 1's tumor end state, every healthy cell at its healthy one; stage 2 runs 20,000 s coupled, its clock from 0"
+  },
+  "criterion": {
+   "cell": "u > m + 2 at the end of stage 2, in every cell",
+   "rows": "for every row, max m - min m <= 2; a row is the cells with one z (the last lattice index)",
+   "source": "BITSEY's GRN_miRNA.py healthy_snapped_rows (line 519), on the whole field"
+  }
+ },
+ "geometry": {
+  "line": {
+   "lattice": "1 x 1 x 25: cells c0..c24 along z",
+   "tumor": "z < 6 (c0..c5)",
+   "junctions": "c_k - c_(k+1), k = 0..23",
+   "rows": "each cell is its own row, so the spread condition is empty",
+   "neighbours": 2,
+   "nodes": 26
+  },
+  "field": {
+   "lattice": "1 x 25 x 25: cell c{y}_{z}, y and z in 0..24",
+   "tumor": "y < 6 and z < 6 (a 6 x 6 block at the corner)",
+   "junctions": "one per pair one lattice step apart (c{y}_{z} - c{y}_{z+1} and c{y}_{z} - c{y+1}_{z}), 1,200 in all; no diagonals",
+   "rows": "row z holds c0_z .. c24_z",
+   "neighbours": 4,
+   "nodes": 626
+  }
+ },
+ "search": {
+  "bracket": [
+   0.0,
+   1e-13
+  ],
+  "ends": "D = 0 must not normalize and D = 1e-13 must; both are run",
+  "stop": "hi <= (1 + 0.001) lo, hi the smallest normalizing D and lo the largest below it that does not; reported x2 = hi",
+  "placement": "free: any sequence of points that narrows the bracket to the stopping rule, every point integrated from stage 1's end state over the full 20,000 s",
+  "tighter": "the final bracket's two ends again at a ten-fold tighter integration tolerance; both must keep their outcomes"
+ },
+ "interface": {
+  "file": "validation/gap_junction_tissue/references/interface/neither.json",
+  "format": "gap_junction_tissue.neither_references@1",
+  "keys": {
+   "format": "gap_junction_tissue.neither_references@1",
+   "registration": "the tag the references read",
+   "model": "{constants: {every key of model.constants, each value as read}, seeds: {tumor: {u, m, z}, healthy: {u, m, z}} as read from model.seeds}",
+   "stage1": "{tumor: {u, m, z}, healthy: {u, m, z}} after 500 s uncoupled",
+   "geometries": "{line, field}: {bracket: [lo, hi], points: [{d, normalized, epithelial_cells, min_margin, max_row_spread}], tighter: {factor, lo_normalized, hi_normalized}, method}; a geometry the references did not compute is absent and is then not assessable"
+  },
+  "conditions": [
+   "hi <= (1 + 0.001) lo",
+   "lo not normalized and hi normalized, in points and again at the tighter tolerance",
+   "points monotone in d, with 0 not normalized and 1e-13 normalized"
+  ]
+ }
+}

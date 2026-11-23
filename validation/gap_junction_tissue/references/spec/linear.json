@@ -1,0 +1,1123 @@
+{
+ "format": "gap_junction_tissue.linear_spec@1",
+ "registration": "docs/GJ_LINEAR_REGISTRATION.md",
+ "citation": "Grodstein, Mathews and Levin (2026), bioRxiv 10.64898/2026.09.02.748840 v1 (CC-BY 4.0)",
+ "model": {
+  "balance": "each cell i: V_i dc_i/dt = G_eq,i (u_i - c_i) + sum over its junctions of G_GJ (c_j - c_i) + sum over its probes of G_probe (h_p - c_i), with G_eq,i = size_i G_eq,1 and V_i = size_i V_1: the preprint's equation 1 with generation K_dec u_i and decay K_dec, and its junctions (Fick, no drift)",
+  "steady_state": "the concentrations at which every cell's right side is zero",
+  "chain": "a straight chain of n equal cells, every junction G_GJ = G_eq,1, unloaded 1, sealed at its first cell and seen from its last (the port): its steady port concentration is u_n - i_exit / G_eq,n (the preprint's Figure 8), where i_exit leaves the port; g_eq_ratio is G_eq,n / G_eq,1 and intercept is u_n",
+  "units": "concentrations in the preprint's [mR] units; conductances in units of G_eq,1 = V_1 K_dec; size is a cell's volume in units of V_1"
+ },
+ "networks": {
+  "figure3-g0.5": {
+   "cells": [
+    {
+     "id": "A",
+     "unloaded": 5.0,
+     "size": 1.0
+    },
+    {
+     "id": "B",
+     "unloaded": 10.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_AB",
+     "a": "A",
+     "b": "B",
+     "g": 0.5
+    }
+   ],
+   "probes": []
+  },
+  "figure3-g1": {
+   "cells": [
+    {
+     "id": "A",
+     "unloaded": 5.0,
+     "size": 1.0
+    },
+    {
+     "id": "B",
+     "unloaded": 10.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_AB",
+     "a": "A",
+     "b": "B",
+     "g": 1.0
+    }
+   ],
+   "probes": []
+  },
+  "figure3-g2": {
+   "cells": [
+    {
+     "id": "A",
+     "unloaded": 5.0,
+     "size": 1.0
+    },
+    {
+     "id": "B",
+     "unloaded": 10.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_AB",
+     "a": "A",
+     "b": "B",
+     "g": 2.0
+    }
+   ],
+   "probes": []
+  },
+  "figure3-g5": {
+   "cells": [
+    {
+     "id": "A",
+     "unloaded": 5.0,
+     "size": 1.0
+    },
+    {
+     "id": "B",
+     "unloaded": 10.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_AB",
+     "a": "A",
+     "b": "B",
+     "g": 5.0
+    }
+   ],
+   "probes": []
+  },
+  "figure3-g10": {
+   "cells": [
+    {
+     "id": "A",
+     "unloaded": 5.0,
+     "size": 1.0
+    },
+    {
+     "id": "B",
+     "unloaded": 10.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_AB",
+     "a": "A",
+     "b": "B",
+     "g": 10.0
+    }
+   ],
+   "probes": []
+  },
+  "figure3-g50": {
+   "cells": [
+    {
+     "id": "A",
+     "unloaded": 5.0,
+     "size": 1.0
+    },
+    {
+     "id": "B",
+     "unloaded": 10.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_AB",
+     "a": "A",
+     "b": "B",
+     "g": 50.0
+    }
+   ],
+   "probes": []
+  },
+  "figure5-lumped-g1": {
+   "cells": [
+    {
+     "id": "A",
+     "unloaded": 10.0,
+     "size": 1.0
+    },
+    {
+     "id": "B",
+     "unloaded": 5.0,
+     "size": 1.3333333333333333
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_AB",
+     "a": "A",
+     "b": "B",
+     "g": 1.0
+    }
+   ],
+   "probes": []
+  },
+  "figure5-network-g1": {
+   "cells": [
+    {
+     "id": "A",
+     "unloaded": 10.0,
+     "size": 1.0
+    },
+    {
+     "id": "B",
+     "unloaded": 5.0,
+     "size": 1.0
+    },
+    {
+     "id": "A1",
+     "unloaded": 10.0,
+     "size": 1.0
+    },
+    {
+     "id": "A2",
+     "unloaded": 10.0,
+     "size": 1.0
+    },
+    {
+     "id": "B1",
+     "unloaded": 5.0,
+     "size": 1.0
+    },
+    {
+     "id": "B2",
+     "unloaded": 5.0,
+     "size": 1.0
+    },
+    {
+     "id": "B3",
+     "unloaded": 5.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_AB",
+     "a": "A",
+     "b": "B",
+     "g": 1.0
+    },
+    {
+     "id": "gj_A1",
+     "a": "A",
+     "b": "A1",
+     "g": 1.0
+    },
+    {
+     "id": "gj_A2",
+     "a": "A",
+     "b": "A2",
+     "g": 1.0
+    },
+    {
+     "id": "gj_B1",
+     "a": "B",
+     "b": "B1",
+     "g": 1.0
+    },
+    {
+     "id": "gj_B2",
+     "a": "B",
+     "b": "B2",
+     "g": 1.0
+    },
+    {
+     "id": "gj_B3",
+     "a": "B",
+     "b": "B3",
+     "g": 1.0
+    }
+   ],
+   "probes": []
+  },
+  "figure5-lumped-g10": {
+   "cells": [
+    {
+     "id": "A",
+     "unloaded": 10.0,
+     "size": 1.0
+    },
+    {
+     "id": "B",
+     "unloaded": 5.0,
+     "size": 1.3333333333333333
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_AB",
+     "a": "A",
+     "b": "B",
+     "g": 10.0
+    }
+   ],
+   "probes": []
+  },
+  "figure5-network-g10": {
+   "cells": [
+    {
+     "id": "A",
+     "unloaded": 10.0,
+     "size": 1.0
+    },
+    {
+     "id": "B",
+     "unloaded": 5.0,
+     "size": 1.0
+    },
+    {
+     "id": "A1",
+     "unloaded": 10.0,
+     "size": 1.0
+    },
+    {
+     "id": "A2",
+     "unloaded": 10.0,
+     "size": 1.0
+    },
+    {
+     "id": "B1",
+     "unloaded": 5.0,
+     "size": 1.0
+    },
+    {
+     "id": "B2",
+     "unloaded": 5.0,
+     "size": 1.0
+    },
+    {
+     "id": "B3",
+     "unloaded": 5.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_AB",
+     "a": "A",
+     "b": "B",
+     "g": 10.0
+    },
+    {
+     "id": "gj_A1",
+     "a": "A",
+     "b": "A1",
+     "g": 10.0
+    },
+    {
+     "id": "gj_A2",
+     "a": "A",
+     "b": "A2",
+     "g": 10.0
+    },
+    {
+     "id": "gj_B1",
+     "a": "B",
+     "b": "B1",
+     "g": 10.0
+    },
+    {
+     "id": "gj_B2",
+     "a": "B",
+     "b": "B2",
+     "g": 10.0
+    },
+    {
+     "id": "gj_B3",
+     "a": "B",
+     "b": "B3",
+     "g": 10.0
+    }
+   ],
+   "probes": []
+  },
+  "figure5-lumped-g50": {
+   "cells": [
+    {
+     "id": "A",
+     "unloaded": 10.0,
+     "size": 1.0
+    },
+    {
+     "id": "B",
+     "unloaded": 5.0,
+     "size": 1.3333333333333333
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_AB",
+     "a": "A",
+     "b": "B",
+     "g": 50.0
+    }
+   ],
+   "probes": []
+  },
+  "figure5-network-g50": {
+   "cells": [
+    {
+     "id": "A",
+     "unloaded": 10.0,
+     "size": 1.0
+    },
+    {
+     "id": "B",
+     "unloaded": 5.0,
+     "size": 1.0
+    },
+    {
+     "id": "A1",
+     "unloaded": 10.0,
+     "size": 1.0
+    },
+    {
+     "id": "A2",
+     "unloaded": 10.0,
+     "size": 1.0
+    },
+    {
+     "id": "B1",
+     "unloaded": 5.0,
+     "size": 1.0
+    },
+    {
+     "id": "B2",
+     "unloaded": 5.0,
+     "size": 1.0
+    },
+    {
+     "id": "B3",
+     "unloaded": 5.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_AB",
+     "a": "A",
+     "b": "B",
+     "g": 50.0
+    },
+    {
+     "id": "gj_A1",
+     "a": "A",
+     "b": "A1",
+     "g": 50.0
+    },
+    {
+     "id": "gj_A2",
+     "a": "A",
+     "b": "A2",
+     "g": 50.0
+    },
+    {
+     "id": "gj_B1",
+     "a": "B",
+     "b": "B1",
+     "g": 50.0
+    },
+    {
+     "id": "gj_B2",
+     "a": "B",
+     "b": "B2",
+     "g": 50.0
+    },
+    {
+     "id": "gj_B3",
+     "a": "B",
+     "b": "B3",
+     "g": 50.0
+    }
+   ],
+   "probes": []
+  },
+  "figure8-chain1-held0.5": {
+   "cells": [
+    {
+     "id": "c0",
+     "unloaded": 1.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [],
+   "probes": [
+    {
+     "id": "probe",
+     "cell": "c0",
+     "held": 0.5,
+     "g": 1.0
+    }
+   ]
+  },
+  "figure8-chain1-held2": {
+   "cells": [
+    {
+     "id": "c0",
+     "unloaded": 1.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [],
+   "probes": [
+    {
+     "id": "probe",
+     "cell": "c0",
+     "held": 2.0,
+     "g": 1.0
+    }
+   ]
+  },
+  "figure8-chain2-held0.5": {
+   "cells": [
+    {
+     "id": "c0",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c1",
+     "unloaded": 1.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_0",
+     "a": "c0",
+     "b": "c1",
+     "g": 1.0
+    }
+   ],
+   "probes": [
+    {
+     "id": "probe",
+     "cell": "c1",
+     "held": 0.5,
+     "g": 1.0
+    }
+   ]
+  },
+  "figure8-chain2-held2": {
+   "cells": [
+    {
+     "id": "c0",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c1",
+     "unloaded": 1.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_0",
+     "a": "c0",
+     "b": "c1",
+     "g": 1.0
+    }
+   ],
+   "probes": [
+    {
+     "id": "probe",
+     "cell": "c1",
+     "held": 2.0,
+     "g": 1.0
+    }
+   ]
+  },
+  "figure8-chain3-held0.5": {
+   "cells": [
+    {
+     "id": "c0",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c1",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c2",
+     "unloaded": 1.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_0",
+     "a": "c0",
+     "b": "c1",
+     "g": 1.0
+    },
+    {
+     "id": "gj_1",
+     "a": "c1",
+     "b": "c2",
+     "g": 1.0
+    }
+   ],
+   "probes": [
+    {
+     "id": "probe",
+     "cell": "c2",
+     "held": 0.5,
+     "g": 1.0
+    }
+   ]
+  },
+  "figure8-chain3-held2": {
+   "cells": [
+    {
+     "id": "c0",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c1",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c2",
+     "unloaded": 1.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_0",
+     "a": "c0",
+     "b": "c1",
+     "g": 1.0
+    },
+    {
+     "id": "gj_1",
+     "a": "c1",
+     "b": "c2",
+     "g": 1.0
+    }
+   ],
+   "probes": [
+    {
+     "id": "probe",
+     "cell": "c2",
+     "held": 2.0,
+     "g": 1.0
+    }
+   ]
+  },
+  "figure8-chain4-held0.5": {
+   "cells": [
+    {
+     "id": "c0",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c1",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c2",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c3",
+     "unloaded": 1.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_0",
+     "a": "c0",
+     "b": "c1",
+     "g": 1.0
+    },
+    {
+     "id": "gj_1",
+     "a": "c1",
+     "b": "c2",
+     "g": 1.0
+    },
+    {
+     "id": "gj_2",
+     "a": "c2",
+     "b": "c3",
+     "g": 1.0
+    }
+   ],
+   "probes": [
+    {
+     "id": "probe",
+     "cell": "c3",
+     "held": 0.5,
+     "g": 1.0
+    }
+   ]
+  },
+  "figure8-chain4-held2": {
+   "cells": [
+    {
+     "id": "c0",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c1",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c2",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c3",
+     "unloaded": 1.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_0",
+     "a": "c0",
+     "b": "c1",
+     "g": 1.0
+    },
+    {
+     "id": "gj_1",
+     "a": "c1",
+     "b": "c2",
+     "g": 1.0
+    },
+    {
+     "id": "gj_2",
+     "a": "c2",
+     "b": "c3",
+     "g": 1.0
+    }
+   ],
+   "probes": [
+    {
+     "id": "probe",
+     "cell": "c3",
+     "held": 2.0,
+     "g": 1.0
+    }
+   ]
+  },
+  "figure8-chain5-held0.5": {
+   "cells": [
+    {
+     "id": "c0",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c1",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c2",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c3",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c4",
+     "unloaded": 1.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_0",
+     "a": "c0",
+     "b": "c1",
+     "g": 1.0
+    },
+    {
+     "id": "gj_1",
+     "a": "c1",
+     "b": "c2",
+     "g": 1.0
+    },
+    {
+     "id": "gj_2",
+     "a": "c2",
+     "b": "c3",
+     "g": 1.0
+    },
+    {
+     "id": "gj_3",
+     "a": "c3",
+     "b": "c4",
+     "g": 1.0
+    }
+   ],
+   "probes": [
+    {
+     "id": "probe",
+     "cell": "c4",
+     "held": 0.5,
+     "g": 1.0
+    }
+   ]
+  },
+  "figure8-chain5-held2": {
+   "cells": [
+    {
+     "id": "c0",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c1",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c2",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c3",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c4",
+     "unloaded": 1.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_0",
+     "a": "c0",
+     "b": "c1",
+     "g": 1.0
+    },
+    {
+     "id": "gj_1",
+     "a": "c1",
+     "b": "c2",
+     "g": 1.0
+    },
+    {
+     "id": "gj_2",
+     "a": "c2",
+     "b": "c3",
+     "g": 1.0
+    },
+    {
+     "id": "gj_3",
+     "a": "c3",
+     "b": "c4",
+     "g": 1.0
+    }
+   ],
+   "probes": [
+    {
+     "id": "probe",
+     "cell": "c4",
+     "held": 2.0,
+     "g": 1.0
+    }
+   ]
+  },
+  "figure8-chain10-held0.5": {
+   "cells": [
+    {
+     "id": "c0",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c1",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c2",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c3",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c4",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c5",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c6",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c7",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c8",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c9",
+     "unloaded": 1.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_0",
+     "a": "c0",
+     "b": "c1",
+     "g": 1.0
+    },
+    {
+     "id": "gj_1",
+     "a": "c1",
+     "b": "c2",
+     "g": 1.0
+    },
+    {
+     "id": "gj_2",
+     "a": "c2",
+     "b": "c3",
+     "g": 1.0
+    },
+    {
+     "id": "gj_3",
+     "a": "c3",
+     "b": "c4",
+     "g": 1.0
+    },
+    {
+     "id": "gj_4",
+     "a": "c4",
+     "b": "c5",
+     "g": 1.0
+    },
+    {
+     "id": "gj_5",
+     "a": "c5",
+     "b": "c6",
+     "g": 1.0
+    },
+    {
+     "id": "gj_6",
+     "a": "c6",
+     "b": "c7",
+     "g": 1.0
+    },
+    {
+     "id": "gj_7",
+     "a": "c7",
+     "b": "c8",
+     "g": 1.0
+    },
+    {
+     "id": "gj_8",
+     "a": "c8",
+     "b": "c9",
+     "g": 1.0
+    }
+   ],
+   "probes": [
+    {
+     "id": "probe",
+     "cell": "c9",
+     "held": 0.5,
+     "g": 1.0
+    }
+   ]
+  },
+  "figure8-chain10-held2": {
+   "cells": [
+    {
+     "id": "c0",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c1",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c2",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c3",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c4",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c5",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c6",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c7",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c8",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c9",
+     "unloaded": 1.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_0",
+     "a": "c0",
+     "b": "c1",
+     "g": 1.0
+    },
+    {
+     "id": "gj_1",
+     "a": "c1",
+     "b": "c2",
+     "g": 1.0
+    },
+    {
+     "id": "gj_2",
+     "a": "c2",
+     "b": "c3",
+     "g": 1.0
+    },
+    {
+     "id": "gj_3",
+     "a": "c3",
+     "b": "c4",
+     "g": 1.0
+    },
+    {
+     "id": "gj_4",
+     "a": "c4",
+     "b": "c5",
+     "g": 1.0
+    },
+    {
+     "id": "gj_5",
+     "a": "c5",
+     "b": "c6",
+     "g": 1.0
+    },
+    {
+     "id": "gj_6",
+     "a": "c6",
+     "b": "c7",
+     "g": 1.0
+    },
+    {
+     "id": "gj_7",
+     "a": "c7",
+     "b": "c8",
+     "g": 1.0
+    },
+    {
+     "id": "gj_8",
+     "a": "c8",
+     "b": "c9",
+     "g": 1.0
+    }
+   ],
+   "probes": [
+    {
+     "id": "probe",
+     "cell": "c9",
+     "held": 2.0,
+     "g": 1.0
+    }
+   ]
+  }
+ },
+ "chains": [
+  1,
+  2,
+  3,
+  4,
+  5,
+  10
+ ],
+ "requested": {
+  "limits": "figure3: the common limit of Figure 3b's two cells (unloaded 5 and 10, equal sizes) as G_GJ grows without bound; figure5b: the same for Figure 5b's pair (A unloaded 10, size 1; B unloaded 5, size 4/3); chain: G_eq,n / G_eq,1 as n grows, at G_GJ = G_eq,1",
+  "printed_recursion": "the appendix's chain recursion as printed (p. 15 and p. 20), G_eq,n+1 = 1 / [(G_eq,n^-1 + G_GJ^-1)^-1 + G_eq,n], at G_GJ = G_eq,1 = 1 for n = 1 to 10: 'literal' as printed, and 'resistance_form' read as Figure 7's resistance form, G_eq,n+1 = (G_eq,n^-1 + G_GJ^-1)^-1 + G_eq,n"
+ },
+ "interface": {
+  "file": "validation/gap_junction_tissue/references/interface/linear.json",
+  "format": "gap_junction_tissue.linear_references@1",
+  "keys": {
+   "format": "gap_junction_tissue.linear_references@1",
+   "registration": "the tag the references read",
+   "networks": "{network id: {declaration, concentrations, accuracy_rel, method}} for every network id listed under `networks`; declaration echoes that listing's {cells, junctions, probes} exactly as read; concentrations is {cell id: steady concentration} in the preprint's [mR] units",
+   "chains": "{n: {g_eq_ratio, intercept, accuracy_rel, method}} for n in 1, 2, 3, 4, 5, 10: the Norton conductance of a straight chain of n cells at G_GJ = G_eq,1 in units of G_eq,1, sealed at its far end and seen from cell n, and its open-circuit concentration (mR_UL0 = 1)",
+   "limits": "{figure3: the two cells' common limit as G_GJ grows (unloaded 5 and 10), figure5b: the lumped model's (A unloaded 10, B 4/3 of A unloaded 5), chain: the chain's Norton conductance as n grows, in units of G_eq,1}",
+   "printed_recursion": "{literal: [G_eq,1 .. G_eq,10], resistance_form: [...]}: the appendix's recursion taken literally (in units of G_eq,1) and read as Figure 7's resistance form, at G_GJ = G_eq,1"
+  },
+  "accuracy": "every accuracy_rel at most 1e-13"
+ }
+}
