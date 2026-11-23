@@ -449,29 +449,60 @@ def _binding_face(step, world, by_name):
 
 
 def _face_rule(world, by_name):
-    """FR-46 (D323): one face per complex. A wall step converting a complex of one face into a
-    complex of the other, holding a ligand moiety on both sides, makes a carrier: refused."""
-    faces = {}
+    """FR-46 (D323): one face per complex, propagated by ligand moiety over every wall state.
+
+    Each admitted binding step seeds its complex with its face, for each moiety of its ligand. Every
+    step wholly in the membrane joins, per moiety, each reactant species that holds the moiety with
+    each product species that holds it: the stoichiometry decides, not the declared pairs, so a wall
+    state with no binding pair of its own carries the face on. A component that holds both faces
+    for one moiety lets that moiety pass through the wall from the pool to the lumen: a carrier,
+    refused by name with its wall states."""
+    moieties = {s.id: set(s.moiety_counts()) for s in world.species}
+    seeds = []  # (moiety, wall species, face)
     for step in world.steps:
         found = _binding_face(step, world, by_name)
         if found is not None:
-            faces[found[2]] = found[0]
-    if "inner" not in faces.values():
-        return
-    moieties = {s.id: set(s.moiety_counts()) for s in world.species}
+            face, ligand, complex_ = found
+            seeds += [(m, complex_, face) for m in sorted(moieties[ligand])]
+    if {face for _, _, face in seeds} != {"outer", "inner"}:
+        return  # one face, or none: no carrier is possible
+    parent = {}
+
+    def root(node):
+        parent.setdefault(node, node)
+        while parent[node] != node:
+            parent[node] = parent[parent[node]]
+            node = parent[node]
+        return node
+
+    ligand_moieties = sorted({m for m, _, _ in seeds})
     for step in world.steps:
         names = [n for n, _ in (*step.reactants, *step.products)]
         if any(by_name[n].phase != world_rules.MEMBRANE for n in names):
             continue
-        left = [by_name[n].species for n, _ in step.reactants if by_name[n].species in faces]
-        right = [by_name[n].species for n, _ in step.products if by_name[n].species in faces]
-        for a in left:
-            for b in right:
-                if faces[a] != faces[b] and moieties[a] & moieties[b]:
-                    raise ConfigError(
-                        f"world: step {step.id} turns the {faces[a]} complex {a} into the "
-                        f"{faces[b]} complex {b}: a carrier across the wall (FR-46's face rule)"
-                    )
+        for m in ligand_moieties:
+            left = [by_name[n].species for n, _ in step.reactants
+                    if m in moieties[by_name[n].species]]  # fmt: skip
+            right = [by_name[n].species for n, _ in step.products
+                     if m in moieties[by_name[n].species]]  # fmt: skip
+            for a in left:
+                for b in right:
+                    parent[root((m, a))] = root((m, b))
+    faces = {}
+    for m, species, face in seeds:
+        faces.setdefault(root((m, species)), set()).add(face)
+    for top, found in sorted(faces.items()):
+        if len(found) > 1:
+            m = top[0]
+            states = sorted({sp for (mm, sp) in list(parent) if mm == m and root((mm, sp)) == top}
+                            | {sp for mm, sp, _ in seeds
+                               if mm == m and root((mm, sp)) == top})  # fmt: skip
+            raise ConfigError(
+                f"world: the ligand moiety {m} can pass through the wall's states {states} from "
+                "an outer-face complex to an inner-face one: a carrier across the wall, refused "
+                "(FR-46's face rule: one face per complex, propagated by ligand moiety over every "
+                "wall state)"
+            )
 
 
 def _geometry_refusals(world):

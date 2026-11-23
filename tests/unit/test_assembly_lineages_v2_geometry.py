@@ -899,14 +899,12 @@ def face_world(kind="separate", *, x_pool=5, x_lumen=0, P=2e-7, k_bind=3.0, k_wa
     if kind == "same face":
         w["sites"].append({"site": "R", "complex": "XR2"})
         binding("bind_outer_2", "X@pool", "XR2")
-    for i, (a, b) in enumerate(zip(chain, chain[1:])):
+    for i, (a, b) in enumerate(zip(chain, chain[1:], strict=False)):
         w["steps"].append({"id": f"wall_{i}", "phase": "membrane", "reactants": {a: 1},
                            "products": {b: 1}, "law": MASS_ACTION, "forward_rate_per_s": k_wall})
     return w
 
 
-_MISSED = pytest.mark.xfail(strict=True, reason="the direct-conversion check misses a carrier "
-                            "through a wall state with no pair (the reviewer's counterexample)")
 FACE_RULE = {
     "the reviewer's counterexample, a carrier through one wall state with no pair": (
         "one", "a carrier across the wall"),
@@ -917,9 +915,7 @@ FACE_RULE = {
 }  # fmt: skip
 
 
-@pytest.mark.parametrize("case", [
-    pytest.param(c, marks=_MISSED) if FACE_RULE[c][0] in ("one", "two") else c
-    for c in sorted(FACE_RULE)])  # fmt: skip
+@pytest.mark.parametrize("case", sorted(FACE_RULE))
 def test_the_face_rule_refuses_every_carrier_and_admits_one_face(case):
     """FR-46 (D323): one face per complex. A ligand moiety that can pass through the wall's states
     from an outer complex to an inner one is a carrier across the wall, refused by name, whether the
@@ -935,11 +931,11 @@ def test_the_face_rule_refuses_every_carrier_and_admits_one_face(case):
 
 
 def test_inner_face_binding_has_its_closed_form_rates_and_keeps_the_identity():
-    """FR-46 (D323): X@lumen + R@membrane -> XRi@membrane for a declared inner pair, in a shell, with
-    FR-48's lumen potential on the ligand (solution 0.0, lumen 0.4). a+ = k_f theta+ n_R, theta+ the
-    lumen's activity x / X_lumen, and a- = k_f e^(mu_XRi - mu_R - mu_X@lumen) n_XRi: dissociation
-    returns X to the lumen. The pair identity at random states, and a short run's ledger. Host
-    arithmetic, apart from the run."""
+    """FR-46 (D323): X@lumen + R@membrane -> XRi@membrane for a declared inner pair, in a shell,
+    with FR-48's lumen potential on the ligand (solution 0.0, lumen 0.4). a+ = k_f theta+ n_R,
+    theta+ the lumen's activity x / X_lumen, and a- = k_f e^(mu_XRi - mu_R - mu_X@lumen) n_XRi:
+    dissociation returns X to the lumen. The pair identity at random states, and a short run's
+    ledger. Host arithmetic, apart from the run."""
     w = face_world("separate", x_lumen=3)
     next(sp for sp in w["species"] if sp["id"] == "X")["standard_mu_RT"] = {"solution": 0.0,
                                                                             "lumen": 0.4}
@@ -947,7 +943,8 @@ def test_inner_face_binding_has_its_closed_form_rates_and_keeps_the_identity():
     world_, structure, layout = s.model.world, model.structure(s), model.layout(s)
     R, r = structure.steps, [st.id for st in world_.steps].index("bind_inner")
     at = {p.name: i for i, p in enumerate(world_.places)}
-    X_lumen = 6.02214076e23 * world_.volume("lumen") * world_.units.standard_concentration_mM * 1e-3
+    X_lumen = (6.02214076e23 * world_.volume("lumen")
+               * world_.units.standard_concentration_mM * 1e-3)  # fmt: skip
     k_rev = 3.0 * math.exp(-6.0 - (-2.0) - 0.4)
     for x, n_r, n_xri in ((3, 4, 0), (1, 5, 1), (0, 4, 2), (6, 0, 6)):
         c = np.asarray(model.founder(s)).copy()
