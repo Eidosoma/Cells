@@ -9754,7 +9754,7 @@ fr15-f2-design-landed-2026-11-23), under the user's go on the cancer lanes and t
 
 ## D311: FR-30's benchmark is Revilla, Castro and Barrio (1999), held out at -80 and +80 mV; the trace criterion is a dated amendment (the user)
 
-2026-11-23, about 13:05 UTC. The user chose (a), "Sounds good", on the lead's description and blind to every
+2026-11-23, about 12:08 UTC. The user chose (a), "Sounds good", on the lead's description and blind to every
 value, after the advisor endorsed it with a precedent check, which came back clean. The section 13.4
 extraction is in /mnt/workspaces/Cells/fr30-candidates4-extraction/ (README.md, LOG.txt).
 
@@ -9834,7 +9834,7 @@ e83680830219a58ab6b47d268518543b90e63c52d6b7d7694ee8a8e45c7a7285. All 12 entries
 
 ## D312: XC0's comparison rule is registered; the lead's answers to its three questions
 
-2026-11-23, about 13:30 UTC. The Xenopus lane's XC0 rule is tagged on its branch head,
+2026-11-23, about 12:15 UTC. The Xenopus lane's XC0 rule is tagged on its branch head,
 xc0-rule-registered-2026-11-23 (98351456), and merged at 1030280a. It names its reader,
 validation/xenopus_bioelectric/xc0_compare.py, as D308 requires. Nothing has been compared.
 1. **The manifest: option B, without the text.**
