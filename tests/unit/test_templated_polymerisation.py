@@ -581,7 +581,10 @@ def test_the_export_books_both_sides_and_carries_its_labels(labelled):
     - The producer's identity with its net export, and the node's balance: n_o - n_o(0) = forward
       - backward - its loss, within rounding.
     - With labels: every physical field is the unlabelled run's bit for bit, and the cohort marked
-      on transcription's own schedule rides into the node, whose shares sum to 1."""
+      on transcription's own schedule rides into the node, whose shares sum to 1. There route 1,
+      the node's row times the cohort's share, meets route 2, two pools in series on the run's own
+      counters (cohort.series; §9.17.5's second readout as erratum H reads it), within route 2's
+      grid error plus the share update's split."""
     raw = worlds.with_export(kernel.truncated(worlds.r1(0.75), 600.0), k_E=1e-3)
     if labelled:
         raw = worlds.with_share_labels(raw, window=(0.0, 300.0), chain="tx")
@@ -629,6 +632,28 @@ def test_the_export_books_both_sides_and_carries_its_labels(labelled):
         assert np.array_equal(getattr(end, name), getattr(plain, name)), name
     shares = end.label_outside_share[0, :, o]  # R's labels at the node: [base, cohort].
     assert shares[1] > 0 and abs(float(np.sum(shares)) - 1.0) <= 128 * EPS
+    # §9.17.5's second readout (erratum H, item 2): the cohort at the node by route 1, the node's
+    # row times its share, and route 2, two pools in series from the run's own counters.
+    steps = sorted(states)
+    t = [float(k) * spec.execution.dt for k in steps]
+
+    def series_of(name, index=(0,)):
+        return [float(getattr(states[k], name)[index]) for k in steps]
+
+    rows = dict(
+        Q=series_of("poly_hold_released_fmol", (0, 0, 0)),
+        forward=series_of("poly_export_forward_fmol"),
+        backward=series_of("poly_export_backward_fmol"),
+        n_c=[cell(states[k], "R") for k in steps],
+        n_o=[reference + float(states[k].extracellular_amount_increment[i, o]) for k in steps],
+    )
+    k_d = float(worlds.sheet.RELEASE["k_durable"])
+    args = (t, rows["Q"], k_d, rows["forward"], rows["n_c"], rows["backward"], rows["n_o"])
+    route2 = cohort.series(*args, worlds.OUTSIDE_RATE, 0.0, 300.0, t[-1])[1]
+    error = cohort.series_error(*args, worlds.OUTSIDE_RATE, 0.0, 300.0, t[-1])
+    route1 = node[1] * float(shares[1])
+    split = release_check.split_bound("durable", spec.execution.dt)
+    assert error is not None and abs(route1 - route2) <= error + (split + 128 * EPS) * route2
 
 
 def _two_producers(seconds=600.0):

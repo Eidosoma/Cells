@@ -55,6 +55,8 @@ import json
 import math
 from pathlib import Path
 
+import numpy as np
+
 # D283: the window edges' predicate is the clock's one same-instant predicate (it was a seam here,
 # equal times, until D283 landed), as templated_polymerisation.grid_time reads on_grid.
 from cells.numerics.clock_instants import same_instant
@@ -210,6 +212,52 @@ def known_survival(t, Q, k, t1, t2, ts):
         grid_error_at_window_end=known_rate_error(t, Q, k, t1, t2, t2),
         grid_error_at_sample=known_rate_error(t, Q, k, t1, t2, ts),
     )
+
+
+def series(t, Q, k_f, forward, n_c, backward, n_o, k_o, t1, t2, ts):
+    """FR-38's release-marked cohort through an export (the sheet's §9.17.5, second readout, as
+    erratum H, §9.21, item 2, reads it): (in the fate row, at the node) at ts, two pools in series
+    on the output grid. The window's releases (Q, released during [t1, t2), spread evenly over
+    each interval) join the row; its members leave the row at the fate's gross k_f and by the
+    export's forward part, and return by its backward part; at the node they leave at the outside
+    loss's gross k_o and by the backward part. Each interval's per-molecule export rates are its
+    forward and backward counters' increments over the integral of the row and of the node (the
+    trapezoid), held constant over it, and each interval's linear system is solved exactly (the
+    matrix exponential of its augmented form). Exact for constant rates in well-mixed pools, up to
+    its grid error (series_error)."""
+    from scipy.linalg import expm
+
+    check_counters(t, Q=Q)
+    i1, i2, i3 = _window(t, t1, t2, ts)
+    state = np.zeros(2)
+    for i in range(i1, i3):
+        h = t[i + 1] - t[i]
+        held_c = _integral(t, n_c, i, i + 1)
+        held_o = _integral(t, n_o, i, i + 1)
+        r_e = (forward[i + 1] - forward[i]) / held_c if held_c > 0 else 0.0
+        r_b = (backward[i + 1] - backward[i]) / held_o if held_o > 0 else 0.0
+        made = (Q[i + 1] - Q[i]) / h if i < i2 else 0.0
+        system = np.array([
+            [-(k_f + r_e), r_b, made],
+            [r_e, -(k_o + r_b), 0.0],
+            [0.0, 0.0, 0.0],
+        ])  # fmt: skip
+        state = (expm(system * h) @ np.array([state[0], state[1], 1.0]))[:2]
+    return float(state[0]), float(state[1])
+
+
+def series_error(t, Q, k_f, forward, n_c, backward, n_o, k_o, t1, t2, ts):
+    """|series on every output - series on every second output| at the node: the series form's
+    error on the coarser grid, an upper estimate on the given one (grid_error's form); None where
+    the window holds no output to drop."""
+    i1, i2, i3 = _window(t, t1, t2, ts)
+    keep = [i for i in range(len(t)) if i % 2 == 0 or i in (i1, i2, i3)]
+    if all(i in keep for i in range(i1, i3 + 1)):
+        return None
+    fine = series(t, Q, k_f, forward, n_c, backward, n_o, k_o, t1, t2, ts)[1]
+    pick = [[seq[i] for i in keep] for seq in (t, Q, forward, n_c, backward, n_o)]
+    coarse = series(pick[0], pick[1], k_f, pick[2], pick[3], pick[4], pick[5], k_o, t1, t2, ts)[1]
+    return abs(fine - coarse)
 
 
 def grid_error(t, n, Q, D, t1, t2, ts=None):
