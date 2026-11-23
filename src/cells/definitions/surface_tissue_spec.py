@@ -1,6 +1,8 @@
 """Explicit resolved surfaces, held reservoirs and scheduled passive transport."""
 
+import contextvars
 from bisect import bisect_right
+from contextlib import contextmanager
 from dataclasses import asdict, dataclass
 
 from cells.definitions.spec_values import aligned, fraction, identifier, positive, signed_number
@@ -18,6 +20,24 @@ from cells.definitions.specs import (
 from cells.numerics.surface_field import LAW_ID, NODE_BOUNDS, SOLVER_ID
 
 MODEL_ID = "resolved_tissue@1"
+FACE_LAW_ID = "logmean_electrodiffusion@1"
+# The face laws a calling family's parse admits beyond FACE_LAW_ID (resolved_pump_tissue@3's
+# logmean_electrodiffusion_forms@1; FR-30's `admitting` pattern in surface_pump_spec): ((law ID,
+# its face class), ...), each class a subclass of ExtracellularFaceSpec with the same fields. Such a
+# face is parsed here as its degenerate plain face, its rows as themselves, which every base family
+# checks as a face; the calling family then holds it apart, in its own entity set. Empty outside
+# admitting_faces, so this model and every other family refuse every other face law.
+_ADMITTED_FACES = contextvars.ContextVar("admitted_face_laws", default=())
+
+
+@contextmanager
+def admitting_faces(classes):
+    """Within the block, this parse admits the given face laws ({law ID: face class})."""
+    token = _ADMITTED_FACES.set(tuple(classes.items()))
+    try:
+        yield
+    finally:
+        _ADMITTED_FACES.reset(token)
 
 
 @dataclass(frozen=True)
@@ -115,7 +135,9 @@ def to_dict(spec):
                 if name in row:
                     row[name] = mapped(row[name])
             if key in ("membranes", "junctions", "faces"):
-                row["law"] = "logmean_electrodiffusion@1" if key == "faces" else "constant_field@1"
+                row["law"] = (
+                    getattr(type(p), "LAW", FACE_LAW_ID) if key == "faces" else "constant_field@1"
+                )
             rows.append(row)
         raw[key] = rows
     raw["closure"] = {"law": LAW_ID, "gauge_reference": m.gauge_reference}
@@ -190,7 +212,7 @@ def parse(data, *, field_solver=SOLVER_ID):
     if not cells or not outside or len(cells) + len(outside) > bound:
         raise ConfigError("Resolved tissue requires cells/outside within the dense node bound")
     cids, oids = {p.id for p in cells}, {p.id for p in outside}
-    routes = {}
+    routes, admitted = {}, dict(_ADMITTED_FACES.get())
     for key, cls in (
         ("membranes", Membrane),
         ("junctions", Junction),
@@ -199,7 +221,10 @@ def parse(data, *, field_solver=SOLVER_ID):
         rows = []
         for p in m[key]:
             _fields(p, set(cls.__dataclass_fields__) | {"law"}, key)
-            law = "logmean_electrodiffusion@1" if key == "faces" else "constant_field@1"
+            law = FACE_LAW_ID if key == "faces" else "constant_field@1"
+            row_cls = cls
+            if key == "faces" and isinstance(p["law"], str) and p["law"] in admitted:
+                law, row_cls = p["law"], admitted[p["law"]]
             if p["law"] != law:
                 raise ConfigError("Unsupported resolved transport law")
             a, b = ("inside", "outside") if key == "membranes" else ("sender", "receiver")
@@ -223,7 +248,7 @@ def parse(data, *, field_solver=SOLVER_ID):
                 )
                 if key == "membranes":
                     values["capacitance_F"] = positive(p["capacitance_F"], "capacitance")
-            rows.append(cls(**values))
+            rows.append(row_cls(**values))
         routes[key] = tuple(rows)
     names = [
         p.id

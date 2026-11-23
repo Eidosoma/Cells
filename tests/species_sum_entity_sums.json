@@ -1305,6 +1305,16 @@
    "operators/templated_polymerisation.py",
    "magnitude_terms",
    "entity_sum(row.poly_outside_energy_magnitude_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "models/surface_pump_v3.py",
+   "_fold_forms_ledgers",
+   "entity_sum(state.forms_face_dissipated_energy_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "models/surface_pump_v3.py",
+   "readouts",
+   "entity_sum(forms.dissipation_pJ_s, axis=None, xp=xp)"
   ]
  ]
 }
