@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="robots" content="noindex">
+  <meta name="description" content="Try three ways to explore the Cells Laws catalogue and its declared connections.">
+  <title>Laws design preview · Cells</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./laws-options.css">
+  <script src="./laws-options.js" defer></script>
+</head>
+<body>
+<header class="page-header">
+  <h1>Laws design preview</h1>
+  <a href="../v57/?lens=laws">Open full Laws atlas</a>
+</header>
+<nav class="view-nav" aria-label="Preview layouts">
+  <a href="#floor-plan" aria-current="page">Family floor plan</a>
+  <a href="#trace">Connection trace</a>
+  <a href="#matrix">Model matrix</a>
+</nav>
+<main id="laws-atlas-choices">
+  <noscript>Enable JavaScript to explore the three layouts.</noscript>
+  <section data-view="floor-plan" aria-label="Family floor plan">
+    <div class="la-window" id="la-plan">
+      <header class="la-header">
+        <p class="la-crumb">Laws <span>/</span> Library</p>
+        <h2>Family floor plan</h2>
+        <p>6 shelves <span class="la-sep">/</span> 18 families <span class="la-sep">/</span> 100 pieces</p>
+      </header>
+      <label class="la-model-picker">Highlight model
+        <select id="la-model">
+          <option value="library">Whole library</option>
+          <option value="assembly">Assembly lineages v2</option>
+          <option value="composite">Composite v1</option>
+        </select>
+      </label>
+      <div class="la-plan-grid" aria-label="Choose a shelf"></div>
+      <div class="la-detail" aria-live="polite">
+        <strong id="la-shelf-title"></strong>
+        <ul class="la-family-list" aria-label="Families and piece counts"></ul>
+      </div>
+      <footer id="la-plan-key">One pod per family. Taller pods hold more pieces. Open pods mark design notes.</footer>
+    </div>
+  </section>
+  <section data-view="trace" aria-label="Connection trace" hidden>
+    <div class="la-window" id="la-trace">
+      <header class="la-header">
+        <p class="la-crumb" id="la-trail">Laws <span>/</span> Composite operators <span>/</span> Event</p>
+        <h2>Connection trace</h2>
+        <p>What does this piece declare?</p>
+      </header>
+      <div class="la-trace-tools">
+        <div class="la-verbs" aria-label="Relationship to trace" role="group"></div>
+        <button type="button" id="la-back" hidden>Back one piece</button>
+      </div>
+      <div id="la-graph">
+        <div id="la-subject"><div id="la-selected-pod" aria-hidden="true"></div><strong id="la-piece-name"></strong></div>
+        <div id="la-wire-lane" aria-hidden="true"><span id="la-wire-verb"></span><svg id="la-wires"></svg></div>
+        <div id="la-objects"></div>
+      </div>
+      <label class="la-setting" id="la-field-setting" hidden><input type="checkbox" id="la-field-ids"> Use exact field names</label>
+      <footer id="la-trace-description" aria-live="polite"></footer>
+    </div>
+  </section>
+  <section data-view="matrix" aria-label="Model matrix" hidden>
+    <div class="la-window" id="la-matrix">
+      <header class="la-header">
+        <p class="la-crumb">Laws <span>/</span> Model membership</p>
+        <h2>Model matrix</h2>
+        <p>Which models declare the same piece?</p>
+      </header>
+      <div class="la-table-wrap">
+        <table>
+          <caption class="la-assist">A sample of four catalogue pieces across three models. Select a cell for its declaration.</caption>
+          <colgroup><col class="la-piece-col"><col><col><col></colgroup>
+          <thead><tr><th scope="col">Piece</th><th scope="col"><span class="la-long">Composite</span><span class="la-short" aria-label="Composite">Comp.</span> <small>v1</small></th><th scope="col"><span class="la-long">Replacement</span><span class="la-short" aria-label="Replacement">Repl.</span> <small>v1</small></th><th scope="col">Tissue <small>v3</small></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="la-key" aria-label="Membership key">
+        <span><i class="la-mark la-direct"></i>Direct</span><span><i class="la-mark la-inner"></i>Via inner model</span>
+        <span><i class="la-mark la-kind"></i>Via host kind</span><span><i class="la-mark la-none"></i>No declaration</span>
+      </div>
+      <label class="la-setting"><input type="checkbox" id="la-cell-labels"> Label each cell</label>
+      <footer id="la-cell-description" aria-live="polite"></footer>
+    </div>
+  </section>
+</main>
+<footer class="catalogue-note">Cells catalogue <code>cbe54031</code>. The trace and matrix show selected examples.</footer>
+</body>
+</html>
