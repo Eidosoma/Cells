@@ -405,6 +405,12 @@ def _pore(specs, host_layouts, holders, plans, lanes, layout, due, device):
 def run(spec, *, start=None, stop=None):
     """One world, fresh or (a population, FR-22 rung P) from a checkpoint `start`, to its end or to
     an exact stop at `stop` events (population.run)."""
+    from cells.models.assembly_lineages_v2 import rate_equations  # OL6 (D304)
+
+    if rate_equations.is_representation(spec):
+        if start is not None or stop is not None:
+            raise ConfigError(f"{rate_equations.RATE_EQUATIONS}: checkpoints are refused (§3.8)")
+        return rate_equations.run(spec)
     if spec.execution.mode == "population":  # OL2 milestone 3 (population.py)
         from cells.models.assembly_lineages_v2 import population
 
@@ -474,8 +480,8 @@ def run_lanes(specs):
         else None
         for s, h in zip(specs, host_layouts, strict=True)
     ]
-    for plan, clock, s in zip(plans, clocks, specs, strict=True):
-        if clock is not None and clock.time <= s.experiment.time_horizon_s:
+    for plan, clock in zip(plans, clocks, strict=True):
+        if clock is not None and clock.due:  # t* within the horizon, decided exactly
             plan.append((clock.time, [PORE_STOP]))
     stops = [
         layout_i._replace(horizon=np.float64(plan[0][0])) if plan else layout_i

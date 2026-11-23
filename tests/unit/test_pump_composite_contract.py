@@ -634,6 +634,12 @@ def _insertion():
     return t.with_operators(t.cleft_cell(), t.furrow_insertion(onset=2e-3)), 2e-3
 
 
+def _labels():
+    from tests.unit import test_neutral_arrival_labels as t
+
+    return t.labelled(t.world()), t.TS  # A label switch, on the 1/64 s clock.
+
+
 def _replacement():
     raw, _, _ = frozen_worlds()["replacement"]
     return cs.frozen_definition(raw), 0.005  # 5 ms on the 1 ms clock.
@@ -657,6 +663,7 @@ ON_GRID_ROWS = {
     "bridge_closure (its start with its division)": lambda: _divided(bridge=("linear", 0.004)),
     "membrane_insertion (its onset with its rate change)": _insertion,
     "cell_replacement": _replacement,
+    "species_labels (a label switch)": _labels,
 }
 
 

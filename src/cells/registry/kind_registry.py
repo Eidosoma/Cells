@@ -58,12 +58,14 @@ __all__ = (
     "KindRates",
     "KindView",
     "KindRegistry",
+    "LabelView",
     "PartitionRole",
     "Schedule",
     "active",
     "bound",
     "bounded_integer",
     "declaration_errors",
+    "declared_kinds",
     "declared_schedule",
     "energy_role",
     "finite_number",
@@ -72,6 +74,7 @@ __all__ = (
     "kind_ledgers",
     "kind_role_species",
     "kind_standard_free_energies",
+    "label_refusal_errors",
     "law_count_names",
     "law_ends",
     "law_roles",
@@ -372,6 +375,26 @@ class Kind:
       (§7.3; INNER_MODEL_V4_DESIGN §7.4 (p)), each valued under its own name in `ledger_terms`,
       and `ledger_bounds(row, p, tol, steps, *, xp)` -> their bounds, in that order; declared
       together (kind_ledgers checks the hook's result).
+
+    FR-42's hook (docs/NEUTRAL_LABELS_DESIGN.md §11; D289, D303 item 6), two optional hooks that
+    only a labelled world calls, so KindRates, the per-stage programs and every unlabelled trace are
+    unchanged (D148 case 2):
+    - `label_refusals(declaration, species)` -> [reason, ...]: host side, at the definition, the
+      reasons the kind cannot carry the labelled species (their IDs, in the label rows' order),
+      judged on its own moved rows (moved_rows) and only for the species given; [] where it can.
+      A kind with a `rates` hook and no `label_refusals` is refused while any row is labelled
+      (label_refusal_errors: fail-closed);
+    - `label_transfers(start, end, p, dt, rows, *, weight=None, xp)` -> ((amount [m, entity] fmol
+      over the step, each >= 0, source [entity], destination [entity]), ...): the labelled rows'
+      one-way amounts over one IMEX step, nodes on the core's combined axis (cells, then outside
+      nodes), `rows` the labelled species' rows (traced), `p` the presence-gated layout its rates
+      see. `start` and `end` are LabelViews. Under ARS(2,2,2), N2 and other tableaux `end` is
+      complete and weight None: the trapezoid of the kind's one-way fluxes at the two ends. Under
+      the Euler IMEX `end` holds its state alone and weight = dt a[last, 0] >= 0: weight times
+      the one-way fluxes at the start. Either way the gap to the kind's own booked net (its
+      cumulative field, end less start) is added on the side its sign gives, so forward less
+      backward is the booked move at rounding and both stay >= 0. The core appends these after
+      its own transfers. A kind declares it only beside label_refusals.
     """
 
     kind_id: str
@@ -427,6 +450,9 @@ class Kind:
     standard_free_energies: Callable | None = None  # (declaration) -> (FreeEnergyEntry, ...)
     role_species: Callable | None = None  # (declaration) -> (EntityBinding, ...)
     dispatch_masks: tuple = ()  # Fields full on their axes, or empty there by static dispatch.
+    # FR-42's hook (the docstring's last list; D303 item 6): traced only where rows are labelled.
+    label_refusals: Callable | None = None  # (declaration, species) -> [reason, ...]
+    label_transfers: Callable | None = None  # (start, end, p, dt, rows, *, weight, xp) -> transfers
 
     @property
     def state_fields(self):
@@ -477,6 +503,20 @@ class KindRates(NamedTuple):
     membrane_flux: object = None
     valid: object = True
     stored_pJ_s: object = None
+
+
+class LabelView(NamedTuple):
+    """FR-42: one end of a step as the labelled rows' one-way terms read it: @3's own
+    (models/surface_pump_v3.one_way_fluxes) and a kind's (its label_transfers hook takes the start
+    and the end). It holds the structure's state; its kinds' stage read (the state itself without
+    kinds); its node potentials (V, cells then outside nodes); and the control the stage's rates
+    see there (the routing door's where routes are declared, else the step's). On the Euler IMEX
+    the end carries only its state, for the booked nets: its fluxes are the start's, weighted."""
+
+    state: object
+    read: object = None
+    potentials: object = None
+    control: object = None
 
 
 class KindView(NamedTuple):
@@ -876,9 +916,9 @@ def _finite_fill(value):
 
 def declaration_errors(kind):
     """Why a kind's seam declarations (energy_roles, heat_bookings, partition_roles, ledgers and
-    ledger_bounds) break the contract (empty: they keep it). The fields they name are checked
-    against the kind's own where its fields are static; a kind that declares its fields per entry
-    (declared_fields) may name the fields of every entry."""
+    ledger_bounds, and FR-42's label hooks) break the contract (empty: they keep it). The fields
+    they name are checked against the kind's own where its fields are static; a kind that declares
+    its fields per entry (declared_fields) may name the fields of every entry."""
     out, static = [], kind.declared_fields is None
     roles = kind.energy_roles
     if not isinstance(roles, Mapping) or not all(isinstance(k, str) and k for k in roles):
@@ -941,6 +981,14 @@ def declaration_errors(kind):
         out.append("its standard_free_energies is a callable, or None")
     if kind.role_species is not None and not callable(kind.role_species):
         out.append("its role_species is a callable, or None")
+    labels = (kind.label_refusals, kind.label_transfers)  # FR-42's hook (D303 item 6).
+    if any(h is not None and not callable(h) for h in labels):
+        out.append("its label_refusals and label_transfers are callables, or None")
+    elif labels[1] is not None and labels[0] is None:
+        out.append(
+            "it declares label_transfers only beside label_refusals, which say what its transfers "
+            "cannot carry"
+        )
     return out + _axis_errors(kind, static) + _dispatch_mask_errors(kind, static)
 
 
@@ -1218,6 +1266,43 @@ def bound(kind, entry):
         declared_fields=None,
         **dict.fromkeys(without),
     )
+
+
+def declared_kinds(declared):
+    """((kind ID, the active registry's kind bound to its declaration's structure entry,
+    declaration), ...) for a model's declared kinds (((kind ID, declaration), ...)), in order: the
+    kinds as the core reads them, on the host."""
+    registry, out = active(), []
+    for kind_id, declaration in declared:
+        kind = registry.lookup(kind_id)
+        entry = kind.structure_entry(declaration) if kind.structure_entry is not None else ()
+        out.append((qualified(kind_id), bound(kind, entry), declaration))
+    return tuple(out)
+
+
+def label_refusal_errors(declared, species):
+    """FR-42's kinds hook at the definition (D303 item 6): why the declared kinds (a model's
+    ((kind ID, declaration), ...)) cannot carry the labelled species (their IDs, in the label rows'
+    order), each reason naming its kind; [] where they can, and always where nothing is labelled.
+    A kind's own label_refusals give its reasons. A kind with a rates hook and no label_refusals is
+    refused whenever any species is labelled (fail-closed: nothing says which of its moves it
+    could report)."""
+    species = tuple(species)
+    if not species:
+        return []
+    out = []
+    for kind_id, kind, declaration in declared_kinds(declared):
+        if kind.label_refusals is not None:
+            reasons = kind.label_refusals(declaration, species)
+            if not isinstance(reasons, list) or not all(isinstance(r, str) and r for r in reasons):
+                raise ValueError(f"Kind {kind_id}'s label_refusals returns a list of its reasons")
+            out += [f"{kind_id}: {reason}" for reason in reasons]
+        elif kind.rates is not None:
+            out.append(
+                f"{kind_id} has a rates hook and no label_refusals, so it is refused while any "
+                "row is labelled (fail-closed)"
+            )
+    return out
 
 
 class KindRegistry:

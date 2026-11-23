@@ -27,7 +27,10 @@ do not. A label reused later keeps its older material, which survives with the r
 
 State, present only in a composition that declares this operator: `label_share` [labelled species,
 label, cell] and `label_outside_share` [..., outside node], each row's shares at each node (padded
-labels 0, the presence mask bound in `label_present`); `label_closure_relative` [labelled species],
+labels 0, the presence mask bound in `label_present`); beside a replacing event (`replacing`;
+zero-size elsewhere), `label_removed_fmol` [labelled species, label, cell] and
+`label_pool_removed_fmol` [pool reporter, label, pool], what left at its events by label, cumulative
+from t = 0 (erratum E); `label_closure_relative` [labelled species],
 a diagnostic: the largest closure residual of any reporter's half-step so far
 (label_shares.closure_residual), relative to the amounts involved. It measures each reporter's own
 consistency, its booked move against its reported one-way parts, at rounding; that no other mover
@@ -42,20 +45,29 @@ kept bit for bit). The physical state and validity are the reporter's, bit for b
 run's physical fields and records equal the unlabelled run's.
 
 Stage 2 and D296 (docs/NEUTRAL_LABELS_DESIGN.md section 8): where the inner step takes labels=,
-its faces' and routes' one-way transfers carry their sources' shares (advance_inner); a pool
-reporter's pools are advanced with its rows as sites (advance_pools); a source reporter receives
-each source's arrival label (source_controls); and replacement@1's event reports the slots it
-replaced, which take the newcomer label (advance_event).
+its faces' and routes' one-way transfers carry their sources' shares (advance_inner), and so do
+its declared kinds' through their hook (section 11; D303 item 6); a pool reporter's pools are
+advanced with its rows as sites (advance_pools); a source reporter receives each source's arrival
+label (source_controls); replacement@1's event reports the slots it replaced, which take the
+newcomer label, and a pool reporter's event the pools it emptied, which take the base label, what
+left recorded by label (advance_event; erratum E, TEMPLATED_POLYMERISATION_LAWS §9.18).
 
 Refused (fail closed), each refusal naming the FR-42 stage that lifts it:
 - a labelled species moved inside the inner step (registry moved_in_step) by anything the inner
   step does not report: every mover before @3's side lands (stage 2); afterwards a charged face,
-  a channel, a pump, a kind or an in-step process, and RK4 beside a followed mover;
+  a channel, a pump, a kind without its hook (label_transfers) or an in-step process, and RK4
+  beside a followed mover;
+- what a declared kind says it cannot carry (its label_refusals), and, while any row is
+  labelled, every kind with a rates hook and no label_refusals (kind_registry.label_refusal_errors);
+- a labelled species a closure holds at some node (a kind's stage read: B4's proton row and
+  buffers, rapid_binding@1's closure rows), whatever moves it (closure_errors);
 - an operator whose split part writes species amounts without reporting (turnover, exchange,
   reactions and templated polymerisation report; FR-42's stage 3 added exchange and the reactions'
   passive routes);
 - an event that writes species amounts without reporting the slots it replaced, a closer or
-  retirer of slots, and a provider of the amount references (no FR-42 stage plans them yet).
+  retirer of slots, and a provider of the amount references (no FR-42 stage plans them yet);
+- beside a replacing event, a pool reporter whose event takes no labels (it could empty its pools
+  unreported; erratum E).
 A second label owner is refused by the composite's parser, as a second declaration of its schedule
 key. RK4 on the coupled path needs no refusal: a coupled RK4 composition refuses every split-only
 part, so no reporter runs there.
@@ -74,7 +86,7 @@ from cells.numerics import label_shares
 from cells.numerics.clock_instants import ON_THE_GRID, on_grid, same_instant  # D283's predicate.
 from cells.numerics.species_sums import entity_sum
 from cells.operators.contract import Operator, reports_labels, takes_labels
-from cells.registry import species_registry
+from cells.registry import kind_registry, species_registry
 
 LAW_ID = "neutral_arrival_labels@1"
 SCHEDULE_KEY = "label_arrivals"
@@ -99,6 +111,10 @@ STATE_AXES = {
     "label_closure_relative": ["label_species"],
     # D296: each pool reporter's (LABEL_POOLS, in declared order) pool entries' shares.
     "label_pool_share": ["label_pool_owner", "label_slot", "label_pool"],
+    # Erratum E (TEMPLATED_POLYMERISATION_LAWS §9.18): what left at replacement events, by label,
+    # cumulative from t = 0 (fmol); zero-size along the first axis without a replacing event.
+    "label_removed_fmol": ["label_removed_species", "label_slot", "cell_slot"],
+    "label_pool_removed_fmol": ["label_removed_pool_owner", "label_slot", "label_pool"],
 }
 LAYOUT_FIELDS = (
     "label_rows",  # [labelled species] int64: their rows of the model's species axis.
@@ -319,10 +335,16 @@ def source_controls(spec, declaration, schedule, times):
 
 def operator_errors(spec):
     """The fail-closed refusals of the composition's operators (module docstring), as messages."""
-    errors = []
+    errors, events = [], replacing(spec)
     for op, _, _ in composite_spec.entries(spec):
         if op.LABEL_OWNER:
             continue
+        if events and op.LABEL_POOLS and op.EVENT and not takes_labels(op.event):
+            errors.append(
+                f"{op.LAW_ID} beside {LAW_ID} and a replacing event: its event may empty its label "
+                "pools without reporting what it removed (erratum E: an event that empties them "
+                "takes labels= and reports their amounts)"
+            )
         replaces = set(AMOUNT_FIELDS) & {*op.EVENT_REPLACES, *op.STATE_RESETS}
         writes = set(AMOUNT_FIELDS) & set(op.ENTITY_WRITES) - replaces
         where = f"{op.LAW_ID} beside {LAW_ID}"
@@ -343,32 +365,39 @@ def operator_errors(spec):
 
 
 def in_step_errors(spec, declaration, reports):
-    """Stage 2's refusals of a labelled species moved inside the inner step, as messages. reports:
-    the inner step reports its one-way transfers (it takes labels=; the composition's
-    inner_reports_labels). Where it does, an uncharged face and the membrane and junction routes
-    (REPORTED_MOVERS) are followed, except under RK4; every other in-step mover is refused: a
+    """Stage 2's refusals of a labelled species moved inside the inner step, and the kinds hook's
+    (D303 item 6), as messages. reports: the inner step reports its one-way transfers (it takes
+    labels=; the composition's inner_reports_labels). Where it does, an uncharged face, the
+    membrane and junction routes (REPORTED_MOVERS) and a declared kind's moves through its hook
+    (label_transfers) are followed, except under RK4; every other in-step mover is refused: a
     charged face (no one-way form), a channel or a pump (no FR-42 stage plans them yet), a kind
-    (its hook follows @3's side) and an operator's in-step process. Without a reporting inner step
-    (beside declared kinds, or a step that takes no labels), every in-step mover is refused."""
+    without the hook and an operator's in-step process. Without a reporting inner step (one that
+    takes no labels), every in-step mover is refused. Besides: each declared kind's own refusals
+    (kind_registry.label_refusal_errors: its label_refusals, and a kind with a rates hook and none
+    refused while any row is labelled), and a labelled row a closure holds (closure_errors)."""
     m, inner = species_registry.inner_movers(spec)
     valence = dict(zip(m.species_ids, m.valence, strict=True))
     moved = species_registry.moved_in_step(spec)
     rk4 = spec.execution.solver == "rk4"
+    kinds = kind_registry.declared_kinds(getattr(m, "kinds", ()))
+    hooked = {kind_id for kind_id, kind, _ in kinds if kind.label_transfers is not None}
     errors = []
     for s in declaration.species:
         followed, refused = [], []
-        for kind, law, entities in inner.get(s.id, ()):
-            ok = REPORTED_MOVERS.get(kind) == law and (kind != "face" or valence[s.id] == 0)
-            (followed if reports and ok else refused).append(f"{kind} {', '.join(entities)}")
+        for mover, law, entities in inner.get(s.id, ()):
+            ok = mover in hooked or (
+                REPORTED_MOVERS.get(mover) == law and (mover != "face" or valence[s.id] == 0)
+            )
+            (followed if reports and ok else refused).append(f"{mover} {', '.join(entities)}")
         names = [*moved[s.id]["cell"], *moved[s.id]["outside"]]
         refused += list(dict.fromkeys(n for n in names if n.endswith("(its in-step process)")))
         if refused:
             later = (
                 "a charged face has no one-way form, channels, pumps and in-step processes "
-                "wait for a later stage, and kinds for their hook"
+                "wait for a later stage, and a kind reports only through its hook "
+                "(label_transfers)"
                 if reports
-                else "this composition's inner step reports none: beside declared kinds, until "
-                "their hook, or where its step takes no labels"
+                else "this composition's inner step reports none: its step takes no labels"
             )
             errors.append(
                 f"{LAW_ID}: {s.id} is moved inside the inner step by {', '.join(refused)}, "
@@ -379,7 +408,32 @@ def in_step_errors(spec, declaration, reports):
                 f"{LAW_ID}: {s.id} is moved inside the inner step by {', '.join(followed)}, and "
                 "version 1 follows labels through the IMEX step only, not RK4 (FR-42)"
             )
-    return errors
+    species = tuple(s.id for s in declaration.species)
+    errors += [
+        f"{LAW_ID}: {reason}"
+        for reason in kind_registry.label_refusal_errors(getattr(m, "kinds", ()), species)
+    ]
+    return errors + closure_errors(kinds, declaration)
+
+
+def closure_errors(kinds, declaration):
+    """D303 item 6, centrally: a labelled species that a closure holds at some node (a declared
+    kind's stage read, its stage_rows: B4's proton row and buffers at their buffered nodes,
+    rapid_binding@1's closure rows) is refused, whatever moves it. Its stored row is the closure's
+    total, which the read splits between forms for the rates, so no mover's one-way terms are the
+    stored row's. kinds: kind_registry.declared_kinds of the inner model."""
+    held = {}
+    for kind_id, kind, kind_declaration in kinds:
+        if kind.stage_rows is not None:
+            for row in kind.stage_rows(kind_declaration):
+                held.setdefault(row[0], {}).setdefault(kind_id, []).append(row[1])
+    return [
+        f"{LAW_ID}: {s.id} is held by {kind_id}'s closure at {', '.join(dict.fromkeys(nodes))} "
+        "(its stored row is the closure's total, which the stage read splits between forms), and "
+        "labels do not follow a closure's rows"
+        for s in declaration.species
+        for kind_id, nodes in held.get(s.id, {}).items()
+    ]
 
 
 def check_labels(spec, declaration, model=None):
@@ -420,6 +474,18 @@ def labelled_species(spec):
         for op, declaration, _ in composite_spec.entries(spec)
         if op.LABEL_OWNER
         for s in declaration.species
+    )
+
+
+def replacing(spec):
+    """Whether the composition declares an event that replaces slots' amounts and reports the
+    slots (D296: replacement@1), static: the records of what leaves at an event exist only then,
+    zero-size elsewhere, so every other labelled world keeps its fields (D148 case 2)."""
+    return any(
+        op.EVENT
+        and takes_labels(op.event)
+        and set(AMOUNT_FIELDS) & {*op.EVENT_REPLACES, *op.STATE_RESETS}
+        for op, _, _ in composite_spec.entries(spec)
     )
 
 
@@ -467,11 +533,14 @@ def bind(spec, declaration):
         label_pool_present=pool_present,
         label_pool_cells=pool_cells,
     )
+    events = replacing(spec)  # Static: the records' first axes (erratum E).
     state = dict(
         label_share=share,
         label_outside_share=outside_share,
         label_closure_relative=np.zeros(count),
         label_pool_share=pool_share,
+        label_removed_fmol=np.zeros((count if events else 0, width, x.capacity)),
+        label_pool_removed_fmol=np.zeros((len(pools) if events else 0, width, size)),
     )
     return state, layout
 
@@ -597,21 +666,50 @@ def advance_pools(start, end, moves, p, pool, *, xp=jnp):
     )
 
 
-def advance_event(end, replaced, control, p, *, xp=jnp):
-    """end with each replaced slot's (replaced [cell]) labelled shares, its rows' and its pool
-    entries', set to the label in force for their species this step, the newcomer label (D296;
-    an entry of an unlabelled species keeps the base): the departing material left with its own."""
-    newcomer = control.label_arrival[:, :, None]  # [m, label, 1] one-hot.
-    share = xp.where(replaced[None, None, :], newcomer, end.label_share)
-    pools = p.label_pool_rows  # [pool owner, pool] its species, -1 for none.
-    base = (xp.arange(control.label_arrival.shape[1]) == 0).astype(float)  # The base label.
-    arrival = xp.where(
-        (pools >= 0)[:, :, None], control.label_arrival[xp.maximum(pools, 0)], base
-    )  # [pool owner, pool, label]
-    cells = p.label_pool_cells
-    hit = (cells >= 0) & replaced[xp.maximum(cells, 0)]  # [pool owner, pool]
-    pool_share = xp.where(hit[:, None, :], xp.swapaxes(arrival, 1, 2), end.label_pool_share)
-    return end._replace(label_share=share, label_pool_share=pool_share)
+def _set_pool(values, pool, size, new, *, xp):
+    """values [pool owner, label, pool] with its pool reporter `pool`'s first `size` entries
+    replaced by new [label, size] (a copy in NumPy)."""
+    if xp is jnp:
+        return values.at[pool, :, :size].set(new)
+    out = np.array(values, copy=True)
+    out[pool, :, :size] = new
+    return out
+
+
+def advance_event(before, end, report, control, p, *, xp=jnp, pool=None):
+    """end after an event that reports what it replaced (D296; erratum E, TEMPLATED_POLYMERISATION_
+    LAWS §9.18). Each event reports only its own material, so two reporting events commute. What
+    leaves is recorded by label: its amount before the event times its shares just before it, in
+    the cumulative records (zero-size without a replacing event, `replacing`).
+    - pool None: report is replaced [cell], the slots whose rows the event swapped (replacement@1).
+      Every labelled row there leaves whole, into label_removed_fmol [m, label, cell], and its
+      shares become the label in force for its species this step, the newcomer's: the template's
+      material is newcomer material, a donor copy's included.
+    - pool k, the reporter's position among the pool reporters: report is removed [P] >= 0, the
+      amounts its event emptied from its pool entries (its label_pools, in order), into
+      label_pool_removed_fmol[k]. An entry it emptied (removed > 0) takes the base label: it holds
+      no material, so no later share depends on it, and its next arrivals set its shares."""
+    if pool is None:
+        replaced = report
+        newcomer = control.label_arrival[:, :, None]  # [m, label, 1] one-hot.
+        out = end._replace(label_share=xp.where(replaced[None, None, :], newcomer, end.label_share))
+        if not before.label_removed_fmol.shape[0]:  # Static: no replacing event declared.
+            return out
+        rows = xp.where(replaced[None, :], amounts(before, p, xp=xp)[0], 0.0)  # [m, cell]
+        leaving = rows[:, None, :] * before.label_share
+        return out._replace(label_removed_fmol=end.label_removed_fmol + leaving)
+    removed = report  # [P]
+    size = removed.shape[0]
+    shares = before.label_pool_share[pool, :, :size]  # [label, P] just before the event.
+    base = (xp.arange(shares.shape[0]) == 0).astype(shares.dtype)[:, None]  # The base label.
+    emptied = xp.where((removed > 0)[None, :], base, end.label_pool_share[pool, :, :size])
+    out = end._replace(label_pool_share=_set_pool(end.label_pool_share, pool, size, emptied, xp=xp))
+    if not before.label_pool_removed_fmol.shape[0]:  # Static: no replacing event declared.
+        return out
+    record = end.label_pool_removed_fmol[pool, :, :size] + removed[None, :] * shares
+    return out._replace(
+        label_pool_removed_fmol=_set_pool(end.label_pool_removed_fmol, pool, size, record, xp=xp)
+    )
 
 
 def advance_inner(start, end, transfers, p, *, xp=jnp):
@@ -652,16 +750,20 @@ def advance_nodes(start, end, out, into, transfers, p, *, xp=jnp):
 
 
 def labels_domain_valid(state, p, *, xp):
-    """The shares' domain (label_shares.domain_valid) at every node, and the diagnostic finite
-    and non-negative."""
+    """The shares' domain (label_shares.domain_valid) at every node, and the diagnostic and the
+    records of what left at events (erratum E) finite and non-negative."""
     present = p.label_present
     closure = state.label_closure_relative
-    return (
+    valid = (
         label_shares.domain_valid(state.label_share, present, xp=xp)
         & label_shares.domain_valid(state.label_outside_share, present, xp=xp)
         & label_shares.domain_valid(state.label_pool_share, p.label_pool_present, xp=xp)
         & xp.all(xp.isfinite(closure) & (closure >= 0))
     )
+    for record in (state.label_removed_fmol, state.label_pool_removed_fmol):
+        if record.shape[0]:  # Static: present beside a replacing event alone.
+            valid = valid & xp.all(xp.isfinite(record) & (record >= 0))
+    return valid
 
 
 # ------------------------------------------------------------------ the operator
@@ -683,24 +785,43 @@ class NeutralArrivalLabels(Operator):
         "label_outside_share": "1",
         "label_closure_relative": "1",
         "label_pool_share": "1",
+        "label_removed_fmol": "fmol",
+        "label_pool_removed_fmol": "fmol",
     }
     RECORD_KINDS = {
         "label_share": "level",
         "label_outside_share": "level",
         "label_closure_relative": "level",
         "label_pool_share": "level",
+        "label_removed_fmol": "cumulative",
+        "label_pool_removed_fmol": "cumulative",
     }
     RECORD_DIAGNOSTICS = ("label_closure_relative",)
 
     def view_sets(self, spec, declaration):
         """The run view's sets of its axes: the labelled species; the label positions (each
         species' labels in declared order, the base first; padding past its own); the pool
-        reporters; and their pool positions (each reporter's label_pools in order)."""
+        reporters; their pool positions (each reporter's label_pools in order); and the records'
+        first axes, the labelled species and the pool reporters again where a replacing event is
+        declared, empty elsewhere (erratum E)."""
         width = max(len(s.labels) for s in declaration.species)
         owners = reporters(spec, "LABEL_POOLS")
         pools = {op.LAW_ID: [entry[0] for entry in op.label_pools(d)] for op, d in owners}
         size = max(map(len, pools.values()), default=0)
+        events = replacing(spec)
+        removed = tuple(s.id for s in declaration.species) if events else ()
         return {
+            "label_removed_species": {
+                "id": "label_removed_species",
+                "ids": removed,
+                "holds": "labelled species, its departing material at replacement events recorded",
+                "carries": removed,
+            },
+            "label_removed_pool_owner": {
+                "id": "label_removed_pool_owner",
+                "ids": tuple(op.LAW_ID for op, _ in owners) if events else (),
+                "holds": "pool reporter, the holds its events emptied recorded",
+            },
             "label_pool_owner": {
                 "id": "label_pool_owner",
                 "ids": tuple(op.LAW_ID for op, _ in owners),
@@ -796,8 +917,10 @@ class NeutralArrivalLabels(Operator):
         (declaration,) = (d for op, d, _ in composite_spec.entries(spec) if op.LAW_ID == LAW_ID)
         x = spec.execution
         width = max(len(s.labels) for s in declaration.species)
-        size = len(declaration.species) * width * (x.capacity + x.extracellular_capacity)
-        return 8 * 6 * size
+        nodes = x.capacity + x.extracellular_capacity
+        if replacing(spec):  # Erratum E's record of the rows' departing material, per cell.
+            nodes += x.capacity
+        return 8 * 6 * len(declaration.species) * width * nodes
 
     def summary(self, spec, declaration, schedule, history):
         return {
@@ -847,8 +970,8 @@ class NeutralArrivalLabels(Operator):
     def advance_inner(self, start, end, transfers, p, *, xp):
         return advance_inner(start, end, transfers, p, xp=xp)
 
-    def advance_event(self, end, replaced, control, p, *, xp):
-        return advance_event(end, replaced, control, p, xp=xp)
+    def advance_event(self, before, end, report, control, p, *, xp, pool=None):
+        return advance_event(before, end, report, control, p, xp=xp, pool=pool)
 
     def rate_checks(self, state, control, p, valid, *, xp):
         return valid & labels_domain_valid(state, p, xp=xp)

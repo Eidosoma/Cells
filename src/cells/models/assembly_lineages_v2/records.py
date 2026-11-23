@@ -734,6 +734,10 @@ def _write_json(path, value):
 
 def write_run(directory, run, *, provenance=None):
     """Write one run's bundle into a new directory; returns its summary."""
+    from cells.models.assembly_lineages_v2 import rate_equations  # OL6 (D304)
+
+    if isinstance(run, rate_equations.RateEquationsRun):
+        return rate_equations.write_run(directory, run, provenance=provenance)
     from cells.execution import blas_threads
     from cells.execution.devices import execution_device
     from cells.records.io import _sha256, runtime_identity, source_hashes

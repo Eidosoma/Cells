@@ -555,7 +555,7 @@ def run(spec, *, start=None, stop=None):
         }
         if admitted is not None:  # the checkpoint's clocks, each its definition's, or refused
             pore_clock.refuse_other_clocks(clocks, admitted[2]["doc"]["pores"])
-        pending = sorted((v.time, k) for k, v in clocks.items() if v.time <= horizon)
+        pending = sorted((v.time, k) for k, v in clocks.items() if v.due)  # decided exactly
         pore_clock.refuse_same_time([clocks[k] for _, k in pending], [t for t, _ in plan])
         # the threshold draws are made when the run first holds a vesicle: a resumed run's
         # vesicles drew in the run that wrote its checkpoint (checkpoints.py)

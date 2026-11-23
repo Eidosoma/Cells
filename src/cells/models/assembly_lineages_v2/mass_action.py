@@ -133,8 +133,44 @@ def log_direction(view, locus_membrane, log_extent_dilute, offset, xp):
     )
     activity = entry_sum(terms, xp)
     extent = xp.where(locus_membrane, membrane_factor(view, offset, xp), log_extent_dilute)
-    return xp.where(feasible, activity + extent, -xp.inf)
+    # Mask both operands before the sum: at an infeasible direction activity can be −inf and the
+    # extent +inf, and −inf + inf raises NumPy's invalid-value warning before the mask applies. A
+    # feasible direction's operands pass through unchanged, so its value is bit for bit the same.
+    return xp.where(feasible, xp.where(feasible, activity, 0.0) + xp.where(feasible, extent, 0.0),
+                    -xp.inf)
 
+
+def limit_log_direction(view, locus_membrane, log_extent_dilute, offset, xp):
+    """OL6's large-count limit of log_direction (arithmetic A; the design note's §1.3): ln [a / k]
+    of one direction at real counts n, with every falling factorial ff(n, a) by its power n^a, the
+    membrane's ff(N − c, r) by (N − c)^r, and the common state m by n, so E = N − c + 1 for the
+    membrane. Entries with no coefficient contribute nothing (so a padding entry's empty place
+    never forms 0 × ln 0), and every logarithm is guarded, so the derivatives stay finite."""
+    n = view.counts.astype(np.float64)
+    k = view.coeff
+    kf = k.astype(np.float64)
+    log_n = safe_log(n, xp)
+    terms = (
+        xp.where(view.dilute & (k > 0), kf * (log_n - view.log_X), 0.0)
+        + xp.where(view.membrane & (k > 0), kf * log_n, 0.0)
+        + xp.where(view.held & (k > 0), kf * view.log_activity, 0.0)
+    )
+    activity = entry_sum(terms, xp)
+    r = entry_sum(xp.where(view.membrane, kf, 0.0), xp)
+    size = (view.membrane_total - offset) + xp.zeros_like(r)  # N − c, per step, real
+    membrane = safe_log(size + 1.0, xp) - xp.where(r > 0, r * safe_log(size, xp), 0.0)
+    extent = xp.where(locus_membrane, membrane, log_extent_dilute)
+    return activity + extent
+
+
+LIMIT_FORMULAS = {
+    "forward": "a+(n) = k_f E(n) prod_dilute (n_p/X_p)^a_p prod_held (c_s/c0)^a_s "
+    "prod_membrane n_i^a_i / (N - c)^r, E(n) = N - c + 1 for the membrane locus and X_locus for a "
+    "dilute one; n real",
+    "rule": "arithmetic A (Kurtz's limit): ff(n, a) -> n^a, ff(N - c, r) -> (N - c)^r, m -> n",
+    "reverse": "the same limit applied to the products, k- = k_f exp(sum nu mu°): equal to "
+    "a+ exp(nu . grad F_cont - w), F_cont Stirling's form of the declared F (the limit's check)",
+}
 
 FORMULAS = {
     "forward": "a+(n) = k_f E(m) prod_dilute ff(n_p, a_p)/X_p^a_p prod_held (c_s/c0)^a_s "
@@ -185,6 +221,8 @@ LAW = law_registry.BUILTIN.register(
         split="encounter",
         log_direction=log_direction,
         formulas=FORMULAS,
+        limit=limit_log_direction,
+        limit_formulas=LIMIT_FORMULAS,
     )
 )
 assert LAW.law_id == MASS_ACTION
