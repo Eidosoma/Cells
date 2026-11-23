@@ -29,7 +29,7 @@ Proof sources [Cells constant-field definitions](../CellsProofs/Transport/Consta
 
 ## Numerical comparison
 
-**Checked.** Twelve compiled CPU cases agreed with the 70-digit flux reference within 1.55 × 10⁻²⁰ fmol/s. In a buffered tissue cell, using free H⁺ gave the observed inward rate of 3.31 × 10⁻⁶ fmol/s. Substituting total intracellular proton equivalents reversed the predicted direction. Eight additional composite clamps tracked lumen pH at fixed voltage when bath pH varied independently. MT-1b’s general-binding node currently refuses the leak.
+**Checked.** Twelve compiled CPU cases agreed with the 70-digit flux reference within 1.55 × 10⁻²⁰ fmol/s. In a buffered tissue cell, using free H⁺ gave the observed inward rate of 3.31 × 10⁻⁶ fmol/s. Substituting total intracellular proton equivalents reversed the predicted direction. Eight additional composite clamps tracked lumen pH at fixed voltage when bath pH varied independently. Version 1 refused the general-binding node. [Version 2](buffered-proton-reversal.md) exercises that endpoint.
 
 **Engine** `resolved_pump_tissue@3`, `proton_constant_field_leak@1`
 

@@ -25,7 +25,7 @@ Uses [Stage exits account for residues in unfinished, terminally held and detach
 
 ## Numerical comparison
 
-**Open.** Both unlabelled machine-return policies reproduced all 40 state fields byte for byte at four times after a disk checkpoint with occupied stages and hold. This checks ordinary restart. Removed material, event energy and producer identity still need a coupled replacement-and-restart replay.
+**Open.** Both unlabelled machine-return policies reproduced all 40 state fields byte for byte at four times after a disk checkpoint with occupied stages and hold. The [producer-labelled replacement replay](producer-replacement-rna.md) also checks the departing material and producer identity. An independent numerical reconstruction of the replacement event’s full residue and energy books remains open.
 
 **Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`
 
@@ -34,6 +34,12 @@ Uses [Stage exits account for residues in unfinished, terminally held and detach
 [Unlabelled release world](https://github.com/Eidosoma/Cells/blob/5ef761505f2dbd48c35e36a2caee391e1f7d9394/validation/gene_regulation/worlds.py#L519) · [Initial rates and copy scale](https://github.com/Eidosoma/Cells/blob/5ef761505f2dbd48c35e36a2caee391e1f7d9394/validation/gene_regulation/sheet_check.py) · [Checkpoint at an accepted step](https://github.com/Eidosoma/Cells/blob/5ef761505f2dbd48c35e36a2caee391e1f7d9394/src/cells/execution/runner.py#L362) · [Snapshot writing and reading](https://github.com/Eidosoma/Cells/blob/5ef761505f2dbd48c35e36a2caee391e1f7d9394/src/cells/records/io.py#L86) · [RNA and machine ledgers](https://github.com/Eidosoma/Cells/blob/5ef761505f2dbd48c35e36a2caee391e1f7d9394/src/cells/operators/templated_polymerisation.py#L1993) · [Tagged replacement identities](https://github.com/Eidosoma/Cells/blob/5ef761505f2dbd48c35e36a2caee391e1f7d9394/docs/TEMPLATED_POLYMERISATION_LAWS.md#L1499) · [Short observation schedule](https://github.com/Eidosoma/Cells/blob/ddd2dbd0dc2b01bc7f2db3715ccef4c229e23ae2/lean/checks/terminal_release.py) · [Conditional event proofs](https://github.com/Eidosoma/Cells/blob/ddd2dbd0dc2b01bc7f2db3715ccef4c229e23ae2/lean/CellsProofs/Chemistry/TerminalRelease.lean) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/ddd2dbd0dc2b01bc7f2db3715ccef4c229e23ae2/lean/checks/release_restart.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/ddd2dbd0dc2b01bc7f2db3715ccef4c229e23ae2/lean/PROGRESS.md#fr38-replacement-restart)
 
 [Tested engine 5ef761505f2d](https://github.com/Eidosoma/Cells/commit/5ef761505f2dbd48c35e36a2caee391e1f7d9394) · [Evidence checkpoint ddd2dbd0dc2b](https://github.com/Eidosoma/Cells/commit/ddd2dbd0dc2b01bc7f2db3715ccef4c229e23ae2)
+
+**Reference calculation**
+
+[Per-producer counters and replacement balance](https://github.com/Eidosoma/Cells/blob/36f778812782bc352a9fe3666c579b85bc87ca28/docs/TEMPLATED_POLYMERISATION_LAWS.md#L1483-L1515) · [Division of the event reports between the two owners](https://github.com/Eidosoma/Cells/blob/36f778812782bc352a9fe3666c579b85bc87ca28/docs/TEMPLATED_POLYMERISATION_LAWS.md#L1773-L1787) · [Cells writes the numerical state and clock to its checkpoint](https://github.com/Eidosoma/Cells/blob/36f778812782bc352a9fe3666c579b85bc87ca28/src/cells/records/io.py#L86) · [Reference copy-to-fmol conversion](https://github.com/Eidosoma/Cells/blob/36f778812782bc352a9fe3666c579b85bc87ca28/validation/gene_regulation/sheet_check.py#L96) · [Exact per-producer balance and label partition](https://github.com/Eidosoma/Cells/blob/36f778812782bc352a9fe3666c579b85bc87ca28/lean/CellsProofs/Chemistry/ProducerReplacement.lean) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/36f778812782bc352a9fe3666c579b85bc87ca28/lean/checks/producer_replacement.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/36f778812782bc352a9fe3666c579b85bc87ca28/lean/PROGRESS.md#fr38-producer-replacement)
+
+[Evidence checkpoint 36f778812782](https://github.com/Eidosoma/Cells/commit/36f778812782bc352a9fe3666c579b85bc87ca28)
 
 ## Biological evidence
 

@@ -15,15 +15,15 @@ A detachment event marked in a half-open window belongs to exactly one of the tw
 
 **Proved**
 
-- [CellsProofs.Chemistry.ArrivalWindow.at_start](../CellsProofs/Chemistry/ArrivalWindow.lean#L16)
-- [CellsProofs.Chemistry.ArrivalWindow.at_end](../CellsProofs/Chemistry/ArrivalWindow.lean#L17)
-- [CellsProofs.Chemistry.ArrivalWindow.adjacent](../CellsProofs/Chemistry/ArrivalWindow.lean#L20)
-- [CellsProofs.Chemistry.ArrivalWindow.add_histories](../CellsProofs/Chemistry/ArrivalWindow.lean#L32)
-- [CellsProofs.Chemistry.ArrivalWindow.reuse](../CellsProofs/Chemistry/ArrivalWindow.lean#L39)
-- [CellsProofs.Chemistry.ArrivalWindow.chase_only](../CellsProofs/Chemistry/ArrivalWindow.lean#L44)
-- [CellsProofs.Chemistry.ArrivalWindow.chase_fraction](../CellsProofs/Chemistry/ArrivalWindow.lean#L54)
-- [CellsProofs.Chemistry.ArrivalWindow.empty_fraction](../CellsProofs/Chemistry/ArrivalWindow.lean#L59)
-- [CellsProofs.Chemistry.ArrivalWindow.release_example](../CellsProofs/Chemistry/ArrivalWindow.lean#L63)
+- [CellsProofs.Chemistry.ArrivalWindow.at_start](../CellsProofs/Chemistry/ArrivalWindow.lean#L18)
+- [CellsProofs.Chemistry.ArrivalWindow.at_end](../CellsProofs/Chemistry/ArrivalWindow.lean#L19)
+- [CellsProofs.Chemistry.ArrivalWindow.adjacent](../CellsProofs/Chemistry/ArrivalWindow.lean#L22)
+- [CellsProofs.Chemistry.ArrivalWindow.add_histories](../CellsProofs/Chemistry/ArrivalWindow.lean#L34)
+- [CellsProofs.Chemistry.ArrivalWindow.reuse](../CellsProofs/Chemistry/ArrivalWindow.lean#L41)
+- [CellsProofs.Chemistry.ArrivalWindow.chase_only](../CellsProofs/Chemistry/ArrivalWindow.lean#L46)
+- [CellsProofs.Chemistry.ArrivalWindow.chase_fraction](../CellsProofs/Chemistry/ArrivalWindow.lean#L56)
+- [CellsProofs.Chemistry.ArrivalWindow.empty_fraction](../CellsProofs/Chemistry/ArrivalWindow.lean#L61)
+- [CellsProofs.Chemistry.ArrivalWindow.release_example](../CellsProofs/Chemistry/ArrivalWindow.lean#L65)
 - [CellsProofs.Chemistry.MarkedRelease.event_partition](../CellsProofs/Chemistry/MarkedRelease.lean#L12)
 - [CellsProofs.Chemistry.MarkedRelease.marked_fates](../CellsProofs/Chemistry/MarkedRelease.lean#L20)
 - [CellsProofs.Chemistry.MarkedRelease.survivors_bounded](../CellsProofs/Chemistry/MarkedRelease.lean#L34)
@@ -67,6 +67,14 @@ Uses [Neutral arrival-time cohorts share one physical loss rate](fr42-cohort-sha
 [Finite-step bisection, allocation and empty-row handling](https://github.com/Eidosoma/Cells/blob/73afa19b5ddcb50405280d6d46207a25c41fec24/src/cells/numerics/label_shares.py#L64) · [Label declarations, schedules and share update](https://github.com/Eidosoma/Cells/blob/73afa19b5ddcb50405280d6d46207a25c41fec24/src/cells/operators/species_labels.py) · [Composite half-step calls the label owner](https://github.com/Eidosoma/Cells/blob/73afa19b5ddcb50405280d6d46207a25c41fec24/src/cells/models/pump_composite.py#L1752) · [One-way reaction reports](https://github.com/Eidosoma/Cells/blob/73afa19b5ddcb50405280d6d46207a25c41fec24/src/cells/operators/species_reactions.py#L1692) · [Turnover reports](https://github.com/Eidosoma/Cells/blob/73afa19b5ddcb50405280d6d46207a25c41fec24/src/cells/operators/species_turnover.py#L611) · [Summation along the label axis](https://github.com/Eidosoma/Cells/blob/73afa19b5ddcb50405280d6d46207a25c41fec24/src/cells/numerics/species_sums.py) · [Compiled twin worlds, window integrals and tolerances](https://github.com/Eidosoma/Cells/blob/73afa19b5ddcb50405280d6d46207a25c41fec24/tests/unit/test_neutral_arrival_labels.py#L465) · [Composite tissue and production/clearance fixture](https://github.com/Eidosoma/Cells/blob/73afa19b5ddcb50405280d6d46207a25c41fec24/validation/tissue/secreted_species_fixtures.py) · [Reaction fixture and schedules](https://github.com/Eidosoma/Cells/blob/73afa19b5ddcb50405280d6d46207a25c41fec24/validation/tissue/species_reactions_fixtures.py) · [Exact endpoint and normalized label amounts](https://github.com/Eidosoma/Cells/blob/7e41a441b51b5a84ec57febb04b1e7a8f801674d/lean/CellsProofs/Chemistry/ArrivalSurvival.lean) · [Quadratic cohort and blank reference](https://github.com/Eidosoma/Cells/blob/7e41a441b51b5a84ec57febb04b1e7a8f801674d/lean/CellsProofs/Chemistry/ArrivalCohort.lean) · [Paired Actn1 isotope signals and GEO sample accessions](https://github.com/Eidosoma/Cells/blob/7e41a441b51b5a84ec57febb04b1e7a8f801674d/lean/checks/data/jovanovic2015_actn1.json) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/7e41a441b51b5a84ec57febb04b1e7a8f801674d/lean/checks/arrival_survival.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/7e41a441b51b5a84ec57febb04b1e7a8f801674d/lean/PROGRESS.md#fr42-neutral-survival)
 
 [Tested engine 73afa19b5ddc](https://github.com/Eidosoma/Cells/commit/73afa19b5ddcb50405280d6d46207a25c41fec24) · [Evidence checkpoint 7e41a441b51b](https://github.com/Eidosoma/Cells/commit/7e41a441b51b5a84ec57febb04b1e7a8f801674d)
+
+**Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`
+
+**Operators** `cells.templated_polymerisation@1`
+
+[One-way release from the template hold into the scheduled class and fate](https://github.com/Eidosoma/Cells/blob/57cf9a4ed0b68454232a3c531c14e1b725853955/src/cells/operators/templated_polymerisation.py#L1201-L1224) · [Template hold and release classes in the R1 world](https://github.com/Eidosoma/Cells/blob/57cf9a4ed0b68454232a3c531c14e1b725853955/validation/gene_regulation/worlds.py#L519-L558) · [Schedule controls on the engine grid](https://github.com/Eidosoma/Cells/blob/57cf9a4ed0b68454232a3c531c14e1b725853955/src/cells/definitions/pump_composite_spec.py#L258) · [Public windowed engine execution](https://github.com/Eidosoma/Cells/blob/57cf9a4ed0b68454232a3c531c14e1b725853955/src/cells/execution/windows.py) · [Compiled collection and class-specific release counters](https://github.com/Eidosoma/Cells/blob/57cf9a4ed0b68454232a3c531c14e1b725853955/validation/gene_regulation/engine_run.py#L393-L411) · [Observation horizon and grid of the starting fixture](https://github.com/Eidosoma/Cells/blob/57cf9a4ed0b68454232a3c531c14e1b725853955/validation/gene_regulation/kernel.py#L28-L36) · [Fate export and release-counter selection](https://github.com/Eidosoma/Cells/blob/57cf9a4ed0b68454232a3c531c14e1b725853955/validation/gene_regulation/cohort.py#L240-L310) · [Exact release-window and chase identities](https://github.com/Eidosoma/Cells/blob/e4b729acf7e784cd088a3a9f05da4de42d5e8dd2/lean/CellsProofs/Chemistry/ArrivalWindow.lean) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/e4b729acf7e784cd088a3a9f05da4de42d5e8dd2/lean/checks/arrival_windows.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/e4b729acf7e784cd088a3a9f05da4de42d5e8dd2/lean/PROGRESS.md#fr42-release-windows)
+
+[Tested engine 57cf9a4ed0b6](https://github.com/Eidosoma/Cells/commit/57cf9a4ed0b68454232a3c531c14e1b725853955) · [Evidence checkpoint e4b729acf7e7](https://github.com/Eidosoma/Cells/commit/e4b729acf7e784cd088a3a9f05da4de42d5e8dd2)
 
 ## Biological evidence
 

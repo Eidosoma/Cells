@@ -21,11 +21,11 @@ Direct proof subject `cells.templated_polymerisation@1`
 
 Proof sources [Mathlib triangle inequality specialized to the two count errors](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/Order/Group/Abs.lean#L73-L78) · [Mathlib absolute value of a quotient](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/Order/Field/Basic.lean#L648-L652) · [Mathlib nonnegative product of chase factors](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/Order/BigOperators/Ring/Finset.lean#L30-L34) · [Cells count and ratio definitions](https://github.com/Eidosoma/Cells/blob/57c3cb909db5ebe9a24b90f3d78d7c6a182fd72b/validation/gene_regulation/cohort.py#L200-L216)
 
-Uses [A reused release-time label carries forward its older survivors](release-window-survival.md)
+Uses [Marked RNA is accounted for in both release fates, including after label reuse](release-window-survival.md)
 
 ## Numerical comparison
 
-**Checked.** The repaired checker gave the expected four control verdicts. Three samples yielded insufficient resolution, a resolved ratio of 1 failed against ¼, an empty cohort was identified, and the turnover control passed. All eight R1/R2 ratios reread from compiled exports passed with finite estimated error. The previous checker gave a false pass and raised on the empty cohort.
+**Checked.** The repaired checker gave the expected four control verdicts. Three samples yielded insufficient resolution, a resolved ratio of 1 failed against ¼, an empty cohort was identified, and the turnover control passed. All eight R1/R2 ratios reread from compiled exports passed with finite estimated error. The previous checker gave a false pass and raised on the empty cohort. These eight development readouts use the original exports. The independent registered FR-38 comparison subsequently failed R1 and found R2 inconclusive.
 
 **Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`
 

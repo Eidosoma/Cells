@@ -214,6 +214,8 @@ Lean extends the FR-38 step balance to the event in the tagged §9.16 amendment 
 
 Two unlabelled `templated_polymerisation@1` worlds exercised disk restart on public Cells `5ef76150`. A checkpoint at 4 s contained attached RNA and eight occupied stages under each machine-return policy. After writing and loading it, all 40 state fields, including their dtypes and bytes, matched the uninterrupted run at 4, 6, 8 and 10 s. These were ordinary runs with a single occupant. Cell replacement, its removal counters, and producer identity across a replacement still need an engine replay when the event is implemented. The same evidence run records the checkpoint comparison in `restart.json`. [Restart control](checks/release_restart.py) · [Cells snapshot format](https://github.com/Eidosoma/Cells/blob/5ef761505f2dbd48c35e36a2caee391e1f7d9394/src/cells/records/io.py#L86)
 
+The later [producer-labelled replacement replay](#fr38-producer-replacement) checks the departing material and producer identity through a checkpoint. An independent numerical reconstruction of the full residue and event-energy accounts remains open.
+
 <a id="fr38-lossless-fate"></a>
 
 ## 22 November 2026 · Original missing zero-loss counter for a release fate

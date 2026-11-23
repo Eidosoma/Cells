@@ -27,7 +27,7 @@ Proof sources [Cells inner-cycle charge columns specialized to arbitrary signed 
 
 ## Numerical comparison
 
-**Open.** In two compiled seven-cycle worlds with a potassium-only outer face, combined charge changed by at most 1.27 × 10⁻¹⁸ fmol of charge equivalents. Initial IMS-minus-bath voltage was 0 mV at matched K and −85.61293 mV at a 140:5 gradient. The public parser admits K and AMP individually and refuses five other declared rows. Full per-form outer transport and the MT-1b anchor/start comparison remain open. The separate generic two-ion face and seven-cycle tests are linked below.
+**Open.** In two compiled seven-cycle worlds with a potassium-only outer face, combined charge changed by at most 1.27 × 10⁻¹⁸ fmol of charge equivalents. Initial IMS-minus-bath voltage was 0 mV at matched K and −85.61293 mV at a 140:5 gradient. The original outer face admitted K and AMP individually and refused five other declared rows. The forms-aware law now has a [separate transport comparison](forms-face-carriage.md). The full MT-1b anchor/start comparison remains open.
 
 **Engine** `resolved_pump_tissue@3`, `cells.nadh_ubiquinone_proton_cycle@1`, `cells.ubiquinol_cytochrome_c_proton_cycle@1`, `cells.cytochrome_c_oxygen_proton_cycle@1`, `cells.proton_coupled_atp_synthesis_cycle@1`, `cells.electrogenic_nucleotide_exchange@1`, `cells.phosphate_proton_symport@1`, `cells.potassium_proton_exchange@1`, `cells.logmean_electrodiffusion@1`
 

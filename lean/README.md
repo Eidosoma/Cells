@@ -6,15 +6,15 @@ Browse Cells engine laws by scientific topic. Each claim links its Lean proofs, 
 
 <!-- generated: claims-index -->
 
-Direct Lean claims cover [55 of 55 laws](COVERAGE.md#registered-laws) and [33 of 33 operators](COVERAGE.md#registered-operators).
+Direct Lean claims cover [55 of 55 laws](COVERAGE.md#registered-laws) and [34 of 34 operators](COVERAGE.md#registered-operators).
 
 | Category | Registered laws with proof | Claims with proof | Numerical checks | Claims with biological evidence |
 | --- | ---: | ---: | --- | ---: |
 | [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 6 of 6 | 11 of 11 | 11 checked | 10 |
 | [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 15 of 15 | 15 of 15 | 15 checked | 14 |
-| [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 8 of 8 | 8 checked | 8 |
+| [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 9 of 9 | 8 checked · 1 open | 9 |
 | [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 16 of 16 | 15 checked · 1 failed | 12 |
-| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 16 of 16 | 37 of 37 | 35 checked · 2 failed | 24 |
+| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 16 of 16 | 41 of 41 | 38 checked · 2 failed · 1 open | 26 |
 | [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 2 of 2 | 27 of 27 | 27 checked | 20 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
 
