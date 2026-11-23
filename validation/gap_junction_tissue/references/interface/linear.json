@@ -1,0 +1,1393 @@
+{
+ "format": "gap_junction_tissue.linear_references@1",
+ "registration": "gj-linear-registered-2026-11-23",
+ "networks": {
+  "figure3-g0.5": {
+   "declaration": {
+    "cells": [
+     {
+      "id": "A",
+      "unloaded": 5.0,
+      "size": 1.0
+     },
+     {
+      "id": "B",
+      "unloaded": 10.0,
+      "size": 1.0
+     }
+    ],
+    "junctions": [
+     {
+      "id": "gj_AB",
+      "a": "A",
+      "b": "B",
+      "g": 0.5
+     }
+    ],
+    "probes": []
+   },
+   "concentrations": {
+    "A": 6.25,
+    "B": 8.75
+   },
+   "accuracy_rel": 1.1102230246251565e-16,
+   "method": "exact rational steady state of model.balance (fractions.Fraction, Gauss-Jordan), every declared number taken as its exact binary64 value; every cell's balance residual is exactly zero; equal exactly to the preprint's black-box (Norton) reduction on the junction tree and to eq. 2 (two cells); each concentration is the correctly rounded binary64 of its exact rational (checked exactly against both neighbours)"
+  },
+  "figure3-g1": {
+   "declaration": {
+    "cells": [
+     {
+      "id": "A",
+      "unloaded": 5.0,
+      "size": 1.0
+     },
+     {
+      "id": "B",
+      "unloaded": 10.0,
+      "size": 1.0
+     }
+    ],
+    "junctions": [
+     {
+      "id": "gj_AB",
+      "a": "A",
+      "b": "B",
+      "g": 1.0
+     }
+    ],
+    "probes": []
+   },
+   "concentrations": {
+    "A": 6.666666666666667,
+    "B": 8.333333333333334
+   },
+   "accuracy_rel": 1.1102230246251565e-16,
+   "method": "exact rational steady state of model.balance (fractions.Fraction, Gauss-Jordan), every declared number taken as its exact binary64 value; every cell's balance residual is exactly zero; equal exactly to the preprint's black-box (Norton) reduction on the junction tree and to eq. 2 (two cells); each concentration is the correctly rounded binary64 of its exact rational (checked exactly against both neighbours)"
+  },
+  "figure3-g2": {
+   "declaration": {
+    "cells": [
+     {
+      "id": "A",
+      "unloaded": 5.0,
+      "size": 1.0
+     },
+     {
+      "id": "B",
+      "unloaded": 10.0,
+      "size": 1.0
+     }
+    ],
+    "junctions": [
+     {
+      "id": "gj_AB",
+      "a": "A",
+      "b": "B",
+      "g": 2.0
+     }
+    ],
+    "probes": []
+   },
+   "concentrations": {
+    "A": 7.0,
+    "B": 8.0
+   },
+   "accuracy_rel": 1.1102230246251565e-16,
+   "method": "exact rational steady state of model.balance (fractions.Fraction, Gauss-Jordan), every declared number taken as its exact binary64 value; every cell's balance residual is exactly zero; equal exactly to the preprint's black-box (Norton) reduction on the junction tree and to eq. 2 (two cells); each concentration is the correctly rounded binary64 of its exact rational (checked exactly against both neighbours)"
+  },
+  "figure3-g5": {
+   "declaration": {
+    "cells": [
+     {
+      "id": "A",
+      "unloaded": 5.0,
+      "size": 1.0
+     },
+     {
+      "id": "B",
+      "unloaded": 10.0,
+      "size": 1.0
+     }
+    ],
+    "junctions": [
+     {
+      "id": "gj_AB",
+      "a": "A",
+      "b": "B",
+      "g": 5.0
+     }
+    ],
+    "probes": []
+   },
+   "concentrations": {
+    "A": 7.2727272727272725,
+    "B": 7.7272727272727275
+   },
+   "accuracy_rel": 1.1102230246251565e-16,
+   "method": "exact rational steady state of model.balance (fractions.Fraction, Gauss-Jordan), every declared number taken as its exact binary64 value; every cell's balance residual is exactly zero; equal exactly to the preprint's black-box (Norton) reduction on the junction tree and to eq. 2 (two cells); each concentration is the correctly rounded binary64 of its exact rational (checked exactly against both neighbours)"
+  },
+  "figure3-g10": {
+   "declaration": {
+    "cells": [
+     {
+      "id": "A",
+      "unloaded": 5.0,
+      "size": 1.0
+     },
+     {
+      "id": "B",
+      "unloaded": 10.0,
+      "size": 1.0
+     }
+    ],
+    "junctions": [
+     {
+      "id": "gj_AB",
+      "a": "A",
+      "b": "B",
+      "g": 10.0
+     }
+    ],
+    "probes": []
+   },
+   "concentrations": {
+    "A": 7.380952380952381,
+    "B": 7.619047619047619
+   },
+   "accuracy_rel": 1.1102230246251565e-16,
+   "method": "exact rational steady state of model.balance (fractions.Fraction, Gauss-Jordan), every declared number taken as its exact binary64 value; every cell's balance residual is exactly zero; equal exactly to the preprint's black-box (Norton) reduction on the junction tree and to eq. 2 (two cells); each concentration is the correctly rounded binary64 of its exact rational (checked exactly against both neighbours)"
+  },
+  "figure3-g50": {
+   "declaration": {
+    "cells": [
+     {
+      "id": "A",
+      "unloaded": 5.0,
+      "size": 1.0
+     },
+     {
+      "id": "B",
+      "unloaded": 10.0,
+      "size": 1.0
+     }
+    ],
+    "junctions": [
+     {
+      "id": "gj_AB",
+      "a": "A",
+      "b": "B",
+      "g": 50.0
+     }
+    ],
+    "probes": []
+   },
+   "concentrations": {
+    "A": 7.475247524752476,
+    "B": 7.524752475247524
+   },
+   "accuracy_rel": 1.1102230246251565e-16,
+   "method": "exact rational steady state of model.balance (fractions.Fraction, Gauss-Jordan), every declared number taken as its exact binary64 value; every cell's balance residual is exactly zero; equal exactly to the preprint's black-box (Norton) reduction on the junction tree and to eq. 2 (two cells); each concentration is the correctly rounded binary64 of its exact rational (checked exactly against both neighbours)"
+  },
+  "figure5-lumped-g1": {
+   "declaration": {
+    "cells": [
+     {
+      "id": "A",
+      "unloaded": 10.0,
+      "size": 1.0
+     },
+     {
+      "id": "B",
+      "unloaded": 5.0,
+      "size": 1.3333333333333333
+     }
+    ],
+    "junctions": [
+     {
+      "id": "gj_AB",
+      "a": "A",
+      "b": "B",
+      "g": 1.0
+     }
+    ],
+    "probes": []
+   },
+   "concentrations": {
+    "A": 8.181818181818182,
+    "B": 6.363636363636363
+   },
+   "accuracy_rel": 1.1102230246251565e-16,
+   "method": "exact rational steady state of model.balance (fractions.Fraction, Gauss-Jordan), every declared number taken as its exact binary64 value; every cell's balance residual is exactly zero; equal exactly to the preprint's black-box (Norton) reduction on the junction tree and to eq. 2 (two cells); each concentration is the correctly rounded binary64 of its exact rational (checked exactly against both neighbours); the declared 1.3333333333333333 is not exact in binary64, so the network was also solved exactly with it read as its decimal literal and as the simplest rational that rounds to it (4/3): the three exact solutions differ by at most 8.7e-18 relative, and accuracy_rel bounds the error against all three"
+  },
+  "figure5-network-g1": {
+   "declaration": {
+    "cells": [
+     {
+      "id": "A",
+      "unloaded": 10.0,
+      "size": 1.0
+     },
+     {
+      "id": "B",
+      "unloaded": 5.0,
+      "size": 1.0
+     },
+     {
+      "id": "A1",
+      "unloaded": 10.0,
+      "size": 1.0
+     },
+     {
+      "id": "A2",
+      "unloaded": 10.0,
+      "size": 1.0
+     },
+     {
+      "id": "B1",
+      "unloaded": 5.0,
+      "size": 1.0
+     },
+     {
+      "id": "B2",
+      "unloaded": 5.0,
+      "size": 1.0
+     },
+     {
+      "id": "B3",
+      "unloaded": 5.0,
+      "size": 1.0
+     }
+    ],
+    "junctions": [
+     {
+      "id": "gj_AB",
+      "a": "A",
+      "b": "B",
+      "g": 1.0
+     },
+     {
+      "id": "gj_A1",
+      "a": "A",
+      "b": "A1",
+      "g": 1.0
+     },
+     {
+      "id": "gj_A2",
+      "a": "A",
+      "b": "A2",
+      "g": 1.0
+     },
+     {
+      "id": "gj_B1",
+      "a": "B",
+      "b": "B1",
+      "g": 1.0
+     },
+     {
+      "id": "gj_B2",
+      "a": "B",
+      "b": "B2",
+      "g": 1.0
+     },
+     {
+      "id": "gj_B3",
+      "a": "B",
+      "b": "B3",
+      "g": 1.0
+     }
+    ],
+    "probes": []
+   },
+   "concentrations": {
+    "A": 8.68421052631579,
+    "B": 6.052631578947368,
+    "A1": 9.342105263157896,
+    "A2": 9.342105263157896,
+    "B1": 5.526315789473684,
+    "B2": 5.526315789473684,
+    "B3": 5.526315789473684
+   },
+   "accuracy_rel": 1.1102230246251565e-16,
+   "method": "exact rational steady state of model.balance (fractions.Fraction, Gauss-Jordan), every declared number taken as its exact binary64 value; every cell's balance residual is exactly zero; equal exactly to the preprint's black-box (Norton) reduction on the junction tree; each concentration is the correctly rounded binary64 of its exact rational (checked exactly against both neighbours)"
+  },
+  "figure5-lumped-g10": {
+   "declaration": {
+    "cells": [
+     {
+      "id": "A",
+      "unloaded": 10.0,
+      "size": 1.0
+     },
+     {
+      "id": "B",
+      "unloaded": 5.0,
+      "size": 1.3333333333333333
+     }
+    ],
+    "junctions": [
+     {
+      "id": "gj_AB",
+      "a": "A",
+      "b": "B",
+      "g": 10.0
+     }
+    ],
+    "probes": []
+   },
+   "concentrations": {
+    "A": 7.297297297297297,
+    "B": 7.027027027027027
+   },
+   "accuracy_rel": 1.1102230246251565e-16,
+   "method": "exact rational steady state of model.balance (fractions.Fraction, Gauss-Jordan), every declared number taken as its exact binary64 value; every cell's balance residual is exactly zero; equal exactly to the preprint's black-box (Norton) reduction on the junction tree and to eq. 2 (two cells); each concentration is the correctly rounded binary64 of its exact rational (checked exactly against both neighbours); the declared 1.3333333333333333 is not exact in binary64, so the network was also solved exactly with it read as its decimal literal and as the simplest rational that rounds to it (4/3): the three exact solutions differ by at most 9.5e-18 relative, and accuracy_rel bounds the error against all three"
+  },
+  "figure5-network-g10": {
+   "declaration": {
+    "cells": [
+     {
+      "id": "A",
+      "unloaded": 10.0,
+      "size": 1.0
+     },
+     {
+      "id": "B",
+      "unloaded": 5.0,
+      "size": 1.0
+     },
+     {
+      "id": "A1",
+      "unloaded": 10.0,
+      "size": 1.0
+     },
+     {
+      "id": "A2",
+      "unloaded": 10.0,
+      "size": 1.0
+     },
+     {
+      "id": "B1",
+      "unloaded": 5.0,
+      "size": 1.0
+     },
+     {
+      "id": "B2",
+      "unloaded": 5.0,
+      "size": 1.0
+     },
+     {
+      "id": "B3",
+      "unloaded": 5.0,
+      "size": 1.0
+     }
+    ],
+    "junctions": [
+     {
+      "id": "gj_AB",
+      "a": "A",
+      "b": "B",
+      "g": 10.0
+     },
+     {
+      "id": "gj_A1",
+      "a": "A",
+      "b": "A1",
+      "g": 10.0
+     },
+     {
+      "id": "gj_A2",
+      "a": "A",
+      "b": "A2",
+      "g": 10.0
+     },
+     {
+      "id": "gj_B1",
+      "a": "B",
+      "b": "B1",
+      "g": 10.0
+     },
+     {
+      "id": "gj_B2",
+      "a": "B",
+      "b": "B2",
+      "g": 10.0
+     },
+     {
+      "id": "gj_B3",
+      "a": "B",
+      "b": "B3",
+      "g": 10.0
+     }
+    ],
+    "probes": []
+   },
+   "concentrations": {
+    "A": 7.546512893047547,
+    "B": 6.855075617451855,
+    "A1": 7.76955717549777,
+    "A2": 7.76955717549777,
+    "B1": 6.686432379501686,
+    "B2": 6.686432379501686,
+    "B3": 6.686432379501686
+   },
+   "accuracy_rel": 1.1102230246251565e-16,
+   "method": "exact rational steady state of model.balance (fractions.Fraction, Gauss-Jordan), every declared number taken as its exact binary64 value; every cell's balance residual is exactly zero; equal exactly to the preprint's black-box (Norton) reduction on the junction tree; each concentration is the correctly rounded binary64 of its exact rational (checked exactly against both neighbours)"
+  },
+  "figure5-lumped-g50": {
+   "declaration": {
+    "cells": [
+     {
+      "id": "A",
+      "unloaded": 10.0,
+      "size": 1.0
+     },
+     {
+      "id": "B",
+      "unloaded": 5.0,
+      "size": 1.3333333333333333
+     }
+    ],
+    "junctions": [
+     {
+      "id": "gj_AB",
+      "a": "A",
+      "b": "B",
+      "g": 50.0
+     }
+    ],
+    "probes": []
+   },
+   "concentrations": {
+    "A": 7.175141242937853,
+    "B": 7.11864406779661
+   },
+   "accuracy_rel": 1.1102230246251565e-16,
+   "method": "exact rational steady state of model.balance (fractions.Fraction, Gauss-Jordan), every declared number taken as its exact binary64 value; every cell's balance residual is exactly zero; equal exactly to the preprint's black-box (Norton) reduction on the junction tree and to eq. 2 (two cells); each concentration is the correctly rounded binary64 of its exact rational (checked exactly against both neighbours); the declared 1.3333333333333333 is not exact in binary64, so the network was also solved exactly with it read as its decimal literal and as the simplest rational that rounds to it (4/3): the three exact solutions differ by at most 9.5e-18 relative, and accuracy_rel bounds the error against all three"
+  },
+  "figure5-network-g50": {
+   "declaration": {
+    "cells": [
+     {
+      "id": "A",
+      "unloaded": 10.0,
+      "size": 1.0
+     },
+     {
+      "id": "B",
+      "unloaded": 5.0,
+      "size": 1.0
+     },
+     {
+      "id": "A1",
+      "unloaded": 10.0,
+      "size": 1.0
+     },
+     {
+      "id": "A2",
+      "unloaded": 10.0,
+      "size": 1.0
+     },
+     {
+      "id": "B1",
+      "unloaded": 5.0,
+      "size": 1.0
+     },
+     {
+      "id": "B2",
+      "unloaded": 5.0,
+      "size": 1.0
+     },
+     {
+      "id": "B3",
+      "unloaded": 5.0,
+      "size": 1.0
+     }
+    ],
+    "junctions": [
+     {
+      "id": "gj_AB",
+      "a": "A",
+      "b": "B",
+      "g": 50.0
+     },
+     {
+      "id": "gj_A1",
+      "a": "A",
+      "b": "A1",
+      "g": 50.0
+     },
+     {
+      "id": "gj_A2",
+      "a": "A",
+      "b": "A2",
+      "g": 50.0
+     },
+     {
+      "id": "gj_B1",
+      "a": "B",
+      "b": "B1",
+      "g": 50.0
+     },
+     {
+      "id": "gj_B2",
+      "a": "B",
+      "b": "B2",
+      "g": 50.0
+     },
+     {
+      "id": "gj_B3",
+      "a": "B",
+      "b": "B3",
+      "g": 50.0
+     }
+    ],
+    "probes": []
+   },
+   "concentrations": {
+    "A": 7.2382701241768155,
+    "B": 7.074732394275129,
+    "A1": 7.292421690369427,
+    "A2": 7.292421690369427,
+    "B1": 7.034051366936401,
+    "B2": 7.034051366936401,
+    "B3": 7.034051366936401
+   },
+   "accuracy_rel": 1.1102230246251565e-16,
+   "method": "exact rational steady state of model.balance (fractions.Fraction, Gauss-Jordan), every declared number taken as its exact binary64 value; every cell's balance residual is exactly zero; equal exactly to the preprint's black-box (Norton) reduction on the junction tree; each concentration is the correctly rounded binary64 of its exact rational (checked exactly against both neighbours)"
+  },
+  "figure8-chain1-held0.5": {
+   "declaration": {
+    "cells": [
+     {
+      "id": "c0",
+      "unloaded": 1.0,
+      "size": 1.0
+     }
+    ],
+    "junctions": [],
+    "probes": [
+     {
+      "id": "probe",
+      "cell": "c0",
+      "held": 0.5,
+      "g": 1.0
+     }
+    ]
+   },
+   "concentrations": {
+    "c0": 0.75
+   },
+   "accuracy_rel": 1.1102230246251565e-16,
+   "method": "exact rational steady state of model.balance (fractions.Fraction, Gauss-Jordan), every declared number taken as its exact binary64 value; every cell's balance residual is exactly zero; equal exactly to the preprint's black-box (Norton) reduction on the junction tree and to the uniform-chain closed form c_k = 1 + F(2k+1) e_0; each concentration is the correctly rounded binary64 of its exact rational (checked exactly against both neighbours)"
+  },
+  "figure8-chain1-held2": {
+   "declaration": {
+    "cells": [
+     {
+      "id": "c0",
+      "unloaded": 1.0,
+      "size": 1.0
+     }
+    ],
+    "junctions": [],
+    "probes": [
+     {
+      "id": "probe",
+      "cell": "c0",
+      "held": 2.0,
+      "g": 1.0
+     }
+    ]
+   },
+   "concentrations": {
+    "c0": 1.5
+   },
+   "accuracy_rel": 1.1102230246251565e-16,
+   "method": "exact rational steady state of model.balance (fractions.Fraction, Gauss-Jordan), every declared number taken as its exact binary64 value; every cell's balance residual is exactly zero; equal exactly to the preprint's black-box (Norton) reduction on the junction tree and to the uniform-chain closed form c_k = 1 + F(2k+1) e_0; each concentration is the correctly rounded binary64 of its exact rational (checked exactly against both neighbours)"
+  },
+  "figure8-chain2-held0.5": {
+   "declaration": {
+    "cells": [
+     {
+      "id": "c0",
+      "unloaded": 1.0,
+      "size": 1.0
+     },
+     {
+      "id": "c1",
+      "unloaded": 1.0,
+      "size": 1.0
+     }
+    ],
+    "junctions": [
+     {
+      "id": "gj_0",
+      "a": "c0",
+      "b": "c1",
+      "g": 1.0
+     }
+    ],
+    "probes": [
+     {
+      "id": "probe",
+      "cell": "c1",
+      "held": 0.5,
+      "g": 1.0
+     }
+    ]
+   },
+   "concentrations": {
+    "c0": 0.9,
+    "c1": 0.8
+   },
+   "accuracy_rel": 1.1102230246251565e-16,
+   "method": "exact rational steady state of model.balance (fractions.Fraction, Gauss-Jordan), every declared number taken as its exact binary64 value; every cell's balance residual is exactly zero; equal exactly to the preprint's black-box (Norton) reduction on the junction tree and to the uniform-chain closed form c_k = 1 + F(2k+1) e_0; each concentration is the correctly rounded binary64 of its exact rational (checked exactly against both neighbours)"
+  },
+  "figure8-chain2-held2": {
+   "declaration": {
+    "cells": [
+     {
+      "id": "c0",
+      "unloaded": 1.0,
+      "size": 1.0
+     },
+     {
+      "id": "c1",
+      "unloaded": 1.0,
+      "size": 1.0
+     }
+    ],
+    "junctions": [
+     {
+      "id": "gj_0",
+      "a": "c0",
+      "b": "c1",
+      "g": 1.0
+     }
+    ],
+    "probes": [
+     {
+      "id": "probe",
+      "cell": "c1",
+      "held": 2.0,
+      "g": 1.0
+     }
+    ]
+   },
+   "concentrations": {
+    "c0": 1.2,
+    "c1": 1.4
+   },
+   "accuracy_rel": 1.1102230246251565e-16,
+   "method": "exact rational steady state of model.balance (fractions.Fraction, Gauss-Jordan), every declared number taken as its exact binary64 value; every cell's balance residual is exactly zero; equal exactly to the preprint's black-box (Norton) reduction on the junction tree and to the uniform-chain closed form c_k = 1 + F(2k+1) e_0; each concentration is the correctly rounded binary64 of its exact rational (checked exactly against both neighbours)"
+  },
+  "figure8-chain3-held0.5": {
+   "declaration": {
+    "cells": [
+     {
+      "id": "c0",
+      "unloaded": 1.0,
+      "size": 1.0
+     },
+     {
+      "id": "c1",
+      "unloaded": 1.0,
+      "size": 1.0
+     },
+     {
+      "id": "c2",
+      "unloaded": 1.0,
+      "size": 1.0
+     }
+    ],
+    "junctions": [
+     {
+      "id": "gj_0",
+      "a": "c0",
+      "b": "c1",
+      "g": 1.0
+     },
+     {
+      "id": "gj_1",
+      "a": "c1",
+      "b": "c2",
+      "g": 1.0
+     }
+    ],
+    "probes": [
+     {
+      "id": "probe",
+      "cell": "c2",
+      "held": 0.5,
+      "g": 1.0
+     }
+    ]
+   },
+   "concentrations": {
+    "c0": 0.9615384615384616,
+    "c1": 0.9230769230769231,
+    "c2": 0.8076923076923077
+   },
+   "accuracy_rel": 1.1102230246251565e-16,
+   "method": "exact rational steady state of model.balance (fractions.Fraction, Gauss-Jordan), every declared number taken as its exact binary64 value; every cell's balance residual is exactly zero; equal exactly to the preprint's black-box (Norton) reduction on the junction tree and to the uniform-chain closed form c_k = 1 + F(2k+1) e_0; each concentration is the correctly rounded binary64 of its exact rational (checked exactly against both neighbours)"
+  },
+  "figure8-chain3-held2": {
+   "declaration": {
+    "cells": [
+     {
+      "id": "c0",
+      "unloaded": 1.0,
+      "size": 1.0
+     },
+     {
+      "id": "c1",
+      "unloaded": 1.0,
+      "size": 1.0
+     },
+     {
+      "id": "c2",
+      "unloaded": 1.0,
+      "size": 1.0
+     }
+    ],
+    "junctions": [
+     {
+      "id": "gj_0",
+      "a": "c0",
+      "b": "c1",
+      "g": 1.0
+     },
+     {
+      "id": "gj_1",
+      "a": "c1",
+      "b": "c2",
+      "g": 1.0
+     }
+    ],
+    "probes": [
+     {
+      "id": "probe",
+      "cell": "c2",
+      "held": 2.0,
+      "g": 1.0
+     }
+    ]
+   },
+   "concentrations": {
+    "c0": 1.0769230769230769,
+    "c1": 1.1538461538461537,
+    "c2": 1.3846153846153846
+   },
+   "accuracy_rel": 1.1102230246251565e-16,
+   "method": "exact rational steady state of model.balance (fractions.Fraction, Gauss-Jordan), every declared number taken as its exact binary64 value; every cell's balance residual is exactly zero; equal exactly to the preprint's black-box (Norton) reduction on the junction tree and to the uniform-chain closed form c_k = 1 + F(2k+1) e_0; each concentration is the correctly rounded binary64 of its exact rational (checked exactly against both neighbours)"
+  },
+  "figure8-chain4-held0.5": {
+   "declaration": {
+    "cells": [
+     {
+      "id": "c0",
+      "unloaded": 1.0,
+      "size": 1.0
+     },
+     {
+      "id": "c1",
+      "unloaded": 1.0,
+      "size": 1.0
+     },
+     {
+      "id": "c2",
+      "unloaded": 1.0,
+      "size": 1.0
+     },
+     {
+      "id": "c3",
+      "unloaded": 1.0,
+      "size": 1.0
+     }
+    ],
+    "junctions": [
+     {
+      "id": "gj_0",
+      "a": "c0",
+      "b": "c1",
+      "g": 1.0
+     },
+     {
+      "id": "gj_1",
+      "a": "c1",
+      "b": "c2",
+      "g": 1.0
+     },
+     {
+      "id": "gj_2",
+      "a": "c2",
+      "b": "c3",
+      "g": 1.0
+     }
+    ],
+    "probes": [
+     {
+      "id": "probe",
+      "cell": "c3",
+      "held": 0.5,
+      "g": 1.0
+     }
+    ]
+   },
+   "concentrations": {
+    "c0": 0.9852941176470589,
+    "c1": 0.9705882352941176,
+    "c2": 0.9264705882352942,
+    "c3": 0.8088235294117647
+   },
+   "accuracy_rel": 1.1102230246251565e-16,
+   "method": "exact rational steady state of model.balance (fractions.Fraction, Gauss-Jordan), every declared number taken as its exact binary64 value; every cell's balance residual is exactly zero; equal exactly to the preprint's black-box (Norton) reduction on the junction tree and to the uniform-chain closed form c_k = 1 + F(2k+1) e_0; each concentration is the correctly rounded binary64 of its exact rational (checked exactly against both neighbours)"
+  },
+  "figure8-chain4-held2": {
+   "declaration": {
+    "cells": [
+     {
+      "id": "c0",
+      "unloaded": 1.0,
+      "size": 1.0
+     },
+     {
+      "id": "c1",
+      "unloaded": 1.0,
+      "size": 1.0
+     },
+     {
+      "id": "c2",
+      "unloaded": 1.0,
+      "size": 1.0
+     },
+     {
+      "id": "c3",
+      "unloaded": 1.0,
+      "size": 1.0
+     }
+    ],
+    "junctions": [
+     {
+      "id": "gj_0",
+      "a": "c0",
+      "b": "c1",
+      "g": 1.0
+     },
+     {
+      "id": "gj_1",
+      "a": "c1",
+      "b": "c2",
+      "g": 1.0
+     },
+     {
+      "id": "gj_2",
+      "a": "c2",
+      "b": "c3",
+      "g": 1.0
+     }
+    ],
+    "probes": [
+     {
+      "id": "probe",
+      "cell": "c3",
+      "held": 2.0,
+      "g": 1.0
+     }
+    ]
+   },
+   "concentrations": {
+    "c0": 1.0294117647058822,
+    "c1": 1.0588235294117647,
+    "c2": 1.1470588235294117,
+    "c3": 1.3823529411764706
+   },
+   "accuracy_rel": 1.1102230246251565e-16,
+   "method": "exact rational steady state of model.balance (fractions.Fraction, Gauss-Jordan), every declared number taken as its exact binary64 value; every cell's balance residual is exactly zero; equal exactly to the preprint's black-box (Norton) reduction on the junction tree and to the uniform-chain closed form c_k = 1 + F(2k+1) e_0; each concentration is the correctly rounded binary64 of its exact rational (checked exactly against both neighbours)"
+  },
+  "figure8-chain5-held0.5": {
+   "declaration": {
+    "cells": [
+     {
+      "id": "c0",
+      "unloaded": 1.0,
+      "size": 1.0
+     },
+     {
+      "id": "c1",
+      "unloaded": 1.0,
+      "size": 1.0
+     },
+     {
+      "id": "c2",
+      "unloaded": 1.0,
+      "size": 1.0
+     },
+     {
+      "id": "c3",
+      "unloaded": 1.0,
+      "size": 1.0
+     },
+     {
+      "id": "c4",
+      "unloaded": 1.0,
+      "size": 1.0
+     }
+    ],
+    "junctions": [
+     {
+      "id": "gj_0",
+      "a": "c0",
+      "b": "c1",
+      "g": 1.0
+     },
+     {
+      "id": "gj_1",
+      "a": "c1",
+      "b": "c2",
+      "g": 1.0
+     },
+     {
+      "id": "gj_2",
+      "a": "c2",
+      "b": "c3",
+      "g": 1.0
+     },
+     {
+      "id": "gj_3",
+      "a": "c3",
+      "b": "c4",
+      "g": 1.0
+     }
+    ],
+    "probes": [
+     {
+      "id": "probe",
+      "cell": "c4",
+      "held": 0.5,
+      "g": 1.0
+     }
+    ]
+   },
+   "concentrations": {
+    "c0": 0.9943820224719101,
+    "c1": 0.9887640449438202,
+    "c2": 0.9719101123595506,
+    "c3": 0.9269662921348315,
+    "c4": 0.8089887640449438
+   },
+   "accuracy_rel": 1.1102230246251565e-16,
+   "method": "exact rational steady state of model.balance (fractions.Fraction, Gauss-Jordan), every declared number taken as its exact binary64 value; every cell's balance residual is exactly zero; equal exactly to the preprint's black-box (Norton) reduction on the junction tree and to the uniform-chain closed form c_k = 1 + F(2k+1) e_0; each concentration is the correctly rounded binary64 of its exact rational (checked exactly against both neighbours)"
+  },
+  "figure8-chain5-held2": {
+   "declaration": {
+    "cells": [
+     {
+      "id": "c0",
+      "unloaded": 1.0,
+      "size": 1.0
+     },
+     {
+      "id": "c1",
+      "unloaded": 1.0,
+      "size": 1.0
+     },
+     {
+      "id": "c2",
+      "unloaded": 1.0,
+      "size": 1.0
+     },
+     {
+      "id": "c3",
+      "unloaded": 1.0,
+      "size": 1.0
+     },
+     {
+      "id": "c4",
+      "unloaded": 1.0,
+      "size": 1.0
+     }
+    ],
+    "junctions": [
+     {
+      "id": "gj_0",
+      "a": "c0",
+      "b": "c1",
+      "g": 1.0
+     },
+     {
+      "id": "gj_1",
+      "a": "c1",
+      "b": "c2",
+      "g": 1.0
+     },
+     {
+      "id": "gj_2",
+      "a": "c2",
+      "b": "c3",
+      "g": 1.0
+     },
+     {
+      "id": "gj_3",
+      "a": "c3",
+      "b": "c4",
+      "g": 1.0
+     }
+    ],
+    "probes": [
+     {
+      "id": "probe",
+      "cell": "c4",
+      "held": 2.0,
+      "g": 1.0
+     }
+    ]
+   },
+   "concentrations": {
+    "c0": 1.0112359550561798,
+    "c1": 1.0224719101123596,
+    "c2": 1.0561797752808988,
+    "c3": 1.146067415730337,
+    "c4": 1.3820224719101124
+   },
+   "accuracy_rel": 1.1102230246251565e-16,
+   "method": "exact rational steady state of model.balance (fractions.Fraction, Gauss-Jordan), every declared number taken as its exact binary64 value; every cell's balance residual is exactly zero; equal exactly to the preprint's black-box (Norton) reduction on the junction tree and to the uniform-chain closed form c_k = 1 + F(2k+1) e_0; each concentration is the correctly rounded binary64 of its exact rational (checked exactly against both neighbours)"
+  },
+  "figure8-chain10-held0.5": {
+   "declaration": {
+    "cells": [
+     {
+      "id": "c0",
+      "unloaded": 1.0,
+      "size": 1.0
+     },
+     {
+      "id": "c1",
+      "unloaded": 1.0,
+      "size": 1.0
+     },
+     {
+      "id": "c2",
+      "unloaded": 1.0,
+      "size": 1.0
+     },
+     {
+      "id": "c3",
+      "unloaded": 1.0,
+      "size": 1.0
+     },
+     {
+      "id": "c4",
+      "unloaded": 1.0,
+      "size": 1.0
+     },
+     {
+      "id": "c5",
+      "unloaded": 1.0,
+      "size": 1.0
+     },
+     {
+      "id": "c6",
+      "unloaded": 1.0,
+      "size": 1.0
+     },
+     {
+      "id": "c7",
+      "unloaded": 1.0,
+      "size": 1.0
+     },
+     {
+      "id": "c8",
+      "unloaded": 1.0,
+      "size": 1.0
+     },
+     {
+      "id": "c9",
+      "unloaded": 1.0,
+      "size": 1.0
+     }
+    ],
+    "junctions": [
+     {
+      "id": "gj_0",
+      "a": "c0",
+      "b": "c1",
+      "g": 1.0
+     },
+     {
+      "id": "gj_1",
+      "a": "c1",
+      "b": "c2",
+      "g": 1.0
+     },
+     {
+      "id": "gj_2",
+      "a": "c2",
+      "b": "c3",
+      "g": 1.0
+     },
+     {
+      "id": "gj_3",
+      "a": "c3",
+      "b": "c4",
+      "g": 1.0
+     },
+     {
+      "id": "gj_4",
+      "a": "c4",
+      "b": "c5",
+      "g": 1.0
+     },
+     {
+      "id": "gj_5",
+      "a": "c5",
+      "b": "c6",
+      "g": 1.0
+     },
+     {
+      "id": "gj_6",
+      "a": "c6",
+      "b": "c7",
+      "g": 1.0
+     },
+     {
+      "id": "gj_7",
+      "a": "c7",
+      "b": "c8",
+      "g": 1.0
+     },
+     {
+      "id": "gj_8",
+      "a": "c8",
+      "b": "c9",
+      "g": 1.0
+     }
+    ],
+    "probes": [
+     {
+      "id": "probe",
+      "cell": "c9",
+      "held": 0.5,
+      "g": 1.0
+     }
+    ]
+   },
+   "concentrations": {
+    "c0": 0.9999543212132286,
+    "c1": 0.9999086424264572,
+    "c2": 0.9997716060661429,
+    "c3": 0.9994061757719715,
+    "c4": 0.9984469212497716,
+    "c5": 0.9959345879773434,
+    "c6": 0.9893568426822583,
+    "c7": 0.9721359400694317,
+    "c8": 0.9270509775260369,
+    "c9": 0.809016992508679
+   },
+   "accuracy_rel": 1.1102230246251565e-16,
+   "method": "exact rational steady state of model.balance (fractions.Fraction, Gauss-Jordan), every declared number taken as its exact binary64 value; every cell's balance residual is exactly zero; equal exactly to the preprint's black-box (Norton) reduction on the junction tree and to the uniform-chain closed form c_k = 1 + F(2k+1) e_0; each concentration is the correctly rounded binary64 of its exact rational (checked exactly against both neighbours)"
+  },
+  "figure8-chain10-held2": {
+   "declaration": {
+    "cells": [
+     {
+      "id": "c0",
+      "unloaded": 1.0,
+      "size": 1.0
+     },
+     {
+      "id": "c1",
+      "unloaded": 1.0,
+      "size": 1.0
+     },
+     {
+      "id": "c2",
+      "unloaded": 1.0,
+      "size": 1.0
+     },
+     {
+      "id": "c3",
+      "unloaded": 1.0,
+      "size": 1.0
+     },
+     {
+      "id": "c4",
+      "unloaded": 1.0,
+      "size": 1.0
+     },
+     {
+      "id": "c5",
+      "unloaded": 1.0,
+      "size": 1.0
+     },
+     {
+      "id": "c6",
+      "unloaded": 1.0,
+      "size": 1.0
+     },
+     {
+      "id": "c7",
+      "unloaded": 1.0,
+      "size": 1.0
+     },
+     {
+      "id": "c8",
+      "unloaded": 1.0,
+      "size": 1.0
+     },
+     {
+      "id": "c9",
+      "unloaded": 1.0,
+      "size": 1.0
+     }
+    ],
+    "junctions": [
+     {
+      "id": "gj_0",
+      "a": "c0",
+      "b": "c1",
+      "g": 1.0
+     },
+     {
+      "id": "gj_1",
+      "a": "c1",
+      "b": "c2",
+      "g": 1.0
+     },
+     {
+      "id": "gj_2",
+      "a": "c2",
+      "b": "c3",
+      "g": 1.0
+     },
+     {
+      "id": "gj_3",
+      "a": "c3",
+      "b": "c4",
+      "g": 1.0
+     },
+     {
+      "id": "gj_4",
+      "a": "c4",
+      "b": "c5",
+      "g": 1.0
+     },
+     {
+      "id": "gj_5",
+      "a": "c5",
+      "b": "c6",
+      "g": 1.0
+     },
+     {
+      "id": "gj_6",
+      "a": "c6",
+      "b": "c7",
+      "g": 1.0
+     },
+     {
+      "id": "gj_7",
+      "a": "c7",
+      "b": "c8",
+      "g": 1.0
+     },
+     {
+      "id": "gj_8",
+      "a": "c8",
+      "b": "c9",
+      "g": 1.0
+     }
+    ],
+    "probes": [
+     {
+      "id": "probe",
+      "cell": "c9",
+      "held": 2.0,
+      "g": 1.0
+     }
+    ]
+   },
+   "concentrations": {
+    "c0": 1.0000913575735428,
+    "c1": 1.0001827151470857,
+    "c2": 1.0004567878677142,
+    "c3": 1.001187648456057,
+    "c4": 1.0031061575004567,
+    "c5": 1.0081308240453133,
+    "c6": 1.0212863146354834,
+    "c7": 1.0557281198611366,
+    "c8": 1.1458980449479261,
+    "c9": 1.381966014982642
+   },
+   "accuracy_rel": 1.1102230246251565e-16,
+   "method": "exact rational steady state of model.balance (fractions.Fraction, Gauss-Jordan), every declared number taken as its exact binary64 value; every cell's balance residual is exactly zero; equal exactly to the preprint's black-box (Norton) reduction on the junction tree and to the uniform-chain closed form c_k = 1 + F(2k+1) e_0; each concentration is the correctly rounded binary64 of its exact rational (checked exactly against both neighbours)"
+  }
+ },
+ "chains": {
+  "1": {
+   "g_eq_ratio": 1.0,
+   "intercept": 1.0,
+   "accuracy_rel": 1.1102230246251565e-16,
+   "method": "exact rational: Norton recursion from the sealed cell, G_eq,k+1 = (G_eq,k^-1 + G_GJ^-1)^-1 + G_eq,1 with the open-circuit concentration carried along; equal exactly to the full balance of the n-cell chain solved under port loads held 0.5 and 2 (G_probe = G_eq,1; a third load, held 0 and G_probe = 3 G_eq,1, lies on the same line; the unloaded chain gives the intercept) and to F(2n)/F(2n-1); exactly G_eq,n/G_eq,1 = 1, intercept 1; correctly rounded"
+  },
+  "2": {
+   "g_eq_ratio": 1.5,
+   "intercept": 1.0,
+   "accuracy_rel": 1.1102230246251565e-16,
+   "method": "exact rational: Norton recursion from the sealed cell, G_eq,k+1 = (G_eq,k^-1 + G_GJ^-1)^-1 + G_eq,1 with the open-circuit concentration carried along; equal exactly to the full balance of the n-cell chain solved under port loads held 0.5 and 2 (G_probe = G_eq,1; a third load, held 0 and G_probe = 3 G_eq,1, lies on the same line; the unloaded chain gives the intercept) and to F(2n)/F(2n-1); exactly G_eq,n/G_eq,1 = 3/2, intercept 1; correctly rounded"
+  },
+  "3": {
+   "g_eq_ratio": 1.6,
+   "intercept": 1.0,
+   "accuracy_rel": 1.1102230246251565e-16,
+   "method": "exact rational: Norton recursion from the sealed cell, G_eq,k+1 = (G_eq,k^-1 + G_GJ^-1)^-1 + G_eq,1 with the open-circuit concentration carried along; equal exactly to the full balance of the n-cell chain solved under port loads held 0.5 and 2 (G_probe = G_eq,1; a third load, held 0 and G_probe = 3 G_eq,1, lies on the same line; the unloaded chain gives the intercept) and to F(2n)/F(2n-1); exactly G_eq,n/G_eq,1 = 8/5, intercept 1; correctly rounded"
+  },
+  "4": {
+   "g_eq_ratio": 1.6153846153846154,
+   "intercept": 1.0,
+   "accuracy_rel": 1.1102230246251565e-16,
+   "method": "exact rational: Norton recursion from the sealed cell, G_eq,k+1 = (G_eq,k^-1 + G_GJ^-1)^-1 + G_eq,1 with the open-circuit concentration carried along; equal exactly to the full balance of the n-cell chain solved under port loads held 0.5 and 2 (G_probe = G_eq,1; a third load, held 0 and G_probe = 3 G_eq,1, lies on the same line; the unloaded chain gives the intercept) and to F(2n)/F(2n-1); exactly G_eq,n/G_eq,1 = 21/13, intercept 1; correctly rounded"
+  },
+  "5": {
+   "g_eq_ratio": 1.6176470588235294,
+   "intercept": 1.0,
+   "accuracy_rel": 1.1102230246251565e-16,
+   "method": "exact rational: Norton recursion from the sealed cell, G_eq,k+1 = (G_eq,k^-1 + G_GJ^-1)^-1 + G_eq,1 with the open-circuit concentration carried along; equal exactly to the full balance of the n-cell chain solved under port loads held 0.5 and 2 (G_probe = G_eq,1; a third load, held 0 and G_probe = 3 G_eq,1, lies on the same line; the unloaded chain gives the intercept) and to F(2n)/F(2n-1); exactly G_eq,n/G_eq,1 = 55/34, intercept 1; correctly rounded"
+  },
+  "10": {
+   "g_eq_ratio": 1.6180339631667064,
+   "intercept": 1.0,
+   "accuracy_rel": 1.1102230246251565e-16,
+   "method": "exact rational: Norton recursion from the sealed cell, G_eq,k+1 = (G_eq,k^-1 + G_GJ^-1)^-1 + G_eq,1 with the open-circuit concentration carried along; equal exactly to the full balance of the n-cell chain solved under port loads held 0.5 and 2 (G_probe = G_eq,1; a third load, held 0 and G_probe = 3 G_eq,1, lies on the same line; the unloaded chain gives the intercept) and to F(2n)/F(2n-1); exactly G_eq,n/G_eq,1 = 6765/4181, intercept 1; correctly rounded"
+  }
+ },
+ "limits": {
+  "figure3": 7.5,
+  "figure5b": 7.142857142857143,
+  "chain": 1.618033988749895
+ },
+ "printed_recursion": {
+  "literal": [
+   1.0,
+   0.6666666666666666,
+   0.9375,
+   0.7035460992907802,
+   0.8956277713840842,
+   0.730941765338168,
+   0.8671360461898853,
+   0.7510008398122486,
+   0.8475302515372045,
+   0.7655402028645405
+  ],
+  "resistance_form": [
+   1.0,
+   1.5,
+   2.1,
+   2.7774193548387096,
+   3.5126883556926805,
+   4.291090957162265,
+   5.1020940171935125,
+   5.938215847309149,
+   6.794086575172447,
+   7.665784176892007
+  ]
+ }
+}
