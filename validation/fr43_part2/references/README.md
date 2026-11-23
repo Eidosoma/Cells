@@ -159,10 +159,21 @@ The `checks` in each file report this identity's residual. They also report:
 - **The recharging split.** A first pass locates J_C's sign changes as events, and a second pass adds
   them as step ends (see NOTES.md, reading 3).
 - **The second methods.**
-  - C2.3 and C2.8, which are stiff: Radau at rtol 1e-12, and BDF at rtol 1e-12, a different method
-    family.
+  - C2.3, which is stiff: Radau at rtol 1e-12, and BDF at rtol 1e-12, a different method family.
   - C2.6, which is not stiff: DOP853 at rtol 1e-13, an explicit Runge–Kutta method of order 8, and
     Radau at rtol 1e-12.
+  - C2.8: its primary is Radau at rtol 1e-13, and its second methods are Radau at 1e-12 and BDF at
+    1e-13.
+- **Why C2.8's primary is tighter.**
+  - C2.8 samples every second. From t = 1 s to t = 40 s, recharging and the stage exits run at
+    3.3e-3 down to 1.4e-4 fmol/s each.
+  - They cancel in the gene unit's judged net rate, J_C − r S, to between 3.3e-7 and 2.8e-10 fmol/s.
+  - So that rate's absolute error is the fluxes' error, about rtol × 3e-3 fmol/s. Its pointwise
+    relative error is 1e4 to 5e5 times the state's.
+  - In CRITERIA.md's normalisation, by the rate's largest value of 8.07e-5 fmol/s at t = 0, its e
+    at rtol 1e-11 was 1.5e-10 against Radau at 1e-13. Every other quantity was within 7e-14.
+  - C2.3's samples come 30 s apart, when these fluxes are small, and there the same rate agrees to
+    9.1e-12 at rtol 1e-11.
 - **The accuracy measure** is e = max_i |q_second(t_i) − q_primary(t_i)| / max_i |q_primary(t_i)|,
   CRITERIA.md's normalisation.
 
@@ -212,3 +223,20 @@ Every file's `method.second[...].difference_from_primary` gives e per quantity, 
 - V grows from 1 to 2.504 pL.
 - The passive route reverses between t = 16 and 16.5 s: the dilution shifts A + B ⇌ C back towards
   A and B.
+
+| Case | Primary steps | Second method: largest e (quantity) | Identities: largest residual |
+| --- | --- | --- | --- |
+| C2.8-swelling-pair-sink | 20399 | Radau 1e-12: 8.8e-12 (`gene_rate_N_fmol_per_s`); BDF 1e-13: 4.5e-12 (`gene_state.complexes.tx.stage_8`) | books, machines, residues, products, moieties 4.8e-13 fmol; energy 3.3e-15 of scale |
+
+**C2.8's stated accuracy: e ≤ 8.8e-12 for every quantity.**
+- For the judged quantities, the largest e over both second methods is:
+  - n_N 1.1e-20, n_X 3.8e-14, n_W 2.1e-13 and V 9.5e-14;
+  - the gene unit's books 9.3e-14, and the network's 2.1e-13;
+  - the gene unit's rate 8.8e-12, and the network's 1.0e-20;
+  - F 3.8e-14.
+- The gene unit's rate is the largest only against Radau at 1e-12, whose own error it is. BDF at
+  1e-13 agrees with the primary on that rate to 4.5e-12.
+- Recharging runs backward until t = 0.048029 s.
+- V grows from 1 to 2.5024 pL.
+- The driven route's work changes sign with its ΔG. It is negative while N is plentiful, and
+  slightly positive once N is spent, ending at −1.1105e-2 pJ. Its heat is 0.
