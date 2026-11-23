@@ -10015,7 +10015,7 @@ code and values for it, so it is no longer a blind judge for FR-38. The D313 ver
      threshold of 6.
    - The erratum excludes from M a pair that is exact at the top rung. D6's registered fail stands, and it is
      rescored under the erratum only as a labelled diagnostic.
-   - **A plant cannot rescue the verdict:** Protocol D fails as registered through D6, and the full repair of M
+   - **The registered verdict stands:** Protocol D fails as registered through D6, and the full repair of M
      belongs to a re-registration.
    - **Zero-SE check:** the checker found no (observable, time) pair with a zero combined SE and a nonzero
      error in D1, D2, D4 or D6.
