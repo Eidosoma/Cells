@@ -70,7 +70,8 @@ Every reading below that the amendment of 23 November 2026 settled is marked (am
 
     Degradation is first order in n_R, and reads V only through ΔG_deg.
 12. **`network_route_rate_fmol_per_s` in C2.6**: the passive route's net rate J. READOUTS.md's
-    m k V Π c^α is the driven route's form.
+    m k V Π c^α is the driven route's form. J changes sign between t = 16 and 16.5 s. The
+    network's heat, −∫ J ΔG, is non-decreasing through the reversal.
 13. **The volume bounds** (0.5 and 3.0 pL) are never reached. In C2.6, V stays within
     [1, 2.504] pL.
 14. **Trial states.** A stiff solver's Newton iterate can try a non-positive amount. The logarithm
