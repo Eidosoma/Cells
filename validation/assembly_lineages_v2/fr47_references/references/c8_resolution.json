@@ -84,7 +84,7 @@
  "slope_se_linearised_all_rungs": 38.73440396995802,
  "slope_se_note": "the standard error of a least-squares slope of ln|gap| on ln N_g over all rungs if each rung's ln|gap| were measured with SD 1/resolution (linearised; meaningless where a resolution is below about 3)",
  "provenance": {
-  "references_revision": "f13c3700a03d769e1f4062701a57a90f69d67826",
+  "references_revision": "4151ad96b94ba09974973c082aeceebfdfaf5c31",
   "references_clean": true,
   "writer_version": "fr47-references-writer 1",
   "regeneration_hash_seeds": [
