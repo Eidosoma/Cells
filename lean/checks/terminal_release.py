@@ -45,10 +45,12 @@ def residual(*terms, ledger=None):
 
 def inventories(policy):
     raw = observed(worlds.r1s(policy), 60)
-    switches = {worlds.LABEL: 20.0, worlds.RELEASE: 40.0}
-    for ctl in raw["experiment"]["polymerisation_controls"]:
-        if ctl["route_id"] in switches:
-            ctl["schedule"][1]["time"] = switches[ctl["route_id"]]
+    for arrivals in raw["experiment"]["label_arrivals"]:
+        arrivals["schedule"][1]["time"] = 20.0
+    fraction = next(
+        c for c in raw["experiment"]["polymerisation_controls"] if c["route_id"] == worlds.RELEASE
+    )
+    fraction["schedule"][1]["time"] = 40.0
     spec, states, t, x, _ = collect(raw)
     block = next(b for b in spec.model.operators if b.law == worlds.POLYMERISATION)
     (chain,) = block.chains
@@ -60,7 +62,11 @@ def inventories(policy):
     initial = math.fsum(chain.release.initial_copies) * COPY
     length, m = chain.residues, chain.stages
     r = length // m
-    maxima = dict.fromkeys(("machines", "hold", "residues", "fate_amount"), 0.0)
+    (fates,) = chain.release.fates
+    labelled_totals = {row: f"n_{row}" for row in fates}
+    hold_key = f"H_{worlds.RELEASE}"
+    labelled_totals[hold_key] = hold_key
+    maxima = dict.fromkeys(("machines", "hold", "residues", "fate_amount", "label_sum"), 0.0)
     for k, s in enumerate(states):
         cs = s.poly_complexes_fmol[0, :m]
         free = float(s.poly_free_machines_fmol[0])
@@ -91,12 +97,16 @@ def inventories(policy):
         maxima["machines"] = max(maxima["machines"], machine_error)
         maxima["hold"] = max(maxima["hold"], hold_error)
         maxima["residues"] = max(maxima["residues"], residue_error)
-        for label, pair in enumerate(chain.release.fates):
-            for f, row in enumerate(pair):
-                q = float(s.poly_hold_released_fmol[0, label, f])
-                assert q == x[f"int_Q_{worlds.RELEASE}_{FATES[f]}_{label + 1}"][k]
-                err = residual(x[f"n_{row}"][k], -x[f"n_{row}"][0], -q, x[f"int_D_{row}"][k])
-                maxima["fate_amount"] = max(maxima["fate_amount"], err)
+        for f, row in enumerate(fates):
+            q = float(s.poly_hold_released_fmol[0, 0, f])
+            assert q == x[f"int_Q_{worlds.RELEASE}_{FATES[f]}"][k]
+            err = residual(x[f"n_{row}"][k], -x[f"n_{row}"][0], -q, x[f"int_D_{row}"][k])
+            maxima["fate_amount"] = max(maxima["fate_amount"], err)
+        for row, key in labelled_totals.items():
+            err = residual(
+                *(x[f"label_{row}_{label}"][k] for label in worlds.R1_LABELS), -x[key][k]
+            )
+            maxima["label_sum"] = max(maxima["label_sum"], err)
     wrong_at_start = abs(
         math.fsum(
             (
@@ -109,13 +119,17 @@ def inventories(policy):
     )
     assert math.isclose(wrong_at_start, initial, rel_tol=2e-13) and initial > 0
     assert x["int_Q_tx"][-1] > 0 and min(states[-1].poly_hold_released_fmol[0].flat) > 0
-    # The initially empty class receives completions before the switch, then drains.
-    class_two = x[f"H_{worlds.RELEASE}_2"]
-    assert class_two[0] == 0 < class_two[-1] < class_two[t.index(20.0)]
-    # Compare each class's release increments on both sides of the fraction switch.
+    # Completed RNA enters the marked part of the hold until the window closes, then drains.
+    marked_hold = x[f"label_H_{worlds.RELEASE}_cohort"]
+    assert marked_hold[0] == 0 < marked_hold[-1] < marked_hold[t.index(20.0)]
+    for row in fates:
+        assert x[f"label_{row}_cohort"][-1] > 0
+    # Check each step's gross split on both sides of the change in durable fraction.
     for left, right, p in ((0.0, 40.0, 0.75), (40.0, 60.0, 0.25)):
-        a, b = (states[t.index(v)].poly_hold_released_fmol[0] for v in (left, right))
-        for durable, short in b - a:
+        steps = np.asarray(
+            [s.poly_hold_released_fmol[0, 0] for s in states[t.index(left) : t.index(right) + 1]]
+        )
+        for durable, short in np.diff(steps, axis=0):
             assert durable > 0 and short > 0
             assert math.isclose(durable / (durable + short), p, rel_tol=2e-12)
     return dict(
@@ -125,12 +139,14 @@ def inventories(policy):
         wrong_policy_error_at_start_fmol=wrong_at_start,
         final_completions_fmol=completed,
         final_detachments_fmol=detached,
+        marked_hold_at_close_fmol=marked_hold[t.index(20.0)],
+        marked_hold_at_end_fmol=marked_hold[-1],
         max_abs_error_fmol=maxima,
     )
 
 
 def lossless(omitted):
-    raw = observed(worlds.r1(0.5), 10)
+    raw = worlds.with_share_labels(observed(worlds.r1(0.5), 10), window=(2.0, 8.0))
     block = kernel.block(raw)
     block["degradations"] = [d for d in block["degradations"] if d["polymer"] != omitted]
     experiment = raw["experiment"]
@@ -154,6 +170,11 @@ def lossless(omitted):
             np.testing.assert_array_equal(
                 released, [s.poly_hold_released_fmol[0, 0, f] for s in states]
             )
+            # With no loss, actual cohort increments equal gross detachment at each marked step.
+            marked = x[f"label_{row}_cohort"]
+            for i, when in enumerate(t):
+                stop = t.index(min(max(when, 2.0), 8.0))
+                residual(marked[i], -(released[stop] - released[t.index(2.0)]))
             max_error = max(
                 residual(n, -amount[0], -q) for n, q in zip(amount, released, strict=True)
             )
@@ -162,6 +183,7 @@ def lossless(omitted):
                 final_gain_fmol=amount[-1] - amount[0],
                 max_balance_error_fmol=max_error,
                 loss_series_exported=f"int_D_{row}" in x,
+                marked_received_fmol=marked[-1],
             )
             try:
                 series = cohort.read(path, product=row)
