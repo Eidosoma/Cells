@@ -78,6 +78,7 @@ ION = {"K": "K", "Na": "Na", "Cl": "Cl", "Kir": "K"}
 # and 1/4) and the bracket scan's points (doubled in the retry). Set by build_table only.
 STEP = {"factor": 1.0}
 SCAN_POINTS = {"n": SCAN}
+REPARSED = []  # Each root's re-parse check, for the row that read it (build_table records them).
 
 
 class Refused(Exception):
@@ -263,6 +264,12 @@ def check_reparse(world, v, read):
     return bool(np.float64(read(world.at(v))) == np.float64(read(world.reparsed(v))))
 
 
+def recorded(pair):
+    """A cached (root, reparsed_equal): the flag joins the current row's record."""
+    REPARSED.append(bool(pair[1]))
+    return pair[0]
+
+
 def ion_current_at(world, ion, v, cell="cell_1"):
     base, _ = CONDUCTOR[ion]
     return world.current(world.at(v), ION[ion], base, cell)
@@ -414,7 +421,7 @@ def m_v_zero(params, *, d, cache, **_):
     if "g" in params:
         extra["kir"] = {"cell_1": (float(params["g"]), float(params.get("a", 1.0)))}
     key = ("v_zero", state_of(params), json.dumps(extra, sort_keys=True))
-    return cached(cache, key, lambda: v_zero(leaks_world(state_of(params), d, **extra)))[0]
+    return recorded(cached(cache, key, lambda: v_zero(leaks_world(state_of(params), d, **extra))))
 
 
 def m_e_zero(params, *, d, cache, **_):
@@ -422,7 +429,7 @@ def m_e_zero(params, *, d, cache, **_):
     ion = params["ion"]
     key = ("e_zero", state_of(params), ion, params.get("g"))
     world = ion_world(state_of(params), ion, d, float(params.get("g", G_REF)))
-    return cached(cache, key, lambda: e_zero(world, ion))[0]
+    return recorded(cached(cache, key, lambda: e_zero(world, ion)))
 
 
 def m_ion_current(params, *, d, cache, **_):
@@ -618,7 +625,7 @@ def rest_voltage(params, d, cache):
 def m_sym_stall(params, *, d, cache, **_):
     """C6 v1 stall: the root over V of the population's J at the key's state."""
     key = ("sym_stall", sym_params(params))
-    return cached(cache, key, lambda: stall(sym_world(params, d)))[0]
+    return recorded(cached(cache, key, lambda: stall(sym_world(params, d))))
 
 
 def sym_voltage(params, d, cache):
@@ -666,7 +673,7 @@ def m_diag_ratio(params, *, d, cache, **_):
 def m_diag_stall(params, *, d, cache, **_):
     """C6 v2 (thermodynamic): the root over V of the diagram population's J."""
     key = ("diag_stall", sym_params(params))
-    return cached(cache, key, lambda: stall(sym_world(params, d, version=2)))[0]
+    return recorded(cached(cache, key, lambda: stall(sym_world(params, d, version=2))))
 
 
 # ------------------------------------------------------------------ two cells (C5)
@@ -1031,8 +1038,12 @@ RUN_MEASURES = frozenset({
 
 def evaluate(entry, *, d, x2_cap, cache, factor=1.0):
     STEP["factor"] = factor
+    REPARSED.clear()
     try:
-        return encode(measure(entry["measure"], entry["params"], d=d, x2_cap=x2_cap, cache=cache))
+        value = encode(measure(entry["measure"], entry["params"], d=d, x2_cap=x2_cap, cache=cache))
+        if REPARSED:  # Every root the row read, re-parsed at its anchor: bitwise the same?
+            value["reparsed_equal"] = all(REPARSED)
+        return value
     except Refused as exc:
         return dict(type="refused", reason=str(exc))
     except Exception as exc:  # A failure is recorded, never hidden (the rule's retry reads it).

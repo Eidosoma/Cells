@@ -28,6 +28,7 @@ Stages (each a command):
   gives the verdicts.
 - `synthetic OUT`: an invented interface and table (no engine, no reference), for the end-to-end check.
 - `structure FILE`: the key layout of an interface-shaped file, no value (for the invented one).
+- `selfcheck OUT`: the end-to-end check on the invented interface (the rule's pre-tag check).
 
 Verdicts (the rule's): a row passes, fails, has no power (a sign row whose |aux| <= band), is info,
 or is not run (the rule's not-run list, with its reason). A family fails if any row fails; it passes
@@ -65,8 +66,8 @@ MATCH_RTOL = 1e-9  # A key's number meets a manifest's within this relative diff
 def parse_key(key):
     """A row key's parameters, by REFERENCES_USAGE.md's grammar: a leading state
     `ionset|exterior|T<K>`, then `|`-separated tokens, each `<name><number>` (P, g, a, d, k, x, n,
-    Nain, Naout, BP, BN, NaP, NaN, rB, T, off, V, kir_g, x_gly, ...), `Vrest_<exterior>`, or a word
-    (a scenario such as sym or S1_leaks_bath). Returns {name: float or str}; a token it cannot read
+    Nain, Naout, BP, BN, NaP, NaN, rB, T, off, V, kir_g, x_gly, ...), `Vrest_<exterior>`, a lone
+    ion set or exterior, or a word (a scenario such as sym or S1_leaks_bath). Returns {name: float or str}; a token it cannot read
     is kept as {"word": ...} and the mapping refuses it."""
     tokens = key.split("|")
     params = {}
@@ -79,6 +80,12 @@ def parse_key(key):
     for token in tokens:
         if token.startswith("Vrest_") and token[6:] in EXTERIORS:
             params["Vrest"] = token[6:]
+            continue
+        if token in ION_SETS and "ion_set" not in params:  # A lone ion set (C8 (a)'s pairs).
+            params["ion_set"] = token
+            continue
+        if token in EXTERIORS and "exterior" not in params:
+            params["exterior"] = token
             continue
         m = NUMBER.match(token)
         if m and not re.match(r"^S\d", token):
@@ -264,6 +271,16 @@ def check_rule(path=RULE):
     return rule
 
 
+def check_table(table, rule):
+    """Refuses a table that was not built from a clean frozen snapshot at the rule's X2 cap."""
+    record = table.get("record", {})
+    source = record.get("source", {})
+    if not source.get("snapshot") or source.get("checkout_dirty", True):
+        raise SystemExit("refused: the table was not built from a clean frozen snapshot")
+    if record.get("x2_cap") != rule["x2"]["integration_error_cap"]:
+        raise SystemExit("refused: the table's X2 cap is not the rule's")
+
+
 # ------------------------------------------------------------------ stages
 
 
@@ -308,11 +325,11 @@ def manifest(key_list):
             elif m[0] == "not_run":
                 not_run.append((family, key))
             else:
-                entry = dict(family=family, key=key, measure=m[0], params=m[1])
+                item = dict(family=family, key=key, measure=m[0], params=m[1])
                 tolerance = step_tolerance(family, parse_key(key))
                 if tolerance is not None:
-                    entry["step_tolerance"] = tolerance
-                entries.append(entry)
+                    item["step_tolerance"] = tolerance
+                entries.append(item)
     return dict(entries=entries, unmapped=unmapped, not_run=not_run)
 
 
@@ -346,6 +363,8 @@ def resolve(table, key_list, *, after_retry=False):
                     and same_params(p, params)]  # fmt: skip
             if len(hits) != 1:
                 problems.append(("no table row" if not hits else "several table rows", family, key))
+            elif not inconclusive(hits[0]) and (hits[0]["type"] == "flag") != (entry["kind"] == "flag"):
+                problems.append((f"a {hits[0]['type']} row for a {entry['kind']} family", family, key))
             elif inconclusive(hits[0]):
                 if after_retry:
                     resolved[(family, key)] = ("engine_refused", inconclusive(hits[0]))
@@ -586,6 +605,71 @@ def synthetic(out):
     return out
 
 
+def selfcheck(out):
+    """The reader's end-to-end check on the invented interface (no engine, no reference): each
+    planted case's verdict, and each refusal before any value is read. Returns the failures."""
+    import copy
+
+    out = synthetic(out)
+    values = json.loads((out / VALUES).read_text())
+    bands = json.loads((out / BANDS).read_text())
+    table = json.loads((out / "engine_table.json").read_text())
+    failures = []
+
+    def expect(name, condition):
+        if not condition:
+            failures.append(name)
+
+    r = judge(table, values, bands)
+    planted = {"C2.V_ghk_area": "pass", "C1.zero_K": "fail", "C0.k_effect_sign_patch": "pass",
+               "C4.V_zero_glycine": "pass", "C6.v1_V_stall": "pass", "C7.pump_heat_nonneg": "pass",
+               "C0.V_ghk_unit": "info", "C6.v2_early_ratio_rest": "not_run"}  # fmt: skip
+    for family, verdict in planted.items():
+        expect(f"{family} {verdict}", r["families"][family] == verdict)
+    outcomes = {(x["family"], x["key"]): x["outcome"] for x in r["rows"]}
+    expect("a sign without power", outcomes[("C0.k_effect_sign_patch", "primary|local|T291.15")]
+           == "no_power")  # fmt: skip
+    expect("overall fail", r["overall"] == "fail" and r["claims"]["C1"] == "fail")
+
+    def refuses(name, t, v, b, **kw):
+        try:
+            judge(t, v, b, **kw)
+            failures.append(f"{name}: not refused")
+        except SystemExit:
+            pass
+
+    missing = copy.deepcopy(table)
+    missing["rows"] = [x for x in missing["rows"] if x["family"] != "C2.V_ghk_area"]
+    refuses("a missing row", missing, values, bands)
+    poisoned = copy.deepcopy(values)
+    for f in poisoned["families"].values():
+        f["values"] = {k: "POISON" for k in f["values"]}
+    refuses("a missing row before a poisoned value", missing, poisoned, bands)
+    for name, change in (("a refused row", dict(type="refused", reason="invented")),
+                         ("a step-unconverged row", dict(step_check=dict(converged=False))),
+                         ("a flag row for an abs family", dict(type="flag", value="true"))):
+        t = copy.deepcopy(table)
+        t["rows"][0] |= change
+        refuses(name, t, values, bands)
+    unmapped = copy.deepcopy(bands)
+    unmapped["families"]["C9.unknown"] = dict(kind="abs", unit="V", tol_abs=0, tol_rel=0,
+                                              rows={"x": dict(floor="0", band="0")})  # fmt: skip
+    refuses("an unmapped family", table, values, unmapped)
+    band = copy.deepcopy(bands)
+    band["families"]["C2.V_ghk_area"]["rows"]["primary|bath|T291.15"]["band"] = "2e-6"
+    refuses("a disagreeing stored band", table, values, band)
+    t = copy.deepcopy(table)
+    t["rows"][0] |= dict(step_check=dict(converged=False))
+    after = judge(t, values, bands, after_retry=True)
+    expect("after the retry: engine_refused, not testable",
+           after["families"]["C2.V_ghk_area"] == "not_testable")
+    weak = copy.deepcopy(values)
+    weak["families"]["C0.k_effect_sign_patch"]["aux"]["primary|bath|T291.15"] = "1e-12"
+    expect("no power anywhere: not testable",
+           judge(table, weak, bands)["families"]["C0.k_effect_sign_patch"] == "not_testable")
+    return failures
+
+
 def structure(path):
     """The key layout of an interface-shaped file: family names, their entries' keys and the number
     of rows; no value is printed."""
@@ -614,6 +698,8 @@ def main(argv=None):
     st.add_argument("file")
     g = sub.add_parser("grammar")
     g.add_argument("out")
+    c = sub.add_parser("selfcheck")
+    c.add_argument("out")
     args = a.parse_args(argv)
     if args.command == "keys":
         data = json.dumps(keys(args.bands), indent=1, sort_keys=True)
@@ -627,8 +713,9 @@ def main(argv=None):
         for family, key in result["unmapped"]:
             print(f"unmapped: {family} | {key}")
     elif args.command == "judge":
-        check_rule()
+        rule = check_rule()
         table = json.loads(Path(args.table).read_text())
+        check_table(table, rule)
         digest = hashlib.sha256(Path(args.table).read_bytes()).hexdigest()
         result = judge(table, json.loads(Path(args.values).read_text()),
                        json.loads(Path(args.bands).read_text()), after_retry=args.after_retry)  # fmt: skip
@@ -640,6 +727,10 @@ def main(argv=None):
         print(synthetic(args.out))
     elif args.command == "structure":
         structure(args.file)
+    elif args.command == "selfcheck":
+        failures = selfcheck(args.out)
+        print("selfcheck: " + ("passed" if not failures else "FAILED: " + "; ".join(failures)))
+        return 1 if failures else 0
     elif args.command == "grammar":
         result = manifest(grammar())
         result["entries"] += calibrations()
