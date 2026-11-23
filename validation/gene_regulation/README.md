@@ -143,7 +143,8 @@ reproduces the uninterrupted run's cohort counts. Development, not judged.
 - **The checks:**
   - labels change no physics;
   - the resume reproduces every step and readout bit for bit;
-  - no g1 share before the event and no g0 share in the cell after it;
+  - no g1 share before the event, and no g0 in the cell after it but what the export's
+    backward part returns from the node;
   - the removal records equal replacement@1's removed rows and the operator's H_rem;
   - each generation's per-producer identity, its net exports included, holds at rounding;
   - g0's RNA is retained at the node, the node's label amounts sum to its row, and the two routes

@@ -43,7 +43,8 @@ exported RNA stays there with its producer's label (amendment T's retention, §9
 2. the restart: checkpointed at T_C after the replacement, written to snapshot files and resumed,
    every recorded step equals the uninterrupted run's, bit for bit, labels and records included, so
    the resumed run's readouts, the cohort counts among them, are the uninterrupted run's;
-3. the generations apart: no g1 share before T_E, and no g0 share in the cell after it;
+3. the generations apart: no g1 share before T_E, and no g0 in the cell after it but what the
+   export's backward part has returned from the node since T_E (erratum H, item 3 (a));
 4. the records agree: each fate row's removal record, summed over its labels, is replacement@1's
    removed amount, and the hold's is the operator's H_rem, within rounding;
 5. the per-producer identities (§9.16, item 4, with §9.17.3's exports): g0's over its life and
@@ -303,6 +304,15 @@ def check(out):
     kept = retention(spec, full.observations, whole)
     owner = next(d for op, d, _ in cs_entries(spec) if op.LABEL_OWNER)
     derived = species_labels.derived(spec, owner)[0]
+    # Erratum H (§9.21, item 3 (a)): the backward part returns the node's molecules, g0's among
+    # them, so after T_E g0's RNA in the cell is at most what it has returned since T_E.
+    back = np.asarray(obs["poly_export_backward_fmol"][:, 0])
+    since = {
+        float(t): float(b - back[list(times).index(T_E)]) for t, b in zip(times, back, strict=True)
+    }
+    returned = all(
+        whole[t]["g0_in_cell_fmol"] <= since[t] * (1 + 64 * EPS) + 1e-300 for t in whole if t > T_E
+    ) and bool(np.all(share[after][:, :, g0] < 1e-12))
     node_gap = max(
         abs(sum(v["R_at_node"].values()) - v["R_at_node_fmol"]) / v["R_at_node_fmol"]
         for v in whole.values()
@@ -312,7 +322,7 @@ def check(out):
         "2 the restart reproduces every step bit for bit": not steps,
         "2 the resumed readouts are the uninterrupted run's": same and bool(later),
         "3 no g1 share before T_E": bool(np.all(share[before][:, :, g1] == 0.0)),
-        "3 no g0 share in the cell after T_E": bool(np.all(share[after][:, :, g0] == 0.0)),
+        "3 no g0 in the cell after T_E but what the export's backward part returns": returned,
         "4 the rows' record is replacement@1's removed amount": record_gap
         <= 64 * EPS * float(np.max(np.abs(swapped)) + 1e-300),
         "4 the hold's record is H_rem": pool_gap <= 64 * EPS * float(np.max(h_rem) + 1e-300),
