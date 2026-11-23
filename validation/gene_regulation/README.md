@@ -9,7 +9,7 @@ which this folder's tools read as data only.
 | `worlds.py` | The sheet's A1 and A1-M's fifteen worlds, at any potential set; FR-38's release worlds R1 (with R1L, its fate rows labelled by FR-42's shares), R2 (with the addendum's development check) and R1S |
 | `engine_run.py` | Runs worlds, exporting the sheet's §6 readouts per cell by ID, except each move's ΔG and A1's u(t) (below), with a receipt of the source |
 | `compare.py` | An engine run against G2's interface at G2's required times |
-| `cohort.py` | Window survivors from the counters: one well-mixed pool, loss independent of age; a fate row's inflow is its release's (FR-38, §9.8's route 2); and the survival readout by both routes |
+| `cohort.py` | Window survivors from the counters: one well-mixed pool, loss independent of age; a fate row's inflow is its release's (FR-38, §9.8's route 2); and the survival readout by both routes. A row its cell exports is refused by `read`; `series` reads the cohort through the export (amendment T, erratum H) |
 | `release_check.py` | FR-38's checks of R1, R2 and R1S runs: the requester's limit, the identities, energy, both cohort routes (route 1 on shares) and the survival readout |
 | `optin_check.py` | The release opt-in's before/after dump of every registered FR-25 definition, and its D148 verdict |
 | `rna_readouts.py` | Per-cell RNA readouts and FR-25's two controls |
@@ -42,7 +42,9 @@ At each output, per cell by ID, under G2's interface names:
   `H_deg_<row>` (§9.12); and `G_minus_G0` includes the hold's standard term.
 - **FR-42's labels** (D289), only in a world that declares `neutral_arrival_labels@1`: each
   labelled row's amount carrying each of its labels, `label_<row>_<label>`, the row times the
-  label's share, by the species' and label's IDs. A label changes no physical readout.
+  label's share, by the species' and label's IDs. The labels are the owner's derived list, so a
+  producer's labels (amendment G, §9.20) are exported with the declared ones. A label changes no
+  physical readout.
   - In R1L, `label_R_cohort` and `label_R_s_cohort` are §9.8's route 1 on shares (errata C and
     F): the releases of R1's window still present, with no blank, marked on transcription's own
     label schedule, so a molecule re-synthesised from monomers is not a member.
@@ -50,6 +52,19 @@ At each output, per cell by ID, under G2's interface names:
     producer identity crossed with the window labels must fit within it. RNA that leaves its cell
     by the operator's export (amendment T, §9.17) keeps its label at the node: the export reports
     its two one-way parts as transfers carrying their sources' shares (erratum H).
+- **The export** (amendment T, §9.17; erratum H, §9.21), only where the exported cell's own exports
+  feed nodes, at each such node by its ID:
+  - each row the operator writes there (the exported rows, and the outside degradations' polymers
+    and monomers), `n_<row>_<node>`, and with FR-42's labels `label_<row>_<label>_<node>`;
+  - each export's one-way parts, `int_E_<export>_forward` and `int_E_<export>_backward`;
+  - each outside degradation's `int_D_route_<route>`, and their sum per polymer and node,
+    `int_D_<polymer>_<node>`;
+  - the heat classes `H_exp` (each export's whole heat, booked at its cell) and `H_odeg` (the
+    outside degradations', booked at their node), with each route's `H_route_<route>`.
+
+  `G_minus_G0`, `H_total` and the routes' sum then cover the cell and its nodes, the checks name
+  the nodes (`exported_nodes`), and an exported row is no lossless product (D265). A node that
+  another cell's export also feeds is refused, since G over one cell and the node would not close.
 
 **Not exported**, though G2 publishes them:
 - each move's ΔG, `dG_tx`, `dG_tl`, `dG_rel_R`, `dG_rel_P`, `dG_deg_R`, `dG_deg_P` and `dG_rc`;
