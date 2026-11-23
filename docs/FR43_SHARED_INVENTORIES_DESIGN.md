@@ -52,10 +52,11 @@ calculation, and each process alone.
 - **A (recommended):** a declared hybrid representation in the assembly family. The units run as
   exact events and the pools as continuous equations. It reuses the family's exact events, random
   streams, integrator and pore clock, so event times are located to a declared tolerance. Est.
-  4.5–7 agent-days, after OL6's slice S7. It lifts two of OL6's version-1 refusals for this
+  5–8 agent-days, after OL6's slice S7. It lifts two of OL6's version-1 refusals for this
   representation only (mixed representations, and checkpoints), and a third (a single lineage's
-  checkpoint) unless FR-43's world is a population. Open before the build: a membrane holding both
-  kinds of place is refused, and whether FR-43's world parses with the family's laws is unchecked.
+  checkpoint) unless FR-43's world is a population. A membrane holding both kinds of place would be
+  refused. Today's laws express the unit driving the transfer, or the pool driving the assembly,
+  but not both in one world, so a small new factor is part of the price.
 - **B:** a new integer-population operator in the cell composite, where part 2's pools live. Event
   times are only as accurate as the step, and the composite needs its first random streams and owned
   state through division. Est. 5–8 agent-days.
@@ -657,15 +658,26 @@ error.
   - **checkpoints:** FR-22's rung P serves population worlds; a single lineage's checkpoint (rung S)
     is refused today (`checkpoints.py`), so C3.6 runs in a population world (`cells.shared_pool@1`)
     or a third refusal lifts.
-- **Unverified:** that the C3.1 world parses in @2's exact events with the family's laws, the
-  active unit a catalyst place. In the membrane a place on both sides of a step takes the factor
-  (N − c − r* + 1)/ff(N − c, r) with r* < r, singular at N = r under c = 1
-  (`stochastic_mass_action@1`'s docstring), so the world's phases need checking before the build.
+- **C3.1's world in @2 today** (S, `probe/part3_parse.py`, `out/part3_parse.json`; host-only parses
+  of `validation/assembly_lineages_v2/worlds.world` with a subunit moiety, U and P = 2U):
+  - with the units in the membrane and S's entry catalysed by P through the transition-state
+    factor, the world parses: the activity drives the transfer;
+  - the feedback as a pool place on both sides of the membrane's assembly step is refused: a
+    cross-phase step takes a geometric encounter law, and the one other admitted shape is a pool
+    molecule binding a declared site (§0.2c rule 3, §0.2f);
+  - with the units in the pool, the assembly reading S as a place on both sides parses, but then P
+    cannot catalyse the entry, since the factor's catalysts are membrane places.
+
+  So today's laws express either coupling, not both in one world. Option A also needs a factor by
+  which a membrane step's rate reads a pool place (or a pool unit catalyses a crossing): est. 0.5–1
+  agent-day more, in the family's files. The membrane's both-sides factor, (N − c − r* + 1)/
+  ff(N − c, r), is singular at N = r under c = 1 (`stochastic_mass_action@1`'s docstring), which a
+  world with c = 1 must avoid.
 - **Owners and timing:** the assembly family's files are the OL6 builder's until S7 lands; the build
   starts after it.
 - **Price (est.):** the hybrid loop and its scope declaration 2–3 agent-days, the per-scope
-  arithmetic, F and ledger 1–1.5, the checkpoint 0.5–1, the split token 0.5–1 (§3.5, beside S7), the
-  records 0.5; about 4.5–7 in all, plus the references.
+  arithmetic, F and ledger 1–1.5, the pool-reading factor 0.5–1, the checkpoint 0.5–1, the split
+  token 0.5–1 (§3.5, beside S7), the records 0.5; about 5–8 in all, plus the references.
 
 ### 3.3 Option B: an integer-population operator in the composite
 
@@ -701,7 +713,7 @@ error.
 | The pools' chemistry | The family's laws: dilute and membrane mass action, permeation, the osmotic lumen | Every composite process: reactions, water, transport, the gene unit, part 2's two writers |
 | Consumers | Protocells with low-count channels; FR-39's pores beside them | Cells with few channels or machines (FR-13, FR-40) beside shared pools |
 | Count arithmetic | Per scope: discrete for the exact places, Stirling's for the continuous ones; a mixed membrane refused | The units carry no free energy (declared, as the gene unit's machines); the pools keep @3's terms |
-| Price (est.) | 4.5–7 agent-days | 5–8 agent-days |
+| Price (est.) | 5–8 agent-days | 5–8 agent-days |
 
 ### 3.5 The split of one unit: a declared token
 
@@ -739,9 +751,10 @@ single unit, which needs its own rule. The proposal, in either host:
   conventions; B gives event times only to the split's order and makes the composite stochastic for
   the first time.
 - A's lifted refusals are confined to one new representation, so `cells.rate_equations@1` and
-  exact events keep their programs and their protocols (D and G) stand. Its open questions are
-  stated (§3.2: per-scope arithmetic, a mixed membrane, rung S, the world's parse), and its price
-  carries them.
+  exact events keep their programs and their protocols (D and G) stand. Its open points are stated
+  (§3.2: per-scope arithmetic, a mixed membrane, rung S, the pool-reading factor), and its price
+  carries them. With both at 5–8 agent-days, the choice rests on the event-time guarantee, the
+  restart and the split, where A has the machinery and B needs new infrastructure.
 - B is the door when a cell-scale world needs a low-count population beside part 2's shared pools.
   Its stream and event-location pieces would then be designed against A's clock, which is the same
   algorithm.
