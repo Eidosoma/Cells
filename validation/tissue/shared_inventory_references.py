@@ -14,12 +14,27 @@ C2.3, one pool with two writers at fixed volume, for each kind (sink: N + X -> W
 - the plant (must fail): against the planted reference (the network's k x 1.01), the ratio for
   n_N and for the network's books falls below 3.6.
 
-Usage (from a frozen snapshot's root): python -m validation.tissue.shared_inventory_references c23
-OUT_DIR. It writes OUT_DIR/c23.json and exits 0 when every criterion holds, else 1.
+C2.6 and C2.7, a passive reaction in a swelling cell (the C2.6 worlds at dt = 0.01 s and 0.005 s,
+sampled at t = 0, 0.5, ..., 40 s):
+- C2.6, for q in {n_A, n_B, n_C, V}: the ratio criterion above;
+- C2.7, the engine's own books: F(N_t, V_t) + U(V_t) - F(N_0, V_0) - U(V_0) equals the booked work
+  (the network's and the bath's water work) less the booked heat (the network's and water's). F is
+  computed from the engine's amounts and volume (READOUTS.md's rule as amended); U = 0 (no
+  modulus). The residual over the energy scale (the largest |dF| + |heat| + |work|), at every
+  saved row, shrinks at second order: its ratio between dt and dt/2 lies in [3.6, 4.4];
+- C2.7 against the reference, for q in {F, water's heat, the bath's water work, the network's
+  heat}: the ratio criterion above;
+- the plant (must fail): the network reads the declared volume V_0 for both its rates and its
+  bookings. The engine's energy ledger refuses that run, or else its residual is at least 100 times
+  the correct run's.
+
+Usage (from a frozen snapshot's root): python -m validation.tissue.shared_inventory_references
+{c23,c26} OUT_DIR. It writes OUT_DIR/<case>.json and exits 0 when every criterion holds, else 1.
 """
 
 import argparse
 import json
+import math
 import sys
 import time
 from pathlib import Path
@@ -33,6 +48,11 @@ BAND = (3.6, 4.4)  # Strang over order-3 half-steps: e(dt) / e(dt/2) = 4 to lead
 C23_KINDS = ("sink", "source")
 C23_QUANTITIES = ("n_N", "gene_books_N", "network_books_N", "route_rate")
 C23_PLANTED = ("n_N", "network_books_N")  # The planted reference must fail these by the ratio.
+C26_WORLDS = ("C2.6-swelling-cell-dt0p01.json", "C2.6-swelling-cell-dt0p005.json")
+C26_QUANTITIES = ("n_A", "n_B", "n_C", "V")
+C27_QUANTITIES = ("F", "water_heat", "bath_water_work", "network_heat")
+PLANT_RESIDUE_FACTOR = 100.0  # C2.7's plant, if the ledger admits it: residual >= 100 x correct.
+NETWORK = "local_species_reactions@1"
 
 
 def reference(case):
@@ -93,6 +113,181 @@ def engine(world):
     )
 
 
+def free_energy(raw, ids, n, v):
+    """READOUTS.md's F (as amended on 23 November 2026), pJ per row: the sum over the cell's species
+    rows of RT n_s (ln(n_s / V) - 1) + RT lambda_s n_s, with lambda_s = mu°_s/RT - ln c0 from the
+    species registry where it declares the row, else from the network at its own c0, else 0."""
+    from cells.laws.electrochemistry import R
+
+    model = raw["model"]
+    rt = 1e-3 * R * model["temperature_K"]  # pJ/fmol.
+    registry = {s["id"]: s.get("standard_mu_RT") for s in model["species"]}
+    network = next(o for o in model["operators"] if o["law"] == NETWORK)
+    own = {s["id"]: s["standard_mu_RT"] for s in network["species"]}
+    lam = np.zeros(len(ids))
+    for i, s in enumerate(ids):
+        if registry.get(s) is not None:
+            lam[i] = registry[s] - math.log(model["standard_concentration_mM"])
+        elif s in own:
+            lam[i] = own[s] - math.log(network["standard_concentration_mM"])
+    return np.sum(rt * n * (np.log(n / v[:, None]) - 1.0) + rt * lam[None, :] * n, axis=1)
+
+
+def engine_c26(world):
+    """(samples [T] s, {quantity: [T]}, the identity's residual over its scale at every saved row,
+    seconds) of the engine's run of worlds/<world>, every host check on every accepted row."""
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import run
+    from cells.registry.models import get_model
+
+    raw = json.loads((REFERENCES / "worlds" / world).read_text())
+    spec = parse_spec(raw)
+    started = time.perf_counter()
+    result = run(spec)
+    seconds = time.perf_counter() - started
+    _, p = get_model(spec.model).initial_values(spec)
+    ids = list(spec.model.species_ids)
+    h = result.history
+    n = np.asarray(p.amount_reference)[:, 0][None, :] + np.asarray(h.amount_increment)[:, :, 0]
+    v = np.asarray(p.volume)[0] + np.asarray(h.volume_increment_pL)[:, 0]
+    f = free_energy(raw, ids, n, v)
+    water_heat = np.asarray(h.water_dissipated_energy_pJ).sum(axis=1)
+    bath_work = np.asarray(h.bath_water_work_pJ).sum(axis=1)
+    network_heat = np.asarray(h.reaction_dissipated_energy_pJ)[:, 0]
+    network_work = np.asarray(h.reaction_work_pJ)[:, 0]
+    work, heat = network_work + bath_work, network_heat + water_heat
+    residual = (f - f[0]) - (work - heat)  # U = 0: no modulus is declared.
+    scale = float(np.max(np.abs(f - f[0])) + np.max(np.abs(heat)) + np.max(np.abs(work)))
+    identity = dict(
+        residual_over_scale=float(np.max(np.abs(residual))) / scale,
+        endpoint_residual_over_scale=float(abs(residual[-1])) / scale,
+        scale_pJ=scale,
+    )
+    samples = np.asarray(spec.experiment.observation_times, dtype=float)
+    times = np.asarray(result.times, dtype=float)
+    rows = [int(np.argmin(np.abs(times - t))) for t in samples]
+    assert np.allclose(times[rows], samples, rtol=0, atol=1e-9), (world, times[rows].tolist())
+
+    def at(name):
+        return n[rows, ids.index(name)]
+
+    values = dict(
+        n_A=at("A"),
+        n_B=at("B"),
+        n_C=at("C"),
+        V=v[rows],
+        F=f[rows],
+        water_heat=water_heat[rows],
+        bath_water_work=bath_work[rows],
+        network_heat=network_heat[rows],
+        network_work=network_work[rows],
+    )
+    return samples, values, identity, seconds
+
+
+def planted_c26(world):
+    """C2.7's plant: the network reads the declared volume V_0 (no view), for its rates and its
+    bookings alike. (refused by the energy ledger, message, its identity or None)."""
+    import jax
+
+    from cells.execution.errors import NumericalError
+    from cells.operators import species_reactions as sr
+
+    original = sr.LocalSpeciesReactions.half_step
+
+    def planted(self, *args, view=None, **kwargs):
+        return original(self, *args, **kwargs)
+
+    jax.clear_caches()  # The runner's compiled rollout is cached per model: retrace the plant.
+    sr.LocalSpeciesReactions.half_step = planted
+    try:
+        try:
+            _, _, identity, _ = engine_c26(world)
+        except NumericalError as refusal:
+            return "energy" in str(refusal), str(refusal)[:400], None
+        return False, None, identity
+    finally:
+        sr.LocalSpeciesReactions.half_step = original
+        jax.clear_caches()
+
+
+def reference_c26():
+    data = json.loads((REFERENCES / "out" / "C2.6-swelling-cell.json").read_text())
+
+    def get(name):
+        return np.asarray(data[name], dtype=float)
+
+    return get("times_s"), dict(
+        n_A=get("amount_fmol.A"),
+        n_B=get("amount_fmol.B"),
+        n_C=get("amount_fmol.C"),
+        V=get("volume_pL"),
+        F=get("free_energy_pJ"),
+        water_heat=get("water_heat_pJ"),
+        bath_water_work=get("bath_water_work_pJ"),
+        network_heat=get("network_heat_pJ"),
+        network_work=get("network_work_pJ"),
+        U=get("elastic_energy_pJ"),
+    )
+
+
+def judge_c26():
+    """C2.6 and C2.7's verdict, every number recorded."""
+    t_ref, ref = reference_c26()
+    runs, identities = {}, {}
+    for label, world in zip(("dt", "half_dt"), C26_WORLDS, strict=True):
+        samples, values, identity, seconds = engine_c26(world)
+        assert samples.shape == t_ref.shape and np.allclose(samples, t_ref, rtol=0, atol=1e-9)
+        runs[label] = dict(world=world, values=values, seconds=seconds)
+        identities[label] = identity
+    dt, half = runs["dt"]["values"], runs["half_dt"]["values"]
+    c26 = {q: ratio_verdict(error(dt[q], ref[q]), error(half[q], ref[q])) for q in C26_QUANTITIES}
+    c27_reference = {
+        q: ratio_verdict(error(dt[q], ref[q]), error(half[q], ref[q])) for q in C27_QUANTITIES
+    }
+    coarse = identities["dt"]["residual_over_scale"]
+    fine = identities["half_dt"]["residual_over_scale"]
+    ratio = coarse / fine if fine > 0 else float("inf")
+    c27_identity = dict(
+        identities,
+        ratio=ratio,
+        passed=BAND[0] <= ratio <= BAND[1],
+        network_work_max_pJ=float(
+            max(np.max(np.abs(dt["network_work"])), np.max(np.abs(half["network_work"])))
+        ),
+        reference_U_max_pJ=float(np.max(np.abs(ref["U"]))),
+    )
+    refused, message, planted_identity = planted_c26(C26_WORLDS[0])
+    if refused:
+        plant = dict(refused_by_the_energy_ledger=True, message=message, fails_as_required=True)
+    else:
+        over = (planted_identity or {}).get("residual_over_scale", 0.0) / coarse if coarse else 0.0
+        plant = dict(
+            refused_by_the_energy_ledger=False,
+            message=message,
+            identity=planted_identity,
+            residual_over_correct=over,
+            fails_as_required=over >= PLANT_RESIDUE_FACTOR,
+        )
+    passed = (
+        all(v["passed"] for v in c26.values())
+        and all(v["passed"] for v in c27_reference.values())
+        and c27_identity["passed"]
+        and plant["fails_as_required"]
+    )
+    return dict(
+        case="C2.6 and C2.7",
+        floor=FLOOR,
+        band=list(BAND),
+        runs={k: dict(world=v["world"], seconds=round(v["seconds"], 2)) for k, v in runs.items()},
+        c26=c26,
+        c27_identity=c27_identity,
+        c27_reference=c27_reference,
+        plant=plant,
+        passed=passed,
+    )
+
+
 def error(values, ref):
     """e_q(h): the largest departure at the sample times over the reference's largest size."""
     return float(np.max(np.abs(values - ref)) / np.max(np.abs(ref)))
@@ -149,23 +344,20 @@ def judge_c23(kinds=C23_KINDS):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    parser.add_argument("case", choices=("c23",))
+    parser.add_argument("case", choices=("c23", "c26"))
     parser.add_argument("out")
     parser.add_argument("--kinds", nargs="+", default=list(C23_KINDS), choices=C23_KINDS)
     args = parser.parse_args(argv)
     import jax
 
     jax.config.update("jax_enable_x64", True)
-    verdict = judge_c23(tuple(args.kinds))
+    verdict = judge_c23(tuple(args.kinds)) if args.case == "c23" else judge_c26()
     verdict["references"] = str(REFERENCES.relative_to(ROOT))
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     (out / f"{args.case}.json").write_text(json.dumps(verdict, indent=1) + "\n")
-    print(
-        json.dumps(
-            {k: v["passed"] for k, v in verdict["kinds"].items()} | dict(passed=verdict["passed"])
-        )
-    )
+    parts = {k: v["passed"] for k, v in verdict.get("kinds", {}).items()}
+    print(json.dumps(parts | dict(passed=verdict["passed"])))
     return 0 if verdict["passed"] else 1
 
 
