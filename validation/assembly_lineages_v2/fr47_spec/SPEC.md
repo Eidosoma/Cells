@@ -50,6 +50,9 @@ This folder is for the code-blind references agent of FR-47's qualification
   - each copy switches independently of every other copy and of the tracer.
 - **A withdrawal** (fraction f, a dyadic number, with a tracer-free buffer): each pool molecule is
   removed independently with probability exactly f. Nothing is added. Lumen molecules stay.
+  - Its booked mixing heat is −k·ln(1 − f), with k the pool's kept count.
+  - Exact events book it to rounding, not to the bit: 2–4 × 10⁻¹⁶ relative, checked on a made-up
+    one-slot shell.
 - **A replacement** (a full wash, with a tracer-free fresh pool): every pool molecule is removed.
   Nothing is added. Lumen molecules stay.
 - **The wall's subunit B** is a constant count: no step moves it.
@@ -129,6 +132,8 @@ inputs after reading that table and before the tag.
   - N_w is the wall's total count, B + G + H = 100 + N_g, a constant.
   - The factor is the limit's membrane factor for a one-to-one wall step, (N − c + 1)/(N − c) with
     c = 0. The exact process's factor cancels to 1 (§1).
+  - The factor was checked on a geometry-free, single-lineage world only, because (d) cannot run a
+    shell before FR-47's build. That build confirms it in a shell world before the checker runs.
   - So the gap below carries an O(1/N_w) term from this factor, beside the O(1/N_g) term from the
     gate's correlation with the tracer.
 - **The representation gap:** the mean-field minus the exact mean, per observable and time.

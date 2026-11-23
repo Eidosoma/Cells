@@ -65,6 +65,12 @@ The proposed tag, once at the final head, after the references agent's work, is
   - Where it predicts spread, identical replicas still face the spread test.
   - A tolerance exists only where it is derived: here, the tracer moiety's sum in (d).
 - **No pair is excluded after a run.**
+- **The spread z is not normal at M = 128.** s² is skewed, so its tails are not the normal's.
+  - For a Gaussian population, the upper tail is 4.9 × 10⁻⁵ at 4.5, against the normal's
+    3.4 × 10⁻⁶, and 3.3 × 10⁻⁷ at 6, against 10⁻⁹. Counts with excess kurtosis are heavier still.
+  - Over about 200 spread pairs, that is about a 1% chance of a false inconclusive, which the
+    retry settles, and about 7 × 10⁻⁵ of a false fail.
+  - The bands are kept as registered.
 - **The same module serves Protocol D's re-registration,** whose excluded pairs must be justified
   from the model, not from the replicas.
 
