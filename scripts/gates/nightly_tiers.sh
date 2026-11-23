@@ -34,6 +34,9 @@ LOCK_A=${LOCK_A:-/mnt/workspaces/Cells/locks/gate-cores-0-3.lock}; CPUS_A=${CPUS
 LOCK_B=${LOCK_B:-/mnt/workspaces/Cells/locks/gate-cores-8-11.lock}; CPUS_B=${CPUS_B:-8,9,10,11,24,25,26,27}
 G=$(cd "$(dirname "$0")" && pwd)
 export JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONDONTWRITEBYTECODE=1 JAX_ENABLE_X64=1
+# Cold (D321 R2): the nightly full run is the control for gates that use a cache, so it never does.
+export JAX_ENABLE_COMPILATION_CACHE=false
+unset JAX_COMPILATION_CACHE_DIR CELLS_JAX_CACHE
 log() { echo "$(date -u +%FT%TZ) $*" >> "$OUT/nightly.log"; }
 stop_selection() {  # WHY: selection off until the lead explains the failure.
   mkdir -p "$GATE_CACHE"
@@ -91,12 +94,21 @@ case "${1:-}" in
     done_locked() { echo "$1" > "$OUT/locked.done"; exit "$1"; }
     taskset -cp "$CPUS" $$ > /dev/null || { log "could not pin to lane $LANE's CPUs $CPUS"; done_locked 2; }
     log "lane $LANE, lock held; affinity $(taskset -pc $$ | sed 's/.*: //')"
+    log "JAX's persistent compilation cache disabled in every process (JAX_ENABLE_COMPILATION_CACHE=false, \
+no cache folder; D321 R2)"
     start=$(date +%s)
     (cd "$S" && PYTHONPATH="$S/src:$S" "$PY" -B scripts/test_tiers.py run --tiers "${TIERS:-tests/test_tiers.json}" \
       --tier 1 2 --out "$OUT/tiers-1+2" --cpus "$CPUS" --cap 300 --scope-map "$OUT/tiers-1+2/scope" \
       > "$OUT/tiers-1+2.log" 2>&1)
     tiers=$?
     log "tiers 1+2 exit $tiers seconds $(( $(date +%s) - start )): $(tail -n 1 "$OUT/tiers-1+2.log")"
+    if why=$("$HOSTPY" -I "$S/scripts/gates/gate_steps.py" jax-entries "$OUT/tiers-1+2" 2>&1); then
+      log "cold check after the tiers: $why"
+    else
+      log "stopped: JAX compilation cache entries appeared after the tiers (the cold check): $why"
+      stop_selection "the cold check failed: $why"
+      done_locked 1
+    fi
     taskset -c "${CPUS%%,*}" "$HOSTPY" -I "$S/scripts/gates/scope.py" build "$OUT/tiers-1+2" "$S" \
       "$OUT/scope-map.json" --python "$PY" > "$OUT/scope-build.log" 2>&1
     built=$?

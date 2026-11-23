@@ -23,7 +23,8 @@
 #   2. refuse, launching nothing, unless the snapshot is clean and no other unit computes on lane B
 #      without its lock (OUT/lane-check.json);
 #   3. launch the four queues on CPUs 8, 9, 10 and 11, leaving their siblings 24-27 idle, and hold
-#      the lock until they end.
+#      the lock until they end. Each queue runs with JAX's persistent compilation cache disabled
+#      (D321 R2), passed explicitly so it holds whichever run_detached.sh launches it.
 #
 # Usage: fr_landing_holder.sh WORKTREE SNAPSHOT_DEST START OUT
 set -u
@@ -61,7 +62,8 @@ launch() {  # CPU TASK...
   local cpu=$1; shift
   "$RD" "fr45-landingB-q$cpu" 3G --cpus "$cpu" --oom-first --runtime-max 3600 --dir "$S" \
     --env "PYTHONPATH=$S/src:$S" --env JAX_ENABLE_X64=1 --env JAX_PLATFORMS=cpu \
-    --env CUDA_VISIBLE_DEVICES= --env PYTHONDONTWRITEBYTECODE=1 -- \
+    --env CUDA_VISIBLE_DEVICES= --env PYTHONDONTWRITEBYTECODE=1 \
+    --env JAX_ENABLE_COMPILATION_CACHE=false -- \
     bash "$Q" "$O" "$START" "$cpu" "$@" >> "$O/launch.log" 2>&1
 }
 launch 8 "$(q fr4 rung_1ms $F4)" "$(q fr4 control_k1 $F4)" "$(q fr5 T_control $F5 $F5/start/start.json)"
