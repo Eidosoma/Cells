@@ -64,8 +64,8 @@ ROOT_XTOL = 1e-16  # V: brentq's absolute tolerance on a voltage root (rtol 4 ep
 SCAN = 24  # Bracket scan points across a root's domain.
 V_DOMAIN = (-0.20, 0.15)  # V: the scan for a root with no channel population declared.
 CHANNEL_DOMAIN = (-0.12, 0.06)  # V: @3's channel domain, wherever GlyR is declared.
-# V: a symporter world's scan (erratum 1): no channel is declared there, and the keys' stalls reach
-# about +0.29 V (B_N/B_P 1e-5); points outside the law's domain (|x| > 80) are skipped by the scan.
+# V: a symporter world's scan (erratum 1): no channel is declared there, and with the keys' B ratios
+# (to 1e-5) a stall can lie far beyond V_DOMAIN; points outside the law's domain (|x| > 80) are skipped.
 SYM_DOMAIN = (-1.0, 1.0)
 SLOPE_STEP_V = 1e-5  # V: the central difference of dV/dt (or a current) for a slope.
 NEWTON_STEPS = 12  # The two-cell steady state's polishing steps at most.
@@ -344,21 +344,24 @@ def eq_ratio(n, na_in, na_out, b_out, temperature, v, *, d=None, version=1):
 
 WINDOW_STEPS = 10000  # Accepted steps per window of the scalar window path.
 KEEP = ("times", "membrane_voltage_V", "amount", "extracellular_amount", "membrane_transferred",
-        "extracellular_potential_V")  # fmt: skip
+        "extracellular_potential_V", "channel_transferred", "passive_transferred",
+        "pump_cycles")  # fmt: skip  # The last three where the world's model records them.
 
 
 def windowed(spec, checkpoint=None, keep=KEEP):
     """A run of a parsed definition through the engine's scalar window path (cells.execution.
     windows.iter_windows, which runs X2 where the definition selects it), from its start or from a
     checkpoint, keeping the named observation fields; the windows' diagnostics are merged by their
-    maxima. Returns (fields, diagnostics, final checkpoint)."""
+    maxima; a field the model does not record is left out. Returns (fields, diagnostics, final
+    checkpoint)."""
     from cells.execution.windows import WindowPolicy, iter_windows
 
     policy = WindowPolicy(window_steps=WINDOW_STEPS, recording="observations")
     parts, diagnostics, final = {f: [] for f in keep}, {}, None
     for window in iter_windows(spec, policy, checkpoint):
         for f in keep:
-            parts[f].append(np.asarray(getattr(window.observations, f)))
+            if hasattr(window.observations, f):
+                parts[f].append(np.asarray(getattr(window.observations, f)))
         for k, v in window.diagnostics.items():
             if isinstance(v, (int, float, np.floating, np.integer)) and np.isfinite(v):
                 diagnostics[k] = max(diagnostics.get(k, -math.inf), float(v))
@@ -383,6 +386,8 @@ def trajectory(world_kw, end_time, *, d=None, x2_cap, dt=None, every=1):
     membranes = [m.id for m in spec.model.membranes]
     cells = [c.id for c in spec.model.cells]
     voltage = o["membrane_voltage_V"]
+    inside = {m.id: m.inside for m in spec.model.membranes}
+    routes = dict(spec.model.kinds).get("cells.passive_routes@1", ())
     return dict(
         t=np.asarray(o["times"], dtype=float),
         V={c: voltage[:, membranes.index(f"m_main_{c}")] for c in cells},
@@ -391,6 +396,13 @@ def trajectory(world_kw, end_time, *, d=None, x2_cap, dt=None, every=1):
         transferred=o["membrane_transferred"],  # [t, species, membrane], cumulative outward
         membranes=membranes,
         membrane_cell=[m.inside for m in spec.model.membranes],
+        # A channel population's and a route's transfers are their own records, not the patch's:
+        # [t, species, channel] cumulative outward; [t, species, route] cumulative inward.
+        channel_transferred=o.get("channel_transferred"),
+        channel_cell=[inside[c.membrane_id] for c in spec.model.channels],
+        route_transferred=o.get("passive_transferred"),
+        route_cell=[r.inside for r in routes],
+        pump_cycles=o.get("pump_cycles"),
         species=list(spec.model.species_ids),
         cells=cells,
         outside_ids=[x.id for x in spec.model.extracellular],
@@ -1223,12 +1235,31 @@ def m_c5_tau_fit(mode):
     return reading
 
 
+def own_outward_charge(traj, cell):
+    """The charge (C) that has left the cell through its own patches, channel populations and
+    routes by each observation: e sum_s z_s of the engine's cumulative records (membrane_ and
+    channel_transferred outward, passive_transferred inward). Refused where a pump has cycled,
+    whose transfers these records do not carry."""
+    if traj["pump_cycles"] is not None and np.any(np.asarray(traj["pump_cycles"]) != 0):
+        raise Refused("a pump cycled: its transfers are not booked here")
+    z = traj["valence"][None, :, None]
+    moved = np.zeros(len(traj["t"]))
+    for record, owners, sign in (("transferred", traj["membrane_cell"], 1.0),
+                                 ("channel_transferred", traj["channel_cell"], 1.0),
+                                 ("route_transferred", traj["route_cell"], -1.0)):  # fmt: skip
+        own = [i for i, c in enumerate(owners) if c == cell]
+        if own:
+            moved += sign * np.sum(z * np.asarray(traj[record])[:, :, own], axis=(1, 2))
+    return CHARGE_PER_FMOL * moved
+
+
 def m_c5_junction_charge_sum(params, *, d, x2_cap, cache, **_):
     """C5.junction_charge_sum: the run of the scenario's two cells at x1 from the declared anchor
     V0 = -0.04 V (both) to 4 tau_common, every 10 accepted steps observed; at each observation,
-    the junction's charge into each cell is its charge change from its recorded amounts plus
-    e sum_s z_s of its own patches' cumulative outward transfers; the reading is the largest
-    |sum over the two cells| (C), the junction's own conservation through the engine's records."""
+    the junction's charge into each cell is its charge change from its recorded amounts plus the
+    charge that has left through its own patches, channel populations and routes
+    (own_outward_charge); the reading is the largest |sum over the two cells| (C), the junction's
+    own conservation through the engine's records."""
     key = ("c5_charge", json.dumps(params, sort_keys=True, default=str), STEP["factor"])
 
     def make():
@@ -1238,12 +1269,9 @@ def m_c5_junction_charge_sum(params, *, d, x2_cap, cache, **_):
 
     traj = cached(cache, key, make)
     total = np.zeros(len(traj["t"]))
-    for k, cell in enumerate(traj["cells"]):
+    for cell in traj["cells"]:
         q = cell_charge(traj, cell)
-        own = [i for i, c in enumerate(traj["membrane_cell"]) if c == cell]
-        out = CHARGE_PER_FMOL * np.sum(
-            traj["valence"][None, :, None] * traj["transferred"][:, :, own], axis=(1, 2))
-        total += (q - q[0]) + out
+        total += (q - q[0]) + own_outward_charge(traj, cell)
     return float(np.max(np.abs(total)))
 
 

@@ -771,7 +771,7 @@
   "matched": [
    "C0 (reading 2): effect signs, cl_bound; cl_i_critical_area is the cl_threshold root at V_rest; cl_i_threshold_V<V> the same root at the family's fixed V; feasible_19p4_area holds iff V_rest - E_Cl >= 19.4 mV (T2's published magnitude) from the engine's roots",
    "C2 (reading 4): sign_dVdt_dV<off> is the sign of dV/dt at V_GHK + off (dvdt_offset)",
-   "C5 (reading 6): steady voltages, modes, V_limit (the root of dV1/dt + dV2/dt at a common V), g_J (the junction's slope conductance at V1 = V2, x1), g_m (a cell's slope conductance at its uncoupled zero), junction_charge_sum (from a run, the junction's charge into both cells from their amounts and own patches' transfers, its largest |sum|), tau_fit_common and tau_fit_diff (from the steady state plus 0.002 V along the mode's eigenvector to tau_m, a(t) = v . (V - V_ss), -tau_m / ln(a(tau_m)/a(0)))",
+   "C5 (reading 6): steady voltages, modes, V_limit (the root of dV1/dt + dV2/dt at a common V), g_J (the junction's slope conductance at V1 = V2, x1), g_m (a cell's slope conductance at its uncoupled zero), junction_charge_sum (from a run, the junction's charge into both cells from their amounts and the cumulative transfers of their own patches, channel populations and routes, each the engine's own record: membrane_ and channel_transferred outward, passive_transferred inward; refused where a pump has cycled; its largest |sum|), tau_fit_common and tau_fit_diff (from the steady state plus 0.002 V along the mode's eigenvector to tau_m, a(t) = v . (V - V_ss), -tau_m / ln(a(tau_m)/a(0)))",
    "C6 (reading 7): offsets from the engine's own stall; Vrest_<exterior> at 291.15 K; version 2 with Na_N 21 mM and 291.15 K (the reference's fixed values); capacity state b; J at the stall, dJ/dV there (the probe's own derivative), J-/J+, x at the equilibrium ratio, S_hill from the probe's S at the P end"
   ]
  },
@@ -782,7 +782,7 @@
   "horizon_s": 64.0,
   "observed_every_s": 0.01,
   "start": "the coupled run's cell at the engine's zero-current voltage of the primary set against the local node (SEMANTICS.md); the bare run at the same anchor",
-  "runs": "four saved runs, bare and coupled, at h and h/2, each made by `xc0_engine c8b-run READING FACTOR UNTIL OUT --x2-cap 0.002 [--resume PREVIOUS]` from the frozen snapshot, in segments of at most 32 s of simulated time, so that each gate-lane batch holds about an hour (the lead, 23 November 2026): at h, one segment to 64 s; at h/2, two (to 32 s, then from its snapshot to 64 s). A split run was bitwise its whole on invented inputs",
+  "runs": "four saved runs, bare and coupled, at h and h/2, each made by `xc0_engine c8b-run READING FACTOR UNTIL OUT --x2-cap 0.002 [--resume PREVIOUS]` from the frozen snapshot, in segments of about an hour of one core each, so that each gate-lane batch holds about an hour (the lead, 23 November 2026). At about 5 ms a step (measured on invented inputs) and 0.1 ms the declared step, a 64 s run is about 53 min at h and 107 min at h/2: at h, one segment to 64 s; at h/2, two (to 32 s, then from its snapshot to 64 s). Two batches: the four first segments in parallel, then h/2's two second segments. A split run is bitwise its whole (checks_before_the_tag)",
   "read": "the table stage reads them (--c8b RUNS), checking each segment's trajectory digest, source revision and patch, and cap against its own",
   "lane": "a gate lane when one is free, under its lock, one thread per core, the runs in parallel; yield to FR-43 first, then gates; never CPUs 12-15 or 28-31 or the timed cores 4, 5, 20 and 21"
  },
@@ -898,7 +898,7 @@
   },
   "C5": "two primary cells in the bath at 291.15 K, cell 2 carrying the scenario's element open (kir_g<g>: the route; x_gly<P>: GlyR), the junction at the key's multiple (x1 for g_J, V_limit, the fits and the charge sum)",
   "C6_v2": "Na_N 21 mM and 291.15 K where the key names neither",
-  "symporter_scan": "a symporter world's roots scan -1 to 1 V (no channel is declared there; the keys' stalls reach about +0.29 V); points outside the law's domain are skipped"
+  "symporter_scan": "a symporter world's roots scan -1 to 1 V (no channel is declared there, and with the keys' B ratios, to 1e-5, a stall can lie far beyond the scan of a world without channels, -0.2 to 0.15 V); points outside the law's domain are skipped"
  },
  "measures": {
   "feasible_19p4": "C0.feasible_19p4_area: V_rest - E_Cl >= 19.4 mV (T2's published magnitude), from the engine's\nzero-current voltage and its Cl- zero at the state.",
@@ -917,7 +917,7 @@
   "c5_g_m": "C5.g_m: a cell's membrane slope conductance at its own uncoupled zero-current voltage (S):\ncell1 the leaks alone, cell2 the leaks and the scenario's element; C_total / tau_lin.",
   "c5_tau_fit_common": "C5.tau_fit_common (erratum 1): from the engine's steady voltages at x1 plus 0.002 V along the mode's eigenvector of the engine's Jacobian (its largest component), the run to tau_m = -1/lambda of that mode; a(t) = v . (V(t) - V_ss); tau_fit = -tau_m / ln(a(tau_m) / a(0)), a(tau_m) read as at_time does.",
   "c5_tau_fit_diff": "C5.tau_fit_diff (erratum 1): from the engine's steady voltages at x1 plus 0.002 V along the mode's eigenvector of the engine's Jacobian (its largest component), the run to tau_m = -1/lambda of that mode; a(t) = v . (V(t) - V_ss); tau_fit = -tau_m / ln(a(tau_m) / a(0)), a(tau_m) read as at_time does.",
-  "c5_junction_charge_sum": "C5.junction_charge_sum: the run of the scenario's two cells at x1 from the declared anchor\nV0 = -0.04 V (both) to 4 tau_common, every 10 accepted steps observed; at each observation,\nthe junction's charge into each cell is its charge change from its recorded amounts plus\ne sum_s z_s of its own patches' cumulative outward transfers; the reading is the largest\n|sum over the two cells| (C), the junction's own conservation through the engine's records.",
+  "c5_junction_charge_sum": "C5.junction_charge_sum: the run of the scenario's two cells at x1 from the declared anchor\nV0 = -0.04 V (both) to 4 tau_common, every 10 accepted steps observed; at each observation,\nthe junction's charge into each cell is its charge change from its recorded amounts plus the\ncharge that has left through its own patches, channel populations and routes\n(own_outward_charge); the reading is the largest |sum over the two cells| (C), the junction's\nown conservation through the engine's records.",
   "sym_dj_dv": "C6.v1_dJdV_at_stall: the transporter probe's dJ/dV (the engine's own derivative,\nfmol/s/V) at the key's voltage (the engine's stall with off 0).",
   "sym_ratio": "C6.v1_ratio_Jm_Jp: J-/J+ of the transporter probe at the key's voltage.",
   "sym_eq_x": "C6.v1_eq_x: x = dG_cyc/RT of the probe at B_in = the engine's equilibrium ratio times\nB_out, at the key's voltage.",
@@ -950,9 +950,23 @@
   "the retry, once, as tagged (xc0_compare retry-manifest; xc0_engine table --retry; judge --retry); a C8b row's retry needs the runs at h/4",
   "the verdict record: overall, claim, family and row outcomes, the not-run and not-mappable rows with their reasons, the table's digests, T1 and T2's calibrated values (unconstrained), and not_blind"
  ],
- "checks_before_the_tag": [],
+ "checks_before_the_tag": [
+  "the keys stage, from a clean frozen snapshot of the tagged tree (98351456; no --with-text): 130 families, 8,680 rows; the builder read names, kinds, units and row keys only (keys_stage above)",
+  "the manifest from that keys.json (xc0_compare manifest --calibrations): 7,429 compared rows mapped and T1 and T2's 54 calibration rows; 242 not run and 273 not mappable, each with its reason; 0 unmapped; 736 info rows",
+  "check_rule: the tagged rule as tagged, and this erratum's mapping equal to the reader's rule_mapping() (the judge refuses otherwise)",
+  "xc0_compare selfcheck on the invented interface, from this tree: passed (its cases include a not_mappable row, refused at judging and neutral in the verdicts)",
+  "the tree-scanning guards, from this tree: the gate's guard set (scripts/gates/gate_steps.py GUARDS, eight files) with test_d147_drivers and test_species_registry: 102 passed",
+  "erratum 1's static readings on the invented input set (dev/selftest_erratum_static_novalues.py, which prints no value): 90 readings (C0's threshold and the 19.4 mV flag; C1's route current, slope and ratio; C3's V_inf, g and tau_doubling in seven worlds; C4's a0 currents and monotone flags; C5's V_limit, g_J and g_m; the symporter's and the pump's readings; version 2's stall and ratio), each a finite number, none refused",
+  "the run readings on the invented input set (dev/selftest_erratum_runs.py): C3's Q - C V per observation (S2, k 4 and 16) at round-off (< 1e-22 C) and ratio_t (S5); C7's relaxations (S1 and S4, k 1 and 24), the charge identity at round-off (< 4e-23 C) beside dQ of 3e-13 to 2.3e-12 C; C5's fitted time constants within 0.25% (common) and 0.13% (differential) of the engine's mode tau_m in each of the three scenarios",
+  "C5's junction charge sum, corrected before the tag: the patch record (membrane_transferred) leaves out a channel population's and a route's transfers, which the engine records in channel_transferred (outward) and passive_transferred (inward), so the first reading counted the route's charge as the junction's (3.3e-14 C at kir_g3 on invented inputs). With every own element booked the sum is at round-off in all three scenarios (3.1e-22 to 3.7e-22 C), while the junction moves 1.3e-14 C (kir_g3) and 1.3e-12 C (x_gly3e-8) into cell 1; each record's sign was confirmed against the amounts in a one-cell world (round-off) (dev/diag_junction_sum*.py, dev/probe_signs.py, dev/selftest_junction_sum.py)",
+  "after that correction, the run readings through the changed trajectory() in a leaks-only, a route and a GlyR world (dev/selftest_trajectory_after_fix.py): C3's Q - C V in S1 (leaks), S6 (the route) and S3 (GlyR) and C7's identity in S2, each a finite number",
+  "a split P1LB run equals its whole bitwise in t, c and psi on the invented input set (horizon shortened to 0.4 s, 41 observations), at h (0 to 0.2 s, then from its snapshot to 0.4 s) and at h/2, where the plan splits; the saved-run readings read the joined runs, each a number",
+  "the symporter's roots on -1 to 1 V: at each stall found, J is zero to round-off, and version 2's J-/J+ there is 1"
+ ],
  "not_blind": [
   "the builder read the confirmer's SEMANTICS.md (its digest above), which states definitions, keys and declared inputs and, by its check, no reference value; and the keys stage's output (family names, kinds, units and row keys)",
-  "SEMANTICS.md's section 3 and readings repeat declared inputs (the ion sets, the bath, the leaks, P_GlyR and g_ref values, the 70 mM baths, 19.4 mV, 64 s and t in 1 to 64 s): inputs and published numbers, no reference value"
+  "SEMANTICS.md's section 3 and readings repeat declared inputs (the ion sets, the bath, the leaks, P_GlyR and g_ref values, the 70 mM baths, 19.4 mV, 64 s and t in 1 to 64 s): inputs and published numbers, no reference value",
+  "engine values at registered rows, printed while building on the invented input set: that set changes the ion sets, baths, leaks, the pump's metabolism and capacity and the symporter's K_Na and K_B, but a symporter key sets the concentrations, n and T, so the readings thermodynamics alone fixes are the engine's values at those rows. Printed: version 1's stall at n2|Nain21|Naout91|BP0.1|rB0.01|T291.15 and n4|Nain38|Naout91|BP10|rB1|T291.15 and version 2's at NaP19.9|BP0.1|BN0.0001 and NaP19.9|BP10|BN0.0001 (while widening the symporter scan); at n2|Nain21|Naout19.9|BP0.1|rB0.01|T291.15, J-/J+ and x at offset 0.01 V and the per-cycle dG_chem, dU_cap and heat at offset -0.01 V; x at the equilibrium ratio at n2|Nain21|Naout19.9|V-0.04; version 2's J-/J+ at NaP19.9|BP0.1|BN0.0001|V-0.04; the pump's and the symporter's cycle counts (the declared stoichiometries). None was compared with anything, and no reference value was seen",
+  "the erratum's development scripts (dev/selftest_erratum_static.py and dev/selftest_erratum_runs.py in the run folder) otherwise printed values at the invented input set's own states, residuals and checks (a root's J, a split run's bitwise equality); the builder knows of no other engine value printed at a registered row"
  ]
 }
