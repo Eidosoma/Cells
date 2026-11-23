@@ -349,7 +349,9 @@
   "/mnt/workspaces/Cells/kinds-hook-20261122/measure-32657ff7/measured.json",
   "/mnt/workspaces/Cells/gene-regulation-20261120/fr38/step4/timed-c90f1f5c/measure/measured.json",
   "/mnt/workspaces/Cells/gene-regulation-20261120/fr38/step5/lead/measure90/measured.json",
-  "/mnt/workspaces/Cells/ol6-20261122/tiers-b74ffb39/measure/measured.json"
+  "/mnt/workspaces/Cells/ol6-20261122/tiers-b74ffb39/measure/measured.json",
+  "/mnt/workspaces/Cells/kinds-hook-20261122/measure-296c10ed/measured.json",
+  "/mnt/workspaces/Cells/kinds-hook-20261122/measure-ab8162ae/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2969,6 +2971,22 @@
    "root": "/mnt/workspaces/Cells/ol6-20261122/snapshot-b74ffb39",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-22T22:22:35+00:00"
+  },
+  {
+   "git_revision": "296c10ed7482d84fadd4d9c183fa5db5f0250e3a",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/kinds-hook-20261122/snapshot-296c10ed",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-23T02:34:55+00:00"
+  },
+  {
+   "git_revision": "ab8162ae78421a98b470df453d8d8e12587f8e44",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/kinds-hook-20261122/snapshot-ab8162ae",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-23T02:38:09+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -7443,18 +7461,18 @@
    },
    {
     "file": "tests/unit/test_neutral_arrival_labels.py",
-    "seconds": 62.03,
+    "seconds": 60.31,
     "exit_code": 0,
     "counts": {
-     "passed": 32
+     "passed": 35
     }
    },
    {
     "file": "tests/unit/test_neutral_labels_events.py",
-    "seconds": 22.47,
+    "seconds": 20.62,
     "exit_code": 0,
     "counts": {
-     "passed": 1
+     "passed": 4
     }
    },
    {
