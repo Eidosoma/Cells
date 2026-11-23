@@ -60,6 +60,12 @@ the half-step's start (Neumaier's sum of its h's) plus the offset inside it. The
 other writers of a row it reads or moves (turnover, exchange, @3's step) is Strang's, O(dt^2) in
 the event times; with nothing else moving its rows, the event times are exact at every dt.
 
+**Stages.** Sites whose rows meet, one of them moving a row the other moves or reads while both
+can be live (stages: a parent and its daughters never meet, rows both only read do not), run in
+different stages. With one stage the half-step is the exact flow above. With several it is a
+palindrome of exact stages, the first stages over h/2 forward, the last over h, the first back over
+h/2 (stage_plan), so coupled sites are split at second order, as any other co-writers are.
+
 **Energy.** Each move's heat is -ΔF of the two pools, formed as m ln(c_c'/c_o') + n_c φ(-m/n_c) +
 n_o φ(m/n_o) with φ(x) = x - log1p(x), every term >= 0 by construction (m and ln(c_c'/c_o') share
 u0's sign), times 1e-3 RT (pJ/fmol): a monotone heat. The rounding magnitudes are @3's absolute
@@ -86,8 +92,8 @@ and the lumens are refused (version 1).
 
 **Refused at the definition**, each with its reason: a charged moved species, or one with an @3
 route; an unknown read species; a patch on a held bath; a malformed or non-conserving channel; a
-reactant order above MAX_ORDER; more than MAX_SUBUNITS subunits at a site; two sites moving one
-row, or a site reading a row another site moves; a moved row that a D152 reaction or the gene unit
+reactant order above MAX_ORDER; more than MAX_SUBUNITS subunits at a site; a moved row that a D152
+reaction or the gene unit
 writes, or that an in-step process moves; replacement and every event that replaces amounts; a
 provider or closer of the activity masks that does not divide through the composite's lifecycle
 (insertion@1 and @2 among them), and a composite without the hook; a label owner; units at a site
