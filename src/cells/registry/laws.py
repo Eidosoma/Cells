@@ -187,6 +187,9 @@ class Law:
     qualified: object = None
 
     interface: ClassVar[str | None] = None
+    # D175's four fields stay reserved, except on an interface that declares itself a level of
+    # detail: D304 makes OL6's cells.assembly_representation@1 their first consumer.
+    LEVEL_OF_DETAIL: ClassVar[bool] = False
     UNITS: ClassVar = MappingProxyType({})  # {own field: unit}
     SIGNS: ClassVar = MappingProxyType({})  # {own field: its sign convention}
 
@@ -219,7 +222,7 @@ class Law:
             for name in ("represents", "preserves", "supports", "qualified")
             if getattr(self, name) is not None
         ]
-        if reserved:
+        if reserved and not type(self).LEVEL_OF_DETAIL:
             out.append(
                 f"{', '.join(reserved)}: B8's fields are reserved until their first consumer (D175)"
             )

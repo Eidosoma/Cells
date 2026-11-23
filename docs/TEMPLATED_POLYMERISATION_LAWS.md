@@ -1784,3 +1784,138 @@ before the code that builds on it.*
    departing material by label, the pre-event amount times its shares just before the event, in
    cumulative records from t = 0, rows and holds apart, so the two events still commute (§9.16,
    item 2). Removal stays apart from degradation, booked to the departing producer's label.
+
+### 9.19 Erratum F: the cohort is marked on the chain's own schedule, and leaves at the gross loss
+
+*23 November 2026, the lead's ruling (D306, item 3) on a split that an independent checker found.
+Docs only, tagged before FR-38's rule.*
+
+1. **The definition (§9.8).** FR-38's cohort is the molecules that detach from their template
+   during [t1, t2), in the requester's words "detaches from its template" and "the same molecules".
+   - It is marked on the chain's own label schedule, a label source's (D296): the window's label from
+     t1, the next label from t2.
+   - **A molecule re-synthesised from monomers is not a member.** A degradation's reverse one-way
+     move puts it in its row at the species' label in force, never at the chain's.
+2. **Why the species' own window is not the cohort.**
+   - A fate row's degradation is one-sided only in its booked net move, J_D = k n (1 − e^(y_f)).
+     Its one-way parts are the gross loss k n and the re-synthesis k n e^(y_f), and FR-42's label
+     owner follows each.
+   - So a window on the species' own arrivals also labels the molecules re-synthesised in it.
+   - Near the degradation's domain edge (e^(y_f) ≈ 0.34, the checker's world), that cohort held 70.10
+     copies at 240 s, against 59.42 for the template's releases alone: 18% more.
+   - On the chain's schedule the cohort met the template-only reference to 6.7 × 10⁻⁷, relative.
+3. **Route 2 (§9.8) uses the gross one-way loss.**
+   - A member leaves at the gross per-molecule rate k, whatever re-synthesis returns to its row.
+   - So route 2 carries the window's releases with the declared first-order k of their fate's loss
+     (cohort.py's known-rate form), not with the booked net loss ∫D_F / n_F = k (1 − e^(y_f)).
+   - It stays exact for a constant k in a well-mixed row, up to its grid error.
+4. **The two readings agree only where e^(y_f) ≪ 1:** the species window against the chain's
+   schedule, and the gross loss against the net.
+   - At the sheet's own state, e^(y_f) ≈ 9.4 × 10⁻⁹. There the two cohorts differ by 2.6 × 10⁻⁷
+     copies at 240 s (4.4 × 10⁻⁹ relative), and R1's and R2's closed forms stand.
+   - FR-38's rule judges the chain's schedule, with route 2 at the gross loss.
+5. **Unchanged:**
+   - the release marks at release (the requester's answer to (e));
+   - route 1's error is the share update's split (erratum C);
+   - under release-marking, a hold emptied at a replacement is recorded at the base label (erratum
+     E).
+
+### 9.20 Amendment G (proposed): producer identity from the replacement events, options and the recommendation
+
+*Proposed 23 November 2026 by the gene-regulation lane for the lead's choice (D306, item 4), to tag
+before code. Docs only.*
+
+**The risk.** A producer label is today a declared name on a chain's label schedule (D296, §9.16
+item 7). So a schedule that never switches at its cell's replacement is admitted, and so is one that
+switches early. An independent checker found both. In the first, the newcomer's 89.55 copies sat
+under the founder's label. The requester defines a producer as (cell, occupant generation,
+expression chain), preserved across restart and cell reordering, so the label must follow the
+events, not a declaration that may disagree with them.
+
+#### 9.20.1 The options
+
+**(a) The engine derives the producer label (recommended).**
+- **The declaration.** A labelled species' entry in the label owner may name a chain source with
+  `producer: {windows: [{label, from, to}, ...]}`.
+- **The derivation, at the definition and on the host.** The owner derives, for each generation k of
+  the chain's cell (replacement@1's occupants, keyed by cell ID: the founder k = 0, then each
+  newcomer in event order):
+  - the producer label `<cell>-g<k>-<chain>`, and for each declared window
+    `<cell>-g<k>-<chain>-<window label>`;
+  - the source's schedule: the generation's label from its birth, its window label inside each
+    window, and the next generation's from the next event's step.
+
+  These are exactly the per-source schedules a correct hand-written declaration gives, so the
+  device's per-source arrival controls (source_controls) are unchanged in form.
+- **One authority:** a hand-written schedule for a source declared `producer` is refused.
+- **Owners:** the kinds owner (species_labels.py: the key, the derivation, the label list within
+  MAX_LABELS, the refusal), and the gene-regulation lane (worlds, replace_restart.py and its test to
+  use it). replacement@1 is read only, through species_common.occupants.
+
+**(b) Refuse an inconsistent schedule at the definition.**
+- Each producer label carries its triple (cell, generation, chain) in the declaration.
+- The definition check refuses any source schedule whose label's generation is not its cell's
+  occupant generation at every step: a missed switch, an early or late one, a wrong cell or chain.
+- **Owners:** the kinds owner (the check and the triple), and the gene-regulation lane (worlds and
+  tests keep writing the schedules).
+
+#### 9.20.2 Trade-offs
+
+| | (a) derived | (b) refused if inconsistent |
+| --- | --- | --- |
+| Declarations | one key per producer source; no schedule to write | every schedule by hand, plus the triple per label |
+| What can go wrong | nothing the events do not fix: the names follow them | caught, but each definition must still be right by hand |
+| Without the key or without replacement | no change: host-side only, no new field | no change: a definition check only |
+| Programs | the same per-source controls as a correct hand schedule, so bit for bit that run | the same |
+| Restart | the labels derive from the definition, so a resume derives the same; the checkpoint carries the shares | the same |
+| Cell reordering | names by cell ID and generation by event order, so reordering moves nothing | the same if the check keys by ID |
+| Freedom | a producer source's labels are the engine's convention | any schedule that agrees with the events |
+| Price | owner about 0.75–1 day; gene lane about 0.25–0.5 | owner about 0.5–0.75 day; gene lane about 0.25 |
+
+**The recommendation is (a).** It removes the error rather than catching it, it writes the
+requester's definition into the engine, and it costs about half a day more than (b). The label
+names become a contract convention, which a requester reads as the triple.
+
+#### 9.20.3 What it does not change
+
+- The rows a newcomer brings take the species' label in force (§9.16 item 7, erratum E); only the
+  chain's products carry the producer label.
+- Release-marking and completion-marking (§9.1, erratum C) and the cohort on the chain's own
+  schedule (erratum F) are unchanged. A window of (a) is that schedule's window, crossed with each
+  generation.
+- MAX_LABELS still bounds the labels: generations times (windows + 1), plus the species' own.
+
+### 9.21 Erratum H: route 2 at the node runs at the gross loss (§9.17.5)
+
+*23 November 2026, the lead's ruling, docs only, tagged before amendment T's code. Item 3 is proposed
+with it for the lead's choice at the tag.*
+
+1. **Route 2 at node o runs at o's gross one-way loss,** by erratum F's reasoning (§9.19). This
+   replaces §9.17.5's "∫D_o over n_o".
+   - A producer's molecule at o leaves at o's outside degradation's declared first-order rate k_o,
+     whatever re-synthesis returns to o's row.
+   - A molecule re-synthesised at o from its monomers takes the species' label in force at o, never
+     a producer's. So it is no producer's RNA and no member of a release window's cohort.
+   - The booked net loss, ∫D_o/n_o = k_o (1 − e^(y_o)), counts re-synthesis too. The two readings
+     agree only where e^(y_o) ≪ 1.
+2. **The readouts' route 2** (§9.17.5), each exact for constant rates in a well-mixed row or node,
+   up to its grid error (cohort.py's known-rate form):
+   - **extracellular RNA by producer:** each producer's exports, its chain's export counter over each
+     generation's life, carried at k_o;
+   - **the release-marked cohort at o:** two pools in series. In the fate row the window's members
+     leave at the fate's gross k_f and by export; their exports then leave o at k_o;
+   - **RNA at o from a generation replaced later:** the first readout's route 2 over that
+     generation's life.
+3. **The export's label report** (§9.17.4), proposed:
+   - **(a), recommended:** two one-way transfers per export, as FR-42 reads every two-sided move
+     and as this operator already reports a degradation's re-synthesis apart from its loss:
+     - the forward part, k_E n_F,c φ_E, from c to o with c's shares;
+     - the backward part, k_E n_F,c φ_E e^(x_E), from o to c with o's shares (the same molecules
+       returning).
+
+     Their difference is J_E, so the physics is unchanged. A forward and a backward export counter
+     (zero-size without an export) let the cohort's series in item 2 carry its members by both
+     parts.
+   - **(b), as tagged:** one transfer of the net J_E with c's shares. It is exact only where
+     e^(x_E) ≪ 1. A driven export far inside its domain meets that, but the domain's own bound,
+     x_E ≤ X_DOM = −1, admits e^(x_E) up to e^(−1).

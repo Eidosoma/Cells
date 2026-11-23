@@ -579,6 +579,11 @@ def for_structure(structure):
             f"{ionic.SERIES_GATE_LAW_ID} runs in @3 alone in v1: a composite's operators, its "
             "closers and its lifecycle write junction_gate as one gate (D262)"
         )
+    if ionic.forms_faces_declared(structure):  # The forms law, version 1 (the face builder's).
+        raise ConfigError(
+            f"{ionic.forms_law.LAW_ID} runs in @3 alone in version 1: a composite's operators, "
+            "closers and field refresh know no forms face"
+        )
     return _adapter(ionic.implementation(structure))
 
 

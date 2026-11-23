@@ -976,3 +976,38 @@ and G2's operator). Its format page and `test_library_pages` move in the same la
 **Incidental, reported and not fixed:** P3's run printed a host `RuntimeWarning` at
 `mass_action.py:136` ("invalid value encountered in add"). An infeasible −inf meets a singular +inf
 before the `where` masks it. It is harmless but noisy.
+
+## 9. The representation's contract, as the first level-of-detail contract (D304)
+
+The lead asked (D304) that this representation's contract serve as the first instance of the
+general level-of-detail contract (D299 item 4; D301's site/sink pair follows on it). It is built
+into `cells.assembly_representation@1` (`interfaces.AssemblyRepresentation`), in three parts.
+
+**1. What each level declares.** Law's four reserved fields (D175), each required on a level of
+detail; the template keeps them refused on every other law (`LEVEL_OF_DETAIL`):
+- `represents`: the detailed form it stands in for, its scope (here, the whole world: one
+  representation per run), and the reduction (the large-count limit of the same declared laws);
+- `preserves`: what it keeps exactly (the world id, its laws and units; every moiety; F_cont's
+  minima) and what to a stated tolerance (the ledger's closure);
+- `supports`: the readouts it answers, and those it refuses by name (event traces, channel counts,
+  and the measures of discreteness: H similarity, F12, composomes, extinction);
+- `qualified`: its envelope, its error budget (Protocol D's criterion B), the registered record that
+  qualified it, and who runs that record (an independent checker).
+
+Beside them: the numerical methods it admits (declared apart from the representation), and its own
+lifecycle, which never edits the detailed form's tables.
+
+**2. What a pair agrees on** (`pair`): one world id; the quantities exposed at the interface (here,
+every place's count, the held supplies, heat and work by payer, and vesicle-level events with their
+times, in the world's units); and, for what stays stochastic in both, the same streams (domains and
+keys). The transient difference between the two is the reduction's error budget, as ARCHITECTURE
+states.
+
+**3. How a pair is qualified:** a protocol registered as a tagged document before its first reading,
+run at its tag by an independent checker, against the detailed form where both run. It states its
+worlds, its rungs of size, its per-rung budget, its convergence criteria and its planted failures,
+one of them a case outside the envelope that must fail (§5.1).
+
+**What the choice obeys:** a definition chooses the level before the run (never during it), the
+detailed form is the default, a reduced level outside its envelope is refused or stopped, and an
+unsupported readout is refused.

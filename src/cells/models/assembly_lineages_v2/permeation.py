@@ -56,6 +56,11 @@ LAW = law_registry.BUILTIN.register(
         formulas=FORMULAS,
         rate_key={"insertion_area": RATE_KEY, "diffusion_radius": RATE_KEY},
         extent="geometric",
+        limit=geometric_log_direction,  # OL6: one molecule a step, so ff(n, 1) = n: arithmetic A
+        limit_formulas={
+            "rule": "the same kernel on real counts: every falling factorial has a <= 1, so "
+            "arithmetics A and C coincide (the design note's §1.4); the extent at real W",
+        },
     )
 )
 assert LAW.law_id == MEMBRANE_PERMEATION

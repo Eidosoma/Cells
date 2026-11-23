@@ -71,6 +71,23 @@ ENERGY_RTOL.update(dict.fromkeys(imex.IMPLICIT_CONDUCTANCE_IDS, 2e-3))  # N2: AR
 # 3e-25 C floor) fails: 6.1e-13 after 1 s, 3.3e-11 after 1 min, 2.0e-9 after 1 h
 # at dt = 1 ms. Recorded max_global_charge_bound_ratio values divide by this
 # checked bound, so they are not comparable with values recorded before it.
+# A component grounded through a held bath also rounds into the residual, and
+# the moved charge cannot scale that where no charge crosses the boundary. The
+# electrodes carry the net charge of the grounded components' non-held nodes
+# (surface_field.grounded_tolerance), which rounds as their stored increments do:
+# by at most 2.5 eps x n x their summed |z F dn|, the component rule. Behind a
+# closed patch the moved charge is the residual itself, so the bound stayed at
+# 3e-25 C, and MT-1b's world refused at step 64,756 (1.04 s at 16 us) on a
+# zero-mean fluctuation of 2.8e-25 C, about 1e-3 of the component rule's
+# allowance (D305; mito-step0-20261122/RECONCILE.md section 2). The per-step
+# allowance is therefore the larger of the two (ledger_limits).
+# - The larger, not the sum, so the bound is unchanged wherever the moved charge
+#   is at least the grounded increments: every single-cell held-bath world of the
+#   results baseline. Their sum is at most twice the larger, and both are worst
+#   cases that measured residuals stay far inside.
+# - Where a component's internal exchange outgrows what crossed its boundary
+#   (a junction sheet, a cell replaced or divided), the component rule takes over.
+#   Where no capacitor joins a held node (baths reached through faces), it is 0.
 GLOBAL_CHARGE_ATOL_C = 3e-25
 GLOBAL_CHARGE_ROUNDING = 256 * np.finfo(float).eps
 # Running material and work ledgers: allowance per accepted step, in eps times the
@@ -550,8 +567,10 @@ def moved_charge(row, p, *, xp=np):
 def global_charge_bound(row, p, *, xp=np):
     """Floor plus a rounding allowance on the absolute terms of the global-charge sum.
 
-    The checked bound also adds the per-step allowance on the same magnitude
-    (ledger_limits with ledger_magnitudes).
+    The checked bound also adds a per-step allowance (ledger_limits): the larger of
+    LEDGER_STEP_ROUNDING eps x steps x the same magnitude (ledger_magnitudes) and the
+    component rule's on the components grounded through a held bath
+    (surface_field.grounded_tolerance).
     """
     return GLOBAL_CHARGE_ATOL_C + GLOBAL_CHARGE_ROUNDING * moved_charge(row, p, xp=xp)
 
@@ -644,8 +663,10 @@ def ledger_limits(row, p, tol, rtol, *, steps, magnitudes, xp=np, flow_fields=No
     ledger_magnitudes. Running material and work ledgers add
     LEDGER_STEP_ROUNDING eps x steps x their magnitudes, and the capacitor
     ledger's representative rows their component net-charge rounding
-    (surface_field.charge_tolerance). The host check and the device checks share
-    these bounds. flow_fields: the heat and work fields by name, declared by the
+    (surface_field.charge_tolerance). Global charge adds the larger of its own
+    and the grounded components' net-charge rounding (surface_field.grounded_tolerance),
+    so where its magnitude is the larger its bound is unchanged. The host check and the
+    device checks share these bounds. flow_fields: the heat and work fields by name, declared by the
     caller (a composite's energy-role table); None selects every row field ending in
     _dissipated_energy_pJ or _work_pJ, in field order.
     """
@@ -659,6 +680,9 @@ def ledger_limits(row, p, tol, rtol, *, steps, magnitudes, xp=np, flow_fields=No
     # On the host, Python floats keep sum()'s compensated float summation.
     flows = sum(float(t) for t in terms) if xp is np else sum(terms)
     rounding = LEDGER_STEP_ROUNDING * np.finfo(float).eps * steps
+    grounded = field.grounded_tolerance(
+        tissue.charge_increment_magnitude(row, p, xp=xp), steps, tissue.field_layout(p), xp=xp
+    )
     bounds = (
         tol[:, None],
         tol[:, None],
@@ -671,10 +695,16 @@ def ledger_limits(row, p, tol, rtol, *, steps, magnitudes, xp=np, flow_fields=No
         3e-12,
         3e-12,
     )
-    return flows, tuple(
+    limits = [
         bound if magnitude is None else bound + rounding * magnitude
         for bound, magnitude in zip(bounds, magnitudes, strict=True)
-    )
+    ]
+    charge = LEDGERS.index("global_charge")
+    if magnitudes[charge] is not None:
+        # The larger of the two allowances (the comment at GLOBAL_CHARGE_ATOL_C), taken after
+        # today's expression so that where it is the larger its bits are kept on every backend.
+        limits[charge] = xp.maximum(limits[charge], bounds[charge] + grounded)
+    return flows, tuple(limits)
 
 
 def checked_rows(
@@ -748,8 +778,9 @@ def checked_rows(
 def check_values(state, spec, steps=None):
     """Family ledgers and tolerances; energy also allows the declared IMEX bound.
 
-    The global-charge bound scales with the charge moved (global_charge_bound);
-    running ledgers allow their rounding over the row's accepted steps.
+    The global-charge bound scales with the charge moved (global_charge_bound) and
+    with the net charge of components grounded through a held bath; running ledgers
+    allow their rounding over the row's accepted steps.
     """
     _, p = kinetic.initial_values(spec)
     return checked_rows(

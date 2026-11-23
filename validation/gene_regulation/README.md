@@ -14,6 +14,7 @@ which this folder's tools read as data only.
 | `optin_check.py` | The release opt-in's before/after dump of every registered FR-25 definition, and its D148 verdict |
 | `rna_readouts.py` | Per-cell RNA readouts and FR-25's two controls |
 | `restart_example.py` | A restart at a rate change |
+| `replace_restart.py` | FR-38's step 5: a producer replaced midway through a chase, then a restart |
 | `kernel.py` | The operator's own half-steps in NumPy, used by the tests |
 | `plants.py` | The sheet's plants |
 
@@ -42,8 +43,9 @@ At each output, per cell by ID, under G2's interface names:
 - **FR-42's labels** (D289), only in a world that declares `neutral_arrival_labels@1`: each
   labelled row's amount carrying each of its labels, `label_<row>_<label>`, the row times the
   label's share, by the species' and label's IDs. A label changes no physical readout.
-  - In R1L, `label_R_cohort` and `label_R_s_cohort` are §9.8's route 1 on shares (erratum C): the
-    releases of R1's window still present, with no blank.
+  - In R1L, `label_R_cohort` and `label_R_s_cohort` are §9.8's route 1 on shares (errata C and
+    F): the releases of R1's window still present, with no blank, marked on transcription's own
+    label schedule, so a molecule re-synthesised from monomers is not a member.
   - **Limits:** a labelled species carries at most the label owner's MAX_LABELS labels, so
     producer identity crossed with the window labels must fit within it. RNA that leaves its cell
     cannot keep its label until FR-42's stage 2 moves labelled rows.
@@ -116,3 +118,26 @@ machines, complexes per stage, and every counter).
 Run: `PYTHONPATH=src:. JAX_ENABLE_X64=1 python -m validation.gene_regulation.restart_example --out
 DIR`, with `--world`, `--route`, `--join`, `--factor` and `--window-steps` to vary it. The join
 must fall on a window's end.
+
+## A producer replaced midway through a chase, then a restart (`replace_restart.py`)
+
+**What it shows** (FR-38's step 5, the requester's acceptance; the sheet's §9.16 and §9.18): the
+readout distinguishes the two generations' RNA, and a run restarted after the replacement
+reproduces the uninterrupted run's cohort counts. Development, not judged.
+- **The world:** R1 at p = 0.75 with A1's transcription. Its fate rows R and R_s are labelled by
+  FR-42's shares, with producer x window labels on transcription's own schedule: g0's cohort label
+  for releases in [0, 1,200 s), g0's after it, and g1's from the replacement at 3,000 s. A newcomer
+  from template T, the founder's state and values, takes the slot then. Restarted from snapshot
+  files at 3,600 s; ends at 4,800 s.
+- **The limit, stated plainly:** until amendment T's export (§9.17) is built, **only the
+  newcomer's material stays in the cell**. The departing occupant's rows, chains in progress and
+  hold leave with it, so **the departing g0 RNA is read from the removal record**
+  (`label_removed_fmol` for its rows, `label_pool_removed_fmol` for its hold, by label), never from
+  a row. g1's RNA is read from the rows by share.
+- **The checks:** labels change no physics; the resume reproduces every step and readout bit for
+  bit; no g1 share before the event and no g0 share in the cell after it; the removal records
+  equal replacement@1's removed rows and the operator's H_rem; and each generation's per-producer
+  identity holds at rounding.
+
+Run: `PYTHONPATH=src:. JAX_ENABLE_X64=1 python -m validation.gene_regulation.replace_restart --out
+DIR`. It writes `replace_restart.json` with the verdicts and readouts.

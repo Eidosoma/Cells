@@ -1603,13 +1603,20 @@ def check_two_form_rows(spec):
 
 
 INNER_MOVERS = ("membrane", "junction", "channel", "face", "pump")
+# The forms face law (laws/routes/logmean_electrodiffusion_forms; MT-1b's face note, §4's
+# admission): at a general closure's rows it moves each binder's forms and each ligand's free
+# amount from the closure's own read, so check_closure_rows admits it there, as it admits a kind
+# whose law reads the closure; today's face law stays refused. Names, so this module imports no law.
+FORMS_FACE_LAW, FORMS_FACE_READ = "logmean_electrodiffusion_forms@1", "rapid_binding@1"
 
 
 def _deferred_to_closure(spec):
     """{species: {mover, ...}}: the moves check_two_form_rows leaves to check_closure_rows'
     admission, each named as moved_in_step names it: a declared kind's move of a row at a node
     where a general closure holds that row (its closure_rows), under a law that declares base
-    forms. {} for a world without a general closure, whose movers are then not built here."""
+    forms; and a forms face (FORMS_FACE_LAW) that moves a binder row the closure holds at both its
+    ends, as its forms. {} for a world without a general closure, whose movers are then not built
+    here."""
     if not any(hasattr(d, "closure_rows") for _, d in getattr(spec.model, "kinds", ())):
         return {}
     from cells.registry import laws
@@ -1620,9 +1627,15 @@ def _deferred_to_closure(spec):
         for row in d.closure_rows
     }  # fmt: skip
     _, movers = inner_movers(spec)
+    ends = _entity_ends(m)
     out = {}
     for species, entries in movers.items():
         for kind, law_id, nodes in entries:
+            if kind == "face" and law_id == FORMS_FACE_LAW:  # Its binder held at both its ends.
+                for entity in nodes:
+                    if all((species, end) in held for end in ends.get(entity, (entity,))):
+                        out.setdefault(species, set()).add(_named(kind, law_id, entity))
+                continue
             if kind in INNER_MOVERS or law_id not in laws.active():
                 continue
             if getattr(laws.active().lookup(law_id), "forms", None) != "base":
@@ -1650,6 +1663,7 @@ def _entity_ends(m):
     ends = {p.id: (p.inside, p.outside) for p in m.membranes}
     ends |= {j.id: (j.sender, j.receiver) for j in m.junctions}
     ends |= {f.id: (f.sender, f.receiver) for f in m.faces}
+    ends |= {f.id: (f.sender, f.receiver) for f in getattr(m, "forms_faces", ())}  # Their own set.
     ends |= {c.id: ends[c.membrane_id] for c in m.channels}
     return ends
 
@@ -1792,6 +1806,8 @@ def check_closure_rows(spec):
                         if (species, node) not in rows:
                             continue
                         held = f"species {species} at {node} is held by the closure {read}"
+                        if kind == "face" and law == FORMS_FACE_LAW and read == FORMS_FACE_READ:
+                            continue  # The forms law moves each form at the closure's read.
                         if kind in INNER_MOVERS:
                             raise ConfigError(
                                 f"{held}: the {kind} {entity} moves it in the step, and @3's own "

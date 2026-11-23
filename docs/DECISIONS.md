@@ -9592,3 +9592,79 @@ world: state 4, a steady start, faceless and event-free, at 16 µs. Evidence:
    - the floors do not reopen the implicit block, since they fit at the cap;
    - the global charge refuses whichever block runs (an inference).
 
+## D306: FR-42's kinds, pools and sources and FR-38's steps 4 and 5 accepted; FR-38's cohort follows the requester's words
+
+2026-11-23, about 02:13 UTC. An independent checker, blind to the builders' tests and drivers, ran an
+acceptance written from the requesters' words, on main 529a8bd9. Its evidence is in
+`/mnt/workspaces/Cells/review-check-20261123/`. Its criteria were set after the results, from order
+arguments (a dt-halving ratio near 4, and exact zeros and bit patterns where the design says exact),
+never from the builders' numbers. That is disclosed.
+1. **Passed:**
+   - **FR-42 through kinds:** routes and the transporter, each labelled against unlabelled bit for
+     bit. The one-way splits match closed forms at second order, where a net-only split would be 0.03
+     off in share. Shares are a partition to 3.3e-16, and the rectifier is refused.
+   - **FR-42's pools and sources:** R1's 80 chains, survival 0.7071 and 0.2500, and a restart mid-hold
+     bit for bit.
+   - **FR-38's replacement (step 4):** removal by label exactly the pre-event row times its shares, the
+     counters at birth and death bit for bit, and per-producer identities closing to 1e-15.
+   - **FR-38's replace-then-restart (step 5):** restarts through snapshots bit for bit.
+   - **Planted failures:** all six were caught (shifted one-way amounts on a route and on the
+     transporter, an ulp per step, a skipped relabel, a skipped removal record, completion marks at
+     the base).
+2. **Unmet, in the requester's words:** RNA retained in an extracellular compartment keeping its
+   producer ID. Amendment T's export is tagged and not built. It is next.
+3. **The lead's ruling on a split the checker found.** Near the degradation's domain edge (e^y_f about
+   0.34), RNA re-synthesised from monomers takes the label in force, and a cohort decays at the gross
+   one-way rate.
+   - **The finding:** a cohort windowed on the species' own arrivals then counts re-synthesised
+     molecules, 18% more at 240 s. A cohort windowed on the chain's source schedule, which marks at
+     release from the template, matches the requester's words: "detaches from its template" and "the
+     same molecules".
+   - **The ruling:** FR-38's cohort is defined on the chain's source schedule, and re-synthesised
+     molecules are not members.
+   - **An erratum F to the sheet's section 9.8** is tagged before FR-38's rule. It states:
+     - the definition;
+     - that route 2 uses the gross one-way loss, not the net;
+     - that the species-window and source-schedule readings agree only where e^y_f << 1.
+
+     At the sheet's own state the two differ by 4e-9.
+   - The rule (fr38-rule, untagged) is not yet registered, so no registered result moves.
+4. **A risk, to be closed by design: producer identity is a declared name.**
+   - A producer label schedule that does not switch at the replacement event is admitted, and so is
+     one that switches early. The newcomer's copies then sit under the founder's label.
+   - The requester defines a producer as cell, occupant generation and expression chain, preserved
+     across restart and cell reordering.
+   - So the producer label is to be derived by the engine from the replacement events, or an
+     inconsistent schedule refused. This is a sheet amendment first, with options.
+5. **Stated, not changed:** under release-marking, a hold emptied at a replacement is recorded at the
+   base label (erratum E), and is booked to the departing generation through the counters only. Under
+   completion-marking it carries its labels.
+
+## D307: The global charge's grounded allowance takes the larger of the two terms; producer labels are derived (amendment G, option a)
+
+2026-11-23, about 02:22 UTC. The lead's rulings within the user's decisions. The user can overrule either.
+1. **The global charge (D305, the user's "extend the rule"): option (M).**
+   - The bound is 3e-25 + 256 eps × moved + max(2.5 eps n × moved, 2.5 eps n × the grounded
+     component's summed |z F dn|).
+   - It solves the gap: MT-1b's Step 0 world runs to 131,072 steps (2.1 s) under today's check, its
+     global charge at most 9.2e-5 of the bound after 1 s.
+   - It is bit for bit unchanged wherever the moved charge's term dominates. It is within twice the
+     strict sum (S), and stays the tighter of the two; a planted supply leak at twice the bound is still
+     refused. (Z), the allowance only where nothing has crossed, would bring the refusal back with any
+     tiny leak.
+   - It moves only the diagnostic `max_global_charge_bound_ratio`, always lower: in 26 of G1's 113
+     worlds, and in FR's set. Both frozen baselines are renewed in the same landing, each with a
+     renewal record, as fix (A) renewed G1's (D273). Frozen evidence that stores the ratio stays as
+     recorded, and MG0b's ≤ 1 still holds.
+2. **FR-38's producer identity (D306 item 4): amendment G's option (a).** The label owner derives each
+   producer label, <cell>-g<k>-<chain>, and its source's schedule from replacement@1's occupants.
+   - A hand-written schedule for a producer source is refused.
+   - The derived schedules equal a correct hand-written one, so programs stay bitwise.
+   - Restart and cell reordering leave the labels unchanged.
+   - Option (b), refusing an inconsistent schedule, is cheaper but leaves the burden on every
+     definition.
+   - Price: the kinds owner 0.75–1 day, the gene-regulation lane 0.25–0.5.
+3. **Erratum F** (tag gr1-sheet-fr38-erratum-f-2026-11-23, main f802d0ea) settles D306 item 3. FR-38's
+   cohort is the molecules released from their template, marked on the chain's own label schedule.
+   Route 2 runs at the gross one-way rate. The rule follows it before its tag.
+
