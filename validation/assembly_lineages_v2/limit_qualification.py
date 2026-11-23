@@ -369,7 +369,7 @@ WORLDS = {"D0": lambda rung: d0_world(), "D1": d1_world, "D2": d2_world, "D3": d
 def experiment(name, rung, times):
     """The experiment block both representations share: the horizon is the last observation
     time (D4 and D7: their registered horizons), and D6's one shear time."""
-    horizon = HORIZONS.get(name, {}).get(rung, times[-1]) if name in ("D4", "D7") else times[-1]
+    horizon = HORIZONS[name][rung] if name in ("D4", "D7") else times[-1]
     out = {"time_horizon_s": float(horizon), "event_limit": EXACT["event_limit"],
            "row_every_events": EXACT["event_limit"], "observation_times_s": list(times),
            "trace": False, "uniforms": False}  # fmt: skip
@@ -395,7 +395,7 @@ TIMES = {
     "D4": {r: _vesicle_times(*SIZED[r]) for r in RUNGS["vesicle"]},
     "D5": {r: (7.5, 15.0, 22.5, 30.0, 37.5, 45.0, 52.5, 60.0) for r in RUNGS["vesicle"]},
 }
-TIMES["D7"] = TIMES["D4"]
+TIMES["D7"] = {r: () for r in RUNGS["vesicle"]}  # D7 is judged on its paired event only (§2)
 HORIZONS = {"D4": {r: round(2.0 * SIZED[r][1], 6) for r in RUNGS["vesicle"]}}
 HORIZONS["D7"] = HORIZONS["D4"]
 
@@ -487,12 +487,17 @@ def _rows(run, representation):
     return times, observed, rows["place_count"], None, rows
 
 
-def observables(name, spec, run, representation):
+def observables(name, spec, run, representation, *, start=False):
     """The registered observables at the registered observation times (protocol §3): a dict of
-    name -> array over the times, NaN where the run had ended (lysed) before that time."""
+    name -> array over the times, NaN where the run had ended (lysed) before that time. With
+    start, the same observables at the founder (the start row), as arrays of one."""
     world = spec.model.world
     times = np.asarray(spec.experiment.observation_times_s, dtype=np.float64)
     t, observed, pool, slots, rows = _rows(run, representation)
+    if start:
+        kinds = np.asarray(rows["row_kind"])
+        observed = kinds == ("start" if representation else 0)  # runner.ROW_KINDS[0]
+        times = np.asarray([0.0])
     t_obs = np.asarray(t)[observed]
     out = {}
 
@@ -556,9 +561,16 @@ SPREAD_QUANTILE = 0.99
 E_RATIO = 0.75  # criterion E: SD_K <= 0.75 SD_(K-1), 0.5 expected
 
 
-def scales(d_values):
-    """s_y: the largest |y_d| over the founder and the registered times (the protocol's §3)."""
-    return {k: float(np.nanmax(np.abs(v))) for k, v in d_values.items()}
+def scales(d_values, d_start):
+    """s_y: the largest |y_d| over the founder (d_start, observables(..., start=True)) and the
+    registered times (the protocol's §3)."""
+    return {k: float(max(np.nanmax(np.abs(v)), np.nanmax(np.abs(d_start[k]))))
+            for k, v in d_values.items()}  # fmt: skip
+
+
+def is_count(key):
+    """B judges the counts only (the protocol's §5.3); A, V, σ and W_res are judged under M."""
+    return "@" in key
 
 
 def criterion_p(d_rms, sizes):
@@ -607,7 +619,7 @@ def criterion_b(exact, d, errors, scale, n_k):
     world's smallest passing b and c_r beside the verdict (the constants' sensitivity)."""
     b_needed, c_needed = 0.0, 0.0
     for k in d:
-        if scale[k] <= 0:
+        if scale[k] <= 0 or not is_count(k):
             continue
         e, se = errors[k]
         excess = np.maximum(np.abs(e) - Z_STAR * se, 0.0)
@@ -624,26 +636,56 @@ def criterion_b_at(exact, d, errors, scale, n_min):
 
 
 def criterion_e(times_by_rung, d_by_rung):
-    """E: M on mean(T_a) - t*_d between the top two rungs, and SD_K <= 0.75 SD_(K-1)."""
+    """E: M on mean(T_a) - t*_d between the top two rungs, and the spread from the bottom rung to
+    the top, SD_K <= 0.75 SD_1 (a fourfold diameter: 0.5 expected). For D7, times are the paired
+    Δ = T_a - t*_d(E) and d_by_rung zeros, with RMS(Δ) for the spread (pass them as such)."""
+    first = np.asarray(times_by_rung[0]) - np.asarray(d_by_rung[0])
     (t_b, d_b), (t_k, d_k) = zip(times_by_rung[-2:], d_by_rung[-2:], strict=True)
     e_b, e_k = float(np.mean(t_b) - d_b), float(np.mean(t_k) - d_k)
     se_b, se_k = float(np.std(t_b, ddof=1) / math.sqrt(len(t_b))), float(
         np.std(t_k, ddof=1) / math.sqrt(len(t_k))
     )
     z = (abs(e_k) - abs(e_b) / 2.0) / math.sqrt(se_k**2 + se_b**2 / 4.0)
-    ratio = float(np.std(t_k, ddof=1) / np.std(t_b, ddof=1))
+    ratio = float(np.std(np.asarray(t_k) - np.asarray(d_k), ddof=1) / np.std(first, ddof=1))
     return {"mean_z": z, "sd_ratio": ratio, "passes": z <= Z_STAR and ratio <= E_RATIO,
             "fails": z > Z_FAIL or ratio > E_RATIO}  # fmt: skip
 
 
-def n_min_rule(results):
-    """n_min: the smallest n_k such that every (world, rung) with n_k at or above it passes B.
-    results: [(n_k, passes)]. None when the top rung fails."""
+def n_min_rule(results, ladder_passes):
+    """n_min: the smallest n_k such that every (world, rung) with n_k at or above it passes B, P and
+    M passing over the ladder (ladder_passes); rounded up to two significant figures.
+    results: [(n_k, passes)]. None when the ladder fails or no such n_k exists."""
+    if not ladder_passes:
+        return None
     ordered = sorted(results)
     for i, (n_k, _) in enumerate(ordered):
         if all(passes for _, passes in ordered[i:]):
-            return n_k
+            digits = 10 ** (math.floor(math.log10(n_k)) - 1)
+            return math.ceil(n_k / digits) * digits
     return None
+
+
+def d0_stationary():
+    """P-D1's closed form (S): D0's exact stationary law, P(n_B = j) ∝ q^j / ((T - 2j)! j!) with
+    q = exp(2 mu_A - mu_B) / X, its rate-equation fixed point, and the deviation of n_A, in units
+    of s_A = 4, that a single time reaches with probability at least 1%."""
+    total, q = D0["T"], math.exp(-D0["mu_B"]) / D0["X"]
+    j = np.arange(total // 2 + 1)
+    log_p = j * math.log(q) - np.array([math.lgamma(total - 2 * k + 1) + math.lgamma(k + 1)
+                                        for k in j])  # fmt: skip
+    p = np.exp(log_p - log_p.max())
+    p /= p.sum()
+    n_a = total - 2 * j
+    fixed = (-1.0 + math.sqrt(1.0 + 8.0 * q * total)) / (4.0 * q)
+    s_a = float(D0["founder"]["A"])
+    deviation = np.abs(n_a - fixed) / s_a
+    order = np.argsort(-deviation)
+    reached = deviation[order][np.searchsorted(np.cumsum(p[order]), 0.01)]
+    return {"p_n_A": {int(a): float(x) for a, x in zip(n_a, p, strict=True)},
+            "fixed_point_n_A": fixed, "exact_mean_n_A": float(np.sum(p * n_a)),
+            "p_n_A_at_least_8": float(np.sum(p[n_a >= 8])),
+            "deviation_reached_at_1_percent": float(reached),
+            "budget_at_smallest_n_min": C_SPREAD / math.sqrt(97.0)}
 
 
 # -------------------------------------------------------------------------------- the plants
@@ -904,7 +946,7 @@ def main(argv=None):
     reg.add_argument("--clock", nargs="*", default=(),
                      help="the (d)-alone clock measurements (protocol §7.2, §7.4) to record")
     args = parser.parse_args(argv)
-    doc = {**header(), "constants": constants()}
+    doc = {**header(), "constants": constants(), "pd1_closed_form": d0_stationary()}
     if args.plants:
         with open(args.plants) as handle:
             doc["plant_power_d_alone"] = json.load(handle)

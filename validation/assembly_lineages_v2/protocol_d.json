@@ -431,36 +431,9 @@
     ]
    },
    "D7": {
-    "25.0": [
-     0.0195,
-     0.039,
-     0.0585,
-     0.10864,
-     0.15228,
-     0.19592,
-     0.23956,
-     0.2832
-    ],
-    "50.0": [
-     0.039,
-     0.078,
-     0.117,
-     0.1616,
-     0.1932,
-     0.2248,
-     0.2564,
-     0.288
-    ],
-    "100.0": [
-     0.078,
-     0.156,
-     0.234,
-     0.28183,
-     0.30366,
-     0.32549,
-     0.34732,
-     0.36915
-    ]
+    "25.0": [],
+    "50.0": [],
+    "100.0": []
    }
   },
   "horizons": {
@@ -511,6 +484,22 @@
    "P-D6",
    "P-D7"
   ]
+ },
+ "pd1_closed_form": {
+  "p_n_A": {
+   "12": 4.131504250093731e-05,
+   "10": 0.0018178618700412392,
+   "8": 0.0272679280506186,
+   "6": 0.1696671078705154,
+   "4": 0.42416776967628966,
+   "2": 0.33933421574103084,
+   "0": 0.0377038017490034
+  },
+  "fixed_point_n_A": 3.5584219849035215,
+  "exact_mean_n_A": 3.630159981025685,
+  "p_n_A_at_least_8": 0.029127104963160778,
+  "deviation_reached_at_1_percent": 1.1103945037741196,
+  "budget_at_smallest_n_min": 0.5076730825668095
  },
  "plant_power_d_alone": {
   "P-D3": {
@@ -622,16 +611,30 @@
     "largest_(estimate-1e-10)/dH": 0.000528544336197881
    }
   ],
-  "clock_ratio_1e-12_34.json": [
+  "clock_ratio_1e-12_34_seeds128_rungs100.json": [
+   {
+    "log_c": 34.0,
+    "rung": 100.0,
+    "rtol": 1e-12,
+    "seeds": 128,
+    "causes": {
+     "pore": 128
+    },
+    "steps": 65766,
+    "largest_estimate": 2.165352025606121e-07,
+    "largest_(estimate-1e-10)/dH": 0.000528544336197881
+   }
+  ],
+  "clock_ratio_1e-12_34_seeds128_rungs25,50.json": [
    {
     "log_c": 34.0,
     "rung": 25.0,
     "rtol": 1e-12,
-    "seeds": 12,
+    "seeds": 128,
     "causes": {
-     "pore": 12
+     "pore": 128
     },
-    "steps": 6799,
+    "steps": 71851,
     "largest_estimate": 4.896635313582519e-09,
     "largest_(estimate-1e-10)/dH": 4.04169943207184e-06
    },
@@ -639,25 +642,13 @@
     "log_c": 34.0,
     "rung": 50.0,
     "rtol": 1e-12,
-    "seeds": 12,
+    "seeds": 128,
     "causes": {
-     "pore": 12
+     "pore": 128
     },
-    "steps": 6705,
+    "steps": 71047,
     "largest_estimate": 2.7852203912271582e-08,
     "largest_(estimate-1e-10)/dH": 3.371159317169435e-05
-   },
-   {
-    "log_c": 34.0,
-    "rung": 100.0,
-    "rtol": 1e-12,
-    "seeds": 12,
-    "causes": {
-     "pore": 12
-    },
-    "steps": 6193,
-    "largest_estimate": 2.165352025606121e-07,
-    "largest_(estimate-1e-10)/dH": 0.000528544336197881
    }
   ],
   "clock_tstar_convergence.json": [
@@ -787,6 +778,48 @@
     "t_1e-13": 0.4535689077854665,
     "relative_difference": 9.60807731100396e-10
    }
-  ]
+  ],
+  "clock_h_at_max.json": {
+   "what": "D7 in cells.rate_equations@1 alone, measure only: the pore clock H on rows at 0.9, 0.99 and 0.999 t*_D4 with every domain-7 threshold E patched out of reach (pore_clock.threshold returning E = 1e9, so no opening), ln(A nu_A) = 34, seed 1, rtol 1e-12, the bound disabled (H_ERROR = 1e300); printed by clock_h_at_max.py (34) and recorded here verbatim",
+   "patched": "pore_clock.threshold's value (E) and rate_equations.H_ERROR, in the measuring process only",
+   "rows": {
+    "25.0": {
+     "H_at_rows": [
+      18.166163167517052,
+      35.63869171093335,
+      37.856975792918746
+     ],
+     "rows_s": [
+      0.33984,
+      0.373824,
+      0.3772224
+     ]
+    },
+    "50.0": {
+     "H_at_rows": [
+      8.507172483081874,
+      23.76222759737042,
+      25.985720011704956
+     ],
+     "rows_s": [
+      0.3456,
+      0.38016,
+      0.383616
+     ]
+    },
+    "100.0": {
+     "H_at_rows": [
+      3.8654744391681994,
+      19.60359690360359,
+      22.393303955262002
+     ],
+     "rows_s": [
+      0.44298000000000004,
+      0.48727800000000004,
+      0.49170780000000003
+     ]
+    }
+   }
+  }
  }
 }

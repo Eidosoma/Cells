@@ -67,7 +67,11 @@ the vesicle rungs are diameters.
 | **D4** | A floppy vesicle (V_osm/V_sph = 0.9) whose lumen takes up a permeant S from a held pool (480 mM, outside osmolarity 600 mM), through the lumen's kink, to lysis at σ_max = 3 mN/m. L exchanges with a held pool at its floppy equilibrium. Rtol 1e-12, atol_count 1e-9, as D7's twin | `cells.bilayer_geometry@1`, `cells.phase_exchange@1`, `cells.membrane_permeation@1`, `cells.osmotic_lumen@1` | d = 25, 50, 100 nm (N ≈ 1.3 × 10⁴, 5.2 × 10⁴, 2.1 × 10⁵ amphiphiles at 0.3 nm² per leaflet) | 128 |
 | **D5** | Two vesicles on one finite pool of L, one tense (x0 = 1.43, σ ≈ 2 mN/m) and one floppy (0.85): A1's mechanism at small scale. The tense one gains about 4% of its amphiphile by 60 s | Geometry, exchange, lumen, `cells.shared_pool@1` | As D4 | 128 |
 | **D6** | A floppy vesicle (v = 0.6) in a finite pool of L at its equilibrium, split at a shear time of 1 s (k = 2, continuation `first`) | Geometry, exchange, lumen, `cells.shear_fission@1` | As D4 | 128 |
-| **D7** | D4 with the pore law and σ from F, paired with exact events by each vesicle's domain-7 threshold E. ln(A ν_A) = 34 and Γ = 4.5 pN (σ_β/4 = 3.9 mN/m ≥ σ_max). It needs §7.3's proposal (§7.4) | D4's laws, `cells.pore_nucleation@1` | As D4 | 128 |
+| **D7** | D4 with the pore law and σ from F, paired with exact events by each vesicle's domain-7 threshold E. ln(A ν_A) = 34 and Γ = 4.5 pN (σ_β/4 = 3.9 mN/m ≥ σ_max). It is judged on its paired event only: until its opening, both representations take D4's path (the note's §3.6 identity), so its states are D4's. It needs §7.3's proposal (§7.4) | D4's laws, `cells.pore_nucleation@1` | As D4 | 128 |
+
+**Phase exchange is qualified by D5 and D6.** In D4 and D7 the join fires about once a second at
+100 nm: L's floppy equilibrium concentration is 0.08 mM. So those worlds carry the law but barely
+exercise it.
 
 **The ladder starts at Ω = 1000, not the note's 250.** At Ω = 250, D1's smallest place holds 25.
 - n_min could then come out at 25, where c_r/√25 = 1.0.
@@ -80,7 +84,8 @@ the vesicle rungs are diameters.
 - **D2:** 0.05 to 0.4 s, every 0.05 s.
 - **D5:** 7.5 to 60 s, every 7.5 s.
 - **D6:** 0.25, 0.5, 0.75, 1.25, 1.5, 2, 2.5 and 3 s, so none falls at the shear.
-- **D4 and D7:** placed per rung from (d)'s kink t_k and lysis t* (the sizing of §12):
+- **D7:** none. Its horizon is D4's.
+- **D4:** placed per rung from (d)'s kink t_k and lysis t* (the sizing of §12):
   - three times at (0.3, 0.6, 0.9) t_k;
   - then five at t_k + (0.2, 0.4, 0.6, 0.8, 1.0) × (0.75 t* − t_k);
   - the horizon is 2 t*.
@@ -112,7 +117,11 @@ are not used.
   registered times, over every slot.
 - Both come from (d)'s own run, so neither reads an exact result.
 
-**An early end.** In D4 and D7, an exact replica that ends before the last registered time
+**Which criteria judge which observables.**
+- B judges the counts only.
+- A, V, σ and W_res are judged under M, and in the density worlds under P. §5.3 gives the reason.
+
+**An early end.** In D4, an exact replica that ends before the last registered time
 fails a precondition (§9), and the world is inconclusive. A replica's value at a time after its own
 end is NaN and enters no statistic.
 
@@ -204,17 +213,31 @@ smallest passing b and c_r are reported (`b_needed`, `c_r_needed`).
 **A world outside the envelope** is held to the envelope's budget, with n_k = n_min
 (`criterion_b_at`).
 
+**B judges counts only** (`is_count`).
+- σ's relative fluctuation is the lumen count's, amplified by c_in/Δc: SD(σ)/s_σ ≈ SD(N_L)/(N_L −
+  N_0).
+- So it falls as d^(−½), while c_r/√n_k, with n_k a lumen count ∝ d³, falls as d^(−3/2).
+- By that estimate σ would use about 0.5, 0.8 and 1.9 of the budget at 25, 50 and 100 nm, so a
+  correct engine would fail B at the top rung.
+- A, V and W_res are derived the same way. They and σ are judged under M (and P), which has no
+  such budget.
+
 ### 5.4 E: events (D4; D7 paired by E)
 
 **D4.**
 - M is applied to mean(T_a) − t*_d, on the 50 and 100 nm rungs.
-- **The spread** must fall: SD_K ≤ 0.75 SD_(K−1) (`criterion_e`). N grows 4 times per rung, so 0.5
-  is expected (N^(−½)), or less if the lumen's count dominates.
+- **The spread** must fall from the bottom rung to the top: SD(100 nm) ≤ 0.75 SD(25 nm)
+  (`criterion_e`).
+  - The lysis time's spread is SD(T) ≈ SD(N_L)/(dN_L/dt), with SD(N_L) ∝ d^1.5 and the
+    permeation flux ∝ d². So it scales as d^(−½): 0.71 per rung and 0.5 over the fourfold diameter.
+  - So a per-rung test at 0.75 would fail a correct engine about a quarter of the time.
 
 **0.75's derivation (S).** 0.5 × exp(4.5 × √2/√(2(M − 1))) = 0.5 × exp(4.5 × 0.0887) = 0.745, the
-null ratio at 4.5 SE of the log-ratio of two independent sample SDs, with M = 128.
+null ratio at 4.5 SE of the log-ratio of two independent sample SDs over the fourfold diameter,
+with M = 128.
 
-**D7** takes the same two tests on Δ = T_a − t*_d(E) per replica, using RMS(Δ) for the spread.
+**D7** takes the same two tests on Δ = T_a − t*_d(E) per replica, using RMS(Δ) for the spread,
+also from the bottom rung to the top.
 - Each replica's (d) run draws its own E from domain 7, with the vesicle key 0:0 and the replica's
   seed: the same E as the exact run.
 - So D7 has 128 (d) runs per rung.
@@ -243,10 +266,11 @@ checker's head, with their results recorded. This protocol adds two:
 
 - **The rule** (`n_min_rule`): n_min is the smallest n_k among the (world, rung) pairs such that every
   pair with n_k at or above it passes B, with P and M passing over the ladder.
-  - It is rounded up to two significant figures and stated in the verdict, with the tag.
+  - It is rounded up to two significant figures (so 97.1 gives 98) and stated in the verdict, with
+    the tag.
   - The representation's declarations then cite it ("Protocol D, criterion B's smallest passing
     rung, <tag>").
-- **Its possible values** run from 97 upward.
+- **Its possible values** run from 98 upward.
 - **What moves it:**
   - A failure at the smallest rungs moves n_min up a rung. That is an outcome, not a fail.
   - B failing at a world's top rung is a fail.
@@ -291,7 +315,8 @@ disabled where so marked (`/mnt/workspaces/Cells/ol6-20261122/protocol-d/clock_*
 - **What D7 needs.** Every replica should open by pore, so that a replica cannot end by different
   causes in the two representations.
   - That needs H(t_σmax) far above the largest of 128 thresholds, about 5.4.
-  - At ln(A ν_A) = 34, measured just before σ_max at 0.999 t*, H is 38, 26 and 22 at the three rungs.
+  - At ln(A ν_A) = 34, measured just before σ_max at 0.999 t*, H is 38, 26 and 22 at the three rungs
+    (`clock_h_at_max.json`; the thresholds were patched out of reach for this measurement).
     A threshold lysis then has probability e⁻²² ≈ 2 × 10⁻¹⁰ per replica.
 
 ### 7.3 PROPOSAL (for the lead's review, and the user's if it changes a guarantee): a relative clock bound
@@ -308,8 +333,10 @@ disabled where so marked (`/mnt/workspaces/Cells/ol6-20261122/protocol-d/clock_*
 - So the crossing time's relative error is at most c + n·10⁻¹⁰/E, by the estimate.
 
 **The constant's reason.**
-- **Room to run D7:** c is 3.8 times the largest ratio measured, 5.3e-4 at 100 nm, which 12 seeds
-  found.
+- **Room to run D7:** c is 3.8 times the largest ratio measured over the checker's own seed set:
+  5.3 × 10⁻⁴ at 100 nm, over seeds 1–128, all 128 opening by pore
+  (`clock_ratio_1e-12_34_seeds128_rungs100.json`). At 25 and 50 nm, over the same 128 seeds, it
+  is 4.0 × 10⁻⁶ and 3.4 × 10⁻⁵ (`clock_ratio_1e-12_34_seeds128_rungs25,50.json`).
 - **A guarantee inside the representation's own promise:** by the estimate the crossing time is
   within 2 × 10⁻³ relative. That is at most the envelope's mean budget, b/n_min = 2/n_min, for any
   n_min up to 1,000.
@@ -354,10 +381,10 @@ scale.
 
 | Plant | Mechanism | World | Must fail | Effect in (d) alone, against what it must exceed |
 | --- | --- | --- | --- | --- |
-| **P-D1**, the envelope disabled | `min_count` 1, so the sparse world is admitted | D0 | B's replica part at the envelope's budget (§6) | Closed form (S): D0's stationary law at T = 12 gives P(n_A ∈ {0, 8}) = 0.065 at any one time. So the 99th percentile of max_t \|Δn_A\|/s_A is at least \|8 − 3.56\|/4 = 1.11, against c_r/√n_min ≤ 5/√97 = 0.51: at least 2.2 times. The mean part, 1.8% against b/n_min ≤ 2.1%, is reported (it fails only for n_min ≥ about 110). With `min_count` 10, D0 is refused at parse |
+| **P-D1**, the envelope disabled | `min_count` 1, so the sparse world is admitted | D0 | B's replica part at the envelope's budget (§6) | Closed form (S; `d0_stationary`, recorded as `pd1_closed_form`): D0's stationary law at T = 12 gives P(n_A ≥ 8) = 0.029 at any one time. So the 99th percentile of max_t \|Δn_A\|/s_A is at least \|8 − 3.558\|/4 = 1.11 (n_A = 0 gives only 0.89), against c_r/√n_min ≤ 5/√98 = 0.51: at least 2.2 times. The mean part, 0.072/4 = 1.8% against b/n_min ≤ 2.0%, is reported (it fails only for n_min ≥ about 110). With `min_count` 10, D0 is refused at parse |
 | **P-D2**, a power off by one | `validation.ol6_plant_power_off_by_one@1`, mass action with each reactant's power + 1 in its limit, in a scoped registry; D1's (d) steps on it | D1 | (i) With the check on: the limit's check. (ii) With the world's own check off: M and B | (i) Refused: "not the products' law". (ii) 0.21 of scale, 54 times the budget |
 | **P-D3**, a β entry | D2's largest β entry × 1.5 in (d)'s world only | D2 | M and B | 0.095 of scale, 25 times the budget (the note's rule: at least 10) |
-| **P-D4**, the Laplace factor doubled | The tension (d)'s guards read, `lumen.tension`, × 2 | D4 | E's mean (the lysis time) | t*_d moves by −49%, −36% and −25% at the three rungs, against SE(mean T_a) of at most 0.9% of t* even at an SD of 10%: at least 27 SE |
+| **P-D4**, the Laplace factor doubled | The tension (d)'s guards read, `lumen.tension`, × 2 | D4 | E's mean (the lysis time) | t*_d moves by −49%, −36% and −25% at the three rungs. On E's own statistic, \|e_K\| − \|e_(K−1)\|/2 is about 0.054 s, 11% of the top rung's t*, against a combined SE of at most about 0.9% of t* even at an SD of 10%: about 12 SE, far beyond 6 |
 | **P-D5**, a snapped crossing | `_locate` returns its bracket's end, and the re-step's secant is off (`RESTEPS` = 0) | P-D5's world: S3's regression identity, a held vesicle at a fixed area | N: the opening at start + E/k_v within 10(H_ERROR + 1e-9 max(1, E))/k_v | Honest: 1.4e-7 of the tolerance. Planted: the run stalls, with no opening: caught |
 | **P-D6**, the heat's sign | The heat row of `Shape.rhs` negated | D1, bottom rung | L (closure) | Refused: "the ledger did not close" |
 | **P-D7**, μ° in F_cont only | The ideal term's limit + 0.5 n₀ on the world's own Problem | D1 | The limit's check, item 1 | Refused: "not the products' law" |
@@ -366,9 +393,13 @@ Plants of order 1/N vanish in the limit and are not used, as the note says.
 
 ## 9. Preconditions (checked at run time, before any criterion)
 
-- **D4 and D7:**
+- **They apply to the unplanted runs.** A planted (d) run may end anywhere: planted D4 lyses
+  0.4 ms after the last 100 nm stop.
+- **D4:**
   - no exact replica ends before the last registered time;
   - (d)'s kink and event are not within 1% of a registered time (a crossing at a stop is refused).
+- **D7:** every replica ends by its pore in both representations. Ending at σ_max has probability
+  about 2 × 10⁻¹⁰ per replica (§7.2).
 - **D6:** at the shear time every exact replica's v = V/V_sph lies at least 5 of its own replicas'
   SD away from 2^(−½) = 0.707.
   - (d) has v = 0.6 there, where the lumen is impermeant and floppy.
@@ -434,7 +465,23 @@ A precondition that fails makes its world inconclusive.
     from these runs: D3's U2, D4's solute and osmolarity, D5's tense founder, D6's exchange, and D7's
     line tension and pore rate.
   - **The registered definitions,** run once (`final_d_check.py`).
-  - **D7's clock,** over seeds 1–12, with the bound disabled where marked (`clock_*.json`).
+  - **D7's clock,** over seeds 1–12, and 1–128 for the ratio, with the bound disabled where
+    marked (`clock_*.json`).
+  - **H before σ_max** (`clock_h_at_max.json`), measured with every threshold E patched out of
+    reach in the measuring process.
   - **The plants' effects** (`plants_all.json`).
-- **What the author did not run:** no exact-event run of any registered world. Exact definitions
-  were parsed only (`parse_check.py`). Nothing of an exact run's observables was read.
+- **Every final definition parsed** in both representations, the plants' with them
+  (`final_parse.py`). D0 is refused in (d) at `min_count` 10, as designed.
+- **The exact side's structure, on unregistered variants only.** D1 at Ω = 100, and D4–D7 at
+  12.5 nm, each run in exact events only and never in (d), at seed 1
+  (`exact_structure_smoke.{py,log}`).
+  - Only booleans, shapes and key names were printed, never an observable's value.
+  - It checked four things:
+    - the observed rows' times equal the declared times exactly;
+    - an observation at the horizon is recorded;
+    - the population rows use the same observed code;
+    - the pore event and the lysis record carry `time_s`.
+  - D4's variant does not lyse at 12.5 nm, since its plateau tension scales with R. The lysis
+    record's `time_s` was read from runner.py's `_release` instead.
+- **What the author did not run:** no exact-event run of any registered world. Nothing of an exact
+  run's observables was read.
