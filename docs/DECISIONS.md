@@ -10116,3 +10116,40 @@ references returned, against the code-blind references tagged fr43-part3-referen
   - The FR-16 design starts by checking polarity dependence in independent sources, including whether the
     benchmark's junction is homotypic. It does not open Ek-Vitorin 2016, which stays sealed for the benchmark.
   - The law's form changes only if independent sources support it.
+
+## D321: speeding up current runs: the shared compile cache, cold where seconds are measured, and a first L4 timing for the gap-junction field
+
+2026-11-23, about 18:19 UTC. The user's two decisions on the speed-up note,
+/mnt/workspaces/Cells/speedup-20261123/NOTE.md. The note measured from a clean snapshot of main f721e1d8.
+- **The shared JAX compilation cache is adopted in two steps.**
+  - **Background:** it passed qualification on this machine's CPU on 20 November
+    (/mnt/workspaces/Cells/cache-qualify-20261119/run-1), with every output bitwise, and was never adopted.
+    - Warm, it cut G1 from 541 to 177 s and tiers 1+2 from 1,496 to 1,027 s.
+    - Today's sample of 12 G1 worlds, from all five families, is bitwise cold and warm.
+  - **Step 1, now, scripts only:**
+    - **Tier seconds are always measured with the cache disabled.** test_tiers.py enforces this, and fold refuses
+      a measurement without the cold marker. Measured warm, 77 tier-2 files would refile as tier 1, and even an
+      empty shared cache moves 27.
+    - **Gates are cold by default.** gate.sh, stack.sh, nightly_tiers.sh and the fr_landing scripts disable the
+      cache, log it and check that no entry appeared.
+    - run_detached.sh disables the cache in every unit that is not run with --jax-cache, so judged and
+      registered runs stay cold.
+    - **Development runs may opt in** with run_detached.sh --jax-cache. That uses one CPU-only folder per jaxlib
+      version and CPU model under /mnt/workspaces/Cells/jax-cache/, in JAX's default mode as qualified. A nightly
+      sweep caps it at 8 GB. JAX's own eviction under filelock is not adopted: it is unqualified and scans every
+      entry on each write.
+  - **Step 2, after a replay of about one lane-hour:**
+    - Gates read and write the cache. That saves about 15-20 minutes per full gate.
+    - The replay must cover two lanes writing from two trees at once, a case the qualification did not cover.
+    - The nightly full tier run stays cold, as the control.
+- **The gap-junction field on the L4: a measured timing first.**
+  - One windowed timing goes through the vector path, which is already admitted on a GPU, with no src change.
+  - It runs in a short block announced to the visualizer, after FR-43's GPU needs.
+  - The projected gain is 2-5x per point, not measured. The full qualification of the device row checks on the
+    GPU (about 1-1.5 agent-days and 1.5-2 L4-hours), and the tagged GJ-N1 amendment it would need, are decided
+    on the measured number.
+- **The lead's rulings:**
+  - **A routine fix:** configure_caches() stops turning a cache on implicitly for cells ensemble workers, and is
+    off on the GPU. That removes the path of the 8 November L4 bitwise failure.
+  - **Deferred:** resolved_pump_composite@1 in cells ensemble, since no current run uses cells ensemble, and the
+    assembly_lineages@2 ensemble adapter, which would gain no speed.
