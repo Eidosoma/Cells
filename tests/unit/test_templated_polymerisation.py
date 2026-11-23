@@ -571,9 +571,10 @@ def _node_G(state, p, spec):
 
 @pytest.mark.parametrize("labelled", [False, True])
 def test_the_export_books_both_sides_and_carries_its_labels(labelled, tmp_path):
-    """FR-38's amendment T (§9.17; erratum H, §9.21), NumPy, no world compiled, about 2 s a row: R1
-    at p = 0.75 with the export of R into a finite node (k_E = 1e-3 /s, driven by NTP) and R's loss
-    there, 600 s.
+    """FR-38's amendment T (§9.17; erratum H, §9.21), NumPy, no world compiled, about 2 s unlabelled
+    and 7 s labelled (its unlabelled twin and the series readout; the timed lane, 23 November
+    2026): R1 at p = 0.75 with the export of R into a finite node (k_E = 1e-3 /s, driven by NTP)
+    and R's loss there, 600 s.
     - The node's heat is booked at the node: its outside degradation's, every increment >= 0. The
       export's whole heat is the cell's. Each side's routes sum to its booked heat.
     - G's identity over the cell and the node within rounding (64 eps (size + bookings)): the
@@ -713,7 +714,7 @@ def _two_producers(seconds=600.0):
 
 def test_two_producers_share_one_node_row_by_label():
     """§9.17.5's first readout with two producers into one node (the lead's review; amendment G's
-    derived labels; erratum H), NumPy, no world compiled, about 3 s: each producer's RNA at the
+    derived labels; erratum H), NumPy, no world compiled, about 6 s: each producer's RNA at the
     node by route 1, the node's R times the producer's share there, and by route 2, its net exports
     carried at the outside degradation's gross k_o (cohort.known_rate on the outputs every 20 s).
     Route 2 counts every exported molecule, the cell's starting trace at the base label among them,
