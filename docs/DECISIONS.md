@@ -9693,3 +9693,23 @@ fr38-rule-registered-2026-11-23) stopped before any run.
 - **For later rules:** a registration names a reader that exists at its tag, or the rule is not
   tagged.
 
+## D309: OL6's pore clock takes a relative error bound (the user)
+
+2026-11-23, about 10:41 UTC. The user chose "Accept the relative bound", on Protocol D's section 7.3
+proposal (tag ol6-protocol-d-registered-2026-11-23).
+- **The bound:** a deterministic-representation step is accepted when the pore clock's embedded error
+  estimate satisfies |U^H| <= 1e-10 + 2e-3 |dH|, where dH is the step's own clock increment. This replaces
+  the absolute 1e-10 per step (the lead's ruling (a), D304).
+- **Why:**
+  - the absolute bound refuses D7, vesicles opening a pore at 50 and 100 nm, even at rtol 1e-13,
+    because H takes no part in step selection;
+  - the order-3 estimate overstates H's error about 200-fold;
+  - over the registered seeds the largest (estimate - 1e-10)/dH is 5.3e-4, a 3.8-fold margin;
+  - t* moves at most 1.1e-8 relative between rtol 1e-12 and 1e-13.
+  All of this was found from runs of the deterministic representation alone, with no comparison read.
+- **The guarantee it changes:** the crossing time's error is bounded by 2e-3 relative by the estimate.
+  That is inside the envelope's 2/n_min for n_min up to 1000.
+- **Next, both before D7 runs:** an engine follow-up to S3, which implements the bound with its rows,
+  gated, and Protocol D's erratum 1, which makes D7 runnable under it. Protocol D's other worlds (D0-D6)
+  and Protocol G's scope 1 can run now.
+
