@@ -1,5 +1,15 @@
 # Cells proof comparisons
 
+<a id="fr46-shell-ligand-faces"></a>
+
+## 23 November 2026 · A second ligand can carry bound X across a shell
+
+For `cells.stochastic_mass_action@1` on `cells.prescribed_shell@1`, Lean proves that an initially empty lumen stays empty for any finite sequence of admitted events when each event balances X, every possible transfer of X stays on one face, and all inner-accessible places initially contain zero copies of X. The places include bound ligand. An initially occupied inner site can release X into an empty free lumen. The exact controls include a same-face isomerization and a release from a preloaded site. [Theorem](CellsProofs/Chemistry/ShellLigandFaces.lean) · [Exact controls](checks/chemistry/ShellLigandFaces.lean)
+
+The development parser at `61d823be` admitted a two-ligand route. Start with one X outside, one Y inside and one empty wall site R. The events are X_out + R → A, Y_in + A → C, C → D, then D → B + X_in. The Y-binding step carries the X already on A. Every event balances X, Y and the scaffold. The engine’s host kernel gave rates of 0.00166054, 0.0166054, 1 and 1 per second at the four successive states. Following the enabled events left zero X outside and one X inside. Removing Y binding gave a sealed control that the parser admitted. This is a finite path with positive rates. The host check follows those events directly. [Tested parser](https://github.com/Eidosoma/Cells/blob/61d823be7e3913f44a4dd497507a8e8256151584/src/cells/models/assembly_lineages_v2/spec.py#L451-L505) · [Comparison driver](checks/shell_ligand_faces.py)
+
+To repeat, set `PYTHONPATH` to the engine checkout’s `src` and root directories, in that order, and run `python -B lean/checks/shell_ligand_faces.py` with the Cells CPU environment. Its exit code is one when a row disagrees. The frozen engine, per-case JSON and logs are in the Lean run directory `lean-fr48-fr46-shell-laws-20261123`.
+
 <a id="fr48-shell-equilibrium"></a>
 
 ## 23 November 2026 · Tracer equilibrium in a prescribed shell
@@ -7,6 +17,8 @@
 For `cells.shell_permeation@1` on `cells.prescribed_shell@1`, Lean checked the normalized count distribution for every fixed total, detailed balance across each entry/exit pair, and zero net probability flow for every count observable in continuous time. At equal volumes a lumen cost of ln 2 in units of RT gives a one-third fraction inside and a one-half ratio of mean concentrations. [Claim, assumptions and engine status](claims/fr48-shell-equilibrium.md)
 
 With two tracers the exact probabilities at zero, one and two inside are 4/9, 4/9 and 1/9. With no tracer the only state has mass one. Setting the solution potential to ln 2 and the absolute lumen potential to ln 4 distinguishes the correct fraction (1/3) from using the lumen value as an offset (1/5) or reversing the gap (2/3). After the build, run `lake env lean -DwarningAsError=true checks/chemistry/ShellEquilibrium.lean` from `lean/` to repeat the controls and print the proof axioms. [Exact checks](checks/chemistry/ShellEquilibrium.lean)
+
+On the frozen FR-48/FR-46 development stack at `61d823be`, the CPU test passed for 12 tracers. The stationary probabilities from the kernel rates agreed with the binomial reference within 10⁻¹² for a lumen cost of ln 2, equal potentials and the undeclared default. The test used a nonzero solution potential, detected an intentionally incorrect offset and closed the ledger from initially all-outside and all-inside populations. To repeat in that checkout, run `python -B -m pytest -q tests/unit/test_assembly_lineages_v2_geometry.py::test_a_lumen_potential_sets_the_equilibrium_ratio_and_keeps_detailed_balance`. [Engine comparison](https://github.com/Eidosoma/Cells/blob/61d823be7e3913f44a4dd497507a8e8256151584/tests/unit/test_assembly_lineages_v2_geometry.py#L806-L866)
 
 <a id="passive-reaction-cycles"></a>
 
