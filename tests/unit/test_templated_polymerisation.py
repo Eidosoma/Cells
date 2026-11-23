@@ -178,15 +178,32 @@ def _control(raw, route):
     return next(c for c in raw["experiment"]["polymerisation_controls"] if c["route_id"] == route)
 
 
-def _beside_replacement(raw):
-    """R1 beside scheduled_cell_replacement@1, which replaces its one cell at 120 s (in place)."""
+def _replaced(raw, templates=True):
+    """R1 beside scheduled_cell_replacement@1, which replaces its one cell at 120 s by a newcomer
+    from template T (amendment S, §9.16), in place; with templates, T's values are the founder's
+    time-0 values, as the occupant rule (item 6) requires."""
     from validation.tissue import secreted_species_fixtures as sfx
 
     template = sfx.template(raw, worlds.CELL, "T")
     raw.update(sfx.with_replacement(raw, [template], [(120.0, worlds.CELL, "T", "cell_0_g1")]))
+    if templates:
+        rates = {c["route_id"]: c["schedule"][0]["value"]
+                 for c in raw["experiment"]["polymerisation_controls"]}  # fmt: skip
+        kernel.block(raw)["templates"] = [dict(template_id="T", rates=rates)]
+    return raw
 
 
-# R1's refusals (§9.1-§9.6, and D301's beside a replacement): (edit of R1's raw definition at
+def _unused_template(raw):
+    """_replaced's R1 with a second replacement template U, which no event uses, given values."""
+    _replaced(raw)
+    replacement = raw["model"]["operators"][0]
+    replacement["templates"].append(dict(replacement["templates"][0], id="U"))
+    replacement["template_capacity"] = 2
+    block = kernel.block(raw)
+    block["templates"].append(dict(block["templates"][0], template_id="U"))
+
+
+# R1's refusals (§9.1-§9.6, and §9.16's beside a replacement): (edit of R1's raw definition at
 # p = 0.75, words of the refusal).
 RELEASE_REFUSALS = [
     (lambda raw: _release(raw).update(machine="kept"), "machine is one of"),
@@ -210,7 +227,18 @@ RELEASE_REFUSALS = [
         ),
         "durable fraction is in",
     ),
-    (_beside_replacement, r"with scheduled_cell_replacement@1 yet: .* FR-38's step 4"),
+    (lambda raw: _replaced(raw, templates=False), "declare T in templates with a value for tx"),
+    (
+        lambda raw: kernel.block(_replaced(raw))["templates"][0].update(template_id="Z"),
+        "declares values for Z, not a replacement template",
+    ),
+    (_unused_template, "template U's value for deg_R applies to no schedule"),
+    (
+        lambda raw: _control(_replaced(raw), "deg_R")["schedule"].append(
+            dict(time=180.0, value=1e-4)
+        ),
+        "at or after its founder's death",
+    ),
 ]
 
 
@@ -220,6 +248,89 @@ def test_the_release_refuses(edit, words):
     edit(raw)
     with pytest.raises(ConfigError, match=words):
         parse_spec(raw)
+
+
+def test_a_replacement_takes_the_occupants_chains_and_hold_and_restarts_its_counters(monkeypatch):
+    """FR-38's step 4 (amendment S, §9.16), about 1 s, no world compiled: R1 with A1's k_I beside
+    replacement@1 at 120 s, T's k_I half the founder's, after 60 s of the operator's own
+    half-steps. Nothing due: the state bit for bit. Due: complexes and hold 0, every machine free,
+    each removal counter the amount that left, mu°_res (W + L H) the free energy leaving, every
+    birth value the counter's, the residue and machine ledgers at rounding, and the founder's
+    per-producer identity (item 4). With labels (FR-42's pool reporter, erratum E) the same state
+    and the emptied holds reported, zeros when nothing is due. A stale count is refused. The
+    controls: the due count steps at 120 s and T's values hold from then. A donor copy into the
+    slot is refused (check_occupants)."""
+    from dataclasses import replace
+    from types import SimpleNamespace
+
+    raw = _replaced(kernel.truncated(worlds.r1(0.75, initiation=K_I), 240.0))
+    kernel.block(raw)["templates"][0]["rates"]["tx"] = 0.5 * K_I
+    spec = parse_spec(raw)
+    model = get_model(spec.model)
+    op = next(o for o in model.operators if o.LAW_ID == polymerisation.LAW_ID)
+    state, p = model.initial_values(spec)
+    state = type(state)(*(np.asarray(v) for v in state))
+    (block,) = [d for d in spec.model.operators if d.law == worlds.POLYMERISATION]
+    control = kernel.controls(raw, block)
+    for _ in range(60):
+        state, ok = op.half_step(state, 1.0, control, p, xp=np)
+        assert bool(ok)
+
+    def due(count):
+        return SimpleNamespace(**{polymerisation.REPLACEMENTS_DUE: np.array([count])})
+
+    same, ok = op.event(state, due(0.0), p, xp=np)
+    assert bool(ok) and all(np.array_equal(a, b) for a, b in zip(same, state, strict=True))
+    assert not bool(op.event(state, due(2.0), p, xp=np)[1])  # Stale.
+    after, ok = op.event(state, due(1.0), p, xp=np)
+    assert bool(ok) and int(after.poly_rep_applied[0]) == 1
+    C, H = state.poly_complexes_fmol[0], float(np.sum(state.poly_hold_fmol))
+    # FR-42's pool reporter (erratum E): with labels it reports the holds it empties, in order.
+    rows = np.array([0])
+    assert op.event(state, due(0.0), p, xp=np, labels=rows)[2].tolist() == [0.0]
+    labelled, ok_l, removed = op.event(state, due(1.0), p, xp=np, labels=rows)
+    assert removed.tolist() == [H] and all(
+        np.array_equal(a, b) for a, b in zip(labelled, after, strict=True)
+    )
+    assert C.sum() > 0 and H > 0
+    assert not np.any(after.poly_complexes_fmol) and not np.any(after.poly_hold_fmol)
+    assert np.array_equal(after.poly_free_machines_fmol, p.poly_pool_total_fmol)
+    W = float(np.sum(p.poly_chain_held[0] * C))
+    assert after.poly_rep_chains_removed_fmol[0] == pytest.approx(C.sum(), rel=4 * EPS)
+    assert after.poly_rep_residues_removed_fmol[0] == pytest.approx(W, rel=4 * EPS)
+    assert after.poly_rep_hold_removed_fmol[0, 0] == H
+    rt = 1e-3 * 8.314462618 * spec.model.temperature_K
+    leaving = rt * p.poly_chain_residue_mu_RT[0] * (W + p.poly_chain_length[0] * H)
+    assert after.poly_rep_removed_energy_pJ[0] == pytest.approx(leaving, rel=16 * EPS)
+    counters = [float(getattr(state, n)[0]) for n in polymerisation.CHAIN_COUNTERS]
+    assert after.poly_rep_chain_birth_fmol[0].tolist() == counters
+    assert after.poly_rep_chain_departed_fmol[0].tolist() == counters  # The founder's from 0.
+    assert np.array_equal(after.poly_rep_release_birth_fmol[0], state.poly_hold_released_fmol[0])
+    assert np.array_equal(after.poly_rep_degradation_birth_fmol, state.poly_degraded_fmol)
+    ledgers, magnitudes = op.own_ledgers(after, p, xp=np), op.own_magnitudes(after, p, xp=np)
+    for value, size in zip(ledgers.values(), magnitudes, strict=True):
+        assert np.all(np.abs(value) <= 64 * EPS * size + 1e-30)
+    species = list(spec.model.species_ids)
+
+    def n(s, row):
+        i = species.index(row)
+        return float(p.amount_reference[i, 0] + s.amount_increment[i, 0])
+
+    initial = float(np.sum(p.poly_rel_hold0_fmol))
+    start = model.initial_values(spec)[0]
+    kept = sum(n(state, r) - n(start, r) + float(state.poly_degraded_fmol[f])
+               for f, r in enumerate(("R", "R_s")))  # fmt: skip
+    arrivals = float(state.poly_released_fmol[0])
+    assert abs(initial + arrivals - H - kept) <= _identity_bound(initial, arrivals, H, kept)
+    values = cs.control_values(spec, [118.0, 120.0, 122.0])
+    assert values.polymerisation_replacements_due[:, 0].tolist() == [0.0, 1.0, 1.0]
+    assert values.polymerisation_initiation_rate[:, 0].tolist() == [K_I, 0.5 * K_I, 0.5 * K_I]
+    replacement, events = polymerisation.common.replacement_of(spec)
+    donor = replace(events[0], newcomer="donor_copy", template=None, donor="cell_0")
+    monkeypatch.setattr(polymerisation.common, "replacement_of", lambda s: (replacement, (donor,)))
+    schedule = next(x for o, _, x in cs.entries(spec) if o.LAW_ID == polymerisation.LAW_ID)
+    with pytest.raises(ConfigError, match="a donor copy into or from cell_0"):
+        polymerisation.check_occupants(spec, block, schedule)
 
 
 def _identity_bound(*terms):

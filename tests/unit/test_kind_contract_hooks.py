@@ -5,7 +5,8 @@ with a planted error it must catch (D187):
 - a kind's energy roles, admitted heat bookings, partition roles and ledgers are checked at
   registration (planted, each refused: an unknown role, a non-bool monotone, a heat-suffixed field
   declared work, a stray field, the tableau's unversioned ID, a repeated booking, a structural role
-  without a fill, an intensive one with a fill, a non-finite fill, ledgers without their bounds);
+  without a fill, an intensive one with a fill, a non-finite fill, ledgers without their bounds,
+  FR-42's label transfers without label refusals and a label refusal that is not a callable);
   today's built-in kinds declare none, but the transporter, which admits the trapezoid booking
   (K2), and register as before;
 - an undeclared state field takes today's suffix rule, a declaration overrides it (planted: a
@@ -146,6 +147,9 @@ def test_seam_declarations_are_checked_at_registration():
         ),
         "stray partition field": dict(partition_roles=dict(ROLES, other=PartitionRole("history"))),
         "ledgers without bounds": dict(ledgers=lambda declaration: ()),
+        # FR-42's hook (D303 item 6): transfers only beside the refusals that bound them.
+        "label transfers without refusals": dict(label_transfers=lambda *a, **k: ()),
+        "label refusals not a callable": dict(label_refusals=[]),
     }
     for name, declarations in plants.items():
         kind = planted(**declarations)

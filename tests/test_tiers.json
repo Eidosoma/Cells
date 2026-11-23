@@ -342,7 +342,12 @@
   "/mnt/workspaces/Cells/core-pass-kinds-20261118/measure-98da063b/measure/measured.json",
   "/mnt/workspaces/Cells/gene-regulation-20261120/fr38/replacement-refusal/timed-db21a62e/measure/measured.json",
   "/mnt/workspaces/Cells/gene-regulation-20261120/fr42/runs/timed-924fb120/measure/measured.json",
-  "/mnt/workspaces/Cells/pores-endpoint-20261122/tiers-14c87f3c/measure/measured.json"
+  "/mnt/workspaces/Cells/pores-endpoint-20261122/tiers-14c87f3c/measure/measured.json",
+  "/mnt/workspaces/Cells/lead-tools/mass-action-mask/measure-497cf333/measured.json",
+  "/mnt/workspaces/Cells/kinds-hook-20261122/measure-dc124c61/measured.json",
+  "/mnt/workspaces/Cells/kinds-hook-20261122/measure-8dce3dde/measured.json",
+  "/mnt/workspaces/Cells/kinds-hook-20261122/measure-32657ff7/measured.json",
+  "/mnt/workspaces/Cells/gene-regulation-20261120/fr38/step4/timed-c90f1f5c/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2906,6 +2911,46 @@
    "root": "/mnt/workspaces/Cells/pores-endpoint-20261122/snapshot-14c87f3c",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-22T21:23:25+00:00"
+  },
+  {
+   "git_revision": "497cf3338497727d4524e042b8b84cb1385318d0",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/lead-tools/mass-action-mask/snapshot-497cf333",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-22T23:52:55+00:00"
+  },
+  {
+   "git_revision": "dc124c61ccac019e4db7cd5fc39b84b2d4705251",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/kinds-hook-20261122/snapshot-dc124c61",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-22T22:04:18+00:00"
+  },
+  {
+   "git_revision": "8dce3ddefc8137d33e0d604af9ca17555c5c51be",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/kinds-hook-20261122/snapshot-8dce3dde",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-22T22:33:06+00:00"
+  },
+  {
+   "git_revision": "32657ff725ff9e7d2b139a22d182ad8c2b4dcdd8",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/kinds-hook-20261122/snapshot-32657ff7",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-22T22:43:11+00:00"
+  },
+  {
+   "git_revision": "c90f1f5c91b69cdc1fa8eeec577c1d71e7800814",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/gene-regulation-20261120/fr38/step4/snapshot-c90f1f5c",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-22T23:07:17+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -4447,7 +4492,7 @@
    },
    {
     "file": "tests/unit/test_gene_regulation_compare.py",
-    "seconds": 17.51,
+    "seconds": 16.51,
     "exit_code": 0,
     "counts": {
      "passed": 45
@@ -4709,7 +4754,7 @@
    },
    {
     "file": "tests/unit/test_kind_contract_hooks.py",
-    "seconds": 3.03,
+    "seconds": 3.02,
     "exit_code": 0,
     "counts": {
      "passed": 13
@@ -6273,10 +6318,10 @@
    },
    {
     "file": "tests/unit/test_templated_polymerisation.py",
-    "seconds": 8.84,
+    "seconds": 9.19,
     "exit_code": 0,
     "counts": {
-     "passed": 37
+     "passed": 42
     }
    },
    {
@@ -6717,7 +6762,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_kernel.py",
-    "seconds": 61.7,
+    "seconds": 88.98,
     "exit_code": 0,
     "counts": {
      "passed": 10
@@ -6947,7 +6992,7 @@
    },
    {
     "file": "tests/unit/test_cycle_kind.py",
-    "seconds": 42.3,
+    "seconds": 40.11,
     "exit_code": 0,
     "counts": {
      "passed": 50
@@ -7364,10 +7409,26 @@
    },
    {
     "file": "tests/unit/test_neutral_arrival_labels.py",
-    "seconds": 54.26,
+    "seconds": 62.03,
     "exit_code": 0,
     "counts": {
-     "passed": 26
+     "passed": 32
+    }
+   },
+   {
+    "file": "tests/unit/test_neutral_labels_events.py",
+    "seconds": 22.47,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_neutral_labels_kinds.py",
+    "seconds": 64.27,
+    "exit_code": 0,
+    "counts": {
+     "passed": 25
     }
    },
    {
