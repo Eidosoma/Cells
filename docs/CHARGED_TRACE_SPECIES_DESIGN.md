@@ -372,6 +372,12 @@ took about 11 s. Row 3 is one composite compile, about 30–60 s.
   - In a species-only world the energy check refuses it: X at 2 µM against 1e-9 mM leaves 2.0% of
     the route's heat at dt 25 µs and 0.86% at 12.5 µs. From a resolved start (2 and 1 µM) the
     residual is second order: 7.2e-5 and 1.8e-5.
-  - The reactions operator has the same limit (its §3.3 (a)). Worlds with ion flows are blind to
-    it at trace levels.
-  - It is P2's limit on patches too, and the test rows start resolved.
+  - The reactions operator has the same limit (its §3.3 (a)). Read, not measured here: the
+    operators' GUARD_STATEMENT says the shared energy bound beside ion flows is blind to such
+    bookings at µM to nM.
+  - Read from the code, not run here: P2's patch routes book the same tableau heat, so the limit
+    is theirs too. The test rows start resolved.
+  - **For the replication's owner:** the reacting row (§8's check 3) passes with its flows under
+    the energy check's 2e-8 pJ floor, so it says nothing about a microRNA at µM entering near-empty
+    cells. In a species-only world such a start is refused; in a world with ion flows it books
+    heat at first order unseen.

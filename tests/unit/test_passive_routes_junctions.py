@@ -13,14 +13,16 @@ gate is pinned open, on which passive_constant_field_permeation@1 carries the an
   closure moves the voltage (an independent bisection), far from the closure-blind references.
 - A reacting charged trace row beside local_species_reactions@1 reaches its linear steady state
   (the microRNA's shape).
-- The charged law refuses a neutral row on a junction. Its refusal of a junction that crosses a
-  floating capacitor component is the kind file's row (test_passive_routes_kind.py), where the
-  blanket junction refusal's row was (D310's sanctioned change).
+- The charged law refuses a neutral row on a junction, and a junction that crosses a floating
+  capacitor component in a composite beside local_species_reactions@1. The plain @3 crossing row is
+  the kind file's (test_passive_routes_kind.py), where the blanket junction refusal's row was
+  (D310's sanctioned change).
 The kind file keeps its tier-2 cost (D224); these rows hold their own: two compiles, about 60 s.
 """
 
 import copy
 import dataclasses
+import re
 
 import numpy as np
 import pytest
@@ -309,10 +311,11 @@ def test_a_reacting_charged_trace_row_on_a_junction_reaches_its_linear_steady_st
     moiety N), the charged law carrying X on j_ab and K on @3's own junction route. K shorts the
     junction voltage, so this is a check of the composition, not of drift (checks 1 and 2 are):
     at V = 0 the steady state is n_a = k0 V (k + g)/(k (k + 2g)), n_b = g n_a/(k + g), with
-    g = A P/V, and every ledger passes. Measured at this dt, 2.4e-4 and 2.8e-4 from it: the
-    operator's Strang split moves the scheme's fixed point by O(dt^2) (7.8e-5 and 9.4e-5 at half
-    the dt), beside the 2 uV junction voltage that K's counter-current needs; 5e-4 holds. One
-    composite compile, about 40 s."""
+    g = A P/V, and every ledger passes (its flows sit under the energy check's 2e-8 pJ floor, so
+    the energy guard is the own-charge row's, not this one's). Measured at this dt, 2.4e-4 and
+    2.8e-4 from it: the operator's Strang split moves the scheme's fixed point by O(dt^2) (7.8e-5
+    and 9.4e-5 at half the dt), beside the 2 uV junction voltage that K's counter-current needs;
+    5e-4 holds. One composite compile, about 40 s."""
     k0, k_dec, end, dt = 1e-6, 10.0, 1.5, 1e-3
     raw = junction_pair(a_mM=1e-9, b_mM=1e-9, end=end, dt=dt, composite=True)
     raw = add_inventory_species(
@@ -347,9 +350,37 @@ def test_a_reacting_charged_trace_row_on_a_junction_reaches_its_linear_steady_st
     assert n_b == pytest.approx(g * steady_a / (k_dec + g), rel=5e-4)
 
 
-def test_the_charged_law_on_a_junction_refuses_a_neutral_row():
-    """Host side: on a junction as on a patch, the charged law carries a charged row only."""
+def neutral_row_on_the_junction():
+    """The junction pair with the charged law carrying the neutral S."""
     raw = junction_pair()
     raw["model"][passive_routes.MODEL_KEY][0]["species"] = fx.SPECIES
-    with pytest.raises(ConfigError, match="carries a charged row, not the neutral S"):
-        parse_spec(raw)
+    return raw
+
+
+def crossing_beside_reactions():
+    """The crossing junction pair as a composite with local_species_reactions@1 making X and K in
+    cell_a: the microRNA's shape, where D310's refusal must hold as it does in plain @3."""
+    raw = junction_pair(crossing=True, composite=True)
+    species = [rfx.species("X", moieties={"N": 1}), dict(rfx.species("K"), counter_ion=True)]
+    reactions = [rfx.mass_action("make", {"cells": ["cell_a"]}, {}, {"X": 1, "K": 1}, 1e-6)]
+    return rfx.with_reactions(raw, species, reactions, [("make", None, [(0.0, 1.0)])])
+
+
+@pytest.mark.parametrize(
+    "build, message",
+    [
+        (neutral_row_on_the_junction, "carries a charged row, not the neutral S"),
+        (crossing_beside_reactions,
+         "on junction j_ab, which joins two capacitor components where one floats"),
+    ],
+    ids=["neutral row", "crossing junction in a composite"],
+)  # fmt: skip
+def test_the_charged_law_on_a_junction_refuses_a_neutral_row_and_a_crossing_composite(
+    build, message
+):
+    """Host side: on a junction as on a patch, the charged law carries a charged row only; and the
+    crossing junction's refusal (D310) holds in a composite beside local_species_reactions@1, as
+    in plain @3 (the kind file's row): the kinds' definition checks run on the composite's path
+    too (measured before this row: refused, and the same world without the crossing admitted)."""
+    with pytest.raises(ConfigError, match=re.escape(message)):
+        parse_spec(build())
