@@ -374,7 +374,8 @@
   "/mnt/workspaces/Cells/fr43-20261123/part2/tiers/run-2a2/measured.json",
   "/mnt/workspaces/Cells/fr43-part3-20261123/tiers-90a60049/measured.json",
   "/mnt/workspaces/Cells/fr43-part3-20261123/tiers-312f9581/measured.json",
-  "/mnt/workspaces/Cells/fr43-part3-20261123/tiers-fd475b89/measured.json"
+  "/mnt/workspaces/Cells/fr43-part3-20261123/tiers-fd475b89/measured.json",
+  "/mnt/workspaces/Cells/fr46-48-build-20261123/measure-d19b10c2/measured.json"
  ],
  "measured_provenance": [
   {
@@ -3193,6 +3194,14 @@
    "root": "/mnt/workspaces/Cells/fr43-part3-20261123/snap2-fd475b89",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-23T22:37:41+00:00"
+  },
+  {
+   "git_revision": "d19b10c23ba101df718254f1434ad275dbf66413",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr46-48-build-20261123/snapshot-d19b10c2",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-23T22:24:57+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -7060,10 +7069,10 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_geometry.py",
-    "seconds": 54.07,
+    "seconds": 70.46,
     "exit_code": 0,
     "counts": {
-     "passed": 42
+     "passed": 46
     }
    },
    {
@@ -7160,6 +7169,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 34
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_lineages_v2_shell_interior.py",
+    "seconds": 21.14,
+    "exit_code": 0,
+    "counts": {
+     "passed": 12
     }
    },
    {
