@@ -46,15 +46,15 @@ A five-metabolite time course permits reconstruction of the UTP concentration fr
 
 ### huber2026_shared_UTP
 
-The stock calculation assumes a common volume and that all uridine remains in the five measured pools. It uses upstream depletion and downstream product accumulation. No kinetic parameters were fitted for this readout. Figure 8 validation batch, 40_TO7h mean and SD tables, time zero and nine later samples. [Huber et al. (2026), Fig. 8](https://doi.org/10.1016/j.mec.2026.e00287)
+The stock calculation assumes a common volume and that all uridine remains in the five measured pools. It uses upstream depletion and downstream product accumulation. No kinetic parameters were fitted for this readout. Figure 8 validation batch, 40_TO7h mean and SD tables. The archived samples span 0 to 24 h. [Huber et al. (2026), Fig. 8](https://doi.org/10.1016/j.mec.2026.e00287)
 
 - **Evidence role** held out from fitting
-- **Evaluation** All nine post-start UTP means, including the 7-hour endpoint
+- **Evaluation** All nine UTP means from 0.5 to 24 h, with the 7 h measurement reported below
 - **Observed** 0.954545 mM UTP
 - **Predicted** 0.822089 mM UTP
 
 Reported UTP SD at 7 h is 0.350096 mM. The upstream and product measurements also carry uncertainty. The archive gives no paired covariance for the reconstructed residual.
 
-At 7 h the upstream pools supplied a net 38.101943 mM and product accumulation spent 37.279854 mM. Predicted minus observed UTP ranged from −0.284381 to +0.276418 mM across the nine post-start samples. [Dataset manifest](../checks/data/fr43_uridine_pool.json) · [Comparison verdict](../PROGRESS.md#fr43-two-writers)
+At 7 h the upstream pools supplied a net 38.101943 mM and product accumulation spent 37.279854 mM. Predicted minus observed UTP ranged from −0.284381 to +0.276418 mM across the nine samples. At 24 h the reconstruction gave 0.697341 mM against 0.525149 mM observed with a UTP SD of 0.021942 mM. This SD covers only the measured UTP channel. [Dataset manifest](../checks/data/fr43_uridine_pool.json) · [Comparison verdict](../PROGRESS.md#fr43-two-writers)
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)
