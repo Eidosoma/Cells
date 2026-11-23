@@ -470,7 +470,9 @@ def table(directories, *, retry=False, only=None):
 
 
 def _same(a, b):
-    return abs(float(a) - float(b)) <= MATCH * max(1.0, abs(float(b)))
+    """Equal to MATCH relative (two zeros are equal, a zero and a nonzero are not)."""
+    a, b = float(a), float(b)
+    return abs(a - b) <= MATCH * max(abs(a), abs(b))
 
 
 def _p(value):
@@ -574,6 +576,9 @@ class References:
                 key = "route1_blank" if name.startswith("label_") else "route2_exact"
             pick = [entries[_index([x["ts"] for x in entries], t, f"{run}'s cohort")] for t in at]
             out[name] = [x[key] * COPY_FMOL for x in pick]
+        bad = sorted(n for n, v in out.items() if not all(math.isfinite(float(x)) for x in v))
+        if bad:
+            raise ComparisonError(f"{run}: the reference's {bad[:5]} hold a non-finite value")
         return out
 
     def check_units(self, window):
