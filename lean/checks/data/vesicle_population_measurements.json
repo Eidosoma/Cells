@@ -2,6 +2,14 @@
   "deshpande2018": {
     "citation": "Deshpande, Spoelstra, van Doorn, Kerssemakers and Dekker (2018), Mechanical Division of Cell-Sized Liposomes",
     "doi": "10.1021/acsnano.7b08411",
+    "daughter_diameters": {
+      "figure": "3a",
+      "paired_divisions": 152,
+      "observable": "Smaller daughter diameter divided by larger daughter diameter",
+      "mean": 0.97,
+      "sd": 0.03,
+      "limits": "Mechanical splitting at a microfluidic junction. These diameters do not count membrane molecules or identify a growth threshold."
+    },
     "figure": "4a",
     "paired_successful_divisions": 78,
     "observable": "Slope of summed daughter fluorescence against fluorescence of the corresponding parent at the microfluidic splitter",
