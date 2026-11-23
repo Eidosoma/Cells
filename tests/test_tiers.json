@@ -374,7 +374,8 @@
   "/mnt/workspaces/Cells/fr43-20261123/part2/tiers/run-2a2/measured.json",
   "/mnt/workspaces/Cells/fr43-part3-20261123/tiers-90a60049/measured.json",
   "/mnt/workspaces/Cells/fr43-part3-20261123/tiers-312f9581/measured.json",
-  "/mnt/workspaces/Cells/fr43-part3-20261123/tiers-fd475b89/measured.json"
+  "/mnt/workspaces/Cells/fr43-part3-20261123/tiers-fd475b89/measured.json",
+  "/mnt/workspaces/Cells/wash-export-refusal-20261123/tiers-51bb58d5/measured.json"
  ],
  "measured_provenance": [
   {
@@ -3193,6 +3194,14 @@
    "root": "/mnt/workspaces/Cells/fr43-part3-20261123/snap2-fd475b89",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-23T22:37:41+00:00"
+  },
+  {
+   "git_revision": "51bb58d54d2fed43b344d5bd2583f1d86857d8f0",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/wash-export-refusal-20261123/snap-51bb58d5",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-23T22:58:42+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -6738,10 +6747,10 @@
    },
    {
     "file": "tests/unit/test_wash_schedule.py",
-    "seconds": 7.08,
+    "seconds": 7.73,
     "exit_code": 0,
     "counts": {
-     "passed": 33
+     "passed": 35
     }
    },
    {
