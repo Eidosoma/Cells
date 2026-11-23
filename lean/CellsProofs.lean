@@ -10,6 +10,7 @@ import CellsProofs.Chemistry.Enzyme
 import CellsProofs.Chemistry.GardCache
 import CellsProofs.Chemistry.GardRange
 import CellsProofs.Chemistry.RateEquations
+import CellsProofs.Chemistry.ReactionCycles
 import CellsProofs.Chemistry.RosenbrockInventory
 import CellsProofs.Chemistry.SharedWriter
 import CellsProofs.Chemistry.ArrivalCohort

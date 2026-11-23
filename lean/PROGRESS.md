@@ -1,5 +1,13 @@
 # Cells proof comparisons
 
+<a id="passive-reaction-cycles"></a>
+
+## 23 November 2026 · Equilibrium around a closed reaction cycle
+
+For the passive routes of `local_species_reactions@1`, Lean checked the sign of the equilibrium activity quotient, the zero standard-energy sum for real extents, the unit product for signed integer traversals, and the residual from changing one route’s energy. All four proofs use only Mathlib’s usual axioms (`propext`, `Classical.choice`, `Quot.sound`). The claim records the engine formula and the separate work needed to compare a compiled loop or measured equilibrium constants. [Proof and source register](claims/passive-reaction-cycles.md)
+
+As a sign check, take the columns A → B, B → C and A → C in that order. Lean checked that traversals (2, 2, −2) return every species to its start and have product one for arbitrary species potentials. Adding an energy offset δ to the third route gives a residual of −2δ. Traversals (2, 2, 2) leave the cycle open. Run `lake env lean -DwarningAsError=true checks/chemistry/PassiveCycle.lean` from `lean/` after the build. [Exact example and axiom check](checks/chemistry/PassiveCycle.lean)
+
 <a id="fr43-integer-segregation"></a>
 
 ## 23 November 2026 · Integer counts at membrane-patch division
