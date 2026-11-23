@@ -3,7 +3,7 @@
  "erratum": 1,
  "amends": "validation/xenopus_bioelectric/xc0_rule.json, tagged xc0-rule-registered-2026-11-23 (98351456), kept as tagged; every entry it does not replace stands",
  "status": "For the lead's tag before the table is built (D308, D312). No table has been built and nothing compared. Its reader is the amended xc0_compare.py of this erratum (D308): the judge refuses unless this file's mapping is that module's. Revised before the tag (23 November 2026) on the reviewer's six questions, which the confirmer answered in SEMANTICS-2.md (semantics.answers), and with the reader's token guard",
- "decisions": "D312 (the lead, 23 November 2026): option B without the text; the semantics from a code-blind, value-silent confirmer, read from its one file alone; T1 and T2 unscored calibrations, reported with the verdict as unconstrained",
+ "decisions": "D312 (the lead, 23 November 2026): option B without the text; the semantics from a code-blind, value-silent confirmer, read from its one file alone; T1 and T2 unscored calibrations, reported with the verdict as unconstrained; the lead, 23 November 2026, on C5.junction_charge_sum (the reviewer's blocking question 2): it stays not mappable (neutral). SEMANTICS-2 states that the reference's two-cell model books no ionic charge and leaves the run, window and statistic to the lead; a statistic chosen now would be the lead's own construction, and the engine's own charge ledgers already verify the junction's conservation in every run",
  "keys_stage": {
   "command": "xc0_compare keys validation/xenopus_bioelectric/references/designs/xc0_interface_bands.json keys.json (no --with-text), run inside a clean frozen snapshot of the tagged tree",
   "snapshot": "/mnt/workspaces/Cells/xenopus-lane-20261119/xc0-run/keys-stage/snapshot",
@@ -1201,7 +1201,7 @@
    "the version-2 not-run patterns made exact (^C6\\.v2_J_over_k$, ^C6\\.v2_early_ratio(_rest)?$): the families the old patterns caught (SEMANTICS-2.md, question 6), so the not-run rows are unchanged",
    "the token guard: a key carrying a token its rule does not read, or a word or value its builder does not know, is unmapped (no key of the documented grammar is)"
   ],
-  "counts": "compared rows mapped 7,427 plus C6.v2_alt_set_ratio's rows; not run 242; not mappable 275 less those rows; info 736; calibration 54; unmapped 0 once check-keys passes. These are read from `xc0_compare check-keys` over the keys stage's keys.json, the lead's step before the tag: the reviewer who made this revision may not read xc0-run/",
+  "counts": "Read by the lead at 7ac9d368 with `xc0_compare check-keys` over the keys stage's keys.json (exit 0; names and keys only): compared rows mapped 7,430 (7,427 plus C6.v2_alt_set_ratio's 3); not run 242; not mappable 272 (275 less those 3); info 736; unmapped 0; calibration rows 54 (manifest --calibrations). 7,430 + 242 + 272 + 736 = 8,680, the keys stage's rows.",
   "note": "the keys stage's 130 families: every compared row is mapped, not run (its engine reason) or not mappable (its SEMANTICS.md or SEMANTICS-2.md reason); none is unmapped"
  },
  "readings": {
