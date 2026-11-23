@@ -10406,6 +10406,7 @@ reviewers' additions. Names follow the notes.
   regenerates the composition table with --write, and lands serially):
   - **the wash files:** FR-43 part 3, then the fail-open fix, then FR-44, then FR-49's wash narrowing;
   - **site_occupancy.py:** FR-45, then FR-49's site-occupancy pairing;
-  - **surface_pump_v3.py:** FR-51, then FR-50;
+  - **surface_pump_v3.py:** FR-17's call-site refactor (about 30-60 lines: readouts, imex_step, layout types), then
+    FR-51, then FR-50. Amended the same evening, after the FR-17 builder's report; FR-17 is on GJ-N1's critical path;
   - **FR-49's other pieces** proceed in parallel.
   - Each registered protocol and its spec are tagged before its engine build. Gates wait for FR-43 2B's landing.
