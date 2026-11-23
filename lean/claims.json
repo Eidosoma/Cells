@@ -2945,6 +2945,64 @@
       "driver": "lean/checks/neutral_permeation.py",
       "record": "lean/PROGRESS.md#19-november-2026--passive-neutral-permeation"
     },
+    "mt1b-local-proton-read": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "proton_constant_field_leak@1"
+      ],
+      "engine_revision": "5ef761505f2dbd48c35e36a2caee391e1f7d9394",
+      "record_revision": "ddd2dbd0dc2b01bc7f2db3715ccef4c229e23ae2",
+      "sources": {
+        "Three-compartment definition": "validation/compartment_ph_engine/definitions.py#L117",
+        "Patch endpoints": "src/cells/kinds/passive_routes.py#L585",
+        "Voltage clamp after the stage read": "src/cells/models/pump_composite.py#L1826",
+        "Free-proton law": "src/cells/laws/transport/proton_leak.py#L31",
+        "Independent Decimal flux": "validation/betse/junction_transport/check.py#L10",
+        "General closure admission": "src/cells/registry/species_registry.py#L1809",
+        "Seven-cycle fixture": "tests/unit/test_mito_cycle_laws.py#L85",
+        "Single outside binding control": "tests/unit/test_rapid_binding_world.py#L418",
+        "MT-1b compartment declaration": "docs/MITOCHONDRIA_DESIGN.md#L2232"
+      },
+      "record_inputs": {
+        "Cortese pH ranges": "lean/checks/data/cortese1992_ims_ph.json",
+        "Independent flux orientation": "lean/checks/proton_leak.py",
+        "Joint mitochondrial control": "lean/checks/mitochondrial_cycles.py",
+        "Exact outside dependence": "lean/CellsProofs/Transport/ProtonLeak.lean"
+      },
+      "driver": "lean/checks/ims_proton_leak.py",
+      "record": "lean/PROGRESS.md#mt1b-local-proton-read"
+    },
+    "fr38-restart-control": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.templated_polymerisation@1"
+      ],
+      "engine_revision": "5ef761505f2dbd48c35e36a2caee391e1f7d9394",
+      "record_revision": "ddd2dbd0dc2b01bc7f2db3715ccef4c229e23ae2",
+      "sources": {
+        "Unlabelled release world": "validation/gene_regulation/worlds.py#L519",
+        "Initial rates and copy scale": "validation/gene_regulation/sheet_check.py",
+        "Checkpoint at an accepted step": "src/cells/execution/runner.py#L362",
+        "Snapshot writing and reading": "src/cells/records/io.py#L86",
+        "RNA and machine ledgers": "src/cells/operators/templated_polymerisation.py#L1993",
+        "Tagged replacement identities": "docs/TEMPLATED_POLYMERISATION_LAWS.md#L1499"
+      },
+      "record_inputs": {
+        "Short observation schedule": "lean/checks/terminal_release.py",
+        "Conditional event proofs": "lean/CellsProofs/Chemistry/TerminalRelease.lean"
+      },
+      "driver": "lean/checks/release_restart.py",
+      "record": "lean/PROGRESS.md#fr38-replacement-restart"
+    },
     "proton-leak": {
       "kind": "engine",
       "models": ["resolved_pump_tissue@3"],
@@ -4402,6 +4460,49 @@
         "status": "open",
         "observable": "The examples test numerical domain handling and parser reachability. No organism-specific catalyst range is assigned.",
         "unit": "Binary exponent, row bits and molecule count",
+        "evidence": []
+      }
+    },
+    {
+      "id": "release-replacement-balances",
+      "category": "molecular-assembly",
+      "title": "Residue and energy accounts at producer replacement",
+      "statement": "When a departing occupant takes its unfinished chains and attached RNA and a newcomer starts with both empty, recording those exports preserves the residue account. With row and chain standard energies included, the endpoint energy account closes with zero heat assigned to the event. Successive differences of a cumulative counter recover its total change.",
+      "assumptions": [
+        "A stage j complex holds j r residues, a completed product holds m r, and all extents update the same cumulative counters through the last step of the departing occupant.",
+        "Reconstruct incoming and outgoing rows’ mixing and standard energies from the exchanged amounts. Unfinished and attached residues leave at the chain’s standard energy per residue. Reading an individual generation requires both its counter endpoints."
+      ],
+      "uses": [
+        "polymerisation-residues",
+        "scheduled-cell-replacement"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.templated_polymerisation@1",
+          "cells.scheduled_cell_replacement@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.TerminalRelease.replacement_residue_step": "lean/CellsProofs/Chemistry/TerminalRelease.lean",
+          "CellsProofs.Chemistry.TerminalRelease.replacement_energy": "lean/CellsProofs/Chemistry/TerminalRelease.lean",
+          "CellsProofs.Chemistry.TerminalRelease.generation_counter": "lean/CellsProofs/Chemistry/TerminalRelease.lean"
+        },
+        "sources": {
+          "FR-38 amendment S, event inventory and energy": "https://github.com/Eidosoma/Cells/blob/5ef761505f2dbd48c35e36a2caee391e1f7d9394/docs/TEMPLATED_POLYMERISATION_LAWS.md#L1499",
+          "Mathlib finite telescoping sum, imported as Finset.sum_range_sub": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L862-L865"
+        }
+      },
+      "numerical": {
+        "status": "open",
+        "comparisons": [
+          "fr38-restart-control"
+        ],
+        "result": "Both unlabelled machine-return policies reproduced all 40 state fields byte for byte at four times after a disk checkpoint with occupied stages and hold. This checks ordinary restart. Removed material, event energy and producer identity still need a coupled replacement-and-restart replay."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "The template swap specifies which material leaves a simulated slot. Comparing it with biological inheritance would require a specified physical replacement process and measured outgoing and incoming material.",
+        "unit": "fmol of residues and pJ",
         "evidence": []
       }
     },
@@ -8117,7 +8218,7 @@
       "id": "proton-leak",
       "category": "membrane-transport",
       "title": "Voltage and free proton concentrations set the leak reversal",
-      "statement": "For an open route, inward flux is positive exactly when hOut exceeds hIn × B(−x)/B(x), using the engine’s selected Bernoulli factor at x = FV/(RT). The analytic law reverses at V = (RT/F) × (ln hOut − ln hIn) and releases nonnegative instantaneous heat. The engine’s real-arithmetic evaluator gives the analytic flux at x = 0 and for |x| ≥ 10⁻⁴. At other x the polynomial has its own reversal ratio.",
+      "statement": "For an open route, inward flux is positive exactly when hOut exceeds hIn × B(−x)/B(x), using the engine’s selected Bernoulli factor at x = FV/(RT). The analytic law reverses at V = (RT/F) × (ln hOut − ln hIn) and releases nonnegative instantaneous heat. The engine’s real-arithmetic evaluator gives the analytic flux at x = 0 and for |x| ≥ 10⁻⁴. At other x the polynomial has its own reversal ratio. At fixed voltage and opening, the change in inward flux is scale × B(x) times the change in free outside concentration.",
       "assumptions": ["Positive free H⁺ concentrations on both sides in mM, positive absolute temperature and proton valence +1. Voltage is inside minus outside, with positive flux inward.", "Area × permeability × opening is positive for directional claims and may be zero for the heat inequality. The proof interprets both evaluator branches in real arithmetic."],
       "formal": {"status": "proved", "about": ["cells.proton_constant_field_leak@1"], "theorems": {
         "CellsProofs.Transport.ProtonLeak.series_flux": "lean/CellsProofs/Transport/ProtonLeak.lean",
@@ -8126,13 +8227,42 @@
         "CellsProofs.Transport.ProtonLeak.analytic_inward_iff": "lean/CellsProofs/Transport/ProtonLeak.lean",
         "CellsProofs.Transport.ProtonLeak.analytic_equilibrium_iff": "lean/CellsProofs/Transport/ProtonLeak.lean",
         "CellsProofs.Transport.ProtonLeak.reversal_voltage_iff": "lean/CellsProofs/Transport/ProtonLeak.lean",
-        "CellsProofs.Transport.ProtonLeak.analytic_heat_nonneg": "lean/CellsProofs/Transport/ProtonLeak.lean"
+        "CellsProofs.Transport.ProtonLeak.analytic_heat_nonneg": "lean/CellsProofs/Transport/ProtonLeak.lean",
+        "CellsProofs.Transport.ProtonLeak.outside_change": "lean/CellsProofs/Transport/ProtonLeak.lean",
+        "CellsProofs.Transport.ProtonLeak.strictMono_outside": "lean/CellsProofs/Transport/ProtonLeak.lean"
       }, "sources": {
         "Cells constant-field definitions": "lean/CellsProofs/Transport/ConstantField.lean",
-        "Goldman’s constant-field model (1943)": "https://doi.org/10.1085/jgp.27.1.37"
+        "Goldman’s constant-field model (1943)": "https://doi.org/10.1085/jgp.27.1.37",
+        "Mathlib positive product, imported for strict outside sensitivity": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/Order/GroupWithZero/Unbundled/Basic.lean#L34-L37"
       }},
-      "numerical": {"status": "checked", "comparisons": ["proton-leak"], "result": "Twelve compiled CPU cases agreed with the 70-digit flux reference within 1.55 × 10⁻²⁰ fmol/s. In a buffered tissue cell, using free H⁺ gave the observed inward rate of 3.31 × 10⁻⁶ fmol/s. Substituting total intracellular proton equivalents reversed the predicted direction."},
-      "biology": {"status": "open", "observable": "Reversal voltage of an open H⁺ path across measured pH gradients at known temperature. Predicting the signed flux magnitude also requires permeability, area and opening.", "finding": "In Jurkat T cells the proton-current reversal shifted −47 mV per pH unit, versus an ideal −58 mV per pH unit. The fitted slope uncertainty and intracellular pH limit a quantitative verdict. [Schilling et al., Fig. 2E](https://doi.org/10.1113/jphysiol.2002.028878)", "unit": "mV at reversal, fmol/s for signed proton flux", "evidence": []}
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "proton-leak",
+          "mt1b-local-proton-read"
+        ],
+        "result": "Twelve compiled CPU cases agreed with the 70-digit flux reference within 1.55 × 10⁻²⁰ fmol/s. In a buffered tissue cell, using free H⁺ gave the observed inward rate of 3.31 × 10⁻⁶ fmol/s. Substituting total intracellular proton equivalents reversed the predicted direction. Eight additional composite clamps tracked lumen pH at fixed voltage when bath pH varied independently. MT-1b’s general-binding node currently refuses the leak."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Reversal voltage of an open H⁺ path across measured pH gradients at known temperature. Predicting the signed flux magnitude also requires permeability, area and opening.",
+        "finding": "In Jurkat T cells the proton-current reversal shifted −47 mV per pH unit, versus an ideal −58 mV per pH unit. The fitted slope uncertainty and intracellular pH limit a quantitative verdict. [Schilling et al., Fig. 2E](https://doi.org/10.1113/jphysiol.2002.028878)",
+        "unit": "mV at reversal, fmol/s for signed proton flux",
+        "evidence": [
+          {
+            "dataset_id": "cortese1992_ims_ph",
+            "manifest": "lean/checks/data/cortese1992_ims_ph.json",
+            "doi": "10.1016/0005-2728(92)90081-C",
+            "citation": "Cortese et al. (1992)",
+            "locator": "Abstract, external pH 6.0–8.5.",
+            "context": "Soluble FITC-dextran sampled intermembrane-space pH in intact isolated rat liver mitochondria.",
+            "role": "descriptive",
+            "uncertainty": "The authors reported ranges across conditions. The abstract leaves the replicate errors and respiratory state for each reading unspecified.",
+            "assessment": "Relative to the bath, the intermembrane space was 0.4–0.5 pH units more acidic in the condensed configuration and 0–0.2 more acidic in the orthodox configuration. This supports a compartment-specific proton input. The uncoupled gradient and leak rate remain open.",
+            "report": "lean/PROGRESS.md#mt1b-local-proton-read"
+          }
+        ]
+      }
     },
     {
       "id": "buffered-proton-reversal",

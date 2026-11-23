@@ -72,6 +72,8 @@ For a wash of a solid surface, the first saved step can already include tracer r
 
 Yeast mitochondrial ATP synthase provides a measured example of reversal. The enzyme switched from hydrolysis to synthesis as the proton gradient increased. Cells captures the shift between the lowest and highest ATP loads. The comparison also records the four intermediate measurements outside the combined interpolation limits. [Mitochondrial stall and biological evidence](claims/mitochondrial-stall-heat.md#biological-evidence)
 
+In isolated rat liver mitochondria the intermembrane space was up to 0.5 pH units more acidic than the bath. The three-compartment control shows that substituting bath pH can reverse the predicted leak. The uncoupled mitochondrial gradient remains a separate measurement target. [Proton compartment and experimental scope](PROGRESS.md#mt1b-local-proton-read)
+
 The catalog gives each measurement, its primary source and the part of the law it tests. **Partial evidence** means the literature measures a relevant part of the claim and a full biological verdict remains open. **Not assessable** means a recorded comparison has too much uncertainty for a verdict. The studies and their figures are linked in each row. [Literature review](claims/incoming/biological-evidence.md) · [Pump flux, charge and ATP measurements](claims/incoming/pump-charge-evidence.md) · [PGI worksheet audit](claims/incoming/pgi-evidence.md) · [Publisher’s PGI workbook and spectra](https://mdpi-res.com/metabolites/metabolites-02-00818/article_deploy/metabolites-02-00818-s001.zip)
 
 Three measured rupture rates at each of two temperatures give FR-31 a disclosed comparison for first rupture. Evans and Smith describe an independent vesicle lifetime assay. Linking a particular constant-tension series to its vesicle sizes, exposure times and censoring remains open. A complete rupture returns each molecule to its destination in both assembly runners. [Rate measurements](claims/vesicle-lysis-threshold.md#biological-evidence) · [Independent study search](claims/incoming/vesicle-osmosis-evidence.md#independent-fixed-tension-series) · [Rupture receipts in Lean and Cells](claims/vesicle-lysis-returns.md) · [Independent translation-timing data screened by Search](claims/incoming/translation-release-evidence.md#fr-40-screening-for-independent-timing-data)
@@ -472,6 +474,7 @@ For proton leak, check the reversal voltage, instantaneous heat, the small-volta
 
 ```bash
 "$cells_python" -B checks/proton_leak.py
+"$cells_python" -B checks/ims_proton_leak.py
 ```
 
 For ATP-driven transport, compare compiled tissue rates against the four frozen proton and neutral cargo panels. The driver reports free energy, cycle flux, heat and work errors, then checks the voltage response and both off switches. It also finds the proton pump's stall voltage for each of the eight yeast vacuole assay conditions at all four supported couplings. [ATP driver](checks/atp_cycle.py) · [Tissue results](PROGRESS.md#19-november-2026--atp-driven-transport) · [Vacuole results](PROGRESS.md#biological-model-review)
