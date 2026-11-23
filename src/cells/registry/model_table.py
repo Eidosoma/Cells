@@ -171,6 +171,7 @@ MODELS = MappingProxyType(
                 "cells.models.assembly_lineages_v2.shell_permeation",  # FR-21
                 "cells.models.assembly_lineages_v2.gate_factor",  # FR-21
                 "cells.models.assembly_lineages_v2.pore_nucleation",  # FR-31 (D287)
+                "cells.models.assembly_lineages_v2.rate_equations",  # OL6 (D304)
             ),
             operator_homes=(
                 "cells.models.assembly_lineages_v2.division",
@@ -187,6 +188,7 @@ MODELS = MappingProxyType(
                 "cells.assembly_operator@1",
                 "cells.population_structure@1",
                 "cells.assembly_hazard@1",  # FR-31 (D287)
+                "cells.assembly_representation@1",  # OL6 (D304)
             ),
             runner="cells.models.assembly_lineages_v2.runner:run",
         ),

@@ -662,6 +662,13 @@ def parse(data):
     if type(raw["schema_version"]) is not int or raw["schema_version"] != 1:
         raise ConfigError("Only schema_version 1 is supported")
     model = parse_model(raw["model"])
+    if isinstance(raw["execution"], dict) and "representation" in raw["execution"]:
+        from cells.models.assembly_lineages_v2 import rate_equations  # OL6 (D304)
+
+        execution = rate_equations.parse_execution(raw["execution"], model)
+        experiment = parse_experiment(raw["experiment"], model.world)
+        rate_equations.refusals(model.world, experiment, execution)
+        return SimulationSpec(model, experiment, execution)
     execution = parse_execution(raw["execution"], model)
     _mode_refusals(model.world, execution.mode)
     experiment = parse_experiment(raw["experiment"], model.world)
@@ -675,6 +682,15 @@ def parse(data):
 
 def to_dict(spec):
     m, e, x = spec.model, spec.experiment, spec.execution
+    out = _to_dict(m, e, x)
+    from cells.models.assembly_lineages_v2 import rate_equations  # OL6 (D304)
+
+    if isinstance(x, rate_equations.RepresentationExecution):
+        out["execution"] = rate_equations.execution_to_dict(x)
+    return out
+
+
+def _to_dict(m, e, x):
     return {
         "schema_version": 1,
         "model": {"id": MODEL_ID, "world": world_to_dict(m.world)},
