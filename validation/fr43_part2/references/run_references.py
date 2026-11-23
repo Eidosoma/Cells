@@ -66,14 +66,15 @@ ATOL_TEXT = (f"{ATOL_AMOUNT:g} fmol (amounts, machines, complexes, extents) and 
 
 
 def git_identity() -> dict:
-    """The checkout's revision and any changed or untracked source path under this folder (the
-    generated out/ files excluded)."""
+    """The checkout's revision and any changed or untracked path under this folder that can change
+    a result: the code (*.py) and the input worlds (worlds/). Documents and out/ are not."""
     def run(*args):
         return subprocess.run(["git", "-C", HERE, *args], capture_output=True, text=True).stdout
     dirty = [ln[3:] for ln in run("status", "--porcelain", "--untracked-files=all", "--", HERE)
              .splitlines()]
     return {"revision": run("rev-parse", "HEAD").strip(),
-            "dirty_source_paths": [p for p in dirty if "/out/" not in p]}
+            "dirty_code_and_input_paths": [p for p in dirty
+                                           if p.endswith(".py") or "/worlds/" in p]}
 
 
 def _method_record(spec, info, wall):
