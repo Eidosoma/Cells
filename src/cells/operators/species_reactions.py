@@ -1609,6 +1609,7 @@ class LocalSpeciesReactions(Operator):
         common.check_species_cap(spec, LAW_ID)
         common.check_identities(spec, LAW_ID, tuple(s.identity for s in declaration.species))
         check_turnover_rows(spec, declaration)
+        common.registry.check_shared_rows(spec, LAW_ID)
         check_replaced_slots(spec, declaration)
         route_tables(declaration, schedule, spec)  # FR-26: a founder's change after its death.
 
@@ -1620,6 +1621,11 @@ class LocalSpeciesReactions(Operator):
     def species_identities(self, declaration):
         """The species identities it declares (registry/species_registry.py, D176)."""
         return tuple(s.identity for s in declaration.species)
+
+    def written_species(self, declaration):
+        """The species its routes write (a nonzero net coefficient at a node): the registry's
+        shared-row rule reads them (species_registry.check_shared_rows; FR-43 / D315)."""
+        return tuple(dict.fromkeys(name for name, _ in written(declaration)))
 
     def species_potentials(self, declaration):
         """Its declared mu°/RT of each reacting species at its c0 (core/species_registry.py,

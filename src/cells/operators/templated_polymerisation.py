@@ -1341,19 +1341,43 @@ def value_at(changes, time):
 # ------------------------------------------------------------------ definition checks
 
 
+def single_writer_rows(spec, declaration):
+    """The listed rows that keep this operator as their one writer beside a D152 network (FR-43 /
+    D315): its exported rows and its outside degradations' monomers (amendment T, §9.17), whose
+    moves the per-producer counters report, and the rows FR-42's label owner labels, whose moves
+    advance its shares. No stage plans a second writer's reports to either."""
+    out = {e.row for e in declaration.exports}
+    out |= {row for x in declaration.outside_degradations for row, _ in x.monomers}
+    owner = next((d for op, d, _ in composite_spec.entries(spec) if op.LABEL_OWNER), None)
+    if owner is not None:
+        from cells.operators import species_labels  # The label owner's derivation (amendment G).
+
+        out |= {s.id for s in species_labels.derived(spec, owner)[0].species if s.labels}
+    return out
+
+
 def check_writers(spec, declaration):
     """Refuse another writer of a listed row (one writer: the sheet's §4.5 and the design's §7.5):
-    another author's declaration of it, a D152 reaction writing it, and an in-step mover."""
+    another author's declaration of it and an in-step mover. A D152 network may write or declare a
+    listed row (FR-43 / D315: the two-writer rule of 19 November 2026, extended): both writers are
+    split parts whose half-steps, SSP of order three, run in declared order and book their own
+    moved amounts and the exact dG of their own moves from the state they receive, so the
+    composition is Strang's, second order; the row's standard potential has the species registry
+    as its one authority (species_registry.check_shared_rows). A labelled or exported row keeps
+    this operator as its one writer (single_writer_rows)."""
     listed = {s.id for s in declaration.species}
+    single = single_writer_rows(spec, declaration)
     for op, other, _ in composite_spec.entries(spec):
         if op.LAW_ID == LAW_ID:
             continue
         if op.LAW_ID == species_reactions.LAW_ID:
-            hit = sorted(name for name, _ in species_reactions.written(other) if name in listed)
+            hit = sorted(
+                name for name, _ in species_reactions.written(other) if name in listed & single
+            )
             if hit:
                 raise ConfigError(
-                    f"{LAW_ID}: a {op.LAW_ID} reaction writes {hit[0]!r}; this operator is the "
-                    "one writer of its listed rows (its transfers recharge them)"
+                    f"{LAW_ID}: a {op.LAW_ID} reaction writes {hit[0]!r}, a labelled or exported "
+                    "row, which keeps this operator as its one writer (FR-43 / D315)"
                 )
         elif op.IDENTITY_ROLE == "author":
             shared = sorted(listed & {s.id for s in op.species_identities(other)})
@@ -1370,6 +1394,7 @@ def check_writers(spec, declaration):
                 f"{LAW_ID}: {name!r} is moved inside the inner step by {movers[0]}; its writer is "
                 "this split part's half-steps only"
             )
+    species_registry.check_shared_rows(spec, LAW_ID)
     # Amendment T (§9.17.6): retention is the one-writer rule extended to the exported nodes.
     for name in sorted(
         {e.row for e in declaration.exports}
@@ -3070,6 +3095,11 @@ class TemplatedPolymerisation(Operator):
         """FR-42's pools (D296), one per release in release order: (release ID, its durable fate
         row, whose labels the hold carries, its cell)."""
         return tuple((r.id, r.fates[0][0], c.cell) for c, r in releases_of(declaration))
+
+    def written_species(self, declaration):
+        """Its listed rows, whose writer its half-steps are (check_writers): the registry's
+        shared-row rule reads them (species_registry.check_shared_rows; FR-43 / D315)."""
+        return tuple(s.id for s in declaration.species)
 
     def species_potentials(self, declaration):
         """Its declared mu°/RT of each listed species at its c0 (check_potentials: the registry's,

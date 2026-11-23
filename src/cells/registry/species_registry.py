@@ -669,6 +669,33 @@ def check_potentials(spec):
                 )
 
 
+def operator_written_rows(op, declaration):
+    """The species rows an operator's split half-steps write, for the shared-row rule: its
+    written_species hook, or none (an operator without the hook writes no shared row)."""
+    hook = getattr(op, "written_species", None)
+    return () if hook is None else tuple(hook(declaration))
+
+
+def check_shared_rows(spec, law):
+    """Refuse a species row that two operators write (the two-writer rule of 19 November 2026,
+    extended to the gene unit beside a D152 network by FR-43 / D315) when the species registry
+    gives no standard potential for it. Each writer books the exact dG of its own moves from its
+    own mu°/RT, so the row needs one authority for its potential, and check_potentials holds both
+    writers to the registry's value, but only where the registry gives one. One function, called
+    by every operator with writers and naming the caller, so no pairwise check is added (D176)."""
+    writers = {}
+    for op, declaration in _entries(spec):
+        for species in dict.fromkeys(operator_written_rows(op, declaration)):
+            writers.setdefault(species, []).append(op.LAW_ID)
+    for species, laws in writers.items():
+        if len(laws) > 1 and standard_potential(spec, species) is None:
+            raise ConfigError(
+                f"{law}: species {species!r} is written by {' and '.join(laws)}; a row that two "
+                "operators write needs its standard potential in the species registry, its one "
+                "authority (FR-43 / D315)"
+            )
+
+
 def declared_free_energies(spec):
     """Every reaction-level standard free energy the definition declares (seam E, module
     docstring): ((where, (FreeEnergyEntry, ...)), ...), each composite operator's in declared order
