@@ -723,7 +723,38 @@ def kinds_case(case):
     raise ValueError(case)
 
 
+def producer_case(case):
+    """FR-38's step-5 world with its producer derived (amendment G), changed to be refused."""
+    from tests.unit.test_neutral_labels_events import chase
+
+    raw = chase("derived")
+    owner = next(o for o in raw["model"]["operators"] if o["law"] == LAW)
+    producer = owner["species"][0]["producers"][0]
+    if case == "hand-written":
+        raw["experiment"]["label_arrivals"].append(
+            dict(species="R", source="tx", schedule=[dict(time=0.0, label="base")])
+        )
+    elif case == "unknown":
+        for entry in owner["species"]:
+            entry["producers"][0]["source"] = "nope"
+    else:
+        producer["windows"].append({"label": "late", "from": 600.0, "to": 1800.0})
+    return raw
+
+
 REFUSED = {
+    "a producer source's schedule written by hand (amendment G: one authority)": (
+        lambda: producer_case("hand-written"),
+        r"label_arrivals gives source tx's schedule by hand, and tx is a producer source",
+    ),
+    "a producer that is no source reporter's chain (amendment G)": (
+        lambda: producer_case("unknown"),
+        r"R's producer nope is no source reporter's chain at a cell",
+    ),
+    "a producer's windows overlapping (amendment G)": (
+        lambda: producer_case("overlap"),
+        r"producer tx's windows are distinct, inside the horizon, increasing and disjoint",
+    ),
     "a transporter changes its finite fuel at one end only (the kinds' hook)": (
         lambda: mover("fuel"),
         r"cells.transporter@1: transporter_0's mode cycle changes the labelled ATP at its N end "

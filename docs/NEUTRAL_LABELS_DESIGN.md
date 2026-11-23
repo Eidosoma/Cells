@@ -495,3 +495,33 @@ tests/unit/test_neutral_arrival_labels.py).
 
 **What moves:** no registered world, since worlds without labels keep their programs (crossrev and
 G1). Labelled worlds beside kinds, refused before, are admitted where the kinds report.
+
+## 12. Producer labels derived from the replacement events (amendment G, D307)
+
+TEMPLATED_POLYMERISATION_LAWS §9.20 chose option (a): the label owner derives each producer's label
+and schedule, so a schedule can no longer disagree with the events (operators/species_labels.py,
+`derived`).
+- **The declaration:** a species' entry names its chain sources, `producers: [{source, windows:
+  [{label, from, to}, ...]}]`. Window times are on the clock's grid inside the horizon, increasing
+  and disjoint.
+- **The derivation,** at the definition and on the host:
+  - the chain's cell comes from a source reporter's `label_sources`, and that cell's occupants from
+    replacement@1 (species_common.occupants), keyed by cell ID;
+  - the labels are `<cell>-g<k>-<chain>` for each generation k (the founder 0, then each newcomer
+    in event order) and `<cell>-g<k>-<chain>-<window>` for each window, after the species' own,
+    within MAX_LABELS;
+  - the source's schedule is the generation's label from its birth, its window's inside each
+    window, and the next generation's from the next event's step.
+- **One authority:** a hand-written schedule for a producer source is refused, and so is a producer
+  that is no source reporter's chain at a cell.
+- **Bitwise:** on FR-38's step-5 world the derived definition binds to a correct hand-written one's
+  types, initial state, layout and every control array bit for bit (tests/unit/
+  test_neutral_labels_events.py).
+- **Identity:** the definition keeps `producers`, not the derived labels. So a restart derives the
+  same, and so does a reordering of the cells, since names follow cell IDs and generations the
+  event order.
+- **A limit:** the derived label count follows a cell's replacement events, which the owner's batch
+  signature (declarations only) cannot read. A batch of worlds whose producer cells see different
+  event counts would differ in its label width.
+- **The gene unit's check** compares a release's two fate rows' declared labels. Each fate row
+  should declare the same producers, so their derived lists agree.
