@@ -5,9 +5,9 @@ the planted checkpoint, is the judge's (validation/fr49/judge_l.py).
 World L at dt = 2 s to 1260 s, checkpointed at 900 s, written and loaded, then resumed. That is two
 compiles: the labelled run and the resumed segment.
 
-Seconds and reason (D224): SECONDS on the timed lane, measured at landing. The resume is FR-49's own
-promise for labels beside a compartment, and it is split from test_fr49_world_l.py to keep each file
-under the tier cap.
+Seconds and reason (D224): 82.7 s on the timed lane, measured cold at a9ea8915. The resume is
+FR-49's own promise for labels beside a compartment, and it is split from test_fr49_world_l.py
+to keep each file under the tier cap.
 """
 
 from validation.fr49 import judge_l

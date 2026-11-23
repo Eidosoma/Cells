@@ -4,10 +4,10 @@ validation/fr49/REGISTRATION.md §3). L7, the restart, is test_fr49_world_l_resu
 World L (validation/fr49/worlds.py) at dt = 2 s to 1260 s covers the pulse [600, 1200) s. The runs
 are the labelled run and its unlabelled twin, two compiles.
 
-Seconds and reason (D224): SECONDS on the timed lane, measured at landing. This is the only compiled
-path through labels and expression beside a compartment. L4 and L5, the order and the size against
-the code-blind references, are the registered judgement (validation/fr49/judge_l.py), run once the
-references are tagged.
+Seconds and reason (D224): 77.7 s on the timed lane, measured cold at a9ea8915. This is the only
+compiled path through labels and expression beside a compartment. L4 and L5, the order and the
+size against the code-blind references, are the registered judgement
+(validation/fr49/judge_l.py), run once the references are tagged.
 """
 
 import numpy as np
