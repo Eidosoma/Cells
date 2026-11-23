@@ -1,6 +1,22 @@
 {
   "note": "Artifacts published from this folder. Update an artifact at its URL; do not create a second one for the same page.",
   "artifacts": {
+    "site": {
+      "title": "Cells",
+      "url": "https://cells.eidosoma.ai/",
+      "versions": [
+        {
+          "id": "v58",
+          "date": "2026-11-23",
+          "previous": "v53",
+          "viewer_revision": "8b10114489cb5fbdb5ebba0862b96f3a7e53f0ba",
+          "engine_revision": "cbe54031",
+          "staging": "https://cells.eidosoma.ai/r/v58/",
+          "manifest": "https://cells.eidosoma.ai/r/v58/release.json",
+          "note": "The Laws star atlas and vesicle replays are live. All 93 site checks passed. The public homepage matched the staged root page byte for byte, and all 15 Laws checks passed at both desktop and phone widths."
+        }
+      ]
+    },
     "architecture": {
       "title": "Cells",
       "url": "https://claude.ai/artifact/1TrHm1XwUFJvBojB4u6yko",

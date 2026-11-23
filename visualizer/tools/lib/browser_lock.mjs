@@ -27,7 +27,8 @@ import { ROOT } from "./build_page.mjs";
 const SHARED = "/mnt/workspaces/Cells/visualizer-worktrees";
 export const PLACES_HOME = process.env.CELLS_BROWSER_PLACES || (existsSync(SHARED) ? path.join(SHARED, ".browser-places") : path.join(ROOT, "out"));
 const LOCK = path.join(PLACES_HOME, ".browser.lock"); // place n is this folder's name with ".n" after it
-const PROFILES = path.join(ROOT, "out", ".browser-profiles");
+// A separate disk can hold the browser profiles while every checkout still shares the same CPU slots.
+const PROFILES = path.join(process.env.CELLS_BROWSER_PROFILE_HOME || path.join(ROOT, "out"), ".browser-profiles");
 const gone = (folder) => {
   try {
     rmSync(folder, { recursive: true, force: true, maxRetries: 8, retryDelay: 250 });

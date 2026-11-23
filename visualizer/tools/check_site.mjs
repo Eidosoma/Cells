@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // The site's acceptance check (docs/HOSTING_AND_API.md, section 10): a visit to a release asks no host but the site's own.
 //
-//   node tools/check_site.mjs --site SITE [--id v49] [--out DIR]
+//   node tools/check_site.mjs --site SITE [--id v49] [--out DIR] [--no-pictures]
 //
 // SITE is a site folder as tools/stage_site.mjs writes it (SITE/r/<id>/, and SITE/index.html, the pointer, once one is
 // moved). The check comes before the pointer moves: the root page is served from r/<id>/root.html, which --release
@@ -33,7 +33,8 @@
 //     reached by a Tab press; once the page has drawn, cover and text are both put away. Where less motion is asked for
 //     the ring does not turn. On a line slow enough that the page cannot draw in COVER_WAIT seconds, the cover lets the
 //     About words through at that time (its links pressed and reached), and when the page then draws, both are put away.
-//     Pictures of each look go to DIR/pictures (the root page also on a phone of 360 px, and with script off);
+//     Pictures of each look go to DIR/pictures (the root page also on a phone of 360 px, and with script off).
+//     --no-pictures keeps every check and clock threshold when a software screenshot stalls the next sample.
 //   - the root files, served as --release will put them at the root (the release's own, before the pointer moves):
 //     robots.txt lets every reader read everything and never closes /r/, and names the sitemap; the sitemap lists the
 //     root; llms.txt names the release's files, its cards, the contracts and the source.
@@ -55,6 +56,7 @@ import { COMPRESSIBLE, COVER_WAIT, ROOT_FILES, SHARE, SHARE_SIZE, SITE, contentT
 const CREDIT = JSON.parse(await readFile(path.join(ROOT, "data", "site", "about.json"), "utf8")).credit; // what names anyone
 
 const args = process.argv.slice(2);
+const savePictures = !args.includes("--no-pictures");
 const value = (name, fallback) => (args.includes(name) ? args[args.indexOf(name) + 1] : fallback);
 const SITE_DIR = value("--site") ? path.resolve(value("--site")) : null;
 if (!SITE_DIR || !existsSync(path.join(SITE_DIR, "r"))) {
@@ -193,7 +195,7 @@ const chrome = spawn(
   ["--headless=new", `--user-data-dir=${release.profile}`, "--disable-breakpad", "--no-first-run", "--no-sandbox", "--mute-audio", "--hide-scrollbars", "--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader", `--window-size=${WIDTH},${HEIGHT}`, "--remote-debugging-port=0", "about:blank"],
   { stdio: ["ignore", "ignore", "pipe"] }
 );
-const record = { format: "cells.visualizer.site_check@1", site: path.basename(SITE_DIR), release: ID, policy: sitePolicy(), said, visits: [], text: [] };
+const record = { format: "cells.visualizer.site_check@1", site: path.basename(SITE_DIR), release: ID, pictures: savePictures, policy: sitePolicy(), said, visits: [], text: [] };
 let failed = null, socket = null;
 try {
   const endpoint = await new Promise((resolve, reject) => {
@@ -353,8 +355,9 @@ try {
   check("a link that names only a part keeps its selection when its tab opens", await evaluate(`${V}.state.lens === "engine" && ${V}.state.selected === new URL(location.href).searchParams.get("select") && ${V}.state.selected === ${JSON.stringify(part)}`));
   // ---------------------------------------------------------------- the cover while the page loads
   const pictures = path.join(OUT, "pictures");
-  await mkdir(pictures, { recursive: true });
+  if (savePictures) await mkdir(pictures, { recursive: true });
   const picture = async (name) => {
+    if (!savePictures) return;
     const shot = await tab("Page.captureScreenshot", { format: "png" }).catch(() => null);
     if (shot?.data) await writeFile(path.join(pictures, `${name}.png`), Buffer.from(shot.data, "base64"));
   };
