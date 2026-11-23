@@ -192,3 +192,23 @@ Every file's `method.second[...].difference_from_primary` gives e per quantity, 
 - Radau at 1e-12 agrees with the primary to 9.1e-12 or better.
 - One sign change of J_C is found in each case: at t = 0.047963 s in the sink and 0.047978 s in the
   source. The three methods place it within 4.1e-14 s of each other.
+
+| Case | Primary steps | Second method: largest e (quantity) | Identities: largest residual |
+| --- | --- | --- | --- |
+| C2.6-swelling-cell | 2675 | DOP853 1e-13: 2.0e-14 (`water_heat_pJ`); Radau 1e-12: 1.9e-14 (`bath_water_work_pJ`) | energy 7.7e-15 of scale |
+
+**C2.6 and C2.7's stated accuracy: e ≤ 2.0e-14 for every quantity.**
+- The figures:
+  - n_A, n_B: 2.8e-15;
+  - n_C: 5.4e-15;
+  - V: 9.4e-15;
+  - F: 2.4e-15;
+  - water's heat: 2.0e-14;
+  - the bath's work: 1.9e-14;
+  - the network's heat: 1.7e-14.
+- This problem is not stiff, so the explicit DOP853 at 1e-13 is an independent check.
+- C2.7's endpoint identity, F + U − F₀ − U₀ = work − heat, closes to 1.4e-11 pJ on every row. That
+  is 7.7e-15 of the energy scale, 1865 pJ.
+- V grows from 1 to 2.504 pL.
+- The passive route reverses between t = 16 and 16.5 s: the dilution shifts A + B ⇌ C back towards
+  A and B.
