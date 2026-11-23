@@ -4505,7 +4505,7 @@
           "fr38-producer-checkpoint",
           "fr38-producer-public-admission"
         ],
-        "result": "All 14 development-fixture checks passed on public Cells at fd2bb88c. The separate registered FR-38 comparison failed R1 and found R2 inconclusive (D313). At the checkpoint, 1.0534 × 10⁻²⁶ fmol of founder RNA was inside the new cell after 1.1173 × 10⁻²⁶ fmol had returned. The combined durable RNA inventory closed within 6.01 × 10⁻²³ fmol. Exchanging two outside labels kept total RNA identical and misplaced 8.114 × 10⁻⁹ fmol. The reader detected it. The three standard retention outputs had finite bounds. Sparse-grid behavior is recorded separately."
+        "result": "All 14 development-fixture checks passed on public Cells at fd2bb88c. The separate registered FR-38 comparison failed R1 and found R2 inconclusive (D313). The non-blind follow-up traced route 1 to gross cohort loss in the engine and net loss in the reference (D316). At the checkpoint, 1.0534 × 10⁻²⁶ fmol of founder RNA was inside the new cell after 1.1173 × 10⁻²⁶ fmol had returned. The combined durable RNA inventory closed within 6.01 × 10⁻²³ fmol. Exchanging two outside labels kept total RNA identical and misplaced 8.114 × 10⁻⁹ fmol. The reader detected it. The three standard retention outputs had finite bounds. Sparse-grid behavior is recorded separately."
       },
       "biology": {
         "status": "open",
