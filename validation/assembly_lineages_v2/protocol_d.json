@@ -1,0 +1,825 @@
+{
+ "kind": "cells.ol6.protocol_d@1",
+ "status": "proposed for registration: tag ol6-protocol-d-registered-2026-11-23, before any comparison of cells.rate_equations@1 with exact events; D7 held for the lead's choice (the protocol's \u00a77), by an amendment tagged before it runs",
+ "document": "docs/OL6_PROTOCOL_D.md",
+ "engine_models": {
+  "representation": [
+   "cells.rate_equations@1",
+   "cells.assembly_representation@1",
+   "rosenbrock_rodas4_dense@1"
+  ],
+  "exact": [
+   "cells.assembly_lineages@2"
+  ],
+  "worlds": {
+   "D0": [
+    "cells.stochastic_mass_action@1",
+    "cells.ideal_mixing@1"
+   ],
+   "D1": [
+    "cells.stochastic_mass_action@1",
+    "cells.ideal_mixing@1"
+   ],
+   "D2": [
+    "cells.stochastic_mass_action@1",
+    "cells.ideal_mixing@1",
+    "cells.transition_state_factor@1"
+   ],
+   "D3": [
+    "cells.stochastic_mass_action@1",
+    "cells.ideal_mixing@1",
+    "cells.regular_mixing@1"
+   ],
+   "D4": [
+    "cells.bilayer_geometry@1",
+    "cells.phase_exchange@1",
+    "cells.osmotic_lumen@1",
+    "cells.ideal_mixing@1",
+    "cells.membrane_permeation@1"
+   ],
+   "D5": [
+    "cells.bilayer_geometry@1",
+    "cells.phase_exchange@1",
+    "cells.osmotic_lumen@1",
+    "cells.ideal_mixing@1",
+    "cells.shared_pool@1"
+   ],
+   "D6": [
+    "cells.bilayer_geometry@1",
+    "cells.phase_exchange@1",
+    "cells.osmotic_lumen@1",
+    "cells.ideal_mixing@1",
+    "cells.shear_fission@1"
+   ],
+   "D7": [
+    "cells.bilayer_geometry@1",
+    "cells.phase_exchange@1",
+    "cells.osmotic_lumen@1",
+    "cells.ideal_mixing@1",
+    "cells.membrane_permeation@1",
+    "cells.pore_nucleation@1"
+   ]
+  }
+ },
+ "not_blind": "the note's probes P2b and P2c (arithmetic identities) and P4 (D0's exact stationary mean against the rate-equation fixed point, closed form, 2.0% at T = 12) were read; the parity item of the limit's check (the builders' tests) compares each limit with its exact kernel at scaled states; S3's clock table (STATE.md); the author ran cells.rate_equations@1 alone at snapshot 8df9b012 to size every world (seed 1; D7 also seeds 1-12) and to compute the plants' effects; no exact-event run of any registered world was made, and exact definitions were parsed only",
+ "constants": {
+  "ladder": {
+   "rungs": {
+    "density": [
+     1000,
+     4000,
+     16000,
+     64000
+    ],
+    "vesicle": [
+     25.0,
+     50.0,
+     100.0
+    ]
+   },
+   "replicas": {
+    "density": 256,
+    "vesicle": 128,
+    "D0": 256
+   },
+   "seeds": {
+    "first": 1,
+    "retry": 100001,
+    "rule": "seeds base .. base + M - 1, environment 0, lineage 0, branch 0"
+   }
+  },
+  "envelope": {
+   "min_count": 10.0,
+   "provenance": "Protocol D's qualification runs"
+  },
+  "integrators": {
+   "density": {
+    "id": "rosenbrock_rodas4_dense@1",
+    "rtol": 1e-10,
+    "atol_count": 1e-06,
+    "step_limit": 1000000
+   },
+   "vesicle": {
+    "id": "rosenbrock_rodas4_dense@1",
+    "rtol": 1e-12,
+    "atol_count": 1e-09,
+    "step_limit": 1000000
+   }
+  },
+  "exact": {
+   "chunk_events": 4096,
+   "event_limit": 2147483647
+  },
+  "worlds": {
+   "D0": {
+    "T": 12,
+    "X": 12.0,
+    "mu_B": -1.3862943611198906,
+    "k_f": 1.0,
+    "founder": {
+     "A": 4,
+     "B": 4
+    },
+    "times": [
+     5.0,
+     10.0,
+     15.0,
+     20.0,
+     25.0,
+     30.0,
+     35.0,
+     40.0
+    ]
+   },
+   "D1": {
+    "mu": {
+     "A": 0.0,
+     "B": 0.0,
+     "C": -0.4054651081081644,
+     "D": 0.24686007793152578
+    },
+    "k": {
+     "ab": 2.0,
+     "aa": 1.0
+    },
+    "founder": {
+     "A": 0.5,
+     "B": 0.3,
+     "C": 0.1,
+     "D": 0.1
+    },
+    "times": [
+     0.25,
+     0.5,
+     0.75,
+     1.0,
+     1.5,
+     2.0,
+     3.0,
+     4.0
+    ]
+   },
+   "D2": {
+    "K": [
+     2.0,
+     1.5,
+     1.0,
+     3.0
+    ],
+    "K_rho": [
+     0.5,
+     0.4,
+     0.35,
+     0.25
+    ],
+    "kb": [
+     1.0,
+     0.8,
+     1.2,
+     1.0
+    ],
+    "mu_C": -0.6931471805599453,
+    "k_dimer": 2.0,
+    "beta_seed": 20261124,
+    "founder": [
+     0.3,
+     0.25,
+     0.25,
+     0.1,
+     0.1
+    ],
+    "times": null,
+    "beta": [
+     [
+      6.0369346781125595,
+      5.763147578151169e-05,
+      0.017079697140113276,
+      0.0005662384917712453
+     ],
+     [
+      7.522961024600889,
+      0.00039625048435529465,
+      1.0190804498082513,
+      0.003535731506368359
+     ],
+     [
+      17.537496402298046,
+      0.009066575755974133,
+      0.002026278811936629,
+      0.00029797841977783176
+     ],
+     [
+      0.04323389586800487,
+      7.114167108646446e-05,
+      0.00012296523571850437,
+      0.0014051535311998859
+     ]
+    ]
+   },
+   "D3": {
+    "mu_bil": [
+     -1.0,
+     -0.5,
+     -0.75
+    ],
+    "k": [
+     3.0,
+     2.0,
+     2.0
+    ],
+    "chi": [
+     [
+      0,
+      1,
+      1.5
+     ],
+     [
+      1,
+      2,
+      -1.5
+     ]
+    ],
+    "pool": [
+     0.4,
+     0.3,
+     0.3
+    ],
+    "membrane": [
+     0.1,
+     0.2,
+     0.1
+    ],
+    "times": [
+     0.25,
+     0.5,
+     0.75,
+     1.0,
+     1.5,
+     2.0,
+     3.0,
+     4.0
+    ]
+   },
+   "vesicles": {
+    "Q_m2": 1e-20,
+    "K_L": 30,
+    "c_ext_mM": 300.0,
+    "mu_bil_L": -9.43,
+    "closure_kT": 25.0,
+    "floor_fraction": 0.05
+   },
+   "D4": {
+    "x0": 0.9,
+    "c_ext_mM": 600.0,
+    "S_held_mM": 480.0,
+    "S_lumen_fraction": 0.1,
+    "P_m_per_s": 1e-08,
+    "insertion_m_per_s": 6.7e-07,
+    "sigma_max": 0.003,
+    "times": null
+   },
+   "D5": {
+    "x0": [
+     1.43,
+     0.85
+    ],
+    "pool_fraction": 0.02,
+    "insertion_m_per_s": 2e-06,
+    "sigma_max": 0.02,
+    "times": null
+   },
+   "D6": {
+    "x0": 0.6,
+    "pool_fraction": 0.02,
+    "insertion_m_per_s": 2e-06,
+    "shear_s": 1.0,
+    "sigma_max": 0.02,
+    "horizon_s": 3.0,
+    "times": [
+     0.25,
+     0.5,
+     0.75,
+     1.25,
+     1.5,
+     2.0,
+     2.5,
+     3.0
+    ]
+   },
+   "D7": {
+    "log_c": 34.0,
+    "gamma_N": 4.5e-12,
+    "E_A_J_per_mol": 27000.0,
+    "eta_298_Pa_s_m": 3e-10
+   },
+   "PD5": {
+    "n_mem": 20000,
+    "sigma": 0.0075,
+    "start_s": 0.5,
+    "end_s": 8.0,
+    "gamma_N": 1.1e-11,
+    "log_c": 34.0,
+    "q": 1e-19,
+    "k_l": 60
+   }
+  },
+  "times": {
+   "D2": {
+    "1000": [
+     0.05,
+     0.1,
+     0.15,
+     0.2,
+     0.25,
+     0.3,
+     0.35,
+     0.4
+    ],
+    "4000": [
+     0.05,
+     0.1,
+     0.15,
+     0.2,
+     0.25,
+     0.3,
+     0.35,
+     0.4
+    ],
+    "16000": [
+     0.05,
+     0.1,
+     0.15,
+     0.2,
+     0.25,
+     0.3,
+     0.35,
+     0.4
+    ],
+    "64000": [
+     0.05,
+     0.1,
+     0.15,
+     0.2,
+     0.25,
+     0.3,
+     0.35,
+     0.4
+    ]
+   },
+   "D4": {
+    "25.0": [
+     0.0195,
+     0.039,
+     0.0585,
+     0.10864,
+     0.15228,
+     0.19592,
+     0.23956,
+     0.2832
+    ],
+    "50.0": [
+     0.039,
+     0.078,
+     0.117,
+     0.1616,
+     0.1932,
+     0.2248,
+     0.2564,
+     0.288
+    ],
+    "100.0": [
+     0.078,
+     0.156,
+     0.234,
+     0.28183,
+     0.30366,
+     0.32549,
+     0.34732,
+     0.36915
+    ]
+   },
+   "D5": {
+    "25.0": [
+     7.5,
+     15.0,
+     22.5,
+     30.0,
+     37.5,
+     45.0,
+     52.5,
+     60.0
+    ],
+    "50.0": [
+     7.5,
+     15.0,
+     22.5,
+     30.0,
+     37.5,
+     45.0,
+     52.5,
+     60.0
+    ],
+    "100.0": [
+     7.5,
+     15.0,
+     22.5,
+     30.0,
+     37.5,
+     45.0,
+     52.5,
+     60.0
+    ]
+   },
+   "D7": {
+    "25.0": [],
+    "50.0": [],
+    "100.0": []
+   }
+  },
+  "horizons": {
+   "D4": {
+    "25.0": 0.7552,
+    "50.0": 0.768,
+    "100.0": 0.9844
+   },
+   "D7": {
+    "25.0": 0.7552,
+    "50.0": 0.768,
+    "100.0": 0.9844
+   }
+  },
+  "sized_vesicle_kink_and_lysis_s": {
+   "25.0": [
+    0.065,
+    0.3776
+   ],
+   "50.0": [
+    0.13,
+    0.384
+   ],
+   "100.0": [
+    0.26,
+    0.4922
+   ]
+  },
+  "criteria": {
+   "z_star": 4.5,
+   "z_fail": 6.0,
+   "slope": {
+    "centre": -0.5,
+    "half_width": 0.1
+   },
+   "b": 2.0,
+   "c_r": 5.0,
+   "spread_quantile": 0.99,
+   "e_ratio": 0.75,
+   "moiety_rtol": 1e-12
+  },
+  "plants": [
+   "P-D1",
+   "P-D2",
+   "P-D3",
+   "P-D4",
+   "P-D5",
+   "P-D6",
+   "P-D7"
+  ]
+ },
+ "pd1_closed_form": {
+  "p_n_A": {
+   "12": 4.131504250093731e-05,
+   "10": 0.0018178618700412392,
+   "8": 0.0272679280506186,
+   "6": 0.1696671078705154,
+   "4": 0.42416776967628966,
+   "2": 0.33933421574103084,
+   "0": 0.0377038017490034
+  },
+  "fixed_point_n_A": 3.5584219849035215,
+  "exact_mean_n_A": 3.630159981025685,
+  "p_n_A_at_least_8": 0.029127104963160778,
+  "deviation_reached_at_1_percent": 1.1103945037741196,
+  "budget_at_smallest_n_min": 0.5076730825668095
+ },
+ "plant_power_d_alone": {
+  "P-D3": {
+   "effect": 0.09527618306882775,
+   "budget": 0.003828125
+  },
+  "P-D2 (check off)": {
+   "effect": 0.20764924410295305,
+   "budget": 0.003828125
+  },
+  "P-D2 (check on)": "refused: cells.rate_equations@1: the limit's check fails: the factored flux is not the products' law (largest",
+  "P-D4 25.0": {
+   "t_star": 0.37756336190292217,
+   "planted_t_star": 0.1917449188966442
+  },
+  "P-D4 50.0": {
+   "t_star": 0.38395877247942706,
+   "planted_t_star": 0.2459918764157638
+  },
+  "P-D4 100.0": {
+   "t_star": 0.49220405605104994,
+   "planted_t_star": 0.3695618519837699
+  },
+  "P-D6": "refused: cells.rate_equations@1: the ledger did not close: {'free_energy_kT': [-2184.1429531942263, -2207.948277839303, -2211.674",
+  "P-D7": {
+   "caught": true
+  },
+  "P-D5": {
+   "honest_gap_over_tolerance": 1.4312020092382197e-07,
+   "planted_gap_over_tolerance": "inf",
+   "planted_status": "stalled"
+  }
+ },
+ "clock_d_alone": {
+  "clock_ratio_1e-12_30,34.json": [
+   {
+    "log_c": 30.0,
+    "rung": 25.0,
+    "rtol": 1e-12,
+    "seeds": 4,
+    "causes": {
+     "pore": 2,
+     "threshold": 2
+    },
+    "steps": 2715,
+    "largest_estimate": 8.968497604309683e-11,
+    "largest_(estimate-1e-10)/dH": 0.0
+   },
+   {
+    "log_c": 30.0,
+    "rung": 50.0,
+    "rtol": 1e-12,
+    "seeds": 4,
+    "causes": {
+     "pore": 2,
+     "threshold": 2
+    },
+    "steps": 2523,
+    "largest_estimate": 5.101308705933119e-10,
+    "largest_(estimate-1e-10)/dH": 1.4489820508843303e-06
+   },
+   {
+    "log_c": 30.0,
+    "rung": 100.0,
+    "rtol": 1e-12,
+    "seeds": 4,
+    "causes": {
+     "pore": 2,
+     "threshold": 2
+    },
+    "steps": 2236,
+    "largest_estimate": 3.965980578745079e-09,
+    "largest_(estimate-1e-10)/dH": 5.748714571329781e-05
+   },
+   {
+    "log_c": 34.0,
+    "rung": 25.0,
+    "rtol": 1e-12,
+    "seeds": 4,
+    "causes": {
+     "pore": 4
+    },
+    "steps": 2259,
+    "largest_estimate": 4.896635313582519e-09,
+    "largest_(estimate-1e-10)/dH": 4.04169943207184e-06
+   },
+   {
+    "log_c": 34.0,
+    "rung": 50.0,
+    "rtol": 1e-12,
+    "seeds": 4,
+    "causes": {
+     "pore": 4
+    },
+    "steps": 2230,
+    "largest_estimate": 2.7788802734994064e-08,
+    "largest_(estimate-1e-10)/dH": 3.371159317169435e-05
+   },
+   {
+    "log_c": 34.0,
+    "rung": 100.0,
+    "rtol": 1e-12,
+    "seeds": 4,
+    "causes": {
+     "pore": 4
+    },
+    "steps": 2061,
+    "largest_estimate": 2.1595754851860964e-07,
+    "largest_(estimate-1e-10)/dH": 0.000528544336197881
+   }
+  ],
+  "clock_ratio_1e-12_34_seeds128_rungs100.json": [
+   {
+    "log_c": 34.0,
+    "rung": 100.0,
+    "rtol": 1e-12,
+    "seeds": 128,
+    "causes": {
+     "pore": 128
+    },
+    "steps": 65766,
+    "largest_estimate": 2.165352025606121e-07,
+    "largest_(estimate-1e-10)/dH": 0.000528544336197881
+   }
+  ],
+  "clock_ratio_1e-12_34_seeds128_rungs25,50.json": [
+   {
+    "log_c": 34.0,
+    "rung": 25.0,
+    "rtol": 1e-12,
+    "seeds": 128,
+    "causes": {
+     "pore": 128
+    },
+    "steps": 71851,
+    "largest_estimate": 4.896635313582519e-09,
+    "largest_(estimate-1e-10)/dH": 4.04169943207184e-06
+   },
+   {
+    "log_c": 34.0,
+    "rung": 50.0,
+    "rtol": 1e-12,
+    "seeds": 128,
+    "causes": {
+     "pore": 128
+    },
+    "steps": 71047,
+    "largest_estimate": 2.7852203912271582e-08,
+    "largest_(estimate-1e-10)/dH": 3.371159317169435e-05
+   }
+  ],
+  "clock_tstar_convergence.json": [
+   {
+    "rung": 25.0,
+    "seed": 1,
+    "t_1e-12": 0.22777132390809188,
+    "t_1e-13": 0.22777132379660314,
+    "relative_difference": 4.894766077326499e-10
+   },
+   {
+    "rung": 25.0,
+    "seed": 2,
+    "t_1e-12": 0.2732489141085211,
+    "t_1e-13": 0.2732489141088069,
+    "relative_difference": 1.0460313030774977e-12
+   },
+   {
+    "rung": 25.0,
+    "seed": 3,
+    "t_1e-12": 0.21657748993108525,
+    "t_1e-13": 0.21657748981408115,
+    "relative_difference": 5.402412824754327e-10
+   },
+   {
+    "rung": 25.0,
+    "seed": 4,
+    "t_1e-12": 0.2598524342023239,
+    "t_1e-13": 0.25985243420880194,
+    "relative_difference": 2.492968882939137e-11
+   },
+   {
+    "rung": 25.0,
+    "seed": 5,
+    "t_1e-12": 0.24844771026483378,
+    "t_1e-13": 0.2484477102787266,
+    "relative_difference": 5.5918532371307203e-11
+   },
+   {
+    "rung": 25.0,
+    "seed": 6,
+    "t_1e-12": 0.2965319296735054,
+    "t_1e-13": 0.29653192966493924,
+    "relative_difference": 2.88877754270155e-11
+   },
+   {
+    "rung": 50.0,
+    "seed": 1,
+    "t_1e-12": 0.27873678651772055,
+    "t_1e-13": 0.27873678638420907,
+    "relative_difference": 4.789876549184739e-10
+   },
+   {
+    "rung": 50.0,
+    "seed": 2,
+    "t_1e-12": 0.3168460945365861,
+    "t_1e-13": 0.31684609441615313,
+    "relative_difference": 3.8009918228348944e-10
+   },
+   {
+    "rung": 50.0,
+    "seed": 3,
+    "t_1e-12": 0.26913699365211474,
+    "t_1e-13": 0.2691369931694962,
+    "relative_difference": 1.7932078030096958e-09
+   },
+   {
+    "rung": 50.0,
+    "seed": 4,
+    "t_1e-12": 0.3057647135356111,
+    "t_1e-13": 0.30576471353207463,
+    "relative_difference": 1.1565915735135244e-11
+   },
+   {
+    "rung": 50.0,
+    "seed": 5,
+    "t_1e-12": 0.2962369722905254,
+    "t_1e-13": 0.29623697233051965,
+    "relative_difference": 1.3500755775097558e-10
+   },
+   {
+    "rung": 50.0,
+    "seed": 6,
+    "t_1e-12": 0.3358300132180295,
+    "t_1e-13": 0.33583001319309824,
+    "relative_difference": 7.423779377619173e-11
+   },
+   {
+    "rung": 100.0,
+    "seed": 1,
+    "t_1e-12": 0.40091110370973004,
+    "t_1e-13": 0.40091110081593967,
+    "relative_difference": 7.218035040942512e-09
+   },
+   {
+    "rung": 100.0,
+    "seed": 2,
+    "t_1e-12": 0.4361809394075071,
+    "t_1e-13": 0.4361809395994816,
+    "relative_difference": 4.401259430231978e-10
+   },
+   {
+    "rung": 100.0,
+    "seed": 3,
+    "t_1e-12": 0.39194632957647685,
+    "t_1e-13": 0.391946325391799,
+    "relative_difference": 1.0676660438892224e-08
+   },
+   {
+    "rung": 100.0,
+    "seed": 4,
+    "t_1e-12": 0.42597636061150335,
+    "t_1e-13": 0.4259763592681567,
+    "relative_difference": 3.153570912815783e-09
+   },
+   {
+    "rung": 100.0,
+    "seed": 5,
+    "t_1e-12": 0.41716935994448034,
+    "t_1e-13": 0.41716936025534285,
+    "relative_difference": 7.451709833529504e-10
+   },
+   {
+    "rung": 100.0,
+    "seed": 6,
+    "t_1e-12": 0.453568908221259,
+    "t_1e-13": 0.4535689077854665,
+    "relative_difference": 9.60807731100396e-10
+   }
+  ],
+  "clock_h_at_max.json": {
+   "what": "D7 in cells.rate_equations@1 alone, measure only: the pore clock H on rows at 0.9, 0.99 and 0.999 t*_D4 with every domain-7 threshold E patched out of reach (pore_clock.threshold returning E = 1e9, so no opening), ln(A nu_A) = 34, seed 1, rtol 1e-12, the bound disabled (H_ERROR = 1e300); printed by clock_h_at_max.py (34) and recorded here verbatim",
+   "patched": "pore_clock.threshold's value (E) and rate_equations.H_ERROR, in the measuring process only",
+   "rows": {
+    "25.0": {
+     "H_at_rows": [
+      18.166163167517052,
+      35.63869171093335,
+      37.856975792918746
+     ],
+     "rows_s": [
+      0.33984,
+      0.373824,
+      0.3772224
+     ]
+    },
+    "50.0": {
+     "H_at_rows": [
+      8.507172483081874,
+      23.76222759737042,
+      25.985720011704956
+     ],
+     "rows_s": [
+      0.3456,
+      0.38016,
+      0.383616
+     ]
+    },
+    "100.0": {
+     "H_at_rows": [
+      3.8654744391681994,
+      19.60359690360359,
+      22.393303955262002
+     ],
+     "rows_s": [
+      0.44298000000000004,
+      0.48727800000000004,
+      0.49170780000000003
+     ]
+    }
+   }
+  }
+ }
+}
