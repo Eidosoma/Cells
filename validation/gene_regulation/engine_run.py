@@ -34,9 +34,9 @@ polymer is made by transcription or translation; a transfer is recharging (rc).
 Run: PYTHONPATH=src:. JAX_ENABLE_X64=1 python -m validation.gene_regulation.engine_run
 [--worlds NAME ... | all | release | release2] [--sets LABEL ...] [--dt S] [--end S] --out DIR.
 "release" is R1's runs (worlds.release_names(), FR-38), at dt worlds.R1_DT; "release2" is R2's,
-its development check's and A1, at A1's 0.5 s; "switch" is R1S's (worlds.r1s) and its unlabelled twin R1SU's, at R1's dt. All
-export the release's readouts: the
-hold H_<release>, its releases int_Q_<release>_<fate>, each fate's class total n_<release>_<fate>
+its development check's and A1, at A1's 0.5 s; "switch" is R1S's (worlds.r1s) and its unlabelled
+twin R1SU's, at R1's dt. All export the release's readouts: the hold H_<release>, its releases
+int_Q_<release>_<fate>, each fate's class total n_<release>_<fate>
 and its heat class H_rel_<release>_<fate>, and the hold's term in G_minus_G0 (the sheet's §9).
 
 A world that declares FR-42's labels (neutral_arrival_labels@1, D289) also exports each labelled
@@ -44,8 +44,8 @@ row's amount carrying each of its labels at the exported cell, label_<row>_<labe
 amount times the label's share, keyed by the species' and label's IDs; and each release's hold by
 the labels of its durable fate row, label_H_<release>_<label>, the hold times its share in the
 label owner's pool (D296). In R1L label_R_cohort and label_R_s_cohort are §9.8's route 1 on shares
-(erratum C), the window's releases still present, with no blank. A label never changes a physical
-readout.
+(errata C and F), the window's releases still present, marked on transcription's own label
+schedule, with no blank. A label never changes a physical readout.
 """
 
 import argparse
