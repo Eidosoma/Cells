@@ -180,7 +180,9 @@ def search_rule():
         convergence="the final bracket's two ends rerun at half their step (C)",
         retry="if C fails, the whole search once more at half the step rule, with its own C at a "
         "quarter; if that C fails too, the geometry is inconclusive. A run the harness stops is "
-        "rerun once from the same snapshot; an engine refusal is a result",
+        "rerun once from the same snapshot; an engine refusal is a result. neither.py's search "
+        "has no step option yet: a retry needs a tagged amendment adding it before it runs "
+        "(D308)",
     )
 
 
@@ -212,7 +214,7 @@ def rule():
             "C passed; inconclusive if the outcomes are not monotone or C fails after its retry; "
             "else passed",
             overall="any failed geometry makes it failed; else any inconclusive makes it "
-            "inconclusive; else passed (D308)",
+            "inconclusive; else any not assessable makes it not assessable; else passed (D308)",
             no_ratio_alone="no ratio of thresholds judges (D219)",
         ),
         plants=plant_rows(),
@@ -249,7 +251,11 @@ def not_blind():
             "lay between 9.0e-16 and 1.8e-15; field-parse-01, a parse with no integration; and "
             "the cost probe field-cost-01: D = 1e-13 for 1.5 s and D = 0 for 16 s, where every "
             "tumor cell was still mesenchymal and every healthy cell epithelial (589 of 625), "
-            "which cannot show a threshold"
+            "which cannot show a threshold; the smokes probes/smoke-registered-01 (a field point, "
+            "D = 1e-13 for 0.25 s; a field search and a line search at 0.25 s and 2 s, each "
+            "stopped at its upper end); and the pinned BITSEY field run's first five outcomes (D "
+            "= 0 not normalized; 1e-13, 5e-14, 2.5e-14 and 1.25e-14 normalized), as in the "
+            "historical log"
         ),
     )
 

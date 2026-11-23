@@ -161,6 +161,8 @@ assessable; else it is passed.
 **The retry.**
 - If C fails, the whole search runs once more at half the step rule, with its own C at a quarter.
   If that C fails too, the geometry is inconclusive.
+  - **The tagged driver cannot make it yet:** `neither.py`'s search has no step option.
+  - A retry therefore needs a tagged amendment, before it runs, that adds that option (D308).
 - A run that the harness stops (memory, runtime limit, machine fault) is rerun once from the same
   snapshot.
 - An engine refusal is a result, never rerun.

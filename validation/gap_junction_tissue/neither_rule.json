@@ -102,14 +102,14 @@
   "placement": "one point per CPU; the first points are the bracket's ends and dyadic points 1e-13/2^k, k from 1 on the line and from 4 on the field (the largest that runs at the base step, neither.first_points); then each finished worker takes a new point inside the current bracket (neither.place)",
   "step": "per point, dt = 1/8 s halved until dt x 2 x neighbours x G/V <= 0.04 (neither.step); stage 1 at the shape's finest coupled step (1/64 s on the line, 1/128 s on the field)",
   "convergence": "the final bracket's two ends rerun at half their step (C)",
-  "retry": "if C fails, the whole search once more at half the step rule, with its own C at a quarter; if that C fails too, the geometry is inconclusive. A run the harness stops is rerun once from the same snapshot; an engine refusal is a result"
+  "retry": "if C fails, the whole search once more at half the step rule, with its own C at a quarter; if that C fails too, the geometry is inconclusive. A run the harness stops is rerun once from the same snapshot; an engine refusal is a result. neither.py's search has no step option yet: a retry needs a tagged amendment adding it before it runs (D308)"
  },
  "verdicts": {
   "R": "refinement: converged, no refused point, monotone, both ends as required",
   "C": "the final bracket's ends keep their outcomes at half their step",
   "A": "Cells' [lo - w/3, hi + w/3] overlaps the reference's bracket (verified at a ten-fold tighter tolerance)",
   "geometry": "failed if a point is refused, a bracket end is wrong, or A fails with R and C passed; inconclusive if the outcomes are not monotone or C fails after its retry; else passed",
-  "overall": "any failed geometry makes it failed; else any inconclusive makes it inconclusive; else passed (D308)",
+  "overall": "any failed geometry makes it failed; else any inconclusive makes it inconclusive; else any not assessable makes it not assessable; else passed (D308)",
   "no_ratio_alone": "no ratio of thresholds judges (D219)"
  },
  "plants": [
@@ -198,7 +198,7 @@
  },
  "not_blind": {
   "line": "Not blind (D219): the registrant's development search neither-02 (from 1f4c740a, 17 November) converged at x2 = 7.177734375e-15 m^2/s, bracket [7.176208496e-15, 7.177734375e-15], 37 points, the half-step check passed; neither-01, picks-01/-02, dense-01 and ladder-01 ran the line at many D values. These conditions were written after; the judged run repeats the search fresh from the tag.",
-  "field": "A true pre-registration (D219): no 25 x 25 world has run past 16 s. Seen before this rule: BITSEY's whole 2D bisection in its saved log (bracket 1.886e-15 to 1.888e-15); sheet-01, a different world (9 x 9, a central 3 x 3 tumor, 2,000 s), whose threshold lay between 9.0e-16 and 1.8e-15; field-parse-01, a parse with no integration; and the cost probe field-cost-01: D = 1e-13 for 1.5 s and D = 0 for 16 s, where every tumor cell was still mesenchymal and every healthy cell epithelial (589 of 625), which cannot show a threshold"
+  "field": "A true pre-registration (D219): no 25 x 25 world has run past 16 s. Seen before this rule: BITSEY's whole 2D bisection in its saved log (bracket 1.886e-15 to 1.888e-15); sheet-01, a different world (9 x 9, a central 3 x 3 tumor, 2,000 s), whose threshold lay between 9.0e-16 and 1.8e-15; field-parse-01, a parse with no integration; and the cost probe field-cost-01: D = 1e-13 for 1.5 s and D = 0 for 16 s, where every tumor cell was still mesenchymal and every healthy cell epithelial (589 of 625), which cannot show a threshold; the smokes probes/smoke-registered-01 (a field point, D = 1e-13 for 0.25 s; a field search and a line search at 0.25 s and 2 s, each stopped at its upper end); and the pinned BITSEY field run's first five outcomes (D = 0 not normalized; 1e-13, 5e-14, 2.5e-14 and 1.25e-14 normalized), as in the historical log"
  },
  "compute_budget": {
   "measured": "field-cost-01 on today's engine (main db54d0f5), one CPU: the field takes 0.16-0.19 s a step (with or without routes; 32- and 16-step windows, 1.3 GB), the line 3.4 ms a step; the first window's compile 72-77 s",

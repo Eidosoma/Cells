@@ -328,7 +328,13 @@ def rule():
             overall="any failed arm makes the comparison failed; else any inconclusive arm makes "
             "it inconclusive; else passed (FR-25's precedence, D308)",
         ),
-        retry={**RETRY, "fractions": list(RETRY["fractions"])},
+        retry={
+            **RETRY,
+            "fractions": list(RETRY["fractions"]),
+            "driver": "run.py takes the triple from the step rule's dt and runs every arm: a "
+            "retry needs a tagged amendment adding the finer base step and the arm filter "
+            "before it runs (D308)",
+        },
         plants=plant_rows(),
         reported=dict(
             publication_targets="the references' closed forms against the preprint's printed "
@@ -345,7 +351,13 @@ def rule():
             "2.5e-6 at dt/2 with orders 2.00-2.01. No tolerance is set from them: every "
             "tolerance is a stated error term's, from the declaration and the engine's own run. "
             "The references' values are not known to the registrant beyond the closed forms the "
-            "preprint itself implies (equation 2, the chain's golden-ratio limit)."
+            "preprint itself implies (equation 2, the chain's golden-ratio limit). A smoke of "
+            "the registered code paths at a 20 s horizon (probes/smoke-registered-01) ran every "
+            "arm. Most were far from steady, but Figure 3b and 5b at 10 and 50 G_eq were at or "
+            "within a few times 1e-9 of their fixed points (no probe, so no uniform mode). For "
+            "aw-figure3-g10 and aw-figure5-lumped-g10 the smoke's table printed their dt/4 "
+            "tolerance (7.3e-7) and orders (2.013, 2.011), in effect the judged triple's. No "
+            "engine value was compared with a reference."
         ),
     )
 

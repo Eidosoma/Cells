@@ -178,6 +178,10 @@ and over 100 times any as-written tolerance the development runs suggest.
   the verdict "instrument not validated", whatever the other arms show.
 - **The retry, once, inconclusive as-written arms only:** a finer triple, dt/2, dt/4 and dt/8,
   judged at dt/8 under the same rule. Nothing else is retried.
+  - **The tagged driver cannot make it yet.** `run.py` takes the triple from the step rule's dt
+    and runs every arm.
+  - A retry therefore needs a tagged amendment, before it runs, that adds the option (the finer
+    base step, and the inconclusive arms alone). This is D308's rule applied to the driver.
   - A run that the harness stops (memory, runtime limit, machine fault) is rerun once from the same
     snapshot.
   - An engine refusal is a result, never rerun.
@@ -278,5 +282,17 @@ A value agrees when it lies within half a unit of its last printed digit:
   - The run was `run.py ... --end 20` from this branch (`probes/smoke-registered-01`): every
     registered arm, the triple, the windowed Figure 5a at 10 G_eq with its record, and the table
     built from its output.
-  - At 20 s no arm is steady: its slowest mode has decayed by e⁻¹ only. The smoke shows nothing of
-    a steady state, and no verdict is drawn from it.
+  - **A correction to eb1c2f00's message, which said every arm was flagged not steady.** Most arms
+    are far from steady at 20 s, but not all.
+    - Every cell starts at its unloaded value, so in a network without a probe the uniform mode
+      has no amplitude.
+    - What remains decays at least at K_dec (1 + 2g) in Figure 3b, and at K_dec (1 + 1.75 g) in
+      Figure 5b.
+    - So four arms were at or within a few times 1e-9 of their fixed points: Figure 3b and
+      Figure 5b at 10 and 50 G_eq.
+    - Two of them, `figure3-g50` and `figure5-lumped-g50`, passed the steady check.
+    - For the as-written `aw-figure3-g10` and `aw-figure5-lumped-g10`, the smoke's table printed
+      their dt/4 tolerance (3 est, 7.3e-7 for each) and their observed orders (2.013 and 2.011).
+      Those are in effect the judged triple's values for these two arms.
+  - **What was not seen.** No engine concentration was compared with any reference, and no
+    tolerance is set from the smoke. Every other arm was far from its fixed point.
