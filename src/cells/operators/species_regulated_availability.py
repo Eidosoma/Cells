@@ -231,6 +231,11 @@ OPERATOR_TABLES = MappingProxyType(
         ("templated_polymerisation@1", "polymerisation_initiation_rate"): (
             "coupling_polymerisation_initiation_rate_routes"
         ),
+        # FR-38's routed durable fraction p (the sheet's §9.4, source 3), the same recorded
+        # exception, under the lead's leave (23 November 2026).
+        ("templated_polymerisation@1", "polymerisation_release_fraction"): (
+            "coupling_polymerisation_release_fraction_routes"
+        ),
     }
 )
 LAYOUT_FIELDS_V2 = (

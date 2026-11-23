@@ -192,9 +192,17 @@ RELEASE_FIELDS = dict(
 EMPTY = hashlib.sha256(b"").hexdigest()
 
 
+# The routed durable fraction's table (the sheet's §9.4, source 3; FR-38's routed-p round): a
+# coupling@2 world without a route onto p holds it empty.
+ROUTED_P_FIELDS = dict(
+    state=(), layout=("coupling_polymerisation_release_fraction_routes",), control=()
+)
+
+
 def added_fields():
-    """{kind: names}: the opt-in fields a definition without them holds empty, the release's (§9)
-    and the replacement's (amendment S, §9.16: every poly_rep_ field and the due count)."""
+    """{kind: names}: the opt-in fields a definition without them holds empty, the release's (§9),
+    the replacement's (amendment S, §9.16: every poly_rep_ field and the due count) and the routed
+    durable fraction's table (ROUTED_P_FIELDS)."""
     from cells.operators import templated_polymerisation as tp
 
     replacement = dict(
@@ -202,7 +210,10 @@ def added_fields():
         layout=tuple(f for f in tp.LAYOUT_FIELDS if f.startswith("poly_rep_")),
         control=(tp.REPLACEMENTS_DUE,),
     )
-    return {kind: (*names, *replacement[kind]) for kind, names in RELEASE_FIELDS.items()}
+    return {
+        kind: (*names, *replacement[kind], *ROUTED_P_FIELDS[kind])
+        for kind, names in RELEASE_FIELDS.items()
+    }
 
 
 def _empty(kind):

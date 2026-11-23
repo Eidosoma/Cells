@@ -62,8 +62,10 @@ the horizon (grid_time):
 - a transfer's capacity, in mM/s;
 - a scheduled release's durable fraction p, in [0, 1], by the release's ID.
 
-The initiation rate is routable (B1′): a rate route's factor u in [b, 1] multiplies it at the start
-of each half-step, so the scheduled k_I is the maximum.
+The initiation rate and a release's durable fraction are routable (B1′): a rate route's factor u in
+[b, 1] multiplies each at the start of each half-step, or at its midpoint where the half-step moves
+the route's source (half_step_rows), so the scheduled k_I and p are the maxima and a routed p stays
+in [0, 1] (the sheet's §9.4, source 3).
 
 Laws (the sheet's §4), per route at its cell
 --------------------------------------------
@@ -2146,9 +2148,10 @@ class TemplatedPolymerisation(Operator):
     HEAT_FIELDS = ("poly_dissipated_energy_pJ",)
     LAYOUT_FIELDS = LAYOUT_FIELDS
     CONTROL_FIELDS = (*HALF_STEP_CONTROLS, REPLACEMENTS_DUE)
-    # B1′: a chain's initiation rate constant, which a rate route may multiply in the half-steps
-    # (the scheduled rate is the maximum).
-    ROUTABLE_CONTROLS = MappingProxyType({INITIATION: "rate"})
+    # B1′: a chain's initiation rate constant and a release's durable fraction p (the sheet's §9.4,
+    # source 3), which a rate route may multiply in the half-steps (the scheduled value is the
+    # maximum, so a routed p stays in [0, 1]).
+    ROUTABLE_CONTROLS = MappingProxyType({INITIATION: "rate", RELEASE_FRACTION: "rate"})
     EXPERIMENT_KEYS = (EXPERIMENT_KEY,)
     CONFLICTS_VIEW = common.CONFLICTS_VIEW
     ENTITY_WRITES = {"amount_increment": ("poly_produced_fmol", "poly_consumed_fmol")}
@@ -2331,8 +2334,12 @@ class TemplatedPolymerisation(Operator):
         )
 
     def routable_elements(self, declaration, field):
-        """B1′: the initiation rate's elements are the chains, by chain ID, each at its pool's
-        cell, in control order."""
+        """B1′, in control order: the initiation rate's elements are the chains, by chain ID, each
+        at its pool's cell; the durable fraction's are the releases, by release ID, each at its
+        chain's cell (the sheet's §9.4: p = p_max u, u in [b, 1], p_max its constant or scheduled
+        value)."""
+        if field == RELEASE_FRACTION:
+            return tuple((r.id, c.cell) for c, r in releases_of(declaration))
         return tuple((c.id, c.cell) for c in declaration.chains)
 
     def half_step_rows(self, declaration):
