@@ -186,42 +186,195 @@ def capacity(family, params):
 
 
 def diagram(family, params):
-    return {"n": 2, "Nain": params["NaN"] if "NaN" in params else None, "Naout": params["NaP"],
-            "BP": params["BP"], "rB": params["BN"] / params["BP"], "T": params.get("T", 291.15),
-            "V": params["V"]}  # fmt: skip
+    """Version 2's keys (NaP, BP, BN[, V]): Na_N 21 mM and 291.15 K, fixed in the reference's
+    generator (SEMANTICS.md, reading 7), unless the key names them."""
+    out = {"n": 2, "Nain": params.get("NaN", 21.0), "Naout": params["NaP"], "BP": params["BP"],
+           "rB": params["BN"] / params["BP"], "T": params.get("T", 291.15)}
+    if "V" in params:
+        out["V"] = params["V"]
+    return out
 
 
+def from_family(pattern, name, value=float):
+    """A parameter carried in the family's name (C0.cl_i_threshold_V<V>, C1.kir_I_u<u>,
+    C1.kir_slope_u<u>, C2.sign_dVdt_dV<off>)."""
+
+    def build(family, params):
+        m = re.match(pattern, family)
+        return {**{n: params[n] for n in STATE if n in params}, name: value(m.group(1))}
+
+    return build
+
+
+def with_state(**fixed):
+    def build(family, params):
+        return {**{n: params[n] for n in STATE}, **fixed}
+
+    return build
+
+
+def sign_current(family, params):
+    m = re.match(r"^C1\.sign_I_(K|Cl)_dV(-?[0-9.]+)$", family)
+    return {**{n: params[n] for n in STATE}, "ion": m.group(1), "offset": float(m.group(2))}
+
+
+def scenario_k(family, params):
+    return {"scenario": params["word"], "k": params["k"]}
+
+
+def two_cell_cell(family, params):
+    out = two_cell(family, {k: v for k, v in params.items() if k != "cell"})
+    out["cell"] = f"cell{int(params['cell'])}"
+    return out
+
+
+def capacity_b(family, params):
+    """C6.v1_capacity_ratio's state b (SEMANTICS.md, reading 7): Na_N 21, Na_P 19.9, B_N 0.0001,
+    B_P 10 mM, -0.0899 V, n 2, 291.15 K; state a's voltage is not stated (not mappable)."""
+    if params.get("word") != "b":
+        raise KeyError("only state b is defined")
+    return {"n": 2, "Nain": 21.0, "Naout": 19.9, "BP": 10.0, "rB": 0.0001 / 10.0, "T": 291.15,
+            "V": -0.0899, "f": params["f"]}
+
+
+def pump_counts(family, params):
+    measure = {"dNa_cell": "pump_counts_Na", "dK_cell": "pump_counts_K",
+               "outward_charge": "pump_outward_charge"}[params["word"]]
+    return {"measure": measure}
+
+
+def pump_state(family, params):
+    out = {"ion_set": params["ion_set"], "exterior": params["exterior"], "T": params["T"]}
+    if params.get("word") == "Vghk":
+        out["word"] = "Vghk"
+    elif "V" in params:
+        out["V"] = params["V"]
+    else:
+        raise KeyError("no voltage")
+    return out
+
+
+def sym_offset(family, params):
+    return {n: params[n] for n in ("n", "Nain", "Naout", "BP", "rB", "T", "off")}
+
+
+def sym_at_stall(family, params):
+    return {**{n: params[n] for n in ("n", "Nain", "Naout", "BP", "rB", "T")}, "off": 0.0}
+
+
+def counts_word(family, params):
+    return {"n": params["n"], "word": params["word"]}
+
+
+def c8_species(family, params):
+    if params.get("word") not in ("Na", "K", "Cl"):
+        raise KeyError("no species")
+    return {"species": params["word"]}
+
+
+def c8_species_t(family, params):
+    out = c8_species(family, params)
+    out["t"] = params["t"]
+    return out
+
+
+def c8_t(family, params):
+    return {"t": params["t"]}
+
+
+def cl_sign_side(family, params):
+    return {"ion_set": params["ion_set"], "exterior": params["exterior"], "T": params["T"],
+            "ion": "Cl"}
+
+
+SYM = ("n", "Nain", "Naout", "BP", "rB", "T")
+OFF = (*SYM, "off")
+PUMP = ("ion_set", "exterior", "T")
+# The erratum's mapping (erratum 1, 23 November 2026, from the tagged reader's keys stage and the
+# confirmer's SEMANTICS.md). Each rule: (family pattern, engine measure, params builder, needs).
 MAPPING = (
     (r"^C0\.E_(K|Na|Cl)$", "e_zero", ion_from_family("C0.E_"), STATE),
     (r"^C0\.V_ghk_area$", "v_zero", keep(*STATE), STATE),
-    (r"^C0\.k_effect_sign", "effect_sign", keep(*STATE, ion="K"), STATE),
-    (r"^C0\.cl_effect_sign", "effect_sign", keep(*STATE, ion="Cl"), STATE),
-    (r"^C0\.cl_bound", "cl_bound", keep(*STATE), STATE),
+    (r"^C0\.k_effect_sign_area$", "effect_sign", keep(*STATE, ion="K"), STATE),
+    (r"^C0\.cl_effect_sign_area$", "effect_sign", keep(*STATE, ion="Cl"), STATE),
+    (r"^C0\.cl_bound_area$", "cl_bound", keep(*STATE), STATE),
+    (r"^C0\.cl_i_critical_area$", "cl_threshold", keep(*STATE), STATE),
+    (r"^C0\.cl_i_threshold_V(-?[0-9.]+)$", "cl_threshold",
+     from_family(r"^C0\.cl_i_threshold_V(-?[0-9.]+)$", "V"), STATE),
+    (r"^C0\.feasible_19p4_area$", "feasible_19p4", keep(*STATE), STATE),
     (r"^C1\.zero_(K|Cl)$", "e_zero", ion_from_family("C1.zero_"), STATE),
+    (r"^C1\.sign_I_(K|Cl)_dV(-?[0-9.]+)$", "ion_current", sign_current, STATE),
+    (r"^C1\.kir_zero_at_EK$", "kir_current_ek", with_state(u=0.0), STATE),
+    (r"^C1\.kir_I_u(-?[0-9.]+)$", "kir_current_ek", from_family(r"^C1\.kir_I_u(-?[0-9.]+)$", "u"),
+     STATE),
+    (r"^C1\.kir_slope_u(-?[0-9.]+)$", "kir_slope_ek",
+     from_family(r"^C1\.kir_slope_u(-?[0-9.]+)$", "u"), STATE),
+    (r"^C1\.kir_sqrtKo_ratio$", "kir_sqrtko_ratio", keep("ion_set", "T"), ("ion_set", "T")),
     (r"^C2\.V_ghk_area$", "v_zero", keep(*STATE), STATE),
+    (r"^C2\.sign_dVdt_dV(-?[0-9.]+)$", "dvdt_offset",
+     from_family(r"^C2\.sign_dVdt_dV(-?[0-9.]+)$", "offset"), STATE),
+    (r"^C3\.V_inf$", "c3_v_inf", scenario(), ("word",)),
+    (r"^C3\.g$", "c3_g", scenario(), ("word",)),
     (r"^C3\.tau_lin$", "tau_lin", scenario(), ("word",)),
+    (r"^C3\.tau_doubling$", "c3_tau_doubling", scenario(), ("word",)),
     (r"^C3\.tau_fit$", "tau_fit", scenario(), ("word", "d")),
     (r"^C3\.ratio_t$", "ratio_t", scenario("k"), ("word", "d", "k")),
-    (r"^C3\.Q_over_CV_error$", "charge_identity", scenario(), ("word", "d")),
+    (r"^C3\.Q_over_CV_error$", "c3_q_minus_cv", scenario("k"), ("word", "d", "k")),
+    (r"^C4\.V_zero_both$", "v_zero", with_state(P=3e-8, g=3.0, a=1.0), STATE),
     (r"^C4\.V_zero_glycine$", "v_zero", keep(*STATE, "P", "a"), (*STATE, "P", "a")),
     (r"^C4\.V_zero_kir$", "v_zero", keep(*STATE, "g", "a"), (*STATE, "g", "a")),
-    (r"^C4\.V_zero_both$", "v_zero", keep(*STATE, "P", "g", "a"), (*STATE, "P", "g", "a")),
-    (r"^C4\.shift_glycine$", "shift", keep(*STATE, "P", "a"), (*STATE, "P", "a")),
     (r"^C4\.shift_kir$", "shift", keep(*STATE, "g", "a"), (*STATE, "g", "a")),
+    (r"^C4\.shift_glycine_sign$", "shift", with_state(P=1e-8, a=1.0), STATE),
+    (r"^C4\.monotone_kir$", "c4_monotone_kir", keep(*STATE), STATE),
+    (r"^C4\.monotone_glycine$", "c4_monotone_glycine", keep(*STATE), STATE),
+    (r"^C4\.flux_at_a0$", "c4_flux_at_a0", keep(*STATE, "V"), (*STATE, "V")),
+    (r"^C5\.V1_ss$", "c5_v1", two_cell, ()),
+    (r"^C5\.V2_ss$", "c5_v2", two_cell, ()),
     (r"^C5\.tau_common$", "c5_tau_common", two_cell, ()),
     (r"^C5\.tau_diff$", "c5_tau_diff", two_cell, ()),
-    (r"^C6\.v1_V_stall$", "sym_stall", symporter, ("n", "Nain", "Naout", "BP", "rB", "T")),
-    (r"^C6\.v1_x_offset$", "sym_x", symporter, ("n", "Nain", "Naout", "BP", "rB", "T", "off")),
+    (r"^C5\.V_limit$", "c5_v_limit", two_cell, ()),
+    (r"^C5\.g_J$", "c5_g_j", two_cell, ()),
+    (r"^C5\.g_m$", "c5_g_m", two_cell_cell, ("cell",)),
+    (r"^C5\.junction_charge_sum$", "c5_junction_charge_sum", two_cell, ()),
+    (r"^C5\.tau_fit_common$", "c5_tau_fit_common", two_cell, ()),
+    (r"^C5\.tau_fit_diff$", "c5_tau_fit_diff", two_cell, ()),
+    (r"^C6\.S_hill$", "sym_s_at", keep("NaP", "BP"), ("NaP", "BP")),
+    (r"^C6\.v1_V_stall$", "sym_stall", symporter, SYM),
+    (r"^C6\.v1_J_at_stall$", "sym_j", sym_at_stall, SYM),
+    (r"^C6\.v1_dJdV_at_stall$", "sym_dj_dv", sym_at_stall, SYM),
+    (r"^C6\.v1_J_offset$", "sym_j", sym_offset, OFF),
+    (r"^C6\.v1_ratio_Jm_Jp$", "sym_ratio", sym_offset, OFF),
+    (r"^C6\.v1_sign_J_offset$", "sym_j", sym_offset, OFF),
+    (r"^C6\.v1_x_offset$", "sym_x", sym_offset, OFF),
     (r"^C6\.v1_eq_ratio$", "sym_eq_ratio", eq_ratio, ("n", "Nain", "Naout")),
-    (r"^C6\.v1_capacity_ratio$", "sym_capacity_ratio", capacity, ("n", "Nain", "Naout", "BP", "f")),
-    (r"^C6\.v2_ratio_Jm_Jp$", "diag_ratio", diagram, ("NaP", "BP", "BN", "V", "NaN")),
+    (r"^C6\.v1_eq_x$", "sym_eq_x", eq_ratio, ("n", "Nain", "Naout")),
+    (r"^C6\.v1_capacity_ratio$", "sym_capacity_ratio", capacity_b, ("f",)),
+    (r"^C6\.v2_V_stall$", "diag_stall", diagram, ("NaP", "BP", "BN")),
+    (r"^C6\.v2_ratio_Jm_Jp$", "diag_ratio", diagram, ("NaP", "BP", "BN", "V")),
+    (r"^C7\.pump_cycle_counts$", "pump_counts", pump_counts, ("word",)),
     (r"^C7\.pump_cell_charge_per_fmol$", "pump_cell_charge_per_fmol", keep(), ()),
-    (r"^C7\.pump_dG_atp$", "pump_dG_atp", keep(), ()),
-    (r"^C7\.pump_heat$", "pump_heat", keep(), ()),
-    (r"^C7\.pump_heat_nonneg$", "pump_heat_nonneg", keep(), ()),
+    (r"^C7\.pump_dG_atp$", "pump_dG_atp_at", pump_state, PUMP),
+    (r"^C7\.pump_dG_chem$", "pump_dG_chem_at", pump_state, PUMP),
+    (r"^C7\.pump_dU_cap$", "pump_dU_cap_at", pump_state, PUMP),
+    (r"^C7\.pump_heat$", "pump_heat_at", pump_state, PUMP),
+    (r"^C7\.pump_heat_nonneg$", "pump_heat_nonneg_at", pump_state, PUMP),
+    (r"^C7\.relax_dQ$", "c7_relax_dQ", scenario_k, ("word", "k")),
+    (r"^C7\.relax_charge_identity$", "c7_relax_identity", scenario_k, ("word", "k")),
+    (r"^C7\.sym_dG_chem$", "sym_dG_chem", sym_offset, OFF),
+    (r"^C7\.sym_dU_cap$", "sym_dU_cap", sym_offset, OFF),
+    (r"^C7\.sym_heat_per_cycle$", "sym_heat_per_cycle", sym_offset, OFF),
+    (r"^C7\.sym_heat_power$", "sym_heat_power", sym_offset, OFF),
+    (r"^C7\.sym_heat_nonneg$", "sym_heat_nonneg", sym_offset, OFF),
+    (r"^C7\.sym_cycle_counts$", "sym_counts", counts_word, ("n", "word")),
+    (r"^C8\.a_dE_K$", "c8a_e_K", keep("ion_set", "T"), ("ion_set", "T")),
     (r"^C8\.a_dV_ghk_area$", "c8a_v_zero", keep("ion_set", "T"), ("ion_set", "T")),
-    (r"^C8\.a_dE_(K|Na|Cl)$", None, None, ()),  # Resolved in mapped() below: c8a_e_<ion>.
-)
+    (r"^C8\.a_cl_sign_bath_vs_local$", "effect_sign", cl_sign_side, ("ion_set", "exterior", "T")),
+    (r"^C8\.b_final_c$", "c8b_final_saved", c8_species, ("word",)),
+    (r"^C8\.b_final_psi$", "c8b_psi_final_saved", keep(), ()),
+    (r"^C8\.bc_t_e$", "c8b_t_e_saved", c8_species, ("word",)),
+    (r"^C8\.bc_c_t$", "c8b_at_saved", c8_species_t, ("word", "t")),
+    (r"^C8\.bc_psi_t$", "c8b_psi_at_saved", c8_t, ("t",)),
+)  # fmt: skip
 NOT_RUN = (
     (r"^C6\.v2_early", "not run on main: cells.na2_anion_symport_diagram@1 fixes zeta at 0 on "
      "e3/e5/e6/e7 (b_P, b_N, na2_N, na1_N), so DESIGN §3.4's charge placement cannot be declared "
@@ -229,11 +382,34 @@ NOT_RUN = (
      "2026; a declared zeta on every edge is queued with the kinds lane as a general feature)"),
     (r"^C6\.v2_(J|KA|king|ka)", "not run on main: the King-Altman J depends on the charge placement "
      "(as above)"),
+    (r"^C6\.S_half$", "not run: its states hold 1e12 mM, which the engine cannot declare (a node's "
+     "initial inventory must hold its charge anchor to 1e-20 C, beyond float64 at 1e15 fmol)"),
+    (r"^C8\.a_dV_ghk_unit$", "not run: an unweighted (unit) row, info by the lead's ruling in the "
+     "references' amendment (REFERENCES_USAGE.md, after the erratum), though its bands entry says "
+     "abs; the engine has no unweighted membrane"),
+)  # fmt: skip
+# Rows the confirmer's SEMANTICS.md leaves without a definition or a needed value: refused at
+# judging as not mappable (the lead, 23 November 2026), reported, and neutral in the verdicts.
+NOT_MAPPABLE = (
+    (r"^C4\.T1_reachable$", None, "SEMANTICS.md defines no C4.T1_reachable"),
+    (r"^C5\.V_dev_t$", None, "its times need the generator's step count N: 'needs a value; not "
+     "stated' (SEMANTICS.md, C5's fits)"),
+    (r"^C6\.J_over_k_grid$", None, "the state behind 'dG_cyc far negative' (the N end, V) is not "
+     "stated (SEMANTICS.md, reading 7: names and keys only)"),
+    (r"^C6\.v1_n1_(J|dJ_over_V)$", None, "the n = 1 rows' other concentrations are not stated "
+     "(SEMANTICS.md, reading 7: names and keys only)"),
+    (r"^C6\.v1_capacity_ratio$", "a", "state a's voltage: 'needs a value; not stated' "
+     "(SEMANTICS.md, reading 7)"),
+    (r"^C6\.v2_alt_set_ratio$", None, "its second constant set: 'needs a value; not stated' "
+     "(SEMANTICS.md, reading 7)"),
+    (r"^C8\.b_final_is_bath$", None, "its criterion: 'needs a value; not stated' (SEMANTICS.md, "
+     "C8 (b))"),
 )  # fmt: skip
 
 
 def mapped(family, key):
-    """(measure, params) for one compared row, ('not_run', reason), or None (unmapped)."""
+    """(measure, params) for one compared row, ('not_run', reason), ('not_mappable', reason), or
+    None (unmapped: the judge refuses)."""
     for pattern, reason in NOT_RUN:
         if re.search(pattern, family):
             return "not_run", reason
@@ -241,40 +417,45 @@ def mapped(family, key):
         params = parse_key(key)
     except ValueError:
         return None
-    m = re.match(r"^C8\.a_dE_(K|Na|Cl)$", family)
-    if m:
-        if all(n in params for n in ("ion_set", "T")):
-            return f"c8a_e_{m.group(1)}", {"ion_set": params["ion_set"], "T": params["T"]}
-        return None
+    for pattern, word, reason in NOT_MAPPABLE:
+        if re.search(pattern, family) and (word is None or params.get("word") == word):
+            return "not_mappable", reason
     for pattern, measure, build, needs in MAPPING:
-        if measure is None or not re.search(pattern, family):
+        if not re.search(pattern, family):
             continue
         if any(n not in params for n in needs):
             return None
         try:
-            return measure, build(family, params)
-        except KeyError:
+            built = build(family, params)
+        except (KeyError, AttributeError):
             return None
+        if "measure" in built:  # A builder that picks the measure by the key's word.
+            return built.pop("measure"), built
+        return measure, built
     return None
 
 
-RULE = HERE / "xc0_rule.json"
+RULE = HERE / "xc0_rule.json"  # Tagged xc0-rule-registered-2026-11-23; kept as tagged.
+ERRATUM = HERE / "xc0_rule_erratum_1.json"  # Erratum 1: the mapping this module now holds.
 
 
 def rule_mapping():
-    """The mapping as the rule file renders it, from this module (one source)."""
-    rules = [dict(family=p, measure=m, needs=list(n)) for p, m, b, n in MAPPING if m is not None]
-    rules.append(dict(family=r"^C8\.a_dE_(K|Na|Cl)$", measure="c8a_e_<ion>", needs=["ion_set", "T"]))
-    return dict(rules=rules, not_run=[dict(family=p, reason=r) for p, r in NOT_RUN])
+    """The mapping as the erratum renders it, from this module (one source)."""
+    return dict(
+        rules=[dict(family=p, measure=m, needs=list(n)) for p, m, b, n in MAPPING],
+        not_run=[dict(family=p, reason=r) for p, r in NOT_RUN],
+        not_mappable=[dict(family=p, key_word=w, reason=r) for p, w, r in NOT_MAPPABLE],
+    )
 
 
-def check_rule(path=RULE):
-    """Refuses when the registered rule's mapping is not this module's."""
-    rule = json.loads(Path(path).read_text())
-    mine = rule_mapping()
-    if rule["mapping"]["rules"] != mine["rules"] or rule["mapping"]["not_run"] != mine["not_run"]:
+def check_rule(path=ERRATUM):
+    """Refuses when the registered erratum's mapping is not this module's. Returns the tagged rule
+    with the erratum's entries over its own, the erratum itself under "erratum"."""
+    erratum = json.loads(Path(path).read_text())
+    if erratum["mapping"] != rule_mapping():
         raise SystemExit(f"refused: {path}'s mapping is not the reader's")
-    return rule
+    rule = json.loads(RULE.read_text())
+    return {**rule, **{k: v for k, v in erratum.items() if k in rule}, "erratum": erratum}
 
 
 def check_table(table, rule):
@@ -308,10 +489,11 @@ def keys(bands_path, *, with_text=False):
 STEP_TOLERANCE = (
     (r"^C3\.tau_fit$", lambda p: {"rel": 0.02}),
     (r"^C3\.ratio_t$", lambda p: {"rel": 0.02 * p["k"] / 4.0}),
-    (r"^C3\.Q_over_CV_error$|^C7\.relax_(dQ|charge)", lambda p: {"abs": 1e-14}),
+    (r"^C3\.Q_over_CV_error$|^C7\.relax_(dQ|charge)|^C5\.junction_charge_sum$",
+     lambda p: {"abs": 1e-14}),
     (r"^C5\.tau_fit", lambda p: {"rel": 0.03}),
     (r"^C8\.b", lambda p: {"rel": 0.05}),
-)
+)  # fmt: skip
 
 
 def step_tolerance(family, params):
@@ -331,8 +513,8 @@ def manifest(key_list):
             m = mapped(family, key)
             if m is None:
                 unmapped.append((family, key))
-            elif m[0] == "not_run":
-                not_run.append((family, key))
+            elif m[0] in ("not_run", "not_mappable"):
+                not_run.append((family, key, m[0]))
             else:
                 item = dict(family=family, key=key, measure=m[0], params=m[1])
                 tolerance = step_tolerance(family, parse_key(key))
@@ -364,8 +546,8 @@ def resolve(table, key_list, *, after_retry=False):
             if m is None:
                 problems.append(("unmapped", family, key))
                 continue
-            if m[0] == "not_run":
-                resolved[(family, key)] = ("not_run", m[1])
+            if m[0] in ("not_run", "not_mappable"):
+                resolved[(family, key)] = m
                 continue
             params = parse_key(key)
             hits = [r for f, p, measure, r in rows if f == family and measure == m[0]
@@ -481,8 +663,8 @@ def judge(table, values, bands, *, after_retry=False):
     rows, decimal.getcontext().prec = [], 60
     for (family, key), (what, item) in sorted(resolved.items()):
         entry = bands["families"][family]
-        if what == "not_run":
-            rows.append(dict(family=family, key=key, outcome="not_run", reason=item))
+        if what in ("not_run", "not_mappable"):
+            rows.append(dict(family=family, key=key, outcome=what, reason=item))
             continue
         if what == "engine_refused":
             rows.append(dict(family=family, key=key, outcome="engine_refused", reason=item))
@@ -531,6 +713,8 @@ def verdicts(rows):
             return "info"
         if all(o == "not_run" for o in outcomes):
             return "not_run"
+        if all(o in ("not_run", "not_mappable") for o in outcomes):
+            return "not_mappable"
         return "no_power"
 
     fam = {f: family_verdict(o) for f, o in families.items()}
@@ -617,11 +801,12 @@ def synthetic(out):
     fams = {
         "C2.V_ghk_area": ("abs", 1e-6, 0.0, {state: ("-0.0123456", "1e-17")}),
         "C1.zero_K": ("abs", 1e-6, 0.0, {state: ("-0.1000000", "1e-17")}),
-        "C0.k_effect_sign_patch": ("sign", 1e-6, 0.0, {state: ("-1", "1e-17"),
-                                                       "primary|local|T291.15": ("1", "1e-17")}),
+        "C0.k_effect_sign_area": ("sign", 1e-6, 0.0, {state: ("-1", "1e-17"),
+                                                      "primary|local|T291.15": ("1", "1e-17")}),
         "C4.V_zero_glycine": ("abs", 1e-5, 0.0, {f"{state}|P1e-08|a0.5": ("-0.02", "1e-17")}),
         "C6.v1_V_stall": ("abs", 1e-5, 0.0, {"n2|Nain21|Naout9.9|BP10|rB1|T291.15": ("-0.03", "1e-17")}),
-        "C7.pump_heat_nonneg": ("flag", 0.0, 0.0, {"": ("true", "0")}),
+        "C7.pump_heat_nonneg": ("flag", 0.0, 0.0, {f"{state}|V-0.04": ("true", "0")}),
+        "C8.b_final_is_bath": ("flag", 0.0, 0.0, {"bath": ("false", "0")}),
         "C0.V_ghk_unit": ("info", 0.0, 0.0, {state: ("-0.07", "1e-17")}),
         "C6.v2_early_ratio_rest": ("abs", 0.0, 1e-6, {"Vrest_bath": ("2.0", "1e-17")}),
     }
@@ -640,16 +825,16 @@ def synthetic(out):
     table = dict(rows=[
         dict(family="C2.V_ghk_area", key=state, measure="v_zero", type="number", value="-0.0123459"),
         dict(family="C1.zero_K", key=state, measure="e_zero", type="number", value="-0.0999"),
-        dict(family="C0.k_effect_sign_patch", key=state, measure="effect_sign", type="number",
+        dict(family="C0.k_effect_sign_area", key=state, measure="effect_sign", type="number",
              value="-1.0"),
-        dict(family="C0.k_effect_sign_patch", key="primary|local|T291.15", measure="effect_sign",
+        dict(family="C0.k_effect_sign_area", key="primary|local|T291.15", measure="effect_sign",
              type="number", value="-1.0"),
         dict(family="C4.V_zero_glycine", key=f"{state}|P1e-8|a0.50", measure="v_zero", type="number",
              value="-0.020004"),
         dict(family="C6.v1_V_stall", key="n2|Nain21.0|Naout9.90|BP10.0|rB1.0|T291.15",
              measure="sym_stall", type="number", value="-0.0300001"),
-        dict(family="C7.pump_heat_nonneg", key="", measure="pump_heat_nonneg", type="flag",
-             value="true"),
+        dict(family="C7.pump_heat_nonneg", key=f"{state}|V-0.04", measure="pump_heat_nonneg_at",
+             type="flag", value="true"),
     ])  # fmt: skip
     for row in table["rows"]:  # As the engine's table holds them: the measure's parameters.
         row["params"] = mapped(row["family"], row["key"])[1]
@@ -674,13 +859,14 @@ def selfcheck(out):
             failures.append(name)
 
     r = judge(table, values, bands)
-    planted = {"C2.V_ghk_area": "pass", "C1.zero_K": "fail", "C0.k_effect_sign_patch": "pass",
+    planted = {"C2.V_ghk_area": "pass", "C1.zero_K": "fail", "C0.k_effect_sign_area": "pass",
                "C4.V_zero_glycine": "pass", "C6.v1_V_stall": "pass", "C7.pump_heat_nonneg": "pass",
-               "C0.V_ghk_unit": "info", "C6.v2_early_ratio_rest": "not_run"}  # fmt: skip
+               "C0.V_ghk_unit": "info", "C6.v2_early_ratio_rest": "not_run",
+               "C8.b_final_is_bath": "not_mappable"}  # fmt: skip
     for family, verdict in planted.items():
         expect(f"{family} {verdict}", r["families"][family] == verdict)
     outcomes = {(x["family"], x["key"]): x["outcome"] for x in r["rows"]}
-    expect("a sign without power", outcomes[("C0.k_effect_sign_patch", "primary|local|T291.15")]
+    expect("a sign without power", outcomes[("C0.k_effect_sign_area", "primary|local|T291.15")]
            == "no_power")  # fmt: skip
     expect("overall fail", r["overall"] == "fail" and r["claims"]["C1"] == "fail")
 
@@ -729,10 +915,10 @@ def selfcheck(out):
     except SystemExit:
         pass
     weak = copy.deepcopy(values)
-    weak["families"]["C0.k_effect_sign_patch"]["aux"]["primary|bath|T291.15"] = "1e-12"
+    weak["families"]["C0.k_effect_sign_area"]["aux"]["primary|bath|T291.15"] = "1e-12"
     w = judge(table, weak, bands)
     expect("a powerless family is neutral; its claim, with nothing else passing, not testable",
-           w["families"]["C0.k_effect_sign_patch"] == "no_power" and w["claims"]["C0"] == "not_testable")
+           w["families"]["C0.k_effect_sign_area"] == "no_power" and w["claims"]["C0"] == "not_testable")
     lazy = judge(copy.deepcopy(table), lambda: values, bands)
     expect("values loaded lazily give the same verdicts", lazy["families"] == r["families"])
     try:
@@ -763,6 +949,7 @@ def main(argv=None):
     m = sub.add_parser("manifest")
     m.add_argument("keys")
     m.add_argument("out")
+    m.add_argument("--calibrations", action="store_true", help="T1 and T2's readings (unscored)")
     j = sub.add_parser("judge")
     for name in ("table", "values", "bands", "out"):
         j.add_argument(name)
@@ -785,9 +972,11 @@ def main(argv=None):
         print(hashlib.sha256(data.encode()).hexdigest())
     elif args.command == "manifest":
         result = manifest(json.loads(Path(args.keys).read_text()))
+        if args.calibrations:  # D312: T1 and T2 are unscored calibrations, reported beside the verdict.
+            result["entries"] += calibrations()
         Path(args.out).write_text(json.dumps(result, indent=1))
-        print(f"{len(result['entries'])} rows mapped, {len(result['not_run'])} not run, "
-              f"{len(result['unmapped'])} unmapped")
+        print(f"{len(result['entries'])} rows mapped, {len(result['not_run'])} not run or not "
+              f"mappable, {len(result['unmapped'])} unmapped")
         for family, key in result["unmapped"]:
             print(f"unmapped: {family} | {key}")
     elif args.command == "judge":
