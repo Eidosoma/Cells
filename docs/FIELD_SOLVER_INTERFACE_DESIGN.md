@@ -487,3 +487,144 @@ conduction probe's numbers fill them when they land.
   and GH200.
 - **If it does not,** this interface waits and the profile's leading class is the next
   question.
+
+## 8. The sparse node-space solver for GJ-N1's field and FR-17 (draft, 23 November 2026)
+
+**Status.** A draft for the lead, written before any code, as the user chose on 23 November
+(D317): the bit-identical fixes plus a sparse solve, the latter as part of FR-17. It builds §6.1
+on §6's interface. GJ-N1's field runs only after the solver is qualified and a tagged amendment
+names it.
+
+### 8.1 The measured case
+
+**GJ-N1's 25 × 25 field** (`validation/gap_junction_tissue/neither.py`, `--shape field`):
+- **Nodes:** 626, the 625 cells and one bath, which is a reservoir and so a clamp.
+- **The capacitor matrix:** 1,876 nonzeros, an arrowhead: each cell's diagonal and its one
+  coupling to the bath. Its sparse Cholesky has 1,251 nonzeros and needs 625 multiply-adds,
+  against 8.2 × 10⁷ dense (`scripts/profile_step.py sparsity`).
+- **The reduced systems are diagonal.** With the bath clamped, the capacitor solve matrix and
+  the reduced IMEX operator have 626 nonzeros each. The face Laplacian is empty and there are no
+  floating groups, so the offset solve is empty.
+- **What the dense path spends on them, per step on one CPU** (the fused step and its device
+  checks, traced):
+  - Cholesky: 9.6 ms;
+  - triangular solves: 8.0 ms;
+  - full-matrix copies, adds and finite checks: 15.2 ms;
+  - in all, 33 of about 105 ms.
+- **Evidence:** `/mnt/workspaces/Cells/gap-junction-20261123/probes/field-profile-01/`, from a
+  clean snapshot of main 23593267.
+
+**FR-17's 25³ field** (the preprint's 3D table): 15,626 nodes in the same no-tricks structure.
+- **Dense is out of reach.** One n² matrix is 1.95 GB, and a factorisation is 1.3 × 10¹² operations.
+- **Sparse, the reductions are again diagonal,** and the work is O(n).
+- **Worlds with outside faces** (a lattice of outside nodes) fill under elimination. Nested
+  dissection keeps that at O(n log n) nonzeros on these graphs (§6.4).
+
+### 8.2 The solver ID
+
+**A new ID (D147).** The name proposed is `sparse_capacitive_reduction_gauged_damped_newton@1`.
+- **The method is `@2`'s:** the same capacitive reduction, gauge, damped Newton on the floating
+  offsets, IMEX stages and acceptance checks.
+- **Only the node-space linear algebra changes,** onto a static sparsity pattern bound once per
+  definition.
+- **Its node bound is set by its factor.** It declares a bound on the bound factor's nonzeros (and
+  its index maps), not 2,048 nodes. The dense IDs keep theirs.
+- **The choice is static,** as §6 requires: by the ID in the execution block, never by data.
+
+### 8.3 bind, prepare and solve
+
+**bind** runs on the host, once per definition, from the topology alone. The topology is the
+membranes, the faces, the junctions that carry charge, the floating groups and the clamps.
+- **The patterns:** of C, of L and of the three reduced systems.
+- **The ordering:** a fill-reducing one. Minimum degree is the first; nested dissection follows
+  for faced 3D worlds.
+- **The symbolic factor:** the elimination tree, each column's row structure and the level
+  schedule. The levels are the columns a numeric pass can compute together, because none depends
+  on another.
+- **The index maps:** these assemble values straight into the factor's pattern, and they replace
+  §6.5's dense scatter targets.
+- **The invariant products** of §4.
+- **All of it becomes layout leaves,** so a checkpoint carries it and `validate_checkpoint` refuses
+  a mismatch, as for `@3`'s bound factor.
+
+**prepare** runs on the device, per step: the numeric factorisation on the bound pattern.
+- **One pass per level,** in a static loop over the levels. Each pass is gathers of the updating
+  columns' entries and segment sums into the pivots and the columns below them.
+- **No n² array** is formed anywhere.
+
+**solve** is forward and back substitution level by level, with the same gathers and segment
+sums. Then the residual is computed by a sparse product with the assembled matrix.
+
+**The exact special cases are decided at bind time, statically:**
+- **A diagonal reduced system** (no off-diagonal entry in its pattern) has one level. Its factor is
+  the square root of the diagonal and its solve is two divisions per node, the operation order of
+  the dense path.
+- **The arrowhead** with its hub ordered last has two levels.
+- GJ-N1's field and the sheets of §2 are both cases. FR-17's no-tricks 3D field is the first.
+
+**Acceptance is unchanged** (§6): the stage residual bound, the capacitor solve's solved rows and
+the Newton target or `@3`'s floor. A failed solve is a refusal, with no fallback.
+
+### 8.4 Bitwise status
+
+**Not bitwise to the dense ID in general.** The elimination order and the summation order differ.
+The method is backward stable for these SPD systems in any order, so it is tolerance-based through
+the acceptance checks (§6.1).
+
+**On diagonal reductions it may reproduce the dense ID bit for bit,** if XLA's dense triangular
+solve divides by each pivot in the same order. That is measured, not promised. If it holds,
+GJ-N1's field gets the same numbers from either ID. Its amendment then needs no tolerance.
+
+### 8.5 Qualification against the dense solver
+
+1. **D147's guards.** Outside the solver the jaxpr is unchanged, and the state depends on the
+   solver only through its solutions.
+2. **Agreement with the dense ID** within the ledger tolerances, and with every registered number
+   unchanged within its judge's tolerance. The worlds are §6.1's (W1, W2, G2-Q1, the 825-node
+   world and the hold's saved states), the sheets, GJ-N1's line and GJ-N1's field (a few windows,
+   at D = 0 and at the bracket's upper end).
+3. **Identical refusal classes** on the guard worlds.
+4. **The exact cases.** A diagonal and an arrowhead system against a closed-form solve in exact
+   rationals, and the bitwise question of §8.4 answered on GJ-N1's field.
+5. **Above 2,048 nodes, with no dense reference:**
+   - manufactured SPD systems on the bound patterns with known solutions;
+   - the acceptance checks;
+   - the charge and energy ledgers closing;
+   - the 25³ field's systems at saved states, against a SciPy sparse solve on the host (a
+     reference only, never imported into `src/cells`).
+6. **Cost:** the field step's node-space work, about 33 ms dense, should fall to well under 1 ms on
+   CPU. It is measured on CPU and on the L4. The L4 also needs the device row checks qualified
+   there first: they are refused on a GPU today (`execution/row_checks.admit`).
+7. **The tier gate,** G1, crossrev (new programs only under the new ID) and FR's bitwise set, as
+   for any landing.
+
+### 8.6 What GJ-N1 then needs
+
+- **A tagged amendment** naming the qualified ID in the field's `execution.field_solver`, before
+  any field point runs. The line keeps the dense ID that ran it.
+- **The field's cost** is re-estimated from measured steps.
+  - **Today:** the windowed step costs 0.142 s with routes.
+  - **What each fix removes:** the bit-identical Hill rewrite about 26 ms, the window path's route
+    overhead (fix (d)) about 28 ms, and the sparse solve about 33 ms.
+  - **Expected after all three:** about 45-60 ms per step, 2.5-3× below today. The search then takes
+    about 100-130 CPU-hours, and its upper end 1.3-1.8 days.
+  - **The step count then dominates** (§8.7).
+
+### 8.7 Not in this solver
+
+**The fixed explicit junction step.** dt × rate ≤ 0.04 fixes 160,000 to 2.56 million steps per
+point. The references' implicit adaptive integration takes about 2-3 s per field point. Closing
+that gap needs an implicit treatment of the junction routes or adaptive stepping. It is a
+numerics design of its own, and FR-18's question.
+
+### 8.8 Questions for the lead
+
+1. **The ID's name.** The alternative is a sparse backend option of `@2`, which D147 would make a
+   new ID anyway.
+2. **The ordering in bind.** Our own minimum degree in NumPy, or SciPy's on the host, which is a
+   dependency decision.
+3. **Staging.**
+   - **First:** the interface and the level-scheduled factorisation, qualified on the diagonal and
+     arrowhead worlds and the dense ID's worlds. That is enough for GJ-N1's field and FR-17's
+     no-tricks 3D field.
+   - **Then:** nested dissection and its performance on faced worlds, for the rest of FR-17.
