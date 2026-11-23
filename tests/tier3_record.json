@@ -39,11 +39,13 @@
   "/mnt/workspaces/Cells/d172-restructure-20261115-01/endgame/c1-3c10b833/tiers-3-attrib/c1-52",
   "/mnt/workspaces/Cells/d172-restructure-20261115-01/endgame/c1-3c10b833/tiers-3-attrib/c1-54",
   "/mnt/workspaces/Cells/d172-restructure-20261115-01/endgame/c1-3c10b833/tiers-3-attrib/c1-57",
-  "/mnt/workspaces/Cells/fr43-20261123/part1/tiers/tier3-run3"
+  "/mnt/workspaces/Cells/fr43-20261123/part1/tiers/tier3-run3",
+  "/mnt/workspaces/Cells/fr43-20261123/part2/tiers/tier3-run-2b"
  ],
  "collected": [
   "/mnt/workspaces/Cells/test-audit-20261116-01/collect/c1-3c10b833.json",
-  "/mnt/workspaces/Cells/fr43-20261123/part1/tiers/tier3-run3/collected.json"
+  "/mnt/workspaces/Cells/fr43-20261123/part1/tiers/tier3-run3/collected.json",
+  "/mnt/workspaces/Cells/fr43-20261123/part2/tiers/tier3-run-2b/collected.json"
  ],
  "time": "file wall seconds only: the -q logs carry no per-test times",
  "outcomes": [
@@ -114,6 +116,16 @@
    ],
    "note": "FR-43 part 1's tier-3 guard, measured over its full horizon at 764d685a (238.48 s, 3 passed), added after part 1's landing, which folded only its tier 1 and 2 rows",
    "evidence": "/mnt/workspaces/Cells/fr43-20261123/part1/tiers/tier3-run3/"
+  },
+  {
+   "decision": "D315",
+   "tag": "fr43-part2b (landing)",
+   "files": [
+    "tests/unit/test_shared_inventory_pair_volume.py",
+    "tests/unit/test_shared_inventory_volume.py"
+   ],
+   "note": "FR-43 part 2B's world-running files, measured cold at 253dce46 (main c9687d68 merged): both reached the 90 s cap on the timed cores, then ran to their end on CPU 4 (test_shared_inventory_pair_volume 139.04 s, 3 passed; test_shared_inventory_volume 94.76 s, 2 passed)",
+   "evidence": "/mnt/workspaces/Cells/fr43-20261123/part2/tiers/tier3-run-2b/"
   }
  ],
  "files": {
@@ -4294,6 +4306,15 @@
    ["test_restart_across_a_schedule_change_and_an_event_is_bitwise[0.0]", "passed"],
    ["test_a_vector_batch_mixes_per_world_rates_and_law_parameters", "passed"],
    ["test_a_flux_beyond_the_pool_refuses_the_compiled_step_and_keeps_the_start_state", "passed"]
+  ]},
+  "tests/unit/test_shared_inventory_pair_volume.py": {"run": "/mnt/workspaces/Cells/fr43-20261123/part2/tiers/tier3-run-2b", "log": "/mnt/workspaces/Cells/fr43-20261123/part2/tiers/tier3-run-2b/logs/tests__unit__test_shared_inventory_pair_volume.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 3}, "seconds": 139.04, "collected": 3, "reached": 3, "aligned": true, "tests": [
+   ["test_c28_both_writers_meet_the_reference_at_second_order_while_the_cell_swells", "passed"],
+   ["test_c28_a_writer_on_the_declared_volume_misses_in_amounts[gene_unit]", "passed"],
+   ["test_c28_a_writer_on_the_declared_volume_misses_in_amounts[network]", "passed"]
+  ]},
+  "tests/unit/test_shared_inventory_volume.py": {"run": "/mnt/workspaces/Cells/fr43-20261123/part2/tiers/tier3-run-2b", "log": "/mnt/workspaces/Cells/fr43-20261123/part2/tiers/tier3-run-2b/logs/tests__unit__test_shared_inventory_volume.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 2}, "seconds": 94.76, "collected": 2, "reached": 2, "aligned": true, "tests": [
+   ["test_c25_a_tracer_keeps_its_amount_and_dilutes_with_the_volume", "passed"],
+   ["test_c27_the_energy_identity_closes_at_second_order_and_the_v0_plant_is_refused", "passed"]
   ]},
   "tests/unit/test_source_pair.py": {"run": "/mnt/workspaces/Cells/d172-restructure-20261115-01/endgame/c1-3c10b833/tiers-3-resume1", "log": "/mnt/workspaces/Cells/d172-restructure-20261115-01/endgame/c1-3c10b833/tiers-3-resume1/logs/tests__unit__test_source_pair.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 68}, "seconds": 74.58, "collected": 68, "reached": 68, "aligned": true, "tests": [
    ["test_roundtrip_complete_typed_state[baseline]", "passed"],
