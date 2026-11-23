@@ -9968,3 +9968,37 @@ and gave the five rulings it asks of the lead, with part 3's host.
   - the code-blind references for part 2's coupled calculation and part 3's same-draws integration, by a
     separate agent;
   - the GPU column folded into the note.
+
+## D316: FR-38's route 1 diagnosis: every failure is definitional, with no engine or reference defect found
+
+2026-11-23, about 14:26 UTC. The judge's non-blind diagnosis (D314, the user's option 2). The judge read the references'
+code and values for it, so it is no longer a blind judge for FR-38. The D313 verdict stands as scored. Files:
+/mnt/workspaces/Cells/fr38-judged-20261123/diagnosis/ (diagnosis.json and the three scripts with their records).
+- **Route 1 is definitional.**
+  - The engine's label cohort leaves at the gross rate, which is erratum F's definition and what the rule
+    asks: the forward loss k n leaves at the row's shares, and the re-synthesis k n e^y enters at the base
+    label.
+  - The references' route1_blank (row minus blank) loses at the net rate, k(1 - e^y). The references were
+    built on 22 November, the day before erratum F.
+  - The per-time gaps equal the gross-minus-net closed form, to the engine's own split-step error. The
+    durable readout's 3.56e-9 is that form at 7200 s, normalised by the 3600-s scale.
+  - The engine meets the references' own gross closed form, first_order_limit, to 2e-14.
+  - The mapping that failed was the lead's: erratum 1's reading that "the blank-free label row is the same
+    quantity".
+  - Route 2 has the same mismatch, hidden by its known-rate grid error.
+- **The blank's G_minus_G0** is mu_M times the engine's float rounding of n_M (0.85 ulp at 7200 s). With
+  the exact M, the engine meets the reference to 7.7e-22 pJ.
+- **The zero-rate survivors.** The reference's n_F_minus_blank carries the row's real coupling through M,
+  and the closed form gives the same value. The engine departs from it by 4 to 5e-27 fmol, within its own
+  step noise. The sixth ruling's premise, that this quantity is exactly 0, was wrong.
+- **A side finding:** the short-lived split error is 1.10 times erratum C's stated bound, so that bound is
+  not strict. A sheet correction is on the backlog.
+- **The judge's recommendation:** a corrected rule for a new comparison, with these parts:
+  - routes 1 and 2 mapped to the gross reading, either through first_order_limit or through a new code-blind
+    gross tracker;
+  - the survivors compared with the reference at a floor of 1e-9 times the row's magnitude;
+  - G's floor set as a reasoned multiple of |mu_M| ulp(n_M);
+  - R2's order window argued from the split scheme before any run;
+  - fresh runs and a new judge, with the non-blindness disclosed.
+
+  Such a comparison on these worlds is weaker evidence than the first. The decision is the user's.
