@@ -1614,8 +1614,8 @@ def _deferred_to_closure(spec):
     """{species: {mover, ...}}: the moves check_two_form_rows leaves to check_closure_rows'
     admission, each named as moved_in_step names it: a declared kind's move of a row at a node
     where a general closure holds that row (its closure_rows), under a law that declares base
-    forms; and a forms face (FORMS_FACE_LAW) that moves a binder row the closure holds at both its
-    ends, as its forms. {} for a world without a general closure, whose movers are then not built
+    forms; and a forms face (FORMS_FACE_LAW) that moves a row the closure holds at both its ends (a
+    binder as its forms). {} for a world without a general closure, whose movers are then not built
     here."""
     if not any(hasattr(d, "closure_rows") for _, d in getattr(spec.model, "kinds", ())):
         return {}
@@ -1731,6 +1731,39 @@ def entity_modes(kind, declaration):
     return tuple(out)
 
 
+def _route_law(law_id):
+    """Whether a kind move's law is a route law (registry/laws.RouteLaw's interface)."""
+    from cells.registry import laws
+
+    try:
+        law = laws.active().lookup(law_id)
+    except KeyError:
+        return False
+    return type(law).interface == laws.ROUTE_LAW
+
+
+def _route_mover_errors(closure, law_id, species):
+    """§5.2's admission of a kind's route law at a general closure's rows (MT-1b's face plan, item
+    3; the binding owner's file, under the lead's leave), after the reads check: the reasons it is
+    refused, or (). Its one carried row is a ligand of the closure, whose stage read writes that
+    ligand's free amount into its row, so the route moves the ligand's base form, never a binder's
+    forms (a binder's row holds their total); and it crosses between the two ends of the hosts it
+    sits on (a patch or a junction), so it moves that row out of one end and into the other. The
+    moieties wait for item 6, as for every mover here."""
+    from cells.registry import laws
+
+    law = laws.active().lookup(law_id)
+    out = []
+    if species not in closure.ligands:
+        out.append(
+            f"under {law_id}, {species} is no ligand of the closure: a route law moves a ligand's "
+            "free amount, never a binder's forms"
+        )
+    if not set(law.hosts) <= {"membrane", "junction"}:
+        out.append(f"under {law_id}, its hosts {list(law.hosts)} are not two-ended")
+    return tuple(out)
+
+
 def _closure_mover_errors(spec, m, kind_id, law_id, rows):
     """§5.2's admission of a kind's moves under one law at a general closure's rows (the charge
     half; the moieties wait for item 6): the reasons it is refused, or (). The kind must declare
@@ -1770,7 +1803,9 @@ def check_closure_rows(spec):
     - @3's own routes and pumps (membrane, junction, channel, face, pump) are refused: they read
       stored totals as concentrations;
     - a kind's in-step move is admitted only when its law's reads name the closure's read ID, so
-      no mover reads a stored total (a route law declares no reads, so it is refused). That read
+      no mover reads a stored total (a route law without reads is refused). A route law that reads
+      the closure (MT-1b's leak @2) is admitted where its row is a ligand of the closure and its
+      hosts two-ended (_route_mover_errors; the face plan's item 3). For a cycle law, the read
       is kept beside §5.2's admission (the lead, 19 November 2026), which follows it: the kind
       declares role_species, its law declares base forms, each resolved mode passes mode_errors
       (the charge half; the moieties wait for item 6), and its moved_rows at the closure are its
@@ -1820,11 +1855,14 @@ def check_closure_rows(spec):
                                 f"{list(reads)} lack {read}; a mover at a closure node reads the "
                                 "closure"
                             )
-                        at_rows = sorted(
-                            (s, n) for s, kinds in movers.items() for k, w, ns in kinds
-                            if k == kind and w == law for n in ns if (s, n) in rows
-                        )  # fmt: skip
-                        errors = _closure_mover_errors(spec, m, kind, law, at_rows)
+                        if _route_law(law):  # MT-1b's face plan, item 3: a route law's own branch.
+                            errors = _route_mover_errors(closure, law, species)
+                        else:
+                            at_rows = sorted(
+                                (s, n) for s, kinds in movers.items() for k, w, ns in kinds
+                                if k == kind and w == law for n in ns if (s, n) in rows
+                            )  # fmt: skip
+                            errors = _closure_mover_errors(spec, m, kind, law, at_rows)
                         if errors:
                             raise ConfigError(
                                 f"{held}: §5.2's admission refuses {kind}'s move under {law}: "
