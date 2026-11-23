@@ -166,4 +166,29 @@ The `checks` in each file report this identity's residual. They also report:
 - **The accuracy measure** is e = max_i |q_second(t_i) − q_primary(t_i)| / max_i |q_primary(t_i)|,
   CRITERIA.md's normalisation.
 
-The results table follows the runs.
+## Results
+
+Every file's `method.second[...].difference_from_primary` gives e per quantity, and
+`method.largest_difference_e` gives the largest over the second methods. The table gives, per case:
+- the primary method's steps;
+- each second method's largest e, and the quantity it falls on;
+- the largest identity residuals.
+
+| Case | Primary steps | Second method: largest e (quantity) | Identities: largest residual |
+| --- | --- | --- | --- |
+| C2.3-sink | 10995 | Radau 1e-12: 9.1e-12 (`gene_rate_N_fmol_per_s`); BDF 1e-12: 3.1e-11 (`gene_state.releases.tx`) | books, machines, residues, products, moieties 5.8e-13 fmol; energy 2.2e-15 of scale |
+| C2.3-sink-planted | 10973 | Radau 1e-12: 8.0e-12 (`gene_rate_N_fmol_per_s`); BDF 1e-12: 3.1e-11 (`gene_state.releases.tx`) | books, machines, residues, products, moieties 4.0e-13 fmol; energy 5.4e-15 of scale |
+| C2.3-source | 11055 | Radau 1e-12: 3.5e-14 (`gene_rate_N_fmol_per_s`); BDF 1e-12: 3.0e-11 (`gene_state.releases.tx`) | books, machines, residues, products, moieties 5.8e-13 fmol; energy 1.3e-14 of scale |
+| C2.3-source-planted | 11050 | Radau 1e-12: 6.9e-14 (`gene_state.releases.tx`); BDF 1e-12: 3.0e-11 (`gene_state.releases.tx`) | books, machines, residues, products, moieties 4.3e-13 fmol; energy 8.6e-15 of scale |
+
+**C2.3's stated accuracy: e ≤ 3.1e-11 for every quantity.**
+- For CRITERIA.md's judged quantities, the largest e over both second methods is:
+  - n_N: 1e-20;
+  - the gene unit's books: 2.0e-12;
+  - the network's books: 1.4e-12;
+  - the route rate: 2.3e-14.
+- The worst differences fall on the releases and the stage-8 complexes, whose values are the
+  smallest of the gene unit's state (about 1e-13 fmol). They come from BDF, the lower-order method.
+- Radau at 1e-12 agrees with the primary to 9.1e-12 or better.
+- One sign change of J_C is found in each case: at t = 0.047963 s in the sink and 0.047978 s in the
+  source. The three methods place it within 4.1e-14 s of each other.
