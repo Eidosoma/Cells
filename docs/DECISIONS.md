@@ -10185,3 +10185,63 @@ references returned, against the code-blind references tagged fr43-part3-referen
   - an I/O-only change to the judge after its first freeze, with its self-test identical;
   - timing smokes on unregistered seeds 900001+.
 - **Protocol D's fail stands as D318.** It is to be re-registered after FR-43.
+
+## D323: FR-46, FR-47 and FR-48: the user's rulings with a reviewer's additions; FR-48 is built first, then FR-46, and FR-47 is registered before its build
+
+2026-11-23, about 19:10 UTC. These rule on the design note /mnt/workspaces/Cells/fr46-48-design-20261123/DESIGN.md, with its
+section 9. The user agreed with the recommendations and relayed a reviewer's comments, which are adopted.
+- **FR-48, a lumen standard potential (R1-R3):**
+  - The species owns an absolute `lumen` standard potential. Records report Delta = mu0_lumen - mu0_solution.
+  - The shell law keeps all of Delta on the exit.
+  - **What the qualification claims:** the equilibrium ratio, Binomial(N, 1/(1 + e^Delta)) at equal volumes, and
+    detailed balance. The relaxation time follows the law's rate convention and is not claimed.
+  - **Rows:** a nonzero solution potential, with a plant that reads the lumen value as an offset; and the undeclared
+    default.
+  - **Version 1** covers prescribed shells only, with the rest refused by name. The key is statically absent unless
+    declared (D148).
+- **FR-46, binding from a shell's inner face (R4-R6):**
+  - One face per complex, and shells only in version 1.
+  - **The face rule propagates faces by ligand moiety over every wall state,** from the stoichiometry, not from
+    declared pairs. A reviewer reproduced a carrier that passed the proposed check: the ligand went through a
+    ligand-bearing wall state that had no binding pair of its own.
+  - **Rows:**
+    - the reviewer's counterexample first, as a failing row;
+    - carriers with zero, one and two intermediates refused;
+    - a same-face isomerization admitted;
+    - a run-level row: a shell closed to the ligand keeps the lumen at zero.
+  - **Rule 3's recorded message** is revised in FR-46's own landing, with the one recorded string declared in probes2's
+    compare. All 22 historical refusal inputs still refuse.
+- **FR-47, shell exchange and washes in the deterministic representation (R7-R9, R11):**
+  - **Gates:** autonomous switching gates, meaning forms interconverting by a wall step. Gates driven by bound states
+    are refused in (d).
+  - **Zeros (E2):** true zeros for first-order tracer places, through the difference form.
+  - **Site binding** in (d) shell worlds is refused by name in version 1.
+  - **min_count 10** is recorded as the run setting only, not as a qualified n_min.
+  - **E2's derivative.** At an empty place, the flux's one-sided derivative must be the first-order law's, not the
+    zero that exp(safe_log(n)) gives, because the Rosenbrock stages use it.
+    - Rows test the flux and its one-sided derivative at an empty reactant and at an empty product.
+    - A row tests the step-halving order across a step that starts at zero, with the old factored form as its plant.
+    - A stated rule for stage or step results below zero at E2 places replaces the envelope's guard there.
+- **FR-47's qualification (R10, R12),** tagged before the build, with C9 and P9 (the heat against the reference's
+  closed form):
+  - **Zero uncertainty is classified from the reference, before the run.**
+    - Where the reference predicts a constant, every replica must match it, and one wrong replica fails.
+    - Where it predicts spread, identical replicas still face the spread test.
+    - A tolerance exists only where it is derived, for two routes to one constant by different arithmetic, as
+      release_check's bound is. The lead's earlier proposal of a declared rounding floor is withdrawn.
+    - **The same rule serves Protocol D's re-registration,** which must justify any excluded pair from the model, not
+      from the replicas.
+  - **C6's spread test** takes its fourth moment from the reference, or another justified spread test is chosen.
+  - **C8's slope** is claimed as measured only where 128 replicas resolve it by the reference's own estimate.
+    Elsewhere it is reported.
+  - **Seeds:** fresh seeds, disjoint from every probe and smoke seed, are named in the tag.
+  - **The judge** is first run on a file written by the references' own writer, on invented inputs.
+  - **FR-43 part 2's lessons apply:**
+    - the reference spec states the unit of every declared count;
+    - the references agent shows bitwise regeneration under other hash seeds;
+    - there is one tag, at the final head.
+- **Order:**
+  - FR-48, then FR-46, in one gate if both are ready together.
+  - FR-47's protocol and reference spec come next, and its build follows FR-48.
+  - Gates wait for FR-43's lanes.
+  - FR-47's exact ensemble, about 3 CPU-hours, runs after Protocol D's re-registration or on other CPUs.
