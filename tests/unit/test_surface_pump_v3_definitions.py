@@ -119,6 +119,8 @@ def test_explicit_stage_guard_refuses_open_sodium_channels():
         "capacity",
         "missing_channels",
         "hot",
+        "sparse_field_rk4",
+        "sparse_field_n2",
         *ENERGY_CHECK_FAULTS,
     ],
 )
@@ -153,6 +155,9 @@ def test_definition_errors_reject(fault):
         x["channel_capacity"] = len(m["channels"]) - 1
     elif fault == "missing_channels":
         del m["channels"]
+    elif fault.startswith("sparse_field_"):  # FR-17 stage 1: the plain IMEX tableaux alone.
+        x["field_solver"] = "sparse_capacitive_reduction_gauged_damped_newton@1"
+        x["solver"] = "rk4" if fault.endswith("rk4") else imex.IMPLICIT_CONDUCTANCES_ID
     else:
         m["temperature_K"] = 400.5
     with pytest.raises(ConfigError, match=ENERGY_CHECK_FAULTS.get(fault, (None, None))[1]):

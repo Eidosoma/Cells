@@ -50,6 +50,22 @@ def admitting(parsers):
         _ADMITTED_GATES.reset(token)
 
 
+# The field solvers a later family admits beyond versions 2 and 3: resolved_pump_tissue@3's parse
+# admits surface_field.SPARSE_SOLVER_ID (FR-17 stage 1) within its block, so @3 and the models that
+# parse through it accept it, while this parse and @2's refuse it as any other declaration.
+_ADMITTED_FIELD_SOLVERS = contextvars.ContextVar("admitted_field_solvers", default=())
+
+
+@contextmanager
+def admitting_field_solvers(ids):
+    """Within the block, this parse admits the given field solver IDs as declared."""
+    token = _ADMITTED_FIELD_SOLVERS.set(tuple(ids))
+    try:
+        yield
+    finally:
+        _ADMITTED_FIELD_SOLVERS.reset(token)
+
+
 @dataclass(frozen=True)
 class SurfacePumpModel:
     species_ids: tuple[str, ...]
@@ -198,11 +214,13 @@ def parse(data):
                 fraction(c["availability"], "availability") * (gates[group["junction_id"]][3])
             )
     m["id"], x["solver"] = base.MODEL_ID, "rk4"
-    # The factored field, version 2 or (declared) version 3; any other declaration
-    # fails the passive parser's field solver check as before.
+    # The factored field, version 2 or (declared) version 3, or a field solver a later family
+    # admits (admitting_field_solvers); any other declaration fails the passive parser's field
+    # solver check as before.
     declared = x.get("field_solver")
+    admitted = (FLOOR_SOLVER_ID, *_ADMITTED_FIELD_SOLVERS.get())
     passive = base.parse(
-        raw, field_solver=FLOOR_SOLVER_ID if declared == FLOOR_SOLVER_ID else FACTORED_SOLVER_ID
+        raw, field_solver=declared if declared in admitted else FACTORED_SOLVER_ID
     )
     m0 = passive.model
     membranes = tuple(

@@ -465,7 +465,7 @@ def _gains_above(q, dc, *, xp):
             scatter(added, xp.zeros(o), (q.membrane_outside,), xp=xp),
         )
     )
-    return gain > RATIO_ABOVE * xp.diagonal(q.field_capacitor_matrix)
+    return gain > RATIO_ABOVE * field.capacitor_diagonal(tissue.field_layout(q), xp=xp)
 
 
 def _exact_change(operands, *, xp):

@@ -112,6 +112,7 @@ STATE_AXES = _model.STATE_AXES
 STATE_TYPE = _model.STATE_TYPE
 LAYOUT_TYPE = _model.LAYOUT_TYPE
 FLOOR_LAYOUT_TYPE = _model.FLOOR_LAYOUT_TYPE
+SPARSE_LAYOUT_TYPE = _model.SPARSE_LAYOUT_TYPE
 Values = _model.VALUES_TYPE
 
 
@@ -166,7 +167,13 @@ def ionic_control(control):
 
 def ionic_layout(p, state=None):
     """The @3 layout: declared volumes, or the current ones of `state`."""
-    kind = ionic.FLOOR_LAYOUT_TYPE if hasattr(p, "field_current_floor") else ionic.LAYOUT_TYPE
+    kind = (
+        ionic.SPARSE_LAYOUT_TYPE
+        if hasattr(p, "field_capacitor_values")
+        else ionic.FLOOR_LAYOUT_TYPE
+        if hasattr(p, "field_current_floor")
+        else ionic.LAYOUT_TYPE
+    )
     q = kind(*(getattr(p, k) for k in kind._fields))
     if state is None:
         return q
