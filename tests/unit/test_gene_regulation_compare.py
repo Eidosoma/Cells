@@ -383,6 +383,10 @@ SURVIVAL = [
     ("resolved lossless", 60, 1 / 360, 0.0, False, "compared"),
     ("empty cohort", 60, 0.0, K_SHORT, False, "empty cohort"),
     ("resolved first-order", 60, 1 / 360, K_SHORT, True, "compared"),
+    # The Lean lane's turnover_roundoff control: constant turnover through the run (releases equal
+    # losses, the amount steady), where the known-rate form is exact on any grid and its grid error
+    # exactly zero; the ratio's own rounding (one ulp above 1/4) once failed a zero bound.
+    ("steady turnover, zero grid error", 60, None, None, True, "compared"),
 ]
 
 
@@ -401,6 +405,19 @@ def test_the_survival_check_fails_closed(case, every, inflow, loss, ok, status, 
     t1, t2 = worlds.R1_WINDOW
     t = [float(x) for x in range(0, int(2 * t2) + 1, every)]
     n0 = 10.0
+    if inflow is None:  # Steady turnover at the definition's gross k, through the whole record.
+        k = release_check.gross_rate({"definition": worlds.r1(0.75), "cell": "cell_0"}, "R_s")
+        made = [n0 * COPY_FMOL * k * s for s in t]
+        readouts = {"n_R_s": [n0 * COPY_FMOL + q - q for q in made],
+                    "int_Q_tx_release_short_lived": made, "int_D_R_s": list(made)}  # fmt: skip
+        path = tmp_path / "record.json"
+        path.write_text(json.dumps(dict(definition=worlds.r1(0.75), cell="cell_0", t=t,
+                                        readouts=readouts)))  # fmt: skip
+        checks = release_check.Checks()
+        release_check.survival(checks, case, path, "R_s", "short_lived")
+        (row,) = checks.rows
+        assert (row["ok"], row["status"]) == (ok, status), row
+        return
 
     def alive(s):
         made = inflow * min(s, t2)
