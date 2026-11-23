@@ -69,6 +69,14 @@ through the lead.
   the checker's D0–D6 reading. It has no retry and no second (d) run. The refused run's outcome
   stays in the record as found.
 
+- **L and the planted run (the lead's ruling).** §5.5's L judges the honest worlds' (d) runs.
+  - A planted run refused by its own books is a plant outcome, recorded as found, and not a fail
+    of L.
+  - P-D6's registered catch is exactly such a refusal.
+  - P-D1's refused run stays in the record as its found outcome.
+- **When §6 gives no n_min** (the lead confirmed): n_k = 98, the strictest case, fixed before any
+  reading.
+
 ## 3. P-D2(ii)'s plant process (the lead's ruling)
 
 - **The step.** The plant process computes `rate_equations.verdict()`, the cached generic verdict,
