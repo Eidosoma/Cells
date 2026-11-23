@@ -190,3 +190,29 @@ def test_derived_producer_labels_follow_cell_ids_and_events_not_the_cells_order(
         (3.0, "cell_a-g1-tx_a"), (5.0, "cell_a-g2-tx_a"),
     )  # fmt: skip
     assert dict(schedules)[("R", "tx_b")] == ((0.0, "cell_b-g0-tx_b"),)
+
+
+def test_a_batch_of_producer_worlds_is_refused():
+    """Amendment G's batch limit, fail-closed: a producer world's label count follows its cells'
+    replacement events, which the batch's signature check cannot read, so version 1 batches it with
+    no other world. Two members whose producer cells see one and two events are refused by the
+    batch's own check, and so are two identical members; a batch of one parses (parses only)."""
+    from cells.definitions.specs import ConfigError
+    from cells.execution.batch import parse_batch
+    from validation.gene_regulation import replace_restart as rr
+
+    def batch(*worlds):
+        return dict(
+            schema_version=1, kind="independent_worlds",
+            worlds=[dict(world_id=k, simulation=w) for k, w in enumerate(worlds, start=1)],
+            execution=dict(mapping="lax_map", max_worlds=8, max_padded_steps=10**6,
+                           max_working_bytes=2**40),
+        )  # fmt: skip
+
+    twice = chase("derived")
+    events = twice["experiment"]["replacement_events"]
+    events.append(dict(events[0], time=rr.T_C, carrier_id=f"{events[0]['carrier_id']}_2"))
+    for pair in ((chase("derived"), twice), (chase("derived"), chase("derived"))):
+        with pytest.raises(ConfigError, match="matching model array axes"):
+            parse_batch(batch(*pair))
+    parse_batch(batch(chase("derived")))

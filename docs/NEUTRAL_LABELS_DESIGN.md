@@ -520,8 +520,9 @@ and schedule, so a schedule can no longer disagree with the events (operators/sp
 - **Identity:** the definition keeps `producers`, not the derived labels. So a restart derives the
   same, and so does a reordering of the cells, since names follow cell IDs and generations the
   event order.
-- **A limit:** the derived label count follows a cell's replacement events, which the owner's batch
-  signature (declarations only) cannot read. A batch of worlds whose producer cells see different
-  event counts would differ in its label width.
+- **Batches:** the derived label count follows a cell's replacement events, which a declaration
+  does not hold, and the batch check compares declarations' signatures only. So version 1 batches
+  a definition that declares producers with no other world: its signature holds a part equal to
+  nothing (fail-closed; a batch of one runs).
 - **The gene unit's check** compares a release's two fate rows' declared labels. Each fate row
   should declare the same producers, so their derived lists agree.

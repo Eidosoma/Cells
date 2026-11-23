@@ -258,6 +258,20 @@ def _producers(raw, name, base):
     return tuple(out)
 
 
+class Unbatched:
+    """A batch signature's part equal to nothing, itself included (amendment G's batch limit);
+    a fresh one per signature."""
+
+    def __eq__(self, other):
+        return False
+
+    def __hash__(self):
+        return 0
+
+    def __repr__(self):
+        return "Unbatched()"
+
+
 def producer_label(cell, generation, source, window=None):
     """Amendment G's producer label: <cell>-g<k>-<chain>, and <cell>-g<k>-<chain>-<window> inside
     a declared window (a contract convention: the requester's triple, cell, generation, chain)."""
@@ -1062,10 +1076,14 @@ class NeutralArrivalLabels(Operator):
         check_labels(spec, declaration, model)
 
     def batch_signature(self, declaration):
-        """The labelled species, their label counts and their producers (amendment G); IDs,
-        shares and schedules are data. A producer's label count also follows its cell's
-        replacement events, which this signature cannot read."""
-        return (LAW_ID, tuple((s.id, len(s.labels), s.producers) for s in declaration.species))
+        """The labelled species and their label counts; IDs, shares and schedules are data. Where
+        a species declares producers (amendment G) its label count follows its cells' replacement
+        events, which a declaration does not hold, so version 1 batches such a definition with no
+        other world: its signature holds a fresh part equal to nothing (Unbatched; a container's
+        comparison checks identity first, so a shared one would match itself), which the batch's
+        own check refuses ("matching model array axes"). Fail-closed: a batch of one runs."""
+        parts = (LAW_ID, tuple((s.id, len(s.labels)) for s in declaration.species))
+        return parts + ((Unbatched(),) if any(s.producers for s in declaration.species) else ())
 
     def working_size(self, spec):
         (declaration,) = (d for op, d, _ in composite_spec.entries(spec) if op.LAW_ID == LAW_ID)
