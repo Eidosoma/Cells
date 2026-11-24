@@ -193,12 +193,13 @@ def test_a_shell_s_washes_follow_the_mean_s_closed_form_with_their_books_and_rec
     tracer-free full wash, then a withdrawal at f = 1/4 that only E2's refilled pool can feed. The
     counts at every observation, each wash's removed amount and mixing heat −(1 − f) n ln(1 − f),
     and each interval's continuous heat −ΔF_cont (each term 0 at 0, the two zero starts booked by
-    closure) equal the linear mean's closed form; the tracer moiety balances with the removed
-    amounts; the books close; the records name the shell, the washes and E2. One population
-    program compiled and one run: about 25 s."""
+    closure) equal the linear mean's closed form, each read by FR-47's judge from (d)'s rows and
+    stop events; the tracer moiety balances with the removed amounts; the books close; the records
+    name the shell, the washes and E2. One population program compiled and one run: about 25 s."""
     import json
 
     from cells.models.assembly_lineages_v2 import records
+    from validation.assembly_lineages_v2 import fr47_judge
 
     delta, n0 = float(np.log(2.0)), 4000
     spec = parse_spec(shell_definition(shell_world(delta=delta), stops=STOPS, times=TIMES,
@@ -208,27 +209,28 @@ def test_a_shell_s_washes_follow_the_mean_s_closed_form_with_their_books_and_rec
     e2 = run.statistics["e2"]
     assert e2["places"] == ["S@pool", "S@lumen"] and e2["zero_starts"] == 2  # founder, the wash
     observed, washes, intervals = closed_form(n0, delta, STOPS, TIMES, 4.0)
-    names = [p.name for p in spec.model.world.places]
-    pool, lumen = names.index("S@pool"), names.index("S@lumen")
-    rows = run.rows
-    seen = rows["row_kind"] == "observed"
-    for t, p, s in zip(rows["row_time_s"][seen], rows["pool_counts"][seen],
-                       rows["slot_counts"][seen][:, 0], strict=True):  # fmt: skip
-        assert np.allclose((p[pool], s[lumen]), observed[t], rtol=0.0, atol=1e-6 * n0), t
-    events = [e for e in run.events if e["kind"] in ("withdrawal", "replacement")]
-    assert [e["kind"] for e in events] == [k for k, _, _ in STOPS]
-    for e, (kind, removed, heat) in zip(events, washes, strict=True):
-        assert abs(e["removed"]["S@pool"] - removed) <= 1e-6 * n0
-        if kind == "withdrawal":
-            assert abs(e["mixing_heat_kT"] - heat) <= 1e-6 * n0
+    # read as FR-47's judge reads (d)'s rows and stop events
+    world, times = spec.model.world, [t for _, t, _ in STOPS]
+    counts = fr47_judge.d_observables(run, world, ["S@pool", "S@lumen"], TIMES)
+    for t in TIMES:
+        got = (counts[("S@pool", t)], counts[("S@lumen", t)])
+        assert np.allclose(got, observed[t], rtol=0.0, atol=1e-6 * n0), t
+    stops = fr47_judge.d_stops(run)
+    assert [(t, kind) for t, kind, _, _ in stops] == [(t, k) for k, t, _ in STOPS]
+    for (_, kind, removed, heat), (_, want, want_heat) in zip(stops, washes, strict=True):
+        assert abs(removed - want) <= 1e-6 * n0
+        assert (heat is None) == (kind == "replacement")
+        if heat is not None:
+            assert abs(heat - want_heat) <= 1e-6 * n0
     assert washes[2][1] > 20.0  # the pool refilled after the full wash: E2's flux (P4 gives 0)
-    edges = [0.0, *(t for _, t, _ in STOPS), 4.0]
-    q, at = rows["continuous_heat_kT"], rows["row_time_s"]
-    for (a, b), (x0, x1) in zip(zip(edges, edges[1:], strict=False), intervals, strict=True):
-        heat = q[np.flatnonzero(at == b)[-1]] - q[np.flatnonzero(at == a)[-1]]
+    for (a, b, heat), (x0, x1) in zip(fr47_judge.d_intervals(run, times, 4.0), intervals,
+                                      strict=True):  # fmt: skip
         assert abs(heat - (f_cont(x0, delta) - f_cont(x1, delta))) <= 1e-6 * n0, (a, b)
-    present = rows["pool_counts"][-1][pool] + rows["slot_counts"][-1][0][lumen]
-    assert abs(present + sum(e["removed"]["S@pool"] for e in events) - n0) <= 1e-9 * n0
+    names = [p.name for p in world.places]
+    rows = run.rows
+    present = (rows["pool_counts"][-1][names.index("S@pool")]
+               + rows["slot_counts"][-1][0][names.index("S@lumen")])  # fmt: skip
+    assert abs(present + sum(r for _, _, r, _ in stops) - n0) <= 1e-9 * n0
     records.write_run(tmp_path / "bundle", run)
     record = json.loads((tmp_path / "bundle" / "run.json").read_text())
     assert {"shell", "washes", "e2"} <= set(record["representation"]["formulas"])
