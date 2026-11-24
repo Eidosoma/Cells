@@ -944,12 +944,38 @@ doi:10.1016/j.bpj.2015.10.054, PMC4805864.
     - `lean/` has no hit.
   - **Git's full history,** 5,207 commits on every branch, has no other path that ever carried these
     names. So the snapshot copies of tracked files in run folders can hold nothing else.
-  - **In `/mnt/workspaces/Cells` and `/mnt/datasets/Cells`:** [pass 3's result, recorded before
-    Tag A].
-  - **The 2018 extraction names this paper.** Counts only, with no file opened: one line naming it
-    (by its second author, DOI or PMC ID) in each of `fr30-ekvitorin2018-benchmark/extraction/`'s
-    `protocol.json` and `extraction_notes.md`, and none in its `fit.json` or `held_out.json`. That
-    folder is excluded for the fitter, the predictor and the checker (part 9).
+  - **In `/mnt/workspaces/Cells` and `/mnt/datasets/Cells`** (pass 5, 13:18 to 14:07 UTC on 24
+    November; `/mnt/workspaces/Cells/fr30-next-20261124/sweep/pass5/`). File names only, with
+    these skips:
+    - snapshot trees were left to Git's history;
+    - virtual environments and the sweep's own folder were skipped;
+    - the sealed folder was left out of the datasets pass's search roots.
+
+    Earlier passes timed out or were stopped before their datasets stage, so none searched the
+    sealed folder. Pass 5 found:
+    - **519 copies of the four docs above,** in worktrees and run folders.
+    - **Files naming this paper specifically,** by its DOI, PMC ID or year, counted without
+      reading:
+      - the lead's notes in `d172-restructure-20261115-01/` (`LEAD-NOTES.md` and
+        `MORNING-BRIEF-20261123.md`);
+      - the source search's `candidates.md`;
+      - `fr30-candidates4-extraction/`'s `README.md` and `LOG.txt`.
+
+      They are candidate lists and status notes from before this entry, and all of them are
+      barred to the fitter (part 9).
+    - **Files naming the 2018 paper by the same authors:** its extraction's four files, its
+      datasets folder's `MANIFEST.txt`, Revilla's `RULING_DRAFT.md`, Shibayama's `held_out.json`,
+      and a file listing in `wash-export-refusal-20261123/`.
+    - **The surname only:** BITSEY's `GJ_lib.py` (three copies; a person, D334), Elenes's
+      extraction notes, and two text renderings of Moreno et al. (2002) under
+      `review-check-20261121/`.
+    - **Nothing else** in either tree names it.
+  - **The 2018 extraction's two lines.**
+    - A count, with no file opened, found one line matching this paper's second author in each of
+      `fr30-ekvitorin2018-benchmark/extraction/`'s `protocol.json` and `extraction_notes.md`.
+    - The lead read both by name only (24 November). They read "Ek-Vitorin, Pontifex and Burt
+      (2018)": the 2018 candidate, by the same authors, not this paper.
+    - The folder stays excluded for the fitter, the predictor and the checker (part 9).
   - **BITSEY's `GJ_lib.py`** names Jose Ek Vitorin as an expert colleague: a person, not this paper.
     The lead checked it by name only, and there is no exposure (D334).
 
@@ -1331,7 +1357,8 @@ Every G_ss and amplitude entry must carry the protocol's normalization.
 Every stage prints verdicts, statuses, labels and key paths only. Values go to the output files.
 
 **The tests** (`tests/unit/test_junction_benchmark_harness.py`) use invented files only. They run
-in about 1.5 s on one CPU and compile no world. Each claim has its planted error:
+in 2.22 s, measured cold on the timed lane (tier 1, `tests/test_tiers.json`), and compile no
+world. Each claim has its planted error:
 - **G1:** the passing path, a G_ss off by 0.06, and tau_slow off by 30% at two voltages;
 - **G2:** section 13.6's container;
 - **G3:** SD conversion, which needs both n and n_counts;
@@ -1421,10 +1448,10 @@ sealing.
   digitizers.
 - **Other extractions:** every FR-30 extraction folder.
   - That includes `fr30-candidates4-extraction/` (Revilla's among them) and
-    `fr30-ekvitorin2018-benchmark/`, two of whose files name this paper.
+    `fr30-ekvitorin2018-benchmark/`, the same authors' later paper.
 - **Revilla's benchmark:** `fr30-benchmark-20261123/`.
-- **Priors and notes:** `lean/`, the source search's `candidates.md`, and the notes named in
-  section 13 and 13.1.
+- **Priors and notes:** `lean/`, the source search's `candidates.md`, the lead's notes and briefs
+  in `d172-restructure-20261115-01/`, and the notes named in section 13 and 13.1.
 
 #### Part 10. Order of work and tags
 
@@ -1433,7 +1460,7 @@ sealing.
    - the rehearsal passes;
    - the lead gates the landing (D223, D229).
 2. **Tag A, before the paper is opened.** The lead tags this entry with its code:
-   `fr30-ekvitorin2016-registered-<date>`.
+   `fr30-ekvitorin2016-tag-a-2026-11-24`.
 3. **The extraction.**
    - E extracts, recording the PDF's sha256, runs `check` (exit 0) and seals.
    - The lead records `held_out.json`'s digest in a dated decision entry.
@@ -1443,25 +1470,26 @@ sealing.
        verdict is undetermined;
      - otherwise: undetermined, and nothing further runs.
 4. **Tag B, before any fit.** H runs `conventions`, and the lead tags `conventions.json` as
-   `fr30-ekvitorin2016-conventions-<date>`.
+   `fr30-ekvitorin2016-tag-b-<date>`.
 5. **The fit.** F states the kinds, fits, and writes `params.json`.
 6. **The prediction.** P predicts and verifies.
 7. **The score.** C scores, and the lead's decision entry follows.
 
 Each step expected to run for 10 minutes or more runs detached, with durable logs (AGENTS.md).
 
-#### Part 11. Not decided here
+#### Part 11. Settled before Tag A (the lead, 24 November 2026)
 
-- **The tag names and dates** (part 10).
-- **The 2018 extraction's two lines, before Tag A.**
-  - `fr30-ekvitorin2018-benchmark/extraction/protocol.json` and `extraction_notes.md` each name this
-    paper (disclosure).
-  - Should someone who will never fit read only those lines, as the lead did for BITSEY's file, and
-    record whether any value or protocol of this paper is on record there?
-  - S1's "none seen" rests on the fitter never reading that folder.
-- **Retiring section 13.5's modules on main** (`revilla1999.py`, `revilla1999_score.py` and their
-  tests). Their tags keep them. The generic modules reproduce them (part 8), so retiring them is the
-  lead's call under the pre-alpha rule.
+- **The tags:** `fr30-ekvitorin2016-tag-a-2026-11-24` and later `fr30-ekvitorin2016-tag-b-<date>`
+  (part 10).
+- **The 2018 extraction's two lines** name the 2018 paper by the same authors, not this one
+  (disclosure). S1's "none seen" stands, and the folder stays barred (part 9).
+- **The three choices D334 left to this entry stand:**
+  - `other` and `not_stated` count as confounding (E3, P4);
+  - the minimum judged set is as P5 defines it;
+  - cannot predict is decided before the confounded undetermined (P6).
+- **Section 13.5's modules stay on main for now** (`revilla1999.py`, `revilla1999_score.py` and
+  their tests). Their tags keep them, and the generic modules reproduce them (part 8). Retiring them
+  is a later cleanup.
 
 ## Sources
 
