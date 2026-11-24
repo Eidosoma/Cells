@@ -1,0 +1,15 @@
+{
+ "name": "W2_Ng4096",
+ "type": "gated_shell",
+ "spec": "SPEC.md section 2, W2, the rung N_g = 4096",
+ "V_out_L": "2e-18",
+ "V_in_L": "2.5e-19",
+ "A_sh_m2": "1.2e-15",
+ "P_s_m_per_s": "1.5e-7",
+ "tracer_potentials_kBT": {"solution": "0.0", "lumen": null},
+ "gate": {"open_form": "G", "closed_form": "H", "a_open_kBT": "1.0", "b_closed_kBT": "-1.0", "mu0_G_kBT": "-1.0", "mu0_H_kBT": "-1.5", "k_GH_per_s": "4.0"},
+ "founder_molecules": {"S@pool": 20000, "S@lumen": 0, "B@wall": 100, "G@wall": 2048, "H@wall": 2048},
+ "observation_times_s": ["0.5", "1.0", "1.5", "2.0", "3.0", "4.0", "5.0", "6.0"],
+ "horizon_s": "6.0",
+ "plants": []
+}

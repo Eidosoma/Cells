@@ -1,0 +1,784 @@
+{
+ "world": {
+  "name": "W2_Ng64",
+  "type": "gated_shell",
+  "spec": "SPEC.md section 2, W2, the rung N_g = 64",
+  "V_out_L": "2e-18",
+  "V_in_L": "2.5e-19",
+  "A_sh_m2": "1.2e-15",
+  "P_s_m_per_s": "1.5e-7",
+  "tracer_potentials_kBT": {
+   "solution": "0.0",
+   "lumen": null
+  },
+  "gate": {
+   "open_form": "G",
+   "closed_form": "H",
+   "a_open_kBT": "1.0",
+   "b_closed_kBT": "-1.0",
+   "mu0_G_kBT": "-1.0",
+   "mu0_H_kBT": "-1.5",
+   "k_GH_per_s": "4.0"
+  },
+  "founder_molecules": {
+   "S@pool": 20000,
+   "S@lumen": 0,
+   "B@wall": 100,
+   "G@wall": 32,
+   "H@wall": 32
+  },
+  "observation_times_s": [
+   "0.5",
+   "1.0",
+   "1.5",
+   "2.0",
+   "3.0",
+   "4.0",
+   "5.0",
+   "6.0"
+  ],
+  "horizon_s": "6.0",
+  "plants": [],
+  "constants": {
+   "N_A_per_mol": "6.02214076e23",
+   "c0_mol_per_L": "1",
+   "temperature_K": "296.15",
+   "note": "the temperature enters nothing: every energy is in k_BT (SPEC.md section 0)"
+  }
+ },
+ "units": {
+  "counts": "molecules in one place: one species in one compartment (the pool, the lumen of one shell, or the shell's wall); never a concentration, an amount in moles or a count per shell (SPEC.md section 0)",
+  "pairs": "mean and value in molecules, var in molecules^2, mu4 in molecules^4",
+  "stops.removed": "mean and value in molecules, var in molecules^2, mu4 in molecules^4",
+  "stops.mixing_heat": "mean and value in k_BT, var in (k_BT)^2, mu4 in (k_BT)^4",
+  "stops.f": "the withdrawn fraction of the pool, dimensionless (1.0 at the replacement)",
+  "d.pairs.value": "molecules",
+  "d.stops.removed": "molecules",
+  "d.stops.mixing_heat": "k_BT",
+  "d.intervals.heat": "k_BT",
+  "gap.gap": "molecules",
+  "gap.resolution": "dimensionless: |gap| / (SD / sqrt(128)), SD in molecules",
+  "plants": "honest and planted in the unit of the named quantity (molecules for counts, removed and tracer_moiety; k_BT for mixing_heat and heat); distance_in_bounds dimensionless",
+  "times": "s",
+  "world": "as declared: volumes in L, area in m^2, permeability in m/s, times in s, rates per s per molecule or per copy, potentials and barrier shifts in k_BT"
+ },
+ "pairs": [
+  {
+   "observable": "S@pool",
+   "time_s": 0.5,
+   "class": "spread",
+   "mean": 19069.404998982496,
+   "var": 2864.332508162784,
+   "mu4": 24545784.537274536
+  },
+  {
+   "observable": "S@pool",
+   "time_s": 1.0,
+   "class": "spread",
+   "mean": 18554.354122443245,
+   "var": 3279.9869881315403,
+   "mu4": 32271998.440616112
+  },
+  {
+   "observable": "S@pool",
+   "time_s": 1.5,
+   "class": "spread",
+   "mean": 18245.32265686633,
+   "var": 2756.3450991382997,
+   "mu4": 22820220.678840254
+  },
+  {
+   "observable": "S@pool",
+   "time_s": 2.0,
+   "class": "spread",
+   "mean": 18059.28283069365,
+   "var": 2335.910360777601,
+   "mu4": 16383082.764033483
+  },
+  {
+   "observable": "S@pool",
+   "time_s": 3.0,
+   "class": "spread",
+   "mean": 17879.82799100022,
+   "var": 2015.4935318072037,
+   "mu4": 12188123.540926037
+  },
+  {
+   "observable": "S@pool",
+   "time_s": 4.0,
+   "class": "spread",
+   "mean": 17814.7726625962,
+   "var": 1967.9731786672737,
+   "mu4": 11619573.53433783
+  },
+  {
+   "observable": "S@pool",
+   "time_s": 5.0,
+   "class": "spread",
+   "mean": 17791.18903346966,
+   "var": 1968.4507102875637,
+   "mu4": 11625204.515169866
+  },
+  {
+   "observable": "S@pool",
+   "time_s": 6.0,
+   "class": "spread",
+   "mean": 17782.63957908128,
+   "var": 1972.0965220306612,
+   "mu4": 11668300.711205954
+  },
+  {
+   "observable": "S@lumen",
+   "time_s": 0.5,
+   "class": "spread",
+   "mean": 930.5950010175022,
+   "var": 2864.332508162784,
+   "mu4": 24545784.537274536
+  },
+  {
+   "observable": "S@lumen",
+   "time_s": 1.0,
+   "class": "spread",
+   "mean": 1445.6458775567553,
+   "var": 3279.9869881315403,
+   "mu4": 32271998.440616112
+  },
+  {
+   "observable": "S@lumen",
+   "time_s": 1.5,
+   "class": "spread",
+   "mean": 1754.6773431336685,
+   "var": 2756.3450991382997,
+   "mu4": 22820220.678840254
+  },
+  {
+   "observable": "S@lumen",
+   "time_s": 2.0,
+   "class": "spread",
+   "mean": 1940.7171693063488,
+   "var": 2335.910360777601,
+   "mu4": 16383082.764033483
+  },
+  {
+   "observable": "S@lumen",
+   "time_s": 3.0,
+   "class": "spread",
+   "mean": 2120.17200899978,
+   "var": 2015.4935318072037,
+   "mu4": 12188123.540926037
+  },
+  {
+   "observable": "S@lumen",
+   "time_s": 4.0,
+   "class": "spread",
+   "mean": 2185.2273374038,
+   "var": 1967.9731786672737,
+   "mu4": 11619573.53433783
+  },
+  {
+   "observable": "S@lumen",
+   "time_s": 5.0,
+   "class": "spread",
+   "mean": 2208.8109665303396,
+   "var": 1968.4507102875637,
+   "mu4": 11625204.515169866
+  },
+  {
+   "observable": "S@lumen",
+   "time_s": 6.0,
+   "class": "spread",
+   "mean": 2217.3604209187206,
+   "var": 1972.0965220306612,
+   "mu4": 11668300.711205954
+  },
+  {
+   "observable": "G@wall",
+   "time_s": 0.5,
+   "class": "spread",
+   "mean": 24.477926824199262,
+   "var": 15.09001329612768,
+   "mu4": 676.859258621289
+  },
+  {
+   "observable": "G@wall",
+   "time_s": 1.0,
+   "class": "spread",
+   "mean": 24.17528931568183,
+   "var": 15.043300305979132,
+   "mu4": 672.7302296695786
+  },
+  {
+   "observable": "G@wall",
+   "time_s": 1.5,
+   "class": "spread",
+   "mean": 24.163113222812076,
+   "var": 15.04036252028631,
+   "mu4": 672.4704544012363
+  },
+  {
+   "observable": "G@wall",
+   "time_s": 2.0,
+   "class": "spread",
+   "mean": 24.16262333892987,
+   "var": 15.040242610398169,
+   "mu4": 672.4598517824279
+  },
+  {
+   "observable": "G@wall",
+   "time_s": 3.0,
+   "class": "spread",
+   "mean": 24.162602836322993,
+   "var": 15.040237589043556,
+   "mu4": 672.4594077872848
+  },
+  {
+   "observable": "G@wall",
+   "time_s": 4.0,
+   "class": "spread",
+   "mean": 24.162602803135115,
+   "var": 15.040237580915226,
+   "mu4": 672.4594070685666
+  },
+  {
+   "observable": "G@wall",
+   "time_s": 5.0,
+   "class": "spread",
+   "mean": 24.162602803081395,
+   "var": 15.040237580902069,
+   "mu4": 672.4594070674033
+  },
+  {
+   "observable": "G@wall",
+   "time_s": 6.0,
+   "class": "spread",
+   "mean": 24.16260280308131,
+   "var": 15.040237580902048,
+   "mu4": 672.4594070674013
+  },
+  {
+   "observable": "H@wall",
+   "time_s": 0.5,
+   "class": "spread",
+   "mean": 39.522073175800735,
+   "var": 15.09001329612768,
+   "mu4": 676.859258621289
+  },
+  {
+   "observable": "H@wall",
+   "time_s": 1.0,
+   "class": "spread",
+   "mean": 39.82471068431817,
+   "var": 15.043300305979132,
+   "mu4": 672.7302296695786
+  },
+  {
+   "observable": "H@wall",
+   "time_s": 1.5,
+   "class": "spread",
+   "mean": 39.83688677718793,
+   "var": 15.04036252028631,
+   "mu4": 672.4704544012363
+  },
+  {
+   "observable": "H@wall",
+   "time_s": 2.0,
+   "class": "spread",
+   "mean": 39.83737666107013,
+   "var": 15.040242610398169,
+   "mu4": 672.4598517824279
+  },
+  {
+   "observable": "H@wall",
+   "time_s": 3.0,
+   "class": "spread",
+   "mean": 39.837397163677004,
+   "var": 15.040237589043556,
+   "mu4": 672.4594077872848
+  },
+  {
+   "observable": "H@wall",
+   "time_s": 4.0,
+   "class": "spread",
+   "mean": 39.837397196864885,
+   "var": 15.040237580915226,
+   "mu4": 672.4594070685666
+  },
+  {
+   "observable": "H@wall",
+   "time_s": 5.0,
+   "class": "spread",
+   "mean": 39.8373971969186,
+   "var": 15.040237580902069,
+   "mu4": 672.4594070674033
+  },
+  {
+   "observable": "H@wall",
+   "time_s": 6.0,
+   "class": "spread",
+   "mean": 39.837397196918694,
+   "var": 15.040237580902048,
+   "mu4": 672.4594070674013
+  },
+  {
+   "observable": "B@wall",
+   "time_s": 0.5,
+   "class": "constant",
+   "value": 100
+  },
+  {
+   "observable": "B@wall",
+   "time_s": 1.0,
+   "class": "constant",
+   "value": 100
+  },
+  {
+   "observable": "B@wall",
+   "time_s": 1.5,
+   "class": "constant",
+   "value": 100
+  },
+  {
+   "observable": "B@wall",
+   "time_s": 2.0,
+   "class": "constant",
+   "value": 100
+  },
+  {
+   "observable": "B@wall",
+   "time_s": 3.0,
+   "class": "constant",
+   "value": 100
+  },
+  {
+   "observable": "B@wall",
+   "time_s": 4.0,
+   "class": "constant",
+   "value": 100
+  },
+  {
+   "observable": "B@wall",
+   "time_s": 5.0,
+   "class": "constant",
+   "value": 100
+  },
+  {
+   "observable": "B@wall",
+   "time_s": 6.0,
+   "class": "constant",
+   "value": 100
+  }
+ ],
+ "stops": [],
+ "d": {
+  "pairs": [
+   {
+    "observable": "S@pool",
+    "time_s": 0.5,
+    "value": 19068.875734753612
+   },
+   {
+    "observable": "S@pool",
+    "time_s": 1.0,
+    "value": 18553.275219337844
+   },
+   {
+    "observable": "S@pool",
+    "time_s": 1.5,
+    "value": 18244.19181785463
+   },
+   {
+    "observable": "S@pool",
+    "time_s": 2.0,
+    "value": 18058.31167932565
+   },
+   {
+    "observable": "S@pool",
+    "time_s": 3.0,
+    "value": 17879.2657638778
+   },
+   {
+    "observable": "S@pool",
+    "time_s": 4.0,
+    "value": 17814.492813510893
+   },
+   {
+    "observable": "S@pool",
+    "time_s": 5.0,
+    "value": 17791.06007749489
+   },
+   {
+    "observable": "S@pool",
+    "time_s": 6.0,
+    "value": 17782.58287961828
+   },
+   {
+    "observable": "S@lumen",
+    "time_s": 0.5,
+    "value": 931.1242652463893
+   },
+   {
+    "observable": "S@lumen",
+    "time_s": 1.0,
+    "value": 1446.724780662158
+   },
+   {
+    "observable": "S@lumen",
+    "time_s": 1.5,
+    "value": 1755.8081821453704
+   },
+   {
+    "observable": "S@lumen",
+    "time_s": 2.0,
+    "value": 1941.6883206743526
+   },
+   {
+    "observable": "S@lumen",
+    "time_s": 3.0,
+    "value": 2120.7342361222004
+   },
+   {
+    "observable": "S@lumen",
+    "time_s": 4.0,
+    "value": 2185.507186489109
+   },
+   {
+    "observable": "S@lumen",
+    "time_s": 5.0,
+    "value": 2208.9399225051106
+   },
+   {
+    "observable": "S@lumen",
+    "time_s": 6.0,
+    "value": 2217.417120381722
+   },
+   {
+    "observable": "G@wall",
+    "time_s": 0.5,
+    "value": 24.47180917099178
+   },
+   {
+    "observable": "G@wall",
+    "time_s": 1.0,
+    "value": 24.174801824714915
+   },
+   {
+    "observable": "G@wall",
+    "time_s": 1.5,
+    "value": 24.163084087247036
+   },
+   {
+    "observable": "G@wall",
+    "time_s": 2.0,
+    "value": 24.162621791034205
+   },
+   {
+    "observable": "G@wall",
+    "time_s": 3.0,
+    "value": 24.16260283263633
+   },
+   {
+    "observable": "G@wall",
+    "time_s": 4.0,
+    "value": 24.16260280312731
+   },
+   {
+    "observable": "G@wall",
+    "time_s": 5.0,
+    "value": 24.16260280308138
+   },
+   {
+    "observable": "G@wall",
+    "time_s": 6.0,
+    "value": 24.16260280308131
+   },
+   {
+    "observable": "H@wall",
+    "time_s": 0.5,
+    "value": 39.528190829008224
+   },
+   {
+    "observable": "H@wall",
+    "time_s": 1.0,
+    "value": 39.82519817528509
+   },
+   {
+    "observable": "H@wall",
+    "time_s": 1.5,
+    "value": 39.836915912752964
+   },
+   {
+    "observable": "H@wall",
+    "time_s": 2.0,
+    "value": 39.837378208965795
+   },
+   {
+    "observable": "H@wall",
+    "time_s": 3.0,
+    "value": 39.83739716736367
+   },
+   {
+    "observable": "H@wall",
+    "time_s": 4.0,
+    "value": 39.837397196872686
+   },
+   {
+    "observable": "H@wall",
+    "time_s": 5.0,
+    "value": 39.83739719691862
+   },
+   {
+    "observable": "H@wall",
+    "time_s": 6.0,
+    "value": 39.837397196918694
+   },
+   {
+    "observable": "B@wall",
+    "time_s": 0.5,
+    "value": 100
+   },
+   {
+    "observable": "B@wall",
+    "time_s": 1.0,
+    "value": 100
+   },
+   {
+    "observable": "B@wall",
+    "time_s": 1.5,
+    "value": 100
+   },
+   {
+    "observable": "B@wall",
+    "time_s": 2.0,
+    "value": 100
+   },
+   {
+    "observable": "B@wall",
+    "time_s": 3.0,
+    "value": 100
+   },
+   {
+    "observable": "B@wall",
+    "time_s": 4.0,
+    "value": 100
+   },
+   {
+    "observable": "B@wall",
+    "time_s": 5.0,
+    "value": 100
+   },
+   {
+    "observable": "B@wall",
+    "time_s": 6.0,
+    "value": 100
+   }
+  ],
+  "stops": [],
+  "intervals": []
+ },
+ "gap": [
+  {
+   "observable": "S@pool",
+   "time_s": 0.5,
+   "gap": -0.5292642288870398,
+   "resolution": 0.11188344013923192
+  },
+  {
+   "observable": "S@pool",
+   "time_s": 1.0,
+   "gap": -1.07890310540263,
+   "resolution": 0.2131333285785662
+  },
+  {
+   "observable": "S@pool",
+   "time_s": 1.5,
+   "gap": -1.1308390117021132,
+   "resolution": 0.24369070909380708
+  },
+  {
+   "observable": "S@pool",
+   "time_s": 2.0,
+   "gap": -0.971151368003946,
+   "resolution": 0.22733370219932958
+  },
+  {
+   "observable": "S@pool",
+   "time_s": 3.0,
+   "gap": -0.562227122420431,
+   "resolution": 0.14168571725705933
+  },
+  {
+   "observable": "S@pool",
+   "time_s": 4.0,
+   "gap": -0.27984908530859703,
+   "resolution": 0.07137059033270118
+  },
+  {
+   "observable": "S@pool",
+   "time_s": 5.0,
+   "gap": -0.12895597477106213,
+   "resolution": 0.032883965291429805
+  },
+  {
+   "observable": "S@pool",
+   "time_s": 6.0,
+   "gap": -0.05669946300132589,
+   "resolution": 0.014445076526064209
+  },
+  {
+   "observable": "S@lumen",
+   "time_s": 0.5,
+   "gap": 0.5292642288870398,
+   "resolution": 0.11188344013923192
+  },
+  {
+   "observable": "S@lumen",
+   "time_s": 1.0,
+   "gap": 1.07890310540263,
+   "resolution": 0.2131333285785662
+  },
+  {
+   "observable": "S@lumen",
+   "time_s": 1.5,
+   "gap": 1.1308390117021132,
+   "resolution": 0.24369070909380708
+  },
+  {
+   "observable": "S@lumen",
+   "time_s": 2.0,
+   "gap": 0.971151368003946,
+   "resolution": 0.22733370219932958
+  },
+  {
+   "observable": "S@lumen",
+   "time_s": 3.0,
+   "gap": 0.562227122420431,
+   "resolution": 0.14168571725705933
+  },
+  {
+   "observable": "S@lumen",
+   "time_s": 4.0,
+   "gap": 0.27984908530859703,
+   "resolution": 0.07137059033270118
+  },
+  {
+   "observable": "S@lumen",
+   "time_s": 5.0,
+   "gap": 0.12895597477106213,
+   "resolution": 0.032883965291429805
+  },
+  {
+   "observable": "S@lumen",
+   "time_s": 6.0,
+   "gap": 0.05669946300132589,
+   "resolution": 0.014445076526064209
+  },
+  {
+   "observable": "G@wall",
+   "time_s": 0.5,
+   "gap": -0.006117653207484717,
+   "resolution": 0.017817428636950496
+  },
+  {
+   "observable": "G@wall",
+   "time_s": 1.0,
+   "gap": -0.0004874909669135483,
+   "resolution": 0.001422001304843594
+  },
+  {
+   "observable": "G@wall",
+   "time_s": 1.5,
+   "gap": -2.9135565039455903e-05,
+   "resolution": 8.499615457879524e-05
+  },
+  {
+   "observable": "G@wall",
+   "time_s": 2.0,
+   "gap": -1.5478956649951326e-06,
+   "resolution": 4.515639339516895e-06
+  },
+  {
+   "observable": "G@wall",
+   "time_s": 3.0,
+   "gap": -3.6866644180695863e-09,
+   "resolution": 1.075502053097846e-08
+  },
+  {
+   "observable": "G@wall",
+   "time_s": 4.0,
+   "gap": -7.805999799186419e-12,
+   "resolution": 2.2772262025332235e-11
+  },
+  {
+   "observable": "G@wall",
+   "time_s": 5.0,
+   "gap": -1.5497092961987263e-14,
+   "resolution": 4.520930958751008e-14
+  },
+  {
+   "observable": "G@wall",
+   "time_s": 6.0,
+   "gap": -2.953919345757928e-17,
+   "resolution": 8.617400342533692e-17
+  },
+  {
+   "observable": "H@wall",
+   "time_s": 0.5,
+   "gap": 0.006117653207484717,
+   "resolution": 0.017817428636950496
+  },
+  {
+   "observable": "H@wall",
+   "time_s": 1.0,
+   "gap": 0.0004874909669135483,
+   "resolution": 0.001422001304843594
+  },
+  {
+   "observable": "H@wall",
+   "time_s": 1.5,
+   "gap": 2.9135565039455903e-05,
+   "resolution": 8.499615457879524e-05
+  },
+  {
+   "observable": "H@wall",
+   "time_s": 2.0,
+   "gap": 1.5478956649951326e-06,
+   "resolution": 4.515639339516895e-06
+  },
+  {
+   "observable": "H@wall",
+   "time_s": 3.0,
+   "gap": 3.6866644180695863e-09,
+   "resolution": 1.075502053097846e-08
+  },
+  {
+   "observable": "H@wall",
+   "time_s": 4.0,
+   "gap": 7.805999799186419e-12,
+   "resolution": 2.2772262025332235e-11
+  },
+  {
+   "observable": "H@wall",
+   "time_s": 5.0,
+   "gap": 1.5497092961987263e-14,
+   "resolution": 4.520930958751008e-14
+  },
+  {
+   "observable": "H@wall",
+   "time_s": 6.0,
+   "gap": 2.953919345757928e-17,
+   "resolution": 8.617400342533692e-17
+  }
+ ],
+ "plants": [],
+ "provenance": {
+  "references_revision": "266baec88333a8c9f157bf4de117da8be6caa32d",
+  "references_clean": true,
+  "writer_version": "fr47-references-writer 1",
+  "regeneration_hash_seeds": [
+   "random (unset)",
+   0,
+   1,
+   4242
+  ]
+ }
+}
