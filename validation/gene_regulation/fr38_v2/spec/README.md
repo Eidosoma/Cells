@@ -49,6 +49,7 @@ changes an input or a definition becomes a dated amendment to this folder, never
 | `LAWS.md` | The sheet sections to read, and the laws quoted here: the membership classes, the D152 passive law, water's law, G's definition |
 | `READOUTS.md` | Every published quantity: its name, unit and definition, and which arm judges or reports it |
 | `CRITERIA.md` | The criteria, bands and plants, fixed before any reference exists. The plants' predicted effects are yours to compute (SPEC.md §6) |
+| `AMENDMENT-2026-11-24.md` | Amendment 1: the answers to your four questions and your five readings. It governs where it differs from the files above |
 
 ## Where your work goes
 
