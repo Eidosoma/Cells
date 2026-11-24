@@ -413,8 +413,8 @@ where. That qualification closed as failed (D336), so this amendment keeps every
 - **One engine revision for both geometries.** The line ran from main 23593267 (amendment 1, 6);
   the field runs from a frozen snapshot of this amendment's tag, whose src is main 1e40fc16's. The
   composite's src changed in between: the sparse field solver (bcd27f69), FR-43 part 3's division
-  hook (751fb09b) and the field path's speedup (abdfab16, d6d42b46), each bitwise for the line's
-  worlds by its own evidence. The judge reads both `--line` and `--field`, so before the field's
+  hook (751fb09b) and the field path's speedup (abdfab16, d6d42b46). The judge reads both `--line`
+  and `--field`, so before the field's
   launch the line's stage 1 and one line point of its judged search are rerun at the field's
   snapshot, and their records must match the hashed line records (D330: judged/line-01) by bytes,
   field by field, apart from the run's own bookkeeping (its process, CPUs, memory and timings).
