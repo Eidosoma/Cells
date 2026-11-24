@@ -11090,3 +11090,66 @@ fail, and D262 would stand either way.
 
 **Correction to D342.** D342 called a metadata-only search "the user's choice of 24 November". The user's answer then
 only filed the Supporting Material. That search is withdrawn.
+
+## D344: the user's rule for confirmed findings; four Lean wet-lab rows sorted by it; FR-30 reopened narrowly; FR-55 and FR-56 logged; FR-50's judge tagged
+
+2026-11-24, about 15:48 UTC. The advisor reviewed this with the lead. The decisions are the user's.
+
+**The user's rule.** "For Cells, if we have something confirmed that doesn't work the same in Cells, we should find
+out why and fix." Confirmed means two or more independent wet-lab studies agree. One study stays an indication.
+- Each confirmed row is read at the Lean lane's record (`lean/WET_LAB_EVIDENCE.md`), not from a handoff.
+- **The test:** does Cells reproduce the confirmed part when run with that preparation's own inputs?
+  - **Yes:** a comparison rule or a scope line.
+  - **No, because the law cannot produce it:** a law-form gap, diagnosed and then fixed by a general FR.
+  - **Not run:** running it is the first step.
+
+**Four rows, read at the Lean tip d5a2c138:**
+1. **Cx43, the decay at −100 mV.**
+   - **What is confirmed:** two phases. Revilla's paired oocytes gave 417 ± 175 ms and 7.06 ± 1.28 s; Sahu and
+     Bera's N2a pairs gave 70 ± 5 and 931 ± 54 ms. Both data sets are already in D343's table.
+   - **What is not:** a shared magnitude. The time scales differ six- to eightfold across preparations.
+   - **The rule fires.** The shipped single gate, `junction_voltage_relaxation@1`, has one relaxation by design.
+2. **Mixed-ion reversal** (Hodgkin and Katz's intact squid axons; Ohki and Aono's six perfused axons).
+   - **What is confirmed:** the direction. Raising K depolarizes.
+   - **Cells reproduces the direction.** Its +12.63 mV against the measured +2.0 mV carried intact-axon permeability
+     ratios to perfused axons, whose own ratios were never measured.
+   - **A comparison rule:** quantitative comparisons use preparation-specific ratios.
+3. **Receptor turnover** (Strack, ten muscles: 1.1 and 13.1 day half-lives; Stanley and Drachman: 18.7 h and 12.4
+   days).
+   - **What is confirmed:** a mixture of lifetimes, with a fast fraction of 13–20%.
+   - **Cells can represent it.** `population_unit_turnover@1` declares one removal rate per population, so the fast
+     and slow cohorts are two declared populations.
+   - **Guidance, no engine change.**
+4. **Proton reversal** (Kapus's macrophages and Morihata's microglia; Bertholet's mitoplasts and Cherny's alveolar
+   cells).
+   - **What is confirmed:** the Nernst direction.
+   - **Cells reproduces it.** At large gradients the nominal pipette and bath pH overstate the magnitude.
+   - **A comparison rule:** quantitative comparisons use the intracellular pH at the time of the current measurement.
+
+**Earlier flags, re-sorted by the rule:**
+- **SK2 (D338) fires.** Two separate groups' recordings each contradict carrying one closing rate across conditions,
+  and the operator's closing rate cannot depend on the dose.
+- **POPC (D340) partly fires.** Two methods confirm expansion on warming, and Cells shows it only through a footprint
+  declared per temperature.
+- **Kir4.1 (D340) does not fire.** It rests on one series.
+
+**The user's decisions:**
+- **FR-30 reopens narrowly** (amends D343).
+  - `junction_series_gates@1` becomes usable for two phases at a declared voltage, calibrated per preparation.
+  - The voltage dependence stays marked unvalidated, and the law's predicted third amplitude stays flagged as
+    unmeasured.
+  - The Revilla joint fit, labelled and non-blind, moves up as the first diagnosis step.
+  - D262's development flag is narrowed to that scope by a design note and a gated landing, never by this entry alone.
+- **FR-55, high:** an input-dependent closing rate for regulated availability (dose-dependent deactivation).
+- **FR-56, normal:** a temperature-dependent molecular footprint with a declared, sourced expansion coefficient per
+  lipid.
+- **Lean is asked, through the user,** for every row of its 46 where two studies agree and the Cells replay does not.
+
+**The comparison rules and guidance** go into the docstring-only batch, with D337's and D340's scope lines.
+
+**FR-50's judge is tagged** `fr50-judge-2026-11-24` (3cec272b). Its builder reads the references' spec folder only
+after that tag, by the user's permission. The read was refused once earlier, before the judge existed, and was not
+retried.
+
+**The Lean tip d5a2c138** contains 8634e566, 41f3de69, 0bb50d8b, cb961e34 and 73e7e9d7. One merge covers them once
+its gate passes.

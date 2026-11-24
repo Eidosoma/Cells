@@ -60,6 +60,8 @@ and a general feature, never one built for one study (D144).
 | [FR-52](#fr-52--passive-cohort-observations-for-integer-functional-units) | Passive cohort observations for integer functional units: the expected surviving initial and newly assembled units at one site | **High** (logged by the user, 24 November 2026) | **Logged:** `integer_unit_population@1` records its events in a bounded trace, with no cohort readout; labels follow species rows, not units | A design note: a validation reader or a statically absent in-engine expected-cohort record, with classes that partition the count and fail-closed truncation |
 | [FR-53](#fr-53--a-rounding-allowance-for-global-ledgers-at-every-row) | A rounding allowance for global ledgers at every row: the first window's bound no tighter than the sum's own rounding | **High** (logged by the user, 24 November 2026) | **Logged:** at steps 0 and 1 the bound is the bare atol, and the host reads 0.28 of it on 625 cells, growing about as √N | A design note: a derived summation allowance per row, or compensated global sums, with the planted faults still caught |
 | [FR-54](#fr-54--passive-neutral-diffusion-between-two-finite-liquid-regions-qualified-against-the-exact-two-well-solution-then-a-wash-at-a-diffusion-connected-node) | Passive neutral diffusion between two finite liquid regions, qualified against the exact two-well solution; then a wash at a diffusion-connected node | **High** (logged by the user, 24 November 2026; D341) | **Logged:** a wash at a diffusion-connected node stays refused (D246) until measured | A design note: closed-form, code-blind references; a stopped run reports its residual and tolerance; then the wash's qualification |
+| [FR-55](#fr-55--an-input-dependent-closing-rate-for-regulated-availability) | An input-dependent closing rate for regulated availability (dose-dependent deactivation) | **High** (logged by the user, 24 November 2026; D344) | **Logged:** one fixed closing rate; two groups' SK2 records contradict carrying it across doses | A design note, then qualification against both groups' records |
+| [FR-56](#fr-56--a-temperature-dependent-molecular-footprint) | A temperature-dependent molecular footprint with a declared, sourced expansion coefficient | Normal (logged by the user, 24 November 2026; D344) | **Logged:** a fixed footprint per species; two methods confirm POPC's expansion on warming | A design note |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -1366,6 +1368,8 @@ metadata-only search.
 
 **Status (24 November, D343): parked, development-only (D262).** Two relaxation times at the cited voltages; the voltage dependence is unvalidated. Twelve papers have been tested: one qualified (Revilla 1999) and failed (D320), and the rest were undetermined by their data's structure. It reopens when an experiment needs the series-gate law beyond development, or when a source with per-voltage τ_fast and τ_slow at two or more magnitudes is in hand. One labelled, non-blind diagnostic follows: a joint fit to Revilla's six voltages.
 
+**Status (24 November, later, D344): reopened narrowly (the user).** Two labs confirm two decay phases at −100 mV, which the shipped single gate cannot produce. `junction_series_gates@1` becomes usable for two phases at a declared voltage, calibrated per preparation. Its voltage dependence stays unvalidated, and its predicted third amplitude stays unmeasured. First, a labelled, non-blind joint fit to Revilla's six voltages; then a design note and a gated landing narrow D262.
+
 ## FR-31 — Vesicle rupture during a steady tension hold
 
 - **The request (the same review; D248).** The assembly model tests rupture only at a state change.
@@ -2351,6 +2355,47 @@ loosens no bound beyond what that rounding requires. Every planted fault the che
 - **The refusal it lifts.** `scheduled_compartment_wash@1` version 1 refuses a node that a face touches (D246 item 5),
   and any neutral species crossing the node's surface by a declared path. The qualification lifts that refusal only
   for the qualified form: one neutral species crossing by a passive route.
+
+## FR-55 — An input-dependent closing rate for regulated availability
+
+**Logged 24 November 2026 by the user, priority high (D344).**
+
+**Why.** Two separate groups' recordings each contradict carrying one closing rate across calcium doses for SK2
+(D338).
+- Hirschberg's plateau and washout predict a 10.63 ms activation, against 4.1 ± 0.6 ms measured.
+- Oliver's high-dose washout bounds the low-dose rise at 48.1 ms, against about 80 ms reported.
+
+`cells.species_regulated_availability`'s closing rate is fixed and input-independent, so it cannot reproduce this. Under
+the user's rule for confirmed findings, this is a law-form gap.
+
+**The request.** An opt-in closing rate that depends on the input, for dose-dependent deactivation.
+- It keeps the state in [0, 1], with no overshoot and detailed balance where it applies.
+- It keeps the current form exactly when not declared, statically absent (D148).
+
+**First reading:**
+- The design note chooses the closing rate's form from the cited data, not from one study.
+- It is qualified against both groups' records with each preparation's own inputs.
+- The Lean lane's rise-time bound, ln 4 × the washout time constant, holds only for a fixed b. The new form states its
+  own bound.
+
+**Status (24 November):** logged. A design note comes first.
+
+## FR-56 — A temperature-dependent molecular footprint
+
+**Logged 24 November 2026 by the user, priority normal (D344).**
+
+**Why.** Two independent methods confirm that fluid POPC expands on warming (D340).
+- Scattering gave +4.7% over 30–50 °C.
+- Solid-state NMR gave +16.7% over 28–48 °C.
+
+`cells.bilayer_geometry@1` takes a fixed footprint per species. A world compared across temperatures shows the expansion
+only through footprints declared per temperature.
+
+**The request.** An opt-in footprint law, a(T) = a(T_ref)(1 + α(T − T_ref)) or a sourced form, with α declared and
+sourced per lipid. The two methods disagree on its size, so α is a declaration, never a constant of the law. It is
+statically absent unless declared.
+
+**Status (24 November):** logged. A design note comes first.
 
 ## Backlog: external tools to look at (logged by the user, 23 November 2026)
 
