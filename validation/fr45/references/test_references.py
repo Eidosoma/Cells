@@ -3,8 +3,9 @@
   python -m pytest validation/fr45/references/test_references.py -q
   (or: python validation/fr45/references/test_references.py)
 
-It checks the arithmetic (the decimal trig, the rounding), R-eq's three routes against each
-other on invented inputs (including two nearly equal K), the Taylor integrator against DOP853
+It checks the arithmetic (the decimal trig, the rounding), R-eq's routes against each other
+on invented inputs (including two nearly equal K, and two equal K, where the pooled closed form
+applies, with the user's theta formula), the Taylor integrator against DOP853
 and against the fixed-concentration closed form, conservation, the heat's sign and the
 affinity check's sensitivity, and that the writer regenerates the committed invented format
 sample byte for byte. When the spec copy is present, it also checks the transcribed worlds
@@ -36,7 +37,7 @@ from fr45ref_model import System  # noqa: E402
 
 SAMPLE = HERE / "format_sample_INVENTED.json"
 SPEC_ROOT = pathlib.Path(
-    os.environ.get("FR45_SPEC_ROOT", "/mnt/workspaces/Cells/fr45-references-20261124/spec")
+    os.environ.get("FR45_SPEC_ROOT", "/mnt/workspaces/Cells/fr45-references-v2-20261124/spec")
 )
 
 
@@ -110,6 +111,7 @@ def test_equilibrium_three_routes():
             "0.40001",
         ),  # K1 close to K2
         ("1.0e5", "30.0", "70.0", "9000000000.0", "1.0e4", "0.2", "2.0e4", "0.1"),  # large volume
+        ("1.0", "2.0e-3", "1.0e-3", "2000000.0", "1.0e3", "0.5", "2.0e3", "1.0"),  # equal K
     ]
     for args in cases:
         w = _two_ligand_world(*args)
@@ -126,6 +128,14 @@ def test_equilibrium_three_routes():
         )
         res = EQ.residuals(sysm, N, br["state"])
         assert max(res.values()) / S < Decimal("1e-40")
+        # the pooled closed form, where both K are equal, and the user's theta both ways
+        pooled = EQ.pooled(sysm, N)
+        assert bool(pooled) == (sysm.K[0] == sysm.K[1])
+        for pl in pooled.values():
+            assert max(abs(v - br["state"][i]) for i, v in pl["amounts"].items()) / S < Decimal(
+                "1e-40"
+            )
+        assert max(abs(a - b) for a, b in BLD.theta_both_ways(sysm, br["state"])) < Decimal("1e-40")
         # the affinity check vanishes at the root and is sensitive away from it
         assert max(abs(a) for a in EQ.affinities(sysm, br["state"])) / BLD.RT < Decimal("1e-25")
         far = list(br["state"])
@@ -284,33 +294,44 @@ def test_format_sample_regenerates_bitwise():
         if state_dependent:
             assert pair["tolerance"] is None and "formula" in pair["tolerance_terms"], pair
     assert any(p.get("information") for p in d["plants"])
+    # amendment 2: theta in the equilibrium, both ways, for every population
+    assert set(d["equilibrium"]["theta"]) == {q["id"] for q in d["world"]["populations"]}
+    for th in d["equilibrium"]["theta"].values():
+        assert set(th) == {"formula", "root", "gap"}
+    # the event map alone on the start and on the wash row (W7's shape), and P5 per state
+    wash_t = d["world"]["wash"]["t"]
+    for crit in ("C4b", "C6"):
+        assert {p["time_s"] for p in d["pairs"] if p["criterion"] == crit} == {0.0, wash_t}
+    p5 = [(e["criterion"], e["compared"]["time_s"]) for e in d["plants"] if e["plant"] == "P5"]
+    assert [c for c, _ in p5] == ["C6", "C6", "C4a"] and [t for _, t in p5[:2]] == [0.0, wash_t]
 
 
 def test_free_energy_function_is_the_references_own():
     import fr45ref_free_energy as FE
 
-    world = WL.numeric(WL.world_W3()[0])
-    with decimal.localcontext(HP.make_context(FE.DIGITS)):
-        sysm = System(world)
-        y = list(sysm.start())
-        y[0] = y[0] * Decimal("0.75")  # any state will do
-    names = sysm.observables()
-    for node in sysm.facing_nodes():
-        amounts = {
-            names[i]: float(y[i]) for i in range(sysm.n) if sysm.node_of_component(i) == node
-        }
-        exact = [HP.D(float(v)) for v in y]
+    for wid, builder in (("W3", WL.world_W3), ("W7", WL.world_W7)):
+        world = WL.numeric(builder()[0])
         with decimal.localcontext(HP.make_context(FE.DIGITS)):
-            want = +sysm.G(exact, node)
-        assert FE.G("W3", node, amounts) == want
-        bad = dict(amounts)
-        bad.pop(sorted(bad)[0])
-        try:
-            FE.G("W3", node, bad)
-        except KeyError:
-            pass
-        else:
-            raise AssertionError("a missing amount must be refused")
+            sysm = System(world)
+            y = list(sysm.start())
+            y[0] = y[0] * Decimal("0.75")  # any state will do
+        names = sysm.observables()
+        for node in sysm.facing_nodes():
+            amounts = {
+                names[i]: float(y[i]) for i in range(sysm.n) if sysm.node_of_component(i) == node
+            }
+            exact = [HP.D(float(v)) for v in y]
+            with decimal.localcontext(HP.make_context(FE.DIGITS)):
+                want = +sysm.G(exact, node)
+            assert FE.G(wid, node, amounts) == want
+            bad = dict(amounts)
+            bad.pop(sorted(bad)[0])
+            try:
+                FE.G(wid, node, bad)
+            except KeyError:
+                pass
+            else:
+                raise AssertionError("a missing amount must be refused")
 
 
 def test_no_engine_import():

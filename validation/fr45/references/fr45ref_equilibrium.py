@@ -21,7 +21,10 @@ detailed balance B_b = R_s(b) * c_p(b) / K_b (SPEC §1.2), the equations are
      c = -K'_1 K'_2 S.
    The cubic f has f(0) < 0 < f(S), and f(-K'_1), f(-K'_2) have opposite signs, so it
    has three real roots and exactly one of them lies in (0, S). The root is chosen by
-   that check, not by assuming a branch.
+   that check, not by assuming a branch. With K'_1 = K'_2 one root is -K' exactly, and
+   the root in (0, S) is still the only one there.
+4. ``pooled``: where every population on a lone set shares one K'_b (W7, whose two K are
+   both 12 mM, and W7s, with one population), the quadratic of one pooled ligand.
 """
 
 from __future__ import annotations
@@ -260,6 +263,45 @@ def wang(sys, N, s: int) -> dict:
         "pools": (p1, p2),
         "is_largest": all(roots[k] >= roots[j] for j in range(3)),
     }
+
+
+def pooled(sys, N) -> dict:
+    """A closed form for a set whose populations all share one K'_b = K_b * V (fmol).
+
+    Where a subsystem is one set s, each of its pools binds one population on s, and every
+    K'_b is the same K', the set sees one pooled ligand of amount sum_b N_b, and R solves
+
+      R + (sum_b N_b) R / (K' + R) = S,  so  R^2 + b R - S K' = 0,  b = K' + sum_b N_b - S,
+      R = 2 S K' / (b + sqrt(b^2 + 4 S K')),
+
+    with B_b = N_b R / (K' + R) and n_b = N_b K' / (K' + R). With one population it is SPEC
+    §3.1's one-population form B = N R / (K V + R) (W7s); W7's two K are both 12 mM. It is
+    a third route, independent of the enclosure and of Newton. Returns {set index: {"R": R,
+    "amounts": {state index: value}}} for every set where it applies.
+    """
+    out = {}
+    for comp in components(sys):
+        if len(comp["sets"]) != 1:
+            continue
+        s = comp["sets"][0]
+        bs = sys.pops_of_set[s]
+        if not bs or any(len(sys.pops_of_pool[sys.pops[b]["pool_index"]]) != 1 for b in bs):
+            continue
+        kprime = {sys.K[b] * sys.Vd[sys.pops[b]["pool_index"]] for b in bs}
+        if len(kprime) != 1:
+            continue
+        Kp = kprime.pop()
+        S = sys.Sd[s]
+        Ntot = sum((N[sys.pops[b]["pool_index"]] for b in bs), ZERO)
+        b_coef = Kp + Ntot - S
+        R = 2 * S * Kp / (b_coef + sqrt(b_coef * b_coef + 4 * S * Kp))
+        amounts = {sys.i_set(s): R}
+        for b in bs:
+            p = sys.pops[b]["pool_index"]
+            amounts[sys.i_pop(b)] = N[p] * R / (Kp + R)
+            amounts[p] = N[p] * Kp / (Kp + R)
+        out[s] = {"R": R, "amounts": amounts}
+    return out
 
 
 def wang_binary64(sys, N, s: int) -> float:

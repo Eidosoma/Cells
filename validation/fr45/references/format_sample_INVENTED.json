@@ -278,6 +278,38 @@
    "liner": {
     "gap": 1.28e-51
    }
+  },
+  "theta": {
+   "lattice_Q1": {
+    "formula": 0.3297514475764706,
+    "root": 0.3297514475764706,
+    "gap": 5.4e-49
+   },
+   "lattice_Q2": {
+    "formula": 0.3276351018957064,
+    "root": 0.3276351018957064,
+    "gap": 5.3e-49
+   },
+   "lattice_Q3": {
+    "formula": 0.0682832437899697,
+    "root": 0.0682832437899697,
+    "gap": 1.13e-49
+   },
+   "sheet_Q2": {
+    "formula": 0.23093692623633977,
+    "root": 0.23093692623633977,
+    "gap": 1.4e-49
+   },
+   "liner_Q4": {
+    "formula": 0.4026594677849079,
+    "root": 0.4026594677849079,
+    "gap": 9.9e-49
+   },
+   "liner_Q5": {
+    "formula": 0.32730896151577105,
+    "root": 0.32730896151577105,
+    "gap": 7.8e-49
+   }
   }
  },
  "trajectory": [
@@ -3290,6 +3322,132 @@
   {
    "criterion": "C4b",
    "observable": "n:Q1@vessel",
+   "time_s": 0.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: (1 - f) n + f V c_buf of its own state at the event",
+   "tolerance_terms": {
+    "eps_factor": 8.881784197001252e-16,
+    "f_V_c_buf": 6.25e-13,
+    "a_n_information": 0.003,
+    "n_information": 0.003,
+    "formula": "eps_factor * (|a_n| + |n| + f_V_c_buf), with a_n and n the engine's anchor and amount at the event"
+   },
+   "tolerance_information": 5.329070518755863e-18
+  },
+  {
+   "criterion": "C4b",
+   "observable": "removed:Q1@vessel",
+   "time_s": 0.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: f n of its own state at the event",
+   "tolerance_terms": {
+    "eps_factor": 4.440892098500626e-16,
+    "f": 0.25,
+    "n_information": 0.003,
+    "formula": "eps_factor * f * |n|, with n the engine's amount at the event"
+   },
+   "tolerance_information": 3.3306690738754697e-19
+  },
+  {
+   "criterion": "C4b",
+   "observable": "supplied:Q1@vessel",
+   "time_s": 0.0,
+   "class": "derived",
+   "value": 6.25e-13,
+   "tolerance": 2.775557561562891e-28,
+   "against": "reference: f V c_buf"
+  },
+  {
+   "criterion": "C4b",
+   "observable": "n:Q2@vessel",
+   "time_s": 0.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: (1 - f) n + f V c_buf of its own state at the event",
+   "tolerance_terms": {
+    "eps_factor": 8.881784197001252e-16,
+    "f_V_c_buf": 0.00025,
+    "a_n_information": 0.002,
+    "n_information": 0.002,
+    "formula": "eps_factor * (|a_n| + |n| + f_V_c_buf), with a_n and n the engine's anchor and amount at the event"
+   },
+   "tolerance_information": 3.7747582837255325e-18
+  },
+  {
+   "criterion": "C4b",
+   "observable": "removed:Q2@vessel",
+   "time_s": 0.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: f n of its own state at the event",
+   "tolerance_terms": {
+    "eps_factor": 4.440892098500626e-16,
+    "f": 0.25,
+    "n_information": 0.002,
+    "formula": "eps_factor * f * |n|, with n the engine's amount at the event"
+   },
+   "tolerance_information": 2.220446049250313e-19
+  },
+  {
+   "criterion": "C4b",
+   "observable": "supplied:Q2@vessel",
+   "time_s": 0.0,
+   "class": "derived",
+   "value": 0.00025,
+   "tolerance": 1.1102230246251566e-19,
+   "against": "reference: f V c_buf"
+  },
+  {
+   "criterion": "C4b",
+   "observable": "n:Q3@vessel",
+   "time_s": 0.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: (1 - f) n + f V c_buf of its own state at the event",
+   "tolerance_terms": {
+    "eps_factor": 8.881784197001252e-16,
+    "f_V_c_buf": 6.25e-13,
+    "a_n_information": 0.0005,
+    "n_information": 0.0005,
+    "formula": "eps_factor * (|a_n| + |n| + f_V_c_buf), with a_n and n the engine's anchor and amount at the event"
+   },
+   "tolerance_information": 8.881784202552368e-19
+  },
+  {
+   "criterion": "C4b",
+   "observable": "removed:Q3@vessel",
+   "time_s": 0.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: f n of its own state at the event",
+   "tolerance_terms": {
+    "eps_factor": 4.440892098500626e-16,
+    "f": 0.25,
+    "n_information": 0.0005,
+    "formula": "eps_factor * f * |n|, with n the engine's amount at the event"
+   },
+   "tolerance_information": 5.551115123125783e-20
+  },
+  {
+   "criterion": "C4b",
+   "observable": "supplied:Q3@vessel",
+   "time_s": 0.0,
+   "class": "derived",
+   "value": 6.25e-13,
+   "tolerance": 2.775557561562891e-28,
+   "against": "reference: f V c_buf"
+  },
+  {
+   "criterion": "C4b",
+   "observable": "n:Q1@vessel",
    "time_s": 0.25,
    "class": "derived",
    "value": null,
@@ -3766,6 +3924,60 @@
    "value": 0.0009963234403043081,
    "tolerance": 3.575048434027477e-16,
    "against": "reference: S_s"
+  },
+  {
+   "criterion": "C6",
+   "observable": "R:lattice",
+   "time_s": 0.0,
+   "class": "constant",
+   "value": "unchanged",
+   "tolerance": null,
+   "against": "engine: its own value before the event map"
+  },
+  {
+   "criterion": "C6",
+   "observable": "B:lattice_Q1",
+   "time_s": 0.0,
+   "class": "constant",
+   "value": "unchanged",
+   "tolerance": null,
+   "against": "engine: its own value before the event map"
+  },
+  {
+   "criterion": "C6",
+   "observable": "B:lattice_Q2",
+   "time_s": 0.0,
+   "class": "constant",
+   "value": "unchanged",
+   "tolerance": null,
+   "against": "engine: its own value before the event map"
+  },
+  {
+   "criterion": "C6",
+   "observable": "B:lattice_Q3",
+   "time_s": 0.0,
+   "class": "constant",
+   "value": "unchanged",
+   "tolerance": null,
+   "against": "engine: its own value before the event map"
+  },
+  {
+   "criterion": "C6",
+   "observable": "R:sheet",
+   "time_s": 0.0,
+   "class": "constant",
+   "value": "unchanged",
+   "tolerance": null,
+   "against": "engine: its own value before the event map"
+  },
+  {
+   "criterion": "C6",
+   "observable": "B:sheet_Q2",
+   "time_s": 0.0,
+   "class": "constant",
+   "value": "unchanged",
+   "tolerance": null,
+   "against": "engine: its own value before the event map"
   },
   {
    "criterion": "C6",
@@ -5325,6 +5537,19 @@
    "plant": "P5",
    "criterion": "C6",
    "compared": {
+    "observable": "B:sheet_Q2",
+    "time_s": 0.0
+   },
+   "honest": 0.00011955881283651698,
+   "planted": 8.966910962738773e-05,
+   "distance_in_bounds": 2205470822151769.0,
+   "bound_used": "ulps of the honest value (bit for bit)",
+   "assumption": "the planted map scales every B_b facing the washed node by (1 - f) and leaves R_s unchanged"
+  },
+  {
+   "plant": "P5",
+   "criterion": "C6",
+   "compared": {
     "observable": "B:lattice_Q3",
     "time_s": 0.25
    },
@@ -5397,7 +5622,7 @@
  "provenance": {
   "references_revision": "INVENTED (a format sample has no generating revision)",
   "tree_clean": true,
-  "writer_version": "fr45-references-writer 1",
+  "writer_version": "fr45-references-writer 2",
   "regeneration_hash_seeds": [
    0,
    1,

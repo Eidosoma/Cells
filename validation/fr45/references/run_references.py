@@ -6,7 +6,8 @@
 
 It refuses to run unless BLAS is pinned to one thread, the spec copy matches its sums file,
 SPEC.md's rows match the transcribed worlds, and (without --allow-dirty) the checkout is clean
-with no untracked files. It writes the eight reference files and accuracy.json into --out,
+with no untracked files. It writes the reference files (SPEC.md §5; ten from amendment 2) and
+accuracy.json into --out,
 which must be new or empty; run-specific facts (seed, CPU, timings) go to run.log only, so the
 compared outputs are identical across hash seeds and cores. ``--sample`` writes the invented
 format sample instead.

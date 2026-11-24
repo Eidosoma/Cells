@@ -47,6 +47,8 @@ _WORLDS = {
     "W4": WL.world_W4,
     "W5": WL.world_W5,
     "W6": WL.world_W6,
+    "W7": WL.world_W7,  # amendment 2
+    "W7s": WL.world_W7s,
 }
 _SYSTEMS: dict[str, System] = {}
 

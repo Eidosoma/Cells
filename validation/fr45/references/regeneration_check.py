@@ -8,7 +8,8 @@ the 70-digit ones (paths and relative differences only).
 
 Runs run_references.py four times, one after another, each with BLAS pinned to one thread:
 hash seeds 0, 1 and 2 (the writer's declared regeneration seeds) and seed 0 again, the first
-two on the first CPU and the last two on the second. Every output except run.log must be
+two on the first CPU and the last two on the second (the two may be one CPU: each run has its
+own numbered directory). Every output except run.log must be
 byte-identical across the runs. The invented format sample is written under the same four
 seeds and cores and must equal the committed file byte for byte. regeneration.json records
 each run's digests (computed at run time) and the verdicts. The checkout must be clean, since
@@ -64,8 +65,8 @@ def main(argv=None) -> int:
         raise SystemExit(f"refused: {args.root} is not empty")
     args.root.mkdir(parents=True, exist_ok=True)
     runs = []
-    for seed, cpu in plan:
-        out = args.root / f"seed{seed}-cpu{cpu}"
+    for idx, (seed, cpu) in enumerate(plan, start=1):
+        out = args.root / f"run{idx}-seed{seed}-cpu{cpu}"
         env = dict(
             os.environ,
             PYTHONHASHSEED=str(seed),
@@ -89,7 +90,7 @@ def main(argv=None) -> int:
             str(out),
         ]
         proc = subprocess.run(cmd, env=env, capture_output=True, text=True)
-        (args.root / f"seed{seed}-cpu{cpu}.stdout").write_text(
+        (args.root / f"run{idx}-seed{seed}-cpu{cpu}.stdout").write_text(
             proc.stdout + proc.stderr, encoding="utf-8"
         )
         if proc.returncode != 0:
@@ -114,8 +115,8 @@ def main(argv=None) -> int:
     committed = HERE / "format_sample_INVENTED.json"
     committed_digest = hashlib.sha256(committed.read_bytes()).hexdigest()
     sample_runs = []
-    for seed, cpu in plan:
-        out = args.root / f"sample-seed{seed}-cpu{cpu}"
+    for idx, (seed, cpu) in enumerate(plan, start=1):
+        out = args.root / f"sample{idx}-seed{seed}-cpu{cpu}"
         env = dict(
             os.environ,
             PYTHONHASHSEED=str(seed),
@@ -180,7 +181,7 @@ def main(argv=None) -> int:
     proc = subprocess.run(cmd, env=env, capture_output=True, text=True)
     if proc.returncode != 0:
         raise SystemExit(f"the 50-digit run failed:\n{proc.stdout}\n{proc.stderr}")
-    primary = args.root / f"seed{plan[0][0]}-cpu{plan[0][1]}"
+    primary = args.root / f"run1-seed{plan[0][0]}-cpu{plan[0][1]}"
     differing = []
     for p in sorted(primary.glob("reference_*.json")):
         a = json.loads(p.read_text(encoding="utf-8"))
@@ -189,7 +190,7 @@ def main(argv=None) -> int:
         b.pop("provenance")
         _diff(a, b, p.name, [], differing)
     precision = {
-        "compared": "every value of the eight reference files but provenance",
+        "compared": "every value of the reference files but provenance",
         "differing_count": len(differing),
         "differing": differing,
     }

@@ -9,6 +9,7 @@ record (normalised disagreements only).
 
 from __future__ import annotations
 
+import decimal
 import math
 from decimal import Decimal
 from fractions import Fraction
@@ -165,17 +166,83 @@ def equilibrium(sys: System, N: list[Decimal]) -> dict:
                 "bracket_R": br["R"][s],
                 "binary64": EQ.wang_binary64(sys, N, s),
             }
+    pooled = {sys.sets[s]["id"]: v for s, v in EQ.pooled(sys, N).items()}
     written = [D(f64(v)) for v in root]
     return {
         "root": root,
         "newton": nw,
         "bracket": br,
         "wang": w,
+        "pooled": pooled,
         "N": N,
         "residual_written": EQ.residuals(sys, N, written),
         "residual_root": EQ.residuals(sys, N, root),
         "affinities": EQ.affinities(sys, root),
     }
+
+
+def theta_both_ways(sys: System, y) -> list[tuple[Decimal, Decimal]]:
+    """(formula, B_b / S_s) for each population at state y (SPEC §3.1, amendment 2).
+
+    The user's formula theta_b = (c_b/K_b) / (1 + sum_j c_j/K_j), over the populations j of
+    b's set, from the free concentrations c = n/V of the state's pools; and B_b / S_s.
+    """
+    x = [y[q["pool_index"]] / sys.Vd[q["pool_index"]] / sys.K[b] for b, q in enumerate(sys.pops)]
+    out = []
+    for b, q in enumerate(sys.pops):
+        s = q["set_index"]
+        den = ONE + sum((x[j] for j in sys.pops_of_set[s]), ZERO)
+        out.append((x[b] / den, y[sys.i_pop(b)] / sys.Sd[s]))
+    return out
+
+
+def equilibrium_accuracy(sysm: System, eq: dict, snode: dict) -> dict:
+    """The routes' agreement at one R-eq root, normalised by s_node (accuracy record)."""
+    root = eq["root"]
+    nw = eq["newton"]["state"]
+    acc = {}
+    acc["newton_vs_bracket"] = f64(
+        dmax(abs(root[i] - nw[i]) / snode[sysm.node_of_component(i)] for i in range(sysm.n))
+    )
+    acc["bracket_width"] = f64(
+        dmax((eq["bracket"]["width"][s] / snode[sysm.sets[s]["faces"]]) for s in range(sysm.nS))
+    )
+    acc["bracket_iterations"] = eq["bracket"]["iterations"]
+    acc["newton_iterations"] = eq["newton"]["iterations"]
+    acc["residual_root"] = {
+        k: f64(v / dmax(snode.values())) for k, v in eq["residual_root"].items()
+    }
+    acc["residual_written"] = {
+        k: f64(v / dmax(snode.values())) for k, v in eq["residual_written"].items()
+    }
+    acc["affinity_over_RT"] = f64(dmax(abs(a) / RT for a in eq["affinities"]))
+    wg = {}
+    for sid, w in eq["wang"].items():
+        s = sysm.set_index[sid]
+        sn = snode[sysm.sets[s]["faces"]]
+        wg[sid] = {
+            "gap": f64(abs(w["wang"]["R"] - w["bracket_R"]) / sn),
+            "binary64_gap": f64(abs(D(w["binary64"]) - w["bracket_R"]) / sn),
+            "branch": w["wang"]["branch"],
+            "is_largest_root": w["wang"]["is_largest"],
+            "cubic_residual_over_terms": f64(
+                abs(w["wang"]["cubic_residual"]) / w["wang"]["cubic_terms"]
+            ),
+        }
+    acc["wang"] = wg
+    if eq["pooled"]:
+        acc["pooled_closed_form"] = {
+            sid: {
+                "gap_over_s_node": f64(
+                    dmax(
+                        abs(v - root[i]) / snode[sysm.node_of_component(i)]
+                        for i, v in pl["amounts"].items()
+                    )
+                )
+            }
+            for sid, pl in eq["pooled"].items()
+        }
+    return acc
 
 
 def loads_max(sys: System, y, rule: str) -> Decimal:
@@ -343,46 +410,14 @@ class WorldRun:
             return self.sys.pool_totals(self.ode["B"]["post"])
         return self.sys.pool_totals(self.sys.start())
 
+    def row_index(self, t: float) -> int:
+        """The index of a saved row in [start] + times: 0 for the start (0.0 s)."""
+        return 0 if t == 0.0 else self.times.index(t) + 1
+
     def compute_equilibrium(self):
         self.eq = equilibrium(self.sys, self.totals())
         root = self.eq["root"]
-        nw = self.eq["newton"]["state"]
-        acc = {}
-        acc["newton_vs_bracket"] = f64(
-            dmax(
-                abs(root[i] - nw[i]) / self.snode[self.sys.node_of_component(i)]
-                for i in range(self.sys.n)
-            )
-        )
-        acc["bracket_width"] = f64(
-            dmax(
-                (self.eq["bracket"]["width"][s] / self.snode[self.sys.sets[s]["faces"]])
-                for s in range(self.sys.nS)
-            )
-        )
-        acc["bracket_iterations"] = self.eq["bracket"]["iterations"]
-        acc["newton_iterations"] = self.eq["newton"]["iterations"]
-        acc["residual_root"] = {
-            k: f64(v / dmax(self.snode.values())) for k, v in self.eq["residual_root"].items()
-        }
-        acc["residual_written"] = {
-            k: f64(v / dmax(self.snode.values())) for k, v in self.eq["residual_written"].items()
-        }
-        acc["affinity_over_RT"] = f64(dmax(abs(a) / RT for a in self.eq["affinities"]))
-        wg = {}
-        for sid, w in self.eq["wang"].items():
-            s = self.sys.set_index[sid]
-            sn = self.snode[self.sys.sets[s]["faces"]]
-            wg[sid] = {
-                "gap": f64(abs(w["wang"]["R"] - w["bracket_R"]) / sn),
-                "binary64_gap": f64(abs(D(w["binary64"]) - w["bracket_R"]) / sn),
-                "branch": w["wang"]["branch"],
-                "is_largest_root": w["wang"]["is_largest"],
-                "cubic_residual_over_terms": f64(
-                    abs(w["wang"]["cubic_residual"]) / w["wang"]["cubic_terms"]
-                ),
-            }
-        acc["wang"] = wg
+        acc = equilibrium_accuracy(self.sys, self.eq, self.snode)
         if self.world["wash"] is not None:
             # sensitivity of W2's root to R-ode's state at the wash: method A's state instead
             yA = self.ode["A"][self.profile["rtols"][-1]]["post"]
@@ -396,11 +431,36 @@ class WorldRun:
             )
         self.acc["equilibrium"] = acc
 
-    def equilibrium_section(self, totals_note: str):
+    def theta_section(self) -> dict:
+        """SPEC §3.1 and §5 (amendment 2): each population's occupied fraction at R-eq's root,
+        by the user's formula from the root's free concentrations and as B_b / S_s, and their
+        gap, at the working precision. The accuracy record adds the formula from Newton's
+        root and the gap at the written binary64 values."""
+        sysm = self.sys
+        hp = theta_both_ways(sysm, self.eq["root"])
+        nw = theta_both_ways(sysm, self.eq["newton"]["state"])
+        wr = theta_both_ways(sysm, [D(f64(v)) for v in self.eq["root"]])
+        self.acc["equilibrium"]["theta"] = {
+            "formula_vs_root_max": f64(dmax(abs(a - b) for a, b in hp)),
+            "newton_formula_vs_bracket_root_max": f64(
+                dmax(abs(nw[b][0] - hp[b][1]) for b in range(sysm.nB))
+            ),
+            "written_formula_vs_root_max": f64(dmax(abs(a - b) for a, b in wr)),
+        }
+        return {
+            q["id"]: {
+                "formula": f64(hp[b][0]),
+                "root": f64(hp[b][1]),
+                "gap": f64(abs(hp[b][0] - hp[b][1])),
+            }
+            for b, q in enumerate(sysm.pops)
+        }
+
+    def equilibrium_section(self, totals_note: str, theta: bool = False):
         root = self.eq["root"]
         sysm = self.sys
         res = self.eq["residual_written"]
-        return {
+        out = {
             "totals": totals_note,
             "sets": {s["id"]: f64(root[sysm.i_set(i)]) for i, s in enumerate(sysm.sets)},
             "populations": {q["id"]: f64(root[sysm.i_pop(b)]) for b, q in enumerate(sysm.pops)},
@@ -415,6 +475,9 @@ class WorldRun:
                 for sid, w in self.eq["wang"].items()
             },
         }
+        if theta:
+            out["theta"] = self.theta_section()
+        return out
 
     # ---- R-ode outputs -------------------------------------------------------------------
     def trajectory_section(self):
@@ -539,6 +602,25 @@ class WorldRun:
             "moieties_high_precision_over_S": f64(set_hp),
             "moieties_written_over_S": f64(set_w),
         }
+        if wash_t is not None:
+            # each ligand's books across the wash (C4a's identity): free + bound + collected -
+            # supplied against the declared total, at the start and every observation time
+            rec = self.ode["B"]["records"]
+            node = self.world["wash"]["node"]
+            books_hp = books_w = ZERO
+            for k, t in enumerate([0.0] + list(self.times)):
+                y = self.yB[k]
+                tot = sysm.pool_totals(y)
+                totw = sysm.pool_totals([D(f64(v)) for v in y])
+                for p, pool in enumerate(sysm.pools):
+                    if pool["node"] != node:
+                        continue
+                    col, sup = rec[pool["ligand"]] if t > wash_t else (ZERO, ZERO)
+                    sn = self.snode[pool["node"]]
+                    books_hp = max(books_hp, abs(tot[p] + col - sup - N0[p]) / sn)
+                    books_w = max(books_w, abs(totw[p] + D(f64(col)) - D(f64(sup)) - N0[p]) / sn)
+            self.acc["closure"]["books_high_precision_over_s_node"] = f64(books_hp)
+            self.acc["closure"]["books_written_over_s_node"] = f64(books_w)
         return {"ligands": lig, "sets": sets}
 
     def heats_section(self):
@@ -638,6 +720,31 @@ class WorldRun:
             fc_E = max(fc_E, abs(Hc - row["H"]) / row["E"])
             if row["H"] != 0:
                 fc_rel = max(fc_rel, abs(Hc - row["H"]) / abs(row["H"]))
+        # Heats this precision does not resolve to binary64: fewer than 17 significant digits
+        # survive G's rounding at the working precision (|H| <= 10^(17 - digits) E), or the
+        # fine and coarse Taylor runs disagree beyond 1e-17 of the heat. Such a heat is written
+        # as computed; it lies far below every band (W7s's late intervals, 280 time constants
+        # from its start, are the case).
+        floor = Decimal(10) ** (17 - decimal.getcontext().prec)
+        unresolved = []
+        for row in self.heat_rows:
+            Hc = Gc[row["node"]][row["ka"]] - Gc[row["node"]][row["kb"]]
+            if abs(row["H"]) <= floor * row["E"] or abs(Hc - row["H"]) > Decimal("1e-17") * abs(
+                row["H"]
+            ):
+                unresolved.append(
+                    {
+                        "node": row["node"],
+                        "start_s": tt[row["ka"]],
+                        "end_s": tt[row["kb"]],
+                        "heat_over_E": f64(row["H"] / row["E"]),
+                    }
+                )
+        if unresolved:
+            self.acc["heats_below_binary64_resolution"] = {
+                "rule": "|H| <= 10^(17 - working digits) E, or |H_fine - H_coarse| > 1e-17 |H|",
+                "intervals": unresolved,
+            }
         ratios = [row["BH"] / abs(row["H"]) for row in self.heat_rows if row["H"] != 0]
         self.acc["heats_C3a_bound_over_heat"] = {
             "min": f64(min(ratios)) if ratios else None,
@@ -740,9 +847,12 @@ class WorldRun:
                 + list(Lx["L_B"].values())
             )
             c2b_used = Fraction(0)
+            # W1eq: every observation time; W7 (amendment 2): its rows before its wash
+            c2b_times = extra.get("C2b_times", self.times)
             for dt, dtt in dts:
                 h = Q(dt) / 2
-                for k, t in enumerate(self.times, start=1):
+                for t in c2b_times:
+                    k = self.row_index(t)
                     kt = self.kt(self.time_text(t), dtt)
                     for i, name in enumerate(self.obs):
                         tol = (
@@ -856,66 +966,70 @@ class WorldRun:
             # AMENDMENT answer 9: the terms the inputs fix are written; the terms from a state
             # are R-ode's, marked as information, and the judge recomputes them from the
             # engine's own state at the event.
+            # The event map alone on each saved state it is registered on: W2's 4.0 s row; W7's
+            # start (0.0 s) and its 1.0 s wash row (amendment 2).
             wash = self.world["wash"]
-            tw = extra["wash_alone_time"]
-            yw = self.yB[self.times.index(tw) + 1]
             anchors = sysm.anchors()
             f = Q(wash["f"])
-            for p, pool in enumerate(sysm.pools):
-                if pool["node"] != wash["node"]:
-                    continue
-                sup = supplied_exact(sysm, wash, p)
-                n = Q(yw[p])
-                P.append(
-                    _pair(
-                        "C4b",
-                        f"n:{pool['id']}",
-                        tw,
-                        "derived",
-                        None,
-                        None,
-                        "engine: (1 - f) n + f V c_buf of its own state at the event",
-                        tolerance_terms={
-                            "eps_factor": fq(4 * EPS_Q),
-                            "f_V_c_buf": fq(sup),
-                            "a_n_information": anchors[p],
-                            "n_information": f64(yw[p]),
-                            "formula": "eps_factor * (|a_n| + |n| + f_V_c_buf), with a_n and n "
-                            "the engine's anchor and amount at the event",
-                        },
-                        tolerance_information=fq(4 * EPS_Q * (abs(Q(anchors[p])) + abs(n) + sup)),
+            for tw in extra["wash_alone_times"]:
+                yw = self.yB[self.row_index(tw)]
+                for p, pool in enumerate(sysm.pools):
+                    if pool["node"] != wash["node"]:
+                        continue
+                    sup = supplied_exact(sysm, wash, p)
+                    n = Q(yw[p])
+                    P.append(
+                        _pair(
+                            "C4b",
+                            f"n:{pool['id']}",
+                            tw,
+                            "derived",
+                            None,
+                            None,
+                            "engine: (1 - f) n + f V c_buf of its own state at the event",
+                            tolerance_terms={
+                                "eps_factor": fq(4 * EPS_Q),
+                                "f_V_c_buf": fq(sup),
+                                "a_n_information": anchors[p],
+                                "n_information": f64(yw[p]),
+                                "formula": "eps_factor * (|a_n| + |n| + f_V_c_buf), with a_n and "
+                                "n the engine's anchor and amount at the event",
+                            },
+                            tolerance_information=fq(
+                                4 * EPS_Q * (abs(Q(anchors[p])) + abs(n) + sup)
+                            ),
+                        )
                     )
-                )
-                P.append(
-                    _pair(
-                        "C4b",
-                        f"removed:{pool['ligand']}@{pool['node']}",
-                        tw,
-                        "derived",
-                        None,
-                        None,
-                        "engine: f n of its own state at the event",
-                        tolerance_terms={
-                            "eps_factor": fq(2 * EPS_Q),
-                            "f": wash["f"],
-                            "n_information": f64(yw[p]),
-                            "formula": "eps_factor * f * |n|, with n the engine's amount at the "
-                            "event",
-                        },
-                        tolerance_information=fq(2 * EPS_Q * f * abs(n)),
+                    P.append(
+                        _pair(
+                            "C4b",
+                            f"removed:{pool['ligand']}@{pool['node']}",
+                            tw,
+                            "derived",
+                            None,
+                            None,
+                            "engine: f n of its own state at the event",
+                            tolerance_terms={
+                                "eps_factor": fq(2 * EPS_Q),
+                                "f": wash["f"],
+                                "n_information": f64(yw[p]),
+                                "formula": "eps_factor * f * |n|, with n the engine's amount at "
+                                "the event",
+                            },
+                            tolerance_information=fq(2 * EPS_Q * f * abs(n)),
+                        )
                     )
-                )
-                P.append(
-                    _pair(
-                        "C4b",
-                        f"supplied:{pool['ligand']}@{pool['node']}",
-                        tw,
-                        "derived",
-                        fq(sup),
-                        fq(2 * EPS_Q * sup),
-                        "reference: f V c_buf",
+                    P.append(
+                        _pair(
+                            "C4b",
+                            f"supplied:{pool['ligand']}@{pool['node']}",
+                            tw,
+                            "derived",
+                            fq(sup),
+                            fq(2 * EPS_Q * sup),
+                            "reference: f V c_buf",
+                        )
                     )
-                )
         if "C4c" in crit:
             wash = self.world["wash"]
             rec = self.ode["B"]["records"]
@@ -966,26 +1080,14 @@ class WorldRun:
                         )
         if "C6" in crit:
             wash = self.world["wash"]
-            t5 = extra["wash_alone_time"]
-            for s, st in enumerate(sysm.sets):
-                if st["faces"] != wash["node"]:
-                    continue
-                P.append(
-                    _pair(
-                        "C6",
-                        f"R:{st['id']}",
-                        t5,
-                        "constant",
-                        "unchanged",
-                        None,
-                        "engine: its own value before the event map",
-                    )
-                )
-                for b in sysm.pops_of_set[s]:
+            for t5 in extra["wash_alone_times"]:
+                for s, st in enumerate(sysm.sets):
+                    if st["faces"] != wash["node"]:
+                        continue
                     P.append(
                         _pair(
                             "C6",
-                            f"B:{sysm.pops[b]['id']}",
+                            f"R:{st['id']}",
                             t5,
                             "constant",
                             "unchanged",
@@ -993,6 +1095,18 @@ class WorldRun:
                             "engine: its own value before the event map",
                         )
                     )
+                    for b in sysm.pops_of_set[s]:
+                        P.append(
+                            _pair(
+                                "C6",
+                                f"B:{sysm.pops[b]['id']}",
+                                t5,
+                                "constant",
+                                "unchanged",
+                                None,
+                                "engine: its own value before the event map",
+                            )
+                        )
         if "C7" in crit:
             P.append(
                 _pair(
@@ -1397,16 +1511,12 @@ def plants_W1p(run: WorldRun, profile) -> tuple[list, dict]:
     return out, acc
 
 
-def plants_W2(run: WorldRun, profile, wash_alone_time: float) -> tuple[list, dict]:
+def _P5_C6_entries(run: WorldRun, y, t: float) -> list:
+    """The honest and the planted event map on one state, in ulps of the honest value."""
     sysm = run.sys
-    out = []
-    acc = {}
     wash = run.world["wash"]
-    # C6: the planted event map on the state at 5.0 s
-    k5 = run.times.index(wash_alone_time) + 1
-    y5 = run.yB[k5]
-    after_h, _ = sysm.wash(y5, wash, scale_bound=False)
-    after_p, _ = sysm.wash(y5, wash, scale_bound=True)
+    after_h, _ = sysm.wash(y, wash, scale_bound=False)
+    after_p, _ = sysm.wash(y, wash, scale_bound=True)
     entries = []
     for i, name in enumerate(run.obs):
         if name.startswith("n:"):
@@ -1416,21 +1526,44 @@ def plants_W2(run: WorldRun, profile, wash_alone_time: float) -> tuple[list, dic
         ulp = math.ulp(hv)
         entries.append(
             {
-                "compared": {"observable": name, "time_s": wash_alone_time},
+                "compared": {"observable": name, "time_s": t},
                 "honest": hv,
                 "planted": pv,
                 "distance": abs(D(pv) - D(hv)) / D(ulp),
             }
         )
-    out.append(
-        _plant_entry(
-            "P5",
-            "C6",
-            _largest(entries),
-            bound_used="ulps of the honest value (bit for bit)",
-            assumption=P5_ASSUMPTION,
+    return entries
+
+
+def plants_wash(run: WorldRun, profile, wash_alone_times) -> tuple[list, dict]:
+    """P5 (CRITERIA.md) in a wash world: W2, and W7 by the coordinator's ruling of 24 November
+    2026 on amendment 2 (CRITERIA.md's plant row names C6 and C4a for both worlds).
+
+    C6: the planted event map alone on each state it is registered on (W2's 4.0 s row; W7's
+    start and its 1.0 s wash row), one entry per state, so a tie between states cannot hide
+    one. C4a: the planted wash in the full run.
+    """
+    sysm = run.sys
+    out = []
+    acc = {}
+    wash = run.world["wash"]
+    yA_states = _states_A(run)
+    eB_all, eA_all = [], []
+    for t in wash_alone_times:
+        k = run.row_index(t)
+        eB = _P5_C6_entries(run, run.yB[k], t)
+        eB_all += eB
+        eA_all += _P5_C6_entries(run, yA_states[k], t)
+        out.append(
+            _plant_entry(
+                "P5",
+                "C6",
+                _largest(eB),
+                bound_used="ulps of the honest value (bit for bit)",
+                assumption=P5_ASSUMPTION,
+            )
         )
-    )
+    c6_gap = _method_gap(eB_all, eA_all)
     # C4a: the planted wash in the full run
     sysp = System(run.world)
     ode = integrate(sysp, run.world, profile, wash_variant=True)
@@ -1469,7 +1602,10 @@ def plants_W2(run: WorldRun, profile, wash_alone_time: float) -> tuple[list, dic
                 }
             )
     out.append(_plant_entry("P5", "C4a", _largest(entries), assumption=P5_ASSUMPTION))
-    acc["P5"] = {"C4a_taylor_vs_dop853_relative_distance_gap": f64(worst_ab)}
+    acc["P5"] = {
+        "C6_taylor_vs_dop853_relative_distance_gap": c6_gap,
+        "C4a_taylor_vs_dop853_relative_distance_gap": f64(worst_ab),
+    }
     return out, acc
 
 
@@ -1594,3 +1730,115 @@ def plant_P4(stage: dict) -> dict:
         "verdict_honest": stage["verdict_summed"],
         "verdict_planted": stage["verdict_per_population"],
     }
+
+
+# ------------------------------------------------------------------------------------------
+# W7's stated start (AMENDMENT-2-2026-11-24.md)
+
+
+def stated_start_checks(run: WorldRun) -> tuple[dict, dict]:
+    """W7's start as SPEC.md states it, checked, and W7's own root at its start's totals.
+
+    The facts are checked in plain binary64 on the declared start (the anchors, the start
+    as the engine forms it from its inputs), with exact rationals beside where they apply:
+    the capacity S; B = 2.0 and 1.0 and R = 3.0; both K; detailed balance at the start; both
+    of §1.2's net fluxes 0.0; §1.4's map on the start removing 4.0 and 2.0 fmol and supplying
+    4.0 fmol of L2; and the rows before and after the wash. Any failure stops the run: it is
+    a question for the protocol's author, not something the references adjust.
+
+    C2b compares W7's rows before its wash with "its start, its own root" (CRITERIA.md;
+    amendment 2's §3). That root is R-eq at the start's totals, solved as every other root
+    here; it must round to the declared start, or the run stops. As information: R-eq at the
+    declared start's own binary64 totals, the formula's theta at the own root, and whether
+    R-ode's rows before the wash and the wash's removed amounts round to the example too.
+    Returns (the own root's equilibrium, the accuracy record).
+    """
+    w = run.world
+    st = w["stated"]
+    sysm = run.sys
+    anchors = sysm.anchors()
+    a = dict(zip(run.obs, anchors, strict=True))
+    if len(sysm.sets) != 1:
+        raise RuntimeError("W7 has one set")
+    s0 = sysm.sets[0]
+    checked, fails = [], []
+
+    def need(ok, what):
+        (checked if ok else fails).append(what)
+
+    need(s0["S"] == float(st["S"]) and s0["S_naive_binary64_same"], f"S = {st['S']} fmol")
+    for pid, txt in st["B_start"].items():
+        need(a[f"B:{pid}"] == float(txt), f"the start's B of {pid} = {txt} fmol")
+    R = a[f"R:{s0['id']}"]
+    need(R == float(st["R_start"]), f"the start's R = {st['R_start']} fmol")
+    for q in sysm.pops:
+        pool = sysm.pools[q["pool_index"]]
+        n, B = a[f"n:{pool['id']}"], a[f"B:{q['id']}"]
+        K_exact = Q(q["k_off"]) / Q(q["k_on"])
+        need(
+            q["k_off"] / q["k_on"] == float(st["K_mM"]) and K_exact == Q(st["K_mM"]),
+            f"K of {q['id']} = {st['K_mM']} mM",
+        )
+        need(Q(B) / Q(R) == Q(n) / Q(pool["V"]) / K_exact, f"B/R = c/K at the start, {q['id']}")
+        J = q["k_on"] * (n / pool["V"]) * R - q["k_off"] * B
+        need(J == 0.0, f"the net flux of {q['id']} at the start is 0.0 in binary64")
+    wash = w["wash"]
+    for pool in sysm.pools:
+        lig = pool["ligand"]
+        c = [b["c"] for b in wash["buffer"] if b["ligand"] == lig][0]
+        n = a[f"n:{pool['id']}"]
+        want = st["removed_at_start"][lig]
+        need(
+            wash["f"] * n == float(want) and Q(wash["f"]) * Q(n) == Q(want),
+            f"the map on the start removes {want} fmol of {lig}",
+        )
+        if lig in st["supplied_at_start"]:
+            want = st["supplied_at_start"][lig]
+            need(
+                wash["f"] * pool["V"] * c == float(want)
+                and Q(wash["f"]) * Q(pool["V"]) * Q(c) == Q(want),
+                f"the map on the start supplies {want} fmol of {lig}",
+            )
+    before = [t for t in run.times if t <= wash["t"]]
+    need(
+        before == [float(x) for x in st["rows_before_wash"]] and before[-1] == wash["t"],
+        "the rows before the wash are " + " and ".join(st["rows_before_wash"]) + " s",
+    )
+    need(
+        run.times[len(before)] == float(st["first_row_after_wash"]),
+        f"the first row after the wash is {st['first_row_after_wash']} s",
+    )
+    if fails:
+        raise RuntimeError("W7's start does not hold as SPEC.md states it: " + "; ".join(fails))
+    eq0 = equilibrium(sysm, sysm.pool_totals(sysm.start()))
+    root0 = eq0["root"]
+    if [f64(v) for v in root0] != anchors:
+        raise RuntimeError("W7's own root at its start's totals does not round to its start")
+    eqb = equilibrium(sysm, sysm.pool_totals([D(v) for v in anchors]))
+    sn = run.snode
+
+    def dist(y):
+        return f64(
+            dmax(abs(y[i] - D(anchors[i])) / sn[sysm.node_of_component(i)] for i in range(sysm.n))
+        )
+
+    occ = {q["id"]: q["occupancy"] for q in sysm.pops}
+    th0 = theta_both_ways(sysm, root0)
+    rec = run.ode["B"]["records"]
+    acc = {
+        "stated_facts_checked": checked,
+        "own_root_at_the_start_totals": equilibrium_accuracy(sysm, eq0, sn),
+        "own_root_equals_declared_start_in_binary64": True,
+        "own_root_vs_declared_start_over_s_node": dist(root0),
+        "root_at_declared_binary64_totals_vs_declared_start_over_s_node": dist(eqb["root"]),
+        "own_root_theta_formula_equals_declared_occupancy": all(
+            f64(th0[b][0]) == occ[q["id"]] for b, q in enumerate(sysm.pops)
+        ),
+        "rows_before_wash_equal_declared_start_in_binary64": all(
+            [f64(v) for v in run.yB[run.row_index(t)]] == anchors for t in before
+        ),
+        "wash_removed_round_to_the_amounts_stated_for_the_start": all(
+            f64(rec[lig][0]) == float(v) for lig, v in st["removed_at_start"].items()
+        ),
+    }
+    return eq0, acc

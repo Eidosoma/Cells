@@ -523,6 +523,155 @@ def world_W6():
     return world, {"W6": rows}
 
 
+def _w7_literals():
+    return dict(
+        V="1.0",
+        n1="8.0",
+        n2="4.0",
+        N="3613284456.0",
+        S="6.0",
+        nu="1",
+        alpha="1.0",
+        kon1="1.0",
+        koff1="12.0",
+        occ1="0.3333333333333333",
+        kon2="0.25",
+        koff2="3.0",
+        occ2="0.16666666666666666",
+        tw="1.0",
+        f="0.5",
+        cb1="1.0e-12",
+        cb2="8.0",
+        dt="0.005",
+    )
+
+
+def _w7_set_row(L):
+    return (
+        f"| Set `matrix` (owner: node `well`) | "
+        f"N = {L['N']} copies (S = {L['S']} fmol), {NU} = {L['nu']}, {ALPHA} = {L['alpha']} |"
+    )
+
+
+def _w7_pop_row(L, n):
+    return (
+        f"| Population `matrix_L{n}` | "
+        f"L{n}; k_on {L[f'kon{n}']}; k_off {L[f'koff{n}']}; initial occupancy {L[f'occ{n}']} |"
+    )
+
+
+def world_W7():
+    """W7, the user's example washed (AMENDMENT-2-2026-11-24.md). ``stated`` holds the facts
+    SPEC.md states about its start, as the literals written there, for the build to check."""
+    L = _w7_literals()
+    stated = dict(
+        S="6.0",
+        B_start={"matrix_L1": "2.0", "matrix_L2": "1.0"},
+        R_start="3.0",
+        K_mM="12",
+        removed_at_start={"L1": "4.0", "L2": "2.0"},
+        supplied_at_start={"L2": "4.0"},
+        rows_before_wash=["0.5", "1.0"],
+        first_row_after_wash="1.005",
+    )
+    times = ["0.5", "1.0", "1.005", "1.5", "2.0", "3.0", "5.0", "8.0", "12.0"]
+    world = {
+        "id": "W7",
+        "title": "the user's example, washed",
+        "nodes": [{"id": "well", "kind": "node", "V": L["V"]}],
+        "ligands": ["L1", "L2"],
+        "free": [
+            {"ligand": "L1", "node": "well", "n": L["n1"]},
+            {"ligand": "L2", "node": "well", "n": L["n2"]},
+        ],
+        "sets": [
+            {
+                "id": "matrix",
+                "owner": "node well",
+                "faces": "well",
+                "copies": L["N"],
+                "sites_per_copy": L["nu"],
+                "accessible_fraction": L["alpha"],
+            }
+        ],
+        "populations": [
+            _pop("matrix_L1", "matrix", "L1", L["kon1"], L["koff1"], L["occ1"]),
+            _pop("matrix_L2", "matrix", "L2", L["kon2"], L["koff2"], L["occ2"]),
+        ],
+        "dt": [L["dt"]],
+        "times": times,
+        "horizon": "12.0",
+        "wash": {
+            "t": L["tw"],
+            "node": "well",
+            "f": L["f"],
+            "buffer": [{"ligand": "L1", "c": L["cb1"]}, {"ligand": "L2", "c": L["cb2"]}],
+        },
+        "stated": stated,
+    }
+    B1, B2 = stated["B_start"]["matrix_L1"], stated["B_start"]["matrix_L2"]
+    rem = stated["removed_at_start"]
+    rows = [
+        f"| Node `well` | V = {L['V']} pL |",
+        f"| Free L1 (the example's A), L2 (its B) at `well` | {L['n1']} fmol, {L['n2']} fmol |",
+        _w7_set_row(L),
+        _w7_pop_row(L, 1),
+        _w7_pop_row(L, 2),
+        f"| The wash | t = {L['tw']} s, node `well`, f = {L['f']}; "
+        f"buffer L1 {L['cb1']} mM, L2 {L['cb2']} mM |",
+        f"| dt | {L['dt']} s |",
+        f"| Observation times | {', '.join(times)} s |",
+        "| Horizon | 12.0 s |",
+        f"B = {B1} and {B2} fmol, and R = {stated['R_start']} fmol.",
+        f"Both K are {stated['K_mM']} mM, so B_b/R_s = c_l/K_b holds at the start.",
+        "Both of §1.2's net fluxes are 0.0 in binary64.",
+        f"**The row at {L['tw']} s holds the state the wash acts on.** "
+        f"{stated['first_row_after_wash']} s is the first row after it.",
+        f"removes exactly {rem['L1']} fmol of L1 and {rem['L2']} fmol of L2, and supplies\n"
+        f"  {stated['supplied_at_start']['L2']} fmol of L2.",
+    ]
+    return world, {"W7": rows}
+
+
+def world_W7s():
+    """W7s, W7's single-ligand limit: L1 alone on W7's sites, from W7's occupancy, no wash.
+    L2 is absent (SPEC.md: moved by no law, so left out), so the world has one ligand."""
+    L = _w7_literals()
+    times = ["0.5", "1.0", "2.0", "3.0", "5.0", "8.0", "12.0"]
+    world = {
+        "id": "W7s",
+        "title": "W7's single-ligand limit",
+        "nodes": [{"id": "well", "kind": "node", "V": L["V"]}],
+        "ligands": ["L1"],
+        "free": [{"ligand": "L1", "node": "well", "n": L["n1"]}],
+        "sets": [
+            {
+                "id": "matrix",
+                "owner": "node well",
+                "faces": "well",
+                "copies": L["N"],
+                "sites_per_copy": L["nu"],
+                "accessible_fraction": L["alpha"],
+            }
+        ],
+        "populations": [_pop("matrix_L1", "matrix", "L1", L["kon1"], L["koff1"], L["occ1"])],
+        "dt": [L["dt"]],
+        "times": times,
+        "horizon": "12.0",
+        "wash": None,
+    }
+    own = [
+        f"| Node `well` | V = {L['V']} pL; free L1 {L['n1']} fmol |",
+        "| Set `matrix` (owner: node `well`) | as W7 |",
+        "| Population `matrix_L1` | as W7, the set's only population |",
+        f"| dt | {L['dt']} s |",
+        f"| Observation times | {', '.join(times)} s |",
+        "| Horizon | 12.0 s |",
+        "**L2 is absent.**",
+    ]
+    return world, {"W7": [_w7_set_row(L), _w7_pop_row(L, 1)], "W7s": own}
+
+
 BUILDERS = {
     "W1": world_W1,
     "W1p": world_W1p,
@@ -532,6 +681,8 @@ BUILDERS = {
     "W4": world_W4,
     "W5": world_W5,
     "W6": world_W6,
+    "W7": world_W7,
+    "W7s": world_W7s,
 }
 
 
@@ -566,7 +717,7 @@ def check_against_spec(spec_text: str) -> list[str]:
         checked.append(row)
     builders = dict(BUILDERS)
     builders["W1eq"] = world_W1eq_inputs
-    for wid in ("W1", "W1eq", "W1p", "W2", "W3", "W3p", "W4", "W5", "W6"):
+    for wid in ("W1", "W1eq", "W1p", "W2", "W3", "W3p", "W4", "W5", "W6", "W7", "W7s"):
         _, rows = builders[wid]()
         for section, section_rows in rows.items():
             if section not in sections:

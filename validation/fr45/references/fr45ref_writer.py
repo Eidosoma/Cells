@@ -1,8 +1,9 @@
 """The writer of FR-45's reference files (SPEC.md §5) and of its invented format sample.
 
 One JSON file per world: reference_W1.json, reference_W1eq.json, reference_W1p.json,
-reference_W2.json, reference_W3.json, reference_W4.json, reference_W5.json and
-reference_W6.json. Floats are written with repr (round trip exact) and times are the
+reference_W2.json, reference_W3.json, reference_W4.json, reference_W5.json,
+reference_W6.json and, from amendment 2 (AMENDMENT-2-2026-11-24.md), reference_W7.json and
+reference_W7s.json. Floats are written with repr (round trip exact) and times are the
 inputs' floats. Each file's keys, in order:
 
   schema, invented, world, units, equilibrium, trajectory, balances, [wash], heats, pairs,
@@ -12,6 +13,9 @@ inputs' floats. Each file's keys, in order:
   their capacity S, populations, the declared start a_x, dt, times, horizon, wash).
 - equilibrium: {totals, sets {id: R}, populations {id: B}, pools {"L@node": n}, residual,
   residual_definition, wang {set: {gap}}}; wang is {} where no set has two ligands alone.
+  W7's and W7s's (amendment 2) also hold theta {population: {formula, root, gap}}: the
+  user's formula (c_b/K_b) / (1 + sum_j c_j/K_j) from the root's free concentrations, B_b/S_s
+  from the root, and their gap, each rounded once from the working precision.
 - trajectory: [{observable, time_s, value, tolerance_gap}], observables n:<ligand>@<node>,
   R:<set>, B:<population>; at every observation time. value is the high-precision Taylor
   solution rounded once; tolerance_gap is |DOP853(rtol 1e-12) - DOP853(rtol 1e-13)|.
@@ -19,9 +23,9 @@ inputs' floats. Each file's keys, in order:
 - Only amounts a law moves appear anywhere (AMENDMENT answer 3): a declared free amount at a
   node no population binds it from is left out, and listed under world.inert_amounts_information
   when a world has one (no FR-45 world does).
-- wash (W2): {ligand: {removed, supplied}}.
+- wash (W2, W7): {ligand: {removed, supplied}}, the map at the wash on R-ode's state.
 - heats: {intervals: [{node, start_s, end_s, heat, bound, tolerance_gap}],
-  G: [{node, time_s, G}], wash_free_energy_change (W2): [{node, time_s,
+  G: [{node, time_s, G}], wash_free_energy_change (W2, W7): [{node, time_s,
   free_energy_change, sets_part}]}.
 - pairs: [{criterion, observable, time_s, [start_s, end_s], [dt_s], class, value,
   tolerance, against, [spans_wash], [tolerance_terms, tolerance_information], [scale],
@@ -30,6 +34,11 @@ inputs' floats. Each file's keys, in order:
   value null means the judge compares the engine against its own state (named in `against`).
   - The rows of C4a, C5 and C9 are the saved rows: the start (time_s 0.0) and every
     observation time (AMENDMENT answer 7).
+  - C2b's pairs are W1eq's at every observation time and W7's at its rows before its wash,
+    0.5 and 1.0 s (amendment 2), against "its start, its own root": R-eq at W7's start's
+    totals, which rounds to the declared start.
+  - C4b's and C6's pairs are on each state the event map alone acts on, in time_s: W2's
+    4.0 s row; W7's start (0.0 s, the user's example as declared) and its 1.0 s wash row.
   - start_s and end_s are on heat pairs (C3a, C3b, C3c). C3c covers every interval, the
     wash's included (spans_wash: true; its E is taken over the post-wash state and the next
     row); C3a and C3b leave the wash's interval out. C3b's -dG is the references' own
@@ -50,7 +59,8 @@ inputs' floats. Each file's keys, in order:
 - plants: [{plant, criterion, compared, honest, planted, distance_in_bounds, [world],
   [bound_used], [assumption], [information], [verdict_honest, verdict_planted]}]; compared
   is {observable, time_s} or, for a heat, {observable, start_s, end_s}. An entry with
-  information: true is not a plant's criterion (P3's and P6's distances under C3a).
+  information: true is not a plant's criterion (P3's and P6's distances under C3a). P5 has
+  one C6 entry per state its map acts on (W2: 4.0 s; W7: 0.0 and 1.0 s) and one C4a entry.
 - A refusal world (W5) has no trajectory: equilibrium and distance_at_horizon are null and
   trajectory, balances' and heats' lists are empty; it carries stage, C7 and P4.
 - provenance: {references_revision, tree_clean, writer_version, regeneration_hash_seeds,
@@ -68,9 +78,9 @@ import fr45ref_worlds as WL
 from fr45ref_hp import ZERO, D, dmax, f64
 
 SCHEMA = "fr45-reference/1"
-WRITER_VERSION = "fr45-references-writer 1"
+WRITER_VERSION = "fr45-references-writer 2"
 REGENERATION_HASH_SEEDS = (0, 1, 2)
-FILE_ORDER = ("W1", "W1eq", "W1p", "W2", "W3", "W4", "W5", "W6")
+FILE_ORDER = ("W1", "W1eq", "W1p", "W2", "W3", "W4", "W5", "W6", "W7", "W7s")
 
 # Each world's pairs: AMENDMENT-2026-11-24 §3's registered table. C3 is judged in W1, W2, W3
 # and W6 only; C5 in every world but W5; C10 in every run but W5's refusal. W1p carries its
@@ -84,10 +94,17 @@ CRITERIA = {
     "W4": ["C5", "C8", "C10"],
     "W5": ["C7"],
     "W6": ["C1", "C2a", "C3a", "C3b", "C3c", "C5", "C9", "C10"],
+    # AMENDMENT-2-2026-11-24 §3's table: W7 and W7s
+    "W7": ["C1", "C2a", "C2b", "C3a", "C3b", "C3c", "C4a", "C4b", "C4c", "C5", "C6", "C9", "C10"],
+    "W7s": ["C1", "C2a", "C3a", "C3b", "C3c", "C5", "C9", "C10"],
 }
 # The state C4b's and C6's event map acts on alone: the row at 4.0 s, the state the wash acts
 # on (NOTE-2026-11-24.md; CRITERIA.md's C4b and C6 rows as corrected that day).
 W2_WASH_ALONE_TIME = 4.0
+# W7 (amendment 2): the event map alone on its saved states at 0.0 s (the user's example as
+# declared) and at 1.0 s (its wash row); C2b on its rows before its wash, 0.5 and 1.0 s.
+W7_WASH_ALONE_TIMES = (0.0, 1.0)
+W7_C2B_TIMES = (0.5, 1.0)
 
 INVENTED_BANNER = (
     "INVENTED INPUTS. This file is the writer's format sample for the judge, written on "
@@ -126,6 +143,7 @@ def _payload(
     plants=None,
     closed=None,
     stage=None,
+    theta: bool = False,
 ) -> dict:
     d: dict = {}
     if invented:
@@ -135,7 +153,7 @@ def _payload(
     d["world"] = run.world_echo(start_note)
     d["units"] = BLD.UNITS
     if run.has_traj:
-        d["equilibrium"] = run.equilibrium_section(equilibrium_note)
+        d["equilibrium"] = run.equilibrium_section(equilibrium_note, theta=theta)
         d["trajectory"] = run.trajectory_section()
         d["balances"] = run.balances_section()
         if run.world["wash"] is not None:
@@ -299,9 +317,9 @@ def build_all(provenance: dict, profile: str = "reference", only=None, log=print
             provenance,
             invented=False,
             equilibrium_note="the post-wash totals: R-ode's state at 4.0 s through SPEC §1.4's map",
-            extra_pairs={"wash_alone_time": W2_WASH_ALONE_TIME},
+            extra_pairs={"wash_alone_times": [W2_WASH_ALONE_TIME]},
         )
-        plants, pacc = BLD.plants_W2(r, BLD.PROFILES[profile], W2_WASH_ALONE_TIME)
+        plants, pacc = BLD.plants_wash(r, BLD.PROFILES[profile], [W2_WASH_ALONE_TIME])
         payload["plants"] = plants
         files["W2"] = payload
         note("W2", r, {"plants": pacc})
@@ -362,6 +380,40 @@ def build_all(provenance: dict, profile: str = "reference", only=None, log=print
         files["W6"] = _payload(r, provenance, invented=False, equilibrium_note="the start's totals")
         note("W6", r)
         log("W6 integrated")
+
+    if "W7" in want:
+        r = BLD.WorldRun(_numeric(WL.world_W7), profile, CRITERIA["W7"])
+        r.compute_equilibrium()
+        # its start as SPEC.md states it, checked, and its own root there (C2b's x_root)
+        own, stated = BLD.stated_start_checks(r)
+        if [t for t in r.times if t <= r.world["wash"]["t"]] != list(W7_C2B_TIMES):
+            raise RuntimeError("W7's rows before its wash are not C2b's registered rows")
+        payload = _payload(
+            r,
+            provenance,
+            invented=False,
+            equilibrium_note="the post-wash totals: R-ode's state at 1.0 s through SPEC §1.4's map",
+            extra_pairs={
+                "wash_alone_times": list(W7_WASH_ALONE_TIMES),
+                "C2b_root": own["root"],
+                "C2b_times": list(W7_C2B_TIMES),
+            },
+            theta=True,
+        )
+        plants, pacc = BLD.plants_wash(r, BLD.PROFILES[profile], list(W7_WASH_ALONE_TIMES))
+        payload["plants"] = plants
+        files["W7"] = payload
+        note("W7", r, {"start": stated, "plants": pacc})
+        log("W7 integrated, plants sized")
+
+    if "W7s" in want:
+        r = BLD.WorldRun(_numeric(WL.world_W7s), profile, CRITERIA["W7s"])
+        r.compute_equilibrium()
+        files["W7s"] = _payload(
+            r, provenance, invented=False, equilibrium_note="the start's totals", theta=True
+        )
+        note("W7s", r)
+        log("W7s integrated")
 
     return {f"reference_{wid}.json": files[wid] for wid in FILE_ORDER if wid in files}, acc
 
@@ -523,12 +575,14 @@ def build_sample() -> dict:
         invented=True,
         equilibrium_note="INVENTED: the post-wash totals",
         extra_pairs={
-            "wash_alone_time": world["wash"]["t"],
+            # the event map alone on the start and on the wash row, as W7 has it
+            "wash_alone_times": [0.0, world["wash"]["t"]],
             "C8_finest": world["dt_texts"][-1],
             "C2b_root": r.eq["root"],
         },
         closed=closed,
         stage=st,
+        theta=True,
     )
     plants = []
     best, _, _ = BLD.plant_dynamics_C1(r, world, prof, "P1", skip_R=True, unshared=True)
@@ -539,7 +593,7 @@ def build_sample() -> dict:
         entries, _ = BLD.plant_energy(r, plant)
         plants += entries
     plants.append(BLD.plant_P4(st))
-    p5, _ = BLD.plants_W2(r, prof, world["wash"]["t"])
+    p5, _ = BLD.plants_wash(r, prof, [0.0, world["wash"]["t"]])
     plants += p5
     p7, _ = BLD.plants_W3p(r, world, prof, label=world["id"])
     plants += p7
