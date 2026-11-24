@@ -7,6 +7,7 @@ boundaries. No hidden field cache or charge projection enters a checkpoint.
 
 import math
 from dataclasses import make_dataclass, replace
+from fractions import Fraction
 from typing import NamedTuple
 
 import jax
@@ -437,15 +438,50 @@ def control_domain_valid(state, control, p, active, *, xp=jnp):
 domain_valid.with_control = control_domain_valid
 
 
+# A node's charge anchor agrees with its inventory and fixed background within this (C), or
+# beyond it within anchor_rounding_C (D333).
+ANCHOR_FLOOR_C = 1e-20
+
+
+def anchor_rounding_C(anchor_C, fixed_fmol, terms, charge_C):
+    """The rounding budget (C) of a node's charge anchor, exact: check_definition's bound above
+    ANCHOR_FLOOR_C (D333).
+
+    The anchor rule writes a node's fixed background as fl(fl(anchor / CHARGE_PER_FMOL) -
+    fsum(z n)) over its stored terms z n. check_definition reads back charge_C =
+    fl(CHARGE_PER_FMOL fsum(fixed, z n)) and the residual fl(charge_C - anchor). Each of the six
+    results is correctly rounded, so each lies within half its spacing of its exact value: the
+    quotient, fsum(z n), the background and the net sum in fmol (at CHARGE_PER_FMOL), then
+    charge_C and the residual in C. Their sum bounds the residual of every node the rule writes,
+    at any inventory, and a background whose charge is off by more than the larger of the floor
+    and the sum, plus the sum, is refused. It is summed in fractions, so the bound is closed.
+
+    The floor alone is finer than float64 at large inventories: from 2^19 fmol the background's
+    and the ionic sum's half spacings reach 1.12e-20 C, and XC0's balanced nodes of 1e6 to 1e10
+    fmol were refused (D332's C6). The budget is that of an independent exact-rational check of
+    24 November 2026. Its 17 controls, 15 balanced nodes and two backgrounds four spacings off,
+    are rows of tests/unit/test_component_net_charge.py.
+    """
+    stages_fmol = (
+        anchor_C / CHARGE_PER_FMOL,
+        math.fsum(terms),
+        fixed_fmol,
+        math.fsum((fixed_fmol, *terms)),
+    )
+    spacings_C = Fraction(CHARGE_PER_FMOL) * sum(map(Fraction, map(math.ulp, stages_fmol)))
+    return (spacings_C + Fraction(math.ulp(charge_C)) + Fraction(math.ulp(charge_C - anchor_C))) / 2
+
+
 def check_definition(spec):
     for c in (*spec.model.cells, *spec.model.extracellular):
-        q = CHARGE_PER_FMOL * math.fsum(
-            (
-                c.fixed_charge_equivalent_fmol,
-                *(z * a for z, a in zip(spec.model.valence, c.initial_amount_fmol, strict=True)),
-            )
-        )
-        if not math.isfinite(q) or abs(q - c.initial_charge_C) > 1e-20:
+        terms = [z * a for z, a in zip(spec.model.valence, c.initial_amount_fmol, strict=True)]
+        q = CHARGE_PER_FMOL * math.fsum((c.fixed_charge_equivalent_fmol, *terms))
+        residual = q - c.initial_charge_C
+        if not math.isfinite(q) or (
+            abs(residual) > ANCHOR_FLOOR_C
+            and Fraction(abs(residual))
+            > anchor_rounding_C(c.initial_charge_C, c.fixed_charge_equivalent_fmol, terms, q)
+        ):
             raise ConfigError(
                 "Initial inventory, fixed background and explicit charge anchor disagree"
             )

@@ -382,7 +382,10 @@
   "/mnt/workspaces/Cells/fr17-sparse-20261123/tiers-044f07e6/measure/measured.json",
   "/mnt/workspaces/Cells/fr47-build-20261124/measure-4a533a2c/measured.json",
   "/mnt/workspaces/Cells/fr47-build-20261124/measure-94bf2a97/measured.json",
-  "/mnt/workspaces/Cells/fr47-build-20261124/measure-c0aa0bd3/measured.json"
+  "/mnt/workspaces/Cells/fr47-build-20261124/measure-c0aa0bd3/measured.json",
+  "/mnt/workspaces/Cells/fr17-sparse-20261123/measure-478664a0/measure/measured.json",
+  "/mnt/workspaces/Cells/charge-anchor-tolerance-20261124/measure-bb7afe7d/measured.json",
+  "/mnt/workspaces/Cells/fr47-inert-wall-20261124/measure-bac99a6c/measured.json"
  ],
  "measured_provenance": [
   {
@@ -3265,6 +3268,29 @@
    "root": "/mnt/workspaces/Cells/fr47-build-20261124/snapshot-c0aa0bd3",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-24T11:44:47+00:00"
+  },
+  {
+   "git_revision": "478664a0a9c352d9b1718dd035aafda351b8d7f0",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/fr17-sparse-20261123/measure-478664a0/wt",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-24T16:49:18+00:00"
+  },
+  {
+   "git_revision": "bb7afe7d7dd218c3a590b9a27e539533d494ae2d",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/charge-anchor-tolerance-20261124/snapshot-bb7afe7d",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-24T13:53:49+00:00"
+  },
+  {
+   "git_revision": "bac99a6c121e441718f112a8e8ab5410ead14f44",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr47-inert-wall-20261124/snapshot-bac99a6c",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-24T14:17:51+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -4082,10 +4108,10 @@
    },
    {
     "file": "tests/unit/test_component_net_charge.py",
-    "seconds": 13.81,
+    "seconds": 16.07,
     "exit_code": 0,
     "counts": {
-     "passed": 11
+     "passed": 29
     }
    },
    {
@@ -6063,10 +6089,10 @@
    },
    {
     "file": "tests/unit/test_row_checks_program.py",
-    "seconds": 7.84,
+    "seconds": 9.9,
     "exit_code": 0,
     "counts": {
-     "passed": 16
+     "passed": 17
     }
    },
    {
@@ -7204,10 +7230,10 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_rate_equations.py",
-    "seconds": 48.93,
+    "seconds": 77.19,
     "exit_code": 0,
     "counts": {
-     "passed": 19
+     "passed": 24
     }
    },
    {
