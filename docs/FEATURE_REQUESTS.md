@@ -63,6 +63,11 @@ and a general feature, never one built for one study (D144).
 | [FR-55](#fr-55--an-input-dependent-closing-rate-for-regulated-availability) | An input-dependent closing rate for regulated availability (dose-dependent deactivation) | **High** (logged by the user, 24 November 2026; D344) | **Logged:** one fixed closing rate; two groups' SK2 records contradict carrying it across doses | A design note, then qualification against both groups' records |
 | [FR-56](#fr-56--a-temperature-dependent-molecular-footprint) | A temperature-dependent molecular footprint with a declared, sourced expansion coefficient | Normal (logged by the user, 24 November 2026; D344) | **Logged:** a fixed footprint per species; two methods confirm POPC's expansion on warming | A design note |
 | [FR-57](#fr-57--passive-tracer-carried-by-a-prescribed-liquid-flow-between-finite-liquid-regions) | Passive tracer carried by a prescribed liquid flow between finite liquid regions | **High** (logged by the user, 24 November 2026) | **Logged:** a wash's sample goes to a record; no operator carries one region's liquid into another | A design note with FR-54's: one mechanism, rows only a flow passes |
+| [FR-58](#fr-58--a-label-on-an-exchangeable-group-carried-through-reversible-conversions) | A label on an exchangeable group, carried through reversible conversions | To be set by the user (logged 24 November 2026) | **Logged:** labels follow species rows; nothing names the group that crosses | A design note, after FR-50 and FR-44 |
+| [FR-59](#fr-59--reversible-transport-into-an-initially-empty-finite-ion-pool) | Reversible transport into an initially empty finite ion pool | To be set by the user (logged 24 November 2026) | **Logged:** positive-domain laws; species kept positive by a declared trace | A design note: a boundary-capable path, refined in step |
+| [FR-60](#fr-60--work-at-a-scheduled-change-of-a-states-energy) | Work at a scheduled change of a state's energy | To be set by the user (logged 24 November 2026) | **Logged:** no level change books its work | A design note: exact events, an ensemble spread class |
+| [FR-61](#fr-61--an-overdamped-rotational-load-angle-speed-work-and-dissipation) | An overdamped rotational load: angle, speed, work and dissipation | To be set by the user (logged 24 November 2026) | **Logged:** no torque ledger (MODULE_SYSTEM §7 rule (a)) | One design note with FR-62 |
+| [FR-62](#fr-62--ion-transfer-coupled-to-a-rotary-step) | Ion transfer coupled to a rotary step | To be set by the user (logged 24 November 2026) | **Logged:** cycles book ions, not angle or load work | One design note with FR-61 |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -2446,6 +2451,194 @@ prescribed flow cannot be expressed: buffer in at Q, through chambers in series,
   is bitwise.
 
 **Status (24 November):** logged. A design note comes first, with FR-54's.
+
+## FR-58 — A label on an exchangeable group, carried through reversible conversions
+
+**Logged 24 November 2026 by the user.** Priority: to be set by the user.
+
+**Why.** A selective tracer, an exchangeable chemical group, can move between species at chemical equilibrium while
+every concentration stays constant.
+- Today's labels follow species rows (FR-42).
+- The transporter's label contract refuses a species changed at only one end (`docs/NEUTRAL_LABELS_DESIGN.md`).
+- `local_species_reactions@1` returns one-way moves for labelled rows, but no declaration names which group crosses
+  each conversion.
+
+**The request.** For a law with physically specified one-way rates, a definition names the exchangeable group on each
+side.
+- It reports the expected labelled group on each species.
+- Each direction carries its donor's label fraction.
+- The physical trajectory is preserved.
+- A law that gives only a net rate needs a separate kinetic basis, and is refused by name.
+
+**The acceptance example.**
+- **The setup:** A−X + B ⇌ A + B−X, with 1 fmol of each of the four species and forward and reverse rates of 1
+  fmol/s. Initially all the X is labelled, on A−X.
+- **The targets:**
+  - label arrives in B−X at 1 fmol/s at first;
+  - after 1 s, B−X holds (1 − e⁻²)/2 = 0.43233 fmol of label;
+  - total label stays at 1 fmol, and the net extent at zero.
+- **Disabling the observation** preserves the amounts, heat and work.
+
+**First reading (the lead, with the advisor):**
+- The target is any two-pool exchange, so the plant with teeth is a net-rate reader, which gives zero.
+- Add unequal pool sizes, and a second group that does not cross.
+- Check which reaction laws expose forward and reverse rates separately.
+- It follows FR-50, the one-way records, and FR-44, labels across a wash.
+
+**Status (24 November):** logged. A design note comes first.
+
+## FR-59 — Reversible transport into an initially empty finite ion pool
+
+**Logged 24 November 2026 by the user.** Priority: to be set by the user.
+
+**Why.**
+- `nak_atp_mass_action_positive@1` is a positive-domain law: no floor, and invalid trials are refused. Its rate stays
+  finite as the outside potassium goes to zero while the other substrates stay positive.
+- A finite receiving pool that starts empty can gain ions on the first reverse transfer.
+- The chemical potential of an empty ideal pool is singular. Evaluating the initial logarithm, or inserting a
+  numerical floor, changes the accounting problem.
+- Today Cells keeps every species positive at an active node through a declared trace.
+
+**The request.** A boundary-capable law or integration path, qualified for a finite receiver.
+- **The start:** positive inside potassium, and positive sodium and fuel.
+- **The comparison:** the initial signed current at zero outside potassium, against the analytic one-sided limit from
+  the positive domain.
+- **Over a finite interval, under step refinement:** a positive potassium gain, the 3 Na / 2 K cycle stoichiometry,
+  the capacitor charge, and the integrated work and heat.
+- **The limit used:** the ideal mixing free energy's n ln n → 0 at zero amount.
+- **Documentation:** the separate boundary physics needed to hold a reservoir at zero activity.
+
+**First reading (the lead, with the advisor):**
+- The hardest of this group. It runs against @3's standing rule that every species stays positive at an active node.
+- The first step's free energy per ion diverges, so the note must state the refinement order it expects.
+- A held zero bath stays refused.
+- FR-47's true zeros in the deterministic representation (E2) are the nearest precedent.
+
+**Status (24 November):** logged. A design note comes first.
+
+## FR-60 — Work at a scheduled change of a state's energy
+
+**Logged 24 November 2026 by the user.** Priority: to be set by the user.
+
+**Why.** An external controller can change a molecular state's energy while every molecule stays in place.
+- The assembly family carries per-phase standard potentials in the world definition.
+- Its events report the state free energy, heat and reservoir work.
+- No scheduled level change books its own work.
+
+**The request.**
+- The finite state is carried through a switch at a declared time.
+- The externally supplied work is recorded as the new state free energy minus the old, at identical counts.
+- This stays distinct from chemical exchange, and from the heat of the relaxation that follows.
+- An interval with frozen reactions isolates the two switch records.
+
+**The acceptance example.**
+- **The setup:** one carrier, in either of two neutral, equal-energy states, with probability 1/2 each.
+  1. Raise the second state's energy by k_BT ln 3.
+  2. Let it equilibrate with a heat bath: its probability falls to 1/4.
+  3. Restore the original levels.
+- **The ensemble-mean switch works** are +k_BT ln(3)/2 and −k_BT ln(3)/4.
+- **The net input and the bath heat** are both 0.27465 k_BT.
+- **A finite-time check** uses the actual occupancy at the second switch.
+- **Both switches** preserve every count.
+
+**First reading (the lead, with the advisor):**
+- One carrier is below the deterministic envelope, so the note names the representation: exact events.
+- Ensemble means take `agreement.py`'s spread class, with a derived ensemble size.
+- A new schedule kind gets D339's checks of count, time and kind from the start.
+
+**Status (24 November):** logged. A design note comes first.
+
+## FR-61 — An overdamped rotational load: angle, speed, work and dissipation
+
+**Logged 24 November 2026 by the user.** Priority: to be set by the user.
+
+**Why.** No torque or momentum ledger exists. MODULE_SYSTEM §7's version-1 rule (a) folds every kind's ledger terms
+into today's ten ledgers by role. A mechanical work ledger reopens that limit, which is a decision for the design note
+and the user.
+
+**The request.** A rigid rotor in the overdamped regime takes a positive rotational drag and a signed applied torque.
+- It reports the angle in radians, the signed angular speed, the mechanical work the torque's source supplies, and the
+  viscous dissipation.
+- The declaration says who supplies the torque. For a chemical source, it names the ion or fuel current that closes
+  the source's energy balance.
+
+**The acceptance example.**
+- **Constant torque.** 12 pN·nm for 0.5 s against a drag of 3 pN·nm·s/rad gives:
+  - a speed of 4 rad/s;
+  - an angle of 2 rad;
+  - 24 pN·nm dissipated.
+- **Variations:**
+  - doubling the drag halves the speed and the work;
+  - reversing the torque reverses the displacement, and the dissipation stays positive;
+  - a locked rotor has zero displacement and zero work.
+- **Variable torque.** Zero torque for 0.5 s, then 12 pN·nm for 0.5 s:
+  - the mean speed is 2 rad/s;
+  - the integrated viscous work is 24 pN·nm;
+  - the mean-speed shortcut gives 12 pN·nm, which is wrong.
+- **Angular units.** A load calibrated per revolution per second (Hz) and one per rad/s give the same torque and work:
+  - 20 pN·nm/Hz at 5 Hz gives 100 pN·nm;
+  - 20/(2π) pN·nm·s/rad at 10π rad/s gives the same 100 pN·nm;
+  - one revolution takes 200π pN·nm of work.
+
+**First reading (the lead, with the advisor):**
+- On its own this is ω = τ/γ. Its teeth are planted errors: the mean-speed shortcut, and a 2π factor.
+- It shares one design note and one mechanical ledger with FR-62.
+
+**Status (24 November):** logged. A design note comes first.
+
+## FR-62 — Ion transfer coupled to a rotary step
+
+**Logged 24 November 2026 by the user.** Priority: to be set by the user.
+
+**Why.** Cycle laws account for proton transfer and membrane voltage (`proton_coupled_atp_synthesis_cycle`), but no
+transition books angular displacement and load work.
+
+**The request.** A reusable rotary step: one transition books signed ion transfer, angular displacement, the work
+exchanged with an external load, and the electrochemical free energy drawn from the reservoirs.
+
+**The acceptance example.**
+- **The setup:** a homogeneous, isothermal rotor with energetically identical angular positions and exactly one ion
+  per forward step. The reservoirs supply 3 k_BT per forward transfer, against a constant opposing torque.
+- **Local detailed balance, by the load work per forward step:**
+
+  | Load work per step | Forward-to-reverse rate ratio | Mean currents |
+  | --- | --- | --- |
+  | 2 k_BT | e | Forward |
+  | 3 k_BT | 1 | Zero |
+  | 4 k_BT | e⁻¹ | Reversed |
+- **One reverse ion transfer** is counted for every backward step.
+- **Over a stationary interval,** the reservoir free energy drawn, minus the load work delivered, equals temperature
+  times the total entropy production, on average.
+- **It assumes** tight coupling and one reversible transition type.
+
+**Also requested:**
+- **A reference implementation with existing reactions.**
+  - A three-state cyclic register distinguishes every forward and reverse step.
+  - Each transition couples to two pairs of held species: one pair supplies the ion free energy, and the other
+    receives the load work.
+  - The angle is unwrapped from the signed events.
+  - Both one-way counts are reported, even at zero mean current.
+  - A finite-reservoir version updates ion inventories and the capacitor charge at each event.
+- **A viscous-load check.**
+  - The drag declares its convention: Hz or rad/s.
+  - Torque balance and the mechanical work over time are checked.
+  - A fluctuating torque integrates drag × ω² over the residence times.
+  - Reversing both the voltage and the log activity ratio reverses the drive. The rotation changes sign, and the
+    dissipated work stays positive.
+- **A calibration-range readout for mechanical feedback.** Where a rate reads a measured force table, report:
+  - the force per engaged unit;
+  - the rate applied;
+  - the time spent below, inside and above the table's range;
+  - the time at zero occupancy, separately.
+
+**First reading (the lead, with the advisor):**
+- The entropy identity holds on average, so it needs an ensemble size and a derived tolerance.
+- Check that the existing-reactions benchmark parses today, and which side of the "no physics in validation" line its
+  host-side angle falls on.
+- The force-table readout may have no host law yet. If so, it is logged as waiting.
+- It shares one design note with FR-61, and so reopens MODULE_SYSTEM §7 rule (a).
+
+**Status (24 November):** logged. A design note comes first.
 
 ## Backlog: external tools to look at (logged by the user, 23 November 2026)
 
