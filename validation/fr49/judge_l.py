@@ -31,6 +31,7 @@ import subprocess
 import sys
 import tempfile
 import time
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
 import numpy as np
@@ -165,51 +166,90 @@ def restart(spec, result, *, plant=False):
     return dict(fields_differing=differ, passed=not differ)
 
 
+KIND = "cells.fr49_reference_result@1"
+PROTOCOL = "fr49-compartment-compositions-v1"
 QUANTITIES = ("n_O", "n_C", "x_O", "x_C")
-TIME_KEYS = ("sample_times_s", "times_s", "t_s", "times", "t")
+DECLARED = ("V_O_pL", "V_C_pL", "a_pL_per_s", "k_d_per_s", "P_fmol_per_s", "initial_fmol")
+DECLARED += ("pulse_s", "horizon_s")
 
 
-def _find(doc, key):
-    """The first value under `key` in `doc`, searching its nested objects breadth-first (lists are
-    leaves), or None."""
-    queue = [doc]
-    while queue:
-        node = queue.pop(0)
-        if isinstance(node, dict):
-            if key in node:
-                return node[key]
-            queue.extend(v for v in node.values() if isinstance(v, dict))
-    return None
+class ReaderError(ValueError):
+    """A references file not in the results layout, or not answering World L's declared inputs."""
 
 
-def read_reference(path, times):
+def _equal(a, b):
+    """Declared values equal as decimals, objects key by key."""
+    if isinstance(a, dict) or isinstance(b, dict):
+        if not (isinstance(a, dict) and isinstance(b, dict) and a.keys() == b.keys()):
+            return False
+        return all(_equal(a[k], b[k]) for k in a)
+    try:
+        return Decimal(str(a)) == Decimal(str(b))
+    except InvalidOperation:
+        return a == b
+
+
+def _numbers(values, name):
+    """A list of finite numbers (decimal strings or JSON numbers) in binary64, or ReaderError."""
+    if not isinstance(values, list) or not values:
+        raise ReaderError(f"{name} is missing or not a list")
+    try:
+        array = np.asarray([float(x) for x in values], dtype=float)
+    except (TypeError, ValueError) as error:
+        raise ReaderError(f"{name} holds an entry that is not a number") from error
+    if not np.isfinite(array).all():
+        raise ReaderError(f"{name} holds an entry that is not finite")
+    return array
+
+
+def read_reference(path, times, *, cases=worlds.SPEC, invented=False):
     """{q: values at `times`} for q in QUANTITIES, from a references file in the results layout
-    (the registered spec's cases.json, requested_outputs "L"). Structure only is checked here:
-    - the sample times are found, under one of TIME_KEYS, and each of `times` is among them;
-    - each quantity is found and numeric (decimal strings or numbers), one value per sample time.
-    Raises ValueError naming what is missing. This is the reader D308 requires to exist at a tag
-    before it reads the references: --check-reader runs it on a format sample, values unread."""
+    (the spec README's "What to produce", as its format sample shows it). It checks the file's
+    structure and inputs, never its values:
+    - kind, protocol and world "L";
+    - `inputs.invented` is `invented`, so that a format sample is never judged as the references
+      and the check-reader never opens the references;
+    - the declared inputs, and the sample-times rule, are World L's in `cases`, compared as
+      decimals;
+    - `sample_times_s` holds each of `times`;
+    - each quantity is a list of finite numbers, one per sample time.
+    Raises ReaderError naming what is wrong, never a value. D308 requires this reader to exist at
+    a tag before it reads the references: --check-reader runs it on the format sample, against the
+    invented cases the sample was made from."""
     doc = json.loads(Path(path).read_text())
     if not isinstance(doc, dict):
-        raise ValueError("the references file is not a JSON object")
-    found = next((v for k in TIME_KEYS if (v := _find(doc, k)) is not None), None)
-    if found is None:
-        raise ValueError(f"no sample times under any of {TIME_KEYS}; top-level keys {sorted(doc)}")
-    t = np.asarray([float(x) for x in found], dtype=float)
+        raise ReaderError("the file is not a JSON object")
+    for key, want in (("kind", KIND), ("protocol", PROTOCOL), ("world", "L")):
+        if doc.get(key) != want:
+            raise ReaderError(f"{key} is {doc.get(key)!r}, not {want!r}")
+    inputs = doc.get("inputs")
+    if not isinstance(inputs, dict) or bool(inputs.get("invented", False)) != invented:
+        raise ReaderError(
+            "inputs.invented is not true: --check-reader reads a format sample only"
+            if invented
+            else "inputs.invented is true: a format sample, not the references"
+        )
+    world = json.loads(Path(cases).read_text())["worlds"]["L"]
+    declared = doc.get("declared")
+    if not isinstance(declared, dict):
+        raise ReaderError("declared is missing")
+    for key in DECLARED:
+        if key not in declared or not _equal(declared[key], world[key]):
+            raise ReaderError(f"declared {key} is not World L's in {cases}")
+    if declared.get("sample_times_rule") != world["sample_times_s"]["rule"]:
+        raise ReaderError(f"declared sample_times_rule is not World L's in {cases}")
+    t = _numbers(doc.get("sample_times_s"), "sample_times_s")
     index = []
     for target in times:
         hit = np.flatnonzero(np.abs(t - target) <= 1e-9 * max(1.0, abs(target)))
         if not hit.size:
-            raise ValueError(f"the sample time {target} s is not among the file's {t.size} times")
+            raise ReaderError(f"the sample time {target:g} s is not among the file's {t.size}")
         index.append(int(hit[0]))
     out = {}
     for q in QUANTITIES:
-        values = _find(doc, q)
-        if values is None:
-            raise ValueError(f"{q} is missing; top-level keys {sorted(doc)}")
-        array = np.asarray([float(x) for x in values], dtype=float)
+        array = _numbers(doc.get(q), q)
         if array.shape != t.shape:
-            raise ValueError(f"{q} has {array.size} values for {t.size} sample times")
+            raise ReaderError(f"{q} has {array.size} entries for {t.size} sample times")
         out[q] = array[index]
     return out
 
@@ -317,7 +357,17 @@ def main(argv=None):
         default=None,
         help="parse a references format sample with read_reference, structure only, and stop",
     )
+    parser.add_argument(
+        "--cases",
+        type=Path,
+        default=None,
+        help="with --check-reader: the invented cases.json the format sample was made from",
+    )
     args = parser.parse_args(argv)
+    if (args.cases is None) != (args.check_reader is None):
+        parser.error(
+            "--check-reader and --cases go together; a judged run reads the registered spec"
+        )
     args.out.mkdir(parents=True, exist_ok=True)
     v = worlds.declared("L")
     end = float(v["horizon_s"]) if args.end is None else args.end
@@ -325,11 +375,12 @@ def main(argv=None):
     times = [every * i for i in range(int(round(end / every)) + 1)]
     if args.check_reader is not None:  # D308: the reader on a format sample, values unread.
         try:
-            parsed = read_reference(args.check_reader, times)
+            parsed = read_reference(args.check_reader, times, cases=args.cases, invented=True)
             report = dict(parsed=True, quantities={q: len(v) for q, v in parsed.items()},
                           times=len(times))  # fmt: skip
-        except ValueError as error:
+        except ReaderError as error:
             report = dict(parsed=False, why=str(error))
+        report.update(sample=str(args.check_reader), cases=str(args.cases))
         (args.out / "reader_check.json").write_text(json.dumps(report, indent=1))
         print(json.dumps(report))
         return
@@ -348,7 +399,8 @@ def main(argv=None):
             json.dumps(entry, indent=1, default=float)
         )
         return
-    verdict = dict(protocol="fr49-compartment-compositions-v1", part="L", end_s=end, dts=DTS)
+    verdict = dict(protocol=PROTOCOL, part="L", end_s=end, dts=DTS)
+    verdict["references"] = None if args.references is None else str(args.references)
     engine, started = {}, time.perf_counter()
     for dt in DTS:
         spec, labelled = run_world(dt, labelled=True, end=end)
