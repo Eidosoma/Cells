@@ -24,6 +24,103 @@
     "cells.rate_equations@1": "molecular-assembly"
   },
   "comparisons": {
+    "fr47-shell-interval-heat-cpu": {
+      "kind": "engine",
+      "models": ["cells.assembly_lineages@2"],
+      "laws": ["cells.rate_equations@1", "cells.ideal_mixing@1", "cells.prescribed_shell@1", "cells.shell_permeation@1"],
+      "operators": ["cells.pool_replacement@1", "cells.pool_withdrawal@1"],
+      "engine_revision": "43763a36f27d4dcf8381770649d6a59e4747ddf5",
+      "record_revision": "499980de46f30e883d968db7e3d7e6dc9e337434",
+      "sources": {
+        "Continuous ideal free energy at real counts": "src/cells/models/assembly_lineages_v2/ideal_mixing.py#L106",
+        "Deterministic one-way shell fluxes": "src/cells/models/assembly_lineages_v2/rate_equations.py#L822",
+        "Heat booking for a step starting at zero": "src/cells/models/assembly_lineages_v2/rate_equations.py#L1784",
+        "Reader for continuous heat between stops": "validation/assembly_lineages_v2/fr47_judge.py#L195",
+        "Nonregistered shell fixture": "tests/unit/test_assembly_lineages_v2_rate_equations_population.py#L86"
+      },
+      "record_inputs": {
+        "Passive interval heat theorem": "lean/CellsProofs/Chemistry/ShellIntervalHeat.lean",
+        "Two-molecule and whole-term controls": "lean/checks/chemistry/ShellIntervalHeat.lean"
+      },
+      "driver": "lean/checks/shell_interval_heat.py",
+      "record": "lean/PROGRESS.md#fr47-shell-interval-heat"
+    },
+    "fr47-shell-wash-recovery-host": {
+      "kind": "engine",
+      "models": ["cells.assembly_lineages@2"],
+      "laws": ["cells.prescribed_shell@1", "cells.shell_permeation@1"],
+      "operators": ["cells.pool_replacement@1", "cells.pool_withdrawal@1"],
+      "engine_revision": "cf5ddcff0054eac89a02f34c6cfe740ed5d833ce",
+      "record_revision": "db1278778fa36e4f9376eea783d199783ded5b2f",
+      "sources": {
+        "Per-state host rates": "src/cells/models/assembly_lineages_v2/balance.py#L56",
+        "Forward and reverse shell rates": "src/cells/models/assembly_lineages_v2/kernel.py#L279",
+        "Full replacement and the finite pool": "src/cells/models/assembly_lineages_v2/transfer.py#L81",
+        "Removed and supplied counts": "src/cells/models/assembly_lineages_v2/replacement.py#L130",
+        "Threshold draw for each molecule": "src/cells/models/assembly_lineages_v2/withdrawal.py#L150",
+        "Shell fixture with an absolute lumen potential": "tests/unit/test_assembly_lineages_v2_shell_interior.py#L35"
+      },
+      "record_inputs": {
+        "Two-compartment mean and its unique trajectory": "lean/CellsProofs/Chemistry/ShellWashRecovery.lean",
+        "Analytic controls for both reads and the next draw": "lean/checks/chemistry/ShellWashRecovery.lean"
+      },
+      "driver": "lean/checks/shell_wash_recovery.py",
+      "record": "lean/PROGRESS.md#fr47-shell-wash-recovery"
+    },
+    "fr46-shell-carrier-repair": {
+      "kind": "engine",
+      "models": ["cells.assembly_lineages@2"],
+      "laws": ["cells.prescribed_shell@1", "cells.stochastic_mass_action@1"],
+      "engine_revision": "cf5ddcff0054eac89a02f34c6cfe740ed5d833ce",
+      "record_revision": "db1278778fa36e4f9376eea783d199783ded5b2f",
+      "sources": {
+        "Bound ligand followed through other binding events": "src/cells/models/assembly_lineages_v2/spec.py#L456",
+        "Owner’s carrier refusal and sealed control": "tests/unit/test_assembly_lineages_v2_shell_interior.py#L354",
+        "Prescribed-shell fixture": "tests/unit/test_assembly_lineages_v2_geometry.py#L508",
+        "World definition and stoichiometric steps": "tests/assembly_lineage_v2_fixtures.py"
+      },
+      "record_inputs": {
+        "Exact four-event witness and sealed control": "lean/checks/chemistry/ShellLigandFaces.lean"
+      },
+      "driver": "lean/checks/shell_ligand_faces.py",
+      "record": "lean/PROGRESS.md#fr46-shell-ligand-faces-replay"
+    },
+    "fr46-shell-carrier-two-ligands": {
+      "kind": "engine",
+      "models": ["cells.assembly_lineages@2"],
+      "laws": ["cells.prescribed_shell@1", "cells.stochastic_mass_action@1"],
+      "engine_revision": "61d823be7e3913f44a4dd497507a8e8256151584",
+      "record_revision": "69176ea710e804bccf611a6f95c155631c4d16a9",
+      "sources": {
+        "Declared-face binding and composition check": "src/cells/models/assembly_lineages_v2/spec.py#L421",
+        "Site pairs, including a wall species that also acts as a site": "src/cells/models/assembly_lineages_v2/world.py#L521",
+        "Host rate kernel at each state": "src/cells/models/assembly_lineages_v2/balance.py#L56",
+        "Prescribed shell fixture": "tests/unit/test_assembly_lineages_v2_geometry.py",
+        "World definition and stoichiometric steps": "tests/assembly_lineage_v2_fixtures.py"
+      },
+      "record_inputs": {
+        "Exact material accounting, four enabled events and sealed control": "lean/checks/chemistry/ShellLigandFaces.lean"
+      },
+      "driver": "lean/checks/shell_ligand_faces.py",
+      "record": "lean/PROGRESS.md#fr46-shell-ligand-faces"
+    },
+    "fr48-shell-equilibrium-cpu": {
+      "kind": "engine",
+      "models": ["cells.assembly_lineages@2"],
+      "laws": ["cells.prescribed_shell@1", "cells.shell_permeation@1"],
+      "engine_revision": "61d823be7e3913f44a4dd497507a8e8256151584",
+      "record_revision": "69176ea710e804bccf611a6f95c155631c4d16a9",
+      "sources": {
+        "Absolute standard potential at each phase": "src/cells/models/assembly_lineages_v2/world.py#L123",
+        "Shell rate and exit factor": "src/cells/models/assembly_lineages_v2/kernel.py#L279",
+        "Engine comparison driver, binomial probabilities and planted offset": "tests/unit/test_assembly_lineages_v2_geometry.py#L806"
+      },
+      "record_inputs": {
+        "Exact binomial law, stationarity and ratio": "lean/CellsProofs/Chemistry/ShellEquilibrium.lean"
+      },
+      "driver": "lean/checks/chemistry/ShellEquilibrium.lean",
+      "record": "lean/PROGRESS.md#fr48-shell-equilibrium"
+    },
     "fr43-integer-segregation": {
       "kind": "engine",
       "models": [
@@ -9423,6 +9520,47 @@
       "biology": {"status": "open", "observable": "Amount of a specified conserved chemical group across all its species at a closed site.", "finding": "The measured G6P + F6P pool fell 0.613357 mM (7.31%) in the first of five time courses. The raw acquisition lists 0.950 mL and different timing from the workbook. Volumes, shared calibration and unobserved pools limit the amount balance. [Eicher et al., Fig. 5](https://www.mdpi.com/2218-1989/2/4/818) · [Publisher’s workbook](https://mdpi-res.com/metabolites/metabolites-02-00818/article_deploy/metabolites-02-00818-s001.zip)", "unit": "fmol for the target inventory, mM for the measured soluble pool", "evidence": []}
     },
     {
+      "id": "passive-reaction-cycles",
+      "category": "reactions-and-binding",
+      "title": "Passive equilibrium constants multiply to one around a closed reaction cycle",
+      "statement": "When signed reaction extents return every species to its starting amount, their standard free-energy changes sum to zero. For signed integer traversals the product of the equilibrium constants raised to those powers is one (Wegscheider’s condition). An independent energy offset on one reaction leaves a residual equal to the offset times that reaction’s signed extent.",
+      "assumptions": [
+        "At one site each passive route uses the products-minus-reactants column of a finite integer stoichiometric matrix. Each species has one dimensionless standard potential μ°/(RT). All routes use the same temperature and standard concentration. The cycle balances every species, including any explicitly represented ligand.",
+        "For positive activities, the equilibrium constant is the product-to-reactant activity quotient at zero affinity, exp(−ΔG°/RT). The Cells rate uses the reciprocal as its reverse multiplier. A negative traversal uses the reciprocal equilibrium constant. The cycle has no external work or chemostat exchange.",
+        "The proof uses exact arithmetic and holds for any values of the shared potentials. Determining their accuracy requires independent equilibrium measurements."
+      ],
+      "formal": {
+        "status": "proved",
+        "about": ["cells.local_species_reactions@1"],
+        "theorems": {
+          "CellsProofs.Chemistry.ReactionCycles.zero_affinity_iff_quotient": "lean/CellsProofs/Chemistry/ReactionCycles.lean",
+          "CellsProofs.Chemistry.ReactionCycles.cycle_energy_sum": "lean/CellsProofs/Chemistry/ReactionCycles.lean",
+          "CellsProofs.Chemistry.ReactionCycles.wegscheider_product": "lean/CellsProofs/Chemistry/ReactionCycles.lean",
+          "CellsProofs.Chemistry.ReactionCycles.cycle_energy_one_offset": "lean/CellsProofs/Chemistry/ReactionCycles.lean"
+        },
+        "sources": {
+          "Cells stoichiometric columns and shared species potentials": "https://github.com/Eidosoma/Cells/blob/75e67d81b14d3328be0625603ffa533b6c16b075/src/cells/operators/species_reactions.py#L1035-L1056",
+          "Cells forward and reverse log rates and affinity": "https://github.com/Eidosoma/Cells/blob/75e67d81b14d3328be0625603ffa533b6c16b075/src/cells/laws/reactions/mass_action.py#L6-L23",
+          "Mathlib matrix and dot product, imported for the cycle energy": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Matrix/Mul.lean#L661-L665",
+          "Mathlib exponential of a finite sum, imported for the cycle product": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Complex/Exponential.lean#L214-L216",
+          "Mathlib exponential and integer powers, imported for reverse traversals": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Pow/Real.lean#L49-L55",
+          "crnt-lean’s integer cycle product for paired channels, reviewed on its 4.34 pin. Cells proves the signed-route version locally": "https://github.com/marpaia/crnt-lean/blob/7386777488a41efd92e6abc2bccf889fb611660e/CRNT/Equilibria/WegscheiderGenerators.lean#L99-L149",
+          "Cells three-route cycle, direction and energy-offset checks in Lean": "lean/checks/chemistry/PassiveCycle.lean"
+        }
+      },
+      "numerical": {
+        "status": "open",
+        "comparisons": [],
+        "result": "A compiled comparison would need the equilibrium quotients for all routes in one closed passive loop and a roundoff allowance for their product."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Independently determined equilibrium activity quotients for all reactions in one cycle at matched temperature, pH, free Mg and ionic strength.",
+        "unit": "dimensionless equilibrium quotient",
+        "evidence": []
+      }
+    },
+    {
       "id": "enzyme-inventories",
       "category": "reactions-and-binding",
       "title": "Binding and catalysis conserve enzyme and substrate",
@@ -10655,6 +10793,200 @@
         "status": "open",
         "observable": "Bidirectional flux at measured shell area and permeability, with the gate-form ratio held fixed while nongate site counts vary.",
         "unit": "molecules/s",
+        "evidence": []
+      }
+    },
+    {
+      "id": "fr46-shell-ligand-faces",
+      "category": "molecular-assembly",
+      "title": "A sealed shell excludes a ligand when its bound forms stay on one face",
+      "statement": "If every event conserves a ligand moiety and every possible transfer preserves its face, an initially ligand-free interior stays free through any finite event history. A ligand in the final free lumen has an initially occupied origin connected by transfers. Binding another ligand can carry the first one across a wall reaction.",
+      "assumptions": [
+        "Places include free pools and all wall forms. A nonnegative integer weight gives each place’s number of copies of the selected moiety per molecule. Every directed event consumes available molecules and balances their weighted counts. Include both directions of reversible reactions.",
+        "Each consumed place with positive moiety weight connects to every produced place carrying that moiety in the same event. Each such connection must preserve its face. This sufficient condition can conservatively connect distinct copies when a reaction carries several.",
+        "Every inner-accessible place, including bound complexes, starts with zero copies of the selected moiety. The free lumen place has positive weight. Other ligands may already be present inside."
+      ],
+      "formal": {
+        "status": "proved",
+        "about": ["cells.prescribed_shell@1", "cells.stochastic_mass_action@1"],
+        "theorems": {
+          "CellsProofs.Chemistry.ShellLigandFaces.face_along_path": "lean/CellsProofs/Chemistry/ShellLigandFaces.lean",
+          "CellsProofs.Chemistry.ShellLigandFaces.possible_origin": "lean/CellsProofs/Chemistry/ShellLigandFaces.lean",
+          "CellsProofs.Chemistry.ShellLigandFaces.sealed_lumen": "lean/CellsProofs/Chemistry/ShellLigandFaces.lean"
+        },
+        "sources": {
+          "D323 sealed-lumen and face-propagation contract": "https://github.com/Eidosoma/Cells/blob/9eb9890a91ad6049be9b2e5a1bfae7b383a464eb/docs/DECISIONS.md#L10202-L10212",
+          "Mathlib finite-path closure, imported and specialized to equality of ligand faces": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Logic/Relation.lean#L544-L546",
+          "Cells exact two-ligand carrier, same-face control and preloaded-site check": "lean/checks/chemistry/ShellLigandFaces.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": ["fr46-shell-carrier-repair", "fr46-shell-carrier-two-ligands"],
+        "result": "The original candidate 61d823be admitted the four-event carrier. After the face rule began following ligand already on a site through other binding events, the unchanged reproducer passed on d19b10c2 and cf5ddcff. Both refused the path through A, C and D and admitted the sealed control with Y binding removed. The owner’s regression also passed on cf5ddcff."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Lumen tracer count over time in a closed shell with face-selective binding, with the initially free and wall-bound tracer inventories measured.",
+        "unit": "molecules",
+        "evidence": []
+      }
+    },
+    {
+      "id": "fr47-shell-interval-heat",
+      "category": "molecular-assembly",
+      "title": "Dissipated free energy as tracer refills a washed pool",
+      "statement": "Between washes the free energy of the two mean tracer counts is nonincreasing, including at an empty starting place. Its drop is the deterministic continuous interval heat. Replacing an empty place’s initial term by its one-molecule value shifts the heat by (μ° − ln X − 1) kBT when both final counts are positive.",
+      "assumptions": [
+        "Two well-mixed compartments of fixed positive volumes exchange a single passive tracer during the interval. Temperature, standard potentials and the shell conductance are fixed. The surviving mean counts are nonnegative and their sum is conserved. Unchanged wall terms cancel in the difference.",
+        "The free energy of a place in kBT is n(μ° − ln X) + n ln n − n, with μ° in RT units, X = N_A V c₀ in molecules and the continuous value zero at n = 0. Positive entry and exit rates obey ln k_in − ln k_out = (μ°outside − ln Xoutside) − (μ°inside − ln Xinside). A completely impermeable shell has both rates zero.",
+        "The interval runs from just after the preceding wash to just before the following wash, or to the observation horizon. Each wash carries its own work, sink and mixing entries."
+      ],
+      "uses": ["fr47-shell-wash-recovery", "assembly-ideal-mixing"],
+      "formal": {
+        "status": "proved",
+        "about": ["cells.rate_equations@1", "cells.ideal_mixing@1", "cells.prescribed_shell@1", "cells.shell_permeation@1"],
+        "theorems": {
+          "CellsProofs.Chemistry.ShellIntervalHeat.site_continuous": "lean/CellsProofs/Chemistry/ShellIntervalHeat.lean",
+          "CellsProofs.Chemistry.ShellIntervalHeat.site_zero": "lean/CellsProofs/Chemistry/ShellIntervalHeat.lean",
+          "CellsProofs.Chemistry.ShellIntervalHeat.shell_rate_balance": "lean/CellsProofs/Chemistry/ShellIntervalHeat.lean",
+          "CellsProofs.Chemistry.ShellIntervalHeat.energy_derivative": "lean/CellsProofs/Chemistry/ShellIntervalHeat.lean",
+          "CellsProofs.Chemistry.ShellIntervalHeat.energy_antitone": "lean/CellsProofs/Chemistry/ShellIntervalHeat.lean",
+          "CellsProofs.Chemistry.ShellIntervalHeat.postwash_heat_nonneg": "lean/CellsProofs/Chemistry/ShellIntervalHeat.lean",
+          "CellsProofs.Chemistry.ShellIntervalHeat.impermeable_heat": "lean/CellsProofs/Chemistry/ShellIntervalHeat.lean",
+          "CellsProofs.Chemistry.ShellIntervalHeat.one_molecule_bias": "lean/CellsProofs/Chemistry/ShellIntervalHeat.lean"
+        },
+        "sources": {
+          "Registered FR-47 mean-state energy and units": "https://github.com/Eidosoma/Cells/blob/231aae399bd9f8d5db35bc31fe95207ec664ab7b/validation/assembly_lineages_v2/fr47_spec/SPEC.md#L109-L118",
+          "Registered whole-term P9 substitution": "https://github.com/Eidosoma/Cells/blob/231aae399bd9f8d5db35bc31fe95207ec664ab7b/validation/assembly_lineages_v2/fr47_spec/CRITERIA.md#L65-L69",
+          "Mathlib continuity and derivative of x log x, imported for each ideal place": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/NegMulLog.lean#L27-L60",
+          "Mathlib nonpositive interior derivative, specialized to a closed interval starting at zero": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/Deriv/MeanValue.lean#L488-L496",
+          "Cells ideal concentration term, reused locally": "lean/CellsProofs/Chemistry/ReleaseEnergy.lean#L17",
+          "Cells finite-pool derivative, specialized to a conserved tracer": "lean/CellsProofs/Chemistry/ShellWashRecovery.lean#L31",
+          "Exact positive-heat and P9 controls": "lean/checks/chemistry/ShellIntervalHeat.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": ["fr47-shell-interval-heat-cpu"],
+        "result": "On development build 43763a36, all three synthetic intervals agreed within 6.60 × 10⁻⁸ kBT. After full replacement the engine booked 38.34719503 kBT against 38.34719500 predicted. The whole-term substitution gave 24.33882673 kBT. It also changed the empty-lumen interval and had zero effect on the interval with two occupied places. This comparison uses invented inputs."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Free energy dissipated as tracer returns to a freshly washed finite exterior, measured by reversible work or inferred from independent chemical-potential differences over the transfer.",
+        "unit": "kBT per wash-free interval",
+        "evidence": []
+      }
+    },
+    {
+      "id": "fr47-shell-wash-recovery",
+      "category": "molecular-assembly",
+      "title": "Tracer returns to a finite exterior pool after a wash",
+      "statement": "A full tracer-free wash leaves the retained lumen mean L and sets the exterior count to zero. With constant per-molecule rates k_in into the lumen and k_out back out, the exterior mean at elapsed time t is L k_out (1 − exp(−s t))/s, where s = k_in + k_out > 0. Its right derivative at the wash is k_out L. A later withdrawal of fraction f on the sampler’s word grid removes f times that recovered mean.",
+      "assumptions": [
+        "A finite set of tracers exchanges between two well-mixed compartments of fixed positive volume. Each tracer obeys the two-state forward equation between washes. Molecules removed by a wash stay absent. The interval has constant rates and conserves the surviving tracer.",
+        "The physical rates per second are k_in = P A / V_out and k_out = P A exp(Δ) / V_in, with volumes in m³, permeability P in m/s, area A in m² and Δ = (μ°lumen − μ°solution)/RT. A fixed gate can multiply both rates by the same factor.",
+        "A complete replacement exchanges the exterior for tracer-free medium. At the next fractional withdrawal, each exterior molecule has the declared removal probability, independently, under the sampler’s equal-weight word law. The fraction is exactly representable on its grid."
+      ],
+      "uses": ["prescribed-shell-rates", "scheduled-species-turnover", "pool-withdrawal"],
+      "formal": {
+        "status": "proved",
+        "about": ["cells.prescribed_shell@1", "cells.shell_permeation@1", "cells.pool_replacement@1", "cells.pool_withdrawal@1"],
+        "theorems": {
+          "CellsProofs.Chemistry.ShellWashRecovery.mean_flux": "lean/CellsProofs/Chemistry/ShellWashRecovery.lean",
+          "CellsProofs.Chemistry.ShellWashRecovery.exterior_derivative": "lean/CellsProofs/Chemistry/ShellWashRecovery.lean",
+          "CellsProofs.Chemistry.ShellWashRecovery.unique_on_interval": "lean/CellsProofs/Chemistry/ShellWashRecovery.lean",
+          "CellsProofs.Chemistry.ShellWashRecovery.recovery_curve": "lean/CellsProofs/Chemistry/ShellWashRecovery.lean",
+          "CellsProofs.Chemistry.ShellWashRecovery.initial_recovery": "lean/CellsProofs/Chemistry/ShellWashRecovery.lean",
+          "CellsProofs.Chemistry.ShellWashRecovery.recovery_bounds": "lean/CellsProofs/Chemistry/ShellWashRecovery.lean",
+          "CellsProofs.Chemistry.ShellWashRecovery.withdrawal_mean": "lean/CellsProofs/Chemistry/ShellWashRecovery.lean",
+          "CellsProofs.Chemistry.ShellWashRecovery.removed_after_recovery": "lean/CellsProofs/Chemistry/ShellWashRecovery.lean"
+        },
+        "sources": {
+          "Registered FR-47 rates, finite bath and wash actions": "https://github.com/Eidosoma/Cells/blob/231aae399bd9f8d5db35bc31fe95207ec664ab7b/validation/assembly_lineages_v2/fr47_spec/SPEC.md#L37-L79",
+          "Mathlib ODE uniqueness on a closed time interval, imported and specialized to shell exchange": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/ODE/Gronwall.lean#L351-L364",
+          "Mathlib derivative of a finite sum, imported to close the mean equation": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/Deriv/Add.lean#L184-L186",
+          "Cells constant-source interval solution, reused with source k_out times surviving total": "lean/CellsProofs/Chemistry/SpeciesTurnover.lean#L73",
+          "Cells conditional mean of the sampler, reused at each possible exterior count": "lean/CellsProofs/Chemistry/PoolWithdrawal.lean#L107"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": ["fr47-shell-wash-recovery-host", "fr47-shell-interval-heat-cpu"],
+        "result": "On cf5ddcff replacement removed five exterior tracers and left seven in the lumen. The eight-state host rate matrix gave exterior means of 1.3607043414 at 0.75 s and 2.8910229384 at 2 s. The native half-withdrawal averaged 1.4455114692 removed. All agreed within 10⁻¹² molecules. On the separate deterministic development build 43763a36, all six compartment reads and both removed amounts met a 0.00024-molecule tolerance on an invented 240-tracer shell."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Exterior tracer recovered after a full wash, paired with retained lumen tracer and subsequent exterior sampling, at measured compartment volumes and independently calibrated exchange rates.",
+        "unit": "molecules or calibrated concentration",
+        "evidence": [
+          {
+            "dataset_id": "boyer-2007-dppc-release",
+            "manifest": "lean/checks/data/shell_tracer_recovery.json",
+            "citation": "Boyer and Zasadzinski (2007)", "doi": "10.1021/nn7002025",
+            "locator": "Figure 2 and the buffer-control release half-time on page 179.",
+            "context": "Single-bilayer DPPC vesicles, carboxyfluorescein loaded at 20 mM, exterior dye removed by chromatography, pH 7.4, 37 °C.",
+            "role": "descriptive",
+            "uncertainty": "The half-time is a lower bound. A lysed-sample fluorescence reference gives total dye. Absolute retained counts and trapped aqueous volume are unavailable for this comparison.",
+            "assessment": "The post-wash release half-time exceeded 20 h. The suspension fluorescence tracks dye release. An independent exterior recovery curve and return rate remain open.",
+            "report": "lean/PROGRESS.md#fr47-shell-wash-recovery"
+          },
+          {
+            "dataset_id": "bachler-2021-finite-droplet-transfer",
+            "manifest": "lean/checks/data/shell_tracer_recovery.json",
+            "citation": "Bachler et al. (2021)", "doi": "10.1021/acs.analchem.0c04939",
+            "locator": "Figure 2A–B follows fluorescence. Figure 5B–C reports the paired LC–MS measurements and permeability fits.",
+            "context": "Two approximately 25 nL droplets across a symmetric DOPC bilayer, initially 50 µM rhodamine 6G on the donor side and dye-free buffer in the receiver, pH 6, incubation at 37 °C.",
+            "role": "descriptive",
+            "uncertainty": "The fluorescence series normalized the two signals to their sum. LC–MS measured the two separated droplets at each sampling time (N = 4). The authors report possible cooling during later sampling.",
+            "assessment": "The full-series apparent permeability was (6.28 ± 0.68) × 10⁻⁶ cm/s. These paired signals document finite-volume redistribution. Both permeability fits use the same experiment, and vesicle washout remains a separate measurement.",
+            "report": "lean/PROGRESS.md#fr47-shell-wash-recovery"
+          }
+        ]
+      }
+    },
+    {
+      "id": "fr48-shell-equilibrium",
+      "category": "molecular-assembly",
+      "title": "The lumen tracer count has a binomial equilibrium in a prescribed shell",
+      "statement": "Let Δ be the lumen standard potential minus the solution standard potential, both in units of RT. With N molecules and equal volumes, the binomial distribution with lumen probability p = 1/(1 + exp Δ) is normalized and satisfies detailed balance at every adjacent count. It is stationary in continuous time. The mean lumen count is Np. For N > 0 the ratio of mean inside to mean outside concentration is exp(−Δ).",
+      "assumptions": [
+        "A single conserved neutral tracer moves between a finite solution pool and a prescribed lumen of the same fixed positive volume. The only events changing its counts are single-molecule crossings. Both places use the same temperature and standard concentration.",
+        "At lumen count k the total entry rate is h(N−k). From k+1 the exit rate back to k is h(k+1) exp Δ. The common per-molecule rate h comes from permeability, area, volume and a fixed wall gate. A positive h permits crossings in both directions.",
+        "The expectation is over the count at equilibrium in physical time. Each count has the probability assigned by the normalized distribution, including the endpoints at zero and N."
+      ],
+      "uses": ["prescribed-shell-rates"],
+      "formal": {
+        "status": "proved",
+        "about": ["cells.prescribed_shell@1", "cells.shell_permeation@1"],
+        "theorems": {
+          "CellsProofs.Chemistry.ShellEquilibrium.common_shift": "lean/CellsProofs/Chemistry/ShellEquilibrium.lean",
+          "CellsProofs.Chemistry.ShellEquilibrium.inside_outside_odds": "lean/CellsProofs/Chemistry/ShellEquilibrium.lean",
+          "CellsProofs.Chemistry.ShellEquilibrium.countLaw_normalized": "lean/CellsProofs/Chemistry/ShellEquilibrium.lean",
+          "CellsProofs.Chemistry.ShellEquilibrium.count_mass": "lean/CellsProofs/Chemistry/ShellEquilibrium.lean",
+          "CellsProofs.Chemistry.ShellEquilibrium.detailed_balance": "lean/CellsProofs/Chemistry/ShellEquilibrium.lean",
+          "CellsProofs.Chemistry.ShellEquilibrium.stationary": "lean/CellsProofs/Chemistry/ShellEquilibrium.lean",
+          "CellsProofs.Chemistry.ShellEquilibrium.mean_inside_count": "lean/CellsProofs/Chemistry/ShellEquilibrium.lean",
+          "CellsProofs.Chemistry.ShellEquilibrium.mean_concentration_ratio": "lean/CellsProofs/Chemistry/ShellEquilibrium.lean"
+        },
+        "sources": {
+          "D323 absolute potentials, exit factor and scope": "https://github.com/Eidosoma/Cells/blob/9eb9890a91ad6049be9b2e5a1bfae7b383a464eb/docs/DECISIONS.md#L10193-L10201",
+          "Cells shell geometry and reverse rate": "https://github.com/Eidosoma/Cells/blob/9eb9890a91ad6049be9b2e5a1bfae7b383a464eb/src/cells/models/assembly_lineages_v2/kernel.py#L279-L298",
+          "Mathlib binomial probability mass function, imported and specialized to the lumen count": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Probability/ProbabilityMassFunction/Binomial.lean#L23-L56",
+          "Mathlib adjacent binomial coefficient recurrence, imported for detailed balance": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Nat/Choose/Basic.lean#L204-L212",
+          "Cells real-valued point mass, reused from the pool-withdrawal proof": "lean/CellsProofs/Chemistry/PoolWithdrawalEnergy.lean#L16",
+          "Exact occupancy and potential-convention checks": "lean/checks/chemistry/ShellEquilibrium.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": ["fr48-shell-equilibrium-cpu"],
+        "result": "The frozen development engine at 61d823be matched the reference binomial probabilities within 10⁻¹² for 12 tracers at Δ = ln 2, equal potentials and the undeclared default. Its CPU test detected the incorrect offset interpretation and verified ledger closure from both extreme initial distributions."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Equilibrium counts of one conserved neutral tracer inside and outside an equal-volume compartment pair, with an independently determined transfer free energy at the same temperature.",
+        "unit": "molecules and dimensionless concentration ratio",
         "evidence": []
       }
     },
