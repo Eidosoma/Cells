@@ -1,6 +1,6 @@
 {
  "provenance": {
-  "references_revision": "4151ad96b94ba09974973c082aeceebfdfaf5c31",
+  "references_revision": "266baec88333a8c9f157bf4de117da8be6caa32d",
   "references_clean": true,
   "writer_version": "fr47-references-writer 1",
   "regeneration_hash_seeds": [
@@ -305,7 +305,8 @@
      "k_lo": 136,
      "k_hi": 762,
      "N_g": 1024
-    }
+    },
+    "c8_same_largest_pair": true
    }
   },
   "W2_Ng256": {
@@ -374,6 +375,7 @@
      "k_hi": 256,
      "N_g": 256
     },
+    "c8_same_largest_pair": true,
     "plants_same_quantity": true
    }
   },
@@ -430,7 +432,8 @@
      "k_lo": 1056,
      "k_hi": 2538,
      "N_g": 4096
-    }
+    },
+    "c8_same_largest_pair": true
    }
   },
   "W2_Ng64": {
@@ -486,7 +489,8 @@
      "k_lo": 0,
      "k_hi": 64,
      "N_g": 64
-    }
+    },
+    "c8_same_largest_pair": true
    }
   },
   "invented_gate": {
@@ -555,6 +559,7 @@
      "k_hi": 16,
      "N_g": 16
     },
+    "c8_same_largest_pair": true,
     "plants_same_quantity": true
    }
   },

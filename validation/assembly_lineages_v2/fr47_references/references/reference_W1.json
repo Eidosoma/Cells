@@ -508,10 +508,10 @@
   {
    "plant": "P2",
    "criterion": "C4",
-   "observable": "mixing_heat",
+   "observable": "removed",
    "time_s": 2.5,
-   "honest": 9394.447674560797,
-   "planted": 4697.223837280399,
+   "honest": 13553.323071979717,
+   "planted": 20329.984607969574,
    "distance_in_bounds": 50000.0
   },
   {
@@ -571,7 +571,7 @@
   }
  ],
  "provenance": {
-  "references_revision": "4151ad96b94ba09974973c082aeceebfdfaf5c31",
+  "references_revision": "266baec88333a8c9f157bf4de117da8be6caa32d",
   "references_clean": true,
   "writer_version": "fr47-references-writer 1",
   "regeneration_hash_seeds": [
