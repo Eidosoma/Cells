@@ -38,10 +38,10 @@ routed into a node or a record and the supply drawn from a node or a declared in
 | **Today** | The wash exchanges a node's liquid with a buffer, and its sample goes to a record (D246). No operator moves one region's liquid into another. A face at a washed node is refused (D246 item 5), and a stopped energy check names no numbers |
 | **The mechanism** | One definition: well-mixed liquid moved between holders (inlets, finite nodes, records). A wash is two moves at an instant; a flow is moves at prescribed rates (§2) |
 | **Recommended** | One new operator, `liquid_routing@1`. Its event part moves portions at declared times. Its split part runs prescribed flows by the exact step of the declared network. It takes over the wash after a bitwise check (§3.1) |
-| **Exact to rounding** | The flow's trajectory at any step; volume and every solute; each portion's free energy and mixing heat; a step's total heat, which equals the state-function balance; labels |
+| **Exact to rounding** | The flow's trajectory at any step; volume and every solute; each portion's free energy and mixing heat; a step's total heat, which equals the state-function balance because flows end in collectors; labels |
 | **Carrying an order** | How a step's heat is split among the holders (first order in the step); flow beside diffusion (Strang splitting, second order); @3's face transfer (the tableau's polynomial) and its default heat (third order per step, at resolved levels only) |
 | **FR-54** | A two-well harness on @3's faces against closed forms (§4.1). A stopped run reports its residual and bound (§4.2). The wash at a faced node, admitted for one neutral species once measured (§4.3) |
-| **Decisions** | Nine, for the user (§10) |
+| **Decisions** | Ten, for the user (§10) |
 
 ## 1. What exists
 
@@ -94,11 +94,11 @@ routed into a node or a record and the supply drawn from a node or a declared in
 | --- | --- | --- |
 | Inlet | A declared liquid: a concentration for every neutral species, piecewise constant on the grid, unlimited | What it supplied: amounts, volume and F |
 | Node | A finite outside node of @3, well mixed, at constant volume in version 1 | @3's amounts |
-| Sink | Unpooled portions leaving the world (the wash's samples) | The amounts and F it took |
+| Sink | Unpooled portions leaving the world (the wash's samples). Portion events only in version 1 (§3.4) | The amounts and F it took |
 | Collector | One pooled liquid leaving the world: a record that starts at zero volume (§3.2) | Its amounts, volume and F, and its pooling heat |
 
-**Links** are directed liquid connections: inlet to node, node to node, node to a sink or collector, and
-inlet to collector. Records only receive, and inlets only supply.
+**Links** are directed liquid connections: inlet to node, node to node, node to a sink (by portion events
+only) or collector, and inlet to collector. Records only receive, and inlets only supply.
 
 **One mechanism, two schedules.**
 - **A portion event.** At a declared grid time, declared volumes (or fractions of the source node) move
@@ -192,9 +192,17 @@ obeys one linear system:
     router's magnitude terms.
   - The amounts are an anchor plus an increment, so near depletion the wash's limit holds (wash note §4.5).
 - **Ions** are `same_as_compartment`, as D246 requires.
-  - Every node's ions stay bit for bit.
-  - Where liquid moves, each ion's outflow and inflow records at a node are one expression, so they cancel
-    exactly.
+  - Every routed node's ions stay bit for bit. Where liquid moves, each ion's outflow and inflow records at
+    a node are one expression, so they cancel exactly.
+  - That is exact only where the liquid moved carries the receiving node's own ion composition. An
+    inlet's liquid does by declaration, as the wash's buffer does. Liquid from another node does only if
+    the two nodes' ions stay equal for the whole run.
+  - **So, at the definition:** nodes joined by a node-to-node link must declare equal ion
+    concentrations, and no mover of a charged row may act at them (a patch's permeability, a channel, a
+    pump, a face, a kind's charged route, an operator's in-step process). Each is refused by name.
+  - **At run time,** as a guard behind that check: every event and half-step compares the ions at each
+    node-to-node link's two ends, and refuses the step where they differ beyond rounding.
+  - A node with only inlet and record links keeps the wash's rule, with ion movers admitted.
   - Records hold neutral species only, and an ion in an inlet's composition is refused at the definition.
 - **Bound material** is never read or written.
 - **Rejected: per-species first-order transfers.** No volume moves, and any two-stage chain reaches FR-57's
@@ -213,6 +221,12 @@ obeys one linear system:
 - **The step's total.** Σ H = F(inlet liquid) + Σ F(start) − Σ F(end) − ΔF(records), exactly in real
   arithmetic. So @3's energy ledger, closing to rounding, checks the φ computation, as D246 ruling 3
   intends.
+  - This needs the outflow to be pooled. A collector's F is a state function, so its pooling heat takes
+    up the stream's non-uniformity.
+  - A sink's is not. A flow into a sink would book its outflow's F from the step's portions, first order
+    like the split.
+  - **So in version 1 flows end in collectors, and a sink takes portion events only** (§6). A drain is a
+    collector whose contents nobody reads.
 - **Records, outside the IMEX flow bound, as the wash's** (Q6). Rounding-level closure is forced: in a
   species-only world the energy allowance is about 2·10⁻⁸ pJ plus 2·10⁻³ of the flows, and the bath note's
   B1 to B4 were refused at that level.
@@ -254,19 +268,29 @@ obeys one linear system:
 **FR-44's labels and washes.**
 - **The report grows a carried part.** `LiquidExchange` gains `carried`: (amount, source, destination) for
   node to node and node to collector.
-  - `removed` (to sinks) leaves with the node's shares just before the event or half-step.
+  - `removed` (to sinks, by events) leaves with the node's shares just before the event.
   - `supplied` (from inlets) joins the base label, even inside an open window (D327).
   - `carried` keeps its source's shares just before the event or half-step.
   - `supplied` cannot stand for liquid from another node, since it means "no label".
-- **Collectors are the router's label pools** (`LABEL_POOLS`). The owner holds their shares.
-- **The exact map** at a holder: x_k = kept s_k + Σ carried s_source,k + supplied [k = 0], with the shares
+- **Collectors are records, not label pools.**
+  - The contract refuses an exchanged report from an operator that holds label pools
+    (`label_event_error`).
+  - A record's labelled amounts only add, so it needs no shares of its own.
+  - The owner records what reaches each collector by label, cumulative: `label_collected_fmol`
+    [labelled species, label, collector], zero-size without collectors.
+  - A collector's shares are that record over its total.
+- **The exact map** at a node: x_k = kept s_k + Σ carried s_source,k + supplied [k = 0], with the shares
   x over its sum.
   - It is exact for a flow, not only for events. Each label's material obeys the same linear,
     species-blind system, so carrying the start shares along P's portions gives the exact end
     materials.
   - `advance_transfers`, the inner step's predictor-corrector, is second order and is not used.
-- **The handling lands with the report.** The owner refuses a report it does not read
-  (`label_event_error`), so the half-step's report kind and its handling land together.
+- **The half-step's report is a contract amendment** (S, for the builder to settle with the label
+  owner's owner).
+  - Today a labels-taking split part reports moves that the continuous kernel reads, and only events
+    declare a report kind (`contract.label_event`).
+  - The router's half-step needs a declared kind that the exact map reads.
+  - The owner refuses a report it does not read, so the kind and its handling land together.
 - **Worlds without the router** keep their label programs, by a static switch.
 - **The physical rows are bit for bit** with labels on or off (FR-42's promise).
 - **Sites beside labels** stay refused, as today (the labels note §13).
@@ -319,10 +343,12 @@ obeys one linear system:
 
 ### 4.1 Item 1: the two-well references and their tolerances (S)
 
-**The world** is `face_world` (`tests/unit/test_heat_bookings.py`): two finite nodes joined by one face,
-run through the composite.
-- It runs with no operator, and with the router declared but idle as a check under D148.
-- Its parameters are volumes V₁ and V₂, permeance κ = DA/L and k = κ(1/V₁ + 1/V₂).
+**The world** is `face_world` (`tests/unit/test_heat_bookings.py`): two finite nodes joined by one face.
+Its parameters are volumes V₁ and V₂, permeance κ = DA/L and k = κ(1/V₁ + 1/V₂).
+- **Which rows run the composite.** The tier rows run @3's step on `face_world` directly. A composite with
+  no operator takes @3's step as its own, and one row checks the two bit for bit.
+- **Arm 1** runs the cases through `resolved_pump_composite@1`, as FR-54 asks: with no operator, and with
+  the router declared but idle (D148's check).
 
 **The references,** code-blind and tagged before any engine reading:
 - **The transfer:** m*(h) = (c₁ − c₂)(1 − e^(−kh))/(1/V₁ + 1/V₂).
@@ -418,12 +444,21 @@ both heat laws. Three checks are read from the event's level records against the
 - The legs before and after the event are compared with the closed form, restarted at the event's exact
   map, at successively smaller steps.
 
+**"With FR-10's schedule"** (item 3's words). FR-10 is the held baths' dose schedule.
+- This note reads it as the events' schedule form: times on the dt grid by D283's predicate, as FR-10's
+  bath schedule takes them.
+- The other reading is a held bath under FR-10's schedule at one end of the face. That is Q10. The exact
+  face heat refuses a held bath in version 1 (D280), so such an arm would run the default heat alone.
+
 **Flow beside diffusion.** It arrives with this qualification (Q8). FR-57's "flow off while diffusion
 continues" is then a world with Q = 0, bit for bit equal to its diffusion-only twin.
 - With Q > 0 the step is P(h/2), @3's step, P(h/2).
 - Both are linear for neutral rows, so the reference is the exact system's exponential, evaluated in
   decimal.
 - The error is second order, from the splitting and the tableau.
+- **The faces take `exact_free_energy_heat@1` at a flow's nodes** in version 1. A flow can fill a
+  trace-level chamber that a face touches, which is the onset limit with no event to check at. A
+  domain check at every half-step is the later widening.
 
 ## 5. Every acceptance target, and where it is checked
 
@@ -437,6 +472,7 @@ compiled file of §8.4. "Arm n" is an arm of the registered protocol (§8.2).
 | **54.3** Removed, supplied and refill heat at a faced node; the lift only for the qualified form | Kernel row; Runs (faced world, exact heat); arm 2 under both heats; refusal rows | A twin with the event declared and not due, bit for bit; the event row's ledger; plant 17 |
 | **54 target** Equal volumes, 8 and 2 fmol; half of the first collects 4; it keeps 4 plus the refill; the second still 2 | A kernel row, exact: 4.0, then 4 + 0.5 V c_buf, then 2 bit for bit | In the run: the sample equals f times the preceding row |
 | **54 target** Diffusion before and after, at successively smaller steps | Arm 2 | The no-event twin |
+| **54.3** "With FR-10's schedule" | Read as the events' grid form (§4.3) | Q10 |
 | **57** A → B → collector at V/Q: 1 − 2/e = 26.4241% | Kernel rows at 1 and 64 steps per residence time, to the derived bound; Runs | B → A gives 63.2121% from the same compile, P being a control (plant 1) |
 | **57** B → A → collector: 1 − 1/e = 63.2121% | The same | — |
 | **57** The tracer in each chamber and the collector; the sum is the start | The router's records; its own ledger on every row | — |
@@ -444,7 +480,7 @@ compiled file of §8.4. "Arm n" is an arm of the registered protocol (§8.2).
 | **57** Volume: inflow equals outflow at every chamber, or refused by name | Refusal rows | — |
 | **57** An exact coupled step; derived tolerance; the sum to a derived rounding bound | §2 and §3.3; kernel rows at 1, 8 and 64 steps per residence time agree within the bound | Plant 10 |
 | **57** Mixing heat booked; otherwise the energy check stops the run | Runs, with host checks on every row | Plant 8, refused with item 2's message |
-| **57** Version-1 refusals: ions; flow beside diffusion or binding at one node | Refusal rows. Diffusion opens with §4.3 | — |
+| **57** Version-1 refusals: ions; flow beside diffusion or binding at one node | Refusal rows: ions across a node-to-node link, at the definition and at run time (§3.3). Diffusion opens with §4.3 | — |
 | **57** Wording: V/Q of one chamber; clean buffer at the trace | The references include the inlet's trace exactly (the system is linear) | — |
 | **57** D148: absent unless declared; washed worlds bit for bit; a restart mid-flow bit for bit | A new operator; arm 7 if the wash is taken over; the resume file (§3.6) | The restart plants |
 | **57 energy** The loss rate Q[x ln(x/y) − x + y] against storage and fluxes | Kernel rows per step, exact; arm 5, each chamber's heat converging to ∫ RT Q y φ(x/y) dt at first order | Plant 5 |
@@ -452,7 +488,7 @@ compiled file of §8.4. "Arm n" is an arm of the registered protocol (§8.2).
 | **57 energy** The one-mechanism link; an empty chamber's trace and its refinement | A kernel row: H_mix against the series of §3.4, ratio 4 per halving; arm 5's ladders in h and ε | Plant 7 |
 | **57 collector** An empty tube; 1 pL of 1 mM, then 1 pL of 3 mM; 4 fmol in 2 pL at 2 mM | A kernel row by events; arm 4 also by a flow from an inlet that switches from 1 to 3 mM, with the same totals at every step | — |
 | **57 collector** The first portion loses nothing; the total is 0.523248 RT·fmol | Exactly 0.0; the total against decimal (3 ln 3 − 4 ln 2) | Plant 9 |
-| **57 collector** Reversed order: the same total, different per-portion losses | Per delivery: (0, 0.523248) in both orders. The second delivery's split, resident and arriving: (0.306853, 0.216395) forward, (0.216395, 0.306853) reversed. A third delivery: 1, 3 and 3 mM give (0, 0.523248, 0.137341); 3, 3 and 1 mM give (0, 0, 0.660589) | Q5 |
+| **57 collector** Reversed order: the same total, different per-portion losses | Per delivery: (0, 0.523248) in both orders, so D352's "different per-portion losses" needs a reading or a third delivery. The second delivery's split, resident and arriving: (0.306853, 0.216395) forward, (0.216395, 0.306853) reversed. A third delivery: 1, 3 and 3 mM give (0, 0.523248, 0.137341); 3, 3 and 1 mM give (0, 0, 0.660589) | Q5 |
 
 ## 6. Refusals and domains
 
@@ -461,9 +497,13 @@ compiled file of §8.4. "Arm n" is an arm of the registered protocol (§8.2).
   named;
 - a held bath as a node, since that composition is the bath schedule's;
 - ions other than `same_as_compartment`;
+- a node-to-node link whose nodes declare different ion concentrations, or at whose nodes a mover of a
+  charged row acts (§3.3);
 - an inlet that names an ion, misses a neutral species, or holds a concentration ≤ 0 or below a site
   ligand's trace;
 - a link out of a record or into an inlet, and a record declared with contents but no volume;
+- a flow into a sink (flows end in collectors, §3.4);
+- a flow at a node that a face touches, unless the faces take `exact_free_energy_heat@1` (§4.3);
 - a path across a routed node's surface (`surface_crossings`), apart from §4.3's lift;
 - at a flow's nodes: binding, turnover, the reactions and species exchange;
 - the wash at a router's node, while the wash exists;
@@ -477,6 +517,7 @@ compiled file of §8.4. "Arm n" is an arm of the registered protocol (§8.2).
   finite;
 - a heat that is not finite, or below its rounding floor;
 - a stale event count;
+- ions differing beyond rounding across a node-to-node link;
 - under the default face heat, a state after an event outside §4.1's domain at a faced node.
 
 **Domains:**
@@ -528,7 +569,7 @@ until the rename's design note of 25 November settles D350's open points:
 | FR-54's first step | Host one-step rows (§4.1), with no runner |
 | A stopped run's report | Existing refusal rows, extended |
 | The wash at a faced node | The event-map row; one compiled world under exact heat |
-| Labels are exact through events and flows | NumPy rows of the exact map against P applied to label materials; Runs' labelled world bit for bit against its unlabelled twin |
+| Labels are exact through events and flows | NumPy rows: the exact map against P applied to label materials, and the labelled call's state and validity bit for bit the unlabelled call's. Arm 3 runs the twins |
 | Sites are untouched | One operator-alone row: bound arrays bit for bit |
 | A restart is bit for bit | The resume file (§3.6) |
 | The wash is taken over bit for bit (if Q1(a)) | The wash's existing rows, re-declared |
@@ -543,8 +584,11 @@ detached, with its evidence on disk. It is not a tier file.
 - **Arm 3, the flows:**
   - A → B → collector and B → A → collector, at equal and unequal volumes, and, under Q4(a), a split and
     merge and a loop;
-  - two species, a site population at a third node, and the label owner with a labelled tracer in A;
-  - the targets, the sums, the exact labels, and the physical rows bit for bit against the unlabelled twin.
+  - two species, and the label owner with a labelled tracer in A;
+  - the targets, the sums, the exact labels, and the physical rows bit for bit against the unlabelled twin;
+  - a separate unlabelled world with a site population at a third node, whose rows are bit for bit those
+    of the same world without the router. Sites beside labels stay refused (§3.5), so no world holds
+    both.
 - **Arm 4, the growing collector:** fed by portions, and by a flow from an inlet switching from 1 to 3 mM;
   also 1, 3 and 3 mM. A restart at the switch.
 - **Arm 5, energy:**
@@ -591,7 +635,7 @@ The seconds below are priced from measured rows in `tests/test_tiers.json`. The 
 | `test_heat_bookings_formula.py` (tier 2, 35 s) | §4.1's host one-step rows on `face_world`, both heats; the trace-start row reads item 2's numbers | +20 | No runner needed |
 | `test_neutral_arrival_labels.py` (tier 2, 60 s) | The exact map with `carried`, and plant 11 | +2 | NumPy |
 | One vector-window refusal test | Item 2's numbers | 0 | An extended row |
-| **New** `test_liquid_routing_runs.py` (tier 2) | Two compiles: the flow world (forward and reversed on one compile, with labels and a site population elsewhere) and the faced-node wash under exact heat | About 60 | The only path through the compiled split part, and the event at a faced node, under the runner's host checks. The wash's runs file (76 s) and the twins (70 s) have no room |
+| **New** `test_liquid_routing_runs.py` (tier 2) | Two compiles: the flow world with the label owner (forward and reversed on one compile) and the faced-node wash under exact heat | About 60 | The only path through the compiled split part, and the event at a faced node, under the runner's host checks. The wash's runs file (76 s) and the twins (70 s) have no room |
 | **New** `test_liquid_routing_resume.py` (tier 2) | Three compiles: the run and two resumes (§3.6) | About 60, priced from `test_wash_schedule_resume.py` (59 s, three compiles) | No other file restarts across a flow or at a flow switch |
 
 - **The total** is about +145 s on tiers 1 and 2, about 1.4% of their 172 CPU-minutes.
@@ -605,7 +649,8 @@ The seconds below are priced from measured rows in `tests/test_tiers.json`. The 
   "which part of the liquid a port draws" stays out.
 - **Every node is well mixed.** A plug-flow tube is not a node, and a series of nodes approximating one is
   not claimed.
-- **No ions are carried,** and there is no charge transport by liquid.
+- **No ions are carried.** They stay at their nodes, which is exact only where the liquid moved has the
+  receiving node's ion composition, as §3.3 requires. There is no charge transport by liquid.
 - **No flow beside binding, turnover, reactions or exchange at one node** in version 1.
 - **How a step's heat splits among holders** is first order in the step. Only the totals are exact.
 - **A collector has no chemistry.**
@@ -632,7 +677,8 @@ The seconds below are priced from measured rows in `tests/test_tiers.json`. The 
    - **(a) Recommended:** any balanced network of at most 64 nodes, qualified on a chain, a split and merge,
      and a loop.
    - (b) Series chains only.
-5. **Q5. What "different per-portion losses" reads** in the growing collector.
+5. **Q5. What "different per-portion losses" reads** in the growing collector. With two deliveries, each
+   delivery's loss is (0, 0.523248) in either order, so D352's check needs a reading or a third delivery.
    - **(a) Recommended:** each delivery's loss, with a third delivery so that order changes it per delivery:
      1, 3 and 3 mM give (0, 0.523248, 0.137341); 3, 3 and 1 mM give (0, 0, 0.660589).
    - (b) The second delivery's split between resident and arriving liquid, which differs at two deliveries.
@@ -644,9 +690,9 @@ The seconds below are priced from measured rows in `tests/test_tiers.json`. The 
    - (b) A declared heat field: it joins the flows and the dissipation check, and widens the energy bound by
      2·10⁻³ of itself.
 7. **Q7. The default face heat at an exchanged node that a face touches.**
-   - **(a) Recommended:** admitted within §4.1's resolved domain, refused by name outside it, with the exact
-     heat admitted throughout.
-   - (b) The exact heat only.
+   - **(a) Recommended:** for events, admitted within §4.1's resolved domain and refused by name outside
+     it. A flow's faced nodes take the exact heat only in version 1. The exact heat is admitted throughout.
+   - (b) The exact heat only, for events too.
 8. **Q8. When flow beside diffusion opens.**
    - **(a) Recommended:** in the same build, once arms 1 and 2 pass.
    - (b) A later landing.
@@ -654,6 +700,11 @@ The seconds below are priced from measured rows in `tests/test_tiers.json`. The 
    - **(a) Recommended:** one registered protocol for FR-54's items 1 and 3 and for FR-57.
    - (b) Two protocols.
    - (c) The builder's rows only, which D347 counted as a gap for FR-43 part 1.
+10. **Q10. What FR-54 item 3's "with FR-10's schedule" means.**
+    - **(a) Recommended:** the events' schedule form, times on the dt grid by D283's predicate. The
+      acceptance target's two finite compartments fit this reading.
+    - (b) A held bath under FR-10's schedule at one end of the face. That arm would run the default face
+      heat alone, since the exact heat refuses a held bath in version 1 (D280).
 
 **The price** (S, in agent-days):
 
