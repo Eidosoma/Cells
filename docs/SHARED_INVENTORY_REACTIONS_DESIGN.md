@@ -189,7 +189,8 @@ per-node and per-species chemical term, which D150 v1 builds.
    - **Still to come:** the contract fit (C1) is now the code branch's first milestone (§10.4).
 9. **Limits** (§7). Version 1 is a static tissue with neutral species, at most 1,024 species
    (D150's cap: 16 until FR-43 / D315, 7 until FR-9 / D165), and kinetics with dt · L ≤ 1.
-   - It is refused beside water, the lumen, closers, RK4 and the stationary analysis.
+   - It is refused beside the lumens, replacement@2, closers, RK4 and the stationary analysis.
+     Beside water it reads the current volumes (FR-43 / D315, §7.3's volume door, delivered).
    - Cell routes on slots that replacement@1 replaces are refused.
 10. **Effort:** about 6 agent-days (range 5 to 7), plus about an hour of CPU for MG0c's judged runs
     (§8).
@@ -1520,7 +1521,7 @@ ruling, §9 question 8).
 
 | Door | What it needs |
 | --- | --- |
-| Volume (water, the lumen) | `VIEW_READS` with D150's fallback; bookings at the view through water's endpoint free energy (D150 §5.1) |
+| Volume (water, the lumen) | **Delivered for water (FR-43 / D315):** `volume` and `extracellular_volume` are current reads at the split, with C1's fallback, so every world without a volume changer keeps its program; the half-step's concentrations, rates, stage condition and bookings take the view's volumes, held over the half-step, and its bookings meet water's dilution term (docs/FR43_SHARED_INVENTORIES_DESIGN.md §2.3). The lumens and replacement@2 stay refused (`check_volume_changers`) until a probe covers them |
 | Closers | S5's living-interval rule (D150 §5.3) |
 | Charged closed reactions (buffering) | Σ_s z_s ν_sr = 0 checked in integers; the field and electrode exactness of D150 §3 re-argued |
 | Stiff kinetics (dt · L > 1) | Sub-steps with a splitting that holds its order where C3 found reduction; or a positive implicit or linearly implicit half-step. Each needs its own order and positivity probes |
