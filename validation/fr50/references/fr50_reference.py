@@ -266,6 +266,9 @@ def build(spec: fr50_spec.Spec, case: fr50_spec.Case) -> dict:
         doc["a_pL_per_s"] = fmt(a["a"])
         doc["k_per_s"] = fmt(a["k"])
         doc["c_bar_mM"] = fmt(a["c_bar"])
+        table.add("a_pL_per_s", [a["a"]], [b["a"]])
+        table.add("k_per_s", [a["k"]], [b["k"]])
+        table.add("c_bar_mM", [a["c_bar"]], [b["c_bar"]])
         doc["record_times_s"] = [str(t) for t in ts]
         names = (("c_cell", "c_cell_mM"), ("c_node", "c_node_mM"), ("F", "F_fmol"),
                  ("B", "B_fmol"))
@@ -304,6 +307,14 @@ def build(spec: fr50_spec.Spec, case: fr50_spec.Case) -> dict:
         for field in fields:
             table.add(names.get(field, field), [e[field] for e in A.evaluations],
                       [e[field] for e in B.evaluations])
+        if kind == "E6":
+            v_ref_gap = max(abs(Fraction(ea["V_ref"]) - eb["V_ref"])
+                            for ea, eb in zip(A.evaluations, B.evaluations, strict=True))
+            checks["V_ref_largest_absolute_difference_V"] = fmt_q(v_ref_gap)
+            extra_routes["V_ref_exact_strings"] = {
+                "description": "V_ref = V - E_K in both routes, compared absolutely (V)",
+                "max": fmt_q(v_ref_gap), "declared_accuracy": fmt_q(ACCURACY["closed_form"], 1),
+                "within": v_ref_gap <= ACCURACY["closed_form"]}
         doc["evaluations"] = evaluations
     if checks:
         doc["checks"] = checks

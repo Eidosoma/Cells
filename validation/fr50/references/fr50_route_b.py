@@ -243,6 +243,10 @@ def relaxation(case: Case) -> dict:
         out["c_node"].append(y[1] / V_N)
         out["F"].append(y[2])
         out["B"].append(y[3])
+    n_total = V_O * Q(case["c_cell_mM_at_0"]) + V_N * Q(case["c_node_mM_at_0"])
+    out["a"] = a
+    out["k"] = a * (1 / V_O + 1 / V_N)
+    out["c_bar"] = n_total / (V_O + V_N)
     return out
 
 

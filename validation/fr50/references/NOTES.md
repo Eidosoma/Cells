@@ -80,7 +80,10 @@ No declared value was found inconsistent. The checks were:
 - every case declares the fields its kind needs;
 - E4's and E6's blocks name the reversal of K;
 - every record-time rule is readable;
-- every steady case is at zero net in both routes.
+- every steady case is at zero net:
+  - exactly, in both routes, for K1, E2, E3 and K4;
+  - to about 1e-50 of its fluxes for E1 and E4, whose voltage is E_K rounded to 50 digits
+    (reading 1).
 
 The reference reproduces the registration's §6 figures, which informed its bounds and are not
 declared values:
