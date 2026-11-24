@@ -64,7 +64,7 @@ def test_world_L_radau_agrees():
     primary = _L()
     radau = ode.world_L_radau(SPEC.L)
     for k, name in enumerate(("n_O", "n_C", "x_O", "x_C")):
-        assert all(rel(a, b) < 1e-11 for a, b in zip(primary[name], radau[k], strict=True))
+        assert all(rel(a, b) < 1e-13 for a, b in zip(primary[name], radau[k], strict=True))
 
 
 def test_world_B_closed_forms():
@@ -81,6 +81,14 @@ def test_world_B_closed_forms():
     for B, n_L in zip(out["B"], out["n_L"], strict=True):
         assert rel(B + n_L, once["L_T"]) < 1e-58
     assert abs(1 / float(once["lambda"]) - 15.8) < 0.05  # the registration's tau
+
+
+def test_world_B_once_values_by_the_second_route():
+    once = exact.world_B_exact(SPEC)["once"]
+    check = exact.world_B_once_check(SPEC)
+    assert all(rel(once[k], check[k]) < 1e-55 for k in writer.B_ONCE)
+    assert rel(check["B2"] - check["B1"], check["d"]) < 1e-55  # B2 - B1 = d
+    assert rel(ode.capacity(SPEC.B.sites, SPEC.sites_per_fmol), check["S"]) < 1e-15
 
 
 def test_taylor_integrator_matches_world_B():
@@ -112,7 +120,7 @@ def test_c2_transient_start_matches_radau():
     ligands = [(g.k_on, g.k_off, g.total) for g in SPEC.C2.ligands]
     states = exact.binding_taylor(SPEC.C2.V_C, root["S"], ligands, list(SPEC.C2.B0), times,
                                   writer.TAYLOR_STEP["C2"])
-    radau = ode.c2_integrate(SPEC, float(root["S"]), "Radau")
+    radau = ode.c2_integrate(SPEC, "Radau")
     for i, state in enumerate(states):
         for j in range(2):
             assert rel(state[j], radau[j][i]) < 1e-11

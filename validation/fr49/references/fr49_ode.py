@@ -1,6 +1,7 @@
 """FR-49 references: the ODE integrations (SciPy, binary64), the README's cross-checks.
 
-- World L: Radau at rtol 1e-12, its steps stopped at t1 and t2 (one solve per piece).
+- World L: Radau at rtol 1e-13, its steps stopped at t1 and t2 (one solve per piece). The README's
+  example is 1e-12; the tighter tolerance keeps the check below World L's declared 1e-13.
 - World B: Radau at rtol 1e-12 on (B, n_L).
 - C2: Radau at rtol 1e-12 and DOP853 at rtol 1e-13 on (B1, B2, n1, n2, R).
 atol is 1e-30 throughout, so the error control is relative in every component. The thread
@@ -20,8 +21,15 @@ from fr49_spec import Spec, WorldL  # noqa: E402
 from scipy.integrate import solve_ivp  # noqa: E402
 
 RTOL = 1e-12
+RTOL_L = 1e-13  # World L: its check is held to World L's declared 1e-13 as well
 RTOL_DOP853 = 1e-13
 ATOL = 1e-30
+
+
+def capacity(sites, sites_per_fmol: str) -> float:
+    """S = alpha nu N / N_f from the declared strings, in binary64: the ODE routes' own S."""
+    return (float(sites.accessible_fraction) * sites.sites_per_copy * float(sites.copies)
+            / float(sites_per_fmol))
 
 
 def _times(samples) -> list[float]:
@@ -57,7 +65,7 @@ def world_L_radau(L: WorldL) -> np.ndarray:
         if inner[-1:] != [end]:
             inner.append(end)
         sol = _solve(lambda _t, v, s=source: big @ v + s, lambda _t, v: big, (start, end), y,
-                     inner, "Radau", RTOL)
+                     inner, "Radau", RTOL_L)
         for k, t in enumerate(sol.t):
             if t in times:
                 out[:, times.index(t)] = sol.y[:, k]
@@ -65,9 +73,10 @@ def world_L_radau(L: WorldL) -> np.ndarray:
     return out
 
 
-def world_B_radau(spec: Spec, S: float) -> np.ndarray:
+def world_B_radau(spec: Spec) -> np.ndarray:
     """(B, n_L) at every sample time, shape (2, samples)."""
     W = spec.B
+    S = capacity(W.sites, spec.sites_per_fmol)
     V_C, k_on, k_off = float(W.V_C), float(W.k_on), float(W.k_off)
 
     def fun(_t, v):
@@ -84,13 +93,14 @@ def world_B_radau(spec: Spec, S: float) -> np.ndarray:
     return sol.y
 
 
-def c2_integrate(spec: Spec, S: float, method: str) -> np.ndarray:
+def c2_integrate(spec: Spec, method: str) -> np.ndarray:
     """(B1, B2, n1, n2, R) at every sample time, shape (5, samples), by Radau or DOP853.
 
     The free sites R are a state of their own, dR/dt = -(J1 + J2) from R(0) = S - B1 - B2, so
     that each solver's relative error control covers R. Formed as S - B1 - B2 from the bound
     amounts, R would carry their errors amplified S/R times (about 50 near equilibrium)."""
     W = spec.C2
+    S = capacity(W.sites, spec.sites_per_fmol)
     V_C = float(W.V_C)
     k_on = [float(g.k_on) for g in W.ligands]
     k_off = [float(g.k_off) for g in W.ligands]

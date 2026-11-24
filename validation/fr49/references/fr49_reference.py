@@ -244,13 +244,15 @@ def world_L_body(spec: fr49_spec.Spec, parts) -> tuple[dict, dict]:
                 "within": _within(eigen_worst, ACCURACY["matrix_exponential"]),
             },
             "ode_radau": {
-                "description": ("scipy.integrate.solve_ivp, Radau, rtol 1e-12, atol 1e-30, its "
-                                "steps stopped at t1 and t2 (one solve per piece), binary64"),
+                "description": ("scipy.integrate.solve_ivp, Radau, rtol 1e-13, atol 1e-30, its "
+                                "steps stopped at t1 and t2 (one solve per piece), binary64. It "
+                                "is held to World L's declared 1e-13, the stricter of that and "
+                                "the ODE integrations' 1e-10"),
                 "largest_relative_difference": radau_table,
                 "max": fmt_q(radau_worst),
                 "max_normalised_difference": _normalised(primary, radau, names),
-                "declared_accuracy": fmt_q(ACCURACY["ode"], 1),
-                "within": _within(radau_worst, ACCURACY["ode"]),
+                "declared_accuracy": fmt_q(ACCURACY["matrix_exponential"], 1),
+                "within": _within(radau_worst, ACCURACY["matrix_exponential"]),
             },
         },
         "reported_strings_against_eigen_closed_form": fmt_q(reported),
@@ -287,20 +289,25 @@ def build_B(spec: fr49_spec.Spec) -> dict:
     times = exact.sample_times(W.samples)
     primary = exact.world_B_exact(spec)
     once = primary["once"]
-    taylor_states = exact.binding_taylor(W.V_C, once["S"], [(W.k_on, W.k_off, str(once["L_T"]))],
+    check = exact.world_B_once_check(spec)  # S and L_T of its own, in exact rationals
+    with decimal.localcontext(exact.context()):
+        S_check, L_T_check = exact.to_decimal(check["S"]), exact.to_decimal(check["L_T"])
+    taylor_states = exact.binding_taylor(W.V_C, S_check, [(W.k_on, W.k_off, str(L_T_check))],
                                          [W.B0], times, TAYLOR_STEP["B"])
     with decimal.localcontext(exact.context()):
         taylor = {"B": [s[0] for s in taylor_states]}
-        taylor["n_L"] = [once["L_T"] - b for b in taylor["B"]]
+        taylor["n_L"] = [L_T_check - b for b in taylor["B"]]
         taylor["c"] = [n / Decimal(W.V_C) for n in taylor["n_L"]]
-    radau_raw = ode.world_B_radau(spec, float(once["S"]))
+    radau_raw = ode.world_B_radau(spec)
     radau = {"B": list(radau_raw[0]), "n_L": list(radau_raw[1]),
              "c": [n / float(W.V_C) for n in radau_raw[1]]}
     names = list(B_QUANTITIES)
     taylor_table, taylor_worst = _diffs(primary, taylor, names)
     radau_table, radau_worst = _diffs(primary, radau, names)
+    once_table = {k: fmt_q(rel(once[k], check[k])) for k in B_ONCE}
+    once_worst = max(rel(once[k], check[k]) for k in B_ONCE)
     reported = max(_reported_error(primary, taylor, names),
-                   max(rel(Decimal(fmt(once[k])), once[k]) for k in B_ONCE))
+                   max(rel(Decimal(fmt(once[k])), check[k]) for k in B_ONCE))
     equilibrium_gap = rel(once["B*"], once["B1"])
     end_gap_closed = rel(primary["B"][-1], once["B*"])
     end_gap_radau = rel(radau["B"][-1], once["B*"])
@@ -330,6 +337,7 @@ def build_B(spec: fr49_spec.Spec) -> dict:
     }
     within = (taylor_worst <= ACCURACY["thirty_digit"] and radau_worst <= ACCURACY["ode"]
               and equilibrium_gap <= ACCURACY["thirty_digit"]
+              and once_worst <= ACCURACY["thirty_digit"]
               and reported <= ACCURACY["thirty_digit"])
     doc["method"] = {
         "primary": ("LAWS.md 3's closed forms in decimal arithmetic: the equilibrium root c* on "
@@ -348,11 +356,20 @@ def build_B(spec: fr49_spec.Spec) -> dict:
                 "within": taylor_worst <= ACCURACY["thirty_digit"]},
             "ode_radau": {
                 "description": "scipy.integrate.solve_ivp, Radau, rtol 1e-12, atol 1e-30, on "
-                               "(B, n_L), binary64",
+                               "(B, n_L), binary64, with its own S from the declared values",
                 "largest_relative_difference": radau_table, "max": fmt_q(radau_worst),
                 "max_normalised_difference": _normalised(primary, radau, names),
                 "declared_accuracy": fmt_q(ACCURACY["ode"], 1),
                 "within": radau_worst <= ACCURACY["ode"]},
+            "once_values": {
+                "description": ("each once value by a second route: S, K_d, L_T and b in exact "
+                                "rationals; d from b^2 + 4 V_C L_T K_d; B1 = (s - d)/2 and "
+                                "B2 = (s + d)/2, since B2 - B1 = d; lambda = k_on d/V_C; "
+                                "c* = (L_T - B1)/V_C; B* = B1. The Taylor and Radau routes use "
+                                "their own S and L_T"),
+                "relative_difference": once_table, "max": fmt_q(once_worst),
+                "declared_accuracy": fmt_q(ACCURACY["thirty_digit"], 1),
+                "within": once_worst <= ACCURACY["thirty_digit"]},
             "equilibrium": {
                 "description": "B* = L_T - V_C c* from the root's formula, against B1 from the "
                                "quadratic in B",
@@ -426,10 +443,12 @@ def build_C2(spec: fr49_spec.Spec) -> dict:
 
     primary = arrays(exact.binding_taylor(W.V_C, S, ligands, list(W.B0), times,
                                           TAYLOR_STEP["C2"]))
-    step_check = arrays(exact.binding_taylor(W.V_C, S, ligands, list(W.B0), times,
+    with decimal.localcontext(exact.context()):
+        S_check = exact.to_decimal(exact.capacity_rational(W.sites, spec.sites_per_fmol))
+    step_check = arrays(exact.binding_taylor(W.V_C, S_check, ligands, list(W.B0), times,
                                              TAYLOR_CHECK_STEP))
-    radau_raw = ode.c2_integrate(spec, float(S), "Radau")
-    dop_raw = ode.c2_integrate(spec, float(S), "DOP853")
+    radau_raw = ode.c2_integrate(spec, "Radau")
+    dop_raw = ode.c2_integrate(spec, "DOP853")
 
     def from_ode(y) -> dict:
         V_C = float(W.V_C)
@@ -442,14 +461,16 @@ def build_C2(spec: fr49_spec.Spec) -> dict:
     radau_table, radau_worst = _diffs(primary, radau, names)
     dop_table, dop_worst = _diffs(primary, dop, names)
     newton = exact.c2_root_newton2(spec, [radau["c1"][-1], radau["c2"][-1]])
-    root_gaps = [rel(root["c"][j], newton["c"][j]) for j in range(2)]
-    root_gaps += [rel(root["B"][j], newton["B"][j]) for j in range(2)]
-    root_worst = max(root_gaps)
     once = {"c1*": root["c"][0], "c2*": root["c"][1], "B1*": root["B"][0],
             "B2*": root["B"][1], "R*": root["R"], "S": S, "K_1": root["K"][0],
             "K_2": root["K"][1]}
+    once_check = {"c1*": newton["c"][0], "c2*": newton["c"][1], "B1*": newton["B"][0],
+                  "B2*": newton["B"][1], "R*": newton["R"], "S": newton["S"],
+                  "K_1": newton["K"][0], "K_2": newton["K"][1]}
+    root_table = {k: fmt_q(rel(once[k], once_check[k])) for k in C2_ONCE}
+    root_worst = max(rel(once[k], once_check[k]) for k in C2_ONCE)
     reported = max(_reported_error(primary, step_check, names),
-                   max(rel(Decimal(fmt(once[k])), once[k]) for k in C2_ONCE))
+                   max(rel(Decimal(fmt(once[k])), once_check[k]) for k in C2_ONCE))
     end = {f"{route}_B{j + 1}": fmt_q(rel(values[f"B{j + 1}"][-1], root["B"][j]))
            for route, values in (("taylor", primary), ("radau", radau), ("dop853", dop))
            for j in range(2)}
@@ -489,14 +510,14 @@ def build_C2(spec: fr49_spec.Spec) -> dict:
         "second_routes": {
             "ode_radau": {
                 "description": "scipy.integrate.solve_ivp, Radau, rtol 1e-12, atol 1e-30, on "
-                               "(B1, B2, n1, n2, R), binary64",
+                               "(B1, B2, n1, n2, R), binary64, with its own S",
                 "largest_relative_difference": radau_table, "max": fmt_q(radau_worst),
                 "max_normalised_difference": _normalised(primary, radau, names),
                 "declared_accuracy": fmt_q(ACCURACY["ode"], 1),
                 "within": radau_worst <= ACCURACY["ode"]},
             "ode_dop853": {
                 "description": "scipy.integrate.solve_ivp, DOP853, rtol 1e-13, atol 1e-30, on "
-                               "(B1, B2, n1, n2, R), binary64",
+                               "(B1, B2, n1, n2, R), binary64, with its own S",
                 "largest_relative_difference": dop_table, "max": fmt_q(dop_worst),
                 "max_normalised_difference": _normalised(primary, dop, names),
                 "declared_accuracy": fmt_q(ACCURACY["ode"], 1),
@@ -509,7 +530,9 @@ def build_C2(spec: fr49_spec.Spec) -> dict:
                 "within": step_worst <= ACCURACY["thirty_digit"]},
             "root_two_equation_newton": {
                 "description": ("Newton on LAWS.md 5's two equations in (c1, c2) as written, at "
-                                "70 digits, from Radau's state at the horizon"),
+                                "70 digits, from Radau's state at the horizon, with S in exact "
+                                "rationals; R* = S/(1 + c1/K1 + c2/K2)"),
+                "relative_difference": root_table,
                 "largest_relative_difference": fmt_q(root_worst),
                 "declared_accuracy": fmt_q(ACCURACY["thirty_digit"], 1),
                 "within": root_worst <= ACCURACY["thirty_digit"]},

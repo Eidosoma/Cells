@@ -11,8 +11,12 @@ consistency. No reading changes a law; each fixes a detail the spec leaves open.
      y = (n_O, n_C, x_O, x_C, 1), with scaling and squaring.
    - The README's 1e-13 is demonstrated by a second high-precision route, the eigen closed form:
      e^(A dt) by Sylvester's formula, about each interval's steady state.
-   - Radau at rtol 1e-12, atol 1e-30, is the README's ODE cross-check, held to the ODE bound of
-     1e-10. It runs as three solves stopped at t₁ and t₂.
+   - Radau is the README's ODE cross-check, run as three solves stopped at t₁ and t₂, at atol
+     1e-30.
+   - Its rtol is 1e-13, against the README's example of 1e-12. At 1e-12 its largest difference
+     was 1.75e-13, between the ODE bound of 1e-10 and World L's declared 1e-13. At 1e-13 it is
+     below 1e-13, so the check passes whichever bound it is read against, and it is held to
+     1e-13.
 
 2. **World L's names and units.**
    - `n_O`, `n_C`, `x_O` and `x_C` are `cases.json`'s names, in fmol.
@@ -43,6 +47,13 @@ consistency. No reading changes a law; each fixes a detail the spec leaves open.
      (step 0.05 s), and by Radau on (B, n_L).
    - The root is checked by comparing B* = L_T − V_C c* from its formula with B₁ from the quadratic
      in B.
+   - Each `once` value also has a second route:
+     - S, K_d, L_T and b in exact rationals, and d from b² + 4 V_C L_T K_d;
+     - B₁ = (s − d)/2 and B₂ = (s + d)/2, since s² − 4 L_T S = b² + 4 V_C L_T K_d makes
+       B₂ − B₁ = d;
+     - λ = k_on d/V_C, c* = (L_T − B₁)/V_C, and B* = B₁.
+   - The Taylor and Radau routes form their own S and L_T from the declared values, and so do C2's
+     check routes.
 
 7. **C1.**
    - "Just before" and "just after" are t_w− and t_w+.
@@ -82,7 +93,7 @@ consistency. No reading changes a law; each fixes a detail the spec leaves open.
       - C1;
       - C2's root;
       - as delivered, World L's and C2's transients, whose high-precision checks are reported.
-    - 1e-10 for each ODE route's difference.
+    - 1e-10 for each ODE route's difference, except World L's, held to 1e-13 (reading 1).
     - 1e-13 for World L's matrix exponentials, shown by the eigen form.
 
 ## Declared values checked for consistency

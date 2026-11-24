@@ -80,13 +80,16 @@ written `"0"`.
 
 | World | Reported route (high precision) | Second routes |
 | --- | --- | --- |
-| L | The augmented system's matrix exponential on each interval, by Taylor series with scaling and squaring, at 70 digits | The eigen closed form (Sylvester's formula) at 70 digits; Radau at rtol 1e-12 with its steps stopped at t₁ and t₂ |
-| B | LAWS.md §3's closed forms at 60 digits | A Taylor-series integration at 50 digits; Radau at rtol 1e-12; B* from c* against B₁ from the quadratic |
+| L | The augmented system's matrix exponential on each interval, by Taylor series with scaling and squaring, at 70 digits | The eigen closed form (Sylvester's formula) at 70 digits; Radau at rtol 1e-13 with its steps stopped at t₁ and t₂ |
+| B | LAWS.md §3's closed forms at 60 digits | A Taylor-series integration at 50 digits; Radau at rtol 1e-12; each `once` value by a second route (S, K_d, L_T and b in exact rationals, then B₁,₂ = (s ∓ d)/2, λ = k_on d/V_C); B* from c* against B₁ from the quadratic |
 | C1 | LAWS.md §4's arithmetic at 60 digits | The same in exact rationals |
 | C2 | Transient: a Taylor-series integration at 50 digits, step 0.1 s. Root: one equation in R, by Newton at 70 digits | Radau at rtol 1e-12 and DOP853 at rtol 1e-13; the integrator at step 0.05 s; Newton on LAWS.md §5's two equations |
 
-The ODE routes use atol 1e-30, so their error control is relative in every component. C2's
-integrate the free sites R as a state of their own.
+- The ODE routes use atol 1e-30, so their error control is relative in every component.
+- C2's ODE routes integrate the free sites R as a state of their own.
+- Every check route forms its own S and L_T from the declared values; none takes them from the
+  reported route.
+- World L's Radau is held to World L's declared 1e-13, the stricter of that and the ODE bound.
 
 **The declared accuracy** (spec README) is:
 - 1e-20 relative for the 30-digit quantities;

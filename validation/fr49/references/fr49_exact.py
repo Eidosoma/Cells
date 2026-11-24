@@ -45,6 +45,17 @@ def capacity(sites: Sites, sites_per_fmol: str) -> Decimal:
                 / Decimal(sites_per_fmol))
 
 
+def capacity_rational(sites: Sites, sites_per_fmol: str) -> Fraction:
+    """S in exact rationals, for the second routes."""
+    return (Fraction(sites.accessible_fraction) * sites.sites_per_copy * Fraction(sites.copies)
+            / Fraction(sites_per_fmol))
+
+
+def to_decimal(q: Fraction) -> Decimal:
+    """A rational at the current context's precision."""
+    return Decimal(q.numerator) / Decimal(q.denominator)
+
+
 # ---- World L -------------------------------------------------------------------------------------
 
 def _matmul(X: list, Y: list) -> list:
@@ -222,6 +233,29 @@ def world_B_exact(spec: Spec) -> dict:
         return out
 
 
+def world_B_once_check(spec: Spec) -> dict:
+    """World B's once values by a second route.
+    - S, K_d, L_T and b in exact rationals.
+    - d from b^2 + 4 V_C L_T K_d at 70 digits.
+    - Since s^2 - 4 L_T S = b^2 + 4 V_C L_T K_d with s = L_T + S + V_C K_d, B2 - B1 = d, so
+      B1 = (s - d)/2, B2 = (s + d)/2 and lambda = k_on d/V_C.
+    - c* = (L_T - B1)/V_C, and B* = B1."""
+    W: WorldB = spec.B
+    S = capacity_rational(W.sites, spec.sites_per_fmol)
+    V_C, k_on, k_off = Fraction(W.V_C), Fraction(W.k_on), Fraction(W.k_off)
+    L_T = Fraction(W.n_L0) + Fraction(W.B0)
+    K_d = k_off / k_on
+    b = V_C * K_d + S - L_T
+    s = L_T + S + V_C * K_d
+    with decimal.localcontext(context(PREC + 10)):
+        d = to_decimal(b * b + 4 * V_C * L_T * K_d).sqrt()
+        B1 = (to_decimal(s) - d) / 2
+        B2 = (to_decimal(s) + d) / 2
+        return {"S": S, "K_d": K_d, "b": b, "c*": (to_decimal(L_T) - B1) / to_decimal(V_C),
+                "B*": B1, "B1": B1, "B2": B2, "lambda": to_decimal(k_on) * d / to_decimal(V_C),
+                "L_T": L_T, "d": d}
+
+
 # ---- The binding integrator ----------------------------------------------------------------------
 
 def _taylor_step(B: list, h: Decimal, V_C: Decimal, S: Decimal, k_on: list, k_off: list,
@@ -317,8 +351,8 @@ def c2_root_newton2(spec: Spec, guess: list[float]) -> dict:
     W: WorldC2 = spec.C2
     if len(W.ligands) != 2:
         raise ValueError("the check is written for two ligands")
-    S = capacity(W.sites, spec.sites_per_fmol)
     with decimal.localcontext(context(PREC + 10)):
+        S = to_decimal(capacity_rational(W.sites, spec.sites_per_fmol))
         V_C = Decimal(W.V_C)
         K = [Decimal(g.k_off) / Decimal(g.k_on) for g in W.ligands]
         L_T = [Decimal(g.total) for g in W.ligands]
@@ -339,7 +373,7 @@ def c2_root_newton2(spec: Spec, guess: list[float]) -> dict:
             raise RuntimeError("the two-equation Newton check did not converge")
         D = 1 + c[0] / K[0] + c[1] / K[1]
         B = [S * (c[j] / K[j]) / D for j in range(2)]
-        return {"c": c, "B": B}
+        return {"c": c, "B": B, "R": S / D, "S": S, "K": K}
 
 
 # ---- C1 ------------------------------------------------------------------------------------------
