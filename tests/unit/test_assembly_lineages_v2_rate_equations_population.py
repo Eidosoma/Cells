@@ -196,7 +196,8 @@ def test_a_shell_s_washes_follow_the_mean_s_closed_form_with_their_books_and_rec
     and each interval's continuous heat −ΔF_cont (each term 0 at 0, the two zero starts booked by
     closure) equal the linear mean's closed form, each read by FR-47's judge from (d)'s rows and
     stop events; the tracer moiety balances with the removed amounts; the books close; the records
-    name the shell, the washes and E2. One population program compiled and one run: about 25 s."""
+    name the shell, the washes and E2, and their status, development-only until FR-47's verdict.
+    One population program compiled and one run: about 25 s."""
     import json
 
     from cells.models.assembly_lineages_v2 import records
@@ -235,6 +236,10 @@ def test_a_shell_s_washes_follow_the_mean_s_closed_form_with_their_books_and_rec
     records.write_run(tmp_path / "bundle", run)
     record = json.loads((tmp_path / "bundle" / "run.json").read_text())
     assert {"shell", "washes", "e2"} <= set(record["representation"]["formulas"])
+    assert record["representation"]["qualification"] == {
+        "status": "admitted, development-only until fr47-shell-exchange's verdict",
+        "protocol": "fr47-shell-exchange-registered-2026-11-24",
+        "paths": ["shell", "washes", "e2"]}  # fmt: skip
     assert record["check"]["world"]["parity"]["identical"]
     kinds = np.load(tmp_path / "bundle" / "rows.npz")["row_kind"].tolist()
     assert kinds.count("withdrawal") == 2 and kinds.count("replacement") == 1

@@ -217,6 +217,7 @@ def test_a_linear_network_follows_its_matrix_exponential(tmp_path):
     assert record["engine_models"]["representation"] == "cells.rate_equations@1"
     assert record["ledger"]["closes"] and record["moieties"]["closes"]
     assert all(law["limit_formulas"] for law in record["laws"])
+    assert "qualification" not in record["representation"]  # FR-47's status: its paths only
     saved = np.load(tmp_path / "bundle" / "rows.npz")
     assert np.array_equal(saved["counts"], run.rows["counts"])
 

@@ -99,9 +99,12 @@ place's count is refused (T2); with σ from F, σ_max ≤ σ_β/4 is required at
   μ = ln n diverges there (integrably); its heat leaves that step's error control. A step result
   with an E2 place below −10·atol_count is rejected and retried at h/4, or the run stops
   `stalled`. A world without E2 places traces its program as before.
-- **Refused by name in version 1:** washes and the gate factor outside a shell's world, site
-  binding in a shell's world, a gate driven by anything but its own forms (bound states
-  included), and FR-46's inner face.
+- **Refused by name in version 1,** each until a qualification covers it: washes and the gate
+  factor outside a shell's world, site binding in a shell's world, a gate driven by anything but
+  its own forms (bound states included), and FR-46's inner face.
+- **Status:** admitted, development-only until fr47-shell-exchange's verdict. The registered
+  declaration's `qualified` says so, and each run that uses these paths records it
+  (representation.qualification in run.json).
 
 **Slices:** S1 (OL1's laws), S2 (vesicles: geometry, the osmotic lumen, lysis, the shared pool,
 shear fission, serial transfer) and S3 (the pore clock and held tensions); FR-47 (the shell).
@@ -171,6 +174,8 @@ EPS = float(np.finfo(np.float64).eps)
 MAX_SLOTS = 64  # §6.9: a population's linear algebra is dense in version 1
 WASHES = ("replacement", "withdrawal")  # FR-47: admitted in a prescribed shell's world only
 BELOW_ZERO = 10.0  # FR-47's E2: a step result below −BELOW_ZERO·atol_count is retried at h/4
+FR47_STATUS = "admitted, development-only until fr47-shell-exchange's verdict"  # the lead's words
+FR47_PROTOCOL = "fr47-shell-exchange-registered-2026-11-24"  # FR-47's registered tag (D323)
 H_ERROR = 1e-10  # §3.5: the pore clock's bound per accepted step, its absolute part
 H_RELATIVE = 2e-3  # D309: its relative part, |U^H| <= H_ERROR + H_RELATIVE |dH| per vesicle
 
@@ -267,9 +272,10 @@ REPRESENTATION = law_registry.BUILTIN.register(
             "error_budget": "Protocol D's criterion B: b = 2 on the mean, c_r = 5 per replica "
             "(docs/OL6_DETERMINISTIC_REPRESENTATION_DESIGN.md §5.1)",
             "record": "development: Protocol D's registered tag is pending (S5)",
-            "fr47": "development: the prescribed shell, its washes, E2 and autonomous gates are "
-            "registered for FR-47's protocol (tag fr47-shell-exchange-registered-2026-11-24); its "
-            "independent checker's run is pending",
+            "fr47": FR47_STATUS + ": the prescribed shell, its washes, E2 and autonomous gates, "
+            "in a prescribed shell's world only, registered for FR-47's protocol (tag "
+            "fr47-shell-exchange-registered-2026-11-24); its independent checker's run is pending, "
+            "and each run that uses them records this status (representation.qualification)",
             "checker": "an independent checker runs each protocol at its tag (D304)",
         },
         methods=METHODS,
@@ -450,15 +456,15 @@ def refusals(world, experiment, execution):
             if spec_rules._declared_binding(step, world, by_name):
                 raise ConfigError(
                     f"{RATE_EQUATIONS}: site binding in a {PRESCRIBED_SHELL} world (step "
-                    f"{step.id}) is refused in version 1 (FR-47, D323): it is bimolecular at the "
-                    "wall, and FR-47's qualification does not cover it"
+                    f"{step.id}) is refused in version 1 (FR-47, D323), until a qualification "
+                    "covers it: it is bimolecular at the wall, and FR-47's does not cover it"
                 )
     if world.rate_factor is not None and world.rate_factor[0] == GATE_FACTOR:
         if not shell:
             raise ConfigError(
                 f"{RATE_EQUATIONS}: {GATE_FACTOR} is refused in version 1 outside a "
-                f"{PRESCRIBED_SHELL} world: FR-47's qualification covers a gate in a shell's "
-                "world only"
+                f"{PRESCRIBED_SHELL} world, until a qualification covers it: FR-47's covers a "
+                "gate in a shell's world only"
             )
         _gate_refusals(world)  # FR-47 (D323, R7): autonomous switching only
     if world.geometry is not None and world.geometry[0] not in (BILAYER_GEOMETRY, PRESCRIBED_SHELL):
@@ -475,8 +481,8 @@ def refusals(world, experiment, execution):
         if schedule.kind in WASHES and not shell:
             raise ConfigError(
                 f"{RATE_EQUATIONS}: a {schedule.kind} schedule is refused in version 1 outside a "
-                f"{PRESCRIBED_SHELL} world: FR-47's qualification covers washes in a shell's "
-                "world only"
+                f"{PRESCRIBED_SHELL} world, until a qualification covers it: FR-47's covers "
+                "washes in a shell's world only"
             )
     if world.role is not None:
         raise ConfigError(
@@ -506,7 +512,8 @@ def refusals(world, experiment, execution):
                     f"{RATE_EQUATIONS}: {label}'s {place.name} holds {counts[i]}, below the "
                     f"envelope's min_count {execution.min_count:g}: the representation is valid "
                     "only where every count a rate reads is large (a place rising from 0 is "
-                    "refused in version 1, but at E2's first-order places in a shell's world)"
+                    "refused in version 1, but at E2's first-order places in a shell's world, "
+                    "until a qualification covers it elsewhere)"
                 )
 
 
@@ -542,8 +549,9 @@ def _gate_refusals(world):
             raise ConfigError(
                 f"{RATE_EQUATIONS}: step {step.id} changes the gate's form {changed[0]} and reads "
                 f"{others[0]}: a gate driven by bound states, or by anything but its own forms, is "
-                "refused in version 1 (FR-47, D323): FR-47 qualifies autonomous switching only, "
-                "forms interconverting by wall steps among themselves"
+                "refused in version 1 (FR-47, D323), until a qualification covers it: FR-47's "
+                "covers autonomous switching only, forms interconverting by wall steps among "
+                "themselves"
             )
 
 
@@ -2334,17 +2342,38 @@ NO_LIMIT_HOOK = {  # the representation's rule for what declares no limit kernel
 }
 
 
+def fr47_paths(spec):
+    """The FR-47 paths a (d) run's world uses: the shell, its washes, E2 and the gate."""
+    world, experiment = spec.model.world, spec.experiment
+    out = []
+    if world.geometry is not None and world.geometry[0] == PRESCRIBED_SHELL:
+        out.append("shell")
+    if any(s.kind in WASHES for s in experiment.schedules):
+        out.append("washes")
+    if any(e2_places(world, experiment, spec.execution.min_count)):
+        out.append("e2")
+    if world.rate_factor is not None and world.rate_factor[0] == GATE_FACTOR:
+        out.append("gate")
+    return out
+
+
+def qualification_of(spec):
+    """FR-47's status for one run's record, or None: the newly admitted deterministic shell paths
+    stay unqualified until the registered protocol's verdict (the lead's ruling at the landing).
+    Written only where a world uses them, so no other run's record moves."""
+    paths = fr47_paths(spec)
+    if not paths:
+        return None
+    return {"status": FR47_STATUS, "protocol": FR47_PROTOCOL, "paths": paths}
+
+
 def formulas_of(spec):
     """The representation's formulas for one run's record: FORMULAS, and FR-47's only where the
     world uses them (a shell, a wash, an E2 place), so no other run's record moves."""
-    world, experiment = spec.model.world, spec.experiment
     out = dict(FORMULAS)
-    if world.geometry is not None and world.geometry[0] == PRESCRIBED_SHELL:
-        out["shell"] = FR47_FORMULAS["shell"]
-    if any(s.kind in WASHES for s in experiment.schedules):
-        out["washes"] = FR47_FORMULAS["washes"]
-    if any(e2_places(world, experiment, spec.execution.min_count)):
-        out["e2"] = FR47_FORMULAS["e2"]
+    for path in fr47_paths(spec):
+        if path in FR47_FORMULAS:
+            out[path] = FR47_FORMULAS[path]
     return out
 
 
@@ -2369,6 +2398,7 @@ def write_run(directory, run, *, provenance=None):
         laws.append({**exact_records._law(law_id),
                      "limit_formulas": formulas or NO_LIMIT_HOOK[law_id]})  # fmt: skip
     block = execution_to_dict(spec.execution)["representation"]
+    qualification = qualification_of(spec)  # FR-47: development-only until its verdict
     record = {
         "format": RUN_FORMAT,
         "world": spec_rules.world_id(world),
@@ -2381,6 +2411,7 @@ def write_run(directory, run, *, provenance=None):
             "statuses": list(STATUSES),
             "not_applicable": list(NOT_APPLICABLE),
             "statistics": run.statistics,
+            **({"qualification": qualification} if qualification else {}),
         },
         "conventions": conventions_rules.to_dict(world.conventions),
         "laws": laws,

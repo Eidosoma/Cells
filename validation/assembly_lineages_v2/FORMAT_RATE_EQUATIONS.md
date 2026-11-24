@@ -30,9 +30,12 @@ OL6 (D304); the design is docs/OL6_DETERMINISTIC_REPRESENTATION_DESIGN.md (tag
 - **FR-47 (D323)** runs FR-21's prescribed shell (`cells.prescribed_shell@1`, its
   `cells.shell_permeation@1` and its `cells.gate_factor@1`), with FR-48's lumen potential, and in a
   shell's world FR-20's replacement and FR-35's withdrawal (its mean) and E2. Refused by name in
-  version 1: a replacement, a withdrawal or the gate factor outside a shell's world, site binding
-  in a shell's world, a gate driven by anything but its own forms (bound states included) and
-  FR-46's inner face.
+  version 1, each until a qualification covers it: a replacement, a withdrawal or the gate factor
+  outside a shell's world, site binding in a shell's world, a gate driven by anything but its own
+  forms (bound states included) and FR-46's inner face.
+- **Their status:** admitted, development-only until fr47-shell-exchange's verdict (the registered
+  protocol, tag `fr47-shell-exchange-registered-2026-11-24`). A run whose world uses one of them
+  records it in `representation.qualification`.
 - **E2, true zeros at first-order places** (a shell's world). A finite dilute place that every step
   reading it reads at first order (at most one finite molecule a side, by no excess term), and that
   some founder holds below `min_count` or a declared wash acts on, is outside the envelope: each
@@ -63,7 +66,7 @@ OL6 (D304); the design is docs/OL6_DETERMINISTIC_REPRESENTATION_DESIGN.md (tag
 | --- | --- |
 | `world`, `model`, `definition_sha256` | As for exact events: the world's id, `cells.assembly_lineages@2`, and the definition's fingerprint |
 | `engine_models` | The world's laws and operators, and `representation: cells.rate_equations@1` |
-| `representation` | The declared envelope and integrator; `formulas`; `statuses`; `not_applicable`; and `statistics`: steps accepted and rejected, `restarts` (the lumen's kink), `crossings` (located roots), rtol, atol, the end time, `stop_reason` (`envelope` or `floor` for `outside_envelope`) and `schedule_draws` (Poisson gaps on domain 6, as exact) |
+| `representation` | The declared envelope and integrator; `formulas`; `statuses`; `not_applicable`; and `statistics`: steps accepted and rejected, `restarts` (the lumen's kink), `crossings` (located roots), rtol, atol, the end time, `stop_reason` (`envelope` or `floor` for `outside_envelope`) and `schedule_draws` (Poisson gaps on domain 6, as exact). A run whose world uses FR-47's paths adds `qualification`: `status` ("admitted, development-only until fr47-shell-exchange's verdict"), `protocol` (the registered tag) and `paths` (of `shell`, `washes`, `e2` and `gate`) |
 | `conventions` | The world's tokens, echoed |
 | `laws` | Each law as an exact run states it (id, interface, formulas, provenance, test), plus its `limit_formulas`; a law with no limit kernel (the bilayer geometry) states the representation's rule for it |
 | `status` | One of `complete`, `lysed`, `outside_envelope`, `stalled`, `step_limit`, `slots_full` |
