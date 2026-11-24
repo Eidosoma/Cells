@@ -503,6 +503,28 @@ def test_the_zero_blocker_and_one_count_on_the_host():
         assert not np.array_equal(planted, fr51.host("B1_two_modes_E1", volts)["u"])
 
 
+def test_the_block_superposes_in_its_reference():
+    """FR-51's B-superposition (host, about 1 s): under the reversal reference, B1's u at E1 and at
+    E2 agrees at equal V - E within 1e-12 of max u; under the membrane voltage, B3's agrees at equal
+    V. Plant (ii), E with the wrong sign of its valence, breaks the first."""
+    offsets = np.array([-0.06, -0.03, 0.0, 0.03, 0.06])  # V - E (V).
+    e1, e2 = (float(fr51_laws.reversal(c)) for c in ("B1_two_modes_E1", "B1_two_modes_E2"))
+
+    def apart(first, second):
+        return np.max(np.abs(first - second)) / max(first.max(), second.max())
+
+    u1 = fr51.host("B1_two_modes_E1", e1 + offsets)["u"]
+    u2 = fr51.host("B1_two_modes_E2", e2 + offsets)["u"]
+    assert apart(u1, u2) <= 1e-12
+    v = np.array([-0.08, -0.04, 0.0, 0.04])
+    assert apart(fr51.host("B3_divalent_outside_E1", v)["u"],
+                 fr51.host("B3_divalent_outside_E2", v)["u"]) <= 1e-12  # fmt: skip
+    with fr51_plants.reversal_valence_flipped():
+        planted = (fr51.host("B1_two_modes_E1", e1 + offsets)["u"],
+                   fr51.host("B1_two_modes_E2", e2 + offsets)["u"])  # fmt: skip
+    assert apart(*planted) > 1e-12
+
+
 def fr51_block(**changes):
     """B1's block declaration with changes applied in place by the callables given."""
     raw = fr51.raw_world("B1_two_modes_E1")
