@@ -10,22 +10,30 @@ scales, mean_error, P, B, E, n_min and the plants) and with agreement.py's share
   elsewhere; no pair of D0-D7 is `derived`;
 - **M repaired by the shared rule** (`criterion_m`): a constant pair by agreement.judge_constant,
   every exact replica and (d)'s value bit for bit against the model's value; a spread pair by the
-  registered excess, with the registered inequality evaluated exactly where the combined SE is
-  0, so that no zero SE is taken as no limit and no rounding floor is declared;
-- **the constant pairs' precondition** (`floppy_margins`, `precondition`): every vesicle the
-  classification calls floppy is floppy in every exact replica and in (d) at that time;
-- **its checks** (`check`): the reader on invented inputs, M on made-up columns, the
-  classification, the seeds and the parse of every registered definition.
+  registered excess on `moments`, with the registered inequality evaluated exactly where the
+  combined SE is 0, so that no zero SE is taken as no limit and no rounding floor is declared;
+- **the constant pairs' precondition, judged first** (`floppy_margins`, `precondition`,
+  `judge_world`): every vesicle the classification calls floppy is floppy in every exact replica
+  and in (d) at that time, recomputed from each run's recorded counts; where it fails the pair is
+  not judged and the world is inconclusive, with its tense runs counted;
+- **the linear-noise variance of each floppy margin** (`linear_noise`, `noise_table`): the
+  model's prediction, before any run, that no replica turns tense at a constant pair;
+- **P-D8** (`pd8`): the constant rule's plant, one ulp in (d) alone on D6;
+- **its checks** (`check`): the reader on invented inputs, M and the world's verdict on made-up
+  columns, the zero-SE path on the registered constants, the classification, the seeds and the
+  parse of every registered definition.
 
 Run with `PYTHONPATH=src:. JAX_ENABLE_X64=1`:
 - `python -m validation.assembly_lineages_v2.protocol_d_v2 check` runs the checks, on invented
   inputs and made-up columns only, and parses the registered definitions (it runs no world);
+- `python -m validation.assembly_lineages_v2.protocol_d_v2 noise --out FILE` runs (d) alone on D5
+  and D6 at every rung and writes the linear-noise table (the document's §4.3; a few minutes);
 - `python -m validation.assembly_lineages_v2.protocol_d_v2 register --margins FILE --out FILE
-  --scale FILE` writes protocol_d_v2.json from (d)'s margins and the model's fluctuation scale at
-  them (the document's §4.3).
+  --noise FILE` writes protocol_d_v2.json from (d)'s margins and that table.
 """
 
 import json
+import math
 import sys
 from types import SimpleNamespace
 
@@ -38,18 +46,24 @@ CONSTANT, DERIVED, SPREAD = agreement.CONSTANT, agreement.DERIVED, agreement.SPR
 
 # ------------------------------------------------------------------ the seeds (the document's §3)
 
-SEEDS = {"first": 640001, "retry": 740001}  # seeds base .. base + M - 1, environment 0
-EARLIER_SEEDS = (  # every stream seed range registered or used before this registration
+SEEDS = {"first": 540001, "retry": 560001}  # seeds base .. base + M - 1, environment 0
+EARLIER_SEEDS = (  # every stream seed range registered, used or probed before this registration
     ("Protocol D, first seeds", 1, 256),
     ("Protocol D, retry seeds", 100001, 100256),
     ("Protocol G, seeds (@1 1001-1256 and @2 2001-2256 among them)", 1, 5256),
     ("Protocol G, matrix seeds", 20261123, 20261142),
-    ("Protocol G's checker, timing smokes (unregistered, 900001 onward)", 900001, 999999),
+    ("Protocol G's checker, timing smokes (unregistered, '900001+', no upper end recorded)",
+     900001, None),
     ("FR-47, first seeds (W1, W1D, W2's rungs, P7, P8)", 470001, 471528),
     ("FR-47, retry seeds (W2's: the first plus 500,000)", 970001, 971528),
     ("the probes' and smokes' stream seeds, 1 and 7", 1, 7),
     ("D2's beta generator seed (a world input, kept)", 20261124, 20261124),
-)
+    ("this registration's first seeds as proposed at dbf17e84, withdrawn: the D7 clock-room "
+     "probe ran D7's (d) on 640001-640128", 640001, 640256),
+    ("this registration's retry seeds as proposed at dbf17e84, withdrawn (never run)",
+     740001, 740256),
+    ("the noise check: exact events on an unregistered 12.5 nm D5, seeds 1-128", 1, 128),
+)  # fmt: skip
 
 
 def seeds(name, which="first"):
@@ -59,13 +73,14 @@ def seeds(name, which="first"):
 
 
 def seeds_disjoint():
-    """(ok, overlaps): every seed of every world and both sets against EARLIER_SEEDS."""
+    """(ok, overlaps): every seed of every world and both sets against EARLIER_SEEDS (an upper end
+    None is open)."""
     used = set()
     for name in ("D0", *lq.DENSITY, *lq.VESICLE):
         for which in SEEDS:
             used |= set(seeds(name, which))
     overlaps = [(label, lo, hi) for label, lo, hi in EARLIER_SEEDS
-                if any(lo <= s <= hi for s in used)]  # fmt: skip
+                if any(lo <= s and (hi is None or s <= hi) for s in used)]  # fmt: skip
     return not overlaps, overlaps
 
 
@@ -209,6 +224,29 @@ def spread_excess(e_k, se_k, e_b, se_b):
     return np.where(np.isnan(combined) | np.isnan(num), np.nan, out)
 
 
+def moments(exact, d):
+    """e and SE per (observable, time), as the registered lq.mean_error gives them, except where at
+    least two replicas are finite and every finite replica holds one value bit for bit. There e is
+    that value minus y_d, one subtraction, and SE is 0, so the zero-SE path judges the pair
+    exactly: identical replicas at (d)'s bits hold the inequality, and off them it decides. The
+    registered sum leaves its rounding residue r there instead, SE = |r|/√(m − 1) and
+    z = ±√(m − 1) (§1); the check finds it at the registered constants (§8)."""
+    out = lq.mean_error(exact, d)
+    for k, (e, se) in out.items():
+        values = np.asarray(exact[k], dtype=np.float64)
+        e, se = np.array(e, dtype=np.float64), np.array(se, dtype=np.float64)
+        for j in range(values.shape[1]):
+            column = values[:, j][np.isfinite(values[:, j])]
+            if column.size >= 2 and np.all(column.view(np.uint64) == column[0:1].view(np.uint64)):
+                e[j] = column[0] - np.float64(d[k][j])
+                se[j] = 0.0
+        out[k] = (e, se)
+    return out
+
+
+UNJUDGED = "unjudged"  # a constant pair where §6's precondition fails (judge_world): not judged
+
+
 def _judge_constant(values, d_value, expected):
     """One constant pair at one rung: agreement.judge_constant on the exact replicas, and (d)'s
     value bit for bit; a NaN anywhere is not the constant."""
@@ -226,12 +264,14 @@ def criterion_m(exact_top, d_top, exact_below, d_below, classes_top, values_top,
 
     - A pair constant at K is judged by the constant rule at K, and at K - 1 where it is constant
       there too; it is not in the z. One replica off, or (d) off, fails M.
-    - Every other pair is spread: lq.mean_error at both rungs and `spread_excess`; the largest z
-      passes at most lq.Z_STAR and fails beyond lq.Z_FAIL. Identical replicas are not excluded.
+    - Every other pair is spread: `moments` at both rungs and `spread_excess`; the largest z
+      passes at most lq.Z_STAR and fails beyond lq.Z_FAIL. Identical replicas are not excluded:
+      they are judged exactly.
+    - A pair marked UNJUDGED (judge_world, where §6's precondition fails) is in neither.
     - M passes when every constant pair passes and the largest z passes; it fails when a constant
       pair fails or the largest z fails; it is inconclusive otherwise. With no spread pair the
       largest z is -inf."""
-    top, below = lq.mean_error(exact_top, d_top), lq.mean_error(exact_below, d_below)
+    top, below = moments(exact_top, d_top), moments(exact_below, d_below)
     worst, judged, constants, failed = -np.inf, 0, {}, []
     for key, (e_k, se_k) in top.items():
         row = classes_top.get(key)
@@ -268,8 +308,10 @@ def criterion_m(exact_top, d_top, exact_below, d_below, classes_top, values_top,
 
 def floppy_margins(spec, run, representation):
     """{vesicle prefix: [ln V_sph - ln V_osm per registered time]} of one run, read from its rows
-    as lq.observables reads them (NaN after the run's end); positive where floppy. The engine's
-    own lumen.log_branches on real N_L and W."""
+    as lq.observables reads them (NaN after the run's end); positive where floppy. It recomputes
+    floppiness from the recorded counts alone: N_L and W from each row's counts, then the engine's
+    own lumen.log_branches. It reads no σ, no V and no flag of the run, so a wrong replica cannot
+    read as floppy, and a tense one cannot read as floppy by a wrong σ."""
     from cells.models.assembly_lineages_v2 import geometry, lumen
 
     world = spec.model.world
@@ -318,6 +360,311 @@ def precondition(classes, margins_by_run):
                 if not (np.isfinite(m) and m > 0):
                     bad.append((prefix, j, r))
     return {"holds": not bad, "violations": bad}
+
+
+def judge_world(exact_top, d_top, exact_below, d_below, classes_top, values_top, classes_below,
+                values_below, margins_top, margins_below):  # fmt: skip
+    """One world's M with §6's precondition judged first. `margins_top` and `margins_below` hold
+    each rung's floppy_margins, one per exact replica in seed order, then (d)'s.
+
+    - At each rung, a constant pair at a time where any run's vesicle is not floppy is marked
+      UNJUDGED: neither the constant rule nor the z sees it, so a tense replica can never fail
+      or pass it.
+    - The world **fails** when M fails on what is judged (a judged constant pair, or the z beyond
+      lq.Z_FAIL). Otherwise it is **inconclusive** when the precondition fails anywhere or M is
+      inconclusive. Otherwise it **passes**.
+    - `tense` per rung: the runs with a vesicle not floppy at a constant time (exact replicas and
+      whether (d)), and the count of such runs at each (vesicle, time index)."""
+    judged, rungs = [], {}
+    for label, classes, margins in (("top", classes_top, margins_top),
+                                    ("below", classes_below, margins_below)):  # fmt: skip
+        pre = precondition(classes, margins)
+        bad = {}
+        for prefix, j, _ in pre["violations"]:
+            bad.setdefault(prefix, set()).add(j)
+        marked = {}
+        for key, row in classes.items():
+            prefix = key.split(":")[0] + ":" if ":" in key else ""
+            marked[key] = [UNJUDGED if c == CONSTANT and j in bad.get(prefix, ()) else c
+                           for j, c in enumerate(row)]  # fmt: skip
+        judged.append(marked)
+        runs = {r for _, _, r in pre["violations"]}
+        d_index = len(margins) - 1
+        by_time = {}
+        for prefix, j, _ in pre["violations"]:
+            by_time[f"{prefix}{j}"] = by_time.get(f"{prefix}{j}", 0) + 1
+        rungs[label] = {"holds": pre["holds"], "violations": pre["violations"],
+                        "tense": {"exact_replicas": len(runs - {d_index}),
+                                  "d": d_index in runs, "by_vesicle_time": by_time},
+                        "unjudged": sorted(f"{k}@{j}" for k, row in marked.items()
+                                           for j, c in enumerate(row) if c == UNJUDGED)}  # fmt: skip
+    m = criterion_m(exact_top, d_top, exact_below, d_below, judged[0], values_top, judged[1],
+                    values_below)  # fmt: skip
+    holds = rungs["top"]["holds"] and rungs["below"]["holds"]
+    if m["fails"]:
+        verdict = "fail"
+    elif not holds or not m["passes"]:
+        verdict = "inconclusive"
+    else:
+        verdict = "pass"
+    return {"verdict": verdict, "m": m, "precondition": rungs}
+
+
+# ------------------------------------------------------------------ P-D8, the constant rule's plant
+
+
+def pd8(exact_top, d_top, exact_below, d_below, classes_top, values_top, classes_below,
+        values_below, margins_top, margins_below):  # fmt: skip
+    """P-D8 (the lead's ruling 3): on D6's honest observables at the two rungs M reads, (d)'s value
+    at one constant pair moved one ulp up (np.nextafter toward +inf; σ's +0.0 becomes the smallest
+    subnormal), the exact replicas and every other value as run; once for each constant pair at
+    each rung. A planted pair is caught when judge_world fails the world and M's constant failures
+    are the honest judgement's plus that pair. P-D8 is caught when every planted pair that the
+    precondition lets M judge is caught, and at least one is judged."""
+    args = [exact_top, d_top, exact_below, d_below, classes_top, values_top, classes_below,
+            values_below, margins_top, margins_below]  # fmt: skip
+    honest = judge_world(*args)
+    unjudged = {"top": set(honest["precondition"]["top"]["unjudged"]),
+                "below": set(honest["precondition"]["below"]["unjudged"])}
+    rows = []
+    for label, index in (("top", 1), ("below", 3)):
+        classes = classes_top if label == "top" else classes_below
+        for key, row in classes.items():
+            for j, c in enumerate(row):
+                if c != CONSTANT:
+                    continue
+                if label == "below" and classes_top[key][j] != CONSTANT:
+                    continue  # M judges K - 1's constants only where the pair is constant at K
+                planted = {k: np.array(v, dtype=np.float64) for k, v in args[index].items()}
+                planted[key][j] = np.nextafter(planted[key][j], np.inf)
+                trial = list(args)
+                trial[index] = planted
+                result = judge_world(*trial)
+                name = f"{key}@{j}"
+                judged = name not in unjudged[label] and name not in unjudged["top"]
+                want = sorted(set(honest["m"]["constant_failures"]) | {name})
+                caught = (result["verdict"] == "fail"
+                          and sorted(result["m"]["constant_failures"]) == want)  # fmt: skip
+                rows.append({"rung": label, "pair": name, "judged": judged, "caught": caught})
+    judged_rows = [r for r in rows if r["judged"]]
+    return {"plant": "P-D8", "planted": len(rows), "judged": len(judged_rows),
+            "caught": bool(judged_rows) and all(r["caught"] for r in judged_rows),
+            "honest_verdict": honest["verdict"], "rows": rows}  # fmt: skip
+
+
+# ------------------------------------------------------------------ the linear-noise variance (§4.3)
+
+NOISE_GRID_S = {"D5": 0.1, "D6": 0.01}  # (d)'s observation grid for the variance's integration
+
+
+def _noise_model(spec):
+    """The world's drift, its Jacobian, the diffusion matrix and each vesicle's margin, on the core
+    state [pool (P), slots (K × V)] (a single lineage: the whole world, P), from the engine's own
+    Problem and Shape: each step's directions a+ = k_f exp(log_direction) and a- = a+ exp(ΔF),
+    as `Problem.flux` forms J = a+ (1 - e^ΔF)."""
+    import jax
+    import jax.numpy as jnp
+
+    from cells.models.assembly_lineages_v2 import lumen
+    from cells.models.assembly_lineages_v2 import rate_equations as re_
+
+    prob = re_.Problem(spec)
+    shape = re_.Shape(prob)
+    P, b = prob.P, shape.blocks
+    alive = np.asarray(shape.initial()[1], dtype=bool)
+    lay = prob.layout
+    active, kf = np.asarray(lay.step_active), np.asarray(lay.kf)
+    on = shape.vesicle_step if shape.population else active
+    jumps = {}
+    for k in (range(shape.K) if shape.population else (0,)):
+        nu = np.zeros((prob.R, P + b))
+        if shape.population:
+            nu[:, :P] = shape.nu_pool
+            nu[:, P + k * shape.V : P + (k + 1) * shape.V] = shape.nu_slot
+        else:
+            nu[:, :P] = prob.nu_finite
+        jumps[k] = nu * np.asarray(on, dtype=np.float64)[:, None]
+
+    def states(core):
+        if not shape.population:
+            return {0: core}
+        full = shape.full(core[:P], core[P:].reshape((shape.K, shape.V)))
+        return {k: full[k] for k in range(shape.K) if alive[k]}
+
+    def rhs(core):
+        y = jnp.concatenate((core, jnp.zeros(P + 2)))
+        return shape.rhs(y, jnp.asarray(alive))[: P + b]
+
+    def parts(core):
+        f, d = jnp.zeros(P + b), jnp.zeros((P + b, P + b))
+        for k, n in states(core).items():
+            d_f = jnp.asarray(prob.nu_finite) @ prob.potentials(n) - np.asarray(lay.step_work)
+            log_a = prob.log_direction(n, True)
+            a_plus = jnp.where(active, kf * jnp.exp(jnp.where(active, log_a, 0.0)), 0.0)
+            a_minus = a_plus * jnp.exp(jnp.where(active, d_f, 0.0))
+            nu = jnp.asarray(jumps[k])
+            f = f + nu.T @ (a_plus - a_minus)
+            d = d + (nu.T * (a_plus + a_minus)[None, :]) @ nu
+        return f, d
+
+    def margin(core, k):
+        n = states(core)[k]
+        log_osm, log_sph = lumen.log_branches(n @ prob.lumen_mask, n @ prob.quanta,
+                                              prob.lumen_c, jnp)  # fmt: skip
+        return log_sph - log_osm
+
+    vesicles = [k for k in (range(shape.K) if shape.population else (0,)) if alive[k]]
+    return SimpleNamespace(
+        prob=prob, shape=shape, P=P, rhs=jax.jit(rhs), jacobian=jax.jit(jax.jacfwd(rhs)),
+        parts=jax.jit(parts), vesicles=vesicles,
+        grad={k: jax.jit(jax.grad(lambda c, k=k: margin(c, k))) for k in vesicles},
+        margin={k: jax.jit(lambda c, k=k: margin(c, k)) for k in vesicles})  # fmt: skip
+
+
+def _van_loan(sigma, a, d, h):
+    """Σ after h under dΣ/dt = AΣ + ΣAᵀ + D with A and D constant (Van Loan, 1978)."""
+    from scipy.linalg import expm
+
+    n = a.shape[0]
+    big = np.zeros((2 * n, 2 * n))
+    big[:n, :n], big[:n, n:], big[n:, n:] = -a, d, a.T
+    e = expm(big * h)
+    f = e[n:, n:].T
+    return f @ sigma @ f.T + f @ e[:n, n:]
+
+
+def linear_noise(name, rung, definition=None):
+    """The linear-noise approximation (van Kampen) of the exact process about (d)'s own trajectory:
+    {prefix: [{"t", "margin", "sd"}]} for each vesicle at the registered times, with
+    `drift_check` (the directions' drift against the engine's right-hand side at a moved state).
+
+    (d) runs alone on its registered definition (or `definition`) with a fine observation grid
+    added. dΣ/dt = AΣ + ΣAᵀ + D from Σ = 0 at the fixed founder: A the drift's Jacobian, and
+    D = Σ over every step's two directions of (a+ + a-) ν νᵀ, both at (d)'s state, each grid
+    interval solved exactly with A and D at the mean of its two ends. At D6's shear (d) gives the
+    followed daughter half the vesicle; the exact split (division.py) cuts a one-species membrane
+    at equal areas (rule 9: variance at most 1/4) and sends each lumen molecule to it with p = 1/2
+    (rule 10: variance N_L/4), so Σ → SΣSᵀ + diag(split), S halving the vesicle's places. The SD
+    is (gᵀΣg)^½, g the margin's gradient."""
+    import jax.numpy as jnp
+
+    from cells.definitions.specs import parse_spec
+    from cells.models.assembly_lineages_v2 import runner
+
+    d = lq.definition(name, rung, 1, True) if definition is None else json.loads(
+        json.dumps(definition))
+    times = [float(t) for t in d["experiment"]["observation_times_s"]]
+    horizon = float(d["experiment"]["time_horizon_s"])
+    h = NOISE_GRID_S[name]
+    grid = {round(h * i, 9) for i in range(1, int(round(horizon / h)) + 1)} | set(times)
+    if name == "D6":
+        grid.discard(float(lq.D6["shear_s"]))
+    d["experiment"]["observation_times_s"] = sorted(grid)
+    spec = parse_spec(d)
+    m = _noise_model(spec)
+    run = runner.run(spec)
+    rows = run.rows
+    kinds = [str(k) for k in np.asarray(rows["row_kind"])]
+    t = np.asarray(rows["row_time_s"], dtype=np.float64)
+
+    def padded(a):
+        a = np.asarray(a, dtype=np.float64)
+        out = np.zeros(a.shape[:-1] + (m.P,))
+        out[..., : a.shape[-1]] = a
+        return out
+
+    if m.shape.population:
+        slots = padded(rows["slot_counts"])[:, :, m.shape.places]
+        core = np.concatenate((padded(rows["pool_counts"]), slots.reshape(len(t), -1)), axis=1)
+    else:
+        core = padded(rows["counts"])
+    moved = core[0].copy()
+    moved[moved > 0] *= 1.0 + 0.003 * np.arange(1, int(np.sum(moved > 0)) + 1)
+    f_moved, _ = m.parts(jnp.asarray(moved))
+    rhs_moved = np.asarray(m.rhs(jnp.asarray(moved)))
+    drift_check = float(np.max(np.abs(np.asarray(f_moved) - rhs_moved)) / np.max(np.abs(rhs_moved)))
+
+    def at(i):
+        return np.asarray(m.jacobian(jnp.asarray(core[i]))), np.asarray(m.parts(
+            jnp.asarray(core[i]))[1])
+
+    n = core.shape[1]
+    sigma = np.zeros((n, n))
+    prefixes = {k: ("" if not m.shape.population else f"slot{k}:") for k in m.vesicles}
+    out = {prefixes[k]: [] for k in m.vesicles}
+    prev = 0
+    a_prev, d_prev = at(0)
+    for i in range(1, len(t)):
+        if kinds[i] == "shear":
+            if t[i] > t[prev]:
+                sigma = _van_loan(sigma, a_prev, d_prev, t[i] - t[prev])
+            prob = m.prob
+            halve = np.where(prob.vesicle, 0.5, 1.0)
+            split = np.zeros(n)
+            lumen_places = np.flatnonzero(prob.vesicle & (prob.lumen_mask > 0))
+            split[lumen_places] = core[prev][lumen_places] / 4.0
+            split[np.flatnonzero(prob.vesicle & (prob.quanta > 0))] = 0.25
+            sigma = halve[:, None] * sigma * halve[None, :] + np.diag(split)
+            prev = i
+            a_prev, d_prev = at(i)
+            continue
+        if kinds[i] not in ("observed", "end"):
+            continue
+        a_i, d_i = at(i)
+        sigma = _van_loan(sigma, 0.5 * (a_prev + a_i), 0.5 * (d_prev + d_i), t[i] - t[prev])
+        sigma = 0.5 * (sigma + sigma.T)
+        prev, a_prev, d_prev = i, a_i, d_i
+        if kinds[i] == "observed" and float(t[i]) in times:
+            for k in m.vesicles:
+                g = np.asarray(m.grad[k](jnp.asarray(core[i])))
+                out[prefixes[k]].append({
+                    "t": float(t[i]), "margin": float(m.margin[k](jnp.asarray(core[i]))),
+                    "sd": math.sqrt(max(float(g @ sigma @ g), 0.0))})  # fmt: skip
+    return {"status": run.status, "drift_check": drift_check, "vesicles": out}
+
+
+def noise_table():
+    """For D5 and D6 at every rung, each vesicle with constant pairs (D5's slot 1, D6's vesicle) at
+    its constant times: (d)'s margin, the linear-noise SD, z = margin/SD and the Gaussian chance
+    that one replica is tense there; at D6 after the shear also the lumen split's exact binomial
+    tail (it dominates the SD there). Per world and rung, the chance that any of its M replicas is
+    tense at any constant time, bounded by the union over times: 1 - (1 - Σ_t p_t)^M."""
+    from scipy.stats import binom, norm
+
+    margins = _registered_margins()
+    out = {}
+    for name in ("D5", "D6"):
+        for rung in lq.RUNGS["vesicle"]:
+            replicas = lq.REPLICAS["vesicle"]
+            classes, _ = classify(name, rung, floppy_from_margins(name, rung, margins))
+            world = _parse(name, rung, True).model.world
+            is_lumen = np.asarray([p.phase == "lumen" for p in world.places], dtype=np.float64)
+            noise = linear_noise(name, rung)
+            for prefix, rows in noise["vesicles"].items():
+                times = [j for j, c in enumerate(classes.get(f"{prefix}sigma_N_per_m", []))
+                         if c == CONSTANT]  # fmt: skip
+                if not times:
+                    continue
+                per_time = []
+                for j in times:
+                    r = rows[j]
+                    z = r["margin"] / r["sd"] if r["sd"] > 0 else math.inf
+                    row = {"t": r["t"], "margin": r["margin"], "sd": r["sd"], "z": z,
+                           "p_tense": float(norm.sf(z))}  # fmt: skip
+                    if name == "D6" and r["t"] > lq.D6["shear_s"]:
+                        # the parent's lumen at the shear is the founder's: no step moves it
+                        n_l = int(round(float(np.asarray(world.founder) @ is_lumen)))
+                        bound = (n_l / 2.0) * math.exp(r["margin"])
+                        row["p_tense_lumen_binomial"] = float(binom.sf(math.floor(bound), n_l, 0.5))
+                    per_time.append(row)
+                union = min(1.0, math.fsum(p["p_tense"] for p in per_time))
+                out[f"{name}_{float(rung)}:{prefix or 'vesicle'}"] = {
+                    "status": noise["status"], "drift_check": noise["drift_check"],
+                    "constant_times": per_time,
+                    "smallest_z": min(p["z"] for p in per_time),
+                    "p_any_replica_tense": -math.expm1(replicas * math.log1p(-union)),
+                    "m_reads": rung in lq.RUNGS["vesicle"][-2:]}  # fmt: skip
+    return out
 
 
 # ------------------------------------------------------------------ the registered numbers (§4.3)
@@ -440,8 +787,17 @@ def _m_checks(rng):
     a, d = _made_up(rng, 0.7316, 1e-3, ties=range(TIMES))
     b, db = _made_up(rng, 0.6113, 2e-3, ties=range(TIMES))
     m = criterion_m({"V": a}, {"V": d}, {"V": b}, {"V": db}, spread_all, none, spread_all, none)
-    label = "identical replicas at a spread pair still face the test (the artifact, unclassified)"
-    out[label] = {"z": m["largest_z"], "ok": not m["passes"]}
+    old = lq.criterion_m(lq.mean_error({"V": a}, {"V": d}), lq.mean_error({"V": b}, {"V": db}))
+    off = a.copy()
+    off[:, 3] = np.nextafter(d[3], np.inf)
+    m_off = criterion_m({"V": off}, {"V": d}, {"V": b}, {"V": db}, spread_all, none, spread_all,
+                        none)  # fmt: skip
+    label = ("identical non-integer replicas at a spread pair are judged exactly: at (d)'s bits "
+             "-inf, all one ulp off +inf (the registered mean_error's residue gave a z)")
+    out[label] = {"z": m["largest_z"], "z_one_ulp_off": m_off["largest_z"],
+                  "registered_z": old["largest_z"],
+                  "ok": m["passes"] and m["largest_z"] == -np.inf and m_off["fails"]
+                  and m_off["largest_z"] == np.inf and old["largest_z"] > 6.0}  # fmt: skip
 
     a, d = _made_up(rng, 3.2, 1e-2)
     b, db = _made_up(rng, 3.1, 2e-2)
@@ -456,6 +812,104 @@ def _m_checks(rng):
     except ValueError:
         refused = True
     out["an observable without a class is refused"] = {"ok": refused}
+    return out
+
+
+def _zero_se_checks():
+    """The zero-SE path on the registered constants: every constant pair of D5 and D6 at the rungs
+    M reads, as 128 identical replicas at the registered value with (d) at it, classed spread at
+    both rungs. `moments` gives SE 0 and e 0 at every one, so the excess is -inf; the registered
+    mean_error leaves its rounding residue at some of them (counted, with their z)."""
+    table = json.loads(_registered_path().read_text())["classification"]
+    pairs, residue, worst = 0, 0, -np.inf
+    exact_path = True
+    for name in ("D5", "D6"):
+        for rung in lq.RUNGS["vesicle"][-2:]:
+            for _, rows in table[f"{name}_{float(rung)}"]["constant"].items():
+                for _, value in rows:
+                    column = np.full((REPLICAS, 1), np.float64(value))
+                    d = np.asarray([np.float64(value)])
+                    e, se = moments({"x": column}, {"x": d})["x"]
+                    exact_path &= bool(e[0] == 0.0 and se[0] == 0.0)
+                    exact_path &= bool(spread_excess(e, se, e, se)[0] == -np.inf)
+                    e_r, se_r = lq.mean_error({"x": column}, {"x": d})["x"]
+                    if se_r[0] > 0:
+                        residue += 1
+                        worst = max(worst, float(spread_excess(e_r, se_r, np.zeros(1),
+                                                               np.zeros(1))[0]))  # fmt: skip
+                    pairs += 1
+    return {"the zero-SE path on the registered constants: identical replicas at (d)'s bits are an "
+            "exact match": {"pairs": pairs, "registered_mean_error_residues": residue,
+                            "registered_largest_z": worst, "ok": exact_path and pairs == 54}}
+
+
+def _world_checks(rng):
+    """judge_world and P-D8 on made-up columns: a constant V before an operator, a constant σ and
+    a spread count, at two rungs, with invented margins."""
+    out = {}
+    v_top, v_below = 2.7488312e-19, 3.4360390e-20
+    classes = {"V_L": [CONSTANT] * 3 + [SPREAD] * 5, "sigma_N_per_m": [CONSTANT] * TIMES,
+               "L@pool": [SPREAD] * TIMES}  # fmt: skip
+
+    def rung(v, spread_v, count):
+        a_v, d_v = _made_up(rng, v, spread_v, ties=(0, 1, 2))
+        a_v[:, :3], d_v[:3] = v, v
+        a_n, d_n = _made_up(rng, count, 1e-2)
+        exact = {"V_L": a_v, "sigma_N_per_m": np.zeros((REPLICAS, TIMES)), "L@pool": a_n}
+        d = {"V_L": d_v, "sigma_N_per_m": np.zeros(TIMES), "L@pool": d_n}
+        values = {"V_L": [v] * 3 + [None] * 5, "sigma_N_per_m": [0.0] * TIMES,
+                  "L@pool": [None] * TIMES}  # fmt: skip
+        return exact, d, values
+
+    e_top, d_top, val_top = rung(v_top, 1e-3, 8378.0)
+    e_below, d_below, val_below = rung(v_below, 2e-3, 2094.0)
+    floppy = {"": [0.51] * 3 + [0.164] * 5}
+
+    def margins(tense_run=None, at=6):
+        runs = [{"": list(floppy[""])} for _ in range(REPLICAS + 1)]
+        if tense_run is not None:
+            runs[tense_run][""][at] = -0.004
+        return runs
+
+    def world(e_t=None, d_t=None, m_t=None, m_b=None):
+        return judge_world(e_top if e_t is None else e_t, d_top if d_t is None else d_t, e_below,
+                           d_below, classes, val_top, classes, val_below,
+                           margins() if m_t is None else m_t,
+                           margins() if m_b is None else m_b)  # fmt: skip
+
+    honest = world()
+    out["the world's verdict: every run floppy, every constant exact: pass"] = {
+        "verdict": honest["verdict"], "ok": honest["verdict"] == "pass"}
+    tense = world(m_t=margins(17))
+    physical = {k: v.copy() for k, v in e_top.items()}
+    physical["sigma_N_per_m"][17, 6] = 1.3e-4  # the tense replica's own tension, as it would be
+    tense_physical = world(e_t=physical, m_t=margins(17))
+    d_tense = world(m_t=margins(REPLICAS))
+    label = "a tense replica gives inconclusive, never pass (its σ moved or not; (d) tense alike)"
+    out[label] = {
+        "verdicts": [tense["verdict"], tense_physical["verdict"], d_tense["verdict"]],
+        "tense": tense["precondition"]["top"]["tense"],
+        "ok": [tense["verdict"], tense_physical["verdict"], d_tense["verdict"]]
+        == ["inconclusive"] * 3
+        and tense["precondition"]["top"]["tense"] == {"exact_replicas": 1, "d": False,
+                                                      "by_vesicle_time": {"6": 1}}
+        and d_tense["precondition"]["top"]["tense"]["d"]
+        and tense["precondition"]["top"]["unjudged"] == ["sigma_N_per_m@6"]}  # fmt: skip
+    wrong = {k: v.copy() for k, v in e_top.items()}
+    wrong["V_L"][40, 1] = np.nextafter(v_top, np.inf)
+    both = world(e_t=wrong, m_t=margins(17))
+    out["a floppy replica one ulp off fails the world, a tense one elsewhere notwithstanding"] = {
+        "verdict": both["verdict"], "failures": both["m"]["constant_failures"],
+        "ok": both["verdict"] == "fail" and both["m"]["constant_failures"] == ["V_L@1"]}
+    plant = pd8(e_top, d_top, e_below, d_below, classes, val_top, classes, val_below, margins(),
+                margins())  # fmt: skip
+    plant_tense = pd8(e_top, d_top, e_below, d_below, classes, val_top, classes, val_below,
+                      margins(17), margins())  # fmt: skip
+    out["P-D8 on made-up columns: every planted constant pair caught; a tense time's not judged"] = {
+        "planted": plant["planted"], "judged": plant["judged"],
+        "judged_with_a_tense_replica": plant_tense["judged"],
+        "ok": plant["caught"] and plant["planted"] == 22 and plant["judged"] == 22
+        and plant_tense["caught"] and plant_tense["judged"] == 20}  # fmt: skip
     return out
 
 
@@ -591,6 +1045,8 @@ def check(margins_path=None):
     ok, overlaps = seeds_disjoint()
     out = {"the seeds are disjoint from every earlier range": {"overlaps": overlaps, "ok": ok}}
     out |= _m_checks(rng)
+    out |= _zero_se_checks()
+    out |= _world_checks(rng)
     out |= _classification_checks(margins)
     out |= _reader_checks(rng, margins)
     out |= _parse_checks()
@@ -599,12 +1055,15 @@ def check(margins_path=None):
     return out
 
 
-def _registered_margins(path=None):
+def _registered_path():
     from pathlib import Path
 
+    return Path(__file__).with_name("protocol_d_v2.json")
+
+
+def _registered_margins(path=None):
     if path is None:
-        path = Path(__file__).with_name("protocol_d_v2.json")
-        return json.loads(Path(path).read_text())["d_margins"]
+        return json.loads(_registered_path().read_text())["d_margins"]
     return margins_from_probe(path)
 
 
@@ -620,9 +1079,19 @@ COST = {  # the document's §9, measured from the first check of the same worlds
 }  # fmt: skip
 
 
-def register(margins_path, out_path, scale_path=None):
-    """protocol_d_v2.json: the seeds, the earlier ranges, (d)'s margins and the model's
-    fluctuation scale at them, the classification table and the cost (§4.3 and §9)."""
+PLANTS = {  # the document's §8: the plant this registration adds, with its registered effect
+    "P-D8": {"world": "D6", "rungs": [50.0, 100.0], "where": "(d) alone, on the honest run's "
+             "observables: one constant pair's value one ulp up, once per constant pair and rung",
+             "criterion": "M's constant rule (judge_world)",
+             "registered_effect": "each judged planted pair fails the world, M's constant "
+             "failures the honest judgement's plus that pair: 22 single-pair plants (11 pairs "
+             "at each rung), none excused", "cost": "none: it reads the honest D6 runs"},
+}  # fmt: skip
+
+
+def register(margins_path, out_path, noise_path=None):
+    """protocol_d_v2.json: the seeds, the earlier ranges, (d)'s margins and the linear-noise table
+    at them, the classification table, the plant it adds and the cost (§3, §4.3, §8 and §9)."""
     margins = margins_from_probe(margins_path)
     doc = {
         "kind": "cells.ol6.protocol_d@2",
@@ -633,9 +1102,10 @@ def register(margins_path, out_path, scale_path=None):
                   "rule": "seeds base .. base + M - 1, environment 0, lineage 0, branch 0",
                   "earlier": [list(r) for r in EARLIER_SEEDS]},
         "d_margins": margins,
-        "floppy_scale_estimate": json.loads(open(scale_path).read()) if scale_path else None,
+        "linear_noise": json.loads(open(noise_path).read()) if noise_path else None,
         "classification": classification_table(margins),
         "derived_pairs": [],
+        "plants": PLANTS,
         "cost": COST,
     }  # fmt: skip
     with open(out_path, "w") as handle:
@@ -649,12 +1119,22 @@ def main(argv):
         results = check(argv[1] if len(argv) > 1 else None)
         print(json.dumps(results, indent=1, default=str))
         return 0 if all(r["ok"] for r in results.values()) else 1
+    if argv[:2] == ["noise", "--out"] and len(argv) == 3:
+        table = noise_table()
+        with open(argv[2], "w") as handle:
+            json.dump(table, handle, indent=1)
+            handle.write("\n")
+        for key, row in table.items():
+            print(key, "smallest z", round(row["smallest_z"], 2), "P(any replica tense)",
+                  f"{row['p_any_replica_tense']:.2e}", "drift check", f"{row['drift_check']:.1e}")
+        return 0
     registering = argv[:1] == ["register"] and len(argv) in (5, 7)
     if registering and argv[1] == "--margins" and argv[3] == "--out":
-        register(argv[2], argv[4], argv[6] if len(argv) == 7 and argv[5] == "--scale" else None)
+        register(argv[2], argv[4], argv[6] if len(argv) == 7 and argv[5] == "--noise" else None)
         return 0
     raise SystemExit("usage: python -m validation.assembly_lineages_v2.protocol_d_v2 check "
-                     "[MARGINS] | register --margins FILE --out FILE [--scale FILE]")
+                     "[MARGINS] | noise --out FILE | register --margins FILE --out FILE "
+                     "[--noise FILE]")
 
 
 if __name__ == "__main__":
