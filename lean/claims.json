@@ -24,6 +24,34 @@
     "cells.rate_equations@1": "molecular-assembly"
   },
   "comparisons": {
+    "fr51-weighted-channel-block-cpu": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3",
+        "resolved_pump_composite@1"
+      ],
+      "laws": [
+        "open_channel_block_weighted_modes@1"
+      ],
+      "engine_revision": "f8c6c32665c1ba8c0bcd8b687e4a7f961dc1cc5e",
+      "record_revision": "fef8a0d868ac22d0a596f2fd2743ce31d7c12567",
+      "sources": {
+        "Mode domain and common steepness sign": "src/cells/definitions/surface_pump_v3_spec.py#L482-L531",
+        "Native voltage reference, fractions and slope": "src/cells/laws/channels/open_channel_block.py#L69-L107",
+        "Native stage values": "src/cells/models/surface_pump_v3.py#L686-L716",
+        "Blocked current voltage term": "src/cells/models/surface_pump_v3.py#L745-L765",
+        "Compiled clamp over voltage commands": "validation/fr51/engine.py#L194-L200",
+        "Synthetic cases and fixed voltage grid": "validation/fr51/references/spec/cases.json",
+        "Independent decimal derivatives and mode factors": "validation/fr51/closed_forms.py#L52-L105",
+        "Compiled zero-blocker control": "tests/unit/test_fr51_compiled_ends.py#L26",
+        "Compiled strong-block control": "tests/unit/test_fr51_blocked_run.py#L149"
+      },
+      "record_inputs": {
+        "Weighted blocker bounds": "lean/CellsProofs/Transport/OpenChannelBlock.lean"
+      },
+      "driver": "lean/checks/weighted_channel_block.py",
+      "record": "lean/PROGRESS.md#fr51-weighted-block"
+    },
     "fr44-label-wash-replay": {
       "kind": "engine",
       "models": [
@@ -4696,6 +4724,110 @@
     }
   },
   "claims": [
+    {
+      "id": "fr51-weighted-channel-block",
+      "category": "channels-and-junctions",
+      "title": "An equilibrium channel blocker bounds the free fraction and its voltage slope",
+      "statement": "The weighted fraction of unblocked channels lies between zero and one. Its absolute voltage derivative equals the native slope bound when the modes share a blocker side and charge sign. The product of this fraction and the free current obeys the native stage bound whenever the free current has the declared conductance bound.",
+      "assumptions": [
+        "Each mode has a positive dissociation constant at zero reference voltage. The blocker concentration is nonnegative. The finite mode weights are nonnegative and have positive total. Cells normalizes by the actual weight sum.",
+        "The voltage derivative holds concentration, temperature, availability and gate state fixed. The reference is membrane voltage or membrane voltage minus a fixed reversal potential. The native declaration assigns a single blocker side and charge sign to all modes.",
+        "A measured current ratio represents pore block only to the extent that changes in gating, driving force and the recording protocol are accounted for. Quantitative comparisons require a declared preparation, dose and voltage range."
+      ],
+      "uses": [
+        "single-site-binding",
+        "channel-ion-transfer"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.open_channel_block_weighted_modes@1"
+        ],
+        "theorems": {
+          "CellsProofs.Transport.OpenChannelBlock.mode_hasDerivAt": "lean/CellsProofs/Transport/OpenChannelBlock.lean",
+          "CellsProofs.Transport.OpenChannelBlock.unblocked_mem_unit": "lean/CellsProofs/Transport/OpenChannelBlock.lean",
+          "CellsProofs.Transport.OpenChannelBlock.zero_blocker": "lean/CellsProofs/Transport/OpenChannelBlock.lean",
+          "CellsProofs.Transport.OpenChannelBlock.unblocked_hasDerivAt": "lean/CellsProofs/Transport/OpenChannelBlock.lean",
+          "CellsProofs.Transport.OpenChannelBlock.abs_deriv_le_slopeBound": "lean/CellsProofs/Transport/OpenChannelBlock.lean",
+          "CellsProofs.Transport.OpenChannelBlock.abs_deriv_eq_slopeBound_of_common_sign": "lean/CellsProofs/Transport/OpenChannelBlock.lean",
+          "CellsProofs.Transport.OpenChannelBlock.current_slope_bound": "lean/CellsProofs/Transport/OpenChannelBlock.lean"
+        },
+        "sources": {
+          "Mathlib real exponential derivative, imported for voltage-dependent dissociation": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/ExpDeriv.lean#L248-L249",
+          "Mathlib finite sum derivative, imported for the mode mixture": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/Deriv/Add.lean#L188-L192",
+          "Mathlib finite-sum triangle inequality, specialized to the blocker slope": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/Order/BigOperators/Group/Finset.lean#L234-L239",
+          "Mathlib product derivative, imported for the full current bound": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/Deriv/Mul.lean#L200-L204",
+          "Cells single-site occupancy, imported and specialized locally": "https://github.com/Eidosoma/Cells/blob/fef8a0d868ac22d0a596f2fd2743ce31d7c12567/lean/CellsProofs/Chemistry/SingleSiteBinding.lean#L17"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "fr51-weighted-channel-block-cpu"
+        ],
+        "result": "The compiled CPU float64 clamp passed 6,543 in-range voltage checks across all 18 synthetic blocker cases on f8c6c326. The largest relative errors were 7.77 × 10⁻¹⁵ for the free fraction and 1.13 × 10⁻¹⁴ for the absolute blocker slope against the decimal reference. The largest full-current derivative was 0.989 of its bound or less. A four-mode automatic-differentiation control agreed to 1.90 × 10⁻¹³. All 15 native regression controls passed."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Change with voltage in the fraction of sodium current or permeability retained under external acidification. The nodal studies support the direction. The ventricular recordings cover a different voltage range. The exact derivative and transfer of mode parameters remain open.",
+        "unit": "relative sodium current or permeability at fixed voltage",
+        "evidence": [
+          {
+            "dataset_id": "woodhull1973-nodal-protons",
+            "manifest": "lean/checks/data/nodal_proton_block.json",
+            "citation": "Woodhull (1973), Fig. 4A",
+            "doi": "10.1085/jgp.61.6.687",
+            "locator": "Fig. 4A and the summary, external pH 7 and 5.",
+            "context": "Voltage-clamped frog nodes of Ranvier. The study estimated sodium permeability from peak current.",
+            "role": "descriptive",
+            "uncertainty": "The two reductions are rounded examples. No pointwise uncertainty accompanies them in the summary. The +180 mV command is outside the native channel range.",
+            "assessment": "Bath acidification reduced estimated permeability by about 60% at +20 mV and 20% at +180 mV. Block was relieved by stronger depolarization.",
+            "report": "lean/PROGRESS.md#fr51-weighted-block"
+          },
+          {
+            "dataset_id": "mozhayeva1984-nodal-protons",
+            "manifest": "lean/checks/data/nodal_proton_block.json",
+            "citation": "Mozhayeva, Naumov and Nosyreva (1984)",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/6087908/",
+            "locator": "Primary abstract, instantaneous nodal sodium-current measurements.",
+            "context": "A separate group voltage-clamped nodal membranes at normal external pH and at pH 4.8–4.9. Instantaneous currents addressed open-channel block during acidification.",
+            "role": "descriptive",
+            "uncertainty": "The abstract reports the direction. Pointwise responses, uncertainties and a common voltage interval were unavailable for this comparison.",
+            "assessment": "Proton block decreased as membrane voltage became more positive. A shared numerical slope has yet to be tested.",
+            "report": "lean/PROGRESS.md#fr51-weighted-block"
+          },
+          {
+            "dataset_id": "zhang1991-cardiac-protons",
+            "manifest": "lean/checks/data/nodal_proton_block.json",
+            "citation": "Zhang and Siegelbaum (1991), Fig. 3B",
+            "doi": "10.1085/jgp.98.6.1065",
+            "locator": "Fig. 3B and the single-channel amplitude analysis over −70 to −20 mV.",
+            "context": "Native guinea-pig ventricular sodium channels, with extracellular pH 5.5 compared with 7.4. This assay measured unitary current amplitude.",
+            "role": "descriptive",
+            "uncertainty": "This tissue, command interval and unitary-current readout differ from the nodal experiments. A zero slope cannot be inferred from an unresolved voltage effect.",
+            "assessment": "Acid reduced unitary amplitude. The study found no significant voltage dependence of that reduction over its tested range, limiting extrapolation of the nodal result.",
+            "report": "lean/PROGRESS.md#fr51-weighted-block"
+          }
+        ],
+        "pairs": [
+          {
+            "id": "nodal-sodium-proton-block-relief",
+            "assumption": "Depolarization relieves extracellular proton block of nodal sodium current.",
+            "datasets": [
+              "woodhull1973-nodal-protons",
+              "mozhayeva1984-nodal-protons"
+            ],
+            "outcome": "both_support",
+            "independence": "Woodhull’s original study motivated the model. The Mozhayeva group collected independent nodal recordings and used instantaneous currents to address gating. The comparison is the direction of voltage dependence.",
+            "comparison": "Woodhull found about 40% versus 80% permeability retained at +20 versus +180 mV. The independent instantaneous-current study also found less block at more positive voltage. In ventricular myocytes, a separate unitary-current study resolved no slope over −70 to −20 mV.",
+            "replay": {
+              "status": "represented",
+              "assessment": "An extracellular positive blocker with positive electrical distance gives the observed direction at fixed dose. The synthetic engine comparison verifies the formula. A matched nodal current replay and common fitted slope remain open."
+            }
+          }
+        ]
+      }
+    },
     {
       "id": "fr44-label-wash",
       "category": "tissue-and-conservation",
@@ -10921,7 +11053,7 @@
             "comparison": "Two fits to excised-patch data give a steep apparent valence above four. The fitted high-affinity Kd slope gives 5.33–5.37. The fitted steep component of relative current gives 5.0 ± 0.2 (SEM, seven patches).",
             "replay": {
               "status": "partial",
-              "assessment": "At −20, −10, +10 and +20 mV, halving prescribed Kir2.1 availability in the native clamp gave the same current ratio of 0.5. The conversion rules out zδ≤4 for the measured steep component. The proposed block law can be tested against these slopes. Displaced ion number remains unmeasured. [FR-51](https://github.com/Eidosoma/Cells/blob/bfbaa92b390a52d17100875dbcd9d40202432f26/docs/FEATURE_REQUESTS.md#L2171)"
+              "assessment": "Halving prescribed Kir2.1 availability in the native clamp gave a current ratio of 0.5 at all four voltages. The measured steep components exceed the maximum of four from spermine charge times electrical distance. The landed FR-51 declaration admits these effective valences. Their model fits leave the number of displaced ions unmeasured. [FR-51 on main](https://github.com/Eidosoma/Cells/blob/f8c6c32665c1ba8c0bcd8b687e4a7f961dc1cc5e/src/cells/laws/channels/open_channel_block.py#L7-L17)"
             }
           },
           {
