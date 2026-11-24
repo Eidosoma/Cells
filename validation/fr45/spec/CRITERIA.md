@@ -1,6 +1,12 @@
 # FR-45's criteria, bands and plants
 
 These are fixed before any engine run (`docs/FR45_SITE_COMPETITION_PROTOCOL.md`; D327).
+**Amended 24 November 2026, before the tag** (`AMENDMENT-2026-11-24.md`):
+- C3's worlds are named, and W4 leaves C3;
+- C3b's free energy is the references' own;
+- C3c covers the wash's interval;
+- each criterion's worlds and amounts are registered there (its §3);
+- no band is changed.
 - "The reference" is the references agent's file (SPEC.md §5).
 - "The engine" is `site_occupancy@1` with FR-45's site sets, beside `scheduled_compartment_wash@1`
   in W2, run by `resolved_pump_composite@1` over `resolved_pump_tissue@3`.
@@ -50,9 +56,9 @@ No pair is excluded after the run, and no class changes after it.
 | C1 | Every free amount, R_s and B_b at every observation time (W1, W2, W3, W6), against R-ode | band | \|y_e − y_ref\| ≤ 10⁻⁶·s_node |
 | C2a | The state at the horizon (W1, W2, W3, W6) against R-eq's root | band | \|x_e(T) − x_eq\| ≤ 10⁻⁹·s_node. A band, not a derived pair: the engine relaxes to the equilibrium of its own totals, which carry C4a's and C5's rounding, and the trajectory's decayed error remains. C2b is the derived check of the fixed point |
 | C2b | W1eq's state at every observation time against its start, the root | derived | \|x_e(t) − x_root\| ≤ (2 + 3·k_t·h·L)·4ε·max(\|x_root\|, \|a_x\|), with h = dt/2 and L the largest load at the start. The derivation: the declared start rounds once (2). Each step's three stages evaluate rates whose rounding is a few ε of the largest one-way flux, so a step moves a pool by at most about 3·h·L·ε·x, with no credit for the contraction |
-| C3a | The engine's heat at each node over each interval between observation times (none across W2's wash), against R-dG | band | \|H_e − H_ref\| ≤ B_H, with B_H = 2·Σ_x (\|μ°_x\| + RT·(\|ln(max(x, δ)/x₀)\| + 1))·δ, + 16ε·E. The sum runs over the node's pools and sites at both ends, with δ = 10⁻⁶·s_node, C1's band. x₀ is V·1 mM for a pool and S for a site, and μ° is 0 for pools and free sites. max(x, δ) keeps the bound finite where an amount starts at zero. That is C1's band carried through G's derivatives |
-| C3b | The same heats, against −ΔG of the engine's own saved states (§1.3's formula, on the judge's side) | derived | ≤ 16ε·k·E, with k the interval's steps |
-| C3c | The sign: each node's cumulative heat never falls | derived | By more than 16ε·E between consecutive rows |
+| C3a | The engine's heat at each node over each interval between observation times from t = 0 (none across W2's wash), against R-dG; W1, W2, W3 and W6 (amended 24 November) | band | \|H_e − H_ref\| ≤ B_H, with B_H = 2·Σ_x (\|μ°_x\| + RT·(\|ln(max(x, δ)/x₀)\| + 1))·δ, + 16ε·E. The sum runs over the node's pools and sites at both ends, with δ = 10⁻⁶·s_node, C1's band. x₀ is V·1 mM for a pool and S for a site, and μ° is 0 for pools and free sites. max(x, δ) keeps the bound finite where an amount starts at zero. That is C1's band carried through G's derivatives |
+| C3b | The same heats, against −ΔG of the engine's own saved states, with SPEC.md §1.3's G computed by the references' own function, not a judge-side copy (amended 24 November) | derived | ≤ 16ε·k·E, with k the interval's steps |
+| C3c | The sign: each node's cumulative site heat never falls, over every interval, the wash's included; W1, W2, W3 and W6 (amended 24 November) | derived | By more than 16ε·E between consecutive rows |
 | C4a | Each ligand's books in W2, at every row: free + bound + collected − supplied | derived | Against the declared total N_l, within 16ε·(k_t + 1)·M_l, with M_l the row's free + bound + collected + supplied |
 | C4b | W2's wash alone (its event map in NumPy and compiled, on the engine's saved state at 5.0 s): each free amount, and the sample and supply records | derived | Free amounts against (1 − f)·n + f·V·c_buf, within 4ε·(\|a_n\| + \|n\| + f·V·c_buf). Records against f·n and f·V·c_buf, within 2ε of each |
 | C4c | W2's removed and supplied amounts against the reference's | band | Removed within f·10⁻⁶·s_node; supplied as C4b |

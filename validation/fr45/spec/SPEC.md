@@ -238,6 +238,12 @@ W3's inputs, with observation times 0.1, 0.2, 0.5, 1.0 and 2.0 s and a horizon o
 
 ### 3.2 R-ode: the trajectories and each ligand's balance
 
+- **Amended 24 November 2026 (AMENDMENT-2026-11-24.md, answers 2 and 3):**
+  - `value` is the 50-digit Taylor solution, written with `repr`.
+  - At every reported pair it must agree with DOP853 at rtol 10⁻¹³ within `tolerance_gap` + 10⁻¹²
+    of its scale. Otherwise the world is resized before the tag.
+  - An amount that no law moves (a ligand's free amount at a node that no population binds it
+    from) is left out of the trajectory and of every criterion.
 - **Integrate §1.2** for W1, W1eq, W1p, W2 (with §1.4's map at 4.0 s), W3, W4 and W6, at two
   tolerances (rtol 10⁻¹² and 10⁻¹³, absolute tolerance scaled to each amount).
 - **Report at every observation time:** every free amount, every R_s and every B_b, with the gap
@@ -311,6 +317,13 @@ the per-population rule.
     where it applies};
   - `"trajectory"`: [{observable, time_s, value, tolerance_gap}, ...]. The observables are named
     `n:<ligand>@<node>`, `R:<set>` and `B:<population>`;
+  - **Amended 24 November 2026 (answer 12):**
+    - `"balances"` is {ligands: [...], sets: [...]};
+    - `"heats"` is {intervals: [...], G: [...]};
+    - `"spread"` is "none";
+    - interval pairs carry `start_s` and `end_s`.
+  - **The references also expose one function, G of a node's amounts per world (SPEC.md §1.3),**
+    for the judge's C3b on the engine's saved states (the amendment's §2.2).
   - `"balances"`: [{ligand, time_s, total}, ...], [{set, time_s, sites}, ...]; for W2, `"wash"`:
     {ligand: {removed, supplied}};
   - `"heats"`: [{node, start_s, end_s, heat, bound}, ...] and [{node, time_s, G}, ...];
