@@ -2882,6 +2882,41 @@
       "driver": "lean/checks/bath_schedule.py",
       "record": "lean/PROGRESS.md#bath-recipe-order"
     },
+    "paired-transport-response": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "clleak_always_open@1",
+        "passive_constant_field_permeation@1"
+      ],
+      "operators": [
+        "cells.species_regulated_availability@1",
+        "cells.species_regulated_availability@2"
+      ],
+      "engine_revision": "afc28d1d200d3f926c831e6216eee8209a763f38",
+      "record_revision": "bb2a42672ba8e3acd6fdb7055e68b4c3f5c5b8d9",
+      "sources": {
+        "Held-input state update": "src/cells/operators/species_regulated_availability.py#L1363",
+        "Chloride-selective flux kernel": "src/cells/laws/junctions/selective.py#L19",
+        "Charged route flux kernel": "src/cells/laws/routes/constant_field_permeation.py#L59",
+        "Composite world fixture": "validation/tissue/secreted_species_fixtures.py#L92",
+        "Regulatory state fixture": "validation/tissue/regulated_availability_fixtures.py#L130"
+      },
+      "record_inputs": {
+        "Independent chloride and SK2 measurements": "lean/checks/data/paired_transport_responses.json",
+        "SK2 calibration measurements": "lean/checks/data/hirschberg1998_sk2.json",
+        "Red-cell chloride readings": "lean/checks/data/freedman1997_chloride.json",
+        "Bilayer potassium readings": "lean/checks/data/pfeffermann2026_potassium.json",
+        "SK2 calcium clamp": "lean/checks/regulated_availability.py#L337",
+        "Original chloride protocol": "lean/checks/chloride_channel.py#L23",
+        "One-voltage calibrations": "lean/checks/charged_permeation.py#L152"
+      },
+      "driver": "lean/checks/paired_transport.py",
+      "record": "lean/PROGRESS.md#paired-transport-and-membrane-measurements"
+    },
     "regulated-state-response": {
       "kind": "engine",
       "models": [
@@ -8737,9 +8772,10 @@
         "comparisons": [
           "regulated-pulse-main-nov21",
           "site-regulated-readout-nov21",
-          "regulated-state-response"
+          "regulated-state-response",
+          "paired-transport-response"
         ],
-        "result": "On six pulse-and-washout runs the gate agreed with the stage-by-stage solution within 4.45 × 10⁻¹⁶. For version 2 the analytic half-step midpoints recovered the recorded second reporter factor within 4.45 × 10⁻¹⁶ and cumulative gains within 6.08 × 10⁻¹⁸ fmol. Sampling the half-step starts missed the factor by up to 0.053925. The fixed-calcium SK2 comparison also replayed. D264 holds the separate exported instantaneous site-routed reaction rate."
+        "result": "On six pulse-and-washout runs the gate agreed with the stage-by-stage solution within 4.45 × 10⁻¹⁶. For version 2 the analytic half-step midpoints recovered the recorded second reporter factor within 4.45 × 10⁻¹⁶ and cumulative gains within 6.08 × 10⁻¹⁸ fmol. Sampling the half-step starts missed the factor by up to 0.053925. Both compiled operators bracketed the held-dose 20–80% interval at 42.97–43.95 ms, enclosing the exact 43.32 ms. The fixed-calcium SK2 comparison also replayed. D264 holds the separate exported instantaneous site-routed reaction rate."
       },
       "biology": {
         "status": "open",
@@ -9533,7 +9569,10 @@
         "CellsProofs.Transport.IonChannels.other_flux": "lean/CellsProofs/Transport/IonChannels.lean",
         "CellsProofs.Transport.IonChannels.patch_booking": "lean/CellsProofs/Transport/IonChannels.lean"
       }},
-      "numerical": {"status": "checked", "comparisons": ["chloride-channel"], "result": "At the same initial voltage, 147 and 70 mM bath chloride gave opposite fluxes and initial electrode currents of +0.573 and −5.733 pA. The two tissue trajectories matched an independent solution within 1.58 × 10⁻¹² fmol of transfer, with zero off-ion and padding flux."},
+      "numerical": {"status": "checked", "comparisons": [
+          "chloride-channel",
+          "paired-transport-response"
+        ], "result": "At the same initial voltage, 147 and 70 mM bath chloride gave opposite fluxes and initial electrode currents of +0.573 and −5.733 pA. The two tissue trajectories matched an independent solution within 1.58 × 10⁻¹² fmol of transfer, with zero off-ion and padding flux."},
       "biology": {"status": "open", "observable": "Shift in the single-channel reversal potential when the nominal extracellular chloride concentration changes at fixed intracellular chloride and temperature.", "unit": "mV", "pairs": [
           {
             "id": "epithelial-chloride-gradient",
@@ -9614,7 +9653,10 @@
       },
       "numerical": {
         "status": "checked",
-        "comparisons": ["charged-permeation"],
+        "comparisons": [
+          "charged-permeation",
+          "paired-transport-response"
+        ],
         "result": "360 CPU float64 component cases matched high-precision flux, heat and slope references. In two finite tissue pairs, halving the step from 64 to 128 steps reduced errors in signed transfer, heat and final voltage by factors of 4.03–4.05. Both amount ledgers matched the transferred material."
       },
       "biology": {
