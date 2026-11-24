@@ -39,8 +39,11 @@ planted error it must catch:
   relative.
 - **G12, values never printed.** `check`, `resolve` (both roles; the wrong role refused) and `score`
   print no value, and a refusal names its key path. score.py imports the standard library only.
+- **G13, pooled units** (E5, S0, S3): decays pooled by |V_j| at 40 to 120 mV hold out two pooled
+  units, scored at +|V_j|. Planted: a G_ss off by 0.06 at +60 mV fails, the same at -60 mV does
+  not count, and per-polarity and pooled entries of one observable are refused.
 
-Cost: about 1.5 s on one CPU (host arithmetic, no world compiled), most of it two readouts of
+Cost: about 2 s on one CPU (host arithmetic, no world compiled), most of it two readouts of
 10,001-sample traces in G11. Reason: the harness is registered code (D308), and these are its
 claims.
 """
@@ -142,15 +145,16 @@ def protocol(kind="one_sided", **changes):
             "convention": convention(kind), "fields": fields}  # fmt: skip
 
 
-def documents(kind="one_sided", decay=DECAY, steady_only=(20,), edits=None):
+def documents(kind="one_sided", decay=DECAY, steady_only=(20,), edits=None, pooled=False):
     """(fit, held_out, protocol): invented, consistent with S0 to S5. edits maps (vj, observable) to
     a planted observation."""
     edits = edits or {}
     entries = []
     for m in decay:
-        for s in (-1, 1):
+        for s in (1,) if pooled else (-1, 1):  # a pooled entry carries |V_j| (E5)
             for o in ("tau_fast", "tau_slow", "A_fast", STEADY):
-                entries.append(entry(s * m, o, edits.get((s * m, o))))
+                polarity = "pooled" if pooled else None
+                entries.append(entry(s * m, o, edits.get((s * m, o)), polarity=polarity))
     for m in steady_only:
         for s in (-1, 1):
             entries.append(entry(s * m, STEADY, edits.get((s * m, STEADY))))
@@ -383,3 +387,18 @@ def test_g12_values_are_never_printed(tmp_path, capsys):
                 for a in n.names} | {n.module.split(".")[0] for n in ast.walk(tree)
                                      if isinstance(n, ast.ImportFrom)}  # fmt: skip
     assert imported <= set(sys.stdlib_module_names)
+
+
+def test_g13_pooled_units_are_scored_at_plus_their_magnitude():
+    fit, held, proto = documents(steady_only=(), pooled=True)
+    assert scorer.check(fit, held, proto)["units"] == [("pooled", 60.0), ("pooled", 100.0)]
+    result = scorer.score(predictions(), held, fit)
+    assert result["verdict"] == "pass" and result["judged"] == 8 and result["confounded"] == []
+    plus = predictions(changes={(60.0, "G_ss_over_G0"): truth(60, STEADY) + 0.06})
+    assert scorer.score(plus, held, fit)["verdict"] == "fail"
+    minus = predictions(changes={(-60.0, "G_ss_over_G0"): truth(60, STEADY) + 0.06})
+    assert scorer.score(minus, held, fit)["verdict"] == "pass"
+    mixed = copy.deepcopy(held)
+    mixed["observables"].append(entry(-60, STEADY))
+    with pytest.raises(scorer.Refusal, match="per-polarity and pooled"):
+        scorer.check(fit, mixed, proto)

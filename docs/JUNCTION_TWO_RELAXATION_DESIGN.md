@@ -914,7 +914,7 @@ runs `verify`, `resolve` and `score` as section 13.5 point 6 states, with the sa
 **Who wrote it.** The author of FR-16's polarity check, who is FR-30's harness author under D334 and
 never fits, predicts or checks.
 - It registers the fresh blind benchmark of D320, with the user's decisions of D334.
-- **Nobody on this project has opened the paper.**
+- **No record shows anyone on this project opening the paper** (D311; the exposure sweep below).
 - The commit carrying this entry, its code and its tests is tagged (Tag A, part 10) before the paper
   is opened.
 - The polarity check is [JUNCTION_GATE_POLARITY.md](JUNCTION_GATE_POLARITY.md), committed beside
@@ -961,8 +961,12 @@ doi:10.1016/j.bpj.2015.10.054, PMC4805864.
       - the source search's `candidates.md`;
       - `fr30-candidates4-extraction/`'s `README.md` and `LOG.txt`.
 
-      They are candidate lists and status notes from before this entry, and all of them are
-      barred to the fitter (part 9).
+      `candidates.md` and the two candidates4 files are candidate lists and status notes
+      (section 13.4; D311). The lead's two files were counted, not read, and the lead confirms them
+      before Tag A. All of them are barred to the fitter (part 9).
+    - **Pass 4** also searched every snapshot's `checkout.patch` (the snapshots' uncommitted
+      changes), with no hit.
+    - ripgrep skips binary and compressed files, so "nothing else" below means text files.
     - **Files naming the 2018 paper by the same authors:** its extraction's four files, its
       datasets folder's `MANIFEST.txt`, Revilla's `RULING_DRAFT.md`, Shibayama's `held_out.json`,
       and a file listing in `wash-export-refusal-20261123/`.
@@ -1372,7 +1376,9 @@ world. Each claim has its planted error:
 - **G9:** Part S;
 - **G10:** the conventions, including section 13.5's constants at 30 s and three refusals;
 - **G11:** `verify` against a tampered time;
-- **G12:** no value printed, and `score.py`'s imports from the standard library only.
+- **G12:** no value printed, and `score.py`'s imports from the standard library only;
+- **G13:** pooled units, scored at +|V_j|, and per-polarity and pooled entries of one observable
+  refused.
 
 **The rehearsal on Revilla's spent files** (D334) runs Tag A's whole chain in this layout:
 convert, `check`, `resolve` for both roles, `conventions`, `predict` with Revilla's registered
@@ -1403,14 +1409,16 @@ commit that holds the final code. This run adds `resolve` for both roles (record
 - **Every stage exited 0,** and `resolve` printed key paths only. On the held-out file they are the
   six of D320's own `resolve`, one for one.
 - **All 43 checks passed again,** and the six comparison lines are byte-identical to D320's.
-- **Later commits change this note only.**
+- **Later commits change no module under `validation/`:** they change this note, the tier
+  record and the test file (G13, pooled units).
 
 #### Part 9. Roles and exclusions
 
 - **The extractor (E)** reads the paper and follows E1 to E12. It is a fresh agent.
 - **The harness author (H)** is the polarity check's author (D334), who never fits, predicts or
   checks.
-  - H wrote part 8's code and tests from this entry alone.
+  - H wrote part 8's code and tests from this entry, with section 13.5's modules and Revilla's
+    spent files (already seen) for the rehearsal.
   - After the seal, H runs `conventions` on `protocol.json` and commits `conventions.json` for
     Tag B.
   - H reads `protocol.json` and `fit.json`'s structure, never `held_out.json`'s values or
@@ -1466,8 +1474,8 @@ sealing.
    - The lead records `held_out.json`'s digest in a dated decision entry.
    - **The branch,** read from the sealed split's structure without values:
      - two or more held-out voltages carry both times: steps 4 to 7 run for FR-30's verdict;
-     - otherwise, if a steady magnitude is held out: steps 4 to 7 run for Part S alone, and FR-30's
-       verdict is undetermined;
+     - otherwise, if the held-out file carries at least two G_ss entries (counted from `check`'s
+       output): steps 4 to 7 run for Part S alone, and FR-30's verdict is undetermined;
      - otherwise: undetermined, and nothing further runs.
 4. **Tag B, before any fit.** H runs `conventions`, and the lead tags `conventions.json` as
    `fr30-ekvitorin2016-tag-b-<date>`.
@@ -1487,6 +1495,11 @@ Each step expected to run for 10 minutes or more runs detached, with durable log
   - `other` and `not_stated` count as confounding (E3, P4);
   - the minimum judged set is as P5 defines it;
   - cannot predict is decided before the confounded undetermined (P6).
+- **A fourth choice, for the lead to confirm before the tag.** Part S judges every held-out G_ss
+  (P7), including those at decay-list magnitudes, and part 10 starts it from at least two held-out
+  G_ss entries. D334's draft named the steady list only. The case this decides: three magnitudes
+  with pooled decays give one held-out unit, so FR-30's verdict is undetermined, while a held-out
+  G_ss exists.
 - **Section 13.5's modules stay on main for now** (`revilla1999.py`, `revilla1999_score.py` and
   their tests). Their tags keep them, and the generic modules reproduce them (part 8). Retiring them
   is a later cleanup.
