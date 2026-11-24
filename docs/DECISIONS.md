@@ -11563,3 +11563,55 @@ They cite Lean by commit (fccbb5e5), since Lean's files are not on main.
 - **Panama's other K levels.** Panama recorded four K levels, and Lean scored one pair. The lead asks Lean, through
   the user, whether the other levels are unscored. Until then `kir_spermine_potassium.json` stays unopened, since those
   levels could be the one arm still blind.
+
+## D356: Kir2.1 is a composition, not a law; the user's decision: one declared voltage shift on the channel population (FR-64), with FR-63 re-formed; Panama's 10 and 20 mM become holdouts
+
+2026-11-24, about 18:19 UTC.
+
+**Kir2.1 (the lead with the advisor, at the user's request for the cleanest form).** There is no Kir2.1 law. Kir2.1
+is an always-open K population (`kleak_always_open@1`) carrying FR-51's block on a K reversal reference.
+- **Why no law.** The two labs confirm the block's shift (D355), each with its own fitted modes. A Kir2.1 law would
+  freeze one lab's fit. The confirmed part is the form, and FR-51's reference gives it to any channel population.
+- **The block stays off `kir2p1_mh2@1`.**
+  - Its m target falls with depolarisation at absolute voltage, so stacking the block on it would rectify twice, and
+    the gate half could not shift.
+  - Lean's ratio cancelled the gates, and no gates on V − E have evidence here.
+- **FR-51's registration already runs this pairing:** `validation/fr51/REGISTRATION.md` names the always-open hosts,
+  and its references' cases use them. D353's registration judges the composition itself. Until it passes, both
+  library pages (`kir2p1_mh2@1`'s and the block law's) call the composition development-only.
+- **What the pages say is not claimed:**
+  - the unblocked current's shape and size against external K, which Lean leaves open;
+  - internal K, an indication (D355);
+  - the block's own limits in version 1: the blocker is held at a declared constant concentration rather than a
+    species row; the block has no kinetics; and binding is trace, with no count.
+- **No values tonight.** The fitted modes stay in Lean's driver and JSON, unopened.
+
+**The user's decision: one general mechanism, logged as FR-64.** FR-51's reversal reference and FR-63's pH shift have
+one shape: the voltage a factor reads, shifted by a declared function of a local activity. It becomes one mechanism,
+declared on the channel population:
+- **The shifts are a small closed set:** an ion's reversal, V − E from its compartment concentrations, and a sourced
+  shift per pH unit.
+- **Who reads it:** the factors that declare it, the gates and the block.
+- **Parity laws are untouched.** A population that declares no shift runs bit for bit as now.
+- **FR-63** becomes a declared pH shift on Kv1.5's population, instead of a new law.
+- **FR-51** lands as is. Its block's `reference` key then moves into the mechanism, with no aliases (pre-alpha).
+- **A design note comes first,** before FR-51's block law is registered and before the rename's design note
+  (25 November).
+- **Where it sits today** (the lead's read of `fr51-slot-refusal`):
+  - `channel_block` in `surface_pump_v3.py` computes V − E per population, for the block only;
+  - `channel_kinetics` hands the gating laws the plain membrane voltage;
+  - the block law, `open_channel_block.py`, already takes any reference voltage.
+
+  So the change is in the model's plumbing, not in any law.
+
+**Lean's answer on Panama's other levels** (relayed by the user):
+- **What Lean scored.** Its frozen replay fitted Panama at 5.4 mM and scored only 60 mM. Panama's 10 and 20 mM
+  normalized-current curves and half-conductance shifts are unscored; the 20 mM row in D355's table is Ishihara's. Lean
+  verified this from the saved run output and left the input data file unopened.
+- **The registration** (after FR-51 lands, D353) reserves both levels as within-study holdouts. The 5.4 mM fit, the
+  readout and the scoring rule are frozen before the two levels are extracted.
+- **Prior exposure, disclosed.** Lean's search saw the full figure, including the intermediate traces, and had read
+  their reversal voltages and the published four-level fit. By its recall it extracted normalized currents only at the
+  endpoints. So the registration can claim a prospective test of the two intermediate responses, with that exposure
+  disclosed.
+- **The lead** keeps `kir_spermine_potassium.json` unopened.

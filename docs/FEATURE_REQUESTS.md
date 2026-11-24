@@ -68,7 +68,8 @@ and a general feature, never one built for one study (D144).
 | [FR-60](#fr-60--work-at-a-scheduled-change-of-a-states-energy) | Work at a scheduled change of a state's energy | To be set by the user (logged 24 November 2026) | **Logged:** no level change books its work | A design note: exact events, an ensemble spread class |
 | [FR-61](#fr-61--an-overdamped-rotational-load-angle-speed-work-and-dissipation) | An overdamped rotational load: angle, speed, work and dissipation | To be set by the user (logged 24 November 2026) | **Logged:** no torque ledger (MODULE_SYSTEM §7 rule (a)) | One design note with FR-62 |
 | [FR-62](#fr-62--ion-transfer-coupled-to-a-rotary-step) | Ion transfer coupled to a rotary step | To be set by the user (logged 24 November 2026) | **Logged:** cycles book ions, not angle or load work | One design note with FR-61 |
-| [FR-63](#fr-63--a-ph-dependent-kv15-activation) | A pH-dependent Kv1.5 activation, as a new law beside the parity law | Normal (logged by the user, 24 November 2026; D353) | **Logged:** three labs confirm the acid shift's direction; `kv1p5_mh@1` has no pH input | A design note |
+| [FR-63](#fr-63--a-ph-dependent-kv15-activation) | A pH-dependent Kv1.5 activation, re-formed as a declared pH shift on its population (FR-64, D356) | Normal (logged by the user, 24 November 2026; D353) | **Logged:** three labs confirm the acid shift's direction; `kv1p5_mh@1` has no pH input | A design note |
+| [FR-64](#fr-64--a-declared-voltage-shift-on-a-channel-population) | A declared voltage shift on a channel population: an ion's reversal or a sourced shift per pH unit, read by its gates or its block | To be set by the user (logged 24 November 2026; D356) | **Logged:** one mechanism for FR-51's reversal reference and FR-63's pH shift | A design note, before FR-51's law is registered |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -2269,6 +2270,13 @@ It is non-blind, since the lead has seen 0.98. Also queued: one admitted row wit
 - **Scope lines,** in the landing message and the block law's docstring on the follow-up branch: the reversal
   reference is supported for external-K changes only; `kir2p1_mh2@1`'s gates read absolute voltage.
 
+**Kir2.1 and the holdouts (D356).**
+- **Kir2.1** is this block on an always-open K population with a K reversal reference. It stays development-only until
+  the registration passes.
+- **Holdouts:** Panama's 10 and 20 mM levels are unscored, and become within-study holdouts. The 5.4 mM fit, the
+  readout and the scoring rule are frozen before they are extracted.
+- **After landing,** the `reference` key moves into FR-64's declared voltage shift.
+
 ## FR-52 — Passive cohort observations for integer functional units
 
 **Logged 24 November 2026 by the user, priority high.**
@@ -2771,6 +2779,45 @@ a declared and sourced shift per pH unit. The size is a declaration, since the l
   reported, not judged.
 
 **Status (24 November):** logged. A design note comes first.
+
+**Re-formed (24 November, later; the user's decision, D356):** the request becomes a declared pH shift on Kv1.5's
+population, in FR-64's general mechanism, instead of a new law. The parity law stays untouched, and the shift's size per
+pH unit is still declared and sourced per preparation.
+
+## FR-64 — A declared voltage shift on a channel population
+
+**Logged 24 November 2026 by the user (D356); priority to be set by the user.**
+
+**Why.** Two confirmed findings have one shape:
+- Kir2.1's block shifts with external K (D355);
+- Kv1.5's activation shifts with acid (D351).
+
+In each, the voltage a factor reads is moved by a declared function of a local activity. FR-51 gives a reversal
+reference to its block alone, and FR-63 asked for a new Kv1.5 law. One mechanism serves both, and later channels,
+without a new law per channel.
+
+**The request.** A channel population declares, for each factor that reads voltage (its gates, its block), the shift
+that factor reads:
+- **none:** the membrane voltage, the default;
+- **an ion's reversal:** V − E, with E from that ion's compartment concentrations;
+- **a sourced shift per pH unit,** from the local proton activity.
+
+The set is closed: a new kind of shift is a new request.
+
+**Constraints:**
+- **Parity laws are untouched.** A population with no declared shift runs bit for bit as now.
+- **FR-51's block** moves its `reference` key into this mechanism after FR-51 lands, with no aliases.
+- **FR-63** is served by this mechanism.
+
+**First reading (the lead's read of `fr51-slot-refusal`):**
+- `channel_block` computes V − E for the block only;
+- `channel_kinetics` hands the gating laws the plain membrane voltage;
+- the block law already takes any reference voltage.
+
+So the change is in the model's plumbing, one reference voltage per factor computed in `channel_rates`, and in no law.
+
+**Status (24 November):** logged. A design note comes first, before FR-51's block law is registered and before the
+rename's design note.
 
 ## Backlog: external tools to look at (logged by the user, 23 November 2026)
 
