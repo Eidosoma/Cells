@@ -1363,9 +1363,10 @@ RULES = (
     ),
     dict(
         rule="no declared path moves a washed node's neutral species across its surface: the "
-        "patch's own permeability, a kind's route, an exchange route through a facing patch or "
-        "a site population's internalisation from the node (fail closed)",
-        laws=(WASH, EXCHANGE, SITES),
+        "patch's own permeability, a kind's route, an exchange route through a facing patch, "
+        "a site population's internalisation from the node, or the gene unit's export into the "
+        "node or outside degradation there (fail closed)",
+        laws=(WASH, EXCHANGE, SITES, "templated_polymerisation@1"),
         level="data",
         check=OPS + "wash_schedule.py::surface_crossings",
         test=TESTS + "test_wash_schedule.py::test_each_refusal_fires_with_its_reason",
@@ -1373,7 +1374,9 @@ RULES = (
         why="The step's booking of a concentration step at the node is unmeasured, and the "
         "wash's books do not see the exchange (D263 finding 2, a second review: a registered "
         "route's crossing was admitted where the patch's own was refused). An operator law not "
-        "shown local is refused until it is classified",
+        "shown local is refused until it is classified. The gene unit's export and outside "
+        "degradation, which amendment T added after its classification as writing cells only, "
+        "are each refused by name (D327, the fail-open fix)",
     ),
     dict(
         rule="membrane state beside a compartment only together with its admitted writers, "
