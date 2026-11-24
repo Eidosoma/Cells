@@ -24,6 +24,28 @@
     "cells.rate_equations@1": "molecular-assembly"
   },
   "comparisons": {
+    "membrane-physiology-reversals": {
+      "kind": "engine",
+      "models": [],
+      "laws": [
+        "cells.passive_constant_field_permeation@1",
+        "cells.proton_constant_field_leak@1"
+      ],
+      "engine_revision": "0455ce787fd8c36ec2eb51389e4f5a5a5012f253",
+      "record_revision": "34e1f9dfc1628af1f81e66cf8166d5c6f4207407",
+      "sources": {
+        "Three-ion constant-field flux": "src/cells/laws/routes/constant_field_permeation.py#L59",
+        "Open-route proton flux": "src/cells/laws/transport/proton_leak.py#L31",
+        "Thermodynamic constants": "src/cells/laws/electrochemistry.py#L10",
+        "Flux evaluation": "src/cells/laws/electrochemistry.py#L32"
+      },
+      "record_inputs": {
+        "1949 squid permeability ratios": "lean/checks/data/hodgkin_katz1949_rest.json",
+        "1979 substitutions and measured proton reversals": "lean/checks/data/membrane_physiology_pairs.json"
+      },
+      "driver": "lean/checks/paired_membrane_physiology.py",
+      "record": "lean/PROGRESS.md#paired-membrane-physiology"
+    },
     "bilayer-warm-footprint": {
       "kind": "engine",
       "models": [
@@ -9438,9 +9460,10 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
-          "mixed-ion-reversal"
+          "mixed-ion-reversal",
+          "membrane-physiology-reversals"
         ],
-        "result": "Four roots of the Cells membrane current matched the analytic voltage within 2 × 10⁻¹⁵ V. At −47.168248 mV, outward Na, K and Cl currents were −0.557437, +0.491856 and +0.065581 pA. All three also matched on both sides of reversal and in a two-step run."
+        "result": "Four roots of the Cells membrane current matched the analytic voltage within 2 × 10⁻¹⁵ V. At −47.168248 mV, outward Na, K and Cl currents were −0.557437, +0.491856 and +0.065581 pA. All three also matched on both sides of reversal and in a two-step run. Seven native roots with the 1949 permeability ratios reproduced the analytical changes to within 10⁻¹⁰ mV. Transferring that ratio to the 1979 perfusate gave +12.63 mV for 10→30 mM external K against +2.0 mV measured."
       },
       "biology": {
         "status": "open",
@@ -10163,9 +10186,10 @@
         "status": "checked",
         "comparisons": [
           "proton-leak",
-          "mt1b-local-proton-read"
+          "mt1b-local-proton-read",
+          "membrane-physiology-reversals"
         ],
-        "result": "Twelve compiled CPU cases agreed with the 70-digit flux reference within 1.55 × 10⁻²⁰ fmol/s. In a buffered tissue cell, using free H⁺ gave the observed inward rate of 3.31 × 10⁻⁶ fmol/s. Substituting total intracellular proton equivalents reversed the predicted direction. Eight additional composite clamps tracked lumen pH at fixed voltage when bath pH varied independently. Version 1 refused the general-binding node. [Version 2](buffered-proton-reversal.md) exercises that endpoint."
+        "result": "Twelve compiled CPU cases agreed with the 70-digit flux reference within 1.55 × 10⁻²⁰ fmol/s. In a buffered tissue cell, using free H⁺ gave the observed inward rate of 3.31 × 10⁻⁶ fmol/s. Substituting total intracellular proton equivalents reversed the predicted direction. Eight additional composite clamps tracked lumen pH at fixed voltage when bath pH varied independently. Version 1 refused the general-binding node. [Version 2](buffered-proton-reversal.md) exercises that endpoint. Six compiled roots agreed with the Nernst values at nominal pipette and bath pH to within 10⁻¹⁰ mV. At microglial pipette/bath pH 5.5/7.8 the model gave −135.15 mV at 23 °C against an approximate −86 mV measured."
       },
       "biology": {
         "status": "open",

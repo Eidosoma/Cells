@@ -23,13 +23,19 @@ Uses [Ion charge sets permeation reversal and bounds the current–voltage slope
 
 ## Numerical comparison
 
-**Checked.** Four roots of the Cells membrane current matched the analytic voltage within 2 × 10⁻¹⁵ V. At −47.168248 mV, outward Na, K and Cl currents were −0.557437, +0.491856 and +0.065581 pA. All three also matched on both sides of reversal and in a two-step run.
+**Checked.** Four roots of the Cells membrane current matched the analytic voltage within 2 × 10⁻¹⁵ V. At −47.168248 mV, outward Na, K and Cl currents were −0.557437, +0.491856 and +0.065581 pA. All three also matched on both sides of reversal and in a two-step run. Seven native roots with the 1949 permeability ratios reproduced the analytical changes to within 10⁻¹⁰ mV. Transferring that ratio to the 1979 perfusate gave +12.63 mV for 10→30 mM external K against +2.0 mV measured.
 
 **Engine** `resolved_pump_tissue@3`, `cells.passive_constant_field_permeation@1`
 
 [Signed ion flux](https://github.com/Eidosoma/Cells/blob/b9d6452dff1cd0a1d5d3664e0a81b00ce988bfbc/src/cells/laws/routes/constant_field_permeation.py#L56) · [Area, opening and orientation of each passive route](https://github.com/Eidosoma/Cells/blob/b9d6452dff1cd0a1d5d3664e0a81b00ce988bfbc/src/cells/kinds/passive_routes.py#L550) · [Sum of the outward membrane currents](https://github.com/Eidosoma/Cells/blob/b9d6452dff1cd0a1d5d3664e0a81b00ce988bfbc/src/cells/models/surface_pump_v3.py#L874) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/b4353f85b18d489a277818bfe43e20c8416b6066/lean/checks/mixed_membrane.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/b4353f85b18d489a277818bfe43e20c8416b6066/lean/PROGRESS.md#mixed-membrane-reversal)
 
 [Tested engine b9d6452dff1c](https://github.com/Eidosoma/Cells/commit/b9d6452dff1cd0a1d5d3664e0a81b00ce988bfbc) · [Evidence checkpoint b4353f85b18d](https://github.com/Eidosoma/Cells/commit/b4353f85b18d489a277818bfe43e20c8416b6066)
+
+**Engine** `cells.passive_constant_field_permeation@1`, `cells.proton_constant_field_leak@1`
+
+[Three-ion constant-field flux](https://github.com/Eidosoma/Cells/blob/0455ce787fd8c36ec2eb51389e4f5a5a5012f253/src/cells/laws/routes/constant_field_permeation.py#L59) · [Open-route proton flux](https://github.com/Eidosoma/Cells/blob/0455ce787fd8c36ec2eb51389e4f5a5a5012f253/src/cells/laws/transport/proton_leak.py#L31) · [Thermodynamic constants](https://github.com/Eidosoma/Cells/blob/0455ce787fd8c36ec2eb51389e4f5a5a5012f253/src/cells/laws/electrochemistry.py#L10) · [Flux evaluation](https://github.com/Eidosoma/Cells/blob/0455ce787fd8c36ec2eb51389e4f5a5a5012f253/src/cells/laws/electrochemistry.py#L32) · [1949 squid permeability ratios](https://github.com/Eidosoma/Cells/blob/34e1f9dfc1628af1f81e66cf8166d5c6f4207407/lean/checks/data/hodgkin_katz1949_rest.json) · [1979 substitutions and measured proton reversals](https://github.com/Eidosoma/Cells/blob/34e1f9dfc1628af1f81e66cf8166d5c6f4207407/lean/checks/data/membrane_physiology_pairs.json) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/34e1f9dfc1628af1f81e66cf8166d5c6f4207407/lean/checks/paired_membrane_physiology.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/34e1f9dfc1628af1f81e66cf8166d5c6f4207407/lean/PROGRESS.md#paired-membrane-physiology)
+
+[Tested engine 0455ce787fd8](https://github.com/Eidosoma/Cells/commit/0455ce787fd8c36ec2eb51389e4f5a5a5012f253) · [Evidence checkpoint 34e1f9dfc162](https://github.com/Eidosoma/Cells/commit/34e1f9dfc1628af1f81e66cf8166d5c6f4207407)
 
 ## Biological evidence
 
