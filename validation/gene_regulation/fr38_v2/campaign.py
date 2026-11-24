@@ -246,9 +246,11 @@ def job_path(out, job):
     return record_path(out, family=job["family"], run=job["run"], dt=job["dt"])
 
 
-def launch(out, cpus, jobs):
+def launch(out, cpus, jobs, parse_only=False):
     """Each job in its own process (a fresh, cold compile), one per CPU at a time, pinned to it.
-    A job's stdout and stderr go to logs/; progress.json is rewritten after each finish."""
+    A job's stdout and stderr go to logs/; progress.json is rewritten after each finish.
+    parse_only: each job parses its world and writes that, compiling nothing (the command line's
+    own check, before the registration's tag)."""
     out = Path(out)
     (out / "logs").mkdir(parents=True, exist_ok=True)
     pending = [j for j in jobs if not job_path(out, j).exists()]
@@ -264,7 +266,7 @@ def launch(out, cpus, jobs):
             log = (out / "logs" / f"{name}.log").open("w")
             command = ["taskset", "-c", str(cpu), sys.executable, "-m",
                        "validation.gene_regulation.fr38_v2.campaign", *job_args(job),
-                       "--out", str(out)]  # fmt: skip
+                       "--out", str(out), *(["--parse-only"] if parse_only else [])]  # fmt: skip
             proc = subprocess.Popen(command, stdout=log, stderr=subprocess.STDOUT, env=env)
             running[cpu] = (proc, job, time.time(), log)
         time.sleep(2)
@@ -560,6 +562,7 @@ def main(argv=None):
     parser.add_argument("--cpus", default="6,7")
     parser.add_argument("--retry", action="store_true")
     parser.add_argument("--only", nargs="+", default=["AF", "AN", "B", "C", "D"])
+    parser.add_argument("--parse-only", action="store_true", help="parse; run nothing")
     args = parser.parse_args(argv)
     if args.command == "plan":
         print(json.dumps(plan(args.retry, tuple(args.only)), indent=1))
@@ -572,7 +575,7 @@ def main(argv=None):
         (out / "campaign.json").write_text(json.dumps(dict(jobs=jobs, cpus=cpus,
                                                            source=_source(out / "source")),
                                                       indent=1))  # fmt: skip
-        done = launch(out, cpus, jobs)
+        done = launch(out, cpus, jobs, args.parse_only)
         return 0 if all(d["exit"] == 0 for d in done) else 1
     if args.command == "table":
         print(table(out, tuple(args.only), args.retry))
@@ -587,7 +590,22 @@ def main(argv=None):
     folder = path.parent / f"{path.stem}.source"
     source = _source(folder)  # Before the run (engine_run.provenance); late sources after it.
     try:
-        if args.command == "restart":
+        if args.parse_only:  # The command line's own check: the world parsed, nothing compiled.
+            if args.command == "restart":
+                raw, identity = worlds.world(family, run, dt=worlds.H), dict(restart=True)
+            elif args.plant:
+                family, run, judged_as, _ = worlds.PLANTS[args.plant]
+                raw, identity = (
+                    worlds.plant(args.plant),
+                    dict(plant=args.plant, judged_as=judged_as),
+                )
+            else:
+                family, run = args.family, args.run
+                raw, identity = worlds.world(family, run, dt=args.dt), {}
+            worlds._parse(raw)
+            record = dict(kind=RECORD, family=family, run=run, **identity, parsed_only=True,
+                          refused=False, dt_s=raw["execution"]["dt"], definition=raw)  # fmt: skip
+        elif args.command == "restart":
             raw = worlds.world(family, run, dt=worlds.H)
             record = restart_record(raw, join, path.parent / "snapshot-files", family=family,
                                     run=run, restart=True)  # fmt: skip

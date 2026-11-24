@@ -373,23 +373,23 @@ def with_labels(raw, t1, t2):
 # ------------------------------------------------------------------ arm B (SPEC.md §2)
 
 
-def b(run, *, dt, edits=None):
-    """B's world by its run name: A1 with transcription's release (module docstring)."""
+def b(run, *, dt, edits=None, f=None):
+    """B's world by its run name: A1 with transcription's release (module docstring); `f`
+    replaces B's own inputs (a made-up B for the smoke), A1's staying the sheet's."""
+    f = ARM_B if f is None else f
     edits = dict(edits or {})
     p, machine, blank, labelled = _parse_run(run)
-    if p != "p=0.55" or blank:
-        raise ValueError(f"B's runs are p=0.55 with a machine option, not {run!r}")
-    release = dict(machine=machine, rates=(ARM_B.k_d, ARM_B.k_s), dwell_s=ARM_B.tau_s)
-    raw = gw._a1(dt=dt, end=ARM_B.horizon, every=ARM_B.every, symbols=None, release=release)
+    if p != f"p={f.p:g}" or blank:
+        raise ValueError(f"B's runs are p={f.p:g} with a machine option, not {run!r}")
+    release = dict(machine=machine, rates=(f.k_d, f.k_s), dwell_s=f.tau_s)
+    raw = gw._a1(dt=dt, end=f.horizon, every=f.every, symbols=None, release=release)
     block = next(o for o in raw["model"]["operators"] if o["law"] == gw.POLYMERISATION)
     chain = next(c for c in block["chains"] if c["id"] == "tx")
-    chain["release"].update(
-        durable_fraction=ARM_B.p, label=dict(at=edits.pop("label_at", "release"))
-    )
+    chain["release"].update(durable_fraction=f.p, label=dict(at=edits.pop("label_at", "release")))
     if chain["release"]["initial_copies"] != [0.0]:
         raise ValueError("B's hold starts empty (SPEC.md §2)")
     if labelled:
-        raw = with_labels(raw, *ARM_B.window)
+        raw = with_labels(raw, *f.window)
     if edits:
         raise ValueError(f"unknown edits {sorted(edits)}")
     return raw

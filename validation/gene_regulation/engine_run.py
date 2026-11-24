@@ -72,14 +72,16 @@ an export from the exported cell nothing here is read, and the record is unchang
 and D, validation/gene_regulation/fr38_v2/spec/READOUTS.md):
 - **local_species_reactions@1** (D152) on the exported cell adds the rows of its own that the gene
   unit does not list (n_<row>, n_Mx in family C), its heat there, H_store
-  (reaction_dissipated_energy_pJ), and its bookings' magnitude. G_minus_G0 adds those rows at the
-  network's potentials, converted to the gene unit's c0.
+  (reaction_dissipated_energy_pJ), its work there (reaction_work_pJ: zero on a passive route such
+  as family C's, not on a driven one), and its bookings' magnitude. G_minus_G0 adds those rows at
+  the network's potentials, converted to the gene unit's c0.
 - **ideal_osmosis_linear_compliance_water@1** makes the cell's volume current, V (pL). It adds
   water's heat H_water (water_dissipated_energy_pJ, summed) and the held baths' water work W_bath
   (bath_water_work_pJ, summed). G_minus_G0 then reads every species row at the current V, K and Y
   included at mu° 0 (their amounts move by nothing, their terms by dilution; n_K and n_Y are
   exported), and the elastic energy U(V) is 0 at no modulus.
-- G's identity closes over them: G(t) - G(0) + H_total + H_store + H_water - W_bath.
+- G's identity is formed over them: G(t) - G(0) + H_total + H_store - W_network + H_water - W_bath.
+  With water it closes at second order (water's bookings, FR-43's C2.7), not at rounding.
 
 Without either operator nothing here is read, and the record is unchanged.
 """
@@ -439,8 +441,9 @@ def readouts(spec, states, cell=None):
             put("V", current)
             put("H_water", math.fsum(float(x) for x in np.asarray(s.water_dissipated_energy_pJ)))
             put("W_bath", math.fsum(float(x) for x in np.asarray(s.bath_water_work_pJ)))
-        if network is not None:  # Family C: the store's heat at the cell.
+        if network is not None:  # Family C: the store's heat and the network's work at the cell.
             put("H_store", np.asarray(s.reaction_dissipated_energy_pJ)[at])
+            put("W_network", np.asarray(s.reaction_work_pJ)[at])
         heats = {
             "chain": np.asarray(s.poly_chain_heat_pJ),
             "degradation": np.asarray(s.poly_degradation_heat_pJ),
@@ -497,7 +500,7 @@ def readouts(spec, states, cell=None):
     scale = max(abs(v) for v in out["H_total"]) or 1.0
     zeros = [0.0] * len(times)
     beside = zeros  # The second writer's heat and water's heat less the bath's work.
-    for name, sign in (("H_store", 1.0), ("H_water", 1.0), ("W_bath", -1.0)):
+    for name, sign in (("H_store", 1.0), ("W_network", -1.0), ("H_water", 1.0), ("W_bath", -1.0)):
         beside = [b + sign * v for b, v in zip(beside, out.get(name, zeros), strict=True)]
     identity = [
         g + h + b for g, h, b in zip(out["G_minus_G0"], out["H_total"], beside, strict=True)
