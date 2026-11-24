@@ -10875,3 +10875,69 @@ inert wall places, in progress, is not in the judged engine.
 - It printed statuses and booleans only, never a value.
 - The folder (`/mnt/workspaces/Cells/fr47-inert-wall-20261124/`) is barred to FR-47's checker. Its brief will say
   so.
+
+## D339: a reviewer's four points (FR-47's scorer gets a registered schedule supplement and a tightened acceptance; FR-52's premise is corrected; the GPU guard; the feature index); GJ-N1 amendment 2 and FR-38 v2's references are tagged
+
+2026-11-24, about 14:46 UTC. The advisor reviewed the four points with the lead.
+
+**FR-47's frozen scorer does not check the washes against the registered schedule.**
+- **Confirmed by reading `fr47_judge.py` at the registration tag:**
+  - `judge_d` takes each stop's kind from the run, and never compares stop times or the heat intervals' ends;
+  - `judge_exact` indexes each replica's stops by the references' count, and ignores time, kind and any extra
+    stop.
+
+  The reviewer's three invented cases pass it: a relabelled withdrawal with its heat removed, both washes 10 s late,
+  and an extra trailing wash in every replica.
+- **The frozen scorer stays the official verdict, unchanged.** There is no erratum.
+- **A schedule supplement is registered before any judged run.** It is
+  `validation/assembly_lineages_v2/FR47_SCHEDULE_SUPPLEMENT.md`, tagged `fr47-schedule-supplement-2026-11-24`.
+  It checks, exactly:
+  - count, order, time and kind, for the references and for every saved run;
+  - a heat at every scheduled withdrawal;
+  - the heat intervals' ends.
+
+  Before any saved run is read, its controls must behave: the three cases fail and an honest record passes.
+- **The lead tightens D323:** FR-47 leaves development-only only if both the frozen verdict and the supplement pass.
+  D323 named the verdict alone. The user is told.
+- **FR-47's independent checker implements the supplement.** Its brief also bars the inert-wall fix's
+  before-and-after folder (D338).
+
+**FR-52: one event can move several units.**
+- A channel carries integer stoichiometry over the unit states, and `integer_change` is products minus reactants.
+  So the reader uses each event's declared change, E <- E·(n − d)/n. Restricting version 1 to single-unit events,
+  by name, is the fallback.
+- **An acceptance row:** two original units and one new; one event removes two, chosen uniformly. The expected
+  survivors are 2/3 original and 1/3 new.
+- **A mutant:** a reader assuming one unit per event gives a total of 2 against the engine's 1, and must fail the
+  integrity check.
+- **For the design note:** whether a channel may list the active state on both sides. If so, the stored change is
+  net there.
+
+**The GPU guard.**
+- 478664a0 refuses the composite on a GPU in the vector path. It waits for lane B, with FR's set and the D148
+  proofs.
+- After it lands, its refusal row is rerun at main's head and recorded.
+- Judged runs of the composite run on CPUs (D338, GJ-N1 amendment 2).
+
+**The feature index is brought up to date:**
+- FR-43: all three parts on main (D328);
+- FR-46 and FR-48: landed at d702f13a;
+- FR-49: parts H and L at 7d021548, with World L passing (D331); World B, C1, C2 and C4 are still to come.
+
+**Tags:**
+- **`gj-n1-amendment-2-2026-11-24` at 750076a7.**
+  - The field runs on CPUs. The upper end runs on CPU 13 from launch; the base-step points, bisection and half steps
+    run on lane A from 20:00 UTC.
+  - One engine revision serves both geometries: the line's stage 1 and one line point are checked by bytes at the
+    field's snapshot before launch.
+- **`fr38-v2-references-2026-11-24` at 8bd81c7e** (generated at 55c52c4b from a clean tree).
+  - Six files, 19,957,976 bytes in `out/`, byte-identical across PYTHONHASHSEED 0, 1 and 4242. The hashes are in
+    `out/SHA256SUMS` at the tag.
+  - The worst judged accuracy is 1.3e-16 of scale, against 1e-11. Every must-catch plant is at least 72 times its
+    honest tolerance.
+  - **The user's limit:** about 20 MB is the ceiling for any committed data set. This one is at it.
+
+**The ledger limit, recorded here** because the builder's note sits in a scratch folder. Small E2 worlds at a loose
+`atol_count` can fail their own ledger: its tolerance is 100·rtol·max(1, |Q| + |W| + events), with no atol term. The
+fix is an atol term derived from the integrator's declared `atol_count`. It is a follow-up after Protocol D's
+re-registration.

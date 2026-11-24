@@ -48,13 +48,13 @@ and a general feature, never one built for one study (D144).
 | [FR-40](#fr-40--a-single-ribosome-translation-timing-benchmark) | A single-ribosome translation timing benchmark: 406 s from first detectable nascent chain to release | **High** (user, via the Lean lane, 22 November 2026; D286) | **Desk note landed** (022a5d2a). With only the paper's own speeds, which conflict, a comparison is a calibration, not a validation | A metadata-only search for a matched-condition speed or a multi-length reporter series; the spread test needs no speed |
 | [FR-41](#fr-41--vesicle-shrinkage-validation-records) | Vesicle shrinkage validation records for the osmotic lumen law | **High** (user, via the Lean lane, 22 November 2026; D286) | **One agreement, retention open:** shrinkage matches (24.56% against about 25%). The data-only retention check is undetermined for all three sources; the one point estimate (gel-phase LUVs) suggests partial release | Parked until a study with paired, tabulated volume and small-solute retention appears |
 | [FR-42](#fr-42--neutral-arrival-time-labels-that-leave-the-dynamics-unchanged) | Neutral arrival-time labels that leave the dynamics unchanged: loss computed once per physical population and shared by label | **High** (a user, 22 November 2026) | **Landed and accepted (D306):** labels as share vectors on the physical row (option A, D289; the label owner, D296), across kinds, pools and sources, with the kinds hook (`label_refusals`, `label_transfers`) | Done for its consumers; FR-38's comparison reads its shares |
-| [FR-43](#fr-43--shared-inventories-larger-networks-shared-pools-and-low-count-populations) | Shared inventories: larger sparse reaction networks; one pool spent and replenished by separate processes, at fixed and changing volume; a low-count integer population coupled to continuous chemistry | **Very high** (logged by the user, 23 November 2026) | **Design decided (D315):** the cap to 1,024 with the scan fold above 16 and the trace budget fixed; a reported dt limit; two writers with one registry potential; current-volume reads for both writers; part 3 as an integer-population operator in the composite (B), split by independent_segregation | The build, with code-blind references for parts 2 and 3; the sparse layout after the raise |
+| [FR-43](#fr-43--shared-inventories-larger-networks-shared-pools-and-low-count-populations) | Shared inventories: larger sparse reaction networks; one pool spent and replenished by separate processes, at fixed and changing volume; a low-count integer population coupled to continuous chemistry | **Very high** (logged by the user, 23 November 2026) | **All three parts on main (D328):** part 1 (bbc99163), part 2A (c9687d68) and 2B (2ca07dcb), part 3 (7fb0ad87); part 3's registered check passes (D319), and part 2's (D324) | The factor-width term, and the request's item-by-item check (A1: turnover in swelling cells) |
 | [FR-44](#fr-44--labels-across-a-wash-arrival-time-labels-through-scheduled-compartment-washes) | Labels across a wash: neutral arrival-time labels through scheduled compartment washes | **High** (logged by the user, 23 November 2026) | **Logged:** `neutral_arrival_labels@1` (FR-42) and `scheduled_compartment_wash@1` (FR-27) refuse each other at parse | A design note: the wash dilutes each washed node's label shares exactly with unlabelled buffer |
 | [FR-45](#fr-45--several-ligands-competing-for-one-shared-wash-retained-site-capacity) | Several ligands competing for one shared, wash-retained site capacity | **High** (logged by the user, 23 November 2026) | **Logged:** FR-28's node-owned sites bind one ligand per population, and sites modelled as dissolved species wash out with the fluid | A design note: competing ligands in one site pool, or immobile anchored species that a wash leaves in place |
-| [FR-46](#fr-46--binding-from-a-shells-inner-face-lumen-ligands-on-membrane-sites) | Binding from a shell's inner face: lumen ligands on membrane sites | **High** (logged by the user, 23 November 2026) | **Logged:** `cells.prescribed_shell@1` admits outer-face binding of a pool ligand and refuses the lumen's | A design note: reversible inner-face binding with detailed balance, and the occupied state usable in a gate rule |
+| [FR-46](#fr-46--binding-from-a-shells-inner-face-lumen-ligands-on-membrane-sites) | Binding from a shell's inner face: lumen ligands on membrane sites | **High** (logged by the user, 23 November 2026) | **Landed** (merge d702f13a, D323): a site pair declares its face; an inner pair binds a lumen ligand in a prescribed shell; the face rule refuses carriers by name | Inner-face binding stays refused in the deterministic representation until a qualification covers it |
 | [FR-47](#fr-47--shell-exchange-and-scheduled-washes-in-the-deterministic-representation) | Shell exchange and scheduled washes in the deterministic representation | **High** (logged by the user, 23 November 2026) | **Built, admitted, development-only until fr47-shell-exchange's verdict (D323):** `cells.rate_equations@1` runs the prescribed shell, its full and fractional washes, E2's true zeros and autonomous gates in a prescribed shell's world; each is refused by name elsewhere, until a qualification covers it | A design note and a registered qualification against an analytical mass balance and an exact-event ensemble |
-| [FR-48](#fr-48--a-lumen-standard-potential-a-reversible-free-energy-difference-across-a-prescribed-shell) | A lumen standard potential: a reversible free-energy difference for one neutral solute across a prescribed shell | **High** (logged by the user, 23 November 2026) | **Logged:** `cells.assembly_lineages@2` gives the pool and the lumen one solution standard potential per species | A design note with FR-46 and FR-47 (the same files) |
-| [FR-49](#fr-49--compartment-composition-qualifications-expression-site-occupancy-and-labels-beside-cell-owned-compartments) | Compartment composition qualifications: expression, site occupancy and labels beside cell-owned compartments | **High** (logged by the user, 23 November 2026) | **Logged:** each is refused by the compartments' admitted list alone (refusal 7) | Qualify each pairing with its smallest feature and one world |
+| [FR-48](#fr-48--a-lumen-standard-potential-a-reversible-free-energy-difference-across-a-prescribed-shell) | A lumen standard potential: a reversible free-energy difference for one neutral solute across a prescribed shell | **High** (logged by the user, 23 November 2026) | **Landed** (merge d702f13a, D323): an absolute lumen standard potential per species in a prescribed shell, read by every law through the lumen place's standard potential | None open |
+| [FR-49](#fr-49--compartment-composition-qualifications-expression-site-occupancy-and-labels-beside-cell-owned-compartments) | Compartment composition qualifications: expression, site occupancy and labels beside cell-owned compartments | **High** (logged by the user, 23 November 2026) | **Parts H and L landed** (merge 7d021548): the gene unit and neutral arrival labels beside cell-owned compartments; World L's registered judgement passes (D331) | World B and the combination checks C1 and C2, after FR-49's site pairing (following FR-45) and its wash narrowing (following FR-44); C4's four-way form by amendment, once admission by species lands |
 | [FR-50](#fr-50--one-way-cumulative-transfer-records-per-route) | One-way cumulative transfer records per route | **High** (logged by the user, 23 November 2026) | **Logged:** most transfer records are net, so equal opposite flows cancel | Opt-in one-way records from the existing one-way kernels, closing to the net |
 | [FR-51](#fr-51--two-voltage-dependent-blocking-modes-on-one-channel-population) | Two voltage-dependent blocking modes on one channel population | **High** (logged by the user, 23 November 2026) | **Logged:** not expressible; a channel law's kinetics read the voltage only, and there is no block law | An optional weighted-mode block on a channel population, qualified for permeation and block separately |
 | [FR-52](#fr-52--passive-cohort-observations-for-integer-functional-units) | Passive cohort observations for integer functional units: the expected surviving initial and newly assembled units at one site | **High** (logged by the user, 24 November 2026) | **Logged:** `integer_unit_population@1` records its events in a bounded trace, with no cohort readout; labels follow species rows, not units | A design note: a validation reader or a statically absent in-engine expected-cohort record, with classes that partition the count and fail-closed truncation |
@@ -1957,6 +1957,8 @@ cases below are the request's own, condensed.
   `integer_unit_population@1`'s transfers across a washed surface, so it refuses the operator
   (fail-closed). Lifting that is its own qualified extension.
 
+**Status (24 November):** all three parts are on main (D328): part 1 (bbc99163), part 2A (c9687d68) and 2B (2ca07dcb), and part 3 (7fb0ad87). Part 3's registered check passes (D319), and so does part 2's (D324). Still open: the factor-width term, and the request's item-by-item check (A1, turnover in swelling cells).
+
 ## FR-44 — Labels across a wash: arrival-time labels through scheduled compartment washes
 
 **Logged 23 November 2026 by the user, priority high.**
@@ -2025,6 +2027,8 @@ in the lumen binding the same site, with the site and the complex on the membran
 
 **Status (23 November):** logged. A design note comes first.
 
+**Status (24 November):** landed with FR-48 at the merge d702f13a (D323). Inner-face binding stays refused in the deterministic representation until a qualification covers it.
+
 ## FR-47 — Shell exchange and scheduled washes in the deterministic representation
 
 **Logged 23 November 2026 by the user, priority high.**
@@ -2061,6 +2065,8 @@ So large-count vesicle worlds with a shell and washes can run only as exact even
   driver and runs it after the landing. Until that verdict, these paths are development-only: the
   representation's registered `qualified` field says so, and each run that uses them records it
   (`representation.qualification` in its run.json).
+
+**Status (24 November, later):** a reviewer found that the frozen scorer does not check the washes against the registered schedule. The frozen scorer stays official, and a separate schedule supplement is registered before any judged run (`validation/assembly_lineages_v2/FR47_SCHEDULE_SUPPLEMENT.md`, D339). FR-47 stays development-only unless both pass. A fix for inert wall places, which no rate or geometry reads, is in its gate.
 
 ## FR-48 — A lumen standard potential: a reversible free-energy difference across a prescribed shell
 
@@ -2101,6 +2107,8 @@ fixed volumes.
 
 **Status (23 November):** logged. A design note comes first, with FR-46 and FR-47.
 
+**Status (24 November):** landed with FR-46 at the merge d702f13a (D323).
+
 ## FR-49 — Compartment composition qualifications: expression, site occupancy and labels beside cell-owned compartments
 
 **Logged 23 November 2026 by the user, priority high.** This comes from a review of which fixed-volume
@@ -2133,6 +2141,8 @@ alone; nothing in their declarations conflicts.
   admitted.
 
 **Status (23 November):** logged.
+
+**Status (24 November):** parts H and L landed at the merge 7d021548, and World L's registered judgement passes (D331). Still to come: World B and the combination checks C1 and C2, after FR-49's site pairing (following FR-45) and its wash narrowing (following FR-44), and C4's four-way form by amendment, once admission by species lands.
 
 ## FR-50 — One-way cumulative transfer records per route
 
@@ -2248,6 +2258,12 @@ count and the expected newly assembled count, conditional on the recorded events
   exactly one unit.
 
 **Status (24 November):** logged. A design note comes first.
+
+**Correction (24 November, later):** one event can move several units, so the first reading's open premise is settled the other way. A channel carries integer stoichiometry over the unit states (up to `MAX_ORDER` per state), and `integer_change` is products minus reactants.
+- **The reader uses each event's declared change.** Removing d of n exchangeable units uniformly gives E <- E*(n - d)/n. Restricting version 1 to single-unit events, by name, is the fallback.
+- **An acceptance row:** start with two original units and one new unit. One event removes two, chosen uniformly. The expected survivors are 2/3 original and 1/3 new, and a truncated trace returns unresolved.
+- **A mutant:** a reader that assumes one unit per event gives 4/3 and 2/3, a total of 2 against the engine's 1. It must fail the integrity check.
+- **For the design note:** whether a channel may list the active state on both sides. If it may, the stored change is net there, which conflicts with the gross reading.
 
 ## FR-53 — A rounding allowance for global ledgers at every row
 
