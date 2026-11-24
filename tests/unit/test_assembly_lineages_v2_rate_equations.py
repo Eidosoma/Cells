@@ -388,17 +388,13 @@ def _inert_on_a_bilayer(raw):
 
 
 def inert_wall_definition(wall, *, wall_reads=None):
-    """A one-slot prescribed shell with equal pool and lumen volumes, passive exchange at 1 per s
-    each way (P A / V = 1), one tracer in the lumen and none outside, and a wall species W at
-    `wall` copies, in (d) at min_count 2 (rtol 1e-9, atol_count 1e-9). W is inert: no step,
-    factor or law reads it. With `wall_reads` "gate", W and a second form V gate the entry; with
-    "step", W switches to V by a wall step: either way a rate reads W's count."""
-    from cells.models.assembly_lineages_v2 import (
-        GATE_FACTOR,
-        PRESCRIBED_SHELL,
-        SHARED_POOL,
-        SHELL_PERMEATION,
-    )
+    """One prescribed shell (a single lineage: the envelope's rule is the same for one slot of a
+    population) with equal pool and lumen volumes, passive exchange at 1 per s each way
+    (P A / V = 1), one tracer in the lumen and none outside, and a wall species W at `wall`
+    copies, in (d) at min_count 2 (rtol 1e-9, atol_count 1e-9). W is inert: no step, factor or law
+    reads it. With `wall_reads` "gate", W and a second form V gate the entry; with "step", W
+    switches to V by a wall step: either way a rate reads W's count."""
+    from cells.models.assembly_lineages_v2 import GATE_FACTOR, PRESCRIBED_SHELL, SHELL_PERMEATION
 
     u = "unsourced; test"
     names = [("S", {"s": 1}, {"solution": 0.0}), ("W", {"w": 1}, {"bilayer": -1.0})]
@@ -418,8 +414,7 @@ def inert_wall_definition(wall, *, wall_reads=None):
                    "products": {"S@lumen": 1}, "law": SHELL_PERMEATION,
                    "permeability_m_per_s": {"value": 1e-6, "provenance": u}}],
         "free_energy": [{"law": IDEAL_MIXING}],
-        "founder": {"S@pool": 0, **{k: 0 for k in slot}},
-        "population": {"structure": SHARED_POOL, "slots": 1, "founders": [slot]},
+        "founder": {"S@pool": 0, **slot},
         "geometry": {"law": PRESCRIBED_SHELL, "area_m2": {"value": 1e-15, "provenance": u}},
     }  # fmt: skip
     if wall_reads == "gate":
@@ -430,7 +425,6 @@ def inert_wall_definition(wall, *, wall_reads=None):
     d = as_representation(definition(w, horizon=1.0, observations=(1.0,)),
                           envelope={"min_count": 2.0, "provenance": "a test"},
                           integrator=dict(INTEGRATOR, atol_count=1e-9))  # fmt: skip
-    d["execution"]["mode"] = "population"
     return d
 
 
@@ -444,8 +438,8 @@ def _wall_read(reads):
         (_shell(lambda w: w), "site binding in a cells.prescribed_shell@1 world"),
         (_shell(_driven), "a gate driven by bound states, or by anything but its own forms"),
         (_gate_on_a_bilayer(None), "cells.gate_factor@1 is refused in version 1 outside"),
-        (_wall_read("gate"), "founder 0's W@membrane holds 1, below the envelope"),
-        (_wall_read("step"), "founder 0's W@membrane holds 1, below the envelope"),
+        (_wall_read("gate"), "the founder's W@membrane holds 1, below the envelope"),
+        (_wall_read("step"), "the founder's W@membrane holds 1, below the envelope"),
         (_inert_on_a_bilayer(None), "J@membrane holds 1, below the envelope"),
     ],
 )  # fmt: skip
@@ -478,14 +472,14 @@ def test_an_inert_wall_species_is_outside_the_envelope(wall):
     is outside the envelope, at 1 copy as at 2, below and at min_count 2. The one tracer in the
     lumen relaxes to the two-state mean, (1 + e^-2)/2 inside at 1 s, within 1e-7, and the tracer
     is conserved to the moieties' tolerance with the books closed. The guard stays where a rate
-    reads the wall (test_fr47_s_refusals_by_name). Two small population programs (the founders
-    differ, so do the worlds) and two short runs: about 25 s."""
+    reads the wall (test_fr47_s_refusals_by_name). Two small programs (the founders differ, so do
+    the worlds) and two short runs: about 20 s."""
     spec = parse_spec(inert_wall_definition(wall))
     run = runner.run(spec)
     assert run.status == "complete" and run.moieties["closes"] and run.ledger["closes"]
     names = [p.name for p in spec.model.world.places]
     seen = run.rows["row_kind"] == "observed"
-    inside = run.rows["slot_counts"][seen][0, 0, names.index("S@lumen")]
-    outside = run.rows["pool_counts"][seen][0, names.index("S@pool")]
+    inside = run.rows["counts"][seen][0, names.index("S@lumen")]
+    outside = run.rows["counts"][seen][0, names.index("S@pool")]
     assert abs(inside - (1.0 + np.exp(-2.0)) / 2.0) <= 1e-7
     assert abs(inside + outside - 1.0) <= 1e-12
