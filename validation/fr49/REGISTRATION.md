@@ -195,7 +195,7 @@ development aids on the declared values, not the code-blind reference, and not e
 - τ = 15.8 s, and dt L = 0.2 at 0.1 s;
 - plant (a) misses B* by 2.9%.
 
-**`c2_scales.py`:** C2's slowest relaxation time is 49.7 s, and its remainder at 2000 s is 1.7e-16.
+**`c2_scales.py`:** C2's slowest relaxation time is 49.7 s, and its remainder at 2000 s is 1.7e-16. (The remainder figure is withdrawn by amendment 1 below; the relaxation time stands.)
 
 **The other bounds:**
 - The order windows follow FR-43 part 2's [3.6, 4.4] for second order. For third order the window
@@ -203,3 +203,23 @@ development aids on the declared values, not the code-blind reference, and not e
 - The conservation bound covers the site operator's per-step rounding allowance (2.5 ε per step)
   accumulated in the worst case: 6.7e-12 over World B's 12,000 steps at 0.05 s, and 2.2e-11 over
   C2's 40,000. That is 15 and 4.5 times headroom. A misbooking plant misses by order 1.
+
+## Amendment 1 (24 November 2026): §6's C2 remainder, a development figure withdrawn
+
+**The point.** The code-blind references could not reproduce one figure of §6: C2's remainder at
+2000 s. That figure is a development estimate, and it is withdrawn here. The reference reads nothing
+differently.
+
+**Why the figure was wrong.** It came from `c2_scales.py`, a development aid in binary64: SciPy's
+Radau at rtol 1e-12 and atol 1e-24, against a root from `fsolve` at xtol 1e-15. Its value is that
+aid's own floor, the rounding of the integrated state and of the root at binary64's resolution of
+B*, not the remainder of the relaxation.
+- **The remainder itself** lies far below binary64's resolution of B*, by C2's slowest relaxation time
+  (which stands) over 2000 s.
+- `probe/c2_remainder.py` shows this. It propagates the departure from equilibrium linearly from 500 s,
+  so that no cancellation limits it. Its record is beside the other probes.
+
+**What changes:** only §6's evidence sentence. No criterion, bound or declared value changes.
+- C2-3's bound, 1e-10 relative at t ≥ 1800 s, was fixed with this headroom in view.
+- The references' own figure stands as they report it.
+- This amendment quotes none of the references' values.
