@@ -1951,6 +1951,9 @@ cases below are the request's own, condensed.
   - the matrix exponential is a closed form, inside the test;
   - part 2's coupled calculation and part 3's same-draws integration come from a code-blind references
     agent, started at the design ruling.
+- **Part 3's version 1 is refused beside a wash.** `scheduled_compartment_wash@1` reads none of
+  `integer_unit_population@1`'s transfers across a washed surface, so it refuses the operator
+  (fail-closed). Lifting that is its own qualified extension.
 
 ## FR-44 — Labels across a wash: arrival-time labels through scheduled compartment washes
 
