@@ -12225,3 +12225,66 @@ Its five questions go to the user in the morning batch with the advisor.
 
 **A note on the probe:** it held the timed lock for about four minutes while an FR-43 profile, the user's top priority,
 was waiting. Briefs now say to release the lock between probes.
+
+## D371: the user's decisions on the rename's family words, FR-52's form and scope, and FR-53's priority; the lead's rulings on the notes' other questions
+
+2026-11-24, about 22:29 UTC. The lead brought the three notes' questions to the advisor, as the user asked; four went to
+the user.
+
+**The user's decisions:**
+- **The rename's family words:** short where unambiguous, prefixed where a collision could come. For the five missing
+  interfaces and the block law:
+
+| Old ID | New ID |
+| --- | --- |
+| `rapid_binding@1` | `cells.binding.rapid_binding@1` |
+| `shared_pool@1` | `cells.population.shared_pool@1` |
+| `bilayer_geometry@1` | `cells.assembly_geometry.bilayer_geometry@1` |
+| `pore_nucleation@1` | `cells.assembly_hazard.pore_nucleation@1` |
+| `rate_equations@1` | `cells.assembly_representation.rate_equations@1` |
+| `open_channel_block_weighted_modes@1` | `cells.channel_block.open_channel_block_weighted_modes@1` |
+
+  The note's `block` is not used, since "block" already names a definition section throughout the code.
+- **FR-52's form:** an engine record kept at each event, with the trace reader kept in `validation/` as the
+  independent check.
+- **FR-52's scope:** chains are needed now. Version 1 covers dimer-to-tetramer chains and single-subunit activation,
+  through a declared identity map across states, rather than the note's two-state limit.
+- **FR-53 goes to normal.** Its premise was corrected (D370), and on CPU nothing fails. FR-47's small ledger fix, an
+  atol term for counts, lands on its own now that Protocol D has passed.
+
+**The lead's rulings, as the notes recommend, with the advisor's cautions:**
+- **FR-52:**
+  - **Q3:** an observed state on both sides of a channel is refused in version 1; the page states how returns are
+    counted.
+  - **Q4:** the new tier-2 file, with one integer-unit world added to G1 and crossrev at landing, rather than a routine
+    twin.
+  - **Q5:** an optional `cohorts` key on `@1`; omission is the only spelling, and an empty list is refused.
+  - **Independence:** the author's enumerated fractions are frozen in the note before the build, and the note states
+    the float record's rounding bound.
+- **FR-53:**
+  - **Q3:** X2's registered floor is unchanged.
+  - **Q4:** the fixed multipliers stay until evidence retires each one.
+  - **Q1, Q2 and Q5** wait for the build, now normal priority, after reads of what the new sum changes in G1's and
+    crossrev's saved fields, its compiled cost, and evidence on the L4.
+- **The rename:**
+  - **Q2:** the block law gets its own family, `channel_block`, with its law and interface registered in the hand
+    refactors, so the mapping holds no seeded law row. The interface's name follows the family word.
+  - **Q3:** the 18 live pieces also spelled inside legacy are re-spelled in legacy's files too, after a check for
+    pinned legacy config digests. Every route left after D369 has legacy outliving the rename.
+  - **Q4:** the ten sub-laws and the field closure law are in scope, since D346 names laws; the 35 recorded labels are
+    not. Any that needs a new family word comes back to the user.
+  - **Q5:** folders move separately, after the rename.
+  - **Q6:** the manifest keeps `@2`'s keys, with its ID rule amended. The note checks the library pages' paths, and
+    the viewer session is told.
+  - **Q7:** tagged files are pinned or translated at live drivers, with an erratum only where a judge must change. The
+    note lists every tagged registration with a run still to come (FR-38, FR-45, FR-49, Ek-Vitorín), each marked
+    pinned or translated.
+  - **Q8:** test plants take the three-part shape. The note states the grammar for outside modules, and the user is
+    told that private IDs change shape.
+- **The move's order:**
+  - FR-38's build runs its judged run before it merges main after the rename.
+  - The scripted move stays pure, with the long-line rewrap as a separate commit.
+  - The scope map is refreshed right after the landing.
+
+**FR-45, a coordinator's ruling.** P5's sizing on W7 covers both C6 and C4a, as for W2. CRITERIA's plant row, as
+amendment 2 amended it, names both, and it governs the narrower per-world table in amendment 2 §3.
