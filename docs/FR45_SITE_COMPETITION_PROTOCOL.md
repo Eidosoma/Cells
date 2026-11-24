@@ -11,10 +11,15 @@ references agent's work, is `fr45-protocol-registered-2026-11-2x`.
 - the criteria, bands and plants, `validation/fr45/spec/CRITERIA.md`;
 - the pair rule, `validation/assembly_lineages_v2/agreement.py`, FR-47's (D323), which is not yet on
   main (§8);
+- the dated changes of 24 November 2026, before the tag, in `validation/fr45/spec/`:
+  - `AMENDMENT-2026-11-24.md`, the references agent's 13 questions;
+  - `NOTE-2026-11-24.md`, C4b's and C6's state;
+  - `AMENDMENT-2-2026-11-24.md`, the user's acceptance targets: W7, the user's example washed, and
+    W7s, its single-ligand limit;
 - at the tag, the code-blind references' code and files, in `validation/fr45/references/`.
 
 **Engine models it runs:** `resolved_pump_composite@1` over `resolved_pump_tissue@3`, with
-`site_occupancy@1` widened by FR-45's site sets, and `scheduled_compartment_wash@1` in W2.
+`site_occupancy@1` widened by FR-45's site sets, and `scheduled_compartment_wash@1` in W2 and W7.
 
 **S** marks this document's own reading or derivation.
 
@@ -105,10 +110,12 @@ only:
 | W4 | Fixed concentrations in a 1 mL node, at three steps | C8 |
 | W5 | The stage condition's edge: each population at h·k_on·c = 0.3, summed 0.6 | C7, P4 |
 | W6 | A two-ligand set on a patch's outside face, from partial occupancies | C1, C2a, C3, C5, C9, C10 |
+| W7 | The user's example (amendment 2): 8 fmol free A and 4 free B over 6 fmol of shared sites (3 empty, 2 A, 1 B), at its own equilibrium, then half washed for a buffer holding B | C1, C2a, C2b (before the wash), C3, C4, C5, C6, C9, C10, P5 |
+| W7s | W7's single-ligand limit (amendment 2): A alone on W7's sites | C1, C2a, C3, C5, C9, C10 |
 
 **Every world's step meets dt·max L ≤ 0.03,** sized before this spec by a NumPy probe of the same
 law. Two worlds are exceptions by design: W4's coarser runs (the order study) and W5 (the
-refusal). **Every horizon of W1, W2, W3 and W6 reaches e⁻³⁰ of its slowest mode.** W1eq starts at
+refusal). **Every horizon of W1, W2, W3, W6, W7 and W7s reaches e⁻³⁰ of its slowest mode.** W1eq starts at
 its root, and W1p, W3p, W4 and W5 are short by design.
 
 ## 5. The judged run

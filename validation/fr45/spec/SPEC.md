@@ -91,7 +91,7 @@ For population b on set s, binding ligand l from the facing node i:
 - **The heat over an interval** without an event is H = G(start) − G(end). Binding only, so the
   sub-system is closed and passive, and H ≥ 0.
 
-### 1.4 The wash (W2)
+### 1.4 The wash (W2, W7)
 
 At a wash of node i, fraction f with buffer concentrations c_buf (the event's map, applied at once):
 - every ligand's free amount at i becomes (1 − f)·n + f·V_i·c_buf;
@@ -213,6 +213,40 @@ W3's inputs, with observation times 0.1, 0.2, 0.5, 1.0 and 2.0 s and a horizon o
 | Observation times | 0.25, 0.5, 1.0, 2.0, 4.0, 8.0, 16.0, 25.0 s |
 | Horizon | 25.0 s |
 
+### W7: the user's example, washed (amendment 2, 24 November 2026)
+
+| Input | Value |
+| --- | --- |
+| Node `well` | V = 1.0 pL |
+| Free L1 (the example's A), L2 (its B) at `well` | 8.0 fmol, 4.0 fmol |
+| Set `matrix` (owner: node `well`) | N = 3613284456.0 copies (S = 6.0 fmol), ν = 1, α = 1.0 |
+| Population `matrix_L1` | L1; k_on 1.0; k_off 12.0; initial occupancy 0.3333333333333333 |
+| Population `matrix_L2` | L2; k_on 0.25; k_off 3.0; initial occupancy 0.16666666666666666 |
+| The wash | t = 1.0 s, node `well`, f = 0.5; buffer L1 1.0e-12 mM, L2 8.0 mM |
+| dt | 0.005 s |
+| Observation times | 0.5, 1.0, 1.005, 1.5, 2.0, 3.0, 5.0, 8.0, 12.0 s |
+| Horizon | 12.0 s |
+
+- **The start is the user's example:** B = 2.0 and 1.0 fmol, and R = 3.0 fmol.
+  - Both K are 12 mM, so B_b/R_s = c_l/K_b holds at the start.
+  - Both of §1.2's net fluxes are 0.0 in binary64.
+- **The row at 1.0 s holds the state the wash acts on.** 1.005 s is the first row after it.
+- **§1.4's map on the start** removes exactly 4.0 fmol of L1 and 2.0 fmol of L2, and supplies
+  4.0 fmol of L2.
+
+### W7s: W7's single-ligand limit (amendment 2)
+
+| Input | Value |
+| --- | --- |
+| Node `well` | V = 1.0 pL; free L1 8.0 fmol |
+| Set `matrix` (owner: node `well`) | as W7 |
+| Population `matrix_L1` | as W7, the set's only population |
+| dt | 0.005 s |
+| Observation times | 0.5, 1.0, 2.0, 3.0, 5.0, 8.0, 12.0 s |
+| Horizon | 12.0 s |
+
+- **L2 is absent.** It sits at its trace, moved by no law, so it is left out (amendment answer 3).
+
 **The start of every world:**
 - B_b = (initial occupancy)·S_s(b);
 - R_s = S_s − Σ_{b on s} B_b;
@@ -228,12 +262,19 @@ W3's inputs, with observation times 0.1, 0.2, 0.5, 1.0 and 2.0 s and a horizon o
   - in general, the system of §1.2's detailed balance with each ligand's total and each set's
     moiety.
 - **The totals:**
-  - W1, W1eq, W3 and W6: the start's;
+  - W1, W1eq, W3, W6 and W7s: the start's;
   - W2: the post-wash totals, the pre-wash state through §1.4's map at 4.0 s. Because that state
     comes from R-ode, R-eq of W2 rests on R-ode's state at 4.0 s.
+  - W7 (amendment 2): the post-wash totals, R-ode's state at 1.0 s through §1.4's map.
 - **Every root** to at least 15 significant digits, with its residual.
-- **For one set with two ligands** (W1, W1eq, W6; W2 after the wash), also the trigonometric root
-  of the cubic in the free-site variable (Wang 1995). Its gap from the bracketed root is reported.
+- **For one set with two ligands** (W1, W1eq, W6; W2 and W7 after the wash), also the
+  trigonometric root of the cubic in the free-site variable (Wang 1995). Its gap from the bracketed
+  root is reported.
+- **For W7 and W7s (amendment 2),** each population's occupied fraction is also reported both ways.
+  - By the user's formula, θ_b = (c_b/K_b)/(1 + Σ_j c_j/K_j), from the root's free
+    concentrations, over the set's populations. W7s's sum has its one term.
+  - As B_b/S_s from the root.
+  - Their gap is reported: a check of the reference.
 - **For W1eq,** the start of §2 from the root, written with `repr`.
 
 ### 3.2 R-ode: the trajectories and each ligand's balance
@@ -244,14 +285,15 @@ W3's inputs, with observation times 0.1, 0.2, 0.5, 1.0 and 2.0 s and a horizon o
     of its scale. Otherwise the world is resized before the tag.
   - An amount that no law moves (a ligand's free amount at a node that no population binds it
     from) is left out of the trajectory and of every criterion.
-- **Integrate §1.2** for W1, W1eq, W1p, W2 (with §1.4's map at 4.0 s), W3, W4 and W6, at two
+- **Integrate §1.2** for W1, W1eq, W1p, W2 (with §1.4's map at 4.0 s), W3, W4, W6, W7 (with §1.4's
+  map at 1.0 s) and W7s, at two
   tolerances (rtol 10⁻¹² and 10⁻¹³, absolute tolerance scaled to each amount).
 - **Report at every observation time:** every free amount, every R_s and every B_b, with the gap
   between the two tolerances. A gap above 10⁻¹⁰ of the observable's scale (CRITERIA.md) is
   reported, not hidden.
 - **Each ligand's balance:**
   - its total, free plus bound, at every observation time;
-  - for W2, the wash's removed and supplied amounts of each ligand;
+  - for W2 and W7, the wash's removed and supplied amounts of each ligand;
   - every R_s + Σ B_b.
 - **The distance from R-eq at the horizon,** r_T = |x(T) − x_eq| per amount.
 - **W4's closed form:** at fixed concentrations (the large-V limit), B(t) = B_eq + e^(A·t)·(B₀ − B_eq),
@@ -264,12 +306,13 @@ W3's inputs, with observation times 0.1, 0.2, 0.5, 1.0 and 2.0 s and a horizon o
 - **G** (§1.3) of R-ode's state at the start and at every observation time, per facing node: the
   node's pools plus the sets that face it.
 - **Every interval's heat** H = G(t_k) − G(t_{k+1}), between consecutive times from the start. In
-  W2 the interval across the wash (4.0 to 4.0125 s) is excluded.
+  W2 the interval across the wash (4.0 to 4.0125 s) is excluded, and in W7 the interval from 1.0 to
+  1.005 s.
 - **The heat bound B_H of each interval** (CRITERIA.md, C3a). Its log terms take max(x, δ_x) in
   place of x, so an amount that starts at zero, such as an empty population, gives a finite
   bound.
-- **The free-energy change at W2's wash** for the record, not judged: G just after §1.4's map minus
-  G just before. The sets' part is zero.
+- **The free-energy change at W2's and W7's washes** for the record, not judged: G just after
+  §1.4's map minus G just before. The sets' part is zero.
 
 ### 3.4 The class of every zero-uncertainty pair
 
@@ -309,8 +352,10 @@ the per-population rule.
 ## 5. The writer and its file
 
 - **One JSON file per world:** `reference_W1.json`, `reference_W1eq.json`, `reference_W1p.json`,
-  `reference_W2.json`, `reference_W3.json`, `reference_W4.json`, `reference_W5.json` and
-  `reference_W6.json`.
+  `reference_W2.json`, `reference_W3.json`, `reference_W4.json`, `reference_W5.json`,
+  `reference_W6.json`, and (amendment 2) `reference_W7.json` and `reference_W7s.json`.
+  - W7's and W7s's `"equilibrium"` also holds `"theta"`: {population: {formula, root, gap}}
+    (§3.1).
 - **Each file holds:**
   - `"world"`: this spec's inputs, echoed, with every capacity S_s;
   - `"equilibrium"`: {sets: {id: R}, populations: {id: B}, pools: {id: n}, residual, wang: {gap}
