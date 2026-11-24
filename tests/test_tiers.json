@@ -389,6 +389,10 @@
   "/mnt/workspaces/Cells/fr44-core-20261124/tiers-78f72bc0/measured.json",
   "/mnt/workspaces/Cells/fr44-core-20261124/tiers-compartments-f60232c0/measured.json",
   "/mnt/workspaces/Cells/fr51-build-20261124/tiers-d3b3cf0b/measured.json",
+  "/mnt/workspaces/Cells/fr51-build-20261124/tiers-7ca7c9c1/measured.json",
+  "/mnt/workspaces/Cells/fr51-slot-refusal-20261124/tiers-38756bf6/measured.json",
+  "/mnt/workspaces/Cells/fr50-build-20261124/tiers/measured.json/measured.json",
+  "/mnt/workspaces/Cells/fr50-build-20261124/tiers2/measured-quiet/measured.json",
   "/mnt/workspaces/Cells/fr43-part1-gaps-20261124/tiers/measure-4f4c4812/measured.json"
  ],
  "measured_provenance": [
@@ -3321,6 +3325,36 @@
    "utc": "2026-11-24T14:35:46+00:00"
   },
   {
+   "git_revision": "7ca7c9c15f7f02983aeb103b989c5d0a739e9d31",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr51-build-20261124/snap-7ca7c9c1",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-24T14:49:01+00:00"
+  },
+  {
+   "git_revision": "38756bf65a3dbb09092704786f08ddcb3ca7a068",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr51-slot-refusal-20261124/snap-38756bf6",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-24T19:56:24+00:00"
+  },
+  {
+   "git_revision": "e7e574d587f82bcb622963cec047230865a1223c",
+   "dirty": false,
+   "root": ".claude/worktrees/fr50-one-way-records",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-24T16:26:46+00:00"
+  },
+  {
+   "git_revision": "2fae9e65bf6b675617a56d2d56195f2ff92acc11",
+   "dirty": false,
+   "root": ".claude/worktrees/fr50-one-way-records",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-24T19:59:55+00:00"
+  },
+  {
    "git_revision": "4f4c48121ee0fc6b6f900c0c5a461347e13f9dbe",
    "dirty": false,
    "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -5491,7 +5525,7 @@
    },
    {
     "file": "tests/unit/test_modules_surface.py",
-    "seconds": 3.07,
+    "seconds": 2.92,
     "exit_code": 0,
     "counts": {
      "passed": 5
@@ -7977,10 +8011,10 @@
    },
    {
     "file": "tests/unit/test_neutral_labels_kinds.py",
-    "seconds": 64.27,
+    "seconds": 64.18,
     "exit_code": 0,
     "counts": {
-     "passed": 25
+     "passed": 27
     }
    },
    {
@@ -7997,6 +8031,22 @@
     "exit_code": 0,
     "counts": {
      "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_one_way_records.py",
+    "seconds": 75.2,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
+   },
+   {
+    "file": "tests/unit/test_one_way_records_transporter.py",
+    "seconds": 28.88,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
     }
    },
    {
@@ -8073,10 +8123,10 @@
    },
    {
     "file": "tests/unit/test_passive_routes_kind.py",
-    "seconds": 72.13,
+    "seconds": 75.57,
     "exit_code": 0,
     "counts": {
-     "passed": 22
+     "passed": 29
     }
    },
    {
@@ -8594,10 +8644,10 @@
    },
    {
     "file": "tests/unit/test_surface_pump_v3_populations.py",
-    "seconds": 30.62,
+    "seconds": 23.65,
     "exit_code": 0,
     "counts": {
-     "passed": 57
+     "passed": 61
     }
    },
    {
@@ -8637,10 +8687,10 @@
    },
    {
     "file": "tests/unit/test_transporter_kind.py",
-    "seconds": 79.55,
+    "seconds": 78.85,
     "exit_code": 0,
     "counts": {
-     "passed": 30
+     "passed": 34
     }
    },
    {

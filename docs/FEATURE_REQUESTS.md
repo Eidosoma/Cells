@@ -58,7 +58,7 @@ and a general feature, never one built for one study (D144).
 | [FR-50](#fr-50--one-way-cumulative-transfer-records-per-route) | One-way cumulative transfer records per route | **High** (logged by the user, 23 November 2026) | **Logged:** most transfer records are net, so equal opposite flows cancel | Opt-in one-way records from the existing one-way kernels, closing to the net |
 | [FR-51](#fr-51--two-voltage-dependent-blocking-modes-on-one-channel-population) | Two voltage-dependent blocking modes on one channel population | **High** (logged by the user, 23 November 2026) | **Landed** 24 November 2026 at 955765ef (tag `fr51-landed-2026-11-24`); judged against fr51-channel-block-v1, every criterion passing | The slot-refusal follow-up; the law's registration after FR-64's note; the two-arm registration (D353, D356) |
 | [FR-52](#fr-52--passive-cohort-observations-for-integer-functional-units) | Passive cohort observations for integer functional units: the expected surviving initial and newly assembled units at one site | **High** (logged by the user, 24 November 2026) | **Logged:** `integer_unit_population@1` records its events in a bounded trace, with no cohort readout; labels follow species rows, not units | A design note: a validation reader or a statically absent in-engine expected-cohort record, with classes that partition the count and fail-closed truncation |
-| [FR-53](#fr-53--a-rounding-allowance-for-global-ledgers-at-every-row) | A rounding allowance for global ledgers at every row: the first window's bound no tighter than the sum's own rounding | **High** (logged by the user, 24 November 2026) | **Logged:** at steps 0 and 1 the bound is the bare atol, and the host reads 0.28 of it on 625 cells, growing about as √N | A design note: a derived summation allowance per row, or compensated global sums, with the planted faults still caught |
+| [FR-53](#fr-53--a-rounding-allowance-for-global-ledgers-at-every-row) | A rounding allowance for global ledgers at every row: the first window's bound no tighter than the sum's own rounding | Normal (logged by the user, 24 November 2026 as high; lowered by the user, D371) | **Logged:** at steps 0 and 1 the bound is the bare atol, and the host reads 0.28 of it on 625 cells, growing about as √N | A design note: a derived summation allowance per row, or compensated global sums, with the planted faults still caught |
 | [FR-54](#fr-54--passive-neutral-diffusion-between-two-finite-liquid-regions-qualified-against-the-exact-two-well-solution-then-a-wash-at-a-diffusion-connected-node) | Passive neutral diffusion between two finite liquid regions, qualified against the exact two-well solution; then a wash at a diffusion-connected node | **High** (logged by the user, 24 November 2026; D341) | **Logged:** a wash at a diffusion-connected node stays refused (D246) until measured | A design note: closed-form, code-blind references; a stopped run reports its residual and tolerance; then the wash's qualification |
 | [FR-55](#fr-55--an-input-dependent-closing-rate-for-regulated-availability) | An input-dependent closing rate for regulated availability (dose-dependent deactivation) | Normal (logged by the user, 24 November 2026; D344; lowered by D351) | **Logged:** one fixed closing rate; two groups' SK2 records contradict carrying it, in opposite directions (an indication pair, D351) | A design note, then qualification against both groups' records |
 | [FR-56](#fr-56--a-temperature-dependent-molecular-footprint) | A temperature-dependent molecular footprint with a declared, sourced expansion coefficient | Normal (logged by the user, 24 November 2026; D344) | **Logged:** a fixed footprint per species; two methods confirm POPC's expansion on warming | A design note |
@@ -2375,6 +2375,8 @@ count and the expected newly assembled count, conditional on the recorded events
 - **A mutant:** a reader that assumes one unit per event gives 4/3 and 2/3, a total of 2 against the engine's 1. It must fail the integrity check.
 - **For the design note:** whether a channel may list the active state on both sides. If it may, the stored change is net there, which conflicts with the gross reading.
 
+**Design (D371; the user):** an engine record kept at each event, with the trace reader as the independent check. Version 1 covers chains (dimer to tetramer) and single-subunit activation, through a declared identity map across states. The note on `fr52-design` is being revised accordingly.
+
 ## FR-53 — A rounding allowance for global ledgers at every row
 
 **Logged 24 November 2026 by the user, priority high.**
@@ -2412,6 +2414,10 @@ loosens no bound beyond what that rounding requires. Every planted fault the che
 - **A new GPU qualification is separate,** and the user's decision (D336).
 
 **Status (24 November):** logged. A design note comes first.
+
+**Correction and design note (24 November, D370):** in the `ledger_limits` family the row-1 bound is not the bare atol, since the running allowance is already about 98% to 99.9% of it. What grows with the cell count is the check's own summation. Design note: `docs/LEDGER_ROUNDING_DESIGN.md` on `fr53-design`, recommending one compensated sum and one bound form with declared classes.
+
+**Priority (D371):** normal, by the user, after D370's correction.
 
 ## FR-54 — Passive neutral diffusion between two finite liquid regions, qualified against the exact two-well solution; then a wash at a diffusion-connected node
 

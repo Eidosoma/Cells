@@ -63,6 +63,20 @@ J- = J+ e^x, over the step with the gap to the booked cycles (label_transfers). 
 refuses a labelled species that a net-flow form changes, that a law changes at one end only or on
 a held row, or whose counts at the two ends differ. Neither hook is traced without labels.
 
+**FR-50's one-way records** (D327; the registered protocol fr50-one-way-records-v1), in both
+layouts: a population asks with its optional key `"one_way": true`. Its forward and backward cycle
+records are the integrals of J+ and J- over the run, by @3's shared step rule
+(numerics/one_way_split.py) from the same one-way rates as the labels (record_fluxes; record_nets
+reads the booked cycles), in fmol of cycles, with the running maximum of each step's relative gap:
+- version 1: `transporter_forward_fmol`, `transporter_backward_fmol` and
+  `transporter_one_way_gap_relative` [membrane_slot], closing to transporter_cycles;
+- the population axis: `cycle_forward_fmol`, `cycle_backward_fmol` and
+  `cycle_one_way_gap_relative` [mode, population], closing to cycle_count.
+A population that does not ask keeps zeros. The fields, the masks (`transporter_one_way`,
+`cycle_one_way`) and both hooks exist only where a population asks (declared_fields), so a
+definition without the key keeps today's structure entry, fields and programs. A population whose
+law runs the net-flow form is refused: it has no one-way cycle rates.
+
 Version 1's layout:
 
 docs/INNER_MODEL_V4_DESIGN.md §7.4 (g) 2 and (k); docs/COMPARTMENT_PH_TRANSFER_DESIGN.md §5–6
@@ -160,9 +174,11 @@ from cells.modules import (
     Kind,
     KindFields,
     KindView,
+    OneWayRecord,
     PartitionRole,
     Schedule,
     bounded_integer,
+    close_one_way,
     declared_schedule,
     entity_sum,
     finite_number,
@@ -171,6 +187,7 @@ from cells.modules import (
     require_fields,
     scatter,
     series_to_dict,
+    step_one_way_amounts,
 )
 from cells.registry import species_registry
 from cells.registry.kind_registry import BUILTIN
@@ -235,6 +252,19 @@ GAP_FINITE_FUEL = (
     "finite fuel (finite_fuel_rows@1) is refused in this round: the stage energy-rate "
     "observation's standard-potential term waits for the landing (gap 2)"
 )
+# FR-50's one-way records (the module docstring): a population asks with its optional key, and the
+# fields, masks and hooks exist only where one does (declared_fields; bound() drops the hooks).
+ONE_WAY_KEY = "one_way"
+V1_ONE_WAY_STATE_AXES = (
+    ("transporter_forward_fmol", ("membrane_slot",)),  # Forward cycles, cumulative.
+    ("transporter_backward_fmol", ("membrane_slot",)),  # Backward cycles, cumulative.
+    ("transporter_one_way_gap_relative", ("membrane_slot",)),  # The running maximum of r.
+)
+V1_ONE_WAY_FIELDS = ("transporter_one_way",)  # [membrane]: the patch's population records.
+V1_ONE_WAY_RECORD = OneWayRecord(
+    "transporter_cycles", "transporter_forward_fmol", "transporter_backward_fmol",
+    "transporter_one_way_gap_relative",
+)  # fmt: skip
 
 
 @dataclass(frozen=True)
@@ -256,6 +286,7 @@ class Population:
     ph_band: float | None
     inside: str  # the patch's inside cell
     outside: str  # the patch's outside node
+    one_way: bool = False  # FR-50: its one-way cycle records.
 
 
 # ---------------------------------------------------------------------------- definition
@@ -334,7 +365,8 @@ def _parse_version_1(entries, base):
     taken, ids, used = _taken_ids(m), set(), set()
     out = []
     for raw in entries:
-        require_fields(raw, set(ENTRY_FIELDS), "a transporter population")
+        optional = {ONE_WAY_KEY} & set(raw) if isinstance(raw, dict) else set()
+        require_fields(raw, set(ENTRY_FIELDS) | optional, "a transporter population")
         name = raw["id"]
         if not isinstance(name, str) or not name or name in ids or name in taken:
             raise ConfigError(f"transporter ID {name!r} must be unique among the model's IDs")
@@ -384,16 +416,29 @@ def _parse_version_1(entries, base):
                 *_fuel(raw["fuel"], where, law, patch, role, valence),
                 patch.inside,
                 patch.outside,
+                one_way=_one_way(raw, where),
             )
         )
     return tuple(out)
 
 
+def _one_way(raw, where):
+    """A population's optional one_way key (FR-50): true or false, false where it is not given."""
+    one_way = raw.get(ONE_WAY_KEY, False)
+    if not isinstance(one_way, bool):
+        raise ConfigError(
+            f"{where}: {ONE_WAY_KEY} is true or false (true keeps the population's one-way cycle "
+            "records, forward and backward)"
+        )
+    return one_way
+
+
 def to_dict(declaration):
     if isinstance(declaration, PopulationAxis):
         return [_population_dict(t) for t in declaration]
-    return [
-        dict(
+    out = []
+    for t in declaration:
+        entry = dict(
             id=t.id,
             patch=t.patch,
             law=t.law,
@@ -410,21 +455,27 @@ def to_dict(declaration):
                 ph_band=t.ph_band,
             ),
         )
-        for t in declaration
-    ]
+        if t.one_way:  # FR-50: written only where asked, so a definition keeps its form.
+            entry[ONE_WAY_KEY] = True
+        out.append(entry)
+    return out
 
 
 def structure_entry(declaration):
-    """Value-free: the declared laws and fuel kinds, sorted; on the population axis, CycleAxis."""
+    """Value-free: the declared laws and fuel kinds, sorted; on the population axis, CycleAxis.
+    Where a population keeps one-way records (FR-50), OneWayEntry(that entry), so today's
+    declarations keep today's entry."""
     if isinstance(declaration, PopulationAxis):
         asks = any(t.proton_readout is not None for t in declaration)
         ends = any(_end_chemistry_rows(t).any() for t in declaration)
         current = any(t.current_readout for t in declaration)
-        return CycleAxis(tuple(sorted({t.law for t in declaration})), asks, ends, current)
-    return (
-        tuple(sorted({t.law for t in declaration})),
-        tuple(sorted({t.fuel_kind for t in declaration})),
-    )
+        entry = CycleAxis(tuple(sorted({t.law for t in declaration})), asks, ends, current)
+    else:
+        entry = (
+            tuple(sorted({t.law for t in declaration})),
+            tuple(sorted({t.fuel_kind for t in declaration})),
+        )
+    return OneWayEntry(entry) if any(t.one_way for t in declaration) else entry
 
 
 def check_definition(spec):
@@ -500,6 +551,11 @@ def initial(spec, declaration, layout):
         transporter_metabolic_work_pJ=np.zeros(k),
         transporter_fuel_supplied_fmol=np.zeros((s, k)),
     )
+    if any(t.one_way for t in declaration):  # declared_fields' test (FR-50).
+        v["transporter_one_way"] = np.zeros(k, dtype=bool)
+        for t in declaration:
+            v["transporter_one_way"][patches.index(t.patch)] = t.one_way
+        state |= {name: np.zeros(k) for name, _ in V1_ONE_WAY_STATE_AXES}
     return state, v
 
 
@@ -1032,6 +1088,17 @@ END_CHEMISTRY_FIELDS = ("cycle_row_end_chemistry",)  # [K, P]
 CURRENT_READOUT_KEY = "current_readout"
 CURRENT_READOUT_FIELDS = ("cycle_current_present",)  # [P]: the population asks
 CURRENT_READOUT_COLUMNS = ("cycle_current_A",)  # [P]: _charge_current, outward-positive (A)
+# FR-50's one-way records on the population axis (the module docstring), only where a population
+# asks (declared_fields), as version 1's (V1_ONE_WAY_STATE_AXES).
+GENERAL_ONE_WAY_STATE_AXES = (
+    ("cycle_forward_fmol", ("cycle_mode", "cycle_population")),  # Forward cycles, cumulative.
+    ("cycle_backward_fmol", ("cycle_mode", "cycle_population")),  # Backward cycles, cumulative.
+    ("cycle_one_way_gap_relative", ("cycle_mode", "cycle_population")),  # The running max of r.
+)
+GENERAL_ONE_WAY_FIELDS = ("cycle_one_way",)  # [P]: the population records.
+GENERAL_ONE_WAY_RECORD = OneWayRecord(
+    "cycle_count", "cycle_forward_fmol", "cycle_backward_fmol", "cycle_one_way_gap_relative"
+)
 PROTON_READOUT_COLUMNS = (
     "cycle_membrane_potential_V",  # [P]: delta psi = phi_P - phi_N
     "cycle_proton_motive_force_V",  # [P]: delta p = delta psi + (RT/F) ln(h_P / h_N)
@@ -1055,6 +1122,14 @@ class CycleAxis(NamedTuple):
     current_readout: bool = False
 
 
+class OneWayEntry(NamedTuple):
+    """FR-50: the structure entry of a declaration where a population keeps one-way records, either
+    layout's entry inside it. The marker keeps it distinct from every entry of today's."""
+
+    entry: object  # Version 1's (laws, fuel kinds), or a CycleAxis.
+    marker: str = ONE_WAY_KEY
+
+
 class CyclePopulation(NamedTuple):
     """One population on the axis, its host's ends resolved at the parse."""
 
@@ -1072,6 +1147,7 @@ class CyclePopulation(NamedTuple):
     proton_readout: object = None  # K4: its free-proton species row, where it asks (else None)
     charged_roles: tuple = ()  # K3b: its roles whose species is charged, recorded at the parse
     current_readout: bool = False  # FR-34: its current read out at each observed row
+    one_way: bool = False  # FR-50: its one-way cycle records
 
 
 class PopulationAxis(tuple):
@@ -1134,6 +1210,7 @@ def _mapped(t):
         t.inside,
         t.outside,
         t,
+        one_way=t.one_way,
     )
 
 
@@ -1144,7 +1221,7 @@ def _counts(form, values):
 
 def _parse_general(raw, base, patches, valence, taken):
     """One entry in the general form (statement 1, §1)."""
-    keys = {PROTON_READOUT_KEY, CURRENT_READOUT_KEY}  # Each optional (K4, FR-34).
+    keys = {PROTON_READOUT_KEY, CURRENT_READOUT_KEY, ONE_WAY_KEY}  # Optional (K4, FR-34, FR-50).
     optional = keys & set(raw) if isinstance(raw, dict) else set()
     require_fields(raw, set(GENERAL_FIELDS) | optional, "a transporter population")
     name = raw["id"]
@@ -1195,7 +1272,8 @@ def _parse_general(raw, base, patches, valence, taken):
         raise ConfigError(f"{where}: held_rows lists distinct rows of the law, each [role, N or P]")
     held = tuple(tuple(r) for r in held)
     proton = raw.get(PROTON_READOUT_KEY)
-    if optional and not (isinstance(proton, str) and valence.get(proton) == 1):
+    readout = optional - {ONE_WAY_KEY}  # Today's two keys, read as before (FR-50's aside).
+    if readout and not (isinstance(proton, str) and valence.get(proton) == 1):
         raise ConfigError(
             f"{where}: {PROTON_READOUT_KEY} names the model's free-proton species row (valence "
             "+1), whose concentrations at the N and P ends give the population's proton-motive "
@@ -1221,13 +1299,21 @@ def _parse_general(raw, base, patches, valence, taken):
         proton_readout=proton,
         charged_roles=tuple(role for role in named if valence[roles[role]] != 0),
         current_readout=current,
+        one_way=_one_way(raw, where),
     )
     _check_population(population, form, hosted[law], valence, where)
     return population
 
 
 def _check_population(t, form, law, valence, where):
-    """A population's rows and modes against the pass's rules (statement 1, §2; Q3, Q4)."""
+    """A population's rows and modes against the pass's rules (statement 1, §2; Q3, Q4), and FR-50's
+    refusal of one-way records on a net-flow form."""
+    if t.one_way and form.kinetics == "net_flow":
+        raise ConfigError(
+            f"{where}: {ONE_WAY_KEY} records are refused on {t.law}, whose modes run the net-flow "
+            "form: it gives each mode's net rate alone, with no one-way cycle rates J+ and J- "
+            "(FR-50, version 1)"
+        )
     roles, held = dict(t.roles), set(t.held_rows)
     for role, end in held:
         if valence[roles[role]] != 0:
@@ -1325,12 +1411,25 @@ def _population_dict(t):
         out[PROTON_READOUT_KEY] = t.proton_readout
     if t.current_readout:  # FR-34: likewise, written only where asked.
         out[CURRENT_READOUT_KEY] = True
+    if t.one_way:  # FR-50: likewise.
+        out[ONE_WAY_KEY] = True
     return out
 
 
 def declared_fields(entry):
     """The kind's fields for its structure entry (§7.4 (n) 5): version 1's for today's entry, with
-    the population axis's own hooks absent; the population axis's for CycleAxis."""
+    the population axis's own hooks absent; the population axis's for CycleAxis; and for
+    OneWayEntry its entry's, with the layout's one-way records, their mask and hooks (FR-50)."""
+    if isinstance(entry, OneWayEntry):
+        fields = declared_fields(entry.entry)
+        axis = isinstance(entry.entry, CycleAxis)
+        return fields._replace(
+            state_axes=fields.state_axes
+            + (GENERAL_ONE_WAY_STATE_AXES if axis else V1_ONE_WAY_STATE_AXES),
+            layout_fields=fields.layout_fields
+            + (GENERAL_ONE_WAY_FIELDS if axis else V1_ONE_WAY_FIELDS),
+            one_way_records=(GENERAL_ONE_WAY_RECORD if axis else V1_ONE_WAY_RECORD,),
+        )
     if isinstance(entry, CycleAxis):
         layout = GENERAL_LAYOUT_FIELDS + (MONOMIAL_FIELDS if _declares_monomial(entry) else ())
         columns = GENERAL_READOUT_COLUMNS
@@ -1506,6 +1605,9 @@ def _population_initial(spec, declaration):
         cycle_metabolic_work_pJ=np.zeros(P),
         cycle_supplied_fmol=np.zeros((len(ids), P)),
     )
+    if any(t.one_way for t in declaration):  # Its test (FR-50).
+        v["cycle_one_way"] = np.array([t.one_way for t in declaration])
+        state |= {name: np.zeros((M, P)) for name, _ in GENERAL_ONE_WAY_STATE_AXES}
     return state, v
 
 
@@ -2615,15 +2717,13 @@ def label_transfers(start, end, p, dt, rows, *, weight=None, xp):
       opposite counts at the two ends, by a flux-force form, on moved rows."""
     axis = MARK in type(p)._fields  # Static: the population axis's layout.
     one_way = _population_one_way if axis else _version_1_one_way
-    forward, backward = one_way(start, p, xp=xp)
-    if weight is None:
-        at_end = one_way(end, p, xp=xp)
-        forward, backward = 0.5 * dt * (forward + at_end[0]), 0.5 * dt * (backward + at_end[1])
-    else:
-        forward, backward = weight * forward, weight * backward
+    at_start = one_way(start, p, xp=xp)
+    at_end = one_way(end, p, xp=xp) if weight is None else None
+    forward, backward = step_one_way_amounts(at_start, at_end, dt, weight=weight)
     booked = "cycle_count" if axis else "transporter_cycles"
-    gap = getattr(end.state, booked) - getattr(start.state, booked) - (forward - backward)
-    forward, backward = forward + xp.maximum(gap, 0.0), backward + xp.maximum(-gap, 0.0)
+    net = getattr(end.state, booked) - getattr(start.state, booked)
+    split = close_one_way(forward, backward, net, xp=xp)  # The shared rule (FR-42, FR-50).
+    forward, backward = split.forward, split.backward
     idx = xp.asarray(rows)
     if not axis:
         role = (p.transporter_role[None, :] == idx[:, None]) & p.transporter_present[None, :]
@@ -2641,6 +2741,28 @@ def label_transfers(start, end, p, dt, rows, *, weight=None, xp):
     to_n = entity_sum(enters * forward[None] + leaves * backward[None], axis=1, xp=xp)
     n_node, p_node = _population_ends(p, xp=xp)
     return ((to_p, n_node, p_node), (to_n, p_node, n_node))
+
+
+def record_fluxes(view, p, *, xp):
+    """FR-50's hook (the contract in kind_registry.Kind): each recording population's one-way cycle
+    rates (J+, J-) at one end of a step, fmol of cycles per s, each >= 0, from the labels' kernels:
+    {transporter_cycles: [membrane]} in version 1, {cycle_count: [mode, population]} on the axis;
+    0 where a population keeps no records."""
+    if MARK in type(p)._fields:  # Static: the population axis's layout.
+        forward, backward = _population_one_way(view, p, xp=xp)
+        on = p.cycle_one_way[None, :]
+        return {"cycle_count": (xp.where(on, forward, 0.0), xp.where(on, backward, 0.0))}
+    forward, backward = _version_1_one_way(view, p, xp=xp)
+    on = p.transporter_one_way
+    return {"transporter_cycles": (xp.where(on, forward, 0.0), xp.where(on, backward, 0.0))}
+
+
+def record_nets(state, p, *, xp):
+    """FR-50's hook: the booked cycles of each recording population at a state (transporter_cycles
+    or cycle_count), and 0 where a population keeps no records."""
+    if MARK in type(p)._fields:  # Static: the population axis's layout.
+        return {"cycle_count": xp.where(p.cycle_one_way[None, :], state.cycle_count, 0.0)}
+    return {"transporter_cycles": xp.where(p.transporter_one_way, state.transporter_cycles, 0.0)}
 
 
 def label_refusals(declaration, species):
@@ -2828,6 +2950,13 @@ VIEW = KindView(
             "cycle_membrane_potential_V": "V",
             "cycle_proton_motive_force_V": "V",
             "cycle_current_A": "A",
+            # FR-50's records (each only where a population asks).
+            "transporter_forward_fmol": "fmol",
+            "transporter_backward_fmol": "fmol",
+            "transporter_one_way_gap_relative": "1",
+            "cycle_forward_fmol": "fmol",
+            "cycle_backward_fmol": "fmol",
+            "cycle_one_way_gap_relative": "1",
         }
     ),
     observation_axes=MappingProxyType(
@@ -2855,6 +2984,12 @@ VIEW = KindView(
             "cycle_membrane_potential_V": "level",
             "cycle_proton_motive_force_V": "level",
             "cycle_current_A": "rate",
+            "transporter_forward_fmol": "cumulative",
+            "transporter_backward_fmol": "cumulative",
+            "transporter_one_way_gap_relative": "level",
+            "cycle_forward_fmol": "cumulative",
+            "cycle_backward_fmol": "cumulative",
+            "cycle_one_way_gap_relative": "level",
         }
     ),
     orientation=MappingProxyType(
@@ -2863,6 +2998,20 @@ VIEW = KindView(
             "transporter_cycle_rate_fmol_s": _CYCLES,
             "cycle_count": _MODES,  # The N-to-P flows (K4): each row's per_cycle times the count.
             "cycle_rate_fmol_s": _MODES,
+            "transporter_forward_fmol": MappingProxyType(
+                {**_CYCLES, "says": f"{_CYCLES['says']}; the forward cycles alone (FR-50)"}
+            ),
+            "transporter_backward_fmol": MappingProxyType(
+                {**_CYCLES, "says": f"{_CYCLES['says']}; the backward cycles alone, counted "
+                 "positive (FR-50)"}
+            ),
+            "cycle_forward_fmol": MappingProxyType(
+                {**_MODES, "says": f"{_MODES['says']}; the forward cycles alone (FR-50)"}
+            ),
+            "cycle_backward_fmol": MappingProxyType(
+                {**_MODES, "says": f"{_MODES['says']}; the backward cycles alone, counted "
+                 "positive (FR-50)"}
+            ),
             "cycle_membrane_potential_V": _POTENTIAL_DIFFERENCE,
             "cycle_proton_motive_force_V": _PROTON_MOTIVE_FORCE,
             "cycle_current_A": _OUTWARD_CURRENT,
@@ -2874,6 +3023,7 @@ VIEW = KindView(
                 *(f for f, _ in STATE_AXES),
                 *READOUT_COLUMNS,
                 *(f for f, _ in GENERAL_STATE_AXES),
+                *(f for f, _ in (*V1_ONE_WAY_STATE_AXES, *GENERAL_ONE_WAY_STATE_AXES)),
                 *GENERAL_READOUT_COLUMNS,
                 *PROTON_READOUT_COLUMNS,
                 *CURRENT_READOUT_COLUMNS,
@@ -2938,15 +3088,21 @@ _STRUCTURAL = {
     "cycle_pmf_present": False,
     "cycle_row_end_chemistry": False,
     "cycle_current_present": False,
+    "transporter_one_way": False,  # FR-50's masks.
+    "cycle_one_way": False,
 }
 _EXTENSIVE = ("transporter_capacity_fmol_s", "cycle_capacity_fmol_s")
 _PER_ENTITY = (
     *LAYOUT_FIELDS, *CONTROL_FIELDS, *GENERAL_LAYOUT_FIELDS, *MONOMIAL_FIELDS,
     *PROTON_READOUT_FIELDS, *END_CHEMISTRY_FIELDS, *CURRENT_READOUT_FIELDS, *GENERAL_CONTROL_FIELDS,
+    *V1_ONE_WAY_FIELDS, *GENERAL_ONE_WAY_FIELDS,
 )  # fmt: skip
+# Each one-way record takes its net record's role (history), as the design note's §2.3 says; version
+# 1 refuses records beside a slot changer all the same (pump_composite's structure errors).
+_HISTORY = (*STATE_AXES, *GENERAL_STATE_AXES, *V1_ONE_WAY_STATE_AXES, *GENERAL_ONE_WAY_STATE_AXES)
 PARTITION_ROLES = MappingProxyType(
     {
-        **{name: PartitionRole("history") for name, _ in (*STATE_AXES, *GENERAL_STATE_AXES)},
+        **{name: PartitionRole("history") for name, _ in _HISTORY},
         **{name: PartitionRole("structural", fill) for name, fill in _STRUCTURAL.items()},
         **{name: PartitionRole("extensive") for name in _EXTENSIVE},
         **{
@@ -3003,11 +3159,14 @@ _SHAPES = {
     "cycle_mono_term_q": "MQGRP", "cycle_mono_term_eta": "MQGP", "cycle_mono_term_present": "MQGP",
     "cycle_mono_share": "MP", "cycle_mono_ln_standard": "P",
     "cycle_pmf_species": "P", "cycle_pmf_present": "P", "cycle_row_end_chemistry": "KP",
-    "cycle_current_present": "P",
+    "cycle_current_present": "P", "cycle_one_way": "P",
 }  # fmt: skip
 FIELD_AXES = MappingProxyType(
     {
-        **{name: ("membrane_slot",) for name in (*LAYOUT_FIELDS, *CONTROL_FIELDS)},
+        **{
+            name: ("membrane_slot",)
+            for name in (*LAYOUT_FIELDS, *CONTROL_FIELDS, *V1_ONE_WAY_FIELDS)
+        },
         "transporter_fuel_rows": ("transporter_fuel_role", "membrane_slot"),
         "transporter_c0_mM": (),  # One value: the registry's standard concentration.
         **{name: tuple(_AXIS[c] for c in letters) for name, letters in _SHAPES.items()},
@@ -3114,6 +3273,8 @@ TRANSPORTER = BUILTIN.register(
         view_sets=view_sets,
         partition_roles=PARTITION_ROLES,
         field_axes=FIELD_AXES,
+        one_way_fluxes=record_fluxes,  # FR-50: bound only where a population keeps records.
+        one_way_nets=record_nets,
         axis_hosts=AXIS_HOSTS,
         internal_axes=INTERNAL_AXES,
         presence=PRESENCE,

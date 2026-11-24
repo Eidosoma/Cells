@@ -12002,3 +12002,289 @@ block, and it does not.
 - FR-53's design note.
 
 FR-43's builder takes the next free slot.
+
+## D366: FR-30's Revilla diagnostic, second deliverable: the registered split had little power to test the law; D320 stands; Ek-Vitorín's fit waits for a power check
+
+2026-11-24, about 21:21 UTC. The lead, with the advisor.
+
+**The terms.** The diagnostic is labelled and non-blind (D343, D344). It decides nothing (W6), and changes no verdict
+and no law. D320 stands. Every result is one study's indication, and D334's caveat applies to the steady-state
+polarity difference, since Revilla's one-cell protocol ties V_j's sign to one oocyte's V_m.
+
+**Identity, checked before the search, with no refit:**
+- the tagged `predict` stage reproduced `predictions.json` byte for byte, apart from its time stamp;
+- the objective at the judged parameters is bit-equal to the record;
+- one shared slope and midpoint per gate set both the rates and the steady target.
+
+**The declared reading, on the law's full box (free split).** This box has ten parameters on nine distinct targets,
+so it is saturated (D1), and "could not test" was nearly forced there by counting.
+- **The compatible sets:** 383, 397 and 411 at margins 0.5, 1.0 and 2.0 of excess over the polarity floor.
+- **Their predictions at 80 mV,** all inner bounds:
+  - τ_slow(80) spans 4.15 to 135 s;
+  - τ_fast(80) spans 1.10 to 3.77 s;
+  - G_ss/G_0(80) spans 0.332 to 0.473 (the lead, from `exact.jsonl`).
+
+  Each covers both polarities' windows.
+- **A witness on the floor,** S804 (excess 0.0000), predicts τ_slow(80) = 15.81 s, passing both ±80 lines.
+
+**The judged family (split ½, eight parameters).** This is beside and post hoc, since the declaration gave the slice
+no meaning on a premise the run refuted. Three sets fit the training data comparably and score differently on the six
+judged lines:
+- S59, at excess 0.0125: 3 of 6;
+- S444, at 0.1456: 5 of 6;
+- the judged fit, at 1.1242: 4 of 6.
+
+What follows from that:
+- **The local minimum cost no pass.** The registered fit stopped in one, but the family's better minimum scores fewer
+  lines. D1's reading of the 1.124 excess, as the cost of eight parameters on nine targets, is superseded; no entry
+  had quoted it.
+- **In this family G_ss/G_0(80) is pinned,** at 0.434 to 0.450 (margins 0.5 and 1.0, 116 sets), just above +80's
+  window top of 0.4339.
+
+**Narrowed:**
+- **"Could not test" holds for the two time constants.** The −80 steady-state line is failed by 79 of the 91 sets
+  scoring 5 of 6. That is the polarity difference again, confounded as D350 left it.
+- **The one set passing all six lines** (S247, post hoc) is recorded only:
+  - it is 1 of 383, and one split sits on the box edge;
+  - its G_ss(80) lies in a band 0.0094 wide, against a 0.007 digitising error;
+  - it was checked with uncommitted code.
+- **"Kinetics alone, feasible"** fits six distinct numbers with eight or more parameters, and supports nothing.
+
+**The named witnesses** are scored through the tagged predict, readout and scorer (`d2/verify_key_sets.txt`): S804, S444
+and S913 score 5 of 6, and S59 3 of 6.
+
+**What it means.**
+- **D344's "voltage dependence unvalidated"** now has its reason: two training magnitudes do not pin the law's
+  interpolation to the held-out magnitude.
+- **FR-30's next fit, Ek-Vitorín's** (tag A and amendment 1), fits `junction_series_gates@1` to `train.json` and
+  predicts the held-out voltages. It has no power check and no stated starts. Before any fit, an amendment adds two
+  rules:
+  1. **A power check, judged first from the training data alone.** Over the parameter sets compatible with the
+     training fit within a declared margin, compare each held-out prediction's span with its pass band. A comparison
+     whose span covers both a pass and a fail is "not tested by the split", reported and not judged. The benchmark
+     counts only tested comparisons, and is undetermined if too few remain.
+  2. **Multistart,** with declared starts and a reported check of the global minimum.
+
+  The fitter starts only after that amendment's tag. The extraction is not yet tagged (no tag B).
+- **The diagnostic lands by merge** in the next stack with no src change, keeping its declaration (7c9f6ea0) ahead of
+  its driver (64fbd84a). Branch `fr30-revilla-diagnostic`.
+
+**Cost:** 3 h 33 min of wall time and 10.8 CPU-hours, on CPUs 6, 7, 22 and 23. The record is
+`/mnt/workspaces/Cells/fr30-revilla-diagnostic-20261124/d2/`, with its SHA256SUMS.
+
+## D367: FR-38 v2's judge is built from the spec alone; amendment 4 rules its questions and registers the export contract
+
+2026-11-24, about 21:27 UTC.
+
+**The judge.** A separate agent built it from the spec folder alone, at amendment 3's tag. It is on branch
+`fr38-v2-judge` (4c98bd7a), untagged, and has read no engine output.
+- **C0:** its reader accepted all six reference files, the invented one first.
+- **Sizing:** every C2 must-catch unit clears the 10× rule. The smallest margins are P6 in AF at 72×, P1′ in AN at 159×
+  and P3a at 786×.
+- **Tests:** 23 host-only tests on invented inputs, taking 19 to 39 s.
+- **Disclosed:**
+  - It opened the six real reference files with ad hoc scripts, the invented file first, before its reader existed. It
+    took their key names and entry shapes from them, and set its 1-ulp echo tolerances with them in view. No accept or
+    refuse rule changed after the reader's first run on them.
+  - It read no engine code and no engine output, and none of the references' code or README.
+
+**Amendment 4,** tagged `fr38-v2-amendment-4-2026-11-24` (b4af13df). It is written by the protocol author, without
+the judge's code, and value-silent:
+- **Arm B's G scale** is the sheet's §3.4 reading, covering every chain's residues in transit. It is reported only, so
+  no verdict depends on it. C0 checks a stated scale only where a judged entry's accuracy rests on it.
+- **C4 runs at every rung,** each with its own step count, retry rungs included. Family D's energy identity is the
+  exception, being stepped since amendment 3.
+- **Blanks are judged runs,** and AF's two engine blanks must be bitwise equal.
+- **P8's negative control** follows the literal text: a failure leaves family C inconclusive, never FR-38.
+- **The judge forms P1, P1′, P1″ and P6 itself.** Builder entries for them are excluded from scoring and recorded.
+- **A missing index** is recorded and flagged to the checker. A missing run, or a run without provenance, is still
+  refused.
+- **The judge's readings are confirmed,** with two corrections:
+  - route 2's "every second output" counts even indices from the grid's start, which is the same in every registered
+    world;
+  - the restart comparison includes the labels and `released_present_gross`.
+
+  An unscorable core plant leaves FR-38 at best inconclusive.
+- **The export contract is registered (§8):** the builder's hashed per-family engine tables, hashed before any
+  reference value is read. The judge's reader conforms to §8 before its tag, and the builder adds P9's V₀ patch to
+  P9's record.
+
+**Next:**
+1. The judge adapts on its branch, then the lead tags it.
+2. The builder's table follows §8.
+3. The judged run waits for both, and for the lead's go.
+
+## D368: OL6 Protocol D v2 passes its independent check on the first seed set; D318's failure stays on record
+
+2026-11-24, about 21:38 UTC. The checker is fresh, neither the builder nor the first checker, working under the tag
+`ol6-protocol-d-v2-registered-2026-11-24` (D357).
+- **The snapshot** is at eced4ef8 (`snap-eced4ef8`), clean. Its src is exactly main 9d8c42be's, and the four files it
+  judges with are byte-identical to their own tags.
+- **The check:** `protocol_d_v2 check` passes 29 of 29.
+- **The verdict** is `/mnt/workspaces/Cells/ol6-protocol-d-v2-checker-20261124/verdict/verdict.json`, with its
+  disclosures and choices in `record.json`.
+
+**The verdict: pass.** All seven worlds pass on the first seed set (670001 to 670000 + M), so no retry is needed.
+
+| World | M (z) | B | Other |
+| --- | --- | --- | --- |
+| D1 | 1.38 | passes at all 4 rungs | P slope −0.504 |
+| D2 | 2.52 | passes at all 4 rungs | P −0.512 |
+| D3 | 2.23 | passes at all 4 rungs | P −0.500 |
+| D4 | 1.57 | passes at all 3 rungs | E: mean z 0.38, SD ratio 0.19 |
+| D5 | 1.94, on 56 spread pairs | passes at all 3 rungs | 16 constant pairs exact at both rungs |
+| D6 | 1.97, on 29 spread pairs | passes at all 3 rungs | 11 constant pairs exact at both rungs |
+| D7 | — | — | E on the paired Δ: mean z −0.15, RMS ratio 0.2385 |
+
+- **The constant pairs:** all 27 hold, 128 replicas each, with (d)'s bits matching.
+- **The precondition:** no exact replica and no (d) run was tense, and no pair was left unjudged.
+- **The plants,** P-D1 to P-D8, are all caught. P-D8, the one-ulp plant, is caught 22 of 22.
+- **The bounds:**
+  - L: all 423 honest (d) runs close, with the largest moiety drift 1.5e-14 against 1e-12;
+  - n_min is 98;
+  - no clock refusal in 384 paired runs, the largest fraction of the bound used being 0.389.
+- **Cost:** 7.79 CPU-hours against the estimated 13.5. Lane B was held for 59 minutes in batches between gates.
+
+**The checker's disclosures:**
+- **Erratum 2's module:** it read it in full to use `pd1_b`, including the disclosed docstring line.
+- **Erratum 3's module:** three of its searches spanned that module's text, and none printed a line.
+- **Commit subjects:** a `git log` printed one merge subject (9dac867b), which states no result. The session context
+  showed main's recent commit subjects, D357's included.
+- **A probe of other locks:** a non-blocking shared-lock probe briefly took, and at once released, the timed-cores,
+  GPU and gap-junction locks. A checker should not probe locks it does not use, so this goes into future briefs.
+- **PROGRESS:** following the brief, it wrote only to its own folder, so the PROGRESS line §10 asks for is the lead's.
+
+**What it means.** OL6's deterministic representation (d) agrees with the exact stochastic chemistry on D1 to D7,
+under the shared agreement rule.
+- **D318's failure stays on record:** the first registration failed on D6's M alone, the zero-spread artifact. Version 2
+  passes on fresh seeds after M's repair.
+- **FR-47's** schedule supplement and independent check are next in this lane.
+
+## D369: the user's direction on legacy: everything actually used leaves legacy, in Cells' canonical formats
+
+2026-11-24, about 22:18 UTC. The user, on reading the port plan's summary: "the legacy work is clearly important cleanup we
+need to make sure to get everything we're actually using out of there in our canonical formats".
+
+**What it settles:**
+- **The end state is canonical.** Everything Cells uses from legacy is re-expressed in the engine's canonical forms:
+  its laws, models, operators and definitions, under the rename's IDs. Relocation alone, a legacy island moved into
+  `src/cells`, is ruled out as an end state. That is the port plan's Q2 (c).
+- **The scope is a test of use, not a list of IDs.** The port plan's "the 11 families" (D348) gives way to everything
+  actually used. This restates the user's 17 November rule: legacy is removed in one batch after a check that covers
+  every capability.
+
+**Not settled: the sequence.** Whether a bitwise relocation comes first, as an interim step, is still the user's call;
+D348 never defined "port". The morning's review prices both routes.
+
+**The port plan is reworked** (plan only, by its author) around:
+1. **A coverage table by capability and consumer,** not by ID or import closure. Each row gets one class: canonical
+   already, expressible today, needs an engine feature, or dropped.
+2. **A definition of "used," fixed before counting.** A test whose only subject is a legacy model is not a use. The
+   plan's dry-run deletion, with a tiers run, measures it.
+3. **The 18 BETSE drivers on other legacy IDs:** whether their evidence is still claimed anywhere. That decides the
+   plan's Q1 and the rename's Q3.
+4. **The "blocked today" list,** checked by reading each refusal site: calcium-permeant channels on @3, finite fuel,
+   an ER store, and assembly coupling. Each confirmed gap is a candidate request for the user, not a logged FR.
+5. **The BETSE rule (AGENTS.md, 8 November):** nothing in `src/cells` re-hosts or copies BETSE code or carries its
+   conventions or names. A relocated family must meet that, which may rule relocation out for some families.
+6. **Qualifying a re-expression** needs science-length runs, with a tolerance derived, never tuned. Five-step captures
+   prove only a bitwise move.
+
+**Order:**
+- **The rename's Q3,** the 18 live pieces also spelled inside legacy, waits until the sequence is chosen.
+- **In the morning,** before the rename's move lands, main is tagged and the pre-rename snapshot frozen. Every capture
+  can run from it later.
+
+## D370: a correction to FR-53's premise (the global ledgers' row-1 bound), from its design note
+
+2026-11-24, about 22:19 UTC. The note is `docs/LEDGER_ROUNDING_DESIGN.md` on branch `fr53-design` (774fdcd5). Its
+probe ran four worlds on CPU 4 under the timed lock: GJ-N1's line and 9×9 sheet, and synthetic sheets of 15×15 and
+27×27 cells. The evidence is in `/mnt/workspaces/Cells/fr53-design-20261124/`.
+
+**The correction.** In the `ledger_limits` family (`resolved_pump_tissue@1` to `@3`, the water models, the replacement
+model and the composite), the bound at row 1 is not the bare material atol.
+- **Row 0** has every residual exactly zero.
+- **From row 1** the running allowance (2.5 ε k M) is already 97.6% to 99.9% of the total ledger's bound.
+
+So FR-53's "zero at steps 0 and 1", and the "bare material atol" in D335 and the GPU criteria, do not hold for these
+models. They do hold for `resolved_tissue@1` to `@10`, reached through legacy.
+
+**What grows is the check's own summation, not the stored state:**
+- **The row's exact residual** stays at or below 0.12 of the bound, and does not grow with the cell count.
+- **The check's sum** reaches 0.12 of the bound on the host at 225 and 729 cells, and up to 0.19 on the CPU device. It
+  is also the part that differs between host and device: D336 recorded the L4's two sums 0.51 apart.
+- **No clean √N law fits.** The host's first-window shares are 0.044, 0.122, 0.169 and 0.115 at 25, 81, 225 and 729
+  cells.
+
+**The note recommends:**
+- **One compensated sum** (fixed-order TwoSum), with the same code on host and device.
+- **One bound form for every ledger,** with three declared classes: exact, rounding, and truncation. The truncation
+  class carries its own term, as FR-38's amendment 3 taught, and FR-47's `atol_count` term belongs there.
+
+Its five questions go to the user in the morning batch with the advisor.
+
+**A note on the probe:** it held the timed lock for about four minutes while an FR-43 profile, the user's top priority,
+was waiting. Briefs now say to release the lock between probes.
+
+## D371: the user's decisions on the rename's family words, FR-52's form and scope, and FR-53's priority; the lead's rulings on the notes' other questions
+
+2026-11-24, about 22:29 UTC. The lead brought the three notes' questions to the advisor, as the user asked; four went to
+the user.
+
+**The user's decisions:**
+- **The rename's family words:** short where unambiguous, prefixed where a collision could come. For the five missing
+  interfaces and the block law:
+
+| Old ID | New ID |
+| --- | --- |
+| `rapid_binding@1` | `cells.binding.rapid_binding@1` |
+| `shared_pool@1` | `cells.population.shared_pool@1` |
+| `bilayer_geometry@1` | `cells.assembly_geometry.bilayer_geometry@1` |
+| `pore_nucleation@1` | `cells.assembly_hazard.pore_nucleation@1` |
+| `rate_equations@1` | `cells.assembly_representation.rate_equations@1` |
+| `open_channel_block_weighted_modes@1` | `cells.channel_block.open_channel_block_weighted_modes@1` |
+
+  The note's `block` is not used, since "block" already names a definition section throughout the code.
+- **FR-52's form:** an engine record kept at each event, with the trace reader kept in `validation/` as the
+  independent check.
+- **FR-52's scope:** chains are needed now. Version 1 covers dimer-to-tetramer chains and single-subunit activation,
+  through a declared identity map across states, rather than the note's two-state limit.
+- **FR-53 goes to normal.** Its premise was corrected (D370), and on CPU nothing fails. FR-47's small ledger fix, an
+  atol term for counts, lands on its own now that Protocol D has passed.
+
+**The lead's rulings, as the notes recommend, with the advisor's cautions:**
+- **FR-52:**
+  - **Q3:** an observed state on both sides of a channel is refused in version 1; the page states how returns are
+    counted.
+  - **Q4:** the new tier-2 file, with one integer-unit world added to G1 and crossrev at landing, rather than a routine
+    twin.
+  - **Q5:** an optional `cohorts` key on `@1`; omission is the only spelling, and an empty list is refused.
+  - **Independence:** the author's enumerated fractions are frozen in the note before the build, and the note states
+    the float record's rounding bound.
+- **FR-53:**
+  - **Q3:** X2's registered floor is unchanged.
+  - **Q4:** the fixed multipliers stay until evidence retires each one.
+  - **Q1, Q2 and Q5** wait for the build, now normal priority, after reads of what the new sum changes in G1's and
+    crossrev's saved fields, its compiled cost, and evidence on the L4.
+- **The rename:**
+  - **Q2:** the block law gets its own family, `channel_block`, with its law and interface registered in the hand
+    refactors, so the mapping holds no seeded law row. The interface's name follows the family word.
+  - **Q3:** the 18 live pieces also spelled inside legacy are re-spelled in legacy's files too, after a check for
+    pinned legacy config digests. Every route left after D369 has legacy outliving the rename.
+  - **Q4:** the ten sub-laws and the field closure law are in scope, since D346 names laws; the 35 recorded labels are
+    not. Any that needs a new family word comes back to the user.
+  - **Q5:** folders move separately, after the rename.
+  - **Q6:** the manifest keeps `@2`'s keys, with its ID rule amended. The note checks the library pages' paths, and
+    the viewer session is told.
+  - **Q7:** tagged files are pinned or translated at live drivers, with an erratum only where a judge must change. The
+    note lists every tagged registration with a run still to come (FR-38, FR-45, FR-49, Ek-Vitorín), each marked
+    pinned or translated.
+  - **Q8:** test plants take the three-part shape. The note states the grammar for outside modules, and the user is
+    told that private IDs change shape.
+- **The move's order:**
+  - FR-38's build runs its judged run before it merges main after the rename.
+  - The scripted move stays pure, with the long-line rewrap as a separate commit.
+  - The scope map is refreshed right after the landing.
+
+**FR-45, a coordinator's ruling.** P5's sizing on W7 covers both C6 and C4a, as for W2. CRITERIA's plant row, as
+amendment 2 amended it, names both, and it governs the narrower per-world table in amendment 2 §3.

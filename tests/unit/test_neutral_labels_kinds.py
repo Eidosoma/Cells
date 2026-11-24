@@ -653,3 +653,40 @@ def test_label_errors_take_each_kinds_reasons_from_the_model():
         assert any("rectifier_Na runs" in e for e in errors) == refused, (species, errors)
     blanket = surface_pump_v3.label_errors(p, (ids.index("S"),), structure=structure)
     assert any("need the parsed model" in e for e in blanket)
+
+
+@pytest.mark.parametrize("solver", [None, "imex_euler_face_electromigration@1"])
+def test_labels_beside_one_way_records_share_the_steps_ends_and_change_nothing(solver):
+    """FR-50 (D327) beside FR-42: the world's route and pump keep one-way records too. Over three
+    host steps, under ARS(2,2,2) and the Euler IMEX, the labelled transfers are the labelled-only
+    twin's bit for bit, the records the recorded-only twin's, and every shared field all three
+    twins'. Records and labels read one end view of each step."""
+    raw = kinds_world(labelled=False)
+    if solver:
+        raw["execution"]["solver"] = solver
+    recorded = copy.deepcopy(raw)
+    recorded["model"][passive_routes.MODEL_KEY][0]["one_way"] = True
+    recorded["model"][transporter.MODEL_KEY][0]["one_way"] = True
+    twins = {}
+    for name, world, labelled in (("labels", raw, True), ("records", recorded, False),
+                                  ("both", recorded, True)):  # fmt: skip
+        spec, impl, state, p, control = host(world)
+        rows = np.asarray([list(spec.model.species_ids).index(s) for s in ("S", "Y")])
+        transfers = []
+        for _ in range(3):
+            asks = dict(labels=rows) if labelled else {}
+            out = impl.imex_step(state, 1e-3, control, p, xp=np, **asks)
+            state, valid = out[0], out[1]
+            assert bool(valid)
+            transfers.append(out[2] if labelled else None)
+        twins[name] = (state, transfers)
+    (labels, label_transfers), (records, _), (both, both_transfers) = twins.values()
+    for a, b in zip(label_transfers, both_transfers, strict=True):
+        assert bits(np.concatenate([np.ravel(x) for t in a for x in t])) == bits(
+            np.concatenate([np.ravel(x) for t in b for x in t])
+        )
+    for name in type(both)._fields:
+        assert bits(getattr(both, name)) == bits(getattr(records, name)), name
+        if name in type(labels)._fields:
+            assert bits(getattr(both, name)) == bits(getattr(labels, name)), name
+    assert np.all(both.passive_inward_fmol > 0) and np.all(both.transporter_forward_fmol[1] > 0)
