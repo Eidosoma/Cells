@@ -1,9 +1,10 @@
 # Liquid routing: a liquid exchange routed into a node (FR-54 and FR-57), design note
 
-**Status: a design, written 24 November 2026 at main 05826ec1 on branch `fr54-57-design`. Nothing is
-built.** Integration would grant no acceptance (D143). **S** marks this note's own reading,
-derivation or proposal. The desk sketches cited are decimal and NumPy arithmetic on the note's
-reading of the code, not engine runs.
+**Status: a design, written 24 November 2026 at main 05826ec1 on branch `fr54-57-design`. It was
+revised the same day with the user's decisions (Q1 and Q3) and the coordinator's rulings on the rest
+(§10). Nothing is built.** Integration would grant no acceptance (D143). **S** marks this note's own
+reading, derivation or proposal. The desk sketches cited are decimal and NumPy arithmetic on the
+note's reading of the code, not engine runs; each is measured before any tag (§8.2).
 
 **The requests** ([FEATURE_REQUESTS.md](FEATURE_REQUESTS.md)), both high priority (the user; D341 for
 FR-54):
@@ -37,11 +38,11 @@ routed into a node or a record and the supply drawn from a node or a declared in
 | --- | --- |
 | **Today** | The wash exchanges a node's liquid with a buffer, and its sample goes to a record (D246). No operator moves one region's liquid into another. A face at a washed node is refused (D246 item 5), and a stopped energy check names no numbers |
 | **The mechanism** | One definition: well-mixed liquid moved between holders (inlets, finite nodes, records). A wash is two moves at an instant; a flow is moves at prescribed rates (§2) |
-| **Recommended** | One new operator, `liquid_routing@1`. Its event part moves portions at declared times. Its split part runs prescribed flows by the exact step of the declared network. It takes over the wash after a bitwise check (§3.1) |
+| **Decided** | One new operator, `liquid_routing@1`. Its event part moves portions at declared times. Its split part runs prescribed flows by the exact step of the declared network. It takes over the wash after a bitwise check (§3.1). Its collector is a record that a later landing can open as a node (§3.2) |
 | **Exact to rounding** | The flow's trajectory at any step; volume and every solute; each portion's free energy and mixing heat; a step's total heat, which equals the state-function balance because flows end in collectors; labels |
 | **Carrying an order** | How a step's heat is split among the holders (first order in the step); flow beside diffusion (Strang splitting, second order); @3's face transfer (the tableau's polynomial) and its default heat (third order per step, at resolved levels only) |
 | **FR-54** | A two-well harness on @3's faces against closed forms (§4.1). A stopped run reports its residual and bound (§4.2). The wash at a faced node, admitted for one neutral species once measured (§4.3) |
-| **Decisions** | Ten, for the user (§10) |
+| **Decisions** | Made on 24 November: Q1 and Q3 by the user, the rest by the coordinator (§10) |
 
 ## 1. What exists
 
@@ -121,6 +122,30 @@ obeys one linear system:
   schedule segment on the host;
 - it is species-blind: one P carries every dissolved species.
 
+**The exponential's bits.** They set restart identity and crossrev, so the routine is named and its
+library version is held.
+- **The routine** is `scipy.linalg.expm` (Al-Mohy and Higham's scaling and squaring with Padé
+  approximants), on the host, once per segment.
+- **The version is pinned and recorded.**
+  - `scipy==1.18.1` is pinned in `pyproject.toml`.
+  - Every run's runtime identity records it (`records/io.runtime_identity`, `RUNTIME_PACKAGES`).
+  - Its BLAS runs at one thread (D190), and the run manifest records those libraries
+    (`execution/blas_threads`).
+- **So P's bits follow** the declared Q, V and h, the scipy version and the CPU type, as every other
+  host computation's do.
+  - A resume across a runtime change is refused (checkpoint continuity, case 4).
+  - crossrev hashes the controls, P among them, so a change of scipy shows there.
+- **A decimal routine was weighed.** Its bits would not follow the CPU, but the engine's do anyway
+  (D190), and it costs seconds per segment at 64 nodes.
+
+**The repeated eigenvalue.** A chain of identical wells at one rate has a repeated eigenvalue.
+- B's amount is then N₀ (Qt/V) e^(−Qt/V), the t·e^(−t) form.
+- The two-rate formula k_A/(k_B − k_A)(e^(−k_A t) − e^(−k_B t)) reaches it only as a limit (0/0 at
+  equal rates).
+- FR-57's 26.42%, 1 − 2/e, is that case. So the references write the confluent form, and nearly equal
+  rates by a stable divided difference.
+- The engine's exponential needs no special case.
+
 **The step as portions.**
 - P_ji V_i is the volume of node i's start liquid that ends in j within the step. The inlet columns give
   the inlet liquid that ends in each node or record.
@@ -128,7 +153,7 @@ obeys one linear system:
 - A flow's step is therefore one routed exchange whose portions come from P, and §3.3 and §3.4 apply
   to it unchanged.
 
-## 3. Options and recommendations
+## 3. Options and decisions
 
 ### 3.1 What routes the liquid
 
@@ -139,36 +164,69 @@ obeys one linear system:
 | C | A flow-only operator beside the wash, sharing one kernel | The wash untouched | Two operators for one mechanism. The wash refuses every non-local law at its nodes, so the two cannot share a node |
 | D | A mover class in @3 (advective faces) | Inside the tableau | Integrated by the explicit stages, not exactly. Rate-booked heat reads the trace (§3.4). It has no records for a collector |
 
-**Recommendation: B, `liquid_routing@1`** (`cells.operator.liquid_routing@1` under the rename, §7).
+**Decided: B, `liquid_routing@1`** (`cells.operator.liquid_routing@1` under the rename, §7; the user, Q1).
 - **The name** avoids `exchange`, the assembly family's law interface (§7). It also avoids "routes", which
   are kinds' passive routes and exchange routes. The entities are holders, links and portions.
 - **The wash becomes its event.** A wash maps one to one onto a portion event with a sink and an inlet.
 - **Its kernel is `wash_terms`, generalized.** The wash's worlds re-declared as portion events must give
   every physical field and mapped record bit for bit (§8.2, arm 7) before the wash is retired.
-- **What a retirement touches:**
-  - FR-49's registration (`validation/fr49/REGISTRATION.md`, Worlds B and C1) names the wash's ID;
-  - Lean's claims name it at their engine revisions, which old tags keep;
+- **What the retirement touches:**
+  - FR-49's registration (`validation/fr49/REGISTRATION.md`) names the wash's ID in Worlds B and C1;
+  - FR-45's protocol, `fr45-site-competition-v1`, washes in W2 and W7. W7 comes from its amendment 2 on
+    branch `fr45-protocol` (ff99fead), which is not yet tagged;
+  - Lean's claims name the wash at their engine revisions, which old tags keep;
   - frozen checkpoints of washed worlds need renewing (D350).
-- **So the timing is the user's (Q1):** after FR-49's judged B and C1 runs, or with them pinned to a
-  snapshot from before the retirement.
+- **The timing (the user's decision).** The wash is retired after arm 7's bitwise check, and only once:
+  - FR-49's registered B and C1 runs have finished, or are pinned to a snapshot from before the
+    retirement;
+  - FR-45's protocol is written against the router before its tag, or its judged runs are pinned the
+    same way.
 
 ### 3.2 The collector at zero volume
 
 | Option | What | Verdict |
 | --- | --- | --- |
-| **(a)** | **A record from zero volume, which grows** | **Recommended, as FR-57 settled (D352)** |
-| (b) | A node at a trace, with a small volume | Refused. A node's volume is fixed in version 1, so it cannot grow. And a tube at zero volume holds no trace: a trace volume V_ε would book about RT V_ε x at the first portion instead of 0, a number set by the declared V_ε alone (plant 9) |
-| (c) | A record that opens as a node once it holds liquid, so its liquid can keep reacting | Later, with an onset in membrane insertion's manner. About 1 to 1.5 agent-days |
+| (a) | A record from zero volume, which grows, and stays a record | Superseded by (b) |
+| **(b)** | **A record from zero volume, which grows, and which a later landing can open as a node whose liquid keeps reacting** | **Decided (the user, Q3), as FR-57 settled (D352)** |
+| (c) | A node at a trace, with a small volume | Refused. A node's volume is fixed in version 1, so it cannot grow. And a tube at zero volume holds no trace: a trace volume V_ε would book about RT V_ε x at the first portion instead of 0, a number set by the declared V_ε alone (plant 9) |
 
-**(a) in detail:**
+**The record, in version 1:**
 - At zero volume the amounts are exactly 0, and F(0, 0) = 0 (n ln n → 0).
 - The first portion is taken as it is: the record's concentrations become the portion's, bit for bit, and
   its loss is exactly 0.0.
 - Later portions pool by the lumen's fill form, with the resident liquid as one portion.
 - Each delivery records its loss and that loss's two terms, the resident's and the arriving portion's,
-  as level records. That supports either reading of Q5.
+  as level records (Q5).
 - **A node empty of tracer is a different thing.** It is a node at the tracer's trace (§3.4, "the
   trace"). The two are never mixed up.
+
+**Opening it as a node, designed in now** (S; a later landing, +1 to 1.5 agent-days, §10). Version 1
+fixes the record so that opening changes none of its meaning or bits.
+- **The record holds exactly what a node needs:**
+  - its amounts as plain binary64 levels in fmol, never anchor plus increment, so a copy is exact;
+  - its volume in pL, the same way;
+  - the F of its liquid as a stored level in @3's convention;
+  - its pooling heat, cumulative.
+
+  The field names and record kinds are fixed in version 1 and never renamed.
+- **Every species stays positive once liquid arrives.** Every inlet and node liquid carries every neutral
+  species at its trace or above. So a record that has received liquid holds every species above 0, as
+  @3 requires of a node.
+- **The opening is additive** (D148: statically absent unless declared). At a declared grid time:
+  - an outside node slot, declared closed until then, opens;
+  - its anchor is the record's amounts and its volume the record's, bit for bit. The router provides both
+    through the view for that slot alone, as insertion's onset anchors are provided (D057). Door S's scoping
+    keeps the router's fixed reads at its other nodes unchanged;
+  - the energy ledger books the record's stored F as entering the world, never recomputed, and the
+    material ledgers book its amounts as supplied into the node;
+  - the node's label shares are the record's labelled contents over its total (§3.5);
+  - the node's ions are declared at the opening, under §3.3's rule for liquid from another node.
+- **After the opening,** the record keeps its values: what was collected until then. It takes no further
+  delivery, refused by name, and the node is an ordinary node under the volume rule.
+- **Its rows,** in the later landing:
+  - the node's first row against the record's last, bit for bit;
+  - the ledgers on the opening row;
+  - a restart cut at the opening.
 
 ### 3.3 Volume and every solute
 
@@ -179,15 +237,22 @@ obeys one linear system:
   - The step is applied as moved amounts m_ji = P_ji n_i (j ≠ i) and inlet amounts. Each is one
     expression used at both of its ends (D266), and the stored increments change by their sums, so P_ii
     is never applied directly.
+  - **The kept part absorbs the column-sum remainder.** A source's kept amount is n − Σ moved out, and a
+    holder's kept volume is V − Σ moved in, each formed as the remainder.
+    - So the books close by construction.
+    - The remainder, 1 − Σ_j P̂_ji, is at most a few eps. It is a trajectory error inside the rounding
+      bound, not a booking error.
   - The router's own ledger holds, per species, Σ nodes + Σ records − Σ inlets supplied equal to the
     start.
   - @3's outside and total ledgers gain (to records − from inlets) at each node, D150's sign, as the
     wash's do.
 - **The rounding bound,** derived:
   - P's columns, with their record entries, are checked on the host, as each segment's P is computed, to
-    sum to 1 within 4 eps.
+    sum to 1 within 4 eps. The protocol also checks P̂ entry by entry against the references' decimal P,
+    within 8 eps absolute (‖P‖ ≤ 1).
   - Each half-step's material error is then at most (K + 4) eps of the moved amounts, with K the routed
-    nodes.
+    nodes. Over S steps each amount lies within 2S (K + 12) eps of the total amount from the exact one,
+    since P only contracts (S).
   - That enters the composite's allowance (`LEDGER_STEP_ROUNDING` eps × steps × magnitudes) through the
     router's magnitude terms.
   - The amounts are an anchor plus an increment, so near depletion the wash's limit holds (wash note §4.5).
@@ -258,7 +323,7 @@ obeys one linear system:
 
 | Heat option | Verdict |
 | --- | --- |
-| **(a) The exact step's portions, in φ form** | **Recommended:** the total exact, the split first order, H ≥ 0 per holder |
+| **(a) The exact step's portions, in φ form** | **Chosen** (with Q2): the total exact, the split first order, H ≥ 0 per holder |
 | (b) The rate form, integrated by quadrature on the exact trajectory | A better split, but the total misses rounding, and it is singular at a trace start |
 | (c) The ledger's remainder | Rejected (D246 ruling 3): it checks nothing |
 | (d) The rate at the step's start × h | Rejected: it reads the trace, is first order, and the energy check stops the run (plant 7) |
@@ -267,26 +332,33 @@ obeys one linear system:
 
 **FR-44's labels and washes.**
 - **The report grows a carried part.** `LiquidExchange` gains `carried`: (amount, source, destination) for
-  node to node and node to collector.
-  - `removed` (to sinks, by events) leaves with the node's shares just before the event.
+  liquid moved from node to node.
+  - `removed` is what leaves a node into a record: a sink by events, or a collector by events or flows.
+    It leaves with the node's shares just before the event or half-step.
   - `supplied` (from inlets) joins the base label, even inside an open window (D327).
   - `carried` keeps its source's shares just before the event or half-step.
   - `supplied` cannot stand for liquid from another node, since it means "no label".
-- **Collectors are records, not label pools.**
-  - The contract refuses an exchanged report from an operator that holds label pools
-    (`label_event_error`).
-  - A record's labelled amounts only add, so it needs no shares of its own.
-  - The owner records what reaches each collector by label, cumulative: `label_collected_fmol`
-    [labelled species, label, collector], zero-size without collectors.
-  - A collector's shares are that record over its total.
+- **Collectors are records, not label pools.** The contract refuses an exchanged report from an operator
+  that holds label pools (`label_event_error`). A record's labelled amounts only add, so it needs no
+  shares of its own.
+- **No new field on the label owner.**
+  - `label_outside_removed_fmol` keeps its meaning: what left each outside node by label, into a record.
+    It covers collectors as well as sinks.
+  - In version 1 a node feeds at most one record, refused by name otherwise.
+  - So a collector's labelled contents are the sum of its feeding nodes' records, plus its direct inlet
+    deliveries at the base. Its shares are those contents over its total.
+  - So FR-49's judge, whose `LABELS_ONLY` names every owner field (its erratum 1 added this one), needs no
+    second erratum, and neither does the labels test's `same_physics`.
+  - Rejected: a field `label_collected_fmol`, zero-size elsewhere. It would need FR-49's judge erratum 2
+    before any of its later judged runs on an engine with the router.
 - **The exact map** at a node: x_k = kept s_k + Σ carried s_source,k + supplied [k = 0], with the shares
   x over its sum.
   - It is exact for a flow, not only for events. Each label's material obeys the same linear,
     species-blind system, so carrying the start shares along P's portions gives the exact end
     materials.
   - `advance_transfers`, the inner step's predictor-corrector, is second order and is not used.
-- **The half-step's report is a contract amendment** (S, for the builder to settle with the label
-  owner's owner).
+- **The half-step's report is a contract amendment** (S, kept marked, for the builder to settle with the
+  label owner's owner).
   - Today a labels-taking split part reports moves that the continuous kernel reads, and only events
     declare a report kind (`contract.label_event`).
   - The router's half-step needs a declared kind that the exact map reads.
@@ -385,7 +457,8 @@ kh · c_max/c_min ≲ 1, pinned by the registration's dt study.
 - At a trace background its first step stays a few percent off as h falls. That is FR-10's onset limit
   (BATH_SCHEDULE_DESIGN §3.2), recorded as such, not judged.
 
-**A desk sketch** (S, the default as this note reads it):
+**A desk sketch** (S, the default as this note reads it). Its edges are measured on the engine, in a
+recorded dt study, before any tag, and the measured edges replace them:
 - At kh = 0.2 and c₁/c₂ = 4, T2's error is −0.70% and T4's is −1.6%. With backgrounds of 10 and 1000 mM,
   T4's is −1.1%.
 - T4's ratios approach 8 per halving.
@@ -444,11 +517,19 @@ both heat laws. Three checks are read from the event's level records against the
 - The legs before and after the event are compared with the closed form, restarted at the event's exact
   map, at successively smaller steps.
 
-**"With FR-10's schedule"** (item 3's words). FR-10 is the held baths' dose schedule.
-- This note reads it as the events' schedule form: times on the dt grid by D283's predicate, as FR-10's
-  bath schedule takes them.
-- The other reading is a held bath under FR-10's schedule at one end of the face. That is Q10. The exact
-  face heat refuses a held bath in version 1 (D280), so such an arm would run the default heat alone.
+**The 8 and 2 fmol world lies inside the admitted domain** (desk figures, measured before any tag).
+- Before the event its two wells stand at c_max/c_min = 4, at equal volumes.
+- After the half wash at the trace, they stand at 2: 4 fmol plus the refill's trace, against 2 fmol.
+- So at the declared steps, kh ≤ 0.2, kh · c_max/c_min is at most 0.8 before and 0.4 after: inside the
+  sketched edge near 1.
+- **The energy check is a separate limit.** Under the default heat it is expected to stop this world
+  above kh ≈ 0.08 (§4.1). So arm 2 runs the default heat to completion at kh ≤ 0.05, and its larger steps
+  are item 2's stop cases.
+
+**"With FR-10's schedule"** (item 3's words; Q10, ruled). FR-10 is the held baths' dose schedule. Item 3
+says "a withdrawal and a refill at a connected finite node", so the plain reading holds: the events'
+schedule form, times on the dt grid by D283's predicate, as FR-10's bath schedule takes them. No held
+bath enters.
 
 **Flow beside diffusion.** It arrives with this qualification (Q8). FR-57's "flow off while diffusion
 continues" is then a world with Q = 0, bit for bit equal to its diffusion-only twin.
@@ -463,7 +544,8 @@ continues" is then a world with Q = 0, bit for bit equal to its diffusion-only t
 ## 5. Every acceptance target, and where it is checked
 
 "Kernel" rows are NumPy rows on the router's event and half-step, with no world compiled. "Runs" is the
-compiled file of §8.4. "Arm n" is an arm of the registered protocol (§8.2).
+compiled file of §8.4. "Arm n" is an arm of the registered protocol (§8.2). Each readout's class (§8)
+sets its tolerance: a rounding bound or an order window, never the other.
 
 | Target | Where it is checked | Controls |
 | --- | --- | --- |
@@ -472,7 +554,7 @@ compiled file of §8.4. "Arm n" is an arm of the registered protocol (§8.2).
 | **54.3** Removed, supplied and refill heat at a faced node; the lift only for the qualified form | Kernel row; Runs (faced world, exact heat); arm 2 under both heats; refusal rows | A twin with the event declared and not due, bit for bit; the event row's ledger; plant 17 |
 | **54 target** Equal volumes, 8 and 2 fmol; half of the first collects 4; it keeps 4 plus the refill; the second still 2 | A kernel row, exact: 4.0, then 4 + 0.5 V c_buf, then 2 bit for bit | In the run: the sample equals f times the preceding row |
 | **54 target** Diffusion before and after, at successively smaller steps | Arm 2 | The no-event twin |
-| **54.3** "With FR-10's schedule" | Read as the events' grid form (§4.3) | Q10 |
+| **54.3** "With FR-10's schedule" | Ruled: the events' grid form, with no held bath (§4.3) | Q10 |
 | **57** A → B → collector at V/Q: 1 − 2/e = 26.4241% | Kernel rows at 1 and 64 steps per residence time, to the derived bound; Runs | B → A gives 63.2121% from the same compile, P being a control (plant 1) |
 | **57** B → A → collector: 1 − 1/e = 63.2121% | The same | — |
 | **57** The tracer in each chamber and the collector; the sum is the start | The router's records; its own ledger on every row | — |
@@ -482,13 +564,13 @@ compiled file of §8.4. "Arm n" is an arm of the registered protocol (§8.2).
 | **57** Mixing heat booked; otherwise the energy check stops the run | Runs, with host checks on every row | Plant 8, refused with item 2's message |
 | **57** Version-1 refusals: ions; flow beside diffusion or binding at one node | Refusal rows: ions across a node-to-node link, at the definition and at run time (§3.3). Diffusion opens with §4.3 | — |
 | **57** Wording: V/Q of one chamber; clean buffer at the trace | The references include the inlet's trace exactly (the system is linear) | — |
-| **57** D148: absent unless declared; washed worlds bit for bit; a restart mid-flow bit for bit | A new operator; arm 7 if the wash is taken over; the resume file (§3.6) | The restart plants |
+| **57** D148: absent unless declared; washed worlds bit for bit; a restart mid-flow bit for bit | A new operator; arm 7, the takeover's bitwise check; the resume file (§3.6) | The restart plants |
 | **57 energy** The loss rate Q[x ln(x/y) − x + y] against storage and fluxes | Kernel rows per step, exact; arm 5, each chamber's heat converging to ∫ RT Q y φ(x/y) dt at first order | Plant 5 |
 | **57 energy** A uniform stream loses nothing; flow off contributes nothing while diffusion continues | A kernel row: H ≤ (16 eps)² RT Σ n. Runs: Q = 0 against the diffusion-only twin, bit for bit | — |
 | **57 energy** The one-mechanism link; an empty chamber's trace and its refinement | A kernel row: H_mix against the series of §3.4, ratio 4 per halving; arm 5's ladders in h and ε | Plant 7 |
 | **57 collector** An empty tube; 1 pL of 1 mM, then 1 pL of 3 mM; 4 fmol in 2 pL at 2 mM | A kernel row by events; arm 4 also by a flow from an inlet that switches from 1 to 3 mM, with the same totals at every step | — |
 | **57 collector** The first portion loses nothing; the total is 0.523248 RT·fmol | Exactly 0.0; the total against decimal (3 ln 3 − 4 ln 2) | Plant 9 |
-| **57 collector** Reversed order: the same total, different per-portion losses | Per delivery: (0, 0.523248) in both orders, so D352's "different per-portion losses" needs a reading or a third delivery. The second delivery's split, resident and arriving: (0.306853, 0.216395) forward, (0.216395, 0.306853) reversed. A third delivery: 1, 3 and 3 mM give (0, 0.523248, 0.137341); 3, 3 and 1 mM give (0, 0, 0.660589) | Q5 |
+| **57 collector** Reversed order: the same total, different per-portion losses | With two deliveries each delivery's loss is (0, 0.523248) in either order (D362 corrects D352). Judged per delivery, with a third delivery added: 1, 3 and 3 mM give (0, 0.523248, 0.137341); 3, 3 and 1 mM give (0, 0, 0.660589). Recorded too, the two-delivery split, resident and arriving: (0.306853, 0.216395) forward, (0.216395, 0.306853) reversed | Q5 |
 
 ## 6. Refusals and domains
 
@@ -503,6 +585,7 @@ compiled file of §8.4. "Arm n" is an arm of the registered protocol (§8.2).
   ligand's trace;
 - a link out of a record or into an inlet, and a record declared with contents but no volume;
 - a flow into a sink (flows end in collectors, §3.4);
+- a node that feeds more than one record (§3.5, labels);
 - a flow at a node that a face touches, unless the faces take `exact_free_energy_heat@1` (§4.3);
 - a path across a routed node's surface (`surface_crossings`), apart from §4.3's lift;
 - at a flow's nodes: binding, turnover, the reactions and species exchange;
@@ -558,6 +641,18 @@ until the rename's design note of 25 November settles D350's open points:
 
 ## 8. The qualification plan
 
+**Three readout classes.** Each readout is classed before its tolerance is written, so an exact readout
+is never judged by an order window, nor an order-carrying one held to rounding. FR-38's amendment 3
+(D354) corrected the second kind of mismatch on 24 November.
+
+| Class | Readouts | How each is judged |
+| --- | --- | --- |
+| **Exact** | Flow alone: trajectories, targets, sums, volumes. Portion events and the growing collector. Each step's total heat. Labels through events and flows. FR-54's T1 and T3 | A derived rounding bound (§3.3), never an order window |
+| **Second order** | Flow beside diffusion: Strang splitting with @3's tableau (arm 6) | An order window at halved steps, global ratio near 4 |
+| **First order** | How a step's heat splits among the holders (arm 5) | An order window, global ratio near 2 |
+
+FR-54's T2 and T4 carry the tableau's own orders, with derived bounds and ratios near 8 (§4.1).
+
 ### 8.1 The cheapest proof of each claim
 
 | Claim | The cheapest proof |
@@ -572,18 +667,26 @@ until the rename's design note of 25 November settles D350's open points:
 | Labels are exact through events and flows | NumPy rows: the exact map against P applied to label materials, and the labelled call's state and validity bit for bit the unlabelled call's. Arm 3 runs the twins |
 | Sites are untouched | One operator-alone row: bound arrays bit for bit |
 | A restart is bit for bit | The resume file (§3.6) |
-| The wash is taken over bit for bit (if Q1(a)) | The wash's existing rows, re-declared |
+| The wash is taken over bit for bit (Q1) | The wash's existing rows, re-declared |
 
-### 8.2 The composed worlds: one registered protocol (Q9)
+### 8.2 The composed worlds: one registered protocol, a verdict per request (Q9)
 
-The references are written code-blind from this note, and tagged before any engine reading. The run is
-detached, with its evidence on disk. It is not a tier file.
+- **The references come from a separate, code-blind agent.** This note's author has read the engine, so
+  writes none of them.
+  - They are written from this note and the requests, and tagged before any engine reading.
+  - They compute P in decimal, and FR-57's equal-rate chain in its confluent form (§2).
+- **Before the tag,** a recorded dt study on the engine measures §4.1's and §4.3's desk edges. The
+  measured edges replace the sketched ones.
+- **Two verdicts.**
+  - FR-54's verdict reads arms 1 and 2. Item 2's message is read on arm 2's stop cases.
+  - FR-57's verdict reads arms 3 to 7. Arm 6 runs only once FR-54's arms pass (Q8).
+- **The run** is detached, with its evidence on disk. It is not a tier file.
 - **Arm 1, the two-well first step:** §4.1's cases, both heats.
 - **Arm 2, the native run:** diffusion, a half wash, then diffusion, at the declared steps. The three
   event checks, under both heats.
 - **Arm 3, the flows:**
-  - A → B → collector and B → A → collector, at equal and unequal volumes, and, under Q4(a), a split and
-    merge and a loop;
+  - A → B → collector and B → A → collector, at equal and unequal volumes, and a split and merge and a
+    loop (Q4);
   - two species, and the label owner with a labelled tracer in A;
   - the targets, the sums, the exact labels, and the physical rows bit for bit against the unlabelled twin;
   - a separate unlabelled world with a site population at a third node, whose rows are bit for bit those
@@ -597,8 +700,9 @@ detached, with its evidence on disk. It is not a tier file.
   - the per-step total, exact throughout.
 - **Arm 6, flow beside diffusion:** A ↔ B by a face, with A → B → collector. Checked against the linear
   system's exponential, second order at halved steps; Q = 0 bit for bit against the diffusion-only twin.
-- **Arm 7, if Q1(a):** the wash's worlds re-declared as portion events, with every physical field and
-  mapped record bit for bit. Those are FR-27's review well, FR-44's twins and FR-37's three draws.
+- **Arm 7, the takeover (Q1):** the wash's worlds re-declared as portion events, with every physical
+  field and mapped record bit for bit. Those are FR-27's review well, FR-44's twins and FR-37's three
+  draws. It gates the wash's retirement (§3.1).
 
 ### 8.3 Planted errors
 
@@ -631,7 +735,7 @@ The seconds below are priced from measured rows in `tests/test_tiers.json`. The 
 
 | File | Change | Seconds | Reason |
 | --- | --- | --- | --- |
-| `test_wash_schedule.py` (tier 1, 9.7 s; renamed with the operator if the wash is taken over) | Kernel and refusal rows, NumPy | +3 | The operator's own rows, with no world compiled |
+| `test_wash_schedule.py` (tier 1, 9.7 s; renamed with the operator when the wash is retired) | Kernel and refusal rows, NumPy | +3 | The operator's own rows, with no world compiled |
 | `test_heat_bookings_formula.py` (tier 2, 35 s) | §4.1's host one-step rows on `face_world`, both heats; the trace-start row reads item 2's numbers | +20 | No runner needed |
 | `test_neutral_arrival_labels.py` (tier 2, 60 s) | The exact map with `carried`, and plant 11 | +2 | NumPy |
 | One vector-window refusal test | Item 2's numbers | 0 | An extended row |
@@ -639,8 +743,11 @@ The seconds below are priced from measured rows in `tests/test_tiers.json`. The 
 | **New** `test_liquid_routing_resume.py` (tier 2) | Three compiles: the run and two resumes (§3.6) | About 60, priced from `test_wash_schedule_resume.py` (59 s, three compiles) | No other file restarts across a flow or at a flow switch |
 
 - **The total** is about +145 s on tiers 1 and 2, about 1.4% of their 172 CPU-minutes.
-- **If the wash is taken over (Q1(a)),** its three files (about 145 s) are folded into the router's, their
+- **With the wash taken over (Q1),** its three files (about 145 s) are folded into the router's, their
   worlds sharing its compiles. The net is estimated at about +50 s.
+- **The collector's opening (Q3),** in its later landing: one NumPy row, and one compiled world in
+  `test_liquid_routing_runs.py`, about +25 s, taking it to about 85 s. Its reason: the only path
+  through an opened node. It moves to a file of its own if the measured row passes the cap.
 - **The registered protocol** runs once, as a detached job. It is not tier-tested.
 
 ## 9. What is not claimed
@@ -653,58 +760,29 @@ The seconds below are priced from measured rows in `tests/test_tiers.json`. The 
   receiving node's ion composition, as §3.3 requires. There is no charge transport by liquid.
 - **No flow beside binding, turnover, reactions or exchange at one node** in version 1.
 - **How a step's heat splits among holders** is first order in the step. Only the totals are exact.
-- **A collector has no chemistry.**
+- **A collector has no chemistry while it is a record.** Opening it as a node is a later landing (§3.2).
 - **No count-level (binomial) execution** of routed portions. That stays FR-20's later extension.
 - **No claim that the default face heat books a step from the trace.** FR-10's onset limit stands.
 - **Nothing about real instruments** beyond the declared Q and portions.
 - **Integration grants no acceptance** (D143). The registered protocol's verdict does.
 
-## 10. Decisions for the user, and the price
+## 10. Decisions, the price and the order
 
-1. **Q1. The operator's identity.**
-   - **(a) Recommended:** a new `liquid_routing@1` takes over the wash, which is retired after arm 7.
-     Retire it after FR-49's judged B and C1 runs, or with those runs pinned to an earlier snapshot.
-   - (b) A sibling beside the wash, sharing one kernel, the two refused at a shared node.
-   - (c) The wash widened in place (D148), renewing crossrev.
-2. **Q2. Events, flows or both, and how a flow runs.**
-   - **(a) Recommended:** both in one operator, a flow by the exact step of its network.
-   - (b) A flow as a train of D246 events: first order, reaching the targets only in the limit.
-   - (c) A flow's rates in @3's tableau: second order, with a rate-booked heat.
-3. **Q3. The collector.**
-   - **(a) Recommended:** a record only in version 1.
-   - (b) A record that opens as a node once it holds liquid, later (+1 to 1.5 agent-days).
-4. **Q4. Networks in version 1.**
-   - **(a) Recommended:** any balanced network of at most 64 nodes, qualified on a chain, a split and merge,
-     and a loop.
-   - (b) Series chains only.
-5. **Q5. What "different per-portion losses" reads** in the growing collector. With two deliveries, each
-   delivery's loss is (0, 0.523248) in either order, so D352's check needs a reading or a third delivery.
-   - **(a) Recommended:** each delivery's loss, with a third delivery so that order changes it per delivery:
-     1, 3 and 3 mM give (0, 0.523248, 0.137341); 3, 3 and 1 mM give (0, 0, 0.660589).
-   - (b) The second delivery's split between resident and arriving liquid, which differs at two deliveries.
-     (a) records it too.
-   - (c) The by-material terms, 1·ln(1/2) and 3·ln(3/2). These are not bookings, and one is negative.
-6. **Q6. The heat's form.**
-   - **(a) Recommended:** records outside the IMEX flow bound, as the wash's, with H ≥ 0 checked at every
-     event and step.
-   - (b) A declared heat field: it joins the flows and the dissipation check, and widens the energy bound by
-     2·10⁻³ of itself.
-7. **Q7. The default face heat at an exchanged node that a face touches.**
-   - **(a) Recommended:** for events, admitted within §4.1's resolved domain and refused by name outside
-     it. A flow's faced nodes take the exact heat only in version 1. The exact heat is admitted throughout.
-   - (b) The exact heat only, for events too.
-8. **Q8. When flow beside diffusion opens.**
-   - **(a) Recommended:** in the same build, once arms 1 and 2 pass.
-   - (b) A later landing.
-9. **Q9. Qualification.**
-   - **(a) Recommended:** one registered protocol for FR-54's items 1 and 3 and for FR-57.
-   - (b) Two protocols.
-   - (c) The builder's rows only, which D347 counted as a gap for FR-43 part 1.
-10. **Q10. What FR-54 item 3's "with FR-10's schedule" means.**
-    - **(a) Recommended:** the events' schedule form, times on the dt grid by D283's predicate. The
-      acceptance target's two finite compartments fit this reading.
-    - (b) A held bath under FR-10's schedule at one end of the face. That arm would run the default face
-      heat alone, since the exact heat refuses a held bath in version 1 (D280).
+The decisions were made on 24 November 2026. The user decided Q1 and Q3, and the coordinator ruled the
+rest as this note recommended.
+
+| Question | Decision | By |
+| --- | --- | --- |
+| Q1. The operator's identity | A new `liquid_routing@1` takes over the wash. The wash is retired after arm 7's bitwise check, once FR-49's B and C1 and FR-45's W2 and W7 allow, or with them pinned to an earlier snapshot (§3.1). Not a sibling beside the wash, nor the wash widened in place | The user |
+| Q2. Events, flows, and how a flow runs | Both in one operator, a flow by its network's exact step. Not a train of D246 events (first order), nor rates in @3's tableau | The coordinator |
+| Q3. The collector | A record that a later landing can open as a node whose liquid keeps reacting. Version 1 fixes the record so the opening changes none of its meaning or bits (§3.2) | The user |
+| Q4. Networks | Any balanced network of at most 64 nodes, qualified on a chain, a split and merge, and a loop | The coordinator |
+| Q5. "Different per-portion losses" | Each delivery's loss, with a third delivery added: 1, 3 and 3 mM give (0, 0.523248, 0.137341); 3, 3 and 1 mM give (0, 0, 0.660589). The two-delivery resident and arriving split is recorded too. D362 corrects D352 | The coordinator |
+| Q6. The heat's form | Records outside the IMEX flow bound, as the wash's, with H ≥ 0 checked at every event and step | The coordinator |
+| Q7. The default face heat at a faced exchanged node | For events, admitted within §4.1's resolved domain and refused by name outside it. A flow's faced nodes take the exact heat. The edges are measured before any tag, and the 8 and 2 fmol world lies inside the domain (§4.3) | The coordinator |
+| Q8. Flow beside diffusion | In the same build, once arms 1 and 2 pass | The coordinator |
+| Q9. Qualification | One registered protocol, with a verdict per request: FR-54's and FR-57's (§8.2) | The coordinator |
+| Q10. "With FR-10's schedule" | The events' grid form. Item 3 says "a withdrawal and a refill at a connected finite node" | The coordinator |
 
 **The price** (S, in agent-days):
 
@@ -712,14 +790,23 @@ The seconds below are priced from measured rows in `tests/test_tiers.json`. The 
 | --- | --- |
 | FR-54 item 2 | 0.25 |
 | The router: parse, holders, links, the exact step, books, records, refusals, summary and run view | 3 to 4 |
-| Labels: the report, the exact map and collectors as pools | 0.75 to 1 |
+| Labels: the report, the exact map and the collectors' labelled contents | 0.75 to 1 |
 | The faced-node lift and the default's domain | 0.5 |
 | Tests | 1 |
-| The registered protocol: references, judge and run | 1.5 to 2 |
+| The registered protocol: the dt study, the references (a separate agent), judge and run | 1.5 to 2 |
 | Docs: library page, composition table and `PUMP_COMPOSITE.md` | 0.25 |
-| **Development** | **7.25 to 9** |
-| With the wash taken over (arm 7, its tests re-expressed, its retirement) | +1 to 1.5 |
+| The wash taken over (Q1): arm 7, its tests re-expressed, its retirement | 1 to 1.5 |
+| **Development** | **8.25 to 10.5** |
+| The collector's opening as a node (Q3), a later landing | +1 to 1.5 |
 
 **The order.**
-- The wash's files carry FR-49's wash narrowing next (D327), so the router's build starts after it.
-- The router is born after the rename, so it needs no mapping row.
+1. **This note** lands with the rename's design note, in one stack with no src change.
+2. **The build comes after the rename of 25 November,** so the operator's ID is minted once, as
+   `cells.operator.liquid_routing@1`, with no mapping row. The wash's files carry FR-49's wash narrowing
+   first (D327).
+3. **The registered protocol is tagged before the build.**
+   - Its dt study runs on today's engine first. The default face heat's edges need only @3's faces: the
+     8 and 2 fmol world before and after the event is a two-well start.
+   - Its references come from a separate code-blind agent (§8.2).
+4. **The wash is retired after arm 7,** when FR-49's and FR-45's runs allow (§3.1).
+5. **The collector's opening** follows as its own landing, statically absent until declared (§3.2).
