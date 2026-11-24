@@ -17,7 +17,7 @@ from tests.unit.test_chloride_leak_law import chloride_world
 from validation.tissue.surface_pump_v3_fixtures import channel
 
 
-def specimen(protocol):
+def specimen(protocol, *, external_pH=None):
     raw = chloride_world(patch=0.0)
     model = raw["model"]
     for reservoirs, field in (("cells", "inside_K_mM"), ("extracellular", "outside_K_mM")):
@@ -26,6 +26,19 @@ def specimen(protocol):
         potassium = protocol[field] * pool["volume_pL"]
         amounts["Na"] += amounts["K"] - potassium  # Preserve the charge of the fixture.
         amounts["K"] = potassium
+    if external_pH is not None:
+        # Carry free H as its own positive species. Exchange equal monovalent charge
+        # with Na so that changing bath pH preserves each node's declared charge.
+        model["species"].append({"id": "H", "valence": 1})
+        raw["execution"]["material_balance_atol_fmol"]["H"] = 1e-12
+        for group, pH in (("cells", protocol.get("inside_pH", 7.3)),
+                          ("extracellular", external_pH)):
+            for pool in model[group]:
+                amount = pool["volume_pL"] * 10 ** (3 - pH)
+                pool["initial_amount_fmol"]["H"] = amount
+                pool["initial_amount_fmol"]["Na"] -= amount
+        for patch in model["membranes"]:
+            patch["permeability_m_per_s"]["H"] = 0.0
     model["membranes"][0]["pump"] = None
     raw["experiment"]["pump_controls"] = []
     model["channels"] = [channel("kv15", 0, "kv1p5_mh@1", "K", 4e-9, 1.0, [0.5, 1.0])]
