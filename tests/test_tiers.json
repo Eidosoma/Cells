@@ -389,7 +389,8 @@
   "/mnt/workspaces/Cells/fr44-core-20261124/tiers-78f72bc0/measured.json",
   "/mnt/workspaces/Cells/fr44-core-20261124/tiers-compartments-f60232c0/measured.json",
   "/mnt/workspaces/Cells/fr51-build-20261124/tiers-d3b3cf0b/measured.json",
-  "/mnt/workspaces/Cells/fr50-build-20261124/tiers/measured.json/measured.json"
+  "/mnt/workspaces/Cells/fr50-build-20261124/tiers/measured.json/measured.json",
+  "/mnt/workspaces/Cells/fr50-build-20261124/tiers2/measured-quiet/measured.json"
  ],
  "measured_provenance": [
   {
@@ -3326,6 +3327,13 @@
    "root": ".claude/worktrees/fr50-one-way-records",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-24T16:26:46+00:00"
+  },
+  {
+   "git_revision": "2fae9e65bf6b675617a56d2d56195f2ff92acc11",
+   "dirty": false,
+   "root": ".claude/worktrees/fr50-one-way-records",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-24T19:59:55+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -8088,10 +8096,10 @@
    },
    {
     "file": "tests/unit/test_passive_routes_kind.py",
-    "seconds": 72.34,
+    "seconds": 75.57,
     "exit_code": 0,
     "counts": {
-     "passed": 28
+     "passed": 29
     }
    },
    {
