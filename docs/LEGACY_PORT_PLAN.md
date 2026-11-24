@@ -1,899 +1,730 @@
-# Legacy port plan: the families BETSE's comparisons and the calcium ensemble use, then legacy's deletion
+# Legacy port plan: everything Cells uses leaves legacy, in canonical forms
 
-**Status: a plan for review, 24 November 2026, night.** Nothing in it is built, run as a gate, or decided
-beyond D345, D346 and D348. It was written read-only against main at `ce4780d2`.
+**Status: a plan for the morning's review, reworked after D369** (24 November 2026, night). Nothing in it is
+built or decided. It was written read-only:
+- the tree is main at `ce4780d2`;
+- D369 is at `618cf31c`, which changes none of the files cited here by line.
 
-**Decisions it carries out:**
-- **D346, amended by D348:** port the 11 legacy families that the BETSE comparisons and the calcium
-  ensemble use, then delete `src/cells/legacy/` whole, in one deletion with one gate.
-- **D348's correction:** `kinetic_pump_binding.py` does not import legacy.
-- **The rename comes first (D345, D346).** Every live ID becomes `cells.<family>.<name>@major`. Legacy's IDs
-  stay bare and frozen until the deletion. A ported family's ID is minted once, under the rename's
-  families. Every ID below is a proposal, **to be named in the rename note** (branch `rename-design`).
-- **BETSE's role (AGENTS.md):** BETSE is an outside reference only. Nothing named BETSE goes into `src/`.
-  Parity checks stay possible later, against saved outputs, out of process.
+**What is decided:**
+- **D346 and D348:** port the legacy families that are used, then delete `src/cells/legacy/` whole, in one
+  deletion with one gate. Main is tagged first.
+- **D369, the user's direction:** "the legacy work is clearly important cleanup we need to make sure to get
+  everything we're actually using out of there in our canonical formats".
+  - **The end state is canonical.** Everything used is re-expressed in the engine's laws, models,
+    operators and definitions, under the rename's IDs. A relocated legacy island is not an end state.
+  - **The scope is a test of use, not a list of IDs.** This is the user's rule of 17 November: legacy goes
+    in one batch after a check that covers every capability.
+  - **Not settled:** whether a bitwise relocation comes first, as an interim step. §7 prices both routes.
+- **BETSE (AGENTS.md, 8 November):** an outside reference only. Nothing in `src/cells` imports, executes,
+  re-hosts or copies BETSE code, or carries its conventions or names. Laws BETSE also uses are fine under
+  neutral names, with the source cited.
+- **The rename comes first (D345, D346).** Every live ID becomes `cells.<family>.<name>@major`; legacy's
+  stay bare and frozen until the deletion. Every new ID below is a proposal, to be named in the rename note
+  (`docs/ID_HIERARCHY_DESIGN.md` on branch `rename-design`).
 
-**Records:**
-- The lead's dependency analysis: `/mnt/workspaces/Cells/legacy-removal-20261124/`.
-- This plan's read-only probes and inventories: `/mnt/workspaces/Cells/legacy-port-plan-20261124/`.
-  - `inventory.json`: per family, its seeds, import-time closure and direct consumers, and every test file's
-    class.
-  - `probe.json`, `probe2.json`, `probe3.json` and `probe4.json`: the import graph, the runtime reach from
-    the scope map, the closures and the test classification. Their scripts are in `tools/`.
-  - `probe-capture-a/` and `probe-capture-b/`: the capture probes of §5.
-  - **Caveat:** `probe.json` and `probe2.json` hold superseded figures: 1,445 consumers through the
-    dispatch string, and a loose JSON-name match. `probe4.json` supersedes them. `inventory.json` lists
-    direct evidence only; the reach through fixtures is in `probe4.json`.
+**Records:** `/mnt/workspaces/Cells/legacy-port-plan-20261124/`.
+- `inventory.json`, `probe4.json`: the import graph, each file's legacy evidence, and each test file's
+  class. `probe.json` and `probe2.json` hold superseded figures, among them 1,445 consumers counted through
+  the dispatch string.
+- `probe-capture-{a,b,c}/`: tonight's capture probes.
+- `legacy_defs_with_shared.json`: the legacy definitions that spell the rename's 18 shared pieces.
+- `tools/`: the probes' scripts.
+- The lead's earlier analysis is in `/mnt/workspaces/Cells/legacy-removal-20261124/`.
 
-Paths below are repository paths unless they start with `/mnt/`.
+Paths are repository paths unless they start with `/mnt/`.
 
 ## 1. Summary
 
-**The 11 decided families sit on more legacy than their IDs show.** Their import-time closure is 107 of
-legacy's 321 modules and about 27,400 of its 75,600 lines. With function-level imports it is 122 modules
-and 33,600 lines.
-- They nest three more legacy families inside their definitions:
-  - `er_calcium@1` is the store in seven of them;
-  - `spatial_extracellular@2` is the ionic child of `spatial_calcium@1`–`@4` and of the cluster's base
-    configuration;
-  - `finite_extracellular@2` is the ionic child of `assembly_regulated_cell@1`.
-- **18 of the 39 legacy-importing BETSE drivers use none of the five BETSE IDs.** They run
-  `finite_extracellular@1`–`@3` and `spatial_extracellular@1`–`@2`: the REF-003 to REF-005 comparisons
-  and the junction and spatial-cluster panels.
-  - The lead's closure kept their modules, through its import seeds.
-  - Its count of five IDs came from ID strings, though. These drivers import the models by module, and
-    those families' IDs are defined in `definitions/specs.py`, outside legacy.
-  - This is question Q1.
+**"Used" is fixed before counting (§2).** A capability is used when a consumer that is not a legacy-subject
+test needs it, in one of four ways:
+- a live engine module needs it;
+- a live feature's test uses it as a vehicle or reference;
+- a current document claims a result that rests on it;
+- a registered protocol in force runs it.
 
-**What "port" means here (§2).** Bit for bit is attainable only by a faithful relocation.
-- The code moves out of `legacy/` under neutral names, and its ID is minted.
-- Its dispatch joins the live registries: the parse entry at once, the subclass-ordered entries at the
-  deletion. That is
-D188's scripted move, run for the kept families, with its import rewriter and verifier. A re-expression on
-the modular core (`resolved_pump_tissue@3`, the composite, operators and kinds) cannot be bitwise. Its
-blockers today include:
-- @3's channel valence table, {Na, K, Cl}, which refuses every calcium-permeant channel law (@3 does carry
-  a plasma-membrane calcium pump);
+A test whose only subject is a legacy model is not a use, and neither is a historical record.
+
+**Tonight's checks of use:**
+- **No registered protocol in force names a legacy model.** None of the rename probe's 233 frozen files
+  does.
+- **No current document claims a result from the 39 legacy-importing BETSE drivers.**
+  - The BETSE parity that PROGRESS claims (the default world, rungs D and F, P2 to P4b, CPU and L4) runs on
+    `resolved_pump_tissue@1` to `@3` (`validation/betse/protocols/physical_*`).
+  - The 18 REF-003 to REF-005 drivers are cited only by their own September and October design and closeout
+    notes and reports.
+  - The 17 physiology drivers' results are claimed nowhere. PROGRESS records only that their stack moved
+    to `validation/betse` (Stage B).
+- **Used today, beyond legacy's own tests:**
+  - the calcium ensemble: the assembly-regulated cell and cluster over `spatial_calcium@1`–`@4`. Its users
+    are the live ensemble runner's kinds (`ensemble/families.py:20–26`) and `docs/GPU_ENSEMBLES.md`'s
+    qualified preparations;
+  - `spatial_extracellular@2`, which the JUPITER readiness check runs (`validation/ensemble/jupiter_check.py:47,
+    367`; `docs/JUPITER_RUNBOOK.md`);
+  - `resolved_tissue@8`, @3's reference world in its gates-equivalence tests;
+  - `source_decay@1`, the shared conftest's world for 9 infrastructure tests.
+- **Documents that point at legacy capabilities** (paper reviews, two design notes) are claims to correct,
+  not uses (§3, group H).
+
+**The coverage table (§3)** has 38 capability rows:
+- 15 canonical already;
+- 5 expressible today;
+- 9 that need an engine feature: five for the calcium ensemble, one if Q2 keeps the physiology set, and
+  three only if wanted;
+- 6 dropped, each listed with what is lost;
+- 3 that follow Q2 or another row.
+
+**Nine gaps are confirmed at their refusal sites (§4).** They are candidate requests for the user, not FRs:
+- calcium-permeant channels on @3;
+- instantaneous gate-free laws;
+- channels that read a species;
+- an ER store;
+- IP3-gated store release;
 - finite fuel;
-- no ER compartment or assembly-coupling law.
-
-This plan relocates first and proves the relocation bitwise. Re-expression is question Q2.
-
-**The proof reuses G1's tool.** `validation/results_baseline.py save --from` captured legacy worlds
-unchanged in tonight's probe on CPU 4, under the timed lock and a 4 GB scope, for a 5-step first window,
-cold. The two probe runs took 131 s and 324 s of wall:
-
-| World | Seconds | Arrays |
-|---|---|---|
-| `resolved_tissue@12` | 76.8 | 79 |
-| `spatial_calcium@1` | 22.6 | 53 |
-| `resolved_calcium_energy@5` | 154.9 | 140 |
-| `resolved_open_calcium_energy@1`, from a fixture, JIT off | 142.7 | 144 |
-
-- **The assembly families capture through their own CPU command line** (§5.2, C4). That path was not run
-  tonight, because the timed lock was taken by another agent's timed job. Its cost is an estimate.
-- **The capture's helper scripts do not exist yet** (§5.2).
-- **The full capture is estimated at 2.5–4 CPU-hours,** about 25–40 minutes on one lane.
-- **It is not for tonight:** both lanes are held and the load is about 17.
-- **It runs from the pre-rename tag's frozen snapshot** (§5, §13).
-
-**The deletion is more than the folder (§8).**
-- The legacy hub also dispatches live code: `resolved_tissue@1`–`@12`, whose model is
-  `cells.models.surface_kinetic`. The modern @3's tests use `resolved_tissue@8` as a reference world.
-- It serves `source_decay@1`, `emt_mirna@1` and `passive_pair@1`. These parse in `definitions/specs.py`
-  but run on legacy models. `source_decay@1` is the shared conftest's default world.
-
-**Tests (§7).** 195 of the 891 tier-record test files import legacy directly; that is D346's count. 10 more
-name a legacy ID themselves. 401 reach legacy only through a fixture, shared driver or configuration.
-- At runtime, 388 of the scope map's 662 files load legacy, and 354 of those load the hub. Most of those
-  loads are dispatch misses, not uses.
-- The definitive list is a scratch dry-run deletion with a tiers run (§7.4). Its command is given; it has not
-  been run.
-
-**Gate time (§9).** The deletion removes 13–70% of the test-seconds of tiers 1+2, which take about 42 of a
-gate's 55 locked minutes.
-- **The point estimate:** the files certain or likely to go hold about 2,100 of 13,577 test-seconds, about
-  15%. That is about 6.5 minutes of a gate's wall.
-- **The upper bound:** 9,554 test-seconds (70%), about 30 minutes.
-- **Unchanged:** G1's 113 worlds (about 10 minutes) and crossrev's sets (about 2.5 minutes), whose worlds
-  name no legacy ID.
-- **Tier 3** shrinks most: 204 of its 215 recorded files, 85,147 of 87,166 test-seconds, reach legacy.
-- The dry run measures the true figure.
-
-**Cost (§10).**
-- The relocation: about 8–11 agent-days, plus about 10–12 lane-hours of gates and captures. Tier 3's
-  deliberate run is the largest part.
-- A full re-expression: a further 15–25 agent-days, judged at tolerances, not bitwise.
-
-**The user's questions (§12):**
-- Q1, scope beyond the 11;
-- Q2, relocation then re-expression;
-- Q3, which BETSE drivers stay runnable;
-- Q4, the `resolved_tissue` majors kept;
-- Q5, the three inline families and the conftest world.
-
-## 2. What a port is here, and what "bit for bit" covers
-
-**Relocation (R), the proving step.**
-- Each kept module moves out of `legacy/` into a neutral home, by a move map and D188's tool,
-  `scripts/source_moves.py`: one map, one import rewriter, one verifier. Its maps are kept beside move 1's
-  and move 2's in `scripts/moves/`.
-- **The verifier** checks that every changed file equals the rewriter applied to its old content.
-- **Dispatch:** each kept family's entries in `legacy/registration.py` (parse, `model_for`, `to_dict`,
-  `control_values`, the command line and the ensemble hook) move into the live dispatch points
-  (`definitions/specs.py`, `registry/models.py`, `execution/schedule.py`, `__main__.py`,
-  `ensemble/families.py`) and the model table.
-- **IDs:** its ID is minted under the rename's families. The legacy ID is then refused at parse, with a
-  message naming the new one, as the rename's table does. There are no aliases (D345); superseded
-  mechanisms retire when the replacement lands.
-- **Pruning** is separate and behaviour-preserving: branches no kept family reaches are cut, for example the
-  cluster's mobile-channel, mobile-pump, mitochondria, network-transport and finite-energy branches,
-  which serve only the `resolved_*` derived families.
-- **Why it can be bitwise:** the kernels, their evaluation order and the compiled programs' inputs are
-  unchanged. D188's moves were gated on G1 at 113 of 113, bitwise.
-- **What the verifier does not cover.** It refuses hand edits, so each landing is two commits:
-  - first the verified move;
-  - then the hand edits: neutral renames inside files, F1's fold, the dispatch re-plumbing and the ID
-    mint.
-
-  The verifier proves the first, and C5's bitwise comparison proves both.
-
-**Dispatch between the landings.**
-- `model_for`, `to_dict` and `control_values` are isinstance chains, subclass first, and the live dispatch
-  points run before the legacy miss.
-- **Unported legacy classes derive from the ported ones:**
-  - from `SurfaceHCNExtraModel` (F1): five, among them active excision and the active barrier, profile and
-    bath-event models;
-  - from `SurfaceCalciumHCNExtraModel` (F2): three, besides F4;
-  - from `SurfaceCalciumEnergyHCNExtraModel` (F3): eight, besides F5, among them the regulated, transport,
-    water and excision models;
-  - from F4 and F5: their bath-event models;
-  - from `IP3CalciumModel` (F9): `TissueCalciumModel` (`spatial_calcium@5`);
-  - from `SpatialJunctionSpec`: `TissueModel` (`spatial_extracellular@3`).
-- A ported base checked live with `isinstance` would therefore catch those subclasses until L3.
-- **So until the deletion:**
-  - a ported family's `model_for`, `to_dict` and `control_values` entries stay in the hub, retargeted by the
-    rewriter to the moved modules;
-  - only its parse entry, which matches an exact ID string, goes live.
-- L3 moves the remaining entries into the live dispatch points in the commit that deletes the subclasses.
-- **The alternative** is exact-type checks (`type(spec) is X`) in the live entries from L1. That is the
-  lead's ruling.
-
-**Re-expression (E), a later step per family.**
-- The family becomes a declared structure of @3 or of the composite: registered channel, cycle, route and
-  reaction laws, operators and kinds.
-- **It cannot be bitwise.** `docs/ARCHITECTURE.md` records A7's summation order moving ledger and
-  diagnostic arrays at rounding. The registered PMCA (`cells.ca_atp_mass_action_positive@1`) already uses
-  another standard state (Δg0 − RT ln 1000).
-- **Today's blockers:**
-  - @3's channel valence table is {Na, K, Cl} (`definitions/surface_pump_v3_spec.py:169`, checked at
-    :327–329), which refuses every calcium-permeant channel law. @3 does carry a plasma-membrane calcium
-    pump (`cells.ca_atp_mass_action_positive@1`);
-  - gate-free laws give no opening under @3's template, which excludes 8 instantaneous Morris–Lecar laws;
-  - the channel-law seam reads voltage only;
-  - finite fuel is a target, not a case (`ARCHITECTURE.md`, material identity and fuel);
-  - there is no ER store or assembly-coupling law.
-- So E is judged at a declared tolerance against R's bitwise-proven outputs. That is Q2.
-
-**Bit for bit covers numeric arrays only.**
-- **Scalar families:** every array `results_baseline.py save` writes per world: times, `history.*`,
-  `observations.*`, `diagnostics.*`, and the final checkpoint's state, time and step.
-- **Assembly families:** every array of `checkpoint/state.npz` (`pool_*`, `ionic_*`, `tick`, `segments`,
-  `availability_exposure_s`, `fault`) and the numbers in `observations/tick-*.json` and `result.json`.
-  They are compared as loaded arrays, not as file digests.
-- **A refusal is an output.** Its type must match, and its message must match after the ID mapping.
-  `results_baseline.compare` needs one validation-only option for that: an ID-mapping file applied to
-  refusal messages.
-- **Not compared:**
-  - model, law, observer and domain ID strings, which go through the mapping table;
-  - source paths and SHA-256 values of source files, which drivers record, for example `trajectory.py`'s
-    `source_sha256`;
-  - runtime identity;
-  - timestamps and wall times.
-- **The environment must match:** the same `venv-cpu` (jaxlib, XLA flags), CPU only, float64,
-  single-thread BLAS, cold compilation cache and one CPU per shard. `results_baseline`'s manifest records
-  it, and a mismatch voids the comparison rather than failing it.
-
-## 3. Scope
-
-### 3.1 The 11 decided families
-
-| # | ID (legacy, frozen) | Spec / parse | Model | Import-time closure in legacy | Notes |
-|---|---|---|---|---|---|
-| F1 | `resolved_tissue@12` | `definitions/surface_kinetic_spec.py` (live) | `legacy/models/surface_hcn_extra.py` → `surface_cav.py` → live `models/surface_kinetic.py` | 2 modules, 73 lines | The model and the 56-law catalogue are live |
-| F2 | `resolved_calcium@11` | `legacy/core/surface_calcium_spec.py` | `legacy/models/surface_calcium_hcn_extra.py` → `surface_calcium.py` | 38 modules, 11,123 lines | Children: ionic F1, `er_calcium@1` stores |
-| F3 | `resolved_calcium_energy@5` | `legacy/core/surface_calcium_energy_spec.py` | `legacy/models/surface_calcium_energy_hcn_extra.py` → `surface_calcium_energy.py` | 44 modules, 13,438 lines | Parse rewrites @5 to F2 before decoding (spec:367–378) |
-| F4 | `resolved_open_calcium@1` | `legacy/core/surface_open_calcium_spec.py` | `legacy/models/surface_open_calcium.py` → `open_calcium_runtime.py` | 58 modules, 17,979 lines | An adapter over F2 |
-| F5 | `resolved_open_calcium_energy@1` | `legacy/core/surface_open_calcium_energy_spec.py` | `legacy/models/surface_open_calcium_energy.py` | 58 modules, 17,986 lines | The same adapter over F3 |
-| F6 | `spatial_calcium@1` | `legacy/core/spatial_calcium_spec.py` | `legacy/models/spatial_calcium.py` | 26 modules, 8,157 lines | Subclasses `spatial_extracellular@2`; `er_calcium@1` stores |
-| F7 | `spatial_calcium@2` | `legacy/core/plasma_calcium_spec.py` | `legacy/models/plasma_calcium.py` | 28 modules, 8,771 lines | Over F6 |
-| F8 | `spatial_calcium@3` | `legacy/core/gated_calcium_spec.py` | `legacy/models/gated_calcium.py` | 30 modules, 9,204 lines | Over F7 |
-| F9 | `spatial_calcium@4` | `legacy/core/ip3_calcium_spec.py` | `legacy/models/ip3_calcium.py` | 34 modules, 9,471 lines | Over F8 |
-| F10 | `assembly_regulated_cell@1` | `legacy/assembly_cell/spec.py` | `legacy/assembly_cell/`, `legacy/ensemble/coupled.py` | 12 modules, 3,300 lines (+91 at function level) | Ionic child `finite_extracellular@2`; pool `finite_bond_assembly@1` (live, `assembly_pool/`) |
-| F11 | `assembly_regulated_cluster@1` | `legacy/assembly_cluster/spec.py` | `legacy/assembly_cluster/`, `legacy/ensemble/cluster.py` | 83 modules, 21,567 lines | Ionic child `spatial_extracellular@2` or F6–F9 |
-
-The union of the 11 import-time closures is 107 modules and 27,414 lines.
-- **Pruning** the cluster's five branches for the `resolved_*` families is estimated to remove about 37
-  modules and 7,800 lines. The specs and models of mobile channels, mobile pumps, repair, redistribution,
-  water and mitochondria go with them.
-- **That leaves about 70 modules and 20,000 lines.** The builder's first step computes the exact figure.
-- **Two modules outside the closure are reached only lazily, through the hub's ensemble hook:**
-  `legacy/ensemble/cluster.py` and `coupled.py` (461 lines). F10 and F11 need them.
-
-### 3.2 Layers the 11 need underneath: nested in definitions or inherited in code
-
-| ID or layer | Why it is needed | Where it lives |
-|---|---|---|
-| `er_calcium@1` | The `stores` child of F2, F3 and F6–F9 (for example `configs/resolved_hcn_extra_calcium.json` and `configs/spatial_calcium_cluster.json`) | `legacy/core/er_spec.py`, `legacy/models/er_calcium.py`, over `compartment_reactions@1` (`legacy/core/reaction_spec.py`, `legacy/models/compartment_reactions.py`) |
-| `spatial_extracellular@2` | The ionic child of F6–F9 and of `configs/assembly_regulated_cluster.json`; F6's spec class subclasses it | `legacy/core/spatial_junction_spec.py`, `legacy/models/spatial_junction.py`, over `finite_extracellular@3`, `@1` and `spatial_extracellular@1` |
-| `finite_extracellular@2` | The ionic child of F10 (`configs/assembly_regulated_cell.json`) | `legacy/core/kinetic_finite_spec.py`, `legacy/models/kinetic_finite_extracellular.py`, `kinetic_finite_bounds.py` |
-| `resolved_tissue@12` (F1) | The ionic child of F2 and F3 | as F1 |
-| `resolved_calcium@1`–`@10` and `resolved_calcium_energy@1`–`@4` bases | F2's and F3's models inherit their code from `surface_calcium.py`, `surface_calcium_catalog.py`, `surface_calcium_cav.py` and `surface_energy_spec.py`, not their IDs | legacy models and specs, in the closure |
-| older families' helpers | `bioelectric_spec`, `multispecies_spec` and `multispecies_membrane`, `voltage_gated_spec` and `voltage_gated_membrane`, `physical_ionic_graph_spec` and its model: imported by the extracellular line, as helpers only | legacy, in the closure |
-
-The spec classes of `finite_extracellular@1`–`@3` and `spatial_extracellular@1`–`@2` are already live
-(`definitions/specs.py:294–402`). Only their parse modules and models are legacy.
-
-### 3.3 IDs consumers use beyond the 11
-
-| ID | Consumers | Note |
-|---|---|---|
-| `finite_extracellular@1` | 13 BETSE drivers (§4.8) | Not one of the five; Q1 and Q3 |
-| `finite_extracellular@2` | 3 BETSE drivers; F10's child | Q1 and Q3 |
-| `finite_extracellular@3` | `validation/betse/junction_coupled/test_coupled.py`, `spatial_cluster/test_spatial.py` | Q1 and Q3 |
-| `spatial_extracellular@1`, `@2` | `validation/betse/spatial_cluster/test_spatial.py`; `@2` is F6's and F11's child | Q1 and Q3 |
-| `compartment_reactions@1` | 3 BETSE physiology drivers (`physiology_protein_loop.py`, `physiology_protein_interval_accounting.py`, `physiology_protein_interval_arrays.py`) | Under `er_calcium@1` anyway |
-| `resolved_tissue@1`–`@11` | Live code, legacy dispatch. 14–49 files each name them; @3's reference worlds use `@8` (`validation/tissue/surface_pump_v3_fixtures.py:107–129`, for example `tests/unit/test_surface_pump_v3_gates_equivalence.py`); the BETSE physiology references name `@1` | Q4 |
-| `source_decay@1`, `emt_mirna@1`, `passive_pair@1` | The shared conftest (`configs/single_cell_pulse.json`, 10 test files), their own tests | Q5 |
-| Legacy process helpers, not model IDs | `tissue_profiles.py` (static profiles), `processes/tissue_removal.py`, `processes/extracellular_face_transport.py`, `processes/tissue_target_selectors.py`, `processes/geometry_operator_binding.py`, `core/tissue_profile{,_composition}_preparation.py`, `multispecies_spec.identifier` | Used directly by BETSE drivers. The target selectors, geometry binding and the two profile preparations are in F4's closure, and `multispecies_spec` is in every family's; `tissue_profiles.py` (263 lines), `tissue_removal.py` (520) and `extracellular_face_transport.py` (751) are outside every closure |
-
-**`ensemble/ionic.py` admits 98 legacy IDs** as ionic children. Tests and drivers exercise
-`spatial_extracellular@2` and F6–F9 under F11, and `finite_extracellular@2` under F10. The rest go with
-the deletion: the cluster's spec (`legacy/assembly_cluster/spec.py:139–175`) admits 33 legacy types, and
-the ported cluster admits only the exercised ones.
-
-## 4. The families
-
-Each entry gives:
-- the legacy source and its closure (§3.1);
-- the physics, with its sources as the code and docs cite them;
-- the consumers, grouped (the full lists are in `inventory.json`);
-- the target home, with neutral names, and the proposed ID;
-- the bitwise check, whose world list and commands are in §5.
-
-The proposed ID form is **`cells.model.<legacy name>@<legacy major>`**: the family prefix only, with
-names and majors kept. It keeps lineage readable and makes the capture's mapping trivial. Descriptive new
-names at major 1 are the alternative, for the rename note to choose.
-
-### 4.1 F1 `resolved_tissue@12`: the 56-law gated tissue
-
-- **Physics.** `models/surface_kinetic.py` over `resolved_tissue@1`:
-  - channel gates, with transfer and heat per species;
-  - a junction gate;
-  - the Na/K pump `nak_atp_mass_action_positive@1` on maintained reservoirs, with `pump_cycles`, pump heat
-    and `metabolic_work_pJ`;
-  - the energy ledger: channel and pump heat, less work;
-  - RK4 step ceilings of 1.25, 2.5 and 25 µs.
-- **@12 over @11** adds `hcn_leak_open@1`, `hcn2_camp_m@1` and `hcn4_camp_m@1` (codes 53–55,
-  `laws/channels/hcn_extra_channels.py`).
-- **Sources.** The law forms come from BETSE 1.5.0's channel classes (Pietak and Curry, 2025, as
-  `laws/channels/kv1p1_mh2.py` cites them), for example `vg_funny.py` at 5269a714
-  (`docs/TISSUE_RETURN_CURRENT.md`). Primary papers are cited second-hand only.
-- **What the legacy wrappers add.** `legacy/models/surface_hcn_extra.py` (32 lines) and `surface_cav.py`
-  (41 lines) add the MODEL_ID, OBSERVER_ID `resolved_hcn_extra_accepted_grid@1`, STAGE_DOMAIN_ID
-  `positive_resolved_hcn_extra_actual_controls@1`, the layout type, the channel axes and `working_size`.
-  The layout type alone selects the 56-law catalogue.
-- **Consumers.** 55 files name the ID or import its modules:
-  - src: `ensemble/ionic.py`;
-  - BETSE: 7, in the physiology set;
-  - tests: 9;
-  - other validation: 37, the derived families' references, which go.
-- **Target.** No relocation of the model. The wrappers' constants become a per-major table in
-  `models/surface_kinetic.py`. The `resolved_tissue` dispatch moves into the live dispatch points
-  (`registration.py:778–807, 1196–1211, 1444–1447, 1946–1949`). Which majors keep IDs is Q4.
-- **ID:** `cells.model.resolved_tissue@12`, to be named in the rename note.
-- **Bitwise check.** Set `F1`: `configs/resolved_hcn_extra_ionic.json`,
-  `configs/resolved_active_excision_source.json`, and
-  `validation/tissue/hcn_extra_catalog_fixtures.definition("ionic", arm)` for its six arms. If Q4 keeps
-  them, add the `@8` reference world `surface_pump_v3_fixtures.reference()` and one `@1` world.
-- **Cost:** about 8 worlds at about 80–120 s each, roughly 15 CPU-minutes. This is extrapolated from the
-  probe's 76.8 s.
-
-### 4.2 F2 `resolved_calcium@11`: 56-law tissue with owned calcium and ER
-
-- **Physics:**
-  - one `er_calcium@1` store per cell, 1–16 per world, sharing cytosol volume and free ions with the ionic
-    child;
-  - per membrane, PMCA `plasma_calcium_pump_positive@1`, NCX `ncx_3na_1ca_symmetric_barrier@1` and one
-    Cav1.2 population `cav1p2_m2h@1`;
-  - the IP3 factor `ip3_er_release@1` on ER release;
-  - the energy ledger to 1e-9 pJ, the chemical ledger, ownership and three work identities;
-  - a finite exterior only.
-- **The ER store (`er_calcium@1`, §3.2):**
-  - an ER capacitor, V = V0 + F·1e-15/C·Σ z Δn;
-  - a GHK leak per species;
-  - the pump `er_calcium_pump_positive@1` with the `maintained_mM_quotient@1` convention;
-  - the calcium-gated release `er_calcium_release@1`;
-  - buffers by `ideal_detailed_balance_mass_action@1`.
-- **Sources:**
-  - BETSE 1.5.0's `pumpCaATP`, `pumpCaER`, `Cav1p2` (`vg_ca.py`) and `EndoRetic.channels`
-    (`docs/PLASMA_CALCIUM.md`, `docs/ER_CALCIUM.md`);
-  - NCX is a synthetic symmetric-barrier law; Hilgemann and colleagues (1992) support only its 3:1
-    electrogenic reversal (`PLASMA_CALCIUM.md`);
-  - Tran et al. (2009) are cited as a contrast only.
-- **Consumers.** 36 files:
-  - BETSE: 11 (physiology);
-  - tests: 8, among them `tests/unit/test_hcn_extra_catalog.py` (tier 3, 459 s, 106 passed) and
-    `test_surface_calcium_catalog.py`;
-  - other validation: 16;
-  - src: `ensemble/ionic.py`.
-- **Target:** `models/calcium/` (`surface.py`, `surface_catalog.py`, `surface_cav.py`, `hcn_catalog.py`)
-  and `definitions/calcium/surface_spec.py`. The legacy-only IP3 law
-  (`legacy/processes/ip3_release.py`) moves to `laws/reactions/ip3_release.py`.
-- **ID:** `cells.model.resolved_calcium@11`. Its store's ID is `cells.model.er_calcium@1`.
-- **Bitwise check.** Set `F2`: `configs/resolved_hcn_extra_calcium.json`,
-  `configs/resolved_calcium_excision_source.json` and `hcn_extra_catalog_fixtures.definition("calcium",
-  arm)` for the six arms.
-- **Cost:** about 8 worlds at about 150 s, roughly 20 CPU-minutes.
-
-### 4.3 F3 `resolved_calcium_energy@5`: with finite cellular ATP/ADP/Pi
-
-- **Physics.** Per-cell finite ATP/ADP/Pi pools:
-  - pool law `finite_atp_adp_pi_transformed@1`;
-  - regeneration ports `driven_atp_regeneration_tanh@1`;
-  - the Na/K pump on `finite_energy_pool@1`;
-  - `finite_atp_pmca_positive@1` and `finite_atp_er_1ca_positive@1`, one Ca and one ATP per cycle, with
-    ΔG0 shifted by −RT ln 1000 (`legacy/processes/finite_calcium_pumps.py`).
-- **Ledgers:** pool free energy, material, adenylate, phosphorus, per-cell pool energy and regeneration
-  work.
-- **Sources:** none external. It is a synthetic port, "rather than a mitochondrial or experimental fit"
-  (`docs/FINITE_ENERGY_POOLS.md`); the conversions are in `docs/FINITE_CALCIUM_PUMPS.md`.
-- **Consumers.** 49 files:
-  - BETSE: 12;
-  - tests: 13, five of them tier 1 (for example `test_surface_calcium_energy_water.py`, which goes);
-  - other validation: 23.
-- **Target:** `models/calcium/energy.py`, `energy_hcn_catalog.py` and `definitions/calcium/energy_spec.py`.
-  The pool and pump laws move from `legacy/processes/finite_energy.py` and `finite_calcium_pumps.py` to
-  `laws/pumps/` and `laws/reactions/`.
-- **ID:** `cells.model.resolved_calcium_energy@5`. The four law IDs go to the cycle, reaction and
-  free-energy families, for the rename note.
-- **Bitwise check.** Set `F3`: `configs/resolved_hcn_extra_energy.json` and
-  `hcn_extra_catalog_fixtures.definition("energy", arm)` for the six arms.
-- **Cost:** measured at 154.9 s for 5 steps; about 7 worlds, roughly 20 CPU-minutes.
-
-### 4.4 F4 and F5 `resolved_open_calcium@1`, `resolved_open_calcium_energy@1`: static open exterior
-
-- **Physics.** No new rate law or state over F2 and F3. They add:
-  - the policies `static_declared_ideal_chemical_and_voltage_reservoirs@1` and
-    `hard_global_ionic_moiety_ceilings_fmol_every_stage@1`;
-  - the closure `complete_owned_calcium_static_reservoir_material_electrode_work@1`;
-  - ceilings checked at every stage;
-  - a loss bound and steps of at most 1.25 µs (`legacy/models/open_calcium_{runtime,reservoirs,admission}.py`).
-- **Sources:** none; synthetic (`TISSUE_RETURN_CURRENT.md`).
-- **The closure also pulls in** the profile and geometry helpers, nine modules of about 4,200 lines:
-  `owned_calcium_profile_binding`, `surface_profile_interventions` (spec and model),
-  `geometry_{profile,tissue}_preparation`, `tissue_profile{,_composition}_preparation`,
-  `tissue_target_selectors` and `geometry_operator_binding`.
-- **Consumers.** 26 and 27 files:
-  - BETSE: 8 and 9 (physiology: `physiology_boundary_voltage.py`, `physiology_temperature.py`,
-    `physiology_boundary_voltage_view.py`, `physiology_temperature_view.py` and the open arrays);
-  - tests: `tests/unit/test_open_calcium.py` (tier 2), `test_open_calcium_bath_events.py` (tier 3), and
-    three fixtures under `tests/`;
-  - other validation: 12.
-- **Target:**
-  - `models/calcium/open.py`, `open_energy.py`, `open_runtime.py`, `open_reservoirs.py`, `open_admission.py`;
-  - the profile helpers go to `definitions/profiles/`;
-  - `tissue_target_selectors` and `geometry_operator_binding` go to `numerics/`.
-- **IDs:** `cells.model.resolved_open_calcium@1` and `cells.model.resolved_open_calcium_energy@1`.
-- **Bitwise check.** Set `F45`: `validation/tissue/open_calcium_fixtures.definition(family, case)` for the
-  five cases of each family, plus `depleted=True` for energy, 11 worlds.
-- **Cost.** The fixtures run with JIT off. A 5-step window measured 142.7 s, and eager cost grows with
-  steps, so these worlds capture 16 steps: estimated 40–90 CPU-minutes, the largest item.
-
-### 4.5 F6–F9 `spatial_calcium@1`–`@4`: the calcium ensemble's ionic families
-
-- **Physics:**
-  - **F6:** one ER store per cell (1–16 per world). `amount_increment` becomes a whole-cell exchange
-    ledger, so ER exchange and binding cannot charge the plasma capacitor. Ownership residual and charge
-    checks; energy balance to 1e-9 pJ; steps of at most 50 µs with h·loss at most 0.25. No new law
-    (`docs/SPATIAL_CALCIUM.md`).
-  - **F7:** per-membrane PMCA and NCX, with `plasma_pump_cycles`, `plasma_exchange_cycles` and
-    `plasma_dissipated_energy_pJ`, and schedules.
-  - **F8:** one Cav1.2 per membrane (`cav1p2_m2h@1`, 298.15 K only), with GHK flux at z = 2 and
-    P = max·abundance·availability·m²h.
-  - **F9:** per-cell binding to free IP3 multiplies ER release by a/(1 + a) at every stage; no new state.
-- **Sources:**
-  - F7 to F9 as F2: BETSE 1.5.0's `pumpCaATP`, `Cav1p2` and the IP3 Hill factor; NCX synthetic;
-  - F6 has none ("no biological or native trajectory calibration", `legacy/models/spatial_calcium.py:544–547`).
-- **Consumers:**
-  - tests: `test_spatial_calcium.py` (tier 3, 475 s), `test_plasma_calcium.py`, `test_gated_calcium.py`,
-    `test_ip3_calcium.py` and `test_tissue_calcium.py` (tier 3);
-  - ensemble validation: `validation/ensemble/cluster_matrix.py` and `parallel_cluster.py`, which requires
-    `@4`;
-  - frozen evidence: `/mnt/workspaces/Cells/{spatial,plasma,gated,ip3}-calcium-2026*`.
-- **Evidence registrations record pre-D188 source paths,** so their source gates already refuse today's
-  tree. Re-running old evidence is not a path the port needs.
-- **Target:** `models/calcium/spatial.py`, `plasma.py`, `gated.py`, `ip3.py` and
-  `definitions/calcium/{spatial,plasma,gated,ip3}_spec.py`. NCX and Cav1.2 stay in their live law modules.
-- **IDs:** `cells.model.spatial_calcium@1`–`@4`.
-- **Bitwise check.** Set `F69`: `configs/{spatial,plasma,gated,ip3}_calcium_cluster.json`, 200 steps each.
-- **Cost:** measured 22.6 s for `@1`; roughly 3–5 CPU-minutes for the four.
-
-### 4.6 F10 `assembly_regulated_cell@1`: one assembly-gated channel in a finite ionic cell
-
-- **Physics:**
-  - coupling law `root_component_has_cycle@1`: the channel is available when popcount(bonds) ≥
-    popcount(occupied);
-  - the assembly topology sets availability over each segment, and ionic state never feeds back;
-  - RK4 split at events on a fixed grid;
-  - state `CoupledState(pool, ionic, tick, segments, availability_exposure_s, fault)`;
-  - one cell, one channel and constant controls.
-- **Sources:** the base capsid model is Asor et al., Nature (2026) (`docs/CAPSID_ASSEMBLY.md`). The
-  coupling is a stated hypothesis.
-- **Consumers:**
-  - src: `ensemble/cli.py`, `families.py` (`TODAY`, `_older(...)`) and `worker.py`;
-  - tests: `test_assembly_cell.py` (tier 3, 561 s; its recorded outcome has 1 failure), and
-    `test_assembly_worker_source.py` and `test_integrated_ensemble.py`;
-  - validation: `validation/assembly/cluster_partition_replay.py` and `qualify_cell.py` (its default case),
-    and five under `validation/ensemble/` (`parallel_cluster.py`, `rounding_cluster.py`, `step_cluster.py`,
-    `test_gpu_screen.py`, `test_rounding_cluster.py`).
-- **Target:** `models/assembly_regulation/` (`cell_spec`, `cell_kernel`, `cell_engine`, `cell_io`,
-  `ensemble_coupled`). The coupling law goes to `laws/assembly/root_component_has_cycle.py`, and the
-  ensemble's adapter enters the model table.
-- **IDs:** `cells.model.assembly_regulated_cell@1`; the coupling law's family is for the rename note.
-- **Bitwise check.** Set `E10`:
-  `cells assembly-cell run configs/assembly_regulated_cell.json --backend cpu --until T` (§5.2, C4).
-- **Cost:** estimated at 3–8 CPU-minutes, from the tier-3 file's 561 s for six tests.
-
-### 4.7 F11 `assembly_regulated_cluster@1`: per-cell assembly pools over an ionic tissue
-
-- **Physics:**
-  - pools are owned per cell, with seeds (base + stream) mod 2³²;
-  - the clock is the union of all cells' events and control changes;
-  - per-owner modulation;
-  - `lax.map` over worlds keeps the bits fixed (`legacy/assembly_cluster/kernel.py:101–127`);
-  - it adds `aggregate`: per-cell and per-model checks with Wilson intervals.
-- **Sources:** none external.
-- **Consumers.** 56 files:
-  - src: `ensemble/cli.py`, `families.py`;
-  - 13 ensemble validation files: `validation/assembly/qualify_cell.py` and `cluster_partition_replay.py`;
-    `validation/ensemble/cluster_matrix.py`, `parallel_cluster.py`, `parallel_kernel.py`,
-    `rounding_cluster.py` and `step_cluster.py`; and `test_energy_steps.py`, `test_gpu_screen.py`,
-    `test_larger_screen.py`, `test_parallel_cluster.py`, `test_rounding_cluster.py` and
-    `test_step_cluster.py`. `profile_cluster.py` and `tile_benchmark.py` reach it through these;
-  - tests: `test_assembly_cluster.py` (tier 3, 179 s, recorded with 2 failures), `test_assembly_controls.py`
-    (tier 1), `tests/integration/test_assembly_cluster_gpu.py`, and about 30 derived-family tests that go.
-- **Target:** `models/assembly_regulation/` (`cluster_spec`, `cluster_kernel`, `cluster_engine`,
-  `cluster_controls`, `ensemble_cluster`). The `resolved_*` branches are pruned.
-- **ID:** `cells.model.assembly_regulated_cluster@1`.
-- **Bitwise check.** Set `E11`: `cells assembly-cluster run CONFIG --backend cpu --until T` for
-  `configs/assembly_regulated_cluster.json` and the four `configs/assembly_regulated_*calcium_cluster.json`.
-- **Cost:** estimated at 15–25 CPU-minutes.
-
-### 4.8 The BETSE drivers (39 import legacy), by group
-
-| Group | Files | Legacy used | Bearing on the port |
-|---|---|---|---|
-| Physiology (17) | `validation/betse/physiology/` (`core/`: boundary voltage, initial preparation, perturbation remap, protein interval accounting, protein loop, temperature, tissue binding, random profile preparation; `models/`: active-temperature arrays and open arrays, boundary-voltage, permeability and temperature views; `numerics/`: protein electrical and interval arrays; `physiology_initial_preparation_io.py`, `random_tissue_profiles.py`) | F1–F5 spec classes and models; the `surface_calcium` and `surface_calcium_energy` bases; `compartment_reactions`; `kinetic_finite_extracellular.pump_parameters`; `tissue_profiles`, `tissue_target_selectors`, `tissue_removal`, the profile preparations | Retargeted by the move map, if they stay runnable (Q3); 58 tests in `tests/betse_physiology/` follow them |
-| REF-003 to REF-005 comparisons, and the junction and spatial-cluster panels (18) | `alignment.py`, `cluster_alignment.py`, `trajectory.py`, `test_trajectory.py`, `test_cluster.py`, `channel_feedback_pilot/`, `channel_history_preflight/`, `channel_loop_preparation/` (2), `channel_release_design/`, `channel_release_pilot/`, `channel_transport_preflight/` (2): `finite_extracellular@1`. `pump_matched_pilot/` (2), `junction_trajectory/test_trajectory.py`: `@2`. `junction_coupled/test_coupled.py`: `@3`. `spatial_cluster/test_spatial.py`: `spatial_extracellular@1`, `@2`, `finite_extracellular@3` | None of the five IDs | They need Q1 option (b), or they retire with their saved outputs (Q3). BETSE runs in its own process: `trajectory.py`'s Cells worker, for example, refuses if BETSE was imported |
-| Helpers (4) | `native_environment_paths.py` (face transport), `native_geometry_operators.py` (geometry binding), `native_profile_conventions.py` (target selectors), `emulator/spatial_spec.py` (`identifier`) | Legacy process code imported into `validation/` | Under AGENTS.md, physics the engine lacks must not live in `validation/`. They follow whatever src home their helper gets, or retire with the drivers they serve |
-
-`validation/betse/physiology/core/physiology_active_temperature_compilation.py` names the IDs without
-importing legacy, so it is a 40th consumer.
-
-## 5. Captures: what is saved from legacy before any change, and how
-
-### 5.1 When and from what
-
-- **The captures run from the frozen snapshot of the pre-rename tag,** D346's step 2, "tag main". The
-  rename rewrites live law IDs that legacy definitions name: `kv1p5_mh@1`, `constant_field@1`,
-  `cav1p2_m2h@1`, `er_calcium_pump_positive@1` and the rest. Legacy specs also import law-ID constants
-  from live modules (`calcium_gates.LAW_ID`, `plasma_calcium.PUMP_LAW` and `EXCHANGER_LAW`).
-- **A snapshot is immutable,** so the captures can run any time after the tag, when a lane is free, and
-  need not precede the rename's landing.
-- **Recommended:** a second capture of the same worlds on the renamed main before the first port landing.
-  It shows bitwise that the rename moved no legacy number, and its definitions carry the new law IDs that
-  the port's comparison feeds back. It costs the same lane time.
-
-### 5.2 Steps and commands
-
-**Verified tonight: only `results_baseline.py save --from`.** These are the probe's exact form and its
-origin layout (`ORIGIN/<set>/<world>.json` holding `{"name", "definition"}`):
-```
-flock -w 300 /mnt/workspaces/Cells/locks/timed-cores-4-5.lock systemd-run --user --scope -q -p MemoryMax=4G taskset -c 4 env PYTHONPATH=CHECKOUT/src:CHECKOUT JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 /mnt/workspaces/Cells/venv-cpu/bin/python -B CHECKOUT/validation/results_baseline.py save OUT --sets legacy-probe --from ORIGIN --max-steps 5
-```
-**Not yet run or not yet written:**
-- C4's assembly command lines were not run;
-- `validation/legacy_port/capture_worlds.py`, `capture.sh`, `compare_assembly.py` and `dry_delete.py`
-  do not exist;
-- `gate_steps.py g1-merge` is untested on sets other than G1's. C2 can do without it: each shard saves
-  its own sets to its own folder, and C5 compares folder by folder.
-
-**The default path assumes the tools miss the tag,** since nothing lands tonight. They run from the checkout
-with `PYTHONPATH=SNAP/src:SNAP`, and each run records both revisions.
-
-- **C0: freeze the tag's snapshot.** From a clean worktree at the tag (TAG below), in about a minute:
-  ```
-  python scripts/gates/freeze_snapshot.py <worktree-at-TAG> /mnt/workspaces/Cells/legacy-port-20261125/snapshot --scope full --require-clean
-  ```
-- **C1: write the world definitions.** A small validation tool, `validation/legacy_port/capture_worlds.py`,
-  writes `ORIGIN/<set>/<world>.json` from §4's configs and fixture builders. It freezes the definitions,
-  as G1's `--from` does.
-  - It imports fixtures that the deletion will remove, so it reads them from the snapshot.
-  - No compile; under a minute:
-  ```
-  PYTHONPATH=SNAP/src:SNAP JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 /mnt/workspaces/Cells/venv-cpu/bin/python -B CHECKOUT/validation/legacy_port/capture_worlds.py ORIGIN
-  ```
-  - If the tool lands before the tag, it runs from `SNAP/validation/legacy_port/` instead.
-- **C2: capture the scalar families (F1–F9 and the run paths) on one lane.** The capture logic is in a
-  script file, never an inline `bash -c` (systemd expands `${...}`).
-  - `validation/legacy_port/capture.sh` shards the sets over the lane's eight CPUs, one CPU per shard
-    (`taskset`), as `gate.sh` shards G1.
-  - Each shard runs:
-    ```
-    PYTHONPATH=SNAP/src:SNAP JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 CUDA_VISIBLE_DEVICES= OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 /mnt/workspaces/Cells/venv-cpu/bin/python -B SNAP/validation/results_baseline.py save OUT/part-K --sets <sets> --from ORIGIN --max-steps 200
-    ```
-    The eager F4 and F5 worlds use `--max-steps 16`.
-  - The parts are then merged with `scripts/gates/gate_steps.py g1-merge`.
-  - On lane A:
-    ```
-    scripts/run_detached.sh legacy-capture 24G --cpus 0-3,16-19 --oom-first --wait-headroom 26G -- flock /mnt/workspaces/Cells/locks/gate-cores-0-3.lock bash CHECKOUT/validation/legacy_port/capture.sh SNAP ORIGIN /mnt/workspaces/Cells/legacy-port-20261125/capture-tag
-    ```
-  - Lane B is the same with `--cpus 8-11,24-27` and `/mnt/workspaces/Cells/locks/gate-cores-8-11.lock`.
-    Never CPUs 12–15 or 28–31.
-  - `run_detached.sh` disables JAX's compilation cache in the unit (D321), so the capture is cold.
-  - The probes stayed within their 4 GB scope caps; their peaks were not measured. 3 GB per shard is
-    assumed, and the first shard's journal peak checks it.
-- **C3: the run paths.** One world per scalar family goes through every run path that
-  `results_baseline.run_paths` exercises. A refused path is captured as a refusal, which must match after
-  the port. This is set `paths` in the same unit.
-- **C4: the assembly families on the CPU.** `cells ensemble run` is GPU-only (`ensemble/worker.py:95`), so
-  the capture uses each family's own command line:
-  ```
-  CELLS_OUTPUT_ROOT=OUT PYTHONPATH=SNAP/src:SNAP JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 /mnt/workspaces/Cells/venv-cpu/bin/python -B -m cells assembly-cell run SNAP/configs/assembly_regulated_cell.json --output OUT/E10/cell --backend cpu --until T
-  CELLS_OUTPUT_ROOT=OUT ... -m cells assembly-cluster run SNAP/configs/<config>.json --output OUT/E11/<name> --backend cpu --until T
-  ```
-  - The cluster runs on the base config and the four calcium configs.
-  - The outputs are `checkpoint/state.npz`, `observations/tick-*.json`, `result.json` and
-    `completion.json` (which holds digests).
-  - **T** is the horizon at which one run takes at most about 5 minutes on one CPU. The tool times one run
-    first and records T.
-  - These lines join `capture.sh` as a ninth queue on the same lane.
-  - **The cold cache.** The command line calls `configure_caches()` (`execution/output_paths.py:19`), which
-    points `JAX_COMPILATION_CACHE_DIR` under the output root. So C4 sets
-    `JAX_ENABLE_COMPILATION_CACHE=false` itself, as `run_detached.sh` does, and checks OUT for cache
-    entries afterwards (`gate_steps.py jax-entries`).
-  - **Recorded failures.** Before C4, read whether the recorded tier-3 failures of `test_assembly_cell.py`
-    (1) and `test_assembly_cluster.py` (2) touch the command line's run path.
-- **C5: the compare, after each port landing.**
-  ```
-  python SNAP2/validation/results_baseline.py compare CAPTURE PORTED --output compare.json
-  ```
-  - This is bitwise by default, with the ID-mapping option of §2. PORTED is saved by the same command as
-    C2, from the ported head's snapshot SNAP2, `--from` the mapped definitions.
-  - `validation/legacy_port/compare_assembly.py` compares the assembly arrays and numbers, excluding
-    provenance fields.
-
-### 5.3 Cost and placement
-
-| Item | Worlds | One-CPU estimate | Basis |
-|---|---|---|---|
-| F1 | ~8 | ~15 min | 76.8 s measured for one 5-step window |
-| F2 | ~8 | ~20 min | extrapolated from F3 |
-| F3 | ~7 | ~20 min | 154.9 s measured |
-| F4, F5 | 11 | 40–90 min | 142.7 s measured, eager; 16 steps |
-| F6–F9 | 4 | 3–5 min | 22.6 s measured for `@1` |
-| Run paths | ~9 | ~25 min | G1's run-paths set, scaled |
-| F10, F11 | 6 | 20–35 min | tier-3 seconds of their test files; not probed |
-| **Total** | **~53** | **2.5–4 CPU-hours** | **one lane, 8 shards: about 25–40 min wall, bounded by the slowest eager shard** |
-
-- **Placement:** lane A or B under its lock, like a gate.
-- **Tonight:** nothing heavy runs. Both lanes are held by gates and the load is about 17. C0 and C1 are
-  light, but C1's tool must be written first. The probes above ran on CPU 4 under the timed lock, each
-  under a 4 GB scope cap.
-- **GPU.** The ensemble's GPU tests compare the GPU with a same-run CPU at 3e-10 relative, not bitwise. The
-  L4 has a recorded bitwise failure across the compilation cache, and D336 refuses the composite on a GPU.
-  - So the CPU capture is the proof. After F11's landing, the GPU tests (`test_assembly_cluster_gpu.py`,
-    `test_integrated_ensemble_gpu.py`, and the `CELLS_*_TEST_BACKEND=gpu` cases) run once at their own
-    criteria, in an announced GPU block (`gpu.reserved`).
-  - No GPU capture is planned.
-
-## 6. Order of ports and dependencies
-
-| Step | Content | Depends on | Lands with |
-|---|---|---|---|
-| S0 | `validation/legacy_port/` capture tools; tag; C0–C4 from the tag's snapshot | — | a no-src landing (D223), before or after the tag (§5.2) |
-| S1 | F1: the `resolved_tissue` dispatch into the live registries, and the wrappers folded | the rename | L1 |
-| S2 | The nested layers: `compartment_reactions@1`, `er_calcium@1`, the extracellular line (`finite_extracellular@1`–`@3`, `spatial_extracellular@1`–`@2` as modules, with their IDs per Q1) and the old families' helpers | the rename | L1 |
-| S3 | F6–F9 | S2 | L1 |
-| S4 | F2, then F3 | S1, S2, S3 (`surface_calcium.py` imports spatial, plasma, gated and IP3 helpers) | L2 |
-| S5 | F4 and F5, with the profile and geometry helpers | S4 | L2 |
-| S6 | F10 and F11, with the ensemble adapters: `families.py` (`TODAY` entries, `_older`), `cli.py`, `worker.py`, `ionic.py` pruned to kept children | S2, S3 | L2 |
-| S7 | Consumers: the BETSE drivers kept (Q3), the ensemble validation, the moved tests, configs and examples, all retargeted by the move map | S1–S6, in the same landing as the families they use | L1, L2 |
-| S8 | The deletion (§8) | L1 and L2 on main | L3 |
-
-- **Three full gates, not six.** Each landing changes src/, so it runs the full gate (D223): tiers 1+2,
-  crossrev, G1 and the IDs, plus C5 for its families. Batching the six moves into two landings saves three
-  gates; each landing's move map and verifier keep it mechanical.
-- **Dispatch:** in L1 and L2 the ported families' `model_for`, `to_dict` and `control_values` entries stay in
-  the hub, pointing at the moved modules, and only their parse entries go live. L3 moves the rest (§2,
-  "Dispatch between the landings").
-- **Two builders can work in parallel on disjoint files:**
-  - builder 1 takes S2, S3 and S6, the ensemble line;
-  - builder 2 takes S1, then S4 and S5 once S3 has landed in L1, the BETSE line.
-- **Branches in flight** that touch legacy rebase onto each landing's move map by the same script, as D188
-  required.
-
-## 7. Tests: move, stay or go
-
-### 7.1 What the numbers count
-
-Each class below is defined per tier-record file (891 files, `inventory.json`):
-- **Imports legacy directly** (195 files; D346's count): 76 in tiers 1 and 2 (1,530 test-seconds) and 119
-  in tier 3.
-- **Names a legacy model ID itself** (10): 7 in tiers 1 and 2 (177 s) and 3 in tier 3.
-- **Reaches legacy only through a fixture, shared driver or configuration** (401): 312 in tiers 1 and 2
-  (7,847 s) and 89 in tier 3.
-  - 27 of the 312 (370 s) are named after a legacy family and likely go.
-  - The other 285 (7,477 s) are mostly modern-subject tests whose fixtures also name legacy IDs: bath
-    schedule, compartments, the command line, replay, windows and the BETSE physiology set.
-- **No static evidence** (285), but 35 of them (1,239 s) load legacy at runtime through a dispatch miss.
-  - For example, `parse_spec` calls `legacy().parse` before the inline families, and `model_for` imports
-    spec modules in order until one matches.
-  - These must pass unchanged after the deletion.
-- **Runtime (the scope map, 24 November, tiers 1 and 2):** 388 of 662 files load at least one legacy module,
-  and 354 load the hub. That counts loads, not uses.
-
-### 7.2 The classes and what happens to each
-
-| Class | What happens | Files (tiers 1+2 / tier 3) |
-|---|---|---|
-| **Go**: the subject is a legacy family not ported (derived families: excision, barriers, profiles, bath events, water, repair, mitochondria, transport, the older bioelectric, multispecies, graph and EMT families) | Deleted in one batch with the deletion, by a removal list (D224) giving each file's family and the reason | about 95 / 115 (estimate; the dry run fixes it) |
-| **Go, replaced**: tests of the 11 families that check legacy structure (planning, dispatch, the hub) | Deleted. C5's recorded bitwise comparison is the proof, and the moved physics tests keep coverage | a few; listed by the builders |
-| **Move**: physics, conservation and reference tests of the 11 families and their nested layers (for example `test_hcn_extra_catalog.py`, `test_spatial_calcium.py`, `test_plasma_calcium.py`, `test_gated_calcium.py`, `test_ip3_calcium.py`, `test_er_calcium.py`, `test_assembly_cell.py`, `test_assembly_cluster.py`, `test_integrated_ensemble.py`, `test_open_calcium.py`, the GPU integration tests, and `tests/betse_physiology/` if Q3 keeps the physiology set) | Retargeted by the move map, with the same assertions. Paths do not move (D188) | about 40 / 45 under Q3 (a), of which `tests/betse_physiology/` is 34 / 24 (941 tier 1+2 seconds) |
-| **Stay**: modern-subject tests with incidental legacy reach (fixtures naming legacy IDs, dispatch misses, the conftest world) | Their fixtures are cleaned. References to `resolved_tissue@8`/`@1` are kept or retargeted (Q4); the 10 conftest users are retargeted (Q5) | about 290 / 55 |
-| **New** | None in the tiers. The bitwise proof is a recorded one-time comparison, like G1's baseline. Any new test that compiles a world states its seconds and reason (D224) | 0 |
-
-### 7.3 Pre-existing failures
-
-- **The tier-3 record holds failures in the moved files:** `test_assembly_cell.py` (1),
-  `test_assembly_cluster.py` (2), `test_surface_calcium_energy.py` (1), and `test_surface_calcium.py`, which
-  times out at 1,800 s.
-- A moved file must match its recorded outcome, not improve on it silently. A fix goes in the existing file
-  as a row (D224).
-
-### 7.4 The definitive classifier: a scratch dry-run deletion
-
-This runs once L2 is on main, and its output is the deletion's removal list.
-1. Freeze a snapshot of the head with `freeze_snapshot.py --scope full`.
-2. In the snapshot only, `validation/legacy_port/dry_delete.py`:
-   - removes `src/cells/legacy/` and `registry/legacy_entry.py`;
-   - replaces every `legacy()` call site with its miss branch: the six of §8 and the ensemble's.
-3. Run, on a lane:
+- assembly-to-availability coupling;
+- the composite on a GPU;
+- excision.
+
+The calcium ensemble alone needs five of them: G-1, G-4, G-5, G-7 and G-8.
+
+**The BETSE rule bars part of a relocation (§5).**
+- The profile, mesh and face chain that `resolved_open_calcium@1`'s closure pulls in carries BETSE's
+  conventions: BETSE's source revision and functions recorded as fields, its selector conventions, its mesh
+  summation order, its grid and bath conventions. It cannot enter `src/cells`.
+- The open families need only one helper from it (`open_calcium_admission.py:13, 89`).
+- The physiology set's helpers are BETSE glue throughout.
+
+**The two routes (§7):**
+- **Route A:** relocate the used, feature-blocked cores bitwise as an interim, delete legacy early, then
+  re-express as the features land.
+  - About 16–24 agent-days, plus the features.
+  - Legacy goes in about 1–1.5 weeks.
+- **Route B:** re-express first, then delete.
+  - About 13–20 agent-days, plus the same features.
+  - The deletion waits for all five features, and legacy's tests stay in every gate until then.
+
+**Qualifying a re-expression (§8)** needs science-length captures at three steps (h, h/2, h/4), with the
+tolerance derived from legacy's own step-halving and fixed before any re-expressed run, plus a power check.
+- Tonight's probes give the per-step costs: 0.013 s per step for `spatial_calcium@1` and 0.052 s for
+  `resolved_tissue@12`, after compiles of 22–155 s.
+- The used set's science captures are estimated at 6–8 CPU-hours, about 1–1.5 hours of one lane, from
+  the pre-rename snapshot. The five-step bitwise captures are only for Route A.
+
+**The rename's Q3 (§11):** option (a), re-spell legacy's uses of the 18 shared pieces, works under either
+route.
+- Retiring the 18 REF-era drivers before the move takes about a dozen of the rename's 30 `validation/betse`
+  rewrite files out.
+- Captures from the pre-rename snapshot need no re-spelling: they are compared through the table.
+
+**The user's questions (§13):**
+- Q1, the sequence;
+- Q2, the physiology stack;
+- Q3, the REF-era drivers;
+- Q4, the calcium ensemble's place;
+- Q5, @3's reference world;
+- Q6, the three inline families;
+- Q7, which gaps to request.
+
+## 2. What "used" means, and how it is measured
+
+**Definition, fixed before counting.** A legacy capability is used when deleting it would take it from at
+least one of these consumers:
+- **U1, a live engine module:** for example the ensemble runner's kinds (`ensemble/families.py`, `cli.py`,
+  `ionic.py`, `worker.py`).
+- **U2, a test whose subject is live code** that uses the capability as a vehicle or reference: @3's
+  reference world, or the conftest's `spec` fixture.
+- **U3, a current document that claims a result resting on it:**
+  - PROGRESS's plan and status tables;
+  - `CURRENT_PLAN.md`, `SCIENTIFIC_BASIS.md`, `ROADMAP.md` and `EXPERIMENTS.md`;
+  - the experiment designs and paper notes;
+  - an operational runbook in force.
+- **U4, a registered protocol, judge or reference in force** that runs it.
+
+**Not a use:**
+- a test whose only subject is a legacy model;
+- a driver whose evidence no current document claims;
+- a design note, closeout or report that records past work. Its evidence stays under `/mnt/workspaces/Cells`,
+  and the pre-deletion tag reproduces it.
+
+A document that points at a legacy module as an existing capability is a claim to correct (group H), not a
+use.
+
+**How it was measured tonight (read-only):**
+- **U4:** the rename probe's frozen set (233 files with registration tags or Freeze and Register commits)
+  names no legacy model ID. U4 is empty.
+- **U3:** a scan of PROGRESS, the plans, the scientific basis and the paper notes (§6). The claimed BETSE
+  parity runs on modern models. The calcium ensemble's qualification is claimed in `docs/GPU_ENSEMBLES.md`,
+  and the JUPITER runbook runs `spatial_extracellular@2`.
+- **U1 and U2:** the static reach and the scope map (§9). Only the dry run below settles U2.
+
+**The dry-run deletion, the definitive measure of U2.** It is not run tonight, because the lanes are full.
+1. `cp -a` the morning's pre-rename snapshot to a scratch tree DRY. Snapshots are immutable, so the dry run
+   works on a copy.
+2. Run `validation/legacy_port/dry_delete.py DRY`. The script is not yet written. It removes
+   `src/cells/legacy/` and `registry/legacy_entry.py`, and replaces every `legacy()` call site with its miss
+   branch:
+   - `definitions/specs.py:857, 1049`;
+   - `registry/models.py:71`;
+   - `execution/schedule.py:147`;
+   - `__main__.py:220, 237`;
+   - `ensemble/families.py`'s `_older` and `ensemble/cli.py:139`.
+3. Run tiers 1+2 on lane B, under its lock:
    ```
-   scripts/run_detached.sh legacy-dry-tiers 12G --cpus 8-11,24-27 --oom-first -- flock /mnt/workspaces/Cells/locks/gate-cores-8-11.lock /mnt/workspaces/Cells/venv-cpu/bin/python -B DRY/scripts/test_tiers.py run --tiers DRY/tests/test_tiers.json --tier 1 2 --cpus 8,9,10,11,24,25,26,27 --out OUT
+   scripts/run_detached.sh legacy-dry-tiers 12G --cpus 8-11,24-27 --oom-first -- flock /mnt/workspaces/Cells/locks/gate-cores-8-11.lock /mnt/workspaces/Cells/venv-cpu/bin/python -B DRY/scripts/test_tiers.py run --tiers DRY/tests/test_tiers.json --tier 1 2 --cpus 8,9,10,11,24,25,26,27 --out OUT/tiers12
    ```
-   About 30 minutes of lane B. Tier 3 runs deliberately afterwards.
-4. Every failing or erroring file goes on the removal list, with its reason, or on the fix list.
-5. The passing files' summed seconds, against the base run, are the measured saving of §9.
+   **Cost:** about 42 minutes of the lane. The measured full tiers stage was 2,531 s on 24 November
+   (`/mnt/workspaces/Cells/fr51-slot-refusal-20261124/gate-e79cbade/gate.log`). Files that import legacy
+   fail at collection, so it is no longer.
+4. Tier 3, the same command with `--tier 3`: estimated at 1–2 hours of a lane. Of its recorded 87,166
+   test-seconds, the 204 files that reach legacy mostly fail at collection.
+5. Classify every failing file. It is legacy-subject if it imports or names only legacy models; otherwise
+   it is a U2 use, reviewed by hand. The list goes to §9's removal list. The passing files' seconds give
+   §10's measured saving.
 
-## 8. The deletion: its content, removal list and gate
+## 3. The coverage table, by capability and consumer
 
-**Before it:**
-- main is tagged (D346), as the BETSE-native removal was (`native-betse-frozen-2026-11-08`);
-- the tag's snapshot is frozen.
+**Classes:**
+- **Canonical:** canonical already;
+- **Expressible:** expressible today on canonical pieces;
+- **Feature:** needs an engine feature, with its gap in §4;
+- **Drop:** dropped, listed with what is lost. Each needs the user's OK under the 17 November rule.
+
+"Uses" names only consumers that count under §2. Rows whose only consumers are the physiology set depend
+on Q2.
+
+### A. The electrical tissue
+
+| # | Capability (legacy home) | Uses | Class | Canonical piece or gap |
+|---|---|---|---|---|
+| A1 | Passive resolved tissue: membranes, outside regions, faces, field solver, capacitive closure (`resolved_tissue@1`, live `models/surface_tissue.py`) | @3 is built on its spec (`definitions/surface_tissue_spec.py`) | Canonical | @3; only legacy's dispatch of the ID goes |
+| A2 | Gated Na, K and Cl channels registered on @3: Kv1.1–1.6, Kir2.1, Nav1.2, the three leaks | @3 | Canonical | the 11 `channel_law@1` laws |
+| A3 | The catalogue's other Na/K/Cl gated laws (Kv2, Kv3, `k_fast`, Nav1.3, Nav1.6 persistent, the `navrat` set) | physiology set only (Q2) | Expressible, or Drop | register one module per law on @3, as the Kv1 extraction did (`laws/channels/kv1_channels.py:7–11`) |
+| A4 | Calcium-permeant channel laws: 14 CaV laws with `cav1p2_m2h@1`, cation leaks with a Ca share, HCN laws with a Ca share | the calcium ensemble (Cav1.2 in the gated and IP3 clusters); physiology (Q2) | Feature | G-1 |
+| A5 | Instantaneous voltage-gated laws (8 Morris–Lecar) | none beyond legacy tests; physiology if it uses them | Feature, or Drop | G-2 |
+| A6 | Calcium-activated K (`cagpotassium_numeric_mM_scale@1`) | none beyond legacy tests | Feature, or Drop | G-3 |
+| A7 | Junction gating | @3 | Canonical | `junction_voltage_relaxation@1`, `junction_series_gates@1` |
+| A8 | Na/K pump on maintained reservoirs | @3 | Canonical | `nak_atp_mass_action_positive@1` |
+| A9 | @3's reference world: the gated catalogue model `resolved_tissue@8` (live `models/surface_kinetic.py`) | `tests/unit/test_surface_pump_v3_gates_equivalence.py` and @3's tests through `validation/tissue/surface_pump_v3_fixtures.py:107–129` (U2) | Canonical code, but its dispatch is legacy's | Q5 |
+| A10 | Cell clusters in finite and spatial baths (`finite_extracellular@1`–`@3`, `spatial_extracellular@1`–`@2`) | the JUPITER check (`spatial_extracellular@2`, U3); nested in the calcium ensemble (`spatial_extracellular@2`, `finite_extracellular@2`); the REF-era drivers are not uses | Expressible | the same physics as @3 worlds (constant-field leaks, Kv1.5, the pump, junctions, faces), not bitwise |
+| A11 | The oldest families (`bioelectric_cell@1`, `bioelectric_pair@1`, `multispecies_membrane@1`, `voltage_gated_membrane@1`, `physical_ionic_graph@1`, `emt_mirna_pair@1`, `spatial_extracellular@3`) | none; helpers inside the A10 line | Drop | superseded by @3; group H's pointers corrected |
+
+### B. Calcium
+
+| # | Capability | Uses | Class | Canonical piece or gap |
+|---|---|---|---|---|
+| B1 | Cytosolic calcium with a plasma-membrane pump (`plasma_calcium_pump_positive@1`) | the calcium ensemble; physiology | Canonical | `cells.ca_atp_mass_action_positive@1` on @3: the same kernel at a 1 M standard state, Δg0 − RT ln 1000. Not bitwise |
+| B2 | NCX, 3 Na : 1 Ca (`ncx_3na_1ca_symmetric_barrier@1`, a live module, unregistered) | the calcium ensemble (plasma, gated, IP3); physiology | Expressible | a cycle law in the transporter kind's version-1 layout. The population axis refuses a mode that moves charge (`kinds/transporter.py:1250–1253`). The builder confirms Ca rows |
+| B3 | ER store: a closed compartment with a capacitor, a GHK leak, a pump and calcium-gated release (`er_calcium@1` over `compartment_reactions@1`) | the calcium ensemble (all four calcium clusters); physiology | Feature | G-4 |
+| B4 | Calcium buffering by mass action, in the cytosol and in the ER | as B3 | Feature (with B3) | `local_species_reactions@1` holds a species that @3 routes only as a covered counter-ion (`operators/species_common.py:16–17`). Inside the ER it waits for G-4 |
+| B5 | IP3-gated store release (`ip3_er_release@1`) | the calcium ensemble (IP3 cluster); physiology | Feature | G-5 |
+| B6 | Owned calcium in the 56-law tissue, closed or open exterior (`resolved_calcium@11`, `resolved_open_calcium@1`) | physiology only (Q2) | Feature, or Drop | composes A4, B1–B5 and D1 |
+| B7 | The spatial calcium tissue (`spatial_calcium@5`, `tissue_calcium`) | none; pointed at by `docs/PAPER_REVIEW_CCI_SEQ.md:30` | Drop | its physics is B1–B5 |
+
+### C. Energy
+
+| # | Capability | Uses | Class | Canonical piece or gap |
+|---|---|---|---|---|
+| C1 | Maintained ATP/ADP/Pi reservoirs | @3 | Canonical | `maintained_chemical_reservoirs@1` |
+| C2 | Finite per-cell ATP/ADP/Pi pools, regeneration ports and finite-fuel pumps (`resolved_energy@1`–`@2`, `resolved_calcium_energy@1`–`@5`, `resolved_open_calcium_energy@1`) | physiology only (Q2); `docs/CORE_LAWS_ROADMAP.md:73–75` plans its rebuild | Feature | G-6 |
+| C3 | ATP-driven, irreversible, regulated and cotransport variants (`resolved_calcium_energy_atp_transport@1`, `_irreversible_transport@1`, `_regulated@1`–`@2`, `_transport@1`, `resolved_cotransport@1`) | none | Canonical in part; Drop the legacy forms | `atp_driven_transporter_mass_action_positive@1`, the cotransport cycle laws, `species_regulated_availability@1`. Their finite-fuel forms wait for G-6 |
+| C4 | Mitochondria (`resolved_calcium_energy_mitochondria@1`, `mitochondrial_passive`) | none; pointed at by `docs/PAPER_REVIEW_T_CELL_ORGANELLES.md:119–122` | Canonical in a fuller form; Drop the legacy form | the transporter kind's respiratory-chain, ATP-synthase, nucleotide-exchange and adenylate-kinase laws (`docs/MITOCHONDRIA_DESIGN.md`) |
+
+### D. Exterior, volume, membranes, repair
+
+| # | Capability | Uses | Class | Canonical piece or gap |
+|---|---|---|---|---|
+| D1 | Static ideal chemical and voltage reservoirs with electrode-work ledgers | physiology (Q2) | Expressible | @3's line books `reservoir_supplied`, electrode charge and work (`models/surface_tissue.py:37–43`; `models/surface_pump.py`); the builder confirms every mover's ledger |
+| D2 | Hard global ionic-moiety ceilings at every stage | the open families only | Drop | a check in `models/surface_pump_checks.py` if a consumer asks |
+| D3 | Water and volume (`resolved_water@1`–`@3`, the `*_water` families) | none | Canonical | `ideal_osmosis_linear_compliance_water@1`; `resolved_pump_water@1`, `@2` |
+| D4 | Injury and repair (`resolved_repair@1`–`@4`, `membrane_injury`) | none | Canonical | `cells.patch_damage@1` (FR-5) |
+| D5 | Lateral membrane redistribution, mobile channels and pumps (`resolved_redistribution@1`–`@3`, `surface_mobile_*`) | none; an option in `docs/ABUNDANCE_TO_FUNCTION_DESIGN.md:50–53` | Drop (lost: electrophoretic lateral redistribution) | nearest canonical pieces are `membrane_entity_state@1`, trafficking and insertion |
+| D6 | Scheduled bath composition, bath events and epochs | none | Canonical | `scheduled_bath_composition@1`, the wash schedule |
+| D7 | Extracellular barriers | none | Canonical | the @2/@3 line; parity rung P2 passed on `resolved_pump_tissue@2` |
+| D8 | Scheduled membrane profiles and interventions | none | Canonical | P3's scheduled interventions on @3 |
+| D9 | Excision (cutting) (`resolved_*_excision`, `processes/tissue_removal.py`) | none of the used rows. `docs/EXPERIMENT_PATH_PATTERN_RECOVERY.md` (row 7) names an excision operator for the composite as new work | Drop the legacy form; Feature later | G-9 |
+
+### E. Assembly and ensembles
+
+| # | Capability | Uses | Class | Canonical piece or gap |
+|---|---|---|---|---|
+| E1 | Finite-pool stochastic assembly and the capsid graph (`finite_bond_assembly@1`, `capsid_graph@1`) | the ensemble runner (U1) | Canonical (live code) | `assembly_pool/`, `assembly/`; seeded in the model table by the rename's Q4 |
+| E2 | Assembly topology setting channel availability, in one cell and as per-cell pools over a tissue (`assembly_regulated_cell@1`, `assembly_regulated_cluster@1`) | the ensemble runner's kinds (U1); `docs/GPU_ENSEMBLES.md:125–200` (U3); `validation/assembly/qualify_cell.py`; `validation/ensemble/` | Feature | G-7 |
+| E3 | GPU ensembles of these worlds (`cells ensemble run`, GPU-only, `ensemble/worker.py:95`) | `docs/GPU_ENSEMBLES.md`; the JUPITER runbook | Feature, after re-expression on the composite | G-8 |
+| E4 | The ionic wrapper `ionic_worlds@1` (`ensemble/ionic.py`, which admits 98 legacy IDs) | the JUPITER check; `tests/unit/test_integrated_ensemble.py`; `validation/ensemble/integrated_matrix.py`, `spatial_matrix.py` | Expressible | an adapter onto @3 worlds, whose GPU path stands (D336 refuses only the composite). The builder confirms |
+
+### P. BETSE-facing preparation
+
+| # | Capability | Uses | Class | Canonical piece or gap |
+|---|---|---|---|---|
+| P1 | Tissue-profile selectors and static profiles; mesh binding in BETSE's order; BETSE's grid and bath face conventions; INIT/SIM phase handoff; the `tissue-profiles`, `tissue-geometry`, `tissue-phase` and `excise` command lines | physiology set (Q2); the 4 helper modules | Not allowed in `src` (§5): Drop, or BETSE glue in `validation/betse/` if Q2 keeps the set | physics inside it, such as the Bernoulli-fitted face law and cutting, becomes a request if a kept consumer needs it |
+
+### G. Small inline families
+
+| # | Capability | Uses | Class | Canonical piece or gap |
+|---|---|---|---|---|
+| G1 | `source_decay@1`, the conftest's synthetic world | 9 infrastructure tests (U2): `tests/integration/test_cli.py`, `test_replay.py`; `tests/unit/test_continuity_gpu.py`, `test_continuity_loaders.py`, `test_numerical_refinement.py`, `test_numerics.py`, `test_specs.py`, `test_stationary_analysis.py`, `test_windows.py` | Expressible | retarget to `reaction_transport@1` or a minimal composite (Q6) |
+| G2 | `emt_mirna@1`, `passive_pair@1` | their own tests; pointed at by `docs/PAPER_REVIEW_GZMK_AGEING.md:139` | Drop | — |
+
+### H. Documents that point at legacy capabilities: claims to correct
+
+These are not uses. Each pointer is corrected in the deletion's commit, to its row's canonical piece or to
+"dropped":
+- `docs/PAPER_REVIEW_CCI_SEQ.md:28, 30, 40`: `tissue.py`, `tissue_calcium.py`, the assembly cluster;
+- `docs/PAPER_REVIEW_MITOCHONDRIA.md:33`: `surface_calcium.py`;
+- `docs/PAPER_REVIEW_T_CELL_ORGANELLES.md:119–122`: the mitochondria family;
+- `docs/PAPER_REVIEW_GZMK_AGEING.md:134–139`: `finite_extracellular`, `network_reactions@1`,
+  `finite_ecm_polygon_geometry` and `emt_mirna`;
+- `docs/ABUNDANCE_TO_FUNCTION_DESIGN.md:50–53` and `docs/CORE_LAWS_ROADMAP.md:73–75`.
+
+`network_reactions@1`'s cell, mitochondrial, environment and growth reactions are canonical in part, as
+`local_species_reactions@1` and the secreted species. The legacy form is dropped.
+
+**Tally, 38 rows:**
+- **Canonical: 15** (A1, A2, A7, A8, A9, B1, C1, C3, C4, D3, D4, D6, D7, D8, E1). For C3 and C4, the
+  legacy forms are dropped.
+- **Expressible: 5** (A10, B2, D1, E4, G1).
+- **Feature: 9:**
+  - five the calcium ensemble needs: A4, B3, B5, E2, E3;
+  - C2, if Q2 keeps the physiology set;
+  - A5, A6 and D9, only if wanted.
+- **Drop: 6** (A11, B7, D2, D5, P1, G2).
+- **Following another answer: 3.** A3 and B6 follow Q2, and B4 waits with B3.
+
+## 4. Confirmed gaps, at their refusal sites: candidate requests for the user
+
+Each was confirmed by reading the code at main. None is logged as an FR; each is the user's to request.
+
+| Gap | What is refused, and where | Needed by |
+|---|---|---|
+| **G-1: calcium-permeant channels on @3** | @3's channel valence table is `{"Na": 1, "K": 1, "Cl": -1}` (`definitions/surface_pump_v3_spec.py:169`). Each permeant ion is checked against it, "Channel ion requires its law's species and valence" (`:327–329`). @3 does carry a plasma calcium pump | A4: the calcium ensemble's Cav1.2; physiology |
+| **G-2: instantaneous voltage-gated laws** | "a gate-free law gives no kinetics or opening" (`registry/laws.py:422–423`), so a gate-free law is always open | A5 |
+| **G-3: channels whose kinetics read a species** | `ChannelLaw.kinetics` takes voltage only, and `reads` is empty for every law (`registry/laws.py:372, 375`) | A6 |
+| **G-4: an ER store** | `cell_owned_compartments@1` refuses three things: a Na/K or Ca pump or a channel population on the bounding patch (`operators/compartments.py:359–366`); a constant-field permeability there without declared kinds, and any kind under RK4 (`:368–376`); and an owner whose capacitor component holds no held bath (`:514–519`) | B3, B4: the calcium ensemble; physiology |
+| **G-5: IP3-gated release** | `species_regulated_availability@1` targets only `("junction", "channel")` (`operators/species_regulated_availability.py:154, 548–551`). It refuses a charged source (`:743–745`), and legacy's IP3 is charged −3 | B5: the calcium ensemble's IP3 cluster; physiology |
+| **G-6: finite fuel** | @3's Na/K pump requires maintained reservoirs (`definitions/kinetic_pump_spec.py:43–44`), and its two pumps run on the maintained fuel kind (`models/inner_laws.py:9, 60`). The transporter kind refuses `finite_fuel_rows@1` in its version-1 layout (`kinds/transporter.py:234–237, 443–444`), and its population axis admits it only for the neutral ATP-driven law (`:1088–1104`) | C2: physiology; the roadmap's energy rebuild |
+| **G-7: assembly coupled to availability** | No operator couples an assembly pool's topology to availability. The registry refuses any other (`registry/operators.py:176–181`); the assembly families exist only as ensemble kinds (`ensemble/families.py:20–26`); the nearest door reads species amounts, not topology (`species_regulated_availability.py:47–49`) | E2: the calcium ensemble |
+| **G-8: the composite on a GPU** | `refuse_unqualified_gpu` refuses a GPU backend for `resolved_pump_composite@1` (`execution/vector_windows.py:213–230`, D330, D336) | E3: the calcium ensemble's GPU runs, once it is re-expressed on the composite |
+| **G-9: excision on the composite** | No excision operator exists; `EXPERIMENT_PATH_PATTERN_RECOVERY.md` (row 7) names one as new | D9: no used row today |
+
+**What the calcium ensemble needs:** G-1, G-4, G-5, G-7 and G-8, plus B2's registration.
+- If Q2 keeps the physiology set, G-6 joins them, and G-2 and G-3 too if its worlds use those laws.
+- The dry run and a read of the physiology protocols settle which laws they use.
+
+## 5. The BETSE rule, family by family
+
+**The rule bars BETSE conventions in `src/cells`.** Laws that BETSE also uses are fine under neutral names,
+with the source cited. The rule therefore decides where a relocation may go, and what a re-expression must
+neutralise.
+
+| Family | What its code carries | Relocation into `src/cells` |
+|---|---|---|
+| `resolved_tissue@12` | The two legacy wrappers carry no BETSE convention. The live catalogue does: law-to-BETSE-class maps (`laws/channels/cav_channels.py:13` and others), "native" shifts (`laws/channels/calcium_gates.py:3`, `hcn_channels.py:25`), "pinned" wording | **Allowed.** The catalogue's conventions are existing live code: re-expression neutralises them as the laws are registered, and the rename judges them |
+| `resolved_calcium@11` | Claim strings naming BETSE (`legacy/models/surface_calcium.py:937–938`, `er_calcium.py:482–483`). It depends on live laws carrying BETSE's numeric-mM ATP quotient (`laws/reactions/er_calcium.py:1–5`, `plasma_calcium.py:1–5`, `maintained_mM_quotient@1`) | **Allowed after a neutralising commit** for strings and identifiers. The quotient convention is pre-existing live code; re-expression replaces it with a standard-state form, as `ca_atp_mass_action_positive@1` did |
+| `resolved_calcium_energy@5` | As `resolved_calcium@11`, plus "native" parameter paths in the finite pumps (`legacy/processes/finite_calcium_pumps.py:80–94, 256`) | **Allowed after neutralising** |
+| `resolved_open_calcium@1`, `_energy@1` | The runtime itself is neutral. Its closure pulls in a chain that carries BETSE's conventions: `core/tissue_profile_preparation.py:41–43` records `native_revision` 5269a714, `native_flux` "betse/science/sim_toolbox.py:electroflux and update_Co" and `native_geometry`; `processes/tissue_target_selectors.py:3` ("Selector conventions follow BETSE v1.5.0"); `processes/geometry_operator_binding.py:3, 100` (BETSE's mesh construction, "Preserve native coordinate-wise summation/reciprocal order"); `core/owned_calcium_profile_binding.py:1, 17` ("Native coefficient declarations", `as native`) | **Not allowed for that chain.** The open families use only `background_loss_bound` from it (`legacy/models/open_calcium_admission.py:13, 89`). A relocation must move that one helper neutrally and cut the import. The chain stays out of `src/cells` |
+| The physiology set's helpers | `tissue_profiles.py` (INIT/SIM profile recipes), the selectors and mesh binding above, `processes/extracellular_face_transport.py:4–6` ("Grid and bath conventions follow BETSE v1.5.0"), `processes/tissue_removal.py` (reference-code cut behaviour) | **Not allowed.** If Q2 keeps the set, the BETSE glue goes to `validation/betse/`, and any physics in it that the engine lacks becomes a request. `validation/` must not hold engine physics (AGENTS.md) |
+| `spatial_calcium@1`–`@4`, `assembly_regulated_*` | Laws BETSE also uses (`pumpCaATP`, `Cav1p2`, the IP3 Hill factor), cited; claim strings (`plasma_calcium.py:402` "native PMCA function correspondence", `ip3_calcium.py:154`) | **Allowed after neutralising** strings |
+
+## 6. The BETSE drivers: is their evidence claimed?
+
+**The scan.** I read PROGRESS, README, `docs/CURRENT_PLAN.md`, `SCIENTIFIC_BASIS.md`, `ROADMAP.md`,
+`EXPERIMENTS.md`, the experiment designs, the paper notes and the paper reviews.
+
+**The 18 REF-003 to REF-005 drivers, and the junction and spatial-cluster panels,** which run
+`finite_extracellular@1`–`@3` and `spatial_extracellular@1`–`@2`:
+- They are cited only in their own records: about 40 `docs/BETSE_*` design, preflight and closeout notes
+  from September and October (the older decision series), `docs/BETSE_REFERENCE_PLAN.md`, `validation/betse/README.md`
+  and `reports/`.
+- `docs/BETSE_CAPABILITY_ROADMAP.md:47` cites REF-003a. That is the passive-contact comparison on a live
+  law, not one of these drivers.
+- PROGRESS names only the seven-cell REF-003c configuration, as one of BETSE's reference cases (line 4801).
+- No current plan, the scientific basis or a paper note rests on them.
+- **Their evidence is not claimed.** They retire with their records (Q3).
+
+**The 17 physiology drivers and their 58 tests:**
+- Their results are claimed nowhere. PROGRESS records only that the stack moved to `validation/betse`
+  (Stage B, line 126 and lines 4497–4505).
+- `docs/CURRENT_PLAN.md:253–254` notes a dangling reference in it, as maintenance.
+- **Their use is the user's call (Q2).**
+
+**What BETSE parity rests on today.** The parity PROGRESS claims ("Plan: BETSE parity on CPU and L4", steps 3,
+3b and 5) uses `validation/betse/protocols/physical_*`, on `resolved_pump_tissue@1`, `@2` and `@3`. Legacy
+does not carry it. Parity "against saved outputs, out of process" stays possible after the deletion, because
+the BETSE outputs are saved under `/mnt/workspaces/Cells`.
+
+**Bearing on the rename's Q3 (§11):**
+- The rename's rewrite list holds 30 `validation/betse` files; about a dozen are in REF-era panel folders.
+- Of the 102–106 legacy definitions that spell the shared pieces, 99 are `configs/`, 6 `examples/` and 1
+  `validation/betse/junction_coupled/` (`legacy_defs_with_shared.json`).
+- Retiring the REF-era drivers before the rename's move takes their files out of it.
+
+## 7. Two routes, priced
+
+Both routes end in the same state: every used capability canonical, legacy deleted whole, the rename's IDs
+throughout. The tables count the used set as Q2 (retire the physiology set) and Q4 (keep the calcium
+ensemble) recommend. The gaps of §4 are the user's requests and are priced separately:
+- G-1: 2–4 agent-days;
+- G-4: 5–8;
+- G-5: 2–3;
+- G-7: 4–6;
+- G-8: 3–6;
+- B2's registration: 0.5–1.
+
+That makes 16–28 agent-days for the calcium ensemble's features.
+
+### Route A: relocate the blocked cores bitwise as an interim, delete legacy early, then re-express
+
+| Step | Content | Agent-days | Lanes |
+|---|---|---|---|
+| A-0 | Captures from the pre-rename snapshot: bitwise windows for the relocated cores, and the science-length set of §8 | 0.5 | about 2 h of one lane |
+| A-1 | Re-express at once what is expressible today: the JUPITER check onto @3 (A10, E4), the conftest world (G1), `resolved_tissue@8`'s dispatch per Q5 | 2.5–4 | one gate |
+| A-2 | Relocate the used cores that wait on features: `spatial_calcium@1`–`@4`, `er_calcium@1` with `compartment_reactions@1`, `spatial_extracellular@2` and `finite_extracellular@2` with their helpers, and the two assembly families with the ensemble adapters. `scripts/source_moves.py` does the move: one map, its rewriter and verifier. A neutralising commit follows (§5); the dispatch stays in the hub until A-3 (§12, risk 1). Proven bitwise (§8) | 4–6 | one full gate, plus the compare |
+| A-3 | The coverage table's Drop rows, approved by the user; the dry run; the removal list; the deletion | 2–3 | dry run about 45 min; full gate; tier 3 once (1–2 h); re-measure (about 1 h) |
+| A-4 | Re-express the relocated cores as G-1, G-4, G-5, G-7, G-8 and B2 land, each judged against §8's science captures | 6–9 | judged runs, about 2–4 lane-hours |
+| A-5 | Retire the relocated island | 1–2 | one gate |
+| **Total** | | **16–24, plus 16–28 of features** | |
+
+- **Legacy goes** in about 1–1.5 weeks, independent of the features.
+- **The relocated island** lives under neutral names and new IDs until A-4. D369 rules it out only as an end
+  state.
+- **Risks:** the island's code is thrown away at A-4, and an interim under new IDs can attract new
+  dependents. §12 has the rest.
+
+### Route B: re-express directly, delete when the last used capability is canonical
+
+| Step | Content | Agent-days | Lanes |
+|---|---|---|---|
+| B-0 | The science-length captures of §8 | 0.3 | about 1.5 h of one lane |
+| B-1 | As A-1 | 2.5–4 | one gate |
+| B-2 | The features G-1, G-4, G-5, G-7, G-8 and B2's registration | (priced above) | per request |
+| B-3 | Re-express the calcium ensemble and its nested layers on them, each judged against B-0 | 8–12 | judged runs, 2–4 lane-hours |
+| B-4 | As A-3: the drops, the dry run, the removal list, the deletion | 2–3 | as A-3 |
+| **Total** | | **13–20, plus 16–28 of features** | |
+
+- **The deletion waits for all five features.** At the features' pace that is weeks.
+- **Until then legacy stays in every gate:** its tests cost about 2,100–9,500 of the 13,577 tier 1+2
+  test-seconds per gate (§10), and live changes can break legacy tests that nobody now owns.
+- **No code is thrown away.**
+
+### If Q2 keeps the physiology set
+
+Both routes add:
+- re-expressing `resolved_tissue@12` as @3 channel laws (rows A3 and A4) and its 56-law worlds: 3–5 agent-days;
+- rows B6 and C2, with C2's finite fuel (G-6 at 4–6, plus 3–5): 7–11;
+- moving the BETSE glue into `validation/betse`: 2–3;
+- G-2 and G-3 if its worlds use them: 3–5.
+
+That is about 15–24 agent-days more. Route A would also relocate the cores of `resolved_tissue@12`,
+`resolved_calcium@11` and `resolved_calcium_energy@5` (3–4 agent-days), but not the glue (§5).
+
+## 8. Qualifying a re-expression: science-length captures and a derived tolerance
+
+**Two kinds of capture, both from the pre-rename snapshot frozen in the morning:**
+- **Bitwise windows, Route A only.** They prove a move, not a re-expression: the first scalar window of up
+  to 200 steps, through `validation/results_baseline.py save --from`.
+- **Science-length runs, both routes.** These qualify a re-expression. Each used capability's consumer
+  worlds run at the length their claim used, at three steps, with every recorded array saved.
+
+**The science set (used capabilities, under Q2 and Q4 as recommended):**
+
+| Worlds | Length | Source |
+|---|---|---|
+| The four calcium clusters' ionic children | 20 ms at 12.5 µs, 1,600 steps | `configs/{spatial,plasma,gated,ip3}_calcium_cluster.json` |
+| The four assembly-regulated calcium clusters | the qualified horizon: 20 ms, 12.5 µs, 16-tick windows (`docs/GPU_ENSEMBLES.md:164–165`), 4 seeds per arm, on the CPU command line | `configs/assembly_regulated_*calcium_cluster.json` |
+| The cell family | 20 ms at 100 µs, 200 steps | `configs/assembly_regulated_cell.json` |
+| The cluster's base and the JUPITER world | 20 ms at 50 µs | `configs/assembly_regulated_cluster.json`, `configs/spatial_kinetic_cluster.json` (`spatial_extracellular@2`) |
+
+Each runs at h, h/2 and h/4. The capture tool halves dt and doubles `max_steps`; the admission bounds,
+such as `spatial_calcium`'s h·loss ≤ 0.25, still hold.
+
+**The tolerance is derived, never tuned,** and is fixed in the capture's record before any re-expressed run:
+- **Observed order:** from legacy's three runs, p̂ = log2(|X_h − X_{h/2}| / |X_{h/2} − X_{h/4}|) per
+  array. Only arrays with p̂ within 0.5 of the method's order (4 for RK4) are judged by the band. The others
+  are judged by the consumer's own registered acceptance and reported as such.
+- **The band:** tol = 2·|X_h − X_{h/2}| + 64 ulp · max|X|. That is twice legacy's own step-halving
+  estimate, plus a rounding floor of the size that A7's summation change moved arrays by (`ARCHITECTURE.md`).
+- **Conservation ledgers** keep their own absolute bounds, for example 1e-9 pJ on energy. They are properties,
+  not comparisons.
+- **Stochastic worlds:**
+  - The assembly pool's code is live and unchanged, so the same seeds must give the same event sequence,
+    compared exactly.
+  - If a re-expression changes it, the comparison becomes statistical over a declared seed count, with
+    the ensemble's own Wilson-interval checks (`legacy/ensemble/cluster.py`'s `aggregate`, moved).
+- **The power check, judged first (D366's lesson):** a planted 1% change in one rate constant must exceed
+  the band in at least one judged observable. An observable that misses it is reported as not tested, and
+  the qualification counts only tested ones.
+- **The re-expression's own step:** it is compared at matching output times. It must pass its own
+  step-halving within the same band.
+
+**The command form** is the one verified tonight, in shards on a lane:
+```
+PYTHONPATH=SNAP/src:SNAP JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 /mnt/workspaces/Cells/venv-cpu/bin/python -B SNAP/validation/results_baseline.py save OUT/<part> --sets <sets> --from ORIGIN --max-steps <steps>
+```
+- **The full length** comes from `--max-steps` at or above the world's step count: the first window then
+  holds the whole run.
+- **The assembly families** use `cells assembly-cell run` and `cells assembly-cluster run CONFIG --backend
+  cpu`. That path was not probed tonight. It must export `JAX_ENABLE_COMPILATION_CACHE=false` itself, since
+  `configure_caches()` sets a cache folder (`execution/output_paths.py:19–31`).
+- **The unit:**
+  ```
+  scripts/run_detached.sh legacy-capture 24G --cpus 0-3,16-19 --oom-first --wait-headroom 26G -- flock /mnt/workspaces/Cells/locks/gate-cores-0-3.lock bash CHECKOUT/validation/legacy_port/capture.sh SNAP ORIGIN OUT
+  ```
+  Lane B takes `--cpus 8-11,24-27` and its own lock; CPUs 12–15 and 28–31 are never used.
+- **Not yet written:** `capture_worlds.py`, which writes `ORIGIN` and the step-halved variants, and
+  `capture.sh`. They run from the checkout against the snapshot (`PYTHONPATH=SNAP/src:SNAP`), recording both
+  revisions.
+
+**Measured tonight** on CPU 4, under the timed lock and a 4 GB scope, cold:
+
+| World | 5 steps | 200 steps | Per step | Compile |
+|---|---|---|---|---|
+| `spatial_calcium@1` | 22.6 s | 25.1 s | 0.013 s | about 22 s |
+| `resolved_tissue@12` | 76.8 s | 87.0 s | 0.052 s | about 76 s |
+| `resolved_calcium_energy@5` | 154.9 s | — | — | — |
+| `resolved_open_calcium_energy@1` (fixture, JIT off) | 142.7 s | — | — | — |
+
+**Estimated cost of the science set:**
+- **Ionic children:** about 43, 64 and 106 s per config at h, h/2 and h/4, so about 15 CPU-minutes for the
+  four.
+- **Assembly runs:** 6 configs × 4 seeds × 3 steps at an estimated 3–8 minutes each, about 4–8 CPU-hours.
+  This is unprobed.
+- **The JUPITER world:** about 10 minutes.
+- **Total:** about 6–8 CPU-hours, about 1–1.5 hours of one lane in 8 shards.
+- **If Q2 keeps the physiology set:** about 3–5 CPU-hours more, for its tests' worlds. Its eager (JIT off)
+  fixtures capture with JIT on, with legacy's JIT-on runs as the reference.
+- **Bitwise windows (Route A):** about 1–1.5 CPU-hours for the relocated cores.
+- **Placement and timing:** nothing heavy runs tonight; both lanes are held. The probes ran on CPU 4 under
+  the timed lock and released it between runs.
+
+## 9. Tests: move, stay or go
+
+The counts are from the static evidence and the scope map (`probe4.json`). The dry run (§2) replaces them.
+
+**Today:**
+- 195 of the 891 tier-record files import legacy directly (D346's count): 76 in tiers 1 and 2 (1,530
+  test-seconds) and 119 in tier 3.
+- 10 more name a legacy ID themselves: 7 and 3.
+- 401 reach legacy only through a fixture, shared driver or configuration: 312 (7,847 s) and 89.
+  - 27 of the 312 (370 s) are named after a legacy family.
+  - The other 285 are mostly live-subject tests whose fixtures also name legacy IDs.
+- 35 files have no static evidence and load legacy at runtime only through a dispatch miss.
+
+**Under §2's definition:**
+
+| Class | What happens | Files (tiers 1+2 / tier 3), estimated |
+|---|---|---|
+| **Go:** the subject is a legacy model whose capability is canonical or dropped | Deleted in one batch with the deletion, by a removal list (D224) giving each file's capability row and reason | about 130 / 150 under Q2 (retire), counting the physiology set's 34 / 24 |
+| **Move:** physics, conservation and reference tests of the used capabilities: `test_spatial_calcium.py`, `test_plasma_calcium.py`, `test_gated_calcium.py`, `test_ip3_calcium.py`, `test_er_calcium.py`, `test_assembly_cell.py`, `test_assembly_cluster.py`, `test_integrated_ensemble.py`, `test_assembly_controls.py`, the GPU integration tests | Retargeted to the canonical form when its capability is re-expressed, or moved with the relocation in Route A. Assertions on legacy structure are dropped | about 5 / 10 |
+| **Stay:** live-subject tests with incidental reach: fixtures naming legacy IDs, dispatch misses, the conftest world, @3's reference | Fixtures are cleaned; G1 and A9 are retargeted per Q5 and Q6 | about 290 / 55 |
+| **New** | None in the tiers. A re-expression's judged qualification is a recorded run, not a tier test. A test that compiles a world states its seconds and reason (D224) | 0 |
+
+**Recorded tier-3 failures** stay as recorded in moved files: `test_assembly_cell.py` (1) and
+`test_assembly_cluster.py` (2). A fix is a row in the existing file (D224).
+
+## 10. The deletion: content, removal list, gate and saving
+
+**Before it:** main is tagged and its snapshot frozen, as the BETSE-native removal was
+(`native-betse-frozen-2026-11-08`).
 
 **The commit removes:**
-- `src/cells/legacy/` (321 files, or what the moves left);
-- `registry/legacy_entry.py`;
-- the six `legacy()` call sites of the dispatch points: `definitions/specs.py:857, 1049`,
-  `registry/models.py:71`, `execution/schedule.py:147`, `__main__.py:220, 237`, and `LEGACY_COMMANDS`;
-- the ensemble's: `ensemble/families.py`'s `_older` hooks and `ensemble/cli.py:139`; and
-  `ensemble/ionic.py`'s rows for families not kept;
-- `registry/declarations.py`'s legacy list, `legacy_entries` and the manifest's `legacy` key.
+- `src/cells/legacy/` and `registry/legacy_entry.py`;
+- the `legacy()` call sites of §2;
+- `ensemble/ionic.py`'s rows for capabilities not kept;
+- `registry/declarations.py`'s legacy list and the manifest's `legacy` key. That is coordinated with the
+  viewer's agent first, and the format is the rename note's Q6.
 
-**The manifest change needs coordinating.** The `legacy` key is a top key of `cells.declarations@2`, and the
-viewer reads the manifest. Either the schema goes to `@3` or the key stays empty. That is the lead's ruling,
-with the viewer's agent told first.
+**Also in the same batch:**
+- the removal list's tests and `tests/unit/test_legacy_entry.py`;
+- validation drivers and references that serve only dropped rows;
+- configs and examples naming deleted IDs (112 configs name a legacy ID);
+- group H's document pointers;
+- the regenerated `docs/library/`;
+- PROGRESS.
 
-**Tests, validation and data go with it:**
-- the removal list's tests (§7);
-- `tests/unit/test_legacy_entry.py`;
-- the tier record's rows, re-measured as below;
-- the tier-3 record's rows, refrozen;
-- validation drivers and references that reach only deleted families. About 600 validation files have
-  legacy evidence; the dry run and an import check list them exactly. Their frozen evidence stays under
-  `/mnt/workspaces/Cells` untouched, and the tag keeps them reproducible.
-- configs, examples and reports naming deleted IDs. 112 configs name legacy IDs. Reports are recorded
-  evidence and stay.
+Reports and records stay.
 
-**Laws and numerics left without a user** are listed by an import check after the deletion. Candidates:
-- `laws/channels/`'s catalogue modules, if Q2's re-expression replaces them;
-- `numerics/surface_field.py` and `tissue_field.py`, if only legacy used them.
+**The gate** is the full one:
+- the IDs, with removals declared (`REMOVED_OK_FILE`);
+- crossrev (identical: no set reaches legacy);
+- tiers 1+2 on the surviving files;
+- G1 at 113 of 113 (its worlds name no legacy ID);
+- tier 3 once, deliberately, against a refrozen record;
+- the tiers re-measured and folded;
+- the private-term scan.
 
-They are kept or deleted in the same batch.
+The scope map stays stale until the next nightly rebuilds it.
 
-**Docs:**
-- `docs/library/` regenerated (`scripts/library_pages.py`), with its page tests;
-- `PROGRESS.md`;
-- `ARCHITECTURE.md`'s legacy mentions;
-- this note, marked done.
+**The saving.** Measured in the gate of 24 November: tiers 1+2 took 2,531 s of about 3,275 locked seconds,
+G1 592 s and crossrev 152 s.
 
-**The gate** is the full one, since src/ changes, on a free lane:
-- **IDs**, with the removed IDs declared (`REMOVED_OK_FILE`: the 127 dispatch IDs, the 2 assembly IDs and
-  the 3 inline ones, less those Q4 and Q5 keep).
-- **Crossrev** head against base: identical, since no set reaches legacy.
-- **Tiers 1+2** on the surviving files, against the recorded baseline.
-- **G1** at 113 of 113, bitwise; its worlds name no legacy ID.
-- **Tier 3** once, deliberately, on the final tree against the refrozen record, as D188 did.
-- **Tiers re-measured** on the surviving files (`test_tiers.py measure`, on cores no other job is pinned
-  to), then folded.
-- **The scope map** is stale until the next nightly rebuilds it, so no-src selection is refused until then
-  (`scope.py`). That is expected, not a failure.
-- **The private-term scan** on the staged diff.
-
-## 9. What the deletion saves in gate time
-
-| Stage | Today | After (estimate) | Basis |
-|---|---|---|---|
-| Tiers 1+2 | 669 files, 13,577 test-seconds; 2,531 s of lane B's wall in the gate of 24 November, 20:12–20:54 (`/mnt/workspaces/Cells/fr51-slot-refusal-20261124/gate-e79cbade/gate.log`), 0.186 s of wall per test-second | Point estimate −1,700 to −2,100 test-seconds (13–15%), about 5.5–6.5 min of wall. About −2,700 to −3,000 (8.5–9.5 min) if Q3 (c) also retires the physiology tests. Upper bound −9,554 (70%, about 30 min) if the dry run finds the fixture-reaching tests run legacy worlds | §7.1; the same log |
-| The hub's import | Up to 354 processes import the hub's 97 module-level legacy modules on a dispatch miss | Gone | Measured by the dry run's file seconds |
-| G1 (113 worlds) | 592 s in the same gate | Unchanged | No legacy world |
-| Crossrev (11 sets) | 152 s in the same gate | Unchanged | No legacy world |
-| Pre-lock (preflight, IDs, guard tests) | 406 s, unlocked, on one light CPU; the IDs listing collects about 21,800 test IDs | Shorter by the deleted files' test IDs | The same log |
-| IDs check and manifest | 132 legacy entries | Gone | Small |
-| Tier 3 (deliberate) | 215 recorded files, 87,166 test-seconds | 204 files (85,147 s) reach legacy. Most go; the moved ones stay | §7.1 |
-| No-src selection (D229) | Many files are reached by any change near legacy | Fewer reachers per change | Measured on the first nightly after |
-
-**The reading.**
-- **Tiers dominate a gate.** In that gate, tiers 1+2 took 2,531 s of about 3,275 locked seconds (77%); G1
-  took 592 and crossrev 152.
-- **The saving is bounded by how many tests leave tiers 1+2:**
-  - the point estimate saves about 6.5 of about 55 locked minutes (12%);
-  - the upper bound saves about 30 (54%).
-
-  Which of these holds depends on the 285 fixture-reaching tests (§7.1), and only the dry run settles it.
-- **Tier 3's deliberate runs** shrink the most: about 24 test-hours today. Every later selection also gets a
-  narrower suite.
-- **For comparison,** D189 measured 2.1 minutes per tier 1+2 gate for its retire list.
-
-## 10. Cost in agent-days
-
-| Work | Agent-days | Gates and lanes |
+| Stage | Today | After (estimate, until the dry run measures it) |
 |---|---|---|
-| S0: capture tools, C0–C4 | 0.5 | one lane for about 40 min; optionally again after the rename |
-| S1–S3 (L1): F1, the nested layers, F6–F9; move map, rewriter run, verifier, dispatch and IDs, consumers | 2–3 | one full gate (about 1 h) and C5 |
-| S4–S6 (L2): F2–F5, F10–F11, the ensemble adapters, consumers | 3–4 | one full gate, C5, and the GPU block (about 1 h) |
-| S7 extra: BETSE drivers per Q3, test retargets, the conftest per Q5 | 1–1.5 | inside L1 and L2 |
-| S8 (L3): the dry run, removal list, deletion, re-measure, tier 3 | 1.5–2 | dry run about 30 min; full gate; tier 3 once (about 2–3 h of a lane); re-measure (about 1 h) |
-| **R total** | **about 8–11** | **about 10–12 lane-hours** |
-| E, per family, if Q2 asks for it | F1 3–5; F2/F3/F6–F9 laws and compartments 5–8; F3's fuel blocked on the finite-fuel case; F4/F5 1–2; F10/F11 3–5: **15–25** | tolerance judging per family |
+| Tiers 1+2 | 13,577 test-seconds, 2,531 s of wall (0.186 s of wall per test-second) | Point estimate −2,100 to −3,000 test-seconds (the higher figure with the physiology set retired), about 6.5–9.5 min per gate. Upper bound −9,554 (70%), about 30 min |
+| G1, crossrev | 592 s, 152 s | unchanged |
+| Tier 3 | 215 files, 87,166 test-seconds | 204 files reach legacy; most go |
 
-**The reference is D188.** It sized move 1, which made today's 321-file legacy, at 3.5–4.5 agent-days, and
-both moves at about 6 hours of gates. This port moves about a third of those lines but also re-plumbs
-dispatch, IDs and consumers.
+Under Route B, the saving arrives only at the deletion, after the features.
 
-## 11. Risks
+## 11. The rename's Q3 under each route
 
-- **The scope grows past the 11.** The nested layers and the drivers' extra families (§3.2, §3.3). Q1
-  bounds it.
-- **Bitwise fails for reasons that are not the port:**
-  - a different jaxlib or XLA flags;
-  - BLAS threads;
-  - a warm cache;
-  - shard CPU count;
-  - padding columns at inactive channel slots (K1).
-  The capture records the environment, and C5 runs in the same one. A port difference stops the landing:
-  nothing is accepted at a tolerance without the user (Q2).
-- **Order dependence on IDs or module names.** In the families' closure the only sorts found are
-  reactions by their own definition IDs (`legacy/core/reaction_spec.py:144`) and membranes by cell index,
-  not law IDs. Law codes are unchanged. Still, C5 is the check, not this reading.
-- **The rename breaks legacy before the port.** The rename's gate runs the tiers, which include about 600
-  legacy-reaching files, so the rename must keep legacy parsing (§13). The captures are taken from the tag
-  either way.
-- **Lost coverage of live features.** @3's reference worlds (`resolved_tissue@8`), the conftest's
-  `source_decay@1`, and fixtures shared with modern tests (§7.2). Q4 and Q5 decide them; the dry run
-  shows what is left.
-- **Frozen drivers.** Several BETSE and ensemble drivers pin source paths or hashes
-  (`trajectory.py`'s `source_sha256`, the ensemble registrations' pre-D188 paths). They cannot re-run
-  their own registrations after the move. They stay as records, reproducible from the tag, and only
-  drivers Q3 keeps are retargeted.
-- **BETSE wording.**
-  - Moved docstrings may keep citing BETSE as a law's source (AGENTS.md: "cite the source").
-  - Identifiers carrying BETSE conventions are renamed neutral in the move, for example "native" in
-    `native_geometry_passive_tissue@1` and `phase_clock_rk_stage_native_logistic@1`, and the
-    `tissue_target_selectors as native` alias.
-  - The models' summary strings with BETSE wording are rewritten neutral in the hand-edit commit:
-    `legacy/models/surface_calcium.py:937`, `er_calcium.py:482`, `ip3_calcium.py:154`,
-    `spatial_calcium.py:546`, `plasma_calcium.py:402` and `open_calcium_runtime.py:336`.
-  - Existing live modules already carry some, such as `NATIVE_CALCIUM_SCALE` and
-    `cagpotassium_numeric_mM_scale@1`. They are the rename's to judge, not this port's.
-- **Concurrency.** Other agents' branches touching legacy, and the visualizer's reading of the manifest.
-  Each landing publishes its move map; the viewer's agent is told before L3.
-- **Lane time.** Captures, three full gates, the dry run and tier 3 compete with the FR queue for the two
-  lanes.
-- **The Lean lane** may cite legacy IDs. It gets the port's IDs in the rename's mapping table, through the
-  user (D346). `lean/` is not edited.
+The rename note's Q3 concerns the 18 live pieces that legacy also spells: `constant_field`, the Na/K
+pump, Kv1.x, Kir2.1, Nav1.2, the leaks, the field solver, `finite_bond_assembly` and the water operator. They
+make 2,272 occurrences in 102 legacy definitions and 67 in 33 code files.
 
-## 12. The user's questions
+| Rename Q3 option | Route A | Route B |
+|---|---|---|
+| (a) re-spell them in legacy too, 135 files | Consistent: the relocated cores move already re-spelled. Legacy keeps parsing, and its tests stay green through the rename's gate until the deletion about 1–1.5 weeks later | Consistent, at the cost of re-spelling files that are deleted weeks later. Legacy keeps parsing until then |
+| (b) keep the 18 bare until legacy is deleted, then a second move | The relocation's neutralising commit re-spells the moved cores. The second move follows A-3. @3's definitions mix spellings for about 1–1.5 weeks | @3's definitions mix spellings for weeks, until B-4 |
+| (c) delete legacy first, then rename | The rename's 18 pieces wait about 1–1.5 weeks | The rename's 18 pieces wait for the features: weeks |
+| (d) live files only | Ruled out by the rename note: the parsers both families share would refuse legacy's files | Same |
 
-**Q1. Which legacy IDs survive as IDs, beyond the 11?**
-- (a) The 11 only. The nested layers (`er_calcium@1`, `spatial_extracellular@2`, `finite_extracellular@2`)
-  keep IDs only as definition children; standalone worlds of them are refused. The 18 REF-003 to REF-005
-  drivers retire with their saved outputs.
-- (b) Also keep `finite_extracellular@1`–`@3`, `spatial_extracellular@1`–`@2` and `compartment_reactions@1`
-  as standalone IDs. Their code is in the 11's closure already. This costs:
-  - six more capture sets, about 20 CPU-minutes;
-  - four more catalogue IDs (`finite_extracellular@1` and `@3`, `spatial_extracellular@1`,
-    `compartment_reactions@1`), plus standalone admission for the two nested ones;
-  - about 1 agent-day of consumers.
-- (c) Keep every legacy model the closure carries.
-- **Recommendation: (a).** It matches D348's 11 and the catalogue-size priority. The REF-era comparisons are
-  closed out, with saved outputs, and BETSE parity later works from those outputs and the ported families.
+**In every case:**
+- **The captures** come from the pre-rename snapshot and are compared through the committed table. They
+  need no re-spelling.
+- **Retiring files shrinks the rewrite set.** Retiring the REF-era drivers (Q3), and the physiology set if Q2
+  retires it, before the rename's move takes their files out of the rewrite set. For the REF-era drivers
+  that is about a dozen of its 30 `validation/betse` files.
+- **Recommended: (a)** under either route. It keeps one spelling in live code and costs a mechanical rewrite
+  of files that the deletion removes later.
 
-**Q2. What "ported to the modern models" requires.**
-- (a) Relocate under neutral names, proven bitwise. Re-express a family on @3 or the composite later, when
-  an experiment needs it (D136, D144), judged at a declared tolerance against the relocation.
-- (b) Re-express now, judged at tolerances from the start: 15–25 agent-days more, with no bitwise proof.
-- (c) Relocate only, and never re-express.
-- **Recommendation: (a).** It is the only path the brief's bitwise proof fits. E's blockers
-  (calcium-permeant channels in @3, finite fuel, an ER store) are engine features in their own right.
+## 12. Risks
 
-**Q3. Which BETSE drivers stay runnable after the deletion?**
-- (a) The 17 physiology drivers and their 58 tests, on the ported F1–F5. The 18 REF-era drivers and the
-  4 helpers retire, with their records kept and the tag reproducing them.
-- (b) All 39, which needs Q1 (b).
-- (c) None stay runnable. BETSE parity is redone later from saved outputs, with new drivers on the ported
-  families.
-- **Recommendation: (a).** The physiology set is what uses the five IDs. Its tests already run in tiers 1
-  and 2, and parity against saved outputs stays possible.
+1. **Dispatch between landings (Route A).**
+   - Unported legacy classes derive from the relocated ones: `TissueCalciumModel` from `IP3CalciumModel`,
+     and `TissueModel` from `SpatialJunctionSpec`.
+   - `model_for`, `to_dict` and `control_values` are subclass-first isinstance chains, so until A-3 those
+     entries stay in the hub, pointing at the moved modules. Only parse entries, which match exact IDs, go
+     live.
+   - The alternative is exact-type checks.
+2. **A tolerance that cannot test.** Without the power check, a wide band passes anything. The order check
+   and the planted change are judged before the comparison.
+3. **Features on the critical path (Route B).** Five features stand before the deletion, and legacy's tests
+   cost gate time and maintenance meanwhile.
+4. **Throwaway work (Route A).** The relocated island is discarded at A-4. Keeping it narrow (only the
+   feature-blocked used cores) bounds that.
+5. **BETSE conventions leaking into `src/cells`.** §5 lists them. The rule's boundary test runs in every
+   gate, and the BETSE glue stays in `validation/betse`.
+6. **Lost capability.** Each Drop row names what goes. Group H's pointers are corrected, so no document
+   claims a capability that is gone.
+7. **The rename breaks legacy before the deletion.** It is avoided by Q3 (a). Captures from the snapshot are
+   unaffected.
+8. **Unprobed paths.**
+   - The assembly command lines' capture cost, and the cache setting that `configure_caches()` makes.
+   - The tools `capture_worlds.py`, `capture.sh` and `dry_delete.py` are not written.
+9. **Lane time.** The captures, the dry run, three or four full gates and tier 3 compete with the FR queue.
+   FR-43, the user's top priority, keeps the timed cores.
+10. **The Lean lane** may cite legacy IDs. It gets the mapping table through the user; `lean/` is not edited.
 
-**Q4. The `resolved_tissue` majors.** `@1`–`@12` are live code, only dispatched by legacy.
-- (a) Keep `@12` plus the majors kept consumers use: `@8`, the reference for @3's tests, and `@1`, which the
-  physiology references name.
-- (b) Keep all twelve: no code cost, but nine more IDs.
-- (c) Keep `@12` only, retarget @3's reference checks to another reference, and lose their cross-check.
+## 13. The user's questions
+
+**Q1. The sequence.**
+- (a) Route A: re-express what is expressible now, relocate only the feature-blocked used cores bitwise,
+  delete legacy in about 1–1.5 weeks, then re-express the cores as the features land.
+- (b) Route B: re-express directly, and delete when the last used capability is canonical.
+- **Recommendation: (a).** The calcium ensemble's re-expression waits on five engine features, and B keeps
+  about 600 legacy-reaching test files in every gate until they land. The interim island is narrow and
+  proven bitwise, and D369 rules it out only as an end state.
+
+**Q2. The BETSE physiology stack** (17 drivers, 58 tests, in `validation/betse/physiology`).
+- (a) Retire it with its records. BETSE parity is redone later on canonical models, against saved
+  outputs.
+- (b) Keep it runnable. Its capabilities become uses (rows A3, A4, B6, C2 and D1, and A5 and A6 if needed), its
+  BETSE glue moves into `validation/betse`, and it adds about 15–24 agent-days and G-6.
+- **Recommendation: (a).** No current document claims its results, and the BETSE parity that PROGRESS
+  claims already runs on `resolved_pump_tissue@1`–`@3`.
+
+**Q3. The 18 REF-003 to REF-005 drivers, and the junction and spatial-cluster panels.**
+- (a) Retire them with their records, before the rename's move.
+- (b) Retire them at the deletion.
+- (c) Keep them, which needs A10's families as standalone IDs.
+- **Recommendation: (a).** Their evidence is not claimed (§6), and retiring them early shrinks the rename's
+  rewrite set.
+
+**Q4. The calcium ensemble's place.** D348 named it. The coverage check finds its uses in the live ensemble
+runner's kinds and `docs/GPU_ENSEMBLES.md`'s qualified preparations. No current experiment plan runs it.
+- (a) Keep it in scope. Its re-expression needs G-1, G-4, G-5, G-7 and G-8.
+- (b) Retire it with its records, leaving the ensemble runner its live kinds (`capsid_graph@1`,
+  `finite_bond_assembly@1`) and the ionic wrapper on @3 (E4).
+- **Recommendation: the user's call.** If (a), Route A. If (b), legacy can be deleted after steps A-1 and A-3 alone,
+  with no engine feature, in about 5–7 agent-days.
+
+**Q5. @3's reference world, `resolved_tissue@8`.**
+- (a) Keep the live catalogue model as a reference-only family, with its dispatch moved into the live
+  registries.
+- (b) Point @3's equivalence tests at an independent validation-side reference instead. Candidates:
+  `validation/tissue/surface_kinetic_reference.py`, or NumPy forms of the laws.
+- (c) Drop the cross-check.
+- **Recommendation: (a) for the interim and (b) as the end state.** Its value is its independence.
+
+**Q6. `source_decay@1`, `emt_mirna@1` and `passive_pair@1`.**
+- (a) Delete all three. Retarget the conftest's 9 infrastructure users to `reaction_transport@1` or a
+  minimal composite.
+- (b) Re-express `source_decay@1` as a minimal canonical test world.
 - **Recommendation: (a).**
 
-**Q5. `source_decay@1`, `emt_mirna@1` and `passive_pair@1`.** They parse live, but their models are in
-legacy. `source_decay@1` is the shared conftest's world, used by 10 test files:
-- nine infrastructure tests: `tests/integration/test_cli.py` and `test_replay.py`, and
-  `tests/unit/test_continuity_gpu.py`, `test_continuity_loaders.py`, `test_numerical_refinement.py`,
-  `test_numerics.py`, `test_specs.py`, `test_stationary_analysis.py` and `test_windows.py`;
-- and `test_passive_pair.py`.
-- (a) Delete all three. Retarget the 10 conftest users to a small live world, `reaction_transport@1`
-  or a minimal composite, and drop their own tests.
-- (b) Relocate `source_decay@1` (82 lines) as a minimal synthetic test world. Delete the other two.
-- (c) Keep all three, relocated.
-- **Recommendation: (a)**, by the pre-alpha rule. The tests keep their subjects, and only their vehicle
-  changes. Choose (b) if the user prefers a dedicated minimal world.
+**Q7. Which gaps to request** (§4): the calcium ensemble's five if Q4 (a); G-6 too if Q2 (b); G-2, G-3
+and G-9 only when a consumer asks. **Recommendation:** follow Q2 and Q4.
 
 **For the lead, not the user:**
-- the manifest key (§8);
-- the GPU block after L2 (§5.3);
-- whether to recapture after the rename (§5.1);
-- the capture's `--max-steps` (200 here, as G1);
-- refusal-message mapping in `compare` (§2).
+- exact-type dispatch or hub entries in Route A (§12, risk 1);
+- the manifest key;
+- a GPU block after the ensemble's re-expression;
+- the band's factor 2 and its rounding floor, to be fixed in the capture's record before any run.
 
-## 13. Dependencies for the rename note
+## Appendix A. The 11 families of D348: closures, physics, sources and targets
 
-- **Legacy must keep parsing through the rename.** It names live law IDs in code (`calcium_gates.LAW_ID`,
-  `plasma_calcium.PUMP_LAW` and `EXCHANGER_LAW`, `er_calcium.PUMP_LAW`, `METABOLISM_ID`) and in the
-  configs and fixtures legacy tests read (`kv1p5_mh@1`, `constant_field@1`, `logmean_electrodiffusion@1`,
-  `junction_voltage_relaxation@1`, `nak_atp_mass_action_positive@1`, `cav1p2_m2h@1`, …).
-  - Either the rename's script rewrites those references and data too, or legacy's tests fail the rename's
-    gate.
-  - Legacy's own model IDs stay bare (D346).
-- **The port's IDs enter the same old-to-new table** in its second batch:
-  - model IDs (§4);
-  - legacy-defined law IDs: `ip3_er_release@1`, `finite_atp_pmca_positive@1`, `finite_atp_er_1ca_positive@1`,
-    `finite_atp_adp_pi_transformed@1`, `driven_atp_regeneration_tanh@1`, `finite_energy_pool@1`,
-    `root_component_has_cycle@1`.
-- **Unregistered live laws the families use** are the rename's to name: the 45 catalogue laws not
-  registered on @3, NCX, Cav1.2, the ER pump and release, `maintained_mM_quotient@1`,
-  `capacitive_components_current_continuity@1` and `gauged_dense_kirchhoff@1`.
-- **The closed family list has no word** for the observer, stage-domain, closure and policy IDs these
-  families carry: about 60 strings such as `resolved_hcn_extra_accepted_grid@1` and
-  `static_declared_ideal_chemical_and_voltage_reservoirs@1`. The note decides whether they are catalogue
-  IDs or plain labels.
-- **The captures need the pre-rename tag's snapshot** (§5.1). The tag of D346's step 2 serves.
+This is kept from the first version of this plan for the builders. Its route is now §7's.
+
+| # | ID (legacy, frozen) | Spec / parse | Model | Import-time closure in legacy |
+|---|---|---|---|---|
+| F1 | `resolved_tissue@12` | `definitions/surface_kinetic_spec.py` (live) | `legacy/models/surface_hcn_extra.py` → `surface_cav.py` → live `models/surface_kinetic.py` | 2 modules, 73 lines |
+| F2 | `resolved_calcium@11` | `legacy/core/surface_calcium_spec.py` | `legacy/models/surface_calcium_hcn_extra.py` → `surface_calcium.py` | 38 modules, 11,123 lines |
+| F3 | `resolved_calcium_energy@5` | `legacy/core/surface_calcium_energy_spec.py` | `legacy/models/surface_calcium_energy_hcn_extra.py` → `surface_calcium_energy.py` | 44, 13,438 |
+| F4, F5 | `resolved_open_calcium@1`, `_energy@1` | `legacy/core/surface_open_calcium{,_energy}_spec.py` | `legacy/models/surface_open_calcium{,_energy}.py` → `open_calcium_runtime.py` | 58, about 17,980 |
+| F6–F9 | `spatial_calcium@1`–`@4` | `legacy/core/{spatial,plasma,gated,ip3}_calcium_spec.py` | `legacy/models/{spatial,plasma,gated,ip3}_calcium.py` | 26–34, 8,157–9,471 |
+| F10 | `assembly_regulated_cell@1` | `legacy/assembly_cell/spec.py` | `legacy/assembly_cell/`, `legacy/ensemble/coupled.py` | 12, 3,300 (+91 at function level) |
+| F11 | `assembly_regulated_cluster@1` | `legacy/assembly_cluster/spec.py` | `legacy/assembly_cluster/`, `legacy/ensemble/cluster.py` | 83, 21,567 |
+
+**The union** is 107 modules and 27,414 lines. Pruning the cluster's branches for the `resolved_*`
+families would leave about 70 modules and 20,000 lines.
+
+**Nested children:**
+- `er_calcium@1` is the store of F2, F3 and F6–F9;
+- `spatial_extracellular@2` is the ionic child of F6–F9 and of the cluster's base config;
+- `finite_extracellular@2` is the ionic child of F10.
+
+**Physics and sources, in short** (file:line references from the two research reads are in the session
+records):
+- **F1:** the 56-law catalogue on `models/surface_kinetic.py`. @12 adds `hcn_leak_open@1`, `hcn2_camp_m@1` and
+  `hcn4_camp_m@1`, codes 53–55. The law forms come from BETSE 1.5.0's channel classes, cited.
+- **F2:** ER stores (capacitor, GHK leak, `er_calcium_pump_positive@1`, `er_calcium_release@1`, buffers);
+  PMCA, NCX and Cav1.2 per membrane; the IP3 factor; energy to 1e-9 pJ.
+  - Sources: BETSE's `pumpCaATP`, `pumpCaER`, `Cav1p2` and `EndoRetic.channels` (`docs/PLASMA_CALCIUM.md`,
+    `docs/ER_CALCIUM.md`).
+  - NCX is synthetic; Hilgemann and colleagues (1992) support only its reversal.
+- **F3:** finite ATP/ADP/Pi pools (`finite_atp_adp_pi_transformed@1`), regeneration
+  (`driven_atp_regeneration_tanh@1`), and finite-fuel PMCA and ER pumps. It is synthetic
+  (`docs/FINITE_ENERGY_POOLS.md`).
+- **F4, F5:** static open reservoirs and moiety ceilings; no new rate law.
+- **F6–F9:** F6 adds one ER store per cell and a whole-cell exchange ledger. F7 adds PMCA and NCX, F8 Cav1.2,
+  and F9 the IP3 factor a/(1 + a).
+- **F10, F11:** `root_component_has_cycle@1`: the channel is available when popcount(bonds) ≥
+  popcount(occupied), and the ionic side never feeds back. The cluster has per-cell pools, a union event
+  clock and `lax.map` over worlds.
+  - The base capsid model is Asor et al., Nature (2026) (`docs/CAPSID_ASSEMBLY.md`). The coupling is a
+    stated hypothesis.
+
+**Proposed IDs, to be named in the rename note:** a re-expressed capability takes the canonical family of
+its piece, such as `cells.channel.cav1p2_m2h@1`, `cells.cycle.<ncx law>@1`, an ER-store operator in
+`cells.operator.`, or an availability-coupling operator. Under Route A, a relocated core keeps its name
+under `cells.model.<name>@<major>` until A-5.
+
+**Live laws these families use without a registry entry,** for the rename's table:
+- NCX, Cav1.2, the ER pump and release;
+- `maintained_mM_quotient@1`;
+- `capacitive_components_current_continuity@1`;
+- `gauged_dense_kirchhoff@1`;
+- 44 catalogue laws.
+
+**Laws defined inside legacy:** `ip3_er_release@1`, `finite_atp_pmca_positive@1`,
+`finite_atp_er_1ca_positive@1`, `finite_atp_adp_pi_transformed@1`, `driven_atp_regeneration_tanh@1`,
+`finite_energy_pool@1` and `root_component_has_cycle@1`.
