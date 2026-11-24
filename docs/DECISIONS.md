@@ -11494,3 +11494,72 @@ is untested.
 - **FR-47's wall-marker fix landed** at 9d8c42be (tag `fr47-inert-wall-landed-2026-11-24`): gate G1 113 of 113, and
   the D148 proofs identical but for provenance. The origin branch `fr47-inert-wall`, pushed by mistake, is deleted, as
   the user approved in D342.
+
+## D355: Lean's two-potassium evidence for FR-51: the external arm meets D351 in direction and rough size; FR-51's reversal reference answers it; the internal arm and chloride are indications
+
+2026-11-24, about 18:07 UTC. The lead, with the advisor, on Lean's results relayed by the user.
+
+**What arrived.** Lean's results are at Lean commit fccbb5e5 (branch lean-paired-replay-audit-20261124), with its
+readings and drivers at 59fe4896. They are non-blind exploratory results for the registration after FR-51's landing
+(D353).
+- **The engine:** FR-51's follow-up at 7ca7c9c1 (branch fr51-slot-refusal), not e4bbf0ec, with
+  `resolved_pump_tissue@3`, `kir2p1_mh2@1` and `open_channel_block_weighted_modes@1`.
+- **What ran is FR-51's block factor, not Kir2.1.** Lean divides a blocked population's current by a matched free
+  population's, with their Kir gates held equal. "Absolute voltage" below is FR-51's block on the membrane-voltage
+  reference.
+
+**The external arm.** The half-conductance shift against the measured reversal shift, with each preparation's
+two-mode block fitted to its first K level and then held fixed:
+
+| Series, external K (mM) | Half-conductance shift (mV) | Measured reversal shift (mV) | Cells, from concentrations (mV) | RMS: reversal reference | RMS: membrane voltage | RMS: measured shift (diagnostic) |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Panama, 5.4 → 60 | +51.6 | +53.2 | +62.3 | 0.226 | 0.397 | 0.044 |
+| Ishihara, 150 → 50 | −26.1 | −26.9 | −28.2 | 0.026 | 0.479 | 0.010 |
+| Ishihara, 150 → 20 | −48.1 | −48.9 | −51.7 | 0.043 | 0.533 | 0.015 |
+
+- **The definition is met in direction and rough size only.** The independent pair is Panama against Ishihara.
+  Ishihara's two rows share one 150 mM calibration. On Lean's half-conductance reading the slopes are 0.97 (Panama),
+  and 0.97 and 0.98 (Ishihara). The exact slope stays open, since readings are good to about 1 mV and some half
+  crossings sit in 10 mV brackets.
+- **A correction to D352 and D353:** Panama's 0.98 ± 0.01, which they quote, is a fitted steep component, a different
+  observable. The pair is on the half-conductance reading.
+- **The user's rule (D344) is answered by FR-51's `{"reversal_of": ion}` reference,** which is in flight. D352's "a
+  new law or major" for main's Kir2.1 is withdrawn: FR-51's block law is that new law. `kir2p1_mh2@1` stays unchanged,
+  as a parity law, with a scope line on its library page:
+  - its own gates read absolute voltage, so they do not shift with external K;
+  - a world in which external K changes declares FR-51's block with a reversal reference.
+- **Concentration-based against measured reversal: no cause is assigned.**
+  - Cells' shift is larger in all three series, by 9.1, 1.3 and 2.8 mV, and only Panama's difference is large.
+  - Panama's zero crossings and curves come from different panels, with unspecified specimen linkage.
+  - The measured-shift arm is a clamp offset in Lean's driver: one lab's indication, and no request.
+
+**The internal arm is an indication.** It comes from one lab (Lopatin and Nichols), with one to three patches per K
+level.
+- Raising internal K from 150 to 625 mM moved the half-block voltage about +5 mV, from about −20 to −15.
+- FR-51 predicts −36.3 mV with the reversal reference and 0 with the membrane-voltage reference.
+- The full series' slope is −0.15.
+
+D352's scope line stands, now with numbers: the reversal reference is supported for external-K changes only. One study
+adds no reference option.
+
+**Red-cell chloride is recorded only.** One permeability fits both of Freedman and Novak's mean currents only with an
+intracellular to extracellular chloride ratio of 0.187, against a measured initial 0.67 ± 0.02. Intracellular chloride
+was not measured at each test voltage, so D351's scope finding stands.
+
+**Where the scope lines go:**
+- FR-51's landing message, which the lead writes;
+- the block law's docstring on `fr51-slot-refusal`, never on e4bbf0ec, which is in its gate.
+
+They cite Lean by commit (fccbb5e5), since Lean's files are not on main.
+
+**Lean's tip fccbb5e5 merges only when both hold:**
+- the slot-refusal branch has landed by merge with 7ca7c9c1 in its history (its builder adds commits, and never
+  rebases or squashes);
+- a gate has run on fccbb5e5 itself, since the branch has moved past 59fe4896.
+
+**For the registration (after FR-51 lands, D353), before any run:**
+- **Judged quantities.** Fix which slope and which reversal are judged. The lead's proposal: judge the
+  concentration-based reversal, and report the measured one.
+- **Panama's other K levels.** Panama recorded four K levels, and Lean scored one pair. The lead asks Lean, through
+  the user, whether the other levels are unscored. Until then `kir_spermine_potassium.json` stays unopened, since those
+  levels could be the one arm still blind.

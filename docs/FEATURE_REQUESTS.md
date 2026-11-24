@@ -2261,6 +2261,14 @@ two-potassium rows, read at their commit. It has two arms:
 It is non-blind, since the lead has seen 0.98. Also queued: one admitted row with an effective valence above |z_B|
 (D352).
 
+**Lean's evidence (D355).**
+- **External arm:** it meets D351 in direction and rough size, on Lean's half-conductance reading: slopes of 0.97 for
+  Panama, and 0.97 and 0.98 for Ishihara. Panama's 0.98 ± 0.01, quoted above, is a fitted steep component, a different
+  observable.
+- **Internal arm:** an indication (+5 mV observed, against −36.3 for the reversal reference).
+- **Scope lines,** in the landing message and the block law's docstring on the follow-up branch: the reversal
+  reference is supported for external-K changes only; `kir2p1_mh2@1`'s gates read absolute voltage.
+
 ## FR-52 — Passive cohort observations for integer functional units
 
 **Logged 24 November 2026 by the user, priority high.**
