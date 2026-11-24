@@ -57,8 +57,8 @@ it in the decision entry. The checker runs that revision, with the tagged files 
 - **Rerun at the merged head 0087818d** (`/mnt/workspaces/Cells/ol6-protocol-d-v2-20261124/
   at-0087818d/`):
   - §8's checks: 28 of 28 pass;
-  - (d)'s margins, the linear-noise table and the classification: protocol_d_v2.json, registered
-    again from them, is byte for byte the file tagged here;
+  - (d)'s margins, the linear-noise table and the classification equal the registered ones
+    exactly, and protocol_d_v2.json is registered from them;
   - (d)'s half of the constant rule: 16, 16, 11 and 11 pairs bitwise, and the 12.5 nm reader
     checks all hold.
 
@@ -118,7 +118,7 @@ this registration, never from the first:
 | §2's "Seeds: 1 to M ... the retry's seeds are 100001 to 100000 + M" | §3 |
 | §7.4's convergence seeds 1–6 | 670001–670006 (§3) |
 | Erratum 2's "seeds 1 to 256" for D0 (P-D1) | D0's first seeds here, 670001–670256 |
-| `limit_qualification.criterion_m` for M's verdict | `protocol_d_v2.criterion_m` (§5); `limit_qualification.mean_error` stays its input |
+| `limit_qualification.criterion_m` for M's verdict | `protocol_d_v2.judge_world` (§6), which judges the precondition first and then calls `protocol_d_v2.criterion_m` (§5) on `protocol_d_v2.moments`, the registered `mean_error` except at identical replicas |
 | Erratum 3, its document and `protocol_d_erratum_3.py` | §4 and §5 |
 | §11's cost (2–3 CPU-hours) | §9 |
 

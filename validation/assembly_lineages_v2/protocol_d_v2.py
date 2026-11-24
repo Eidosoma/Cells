@@ -1187,9 +1187,11 @@ PLANTS = {  # the document's §8: the plant this registration adds, with its reg
     "P-D8": {"world": "D6", "rungs": [50.0, 100.0], "where": "(d) alone, on the honest run's "
              "observables: one constant pair's value one ulp up, once per constant pair and rung",
              "criterion": "M's constant rule (judge_world)",
-             "registered_effect": "each judged planted pair fails the world, M's constant "
-             "failures the honest judgement's plus that pair: 22 single-pair plants (11 pairs "
-             "at each rung), none excused", "cost": "none: it reads the honest D6 runs"},
+             "registered_effect": "each planted pair that the precondition lets M judge fails "
+             "the world, M's constant failures the honest judgement's plus that pair; 22 "
+             "single-pair plants (11 pairs at each rung); a pair the precondition leaves "
+             "unjudged is reported, not counted; caught when every judged plant is caught and at "
+             "least one is judged", "cost": "none: it reads the honest D6 runs"},
 }  # fmt: skip
 
 
