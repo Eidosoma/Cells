@@ -14,11 +14,17 @@ questions D361 moved here.
   entries;
 - no compatibility beyond this repository.
 
-**The candidate table** comes from a read-only probe, not from the generator. It ran at main `f8c6c326`, on CPU 4
-under the timed lock. The tree's only untracked file was this note, which the probe does not read:
-- `/mnt/workspaces/Cells/rename-design-20261124/candidate-f8c6c326/` holds `table.tsv` (old spelling, new ID, family),
-  `mapping.json`, `SUMMARY.txt` (every class and every ID in it), `TAGGED.txt` and `FOLLOWUP.txt`;
-- the probe is beside it, in `probe/`.
+**The candidate table** comes from a read-only probe, not from the generator. It ran at main `f8c6c326` plus this note
+(d329730e, clean), on CPU 4 under the timed lock:
+- `/mnt/workspaces/Cells/rename-design-20261124/candidate-f8c6c326/` holds:
+  - `table.tsv` (old spelling, new ID, family) and `mapping.json`;
+  - `SUMMARY.txt`, every class and every ID in it;
+  - `FROZEN.tsv` and `FROZEN_OLD_IDS.tsv`, the frozen set;
+  - `rewrite_after_frozen.tsv`, the files the move would change;
+  - `FOLLOWUP.txt`, the legacy and Lean counts;
+  - `README.txt`, which says which file supersedes which;
+- the probe is beside it, in `probe/`;
+- `candidate-ce4780d2/` is the first run, superseded.
 
 The real generator goes into `scripts/` with the rename (§5).
 
@@ -42,8 +48,8 @@ The real generator goes into `scripts/` with the rename (§5).
     and 67 in 33 code files. They include constant_field, the Na/K pump, Kv1.x, Kir2.1, Nav1.2, the leaks and the
     field solver. They cannot be renamed in live code alone (§1.3, question 3).
 - **Frozen files:**
-  - 152 files under `validation/` are frozen by two rules: registration tags, and Freeze and Register commits.
-    71 of them hold old IDs.
+  - 233 files under `validation/` are frozen by two rules: registration tags, and Freeze and Register commits.
+    94 of them hold old IDs.
   - By default a judged run is pinned to its pre-rename snapshot.
   - A live driver that feeds a frozen file to the renamed engine translates it through the committed table, in
     `validation/` only. The engine never accepts an old ID.
@@ -108,9 +114,23 @@ names:
 That is 2,272 occurrences in 102 legacy definitions, and 67 in 33 code files (7 in `src/cells/legacy`, 26 tests and
 drivers that import it).
 
-Legacy compares these IDs partly with its own literals (`spatial_extracellular_spec.MEMBRANE_LAW =
-"constant_field@1"`), and partly through live constants and live parsers (the tissue base, the channel tables).
-Renaming them in live code only would make legacy refuse its own definitions. Question 3 has the options.
+**How legacy reads them:**
+- **with its own literals:** `legacy/core/spatial_extracellular_spec.py:26–27` (`FACE_LAW` and `MEMBRANE_LAW`), and
+  `legacy/assembly_cluster/mobile_channels.py:93` and `mobile_pumps.py:107`, which compare a definition's
+  `kinetic_laws` with `kv1p5_mh@1` and `nak_atp_mass_action_positive@1`;
+- **through live parsers that live models share:**
+  - `definitions/surface_tissue_spec.py` parses legacy's `resolved_tissue@1` and is the base of @1 to @3. Its faces
+    must be `logmean_electrodiffusion@1` (`FACE_LAW_ID`, line 23) and its membranes and junctions `constant_field@1`
+    (lines 224–228). The closure is `surface_field.LAW_ID` and the node bound `NODE_BOUNDS[field_solver]` (lines 143
+    and 159–161);
+  - `definitions/surface_pump_spec.py:31, 189` requires `junction_voltage_relaxation@1` of every gated junction;
+  - `definitions/surface_kinetic_spec.py:449–513` checks each population's `kinetic_law` against the channel tables,
+    for the legacy kinetic families;
+- **through live constants:** six legacy models import the osmotic water operator's ID.
+
+So renaming them in live files alone does not work. A live parser that both families share would then require the new
+spelling, while legacy's definitions keep the old. The probe simulated exactly that, skipping legacy's places, and it
+left 128 files that hold a shared piece's old spelling inside legacy's places. Question 3 has the options.
 
 ### 1.4 Hazards for a token rewriter
 
@@ -122,7 +142,7 @@ Renaming them in live code only would make legacy refuse its own definitions. Qu
 
   `hcn_channels.py`'s f-string builds catalogue IDs that stay frozen. The other hits, about 50 of the 86, are
   `role@end`, `species@phase` and `case@time` labels, not IDs.
-- **Path segments:** 56 tokens sit inside paths, such as `docs/library/cells/laws/kv1p5_mh@1.md`. The page rule moves
+- **Path segments:** 57 tokens sit inside paths, such as `docs/library/cells/laws/kv1p5_mh@1.md`. The page rule moves
   them (§3), and the token rule skips any token after `/`.
 - **Line length:** the rewrite makes about 1,100 lines longer than 100 characters, in about 420 Python files.
   Ruff's E501 is selected, but no gate runs ruff.
@@ -196,7 +216,10 @@ only inside the grammar module (`ids.parts(x).family`), so no field anywhere is 
   family;
 - **refusal is by table lookup.** A value that is an old spelling in the committed table is refused, naming its new
   ID. Any other bare or two-part value in a piece slot that is not on the kept list is refused for its shape. Shape
-  alone cannot decide, since interface and schema IDs keep two parts.
+  alone cannot decide, since interface and schema IDs keep two parts;
+- **plain words stay schema words.** `"solver": "rk4"`, `"euler"` and `"mapping": "lax_map"` have no major and are
+  not IDs. A slot that takes a word or an ID, such as `execution.solver`, checks its words first, so the shape rule
+  never sees them.
 
 **The refusal's wording** (one function, every site):
 
@@ -228,6 +251,9 @@ past decision entry or a Lean claim is read through it (D345). The refusal costs
 | Computed IDs (§1.4) | f-strings, `"cells." +` | hand refactors before the move: H2 (§8) |
 | `cells.modules` (provisional, D195) | exports `qualified` | its docstring states the new contract |
 | `scripts/library_pages.py`, `tests/unit/test_library_pages.py` | the page path | follow `page_path()` |
+| Outside src: `qualified()` in 12 files (31 lines) of `validation/`, `scripts/` and `tests/` | as in src | unchanged |
+| Outside src: `tests/unit/test_cell_owned_compartments.py:1029` derives a plant kind's `model_key` from its ID's second part | `kind_id.split(".")[1]` | H2: the second part becomes the family |
+| Outside src: the `"cells." +` and `f"cells.{...}"` sites in tests | computed IDs | H2 (§1.4). No ID regex exists outside src |
 
 ## 4. The block law (D361)
 
@@ -278,7 +304,9 @@ the host and the declaring module.
 **The collision report** checks:
 - two old keys mapping to one new ID (none);
 - one spelling naming two pieces (none);
-- an old key equal to a legacy ID, an interface or a schema ID (none);
+- an old key equal to a legacy ID or an interface (none);
+- an old key that a schema-named key carries. The only ones are the five kinds, under definitions' `kind` key, which
+  names a kind piece, not a format;
 - the shared pieces of §1.3.
 
 **The rewriter** (`apply`) maps whole tokens, taking the longest match, so `cells.kv1p5_mh@1` is one token. It skips:
@@ -290,25 +318,31 @@ It does no formatting. The over-long lines are listed, not wrapped: a follow-up 
 at the AST level, as D188's refactor commits were. Docstring lines stay as they are.
 
 **Its scope:** tracked Python, JSON, shell and TOML files under `src/`, `tests/`, `validation/`, `scripts/`,
-`examples/` and `configs/`, less the exclusions (§6). That is 812 files and about 4,160 lines today: 168 in src, 259
-in tests, 350 in validation, 23 in configs, 7 in examples and 5 in scripts. Question 3 (a) adds 102 legacy definitions
-and 33 code files.
+`examples/` and `configs/`, less the exclusions (§6). That is 789 files and about 4,000 lines today: 168 in src, 259
+in tests, 327 in validation, 23 in configs, 7 in examples and 5 in scripts (`rewrite_after_frozen.tsv`). Question 3
+(a) adds 102 legacy definitions and 33 code files.
 
 ## 6. Exclusions, and how frozen files keep being read
 
 **Never rewritten:**
 - **Frozen files, by two rules,** recomputed at the morning's tagged base:
-  - **the tag rule.** For each registration-style tag (142 today: registered, registration, judge, references,
-    erratum, amendment, criteria, rule, sheet, predictions, declaration and supplement), take its own non-merge
-    commits: reachable from the tag, but not from main before the merge that brought it in. Every file under
-    `validation/` they changed whose blob on main is still the tag's is frozen. That gives 105 files, 33 of which hold
-    210 old spellings (`TAGGED.txt`);
+  - **the tag rule.** Take each registration-style tag: 142 today, named registered, registration, judge,
+    references, erratum, amendment, criteria, rule, sheet, predictions, declaration or supplement. Find its own
+    non-merge commits:
+    - for a tag on main's first-parent line, its own commit, unless that commit is a merge;
+    - for a merged side branch, those reachable from the tag but not from main before the merge that brought it in.
+      That merge is found by searching main's first-parent line, since git's `--first-parent --ancestry-path` finds
+      no path from a side branch;
+    - for an unmerged branch, those not on main.
+
+    Every file under `validation/` they changed whose blob on main is still the tag's is frozen. That gives 188 files
+    from 40 tags, FR-51's `REGISTRATION.md` and `cases.json` among them;
   - **the commit rule.** Every file under `validation/` whose last change is a commit whose subject begins "Freeze" or
-    "Register" is frozen. There are 28 such commits, from 9 to 22 November, and they include the registered protocols
-    and predictions that predate tags, such as W1's, W2's and G2-Q1's. That gives 48 files, 39 of which hold old
-    spellings;
+    "Register" is frozen. 22 such commits from 9 to 22 November contribute. They include the registered protocols and
+    predictions that predate tags, such as W1's, W2's and G2-Q1's. That gives 48 files;
   - **the keep list.** The dry run reviews the result and adds any frozen file the two rules miss;
-  - together, 152 files, 71 of which hold old spellings: 48 JSON, 18 Python and 5 Markdown;
+  - together, 233 files (3 by both rules). 94 of them hold 1,337 old spellings: 58 JSON, 24 Python and 12 Markdown
+    (`FROZEN.tsv`, `FROZEN_OLD_IDS.tsv`);
   - FR-50's `judge.py`, `REGISTRATION.md`, `JUDGE_ERRATUM_1.md` and `references/` join when FR-50 lands.
 - **`lean/`:** 166 files hold 2,491 old spellings.
 - **The crossrev replication record** and every record under `/mnt/workspaces`, which are outside the tree.
@@ -316,7 +350,7 @@ and 33 code files.
   D188's maps in `scripts/moves/`.
 - **Legacy's own IDs,** wherever they appear (§5, source 3).
 
-**How the 71 frozen files with old spellings are read, by the advisor's test:**
+**How the 94 frozen files with old spellings are read, by the advisor's test:**
 
 | How | Cases |
 | --- | --- |
@@ -333,7 +367,7 @@ tiers show where. Each read site then gains one call to the translator below.
 | --- | --- | --- |
 | (a) pin | every rerun of a registration from before the rename uses a pre-rename snapshot, as judged runs already do (D350) | no code. But a frozen input then cannot be run on the renamed engine at all: not G1's saved definitions, not crossrev's predictions, not the regression tests above |
 | (b) translate at the driver's boundary | one function in `validation/id_table.py` maps old spellings to new through the committed table, recursively over JSON-like data, refusing an ambiguous one. A live driver applies it to a frozen input before parse. If a frozen judge ever compares a string the engine writes with a frozen one, the driver maps the engine's string back (no case today) | one small module and one row. The engine stays strict: the translator sits outside `src/`, reads frozen evidence, and is retired with the last frozen input that needs it |
-| (c) tagged errata | each affected registration re-spells its files under a new tag, as FR-49's judge erratum did for one field | about 30 registrations now, and every later frozen file the same way |
+| (c) tagged errata | each affected registration re-spells its files under a new tag, as FR-49's judge erratum did for one field | about 40 registrations and amendments now (48 tags and commits stand behind the 94 files), and every later frozen file the same way |
 
 **Recommended:**
 - (a) for judged runs;
@@ -387,7 +421,12 @@ The same table feeds the leftover guard (§10).
   - the manifest regenerated, and the library check;
   - tier 3 the next night, since every world's definition changes spelling.
 
-About an hour locked (D346), plus G1. No tier needs re-measuring: no test file is added and none changes cost.
+About an hour locked (D346), plus G1.
+
+**The tier record:**
+- the six files that gain §10's rows raise their passed counts, so they are re-measured or folded
+  (`test_tiers.py fold`), and declared for the IDs step (`ADDITIONS_FROM`);
+- no file is added, and no other row changes cost.
 
 ## 9. The morning, and the branches in flight
 
@@ -458,7 +497,9 @@ only.
      definitions, 33 code files) to the move, and the tiers measure legacy's tests;
    - (b) keep the 18 bare until legacy is deleted, with a second scripted move then. @3's definitions mix spellings
      until that move;
-   - (c) delete legacy first, which reverses D348's order and waits for the multi-day ports.
+   - (c) delete legacy first, which reverses D348's order and waits for the multi-day ports;
+   - (d) rename them in live files only and skip legacy's places. This is ruled out, since the parsers both families
+     share (§1.3) would then refuse legacy's 128 files that keep the old spelling.
 
    **Recommended: (a).** D346 itself says old live IDs are refused, so legacy's uses of live pieces must change. Only
    legacy's own IDs are frozen.
