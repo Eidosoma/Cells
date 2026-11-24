@@ -10679,3 +10679,72 @@ fail stands.**
   7. **The user's D330 decision goes back to them** once G7′, which includes the determinism cost, is measured,
      since its speed premise was about 3×.
 - Block 2's unpinned, nondeterministic results stay on record as found.
+
+## D336: the user's decisions: XC0's t_e stays out of v2, and FR-17's GPU qualification closes as failed, with the field's longest points on CPUs
+
+2026-11-24, about 13:54 UTC. The user agreed with the lead's and the advisor's recommendation on both.
+
+**XC0 rule erratum 2 (D333): `C8.bc_t_e` stays out of v2.**
+- **Why it was raised.** The row passed in D329 under erratum 1's "final", the bare run's value at 64 s. SEMANTICS.md
+  measures t_e "not from a late value of the run", so that pass rests on a definition that conflicts with the
+  references.
+- **Why it stays out.** D332 diagnosed b_final_c only, and D333 limits v2 to D332's findings. The erratum's author has
+  seen the verdict, so adding a passed row would widen the user's decision.
+- **What v2 reruns:** 349 rows. D329's pass on t_e is carried, and the mismatch is recorded in the erratum as a
+  labelled post-verdict observation.
+- **The lead's other rulings before the tag:**
+  - **C7's tolerance:** |F_declared − F_SI|/F_SI plus the row's float64 allowance, evaluated and stated, so the
+    tolerance is exactly as loose as the two constants' disagreement.
+  - **C6:**
+    - the erratum names the law that makes v1_eq_ratio and v1_eq_x independent of B_out: DESIGN.md's equilibrium
+      ratio (B_in/B_out)_eq = (Na_out/Na_in)^n exp(−(n−1)FV/RT);
+    - it derives B_out = 1e-5 mM from the 2^19 fmol bound over the declared scan domain, not from where the roots
+      lie;
+    - a rerun row whose key carries a B_out token would need its references regenerated before the tag.
+  - **An independent cross-check of the C6 bound.** An exact-rational check of the frozen parser (17 controls)
+    finds every refused balanced input at or above 2^20 fmol. Below 2^19 fmol the worst-case budget, 5.6e-21 C, is
+    under the native 1e-20 C.
+  - **The judge's source check** compares at run time with D329's recorded snapshot manifest, with no source hash as
+    a literal. The six digests in the erratum are of D329's evidence files.
+- **Disclosure:** the lead has seen D329's numbers on these rows (D332).
+- **The tag** waits on the revised head and on the base rerun's CPU-hours. A new independent agent runs it.
+
+**FR-17's GPU qualification (D330, D335) closes as failed.**
+- **Block 3′a** ran from snapshot bc438c6c on the L4, with the host thread on CPU 4 and its sibling 20 idle under
+  the timed lock, and `--xla_gpu_deterministic_ops=true` set.
+  - **G1 passes.** Host and device modes are identical by bytes in all 8 windows, so the flag removes block 2's
+    scatter nondeterminism.
+  - **G2 fails as declared.**
+    - In window 1 (steps 0–32) the device read "total" at 0.715 and handed the window back; the host read 0.202.
+    - The spread, 0.514, is above the amended bound (0.291) and the cap (0.4). In windows 2–8 it is at most 0.016.
+    - The device erred high, so the window went to the host and safety held. The criterion still fails, and D335
+      bars amending it after the data.
+  - **G7 with the flag,** ms per step: device mode 21.8 (16.9 unflagged), host mode 34.0 (29.6). That is about 1.5×
+    the CPU's device mode (32.0), against the about 3× that D326 and D330 assumed.
+  - **G6** is recorded when it lands. G4 was not run, and blocks 3′b, 4′ and 5′ are cancelled.
+- **Consequences:**
+  - **GPU device mode is not qualified.** The field's longest points run on CPUs, as amendment 1 places them. A
+    tagged amendment 2 says so before any field point.
+  - **The admission code.** If main admits GPU device mode, a plain refusal lands, with no XLA_FLAGS check, which
+    nothing qualified could reach. If main already refuses it, only the driver and the criteria record land.
+  - **A new GPU attempt would be a fresh registration** and the user's decision: for example, compensated summation
+    in the device check, or the GH200.
+- **Corrections to D335:**
+  - **The D = 0 line.** The 8.6e-8 was measured against the increments' and gross ledgers' own scale. Against the
+    amounts, the CPU and the L4 differ by at most 2.1e-16, one ulp. A one-ulp change of the start on the CPU alone
+    gives the same picture, with no growth over 32 s.
+  - **The pinned autotune file plays no part under the flag.** The flag disables timing-based autotuning: the
+    flagged dumps hold no results.
+  - **Two items D335 ordered did not run:**
+    - the unflagged repeat, because the admit tripwire refused device mode;
+    - the Newton iteration counts, because the hypothesis is excluded by construction: the reaction operator is
+      explicit (SSPRK(3,3)), and the field arrays were identical between the devices.
+
+    The scatter diagnosis rests on one shared executable, together with the flag contrast.
+- **A finding for any device.** At steps 0–1 the bound is the bare atol, and the host itself reads 0.20–0.28 of it
+  on 625 cells. Whether that fraction grows with cell count is being estimated. If it does, a larger tissue could
+  refuse window 1 on rounding alone.
+
+**FR-47's judged run and its checker's driver use the landed engine,** main at ec7e8c7d (the merge of 43763a36),
+from a frozen snapshot. The registration was tagged before the build, so it names no engine revision. The fix for
+inert wall places, in progress, is not in the judged engine.

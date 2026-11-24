@@ -6,15 +6,15 @@ Browse Cells engine laws by scientific topic. Each claim links its Lean proofs, 
 
 <!-- generated: claims-index -->
 
-Direct Lean claims cover [55 of 55 laws](COVERAGE.md#registered-laws) and [34 of 34 operators](COVERAGE.md#registered-operators).
+Direct Lean claims cover [55 of 55 laws](COVERAGE.md#registered-laws) and [35 of 35 operators](COVERAGE.md#registered-operators).
 
 | Category | Registered laws with proof | Claims with proof | Numerical checks | Claims with biological evidence |
 | --- | ---: | ---: | --- | ---: |
 | [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 6 of 6 | 11 of 11 | 11 checked | 10 |
 | [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 15 of 15 | 15 of 15 | 15 checked | 14 |
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 9 of 9 | 8 checked · 1 open | 9 |
-| [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 17 of 17 | 16 checked · 1 failed | 13 |
-| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 16 of 16 | 42 of 42 | 40 checked · 1 failed · 1 open | 27 |
+| [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 18 of 18 | 16 checked · 1 failed · 1 open | 13 |
+| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 16 of 16 | 46 of 46 | 44 checked · 1 failed · 1 open | 28 |
 | [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 2 of 2 | 28 of 28 | 28 checked | 21 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
 
@@ -70,7 +70,7 @@ A serial dilution experiment follows free fluorescein through three successive e
 
 For partial pool withdrawal, one passive splitter collected a mean of 45.0% of each droplet’s beads in a nominal one-third branch. Another retained 28.2% of beads at a mean liquid fraction of about 27.2%. A test of count variance still needs particle counts and liquid volume measured on the same split. [Count proof and measurements](claims/pool-withdrawal.md) · [Paired-data search and heat proof](PROGRESS.md#fr35-withdrawal-energy) · [Biological disagreements for Cells](PROGRESS.md#nov21-biological-disagreements)
 
-For finite-pool washes, tracer measurements distinguish what leaves the exterior, what survives inside a vesicle, and what can later enter another membrane. [Washout and redistribution measurements](claims/pool-replacement.md#biological-evidence)
+For finite-pool washes, tracer measurements distinguish what leaves the exterior, what survives inside a vesicle, and what can later enter another membrane. The deterministic shell also reproduces the predicted free-energy drop during refill. A direct experimental measurement of that drop remains open. [Washout and redistribution measurements](claims/pool-replacement.md#biological-evidence) · [Post-wash tracer counts](claims/fr47-shell-wash-recovery.md) · [Interval heat and experimental scope](PROGRESS.md#fr47-shell-interval-heat)
 
 For a wash of a solid surface, the first saved step can already include tracer released from the wall. An albumin experiment measured both rinse liquid and the final surface residue. The time course of release in that preparation remains open. [Wall retention and measured albumin recovery](claims/wall-wash-retention.md)
 
