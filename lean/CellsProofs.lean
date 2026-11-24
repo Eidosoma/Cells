@@ -33,6 +33,7 @@ import CellsProofs.Chemistry.ReleaseEnergy
 import CellsProofs.Chemistry.PopulationUnits
 import CellsProofs.Chemistry.PrescribedShell
 import CellsProofs.Chemistry.ShellEquilibrium
+import CellsProofs.Chemistry.ShellIntervalHeat
 import CellsProofs.Chemistry.ShellLigandFaces
 import CellsProofs.Chemistry.ShellWashRecovery
 import CellsProofs.Chemistry.ReservoirExchange
