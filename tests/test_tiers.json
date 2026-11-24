@@ -378,7 +378,8 @@
   "/mnt/workspaces/Cells/fr46-48-build-20261123/measure-d19b10c2/measured.json",
   "/mnt/workspaces/Cells/fr43-20261123/part2/tiers/run-2b/measured.json",
   "/mnt/workspaces/Cells/wash-export-refusal-20261123/tiers-51bb58d5/measured.json",
-  "/mnt/workspaces/Cells/fr49-expression-labels-20261123/tiers-a9ea8915/measured.json"
+  "/mnt/workspaces/Cells/fr49-expression-labels-20261123/tiers-a9ea8915/measured.json",
+  "/mnt/workspaces/Cells/fr17-sparse-20261123/tiers-044f07e6/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -3229,6 +3230,14 @@
    "root": "/mnt/workspaces/Cells/fr49-expression-labels-20261123/snap2-a9ea8915",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-23T23:47:50+00:00"
+  },
+  {
+   "git_revision": "044f07e632b39b5fa316e35d5fef81f7ed3ec12a",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr17-sparse-20261123/snap-head-044f07e6",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-24T00:04:24+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -4359,10 +4368,10 @@
    },
    {
     "file": "tests/unit/test_field_solver_composite.py",
-    "seconds": 8.04,
+    "seconds": 10.5,
     "exit_code": 0,
     "counts": {
-     "passed": 33
+     "passed": 34
     }
    },
    {
@@ -5835,7 +5844,7 @@
    },
    {
     "file": "tests/unit/test_pump_composite_adapter.py",
-    "seconds": 6.89,
+    "seconds": 5.98,
     "exit_code": 0,
     "counts": {
      "passed": 5
@@ -6059,7 +6068,7 @@
    },
    {
     "file": "tests/unit/test_secreted_species.py",
-    "seconds": 5.18,
+    "seconds": 5.43,
     "exit_code": 0,
     "counts": {
      "passed": 20
@@ -7486,10 +7495,10 @@
    },
    {
     "file": "tests/unit/test_field_solver_composite_runs.py",
-    "seconds": 57.13,
+    "seconds": 55.49,
     "exit_code": 0,
     "counts": {
-     "passed": 3
+     "passed": 5
     }
    },
    {
@@ -8230,6 +8239,14 @@
     }
    },
    {
+    "file": "tests/unit/test_sparse_cholesky.py",
+    "seconds": 30.72,
+    "exit_code": 0,
+    "counts": {
+     "passed": 38
+    }
+   },
+   {
     "file": "tests/unit/test_species_cap_runs.py",
     "seconds": 40.53,
     "exit_code": 0,
@@ -8439,10 +8456,10 @@
    },
    {
     "file": "tests/unit/test_surface_pump_v3_definitions.py",
-    "seconds": 33.16,
+    "seconds": 28.47,
     "exit_code": 0,
     "counts": {
-     "passed": 19
+     "passed": 21
     }
    },
    {
@@ -9047,7 +9064,7 @@
    },
    {
     "file": "tests/unit/test_field_floor.py",
-    "seconds": 90.18,
+    "seconds": 90.11,
     "exit_code": null,
     "counts": {}
    },

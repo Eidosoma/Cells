@@ -33,8 +33,16 @@ Parts and their programs:
 The reactions parts were added for the Hill factors' one-branch, declared-slots rewrite in
 route_rates (23 November 2026).
 
+FR-17 stage 1 (docs/FIELD_SOLVER_INTERFACE_DESIGN.md §8.5) compares two field solvers in one
+revision: dump --field-solver ID declares ID in every definition that declares version 2 or 3 of
+the resolved pump family's field solver, or the sparse one (cohorts world by world), so two dumps
+of one snapshot differ only in that field. compare reports each physical difference's largest
+magnitude beside its count, so agreement within a tolerance can be read where the two are not
+bitwise.
+
 Usage:
   python inplace_fix_guard.py dump PART[,PART...] --output DIR [--worlds NAME,...]
+                                                  [--field-solver ID]
   python inplace_fix_guard.py compare BEFORE AFTER --output FILE
 """
 
@@ -364,7 +372,27 @@ def _cohort(name, raws, out):
     return record
 
 
-def dump(parts, out, names=None):
+FAMILY_FIELD_SOLVERS = (
+    "capacitive_reduction_gauged_damped_newton@2",
+    "capacitive_reduction_gauged_damped_newton@3",
+    "sparse_capacitive_reduction_gauged_damped_newton@1",  # The GJ field's (neither.py).
+)
+
+
+def declared(made, solver):
+    """made (a definition, or a cohort's list of them) declaring field solver `solver` where it
+    declares one of FAMILY_FIELD_SOLVERS; unchanged for solver None."""
+    if solver is None:
+        return made
+    if isinstance(made, list):
+        return [declared(raw, solver) for raw in made]
+    out = copy.deepcopy(made)
+    if out.get("execution", {}).get("field_solver") in FAMILY_FIELD_SOLVERS:
+        out["execution"]["field_solver"] = solver
+    return out
+
+
+def dump(parts, out, names=None, field_solver=None):
     import jax
 
     jax.config.update("jax_enable_x64", True)
@@ -379,15 +407,16 @@ def dump(parts, out, names=None):
             if (out / f"{name}.json").exists():
                 continue  # Resumable.
             try:
+                made = declared(make(), field_solver)
                 if program in ("scalar", "scalar-recorded"):
                     record = _scalar(
-                        name, make(), out, device=device, recorded=program == "scalar-recorded"
+                        name, made, out, device=device, recorded=program == "scalar-recorded"
                     )
                 elif program == "windowed":
-                    record = _windowed(name, make(), out)
+                    record = _windowed(name, made, out)
                 else:
-                    record = _cohort(name, make(), out)
-                record.update(world=name, part=part)
+                    record = _cohort(name, made, out)
+                record.update(world=name, part=part, field_solver=field_solver)
                 (out / f"{name}.json").write_text(
                     json.dumps(record, indent=1, default=float) + "\n"
                 )
@@ -461,14 +490,20 @@ def compare(before, after):
                     same |= np.isnan(u) & np.isnan(v)
                 where = np.argwhere(~same)
                 index = [int(i) for i in where[0]] if len(where) else []
-                physical.append(
-                    dict(
-                        array=key,
-                        kind="value" if len(where) else "bits (signed zero or NaN payload)",
-                        index=index,
-                        differing=int(len(where)),
-                    )
+                entry = dict(
+                    array=key,
+                    kind="value" if len(where) else "bits (signed zero or NaN payload)",
+                    index=index,
+                    differing=int(len(where)),
                 )
+                if u.dtype.kind == "f":  # The largest difference, against the largest value.
+                    d = np.abs(u - v)
+                    entry.update(
+                        max_abs_difference=float(np.nanmax(d, initial=0.0)),
+                        max_abs_value=float(np.nanmax(np.abs(np.r_[u.ravel(), v.ravel()]),
+                                                      initial=0.0)),  # fmt: skip
+                    )
+                physical.append(entry)
         diagnostics = {"ledger": {}, "physical": {}}
         da, db = a.get("diagnostics", {}), b.get("diagnostics", {})
         flat_a = _flatten(da)
@@ -515,13 +550,14 @@ def main(argv=None):
     parser.add_argument("args", nargs="+")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--worlds", type=lambda s: s.split(","), default=None)
+    parser.add_argument("--field-solver", default=None)
     args = parser.parse_args(argv)
     if args.action == "dump":
         parts = args.args[0].split(",")
         unknown = [p for p in parts if p not in PARTS]
         if unknown:
             raise SystemExit(f"unknown parts {unknown}; parts are {sorted(PARTS)}")
-        dump(parts, args.output, args.worlds)
+        dump(parts, args.output, args.worlds, args.field_solver)
         return
     report = compare(*args.args)
     worlds = [r for r in report.values() if r.get("physical_identical") is not None]

@@ -10538,3 +10538,84 @@ fail stands.**
   - **C6:** state B_out and the domain, and keep B_in within float64's charge resolution.
   - **The engine, separately:** the parse check's absolute 1e-20 C tolerance could scale with float64 resolution.
 - **What follows is the user's decision.**
+
+## D333: the user's decision on XC0: a v2 for the diagnosed rows, and a separate engine fix
+
+2026-11-24, about 12:36 UTC, following D332.
+- **D329's fail stays on record.**
+- **XC0 v2 is registered as rule erratum 2,** disclosed as not blind on these rows. It changes only what D332 found:
+  - **C7:** declare the SI constants the engine uses, or the deviation, with no band tighter than the two sides'
+    constants agree.
+  - **C8b:** define "final" once, and settle whether the bare node is compared.
+  - **C6:** state B_out and the reading's domain, keep every B_in within float64's charge resolution, and count the
+    points a parse drops in a scan's refusal.
+  - Only those families are rerun, on the same frozen engine (260d7c7f), by an independent runner, with code-blind
+    references regenerated where a declared constant changes.
+- **The engine fix, separately:** surface_tissue.check_definition's absolute 1e-20 C tolerance on the charge anchor
+  scales with float64's resolution of the terms.
+  - It is a definition-time check, so no program changes.
+  - It is a gated src change, after FR-17 lands, since FR-17 also edits that file.
+
+## D334: FR-30's next benchmark keeps the symmetric law; FR-38's second comparison is registered with arms A and B deciding
+
+2026-11-24, about 12:45 UTC. The user's decisions on the two drafts, with the advisor's review applied:
+/mnt/workspaces/Cells/fr30-next-20261124/ (POLARITY.md, REGISTRATION_DRAFT_13_7.md) and
+/mnt/workspaces/Cells/fr38-next-20261124/REGISTRATION_DRAFT.md.
+- **FR-30, superseding D320's "polarity-aware gate" line:**
+  - **The law.** The Ek-Vitorin 2016 benchmark fits junction_series_gates@1 as declared, with one parameter block.
+    - Identical hemichannels whose gates read only V_j are symmetric by construction, so a polarity-aware gate cannot
+      change a homotypic prediction.
+    - Independent sources indicate near-symmetry for homotypic Cx43, each one study's indication. Revilla's one-cell
+      protocol ties the sign of V_j to one cell's V_m.
+  - **@2** (placement and polarity per gate) is logged as a design note under FR-16 F3, for heterotypic junctions
+    only. A correction: what the gap-junction replication needs is F3's two-state Cx45 gate in Chen-Izu's manner. No
+    heterotypic junction is documented in it.
+  - **The one-cell protocol** (the user's ruling, made mechanical before Tag A):
+    - the extractor records the protocol type as an enumerated, value-free field, including what "not stated" maps
+      to;
+    - under a one-cell protocol, disjoint +-V_j windows are reported per observable as confounded by V_m, neither
+      pass nor fail. Overlapping observables are still judged;
+    - a minimum judged set is stated, below which the result is undetermined;
+    - the justification is non-identifiability, not a claim that V_m gating is real.
+  - **The rest, as recommended, with provisos:**
+    - a separate predictor;
+    - a fresh fitter, barred from D311, D320, POLARITY.md and Revilla's extraction;
+    - Part S only as a separately named steady-state result, with FR-30's own verdict staying undetermined;
+    - SD converted only where the paper states what n counts;
+    - generic modules, with the harness authored by the polarity check's author, who never fits, predicts or checks;
+    - withheld cross-voltage summaries;
+    - POLARITY.md committed without its two accidental quotes, naming fallbacks 7 and 9 as exposed and each source
+      at its strength.
+  - **What a pass licenses** is stated in section 13.7: one study's agreement. D262's status changes only by the
+    user's decision.
+  - **No fallback is opened** and nothing is downloaded for this decision.
+  - **BITSEY's GJ_lib.py** names Jose Ek Vitorin as an expert colleague, a person, not the sealed paper. There is no
+    exposure (the lead checked, by name only).
+  - **Before Tag A:**
+    - finish the exposure sweep;
+    - rehearse Tag A's whole chain on Revilla's spent files in the new layout, reproducing section 13.5's
+      conventions and D320's six lines.
+- **FR-38's second registered comparison:**
+  - **Scope:** arms A and B decide FR-38's verdict, and arms C and D (FR-43's shared pools and swelling cells) carry
+    separate verdicts reported beside it.
+  - **Changes to the draft's recommendations:**
+    - in arm A, the stage complexes are reported, not judged, the designer's fallback. The first comparison went
+      inconclusive on a stage complex's order;
+    - the references are written afresh, since the net-rate blank lived in the old ones;
+    - the near world's synthetic potentials are accepted, as a numerical-discrimination world with no biology
+      claimed (D306's precedent). The registration states in advance what a miss there means, since its potentials
+      lie outside section 3.3's range.
+  - **The rest, as recommended:**
+    - D271's order window, with the larger-pair estimate;
+    - fresh worlds only;
+    - a new judge, blind to the first comparison;
+    - a pass recorded beside D313's failure, never in place of it;
+    - the sheet's erratum I tagged before the rule;
+    - export, producer identity, routed p and the observation layer left to later registrations;
+    - no optional engine counters now;
+    - A1's swelling-cell gap logged, not built.
+  - **A correction to D316's reading:** R2's inconclusive verdict came from C_tx_3's observed order (3.94, then 3.69
+    and 3.67 against the 3.5 cap), as D313's verdict records. It did not come from gross against net, which explains
+    R1's failure.
+  - Its judge uses FR-47's agreement.py, which reaches main with FR-47. Its 8-12 CPU-hours queue behind Protocol D's
+    re-registration and FR-47's ensemble.

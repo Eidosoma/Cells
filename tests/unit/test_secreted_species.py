@@ -520,3 +520,14 @@ def test_a_batch_refuses_worlds_with_different_route_structures():
     batch(a, c)
     with pytest.raises(ConfigError, match="matching model array axes"):
         batch(a, b)
+    # The sparse field (FR-17 stage 1) binds the faces' patterns: one face topology per batch,
+    # refused by name; version 2 admits the same pair as before.
+    d = copy.deepcopy(c)
+    face = d["model"]["faces"][0]
+    face["sender"], face["receiver"] = face["receiver"], face["sender"]
+    batch(a, d)
+    sparse = "sparse_capacitive_reduction_gauged_damped_newton@1"
+    for world in (a, d):
+        world["execution"]["field_solver"] = sparse
+    with pytest.raises(ConfigError, match="requires one face topology"):
+        batch(a, d)
