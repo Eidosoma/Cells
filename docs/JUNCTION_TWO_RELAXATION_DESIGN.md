@@ -1504,6 +1504,37 @@ Each step expected to run for 10 minutes or more runs detached, with durable log
   their tests). Their tags keep them, and the generic modules reproduce them (part 8). Retiring them
   is a later cleanup.
 
+#### Part 12. Amendment 1 (24 November 2026, the lead, D341): the paper's Supporting Material is added as a source, before anyone opens it
+
+**Why.** E's extraction of the filed PDF found the benchmark undetermined by structure, for that PDF alone. E
+reported it without values.
+- Fig. 2B shows one illustrative record pair, at a single magnitude, with the paper's own fits.
+- Fig. 2C's points cannot be expressed in the layout (E9, K3).
+
+The lead ruled no new rule for summarizing points. E sealed its folder and released no value.
+
+**The new source.** The user filed the paper's Supporting Material on 24 November 2026, at
+`/mnt/datasets/Cells/papers/incoming/ek-vitorin-2016/supporting-material/`, read-only, with a MANIFEST:
+
+| File | sha256 | What its PDF metadata says |
+| --- | --- | --- |
+| `mmc1.pdf` | d36e596474bebf59ce8ea7e0800576fad8c4349bdf27c2e80cfee40097616757 | 6 pages, the Supporting Material |
+| `mmc2.pdf` | 3ace545d130705f05fe68fbd0e28bea778cb0729fa6c26aacd842e591e9ad6ad | 20 pages, the article with its Supporting Material |
+
+Nobody has opened either file. The lead identified them by their PDF metadata alone.
+
+**What changes:**
+- The same extractor, E, opens these two files under this section's rules, unchanged: E1–E12, the split rule, the
+  layout, the check and the seal.
+- E reads them for the Cx43WT arm's macroscopic decays and steady state at per-voltage resolution.
+- **If they give what §13.7 needs,** E extracts from the paper and its Supporting Material together, as one source:
+  per-voltage τ_fast and τ_slow at two or more magnitudes, at both polarities or pooled. Anything they repeat from the
+  article is taken once, from the Supporting Material's per-voltage form where both give it.
+- **If not,** the benchmark stays undetermined by structure, now for the paper with its Supporting Material.
+
+**What does not change:** every criterion; Part S; the layout; who may read what; and the bar on any rule for
+summarizing plotted points. The fitter, the predictor and the checker start only after a seal under this amendment.
+
 ## Sources
 
 - **Read:**
