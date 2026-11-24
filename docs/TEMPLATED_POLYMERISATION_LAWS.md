@@ -1919,3 +1919,63 @@ with it for the lead's choice at the tag.*
    - **(b), as tagged:** one transfer of the net J_E with c's shares. It is exact only where
      e^(x_E) ≪ 1. A driven export far inside its domain meets that, but the domain's own bound,
      x_E ≤ X_DOM = −1, admits e^(x_E) up to e^(−1).
+
+### 9.22 Erratum I: membership classes, and the excess over a blank
+
+*24 November 2026, the user's decision on FR-38's second registered comparison (D334). Docs only,
+tagged before that comparison's rule. It names the quantities that the first comparison read under
+one name (D313, D316), so that the engine side, the references and the judge read one definition.*
+
+1. **A fate's loss has two one-way parts** (§9.2). For fate row f, with amount n_f and declared
+   first-order rate k_f:
+   - the **forward (gross) loss** is J⁺_f = k_f n_f, so every molecule present leaves at the
+     per-molecule rate k_f;
+   - the **re-synthesis** is J⁻_f = k_f n_f e^(y_f), which makes new molecules from monomers;
+   - the booked net loss is J_f = J⁺_f − J⁻_f = k_f n_f (1 − e^(y_f)).
+2. **Membership.** Each molecule in a fate row belongs to exactly one class, fixed by how and when
+   it entered the row. It leaves its class only by a forward move, at the per-molecule rate k_f.
+
+   | Class | Its members | Its law |
+   | --- | --- | --- |
+   | Pre-existing, P_f | present at t = 0 | dP_f/dt = −k_f P_f |
+   | Re-synthesised, B_f | entered by re-synthesis, at any time | dB_f/dt = J⁻_f − k_f B_f |
+   | Released in an interval I, C_f(I) | released from the hold during I | dC_f/dt = Q_f 1_I(t) − k_f C_f, with C_f = 0 before I opens |
+
+   - Q_f is §9.2's release into f.
+   - An interval is closed on the left and open on the right. A release joins the interval in force
+     at the start of its step (§9.12, reading 7; erratum F).
+   - For any partition of [0, t] into intervals, the classes sum to the row:
+     n_f = P_f + B_f + Σ_I C_f(I).
+   - Only the re-synthesised class's inflow reads e^(y_f). Every other class is independent of the
+     monomer pool, the volume and re-synthesis.
+3. **FR-38's cohort** (§9.8, erratum F) is the class released in the window, C_f(W).
+   - Route 1 reads it from FR-42's shares on the chain's own schedule.
+   - Route 2 integrates it from the release counter at the declared k_f.
+   - Both are the gross reading.
+   - **The released molecules still present** are S_f = Σ_I C_f(I) over every interval since
+     t = 0, also gross.
+4. **The excess over a matched blank, X_f = n_f − n_f^blank, is a pool difference, not a class.**
+   - X_f = S_f + (B_f − B_f^blank), since the pre-existing classes are equal in both runs. So X_f
+     carries re-synthesis and the coupling through the monomer pool. At an idle fate, S_f is
+     exactly zero, while X_f in general is not.
+   - X_f is named the excess over the blank (`excess_over_blank`), never "the survivors" or "the
+     released molecules still present".
+   - This corrects §9.10's "quantity compared" (erratum A, R-F2) and §9.12's reading 4, which named
+     the row minus the blank "the released molecules still present". The two agree only where
+     e^(y_f) ≪ 1 and the coupling through M is negligible.
+5. **The matched blank** of a world whose chain initiates is the same world with H(0) = 0 and the
+   chain's k_I = 0, so that nothing completes and nothing is released. Every other declaration is
+   equal. Where k_I = 0 already, this is §9.12's reading 3.
+6. **The net tracker** dC̃_f/dt = Q_f 1_W − k_f (1 − e^(y_f)) C̃_f follows no set of molecules.
+   - It is not FR-38's cohort.
+   - It is what a separately rowed class minus its blank gives (the first comparison's references'
+     `route1_blank`), and what a tracker at the booked net per-molecule rate gives.
+   - It may be published only to size a planted error.
+7. **Structural zeros.** An idle route (p = 0 or 1, §9.2) releases nothing, so every class it would
+   feed is exactly zero, as are its counter and its heat. A pool difference at an idle fate is not
+   one of these zeros.
+8. **Unchanged:**
+   - release-marking (the request's answer to question (e));
+   - the step-start rule;
+   - erratum C's split;
+   - erratum F's definition of the cohort and route 2's gross loss.
