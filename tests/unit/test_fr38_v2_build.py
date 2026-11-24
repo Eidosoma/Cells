@@ -125,11 +125,19 @@ def test_a_twin_is_its_labelled_run_without_the_label_owner():
 
 
 def test_the_table_builds_from_records_alone(tmp_path):
+    """Amendment 4's §8 contract, on fabricated records: every run at every rung, route 2,
+    survival and the excess; the restart in a run entry's form with its checkpoint; the
+    world-data plants only (the judge forms P1, P1′, P1″ and P6), P9's naming its V0 patch."""
     summary = campaign.table_check(tmp_path)
-    expect = {"AF": ["P2", "P5", "P6", "P7"], "AN": ["P1′", "P3a", "P3b", "P4 AN"], "B": ["P4 B"],
+    expect = {"AF": ["P2", "P5", "P7"], "AN": ["P3a", "P3b", "P4 AN"], "B": ["P4 B"],
               "C": ["P8", "P8 blank"], "D": ["P9"]}  # fmt: skip
     for family, plants in expect.items():
         s = summary[family]
         assert s["rungs"] == ["0.5", "1.0", "2.0"] and not s["missing"], (family, s)
         assert (s["route2"], s["survival"], s["plants"]) == (6, 4, plants), (family, s)
         assert s["excess"] == (family != "B") and s["restart"] == (family == "AN"), (family, s)
+        patches = {name: "V0" if name == "P9" else None for name in plants}
+        assert s["host_patches"] == patches, (family, s)
+    assert summary["AN"]["restart_form"] == ["blank", "checkpoint", "excess_over_blank", "route2",
+                                             "survival"]  # fmt: skip
+    assert summary["AN"]["twin_has_survival"] is False

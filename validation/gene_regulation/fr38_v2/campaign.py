@@ -21,9 +21,9 @@ join.
 P9 runs D's p_sched returned with templated_polymerisation@1's half-step patched in this process
 only to drop the reader view the composite passes, so the gene unit reads the declared volume V0
 for every concentration and booking while water reads the current one (FR-43's V0 plant form,
-validation/tissue/shared_inventory_references.planted_c28). The table adds the host-side and
-record plants: P1′ (route 2 by the net-rate form, cohort.survivors) and P6 (G_minus_G0 without
-the hold's standard term).
+validation/tissue/shared_inventory_references.planted_c28). Its definition is its honest run's, so
+its record names the patch (`host_patch`, HOST_PATCHES; amendment 4, §8.4). The judge forms P1,
+P1′, P1″ and P6 itself from the honest records (amendment 4, item 5), so the table carries none.
 
 **The table** (`table`): one file per family, from the records alone:
 - per rung, each run's series under READOUTS.md §1's names, its definition, checks, ledgers and
@@ -36,7 +36,10 @@ the hold's standard term).
     the same machine option; elsewhere the blank);
   - route 1's survival readout (cohort.label_survival on the `win` class), its ratio None at a
     zero count;
-- the restart's and the plants' records.
+- the restart and the plants, each in a run entry's form, the restart's with its checkpoint and
+  each plant's with `judged_as` and `host_patch`.
+
+This is the engine export contract that amendment 4, §8 registers.
 
 SHA256SUMS lists each table file's sha256, written with the tables.
 
@@ -63,7 +66,6 @@ import sys
 import time
 import traceback
 from datetime import UTC, datetime
-from decimal import Decimal, localcontext
 from pathlib import Path
 
 import numpy as np
@@ -71,7 +73,6 @@ import numpy as np
 from cells.definitions.specs import parse_spec
 from cells.execution.windows import WindowPolicy, iter_windows
 from validation.gene_regulation import cohort, engine_run
-from validation.gene_regulation import sheet_check as sheet
 from validation.gene_regulation.fr38_v2 import worlds
 
 WINDOW_STEPS = 2400  # 1200 s at h: the restart's join, 7200 s, ends a window
@@ -81,6 +82,25 @@ TABLE = "cells.fr38_v2.engine_table@1"
 FATES = {"durable": "R", "short_lived": "R_s"}
 RELEASED = ("pre", "win", "post")
 V0_PLANT = "P9"
+# The host-side patch a plant runs under (CRITERIA.md §6). P9's definition is its honest run's, so
+# its record names the patch (amendment 4, §8.4); a world-data plant's is null.
+HOST_PATCHES = {
+    V0_PLANT: dict(
+        id="V0",
+        operator="templated_polymerisation@1",
+        change=("the gene unit's half-step drops the reader view the composite passes, so it reads "
+                "the declared volume V0 = 1.0 pL for every concentration and booking, while water "
+                "reads the current volume (FR-43's V0 plant form, keeping the half-step's labels)"),
+        code="validation.gene_regulation.fr38_v2.campaign.v0_patch",
+    ),
+}  # fmt: skip
+
+
+def plant_identity(name):
+    """A plant's record identity: its family, honest run, judged_as and host_patch."""
+    family, run, judged_as, _ = worlds.PLANTS[name]
+    return dict(family=family, run=run, plant=name, judged_as=judged_as,
+                host_patch=HOST_PATCHES.get(name))  # fmt: skip
 
 
 def slug(text):
@@ -302,6 +322,8 @@ def host_side(record, window, samples, blank=None):
     t1, t2 = window
     out = {"series": {}, "route2": [], "survival": []}
     labelled = all(f"label_{row}_win" in x for row in FATES.values())
+    if not labelled:  # survival is a labelled run's (amendment 4, §8.3)
+        del out["survival"]
     for fate, row in FATES.items():
         if labelled:
             parts = [x[f"label_{row}_{c}"] for c in RELEASED]
@@ -357,35 +379,19 @@ def _refusal(record, path):
                 record=str(path))  # fmt: skip
 
 
-def g_without_hold(record):
-    """P6 (CRITERIA.md §6, a record plant): G_minus_G0 with the hold's standard term, RT
-    mu°_res L (H - H(0)), taken out, in 60-digit decimal arithmetic as engine_run's G."""
-    block = next(o for o in record["definition"]["model"]["operators"]
-                 if o["law"] == "templated_polymerisation@1")  # fmt: skip
-    chain = next(c for c in block["chains"] if c.get("release"))
-    mu = next(s["standard_mu_RT"] for s in block["species"] if s["id"] == chain["product"])
-    x = record["readouts"]
-    hold = x[f"H_{chain['release']['id']}"]
-    with localcontext() as ctx:
-        ctx.prec = engine_run.DIGITS
-        rt = sheet.R_GAS * sheet.T_K / 1000
-        res = Decimal(repr(mu / chain["residues"])) * chain["residues"]
-        return [float(Decimal(repr(g)) - rt * res * (Decimal(repr(h)) - Decimal(repr(hold[0]))))
-                for g, h in zip(x["G_minus_G0"], hold, strict=True)]  # fmt: skip
+def _usable(record):
+    return record if record is not None and not record.get("refused") else None
 
 
-def net_rate_route2(record, window, samples):
-    """P1′ (CRITERIA.md §6, a host-side plant): route 2 by the net-rate form (LAWS.md §6;
-    cohort.survivors on the fate row's own n, release counter and net loss), with its grid error."""
-    t, x = record["t"], record["readouts"]
-    t1, t2 = window
-    out = []
-    for fate, row in FATES.items():
-        n, Q, D = x[f"n_{row}"], x[f"int_Q_tx_release_{fate}"], x[f"int_D_{row}"]
-        for ts in samples:
-            out.append(dict(fate=fate, ts_s=ts, value=cohort.survivors(t, n, Q, D, t1, t2, ts)[1],
-                            grid_error=cohort.grid_error(t, n, Q, D, t1, t2, ts)))  # fmt: skip
-    return out
+def _run_entry(record, path, family, blank_name, blank):
+    """A run's entry (amendment 4, §8.3): its record's keys, READOUTS.md §2's host-side quantities
+    and its matched blank's name; or its refusal."""
+    if record.get("refused"):
+        return _refusal(record, path)
+    entry = _entry(record, path)
+    extra = host_side(record, _window(family), _samples(family), _usable(blank))
+    entry["readouts"] = {**entry["readouts"], **extra.pop("series")}
+    return entry | extra | {"blank": blank_name}
 
 
 def _load(path):
@@ -408,35 +414,30 @@ def build_table(out, family, rungs=worlds.RUNGS):
             records[run] = (record, path)
         rung = dict(dt_s=dt, runs={})
         for run, (record, path) in records.items():
-            if record.get("refused"):
-                rung["runs"][run] = _refusal(record, path)
-                continue
             blank_name = _blank_of(family, run)
             blank = records.get(blank_name, (None,))[0] if blank_name else None
-            if blank is not None and blank.get("refused"):
-                blank = None
-            entry = _entry(record, path)
-            extra = host_side(record, _window(family), _samples(family), blank)
-            entry["readouts"] = {**entry["readouts"], **extra.pop("series")}
-            entry.update(extra, blank=blank_name)
-            rung["runs"][run] = entry
+            rung["runs"][run] = _run_entry(record, path, family, blank_name, blank)
         table["rungs"][repr(dt)] = rung
     family_r, run_r, _ = worlds.RESTART
-    if family == family_r and rungs == worlds.RUNGS:
+    if family == family_r and rungs == worlds.RUNGS:  # The same form, with its checkpoint (§8.4).
         path = record_path(out, family=family, run=run_r, restart=True)
         record = _load(path)
+        blank_name = _blank_of(family, run_r)
+        blank = _load(record_path(out, family=family, run=blank_name, dt=worlds.H))
         if record is None:
             table["restart"] = None
-        elif record.get("refused"):
-            table["restart"] = _refusal(record, path)
         else:
-            table["restart"] = _entry(record, path) | {"checkpoint": record.get("checkpoint")}
+            table["restart"] = _run_entry(record, path, family, blank_name, blank)
+            if not record.get("refused"):
+                table["restart"]["checkpoint"] = record.get("checkpoint")
     table["plants"] = plants_table(out, family) if rungs == worlds.RUNGS else {}
     return table
 
 
 def plants_table(out, family):
-    """The plants whose records or host-side forms belong to `family` (module docstring)."""
+    """The world-data plants of `family`, each in a run entry's form with `judged_as` and
+    `host_patch` (amendment 4, §8.4); null where the record is missing. P8's excess is its own
+    planted blank's (amendment 1, item 4)."""
     found = {}
     for name, (fam, _run, judged_as, _) in worlds.PLANTS.items():
         if fam != family:
@@ -445,28 +446,11 @@ def plants_table(out, family):
         record = _load(path)
         if record is None:
             found[name] = None
-        elif record.get("refused"):
-            found[name] = _refusal(record, path) | {"judged_as": judged_as}
-        else:
-            blank = None
-            if name == "P8":  # P8's excess is its own planted blank's (amendment 1, item 4).
-                blank = _load(record_path(out, plant="P8 blank"))
-            entry = _entry(record, path)
-            usable = blank if blank and not blank.get("refused") else None
-            extra = host_side(record, _window(family), _samples(family), usable)
-            entry["readouts"] = {**entry["readouts"], **extra.pop("series")}
-            found[name] = entry | extra | {"judged_as": judged_as}
-    h = record_path(out, family=family, run="p_sched returned", dt=worlds.H)
-    honest = {r: _load(record_path(out, family=family, run=r, dt=worlds.H))
-              for r in worlds.LABELLED[family]}  # fmt: skip
-    if family == "AN":
-        found["P1′"] = {r: (None if rec is None or rec.get("refused")
-                            else net_rate_route2(rec, _window(family), _samples(family)))
-                        for r, rec in honest.items()}  # fmt: skip
-    if family == "AF":
-        record = _load(h)
-        found["P6"] = {"p_sched returned": None if record is None or record.get("refused")
-                       else {"G_minus_G0": g_without_hold(record)}}  # fmt: skip
+            continue
+        blank_name = "P8 blank" if name == "P8" else None
+        blank = _load(record_path(out, plant=blank_name)) if blank_name else None
+        found[name] = _run_entry(record, path, family, blank_name, blank) | {
+            "judged_as": judged_as, "host_patch": record.get("host_patch")}  # fmt: skip
     return found
 
 
@@ -497,18 +481,24 @@ def _fabricated(raw, **identity):
 
     x = {f"n_{row}": [1.0 + 0.1 * s / horizon for s in t]
          for row in ("N", "M", "Pi", "R", "R_s", "Mx")}  # fmt: skip
+    labelled = any(o["law"] == worlds.LABELS for o in raw["model"]["operators"])
     for fate, row in FATES.items():
         x[f"int_Q_tx_release_{fate}"] = grow(1e-3)
         x[f"int_D_{row}"] = grow(2e-3)
         shares = {"resyn": 0.1, "pool0": 0.6, "pre": 0.1, "win": 0.1, "post": 0.1}
-        for c, share in shares.items():
+        for c, share in shares.items() if labelled else ():  # A twin's record has no labels.
             x[f"label_{row}_{c}"] = [share * n for n in x[f"n_{row}"]]
     x["H_tx_release"] = [1e-3] * len(t)
     x["G_minus_G0"] = grow(-1.0)
     checks = dict(G_identity_largest_pJ=0.0, energy_magnitude_at_end_pJ=1.0, exported_cell="cell_0")
-    return dict(kind=RECORD, **identity, cell="cell_0", dt_s=raw["execution"]["dt"],
-                steps=int(round(horizon / raw["execution"]["dt"])), wall_s=0.0, t=t, readouts=x,
-                checks=checks, own_ledgers_at_end={}, definition=raw, refused=False)  # fmt: skip
+    record = dict(kind=RECORD, **identity, cell="cell_0", dt_s=raw["execution"]["dt"],
+                  steps=int(round(horizon / raw["execution"]["dt"])), wall_s=0.0, t=t,
+                  readouts=x, checks=checks, own_ledgers_at_end={}, definition=raw,
+                  refused=False)  # fmt: skip
+    if identity.get("restart"):  # As restart_record's: the checkpoint's identity.
+        record["checkpoint"] = dict(time_s=worlds.RESTART[2], step_index=None, event_index=None,
+                                    through="fabricated")  # fmt: skip
+    return record
 
 
 def table_check(out):
@@ -518,19 +508,11 @@ def table_check(out):
     out = Path(out)
     for job in plan():
         if "plant" in job:
-            family, run, judged_as, _ = worlds.PLANTS[job["plant"]]
-            raw, identity = (
-                worlds.plant(job["plant"]),
-                dict(plant=job["plant"], judged_as=judged_as),
-            )
+            raw, identity = worlds.plant(job["plant"]), plant_identity(job["plant"])
         else:
-            family, run = job["family"], job["run"]
-            raw, identity = (
-                worlds.world(family, run, dt=job["dt"]),
-                dict(restart=job.get("restart")),
-            )
-        _write(job_path(out, job), _fabricated(raw, family=family, run=run, **identity),
-               {"fabricated": True})  # fmt: skip
+            raw = worlds.world(job["family"], job["run"], dt=job["dt"])
+            identity = dict(family=job["family"], run=job["run"], restart=job.get("restart"))
+        _write(job_path(out, job), _fabricated(raw, **identity), {"fabricated": True})
     folder = table(out)
     summary = {}
     for family in ("AF", "AN", "B", "C", "D"):
@@ -538,11 +520,19 @@ def table_check(out):
         rungs = built["rungs"]
         runs = {name for rung in rungs.values() for name in rung["runs"]}
         host = next(iter(rungs.values()))["runs"][worlds.LABELLED[family][0]]
+        restart = built.get("restart")
         summary[family] = dict(
             rungs=sorted(rungs), runs=len(runs), missing=built["missing"],
             route2=len(host["route2"]), survival=len(host["survival"]),
             excess="excess_over_blank" in host, plants=sorted(built["plants"]),
-            restart="restart" in built)  # fmt: skip
+            restart="restart" in built,
+            restart_form=None if restart is None else sorted(
+                k for k in ("route2", "survival", "excess_over_blank", "checkpoint", "blank")
+                if k in restart),
+            twin_has_survival=any("survival" in rung["runs"][n] for rung in rungs.values()
+                                  for n in rung["runs"] if n.endswith(worlds.UNLABELLED)),
+            host_patches={k: (v or {}).get("host_patch") and v["host_patch"]["id"]
+                          for k, v in built["plants"].items()})  # fmt: skip
         if built["missing"] or len(runs) != len(worlds.runs(family)):
             raise ValueError(f"{family}'s table misses runs: {built['missing']}")
     return summary
@@ -592,29 +582,24 @@ def main(argv=None):
     try:
         if args.parse_only:  # The command line's own check: the world parsed, nothing compiled.
             if args.command == "restart":
-                raw, identity = worlds.world(family, run, dt=worlds.H), dict(restart=True)
+                raw = worlds.world(family, run, dt=worlds.H)
+                identity = dict(family=family, run=run, restart=True)
             elif args.plant:
-                family, run, judged_as, _ = worlds.PLANTS[args.plant]
-                raw, identity = (
-                    worlds.plant(args.plant),
-                    dict(plant=args.plant, judged_as=judged_as),
-                )
+                raw, identity = worlds.plant(args.plant), plant_identity(args.plant)
             else:
-                family, run = args.family, args.run
-                raw, identity = worlds.world(family, run, dt=args.dt), {}
+                raw = worlds.world(args.family, args.run, dt=args.dt)
+                identity = dict(family=args.family, run=args.run)
             worlds._parse(raw)
-            record = dict(kind=RECORD, family=family, run=run, **identity, parsed_only=True,
-                          refused=False, dt_s=raw["execution"]["dt"], definition=raw)  # fmt: skip
+            record = dict(kind=RECORD, **identity, parsed_only=True, refused=False,
+                          dt_s=raw["execution"]["dt"], definition=raw)  # fmt: skip
         elif args.command == "restart":
             raw = worlds.world(family, run, dt=worlds.H)
             record = restart_record(raw, join, path.parent / "snapshot-files", family=family,
                                     run=run, restart=True)  # fmt: skip
         elif args.plant:
-            family, run, judged_as, _ = worlds.PLANTS[args.plant]
             raw = worlds.plant(args.plant)
-            identity = dict(family=family, run=run, plant=args.plant, judged_as=judged_as)
             with v0_patch() if args.plant == V0_PLANT else contextlib.nullcontext():
-                record = one(raw, **identity)
+                record = one(raw, **plant_identity(args.plant))
         else:
             raw = worlds.world(args.family, args.run, dt=args.dt)
             record = one(raw, family=args.family, run=args.run)

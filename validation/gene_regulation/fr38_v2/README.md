@@ -12,7 +12,7 @@ judge and the checker are other agents, with their own code.
 | File | What it does |
 | --- | --- |
 | `worlds.py` | The engine's worlds from SPEC.md: AF, AN, C and D (`hold`) and B (`b`), each run's labelled form and unlabelled twin, the blanks, and the plants' world data (`PLANTS`). `check()` parses every registered definition with its initial values; nothing is compiled or run |
-| `campaign.py` | The engine side's runs: one process per run, cold, from the registration's snapshot; the restart through snapshot files; P9's V0 patch; the launcher; and the table, which holds READOUTS.md §2's host-side quantities, the plants and the restart, built from the records alone and hashed |
+| `campaign.py` | The engine side's runs: one process per run, cold, from the registration's snapshot; the restart through snapshot files; P9's V0 patch; the launcher (with a parse-only mode); and the table, which holds READOUTS.md §2's host-side quantities, the world-data plants and the restart, built from the records alone and hashed |
 | `smoke.py` | The end-to-end smoke on the references' invented inputs (no registered world). Its reading of the invented file is its own private helper |
 | `../engine_run.py` | The exports, with family C's n_Mx and H_store, family D's V, H_water and W_bath, and G over their rows (current V in D, K and Y included) |
 | `../release_check.py` | The net agreement of route 2's survival counts with the net reading, scoped to where e^(y_f) is small enough for its allowance (`net_scope`) |
@@ -40,13 +40,13 @@ judge and the checker are other agents, with their own code.
   - the gross is (pre + win) + post;
   - route 2 is cohort.known_rate at the definition's k_f, with cohort.known_rate_error as g(ts);
   - the excess is the run's n minus its blank's at the same step;
-  - route 1's survival is cohort.label_survival on the win class;
-  - P1′'s planted route 2 is cohort.survivors, the net-rate form;
-  - P6's planted G is G_minus_G0 less RT mu°_res L (H - H(0)).
+  - route 1's survival is cohort.label_survival on the win class.
+- **The judge's own plants.** P1, P1′, P1″ and P6 are formed by the judge from the honest records
+  (amendment 4, item 5), so the table carries none of them.
 
 ## The engine's table (campaign.py `table`)
 
-One JSON file per family, `table/table_<family>.json` (`table-retry/` for the retry), with their
+Amendment 4, §8 registers this layout as the engine export contract. One JSON file per family, `table/table_<family>.json` (`table-retry/` for the retry), with their
 sha256 in `table/SHA256SUMS`, built from the run records alone:
 - `kind` (`cells.fr38_v2.engine_table@1`), `family`, `window_s`, `samples_s` and `missing` (the
   records not found).
@@ -65,10 +65,14 @@ sha256 in `table/SHA256SUMS`, built from the run records alone:
     matched blank's name;
   - `checks` (engine_run's), `own_ledgers_at_end`, `steps`, `dt_s`, `definition`, `source`, and
     `record` with its `record_sha256`.
-- `restart` (AN): the resumed run's record in the same form, with the checkpoint's identity.
-- `plants`: each world-data plant's record in the same form, with `judged_as`. Also P1′ (in AN:
-  per labelled run, route 2 by the net-rate form, each entry's `value` and `grid_error`) and P6
-  (in AF: the p_sched returned run's `G_minus_G0` without the hold's standard term).
+- `restart` (AN): the resumed run's entry in a run entry's form (its host-side quantities and
+  `blank` included), with `checkpoint`, the checkpoint's identity (`time_s`, `step_index`,
+  `event_index`, `through`).
+- `plants`: each world-data plant's entry in a run entry's form, at h (its `dt_s` is 0.5), with
+  `judged_as`, the honest run it is judged against, and `host_patch`. `host_patch` is null except
+  for P9, whose definition is its honest run's: there it names the V0 patch (`id` "V0",
+  `operator`, `change` and `code`). A missing plant record is null. P8's `excess_over_blank` is its
+  own planted blank's (`blank` "P8 blank").
 
 ## Notes
 
