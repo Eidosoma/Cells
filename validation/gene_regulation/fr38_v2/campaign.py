@@ -423,8 +423,12 @@ def build_table(out, family, rungs=worlds.RUNGS):
     if family == family_r and rungs == worlds.RUNGS:
         path = record_path(out, family=family, run=run_r, restart=True)
         record = _load(path)
-        table["restart"] = (None if record is None else _refusal(record, path)
-                            if record.get("refused") else _entry(record, path))  # fmt: skip
+        if record is None:
+            table["restart"] = None
+        elif record.get("refused"):
+            table["restart"] = _refusal(record, path)
+        else:
+            table["restart"] = _entry(record, path) | {"checkpoint": record.get("checkpoint")}
     table["plants"] = plants_table(out, family) if rungs == worlds.RUNGS else {}
     return table
 

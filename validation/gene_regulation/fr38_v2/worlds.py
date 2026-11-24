@@ -47,7 +47,7 @@ without the owner.
 **The plants' world data** (CRITERIA.md §6), at h only, each in its own process: P2 (AF p=1 at
 1 - 2^-30), P3a and P3b (the window's edges half a second late), P4 (the label at completion, in
 AN and in B), P5 (k_s x (1 + 1e-4)), P7 (AF's p_sched held declared returned) and P8 (the store's
-forward rate x 1.01, with its own matched blank). P9 is a host-side patch (fr38_v2/plants.py).
+forward rate x 1.01, with its own matched blank). P9 is a host-side patch (campaign.v0_patch).
 
 `check()` parses every registered definition and builds its model's initial values, without
 compiling or running any world (the protocol's §5: the builder runs no registered world before
@@ -415,7 +415,7 @@ PLANTS = {
     "P7": ("AF", "p_sched returned", "p_sched held", {}),
     "P8": ("C", "p_sched returned", "p_sched returned", {"store_factor": 1.01}),
     "P8 blank": ("C", "blank returned", "blank", {"store_factor": 1.01}),
-    "P9": ("D", "p_sched returned", "p_sched returned", {}),  # fr38_v2/plants.py's V0 patch
+    "P9": ("D", "p_sched returned", "p_sched returned", {}),  # campaign.v0_patch: V0, host side
 }
 
 

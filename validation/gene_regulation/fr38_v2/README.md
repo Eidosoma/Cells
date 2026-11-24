@@ -44,6 +44,32 @@ judge and the checker are other agents, with their own code.
   - P1′'s planted route 2 is cohort.survivors, the net-rate form;
   - P6's planted G is G_minus_G0 less RT mu°_res L (H - H(0)).
 
+## The engine's table (campaign.py `table`)
+
+One JSON file per family, `table/table_<family>.json` (`table-retry/` for the retry), with their
+sha256 in `table/SHA256SUMS`, built from the run records alone:
+- `kind` (`cells.fr38_v2.engine_table@1`), `family`, `window_s`, `samples_s` and `missing` (the
+  records not found).
+- `rungs`, keyed by the step's `repr` (`"2.0"`, `"1.0"`, `"0.5"`). Each holds `dt_s` and `runs`,
+  keyed by the engine's run names (README above). A run is either a refusal (`refused`,
+  `refusal`, `definition`) or:
+  - `t`, its output times;
+  - `readouts`: READOUTS.md §1's series by name, with `released_present_gross_<fate>` added in
+    labelled runs, and engine_run's other exports (`H_route_*`, `int_D_route_*`, `H_total`,
+    `H_routes_sum`, `n_tx_release_*`, `label_H_*`), which READOUTS.md §4 leaves uncompared;
+  - `route2`: per fate and sample time, `value` (cohort.known_rate at `k_per_s`) and
+    `grid_error`;
+  - `survival` (labelled runs): per fate and later sample time, `alive_t2`, `alive_ts` and
+    `ratio`, null at a zero count;
+  - `excess_over_blank` (runs with a blank): per fate, one value per output, with `blank`, the
+    matched blank's name;
+  - `checks` (engine_run's), `own_ledgers_at_end`, `steps`, `dt_s`, `definition`, `source`, and
+    `record` with its `record_sha256`.
+- `restart` (AN): the resumed run's record in the same form, with the checkpoint's identity.
+- `plants`: each world-data plant's record in the same form, with `judged_as`. Also P1′ (in AN:
+  per labelled run, route 2 by the net-rate form, each entry's `value` and `grid_error`) and P6
+  (in AF: the p_sched returned run's `G_minus_G0` without the hold's standard term).
+
 ## Notes
 
 - 24 November 2026: a reader and mapping were written by the builder under the lead's mistaken
