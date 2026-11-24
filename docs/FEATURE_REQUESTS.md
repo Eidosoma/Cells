@@ -62,7 +62,7 @@ and a general feature, never one built for one study (D144).
 | [FR-54](#fr-54--passive-neutral-diffusion-between-two-finite-liquid-regions-qualified-against-the-exact-two-well-solution-then-a-wash-at-a-diffusion-connected-node) | Passive neutral diffusion between two finite liquid regions, qualified against the exact two-well solution; then a wash at a diffusion-connected node | **High** (logged by the user, 24 November 2026; D341) | **Logged:** a wash at a diffusion-connected node stays refused (D246) until measured | A design note: closed-form, code-blind references; a stopped run reports its residual and tolerance; then the wash's qualification |
 | [FR-55](#fr-55--an-input-dependent-closing-rate-for-regulated-availability) | An input-dependent closing rate for regulated availability (dose-dependent deactivation) | **High** (logged by the user, 24 November 2026; D344) | **Logged:** one fixed closing rate; two groups' SK2 records contradict carrying it across doses | A design note, then qualification against both groups' records |
 | [FR-56](#fr-56--a-temperature-dependent-molecular-footprint) | A temperature-dependent molecular footprint with a declared, sourced expansion coefficient | Normal (logged by the user, 24 November 2026; D344) | **Logged:** a fixed footprint per species; two methods confirm POPC's expansion on warming | A design note |
-| [FR-57](#fr-57--passive-tracer-carried-by-a-prescribed-liquid-flow-between-finite-liquid-regions) | Passive tracer carried by a prescribed liquid flow between finite liquid regions | To be set by the user (logged 24 November 2026) | **Logged:** a wash's sample goes to a record; no operator carries one region's liquid into another | A design note with FR-54's: one mechanism, rows only a flow passes |
+| [FR-57](#fr-57--passive-tracer-carried-by-a-prescribed-liquid-flow-between-finite-liquid-regions) | Passive tracer carried by a prescribed liquid flow between finite liquid regions | **High** (logged by the user, 24 November 2026) | **Logged:** a wash's sample goes to a record; no operator carries one region's liquid into another | A design note with FR-54's: one mechanism, rows only a flow passes |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -2400,7 +2400,7 @@ statically absent unless declared.
 
 ## FR-57 — Passive tracer carried by a prescribed liquid flow between finite liquid regions
 
-**Logged 24 November 2026 by the user.** Priority: to be set by the user.
+**Logged 24 November 2026 by the user, priority high.**
 
 **Why.** This follows FR-37. Today a wash (`scheduled_compartment_wash@1`) exchanges a node's liquid with a declared
 buffer, and its sample goes to a record (D246). No operator carries one finite region's liquid into another, so a
