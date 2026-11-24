@@ -12333,3 +12333,37 @@ amendment 2 amended it, names both, and it governs the narrower per-world table 
 
 **FR-66 is logged** (medium, the user): a passive fluorescence reader over FR-33's regional amount exports, with several
 masks over one accepted trajectory.
+
+## D373: FR-47's independent check passes, and its schedule supplement passes separately; FR-47's development-only status is lifted
+
+2026-11-24, about 22:50 UTC. The checker is fresh: not FR-47's builder, its protocol's author or its references agent. It
+ran under the tag `fr47-shell-exchange-registered-2026-11-24`, with the supplement and its erratum 1 at their tags.
+
+**The frozen scorer's verdict: pass.**
+- **The worlds:** all six pass (W1, W1Δ, and W2 at N_g 64, 256, 1,024 and 4,096). None was inconclusive, so no retry
+  ran. No pair fell in the band; the largest |z| was 3.67.
+- **The plants:** all nine are caught. Each predicted size the references gave is matched: for example P3 at 2.90e4
+  bounds, P8 at 191.6 fail bands and P9 at 428.7.
+- **The first read and regeneration:** the judge's first read of both invented files passed before any engine run.
+  The references regenerate bitwise under two other hash seeds.
+- **The books:** every ledger closes in 768 exact replicas and 6 (d) runs.
+- **The snapshot:** f8c6c326, clean. Every tagged FR-47 file in it is byte-identical to its tag.
+- **The record:** `/mnt/workspaces/Cells/fr47-checker-20261124/judgement/verdict.json`.
+
+**The schedule supplement passes,** a separate result, never merged into the verdict.
+- **The controls,** run before any saved run was read: the honest invented record passes, and cases A, B and C fail
+  as designed.
+- **The schedule:** every exact replica and (d) run records exactly the scheduled stops, in count, order, kind and
+  time, with a clock bound of 0 s derived from the code beforehand.
+- **The heats:** every scheduled withdrawal carries a finite heat. Every (d) run's intervals have the scheduled
+  edges.
+
+**So FR-47's development-only status is lifted** (D339: both must pass).
+
+**The checker's disclosures:**
+- **The plants** are scoped patches in its own driver, with its readings of P1, P3, P5, P6 and P7 stated.
+- **Supplementary variants:** for P1 and P7, CRITERIA names only C1 and C2. Variants with the refusing check made a
+  no-op exercised those criteria, and were kept out of the plant verdicts.
+- **Two driver faults** (v1) were fixed and rerun (v2), with the v1 folders kept as evidence.
+- **Cost:** about 1.06 CPU-hours, against the estimate of about 3.
+- **Cleanup:** its two worktrees are pruned.

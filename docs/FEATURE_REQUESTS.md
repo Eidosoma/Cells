@@ -2145,6 +2145,8 @@ So large-count vesicle worlds with a shell and washes can run only as exact even
 
 **Status (24 November, later):** a reviewer found that the frozen scorer does not check the washes against the registered schedule. The frozen scorer stays official, and a separate schedule supplement is registered before any judged run (`validation/assembly_lineages_v2/FR47_SCHEDULE_SUPPLEMENT.md`, D339). FR-47 stays development-only unless both pass. A fix for inert wall places, which no rate or geometry reads, is in its gate.
 
+**Status (24 November, late; D373):** the independent check passes, under the frozen scorer, and the schedule supplement passes separately. FR-47's development-only status is lifted.
+
 ## FR-48 — A lumen standard potential: a reversible free-energy difference across a prescribed shell
 
 **Logged 23 November 2026 by the user, priority high** (raised the same day, with FR-46 and FR-47).
