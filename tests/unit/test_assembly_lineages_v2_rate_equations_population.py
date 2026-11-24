@@ -279,3 +279,32 @@ def test_a_switching_gate_in_a_shell_has_its_limit_s_rates_and_its_own_check(mon
     monkeypatch.setattr(rate_equations.Problem, "view", off_extent)
     with pytest.raises(ConfigError, match="does not tend to its exact form"):
         rate_equations.shell_parity(spec, np.random.default_rng(1))
+
+
+@pytest.mark.parametrize("value, retried", [(-1e-4, True), (-1e-6, False)])
+def test_e2_s_rule_below_zero_retries_a_quarter_step(value, retried):
+    """CRITERIA's rule for E2 places below zero: a step result with an E2 place below
+    −10·atol_count (−1e-5 here) is rejected and retried at exactly h/4 (planted: the first
+    step's lumen set to −1e-4); one at −1e-6, within the bound, is accepted, and the next step,
+    which starts below zero, books its heat by closure. The washes row's program, reused: about
+    2 s after it."""
+    spec = parse_spec(shell_definition(shell_world(delta=float(np.log(2.0))), stops=STOPS,
+                                       times=TIMES, horizon=4.0))  # fmt: skip
+    state = rate_equations._Run(spec)
+    shape = state.shape
+    lumen = [p.name for p in spec.model.world.places].index("S@lumen")
+    at = shape.problem.P + shape.places.tolist().index(lumen)  # slot 0's lumen in y
+    honest, sizes = state.prog["step"], []
+
+    def planted(y, h, alive):
+        result = honest(y, h, alive)
+        sizes.append(float(h))
+        return result._replace(y=result.y.at[at].set(value)) if len(sizes) == 1 else result
+
+    state.prog = {**state.prog, "step": planted}
+    state.integrate(0.5)
+    assert state.status is None and state.t == 0.5 and state.below_rejected == int(retried)
+    if retried:
+        assert sizes[1] == sizes[0] / 4.0 and state.zero_starts >= 1
+    else:
+        assert sizes[1] != sizes[0] / 4.0 and state.zero_starts >= 2  # the founder's, then -1e-6
