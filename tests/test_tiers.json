@@ -376,6 +376,7 @@
   "/mnt/workspaces/Cells/fr43-part3-20261123/tiers-312f9581/measured.json",
   "/mnt/workspaces/Cells/fr43-part3-20261123/tiers-fd475b89/measured.json",
   "/mnt/workspaces/Cells/fr46-48-build-20261123/measure-d19b10c2/measured.json",
+  "/mnt/workspaces/Cells/fr43-20261123/part2/tiers/run-2b/measured.json",
   "/mnt/workspaces/Cells/wash-export-refusal-20261123/tiers-51bb58d5/measured.json"
  ],
  "measured_provenance": [
@@ -3205,6 +3206,14 @@
    "utc": "2026-11-23T22:24:57+00:00"
   },
   {
+   "git_revision": "253dce466600108c73c27ec19f5640bb5ce1d64e",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr43-20261123/part2/snap-2b-253dce46",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-23T22:32:05+00:00"
+  },
+  {
    "git_revision": "51bb58d54d2fed43b344d5bd2583f1d86857d8f0",
    "dirty": false,
    "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -4044,7 +4053,7 @@
    },
    {
     "file": "tests/unit/test_composition_matrix.py",
-    "seconds": 5.18,
+    "seconds": 5.13,
     "exit_code": 0,
     "counts": {
      "passed": 6
@@ -6282,7 +6291,7 @@
    },
    {
     "file": "tests/unit/test_species_reactions.py",
-    "seconds": 3.08,
+    "seconds": 4.07,
     "exit_code": 0,
     "counts": {
      "passed": 16
@@ -6306,10 +6315,10 @@
    },
    {
     "file": "tests/unit/test_species_reactions_refusals.py",
-    "seconds": 5.93,
+    "seconds": 6.13,
     "exit_code": 0,
     "counts": {
-     "passed": 87
+     "passed": 88
     }
    },
    {
@@ -9352,6 +9361,18 @@
    {
     "file": "tests/unit/test_secreted_species_runs.py",
     "seconds": 90.13,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_shared_inventory_pair_volume.py",
+    "seconds": 90.09,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_shared_inventory_volume.py",
+    "seconds": 90.07,
     "exit_code": null,
     "counts": {}
    },

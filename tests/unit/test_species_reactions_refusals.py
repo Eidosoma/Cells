@@ -525,19 +525,18 @@ def test_cell_routes_on_replaced_slots_take_the_newcomers_template_multipliers()
         parse_spec(unused)
 
 
-REFUSED = {  # Operator lists with each provider or closer (requirements first) and the reason.
-    "water": (("ideal_osmosis_linear_compliance_water@1",), "reads volume as declared"),
-    "replacement@2": (
-        ("ideal_osmosis_linear_compliance_water@1", "scheduled_cell_replacement@2"),
-        "reads volume as declared",
-    ),
+# Operator lists with each provider or closer (requirements first) and the reason. The volumes are
+# current reads (FR-43 / D315): water is admitted before the network (test_water_...), and the
+# lumens and replacement@2 are refused by name at the definition (check_volume_changers); the
+# lumens' insertions still provide the outside mask and anchors it reads as declared.
+REFUSED = {
     "lumen@1": (
         (
             "membrane_entity_state@1",
             "scheduled_membrane_insertion@1",
             "restricted_cleft_lumen@1",
         ),
-        "reads extracellular_volume as declared",
+        "reads outside_active as declared",
     ),
     "lumen@2": (
         (
@@ -545,7 +544,7 @@ REFUSED = {  # Operator lists with each provider or closer (requirements first) 
             "scheduled_membrane_insertion@2",
             "restricted_cleft_lumen@2",
         ),
-        "reads extracellular_volume as declared",
+        "reads outside_active as declared",
     ),
     "insertion@1": (
         ("membrane_entity_state@1", "scheduled_membrane_insertion@1"),
@@ -599,7 +598,8 @@ def test_the_operators_version_1_composes_with_are_admitted(laws):
         assert not [e for e in errors if LAW in e], (order, errors)
 
 
-def test_a_volume_provider_is_refused_through_the_parser():
+def water_world():
+    """A heredity cell under water, with a D152 source of S (the network after water)."""
     from validation.tissue import pump_water_fixtures as wfx
 
     base = wfx.heredity_cell("H", dt=1e-3, end_time=0.004)
@@ -609,14 +609,46 @@ def test_a_volume_provider_is_refused_through_the_parser():
         water, "S", trace_mM=1e-9, diffusivity_m2_per_s=1e-10, floor_fmol=1e-20
     )
     cell = water["model"]["cells"][0]["id"]
-    raw = rfx.with_reactions(
+    return rfx.with_reactions(
         water,
         [rfx.species("S")],
         [rfx.mass_action("supply", {"cells": [cell]}, {}, {"S": 1}, 1e-6)],
         [("supply", None, [(0.0, 1.0)])],
     )
-    with pytest.raises(ConfigError, match="local_species_reactions@1 reads volume as declared"):
-        parse_spec(raw)
+
+
+def test_water_is_admitted_before_the_network_and_refused_after():
+    """FR-43 / D315: the network reads the volumes current at the split, so water, their changer,
+    is admitted declared before it (its first half precedes the network's), and refused after it
+    rather than giving the network a lagged volume (the composite's order rule, C2)."""
+    water = "ideal_osmosis_linear_compliance_water@1"
+    before = pump_composite.structure_errors(adapter, (OPERATORS[water], OPERATORS[LAW]))
+    assert not [e for e in before if LAW in e], before
+    after = pump_composite.structure_errors(adapter, (OPERATORS[LAW], OPERATORS[water]))
+    assert any(
+        f"reads the view volume at stage split before {water} changes it" in e for e in after
+    )
+    spec = parse_spec(water_world())  # And through the parser.
+    assert [d.law for d in spec.model.operators] == [water, LAW]
+
+
+@pytest.mark.parametrize(
+    "changer",
+    ["scheduled_cell_replacement@2", "restricted_cleft_lumen@1", "restricted_cleft_lumen@2"],
+)
+def test_the_other_volume_changers_are_refused_by_name(changer, monkeypatch):
+    """Water is the one volume changer admitted beside the network (FR-43 / D315); a lumen (its
+    lumen volumes) and replacement@2 (a newcomer's volume into water's state) stay refused."""
+    water = "ideal_osmosis_linear_compliance_water@1"
+
+    def entries(laws):
+        return lambda spec: tuple((OPERATORS[k], None, None) for k in laws)
+
+    monkeypatch.setattr(sr.composite_spec, "entries", entries((water, LAW)))
+    sr.check_volume_changers(None)
+    monkeypatch.setattr(sr.composite_spec, "entries", entries((water, changer, LAW)))
+    with pytest.raises(ConfigError, match=re.escape(f"{changer} changes the volumes it reads")):
+        sr.check_volume_changers(None)
 
 
 # ------------------------------------------------------------------ the batch signature (Q11 (c))
