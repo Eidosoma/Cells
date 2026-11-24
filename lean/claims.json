@@ -4932,7 +4932,7 @@
             "citation": "Abrantes et al. (2026), Mitochondrion 102218",
             "doi": "10.1016/j.mito.2026.102218",
             "locator": "Figure 1E, equation 1 and accompanying Results.",
-            "context": "In intact HeLa cells, compartment-targeted measurements gave mean bulk IMS pH 7.96 and mean cytosolic pH 7.41. The authors inferred +33 ± 11 mV, positive on the IMS side.",
+            "context": "In intact cells from a human cell line, compartment-targeted measurements gave mean bulk IMS pH 7.96 and mean cytosolic pH 7.41. The authors inferred +33 ± 11 mV, positive on the IMS side.",
             "role": "descriptive",
             "uncertainty": "The pH observations have reported SDs of 0.08 (IMS) and 0.17 (cytosol). Converting the gradient to voltage assumes proton equilibrium.",
             "assessment": "The cellular gradient makes the compartment definition consequential. It leaves the voltage of isolated mitochondria in their declared bath and the initial combined charge unmeasured.",
@@ -7236,7 +7236,7 @@
             "citation": "Antanavičiūtė et al. (2018), Fig. 2A–D",
             "doi": "10.3390/medicina54040053",
             "locator": "Original measurements in section 5. Fig. 2A shows the midbody and 2C reports the conductance distribution.",
-            "context": "Dividing HeLa sister pairs with a visible midbody bridge. Conductance was measured across the two daughters.",
+            "context": "Dividing sister-cell pairs from a human cell line with a visible midbody bridge. Conductance was measured across the two daughters.",
             "role": "descriptive",
             "uncertainty": "Fifteen bridges, with a reported mean of 32 ± 6 nS. The authors do not identify the error statistic. Elapsed time in Fig. 2B follows a recording, and bridge age since furrowing was unreported.",
             "assessment": "Conductance ranged from below 1 to 70 nS. This supplies an electrical scale. The study lacks simultaneous repeated radii for testing conductance as a function of aperture.",
@@ -9618,7 +9618,7 @@
             "citation": "Desplantez et al. (2011), Table 3",
             "doi": "10.1007/s00232-011-9352-z",
             "locator": "Results on current deactivation and Table 3, wt-Cx43/wt-Cx43 row",
-            "context": "Homotypic untagged Cx43 in paired HeLa cells, dual whole-cell clamp at 22–25 °C. The fast and slow contributions are fractions of the initial decaying component.",
+            "context": "Homotypic untagged Cx43 in paired cells from a human cell line, dual whole-cell clamp at 22–25 °C. The fast and slow contributions are fractions of the initial decaying component.",
             "role": "descriptive",
             "uncertainty": "Table 3 reports mean ± SEM across seven pairs. The WT fast time-constant comparison in their Fig. 5 and Table 2 reuses their 2004 series. The authors describe slow time constants as difficult to estimate.",
             "assessment": "At 110 mV the untagged pairs gave initial fast and slow fractions of 80.0 ± 3.8% and 20.0 ± 3.8%. The fitted components share a normalization. There is no separately measured term at the sum of the fast and slow rates.",
@@ -9634,7 +9634,7 @@
               "desplantez2011_cx43_kinetics@1"
             ],
             "outcome": "inconclusive",
-            "independence": "The rat Cx43 oocyte recordings and the HeLa wild-type controls came from independent teams. The 2011 paper identifies reused 2004 fast-rate data. Only the 2011 Table 3 amplitudes enter here.",
+            "independence": "The rat Cx43 oocyte recordings and the wild-type controls in a human cell line came from independent teams. The 2011 paper identifies reused 2004 fast-rate data. Only the 2011 Table 3 amplitudes enter here.",
             "comparison": "At −100 mV the oocyte fast-to-slow fitted amplitude ratio was 3. At 110 mV the independent wild-type series reported 80 ± 3.8% fast and 20 ± 3.8% slow (SEM, seven pairs). Both fit two decays. Neither reports a third amplitude at the summed rate in the same trace, so the product identity remains untested."
           }
         ]

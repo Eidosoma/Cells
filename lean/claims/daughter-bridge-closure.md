@@ -55,7 +55,7 @@ The held-out diameter at 15 min was about 1.6 µm. The first two readings predic
 
 ### antanaviciute2018_bridge_conductance@1
 
-Dividing HeLa sister pairs with a visible midbody bridge. Conductance was measured across the two daughters. Original measurements in section 5. Fig. 2A shows the midbody and 2C reports the conductance distribution. [Antanavičiūtė et al. (2018), Fig. 2A–D](https://doi.org/10.3390/medicina54040053)
+Dividing sister-cell pairs from a human cell line with a visible midbody bridge. Conductance was measured across the two daughters. Original measurements in section 5. Fig. 2A shows the midbody and 2C reports the conductance distribution. [Antanavičiūtė et al. (2018), Fig. 2A–D](https://doi.org/10.3390/medicina54040053)
 
 - **Evidence role** descriptive
 
