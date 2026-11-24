@@ -1,5 +1,5 @@
 {
- "INVENTED": "INVENTED INPUTS. This file is the writer's format sample for the judge, written on invented volumes, constants, counts and times. It is not a reference for any registered world and none of its numbers belongs to FR-45. It carries every section and every criterion's pairs, so some (C2b against this world's own root, C7, C8 on every set) are there for their format only.",
+ "INVENTED": "INVENTED INPUTS. This file is the writer's format sample for the judge, written on invented volumes, constants, counts and times. It is not a reference for any registered world and none of its numbers belongs to FR-45. It carries every section and every criterion's pairs, so some (C2b against this world's own root, C7, C8 on every set) are there for their format only. A refusal world (W5) differs: its equilibrium and distance_at_horizon are null and its trajectory, balances' and heats' lists are empty.",
  "schema": "fr45-reference/1",
  "invented": true,
  "world": {
@@ -4815,12 +4815,13 @@
    "plant": "P1",
    "criterion": "C1",
    "compared": {
-    "observable": "R:lattice",
+    "observable": "n:Q4@pod",
     "time_s": 0.5
    },
-   "honest": 0.0018271034783440335,
-   "planted": 0.0011296797110449776,
-   "distance_in_bounds": 174999.33733518329
+   "honest": 0.000246112976766153,
+   "planted": 0.00017799348275799858,
+   "distance_in_bounds": 85463.57946189212,
+   "assumption": "ranked over the free and bound amounts only: the plant gives each population S_s - B_b as its free sites and does not say what the set's R_s does"
   },
   {
    "plant": "P2",
@@ -4881,7 +4882,8 @@
    "honest": 0.0014934009444021643,
    "planted": 0.0011200507083016231,
    "distance_in_bounds": 1721774063801430.0,
-   "bound_used": "ulps of the honest value (bit for bit)"
+   "bound_used": "ulps of the honest value (bit for bit)",
+   "assumption": "the planted map scales every B_b facing the washed node by (1 - f) and leaves R_s unchanged"
   },
   {
    "plant": "P5",
@@ -4892,7 +4894,8 @@
    },
    "honest": 0.000749080860076077,
    "planted": 0.0006595943360648916,
-   "distance_in_bounds": 1414349521898.6433
+   "distance_in_bounds": 1414349521898.6433,
+   "assumption": "the planted map scales every B_b facing the washed node by (1 - f) and leaves R_s unchanged"
   },
   {
    "plant": "P7",
