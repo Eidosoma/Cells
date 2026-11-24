@@ -18,7 +18,7 @@ Direct Lean claims cover [55 of 55 laws](COVERAGE.md#registered-laws) and [35 of
 | [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 2 of 2 | 29 of 29 | 28 checked · 1 failed | 22 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
 
-[Paired wet-lab evidence](WET_LAB_EVIDENCE.md) covers 46 comparisons across 34 claims. In 25 comparisons, two independent studies support the stated assumption.
+[Paired wet-lab evidence](WET_LAB_EVIDENCE.md) covers 53 comparisons across 37 claims. In 29 comparisons, two independent studies support the stated assumption. [Cells replay results](WET_LAB_EVIDENCE.md#cells-replay-results) identify 8 comparisons where the tested law misses a replicated observation.
 
 <!-- /generated -->
 
@@ -68,7 +68,7 @@ In a purified *E. coli* experiment, polymerase remained on DNA after RNA release
 
 In a matched Cells control, a donor loses the same amount of labelled protein under transfer and degradation. A receiver gain or a clearance record distinguishes the mechanisms. Imaging of PSD-95 shows label spreading from one spine to two neighbors. The fate of the original label across the whole neuron over 48 hours remains open. Representing a neutral tracer by separate species rows can also change the heat attributed to mixing. [Matched donors](claims/transfer-or-degradation.md) · [Whole-cell balance](claims/regional-pulse-balance.md) · [Neutral label diffusion](claims/neutral-label-diffusion.md) · [Effect on booked heat](claims/label-mixing-power.md)
 
-At 0 mV, the published Kv1.5 activation curves predict 72.1% retained current at pH 6.8 if both preparations share a maximum conductance. A separate pulse in the same study gave 74.5 ± 1.9% (SEM). At +100 mV with the same 10 mM external potassium, acidification had little effect on current. Applying only the measured midpoint shift to the default Cells gate gives 40.5% at 0 mV. Independent recordings support the direction of the voltage shift and the protection by external potassium. [Kv1.5 pH comparison](claims/kv15-ph-activation.md) · [Potassium dependence](WET_LAB_EVIDENCE.md#pair-kv15-potassium-protection)
+At 0 mV, the published Kv1.5 activation curves predict 72.1% retained current at pH 6.8 if both preparations share a maximum conductance. A separate pulse in the same study gave 74.5 ± 1.9% (SEM). At +100 mV with the same 10 mM external potassium, acidification had little effect on current. Applying only the measured midpoint shift to the default Cells gate gives 40.5% at 0 mV. With extracellular free H changed in two independent pulse protocols, the native midpoint shift is zero versus measured shifts of +11.7 and +17.3 mV. A second pair tests why the amount of current lost to acidification depends on external potassium. [Kv1.5 pH comparison](claims/kv15-ph-activation.md) · [In-range potassium and pH replays](WET_LAB_EVIDENCE.md#pair-kv15-acid-potassium-interaction)
 
 For Kv1.5 in HEK293 cells, a density-inhibition curve fitted to the two endpoints predicts a conducting fraction of 0.22 at 300 channels/µm². The same figure gives about 0.23 there, without a pointwise uncertainty. An independent channel count lets a fixed-gate current comparison distinguish changes in availability. [Density comparison](claims/channel-density-availability.md) · [Clamp proof](claims/clamped-channel-current.md)
 

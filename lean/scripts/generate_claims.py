@@ -27,6 +27,14 @@ PAIR_OUTCOMES = {
     "inconclusive": "Comparison unresolved",
     "not_independent": "Independent replication unconfirmed",
 }
+REPLAY_STATUS = {
+    "missed": "Law misses the observation",
+    "reproduced": "Shared observable reproduced",
+    "represented": "Representable with declared inputs",
+    "partial": "Partial replay or missing inputs",
+    "unconfirmed": "Replicated target unresolved",
+    "pending": "Awaiting replay",
+}
 
 
 def unique_keys(pairs):
@@ -249,6 +257,8 @@ def biological_summary(biology, verdict):
 
 def wet_lab_register(claims):
     groups = {outcome: [] for outcome in PAIR_OUTCOMES}
+    replay_counts = Counter()
+    misses = []
     seen = set()
     reviewed_claims = 0
     pending = []
@@ -286,10 +296,24 @@ def wet_lab_register(claims):
             if not all(pair[k].strip() for k in ("assumption", "comparison", "independence")):
                 raise ValueError(f"{pair_id}: missing assumption, measurements or independence")
             sources = " · ".join(publication_link(e) for e in studies)
+            replay = pair.get("replay")
+            state = replay["status"] if replay else "pending"
+            note = replay["assessment"].strip() if replay else "Awaiting an engine comparison."
+            confirmed = outcome in ("both_support", "both_challenge")
+            if state not in REPLAY_STATUS or not note:
+                raise ValueError(f"{pair_id}: invalid Cells replay status or assessment")
+            if (state in ("missed", "reproduced") and not confirmed) or (
+                state == "unconfirmed" and confirmed
+            ):
+                raise ValueError(f"{pair_id}: replay status conflicts with the paired evidence")
+            replay_counts[state] += 1
+            if state == "missed":
+                misses.append(f"- [{pair['assumption']}](#pair-{pair_id})")
             cells = [
                 f'<a id="pair-{pair_id}"></a>{pair["assumption"]} {claim_link}',
                 pair["comparison"],
                 pair["independence"] + " " + sources,
+                f"**{REPLAY_STATUS[state]}.** {note}",
             ]
             cells = [" ".join(c.splitlines()).replace("|", r"\|") for c in cells]
             groups[outcome].append("| " + " | ".join(cells) + " |")
@@ -297,7 +321,9 @@ def wet_lab_register(claims):
     summary = (
         f"[Paired wet-lab evidence](WET_LAB_EVIDENCE.md) covers {len(seen)} comparisons "
         f"across {reviewed_claims} claims. In {len(groups['both_support'])} comparisons, "
-        "two independent studies support the stated assumption."
+        "two independent studies support the stated assumption. "
+        "[Cells replay results](WET_LAB_EVIDENCE.md#cells-replay-results) "
+        f"identify {len(misses)} comparisons where the tested law misses a replicated observation."
     )
     parts = [
         NOTE,
@@ -309,13 +335,22 @@ def wet_lab_register(claims):
         "claim page identifies calibration data and gives the full biological verdict.",
         "| Outcome | Reviewed pairs |\n| --- | ---: |\n"
         + "\n".join(f"| {label} | {len(groups[k])} |" for k, label in PAIR_OUTCOMES.items()),
+        "## Cells replay results",
+        "The last column records what Cells predicts for the observable the studies share. "
+        "A fitted input or a synthetic control establishes representability. A partial replay "
+        "names the missing input or readout. Each claim links its source and numerical checks.",
+        "| Cells result | Pairs |\n| --- | ---: |\n"
+        + "\n".join(f"| {label} | {replay_counts[s]} |" for s, label in REPLAY_STATUS.items()),
     ]
+    if misses:
+        parts += ["### Replicated observations missed by the tested law", "\n".join(misses)]
     for outcome, rows in groups.items():
         if rows:
             parts += [
                 f"## {PAIR_OUTCOMES[outcome]}",
-                "| Assumption and claim | Measurements and scope | Independence and sources |\n"
-                "| --- | --- | --- |\n" + "\n".join(rows),
+                "| Assumption and claim | Measurements and scope | Independence and sources | "
+                "Cells replay |\n"
+                "| --- | --- | --- | --- |\n" + "\n".join(rows),
             ]
     parts += [
         "## Awaiting paired review",

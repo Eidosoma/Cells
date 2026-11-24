@@ -153,11 +153,17 @@ class ClaimDocsTests(unittest.TestCase):
         pair["outcome"] = "not_independent"
         page, _ = wet_lab_register(claims)
         self.assertIn("| Independent replication unconfirmed | 1 |", page)
+        self.assertIn("| Awaiting replay | 1 |", page)
+        pair["replay"] = {"status": "missed", "assessment": "Both calibrated slopes miss."}
+        with self.assertRaisesRegex(ValueError, "conflicts with the paired evidence"):
+            wet_lab_register(claims)
         other["doi"] = "10.1234/different"
         pair["outcome"] = "both_support"
         page, summary = wet_lab_register(claims)
         self.assertIn('<a id="pair-uptake"></a>', page)
         self.assertIn("| Supported by both studies | 1 |", page)
+        self.assertIn("| Law misses the observation | 1 |", page)
+        self.assertIn("[Uptake increases.](#pair-uptake)", page)
         self.assertIn("two independent studies support", summary)
         for datasets in (["a", "a"], ["a", "unknown"]):
             with (

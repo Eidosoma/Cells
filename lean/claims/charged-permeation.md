@@ -46,11 +46,20 @@ Uses [Voltage and free proton concentrations set the leak reversal](proton-leak.
 
 [Tested engine afc28d1d200d](https://github.com/Eidosoma/Cells/commit/afc28d1d200d3f926c831e6216eee8209a763f38) · [Evidence checkpoint bb2a42672ba8](https://github.com/Eidosoma/Cells/commit/bb2a42672ba8e3acd6fdb7055e68b4c3f5c5b8d9)
 
+**Engine** `resolved_pump_tissue@3`, `resolved_pump_composite@1`, `cells.kv1p5_mh@1`, `cells.passive_constant_field_permeation@1`, `cells.inward_rectifier_linear_driving_force@1`
+
+**Operators** `cells.population_unit_turnover@1`, `cells.membrane_entity_state@1`
+
+[Kv1.5 activation and inactivation](https://github.com/Eidosoma/Cells/blob/153449799f4d301a34f2be58172becc4dc562806/src/cells/laws/channels/kv1p5_mh.py#L25) · [Clamped population current](https://github.com/Eidosoma/Cells/blob/153449799f4d301a34f2be58172becc4dc562806/src/cells/models/surface_pump_v3.py#L621) · [Gate advance](https://github.com/Eidosoma/Cells/blob/153449799f4d301a34f2be58172becc4dc562806/src/cells/numerics/exponential_gates.py#L44) · [Constant-field ion flux](https://github.com/Eidosoma/Cells/blob/153449799f4d301a34f2be58172becc4dc562806/src/cells/laws/routes/constant_field_permeation.py#L59) · [Inward rectifier slope](https://github.com/Eidosoma/Cells/blob/153449799f4d301a34f2be58172becc4dc562806/src/cells/laws/routes/inward_rectifier_linear_driving_force.py#L127) · [Native cohort removal](https://github.com/Eidosoma/Cells/blob/153449799f4d301a34f2be58172becc4dc562806/src/cells/operators/population_unit_turnover.py#L958) · [Surface population counts](https://github.com/Eidosoma/Cells/blob/153449799f4d301a34f2be58172becc4dc562806/src/cells/operators/membrane_state.py#L152) · [Two-population fixture](https://github.com/Eidosoma/Cells/blob/153449799f4d301a34f2be58172becc4dc562806/validation/fr7/unit_turnover_fixtures.py#L68) · [Paired measurements and protocols](https://github.com/Eidosoma/Cells/blob/9f27f80116ed324e1adbbef7cddb5671d71f12f7/lean/checks/data/paired_replay_measurements.json) · [Kv1.5 dose and rectifier data](https://github.com/Eidosoma/Cells/blob/9f27f80116ed324e1adbbef7cddb5671d71f12f7/lean/checks/data/paired_calibration_measurements.json) · [Activation curve and step current](https://github.com/Eidosoma/Cells/blob/9f27f80116ed324e1adbbef7cddb5671d71f12f7/lean/checks/data/trapani2003_kv15_ph.json) · [Published receptor component fits](https://github.com/Eidosoma/Cells/blob/9f27f80116ed324e1adbbef7cddb5671d71f12f7/lean/checks/data/membrane_physiology_pairs.json) · [Red-cell chloride measurements](https://github.com/Eidosoma/Cells/blob/9f27f80116ed324e1adbbef7cddb5671d71f12f7/lean/checks/data/freedman1997_chloride.json) · [Planar-bilayer potassium currents](https://github.com/Eidosoma/Cells/blob/9f27f80116ed324e1adbbef7cddb5671d71f12f7/lean/checks/data/pfeffermann2026_potassium.json) · [Prepared clamp and pH rows](https://github.com/Eidosoma/Cells/blob/9f27f80116ed324e1adbbef7cddb5671d71f12f7/lean/checks/kv15_ph.py) · [Permeability calibration](https://github.com/Eidosoma/Cells/blob/9f27f80116ed324e1adbbef7cddb5671d71f12f7/lean/checks/charged_permeation.py) · [Population declaration and binding](https://github.com/Eidosoma/Cells/blob/9f27f80116ed324e1adbbef7cddb5671d71f12f7/lean/checks/population_units.py) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/9f27f80116ed324e1adbbef7cddb5671d71f12f7/lean/checks/paired_law_replays.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/9f27f80116ed324e1adbbef7cddb5671d71f12f7/lean/PROGRESS.md#paired-law-replays)
+
+[Tested engine 153449799f4d](https://github.com/Eidosoma/Cells/commit/153449799f4d301a34f2be58172becc4dc562806) · [Evidence checkpoint 9f27f80116ed](https://github.com/Eidosoma/Cells/commit/9f27f80116ed324e1adbbef7cddb5671d71f12f7)
+
 ## Biological evidence
 
 **Mixed.** Electrical current at a second voltage and reversal at a known ion gradient. These experiments leave microscopic route heat unmeasured.
 
 - [At fixed concentrations in each preparation, one permeability fitted at one voltage suffices to predict current at a second voltage.](../WET_LAB_EVIDENCE.md#pair-single-permeability-current-voltage) · Challenged by both studies
+- [One constant permeability reproduces the wide-voltage I–V shape of valinomycin-mediated potassium transport in two independent planar bilayers.](../WET_LAB_EVIDENCE.md#pair-valinomycin-wide-voltage-shape) · Comparison unresolved
 
 **Unit** mA per g Hb (red cells), nA (bilayer) and mV (reversal)
 
@@ -77,5 +86,15 @@ Planar bilayer under voltage clamp with a 150/15 mM potassium gradient and valin
 The plotted currents are readable to about ±1 nA. The panel gives no pointwise uncertainties or measurement temperature. The reversal is interpolated from the same curve.
 
 The predicted reversal was −59.16 mV against −59.8 mV measured. At −110 mV the same fitted permeability gave −3.84 nA against approximately −13.5 nA measured. [Dataset manifest](../checks/data/pfeffermann2026_potassium.json) · [Comparison verdict](../PROGRESS.md#20-november-2026--charged-constant-field-permeation)
+
+### piasta2011_valinomycin_local@1
+
+Valinomycin added to a single-channel planar bilayer in a 200/10 mM K gradient. Appendix B, Fig. B1, diamond markers after valinomycin addition. Example bilayer and blocked-channel baseline. [Piasta et al. (2011), Appendix B, Fig. B1](https://doi.org/10.1085/jgp.201110684)
+
+- **Evidence role** descriptive
+
+The ±1.3 mV belongs to the channel-minus-carrier reversal difference over four comparisons. Pointwise current uncertainty and ion activities for the plotted curve are unavailable. Use only the narrow window actually covered by the carrier points.
+
+Carrier points straddle the blocked-channel baseline around −71 mV. The paired channel-minus-carrier reversal difference is −0.8 ± 1.3 mV. These data constrain the local crossing. [Dataset manifest](../checks/data/paired_replay_measurements.json) · [Comparison verdict](../PROGRESS.md#paired-law-replays)
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

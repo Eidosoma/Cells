@@ -24,6 +24,94 @@
     "cells.rate_equations@1": "molecular-assembly"
   },
   "comparisons": {
+    "paired-channel-and-cohort-replays": {
+      "kind": "engine",
+      "engine_revision": "153449799f4d301a34f2be58172becc4dc562806",
+      "record_revision": "9f27f80116ed324e1adbbef7cddb5671d71f12f7",
+      "record": "lean/PROGRESS.md#paired-law-replays",
+      "models": [
+        "resolved_pump_tissue@3",
+        "resolved_pump_composite@1"
+      ],
+      "laws": [
+        "cells.kv1p5_mh@1",
+        "cells.passive_constant_field_permeation@1",
+        "cells.inward_rectifier_linear_driving_force@1"
+      ],
+      "operators": [
+        "cells.population_unit_turnover@1",
+        "cells.membrane_entity_state@1"
+      ],
+      "sources": {
+        "Kv1.5 activation and inactivation": "src/cells/laws/channels/kv1p5_mh.py#L25",
+        "Clamped population current": "src/cells/models/surface_pump_v3.py#L621",
+        "Gate advance": "src/cells/numerics/exponential_gates.py#L44",
+        "Constant-field ion flux": "src/cells/laws/routes/constant_field_permeation.py#L59",
+        "Inward rectifier slope": "src/cells/laws/routes/inward_rectifier_linear_driving_force.py#L127",
+        "Native cohort removal": "src/cells/operators/population_unit_turnover.py#L958",
+        "Surface population counts": "src/cells/operators/membrane_state.py#L152",
+        "Two-population fixture": "validation/fr7/unit_turnover_fixtures.py#L68"
+      },
+      "record_inputs": {
+        "Paired measurements and protocols": "lean/checks/data/paired_replay_measurements.json",
+        "Kv1.5 dose and rectifier data": "lean/checks/data/paired_calibration_measurements.json",
+        "Activation curve and step current": "lean/checks/data/trapani2003_kv15_ph.json",
+        "Published receptor component fits": "lean/checks/data/membrane_physiology_pairs.json",
+        "Red-cell chloride measurements": "lean/checks/data/freedman1997_chloride.json",
+        "Planar-bilayer potassium currents": "lean/checks/data/pfeffermann2026_potassium.json",
+        "Prepared clamp and pH rows": "lean/checks/kv15_ph.py",
+        "Permeability calibration": "lean/checks/charged_permeation.py",
+        "Population declaration and binding": "lean/checks/population_units.py"
+      },
+      "driver": "lean/checks/paired_law_replays.py"
+    },
+    "paired-response-endpoints": {
+      "kind": "engine",
+      "engine_revision": "153449799f4d301a34f2be58172becc4dc562806",
+      "record_revision": "9f27f80116ed324e1adbbef7cddb5671d71f12f7",
+      "record": "lean/PROGRESS.md#paired-law-replays",
+      "models": [
+        "cells.assembly_lineages@2",
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "cells.bilayer_geometry@1",
+        "cells.osmotic_lumen@1",
+        "cells.inward_rectifier_linear_driving_force@1"
+      ],
+      "operators": [
+        "cells.pool_withdrawal@1",
+        "cells.scheduled_compartment_wash@1",
+        "cells.site_occupancy@1",
+        "cells.scheduled_species_exchange@1"
+      ],
+      "sources": {
+        "Bilayer area": "src/cells/models/assembly_lineages_v2/geometry.py#L249",
+        "Lumen tension and volume": "src/cells/models/assembly_lineages_v2/lumen.py#L265",
+        "Deterministic rupture decision": "src/cells/models/assembly_lineages_v2/kernel.py#L350",
+        "Bead-equivalent count withdrawal": "src/cells/models/assembly_lineages_v2/withdrawal.py#L150",
+        "Full wash at a bound wall": "src/cells/operators/wash_schedule.py#L472",
+        "Saturable uptake": "src/cells/operators/species_exchange.py#L335",
+        "Potassium reversal": "src/cells/laws/routes/inward_rectifier_linear_driving_force.py#L55"
+      },
+      "record_inputs": {
+        "Paired measurements": "lean/checks/data/paired_wet_lab_measurements.json",
+        "Potassium changes in Müller cells": "lean/checks/data/paired_calibration_measurements.json",
+        "Kir4.1 temperature and concentrations": "lean/checks/data/tada1998_kir41.json",
+        "POPC molecular areas": "lean/checks/data/leaflet_packing.json",
+        "First independent deflation study": "lean/checks/data/fujiwara2014_vesicle.json",
+        "Survival during a tension hold": "lean/checks/data/vesicle_rupture_holds.json",
+        "First bead-count groups": "lean/checks/data/fornell2017_partition.json",
+        "Remaining bead counts and volume observations": "lean/checks/data/pool_withdrawal_measurements.json",
+        "Bilayer area harness": "lean/checks/leaflet_packing.py",
+        "Vesicle world": "lean/checks/vesicle.py",
+        "Retained-osmole comparison": "lean/checks/vesicle_events.py",
+        "Whole draw and site stocks": "lean/checks/wall_wash.py",
+        "Pool event and count reconstruction": "lean/checks/pool_withdrawal.py"
+      },
+      "driver": "lean/checks/paired_response_endpoints.py"
+    },
     "membrane-physiology-reversals": {
       "kind": "engine",
       "models": [],
@@ -3279,13 +3367,13 @@
       "laws": [
         "cells.kv1p5_mh@1"
       ],
-      "engine_revision": "d0104950c40b92860a211c9e2555709d0fd61aed",
-      "record_revision": "c1e2b733bc4c54a4fd005b9dedb4697d801855d1",
+      "engine_revision": "153449799f4d301a34f2be58172becc4dc562806",
+      "record_revision": "9f27f80116ed324e1adbbef7cddb5671d71f12f7",
       "sources": {
-        "Clamped population current at a declared voltage": "src/cells/models/surface_pump_v3.py#L415",
+        "Clamped population current at a declared voltage": "src/cells/models/surface_pump_v3.py#L621",
         "Kv1.5 activation, inactivation and opening": "src/cells/laws/channels/kv1p5_mh.py#L25",
         "Exponential gate update over the pulse": "src/cells/numerics/exponential_gates.py#L44",
-        "Held control schedule": "src/cells/definitions/surface_pump_v3_spec.py#L563",
+        "Held control schedule": "src/cells/definitions/surface_pump_v3_spec.py#L765",
         "Tissue membrane and ionic reservoirs": "tests/unit/test_chloride_leak_law.py#L37",
         "Channel population fixture": "validation/tissue/surface_pump_v3_fixtures.py#L61"
       },
@@ -4522,7 +4610,11 @@
             ],
             "outcome": "inconclusive",
             "independence": "Guizouarn’s group assayed its own control oocytes. Costa’s group measured a separate set with ion-selective electrodes.",
-            "comparison": "Guizouarn reported Na/K/Cl means of 30.0/115.2/21.2 mM, a pooled water estimate of about 500 nL per oocyte and a group voltage of −56.8 ± 1.5 mV. Costa estimated free-ion concentrations of 10.1/109.5/37.7 mM. Assay type and sampling differ. Evaluating charge closure requires total ion amounts, independently measured fixed charge, capacitance and voltage on the same cell. Neither series supplies that set."
+            "comparison": "Guizouarn reported Na/K/Cl means of 30.0/115.2/21.2 mM, a pooled water estimate of about 500 nL per oocyte and a group voltage of −56.8 ± 1.5 mV. Costa estimated free-ion concentrations of 10.1/109.5/37.7 mM. Assay type and sampling differ. Evaluating charge closure requires total ion amounts, independently measured fixed charge, capacitance and voltage on the same cell. Neither series supplies that set.",
+            "replay": {
+              "status": "unconfirmed",
+              "assessment": "An independent fixed-charge amount, capacitance, total mobile charges and voltage from the same oocyte are missing. Numerical charge-closure controls cannot fill those measurements."
+            }
           }
         ],
         "evidence": [
@@ -4740,7 +4832,11 @@
             ],
             "outcome": "inconclusive",
             "independence": "Kahana’s group assayed a partially purified preparation. Eicher’s group measured a separate cell extract capable of additional reactions.",
-            "comparison": "The purified assay recovered 2.505 of the initial 2.500 mM at 30 min. Eicher’s dataset 2 lost 22.29% of the measured sum, while dataset 3 gained 1.04%. Recovery error and unmeasured species prevent treating the extract as a matched closed pool. These data cannot establish a failure of the integration invariant."
+            "comparison": "The purified assay recovered 2.505 of the initial 2.500 mM at 30 min. Eicher’s dataset 2 lost 22.29% of the measured sum, while dataset 3 gained 1.04%. Recovery error and unmeasured species prevent treating the extract as a matched closed pool. These data cannot establish a failure of the integration invariant.",
+            "replay": {
+              "status": "unconfirmed",
+              "assessment": "Cells preserves the sum for a closed pair. Closure of the experimental extract and recovery of all relevant material have not been established."
+            }
           }
         ],
         "status": "not_assessable",
@@ -4989,7 +5085,11 @@
             ],
             "outcome": "both_support",
             "independence": "Eicher’s group measured cell-extract time courses by NMR. Dyson and Noltmann independently assayed purified rabbit-muscle enzyme.",
-            "comparison": "F6P fell by 3.787 mM in the F6P-start extract series and rose by 1.172 mM in the G6P-start series. The purified enzyme approached F6P/G6P ≈ 0.30 from both sides. Both assays support the direction of conversion. Instantaneous dissipation remains unmeasured."
+            "comparison": "F6P fell by 3.787 mM in the F6P-start extract series and rose by 1.172 mM in the G6P-start series. The purified enzyme approached F6P/G6P ≈ 0.30 from both sides. Both assays support the direction of conversion. Instantaneous dissipation remains unmeasured.",
+            "replay": {
+              "status": "reproduced",
+              "assessment": "The extract’s starting compositions give opposite native flux signs. At the purified enzyme’s temperature and kinetic equilibrium estimate, the native zero is near the endpoint reached from either side. Absolute heat was unmeasured."
+            }
           }
         ],
         "status": "open",
@@ -6098,14 +6198,15 @@
         "status": "checked",
         "comparisons": [
           "wall-wash-retention",
-          "wall-wash-stand-in"
+          "wall-wash-stand-in",
+          "paired-response-endpoints"
         ],
         "result": "Main’s stand-in and both FR-28 wall owners collected 30 fmol from 60 free. The wall held 10 fmol at the event and 9.97015402 fmol 10 ms later. Both candidate owners yielded identical traces. A matched buffer gave zero wall rate."
       },
       "biology": {
         "status": "open",
         "observable": "Tracer recovered in each wash and on the surface, with the time between dilution and measurement.",
-        "unit": "µg in pooled liquid and ng/cm² on the disk in the experiment, fmol and fmol/s in Cells",
+        "unit": "mass or fraction of initially adsorbed albumin, surface mass per area, fmol and fmol/s in Cells",
         "evidence": [
           {
             "dataset_id": "robinson2014_albumin_wall_wash",
@@ -6118,8 +6219,50 @@
             "uncertainty": "The rinse series has no per-rinse dwell time or error bars. The tabulated endpoint pools the starting sample, rinses and pipette tip and has no condition-specific uncertainty.",
             "assessment": "Independent recovery of tracer in liquid and on the surface is measured. The instantaneous bound fraction and the synthetic release constant remain open.",
             "report": "lean/PROGRESS.md#fr28-wall-wash"
+          },
+          {
+            "dataset_id": "leibner2009_hsa_eptfe@1",
+            "manifest": "lean/checks/data/paired_replay_measurements.json",
+            "citation": "Leibner et al. (2009), Fig. 4",
+            "doi": "10.1016/j.actbio.2008.11.003",
+            "locator": "Fig. 4 and Results §3.3, radiolabel distribution in one of three adsorption experiments.",
+            "context": "Radiolabelled human serum albumin on expanded PTFE.",
+            "role": "descriptive",
+            "uncertainty": "Bound fraction of adsorbed label after PBS rinses. Mass recovery exceeded 95% for the three trials. No uncertainty for these individual fractions, and substantial between-trial variation.",
+            "assessment": "Three successive rinses removed part of the adsorbed albumin. At 10 and 30 mg/mL loading, 38.5% and 50.8% of adsorbed label remained after the third rinse.",
+            "report": "lean/PROGRESS.md#paired-law-replays"
+          },
+          {
+            "dataset_id": "goyama2023_hsa_eptfe@1",
+            "manifest": "lean/checks/data/paired_replay_measurements.json",
+            "citation": "Goyama et al. (2023), Fig. 2",
+            "doi": "10.1038/s41598-023-35594-7",
+            "locator": "Fig. 2 and protein adsorption methods, uncoated graft controls, post-wash extracted human serum albumin.",
+            "context": "Human serum albumin on uncoated expanded PTFE vascular grafts.",
+            "role": "descriptive",
+            "uncertainty": "Uncoated ePTFE was water-washed before protein extraction and quantification. Reported mean and SD retain the paper’s units. The rinse effluent and pre-wash bound mass were unmeasured.",
+            "assessment": "Extraction after washing recovered 1.47 ± 1.36 µg/m² (reported mean ± SD, seven specimens). The different wash media and measurements preclude a common rate.",
+            "report": "lean/PROGRESS.md#paired-law-replays"
           }
-        ]
+        ],
+        "pairs": [
+          {
+            "id": "albumin-washed-eptfe",
+            "assumption": "Some albumin remains associated with uncoated expanded PTFE after a wash.",
+            "datasets": [
+              "leibner2009_hsa_eptfe@1",
+              "goyama2023_hsa_eptfe@1"
+            ],
+            "outcome": "both_support",
+            "independence": "Separate groups measured their own PTFE samples by radiotracing and protein extraction.",
+            "comparison": "One study recovered 38.5–50.8% of adsorbed label on the surface after three rinses. The other recovered 1.47 ± 1.36 µg/m² from washed grafts. The shared result is positive residual surface stock.",
+            "replay": {
+              "status": "represented",
+              "assessment": "A full native draw retains all 10 fmol initially wall-bound in the control. Both laboratories detected a positive post-wash stock on ePTFE. The time-dependent release rate requires surface binding parameters and independently measured stock before and after rinsing."
+            }
+          }
+        ],
+        "finding": "Two independent laboratories recovered human serum albumin from washed expanded PTFE. Their measurements constrain the presence of a retained stock. A release rate requires comparable times and pre-wash bound amounts."
       }
     },
     {
@@ -6490,7 +6633,8 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
-          "pool-withdrawal"
+          "pool-withdrawal",
+          "paired-response-endpoints"
         ],
         "result": "All finite places balanced in three complete population runs. With eight molecules, 4,000 seeds per fraction gave means 1.993, 3.991 and 2.6405 at one quarter, one half and one third. Sample variances were 1.479, 1.997 and 1.738. Nine controls at or around word cutoffs matched the exact finite-grid law. At f = 2⁻⁵³ the parser admits the wash and every molecule stays."
       },
@@ -6527,8 +6671,53 @@
             "uncertainty": "The center volume was 12.8 ± 1.1 nL, with the parent about 47 nL from the figure. Volume averages used 50 droplets. Bead retention had SD 0.044 across 20 splits.",
             "assessment": "Passive bead and volume retention are close in this preparation. Individual volumes paired with bead counts would distinguish independent sampling from geometry-dependent sorting.",
             "report": "lean/PROGRESS.md#fr35-withdrawal"
+          },
+          {
+            "dataset_id": "sahore2018_passive_bead_split@1",
+            "manifest": "lean/checks/data/paired_replay_measurements.json",
+            "citation": "Sahore et al. (2018), Fig. 6d",
+            "doi": "10.1039/C8AY01474D",
+            "locator": "Fig. 6d, field-off control showing the parent and two separated daughter droplets.",
+            "context": "A magnet-off split in a separate microfluidic droplet device.",
+            "role": "descriptive",
+            "uncertainty": "No per-split volume calibration, count table or replicated passive occupancy fraction. The adjacent 59% withdrawal estimate was obtained during magnetic retention and is excluded.",
+            "assessment": "Particles occupied both daughters in the illustrated passive split. The published quantitative withdrawal volume belongs to magnetic retention.",
+            "report": "lean/PROGRESS.md#paired-law-replays"
           }
-        ]
+        ],
+        "pairs": [
+          {
+            "id": "withdrawal-liquid-fraction",
+            "assumption": "On average the retained passive bead fraction equals the actual retained liquid fraction.",
+            "datasets": [
+              "fornell2017_passive_withdrawal@1",
+              "liu2019_passive_retention@1"
+            ],
+            "outcome": "not_independent",
+            "independence": "The chip experiments are distinct. Anna Fornell and Maria Tenje participated in both studies.",
+            "comparison": "Fornell’s mean across 180 split fractions is 0.450 versus a nominal liquid fraction of ⅓. Liu measured 0.282 ± 0.044 bead retention (20 splits), with a separate volume pool giving 12.8/47 ≈ 0.272 (50 measurements). No individual liquid fraction is linked to a parent/daughter count.",
+            "replay": {
+              "status": "unconfirmed",
+              "assessment": "At nominal f = ⅓ Cells gives three beads for a nine-bead parent on average. Fornell observed four. Liu’s independently estimated group liquid fraction is 0.272 versus 0.282 bead retention. Missing per-droplet liquid fractions and shared investigators preclude a replicated mean or variance discrepancy."
+            }
+          },
+          {
+            "id": "withdrawal-both-daughters-occupied",
+            "assumption": "One passive split can leave beads in both the withdrawn and retained liquid.",
+            "datasets": [
+              "fornell2017_passive_withdrawal@1",
+              "sahore2018_passive_bead_split@1"
+            ],
+            "outcome": "both_support",
+            "independence": "The Fornell group and the Sahore group acquired their own images using different devices.",
+            "comparison": "Fornell’s passive scatter includes points strictly between zero and the total parent count. Sahore’s magnet-off example directly shows beads in both daughters. The second study supplies no frequency of that event.",
+            "replay": {
+              "status": "represented",
+              "assessment": "Native withdrawal can draw and retain a positive number of particles in the same event. Both devices show this possibility. The independent image supplies no probability, liquid fraction or per-droplet denominator."
+            }
+          }
+        ],
+        "finding": "Two separate laboratories observed both daughters retaining particles in a passive split. The two quantitative studies share investigators and lack per-event liquid fractions. Independent mean and variance tests remain open."
       }
     },
     {
@@ -6665,7 +6854,11 @@
             ],
             "outcome": "both_support",
             "independence": "Lawson and Veech measured a myokinase preparation. Kleczkowski and Randall measured their own purified maize-leaf enzyme.",
-            "comparison": "The first assay gave 0.391 at zero free Mg²⁺ and 1.05 at 1 mM. The maize assay reported a span of 0.30–1.27 across 0.0014–8.3 mM and 0.76 ± 0.10 at 1.8–1.9 mM. Both resolve dependence on Mg²⁺. They leave the position of the Cells maximum and its transfer to heart mitochondria open."
+            "comparison": "The first assay gave 0.391 at zero free Mg²⁺ and 1.05 at 1 mM. The maize assay reported a span of 0.30–1.27 across 0.0014–8.3 mM and 0.76 ± 0.10 at 1.8–1.9 mM. Both resolve dependence on Mg²⁺. They leave the position of the Cells maximum and its transfer to heart mitochondria open.",
+            "replay": {
+              "status": "reproduced",
+              "assessment": "The calculated quotient rises from 0.389 in the zero-Mg limit to 1.101 at 1 mM in the first assay. The second assay’s 1.8–1.9 mM interval gives 0.744–0.772. The peak location and tissue transfer remain open."
+            }
           }
         ],
         "status": "open",
@@ -6858,7 +7051,11 @@
             ],
             "outcome": "both_support",
             "independence": "The Moscow and Cambridge groups prepared their own bovine heart submitochondrial particles and used different assays.",
-            "comparison": "Galkin measured 4.00 ± 0.05 H⁺/2e⁻ from proton and NADH rates. Jones obtained 4.21 ± 0.15, 4.10 ± 0.17 and 4.02 ± 0.19 from three flux comparisons on the same four preparations. This constrains complex I. The complete three-complex charge cycle remains unmeasured here."
+            "comparison": "Galkin measured 4.00 ± 0.05 H⁺/2e⁻ from proton and NADH rates. Jones obtained 4.21 ± 0.15, 4.10 ± 0.17 and 4.02 ± 0.19 from three flux comparisons on the same four preparations. This constrains complex I. The complete three-complex charge cycle remains unmeasured here.",
+            "replay": {
+              "status": "reproduced",
+              "assessment": "The native material column posts four protons per two electrons on the P side. This ratio is independent of rate and matches the shared stoichiometric observable. The preparations do not measure the full respiratory chain in this comparison."
+            }
           }
         ],
         "status": "open",
@@ -6943,7 +7140,11 @@
             ],
             "outcome": "not_independent",
             "independence": "The sheep particles and cryo-EM density are new. The initial reconstruction and atomic fit used bovine 5ARA, which itself used Watt’s 2XND. Independence of the eight-subunit count from the starting model is unconfirmed.",
-            "comparison": "Both structures contain eight c-subunits. One proton per c-subunit and three ATP per turn imply 8/3 H⁺ per synthesized ATP, compared with 3 in Cells. The distinction concerns ideal rotor coupling. Effective proton cost under load or during ATP export requires flux measurements."
+            "comparison": "Both structures contain eight c-subunits. One proton per c-subunit and three ATP per turn imply 8/3 H⁺ per synthesized ATP, compared with 3 in Cells. The distinction concerns ideal rotor coupling. Effective proton cost under load or during ATP export requires flux measurements.",
+            "replay": {
+              "status": "unconfirmed",
+              "assessment": "The two density datasets share a model-template lineage. Cells posts three protons per ATP for this leg. A rotor count constrains ideal coupling, and a paired flux is needed to assess effective cost under load."
+            }
           }
         ],
         "evidence": [
@@ -7112,7 +7313,11 @@
             ],
             "outcome": "both_support",
             "independence": "Ojima’s group followed endogenous AMPA receptors in cultured hippocampal neurons. Bruneau’s group independently tracked nicotinic receptors at living mouse neuromuscular junctions.",
-            "comparison": "Ojima found resurfaced label equal to 12.5 ± 2.8% of reference surface signal after 15 min (SEM, three biological replicates). Bruneau found 26 ± 5% of initial surface signal after four days (SD, 29 junctions). The return is replicated. Different denominators, cargo and times prevent a common recycling-rate estimate, and terminal internal stocks were unmeasured."
+            "comparison": "Ojima found resurfaced label equal to 12.5 ± 2.8% of reference surface signal after 15 min (SEM, three biological replicates). Bruneau found 26 ± 5% of initial surface signal after four days (SD, 29 junctions). The return is replicated. Different denominators, cargo and times prevent a common recycling-rate estimate, and terminal internal stocks were unmeasured.",
+            "replay": {
+              "status": "represented",
+              "assessment": "A native two-population recycling cycle returns retrieved units. Each study observed some resurfacing. Neither supplies the terminal internal stock and returned membrane area for its own quantitative balance."
+            }
           }
         ]
       }
@@ -7288,9 +7493,10 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
-          "surface-population-turnover"
+          "surface-population-turnover",
+          "paired-channel-and-cohort-replays"
         ],
-        "result": "An eight-step checked world used two precursor molecules per direct unit and seven per three-stage unit. All observed precursor, transit, insertion, surface and sink amounts matched the independent matrix exponential within 4.55 × 10⁻¹³ units and 4.24 × 10⁻²² fmol. In a compiled two-stage pulse, 10.82448 of the initial 120 units reached the membrane in 12.5 ms."
+        "result": "An eight-step checked world used two precursor molecules per direct unit and seven per three-stage unit. All observed precursor, transit, insertion, surface and sink amounts matched the independent matrix exponential within 4.55 × 10⁻¹³ units and 4.24 × 10⁻²² fmol. In a compiled two-stage pulse, 10.82448 of the initial 120 units reached the membrane in 12.5 ms. Two declared populations reproduce each of the two published fast/slow receptor fits."
       },
       "biology": {
         "status": "open",
@@ -7377,7 +7583,11 @@
             ],
             "outcome": "both_support",
             "independence": "Strack’s group followed hindlimb muscle. Bruneau and Akaaboune independently followed sternomastoid synapses with less than 20% of receptors labelled.",
-            "comparison": "Strack’s labelled signal fell to approximately 67% seven days after its day-7 anchor. The sternomastoid series retained 93 ± 5% at 24 h and 75 ± 8% at 72 h (SD, five synapses each). Both support loss of the detectable cohort. Different anchors and labelling protocols preclude transfer of one fitted rate."
+            "comparison": "Strack’s labelled signal fell to approximately 67% seven days after its day-7 anchor. The sternomastoid series retained 93 ± 5% at 24 h and 75 ± 8% at 72 h (SD, five synapses each). Both support loss of the detectable cohort. Different anchors and labelling protocols preclude transfer of one fitted rate.",
+            "replay": {
+              "status": "partial",
+              "assessment": "Strack’s single-rate fit gives decreasing signal at the later observations. Bruneau’s two measurements also decrease. The second preparation has no independently supplied loss rate or intermediate cohort measurement for a held-out decay curve."
+            }
           },
           {
             "id": "innervated-receptor-single-rate",
@@ -7388,7 +7598,11 @@
             ],
             "outcome": "both_challenge",
             "independence": "The hindlimb and diaphragm curves were collected by different laboratories. Strack’s Table 2 fit and day-7 observations are from the same publication.",
-            "comparison": "Strack fitted 1.1 ± 0.3 and 13.1 ± 0.4 day half-lives (SD, ten muscles). Stanley and Drachman reported 18.7 hours and 12.4 days. Fast fractions were about 13% and 20%, respectively. Both support a mixture of lifetimes. A separately tracked cohort can still have first-order loss."
+            "comparison": "Strack fitted 1.1 ± 0.3 and 13.1 ± 0.4 day half-lives (SD, ten muscles). Stanley and Drachman reported 18.7 hours and 12.4 days. Fast fractions were about 13% and 20%, respectively. Both support a mixture of lifetimes. A separately tracked cohort can still have first-order loss.",
+            "replay": {
+              "status": "represented",
+              "assessment": "Two declared populations with each study’s own fractions and half-lives reproduce both fitted decay components. Seven days after their respective fit origins, the compiled summed fractions are 0.602 and 0.541. The input fits determine these outputs."
+            }
           }
         ]
       }
@@ -7470,7 +7684,11 @@
             ],
             "outcome": "both_support",
             "independence": "Land’s group compared experimentally reduced site density at lizard endplates. Ohno’s group assayed human intercostal muscle with a receptor-scaffold deficiency.",
-            "comparison": "In lizard muscle, available sites fell from 18,000 to 8,200 and 6,900 per µm² as mean peak currents fell from 7.5 to 4.0 and 2.5 nA. In the adult human comparison, sites and current retained 44.5% and 46.3% of control. Current and binding measurements lack matching by individual human endplate. Geometry, occupancy and transmitter exposure limit a test of exact proportionality."
+            "comparison": "In lizard muscle, available sites fell from 18,000 to 8,200 and 6,900 per µm² as mean peak currents fell from 7.5 to 4.0 and 2.5 nA. In the adult human comparison, sites and current retained 44.5% and 46.3% of control. Current and binding measurements lack matching by individual human endplate. Geometry, occupancy and transmitter exposure limit a test of exact proportionality.",
+            "replay": {
+              "status": "partial",
+              "assessment": "With fixed opening and drive, halving native counts halves current. Scaling by the lizard site measurements gives 3.42 and 2.88 nA. The human site ratio gives 44.5% against a current ratio of 46.3%. Endplate-specific opening, stimulus and paired site counts are unavailable."
+            }
           }
         ]
       }
@@ -8140,7 +8358,11 @@
             ],
             "outcome": "inconclusive",
             "independence": "Jin and Baumgart studied aspirated POPC vesicles exposed to an oxidized lipid. Hentrich and Szostak independently tracked oleate vesicles growing under flow.",
-            "comparison": "Jin measured a pooled fractional-area rate constant of 0.0027 ± 0.0005 µM⁻¹ s⁻¹ (SEM, 11 vesicles). Hentrich measured filament elongation against starting diameter. The data did not distinguish linear and quadratic size dependence. Absolute inserted molecules per second by radius under matched supply would resolve the comparison."
+            "comparison": "Jin measured a pooled fractional-area rate constant of 0.0027 ± 0.0005 µM⁻¹ s⁻¹ (SEM, 11 vesicles). Hentrich measured filament elongation against starting diameter. The data did not distinguish linear and quadratic size dependence. Absolute inserted molecules per second by radius under matched supply would resolve the comparison.",
+            "replay": {
+              "status": "unconfirmed",
+              "assessment": "A native size sweep distinguishes the area and diffusion-limited powers. One experiment pooled fractional-area rates and the other reports elongation. A radius series with absolute insertion rates would discriminate them."
+            }
           }
         ]
       }
@@ -8194,7 +8416,11 @@
             ],
             "outcome": "both_support",
             "independence": "Brändén’s group recorded washout from tethered nanovesicles. Peterlin’s group followed individual giant vesicles taking up urea.",
-            "comparison": "The reported efflux estimate converts to 0.0129 µm/s at 22 °C. The influx estimate was 0.013 ± 0.001 µm/s at 0.10 and 0.20 M. Central values differ by under 1%. Both coefficients were inferred from optical data. Curvature, temperature reporting and error conventions limit transfer of a single fitted value. Permeability is an input to Cells."
+            "comparison": "The reported efflux estimate converts to 0.0129 µm/s at 22 °C. The influx estimate was 0.013 ± 0.001 µm/s at 0.10 and 0.20 M. Central values differ by under 1%. Both coefficients were inferred from optical data. Curvature, temperature reporting and error conventions limit transfer of a single fitted value. Permeability is an input to Cells.",
+            "replay": {
+              "status": "represented",
+              "assessment": "The two inferred permeabilities agree after unit conversion. Permeability is declared in the native uptake law. The second experiment provides a fitted coefficient, without the full single-vesicle influx trace and geometry needed for an independent time-course replay at both sizes."
+            }
           }
         ],
         "status": "open",
@@ -8355,7 +8581,8 @@
         "status": "checked",
         "comparisons": [
           "bilayer-footprint",
-          "bilayer-warm-footprint"
+          "bilayer-warm-footprint",
+          "paired-response-endpoints"
         ],
         "result": "A 64-lipid control calibrated to fluid POPC at 30 °C gave 20.576 nm² and an empty lumen. In two compiled 96-event trajectories with different molecular weights for two lipids, every recorded integer footprint matched the independent count sum. A 32-fold refinement preserved the molecule counts across all 98 records. At a fixed 30 °C POPC footprint, the same native 64-lipid system gave 20.576 nm² at 30 and 50 °C. Using the 50 °C footprint gave 21.536 nm²."
       },
@@ -8443,7 +8670,11 @@
             ],
             "outcome": "both_challenge",
             "independence": "Kučerka’s group used neutron and X-ray scattering. Leftin’s group independently used solid-state carbon-13 NMR. Each method infers area from structural data.",
-            "comparison": "Scattering gave 64.3 ± 1.3 to 67.3 ± 1.3 Å² at 30→50 °C. NMR gave 60.4 ± 3.6 to 70.5 ± 4.2 Å² at 28→48 °C. Both central estimates rise on warming, by 4.7% and 16.7% respectively. The evidence supports choosing a footprint for the experimental temperature. A common expansion coefficient remains open."
+            "comparison": "Scattering gave 64.3 ± 1.3 to 67.3 ± 1.3 Å² at 30→50 °C. NMR gave 60.4 ± 3.6 to 70.5 ± 4.2 Å² at 28→48 °C. Both central estimates rise on warming, by 4.7% and 16.7% respectively. The evidence supports choosing a footprint for the experimental temperature. A common expansion coefficient remains open.",
+            "replay": {
+              "status": "missed",
+              "assessment": "Using each study’s own cold footprint in the compiled 64-lipid vesicle gives warm/cold area 1.000 in both series. Giving the engine the measured warm footprint recovers the increase. FR-56 covers temperature dependence."
+            }
           },
           {
             "id": "egg-pc-leaflet-packing",
@@ -8454,7 +8685,11 @@
             ],
             "outcome": "inconclusive",
             "independence": "The NMR preparations are separate. Finer used earlier radius and thickness estimates from Huang, so the geometric evidence has a shared source lineage.",
-            "comparison": "Finer measured 28% inner heads against 26.47% from equal-area geometry and judged the packing compatible with equality. Huang and Mason inferred 32.26% against 28.17% and reported different areas per head. Both residuals point toward larger outer footprints. The radii, model assumptions and missing propagated errors leave the magnitude and exact equality unresolved."
+            "comparison": "Finer measured 28% inner heads against 26.47% from equal-area geometry and judged the packing compatible with equality. Huang and Mason inferred 32.26% against 28.17% and reported different areas per head. Both residuals point toward larger outer footprints. The radii, model assumptions and missing propagated errors leave the magnitude and exact equality unresolved.",
+            "replay": {
+              "status": "unconfirmed",
+              "assessment": "The equal-footprint geometry is evaluated at the two reported radii. Separate molecular areas with propagated errors are missing for the liposomes underlying the measurements."
+            }
           }
         ]
       }
@@ -8495,7 +8730,8 @@
           "ol5-replay-vesicle",
           "osmotic-vesicle-volume",
           "intact-vesicle-deflation",
-          "bhatia-vesicle-deflation"
+          "bhatia-vesicle-deflation",
+          "paired-response-endpoints"
         ],
         "result": "Two compiled trajectories each crossed between 34 slack and 64 tense records. Across both runs the relative volume error stayed below 1.07 × 10⁻¹⁴, tension error below 2.24 × 10⁻¹⁷ N/m, and osmotic energy error below 2.54 × 10⁻¹⁴ k_BT against a 70-digit reference. Separate 64-osmole worlds reproduce the macroscopic reduced-volume and tension-per-radius predictions at matched density."
       },
@@ -8510,7 +8746,11 @@
             ],
             "outcome": "both_support",
             "independence": "Fujiwara and Yanagisawa followed five DOPE/DOPC liposomes. Viallat’s group independently tracked a spherical DOPC vesicle during slow titration.",
-            "comparison": "Fujiwara’s final/initial volume was about 0.25 (70/285 = 0.246). Viallat reported radius shrinking from 25 to 17 µm, giving a spherical volume fraction of 0.314 (50/162 = 0.309). Its apparent area fell by about half. The direction is reproduced. Conservation of membrane area and individual retained-solute counts remain open."
+            "comparison": "Fujiwara’s final/initial volume was about 0.25 (70/285 = 0.246). Viallat reported radius shrinking from 25 to 17 µm, giving a spherical volume fraction of 0.314 (50/162 = 0.309). Its apparent area fell by about half. The direction is reproduced. Conservation of membrane area and individual retained-solute counts remain open.",
+            "replay": {
+              "status": "reproduced",
+              "assessment": "With retained lumen osmoles the native volume ratios are 0.246 at 70→285 and 0.309 at 50→162 mOsm/L. The corresponding central measurements are about 0.25 and 0.314. Initial molecular counts and changes in membrane area remain open."
+            }
           },
           {
             "id": "vesicle-resting-radius-cap",
@@ -8521,7 +8761,11 @@
             ],
             "outcome": "both_challenge",
             "independence": "Shibly’s group transferred DOPC vesicles to mildly hypotonic glucose. Chabanon’s group tracked POPC vesicles during a stronger hypotonic challenge.",
-            "comparison": "An initially full, inextensible sphere predicts zero further swelling. Shibly saw mean volume rises of 1.7 ± 0.1% and 2.6 ± 0.1% (14 and 17 vesicles). Chabanon’s closed pre-pore optical traces rose above the estimated relaxed radius. Both challenge using resting optical geometry as the cap. Available membrane area, slack and elastic dilation were not separately measured in both assays."
+            "comparison": "An initially full, inextensible sphere predicts zero further swelling. Shibly saw mean volume rises of 1.7 ± 0.1% and 2.6 ± 0.1% (14 and 17 vesicles). Chabanon’s closed pre-pore optical traces rose above the estimated relaxed radius. Both challenge using resting optical geometry as the cap. Available membrane area, slack and elastic dilation were not separately measured in both assays.",
+            "replay": {
+              "status": "partial",
+              "assessment": "Setting the initial optical sphere equal to the hard molecular area cap gives zero swelling under Shibly’s dilutions. Both microscopy studies show subsequent swelling. Slack, available molecular area and elastic dilation were not independently measured in both. The mismatch applies to that initialization."
+            }
           },
           {
             "id": "vesicle-ideal-volume-transfer",
@@ -8532,7 +8776,11 @@
             ],
             "outcome": "inconclusive",
             "independence": "The Fujiwara and Wolfisberg groups used separate preparations. Wolfisberg’s illustrated vesicle and ensemble belong to one study.",
-            "comparison": "Fujiwara’s plateau was about 0.25 versus 0.246 expected. At 58 mOsm/L the adhered example in Wolfisberg Fig. 2B gave reduced volume 0.30 versus 0.431 from prepared sucrose (0.439 from the first point). The authors report overall agreement across their 21-vesicle series in Fig. 3. Reduced volume depends on area, and a matched single-vesicle uncertainty is missing."
+            "comparison": "Fujiwara’s plateau was about 0.25 versus 0.246 expected. At 58 mOsm/L the adhered example in Wolfisberg Fig. 2B gave reduced volume 0.30 versus 0.431 from prepared sucrose (0.439 from the first point). The authors report overall agreement across their 21-vesicle series in Fig. 3. Reduced volume depends on area, and a matched single-vesicle uncertainty is missing.",
+            "replay": {
+              "status": "unconfirmed",
+              "assessment": "The 70→285 osmolarity replay is close. At 58 mOsm/L the Wolfisberg example is below the prepared-sucrose prediction, within a broader heterogeneous series. A matched uncertainty and area for each adhered vesicle are missing."
+            }
           }
         ],
         "status": "mixed",
@@ -8690,7 +8938,8 @@
           "ol5-replay-vesicle",
           "vesicle-lysis-repair",
           "vesicle-lysis-hold-recheck",
-          "vesicle-lysis-threshold"
+          "vesicle-lysis-threshold",
+          "paired-response-endpoints"
         ],
         "result": "The repaired tension calculation matched the independent reference in all eight compiled decisions. Both 60 and 1,920 area quanta gave rupture just below 0.0008412963098275772 N/m and survival just above it, including offsets of about 3 × 10⁻¹⁸ N/m. The older comparisons preserve the disagreement that led to the repair."
       },
@@ -8709,7 +8958,11 @@
             ],
             "outcome": "both_challenge",
             "independence": "Karal and Yamazaki followed separate aspirated DOPC vesicles at fixed tension. Evans and Heinrich measured the tension at breakage under increasing suction in another laboratory.",
-            "comparison": "During Karal’s 8 mN/m hold at 32 °C the intact fraction fell from 0.50 at 33 s to 0.111 at 125 s. Under Evans’s ramps, the high-count region of the rupture histogram moved from roughly 4–8 mN/m at 0.07 mN/m/s to 10–16 mN/m at 26 mN/m/s. The same fixed threshold cannot account for both time effects. A common numerical hazard across protocols remains untested."
+            "comparison": "During Karal’s 8 mN/m hold at 32 °C the intact fraction fell from 0.50 at 33 s to 0.111 at 125 s. Under Evans’s ramps, the high-count region of the rupture histogram moved from roughly 4–8 mN/m at 0.07 mN/m/s to 10–16 mN/m at 26 mN/m/s. The same fixed threshold cannot account for both time effects. A common numerical hazard across protocols remains untested.",
+            "replay": {
+              "status": "missed",
+              "assessment": "At a fixed threshold, all survivors at a constant tension retain the same fate. The native comparator crosses the same tension at both ramp rates. FR-31 supplies a stochastic alternative for tension holds. A common hazard fitted and evaluated across these ramps is open."
+            }
           }
         ],
         "evidence": [
@@ -9065,7 +9318,11 @@
             ],
             "outcome": "both_support",
             "independence": "The two groups recorded their own patches expressing the same rat isoform. The Hirschberg dose series calibrates Cells. Syme’s control was held out; unknown channel number permits a normalized dose comparison.",
-            "comparison": "Hirschberg’s single-channel fit gave 0.74 µM and Hill coefficient 2.2 (three-patch means 0.62 ± 0.14 µM and 3.2 ± 1.0). Syme’s untreated NPₒ curve gave 0.700 µM and 2.5. The Cells three-dose fit gives 0.728 µM and 2.58. Its predicted rise time of 10.63 ms versus 4.1 ± 0.6 ms in Hirschberg is still a separate kinetic discrepancy."
+            "comparison": "Hirschberg’s single-channel fit gave 0.74 µM and Hill coefficient 2.2 (three-patch means 0.62 ± 0.14 µM and 3.2 ± 1.0). Syme’s untreated NPₒ curve gave 0.700 µM and 2.5. The Cells three-dose fit gives 0.728 µM and 2.58. Its predicted rise time of 10.63 ms versus 4.1 ± 0.6 ms in Hirschberg is still a separate kinetic discrepancy.",
+            "replay": {
+              "status": "reproduced",
+              "assessment": "The fitted Cells half-response is 0.728 µM. The independent 0.700 µM midpoint is close. This comparison uses steady responses and does not calibrate opening or washout times."
+            }
           },
           {
             "id": "rsk2-single-closing-rate",
@@ -9076,7 +9333,11 @@
             ],
             "outcome": "both_challenge",
             "independence": "Hirschberg’s and Oliver’s groups collected separate recombinant SK2 data. Hirschberg combines single-channel plateaus with macropatch timings. Oliver’s low-dose record has no reported uncertainty, sample count or paired washout.",
-            "comparison": "Hirschberg’s plateau and washout give a 10.63 ms activation time constant versus 4.1 ± 0.6 ms measured. Oliver measured a 6.18 ± 1.91 ms 20–80% rise and 34.7 ± 6.5 ms washout time constant at 10 µM Ca²⁺. Reusing that mean closing rate at 0.5 µM gives an upper bound of ln(4) × 34.7 = 48.1 ms, below the reported rise of about 80 ms. These are two different tests of transferring one rate across recordings. A matched-patch statistical test remains open."
+            "comparison": "Hirschberg’s plateau and washout give a 10.63 ms activation time constant versus 4.1 ± 0.6 ms measured. Oliver measured a 6.18 ± 1.91 ms 20–80% rise and 34.7 ± 6.5 ms washout time constant at 10 µM Ca²⁺. Reusing that mean closing rate at 0.5 µM gives an upper bound of ln(4) × 34.7 = 48.1 ms, below the reported rise of about 80 ms. These are two different tests of transferring one rate across recordings. A matched-patch statistical test remains open.",
+            "replay": {
+              "status": "missed",
+              "assessment": "One native closing rate gives 10.63 ms in Hirschberg’s activation test and bounds Oliver’s low-dose 20–80% rise by 48.1 ms using the high-dose washout mean. The experiments give 4.1 ms and about 80 ms. FR-55 covers dose-dependent closing."
+            }
           }
         ],
         "evidence": [
@@ -9281,7 +9542,10 @@
       },
       "numerical": {
         "status": "checked",
-        "comparisons": ["saturable-species-exchange"],
+        "comparisons": [
+          "saturable-species-exchange",
+          "paired-response-endpoints"
+        ],
         "result": "48 scalar cases per backend matched the independent reference. Six compiled two-cell runs conserved solute and reproduced the shared pool within 1.39 × 10⁻¹⁶ fmol. Halving the step reduced the cell allocation error by a factor of 4.01–4.06. At extreme depletion the 1 fmol anchor resolved a 6.31 × 10⁻¹⁶ fmol remainder to 5.65% and a smaller trial rounded to zero and was refused."
       },
       "biology": {
@@ -9298,7 +9562,11 @@
             ],
             "outcome": "both_support",
             "independence": "Sage and Carruthers measured three independent experiments on ice. Klepper’s group measured its own healthy donor four times per concentration at 4 °C.",
-            "comparison": "Sage’s fitted Kₘ was 1.4 ± 0.2 mM, and Klepper’s control gave 1.3 mM across 0.3–6 mM with no Kₘ uncertainty reported. Cells uses two Sage points for calibration (1.19 mM). The separate donor supports the concentration scale. Absolute capacity, long-time depletion and transfer between two cells remain open."
+            "comparison": "Sage’s fitted Kₘ was 1.4 ± 0.2 mM, and Klepper’s control gave 1.3 mM across 0.3–6 mM with no Kₘ uncertainty reported. Cells uses two Sage points for calibration (1.19 mM). The separate donor supports the concentration scale. Absolute capacity, long-time depletion and transfer between two cells remain open.",
+            "replay": {
+              "status": "partial",
+              "assessment": "Two Sage rates give a native half-saturation of 1.19 mM, close to Klepper’s fitted 1.3 mM. The latter curve is representable with that parameter. A held-out independent absolute flux requires the same normalization and unsupplied pointwise errors."
+            }
           },
           {
             "id": "red-cell-sugar-saturation",
@@ -9309,7 +9577,11 @@
             ],
             "outcome": "both_support",
             "independence": "Batt and Schachter measured two blood specimens at 15 °C. Sage and Carruthers collected a separate cold series, also used in the cold-affinity comparison.",
-            "comparison": "Batt’s influx Kₜ values were 5.0 and 6.1 mM, compared with 1.4 ± 0.2 mM on ice in Sage. Both studies resolve saturation. A single Kₘ across these conditions would miss the 15 °C values. Preparation and assay differences confound attribution to temperature alone."
+            "comparison": "Batt’s influx Kₜ values were 5.0 and 6.1 mM, compared with 1.4 ± 0.2 mM on ice in Sage. Both studies resolve saturation. A single Kₘ across these conditions would miss the 15 °C values. Preparation and assay differences confound attribution to temperature alone.",
+            "replay": {
+              "status": "represented",
+              "assessment": "The compiled zero-time uptake saturates at both reported warm Kₜ values and at the cold control Kₘ. At each preparation’s own half-saturation input it gives one-half capacity. Those fitted constants do not cross-predict a temperature coefficient."
+            }
           }
         ],
         "evidence": [
@@ -9345,9 +9617,17 @@
             "locator": "Filled circles for 3-O-methylglucose uptake into initially sugar-depleted erythrocytes.",
             "context": "Human red cells on ice, 30 s uptake. The reported rate scale is used directly. The preparation’s effective patch area and the rate’s volume denominator are unspecified.",
             "role": "held_out_from_fitting",
-            "fit": ["0.4 and 5 mM extracellular sugar"],
-            "evaluation": ["0.1, 0.8, 1 and 3 mM extracellular sugar"],
-            "excluded": ["Sugar-preloaded exchange", "Later equilibration", "Dehydroascorbic acid"],
+            "fit": [
+              "0.4 and 5 mM extracellular sugar"
+            ],
+            "evaluation": [
+              "0.1, 0.8, 1 and 3 mM extracellular sugar"
+            ],
+            "excluded": [
+              "Sugar-preloaded exchange",
+              "Later equilibration",
+              "Dehydroascorbic acid"
+            ],
             "observed": 117,
             "predicted": 108.1,
             "uncertainty": "The displayed 3 mM point is 117 ± 5 µmol/L/min (SE). Bars summarize three independent experiments in triplicate. The lowest-dose bar is unresolved. Estimated reading precision is ±1 µmol/L/min and ±0.02 mM.",
@@ -9517,7 +9797,11 @@
             ],
             "outcome": "both_support",
             "independence": "Hodgkin and Katz assayed intact squid axons. Ohki and Aono later recorded an independent set of six internally perfused axons at Woods Hole.",
-            "comparison": "Hodgkin and Katz observed +2 and +4 mV from 10 to 15 and 20 mM K. Ohki and Aono observed +2.0 and +7.2 mV from 10 to 30 and 50 mM K at 500 mM internal K. The direction agrees. The transfer of the earlier permeability ratios misses the later magnitudes in a three-ion projection of the nominal perfusate. Individual ionic currents and residual intracellular chloride were unmeasured."
+            "comparison": "Hodgkin and Katz observed +2 and +4 mV from 10 to 15 and 20 mM K. Ohki and Aono observed +2.0 and +7.2 mV from 10 to 30 and 50 mM K at 500 mM internal K. The direction agrees. The transfer of the earlier permeability ratios misses the later magnitudes in a three-ion projection of the nominal perfusate. Individual ionic currents and residual intracellular chloride were unmeasured.",
+            "replay": {
+              "status": "reproduced",
+              "assessment": "Native zeroes move positive in both series. At 10→100 mM external K the perfused axons depolarize 19.8 mV versus 34.5 mV after transferring the intact-axon permeability ratios. The perfused preparation’s ratios were unmeasured."
+            }
           }
         ]
       }
@@ -9635,7 +9919,11 @@
             ],
             "outcome": "inconclusive",
             "independence": "The rat Cx43 oocyte recordings and the wild-type controls in a human cell line came from independent teams. The 2011 paper identifies reused 2004 fast-rate data. Only the 2011 Table 3 amplitudes enter here.",
-            "comparison": "At −100 mV the oocyte fast-to-slow fitted amplitude ratio was 3. At 110 mV the independent wild-type series reported 80 ± 3.8% fast and 20 ± 3.8% slow (SEM, seven pairs). Both fit two decays. Neither reports a third amplitude at the summed rate in the same trace, so the product identity remains untested."
+            "comparison": "At −100 mV the oocyte fast-to-slow fitted amplitude ratio was 3. At 110 mV the independent wild-type series reported 80 ± 3.8% fast and 20 ± 3.8% slow (SEM, seven pairs). Both fit two decays. Neither reports a third amplitude at the summed rate in the same trace, so the product identity remains untested.",
+            "replay": {
+              "status": "unconfirmed",
+              "assessment": "The two observed time constants cannot identify the third, summed-rate amplitude in a product of gates. A simultaneously resolved amplitude in the same trace is missing."
+            }
           }
         ]
       }
@@ -9712,7 +10000,11 @@
             ],
             "outcome": "both_challenge",
             "independence": "Revilla’s group recorded paired oocytes. Sahu and Bera independently recorded N2a cell pairs. Both compared homotypic wild-type Cx43 at the same voltage.",
-            "comparison": "The oocyte fit gave 417 ± 175 ms and 7.06 ± 1.28 s. The N2a fit gave 70 ± 5 ms and 931 ± 54 ms. Both resolved a fast and a slow phase. The time scales differ across preparations. The measured phases constrain the existing one-state gate and motivate the separate two-gate comparison."
+            "comparison": "The oocyte fit gave 417 ± 175 ms and 7.06 ± 1.28 s. The N2a fit gave 70 ± 5 ms and 931 ± 54 ms. Both resolved a fast and a slow phase. The time scales differ across preparations. The measured phases constrain the existing one-state gate and motivate the separate two-gate comparison.",
+            "replay": {
+              "status": "missed",
+              "assessment": "Both preparations have two decay phases at −100 mV. A native single relaxation has only one time constant at that voltage. FR-30 addresses the two-gate use at a declared voltage. The mixed amplitude and voltage dependence are open."
+            }
           }
         ]
       }
@@ -9768,12 +10060,13 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
-          "kv15-ph-clamp"
+          "kv15-ph-clamp",
+          "paired-channel-and-cohort-replays"
         ],
-        "result": "With equal maximal scales, stored effective openings from Figure 1F gave 0.72131 for the ratios at 0 mV and −90 mV on NumPy and compiled JAX CPU. Halving the acid maximum gave 0.36066. The native channel gave a peak ratio of 1.000 under both pH labels. Applying the +11.7 mV shift to its −6.0 mV midpoint gave 0.40493. Supplying both measured midpoints with native kinetics gave 0.69537."
+        "result": "With equal maximal scales, stored effective openings from Figure 1F gave 0.72131 for the ratios at 0 mV and −90 mV on NumPy and compiled JAX CPU. Halving the acid maximum gave 0.36066. The native channel gave a peak ratio of 1.000 under both pH labels. Applying the +11.7 mV shift to its −6.0 mV midpoint gave 0.40493. Supplying both measured midpoints with native kinetics gave 0.69537. With explicitly varied free extracellular H, native tail curves give zero pH-induced shift in two independent protocols."
       },
       "biology": {
-        "status": "not_assessable",
+        "status": "mixed",
         "observable": "Peak outward current remaining at 0 mV after acidification, the activation midpoint and the effect of extracellular potassium on current at strong depolarization.",
         "unit": "fraction of control current",
         "evidence": [
@@ -9832,9 +10125,21 @@
             "uncertainty": "Reported ± as printed. Methods generally use SEM and specify SD for nonlinear least-squares outputs.",
             "assessment": "At 0, 3.5 and 140 mM extracellular K, acid/control maximum conductance was 0.19 ± 0.02, 0.56 ± 0.01 and 0.81 ± 0.12 (n = 12, 6, 6). At 3.5 mM K the activation midpoint also shifted by +7.8 mV.",
             "report": "lean/PROGRESS.md#paired-calibration-and-leaflet-packing"
+          },
+          {
+            "dataset_id": "jager2001_kv15_potassium@1",
+            "manifest": "lean/checks/data/paired_replay_measurements.json",
+            "citation": "Jäger et al. (2001), Fig. 2",
+            "doi": "10.1016/S0014-5793(00)02396-6",
+            "locator": "Fig. 2, wild-type human Kv1.5 peak outward current in RBL cells.",
+            "context": "Wild-type human Kv1.5 recorded at +40 mV at two external K concentrations and two pH values.",
+            "role": "descriptive",
+            "uncertainty": "Approximate ratios within each pH condition. Authors describe the normal-pH peaks as similar. No group error or sample count given for these ratios. Intracellular free K was not measured. The pipette was titrated with KOH to pH 7.2.",
+            "assessment": "At pH 7.4 the peak currents at nominal zero and 4.5 mM K were similar. At pH 6.0 the zero-K current was about one tenth of the 4.5 mM value. The current example supplies an in-range test of the interaction.",
+            "report": "lean/PROGRESS.md#paired-law-replays"
           }
         ],
-        "finding": "Independent human Kv1.5 recordings support a positive shift in activation voltage with acidification and less acid-induced current suppression at higher external potassium. The absolute 0 mV response still depends on activation kinetics and the available conductance in the pulse protocol.",
+        "finding": "Measured activation curves from one preparation predict its separate 0 mV pulse approximately. In the registered voltage-only gate, changing extracellular H produces zero midpoint shift. Independent experiments resolve a positive shift and potassium-dependent suppression of current. The +100 mV protocol exceeds the gate’s declared voltage range.",
         "pairs": [
           {
             "id": "kv15-acid-activation-shift",
@@ -9845,7 +10150,11 @@
             ],
             "outcome": "both_support",
             "independence": "Trapani and Korn recorded HEK293 cells. Longobardo’s group independently recorded drug-free Ltk− cells.",
-            "comparison": "The midpoint moved by +11.7 mV at pH 7.3→6.8 with 10 mM K, and by +17.3 mV at pH 7.4→6.5 with 4 mM K. Both support the sign. The different acid steps, cells and pulse protocols leave a common mV-per-pH coefficient unresolved."
+            "comparison": "The midpoint moved by +11.7 mV at pH 7.3→6.8 with 10 mM K, and by +17.3 mV at pH 7.4→6.5 with 4 mM K. Both support the sign. The different acid steps, cells and pulse protocols leave a common mV-per-pH coefficient unresolved.",
+            "replay": {
+              "status": "missed",
+              "assessment": "The compiled channel receives the two measured bath pH values in each preparation. The normalized midpoints shift by less than 10⁻¹² mV at 10 and 4 mM external K. The measured shifts are +11.7 and +17.3 mV. A voltage-independent availability multiplier cancels in the normalized curve."
+            }
           },
           {
             "id": "kv15-potassium-protection",
@@ -9856,7 +10165,26 @@
             ],
             "outcome": "both_support",
             "independence": "The Connecticut and British Columbia groups collected separate whole-cell recordings. Trapani’s high-voltage panels and activation curve belong to one publication.",
-            "comparison": "Trapani found 38.0 ± 1.5% and 97.7 ± 0.3% of control current at +100 mV with 0 and 3 mM K (pH 7.3→6.8). Kehl found 19%, 56% and 81% of maximal conductance with 0, 3.5 and 140 mM K (pH 7.4→6.4). The direction agrees across a high-voltage current and a fitted maximum. The pH steps and readouts differ."
+            "comparison": "Trapani found 38.0 ± 1.5% and 97.7 ± 0.3% of control current at +100 mV with 0 and 3 mM K (pH 7.3→6.8). Kehl found 19%, 56% and 81% of maximal conductance with 0, 3.5 and 140 mM K (pH 7.4→6.4). The direction agrees across a high-voltage current and a fitted maximum. The pH steps and readouts differ.",
+            "replay": {
+              "status": "partial",
+              "assessment": "Kehl’s fitted tail-current maximum gives a native acid/control ratio of 1 at both positive K levels. At 3.5 mM only the overlapping prepulses are admissible for the comparison. At 140 mM both full grids match. Trapani’s +100 mV step exceeds the +60 mV ceiling."
+            }
+          },
+          {
+            "id": "kv15-acid-potassium-interaction",
+            "assumption": "Low external potassium strengthens acid suppression of wild-type human Kv1.5.",
+            "datasets": [
+              "kehl2002_kv15_potassium@1",
+              "jager2001_kv15_potassium@1"
+            ],
+            "outcome": "both_support",
+            "independence": "The two groups measured their own HEK293 and RBL cell preparations.",
+            "comparison": "Kehl’s acid/control maximal conductance rose from 0.56 at 3.5 mM K to 0.81 at 140 mM. In Jäger’s +40 mV pulse the nominal-zero/4.5 mM peak-current ratio fell from near one at pH 7.4 to about 0.1 at pH 6.0. The ratio denominators differ. The common observation is the potassium–pH interaction.",
+            "replay": {
+              "status": "missed",
+              "assessment": "At +40 mV the near-zero/4.5 mM K peak ratio converges to 1.008 at both pH values, versus near one and about 0.1 in Jäger. Kehl’s native fitted tail maxima give acid/control ratios of 1 on the common grids, including the complete 140 mM grid. The two assays have different denominators."
+            }
           }
         ]
       }
@@ -10016,7 +10344,11 @@
           "chloride-channel",
           "paired-transport-response"
         ], "result": "At the same initial voltage, 147 and 70 mM bath chloride gave opposite fluxes and initial electrode currents of +0.573 and −5.733 pA. The two tissue trajectories matched an independent solution within 1.58 × 10⁻¹² fmol of transfer, with zero off-ion and padding flux."},
-      "biology": {"status": "open", "observable": "Shift in the single-channel reversal potential when the nominal extracellular chloride concentration changes at fixed intracellular chloride and temperature.", "unit": "mV", "pairs": [
+      "biology": {
+        "status": "open",
+        "observable": "Shift in the single-channel reversal potential when the nominal extracellular chloride concentration changes at fixed intracellular chloride and temperature.",
+        "unit": "mV",
+        "pairs": [
           {
             "id": "epithelial-chloride-gradient",
             "assumption": "Lowering extracellular chloride shifts the reversal of a chloride-selective epithelial current in the positive direction.",
@@ -10026,7 +10358,11 @@
             ],
             "outcome": "both_support",
             "independence": "Ling and Bajnath studied different epithelial preparations in separate laboratories. Both measured single-channel currents in cell-attached patches, with voltages relative to resting potential.",
-            "comparison": "Rabbit collecting-duct patches shifted about +45 mV for 145→15 mM external Cl⁻ at 37 °C (Cells +60.63). Human colon patches shifted +23 mV for 150→57 mM at 25 °C (Cells +24.86). Both support direction. The rabbit magnitude falls short of the ideal shift; endpoint errors and ion activities limit a quantitative comparison."
+            "comparison": "Rabbit collecting-duct patches shifted about +45 mV for 145→15 mM external Cl⁻ at 37 °C (Cells +60.63). Human colon patches shifted +23 mV for 150→57 mM at 25 °C (Cells +24.86). Both support direction. The rabbit magnitude falls short of the ideal shift; endpoint errors and ion activities limit a quantitative comparison.",
+            "replay": {
+              "status": "reproduced",
+              "assessment": "At each assay’s temperature and outside chloride concentrations the native roots shift +60.63 and +24.86 mV. The measured shifts are about +45 and +23 mV. Activities and endpoint errors limit the rabbit magnitude comparison."
+            }
           }
         ],
         "evidence": [
@@ -10041,17 +10377,23 @@
             "uncertainty": "The high-chloride reversal was 2 ± 1 mV on the −Vₚ scale. The low-chloride endpoint was about 25 mV. No error on their difference was reported.",
             "assessment": "Lowering external chloride shifted the reversal positive. Cells gives +24.86 mV at 25 °C for a fixed internal chloride concentration. The inside-out control at symmetric chloride was a separate experiment.",
             "report": "lean/PROGRESS.md#paired-transport-and-membrane-measurements"
-          },{
-        "dataset_id": "Ling 1994 chloride substitution",
-        "manifest": "lean/claims/incoming/channel-gating-evidence.md#chloride-leak",
-        "citation": "Ling et al., Fig. 1B", "doi": "10.1172/JCI117037",
-        "locator": "Figure 1B and accompanying Results.",
-        "context": "Cell-attached apical patches of cultured rabbit collecting-tubule principal cells at 37 °C. Pipette chloride was lowered from 145 to 15 mM by partial substitution with gluconate. The voltage scale is relative to the resting membrane potential.",
-        "role": "descriptive", "observed": 45, "predicted": 60.6,
-        "uncertainty": "The two conditions used 11 and 4 patches, with no endpoint uncertainty reported.",
-        "assessment": "The measured shift is approximate. Lowering nominal outside chloride from 145 to 15 mM in rabbit kidney patches at 37 °C shifted reversal in the predicted positive direction. The channels also passed bromide and showed regulated opening. Absolute permeability remains uncalibrated.",
-        "report": "lean/PROGRESS.md#19-november-2026--chloride-leak"
-      }]}
+          },
+          {
+            "dataset_id": "Ling 1994 chloride substitution",
+            "manifest": "lean/claims/incoming/channel-gating-evidence.md#chloride-leak",
+            "citation": "Ling et al., Fig. 1B",
+            "doi": "10.1172/JCI117037",
+            "locator": "Figure 1B and accompanying Results.",
+            "context": "Cell-attached apical patches of cultured rabbit collecting-tubule principal cells at 37 °C. Pipette chloride was lowered from 145 to 15 mM by partial substitution with gluconate. The voltage scale is relative to the resting membrane potential.",
+            "role": "descriptive",
+            "observed": 45,
+            "predicted": 60.6,
+            "uncertainty": "The two conditions used 11 and 4 patches, with no endpoint uncertainty reported.",
+            "assessment": "The measured shift is approximate. Lowering nominal outside chloride from 145 to 15 mM in rabbit kidney patches at 37 °C shifted reversal in the predicted positive direction. The channels also passed bromide and showed regulated opening. Absolute permeability remains uncalibrated.",
+            "report": "lean/PROGRESS.md#19-november-2026--chloride-leak"
+          }
+        ]
+      }
     },
     {
       "id": "neutral-permeation",
@@ -10098,7 +10440,8 @@
         "status": "checked",
         "comparisons": [
           "charged-permeation",
-          "paired-transport-response"
+          "paired-transport-response",
+          "paired-channel-and-cohort-replays"
         ],
         "result": "360 CPU float64 component cases matched high-precision flux, heat and slope references. In two finite tissue pairs, halving the step from 64 to 128 steps reduced errors in signed transfer, heat and final voltage by factors of 4.03–4.05. Both amount ledgers matched the transferred material."
       },
@@ -10116,7 +10459,26 @@
             ],
             "outcome": "both_challenge",
             "independence": "Freedman and Novak inferred chloride flux and voltage from red-cell assays. Pfeffermann’s group directly recorded a valinomycin-containing planar bilayer. Each series has its own fit. Bilayer readings have about 1 nA digitization precision and no reported replicate error at these voltages.",
-            "comparison": "Human red-cell chloride at −59 mV gave −1.17 ± 0.13 mA/g Hb (SD), versus −1.97 predicted after fitting at −103 mV. Bilayer K⁺ at −110 mV gave about −13.5 nA, versus −3.84 after fitting at +110 mV. Its reversal was nevertheless −59.8 mV, close to −59.16 predicted. The current magnitude errors go in opposite directions."
+            "comparison": "Human red-cell chloride at −59 mV gave −1.17 ± 0.13 mA/g Hb (SD), versus −1.97 predicted after fitting at −103 mV. Bilayer K⁺ at −110 mV gave about −13.5 nA, versus −3.84 after fitting at +110 mV. Its reversal was nevertheless −59.8 mV, close to −59.16 predicted. The current magnitude errors go in opposite directions.",
+            "replay": {
+              "status": "missed",
+              "assessment": "Fitting one voltage per preparation requires evaluation/calibration permeability ratios of about 0.59 for red-cell chloride and 3.52 for carrier-mediated potassium. The signed deviations are opposite. Diagnose the two mechanisms separately."
+            }
+          },
+          {
+            "id": "valinomycin-wide-voltage-shape",
+            "assumption": "One constant permeability reproduces the wide-voltage I–V shape of valinomycin-mediated potassium transport in two independent planar bilayers.",
+            "datasets": [
+              "pfeffermann2026_potassium@1",
+              "piasta2011_valinomycin_local@1"
+            ],
+            "outcome": "inconclusive",
+            "independence": "The light-controlled bilayer and the Brandeis channel-calibration experiment used independently constructed membranes and measured currents.",
+            "comparison": "Pfeffermann spans both voltage polarities and misses at the held-out voltage. Piasta’s valinomycin diamonds cluster near −72 to −70 mV on a wider axis. They locate reversal but do not test the wide-voltage shape.",
+            "replay": {
+              "status": "unconfirmed",
+              "assessment": "Pfeffermann’s withheld −110 mV current misses. Piasta’s carrier points span only about 2 mV around the crossing. A second broad asymmetric bilayer trace with isolated potassium current remains missing."
+            }
           }
         ],
         "evidence": [
@@ -10128,8 +10490,12 @@
             "locator": "The lower Fig. 6A points give chloride currents. Fig. 6C gives measured voltages at the two external potassium concentrations. Fig. 5 gives conductances.",
             "context": "DIDS-treated human red cells, five donor series at 23 °C and pH 7.5. Optical shrinkage estimates net chloride transfer. A parallel pH assay estimates membrane voltage.",
             "role": "held_out_from_fitting",
-            "fit": ["1 mM external potassium, −103 mV"],
-            "evaluation": ["10 mM external potassium, −59 mV"],
+            "fit": [
+              "1 mM external potassium, −103 mV"
+            ],
+            "evaluation": [
+              "10 mM external potassium, −59 mV"
+            ],
             "uncertainty": "Means and SD were digitized. Estimated figure-reading precision is ±1.5 mV and ±0.05 mA/g Hb. The within-donor covariance is unavailable.",
             "assessment": "At −59 mV, the one-voltage fit predicted −1.97 mA/g Hb against −1.17 ± 0.13 measured. The ratio of reported mean slope conductances was 3.67. At the inferred fixed chloride concentrations the model permits a local slope ratio up to 1.49.",
             "report": "lean/PROGRESS.md#20-november-2026--charged-constant-field-permeation"
@@ -10142,11 +10508,28 @@
             "locator": "Open magenta squares for asymmetric KCl at matched light state. The text reports the interpolated reversal.",
             "context": "Planar bilayer under voltage clamp with a 150/15 mM potassium gradient and valinomycin. The comparison assumes 25 °C.",
             "role": "held_out_from_fitting",
-            "fit": ["+110 mV potassium current"],
-            "evaluation": ["−110 mV potassium current", "cis-state reversal"],
+            "fit": [
+              "+110 mV potassium current"
+            ],
+            "evaluation": [
+              "−110 mV potassium current",
+              "cis-state reversal"
+            ],
             "uncertainty": "The plotted currents are readable to about ±1 nA. The panel gives no pointwise uncertainties or measurement temperature. The reversal is interpolated from the same curve.",
             "assessment": "The predicted reversal was −59.16 mV against −59.8 mV measured. At −110 mV the same fitted permeability gave −3.84 nA against approximately −13.5 nA measured.",
             "report": "lean/PROGRESS.md#20-november-2026--charged-constant-field-permeation"
+          },
+          {
+            "dataset_id": "piasta2011_valinomycin_local@1",
+            "manifest": "lean/checks/data/paired_replay_measurements.json",
+            "citation": "Piasta et al. (2011), Appendix B, Fig. B1",
+            "doi": "10.1085/jgp.201110684",
+            "locator": "Appendix B, Fig. B1, diamond markers after valinomycin addition. Example bilayer and blocked-channel baseline.",
+            "context": "Valinomycin added to a single-channel planar bilayer in a 200/10 mM K gradient.",
+            "role": "descriptive",
+            "uncertainty": "The ±1.3 mV belongs to the channel-minus-carrier reversal difference over four comparisons. Pointwise current uncertainty and ion activities for the plotted curve are unavailable. Use only the narrow window actually covered by the carrier points.",
+            "assessment": "Carrier points straddle the blocked-channel baseline around −71 mV. The paired channel-minus-carrier reversal difference is −0.8 ± 1.3 mV. These data constrain the local crossing.",
+            "report": "lean/PROGRESS.md#paired-law-replays"
           }
         ]
       }
@@ -10268,7 +10651,11 @@
             ],
             "outcome": "both_support",
             "independence": "Toronto macrophage recordings and Osaka microglial recordings used separate animals and independent laboratories. Each group measured the current crossing following activation.",
-            "comparison": "At bath pH 7.5, changing macrophage pipette pH from 6.8 to 6.0 moved the mean reversal from −38.1 to −69.2 mV. At fixed pipette pH 5.5, increasing microglial bath pH from 6.3 to 7.3 moved it from about −31 to −75 mV. Both support direction. The free pH gradient during the tail and basal mitochondrial leak conductance remain open."
+            "comparison": "At bath pH 7.5, changing macrophage pipette pH from 6.8 to 6.0 moved the mean reversal from −38.1 to −69.2 mV. At fixed pipette pH 5.5, increasing microglial bath pH from 6.3 to 7.3 moved it from about −31 to −75 mV. Both support direction. The free pH gradient during the tail and basal mitochondrial leak conductance remain open.",
+            "replay": {
+              "status": "reproduced",
+              "assessment": "The nominal bath/pipette changes give a more negative root in each preparation. For macrophages the observed change is −31.1 mV versus −46.9 mV from nominal pH. Free intracellular pH at the recording time is needed for magnitudes."
+            }
           },
           {
             "id": "mitoplast-proton-reversal-independence",
@@ -10279,7 +10666,11 @@
             ],
             "outcome": "not_independent",
             "independence": "Brown-fat UCP1 and skeletal-muscle ADP/ATP-carrier measurements used different mouse tissues and proteins. Both came from Kirichok’s laboratory. The 2019 data also appear on the buffered-proton claim.",
-            "comparison": "At a one-unit bath-minus-matrix pH difference the brown-fat example crossed near −60 mV. The muscle group mean was −62.23 mV (six observations). Both are compatible with about −59 mV at 24 °C. Absolute permeability, activation conditions and independent laboratory replication of this mitochondrial comparison remain open."
+            "comparison": "At a one-unit bath-minus-matrix pH difference the brown-fat example crossed near −60 mV. The muscle group mean was −62.23 mV (six observations). Both are compatible with about −59 mV at 24 °C. Absolute permeability, activation conditions and independent laboratory replication of this mitochondrial comparison remain open.",
+            "replay": {
+              "status": "unconfirmed",
+              "assessment": "The nominal one-pH-unit root has the observed sign and approximate magnitude. These independent preparations share a lab. A second laboratory measuring the mitochondrial carrier’s own reversal is still needed."
+            }
           }
         ]
       }
@@ -10333,7 +10724,11 @@
             ],
             "outcome": "both_support",
             "independence": "Bertholet’s group recorded mouse skeletal-muscle mitoplasts. Cherny’s group recorded rat alveolar epithelial cells with a different proton pathway.",
-            "comparison": "The three mitoplast groups reversed at means of −62.2, −91.1 and +28.8 mV at outside-minus-inside pH differences of +1, +1.5 and −0.5. The alveolar tail-current reversal shifted in the same direction by about 52 mV per pH unit over four units. The shared result concerns the zero-current voltage. Permeability and gating remain separate questions."
+            "comparison": "The three mitoplast groups reversed at means of −62.2, −91.1 and +28.8 mV at outside-minus-inside pH differences of +1, +1.5 and −0.5. The alveolar tail-current reversal shifted in the same direction by about 52 mV per pH unit over four units. The shared result concerns the zero-current voltage. Permeability and gating remain separate questions.",
+            "replay": {
+              "status": "reproduced",
+              "assessment": "The three native free-proton reversals are −59.0, −88.4 and +29.5 mV at the mitoplast gradients. The alveolar series gives the same direction and an approximate 52 mV/pH slope. Paired intracellular pH during each tail is missing for an absolute comparison."
+            }
           }
         ],
         "status": "open",
@@ -10421,37 +10816,43 @@
             ],
             "outcome": "not_independent",
             "independence": "The workshop and journal reports come from the same Kettner research group. An independent preparation or dataset lineage for the workshop value is undocumented.",
-            "comparison": "The journal reports a lower bound of +40 mV for three vacuoles. The workshop reports +50 ± 8 mV with no replicate count, and its low-pH figure is a time trace at 0 mV. The values are compatible. The two publications cannot establish an independent replication."
+            "comparison": "The journal reports a lower bound of +40 mV for three vacuoles. The workshop reports +50 ± 8 mV with no replicate count, and its low-pH figure is a time trace at 0 mV. The values are compatible. The two publications cannot establish an independent replication.",
+            "replay": {
+              "status": "unconfirmed",
+              "assessment": "The two reports cannot establish independent low-pH pump reversals. Additional independent clamps with measured fuel activities would test the quantitative stimulus."
+            }
           }
         ],
         "status": "open",
         "observable": "Reversal voltage of ATP-dependent proton transport at known fuel and proton activities, and neutral-cargo flux at fixed activities under varied voltage.",
         "finding": "Vesicles showed ATP-dependent riboflavin uptake. Neutral-cargo reversal and voltage independence remain open. [Van Herwaarden et al., Fig. 3E](https://pmc.ncbi.nlm.nih.gov/articles/PMC1800714/)",
         "unit": "mV for reversal, fmol/s for signed cargo flux",
-        "evidence": [{
-          "dataset_id": "kettner2003_vacuolar_pump@1",
-          "manifest": "lean/checks/data/kettner2003_vacuole.json",
-          "citation": "Kettner et al. (2003), Fig. 3 and Table 2",
-          "doi": "10.1016/S0006-3495(03)74789-4",
-          "locator": "ATP-dependent difference currents in Fig. 3 and five resolved reversals plus three bounds in Table 2.",
-          "context": "Voltage-clamped yeast vacuoles with ATP, ADP and phosphate supplied to the cytosolic side.",
-          "role": "descriptive",
-          "uncertainty": "At cytosolic pH 7.5, the two measured reversal voltages were −25.6 ± 1 and −38.6 ± 9 mV (SE, four and three trials). The proton equilibrium and hydrolysis voltages are calculated quantities.",
-          "assessment": "Changing vacuolar pH from 4.1 to 6.0 shifted the ATP-dependent current reversal by −13.0 mV. Any fixed tightly coupled pump at the same fuel drive predicts the full proton-equilibrium shift, −112.5 mV using the paper's values. At pH 8.5/5.0 the two-proton prediction was −86.5 mV versus −17.5 ± 5 mV measured. The suggested pump-associated proton shunt remains one candidate mechanism.",
-          "report": "lean/PROGRESS.md#biological-model-review"
-        },
-        {
-          "dataset_id": "kettner_workshop_low_ph",
-          "manifest": "lean/checks/data/kettner_low_ph_reversal.json",
-          "citation": "Kettner, 2002 workshop proceedings (2003), Fig. 7B and Table 1",
-          "url": "https://www.beilstein-institut.de/download/736/kettner_1.pdf#page=14",
-          "locator": "Table 1 at cytosolic pH 7.5 and lumen pH 3.1. Figure 7B shows a low-pH trace at 0 mV.",
-          "context": "The same research group reported the journal reversal bound above +40 mV. Workshop voltage ramps lasted 2.5 s and journal ramps lasted 5 s.",
-          "role": "descriptive",
-          "uncertainty": "The table gives +50 ± 8 mV (SE) without a replicate count or a matched low-pH sweep resolving the crossing. Independence from the journal recordings is unknown.",
-          "assessment": "The earlier estimate is compatible with the journal’s lower bound. The low-pH measurement required to reopen FR-29 remains outstanding.",
-          "report": "lean/PROGRESS.md#fr29-low-ph-current"
-        }]
+        "evidence": [
+          {
+            "dataset_id": "kettner2003_vacuolar_pump@1",
+            "manifest": "lean/checks/data/kettner2003_vacuole.json",
+            "citation": "Kettner et al. (2003), Fig. 3 and Table 2",
+            "doi": "10.1016/S0006-3495(03)74789-4",
+            "locator": "ATP-dependent difference currents in Fig. 3 and five resolved reversals plus three bounds in Table 2.",
+            "context": "Voltage-clamped yeast vacuoles with ATP, ADP and phosphate supplied to the cytosolic side.",
+            "role": "descriptive",
+            "uncertainty": "At cytosolic pH 7.5, the two measured reversal voltages were −25.6 ± 1 and −38.6 ± 9 mV (SE, four and three trials). The proton equilibrium and hydrolysis voltages are calculated quantities.",
+            "assessment": "Changing vacuolar pH from 4.1 to 6.0 shifted the ATP-dependent current reversal by −13.0 mV. Any fixed tightly coupled pump at the same fuel drive predicts the full proton-equilibrium shift, −112.5 mV using the paper's values. At pH 8.5/5.0 the two-proton prediction was −86.5 mV versus −17.5 ± 5 mV measured. The suggested pump-associated proton shunt remains one candidate mechanism.",
+            "report": "lean/PROGRESS.md#biological-model-review"
+          },
+          {
+            "dataset_id": "kettner_workshop_low_ph",
+            "manifest": "lean/checks/data/kettner_low_ph_reversal.json",
+            "citation": "Kettner, 2002 workshop proceedings (2003), Fig. 7B and Table 1",
+            "url": "https://www.beilstein-institut.de/download/736/kettner_1.pdf#page=14",
+            "locator": "Table 1 at cytosolic pH 7.5 and lumen pH 3.1. Figure 7B shows a low-pH trace at 0 mV.",
+            "context": "The same research group reported the journal reversal bound above +40 mV. Workshop voltage ramps lasted 2.5 s and journal ramps lasted 5 s.",
+            "role": "descriptive",
+            "uncertainty": "The table gives +50 ± 8 mV (SE) without a replicate count or a matched low-pH sweep resolving the crossing. Independence from the journal recordings is unknown.",
+            "assessment": "The earlier estimate is compatible with the journal’s lower bound. The low-pH measurement required to reopen FR-29 remains outstanding.",
+            "report": "lean/PROGRESS.md#fr29-low-ph-current"
+          }
+        ]
       }
     },
     {
@@ -10474,7 +10875,55 @@
         "CellsProofs.Transport.ElectrogenicPumps.zero_current_iff": "lean/CellsProofs/Transport/ElectrogenicPumps.lean"
       }},
       "numerical": {"status": "checked", "comparisons": ["electrogenic-pump-charge"], "result": "The compiled tissue matched two 80-digit references at five initial voltages, including both stalls (−99.365 and −104.104 mV). The largest cycle-rate error was 3.50 × 10⁻¹⁶ fmol/s. At the midpoint the pumps ran in opposite directions, each contributing 0.349 pA in magnitude. The net electrode current was 2.04 × 10⁻²⁶ A. The 1 ms trajectory accounted for all three ions and both midpoint pumps dissipated energy."},
-      "biology": {"status": "open", "observable": "Ion transfer per ATP, paired ion flux and outward current, and stall voltage under known fuel and ion activities.", "finding": "Squid axons gave 3.05 ± 0.13 Na⁺ per net charge from −60 to −90 mV in Na-free seawater and 2.72 ± 0.09 at 0 mV with 390 mM external Na⁺ (SEM). Cells predicts 3. Red-cell ghosts lost about 3 Na⁺ per ATP. In pig-brain calcium pumps, separate rate measurements imply 1.02 Ca²⁺ per ATP and about +1.4 net charges per ATP after inward H⁺ is included. Cells counts +2 from Ca²⁺ alone. The simulated stall voltages still lack a matched measurement. [Rakowski et al., Table I](https://doi.org/10.1085/jgp.93.5.903) · [Garrahan and Glynn](https://doi.org/10.1113/jphysiol.1967.sp008297) · [Salvador et al., Table I](https://doi.org/10.1074/jbc.273.29.18230)", "unit": "ions per net elementary charge, ions and net elementary charges per ATP, mV for stall", "evidence": []}
+      "biology": {
+        "status": "open",
+        "observable": "Ion transfer per ATP, paired ion flux and outward current, and stall voltage under known fuel and ion activities. A separate erythrocyte measurement reports labelled phosphate incorporation into ATP.",
+        "finding": "Squid axons gave 3.05 ± 0.13 Na⁺ per net charge from −60 to −90 mV in Na-free seawater and 2.72 ± 0.09 at 0 mV with 390 mM external Na⁺ (SEM). Cells predicts 3. Red-cell ghosts lost about 3 Na⁺ per ATP. In pig-brain calcium pumps, separate rate measurements imply 1.02 Ca²⁺ per ATP and about +1.4 net charges per ATP after inward H⁺ is included. Cells counts +2 from Ca²⁺ alone. The simulated stall voltages still lack a matched measurement. [Rakowski et al., Table I](https://doi.org/10.1085/jgp.93.5.903) · [Garrahan and Glynn](https://doi.org/10.1113/jphysiol.1967.sp008297) · [Salvador et al., Table I](https://doi.org/10.1074/jbc.273.29.18230)",
+        "unit": "ions per net elementary charge, ions and net elementary charges per ATP, mV for stall and direction of phosphate label incorporation",
+        "evidence": [
+          {
+            "dataset_id": "garrahan1967_ghost_phosphate_label@1",
+            "manifest": "lean/checks/data/paired_replay_measurements.json",
+            "citation": "Garrahan and Glynn (1967), nucleotide incorporation experiments",
+            "doi": "10.1113/jphysiol.1967.sp008298",
+            "locator": "Primary report, nucleotide labelling in resealed human erythrocyte ghosts, 15 min incorporation.",
+            "context": "Resealed erythrocyte ghosts under opposing sodium and potassium gradients.",
+            "role": "descriptive",
+            "uncertainty": "High internal K and external Na increased radiophosphate incorporation above background. Ouabain suppressed the extra signal. The measured quantity is isotope entering nucleotides.",
+            "assessment": "In five ouabain experiments the pump inhibitor largely suppressed the gradient-associated excess labelling above background.",
+            "report": "lean/PROGRESS.md#paired-law-replays"
+          },
+          {
+            "dataset_id": "lant1968_ghost_phosphate_label@1",
+            "manifest": "lean/checks/data/paired_replay_measurements.json",
+            "citation": "Lant and Whittam (1968), erythrocyte ghost labelling",
+            "doi": "10.1113/jphysiol.1968.sp008663",
+            "locator": "Primary report, human erythrocyte ghosts, membrane and soluble nucleotide fractions.",
+            "context": "A second group varied internal and external ions in resealed human erythrocyte membranes.",
+            "role": "descriptive",
+            "uncertainty": "The gradient-dependent ATP label was ouabain-sensitive. Ion-independent incorporation persisted. A label can enter by exchange at zero net ATP production.",
+            "assessment": "Both ion gradients were needed for excess ATP labelling, which ouabain prevented. This measures isotope incorporation. Independent ATP pool-size changes would be needed for net synthesis.",
+            "report": "lean/PROGRESS.md#paired-law-replays"
+          }
+        ],
+        "pairs": [
+          {
+            "id": "ghost-gradient-atp-label",
+            "assumption": "Opposing Na and K gradients increase ouabain-sensitive radiophosphate incorporation into ATP in red-cell ghosts.",
+            "datasets": [
+              "garrahan1967_ghost_phosphate_label@1",
+              "lant1968_ghost_phosphate_label@1"
+            ],
+            "outcome": "both_support",
+            "independence": "Garrahan and Glynn and Lant and Whittam each prepared and assayed their own ghosts.",
+            "comparison": "Both groups saw ATP labelling increase with a K-rich interior and Na-rich, nominally K-free exterior. Ouabain reduced the excess. Background nucleotide labelling remained. Exchange can produce the signal without net ATP synthesis.",
+            "replay": {
+              "status": "partial",
+              "assessment": "The pump readout is signed net cycle flux. Both experiments measure isotope entering ATP. Without tracer-specific gross forward and reverse fluxes and background exchange, the two quantities cannot be compared, even at zero net flux."
+            }
+          }
+        ]
+      }
     },
     {
       "id": "extracellular-face-direction",
@@ -10765,7 +11214,11 @@
             ],
             "outcome": "different_results",
             "independence": "Zhang’s group measured free Mg using a macroelectrode. Ward’s group used matched fluorescence and phosphorus-NMR aliquots. Its regression and plotted point use the same experiment.",
-            "comparison": "At pH 7.2 and 37 °C, apparent Kd was 87.4 ± 4.9 µM (SD, n = 4) in the muscle-like medium and 27.7 ± 0.4 µM (reported fit error) in MOPS/KCl. This 3.16-fold difference matters for occupancy. Ionic composition and assay differ, so the cause remains unresolved."
+            "comparison": "At pH 7.2 and 37 °C, apparent Kd was 87.4 ± 4.9 µM (SD, n = 4) in the muscle-like medium and 27.7 ± 0.4 µM (reported fit error) in MOPS/KCl. This 3.16-fold difference matters for occupancy. Ionic composition and assay differ, so the cause remains unresolved.",
+            "replay": {
+              "status": "unconfirmed",
+              "assessment": "Each preparation’s fitted affinity changes the predicted occupancy. The different ionic media give different apparent Kd, with no common independently specified binding parameters for a transfer test."
+            }
           }
         ]
       }
@@ -10890,7 +11343,11 @@
             ],
             "outcome": "both_support",
             "independence": "Besarab’s and Günther’s groups independently measured free Ca with an ion-selective electrode and total Ca by atomic absorption. Each comparison stays within one albumin preparation.",
-            "comparison": "All four adjacent steps in the 4.97 g/dL series satisfy Δtotal ≥ Δfree > 0 (endpoint ratio 1.98). The pH-matched 4.0 g/dL pair with palmitate gives 1.37. Both support finite buffering in those solutions. Neither provides a slope at measured, fixed free Mg or an ATP proton–Mg cross-response."
+            "comparison": "All four adjacent steps in the 4.97 g/dL series satisfy Δtotal ≥ Δfree > 0 (endpoint ratio 1.98). The pH-matched 4.0 g/dL pair with palmitate gives 1.37. Both support finite buffering in those solutions. Neither provides a slope at measured, fixed free Mg or an ATP proton–Mg cross-response.",
+            "replay": {
+              "status": "represented",
+              "assessment": "The general native buffering response has Δtotal/Δfree ≥ 1 at fixed other free ligands. Both experimental calcium increments satisfy it. Albumin site parameters and free Mg at both endpoints were not measured for a preparation-matched magnitude."
+            }
           }
         ]
       }
@@ -11232,7 +11689,11 @@
             ],
             "outcome": "both_support",
             "independence": "Different groups equilibrated their own DOPC vesicles against cyclodextrin. They share an assay principle. Only Shaw calibrated activities against crystals.",
-            "comparison": "Shaw’s crystal-referenced activity rose from 0.10 ± 0.01 at 5.4 mol% to 0.22 ± 0.02 at 11.4 mol% (68% intervals). In Lange’s 25 °C data the distribution coefficient changed little across roughly 0.6–14 mol%. Eq. 3 then gives rising cyclodextrin loading x/[(1−x)Q], a relative activity proxy at low occupancy. The pair supports the dilute trend; the high-fraction ideal law and absolute calibration remain open."
+            "comparison": "Shaw’s crystal-referenced activity rose from 0.10 ± 0.01 at 5.4 mol% to 0.22 ± 0.02 at 11.4 mol% (68% intervals). In Lange’s 25 °C data the distribution coefficient changed little across roughly 0.6–14 mol%. Eq. 3 then gives rising cyclodextrin loading x/[(1−x)Q], a relative activity proxy at low occupancy. The pair supports the dilute trend; the high-fraction ideal law and absolute calibration remain open.",
+            "replay": {
+              "status": "partial",
+              "assessment": "The declared ideal mixing activity rises at low fraction and Shaw’s low-fraction data rise. Lange measures cyclodextrin partition. The dilute-occupancy mapping gives the same direction, without the crystal-referenced activity or bath calibration needed for a second absolute replay."
+            }
           }
         ],
         "evidence": [
@@ -11256,7 +11717,9 @@
             "locator": "Table S1, printed page 13, gives the 25 DOPC readings and both 68% confidence half-widths.",
             "context": "Protein-free DOPC/cholesterol large unilamellar vesicles equilibrated with methyl-beta-cyclodextrin at room temperature. Activity 1 refers to crystalline cholesterol.",
             "role": "descriptive",
-            "evaluation": ["Hold out each of the 23 distinct composition values printed in Table S1, keeping rows with the same value together."],
+            "evaluation": [
+              "Hold out each of the 23 distinct composition values printed in Table S1, keeping rows with the same value together."
+            ],
             "uncertainty": "Activity and mole fraction come from the same fit and share a calibration across samples. The published marginal intervals omit their covariance. The comparison also reports sensitivity to weighting by both intervals.",
             "report": "lean/PROGRESS.md#19-november-2026--ideal-and-regular-assembly-mixing",
             "assessment": "Holding out each composition in turn gave a root-mean-square activity error of 0.0953. At 45.6 mol% the ideal prediction was 0.791 and the measured activity was 0.45 ± 0.02. This bulk series leaves the finite-count convention open."
@@ -11269,8 +11732,12 @@
             "locator": "Figure 3 and its accompanying microscopy results give a crystal-onset mole fraction of 0.66 ± 0.02 across three series.",
             "context": "Optical microscopy detected cholesterol monohydrate in hydrated DOPC/cholesterol samples. The microscopy equilibration and stage temperatures are unspecified.",
             "role": "held_out_from_fitting",
-            "fit": ["Shaw Table S1 DOPC activity curve"],
-            "evaluation": ["Parker Fig. 3 crystal-onset composition"],
+            "fit": [
+              "Shaw Table S1 DOPC activity curve"
+            ],
+            "evaluation": [
+              "Parker Fig. 3 crystal-onset composition"
+            ],
             "uncertainty": "The ±0.02 in composition has no stated confidence level. At equilibrium with the same solid chemical potential, onset corresponds to activity 1. Shaw did not characterize its crystal polymorph.",
             "report": "lean/PROGRESS.md#19-november-2026--ideal-and-regular-assembly-mixing",
             "assessment": "Extrapolating from the highest fitted composition (45.6 mol%) to the independently measured crystal onset (66 ± 2 mol%) gives activity 1.119. The expected value is 1 if the crystal references match."
@@ -11321,7 +11788,11 @@
             ],
             "outcome": "both_support",
             "independence": "Niu and Litman and Lange’s group collected separate equilibrium cyclodextrin–vesicle partition datasets. Both used a similar partition method. Only ratios within the same experiment and temperature are compared.",
-            "comparison": "Niu measured a SOPC/DOPC partition ratio of 1.40 ± 0.11 and reported −207 ± 19 cal/mol for transfer into SOPC. Lange’s separate Q measurements give 4.8/3.5 = 1.37. Both support the direction and approximate magnitude of this host effect. The ratios alone cannot identify the Cells pair coefficient χ or its dependence on cholesterol fraction."
+            "comparison": "Niu measured a SOPC/DOPC partition ratio of 1.40 ± 0.11 and reported −207 ± 19 cal/mol for transfer into SOPC. Lange’s separate Q measurements give 4.8/3.5 = 1.37. Both support the direction and approximate magnitude of this host effect. The ratios alone cannot identify the Cells pair coefficient χ or its dependence on cholesterol fraction.",
+            "replay": {
+              "status": "partial",
+              "assessment": "The native pair energy can distinguish host compositions. The observed SOPC/DOPC affinity ratios are 1.40 and 1.37. Neither measurement independently specifies the two membrane interaction energies or the bath reference for a forward prediction."
+            }
           },
           {
             "id": "dopc-crystal-onset-portability",
@@ -11332,7 +11803,11 @@
             ],
             "outcome": "inconclusive",
             "independence": "Different groups prepared their own dispersions. Parker minimized demixing during preparation. Tenchov dried and rehydrated lipid films and used a different crystal-detection method.",
-            "comparison": "Parker detected cholesterol monohydrate by microscopy near a feed mole fraction of 0.66 ± 0.02 using low-temperature trapping. Tenchov detected a 3.40 nm diffraction line in some nominal 0.50 mixtures at 20 °C and none in other 0.50 mixtures. The observed appearances differ. Neither pair of feed fractions establishes two different equilibrium bilayer saturation fractions."
+            "comparison": "Parker detected cholesterol monohydrate by microscopy near a feed mole fraction of 0.66 ± 0.02 using low-temperature trapping. Tenchov detected a 3.40 nm diffraction line in some nominal 0.50 mixtures at 20 °C and none in other 0.50 mixtures. The observed appearances differ. Neither pair of feed fractions establishes two different equilibrium bilayer saturation fractions.",
+            "replay": {
+              "status": "unconfirmed",
+              "assessment": "A feed fraction and a crystal signal under different sample preparations cannot supply the actual equilibrium bilayer composition in both preparations."
+            }
           }
         ],
         "evidence": [
@@ -11380,7 +11855,9 @@
             "locator": "Table S1, printed page 13, gives the 25 DOPC readings and both 68% confidence half-widths.",
             "context": "Protein-free DOPC/cholesterol large unilamellar vesicles equilibrated with methyl-beta-cyclodextrin at room temperature. Activity 1 refers to crystalline cholesterol.",
             "role": "descriptive",
-            "evaluation": ["Hold out each of the 23 distinct composition values printed in Table S1, keeping rows with the same value together."],
+            "evaluation": [
+              "Hold out each of the 23 distinct composition values printed in Table S1, keeping rows with the same value together."
+            ],
             "uncertainty": "Activity and mole fraction come from the same fit and share a calibration across samples. The published marginal intervals omit their covariance. The comparison also reports sensitivity to weighting by both intervals.",
             "report": "lean/PROGRESS.md#19-november-2026--ideal-and-regular-assembly-mixing",
             "assessment": "The interaction term lowered the held-composition activity error from 0.0953 to 0.0782. At 45.6 mol% it predicted 0.677 against 0.45 ± 0.02. Weighting by both measured uncertainties shifted the fitted interaction from 0.75 to 1.02 kBT."
@@ -11393,8 +11870,12 @@
             "locator": "Figure 3 and its accompanying microscopy results give a crystal-onset mole fraction of 0.66 ± 0.02 across three series.",
             "context": "Optical microscopy detected cholesterol monohydrate in hydrated DOPC/cholesterol samples. The microscopy equilibration and stage temperatures are unspecified.",
             "role": "held_out_from_fitting",
-            "fit": ["Shaw Table S1 DOPC activity curve"],
-            "evaluation": ["Parker Fig. 3 crystal-onset composition"],
+            "fit": [
+              "Shaw Table S1 DOPC activity curve"
+            ],
+            "evaluation": [
+              "Parker Fig. 3 crystal-onset composition"
+            ],
             "uncertainty": "The ±0.02 in composition has no stated confidence level. At equilibrium with the same solid chemical potential, onset corresponds to activity 1. Shaw did not characterize its crystal polymorph.",
             "report": "lean/PROGRESS.md#19-november-2026--ideal-and-regular-assembly-mixing",
             "assessment": "Extrapolating from 45.6 mol% to the independently measured crystal onset (66 ± 2 mol%) gives activity 0.804. The ideal prediction, 1.119, is closer to the expected activity of 1 if the crystal references match."
@@ -11543,13 +12024,15 @@
         "comparisons": [
           "rectifier-reference-domain",
           "inward-rectifier-nov20",
-          "inward-rectifier"
+          "inward-rectifier",
+          "paired-channel-and-cohort-replays",
+          "paired-response-endpoints"
         ],
         "result": "All three equivalent normalizations gave 0.5520533 pA and identical transfer and heat, including the smallest normal float64 potassium reference. All 360 voltage controls passed. A positive subnormal reference (5 × 10⁻³²⁴ mM) was refused during definition checking. The original overflow remains at the earlier engine revision."
       },
       "biology": {
         "status": "mixed",
-        "observable": "Kir4.1 unitary current 60 mV below reversal, inward unitary slope conductance and the shift in reversal as external potassium changes.",
+        "observable": "Kir4.1 unitary current 60 mV below reversal, inward unitary slope conductance and the shift in reversal as external potassium changes. Separately, inward unitary slope in sodium-poor mouse Kir2.1 and native ventricular recordings.",
         "unit": "pA",
         "evidence": [
           {
@@ -11598,9 +12081,33 @@
             "uncertainty": "Approximate visual shifts within one cell. No numerical uncertainty on the crossings. Native current may include other channels.",
             "assessment": "A tenfold increase in external K moved the raw current crossing about +50 mV. The separate breakpoint for fast block moved about +100 mV. Native Müller-cell current supports the direction of reversal with a less specific channel assignment.",
             "report": "lean/PROGRESS.md#paired-calibration-and-leaflet-packing"
+          },
+          {
+            "dataset_id": "ishihara2018_kir21_unitary@1",
+            "manifest": "lean/checks/data/paired_replay_measurements.json",
+            "citation": "Ishihara (2018), Fig. 4B–C",
+            "doi": "10.1085/jgp.201711936",
+            "locator": "Fig. 4B–C, wild-type mouse Kir2.1, inward unitary slope of the i–V relation.",
+            "context": "Cell-attached recordings of recombinant mouse Kir2.1, with extracellular potassium reduced with and without sodium replacement.",
+            "role": "descriptive",
+            "uncertainty": "Figure readings, not tabulated slopes. The pipette supplies the extracellular patch solution. Cell-attached recordings leave intracellular K activity unknown. The published power fit uses activity in the Na-substitution series. Cells takes concentrations.",
+            "assessment": "Inward unitary slope fell from about 42 to 35 pS for 150→20 mM K without external Na, and to about 18.5 pS with 130 mM external Na. The concentration-based square-root prediction is 15.3 pS in either low-K solution.",
+            "report": "lean/PROGRESS.md#paired-law-replays"
+          },
+          {
+            "dataset_id": "matsuda1991_ventricular_unitary@1",
+            "manifest": "lean/checks/data/paired_replay_measurements.json",
+            "citation": "Matsuda (1991), Figs. 1–2",
+            "doi": "10.1113/jphysiol.1991.sp018499",
+            "locator": "Figs. 1–2 and accompanying group slope estimates, open-cell-attached guinea-pig ventricular patches, Mg-free cytoplasm.",
+            "context": "Native guinea-pig ventricular inward rectifier, internally Mg-free, with largely sugar-substituted low external K.",
+            "role": "descriptive",
+            "uncertainty": "The two rows at 150 mM internal K compare quasi-linear single-channel slopes with sugar substitution outside. Molecular identity was unresolved. The third row changes the inside concentration.",
+            "assessment": "Lowering external K from 150 to 30 mM gave 23.1 ± 1.2 pS against 14.2 pS predicted from the high-K anchor of 31.7 ± 1.7 pS. The group slopes are mean ± SD.",
+            "report": "lean/PROGRESS.md#paired-law-replays"
           }
         ],
-        "finding": "Reversal moved toward positive voltages when external potassium rose in two preparations. The inward unitary conductance increased with potassium in both recombinant series, with different concentration dependence.",
+        "finding": "Reversal moved toward positive voltages when external potassium rose in two preparations. The inward unitary conductance increased with potassium in both recombinant series, with different concentration dependence. In a separate sodium-poor comparison the low-K slopes exceed high-K-anchored square-root predictions in both preparations.",
         "pairs": [
           {
             "id": "kir41-slope-scaling",
@@ -11611,7 +12118,11 @@
             ],
             "outcome": "different_results",
             "independence": "Tada’s group recorded rat Kir4.1 in HEK293T. Edvinsson’s group recorded human Kir4.1 in cell-attached oocyte patches.",
-            "comparison": "Tada fitted a concentration exponent of 0.51 at 15–153 mM (three patches per level). Edvinsson fitted saturation. Anchoring a square root at their 110 mM value of 23 pS gives 13.9 pS at 40 mM, against about 19 pS in Fig. 7C. Both series rise. The figure precision, species and solutions limit inference about the difference."
+            "comparison": "Tada fitted a concentration exponent of 0.51 at 15–153 mM (three patches per level). Edvinsson fitted saturation. Anchoring a square root at their 110 mM value of 23 pS gives 13.9 pS at 40 mM, against about 19 pS in Fig. 7C. Both series rise. The figure precision, species and solutions limit inference about the difference.",
+            "replay": {
+              "status": "unconfirmed",
+              "assessment": "Tada’s fitted exponent is close to 0.5. In Edvinsson’s preparation the anchored law gives 13.9 versus about 19 pS at 40 mM. The two Kir4.1 preparations differ. The separate Na-poor inward-rectifier comparison has different channel identities."
+            }
           },
           {
             "id": "kir-potassium-reversal",
@@ -11622,7 +12133,26 @@
             ],
             "outcome": "both_support",
             "independence": "The recombinant rat-channel study and native frog retinal-glia study used separate preparations in different laboratories.",
-            "comparison": "The recombinant crossing moved about +60 mV from 15 to 153 mM K. One frog Müller cell gave about +50 mV from 1 to 10 mM at fixed pipette spermine. The measurements support the reversal direction. Neither the representative native trace nor its block breakpoint determines a universal reversal slope."
+            "comparison": "The recombinant crossing moved about +60 mV from 15 to 153 mM K. One frog Müller cell gave about +50 mV from 1 to 10 mM at fixed pipette spermine. The measurements support the reversal direction. Neither the representative native trace nor its block breakpoint determines a universal reversal slope.",
+            "replay": {
+              "status": "reproduced",
+              "assessment": "The native K zero gains about one thermal decade in both preparations, consistent with measured changes near +60 and +50 mV. The glial record gives one crossing per solution. Internal K cancels from the shift at fixed temperature."
+            }
+          },
+          {
+            "id": "kir-low-potassium-sodium-poor",
+            "assumption": "In Na-poor external solutions, one high-K calibration and square-root concentration scaling predict the low-K inward unitary slope.",
+            "datasets": [
+              "ishihara2018_kir21_unitary@1",
+              "matsuda1991_ventricular_unitary@1"
+            ],
+            "outcome": "both_challenge",
+            "independence": "Ishihara measured recombinant mouse Kir2.1 in L cells. Matsuda recorded separate native guinea-pig ventricular patches. The molecular subtype of the latter was unresolved.",
+            "comparison": "For 150→20 mM K, recombinant inward slope retained about 35/42 = 83% without Na. For 150→30 mM K, the native Mg-free slope retained 23.1/31.7 = 73%. Nominal-concentration predictions are 37% and 45%. This compares slope measurements across preparations.",
+            "replay": {
+              "status": "missed",
+              "assessment": "At matched inward drive the high-K anchored native slope ratios are 0.365 and 0.447 versus about 0.83 and 0.729. Each experiment fits slopes over a voltage range. At 20 mM K, Ishihara’s Na-substituted value drops toward the square-root prediction. Molecular identity of the native ventricular current is unresolved."
+            }
           }
         ]
       }
@@ -11676,7 +12206,11 @@
             ],
             "outcome": "both_support",
             "independence": "Miyauchi’s and Paroder’s groups recorded their own oocytes expressing human SMCT1.",
-            "comparison": "The published half-saturation concentrations were 127 ± 14 and 162 ± 26 µM. The dose responses independently support saturation and an affinity scale around 0.1–0.2 mM. The exact affinity, eight transition rates and sodium coupling ratio remain separate questions."
+            "comparison": "The published half-saturation concentrations were 127 ± 14 and 162 ± 26 µM. The dose responses independently support saturation and an affinity scale around 0.1–0.2 mM. The exact affinity, eight transition rates and sodium coupling ratio remain separate questions.",
+            "replay": {
+              "status": "reproduced",
+              "assessment": "Separate two-point fits give 130 and 140 µM. The saturating response matches direction and approximate scale on held-out doses in both reports. Transition rates and the sodium coupling count require different observables."
+            }
           }
         ],
         "status": "open",
@@ -11692,8 +12226,16 @@
             "locator": "The data are the six filled symbols in the main propionate panel.",
             "context": "Human SLC5A8 in one representative Xenopus oocyte at −50 mV, 100 mM external sodium and pH 7.5. The inward current is measured relative to the substrate-free baseline.",
             "role": "held_out_from_fitting",
-            "fit": ["100 µM propionate", "1,000 µM propionate"],
-            "evaluation": ["50 µM propionate", "250 µM propionate", "500 µM propionate", "2,500 µM propionate"],
+            "fit": [
+              "100 µM propionate",
+              "1,000 µM propionate"
+            ],
+            "evaluation": [
+              "50 µM propionate",
+              "250 µM propionate",
+              "500 µM propionate",
+              "2,500 µM propionate"
+            ],
             "uncertainty": "The approximate graph-reading precision is ±5 nA. Per-point biological uncertainties and the measurement temperature are unspecified. The paper reports similar results from three additional oocytes.",
             "assessment": "Two calibration points gave K = 130 µM. At 250 µM the proven curve predicted 260 nA against 278 nA measured. At 2,500 µM it predicted 376 nA against 371 nA. The figure provides too little biological uncertainty for a population verdict.",
             "report": "lean/PROGRESS.md#20-november-2026--eight-state-sodiumanion-cotransport"
@@ -11706,8 +12248,13 @@
             "locator": "Subtract the substrate-free ibuprofen-sensitive trace from the 1 mM lactate trace at each negative voltage.",
             "context": "Human SMCT1 in a Xenopus oocyte, 96 mM external sodium, approximately 24 °C and pH 7.6.",
             "role": "descriptive",
-            "evaluation": ["−50 mV with 1 mM lactate", "−150 mV with 1 mM lactate"],
-            "excluded": ["Positive-voltage currents dominated by an anion leak"],
+            "evaluation": [
+              "−50 mV with 1 mM lactate",
+              "−150 mV with 1 mM lactate"
+            ],
+            "excluded": [
+              "Positive-voltage currents dominated by an anion leak"
+            ],
             "uncertainty": "One representative experiment, approximate reading precision ±0.03 µA. Intracellular activities and kinetic parameters for this preparation are unavailable.",
             "assessment": "The inward current rose from about 0.68 to 1.40 µA in magnitude between −50 and −150 mV. Predicting that voltage dependence requires the transition kinetics.",
             "report": "lean/PROGRESS.md#20-november-2026--eight-state-sodiumanion-cotransport"
@@ -11787,7 +12334,11 @@
             ],
             "outcome": "different_results",
             "independence": "Gopal’s and Coady’s groups studied human SMCT1 in separate oocyte experiments. Coady is the source of the Cells two-sodium choice.",
-            "comparison": "Gopal reported 2.7 ± 0.2 net positive charges per propionate. With monovalent propionate and fully coupled current that implies 3.7 ± 0.2 Na⁺ per substrate. Coady measured 2.3 ± 0.3 Na⁺ per propionate from paired shifts in zero-current voltage (n = 7, SEM). Uncoupled current and passive propionic-acid uptake affect the inference. The two assays give different estimates for this substrate."
+            "comparison": "Gopal reported 2.7 ± 0.2 net positive charges per propionate. With monovalent propionate and fully coupled current that implies 3.7 ± 0.2 Na⁺ per substrate. Coady measured 2.3 ± 0.3 Na⁺ per propionate from paired shifts in zero-current voltage (n = 7, SEM). Uncoupled current and passive propionic-acid uptake affect the inference. The two assays give different estimates for this substrate.",
+            "replay": {
+              "status": "unconfirmed",
+              "assessment": "Current per labelled uptake and shifts in zero-current voltage imply different apparent sodium counts. A matched accounting of neutral entry and uncoupled current is missing."
+            }
           }
         ],
         "status": "open",
@@ -11908,7 +12459,11 @@
             ],
             "outcome": "both_support",
             "independence": "Separate groups studied sheep erythrocytes and rat neurons. The first measured K⁺ efflux and Rb⁺ influx. The second inferred transport direction from the blocker-sensitive electrical response.",
-            "comparison": "Lauf and Adragna located net-flux zeros in sheep red cells using external Rb⁺ as the K⁺ surrogate. In rat dendrites at 4.5 mM pipette anion, blocking transport shifted GABA reversal by +7.0 ± 0.9 mV at 2 mM external K⁺ and −5.0 ± 0.7 mV at 10 mM (SEM). The change of sign supports reversal. The neuronal voltage assay does not locate a flux zero or test a unit activity-product ratio."
+            "comparison": "Lauf and Adragna located net-flux zeros in sheep red cells using external Rb⁺ as the K⁺ surrogate. In rat dendrites at 4.5 mM pipette anion, blocking transport shifted GABA reversal by +7.0 ± 0.9 mV at 2 mM external K⁺ and −5.0 ± 0.7 mV at 10 mM (SEM). The change of sign supports reversal. The neuronal voltage assay does not locate a flux zero or test a unit activity-product ratio.",
+            "replay": {
+              "status": "partial",
+              "assessment": "The native 1:1 product rule reverses signed flux and is consistent with the sheep null measurements. The dendritic readout is a blocker-induced GABA voltage change. A local free chloride gradient and conversion to a transport rate are missing."
+            }
           },
           {
             "id": "kcl-null-across-sheep-protocols",
@@ -11919,7 +12474,11 @@
             ],
             "outcome": "not_independent",
             "independence": "The later paper revisits the earlier same-laboratory result, with Lauf on both papers and a different protocol. These reports document sensitivity to the preparation. A second group’s direct measurement of the null remains open.",
-            "comparison": "The 1991 swelling experiment still had outward net K⁺ flux at equal products and approached zero near an outside/inside ratio of 2. In the later pH- and volume-clamped experiments, normalized reversal had slopes of 1.12 and 1.08 for normal and low internal Mg²⁺ (ideal 1). They report different apparent nulls. Activities and protocol differences preclude transferring the earlier value to the clamped preparation."
+            "comparison": "The 1991 swelling experiment still had outward net K⁺ flux at equal products and approached zero near an outside/inside ratio of 2. In the later pH- and volume-clamped experiments, normalized reversal had slopes of 1.12 and 1.08 for normal and low internal Mg²⁺ (ideal 1). They report different apparent nulls. Activities and protocol differences preclude transferring the earlier value to the clamped preparation.",
+            "replay": {
+              "status": "unconfirmed",
+              "assessment": "The swelling and clamped protocols give different apparent nulls and share a research group. Activities and the time-dependent volume are needed for matched native nulls."
+            }
           },
           {
             "id": "erythrocyte-kcl-stoichiometry",
@@ -11930,7 +12489,11 @@
             ],
             "outcome": "both_support",
             "comparison": "In sheep red cells, normalized external Rb⁺ at the flux null had slopes of 1.12 and 1.08 against the chloride ratio (normal and low Mg²⁺, no slope errors). In rabbit red cells, a direct outward K:Cl flux ratio was 1.12 ± 0.26 (SD, five experiments). These readouts independently support approximately 1:1 coupling. Only the sheep series located the null.",
-            "independence": "Lauf and Adragna inferred stoichiometry from flux-reversal shifts. Jennings and Adame measured ion efflux in separate rabbit preparations."
+            "independence": "Lauf and Adragna inferred stoichiometry from flux-reversal shifts. Jennings and Adame measured ion efflux in separate rabbit preparations.",
+            "replay": {
+              "status": "reproduced",
+              "assessment": "The native postings are one K and one Cl per cycle. This is compatible with the rabbit direct efflux ratio and the near-unit slope of the sheep null series. Only the latter is a test at zero net flux."
+            }
           }
         ],
         "evidence": [
@@ -11969,18 +12532,23 @@
             "uncertainty": "Mean ± SD over five experiments. The two ionic fluxes define a stoichiometric ratio away from the null.",
             "assessment": "The independently measured outward K:Cl flux ratio of 1.12 ± 0.26 is compatible with 1:1 coupling in this preparation. Its zero-flux concentration product was not measured.",
             "report": "lean/PROGRESS.md#paired-transport-and-membrane-measurements"
-          },{
-          "dataset_id": "lauf1996_sheep_kcc_reversal@1",
-          "manifest": "lean/checks/data/lauf1996_kcc_reversal.json",
-          "citation": "Lauf and Adragna (1996), Fig. 8", "doi": "10.1085/jgp.108.4.341",
-          "locator": "Figures 5–7 estimate the reversal point from zero net flux. Figure 8 fits normalized reversal against the chloride ratio.",
-          "context": "Low-potassium sheep red cells with pH and volume clamped. The assay compared outward K and inward Rb flux after chloride-minus-nitrate subtraction.",
-          "role": "descriptive",
-          "evaluation": ["Normal and low internal magnesium"],
-          "uncertainty": "Eight points contributed to the normal-magnesium fit and ten to the low-magnesium fit. The paper gives correlations of 0.912 and 0.976. It gives no uncertainty for either slope.",
-          "assessment": "The ideal product rule predicts a slope of 1. The measured slopes were 1.12 at normal magnesium and 1.08 at low magnesium. Rubidium substitutes for external potassium. The volume dependence of net flux remains open.",
-          "report": "lean/PROGRESS.md#19-november-2026--potassium-and-anion-cotransport"
-        }]
+          },
+          {
+            "dataset_id": "lauf1996_sheep_kcc_reversal@1",
+            "manifest": "lean/checks/data/lauf1996_kcc_reversal.json",
+            "citation": "Lauf and Adragna (1996), Fig. 8",
+            "doi": "10.1085/jgp.108.4.341",
+            "locator": "Figures 5–7 estimate the reversal point from zero net flux. Figure 8 fits normalized reversal against the chloride ratio.",
+            "context": "Low-potassium sheep red cells with pH and volume clamped. The assay compared outward K and inward Rb flux after chloride-minus-nitrate subtraction.",
+            "role": "descriptive",
+            "evaluation": [
+              "Normal and low internal magnesium"
+            ],
+            "uncertainty": "Eight points contributed to the normal-magnesium fit and ten to the low-magnesium fit. The paper gives correlations of 0.912 and 0.976. It gives no uncertainty for either slope.",
+            "assessment": "The ideal product rule predicts a slope of 1. The measured slopes were 1.12 at normal magnesium and 1.08 at low magnesium. Rubidium substitutes for external potassium. The volume dependence of net flux remains open.",
+            "report": "lean/PROGRESS.md#19-november-2026--potassium-and-anion-cotransport"
+          }
+        ]
       }
     },
     {
@@ -12034,7 +12602,11 @@
             ],
             "outcome": "both_support",
             "independence": "Mathai’s and Frallicciardi’s groups performed separate stopped-flow experiments. Only the latter paper’s experimental panels are used.",
-            "comparison": "Both experiments detected shrinkage by dye quenching. Their fitted DOPC/POPC water permeabilities were 15.8/13.0 at 30 °C and 16.0/12.0 at 20 °C, in 10⁻³ cm/s. Flow direction is the shared prediction. Lipid ordering constrains mobility inputs and heat was unmeasured."
+            "comparison": "Both experiments detected shrinkage by dye quenching. Their fitted DOPC/POPC water permeabilities were 15.8/13.0 at 30 °C and 16.0/12.0 at 20 °C, in 10⁻³ cm/s. Flow direction is the shared prediction. Lipid ordering constrains mobility inputs and heat was unmeasured.",
+            "replay": {
+              "status": "represented",
+              "assessment": "The native water flux points outward when external osmotic pressure increases at equal hydrostatic pressure. Both stopped-flow traces shrink. Lipid-specific mobility is an input. A quantitative trace also requires vesicle sizes and fluorescence-to-volume calibration."
+            }
           }
         ],
         "status": "open",
@@ -12129,8 +12701,13 @@
             "locator": "Figure 1 and Table 1 give the 60-minute water and solute changes after initial hypotonic swelling.",
             "context": "Rainbow-trout red cells were held at 215 mOsm/kg with ouabain. Each condition measured changes in cellular water, sodium, potassium, chloride and taurine.",
             "role": "descriptive",
-            "evaluation": ["Sodium bath, n = 21", "Potassium bath, n = 3"],
-            "excluded": ["Choline bath, total osmole change unavailable"],
+            "evaluation": [
+              "Sodium bath, n = 21",
+              "Potassium bath, n = 3"
+            ],
+            "excluded": [
+              "Choline bath, total osmole change unavailable"
+            ],
             "uncertainty": "The paper reports SEM. The water prediction uses the measured osmole total. Covariance with measured water is unavailable.",
             "assessment": "Measured osmole changes imply water changes of −0.375 and +0.078 g/g in two baths, against −0.37 and +0.06 measured. Multiple transport pathways contribute.",
             "report": "lean/PROGRESS.md#20-november-2026--osmotic-water-and-potassiumanion-transport"
