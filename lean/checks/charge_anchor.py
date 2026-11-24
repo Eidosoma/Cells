@@ -71,6 +71,7 @@ def replay(name, original, *, offset_steps=0):
         case=name,
         offset_steps=offset_steps,
         defect_fmol=float(defect),
+        planted_charge_C=float(mismatch),
         background_fmol=fixed,
         anchor_C=anchor,
         residual_C=residual,
@@ -113,8 +114,11 @@ def main():
         rows.append(row)
     return dict(
         model=xc0.MODEL,
+        charge_per_fmol_C=CHARGE_PER_FMOL,
+        original_floor_C=1e-20,
         rows=rows,
         all_native_expected=all(r["native_admits"] == r["expected_admission"] for r in rows),
+        all_scale_expected=all(r["scale_bound_admits"] == r["expected_admission"] for r in rows),
         balanced_refusals=[
             r["case"] for r in rows if r["expected_admission"] and not r["native_admits"]
         ],
