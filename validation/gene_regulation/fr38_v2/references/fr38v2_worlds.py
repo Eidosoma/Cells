@@ -228,6 +228,7 @@ def family_b():
         "M_pol_copies": 10000,
         "M_rib_copies": 1000000,
         "k_I_tx_per_mM_s": 1.2e4,
+        "k_I_per_mM_s": 1.2e4,                  # SPEC.md section 7's sample key: k_I_tx
         "k_I_tl_per_mM_s": 120.0,
         "K_N_tx_mM": 0.02,
         "K_A_tl_mM": 0.02,
@@ -258,6 +259,7 @@ def family_b():
         },
         "tau_s": 1500.0,
         "p": 0.55,
+        "p_sched": [[0.0, 0.55]],               # SPEC.md section 7's sample key: p, constant
         "H0_copies": 0,
         "k_d_per_s": 1 / 8000,
         "k_s_per_s": 1 / 1100,
@@ -314,7 +316,7 @@ def family_invented():
         "template_copies": 1,
         "L_residues": length,
         "stages": 8,
-        "speed_nt_per_s": 25.0,
+        "speed_nt_per_s": 12.5,
         "K_N_mM": 0.03,
         "N_per_residue": 1,
         "Pi_per_residue": 2,

@@ -217,6 +217,7 @@ class Gauss:
         hb = h * self.b
         y0abs = world.y0[None, :, :]
         y0abs_n = np.abs(y0abs)
+        NS = world.NS
         for _ in range(nst):
             if K is None:
                 f0 = world.rhs(d, b1)
@@ -228,7 +229,7 @@ class Gauss:
             best = None
             stall = 0
             for it in range(self.max_iter):
-                Ynew = np.stack([d + sum(hA[i, j] * K[j] for j in range(s)) for i in range(s)])
+                Ynew = d[None, :, :] + np.einsum("ij,jnr->inr", hA, K)    # stage states
                 if Y is not None:
                     full = np.abs(y0abs + Ynew) + y0abs_n + self.FLOOR
                     err = float(np.max(np.abs(Ynew - Y) / full))
@@ -241,13 +242,14 @@ class Gauss:
                         if err < 1e-15 and stall >= 3:
                             break
                 Y = Ynew
-                Kc = world.rhs(np.concatenate(list(Y), axis=1), bs)
+                # the batch's columns are stage-major: [stage 0's rows, stage 1's rows, ...]
+                Kc = world.rhs(Y.transpose(1, 0, 2).reshape(NS, s * R), bs)
                 self.rhs_calls += 1
-                K = np.stack([Kc[:, i * R:(i + 1) * R] for i in range(s)])
+                K = Kc.reshape(NS, s, R).transpose(1, 0, 2)
             else:
                 raise RuntimeError("Gauss-Legendre stage iteration did not converge")
             self.max_iterations_used = max(self.max_iterations_used, it)
-            d = d + sum(hb[j] * K[j] for j in range(s))
+            d = d + np.einsum("j,jnr->nr", hb, K)
         self.last_K = K
         return d
 

@@ -26,6 +26,16 @@ written afresh from the references' spec folder and nothing else. The folder is
 
 Nothing here imports, runs or reads the engine.
 
+**Seen in passing, and not used.** While locating the permitted sections, a few things were seen:
+- the sheet's heading list;
+- the first 60 to 80 characters of each line of §9.12, including its intro and reading 4;
+- the heading lines of §5.1's closed forms and measured bound;
+- the first lines of §9.9 and its R1 release table, which follows the addendum;
+- the file names in `validation/gene_regulation/`, from one directory listing.
+
+None of these was used. Every value here comes from the spec folder's inputs and the permitted
+sections.
+
 ## Files
 
 | File | What it holds |
@@ -146,7 +156,7 @@ Every rate is the sheet's (all in fmol/s, with concentrations n/V in mM):
 
 - **The primary** is Gauss–Legendre collocation, an implicit Runge–Kutta method.
   - It has 5 stages and is of order 10.
-  - Step h = 1 s; 2 s for the invented family.
+  - Step h = 1 s; 4 s for the invented family.
   - Its stage equations are solved by fixed-point iteration until the stage states stop changing
     at round-off.
 - **The primary's refinement** is the same method at h/2. Its truncation error is 2¹⁰ = 1024 times
@@ -154,7 +164,7 @@ Every rate is the sheet's (all in fmol/s, with concentrations n/V in mM):
 - **The second method** is Gragg–Bulirsch–Stoer extrapolation, of a different kind: explicit, the
   modified midpoint rule extrapolated in h².
   - Its substep counts are n = 2, 4, …, 16, so it is of order 16.
-  - Macro step H = 2 s; 4 s for the invented family.
+  - Macro step H = 2 s; 8 s for the invented family.
   - The midpoint sums run on each macro step's increment.
 - **Both methods:**
   - run in numpy long double (x86 extended precision, a 64-bit significand);

@@ -41,7 +41,7 @@ STEPS = {
     "B": (1.0, 0.5, 2.0),
     "C": (1.0, 0.5, 2.0),
     "D": (1.0, 0.5, 2.0),
-    "invented": (2.0, 1.0, 4.0),
+    "invented": (4.0, 2.0, 8.0),
 }
 
 FATES = (("durable", "R", "R"), ("short_lived", "R_s", "Rs"))   # (fate, row, state prefix)
