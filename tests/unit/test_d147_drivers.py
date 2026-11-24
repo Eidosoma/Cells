@@ -44,6 +44,8 @@ EXEMPT = {
     "validation/tissue/inplace_fix_guard.py": "D148 in-place-fix guard: recorded definitions",
     "validation/tissue/field_floor_guard.py": "declares version 2 and version 3 on purpose",
     "validation/tissue/field_floor_held.py": "declares version 3 on purpose (guard 6)",
+    "validation/tissue/sparse_field_probe.py": "declares version 2 and the sparse field solver on "
+    "purpose (FR-17's probe)",
     "validation/tissue/heredity_turnover_literature.py": "held-bath sheets only, no offsets",
     "validation/tissue/ledger_rounding_study.py": "study recorded before D147",
     "validation/tissue/pump_water_equivalence.py": "equivalence guard: water against @3",

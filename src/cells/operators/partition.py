@@ -67,6 +67,8 @@ from cells.definitions.spec_values import identifier
 from cells.definitions.specs import ConfigError, _fields, _number
 from cells.laws.electrochemistry import CHARGE_PER_FMOL
 from cells.models import pump_composite_adapter as adapter
+from cells.models import surface_tissue as tissue
+from cells.numerics import surface_field
 from cells.numerics.extracellular_field import scatter
 from cells.numerics.species_sums import entity_sum
 from cells.operators import membrane_state
@@ -825,7 +827,7 @@ def capacitor_state(state, q, *, xp):
     phi = adapter.node_potentials(state, q, xp=xp)
     v = adapter.patch_voltages(phi, q, xp=xp)
     c = xp.where(q.membrane_active, q.membrane_capacitance, 0.0)
-    plates = (q.field_capacitor_matrix @ phi)[n:]
+    plates = surface_field.capacitor_product(tissue.field_layout(q), phi, xp=xp)[n:]
     return phi, v, c, plates, 0.5e12 * entity_sum(c * v * v, axis=None, xp=xp)
 
 

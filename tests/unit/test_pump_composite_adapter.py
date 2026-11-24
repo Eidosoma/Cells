@@ -104,3 +104,8 @@ def test_a_field_input_provider_is_refused_above_the_node_cap():
     pump3.check_field_inputs(p, pump3.FIELD_INPUT_NODE_CAP)
     with pytest.raises(ConfigError, match=r"limited to 64 field nodes.*\(b\).*\(c\)"):
         pump3.check_field_inputs(p, pump3.FIELD_INPUT_NODE_CAP + 1)
+    raw = sheet()  # The sparse field (FR-17 stage 1) binds no dense array to refresh.
+    raw["execution"]["field_solver"] = "sparse_capacitive_reduction_gauged_damped_newton@1"
+    p = surface_pump_v3.initial_values(parse_spec(raw))[1]
+    with pytest.raises(ConfigError, match="refused under sparse_capacitive"):
+        pump3.check_field_inputs(p, nodes(p))

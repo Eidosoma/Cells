@@ -146,6 +146,16 @@ FLOOR_LAYOUT_TYPE = NamedTuple(  # Declared field solver surface_field.FLOOR_SOL
         )
     ],
 )
+SPARSE_LAYOUT_TYPE = NamedTuple(  # Declared field solver surface_field.SPARSE_SOLVER_ID.
+    "SurfacePumpChannelSparseLayout",
+    [
+        (k, object)
+        for k in (
+            *(k for k in second.SPARSE_LAYOUT_TYPE._fields if k != "channel_species"),
+            *CHANNEL_LAYOUT_FIELDS,
+        )
+    ],
+)
 # The forms faces (logmean_electrodiffusion_forms@1; MITOCHONDRIA_DESIGN's face note, its build
 # plan's item 1): their own entity set, with their own state and layout fields, present only in a
 # structure that declares forms faces (InnerStructure.forms_faces, _kind_types), so no other
@@ -325,10 +335,14 @@ def initial_values(spec, *, structure=None):
         own_state, own_layout = forms_initial_values(spec, entries)
         fields |= own_state
         entries |= own_layout
-    floor = "field_current_floor" in entries
-    return types.STATE_TYPE(**fields), (types.FLOOR_LAYOUT_TYPE if floor else types.LAYOUT_TYPE)(
-        **entries
+    kind = (
+        types.FLOOR_LAYOUT_TYPE
+        if "field_current_floor" in entries
+        else types.SPARSE_LAYOUT_TYPE
+        if "field_capacitor_values" in entries
+        else types.LAYOUT_TYPE
     )
+    return types.STATE_TYPE(**fields), kind(**entries)
 
 
 def _todays_initial_values(spec):
@@ -370,7 +384,13 @@ def _todays_initial_values(spec):
         channel_transferred=np.zeros((s, nc)),
         channel_dissipated_energy_pJ=np.zeros((s, nc)),
     )
-    kind = FLOOR_LAYOUT_TYPE if "field_current_floor" in v else LAYOUT_TYPE
+    kind = (
+        FLOOR_LAYOUT_TYPE
+        if "field_current_floor" in v
+        else SPARSE_LAYOUT_TYPE
+        if "field_capacitor_values" in v
+        else LAYOUT_TYPE
+    )
     return STATE_TYPE(**(state._asdict() | channel)), kind(**v)
 
 
@@ -1282,7 +1302,9 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None
     qdot = CHARGE_PER_FMOL * species_sum(p.valence * xp.concatenate((cell, outside), axis=1), xp=xp)
     dphi = field._capacitor_solve(qdot, xp.zeros_like(qdot), tissue.field_layout(p), xp=xp)
     dvm = xp.where(p.membrane_active, dphi[p.membrane_cell] - dphi[n + p.membrane_outside], 0.0)
-    electrode = xp.where(p.reservoir, (p.field_capacitor_matrix @ dphi)[n:], 0.0)
+    electrode = xp.where(
+        p.reservoir, field.capacitor_product(tissue.field_layout(p), dphi, xp=xp)[n:], 0.0
+    )
     chemical = (
         1e-3
         * R
@@ -2447,7 +2469,7 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
     # The coefficient before the Laplacian, in today's order, so a world without N2 keeps
     # today's program text (crossrev compares it).
     coefficient = implicit_matrix[-1, -1] * dt
-    laplacian = imex.face_laplacian(weight, s, xp=xp)
+    laplacian = imex.operator_laplacian(weight, s, f, xp=xp)  # On the sparse field, its pattern's.
     forms_weight = None
     if forms_faces_declared(structure):  # The forms faces' movers, frozen as the faces' (static).
         faces = forms_faces_of(p)
@@ -2508,7 +2530,9 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
         )
         charge = node_charge(known, p, xp=xp)
         potential, residual = imex.solve_operator(charge, operator, xp=xp)
-        scale = xp.maximum(xp.abs(charge), xp.abs(operator.matrix @ potential))
+        scale = xp.maximum(  # Today's order of evaluation (crossrev compares the program text).
+            xp.abs(charge), xp.abs(imex.operator_product(operator, potential, xp=xp))
+        )
         valid &= xp.all(xp.isfinite(potential))
         valid &= xp.all(xp.abs(residual) <= field.CHARGE_ATOL_C + field.CHARGE_RTOL * scale)
         if n2:  # The routes' linear parts join the faces', their heat at the stage's state.
@@ -4891,6 +4915,7 @@ class KindTypes(NamedTuple):
     STATE_TYPE: object
     LAYOUT_TYPE: object
     FLOOR_LAYOUT_TYPE: object
+    SPARSE_LAYOUT_TYPE: object
     Control: object
     OBSERVATION_FIELDS: tuple
     Observations: object
@@ -4901,6 +4926,7 @@ TODAYS_TYPES = KindTypes(
     STATE_TYPE,
     LAYOUT_TYPE,
     FLOOR_LAYOUT_TYPE,
+    SPARSE_LAYOUT_TYPE,
     Control,
     OBSERVATION_FIELDS,
     Observations,
@@ -4960,6 +4986,10 @@ def _kind_types(fields, registry, series=False, forms=False):
         "SurfacePumpChannelFloorLayout" + suffix,
         [(k, object) for k in (*FLOOR_LAYOUT_TYPE._fields, *layout_extra)],
     )
+    sparse = NamedTuple(
+        "SurfacePumpChannelSparseLayout" + suffix,
+        [(k, object) for k in (*SPARSE_LAYOUT_TYPE._fields, *layout_extra)],
+    )
     control = NamedTuple(
         "SurfacePumpChannelControl" + suffix,
         [
@@ -4982,7 +5012,7 @@ def _kind_types(fields, registry, series=False, forms=False):
     observations = make_dataclass(
         "SurfacePumpChannelObservations" + suffix, [(k, np.ndarray) for k in columns], frozen=True
     )
-    return KindTypes(axes, state, layout, floor, control, columns, observations)
+    return KindTypes(axes, state, layout, floor, sparse, control, columns, observations)
 
 
 def kind_types(structure):

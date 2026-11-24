@@ -42,6 +42,18 @@ STATE_AXES = {
     "electrode_work_pJ": ["extracellular_slot"],
 }
 STATE_TYPE = NamedTuple("SurfaceTissueState", [(k, object) for k in STATE_AXES])
+TISSUE_LAYOUT_FIELDS = (
+    "active",
+    "ids",
+    "volume",
+    "extracellular_volume",
+    "amount_reference",
+    "extracellular_amount_reference",
+    "initial_cell_charge_C",
+    "initial_outside_charge_C",
+    "boundary_V",
+    "initial_membrane_voltage_V",
+)
 LAYOUT_TYPE = NamedTuple(
     "SurfaceTissueLayout",
     [
@@ -49,16 +61,7 @@ LAYOUT_TYPE = NamedTuple(
         for k in (
             *surface.Layout._fields,
             *("field_" + k for k in field.Layout._fields if k != "surface"),
-            "active",
-            "ids",
-            "volume",
-            "extracellular_volume",
-            "amount_reference",
-            "extracellular_amount_reference",
-            "initial_cell_charge_C",
-            "initial_outside_charge_C",
-            "boundary_V",
-            "initial_membrane_voltage_V",
+            *TISSUE_LAYOUT_FIELDS,
         )
     ],
 )
@@ -71,6 +74,19 @@ FACTORED_LAYOUT_TYPE = NamedTuple(
 FLOOR_LAYOUT_TYPE = NamedTuple(
     "SurfaceTissueFloorLayout",
     [(k, object) for k in (*FACTORED_LAYOUT_TYPE._fields, "field_current_floor")],
+)
+# Only identities that declare field.SPARSE_SOLVER_ID bind this layout: the field's arrays are the
+# SparseLayout's, so it holds no n x n matrix. Its marker field is field_capacitor_values.
+SPARSE_LAYOUT_TYPE = NamedTuple(
+    "SurfaceTissueSparseLayout",
+    [
+        (k, object)
+        for k in (
+            *surface.Layout._fields,
+            *("field_" + k for k in field.SparseLayout._fields if k != "surface"),
+            *TISSUE_LAYOUT_FIELDS,
+        )
+    ],
 )
 
 
@@ -101,7 +117,9 @@ def working_size(spec):
 
 def field_layout(p):
     kind = (
-        field.FloorLayout
+        field.SparseLayout
+        if hasattr(p, "field_capacitor_values")
+        else field.FloorLayout
         if hasattr(p, "field_current_floor")
         else field.FactoredLayout
         if hasattr(p, "field_capacitor_factor")
@@ -174,10 +192,10 @@ def initial_values(spec):
     gauge = np.zeros(o, dtype=bool)
     if m.gauge_reference is not None:
         gauge[oids.index(m.gauge_reference)] = True
-    # Only an exact factored (version 2 or 3) declaration changes the binding;
+    # Only an exact factored (version 2 or 3) or sparse declaration changes the binding;
     # all others are version 1.
     solver = getattr(x, "field_solver", None)
-    if solver not in (field.FACTORED_SOLVER_ID, field.FLOOR_SOLVER_ID):
+    if solver not in (field.FACTORED_SOLVER_ID, field.FLOOR_SOLVER_ID, field.SPARSE_SOLVER_ID):
         solver = field.SOLVER_ID
     bound = field.bind(surface.Layout(**v), gauge, solver=solver)
     v.update({"field_" + k: value for k, value in bound._asdict().items() if k != "surface"})
@@ -233,6 +251,7 @@ def initial_values(spec):
     kind = {
         field.FACTORED_SOLVER_ID: FACTORED_LAYOUT_TYPE,
         field.FLOOR_SOLVER_ID: FLOOR_LAYOUT_TYPE,
+        field.SPARSE_SOLVER_ID: SPARSE_LAYOUT_TYPE,
     }.get(solver, LAYOUT_TYPE)
     return state, kind(**v)
 
@@ -369,7 +388,7 @@ def capacitor_change(state, p, *, xp):
     dv = xp.where(
         p.membrane_active, dp[p.membrane_cell] - dp[p.active.size + p.membrane_outside], 0.0
     )
-    return q, p.field_capacitor_matrix @ dp, dv
+    return q, field.capacitor_product(field_layout(p), dp, xp=xp), dv
 
 
 def domain_valid(state, p, active, *, xp=jnp):
@@ -501,7 +520,8 @@ def balances(state, p, *, intracellular_energy_change_pJ=None):
         initial_q, np.r_[np.zeros(n), p.boundary_V], field_layout(p), xp=np
     )
     required = p.field_active & ~np.r_[np.zeros(n, dtype=bool), p.reservoir]
-    charge = np.where(required, p.field_capacitor_matrix @ base - initial_q + cap - q, 0.0)
+    image = field.capacitor_product(field_layout(p), base, xp=np)
+    charge = np.where(required, image - initial_q + cap - q, 0.0)
     electrode = state.electrode_charge_transferred_C - np.where(p.reservoir, cap[n:], 0.0)
     supply_charge = CHARGE_PER_FMOL * np.sum(p.valence * state.reservoir_supplied)
     global_charge = np.sum(state.electrode_charge_transferred_C) + supply_charge

@@ -25,13 +25,17 @@ import pytest
 from cells.definitions import pump_composite_spec as cs
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.execution.runner import branch_checkpoint, validate_checkpoint
-from cells.numerics.surface_field import FACTORED_SOLVER_ID, FLOOR_SOLVER_ID
+from cells.numerics.surface_field import FACTORED_SOLVER_ID, FLOOR_SOLVER_ID, SPARSE_SOLVER_ID
 from cells.records.io import load_snapshot, write_snapshot
 from validation.tissue import secreted_species_fixtures as fx
 from validation.tissue import surface_pump_v3_fixtures as v3fx
 
 IMEX = "imex_ars222_face_electromigration@1"
-FLIP = {FACTORED_SOLVER_ID: FLOOR_SOLVER_ID, FLOOR_SOLVER_ID: FACTORED_SOLVER_ID}
+FLIP = {
+    FACTORED_SOLVER_ID: FLOOR_SOLVER_ID,
+    FLOOR_SOLVER_ID: FACTORED_SOLVER_ID,
+    SPARSE_SOLVER_ID: FACTORED_SOLVER_ID,
+}
 
 
 def minimal(end=None):

@@ -72,6 +72,7 @@ STATE_AXES = _model.STATE_AXES
 STATE_TYPE = _model.STATE_TYPE
 LAYOUT_TYPE = _model.LAYOUT_TYPE
 FLOOR_LAYOUT_TYPE = _model.FLOOR_LAYOUT_TYPE
+SPARSE_LAYOUT_TYPE = _model.SPARSE_LAYOUT_TYPE
 Values = _model.VALUES_TYPE
 
 
@@ -116,7 +117,13 @@ def water_state(state):
 
 
 def water_layout(p):
-    kind = w1.FLOOR_LAYOUT_TYPE if hasattr(p, "field_current_floor") else w1.LAYOUT_TYPE
+    kind = (
+        w1.SPARSE_LAYOUT_TYPE
+        if hasattr(p, "field_capacitor_values")
+        else w1.FLOOR_LAYOUT_TYPE
+        if hasattr(p, "field_current_floor")
+        else w1.LAYOUT_TYPE
+    )
     return kind(*(getattr(p, k) for k in kind._fields))
 
 

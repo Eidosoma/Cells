@@ -61,6 +61,7 @@ STATE_AXES = ionic.STATE_AXES
 STATE_TYPE = ionic.STATE_TYPE
 LAYOUT_TYPE = ionic.LAYOUT_TYPE
 FLOOR_LAYOUT_TYPE = ionic.FLOOR_LAYOUT_TYPE
+SPARSE_LAYOUT_TYPE = ionic.SPARSE_LAYOUT_TYPE
 CONTROL_TYPE = Control
 STATE_FIELDS = ionic.STATE_TYPE._fields
 CONTROL_FIELDS = Control._fields
@@ -488,6 +489,7 @@ def structure_names(implementation):
         STATE_TYPE=state_type,
         LAYOUT_TYPE=implementation.LAYOUT_TYPE,
         FLOOR_LAYOUT_TYPE=implementation.FLOOR_LAYOUT_TYPE,
+        SPARSE_LAYOUT_TYPE=implementation.SPARSE_LAYOUT_TYPE,
         CONTROL_TYPE=control_type,
         STATE_FIELDS=state_type._fields,
         CONTROL_FIELDS=control_type._fields,
@@ -543,6 +545,8 @@ class InnerAdapter:
         return self.STATE_TYPE(*(getattr(state, k) for k in self.STATE_FIELDS))
 
     def layout_kind(self, p):
+        if hasattr(p, "field_capacitor_values"):  # The sparse field (SPARSE_SOLVER_ID).
+            return self.SPARSE_LAYOUT_TYPE
         return self.FLOOR_LAYOUT_TYPE if hasattr(p, "field_current_floor") else self.LAYOUT_TYPE
 
     def inner_layout(self, p):
@@ -597,6 +601,8 @@ def inner_state(state):
 
 
 def layout_kind(p):
+    if hasattr(p, "field_capacitor_values"):  # The sparse field (SPARSE_SOLVER_ID).
+        return SPARSE_LAYOUT_TYPE
     return FLOOR_LAYOUT_TYPE if hasattr(p, "field_current_floor") else LAYOUT_TYPE
 
 
@@ -816,8 +822,16 @@ def refresh_field(q, bound, *, xp=jnp):
 def check_field_inputs(p, nodes):
     """Refuse a field-input provider above the node cap or with floating capacitor components.
 
-    nodes: the definition's padded field size (cell plus outside capacity).
+    nodes: the definition's padded field size (cell plus outside capacity). Under the sparse field
+    (surface_field.SPARSE_SOLVER_ID) every field-input provider is refused: refresh_field rebuilds
+    the dense field arrays, and the sparse layout has none (FR-17 stage 1).
     """
+    if hasattr(p, "field_capacitor_values"):
+        raise ConfigError(
+            f"An operator that changes capacitances or activity masks is refused under "
+            f"{field.SPARSE_SOLVER_ID} (FR-17 stage 1): its field refresh rebuilds the dense "
+            "field arrays, which the sparse field does not bind"
+        )
     if nodes > FIELD_INPUT_NODE_CAP:
         raise ConfigError(
             f"An operator that changes capacitances or activity masks refactorises the field "
@@ -962,8 +976,8 @@ def view_capacitor_terms(state, view, bound, *, xp):
     initial = xp.concatenate((bound.initial_cell_charge_C, bound.initial_outside_charge_C))
     boundary = xp.concatenate((xp.zeros(n), bound.boundary_V))
     base = field._capacitor_solve(initial, boundary, tissue.field_layout(bound), xp=xp)
-    declared = (bound.field_capacitor_matrix @ base + cap)[n:]
-    plates = (view.field_capacitor_matrix @ phi)[n:]
+    declared = (field.capacitor_product(tissue.field_layout(bound), base, xp=xp) + cap)[n:]
+    plates = field.capacitor_product(tissue.field_layout(view), phi, xp=xp)[n:]
     changed = field_inputs_changed(view, bound, xp=xp)
     held = changed & bound.reservoir
     return (
@@ -1014,7 +1028,7 @@ def fixed_charge_change(state, q, dc, bound, *, xp):
         )
     )
     delta = field._capacitor_solve(-dk, xp.zeros_like(dk), tissue.field_layout(q1), xp=xp)
-    image = (q1.field_capacitor_matrix @ delta + dk)[n:]
+    image = (field.capacitor_product(tissue.field_layout(q1), delta, xp=xp) + dk)[n:]
     first = 0.5e12 * s * v
     second = 0.5e12 * xp.sum(xp.where(q1.field_fixed, 0.0, delta * dk))
     total = xp.sum(first)
@@ -1107,7 +1121,10 @@ def charge_following_transfer(state, q, source, target, dc, bound, *, xp):
     off = q.membrane_capacitance - scatter(dc, q.membrane_capacitance, (source,), xp=xp)
     q0 = refresh_field(q._replace(membrane_capacitance=off, **derived), bound, xp=xp)
     heat = merge_heat_pJ(q0, target, dc, jump, xp=xp)
-    electrode = (q1.field_capacitor_matrix @ after - q.field_capacitor_matrix @ phi)[n:]
+    electrode = (
+        field.capacitor_product(tissue.field_layout(q1), after, xp=xp)
+        - field.capacitor_product(tissue.field_layout(q), phi, xp=xp)
+    )[n:]
     return ChargeTransfer(
         view=q1,
         plate_C=plate,
@@ -1137,10 +1154,7 @@ def merge_heat_pJ(q0, target, dc, jump, *, xp):
         nodes == (n + q0.membrane_outside[target])[None, :]
     ).astype(float)
     rhs = xp.where(~p0.fixed[:, None], ports / p0.capacitor_scale, 0.0)
-    if isinstance(p0, (field.FactoredLayout, field.FloorLayout)):
-        solved = field.cholesky_solve(p0.capacitor_factor, rhs, xp=xp)
-    else:
-        solved = xp.linalg.solve(p0.capacitor_solve_matrix, rhs)
+    solved = field.capacitor_factor_solve(rhs, p0, xp=xp)
     response = ports.T @ solved  # E^T K0^-1 E (1/F): the targets' ports seen through K0.
     root = xp.sqrt(dc)
     matrix = xp.eye(dc.size) + root[:, None] * response * root[None, :]

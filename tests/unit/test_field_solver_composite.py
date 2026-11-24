@@ -22,7 +22,7 @@ import pytest
 from cells.definitions import pump_composite_spec as cs
 from cells.definitions.specs import parse_spec
 from cells.execution.state import initialise
-from cells.numerics.surface_field import FACTORED_SOLVER_ID, FLOOR_SOLVER_ID
+from cells.numerics.surface_field import FACTORED_SOLVER_ID, FLOOR_SOLVER_ID, SPARSE_SOLVER_ID
 from tests.field_solver_fixtures import (
     minimal,
     refused_across_the_change,
@@ -54,6 +54,8 @@ def test_a_free_offset_composite_declares_version_3_and_is_admitted(name):
     assert choice.declare(built, "3") == auto
     assert with_solver(auto, FACTORED_SOLVER_ID) == built  # Nothing else differs.
     assert type(initialise(parse_spec(auto)).layout).__name__.endswith("FloorLayout")
+    with pytest.raises(ValueError, match="no floor variant"):  # FR-17 stage 1: refused by name.
+        choice.declare(with_solver(built, SPARSE_SOLVER_ID))
 
 
 def held_bath_composites():
@@ -104,7 +106,7 @@ def test_the_legacy_solver_is_reproduced_explicitly(name):
     assert not type(initialise(parse_spec(legacy)).layout).__name__.endswith("FloorLayout")
 
 
-@pytest.mark.parametrize("version", [FACTORED_SOLVER_ID, FLOOR_SOLVER_ID])
+@pytest.mark.parametrize("version", [FACTORED_SOLVER_ID, FLOOR_SOLVER_ID, SPARSE_SOLVER_ID])
 def test_a_checkpoint_does_not_resume_across_a_solver_change(version, tmp_path):
     raw = with_solver(minimal(), version)
     refused_across_the_change(raw, initialise(parse_spec(raw)), tmp_path / "start")

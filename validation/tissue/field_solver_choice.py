@@ -18,13 +18,18 @@ and those guards run them as declared; frozen definitions are never redeclared.
 
 Drivers offer CHOICES: "auto" follows D147; "2" and "3" declare that version explicitly,
 and "2" reproduces the definitions made before D147.
+
+FR-17 stage 1 (the lead's ruling, 23 November 2026): sparse_capacitive_reduction_gauged_damped_
+newton@1 is version 2's method on sparse patterns, with no floor. "auto" refuses it for a
+free-offset world, which D147 sends to version 3's floor, until a floor variant of the sparse ID
+is qualified; a world with no free offset keeps it.
 """
 
 import copy
 
 import numpy as np
 
-from cells.numerics.surface_field import FACTORED_SOLVER_ID, FLOOR_SOLVER_ID
+from cells.numerics.surface_field import FACTORED_SOLVER_ID, FLOOR_SOLVER_ID, SPARSE_SOLVER_ID
 
 CHOICES = ("auto", "2", "3")
 SOLVERS = {"2": FACTORED_SOLVER_ID, "3": FLOOR_SOLVER_ID}
@@ -64,7 +69,14 @@ def solver_for(raw, choice="auto"):
     declared = raw["execution"].get("field_solver")
     if not in_family(raw):
         return declared
-    return FLOOR_SOLVER_ID if free_field_offsets(raw) > 0 else declared
+    if free_field_offsets(raw) > 0:
+        if declared == SPARSE_SOLVER_ID:
+            raise ValueError(
+                f"{SPARSE_SOLVER_ID} has no floor variant yet: a world with free field offsets "
+                f"declares {FLOOR_SOLVER_ID} (D147)"
+            )
+        return FLOOR_SOLVER_ID
+    return declared
 
 
 def declare(raw, choice="auto"):
