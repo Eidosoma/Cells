@@ -2380,6 +2380,8 @@ count and the expected newly assembled count, conditional on the recorded events
 
 **Design (D371; the user):** an engine record kept at each event, with the trace reader as the independent check. Version 1 covers chains (dimer to tetramer) and single-subunit activation, through a declared identity map across states. The note on `fr52-design` is being revised accordingly.
 
+**Splits (D375; the user):** a split makes a new unit. One half keeps the original identity, and the other counts as newly assembled, so "initial" stays a survival count.
+
 ## FR-53 — A rounding allowance for global ledgers at every row
 
 **Logged 24 November 2026 by the user, priority high.**
@@ -2876,6 +2878,8 @@ Concentrations then follow amounts over the current volume, with the material an
 plus references.
 
 **Status (24 November):** logged. A design note comes first.
+
+**Design note and scope (D375):** `docs/TURNOVER_CHANGING_VOLUME_DESIGN.md` on `fr65-design`. The first build covers turnover beside water, partition or insertion, pairwise, and admits a lumen at nodes turnover does not read (the user). It is followed by the coupling's reads of the current volume, so that A1 in a swelling cell is admitted.
 
 ## FR-66 — A passive fluorescence reader over regional amount exports
 

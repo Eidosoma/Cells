@@ -12411,3 +12411,37 @@ user's answer of earlier the same day, "keep BETSE and ensemble".
 
 **Tonight:** a dry-run deletion of legacy in a scratch copy of a frozen snapshot measures what depends on it, on lane B
 after FR-43's gate. It changes nothing on main.
+
+## D375: the user's decisions on FR-52's splits and FR-65's scope; FR-45's amendment 3 is tagged
+
+2026-11-24, about 23:10 UTC.
+
+**FR-52: a split makes a new unit.** When a tetramer formed from two original dimers splits back into two dimers inside
+the window, one dimer keeps the original identity, and the other counts as newly assembled.
+- **What follows:** "initial" stays a true survival count, and every split adds one to "newly assembled". The round
+  trip ends at 1 initial and 1 new.
+- **This refines D371's sentence:** a partial-assembly step does not count a unit as new, but a split does create one.
+- **The note** (`fr52-design`, ed0bd135) froze both readings' values in advance, so this needs no erratum. It now keeps
+  reading (a).
+- **The lead's rulings, as recommended:**
+  - P1: a channel step with one tracked unit on each side keeps its identity with no declaration;
+  - P3: the G1 and crossrev world is added with its cohort declared.
+- **The price** is 4.25 to 5 agent-days, after the rename.
+
+**FR-65: the first build also admits a lumen,** at nodes turnover does not read. That adds about 1 to 1.5 agent-days to
+the note's pairwise, lumen-free core, for about 3.25 to 4.5 in all.
+- **The note** is `fr65-design` (3dd81578).
+- **The lead's rulings,** as the note recommends:
+  - Q1 (b): turnover first, then the coupling's reads of the current volume, so that A1 in a swelling cell is admitted.
+    It adds about 2 to 2.5 agent-days, and the coupling's contract extension is designed in that step.
+  - Q2 (a): the builder's tests, with no new registered criterion. The Q5 assertion of D150 flips, amended in place with
+    disclosure as on 20 November.
+- **Not now:** partition beside water (M4) and water's current area and masks (M2).
+
+**FR-45's amendment 3 is tagged** `fr45-site-competition-v1-amendment-3-2026-11-24` (98cd33db).
+- **W7s's horizon** is 2.0 s (47 time constants), so every interval's heat stays resolved. The sizing rule gains an
+  upper side.
+- **dt · max L ≤ 0.03** holds, as §4 registers. W7 and W7s now step at 0.0025 s, and amendment 2's sentence confusing
+  h with dt is withdrawn.
+- **Plant entries are keyed** (plant, criterion, world, time_s). P5 under C6 on W7 keeps two entries.
+- **Next:** the references agent regenerates W7 and W7s before the references' tag.
