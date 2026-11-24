@@ -7,6 +7,11 @@ These are fixed before any engine run (`docs/FR45_SITE_COMPETITION_PROTOCOL.md`;
 - C3c covers the wash's interval;
 - each criterion's worlds and amounts are registered there (its §3);
 - no band is changed.
+
+**Corrected the same day** (`NOTE-2026-11-24.md`): C4b and C6 read the engine's saved state at
+4.0 s, the row the wash acts on, as the amendment's §3 registers. The rows' earlier 5.0 s was a
+leftover from the first draft.
+
 - "The reference" is the references agent's file (SPEC.md §5).
 - "The engine" is `site_occupancy@1` with FR-45's site sets, beside `scheduled_compartment_wash@1`
   in W2, run by `resolved_pump_composite@1` over `resolved_pump_tissue@3`.
@@ -60,10 +65,10 @@ No pair is excluded after the run, and no class changes after it.
 | C3b | The same heats, against −ΔG of the engine's own saved states, with SPEC.md §1.3's G computed by the references' own function, not a judge-side copy (amended 24 November) | derived | ≤ 16ε·k·E, with k the interval's steps |
 | C3c | The sign: each node's cumulative site heat never falls, over every interval, the wash's included; W1, W2, W3 and W6 (amended 24 November) | derived | By more than 16ε·E between consecutive rows |
 | C4a | Each ligand's books in W2, at every row: free + bound + collected − supplied | derived | Against the declared total N_l, within 16ε·(k_t + 1)·M_l, with M_l the row's free + bound + collected + supplied |
-| C4b | W2's wash alone (its event map in NumPy and compiled, on the engine's saved state at 5.0 s): each free amount, and the sample and supply records | derived | Free amounts against (1 − f)·n + f·V·c_buf, within 4ε·(\|a_n\| + \|n\| + f·V·c_buf). Records against f·n and f·V·c_buf, within 2ε of each |
+| C4b | W2's wash alone (its event map in NumPy and compiled, on the engine's saved state at 4.0 s, the row the wash acts on): each free amount, and the sample and supply records (corrected 24 November) | derived | Free amounts against (1 − f)·n + f·V·c_buf, within 4ε·(\|a_n\| + \|n\| + f·V·c_buf). Records against f·n and f·V·c_buf, within 2ε of each |
 | C4c | W2's removed and supplied amounts against the reference's | band | Removed within f·10⁻⁶·s_node; supplied as C4b |
 | C5 | Every set's R_s + Σ B_b at every row (every world) | derived | Against S_s, within 16ε·(k_t + 1)·S_s |
-| C6 | W2's bound sites across the wash alone: every R_s and B_b before and after the event map, applied to the engine's saved state at 5.0 s, in NumPy and compiled | constant | `"unchanged"`: bit for bit. Saved rows are not used, since binding resumes within the step (D327) |
+| C6 | W2's bound sites across the wash alone: every R_s and B_b before and after the event map, applied to the engine's saved state at 4.0 s, the row the wash acts on, in NumPy and compiled (corrected 24 November) | constant | `"unchanged"`: bit for bit. Saved rows are not used, since binding resumes within the step (D327) |
 | C7 | W5's first step | constant | Refused by the stage condition: the engine's step report gives h·max L above 1/2 |
 | C8 | W4's error e(dt), the largest \|y_e − y_ref\|/S over R and the B_b at its times, at dt = 0.08, 0.04 and 0.02 s | band | e(0.08)/e(0.04) ≥ 6 and e(0.04)/e(0.02) ≥ 6 (third order gives 8), and e(0.02) ≤ 10⁻⁶. The free amounts, near 10⁶ fmol, are left out: their binary64 spacing alone is about 10⁻⁷ of S |
 | C9 | The R3 quantity `site_occupied_fraction` of every population at every saved row (W1, W3, W6), from the engine's `quantities` on the saved state | derived | Against B_b/S_s of the same state, within \|R_s + ΣB − S_s\|/S_s + 4ε |
