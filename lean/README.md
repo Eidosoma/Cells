@@ -15,10 +15,10 @@ Direct Lean claims cover [55 of 55 laws](COVERAGE.md#registered-laws) and [35 of
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 9 of 9 | 8 checked · 1 open | 9 |
 | [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 18 of 18 | 16 checked · 1 failed · 1 open | 14 |
 | [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 16 of 16 | 46 of 46 | 44 checked · 1 failed · 1 open | 28 |
-| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 2 of 2 | 29 of 29 | 29 checked | 22 |
+| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 2 of 2 | 30 of 30 | 30 checked | 23 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
 
-[Paired wet-lab evidence](WET_LAB_EVIDENCE.md) covers 46 of 131 claims. Across 69 comparisons, two independent studies support the stated assumption in 40 and challenge it in 10. [Cells replay results](WET_LAB_EVIDENCE.md#cells-replay-results) flag 8 discrepancies. Of the original eight, D351 confirmed three findings and classified five as indications. It found no errors within the laws’ stated domains. [D351 ruling on main](https://github.com/Eidosoma/Cells/blob/main/docs/DECISIONS.md#d351-the-wet-lab-gap-diagnosis-three-rows-confirmed-none-wrong-inside-its-claimed-domain-fr-55-goes-to-normal-the-user)
+[Paired wet-lab evidence](WET_LAB_EVIDENCE.md) covers 47 of 132 claims. Across 71 comparisons, two independent studies support the stated assumption in 41 and challenge it in 10. [Cells replay results](WET_LAB_EVIDENCE.md#cells-replay-results) flag 8 discrepancies. Of the original eight, D351 confirmed three findings and classified five as indications. It found no errors within the laws’ stated domains. [D351 ruling on main](https://github.com/Eidosoma/Cells/blob/main/docs/DECISIONS.md#d351-the-wet-lab-gap-diagnosis-three-rows-confirmed-none-wrong-inside-its-claimed-domain-fr-55-goes-to-normal-the-user)
 
 <!-- /generated -->
 

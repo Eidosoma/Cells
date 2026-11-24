@@ -24,6 +24,39 @@
     "cells.rate_equations@1": "molecular-assembly"
   },
   "comparisons": {
+    "fr44-label-wash-replay": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.scheduled_compartment_wash@1",
+        "cells.neutral_arrival_labels@1"
+      ],
+      "engine_revision": "3552e6cd19ddd1b3c12f709dd48df24b7a9aba6b",
+      "record_revision": "42120364522c140f99bc8d7701ad00d96386b3b2",
+      "sources": {
+        "Native liquid-exchange normalization": "src/cells/numerics/label_shares.py#L159-L182",
+        "Cumulative removal at the pre-wash label shares": "src/cells/operators/species_labels.py#L936-L951",
+        "Sample and supply from each scheduled event": "src/cells/operators/wash_schedule.py#L26-L33",
+        "Composite dispatch of a wash report to the label owner": "src/cells/models/pump_composite.py#L1677-L1687",
+        "Tissue model wrapped as a composition": "src/cells/definitions/pump_composite_spec.py#L276-L301",
+        "Compiled run entry point": "src/cells/execution/runner.py#L393",
+        "Scheduled wash fixture": "validation/tissue/wash_schedule_fixtures.py#L35-L45",
+        "Finite tissue nodes and carrier": "validation/tissue/secreted_species_fixtures.py#L92-L115",
+        "Independent exchange controls": "tests/unit/test_neutral_arrival_labels.py#L417-L459",
+        "Compiled labelled and unlabelled twins": "tests/unit/test_neutral_labels_events.py#L163-L225"
+      },
+      "record_inputs": {
+        "Exact balance and dilution proofs": "lean/CellsProofs/Tissue/CompartmentWash.lean",
+        "Vloemans single-step readings": "lean/checks/data/vloemans2024_dilution.json",
+        "Stubbington same-chamber readings": "lean/checks/data/stubbington2018_wash.json"
+      },
+      "driver": "lean/checks/label_wash.py",
+      "record": "lean/PROGRESS.md#fr44-label-wash"
+    },
     "kir-spermine-two-potassium": {
       "kind": "engine",
       "models": [
@@ -4663,6 +4696,112 @@
     }
   },
   "claims": [
+    {
+      "id": "fr44-label-wash",
+      "category": "tissue-and-conservation",
+      "title": "A compartment wash accounts for each tracer label in the sample and the well",
+      "statement": "A well-mixed withdrawal of amount $r$ from a pool of amount $n$ collects $rs$ of a label with initial share $s$. The well keeps $(n-r)s$ and credits all the incoming unlabelled material to the base. For each label, the amount after the wash plus the collected amount equals its starting amount plus its refill.",
+      "assumptions": [
+        "The finite set of declared labels includes the base. Starting shares are nonnegative and sum to one. The withdrawal is between zero and the starting amount, and the supply is nonnegative. Amounts use one common unit.",
+        "The event samples a well-mixed pool, with no preferential loss by label. An empty post-wash pool may retain bookkeeping shares that represent zero material. A complete exchange with positive refill puts every unit in the base.",
+        "For the dilution comparison the carrier concentration is the same before the wash and in its refill, which carries no tracer. Fixed volume makes the original-material concentration ratio equal to its fraction of the starting carrier. Reading fluorescence as this ratio also requires a linear optical response."
+      ],
+      "uses": [
+        "compartment-wash",
+        "fr42-cohort-shares"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.scheduled_compartment_wash@1",
+          "cells.neutral_arrival_labels@1"
+        ],
+        "theorems": {
+          "CellsProofs.Tissue.CompartmentWash.label_total": "lean/CellsProofs/Tissue/CompartmentWash.lean",
+          "CellsProofs.Tissue.CompartmentWash.label_inventory": "lean/CellsProofs/Tissue/CompartmentWash.lean",
+          "CellsProofs.Tissue.CompartmentWash.label_shares_sum": "lean/CellsProofs/Tissue/CompartmentWash.lean",
+          "CellsProofs.Tissue.CompartmentWash.whole_label_share": "lean/CellsProofs/Tissue/CompartmentWash.lean",
+          "CellsProofs.Tissue.CompartmentWash.unchanged_label_share": "lean/CellsProofs/Tissue/CompartmentWash.lean",
+          "CellsProofs.Tissue.CompartmentWash.dilution_of_nonbase": "lean/CellsProofs/Tissue/CompartmentWash.lean"
+        },
+        "sources": {
+          "Mathlib finite sum of scaled shares, imported and specialized": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Ring/Finset.lean#L51-L52",
+          "Mathlib single-index sum, imported to allocate the refill to the base": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Piecewise.lean#L150-L157",
+          "Mathlib sum of quotients, imported to normalize the shares": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Field.lean#L22-L24",
+          "Cells wash and label convention": "https://github.com/Eidosoma/Cells/blob/3552e6cd19ddd1b3c12f709dd48df24b7a9aba6b/docs/library/cells/operators/neutral_arrival_labels@1.md#L84-L100"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "fr44-label-wash-replay"
+        ],
+        "result": "One compiled CPU float64 run on 3552e6cd applied twelve exchanges across four isolated wells. Each started with 1 fmol of tagged carrier. The largest absolute per-label balance residual was 4.44 × 10⁻¹⁶ fmol. The nine exchange controls and the compiled labelled/unlabelled twin regression also passed, including exact clearance of every non-base share on a whole wash with positive supply."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Normalized tracer signal in the retained liquid, paired with the amount of tracer in the withdrawal from the same exchange. The independent studies both measure dilution. A same-chamber assay of both inventories remains open.",
+        "unit": "fraction of starting tracer signal",
+        "evidence": [
+          {
+            "dataset_id": "vloemans2024-dilution",
+            "manifest": "lean/checks/data/vloemans2024_dilution.json",
+            "citation": "Vloemans et al. (2024), Fig. 4A",
+            "doi": "10.1039/D4LC00195H",
+            "locator": "Fig. 2A shows the split, Fig. 4A the single-step concentrations, and supplement §S2 the adsorption check.",
+            "context": "Aliquots of diverted stock and the diluted metered plug were assayed on the same chip using calibrated fluorescein fluorescence. The 5, 2 or 1 µL metered volumes were mixed downstream with 5, 8 or 9 µL of PBS.",
+            "role": "descriptive",
+            "uncertainty": "Fig. 4A shows one SD with at least three replicates. The paper reports CV below 7%. Printed mean concentrations yield the ratios. The stored excess and downstream plug were sampled as aliquots, without total tracer recovery for the device.",
+            "assessment": "The measured plug/stock ratios were 0.498, 0.193 and 0.093. The compiled equivalents were 0.500, 0.200 and 0.100. These are the same chip data already cited for the compartment-wash claim. Wall adsorption was measured.",
+            "report": "lean/PROGRESS.md#fr44-label-wash"
+          },
+          {
+            "dataset_id": "stubbington2018-chamber-wash",
+            "manifest": "lean/checks/data/stubbington2018_wash.json",
+            "citation": "Stubbington (2018), §3.3.3, Fig. 3.6",
+            "url": "https://etheses.durham.ac.uk/id/eprint/12771/1/ThesisLS_final.pdf#page=61",
+            "locator": "Fig. 3.6, printed p. 36. Markers run from zero to nine exchanges. At ten washes the figure has only a reference line.",
+            "context": "A pipette replaced 20% of the solution in one PDMS chamber with pure water at each wash. Confocal imaging after equilibration measured fluorescein signal at one focal plane.",
+            "role": "descriptive",
+            "uncertainty": "Graph readings are approximate to 0.01. Error bars denote SEM over three repeats, about 0.11 at wash one and 0.06 at wash five. The author discusses possible optical nonlinearity at late washes. No withdrawal assay was reported.",
+            "assessment": "At washes one, five and nine the normalized signal was about 0.90, 0.21 and 0.05. Cells gave 0.800, 0.328 and 0.134. The late measured signal falls below the ideal concentration curve. The plotted reference matches 0.8ⁿ. Printed Eq. 3.7 would increase under the stated definition of the exchanged fraction.",
+            "report": "lean/PROGRESS.md#fr44-label-wash"
+          }
+        ],
+        "pairs": [
+          {
+            "id": "blank-refill-tracer-dilution",
+            "assumption": "Mixing retained fluorescein solution with tracer-free liquid lowers its normalized signal.",
+            "datasets": [
+              "vloemans2024-dilution",
+              "stubbington2018-chamber-wash"
+            ],
+            "outcome": "both_support",
+            "independence": "KU Leuven measured split plugs. Durham independently imaged repeated exchanges in one chamber. The comparison is the direction of dilution.",
+            "comparison": "Vloemans observed plug/stock ratios of 0.498, 0.193 and 0.093. Stubbington observed about 0.90 after one 20% wash and 0.05 after nine.",
+            "replay": {
+              "status": "reproduced",
+              "assessment": "The original-carrier concentration fell in all four compiled wells. Cells gave 0.500, 0.200 and 0.100 for the three plugs and 0.134 after nine chamber washes. The late chamber fluorescence lies below the prediction."
+            }
+          },
+          {
+            "id": "same-wash-collected-and-retained-tracer",
+            "assumption": "Tracer in the collected liquid and tracer left in the original chamber together account for the starting tracer after one well-mixed withdrawal and blank refill.",
+            "datasets": [
+              "vloemans2024-dilution",
+              "stubbington2018-chamber-wash"
+            ],
+            "outcome": "inconclusive",
+            "independence": "These are the same two independent studies used for the dilution direction. Neither provides paired withdrawn and retained tracer amounts for one chamber exchange.",
+            "comparison": "The chip assayed two concentrations after a split and downstream dilution. The chamber study followed the retained optical signal. Each lacks at least one measured inventory needed to close the experimental balance.",
+            "replay": {
+              "status": "partial",
+              "assessment": "The compiled run accounts for both inventories with a maximum discrepancy of 4.44 × 10⁻¹⁶ fmol. A quantitative comparison requires measured amounts and volumes on both sides of the same wash."
+            }
+          }
+        ]
+      }
+    },
     {
       "id": "xc0-charge-anchor",
       "category": "tissue-and-conservation",
