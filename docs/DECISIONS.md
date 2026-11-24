@@ -11049,3 +11049,44 @@ is **high priority, the user's decision.** It takes the next free builder after 
   is told.
 
 **FR-50's phase-1 builder has started.** Its judge comes first (D308), on the branch from FR-51's head.
+
+## D343: the user's decision: FR-30 is parked, development-only, with one labelled diagnostic on Revilla's data; D342's metadata search is withdrawn
+
+2026-11-24, about 15:30 UTC. The advisor reviewed FR-30's record with the lead; the decision is the user's.
+
+**The record since FR-30's benchmark began: twelve papers, one qualified, and it failed.**
+- **Undetermined by their data's structure:**
+  - Lin 2003, Desplantez 2004, Moreno 2002 and Snipas 2020;
+  - Sahu and Bera 2013;
+  - Xu 2013, Lin 2010 and Ek-Vitorín 2018 (D291);
+  - Shibayama 2006 and Elenes 2001;
+  - Ek-Vitorín 2016, with its Supporting Material (D341, D342).
+- **Revilla 1999 qualified, and failed** (D320: 4 of 6). Its ±80 mV windows overlap, so the fit missed (§13.7 W2), which
+  says nothing against symmetry.
+- **§13.7 W5:** "undetermined" means no test, and triggers nothing.
+
+**Nothing depends on FR-30's law.** `junction_series_gates@1` is used only by the Revilla benchmark's scripts. GJ-N1
+runs the single gate, pinned open. Under the single-study rule, a second paper passing would leave one pass and one
+fail, and D262 would stand either way.
+
+**The decision: FR-30 is parked.**
+- **It stays development-only (D262).**
+- **Its scope line:** two relaxation times at the cited voltages; the voltage dependence is unvalidated.
+- **It reopens:**
+  - when an experiment or a registered world needs the series-gate law beyond development; or
+  - when a source with per-voltage τ_fast and τ_slow at two or more magnitudes, at both polarities, is in hand.
+
+  The three papers still registered unopened in §13.4's order (Bukauskas 2001, Rackauskas 2007 and Moreno 1994) come
+  first then. Wang 1992 and Lin, Xu and Veenstra 2014 are exposed.
+- **Not done:** pooling across papers. Parameters fail to carry across preparations, as D338 and D340 record today
+  for SK2, Kir4.1 and POPC, so a miss would say nothing about the law.
+
+**One diagnostic, labelled and non-blind.**
+- **What:** a joint fit of `junction_series_gates@1`, with one symmetric block, to all six of Revilla's voltages.
+- **Who:** an agent that never fits FR-30 again.
+- **What it reports:** whether one parameter set can sit inside every registered window, with each residual in
+  window units. It decides nothing (W6), and changes no verdict and no law.
+- **When:** it takes the next free small slot.
+
+**Correction to D342.** D342 called a metadata-only search "the user's choice of 24 November". The user's answer then
+only filed the Supporting Material. That search is withdrawn.

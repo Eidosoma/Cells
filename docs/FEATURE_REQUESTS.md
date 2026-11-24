@@ -1364,6 +1364,8 @@ admission. Ek-Vitorín et al. 2018 is undetermined under rule 1, with one magnit
 candidates are exhausted. The next step is the user's: FR-30 stays development-only, or a further
 metadata-only search.
 
+**Status (24 November, D343): parked, development-only (D262).** Two relaxation times at the cited voltages; the voltage dependence is unvalidated. Twelve papers have been tested: one qualified (Revilla 1999) and failed (D320), and the rest were undetermined by their data's structure. It reopens when an experiment needs the series-gate law beyond development, or when a source with per-voltage τ_fast and τ_slow at two or more magnitudes is in hand. One labelled, non-blind diagnostic follows: a joint fit to Revilla's six voltages.
+
 ## FR-31 — Vesicle rupture during a steady tension hold
 
 - **The request (the same review; D248).** The assembly model tests rupture only at a state change.
