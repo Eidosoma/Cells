@@ -867,8 +867,8 @@ def test_a_shell_population_washes_in_exact_events_and_its_pool_refills():
     and a withdrawal at f = 1/4. The books close; each wash's record holds the tracer's place; a
     withdrawal books −k ln(1 − f), k the kept count; the full wash removes the whole pool; the pool
     refills from the lumen before the last withdrawal; and the tracer balances exactly, present
-    plus every removed count equal to the founder's. One population program (K = 1) and one run:
-    about 10 s."""
+    plus every removed count equal to the founder's. One population program (K = 1) and one run,
+    with the (d) rows' module imported for the world: 17 s cold (the file's row, 58.9 to 75.9 s)."""
     from tests.unit.test_assembly_lineages_v2_rate_equations_population import (
         STOPS,
         TIMES,

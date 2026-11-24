@@ -4,7 +4,8 @@ the judge's synthetic checks, and the parse of the protocol's definitions.
 - **The code-blind references' own self-check**
   (validation/assembly_lineages_v2/fr47_references/test_fr47_references.py), unedited, run as a
   script in an interpreter of its own: its last check is that no engine module is loaded, and this
-  suite's conftest loads the engine.
+  suite's conftest loads the engine. The child keeps the environment, so the D229 scope map's
+  recorder (scripts/gates/scope_inject, on PYTHONPATH) sees what the references read.
 - **agreement.py's and fr47_judge.py's checks,** on made-up inputs only.
 - **fr47_worlds.check():** every exact definition parses, and with FR-47's build (d) admits W1, W1Δ
   and W2's four rungs. It parses only: nothing runs on the protocol's inputs.
@@ -23,8 +24,8 @@ SELF_CHECK = (Path(__file__).resolve().parents[2] / "validation" / "assembly_lin
 
 
 def test_the_references_self_check_passes_in_its_own_interpreter():
-    result = subprocess.run([sys.executable, "-I", str(SELF_CHECK)], capture_output=True,
-                            text=True, timeout=600, cwd=SELF_CHECK.parent)  # fmt: skip
+    result = subprocess.run([sys.executable, str(SELF_CHECK)], capture_output=True, text=True,
+                            timeout=600, cwd=SELF_CHECK.parent)  # fmt: skip
     assert result.returncode == 0, result.stdout[-4000:] + result.stderr[-4000:]
     assert "all passed" in result.stdout
 

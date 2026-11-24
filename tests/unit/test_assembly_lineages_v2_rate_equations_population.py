@@ -123,12 +123,13 @@ def shell_world(*, tracer=4000, wall=50, delta=0.0, gate=None):
 
 
 def shell_definition(w, *, stops=(), times=(), horizon=1.0, representation=True, rtol=1e-9,
-                     seed=1):  # fmt: skip
+                     seed=1, buffer=0, fresh=0):  # fmt: skip
     """One run of `w` in population mode: (d) at `rtol`, or exact events; `stops` are (kind,
-    time, fraction) with tracer-free washes."""
-    schedules = [{"index": i, "kind": "withdrawal", "times_s": [t], "fraction": f, "buffer": [0]}
+    time, fraction), each wash's buffer or fresh pool holding `buffer` or `fresh` tracers."""
+    schedules = [{"index": i, "kind": "withdrawal", "times_s": [t], "fraction": f,
+                  "buffer": [buffer]}
                  if kind == "withdrawal" else
-                 {"index": i, "kind": "replacement", "times_s": [t], "pool": [0]}
+                 {"index": i, "kind": "replacement", "times_s": [t], "pool": [fresh]}
                  for i, (kind, t, f) in enumerate(stops)]  # fmt: skip
     d = definition(w, horizon=horizon, observations=times, event_limit=2**31 - 1,
                    row_every=2**31 - 1, trace=False, seed=seed, molecules=1 << 14,
@@ -310,3 +311,49 @@ def test_e2_s_rule_below_zero_retries_a_quarter_step(value, retried):
         assert sizes[1] == sizes[0] / 4.0 and state.zero_starts >= 1
     else:
         assert sizes[1] != sizes[0] / 4.0 and state.zero_starts >= 2  # the founder's, then -1e-6
+
+
+def test_a_wash_that_supplies_tracer_closes_its_books_and_its_moieties():
+    """FR-47's washes with supply, at the host on the washes row's program (no integration): from
+    a pool of 3000 and a lumen of 500, a withdrawal at f = 1/4 whose buffer carries 300 tracers in
+    fV, then a pulse replacement whose fresh pool holds 2500. The ledger closes at every row, each
+    wash moving F_cont by its work less its sink and heat; the mixing heat is Stirling's
+    F(kept; (1 − f)V) + F(b; fV) − F(kept + b; V) ≥ 0, computed apart; the pulse's work and sink
+    are F_cont of the fresh and the old pool; the tracer balances with what was removed and
+    supplied. About 1 s after the washes row."""
+    delta = float(np.log(2.0))
+    stops = (("withdrawal", 1.0, 0.25), ("replacement", 2.0, None))
+    spec = parse_spec(shell_definition(shell_world(delta=delta), stops=stops, times=TIMES,
+                                       horizon=4.0, buffer=300, fresh=2500))  # fmt: skip
+    state = rate_equations._Run(spec)
+    names = [p.name for p in spec.model.world.places]
+    shape = state.shape
+    y = np.asarray(state.y).copy()
+    y[names.index("S@pool")] = 3000.0
+    y[shape.problem.P + shape.places.tolist().index(names.index("S@lumen"))] = 500.0
+    state.y = jnp.asarray(y)
+    state.row("start")
+    withdrawal_, pulse = spec.experiment.schedules
+    state.withdrawal(withdrawal_)
+    state.replacement(pulse)
+    ledger, moieties = rate_equations._books(state)
+    assert ledger["closes"] and moieties["closes"]
+    w, r = state.events
+
+    def F(c, volume_L):  # the pool's Stirling F of c tracers in a volume
+        return c * (0.3 - np.log(NA * volume_L)) + c * np.log(c) - c
+
+    v = SHELL["V_out_L"]
+    heat = F(2250.0, 0.75 * v) + F(300.0, 0.25 * v) - F(2550.0, v)
+    assert (w["removed"]["S@pool"], w["remaining"]["S@pool"]) == (750.0, 2250.0)
+    assert w["supplied"]["S@pool"] == 300.0 and heat > 0.0
+    assert w["mixing_heat_kT"] == pytest.approx(heat, rel=1e-12)
+    assert w["buffer_F_kT"] == pytest.approx(F(300.0, 0.25 * v), rel=1e-12)
+    assert (r["removed"]["S@pool"], r["supplied"]["S@pool"]) == (2550.0, 2500.0)
+    assert r["work_kT"] == pytest.approx(F(2500.0, v), rel=1e-12)
+    assert r["sink_kT"] == pytest.approx(F(2550.0, v), rel=1e-12)
+    moved = sum(e["removed"]["S@pool"] - e["supplied"]["S@pool"] for e in state.events)
+    pool, slots = shape.split(np.asarray(state.y))[:2]
+    present = pool[names.index("S@pool")] + slots[0, shape.places.tolist().index(
+        names.index("S@lumen"))]  # fmt: skip
+    assert present + moved == 3500.0
