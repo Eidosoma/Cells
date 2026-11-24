@@ -48,6 +48,9 @@ files unchanged.
   construction. No world here has a prescribed shell, a wash or an E2 place, and the representation
   refuses each outside a shell's world.
 - FR-47's landing ran four existing (d) worlds on main and on its head, and they were bitwise equal.
+- FR-47's inert-wall fix (branch `fr47-inert-wall`, to land after main 1e40fc16) makes the
+  envelope's mask precise. The registered reader takes its count keys from that mask. The fix leaves
+  every mask of D0–D7, at every rung, as it was. §10's own check verifies that at the run's head.
 
 ## 1. Why M is repaired
 
@@ -233,6 +236,9 @@ At the top rung K against K − 1, each rung's observables as the registered rea
 - **A violation makes the world inconclusive,** as §9's other preconditions do. It means the model's
   condition failed, not its claim. A floppy replica whose V differs is a wrong replica, and fails
   under §5.
+- **The precondition is judged first.** At a pair where it fails, the constant rule is not judged,
+  so a tense replica gives an inconclusive world, never a fail of M. On the retry, a violation again
+  leaves the world inconclusive, and the protocol with it (§10 of the first registration).
 
 ## 7. The errata, folded in
 
@@ -297,6 +303,13 @@ real_reader.py` and its JSON; booleans, keys and shapes only, no observable valu
   - `floppy_margins` is finite, and the vesicle floppy at every constant time;
   - every run's values at the variant's constant pairs carry the model's bits (16 in D5, 11 in
     D6).
+- **D7's (d) side on the fresh seeds.** Each D7 (d) run draws its pore threshold from its replica's
+  seed, so the fresh seeds change D7's (d) runs. The first registration measured the clock bound's
+  room over seeds 1–128.
+  - The author ran (d) alone on the registered D7 at all three rungs, on 640001–640128
+    (`probes/d7_fresh_seeds.py`, `d7/`). No opening time was printed or written.
+  - Of 384 runs, none was refused by D309's bound, and every one lysed by its pore (cause `pore`).
+  - The largest fraction of the bound used was 0.016, 0.061 and 0.389 at 25, 50 and 100 nm.
 
 ## 9. The cost
 
@@ -315,8 +328,8 @@ alone (`cost` in the JSON).
 | (d): D7's 384 paired runs | 0.75 |
 | (d): every other world's runs, and D7's convergence runs | about 1 |
 | The plants, in (d) | about 0.3 |
-| **The first seed set** | **about 13.5** |
-| A retry of inconclusive worlds | up to those worlds' share again: up to about 27 in all |
+| **The first seed set** | **about 13.5 process-hours (13.5 to 27 CPU-hours)** |
+| A retry of inconclusive worlds | up to those worlds' share again: up to about 27 process-hours in all |
 
 - **It runs before FR-47's exact ensemble** (D323), which is about 3 CPU-hours.
 - **D5's 100 nm rung sets the wall time** unless its 128 replicas are split across CPUs.
@@ -334,8 +347,13 @@ alone (`cost` in the JSON).
   - PROGRESS.md's Protocol D lines and the builders' notes
     (`/mnt/workspaces/Cells/ol6-20261122/STATE.md`), which record the first results.
 
-  It reads the first registration and errata 1 and 2, which §7 folds in. This document quotes none
-  of the first results.
+  It reads the first registration, and erratum 1, which §7 folds in. §7 restates erratum 2's rules,
+  so the checker need not read erratum 2, whose §1 and §4 quote the first check's plant findings in
+  (d) alone. This document quotes none of the first results.
+- **Before any run,** at its own head, it runs `python -m validation.assembly_lineages_v2.
+  protocol_d_v2 check` and stops if any check fails. Main moves between the tag and the run, and the
+  reader's keys come from `rate_equations.enveloped`, which FR-47's inert-wall fix makes precise.
+  That fix leaves every mask of D0–D7 unchanged at its head, but the check verifies it at the run's.
 - **Its driver** may be its own, using the registered functions, as the first check's was.
 - **It runs detached,** with durable logs (AGENTS.md), on the CPUs the lead assigns.
 - **It writes** under `/mnt/workspaces/Cells/ol6-protocol-d-v2-<head>/`: the definitions, both
@@ -361,9 +379,12 @@ alone (`cost` in the JSON).
     (d) is deterministic here), for §4.3's margins. The script is
     `/mnt/workspaces/Cells/ol6-protocol-d-v2-20261124/probes/margins.py`, with its JSON;
   - §4.3's scale estimate (`fluctuation_scale.py`), which runs nothing;
-  - §8's checks, including (d) alone on the registered D5 and D6 at 50 and 100 nm for the constant
-    pairs' bits, and an unregistered 12.5 nm variant of D5 and D6 in exact events (smoke seeds 1 and
-    7) and in (d), printing booleans, keys and shapes only.
+  - §8's checks, including:
+    - (d) alone on the registered D5 and D6 at 50 and 100 nm, for the constant pairs' bits;
+    - an unregistered 12.5 nm variant of D5 and D6, in exact events (smoke seeds 1 and 7) and in
+      (d), printing booleans, keys and shapes only;
+    - (d) alone on the registered D7 at all three rungs on the fresh first seeds, for the clock
+      bound's room, with statuses, causes and the bound's largest fraction only.
 - **Not run:** no exact-event run of any registered world.
 
 ## 12. What does not change
@@ -384,3 +405,6 @@ alone (`cost` in the JSON).
   - No plant acts at a constant pair. The constant path's catches are §8's made-up columns.
 - **The other preconditions (§9),** the verdicts and the retry (§10), with the retry's seeds as §3
   gives them.
+- **D7 and the clock bound.** Its (d) runs draw their thresholds from the fresh seeds, and §8 shows
+  the bound's room on the first set. A retry's (d) runs are not pre-checked. A refused replica is
+  inconclusive (numerics), as erratum 1 says.
