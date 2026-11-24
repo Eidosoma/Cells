@@ -69,18 +69,16 @@
    }
   ],
   "dt": [
-   0.005
+   0.0025
   ],
   "observation_times": [
+   0.25,
    0.5,
    1.0,
-   2.0,
-   3.0,
-   5.0,
-   8.0,
-   12.0
+   1.5,
+   2.0
   ],
-  "horizon": 12.0
+  "horizon": 2.0
  },
  "units": {
   "copies": "count (the one declared count)",
@@ -119,129 +117,93 @@
  "trajectory": [
   {
    "observable": "n:L1@well",
+   "time_s": 0.25,
+   "value": 7.662882058149938,
+   "tolerance_gap": 2.318145675417327e-13
+  },
+  {
+   "observable": "R:matrix",
+   "time_s": 0.25,
+   "value": 3.6628820581499384,
+   "tolerance_gap": 2.313704783318826e-13
+  },
+  {
+   "observable": "B:matrix_L1",
+   "time_s": 0.25,
+   "value": 2.3371179418500616,
+   "tolerance_gap": 2.313704783318826e-13
+  },
+  {
+   "observable": "n:L1@well",
    "time_s": 0.5,
    "value": 7.661906661063901,
-   "tolerance_gap": 1.0036416142611415e-13
+   "tolerance_gap": 1.092459456231154e-13
   },
   {
    "observable": "R:matrix",
    "time_s": 0.5,
    "value": 3.6619066610639006,
-   "tolerance_gap": 9.992007221626409e-14
+   "tolerance_gap": 1.1146639167236572e-13
   },
   {
    "observable": "B:matrix_L1",
    "time_s": 0.5,
    "value": 2.3380933389360994,
-   "tolerance_gap": 9.992007221626409e-14
+   "tolerance_gap": 1.1146639167236572e-13
   },
   {
    "observable": "n:L1@well",
    "time_s": 1.0,
    "value": 7.66190378971534,
-   "tolerance_gap": 1.7763568394002505e-15
+   "tolerance_gap": 5.329070518200751e-15
   },
   {
    "observable": "R:matrix",
    "time_s": 1.0,
    "value": 3.6619037897153404,
-   "tolerance_gap": 1.3322676295501878e-15
+   "tolerance_gap": 7.549516567451064e-15
   },
   {
    "observable": "B:matrix_L1",
    "time_s": 1.0,
    "value": 2.3380962102846596,
-   "tolerance_gap": 1.3322676295501878e-15
+   "tolerance_gap": 7.549516567451064e-15
+  },
+  {
+   "observable": "n:L1@well",
+   "time_s": 1.5,
+   "value": 7.6619037896906015,
+   "tolerance_gap": 1.9877433032888803e-12
+  },
+  {
+   "observable": "R:matrix",
+   "time_s": 1.5,
+   "value": 3.661903789690601,
+   "tolerance_gap": 1.991740106177531e-12
+  },
+  {
+   "observable": "B:matrix_L1",
+   "time_s": 1.5,
+   "value": 2.338096210309399,
+   "tolerance_gap": 1.991740106177531e-12
   },
   {
    "observable": "n:L1@well",
    "time_s": 2.0,
    "value": 7.661903789690601,
-   "tolerance_gap": 2.1049828546892968e-13
+   "tolerance_gap": 1.865174681370263e-14
   },
   {
    "observable": "R:matrix",
    "time_s": 2.0,
    "value": 3.661903789690601,
-   "tolerance_gap": 2.1049828546892968e-13
+   "tolerance_gap": 1.509903313490213e-14
   },
   {
    "observable": "B:matrix_L1",
    "time_s": 2.0,
    "value": 2.338096210309399,
-   "tolerance_gap": 2.1049828546892968e-13
-  },
-  {
-   "observable": "n:L1@well",
-   "time_s": 3.0,
-   "value": 7.661903789690601,
-   "tolerance_gap": 1.3145040611561853e-13
-  },
-  {
-   "observable": "R:matrix",
-   "time_s": 3.0,
-   "value": 3.661903789690601,
-   "tolerance_gap": 1.3145040611561853e-13
-  },
-  {
-   "observable": "B:matrix_L1",
-   "time_s": 3.0,
-   "value": 2.338096210309399,
-   "tolerance_gap": 1.3145040611561853e-13
-  },
-  {
-   "observable": "n:L1@well",
-   "time_s": 5.0,
-   "value": 7.661903789690601,
-   "tolerance_gap": 2.3430146711689304e-12
-  },
-  {
-   "observable": "R:matrix",
-   "time_s": 5.0,
-   "value": 3.661903789690601,
-   "tolerance_gap": 2.3443469387984806e-12
-  },
-  {
-   "observable": "B:matrix_L1",
-   "time_s": 5.0,
-   "value": 2.338096210309399,
-   "tolerance_gap": 2.3443469387984806e-12
-  },
-  {
-   "observable": "n:L1@well",
-   "time_s": 8.0,
-   "value": 7.661903789690601,
-   "tolerance_gap": 7.629452625224076e-13
-  },
-  {
-   "observable": "R:matrix",
-   "time_s": 8.0,
-   "value": 3.661903789690601,
-   "tolerance_gap": 7.611689056830073e-13
-  },
-  {
-   "observable": "B:matrix_L1",
-   "time_s": 8.0,
-   "value": 2.338096210309399,
-   "tolerance_gap": 7.611689056830073e-13
-  },
-  {
-   "observable": "n:L1@well",
-   "time_s": 12.0,
-   "value": 7.661903789690601,
-   "tolerance_gap": 6.066258606551855e-13
-  },
-  {
-   "observable": "R:matrix",
-   "time_s": 12.0,
-   "value": 3.661903789690601,
-   "tolerance_gap": 6.066258606551855e-13
-  },
-  {
-   "observable": "B:matrix_L1",
-   "time_s": 12.0,
-   "value": 2.338096210309399,
-   "tolerance_gap": 6.066258606551855e-13
+   "tolerance_gap": 1.509903313490213e-14
   }
  ],
  "balances": {
@@ -249,6 +211,12 @@
    {
     "ligand": "L1",
     "node": "well",
+    "time_s": 0.25,
+    "total": 10.0
+   },
+   {
+    "ligand": "L1",
+    "node": "well",
     "time_s": 0.5,
     "total": 10.0
    },
@@ -261,37 +229,24 @@
    {
     "ligand": "L1",
     "node": "well",
+    "time_s": 1.5,
+    "total": 10.0
+   },
+   {
+    "ligand": "L1",
+    "node": "well",
     "time_s": 2.0,
-    "total": 10.0
-   },
-   {
-    "ligand": "L1",
-    "node": "well",
-    "time_s": 3.0,
-    "total": 10.0
-   },
-   {
-    "ligand": "L1",
-    "node": "well",
-    "time_s": 5.0,
-    "total": 10.0
-   },
-   {
-    "ligand": "L1",
-    "node": "well",
-    "time_s": 8.0,
-    "total": 10.0
-   },
-   {
-    "ligand": "L1",
-    "node": "well",
-    "time_s": 12.0,
     "total": 10.0
    }
   ],
   "sets": [
    {
     "set": "matrix",
+    "time_s": 0.25,
+    "sites": 6.0
+   },
+   {
+    "set": "matrix",
     "time_s": 0.5,
     "sites": 6.0
    },
@@ -302,27 +257,12 @@
    },
    {
     "set": "matrix",
+    "time_s": 1.5,
+    "sites": 6.0
+   },
+   {
+    "set": "matrix",
     "time_s": 2.0,
-    "sites": 6.0
-   },
-   {
-    "set": "matrix",
-    "time_s": 3.0,
-    "sites": 6.0
-   },
-   {
-    "set": "matrix",
-    "time_s": 5.0,
-    "sites": 6.0
-   },
-   {
-    "set": "matrix",
-    "time_s": 8.0,
-    "sites": 6.0
-   },
-   {
-    "set": "matrix",
-    "time_s": 12.0,
     "sites": 6.0
    }
   ]
@@ -332,10 +272,18 @@
    {
     "node": "well",
     "start_s": 0.0,
+    "end_s": 0.25,
+    "heat": 0.12427825189864161,
+    "bound": 0.00074339036455573,
+    "tolerance_gap": 2.8159154508016194e-15
+   },
+   {
+    "node": "well",
+    "start_s": 0.25,
     "end_s": 0.5,
-    "heat": 0.12427927719552123,
-    "bound": 0.0007433788903311303,
-    "tolerance_gap": 2.3313852533533517e-15
+    "heat": 1.0252968796151348e-06,
+    "bound": 0.0007388103259033448,
+    "tolerance_gap": 1.4469082217503822e-14
    },
    {
     "node": "well",
@@ -343,47 +291,23 @@
     "end_s": 1.0,
     "heat": 8.83285436564955e-12,
     "bound": 0.0007387988179151514,
-    "tolerance_gap": 6.1517272098273905e-19
+    "tolerance_gap": 6.836357062572935e-19
    },
    {
     "node": "well",
     "start_s": 1.0,
-    "end_s": 2.0,
-    "heat": 6.556921566251533e-22,
+    "end_s": 1.5,
+    "heat": 6.556921565764791e-22,
     "bound": 0.0007387987841512667,
-    "tolerance_gap": 2.330770080837516e-15
+    "tolerance_gap": 9.32308031827481e-15
    },
    {
     "node": "well",
-    "start_s": 2.0,
-    "end_s": 3.0,
-    "heat": 3.613250997778027e-42,
+    "start_s": 1.5,
+    "end_s": 2.0,
+    "heat": 4.8674226637946136e-32,
     "bound": 0.0007387987841509759,
-    "tolerance_gap": 2.3190557606452246e-25
-   },
-   {
-    "node": "well",
-    "start_s": 3.0,
-    "end_s": 5.0,
-    "heat": 1.991113e-62,
-    "bound": 0.0007387987841509759,
-    "tolerance_gap": 6.992310236110841e-15
-   },
-   {
-    "node": "well",
-    "start_s": 5.0,
-    "end_s": 8.0,
-    "heat": 1e-68,
-    "bound": 0.0007387987841509759,
-    "tolerance_gap": 2.3307700855626107e-15
-   },
-   {
-    "node": "well",
-    "start_s": 8.0,
-    "end_s": 12.0,
-    "heat": -1e-68,
-    "bound": 0.0007387987841509759,
-    "tolerance_gap": 9.323080322237458e-15
+    "tolerance_gap": 2.3307700762189524e-15
    }
   ],
   "G": [
@@ -391,6 +315,11 @@
     "node": "well",
     "time_s": 0.0,
     "G": 25.22392441827952
+   },
+   {
+    "node": "well",
+    "time_s": 0.25,
+    "G": 25.09964616638088
    },
    {
     "node": "well",
@@ -404,32 +333,44 @@
    },
    {
     "node": "well",
+    "time_s": 1.5,
+    "G": 25.099645141075165
+   },
+   {
+    "node": "well",
     "time_s": 2.0,
-    "G": 25.099645141075165
-   },
-   {
-    "node": "well",
-    "time_s": 3.0,
-    "G": 25.099645141075165
-   },
-   {
-    "node": "well",
-    "time_s": 5.0,
-    "G": 25.099645141075165
-   },
-   {
-    "node": "well",
-    "time_s": 8.0,
-    "G": 25.099645141075165
-   },
-   {
-    "node": "well",
-    "time_s": 12.0,
     "G": 25.099645141075165
    }
   ]
  },
  "pairs": [
+  {
+   "criterion": "C1",
+   "observable": "n:L1@well",
+   "time_s": 0.25,
+   "class": "band",
+   "value": 7.662882058149938,
+   "tolerance": 8e-06,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:matrix",
+   "time_s": 0.25,
+   "class": "band",
+   "value": 3.6628820581499384,
+   "tolerance": 8e-06,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:matrix_L1",
+   "time_s": 0.25,
+   "class": "band",
+   "value": 2.3371179418500616,
+   "tolerance": 8e-06,
+   "against": "reference"
+  },
   {
    "criterion": "C1",
    "observable": "n:L1@well",
@@ -487,6 +428,33 @@
   {
    "criterion": "C1",
    "observable": "n:L1@well",
+   "time_s": 1.5,
+   "class": "band",
+   "value": 7.6619037896906015,
+   "tolerance": 8e-06,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:matrix",
+   "time_s": 1.5,
+   "class": "band",
+   "value": 3.661903789690601,
+   "tolerance": 8e-06,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:matrix_L1",
+   "time_s": 1.5,
+   "class": "band",
+   "value": 2.338096210309399,
+   "tolerance": 8e-06,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L1@well",
    "time_s": 2.0,
    "class": "band",
    "value": 7.661903789690601,
@@ -506,114 +474,6 @@
    "criterion": "C1",
    "observable": "B:matrix_L1",
    "time_s": 2.0,
-   "class": "band",
-   "value": 2.338096210309399,
-   "tolerance": 8e-06,
-   "against": "reference"
-  },
-  {
-   "criterion": "C1",
-   "observable": "n:L1@well",
-   "time_s": 3.0,
-   "class": "band",
-   "value": 7.661903789690601,
-   "tolerance": 8e-06,
-   "against": "reference"
-  },
-  {
-   "criterion": "C1",
-   "observable": "R:matrix",
-   "time_s": 3.0,
-   "class": "band",
-   "value": 3.661903789690601,
-   "tolerance": 8e-06,
-   "against": "reference"
-  },
-  {
-   "criterion": "C1",
-   "observable": "B:matrix_L1",
-   "time_s": 3.0,
-   "class": "band",
-   "value": 2.338096210309399,
-   "tolerance": 8e-06,
-   "against": "reference"
-  },
-  {
-   "criterion": "C1",
-   "observable": "n:L1@well",
-   "time_s": 5.0,
-   "class": "band",
-   "value": 7.661903789690601,
-   "tolerance": 8e-06,
-   "against": "reference"
-  },
-  {
-   "criterion": "C1",
-   "observable": "R:matrix",
-   "time_s": 5.0,
-   "class": "band",
-   "value": 3.661903789690601,
-   "tolerance": 8e-06,
-   "against": "reference"
-  },
-  {
-   "criterion": "C1",
-   "observable": "B:matrix_L1",
-   "time_s": 5.0,
-   "class": "band",
-   "value": 2.338096210309399,
-   "tolerance": 8e-06,
-   "against": "reference"
-  },
-  {
-   "criterion": "C1",
-   "observable": "n:L1@well",
-   "time_s": 8.0,
-   "class": "band",
-   "value": 7.661903789690601,
-   "tolerance": 8e-06,
-   "against": "reference"
-  },
-  {
-   "criterion": "C1",
-   "observable": "R:matrix",
-   "time_s": 8.0,
-   "class": "band",
-   "value": 3.661903789690601,
-   "tolerance": 8e-06,
-   "against": "reference"
-  },
-  {
-   "criterion": "C1",
-   "observable": "B:matrix_L1",
-   "time_s": 8.0,
-   "class": "band",
-   "value": 2.338096210309399,
-   "tolerance": 8e-06,
-   "against": "reference"
-  },
-  {
-   "criterion": "C1",
-   "observable": "n:L1@well",
-   "time_s": 12.0,
-   "class": "band",
-   "value": 7.661903789690601,
-   "tolerance": 8e-06,
-   "against": "reference"
-  },
-  {
-   "criterion": "C1",
-   "observable": "R:matrix",
-   "time_s": 12.0,
-   "class": "band",
-   "value": 3.661903789690601,
-   "tolerance": 8e-06,
-   "against": "reference"
-  },
-  {
-   "criterion": "C1",
-   "observable": "B:matrix_L1",
-   "time_s": 12.0,
    "class": "band",
    "value": 2.338096210309399,
    "tolerance": 8e-06,
@@ -622,7 +482,7 @@
   {
    "criterion": "C2a",
    "observable": "n:L1@well",
-   "time_s": 12.0,
+   "time_s": 2.0,
    "class": "band",
    "value": 7.661903789690601,
    "tolerance": 8e-09,
@@ -631,7 +491,7 @@
   {
    "criterion": "C2a",
    "observable": "R:matrix",
-   "time_s": 12.0,
+   "time_s": 2.0,
    "class": "band",
    "value": 3.661903789690601,
    "tolerance": 8e-09,
@@ -640,7 +500,7 @@
   {
    "criterion": "C2a",
    "observable": "B:matrix_L1",
-   "time_s": 12.0,
+   "time_s": 2.0,
    "class": "band",
    "value": 2.338096210309399,
    "tolerance": 8e-09,
@@ -649,35 +509,69 @@
   {
    "criterion": "C3a",
    "observable": "H:well",
-   "time_s": 0.5,
+   "time_s": 0.25,
    "start_s": 0.0,
+   "end_s": 0.25,
+   "class": "band",
+   "value": 0.12427825189864161,
+   "tolerance": 0.00074339036455573,
+   "against": "reference"
+  },
+  {
+   "criterion": "C3b",
+   "observable": "H:well",
+   "time_s": 0.25,
+   "start_s": 0.0,
+   "end_s": 0.25,
+   "dt_s": 0.0025,
+   "class": "derived",
+   "value": null,
+   "tolerance": 2.41593998969583e-11,
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
+  },
+  {
+   "criterion": "C3c",
+   "observable": "cumulative_site_heat:well",
+   "time_s": 0.25,
+   "start_s": 0.0,
+   "end_s": 0.25,
+   "class": "derived",
+   "value": null,
+   "tolerance": 2.4159399896958304e-13,
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
+  },
+  {
+   "criterion": "C3a",
+   "observable": "H:well",
+   "time_s": 0.5,
+   "start_s": 0.25,
    "end_s": 0.5,
    "class": "band",
-   "value": 0.12427927719552123,
-   "tolerance": 0.0007433788903311303,
+   "value": 1.0252968796151348e-06,
+   "tolerance": 0.0007388103259033448,
    "against": "reference"
   },
   {
    "criterion": "C3b",
    "observable": "H:well",
    "time_s": 0.5,
-   "start_s": 0.0,
+   "start_s": 0.25,
    "end_s": 0.5,
-   "dt_s": 0.005,
+   "dt_s": 0.0025,
    "class": "derived",
    "value": null,
-   "tolerance": 2.4160304066747635e-11,
+   "tolerance": 2.445643801240018e-11,
    "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
   },
   {
    "criterion": "C3c",
    "observable": "cumulative_site_heat:well",
    "time_s": 0.5,
-   "start_s": 0.0,
+   "start_s": 0.25,
    "end_s": 0.5,
    "class": "derived",
    "value": null,
-   "tolerance": 2.4160304066747635e-13,
+   "tolerance": 2.4456438012400183e-13,
    "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
   },
   {
@@ -697,10 +591,10 @@
    "time_s": 1.0,
    "start_s": 0.5,
    "end_s": 1.0,
-   "dt_s": 0.005,
+   "dt_s": 0.0025,
    "class": "derived",
    "value": null,
-   "tolerance": 2.4457344844227817e-11,
+   "tolerance": 4.891468968845563e-11,
    "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
   },
   {
@@ -717,21 +611,21 @@
   {
    "criterion": "C3a",
    "observable": "H:well",
-   "time_s": 2.0,
+   "time_s": 1.5,
    "start_s": 1.0,
-   "end_s": 2.0,
+   "end_s": 1.5,
    "class": "band",
-   "value": 6.556921566251533e-22,
+   "value": 6.556921565764791e-22,
    "tolerance": 0.0007387987841512667,
    "against": "reference"
   },
   {
    "criterion": "C3b",
    "observable": "H:well",
-   "time_s": 2.0,
+   "time_s": 1.5,
    "start_s": 1.0,
-   "end_s": 2.0,
-   "dt_s": 0.005,
+   "end_s": 1.5,
+   "dt_s": 0.0025,
    "class": "derived",
    "value": null,
    "tolerance": 4.891469501257811e-11,
@@ -740,9 +634,9 @@
   {
    "criterion": "C3c",
    "observable": "cumulative_site_heat:well",
-   "time_s": 2.0,
+   "time_s": 1.5,
    "start_s": 1.0,
-   "end_s": 2.0,
+   "end_s": 1.5,
    "class": "derived",
    "value": null,
    "tolerance": 2.445734750628906e-13,
@@ -751,21 +645,21 @@
   {
    "criterion": "C3a",
    "observable": "H:well",
-   "time_s": 3.0,
-   "start_s": 2.0,
-   "end_s": 3.0,
+   "time_s": 2.0,
+   "start_s": 1.5,
+   "end_s": 2.0,
    "class": "band",
-   "value": 3.613250997778027e-42,
+   "value": 4.8674226637946136e-32,
    "tolerance": 0.0007387987841509759,
    "against": "reference"
   },
   {
    "criterion": "C3b",
    "observable": "H:well",
-   "time_s": 3.0,
-   "start_s": 2.0,
-   "end_s": 3.0,
-   "dt_s": 0.005,
+   "time_s": 2.0,
+   "start_s": 1.5,
+   "end_s": 2.0,
+   "dt_s": 0.0025,
    "class": "derived",
    "value": null,
    "tolerance": 4.891469501262398e-11,
@@ -774,111 +668,9 @@
   {
    "criterion": "C3c",
    "observable": "cumulative_site_heat:well",
-   "time_s": 3.0,
-   "start_s": 2.0,
-   "end_s": 3.0,
-   "class": "derived",
-   "value": null,
-   "tolerance": 2.445734750631199e-13,
-   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
-  },
-  {
-   "criterion": "C3a",
-   "observable": "H:well",
-   "time_s": 5.0,
-   "start_s": 3.0,
-   "end_s": 5.0,
-   "class": "band",
-   "value": 1.991113e-62,
-   "tolerance": 0.0007387987841509759,
-   "against": "reference"
-  },
-  {
-   "criterion": "C3b",
-   "observable": "H:well",
-   "time_s": 5.0,
-   "start_s": 3.0,
-   "end_s": 5.0,
-   "dt_s": 0.005,
-   "class": "derived",
-   "value": null,
-   "tolerance": 9.782939002524797e-11,
-   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
-  },
-  {
-   "criterion": "C3c",
-   "observable": "cumulative_site_heat:well",
-   "time_s": 5.0,
-   "start_s": 3.0,
-   "end_s": 5.0,
-   "class": "derived",
-   "value": null,
-   "tolerance": 2.445734750631199e-13,
-   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
-  },
-  {
-   "criterion": "C3a",
-   "observable": "H:well",
-   "time_s": 8.0,
-   "start_s": 5.0,
-   "end_s": 8.0,
-   "class": "band",
-   "value": 1e-68,
-   "tolerance": 0.0007387987841509759,
-   "against": "reference"
-  },
-  {
-   "criterion": "C3b",
-   "observable": "H:well",
-   "time_s": 8.0,
-   "start_s": 5.0,
-   "end_s": 8.0,
-   "dt_s": 0.005,
-   "class": "derived",
-   "value": null,
-   "tolerance": 1.4674408503787195e-10,
-   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
-  },
-  {
-   "criterion": "C3c",
-   "observable": "cumulative_site_heat:well",
-   "time_s": 8.0,
-   "start_s": 5.0,
-   "end_s": 8.0,
-   "class": "derived",
-   "value": null,
-   "tolerance": 2.445734750631199e-13,
-   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
-  },
-  {
-   "criterion": "C3a",
-   "observable": "H:well",
-   "time_s": 12.0,
-   "start_s": 8.0,
-   "end_s": 12.0,
-   "class": "band",
-   "value": -1e-68,
-   "tolerance": 0.0007387987841509759,
-   "against": "reference"
-  },
-  {
-   "criterion": "C3b",
-   "observable": "H:well",
-   "time_s": 12.0,
-   "start_s": 8.0,
-   "end_s": 12.0,
-   "dt_s": 0.005,
-   "class": "derived",
-   "value": null,
-   "tolerance": 1.9565878005049593e-10,
-   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
-  },
-  {
-   "criterion": "C3c",
-   "observable": "cumulative_site_heat:well",
-   "time_s": 12.0,
-   "start_s": 8.0,
-   "end_s": 12.0,
+   "time_s": 2.0,
+   "start_s": 1.5,
+   "end_s": 2.0,
    "class": "derived",
    "value": null,
    "tolerance": 2.445734750631199e-13,
@@ -888,7 +680,7 @@
    "criterion": "C5",
    "observable": "sites:matrix",
    "time_s": 0.0,
-   "dt_s": 0.005,
+   "dt_s": 0.0025,
    "class": "derived",
    "value": 6.0,
    "tolerance": 2.1316282072803006e-14,
@@ -897,8 +689,8 @@
   {
    "criterion": "C5",
    "observable": "sites:matrix",
-   "time_s": 0.5,
-   "dt_s": 0.005,
+   "time_s": 0.25,
+   "dt_s": 0.0025,
    "class": "derived",
    "value": 6.0,
    "tolerance": 2.1529444893531036e-12,
@@ -907,8 +699,8 @@
   {
    "criterion": "C5",
    "observable": "sites:matrix",
-   "time_s": 1.0,
-   "dt_s": 0.005,
+   "time_s": 0.5,
+   "dt_s": 0.0025,
    "class": "derived",
    "value": 6.0,
    "tolerance": 4.284572696633404e-12,
@@ -917,8 +709,8 @@
   {
    "criterion": "C5",
    "observable": "sites:matrix",
-   "time_s": 2.0,
-   "dt_s": 0.005,
+   "time_s": 1.0,
+   "dt_s": 0.0025,
    "class": "derived",
    "value": 6.0,
    "tolerance": 8.547829111194005e-12,
@@ -927,8 +719,8 @@
   {
    "criterion": "C5",
    "observable": "sites:matrix",
-   "time_s": 3.0,
-   "dt_s": 0.005,
+   "time_s": 1.5,
+   "dt_s": 0.0025,
    "class": "derived",
    "value": 6.0,
    "tolerance": 1.2811085525754606e-11,
@@ -937,31 +729,11 @@
   {
    "criterion": "C5",
    "observable": "sites:matrix",
-   "time_s": 5.0,
-   "dt_s": 0.005,
+   "time_s": 2.0,
+   "dt_s": 0.0025,
    "class": "derived",
    "value": 6.0,
-   "tolerance": 2.133759835487581e-11,
-   "against": "reference: S_s"
-  },
-  {
-   "criterion": "C5",
-   "observable": "sites:matrix",
-   "time_s": 8.0,
-   "dt_s": 0.005,
-   "class": "derived",
-   "value": 6.0,
-   "tolerance": 3.412736759855761e-11,
-   "against": "reference: S_s"
-  },
-  {
-   "criterion": "C5",
-   "observable": "sites:matrix",
-   "time_s": 12.0,
-   "dt_s": 0.005,
-   "class": "derived",
-   "value": 6.0,
-   "tolerance": 5.1180393256800016e-11,
+   "tolerance": 1.7074341940315207e-11,
    "against": "reference: S_s"
   },
   {
@@ -982,6 +754,21 @@
   {
    "criterion": "C9",
    "observable": "theta:matrix_L1",
+   "time_s": 0.25,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 0.0,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.881784197001252e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:matrix_L1",
    "time_s": 0.5,
    "class": "derived",
    "value": null,
@@ -1012,67 +799,22 @@
   {
    "criterion": "C9",
    "observable": "theta:matrix_L1",
+   "time_s": 1.5,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 0.0,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.881784197001252e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:matrix_L1",
    "time_s": 2.0,
-   "class": "derived",
-   "value": null,
-   "tolerance": null,
-   "against": "engine: B_b / S_s of its own saved state",
-   "tolerance_terms": {
-    "eps_term": 8.881784197001252e-16,
-    "moiety_term_information": 0.0,
-    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
-   },
-   "tolerance_information": 8.881784197001252e-16
-  },
-  {
-   "criterion": "C9",
-   "observable": "theta:matrix_L1",
-   "time_s": 3.0,
-   "class": "derived",
-   "value": null,
-   "tolerance": null,
-   "against": "engine: B_b / S_s of its own saved state",
-   "tolerance_terms": {
-    "eps_term": 8.881784197001252e-16,
-    "moiety_term_information": 0.0,
-    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
-   },
-   "tolerance_information": 8.881784197001252e-16
-  },
-  {
-   "criterion": "C9",
-   "observable": "theta:matrix_L1",
-   "time_s": 5.0,
-   "class": "derived",
-   "value": null,
-   "tolerance": null,
-   "against": "engine: B_b / S_s of its own saved state",
-   "tolerance_terms": {
-    "eps_term": 8.881784197001252e-16,
-    "moiety_term_information": 0.0,
-    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
-   },
-   "tolerance_information": 8.881784197001252e-16
-  },
-  {
-   "criterion": "C9",
-   "observable": "theta:matrix_L1",
-   "time_s": 8.0,
-   "class": "derived",
-   "value": null,
-   "tolerance": null,
-   "against": "engine: B_b / S_s of its own saved state",
-   "tolerance_terms": {
-    "eps_term": 8.881784197001252e-16,
-    "moiety_term_information": 0.0,
-    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
-   },
-   "tolerance_information": 8.881784197001252e-16
-  },
-  {
-   "criterion": "C9",
-   "observable": "theta:matrix_L1",
-   "time_s": 12.0,
    "class": "derived",
    "value": null,
    "tolerance": null,
@@ -1087,8 +829,8 @@
   {
    "criterion": "C10",
    "observable": "run",
-   "time_s": 12.0,
-   "dt_s": 0.005,
+   "time_s": 2.0,
+   "dt_s": 0.0025,
    "class": "constant",
    "value": "completes",
    "tolerance": null,
@@ -1098,13 +840,13 @@
  "spread": "none",
  "spread_note": "No pair is spread: nothing is drawn (SPEC.md \u00a73.4). Trajectory pairs carry integration error and are class band, judged by their criterion's band directly, never by agreement.judge.",
  "distance_at_horizon": {
-  "n:L1@well": 6.7247882e-62,
-  "R:matrix": 6.7248312e-62,
-  "B:matrix_L1": 6.7247885e-62
+  "n:L1@well": 1.836488491330679e-21,
+  "R:matrix": 1.836488491330679e-21,
+  "B:matrix_L1": 1.836488491330679e-21
  },
  "plants": [],
  "provenance": {
-  "references_revision": "d50aef74d35c6b93dfaa65e95effdb7462125fcc",
+  "references_revision": "2eb8813960d96a86d1dfab590eab548f553f3baa",
   "tree_clean": true,
   "writer_version": "fr45-references-writer 2",
   "regeneration_hash_seeds": [
@@ -1113,16 +855,17 @@
    2
   ],
   "spec": {
-   "label": "fr45-site-competition-v1, amendment 2 of 2026-11-24 (ff99fead)",
+   "label": "fr45-site-competition-v1, amendment 3 of 2026-11-24 (98cd33db)",
    "files": [
     "docs/FR45_SITE_COMPETITION_PROTOCOL.md",
     "validation/fr45/spec/AMENDMENT-2-2026-11-24.md",
     "validation/fr45/spec/AMENDMENT-2026-11-24.md",
+    "validation/fr45/spec/AMENDMENT-3-2026-11-24.md",
     "validation/fr45/spec/CRITERIA.md",
     "validation/fr45/spec/NOTE-2026-11-24.md",
     "validation/fr45/spec/SPEC.md"
    ],
-   "verified_against": "SHA256SUMS-fr45-spec-ff99fead.txt",
+   "verified_against": "SHA256SUMS-fr45-spec-98cd33db.txt",
    "rows_matched": 106
   },
   "profile": "reference"

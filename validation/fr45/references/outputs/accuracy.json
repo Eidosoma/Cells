@@ -577,44 +577,44 @@
    },
    "trajectory_convergence_requirement": {
     "misses": 0,
-    "worst_ratio": 0.059102710746130105
+    "worst_ratio": 0.0062535001315322325
    },
    "trajectory": {
-    "tolerance_gap_over_scale_max": 4.5141668181258865e-13,
+    "tolerance_gap_over_scale_max": 6.362688154126772e-13,
     "pairs_with_gap_above_1e-10_of_scale": 0,
-    "taylor_vs_dop853_rtol1e-13_over_scale_max": 6.304302302293137e-14,
-    "taylor_fine_vs_coarse_over_scale_max": 5.86471878262359e-50,
+    "taylor_vs_dop853_rtol1e-13_over_scale_max": 6.574603698693946e-15,
+    "taylor_fine_vs_coarse_over_scale_max": 5.992088515381257e-50,
     "taylor_steps": {
-     "fine": 127,
+     "fine": 128,
      "coarse": 135
     },
     "dop853_nfev": {
-     "1e-12": 1146,
-     "1e-13": 1338
+     "1e-12": 1134,
+     "1e-13": 1290
     }
    },
    "closure": {
     "ligand_totals_high_precision_over_s_node": 1.25e-70,
     "ligand_totals_written_over_s_node": 5.940183499779278e-17,
-    "moieties_high_precision_over_S": 2.1666666666666668e-69,
+    "moieties_high_precision_over_S": 1e-69,
     "moieties_written_over_S": 3.700743415417188e-17,
     "books_high_precision_over_s_node": 3.75e-70,
     "books_written_over_s_node": 6.245004513516506e-17
    },
-   "wash_interval_site_heat_over_E_min": 0.0017421291935723264,
+   "wash_interval_site_heat_over_E_min": 0.0009056568280379462,
    "heats_convergence_requirement": {
     "misses": 0,
-    "worst_ratio": 0.0001612974460695717
+    "worst_ratio": 0.00015737678318471826
    },
    "heats_C3a_bound_over_heat": {
-    "min": 0.0017210325911059103,
+    "min": 0.0016183014033710826,
     "max": 3.041151949683163e+31
    },
    "heat_pairs_with_gap_above_1e-10_of_E": 0,
    "heats": {
-    "tolerance_gap_over_E_max": 2.717326920338857e-16,
-    "taylor_vs_dop853_rtol1e-13_over_E_max": 1.613412758588104e-16,
-    "taylor_fine_vs_coarse_over_E_max": 4.895291057482132e-51,
+    "tolerance_gap_over_E_max": 3.258671978929472e-16,
+    "taylor_vs_dop853_rtol1e-13_over_E_max": 1.5742806711606806e-16,
+    "taylor_fine_vs_coarse_over_E_max": 5.350018865540999e-51,
     "taylor_fine_vs_coarse_relative_to_heat_max": 2.1664889863524127e-34,
     "smallest_heat_over_E": 5.693803604863674e-37
    },
@@ -636,7 +636,7 @@
      "the map on the start removes 2.0 fmol of L2",
      "the map on the start supplies 4.0 fmol of L2",
      "the rows before the wash are 0.5 and 1.0 s",
-     "the first row after the wash is 1.005 s"
+     "the first row after the wash is 1.0025 s"
     ],
     "own_root_at_the_start_totals": {
      "newton_vs_bracket": 4.25e-69,
@@ -679,7 +679,7 @@
    "plants": {
     "P5": {
      "C6_taylor_vs_dop853_relative_distance_gap": 0.0,
-     "C4a_taylor_vs_dop853_relative_distance_gap": 3.094059405940594e-05
+     "C4a_taylor_vs_dop853_relative_distance_gap": 1.554726368159204e-05
     }
    }
   },
@@ -714,72 +714,54 @@
    },
    "trajectory_convergence_requirement": {
     "misses": 0,
-    "worst_ratio": 0.06822841795337327
+    "worst_ratio": 0.004592070646754085
    },
    "trajectory": {
-    "tolerance_gap_over_scale_max": 2.9304336734981007e-13,
+    "tolerance_gap_over_scale_max": 2.4896751327219135e-13,
     "pairs_with_gap_above_1e-10_of_scale": 0,
-    "taylor_vs_dop853_rtol1e-13_over_scale_max": 7.00236635783036e-14,
-    "taylor_fine_vs_coarse_over_scale_max": 5.637860300812509e-50,
+    "taylor_vs_dop853_rtol1e-13_over_scale_max": 4.725134255641384e-15,
+    "taylor_fine_vs_coarse_over_scale_max": 8.340643857252199e-50,
     "taylor_steps": {
-     "fine": 103,
-     "coarse": 108
+     "fine": 74,
+     "coarse": 79
     },
     "dop853_nfev": {
-     "1e-12": 1034,
-     "1e-13": 1190
+     "1e-12": 502,
+     "1e-13": 634
     }
    },
    "closure": {
     "ligand_totals_high_precision_over_s_node": 0.0,
-    "ligand_totals_written_over_s_node": 4.163336342344337e-17,
+    "ligand_totals_written_over_s_node": 6.938893903907228e-17,
     "moieties_high_precision_over_S": 0.0,
     "moieties_written_over_S": 0.0
    },
    "heats_convergence_requirement": {
     "misses": 0,
-    "worst_ratio": 6.771613022650509e-05
-   },
-   "heats_below_binary64_resolution": {
-    "rule": "|H| <= 10^(17 - working digits) E, or |H_fine - H_coarse| > 1e-17 |H|",
-    "intervals": [
-     {
-      "node": "well",
-      "start_s": 3.0,
-      "end_s": 5.0,
-      "heat_over_E": 2.892322803734898e-64
-     },
-     {
-      "node": "well",
-      "start_s": 5.0,
-      "end_s": 8.0,
-      "heat_over_E": 1.4526161015145288e-70
-     },
-     {
-      "node": "well",
-      "start_s": 8.0,
-      "end_s": 12.0,
-      "heat_over_E": -1.4526161015145288e-70
-     }
-    ]
+    "worst_ratio": 0.00013428151175001518
    },
    "heats_C3a_bound_over_heat": {
-    "min": 0.005981519261345689,
-    "max": 7.387987841509759e+64
+    "min": 0.005981660935833097,
+    "max": 1.517843908741249e+28
    },
    "heat_pairs_with_gap_above_1e-10_of_E": 0,
    "heats": {
-    "tolerance_gap_over_E_max": 1.3542856591795395e-16,
-    "taylor_vs_dop853_rtol1e-13_over_E_max": 6.771613083162313e-17,
-    "taylor_fine_vs_coarse_over_E_max": 3.3718578202772155e-56,
-    "taylor_fine_vs_coarse_relative_to_heat_max": 2.0,
-    "smallest_heat_over_E": -1.4526161015145288e-70
+    "tolerance_gap_over_E_max": 2.1018803428263438e-16,
+    "taylor_vs_dop853_rtol1e-13_over_E_max": 1.343097361170104e-16,
+    "taylor_fine_vs_coarse_over_E_max": 2.0568221358961866e-53,
+    "taylor_fine_vs_coarse_relative_to_heat_max": 9.543038114505523e-34,
+    "smallest_heat_over_E": 7.070496534304794e-34
    },
-   "horizon_distance_over_C2a_band_max": 8.406039e-54
+   "horizon_distance_over_C2a_band_max": 2.295610614163349e-13,
+   "stated_horizon": {
+    "slowest_mode_per_s": 23.323807579381203,
+    "horizon_time_constants": 46.647615158762406,
+    "stated": 47
+   }
   }
  },
  "provenance": {
-  "references_revision": "d50aef74d35c6b93dfaa65e95effdb7462125fcc",
+  "references_revision": "2eb8813960d96a86d1dfab590eab548f553f3baa",
   "tree_clean": true,
   "writer_version": "fr45-references-writer 2",
   "regeneration_hash_seeds": [
@@ -788,16 +770,17 @@
    2
   ],
   "spec": {
-   "label": "fr45-site-competition-v1, amendment 2 of 2026-11-24 (ff99fead)",
+   "label": "fr45-site-competition-v1, amendment 3 of 2026-11-24 (98cd33db)",
    "files": [
     "docs/FR45_SITE_COMPETITION_PROTOCOL.md",
     "validation/fr45/spec/AMENDMENT-2-2026-11-24.md",
     "validation/fr45/spec/AMENDMENT-2026-11-24.md",
+    "validation/fr45/spec/AMENDMENT-3-2026-11-24.md",
     "validation/fr45/spec/CRITERIA.md",
     "validation/fr45/spec/NOTE-2026-11-24.md",
     "validation/fr45/spec/SPEC.md"
    ],
-   "verified_against": "SHA256SUMS-fr45-spec-ff99fead.txt",
+   "verified_against": "SHA256SUMS-fr45-spec-98cd33db.txt",
    "rows_matched": 106
   },
   "profile": "reference"

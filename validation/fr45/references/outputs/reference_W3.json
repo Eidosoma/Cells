@@ -4798,30 +4798,32 @@
   {
    "plant": "P7",
    "criterion": "C5",
+   "world": "W3p",
+   "time_s": null,
    "compared": {
     "observable": "sites:C",
     "time_s": 0.1
    },
    "honest": 0.00249080860076077,
    "planted": 0.00323493984213586,
-   "distance_in_bounds": 3234265181870.1523,
-   "world": "W3p"
+   "distance_in_bounds": 3234265181870.1523
   },
   {
    "plant": "P7",
    "criterion": "C1",
+   "world": "W3p",
+   "time_s": null,
    "compared": {
     "observable": "R:C",
     "time_s": 2.0
    },
    "honest": 0.0006092594378595405,
    "planted": 0.001843505011750809,
-   "distance_in_bounds": 495520.03855868004,
-   "world": "W3p"
+   "distance_in_bounds": 495520.03855868004
   }
  ],
  "provenance": {
-  "references_revision": "d50aef74d35c6b93dfaa65e95effdb7462125fcc",
+  "references_revision": "2eb8813960d96a86d1dfab590eab548f553f3baa",
   "tree_clean": true,
   "writer_version": "fr45-references-writer 2",
   "regeneration_hash_seeds": [
@@ -4830,16 +4832,17 @@
    2
   ],
   "spec": {
-   "label": "fr45-site-competition-v1, amendment 2 of 2026-11-24 (ff99fead)",
+   "label": "fr45-site-competition-v1, amendment 3 of 2026-11-24 (98cd33db)",
    "files": [
     "docs/FR45_SITE_COMPETITION_PROTOCOL.md",
     "validation/fr45/spec/AMENDMENT-2-2026-11-24.md",
     "validation/fr45/spec/AMENDMENT-2026-11-24.md",
+    "validation/fr45/spec/AMENDMENT-3-2026-11-24.md",
     "validation/fr45/spec/CRITERIA.md",
     "validation/fr45/spec/NOTE-2026-11-24.md",
     "validation/fr45/spec/SPEC.md"
    ],
-   "verified_against": "SHA256SUMS-fr45-spec-ff99fead.txt",
+   "verified_against": "SHA256SUMS-fr45-spec-98cd33db.txt",
    "rows_matched": 106
   },
   "profile": "reference"
