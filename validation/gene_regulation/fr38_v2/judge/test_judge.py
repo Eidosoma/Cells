@@ -1,6 +1,6 @@
 """Host-only tests of FR-38's second comparison judge, on invented inputs only.
 
-**Seconds:** 33 s for its 24 tests on CPU 7 at load 25 (24 November 2026); 20 to 90 s with load.
+**Seconds:** 37 s for its 24 tests on CPU 7 at load 25 (24 November 2026); 20 to 90 s with load.
 **Reason (D224):** the judge decides FR-38's registered verdict, so each C0 refusal, each failure
 and inconclusive mode, the retry and each plant (caught and not caught) must be shown to move it
 the registered way before any engine run is judged.
@@ -946,6 +946,20 @@ def test_twin_restart_and_two_blank_mismatches_fail(invented, mapping, tmp_path)
     def check(rec):
         rec["checks"] = {"invented_check": 2.0e-20}
 
+    # a labelled run may carry label-only checks: the twin's checks need only be a subset of its
+    # labelled run's, bit for bit; the restart's equal the uninterrupted run's whole
+    def label_check(rec):
+        rec["checks"] = dict(rec["checks"], label_only_check=1.0e-19)
+
+    v = _perturbed(
+        invented,
+        mapping,
+        tmp_path,
+        [(lambda r: r["run"] == "p_sched returned" and r["role"] in ("honest", "restart"),
+          label_check)],
+        "twin_subset",
+    )  # fmt: skip
+    assert verdict_of(v, "invented", "p_sched returned") == "pass"
     # the twin compares the excess over the blank and the engine's checks too (item 7)
     for name, f in (("twin_checks", check), ("twin_excess", bump("excess_over_blank_short_lived"))):
         v = _perturbed(

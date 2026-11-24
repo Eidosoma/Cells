@@ -396,6 +396,7 @@ def judge_route2(fate, rrun, rungs, fam, steps_h):
         split = k * rec_h.dt**2 / (12.0 * float(fam.inputs["tau_s"])) * abs(route1)
         item["C2"] = {
             "g_ts": g,
+            "engine_grid_error_recorded": rec_h.route2_grid_error.get((fate, ts)),
             "route2_bound": 3.0 * g,
             "e_ref": float(e["accuracy"]),
             "e_round": e_round,
@@ -484,7 +485,7 @@ def _physical(name):
     return not (name.startswith("label_") or name.startswith("released_present_gross_"))
 
 
-def compare_records(a, b, *, names, route2=True, survival=False, checks=True):
+def compare_records(a, b, *, names, route2=True, survival=False, checks="equal"):
     """The engine-only equalities of C1, bit for bit."""
     fails = []
     for n in names:
@@ -513,9 +514,19 @@ def compare_records(a, b, *, names, route2=True, survival=False, checks=True):
                     or (x[2] is not None and rules.bit_equal([x[2]], [y[2]])["fails"])
                 ):
                     fails.append(f"survival/{k}: differs")
-    if checks and not _deep_bit_equal(a.checks, b.checks):
+    if checks == "equal" and not _deep_bit_equal(a.checks, b.checks):
         fails.append("checks: the engine's checks differ")
+    elif checks == "subset" and not _deep_bit_subset(b.checks, a.checks):
+        fails.append("checks: a twin's check is missing from, or differs in, the labelled run's")
     return {"passes": not fails, "fails": bool(fails), "differences": fails}
+
+
+def _deep_bit_subset(sub, full):
+    """Every key the twin's checks hold is present in the labelled run's and bit-equal there,
+    recursively (a labelled run may carry label-only checks)."""
+    if isinstance(sub, dict) and isinstance(full, dict):
+        return all(k in full and _deep_bit_subset(v, full[k]) for k, v in sub.items())
+    return _deep_bit_equal(sub, full)
 
 
 def _deep_bit_equal(x, y):
@@ -626,7 +637,9 @@ def judge_run(fam, unit, index, mapping, attempt):
     if twins:
         for rec, tw in zip(rungs, twins, strict=True):
             names = [n for n in tw.series if _physical(n)]
-            out["equalities"][f"twin@{rec.dt!r}"] = compare_records(rec, tw, names=names)
+            out["equalities"][f"twin@{rec.dt!r}"] = compare_records(
+                rec, tw, names=names, checks="subset"
+            )
     restart = fam.restart()
     if attempt == "primary" and restart and restart[0] == run:
         rs = _get(index, fam.name, "restart", run, "primary", spec.H_STEP_S)

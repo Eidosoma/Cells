@@ -27,9 +27,16 @@ OPEN_SHAPES = (
     "an operator's declaration: the one object anywhere in `definition` with a string value equal "
     "to its law (templated_polymerisation@1, neutral_arrival_labels@1, local_species_reactions@1, "
     "ideal_osmosis_linear_compliance_water@1)",
+    "an operator's contents: `pools`, `chains`, `degradations`, `species` (and the store's "
+    "`reactions`, water's `compartments`, `baths`, `membranes`) direct children of that object",
+    "`model.cells[cell_0].initial_amount_fmol` and the bath's: objects {row: fmol}",
+    "`model.extracellular[bath_0].reservoir`: the boolean true",
+    "`model.moieties[<id>].weights`: {row: number}, other rows absent or zero",
     "`chains[*].draws`, `releases` and `saturation_mM`: objects {species: number}",
-    '`chains[tx].release.fates`: {"durable": "R", "short_lived": "R_s"}',
+    '`chains[tx].release.fates`: {"durable": "R", "short_lived": "R_s"}; `label`: '
+    '{"at": ...}; `initial_copies`: a list',
     "`degradations[*].monomers`: the monomer's species id, a string",
+    "`experiment.polymerisation_controls`: a list matched by route_id, schedules of {time, value}",
     "`experiment.label_arrivals`: a list; a row's own entry {species, schedule} has no `source`; "
     'the source entry is {species, source: "tx", schedule}; schedule entries {time, label}',
     "the label owner's `species[*].labels`: a list of label names, the base (resyn) first; "
@@ -37,6 +44,10 @@ OPEN_SHAPES = (
     "`reactions[store_M]`: `sites` a list of node ids, `reactants` and `products` {species: "
     "number}; `experiment.reaction_controls[store_M].schedule`: entries {time, value}",
     "`experiment.water_controls`: a list of {time, availability}",
+    "arm B's `chains[tl]` and `chains[tl_s]` (§8.5 names them, no keys): read with `chains[tx]`'s "
+    "keys at product P, residues 400, stages 8, speed 16, draws {A: 1, ATP: 4} and releases "
+    "{ADP: 4, Pi: 4} (the sheet's §2), saturation {A: 0.02, ATP: 0.02}; `pools[rib].machines` "
+    "10⁶; `degradations[deg_P]` P, 400, A; their controls tl, tl_s (120) and deg_P (5 × 10⁻⁴)",
 )
 
 

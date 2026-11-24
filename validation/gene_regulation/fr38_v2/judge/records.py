@@ -763,16 +763,23 @@ TABLE_DIRS = (("primary", "table"), ("retry", "table-retry"))
 RUNG_KEYS = {"primary": ("2.0", "1.0", "0.5"), "retry": ("1.0", "0.5", "0.25")}
 ROLES = ("honest", "blank", "twin", "restart", "plant")
 RECORD_PLANTS = ("P2", "P3a", "P3b", "P4", "P5", "P7", "P8", "P9")
-TABLE_PLANTS = {"P2": "P2", "P3a": "P3a", "P3b": "P3b", "P4 AN": "P4", "P4 B": "P4", "P4": "P4",
+TABLE_PLANTS = {"P2": "P2", "P3a": "P3a", "P3b": "P3b", "P4 AN": "P4", "P4 B": "P4",
                 "P5": "P5", "P7": "P7", "P8": "P8", "P8 blank": "P8", "P9": "P9"}  # fmt: skip
 JUDGE_PLANTS = ("P1", "P1′", "P1″", "P6", "P1'", "P1''")  # formed by the judge (amendment 4, §5)
 TABLE_OPEN_SHAPES = (
-    "`route2`: a list of {fate, ts_s, value, grid_error}",
+    "`route2`: a list of {fate, ts_s, value, grid_error}; `grid_error` is recorded beside the "
+    "judge's own g(ts), never used",
     "`survival`: a list of {fate, t2_s, ts_s, alive_t2, alive_ts, ratio}",
     '`excess_over_blank`: {"blank": <the matched blank\'s name>, "durable": [...], '
     '"short_lived": [...]}',
-    '`plants`: under rung "0.5", an object keyed by the plant\'s name',
-    "`restart`: a top-level entry of AN's table; the checkpoint's identity under `checkpoint`",
+    '`plants`: under rung "0.5", an object keyed by the plant\'s name: P2, P3a, P3b, "P4 AN", '
+    '"P4 B", P5, P7, P8, "P8 blank" (judged_as "blank returned"), P9',
+    "`restart`: a top-level entry of AN's table; the checkpoint's identity under `checkpoint`, "
+    "required",
+    "provenance: `source` and `record` any non-empty value, `record_sha256` a sha256 string, all "
+    "three keys of the entry itself",
+    "`checks`: any JSON value; the restart and AF's two blanks compare it whole, the twin as a "
+    "recursive subset of its labelled run's (bit for bit)",
     "a `SHA256SUMS` line: `<sha256>  <file name>`",
 )
 
@@ -794,6 +801,7 @@ class EngineRun:
     definition: object
     series: dict = dataclasses.field(default_factory=dict)  # name -> np.ndarray
     route2: dict = dataclasses.field(default_factory=dict)  # (fate, ts) -> value
+    route2_grid_error: dict = dataclasses.field(default_factory=dict)  # recorded, never used
     survival: dict = dataclasses.field(default_factory=dict)  # (fate, ts) -> (a2, a3, ratio)
     checks: object = None
     faults: list = dataclasses.field(default_factory=list)
@@ -951,7 +959,7 @@ def table_records(tab, family_inputs):
             judged_as = entry.get("judged_as") if isinstance(entry, dict) else None
             if name == "P8 blank":
                 run, machine = "blank", "returned"
-                ok = judged_as in ("blank returned", "blank")
+                ok = judged_as == "blank returned"
             else:
                 run, machine = judged_as, None
                 ok = judged_as in honest
@@ -981,7 +989,8 @@ def _read_entry(rec, entry):
     rec.status = "completed"
     for k in ("source", "record", "record_sha256"):
         v = entry.get(k)
-        if not (isinstance(v, str) and v):
+        empty = v is None or (isinstance(v, (str, list, dict)) and not v)
+        if empty or (k == "record_sha256" and not isinstance(v, str)):
             faults.append(f"{k} is missing: a run without its provenance is refused")
         rec.provenance[k] = v
     sha = rec.provenance.get("record_sha256")
@@ -1032,6 +1041,7 @@ def _read_entry(rec, entry):
                 faults.append(f"route2 entry {e!r}: fate, ts_s and a finite value")
                 continue
             rec.route2[(e["fate"], float(e["ts_s"]))] = float(e["value"])
+            rec.route2_grid_error[(e["fate"], float(e["ts_s"]))] = e.get("grid_error")
     sv = entry.get("survival")
     if sv is not None:
         rec.has_survival = True
