@@ -17,7 +17,9 @@ The file holds:
 - ``gap`` (gated worlds): [{observable, time_s, gap, resolution}], with
   resolution = |gap| / (SD / sqrt(128)) (AMENDMENT section 8);
 - ``plants``: [{plant, criterion, observable, time_s (or start_s and end_s), honest, planted,
-  distance_in_bounds}]: per (plant, criterion), the compared quantity of largest distance;
+  distance_in_bounds}]: per (plant, criterion), the compared quantity of largest distance, a
+  tie going to the earliest time or stop, then to the first observable in the spec's order
+  (AMENDMENT-2026-11-24 section 2);
 - ``provenance``: the references' revision (the generating commit: the last commit that touched
   this package's code or inputs), whether the package was clean, the writer's version, and the
   hash seeds of the regeneration check.

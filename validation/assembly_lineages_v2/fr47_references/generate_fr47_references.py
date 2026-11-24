@@ -10,8 +10,10 @@ Writes, into ``references/`` (or ``--out``):
     normalisation;
   - method 1 re-evaluated at a higher precision, which must give the same floats;
   - the identities' closure on the written floats, in ulps;
-- ``c8_resolution.json``: per rung, the largest |gap| pair (AMENDMENT section 8's tie rule), its
-  resolution at M = 128 and whether it reaches 4.5, with the slope's linearised standard error.
+- ``c8_resolution.json``: per rung, C8's largest pair over the tracer observables (CRITERIA C8 as
+  amended, AMENDMENT-2026-11-24 section 1), its resolution at M = 128 and the replicas a
+  resolution of 4.5 would take, with the slope's linearised standard error. C8 is reported, not
+  claimed; the checker fits the slope from the gap lists, since the references fit nothing.
 
 BLAS is pinned to one thread before numpy loads. Every output is deterministic: no timestamps,
 host names, paths or process seeds are written.
@@ -205,6 +207,8 @@ def accuracy_world(name, doc, raw):
             "k_hi": num["window"][1],
             "N_g": num["Ng"],
         }
+        mine = c8_pair(doc)
+        flags["c8_same_largest_pair"] = num["c8"] == (mine["observable"], mine["time_s"])
     for p in doc["plants"]:
         cands = num["plants"][(p["plant"], p["criterion"])]
         if "time_s" in p:
@@ -213,10 +217,9 @@ def accuracy_world(name, doc, raw):
             key = (p["observable"], p["start_s"], p["end_s"])
         honest, planted, unit = cands[key]
         dist = abs(planted - honest) / unit
-        top = max(abs(c[1] - c[0]) / c[2] for c in cands.values())
-        # method 2 names the same quantity, or one tied with it to rounding (P6 after the last stop)
+        # method 2, by its own naming rule (AMENDMENT-2026-11-24 section 2), names the same quantity
         flags["plants_same_quantity"] = bool(
-            flags.get("plants_same_quantity", True) and dist >= top * (1 - 1e-9)
+            flags.get("plants_same_quantity", True) and fr47_numeric.largest(cands) == key
         )
         tag = f"{p['plant']}/{p['criterion']} {key}"
         worst.add("plants.planted_in_bounds", abs(planted - p["planted"]) / unit, tag)
@@ -337,6 +340,19 @@ def identities_world(doc):
 # --------------------------------------------------------------------------------------------
 
 
+def c8_pair(doc):
+    """C8's largest pair on the written floats: the largest |gap| over S@pool and S@lumen at the
+    observation times, a tie going to S@pool, then to the earliest time (CRITERIA C8 as amended,
+    AMENDMENT-2026-11-24 section 1)."""
+    best = None
+    for g in doc["gap"]:  # ordered S@pool, S@lumen, G@wall, H@wall, then by time
+        if g["observable"] not in fr47_exact.C8_OBSERVABLES:
+            continue
+        if best is None or abs(g["gap"]) > abs(best["gap"]):
+            best = g
+    return best
+
+
 def c8_table(docs):
     rows = []
     gated = [n for n in REGISTERED if docs[n]["world"]["type"] == "gated_shell"]
@@ -354,13 +370,7 @@ def c8_table(docs):
             for e in doc["pairs"]
             if e["class"] == "spread"
         }
-        largest = None
-        best_res = None
-        for g in doc["gap"]:  # ordered S@pool, S@lumen, G@wall, H@wall, then by time
-            if largest is None or abs(g["gap"]) > abs(largest["gap"]):
-                largest = g
-            if best_res is None or g["resolution"] > best_res["resolution"]:
-                best_res = g
+        largest = c8_pair(doc)
         rows.append(
             {
                 "world": name,
@@ -372,19 +382,12 @@ def c8_table(docs):
                     "gap": largest["gap"],
                     "sd": sd[(largest["observable"], largest["time_s"])],
                     "resolution": largest["resolution"],
-                    "qualifies": largest["resolution"] >= RESOLUTION_FLOOR,
-                    # sizing only: replicas at which this pair would reach 4.5
+                    # sizing only: the replicas at which this pair's resolution would be 4.5
                     "replicas_for_resolution_4.5": M
                     * (RESOLUTION_FLOOR / largest["resolution"]) ** 2,
                 },
-                "most_resolved_pair": {
-                    "observable": best_res["observable"],
-                    "time_s": best_res["time_s"],
-                    "resolution": best_res["resolution"],
-                },
             }
         )
-    qualifying = [r for r in rows if r["largest_pair"]["qualifies"]]
     xs = [math.log(r["N_g"]) for r in rows]
     se = None
     if len(rows) >= 2:
@@ -400,13 +403,14 @@ def c8_table(docs):
             / sxx
         )
     return {
-        "rule": "CRITERIA C8 and AMENDMENT section 8: the largest |gap| over S@pool, S@lumen, "
-        "G@wall and H@wall at the observation times (ties to the first in that order, then the "
-        "earliest time); resolution = |gap| / (SD / sqrt(128)); a rung qualifies at 4.5",
+        "rule": "CRITERIA C8 as amended (AMENDMENT-2026-11-24 section 1): reported from the "
+        "reference alone, not claimed. Each rung's gap is taken at its largest pair, the largest "
+        "|gap| over S@pool and S@lumen at the observation times (ties to S@pool, then the earliest "
+        "time); resolution = |gap| / (SD / sqrt(128)). The slope on ln|gap| against ln N_g is "
+        "fitted from the reference files' gap lists by the checker: the references fit nothing "
+        "(SPEC.md section 4)",
         "M": M,
         "rungs": rows,
-        "qualifying_rungs": len(qualifying),
-        "slope_claimable_as_measured": len(qualifying) >= 3,
         "slope_se_linearised_all_rungs": se,
         "slope_se_note": "the standard error of a least-squares slope of ln|gap| on ln N_g over "
         "all rungs if each rung's ln|gap| were measured with SD 1/resolution "

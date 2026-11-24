@@ -624,7 +624,45 @@ def gate_numeric(raw):
             for t in w["obs_t"]:
                 q[(obs, t)] = (mf[t][obs], planted[t][obs], 1e-5 * scale)
         res["plants"][("P5", "C7")] = q
+    res["c8"] = c8_largest(res["gap"], w["obs_t"])
     return res
+
+
+# --------------------------------------------------------------------------------------------
+# The naming rules, in method 2's own code (AMENDMENT-2026-11-24 sections 1 and 2)
+# --------------------------------------------------------------------------------------------
+
+SPEC_ORDER = (
+    "S@pool",
+    "S@lumen",
+    "G@wall",
+    "H@wall",
+    "B@wall",
+    "removed",
+    "mixing_heat",
+    "heat",
+    "tracer_moiety",
+)
+F64_TIE = 1e-9  # float64 cannot split an exact tie the way decimals do; 1e-9 relative is a tie
+
+
+def largest(cands):
+    """A plant entry's named quantity: the largest distance |planted - honest| / unit, a tie going
+    to the earliest time or stop (an interval by its start), then the first observable in the
+    spec's order. ``cands`` maps (observable, time) or (observable, start, end) to
+    (honest, planted, unit)."""
+    dist = {key: abs(p - h) / u for key, (h, p, u) in cands.items()}
+    top = max(dist.values())
+    tied = [key for key, d in dist.items() if d >= top * (1 - F64_TIE)]
+    return min(tied, key=lambda key: (key[1], SPEC_ORDER.index(key[0])))
+
+
+def c8_largest(gaps, times):
+    """C8's pair: the largest |gap| over S@pool and S@lumen, a tie going to S@pool, then to the
+    earliest time. ``gaps`` maps (observable, time) to (gap, resolution)."""
+    order = [(obs, t) for obs in ("S@pool", "S@lumen") for t in sorted(times)]
+    top = max(abs(gaps[key][0]) for key in order)
+    return next(key for key in order if abs(gaps[key][0]) >= top * (1 - F64_TIE))
 
 
 def numeric(raw):

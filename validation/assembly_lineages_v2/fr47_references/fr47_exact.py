@@ -58,7 +58,23 @@ C5_TRACER_PLACES = 2  # P_t: S@pool and S@lumen (AMENDMENT section 7)
 
 SHELL_OBSERVABLES = ("S@pool", "S@lumen", "B@wall")
 GATE_OBSERVABLES = ("S@pool", "S@lumen", "G@wall", "H@wall", "B@wall")
-GAP_OBSERVABLES = ("S@pool", "S@lumen", "G@wall", "H@wall")  # C8's order (AMENDMENT section 8)
+GAP_OBSERVABLES = ("S@pool", "S@lumen", "G@wall", "H@wall")  # the gap list (SPEC.md section 3.3)
+C8_OBSERVABLES = ("S@pool", "S@lumen")  # C8: the tracer only (AMENDMENT-2026-11-24 section 1)
+# the spec's order of compared quantities, for the plants' tie rule (AMENDMENT-2026-11-24 section 2)
+SPEC_ORDER = (
+    "S@pool",
+    "S@lumen",
+    "G@wall",
+    "H@wall",
+    "B@wall",
+    "removed",
+    "mixing_heat",
+    "heat",
+    "tracer_moiety",
+)
+# distances equal to 40 digits are ties: exact ties of exact arithmetic that rounding at 60 (or 100)
+# digits can split, far below any real difference between two compared quantities
+TIE_RELATIVE = "1e-40"
 
 STIRLING2 = {  # S(j, i): n^j = sum_i S(j, i) n(n - 1)...(n - i + 1)
     0: {0: 1},
@@ -451,12 +467,17 @@ def shell_exact_stops(w, law):
 
 
 def _largest(candidates):
-    """The candidate of largest distance; ties go to the first in the listed order."""
-    best = None
-    for cand in candidates:
-        if best is None or cand["distance"] > best["distance"]:
-            best = cand
-    return best
+    """The candidate of largest distance (AMENDMENT-2026-11-24 section 2): a tie in distance goes
+    to the earliest time or stop (an interval by its start), then to the first observable in the
+    spec's order."""
+    top = max(c["distance"] for c in candidates)
+    floor = top - Decimal(TIE_RELATIVE) * top
+    tied = [c for c in candidates if c["distance"] >= floor]
+
+    def when(c):
+        return c["time_s"] if "time_s" in c else c["start_s"]
+
+    return min(tied, key=lambda c: (when(c), SPEC_ORDER.index(c["observable"])))
 
 
 def _c1_scale_pairs(w, d):

@@ -352,6 +352,44 @@ def test_committed_invented_files_match():
             assert fh.read() == fr47_writer.dumps(fr47_writer.build_document(raw, prov)), name
 
 
+def test_naming_rules():
+    """AMENDMENT-2026-11-24: a plant entry's tie goes to the earliest time or stop, then the first
+    observable in the spec's order (section 2); C8 takes the tracer pair alone (section 1)."""
+    dec = fr47_exact.Decimal
+    cands = [
+        {"observable": "S@pool", "time_s": dec(5), "distance": dec(2)},
+        {"observable": "mixing_heat", "time_s": dec(2), "distance": dec(2)},
+        {"observable": "removed", "time_s": dec(2), "distance": dec(2) * (1 - dec("1e-50"))},
+        {"observable": "S@lumen", "time_s": dec(1), "distance": dec(1)},
+    ]
+    best = fr47_exact._largest(cands)
+    assert (best["observable"], best["time_s"]) == ("removed", 2)
+    num = {
+        ("S@pool", 5.0): (0.0, 2.0, 1.0),
+        ("mixing_heat", 2.0): (0.0, 2.0, 1.0),
+        ("removed", 2.0): (0.0, 2.0 * (1 - 1e-12), 1.0),
+        ("S@lumen", 1.0): (0.0, 1.0, 1.0),
+    }
+    assert fr47_numeric.largest(num) == ("removed", 2.0)
+    with open(os.path.join(HERE, "inputs", "W1.json"), encoding="utf-8") as fh:
+        named = {
+            (p, c): (b["observable"], b.get("time_s"))
+            for p, c, b in fr47_exact.reference(json.load(fh))["plants"]
+        }
+    # P2's removed count and mixing heat at 2.5 s tie exactly; P6 ties 10.5 s with the horizon
+    assert named[("P2", "C4")] == ("removed", 2.5) and named[("P6", "C5")] == (
+        "tracer_moiety",
+        10.5,
+    )
+    gaps = {
+        ("S@pool", 1.0): (-3.0, 0.1),
+        ("S@lumen", 1.0): (3.0, 0.1),
+        ("S@pool", 2.0): (2.0, 0.1),
+        ("S@lumen", 2.0): (-2.0, 0.1),
+    }
+    assert fr47_numeric.c8_largest(gaps, [2.0, 1.0]) == ("S@pool", 1.0)
+
+
 def test_no_engine_import():
     """Code-blind: no engine module is loaded, whether run as a script or under pytest."""
     loaded = [m for m in sys.modules if m == "cells" or m.startswith("cells.")]
@@ -367,6 +405,7 @@ if __name__ == "__main__":
         test_gate_tiny_master_equation,
         test_writer_invented_inputs,
         test_committed_invented_files_match,
+        test_naming_rules,
         test_no_engine_import,
     ):
         t1 = time.time()
