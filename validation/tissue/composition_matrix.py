@@ -38,7 +38,13 @@ from cells.operators import compartments as compartments_operator
 from cells.operators import membrane_trafficking as trafficking_operator
 from cells.operators import partition as partition_operator
 from cells.operators import species_labels as labels_operator
-from cells.operators.contract import reports_labels, takes_labels
+from cells.operators.contract import (
+    EXCHANGED,
+    label_event,
+    label_event_error,
+    reports_labels,
+    takes_labels,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
 DOC = ROOT / "docs" / "PUMP_COMPOSITE.md"
@@ -974,9 +980,10 @@ _INTEGER_PAIRS = tuple(
 
 def _labels_refuse(law):
     """Whether FR-42 stage 1's label owner refuses `law` whatever the definition
-    (species_labels.operator_errors): a closer or retirer, a provider of the amount references, an
-    event that writes species amounts without reporting what it replaced, or a split part that
-    writes them without reporting."""
+    (species_labels.operator_errors): a closer or retirer, a provider of the amount references, a
+    labels-taking event whose report kind its declarations contradict, an event that writes
+    species amounts and reports neither the slots it replaced nor a liquid exchange (FR-44), or a
+    split part that writes them without reporting."""
     op = OPERATORS[law]
     replaces = set(labels_operator.AMOUNT_FIELDS) & {*op.EVENT_REPLACES, *op.STATE_RESETS}
     writes = set(labels_operator.AMOUNT_FIELDS) & set(op.ENTITY_WRITES) - replaces
@@ -984,8 +991,9 @@ def _labels_refuse(law):
         op.RETIRES
         or op.CLOSES
         or set(labels_operator.AMOUNT_VIEWS) & set(op.VIEW_FIELDS)
+        or label_event_error(op)
         or (replaces and not (op.EVENT and takes_labels(op.event)))
-        or (writes and op.EVENT and not op.SPLIT)
+        or (writes and op.EVENT and not op.SPLIT and label_event(op) != EXCHANGED)
         or (writes and op.SPLIT and not reports_labels(op))
     )
 
@@ -1500,8 +1508,8 @@ RULES = (
         why="The shares follow only one-way moves that a reporter states (operators/contract.py), "
         "so a part that changes amounts without them is refused, naming the FR-42 stage that "
         "lifts it; templated polymerisation joins the reporters with the gene regulation lane's "
-        "side. It marks the pairs the declarations admit and stands behind their refusals of the "
-        "rest",
+        "side, and the compartment wash reports each liquid exchange (FR-44). It marks the pairs "
+        "the declarations admit and stands behind their refusals of the rest",
         marks=tuple(pair for pair in _LABEL_PAIRS if not errors(sequence(*pair))),
         behind=tuple(pair for pair in _LABEL_PAIRS if errors(sequence(*pair))),
     ),

@@ -154,6 +154,7 @@ against a count of those applied, which is state):
 | `wash_sample_free_energy_pJ`, `wash_buffer_free_energy_pJ` | [node]: F(sample) = f·F(n, V) and F(buffer) = F(f·V·c_buf, f·V) of the exchanged (neutral) species, F(n, V) = 10⁻³ RT n (ln(n / V) − 1), @3's chemical term |
 | `wash_mixing_heat_pJ` | [node]: H_mix, cumulative |
 | `wash_last_mixing_heat_pJ` | [node]: the latest wash's H_mix |
+| `wash_last_sample_fmol`, `wash_last_supply_fmol` | [species, node]: the latest wash's sample and supply, level records (FR-44, D327). An ion's supply record is its sample record, one expression. The labelled event's report reads them (§4.7) |
 | `wash_energy_magnitude_pJ` | [node]: the energy bookings' absolute terms |
 | `wash_applied` | [node], int64: the washes applied |
 
@@ -227,8 +228,10 @@ At the definition, each with its reason:
   - the inner model's movers, through the core's join (`species_registry.inner_movers`): a
     patch's permeability, channels and pumps on a patch facing the node, a face touching it, and
     every declared kind's moved rows at the node (a kind's passive route, a transporter);
-  - species exchange's routes through a patch facing the node, and a site population's
-    internalisation from it;
+  - species exchange's routes through a patch facing the node, a site population's
+    internalisation from it, and the gene unit's exports into the node and its outside
+    degradations there (templated_polymerisation@1's amendment T; D327, the fail-open fix,
+    each refused by name);
   - an operator's in-step process moving a neutral species at an outside node;
   - every operator law not shown local (`SHOWN_LOCAL`, each with why), with `REFUSED`'s reasons
     for the rest; a law in no list is refused until it is classified.
@@ -258,6 +261,17 @@ At the definition, each with its reason:
 - **A buffer richer than the node** raises the concentration that the sites and D152's reactions
   read at their next half-step. Both check their stage conditions at run time, at every stage, so
   a step outside them is refused, not taken.
+- **Labels (FR-44, D327).** Beside `neutral_arrival_labels@1`, in either order:
+  - The event takes `labels=` and also returns a `LiquidExchange`: the two level records
+    (§4.3) at the labelled rows where a wash is due this step, zero elsewhere. Each is the
+    event's own sample and supply. A cumulative record's gain would be inexact, and at f = 1
+    after an earlier wash it leaves a kept part that is nonzero or negative.
+  - The state and validity are the unlabelled call's, bit for bit.
+  - The label owner decides the labels: the sample leaves with the node's shares, and the
+    buffer joins the base, whatever window is open (NEUTRAL_LABELS_DESIGN.md §13).
+  - The owner is shown local to the wash (`SHOWN_LOCAL`): it moves no amount.
+  - The report's axis is the outside nodes, so an exchange of a cell's own liquid cannot be
+    expressed in version 1.
 - **The run view:** one prescribed layer, each wash an event at its node.
 - **The composition matrix** gains its row and column (23 as built; 24 once FR-26's W registers
   before it, §10). The module registers last
@@ -383,7 +397,9 @@ And φ equals the cleft fix's `mixing(e, ratio)` bit for bit, in NumPy and compi
 - **The two φ copies stay,** bit for bit the same: `numerics/ideal_mixing.phi` and the cleft fix's
   (§4.3).
 - **Untested paths are version-1 limits:** a restart from a checkpoint across a wash, and batched
-  windows. Neither is exercised.
+  windows. Neither was exercised then. FR-44 (D327) tests the restart: a labelled run cut at a
+  wash row and one step after, resumed bit for bit, with the wash's redo and skip planted
+  (`tests/unit/test_wash_schedule_resume.py`). Batched windows stay untested.
 - **Criterion 5's failed clause** (§8) is stated in the landing text.
 
 **Landing:** in a stack with FR-24 and FR-26 (the lead's ruling, 20 November 2026). FR-26's

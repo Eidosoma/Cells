@@ -54,9 +54,21 @@ Uses [Bilayer area is half the sum of the molecular footprints in its two leafle
 
 **Open.** Intact fraction of a vesicle cohort over time at known tension. The numerical area-unit invariance is tested on identical physical states in the engine.
 
+- [A single, time-independent critical tension determines when a pure DOPC vesicle ruptures on a hold or ramp.](../WET_LAB_EVIDENCE.md#pair-dopc-rupture-time-history) · Challenged by both studies
+
 Under strong hypotonic swelling, three pores resealed successively in the same vesicle, each within one second. This measures a surviving-vesicle outcome relevant to FR-39. The assembly rule books terminal lysis once per lineage. [Oglęcka et al., Figure 5](https://elifesciences.org/articles/03695/figures#fig5)
 
 **Unit** mN/m, seconds, fraction intact and inverse seconds
+
+### evans2003_dopc_tension_ramps@1
+
+Micropipette aspiration of giant DOPC vesicles with a sustained linear tension ramp until rupture. Fig. 3, middle column, experimental DOPC histograms, p. 268. Fig. 4 compares peak rupture tensions. [Evans and Heinrich (2003), Figs. 3–4](https://doi.org/10.1016/S1631-0705(03)00044-6)
+
+- **Evidence role** descriptive
+
+Intervals describe the high-count parts of the plotted histograms and carry no confidence interpretation. The overlaid theoretical curves were excluded.
+
+The faster tension ramp shifted the distribution of rupture tensions upward in independently measured DOPC vesicles. This constrains application of a fixed rupture threshold; a tension ramp cannot establish the hazard at constant tension. [Dataset manifest](../checks/data/paired_wet_lab_measurements.json) · [Comparison verdict](../PROGRESS.md#paired-transport-and-membrane-measurements)
 
 ### karal2015_dopc_tension_series@1
 

@@ -63,9 +63,22 @@
             "status": {"enum": ["open", "not_assessable", "supported", "disagrees", "mixed"]},
             "observable": {"$ref": "#/$defs/text"}, "unit": {"$ref": "#/$defs/text"},
             "finding": {"$ref": "#/$defs/text"},
-            "evidence": {"type": "array", "items": {"$ref": "#/$defs/experiment"}}
+            "evidence": {"type": "array", "items": {"$ref": "#/$defs/experiment"}},
+            "pairs": {"type": "array", "items": {"$ref": "#/$defs/studyPair"}}
           }
         }
+      }
+    },
+    "studyPair": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "assumption", "datasets", "outcome", "independence", "comparison"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"},
+        "assumption": {"$ref": "#/$defs/text"},
+        "datasets": {"type": "array", "minItems": 2, "maxItems": 2, "uniqueItems": true, "items": {"$ref": "#/$defs/text"}},
+        "outcome": {"enum": ["both_support", "both_challenge", "different_results", "inconclusive", "not_independent"]},
+        "independence": {"$ref": "#/$defs/text"},
+        "comparison": {"$ref": "#/$defs/text"}
       }
     },
     "experiment": {

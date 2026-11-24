@@ -36,6 +36,12 @@ rounding.
 - **The closure** (closure_residual): n1 - (n0 + sum(into) - out) is the report's rounding where
   every mover of the row reported. out enters nothing else.
 
+**A liquid exchange** (exchange; FR-44) is an event, not a rate. A well-mixed sample carries the
+node's shares away, and a buffer brings unlabelled material, which joins the base. So each label's
+material is the kept part times its share, plus the supply at the base: exact in the amounts it
+is given, with no survival exponent. The continuous update above would not be exact here (it
+spreads arrivals over an application).
+
 **Checking against the run's own per-molecule loss rate** (FR-42's check 2): a cohort's survivors
 are the arrivals of its window's steps, each carried forward by exp(-integral of k dt) to the
 observation, with k = (one-way loss) / n per step from the run's records. Where k is constant
@@ -148,6 +154,31 @@ def advance_transfers(shares, n0, n1, transfers, present, held, *, xp=jnp, into=
     arriving, _ = carried(0.5 * (shares + predicted), transfers, xp=xp)
     new = advance(shares, n0, n1, arriving + fixed, present, xp=xp)
     return xp.where(held[None, None, :], shares, new)
+
+
+def exchange(shares, n0, removed, supplied, present, *, xp=jnp):
+    """The shares after a liquid exchange at each node (FR-44): a well-mixed sample takes removed
+    [m, node] of the row away, carrying the node's shares, and a buffer brings supplied [m, node]
+    of unlabelled material, which joins the base (label 0).
+
+    shares [m, label, node] are those just before the exchange, and n0 [m, node] the engine's
+    amounts then. present [m, label] gives the declared labels. Each label's material after is
+    (n0 - removed) s_k + supplied [k = 0], and the shares are that over its own sum, so they sum
+    to 1 at rounding whatever the engine's new amount rounds to. The map is exact in the amounts
+    it is given:
+    - n' s_k' = (1 - f) n0 s_k for every other label;
+    - a zero share stays exactly 0, and a base-only row stays exactly (1, 0, ...);
+    - with removed = fl(1.0 * n0), a whole exchange, every other share is exactly 0;
+    - where nothing is exchanged (removed = supplied = 0) the shares are kept bit for bit.
+    The node axis is the caller's, so the same map serves any node axis."""
+    declared = present if present.ndim == 3 else present[:, :, None]
+    base = (xp.arange(shares.shape[1]) == 0)[None, :, None]
+    kept = (n0 - removed)[:, None, :] * shares
+    x = xp.where(declared, kept + xp.where(base, supplied[:, None, :], 0.0), 0.0)
+    total = entity_sum(x, axis=1, xp=xp)
+    moved = ((removed > 0) | (supplied > 0)) & (total > 0)
+    out = x / xp.where(moved, total, 1.0)[:, None, :]
+    return xp.where(moved[:, None, :], out, shares)
 
 
 def closure_residual(n0, n1, into, out, *, xp=jnp):

@@ -42,6 +42,11 @@ Uses [Production and first-order clearance preserve a positive pool and account 
 
 **Open.** Survival of a labelled surface-channel cohort and appearance of newly made receptors in the plasma membrane.
 
+- [A labelled surface acetylcholine-receptor cohort declines over time at an active, innervated adult mouse neuromuscular junction.](../WET_LAB_EVIDENCE.md#pair-innervated-receptor-cohort-loss) · Supported by both studies
+- [All labelled junctional acetylcholine receptors in a normally innervated mouse muscle share one first-order loss rate.](../WET_LAB_EVIDENCE.md#pair-innervated-receptor-single-rate) · Challenged by both studies
+
+Independent labelled cohorts decline over time. Two innervated mouse preparations resolved fast and slow receptor populations. A common loss constant across the entire pool would miss that heterogeneity. The precursor and removal inventories remain open.
+
 **Unit** % of labelled baseline and hours to surface appearance
 
 ### strack2011_innervated_cohort@1
@@ -65,5 +70,35 @@ Newly synthesized acetylcholine receptors were followed to the plasma membrane i
 The observations describe relative labelling of receptors arriving at the membrane. The report gives no numerical fraction or error for the 3.5-hour observation.
 
 Few labelled receptors reached the surface during the first three hours. By 3.5 hours virtually all receptors entering the membrane carried label. This supports a lag in appearance and leaves the pool count and transit-time distribution open. [Dataset manifest](../checks/data/surface_population_measurements.json) · [Comparison verdict](../PROGRESS.md#surface-population-turnover)
+
+### bruneau2010_active_achr@1
+
+Active adult mouse sternomastoid synapses. Fewer than 20% of AChRs labelled, muscle fibers expressing rapsyn–GFP. Results, pp. 616–617 and Fig. 3D [Bruneau and Akaaboune (2010), Results and Fig. 3D](https://doi.org/10.1523/JNEUROSCI.4595-09.2010)
+
+- **Evidence role** descriptive
+
+Values and times from Results (SD). The figure caption specifies SEM for the plotted bars. Two follow-ups cannot identify the decay law.
+
+The labelled fraction remaining was 93 ± 5% at 24 h and 75 ± 8% at 72 h. These observations constrain the direction of loss in an active synapse. [Dataset manifest](../checks/data/membrane_physiology_pairs.json) · [Comparison verdict](../PROGRESS.md#paired-membrane-physiology)
+
+### strack2011_achr_two_components@1
+
+Labelled AChR in innervated tibialis anterior. The two-component fit is normalized at day 2. The pre-existing claim's Fig. 3D uses a day-7 anchor in the same study. Table 2, innervated adult mouse muscles, fitted components [Strack et al. (2011), Table 2](https://doi.org/10.1371/journal.pone.0020524)
+
+- **Evidence role** descriptive
+
+Table 2 means and SD for ten muscles. These fitted components and the Fig. 3 observations have common provenance.
+
+In innervated muscles, the authors fitted a 13 ± 2% fast component with half-life 1.1 ± 0.3 days and an 87 ± 2% slow component with half-life 13.1 ± 0.4 days. [Dataset manifest](../checks/data/membrane_physiology_pairs.json) · [Comparison verdict](../PROGRESS.md#paired-membrane-physiology)
+
+### stanley1983_achr_turnover@1
+
+Normally innervated mouse diaphragm neuromuscular junctions. Primary report, Science 222, 67–69, abstract with component estimates [Stanley and Drachman (1983), component estimates](https://doi.org/10.1126/science.6623057)
+
+- **Evidence role** descriptive
+
+Published component estimates. The public abstract gives no pointwise time series, errors or sample counts. The inferred subpopulation fractions are approximate.
+
+The authors reported a fast fraction of approximately 20% with an 18.7 h half-life and a slow component with a 12.4 day half-life. Each component is a fit to a subpopulation. [Dataset manifest](../checks/data/membrane_physiology_pairs.json) · [Comparison verdict](../PROGRESS.md#paired-membrane-physiology)
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

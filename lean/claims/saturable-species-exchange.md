@@ -45,7 +45,30 @@ Direct proof subject `cells.scheduled_species_exchange@1`
 
 **Open.** Initial neutral-solute uptake rate versus external concentration and a matched time course of extracellular depletion and intracellular gain.
 
+- [Early 3-O-methylglucose influx into sugar-depleted human erythrocytes is half-saturated near 1–2 mM under cold conditions.](../WET_LAB_EVIDENCE.md#pair-cold-red-cell-sugar-affinity) · Supported by both studies
+- [Initial 3-O-methylglucose influx saturates with increasing extracellular sugar in intact human erythrocytes on ice and at 15 °C.](../WET_LAB_EVIDENCE.md#pair-red-cell-sugar-saturation) · Supported by both studies
+
 **Unit** µmol/L/min
+
+### klepper2001_cold_red_cell_influx@1
+
+Washed human erythrocytes, healthy adult intra-assay control, zero-trans radiolabeled 3-O-methyl-D-glucose influx. §2.4, Fig. 3B–C, Table 1 (pp. 105–108). [Klepper et al. (2001), Fig. 3B–C and Table 1](https://doi.org/10.1016/S0014-5793(01)02463-2)
+
+- **Evidence role** descriptive
+
+No uncertainty reported for the control Km. The larger healthy reference group in Fig. 3A is a different comparison.
+
+The healthy control gave Kₘ 1.3 mM and maximal rate 1,275 ± 32 fmol/s per million cells (SD). It independently supports the half-saturation scale of the cold Cells calibration. Differing rate denominators limit the capacity comparison. [Dataset manifest](../checks/data/paired_wet_lab_measurements.json) · [Comparison verdict](../PROGRESS.md#paired-wet-lab-evidence)
+
+### batt1973_red_cell_influx@1
+
+Two separate human blood samples, intact erythrocytes with zero trans sugar. Table V (p. 1692), influx column for 3-O-methyl-D-glucose. [Batt and Schachter (1973), Table V](https://doi.org/10.1172/JCI107350)
+
+- **Evidence role** descriptive
+
+Each row is a separate blood sample. Table V gives point estimates without errors.
+
+The two influx Kₜ estimates, 5.0 and 6.1 mM at 15 °C, support saturable entry. They set a limit on transferring the cold calibration across preparations. [Dataset manifest](../checks/data/paired_wet_lab_measurements.json) · [Comparison verdict](../PROGRESS.md#paired-wet-lab-evidence)
 
 ### sage2014_zero_trans@1
 

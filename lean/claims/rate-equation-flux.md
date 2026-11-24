@@ -39,6 +39,8 @@ Uses [Free energy sets ATP-driven transport direction and stall](atp-cycle.md)
 
 **Open.** Direction of glucose-6-phosphate (G6P) and fructose-6-phosphate (F6P) conversion from opposite starting conditions, the equilibrium ratio, and dissipated heat per unit time.
 
+- [Phosphoglucose isomerase can convert G6P to F6P or F6P to G6P, depending on the starting mixture.](../WET_LAB_EVIDENCE.md#pair-pgi-reversal) · Supported by both studies
+
 Two extract time courses changed in the directions given by their fitted equilibrium. A separate rabbit-muscle equilibrium assay lets us compare a zero-flux ratio inferred from kinetics with a measured endpoint.
 
 **Unit** F6P/G6P (dimensionless)

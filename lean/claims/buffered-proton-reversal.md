@@ -39,9 +39,21 @@ Uses [Voltage and free proton concentrations set the leak reversal](proton-leak.
 
 **Open.** Measured voltage at zero proton current at controlled pH on each side, with a separate comparison for current magnitude under a buffer change.
 
+- [The reversal voltage of a selective proton current shifts with the free pH gradient in the Nernst direction.](../WET_LAB_EVIDENCE.md#pair-proton-reversal-ph) · Supported by both studies
+
 The three mitochondrial mean reversal voltages have the predicted directions. All three model values lie within the descriptive 95% Student t intervals for the corresponding means. The endpoint comparison leaves intact mitochondrial compartment pH and absolute leak current open.
 
 **Unit** mV, matrix minus bath
+
+### cherny1995_proton_reversal@1
+
+Isolated rat alveolar epithelial cells, whole-cell clamp. Fig. 2 and abstract. [Cherny et al. (1995), Fig. 2](https://doi.org/10.1085/jgp.105.6.861)
+
+- **Evidence role** descriptive
+
+Rounded slope reported across gradients. No standard error for this slope is used.
+
+With strongly buffered solutions the reversal shifted about 52 mV per pH unit over four units. This tests pH dependence in alveolar cells. [Dataset manifest](../checks/data/paired_wet_lab_measurements.json) · [Comparison verdict](../PROGRESS.md#paired-wet-lab-evidence)
 
 ### bertholet-2019-proton-reversal
 

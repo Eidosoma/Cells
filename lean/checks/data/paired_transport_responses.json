@@ -1,0 +1,46 @@
+{
+  "bajnath1993_chloride_reversal@1": {
+    "doi": "10.1007/BF00374509",
+    "locator": "Methods, Fig. 2 and accompanying Results, closed-to-open single-channel amplitudes.",
+    "preparation": "Forskolin-stimulated, cell-attached patches of human HT-29cl.19A epithelium at 25 °C. Pipette chloride was lowered with osmotic compensation.",
+    "temperature_C": 25,
+    "external_Cl_mM": [
+      150,
+      57
+    ],
+    "patches_per_condition": [
+      9,
+      3
+    ],
+    "shift_mV": 23,
+    "authors_expected_shift_mV": 24,
+    "source": "https://repub.eur.nl/pub/70572/REPUB_70572_OA.pdf",
+    "uncertainty": "The high-chloride reversal was 2 ± 1 mV on the −Vₚ scale. The low-chloride endpoint was about 25 mV. No error on their difference was reported."
+  },
+  "syme2000_rsk2_calcium@1": {
+    "doi": "10.1152/ajpcell.2000.278.3.C570",
+    "locator": "Fig. 8C, filled circles, free-calcium dose series in the absence of chlorzoxazone.",
+    "preparation": "Excised inside-out patch from a Xenopus oocyte expressing rat SK2. The readout is the number of active channels times open probability (NPₒ).",
+    "calcium_range_uM": [
+      0.08,
+      10
+    ],
+    "control_half_uM": 0.7,
+    "control_hill": 2.5,
+    "uncertainty": "Fig. 8C gives a fitted midpoint and slope with no uncertainty or replication count. The drug series was recorded on the same patch; Fig. 8B’s n = 7 concerns another experiment."
+  },
+  "oliver2000_rsk2_calcium_jumps@1": {
+    "doi": "10.1016/S0896-6273(00)81197-6",
+    "locator": "Fig. 3A–B and pp. 596–597, recombinant SK2 recordings and the reported low-calcium rise time.",
+    "preparation": "Calcium jumps onto giant inside-out oocyte patches expressing SK2, −80 mV, solution exchange time constant ≤0.5 ms. Only recombinant-channel observations are included.",
+    "high_calcium_uM": 10,
+    "rise_20_80_ms": 6.18,
+    "rise_sd_ms": 1.91,
+    "washout_tau_ms": 34.7,
+    "washout_sd_ms": 6.5,
+    "high_dose_patches": 10,
+    "low_calcium_uM": 0.5,
+    "low_rise_20_80_ms_approx": 80,
+    "uncertainty": "High-dose values are means ± SD across ten patches. The low-dose time is approximate, with no sample count, error or matching washout/absolute plateau reported."
+  }
+}

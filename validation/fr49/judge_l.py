@@ -61,6 +61,9 @@ LABELS_ONLY = {
     "label_pool_share",
     "label_removed_fmol",
     "label_pool_removed_fmol",
+    # FR-44 (D327; judge erratum 1, JUDGE_ERRATUM-1.md): the label owner's record of what left at
+    # liquid exchanges, zero-size without a wash, as World L is.
+    "label_outside_removed_fmol",
 }
 
 

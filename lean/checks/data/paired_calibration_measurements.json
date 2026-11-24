@@ -1,0 +1,87 @@
+{
+  "longobardo2001_kv15_controls@1": {
+    "doi": "10.1038/sj.bjp.0704251",
+    "locator": "Figure 1 and drug-free control results",
+    "preparation": "Wild-type human Kv1.5 in Ltk− cells, whole-cell clamp, 4 mM extracellular K, 21–23 °C. The tail voltage changed from −40 to −30 mV between pH conditions.",
+    "outside_pH": [7.4, 6.5],
+    "midpoint_mV": [-14.2, 3.1],
+    "midpoint_sem_mV": [2.1, 0.7],
+    "midpoint_n": [38, 27],
+    "slope_mV": [4.9, 5.2],
+    "slope_sem_mV": [0.2, 0.1],
+    "dominant_activation_tau_at_60mV_ms": [2.1, 4.23],
+    "tau_sem_ms": [0.2, 0.3],
+    "tau_n": [21, 20],
+    "scope": "The curves were normalized separately. Only the drug-free recordings enter the comparison."
+  },
+  "trapani2003_kv15_high_voltage@1": {
+    "doi": "10.1016/S0006-3495(03)74842-5",
+    "locator": "Figures 1C/D and 9B, +100 mV",
+    "preparation": "Wild-type human Kv1.5 in HEK293. Same study as the existing 0 mV pulse and activation curves.",
+    "outside_pH": [7.3, 6.8],
+    "test_mV": 100,
+    "external_K_mM": [0, 3, 10],
+    "retained_current": [0.38, 0.977, null],
+    "ratio_sem": [0.015, 0.003, null],
+    "cells": [3, 3, 5],
+    "reading": "At 3 mM the paper gives the reduction as 2.3 ± 0.3%. At 10 mM current is described as essentially unaffected. No numerical ratio was imposed on that point."
+  },
+  "kehl2002_kv15_potassium@1": {
+    "doi": "10.1113/jphysiol.2001.014456",
+    "locator": "Figure 2 and Results, external potassium and the conductance response",
+    "preparation": "WT human Kv1.5 in HEK293, 20–25 °C, whole-cell tails after 300-ms prepulses.",
+    "outside_pH": [7.4, 6.4],
+    "external_K_mM": [0, 3.5, 140],
+    "relative_gmax": [0.19, 0.56, 0.81],
+    "reported_errors": [0.02, 0.01, 0.12],
+    "cells": [12, 6, 6],
+    "midpoint_at_3p5mM_mV": [-18.3, -10.5],
+    "midpoint_reported_error_mV": [1.9, 1.2],
+    "uncertainty": "Reported ± as printed. Methods generally use SEM and specify SD for nonlinear least-squares outputs."
+  },
+  "edvinsson2011_kir41_conductance@1": {
+    "doi": "10.4161/chan.5.3.15827",
+    "locator": "Figure 7B–C and adjacent Results",
+    "preparation": "Human Kir4.1 in cell-attached Xenopus oocyte patches, pH 7.4, pipette magnesium 1 mM. Changes in pipette KCl were balanced by NaCl.",
+    "outside_K_mM": [10, 40, 110],
+    "inward_unitary_slope_pS": [8, 19, 23],
+    "reading": "10 and 40 mM are approximate figure readings. The 110 mM value is in the text. Figure errors were plotted without numerical errors or a stated sample count for each point.",
+    "authors_fit": {
+      "maximum_pS": 24.4,
+      "half_K_mM": 16.7,
+      "hill_exponent": 1.4
+    },
+    "scope": "Only inward events were detected. Voltage offsets adjusted to the modeled reversal cannot independently validate reversal."
+  },
+  "kucheryavykh2008_muller_reversal@1": {
+    "doi": "10.1002/glia.20652",
+    "locator": "Figure 5B, two raw current–voltage curves in a frog Müller cell",
+    "preparation": "Whole-cell recording from retinal glia with 100 mM intracellular K and 3 mM added intracellular spermine.",
+    "outside_K_mM": [1, 10],
+    "approx_reversal_shift_mV": 50,
+    "approx_fast_block_shift_mV": 100,
+    "uncertainty": "Approximate visual shifts within one cell. No numerical uncertainty on the crossings. Native current may include other channels."
+  },
+  "besarab1981_bsa_calcium@1": {
+    "doi": "10.1136/jcp.34.12.1361",
+    "locator": "Table 1, retentate after filtration, ionized and total calcium columns",
+    "preparation": "Bovine albumin 4.97 g/dL in retentate at 37 °C. Paired ion-selective electrode and atomic-absorption determinations.",
+    "pH": 7.44,
+    "reported_pH_spread": 0.02,
+    "nominal_Mg_mM": 1.2,
+    "free_Ca_mM": [0.45, 0.66, 0.81, 1.33, 1.56],
+    "total_Ca_mM": [1.03, 1.48, 1.86, 2.67, 3.23],
+    "uncertainty": "Duplicate ionized readings, other entries based on at least four measurements. Reported assay CVs 2.6% for ionized and 2.1% for total calcium. Pointwise errors and free Mg are unavailable."
+  },
+  "gunther1998_bsa_calcium@1": {
+    "url": "https://www.magnesium-ges.de/download/binding-of-mg2-and-ca2-to-serum-albumin-no-effect-of-free-fatty-acids/?wpdmdl=505#page=2",
+    "locator": "Table 1, rows C and D, second page of the paper, Magnesium-Bulletin 20 (1998)",
+    "preparation": "40 g/L bovine albumin with 2.7 mM palmitate at 37 °C. Ion-selective electrode and atomic absorption.",
+    "pH": [7.324, 7.323],
+    "pH_sem": [0.007, 0.005],
+    "free_Ca_mM": [0.416, 1.934],
+    "free_Ca_sem_mM": [0.008, 0.023],
+    "total_Ca_mM": [0.523, 2.605],
+    "uncertainty": "Nine measurements per condition pooled across a magnesium-addition series (0.2–4.15 mM). Values for free calcium are means ± SEM. No sampling error for total calcium is given."
+  }
+}

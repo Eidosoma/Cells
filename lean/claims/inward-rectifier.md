@@ -54,7 +54,12 @@ Proof sources [Mathlib’s lower bound on the hyperbolic sine](https://github.co
 
 ## Biological evidence
 
-**Mixed.** Kir4.1 unitary current 60 mV below each measured reversal potential as external potassium changes.
+**Mixed.** Kir4.1 unitary current 60 mV below reversal, inward unitary slope conductance and the shift in reversal as external potassium changes.
+
+- [Inward Kir4.1 unitary slope conductance follows the square root of external potassium across preparations.](../WET_LAB_EVIDENCE.md#pair-kir41-slope-scaling) · Different experimental results
+- [Raising external potassium shifts the reversal of Kir4.1 or a Kir-dominated Müller-cell current to more positive voltages.](../WET_LAB_EVIDENCE.md#pair-kir-potassium-reversal) · Supported by both studies
+
+Reversal moved toward positive voltages when external potassium rose in two preparations. The inward unitary conductance increased with potassium in both recombinant series, with different concentration dependence.
 
 **Unit** pA
 
@@ -72,5 +77,25 @@ Cloned rat Kir4.1 in HEK293T cell-attached patches at about 25 °C, three patche
 Currents are approximate graph readings interpolated after reading the reversal for each series. Some reversal markers overlap. Per-point numerical uncertainties are unavailable.
 
 At 15 mM external K the current magnitude fell less than the model predicted, as it did at the other three held-out concentrations. The model’s −59.67 mV shift in reversal agreed with the approximately −60 mV measured. [Dataset manifest](../checks/data/tada1998_kir41.json) · [Comparison verdict](../PROGRESS.md#19-november-2026--inward-rectification-and-sodium-anion-symport)
+
+### edvinsson2011_kir41_conductance@1
+
+Human Kir4.1 in cell-attached Xenopus oocyte patches, pH 7.4, pipette magnesium 1 mM. Changes in pipette KCl were balanced by NaCl. Figure 7B–C and adjacent Results [Edvinsson, Shah and Palmer (2011), Fig. 7B–C](https://doi.org/10.4161/chan.5.3.15827)
+
+- **Evidence role** descriptive
+
+10 and 40 mM are approximate figure readings. The 110 mM value is in the text. Figure errors were plotted without numerical errors or a stated sample count for each point.
+
+At 10, 40 and 110 mM external K the inward slope was approximately 8, 19 and 23 pS. The authors fitted saturation (maximum 24.4 pS, half-maximal K 16.7 mM, exponent 1.4). Their modeled reversal offsets supply no independent reversal measurement. [Dataset manifest](../checks/data/paired_calibration_measurements.json) · [Comparison verdict](../PROGRESS.md#paired-calibration-and-leaflet-packing)
+
+### kucheryavykh2008_muller_reversal@1
+
+Whole-cell recording from retinal glia with 100 mM intracellular K and 3 mM added intracellular spermine. Figure 5B, two raw current–voltage curves in a frog Müller cell [Kucheryavykh et al. (2008), Fig. 5B](https://doi.org/10.1002/glia.20652)
+
+- **Evidence role** descriptive
+
+Approximate visual shifts within one cell. No numerical uncertainty on the crossings. Native current may include other channels.
+
+A tenfold increase in external K moved the raw current crossing about +50 mV. The separate breakpoint for fast block moved about +100 mV. Native Müller-cell current supports the direction of reversal with a less specific channel assignment. [Dataset manifest](../checks/data/paired_calibration_measurements.json) · [Comparison verdict](../PROGRESS.md#paired-calibration-and-leaflet-packing)
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

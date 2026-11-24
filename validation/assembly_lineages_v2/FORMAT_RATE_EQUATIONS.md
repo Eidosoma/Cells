@@ -45,6 +45,11 @@ OL6 (D304); the design is docs/OL6_DETERMINISTIC_REPRESENTATION_DESIGN.md (tag
   step's error control. A step result with an E2 place below −10·atol_count is rejected and
   retried at h/4, or the run stops `stalled`. The rows may hold such a place slightly below 0, at
   least −10·atol_count.
+- **A known limit (24 November 2026).** A small E2 world at a loose atol_count can fail its own
+  ledger: after a zero start Q is integrated to atol_count, but the ledger's tolerance, 100·rtol·max(1,
+  |Q| + |W| + events) + 64 eps, has no atol term (shell_interior's lumen shell in (d), 12 tracers,
+  rtol 1e-10, atol_count 1e-6: residual 1.12e-7 kT against 4.87e-8; FR-47's registered worlds
+  close); an atol term from atol_count is a logged follow-up after Protocol D's re-registration.
 - **The pore law's tension** is a hold's (the experiment's `tension_holds`, with tension_hold's
   cross-checks as for exact events) or, with no hold, the osmotic lumen's (σ from F, which needs
   σ_max ≤ σ_β/4). Under a hold, a step that changes a membrane place's count is refused (T2); with
