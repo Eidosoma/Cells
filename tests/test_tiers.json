@@ -383,7 +383,7 @@
   "/mnt/workspaces/Cells/fr47-build-20261124/measure-4a533a2c/measured.json",
   "/mnt/workspaces/Cells/fr47-build-20261124/measure-94bf2a97/measured.json",
   "/mnt/workspaces/Cells/fr47-build-20261124/measure-c0aa0bd3/measured.json",
-  "/mnt/workspaces/Cells/fr47-inert-wall-20261124/measure-b581efae/measured.json"
+  "/mnt/workspaces/Cells/fr47-inert-wall-20261124/measure-bac99a6c/measured.json"
  ],
  "measured_provenance": [
   {
@@ -3268,12 +3268,12 @@
    "utc": "2026-11-24T11:44:47+00:00"
   },
   {
-   "git_revision": "b581efaea0a2a848c3abc58fa53d8a74f894ec46",
+   "git_revision": "bac99a6c121e441718f112a8e8ab5410ead14f44",
    "dirty": false,
    "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-   "root": "/mnt/workspaces/Cells/fr47-inert-wall-20261124/snapshot-b581efae",
+   "root": "/mnt/workspaces/Cells/fr47-inert-wall-20261124/snapshot-bac99a6c",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
-   "utc": "2026-11-24T14:06:05+00:00"
+   "utc": "2026-11-24T14:17:51+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -7213,7 +7213,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_rate_equations.py",
-    "seconds": 73.47,
+    "seconds": 77.19,
     "exit_code": 0,
     "counts": {
      "passed": 24
