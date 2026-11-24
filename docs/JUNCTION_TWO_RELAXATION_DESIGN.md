@@ -909,6 +909,454 @@ the checker has seen no held-out value. The inputs are unchanged:
 **What follows.** After the tag, the checker freezes a clean snapshot that holds the erratum. It then
 runs `verify`, `resolve` and `score` as section 13.5 point 6 states, with the same `--expect-sha256`.
 
+### 13.7 Entry of 13:05 UTC on 24 November 2026: Ek-Vitorín, Pontifex and Burt (2016), registered before the paper is opened
+
+**Who wrote it.** The author of FR-16's polarity check, who is FR-30's harness author under D334 and
+never fits, predicts or checks.
+- It registers the fresh blind benchmark of D320, with the user's decisions of D334.
+- **Nobody on this project has opened the paper.**
+- The commit carrying this entry, its code and its tests is tagged (Tag A, part 10) before the paper
+  is opened.
+- The polarity check is [JUNCTION_GATE_POLARITY.md](JUNCTION_GATE_POLARITY.md), committed beside
+  this note. This benchmark's fitter does not open it.
+
+**The paper.** Ek-Vitorín JF, Pontifex TK, Burt JM (2016), Biophys J 110:127,
+doi:10.1016/j.bpj.2015.10.054, PMC4805864.
+- It is filed read-only at `/mnt/datasets/Cells/papers/incoming/ek-vitorin-2016/`, for the extractor
+  only.
+- One paper: the fit and the held-out test both come from its own data (§13).
+
+**What has been read about it (disclosure).**
+- **This note:** section 13.4's entry, which gives its citation, DOI and PMC ID, "Wild-type Cx43
+  only", and that candidates 1 to 4 "matched a full-text query for two-exponential wording with Cx43
+  and transjunctional voltage".
+- **D311** ("not opened"), **D320**, **D334** and **FR-30's row.**
+- **Section 13.3's caption-level line on Ek-Vitorín et al. 2018,** a different paper from the same
+  laboratory: "second-order decay fits, probably at a single ±80 mV". Nothing here is fixed from it.
+- **From training data:** the approximate title, "Determinants of Cx43 channel gating and
+  permeation: the amino terminus", and so its subject. No figure, protocol, voltage or value.
+- **The exposure sweep (file names only; no matching file opened):**
+  - **In the checkout,** an Ek-Vitorín paper is named only in `docs/DECISIONS.md`,
+    `docs/FEATURE_REQUESTS.md` and this note, and in their copies in worktrees. Those mentions are of
+    the 2016 paper and the 2018 one, and the 2016 DOI or PMC ID appears only in section 13.4.
+    `lean/` has no hit.
+  - **In `/mnt/workspaces/Cells` and `/mnt/datasets/Cells`:** [pass 3's result, recorded before
+    Tag A].
+  - **The 2018 extraction names this paper.** Counts only, with no file opened: one line naming it
+    (by its second author, DOI or PMC ID) in each of `fr30-ekvitorin2018-benchmark/extraction/`'s
+    `protocol.json` and `extraction_notes.md`, and none in its `fit.json` or `held_out.json`. That
+    folder is excluded for the fitter, the predictor and the checker (part 9).
+  - **BITSEY's `GJ_lib.py`** names Jose Ek Vitorin as an expert colleague: a person, not this paper.
+    The lead checked it by name only, and there is no exposure (D334).
+
+#### Part 1. The law to be fitted (D334)
+
+- **`junction_series_gates@1` as declared, with one parameter block** for both polarities. Both gate
+  kinds read |V_j|.
+- **Why the form does not change** (D334; [JUNCTION_GATE_POLARITY.md](JUNCTION_GATE_POLARITY.md)):
+  - Identical hemichannels whose gates read only V_j are symmetric by construction, so no
+    polarity-aware gate can change a homotypic prediction.
+  - Independent sources indicate near-symmetry for homotypic Cx43, each one study's indication.
+- **Not admitted:**
+  - **per-polarity blocks:** they would be another law;
+  - **`junction_series_gates@2`:** a design note under FR-16 F3, for heterotypic junctions only.
+- **The kinds are stated first.** The fitter states each gate's kind before any fit, in `kinds.json`,
+  and then the parameters in `params.json`. Each is hashed in a dated log line.
+- **The host is the law clamped,** as section 13 hosts it: `advance_clamped` at each imposed V_j.
+
+#### Part 2. The extraction protocol
+
+- **E1, scope.** Only the homotypic, untagged, wild-type Cx43 control arm (§13.1 point 6; §6's
+  untagged construct).
+  - **Excluded:** mutants of any domain, tagged constructs, other connexins, heterotypic or mixed
+    pairs, treated arms (drugs, phosphorylation manipulations, uncouplers), and hemichannel and
+    single-channel data.
+  - **Native cells** fall under section 13.3's admission and its label.
+  - If the paper states that its cells express another connexin, the extractor records that
+    statement, and the verdict carries it in its label.
+- **E2, data units.** A data unit is a signed V_j step from the holding level at which the paper
+  reports decays it analysed itself.
+  - **D311's trace criterion:** superimposed or single sample records are not refitted.
+  - Recovery steps enter training only (§13.1 point 1).
+- **E3, the convention block (required, value-free and enumerated).**
+  - **`paper_vj_definition`:** the paper's V_j definition as printed, or "not stated".
+  - **`protocol_type`,** exactly one of:
+    - `one_sided`: one cell stepped, the other held;
+    - `symmetric`: both cells stepped by equal amounts of opposite sign;
+    - `other`: any other stated protocol;
+    - `not_stated`.
+  - **`stepped_cell`:** `cell_1` or `cell_2` in the paper's labels, or null. It is required for
+    `one_sided`, and null for `symmetric`.
+  - **`holding_mV`:** each cell's holding level, a number or null.
+  - **`sign_map`:** `as_printed`, `negated` or `not_stated`.
+
+  **The canonical sign** is vj_mV = V(stepped cell) − V(other cell). Under a symmetric protocol it is
+  V(cell 1) − V(cell 2), by the paper's labels. The law's sender is the stepped cell (or cell 1), so
+  vj_mV is @3's V_sender − V_receiver. Where the sign is `not_stated`, part 7's polarity diagnostics
+  are marked unoriented.
+
+  **What each type maps to (D334).** Only `symmetric` holds the pair's mean membrane potential the
+  same at both polarities. `one_sided`, `other` and `not_stated` all fall under the one-cell rule
+  (P4).
+- **E4, the observables,** as the paper reports them, each with its dispersion:
+  - **τ_fast and τ_slow.** The smaller is the fast one, whatever the paper calls them.
+  - **A_fast and A_slow,** if reported per voltage, with the paper's definition: a fraction of G_0
+    (`of_G0`) or of the decaying part (`of_decaying_part`).
+  - **G_ss/G_0:** the step-end conductance in the paper's normalization: `prepulse`,
+    `instantaneous`, `reference_step`, `fitted_gmax`, or `not_stated`.
+  - **How values are taken.** Text and table values are taken as printed. Plotted points are
+    digitized, each with the extractor's declared digitizing error.
+  - **Special cases:**
+    - one τ at a voltage is recorded and gives no relaxation comparison (§13.1 point 5);
+    - on-rates without P_open make the kinetic part undetermined (D291);
+    - ramp-derived conductance enters training only, and is never judged (§13.1 point 3).
+- **E5, polarity.**
+  - Values reported per polarity are entered per signed voltage.
+  - Values pooled by |V_j| are entered once, with polarity `pooled` (§13.1 point 2).
+- **E6, withheld summaries.**
+  - A quantity fitted across voltages that include a held-out voltage encodes held-out values. Such
+    quantities include a Boltzmann's parameters, a τ(V) fit, a drawn curve and a mean over voltages.
+  - It is listed in `held_out.json`'s `withheld`, never written into `fit.json`, and no value
+    derived from it enters training.
+  - D311's lesson: a copy of Revilla's Table 1 encoded the held-out steady state.
+- **E7, the protocol file.** `protocol.json` carries E3's convention block, identical to the data
+  files'. It also carries these fields:
+  - `step_duration_s`, the analysed decays' step, and `step_durations_s`, every duration in the
+    decay protocol;
+  - `gss_time_s`, `prepulse_mV`, `prepulse_s`, `normalization`, `reference_mV` and `fit_window_s`;
+  - `fit_form`, `fit_offset` and `amplitude_definition`;
+  - `sampling_Hz`, `filter_Hz`, `temperature_C`, `cells`, `construct` and `n`.
+
+  Each field has a status: `stated`, with its quotation and place; `read`, the extractor's reading,
+  saying how it was made; or `not_stated`, with a null value.
+- **E8, the layout.** Both data files follow part 8's layout: one flat list of entries, with
+  identical `split` and `convention` blocks.
+- **E9, the structure check before sealing.**
+  - The extractor runs the tagged `check` stage on `fit.json`, `held_out.json` and `protocol.json`
+    together. It prints key paths, counts, signed voltages and labels, never a value, and exit 0 is
+    required.
+  - **A refusal is fixed in the files,** since the layout binds, never in the reader.
+  - **If the data cannot be expressed in the layout,** the extractor stops and reports to the lead,
+    without values. Any layout erratum is the harness author's, written from that report and tagged
+    before sealing.
+- **E10, the seal.**
+  - `SHA256SUMS` covers `fit.json`, `held_out.json`, `protocol.json`, `extraction_notes.md` and the
+    sealed digitizers, and the files are made read-only.
+  - The extractor hands back the digests and the `check` log.
+  - The lead records `held_out.json`'s digest in a dated decision entry before any fitter starts.
+- **E11, the extractor's limits.** The extractor does not fit, predict or score, wrote none of the
+  harness, and does not open the polarity check before sealing.
+- **E12, no qualifying arm.** If no homotypic wild-type arm qualifies, the benchmark is undetermined.
+  The extractor reports that alone, with no substitute arm.
+
+#### Part 3. The split rule
+
+- **S0, the classes.** Every |V_j| magnitude m falls in exactly one class. "Decays" means mapped
+  time or amplitude entries; "G_ss" means mapped steady-state entries.
+  - **The decay list:** decays at both polarities, or pooled decays.
+  - **Training only:** decays at one polarity only. Every value at m stays in training, and m is not
+    ranked.
+  - **The steady list:** no decays, and G_ss at both polarities or pooled.
+  - **Training:** everything else, for example G_ss at one polarity only.
+  - **Precedence.** Where m carries both per-polarity and pooled values of one observable, the
+    per-polarity values are the data units, and the pooled ones are listed under `not_used`.
+- **S1, the list.** Sort the decay list's magnitudes ascending, and drop any magnitude already seen
+  (§13.1 point 8).
+  - Point 8 concerns the fitter. A fresh fitter barred from the 2018 extraction (part 9) has seen
+    none of this paper's values.
+- **S2, what is held out.** The interior magnitudes at even rank (the 2nd, 4th, ...) are held out;
+  the smallest and the largest stay in training. With three magnitudes, the 2nd is held out. With two
+  or fewer, the kinetic part is undetermined.
+- **S3, both polarities.** A held-out magnitude is held out at both of its signed voltages, or as
+  its pooled unit.
+- **S4, no ranking outside the two lists.** S0's two training classes are never ranked or held out.
+- **S5, the steady list** follows S1 to S3 on its own magnitudes.
+- **S6, everything at a held-out voltage.** Every entry at a held-out magnitude is held out, with
+  any per-voltage value derived from it, and E6's summaries are withheld.
+- **S7, mechanical application.** The extractor applies S0 to S6 and records the classes and the
+  held-out magnitudes in the `split` block. The reader recomputes both from the two files' entries
+  and refuses any mismatch (K4).
+
+#### Part 4. The prediction and readout conventions
+
+**How they are pinned.**
+- At Tag B, the tagged `conventions` stage applies this table to `protocol.json` mechanically.
+- A field that is absent or `not_stated` takes its default, and every value records the field and
+  status it came from.
+- Nothing is left to judgment after the extraction.
+
+| # | Convention | Rule, from `protocol.json` | Default | Against section 13.5 |
+| --- | --- | --- | --- | --- |
+| 1 | Holding V_j | holding_mV(stepped) − holding_mV(other) | 0 mV | same |
+| 2 | Initial state | each gate at its steady state at the holding V_j | — | same |
+| 3 | G_0 | by `normalization`. **prepulse:** the conductance after `prepulse_s` at `prepulse_mV` from the holding state, with dt = 0 where `prepulse_s` is not stated. **reference_step:** the law's G_ss at `reference_mV`, at the step's polarity. **Otherwise** the holding conductance, since the law has no instantaneous voltage dependence | the holding conductance | generalized |
+| 4 | Step duration T | `step_duration_s`. Else the protocol's only duration, or its longest (`step_durations_s`). Neither: the kinetic part cannot be predicted | — | generalized |
+| 5 | G_ss sampling time | `gss_time_s` | the step's end, T | generalized |
+| 6 | Sampling | t_k = k ms from the step's onset | — | same |
+| 7 | Fit window | `fit_window_s`, within the step | 5 ms to T | generalized |
+| 8 | Fit form | y = C + A_f e^(−t/τ_f) + A_s e^(−t/τ_s), **C free in every case**. A fixed offset is recorded as a statement only. An offset taken from data is withheld (E6) | C free | same |
+| 9 | Start grid | T in integer ms, rounded half up; the 1-2-5 ladder from 1 ms to 1,000 s. τ_f has 600·τ_f ≥ T and 15·τ_f ≤ T; τ_s has 30·τ_s ≥ T and 3·τ_s ≤ 5·T; every bound inclusive; pairs with τ_f < τ_s; ties go to the first in grid order | — | scaled with T |
+| 10 | Refinement | Levenberg–Marquardt with Kaufman's Jacobian, tolerances 1e-12, at most 1,000 evaluations | — | same |
+| 11 | Degenerate fit | τ_s/τ_f < 1.5; A_f or A_s below 1e-3, signed; τ_s > 10 T; no convergence; a value not finite or a time not positive | — | the cutoff scaled with T |
+| 12 | Predicted amplitudes | `of_G0`: A_f and A_s over G_0, each judged. `of_decaying_part`: A_f/(A_f + A_s) only, since A_s's share is 1 minus A_f's | — | new |
+| 13 | Cannot predict | the domain fails at the hold, prepulse, step or end; the trace is not finite; or G_0 ≤ 0 | — | same |
+| 14 | One block | every prediction comes from one block, and `verify` recomputes each within a relative 1e-6 | — | same |
+
+**At 30 s the rules give section 13.5 exactly.**
+- With Revilla's fields at T = 30 s, the rules give section 13.5's constants: τ_f {50, ..., 2,000}
+  ms, τ_s {1,000, ..., 50,000} ms (its 33 pairs), the 300-s cutoff and the 5 ms to 30 s window.
+- At T = 10 s the grid is τ_f {20, 50, 100, 200, 500} ms and τ_s {500, 1,000, 2,000, 5,000,
+  10,000} ms.
+
+#### Part 5. The comparisons, the one-cell rule and the verdict
+
+- **P1, the comparisons** (section 13.5's, with amplitudes added):
+  - **a time** passes if |ln(pred/obs)| ≤ ln 1.25 or |pred − obs| ≤ 2 SEM;
+  - **an amplitude** passes if |pred − obs| ≤ max(0.10, 2 SEM), in the paper's definition;
+  - **G_ss/G_0** passes if |pred − obs| ≤ max(0.05, 2 SEM).
+
+  Each comparison records the tolerance that applied.
+- **P2, the SEM.**
+  - An entry's SEM is taken as given.
+  - **An SD becomes SD/√n only where the paper states n and what n counts** (the dispersion's `n`
+    and `n_counts`; D334).
+  - An SD without both, a range, or no dispersion widens nothing, and this is recorded.
+  - The digitizing error is reported and widens nothing.
+- **P3, degenerate fits.** A degenerate predicted fit fails the time and amplitude comparisons at its
+  voltage, with its reasons. Its G_ss is still judged.
+- **P4, the one-cell rule (D334).**
+  - **The windows.** At each held-out magnitude, each observable's + and − acceptance windows are
+    computed from the observations alone (P1's tolerances), never from a prediction:
+    - a time's window is the union of its ln 1.25 band and its 2-SEM band;
+    - a band's window is the observation ± its tolerance.
+  - **The rule.** Under `one_sided`, `other` or `not_stated` (E3), an observable whose two windows
+    are disjoint is reported at both voltages as **confounded by V_m**, neither passed nor failed.
+    Overlapping observables are judged.
+  - **The justification is non-identifiability,** not a claim that V_m gating is real. Unless a
+    protocol is symmetric:
+    - the two polarities differ in the stepped cell's membrane potential as well as in V_j's sign;
+    - a law of V_j alone cannot separate them;
+    - so disjoint windows are equally consistent with an asymmetry in V_j and with an effect of V_m.
+  - **Under `symmetric`,** every comparison is judged.
+- **P5, the minimum judged set.** Two conditions:
+  - at least two held-out voltages each carry both judged times;
+  - wherever the paper reports G_ss at a held-out voltage, at least one G_ss comparison is judged.
+
+  Below this set the verdict is undetermined.
+- **P6, the kinetic verdict (FR-30's), decided in this order:**
+  1. **undetermined**, if fewer than two held-out voltages carry both times. This is decided from
+     the sealed split's structure, before any fit;
+  2. **cannot predict**, if the law leaves its domain at any held-out voltage;
+  3. **undetermined**, if the judged comparisons fall below P5's set;
+  4. **pass**, if (a) every judged G_ss passes, (b) each judged time and amplitude passes at no
+     fewer than ⌊k/2⌋ + 1 of its k judged voltages, and (c) at least 75% of the judged relaxation
+     comparisons pass. Rule (b) means both of two (D311), two of three, and three of four;
+  5. otherwise **fail**.
+
+  The in-sample fit is reported, not judged.
+- **P7, Part S: a separately named steady-state result (D334).**
+  - It is scored only when FR-30's verdict is undetermined. It judges every held-out G_ss under P4,
+    with at least two judged comparisons.
+  - It reads **pass**, **fail**, **cannot predict** or **undetermined**.
+  - FR-30's own verdict stays undetermined whatever Part S reads.
+- **P8, one magnitude held out.** The claim is one interpolated magnitude at both polarities, not
+  two independent tests (D311).
+
+#### Part 6. What a verdict decides, stated before the paper is opened
+
+- **W1, what a pass licenses.** One study's agreement with `junction_series_gates@1`, with one
+  symmetric block, at the held-out magnitudes under this paper's conditions.
+  - D262's development status changes only by the user's decision.
+- **W2, a fail where the failed observables' ± windows overlap.** One symmetric prediction could
+  have passed, so the fit missed (D320's reading). It says nothing against symmetry.
+- **W3, disjoint windows.**
+  - Under a one-cell protocol, P4 reports them as confounded, never as a fail.
+  - Under a symmetric protocol, a fail there is the first independent indication of an intrinsic
+    homotypic asymmetry, and it reopens the polarity check.
+- **W4, Part S.** It says only whether one symmetric steady state predicts the held-out G_ss. It is
+  FR-16's question, and it never qualifies FR-30's law.
+- **W5, undetermined or cannot predict.** No test.
+- **W6, the diagnostics decide nothing.**
+
+#### Part 7. Diagnostics, reported and never judged
+
+- **D1, the windows.** At each held-out magnitude and observable: the + and − windows, whether they
+  are disjoint, and whether P4 applied.
+- **D2, polarity differences.** At every magnitude with both polarities, in both files: obs(+) minus
+  obs(−), the combined SEM, and z.
+  - The SEMs are combined as independent. That is an approximation, since the same pairs usually
+    give both polarities.
+- **D3, the polarity mean.** The prediction against each held-out magnitude's polarity mean.
+- **D4, protocol and V_m.** The protocol type, the stepped cell, the holding levels and the sign
+  map.
+  - The observed sign of G_ss(+) − G_ss(−) is reported at each magnitude, against the V_m
+    hypothesis. Revilla, Bennett and Barrio (2000), doi:10.1073/pnas.97.26.14760, report that
+    "equal depolarization of both cells decreases g(j)". Under a one-cell protocol that predicts
+    G_ss(+) ≤ G_ss(−), + meaning the stepped cell relatively positive.
+  - Unoriented when the sign is `not_stated`.
+- **D5, the in-sample fit.** The fitter's in-sample residuals, as fitted.
+
+#### Part 8. The code at the tag (D308; section 13.6's lesson)
+
+**The modules** (`validation/junction_gate_benchmark/`):
+- **`score.py`,** standard library only: the reader, `check`, `resolve` and `score`. No verdict
+  depends on the engine's code.
+- **`harness.py`:** `conventions`, `predict` and `verify`, with `readout`.
+- **`revilla1999_layout.py`:** the rehearsal's converter of Revilla's spent extraction into this
+  layout.
+- They are generic (D334): a later benchmark of the law reuses them with its own files.
+
+**The layout, binding on the extractor.** Both data files have the same container (section 13.6's
+lesson), and every entry carries all of these keys.
+- **The top level:** `schema` (`fr30-junction-observations@1`), `role` (`train` or `held_out`),
+  `registration`, `paper`, `arm`, E3's `convention`, the `split` and the `observables`, one flat
+  list.
+  - `withheld` is empty in `fit.json`, and it lists E6's summaries in `held_out.json`.
+  - `not_used` lists data left out.
+- **The `split` block:** `rule` (`section 13.7 S0-S7`), `classes_mV` (S0's four classes),
+  `seen_mV`, and `held_out` (`decay_mV`, `steady_mV`).
+- **Each entry:**
+  - `id`, `vj_mV` (the canonical sign, and |V_j| if pooled), `polarity` (`+`, `-` or `pooled`) and
+    the paper's `observable`;
+  - `maps_to` (`tau_fast`, `tau_slow`, `A_fast`, `A_slow`, `G_ss/G_0`, or null), `value` and
+    `units` (`s`, `ms`, `G/G_0` or `fraction`);
+  - `normalization`, for G_ss and amplitudes, and `amplitude_definition`, for amplitudes;
+  - `dispersion`: null, or `type` (`SEM`, `SD` or `range`), `value`, `units`, `n` and `n_counts`;
+  - `n`, `source`, `method` (`printed` or `digitized`) and `digitizing_error`.
+- **`protocol.json`:** `schema` (`fr30-junction-protocol@1`), `role` (`protocol`), `paper`,
+  `convention` and E7's `fields`.
+
+**The reader's checks.** The reader fails closed, and every refusal names key paths only, never a
+value.
+- **K1, the top level:** the schema and role; `observables` as one list, so an object of named
+  lists is refused; and the convention and split blocks.
+- **K2, each entry:** its keys, allowed values and finite numbers; its polarity against its sign;
+  positive times; units suited to the mapping; the normalization and definition where needed; and
+  the dispersion's units.
+- **K3, duplicates:** one entry per (vj_mV, polarity, maps_to), and S0's precedence.
+- **K4, the split:** S0's classes and S1 to S5's held-out magnitudes, recomputed from the union of
+  both files' entries, must equal the declared ones. The two files' blocks must be identical, and
+  `protocol.json`'s convention block equal to theirs.
+- **K5, where entries sit:** no `fit.json` entry at a held-out magnitude, and every `held_out.json`
+  entry at one, with each held-out unit present.
+- **K6, dispersion,** as P2.
+- **K7, errors:** an unexpected error's text is withheld (exit 3).
+
+Every G_ss and amplitude entry must carry the protocol's normalization.
+
+**Stages,** run from a clean snapshot of the tag:
+- `python -m validation.junction_gate_benchmark.score check FIT HELD_OUT PROTOCOL`;
+- `... score resolve FILE --role train|held_out`;
+- `... score score PREDICTIONS HELD_OUT FIT OUT --expect-sha256 HEX`;
+- `python -m validation.junction_gate_benchmark.harness conventions PROTOCOL OUT`;
+- `... harness predict PARAMS CONVENTIONS FIT OUT`. It predicts at both polarities of every
+  held-out magnitude named by `fit.json`'s split, and never opens `held_out.json`;
+- `... harness verify PREDICTIONS CONVENTIONS FIT`.
+
+Every stage prints verdicts, statuses, labels and key paths only. Values go to the output files.
+
+**The tests** (`tests/unit/test_junction_benchmark_harness.py`) use invented files only. They run
+in about 1.5 s on one CPU and compile no world. Each claim has its planted error:
+- **G1:** the passing path, a G_ss off by 0.06, and tau_slow off by 30% at two voltages;
+- **G2:** section 13.6's container;
+- **G3:** SD conversion, which needs both n and n_counts;
+- **G4:** leakage of a held-out magnitude into training;
+- **G5:** the recomputed split, and differing blocks;
+- **G6:** entry checks, with a planted value never printed;
+- **G7:** "more than half";
+- **G8:** the one-cell rule. Disjoint G_ss windows are confounded under `one_sided` and fail under
+  `symmetric`; disjoint τ_slow windows leave the verdict below the minimum judged set; and the
+  confound does not depend on a prediction;
+- **G9:** Part S;
+- **G10:** the conventions, including section 13.5's constants at 30 s and three refusals;
+- **G11:** `verify` against a tampered time;
+- **G12:** no value printed, and `score.py`'s imports from the standard library only.
+
+**The rehearsal on Revilla's spent files** (D334) runs Tag A's whole chain in this layout:
+convert, `check`, `conventions`, `predict` with Revilla's registered parameter block, `verify`, and
+`score`.
+- **What it must reproduce:**
+  - section 13.5's conventions;
+  - the registered `predictions.json` (20ca2a4a...) within `verify`'s tolerance;
+  - D320's six comparison lines, and their verdict.
+- **What it shows of the new rule:** with Revilla's one-cell protocol, P4 confounds nothing, since
+  every ±80 mV window overlaps (D320).
+- Its record is cited in the dated line below, before Tag A.
+
+#### Part 9. Roles and exclusions
+
+- **The extractor (E)** reads the paper and follows E1 to E12. It is a fresh agent.
+- **The harness author (H)** is the polarity check's author (D334), who never fits, predicts or
+  checks.
+  - H wrote part 8's code and tests from this entry alone.
+  - After the seal, H runs `conventions` on `protocol.json` and commits `conventions.json` for
+    Tag B.
+  - H reads `protocol.json` and `fit.json`'s structure, never `held_out.json`'s values or
+    `extraction_notes.md`.
+  - H writes any erratum, from value-free structure logs.
+- **The fitter (F), fresh (D334).**
+  - F works from `fit.json`, `protocol.json` and `conventions.json` alone, and states the kinds
+    before fitting.
+  - F fits @1 to `fit.json` only, and writes `params.json`, hashed in a dated log line.
+  - F evaluates the law at no held-out voltage, and writes no prediction.
+- **The predictor (P), separate (D334).**
+  - From a clean snapshot of Tag B, P runs `predict` and then `verify`, and writes
+    `predictions.json`.
+  - P never opens `held_out.json`, and is neither E, H, F nor C.
+- **The checker (C).**
+  - C wrote no code, erratum or extraction.
+  - From a clean snapshot of Tag B, C runs `verify`, `check`, `resolve` and `score` with
+    `--expect-sha256`, then recomputes every comparison with its own code, and writes the verdict
+    with its disclosures.
+  - **On a refusal, C stops and reports.** The erratum is H's, tagged before any judged score.
+- **The lead** rules and tags, and stays blind to every value until the verdict.
+
+**Exclusions.** They bind F, P and C until C scores. E is held only from the polarity check, until
+sealing.
+- **The fitter is barred** (D334) from D311 and D320, from the polarity check
+  ([JUNCTION_GATE_POLARITY.md](JUNCTION_GATE_POLARITY.md)) and its sources in
+  `/mnt/workspaces/Cells/fr30-next-20261124/`, and from Revilla's extraction.
+- **The paper:** the paper itself and `/mnt/datasets/Cells/papers/incoming/`.
+- **The sealed files:** `held_out.json` (for F and P), `extraction_notes.md` and the sealed
+  digitizers.
+- **Other extractions:** every FR-30 extraction folder.
+  - That includes `fr30-candidates4-extraction/` (Revilla's among them) and
+    `fr30-ekvitorin2018-benchmark/`, two of whose files name this paper.
+- **Revilla's benchmark:** `fr30-benchmark-20261123/`.
+- **Priors and notes:** `lean/`, the source search's `candidates.md`, and the notes named in
+  section 13 and 13.1.
+
+#### Part 10. Order of work and tags
+
+1. **Before Tag A:**
+   - the exposure sweep is completed;
+   - the rehearsal passes;
+   - the lead gates the landing (D223, D229).
+2. **Tag A, before the paper is opened.** The lead tags this entry with its code:
+   `fr30-ekvitorin2016-registered-<date>`.
+3. **The extraction.**
+   - E extracts, recording the PDF's sha256, runs `check` (exit 0) and seals.
+   - The lead records `held_out.json`'s digest in a dated decision entry.
+   - **The branch,** read from the sealed split's structure without values:
+     - two or more held-out voltages carry both times: steps 4 to 7 run for FR-30's verdict;
+     - otherwise, if a steady magnitude is held out: steps 4 to 7 run for Part S alone, and FR-30's
+       verdict is undetermined;
+     - otherwise: undetermined, and nothing further runs.
+4. **Tag B, before any fit.** H runs `conventions`, and the lead tags `conventions.json` as
+   `fr30-ekvitorin2016-conventions-<date>`.
+5. **The fit.** F states the kinds, fits, and writes `params.json`.
+6. **The prediction.** P predicts and verifies.
+7. **The score.** C scores, and the lead's decision entry follows.
+
+Each step expected to run for 10 minutes or more runs detached, with durable logs (AGENTS.md).
+
+#### Part 11. Not decided here
+
+- **The tag names and dates** (part 10).
+- **Retiring section 13.5's modules on main** (`revilla1999.py`, `revilla1999_score.py` and their
+  tests). Their tags keep them. The generic modules reproduce them (part 8), so retiring them is the
+  lead's call under the pre-alpha rule.
+
 ## Sources
 
 - **Read:**
