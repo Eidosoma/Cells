@@ -1,8 +1,9 @@
 # OL6 Protocol D, version 2: the re-registration, with M repaired by the shared rule (registration)
 
 **Status: proposed for the lead's tag, 24 November 2026, before any run of its comparison.** Docs and
-validation only, with no src change. Branch `ol6-protocol-d-v2` from main 0661ccf5. The proposed tag
-is `ol6-protocol-d-v2-registered-2026-11-24`. Its message names the seed ranges of §3.
+validation only, with no src change. Branch `ol6-protocol-d-v2` from main 0661ccf5, with main 9d8c42be
+merged (FR-47's inert-wall landing). The proposed tag is `ol6-protocol-d-v2-registered-2026-11-24`.
+Its message names the seed ranges of §3.
 
 **The decisions it follows.**
 - **D318 (the user, 23 November):** Protocol D is re-registered after FR-43, with M repaired and
@@ -41,17 +42,25 @@ authority.
 - **The detailed form:** `cells.assembly_lineages@2`'s exact events.
 - **Each world's laws:** as protocol_d.json's `engine_models` lists them.
 
-**The engine under test.** The checker runs at the first main head after the tag, with the tagged
-files unchanged.
+**The engine under test is the judged revision:** this registration's merged head, whose src is
+main 9d8c42be's, FR-47's inert-wall landing (tag `fr47-inert-wall-landed-2026-11-24`). The lead pins
+it in the decision entry. The checker runs that revision, with the tagged files unchanged.
 - It records that revision, and every file of `src/cells/models/assembly_lineages_v2/` changed since
   3e50d48d, the first check's head, with each landing's D148 proofs.
 - FR-47's (d) paths (the shell, washes, E2 and the gate factor) are absent from D0–D7 by
   construction. No world here has a prescribed shell, a wash or an E2 place, and the representation
   refuses each outside a shell's world.
 - FR-47's landing ran four existing (d) worlds on main and on its head, and they were bitwise equal.
-- FR-47's inert-wall fix (branch `fr47-inert-wall`, to land after main 1e40fc16) makes the
-  envelope's mask precise. The registered reader takes its count keys from that mask. The fix leaves
-  every mask of D0–D7, at every rung, as it was. §10's own check verifies that at the run's head.
+- FR-47's inert-wall fix, landed at 9d8c42be and merged here, makes the envelope's mask precise.
+  The registered reader takes its count keys from that mask, and every mask of D0–D7, at every
+  rung, is as it was.
+- **Rerun at the merged head 0087818d** (`/mnt/workspaces/Cells/ol6-protocol-d-v2-20261124/
+  at-0087818d/`):
+  - §8's checks: 28 of 28 pass;
+  - (d)'s margins, the linear-noise table and the classification: protocol_d_v2.json, registered
+    again from them, is byte for byte the file tagged here;
+  - (d)'s half of the constant rule: 16, 16, 11 and 11 pairs bitwise, and the 12.5 nm reader
+    checks all hold.
 
 ## 1. Why M is repaired
 
@@ -124,16 +133,18 @@ this registration, never from the first:
 - **Unused, as far as the record shows.**
   - The author has run nothing on either range, and nothing will be run on them before the
     comparison. In particular, D7's (d) runs are not pre-screened for the clock bound (§7).
-  - No number of either range appears anywhere in the repository (docs/, validation/, tests/,
-    src/ and scripts/), in any context.
+  - Outside this registration's three files, no number of either range appears anywhere in the
+    repository (docs/, validation/, tests/, src/ and scripts/), in any context, at the judged
+    revision.
   - Nor does any appear as a number in the run folders of OL6 and FR-46 to FR-48 under
     /mnt/workspaces/Cells (JSON, Python, shell and Markdown files; searched 24 November). The only
     matches there are digits after the decimal point of five timestamps' seconds.
 - **Why the ranges moved from those proposed at dbf17e84 (640001 and 740001).** A (d) run of D7
   consumes its seed. Its pore threshold is drawn from the replica's own stream:
-  - `_Run.__init__` (rate_equations.py:1472): `self.base_key = streams.base_key_data(x.seed,
+  - `_Run.__init__` (rate_equations.py:1510 at the judged revision): `self.base_key =
+    streams.base_key_data(x.seed,
     x.environment, x.lineage, x.branch)`;
-  - `_Run.draw_threshold` (rate_equations.py:1517): `u, energy = pore_clock.threshold(
+  - `_Run.draw_threshold` (rate_equations.py:1555): `u, energy = pore_clock.threshold(
     self.base_key, key, 0)`;
   - `pore_clock.threshold` (pore_clock.py:70–74): domain 7 (`"pore"`), the vesicle's key, counter 0.
 
@@ -476,10 +487,9 @@ alone (`cost` in the JSON).
   It reads the first registration, and erratum 1, which §7 folds in. §7 restates erratum 2's rules,
   so the checker need not read erratum 2, whose §1 and §4 quote the first check's plant findings in
   (d) alone. This document quotes none of the first results.
-- **Before any run,** at its own head, it runs `python -m validation.assembly_lineages_v2.
-  protocol_d_v2 check` and stops if any check fails. Main may move between the tag and the run, and
-  the reader's keys come from `rate_equations.enveloped`, so the check verifies them at the run's
-  head.
+- **Before any run,** at the judged revision, it runs `python -m validation.assembly_lineages_v2.
+  protocol_d_v2 check` and stops if any check fails. The reader's keys come from
+  `rate_equations.enveloped`, so the check verifies them there.
 - **Its driver** may be its own, using the registered functions, as the first check's was.
 - **It runs detached,** with durable logs (AGENTS.md), on the CPUs the lead assigns.
 - **It judges M with `judge_world`** at each world M reads, and P-D8 with `pd8` on D6's honest runs.
