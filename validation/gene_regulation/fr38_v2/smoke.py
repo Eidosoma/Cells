@@ -326,10 +326,132 @@ def smoke(out, sample=None):
     }
     if not results["P9's V0 patch on the invented D"]["ok"]:
         failed.append("P9")
+    failed += coarse_rungs_and_twins(out, f, variants, results)
+    failed += made_up_b(out, results)
+    failed += own_checks(records, h, results)
     summary = dict(kind="cells.fr38_v2.smoke@1", what=__doc__.splitlines()[0],
                    failed=failed, seconds=timing, results=results)  # fmt: skip
     (out / "smoke.json").write_text(json.dumps(summary, indent=1, default=str) + "\n")
     return summary
+
+
+# SPEC.md §4: zero in the blank at every output by the model's structure (READOUTS.md's names)
+BLANK_ZEROS = ("H_tx_release", "int_Q_tx", "int_J_I_tx", "int_S_tx", *(f"C_tx_{j}" for j in
+               range(1, 9)), "E_tx", "W_tx", "H_tx", "int_Q_tx_release_durable",
+               "int_Q_tx_release_short_lived", "H_rel_tx_release_durable",
+               "H_rel_tx_release_short_lived", *(f"label_{r}_{c}" for r in ("R", "R_s")
+               for c in ("pre", "win", "post")))  # fmt: skip
+# A made-up B (not SPEC.md's): A1 with another release, rates, window and a short horizon
+MADE_UP_B = replace(worlds.ARM_B, tau_s=60.0, p=0.4, k_d=1 / 500, k_s=1 / 100,
+                    window=(120.0, 360.0), horizon=600.0, every=30.0,
+                    samples=(360.0, 480.0, 600.0))  # fmt: skip
+B_SERIES = ("n_X", "n_N", "n_M", "n_A", "n_ATP", "n_ADP", "n_Pi", "n_R", "n_R_s", "n_P",
+            "H_tx_release", *(f"C_tx_{j}" for j in range(1, 9)), "E_tx", "W_tx", "F_pol",
+            "int_J_I_tx", "int_S_tx", "int_Q_tx", "int_Q_tx_release_durable",
+            "int_Q_tx_release_short_lived", "int_D_R", "int_D_R_s", "H_tx", "H_deg_R", "H_deg_R_s",
+            "H_rel_tx_release_durable", "H_rel_tx_release_short_lived", "G_minus_G0", "F_rib",
+            *(f"{x}_{c}" for c in ("tl", "tl_s") for x in ("E", "W", "int_J_I", "int_S", "int_Q")),
+            *(f"C_{c}_{j}" for c in ("tl", "tl_s") for j in range(1, 9)), "int_D_P", "int_J_C",
+            "H_tl", "H_deg_P", "H_rc",
+            *(f"label_{r}_{c}" for r in ("R", "R_s")
+              for c in ("resyn", "pool0", "pre", "win", "post")))  # fmt: skip
+
+
+def _plus_zero(values):
+    return all(v == 0.0 and math.copysign(1.0, v) > 0 for v in values)
+
+
+def coarse_rungs_and_twins(out, f, variants, results):
+    """The invented C and D at the coarse rungs (2 and 1 s), each run and its blank, with the
+    blank's structural zeros +0.0 by their bits at every rung, and each one's twin at h bit for bit
+    in its physical readouts and checks."""
+    failed = []
+    for key, g in variants.items():
+        rows = {}
+        for dt in (2.0, 1.0, 0.5):
+            for run in ("p_sched returned", "blank returned"):
+                record = campaign.one(worlds.hold("invented", run, dt=dt, f=g),
+                                      family=f"invented {key}", run=run)  # fmt: skip
+                if record.get("refused"):
+                    rows[f"{run} dt={dt:g}"] = dict(refused=record["refusal"][:300], ok=False)
+                    failed.append(f"invented {key} {run} at {dt:g} s refused")
+                    continue
+                zeros = run.startswith("blank") and all(
+                    _plus_zero(record["readouts"][name]) for name in BLANK_ZEROS
+                )
+                rows[f"{run} dt={dt:g}"] = dict(refused=False, ok=True,
+                                                blank_zeros_plus_zero=zeros or None)  # fmt: skip
+                if run.startswith("blank") and not zeros:
+                    rows[f"{run} dt={dt:g}"]["ok"] = False
+                    failed.append(f"invented {key} blank zeros at {dt:g} s")
+                if dt == 0.5 and run == "p_sched returned":
+                    honest = record
+        unlabelled = "p_sched returned" + worlds.UNLABELLED
+        twin = campaign.one(worlds.hold("invented", unlabelled, dt=0.5, f=g),
+                            family=f"invented {key}", run=unlabelled)  # fmt: skip
+        same = _identical(_physical(honest["readouts"]), twin["readouts"])
+        same = same and twin["checks"] == honest["checks"]
+        rows["twin at h, bit for bit"] = dict(ok=same)
+        if not same:
+            failed.append(f"invented {key} twin")
+        results[f"the invented {key} at every rung, its blank's zeros and its twin"] = rows
+    return failed
+
+
+def made_up_b(out, results):
+    """A made-up B (MADE_UP_B): both machine options at h, the returned one's twin, P4's label at
+    completion, and the returned run at 2 s, the coarsest rung. Every arm-B readout of READOUTS.md
+    §1 has one value per output; the twin equals its run bit for bit; G's identity and §9.7's
+    identities hold at rounding (release_check.energy and identities)."""
+    failed, rows, records = [], {}, {}
+    p = f"p={MADE_UP_B.p:g}"
+    jobs = [(f"{p} returned", 0.5, None), (f"{p} held", 0.5, None),
+            (f"{p} returned{worlds.UNLABELLED}", 0.5, None), (f"{p} returned", 2.0, None),
+            (f"{p} returned", 0.5, {"label_at": "completion"})]  # fmt: skip
+    for run, dt, edits in jobs:
+        name = f"{run} dt={dt:g}" + (" P4" if edits else "")
+        record = campaign.one(worlds.b(run, dt=dt, edits=edits, f=MADE_UP_B), family="made-up B",
+                              run=run)  # fmt: skip
+        if record.get("refused"):
+            rows[name] = dict(refused=record["refusal"][:300], ok=False)
+            failed.append(f"made-up B {name} refused")
+            continue
+        records[name] = record
+        x = record["readouts"]
+        twin_run = run.endswith(worlds.UNLABELLED)
+        wanted = [s for s in B_SERIES if not (twin_run and s.startswith("label_"))]
+        missing = [s for s in wanted if len(x.get(s, ())) != len(record["t"])]
+        checks = release_check.Checks()
+        release_check.energy(checks, name, record)
+        release_check.identities(checks, name, record, run.split(" ")[1])
+        bad = [r["check"] for r in checks.rows if not r["ok"]]
+        rows[name] = dict(refused=False, missing=missing, failed_checks=bad,
+                          ok=not missing and not bad)  # fmt: skip
+        if missing or bad:
+            failed.append(f"made-up B {name}")
+    labelled, twin = records.get(f"{p} returned dt=0.5"), records.get(
+        f"{p} returned{worlds.UNLABELLED} dt=0.5")  # fmt: skip
+    same = bool(labelled and twin) and _identical(_physical(labelled["readouts"]),
+                                                  twin["readouts"])  # fmt: skip
+    same = same and twin["checks"] == labelled["checks"]
+    rows["the twin, bit for bit"] = dict(ok=same)
+    if not same:
+        failed.append("made-up B twin")
+    results["a made-up B: its readouts, identities, twin and P4"] = rows
+    return failed
+
+
+def own_checks(records, h, results):
+    """release_check's §9.7 identities need A1's pool, so on the invented hold runs (another pool)
+    only its energy check runs: G's identity and the routes' heats at rounding."""
+    checks = release_check.Checks()
+    for (run, dt), record in records.items():
+        if dt == h:
+            release_check.energy(checks, f"invented {run}", record)
+    bad = [r["check"] for r in checks.rows if not r["ok"]]
+    results["release_check's energy check on the invented runs at h"] = dict(
+        checks=len(checks.rows), failed=bad, ok=not bad)  # fmt: skip
+    return [f"energy: {b}" for b in bad]
 
 
 def main(argv=None):
