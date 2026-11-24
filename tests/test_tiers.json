@@ -383,7 +383,8 @@
   "/mnt/workspaces/Cells/fr47-build-20261124/measure-4a533a2c/measured.json",
   "/mnt/workspaces/Cells/fr47-build-20261124/measure-94bf2a97/measured.json",
   "/mnt/workspaces/Cells/fr47-build-20261124/measure-c0aa0bd3/measured.json",
-  "/mnt/workspaces/Cells/fr17-sparse-20261123/measure-478664a0/measure/measured.json"
+  "/mnt/workspaces/Cells/fr17-sparse-20261123/measure-478664a0/measure/measured.json",
+  "/mnt/workspaces/Cells/charge-anchor-tolerance-20261124/measure-bb7afe7d/measured.json"
  ],
  "measured_provenance": [
   {
@@ -3273,6 +3274,14 @@
    "root": "/mnt/workspaces/Cells/fr17-sparse-20261123/measure-478664a0/wt",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-24T16:49:18+00:00"
+  },
+  {
+   "git_revision": "bb7afe7d7dd218c3a590b9a27e539533d494ae2d",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/charge-anchor-tolerance-20261124/snapshot-bb7afe7d",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-24T13:53:49+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -4090,10 +4099,10 @@
    },
    {
     "file": "tests/unit/test_component_net_charge.py",
-    "seconds": 13.81,
+    "seconds": 16.07,
     "exit_code": 0,
     "counts": {
-     "passed": 11
+     "passed": 29
     }
    },
    {
