@@ -595,18 +595,52 @@ def _pore_refusals(world, holds):
 
 
 def enveloped(world, exempt=None):
-    """[places] bool: the finite places some rate reads (§1.5): every place of a step, and every
-    membrane place when a step has the membrane locus, a rate factor reads the membrane, or a
-    geometric extent reads the footprint W; less `exempt`'s places (E2's, FR-47), when given."""
+    """[places] bool: the finite places whose count some rate or the geometry reads (§1.5), less
+    `exempt`'s places (E2's, FR-47), when given. Held places hold no count. A place is read:
+    1. **as a step's reactant or product,** by its law's activity (mass_action.limit_log_direction,
+       exchange.geometric_log_direction);
+    2. **through the membrane total N, which sums every finite membrane place,** where a law reads
+       N:
+       - a step with a membrane place on either side: the reverse or forward direction's
+         membrane normalisation 1/ff(N − c, r) (both laws), and ideal mixing's −ln(N − c) in that
+         place's μ, which the step's ΔF reads;
+       - a mass-action step at the membrane locus: its extent (N − c + 1)/(N − c)^r
+         (mass_action.limit_log_direction). A geometric law's extent comes from the geometry
+         instead (kernel.encounter_extent, kernel.shell_extent);
+       - the transition-state factor: its fractions m_j/N over every membrane molecule
+         (transition_state.log_factor);
+    3. **by the gate factor, only its forms' places:** its fractions are over the gate's own forms
+       (gate_factor.log_factor), so no other wall species dilutes or reads it;
+    4. **by a bilayer's footprint W(n) = Σ k_i n_i,** which sums every membrane place: the
+       extents, the floor, the lumen's tension and kink, and the pore law (kernel.encounter_extent,
+       lumen.tension).
+
+    **A prescribed shell reads no wall count.** Its extent is the constant A_sh·ρ0
+    (kernel.shell_extent; prescribed_shell.py: the wall's counts set neither its area nor its
+    lumen), and cells.shell_permeation@1 moves no membrane molecule. So a wall species that no step,
+    factor or law reads (an inert marker) is outside the envelope (FR-47's inert-wall fix). Every
+    other world's places are enveloped as before."""
+    registry = law_registry.active()
     index = {p.name: i for i, p in enumerate(world.places)}
+    membrane = [i for i, p in enumerate(world.places) if p.phase == world_rules.MEMBRANE]
     out = [False] * len(world.places)
-    membrane_read = world.rate_factor is not None or world.geometry is not None
+    total_read = world.geometry is not None and world.geometry[0] == BILAYER_GEOMETRY  # rule 4
     for step in world.steps:
-        for name, _ in (*step.reactants, *step.products):
+        names = [name for name, _ in (*step.reactants, *step.products)]
+        for name in names:  # rule 1
             out[index[name]] = True
-        membrane_read |= step.locus == world_rules.MEMBRANE
+        touches = any(index[name] in membrane for name in names)
+        geometric = getattr(registry.lookup(step.law), "extent", "locus") == "geometric"
+        total_read |= touches or (step.locus == world_rules.MEMBRANE and not geometric)  # rule 2
+    if world.rate_factor is not None:
+        if world.rate_factor[0] == GATE_FACTOR:  # rule 3
+            forms = set(world.rate_factor[1]["forms"])
+            for i in membrane:
+                out[i] |= world.places[i].species in forms
+        else:  # rule 2: a factor over the membrane's composition reads N
+            total_read = True
     for i, place in enumerate(world.places):
-        if place.phase == world_rules.MEMBRANE and membrane_read:
+        if place.phase == world_rules.MEMBRANE and total_read:
             out[i] = True
         if place.held:
             out[i] = False
