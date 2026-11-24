@@ -45,8 +45,10 @@ and 33,600 lines.
     those families' IDs are defined in `definitions/specs.py`, outside legacy.
   - This is question Q1.
 
-**What "port" means here (§2).** Bit for bit is attainable only by a faithful relocation: the code moves
-out of `legacy/` under neutral names, its dispatch joins the live registries, and its ID is minted. That is
+**What "port" means here (§2).** Bit for bit is attainable only by a faithful relocation.
+- The code moves out of `legacy/` under neutral names, and its ID is minted.
+- Its dispatch joins the live registries: the parse entry at once, the subclass-ordered entries at the
+  deletion. That is
 D188's scripted move, run for the kept families, with its import rewriter and verifier. A re-expression on
 the modular core (`resolved_pump_tissue@3`, the composite, operators and kinds) cannot be bitwise. Its
 blockers today include:
