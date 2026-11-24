@@ -11015,3 +11015,37 @@ fix's citation of the Lean claim, merged at 29d69f1d.
 
 **FR-54** (passive neutral diffusion against the exact two-well solution, then a wash at a diffusion-connected node)
 is **high priority, the user's decision.** It takes the next free builder after FR-50.
+
+## D342: FR-30 stays undetermined with the Supporting Material, and stays development-only; FR-38 v2's roles are restored; a branch pushed by mistake is deleted after its landing
+
+2026-11-24, about 15:23 UTC.
+
+**FR-30: the Supporting Material doesn't decide it.** The extractor read it under §13.7 amendment 1.
+- **mmc1** (6 pages) is almost all single-channel work. Its only wild-type macroscopic decay record (Fig. S1 C's
+  inset) is under halothane, a treated arm (E1), and is not fitted (E2).
+- **mmc2** (20 pages) is the article followed by mmc1. Its pages and images are identical to theirs.
+- **So Part 12's condition is not met.** The benchmark is undetermined by structure, now for the paper with its
+  Supporting Material.
+- **The seal:** no data file was written, and no held-out digest exists. The new folder
+  `/mnt/workspaces/Cells/fr30-ekvitorin2016-extraction-a1/` is read-only, and its SHA256SUMS digest begins 5f410db7.
+  It stays barred like the first, since its scratch holds the paper's text and figures.
+- **FR-30 stays development-only (D262).** As the user's choice of 24 November provides, the next step is a
+  metadata-only search for another source. It is registered before anything is opened, and every paper the record
+  names as exposed is excluded. It queues behind FR-50's builder for an agent slot.
+
+**FR-38 v2's roles are restored.**
+- The lead's brief gave one agent both the builder's and the judge's role. The protocol
+  (`docs/FR38_SECOND_COMPARISON_PROTOCOL.md` §5) requires a different agent for each.
+- **The builder's reader is retired unused and never tagged.** It was 9dc73d57, and history keeps it.
+- **The builder continues as builder:** the worlds, and `engine_run.py`'s exports for families C and D.
+- **A new judge, blind to the first comparison and to the builder's retired reader, writes its own reader and
+  mapping.** It starts when a slot frees.
+
+**A branch was pushed by mistake.**
+- The OL6 builder pushed `fr47-inert-wall` to origin at 14:37 UTC. Its own delete was refused by the safety
+  check, and nobody retried it.
+- The branch holds only the inert-wall fix's commits, which passed the privacy scan.
+- **The user's decision:** the lead deletes it once the fix has landed on main. If the deletion is refused, the user
+  is told.
+
+**FR-50's phase-1 builder has started.** Its judge comes first (D308), on the branch from FR-51's head.
