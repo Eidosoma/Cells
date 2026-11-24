@@ -33,7 +33,12 @@ from cells.execution.windows import WindowPolicy, iter_windows, run_windowed
 from cells.models import surface_pump
 from cells.numerics import surface_imex as imex
 from cells.records.window_io import write_windowed_run
-from tests.window_row_check_fixtures import assert_agreement, assert_same_windows, windows
+from tests.window_row_check_fixtures import (
+    assert_agreement,
+    assert_same_windows,
+    require_deterministic_gpu,
+    windows,
+)
 from validation.tissue import surface_pump_fixtures
 
 # The fixture's grid to 1.2 ms: 0.1 ms steps with its pump change at 0.73 ms, 13 steps.
@@ -205,6 +210,7 @@ def admitted_on_a_gpu(monkeypatch, spec):
     (row_checks.GPU_QUALIFIED; D330): these rows test the band's routing on a GPU backend, which
     no model's checks change. The composite's own GPU rows are in
     test_window_row_checks_composite.py."""
+    require_deterministic_gpu()
     key = (surface_pump.MODEL_ID, spec.execution.field_solver)
     qualified = {**row_checks.GPU_QUALIFIED, key: frozenset(surface_pump.LEDGERS)}
     monkeypatch.setattr(row_checks, "GPU_QUALIFIED", qualified)

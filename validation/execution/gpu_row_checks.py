@@ -8,8 +8,9 @@ pair: WINDOWS windows in host mode, then the same windows in device mode, in one
 both modes compile the same program with the same compiler state.
 - C1: each window's times, history, observations and final state, compared by bytes between the
   modes; any array that differs is named.
-- C2, the host-against-device spread: for each window the device decided and each ledger, the
-  host's ratio |residual| / bound over the window's rows against the device's. The host's is
+- C2, the host-against-device spread: for each window and each ledger, the host's ratio
+  |residual| / bound over the window's rows against the device's (G2 reads the windows the device
+  decided; a window handed back is recorded too, for the diagnosis). The host's is
   computed with NumPy from the model's own host ledger functions (balances, magnitudes,
   ledger_limits) and its device-check constants, as the device's program computes its own; the
   largest difference over windows is the spread, in units of the bound. Each diagnostic's device
@@ -19,9 +20,12 @@ both modes compile the same program with the same compiler state.
   against row_checks.HOST_DECIDES_ABOVE.
 long: STEPS steps in device mode only: every window's outcome and ratios, and every SAMPLE-th
 window's C2 from its own rows.
-compare: two saved final states (pair --state), array by array: identical bytes, else the largest
-difference relative to the array's scale (its largest magnitude) and the number of entries that
-differ. For the spread between processes or devices; no value is printed.
+twice: WINDOWS windows in device mode, twice in one process (a diagnostic of run-to-run
+determinism: one mode, one compiled program, two runs), compared by bytes window by window.
+compare: two saved final states (pair --state, or one window's of pair --states), array by array:
+identical bytes, else the largest difference relative to the array's scale (its largest
+magnitude), the index where it lies and the number of entries that differ. For the spread between
+processes or devices; no value is printed.
 Both record each mode's wall and CPU seconds per window (and ms per step after the first window),
 the check program's temporary bytes, the device's peak bytes in use, and SHA-256 digests of each
 device-mode window's arrays, for comparing processes. Ratios, digests, timings and memory only:
@@ -175,6 +179,7 @@ def compare(out, a_path, b_path):
             report[k] = dict(
                 identical=False,
                 relative_to_scale=float(np.max(difference)) / scale if scale else float("inf"),
+                largest_at=[int(i) for i in np.unravel_index(np.argmax(difference), x.shape)],
                 entries_differing=int(np.count_nonzero(x != y)),
                 entries=int(x.size),
             )
@@ -191,7 +196,19 @@ def compare(out, a_path, b_path):
     return summary
 
 
-def run(action, out, definition, *, windows, steps, width, recording, sample_every, state=None):
+def run(
+    action,
+    out,
+    definition,
+    *,
+    windows,
+    steps,
+    width,
+    recording,
+    sample_every,
+    state=None,
+    states=None,
+):
     import jax
 
     jax.config.update("jax_enable_x64", True)
@@ -203,7 +220,7 @@ def run(action, out, definition, *, windows, steps, width, recording, sample_eve
 
     raw = json.loads(Path(definition).read_text())
     dt = raw["execution"]["dt"]
-    count = windows * width if action == "pair" else steps
+    count = windows * width if action in ("pair", "twice") else steps
     raw["experiment"]["end_time"] = count * dt
     raw["experiment"]["observation_times"] = [0.0, count * dt]
     spec = parse_spec(raw)
@@ -222,6 +239,8 @@ def run(action, out, definition, *, windows, steps, width, recording, sample_eve
             "JAX_ENABLE_COMPILATION_CACHE", "XLA_FLAGS", "XLA_PYTHON_CLIENT_PREALLOCATE",
             "CUDA_VISIBLE_DEVICES", "JAX_PLATFORMS")},
     )  # fmt: skip
+    if action == "twice":
+        return _twice(out, record, spec, WindowPolicy(width, recording, "device"))
     modes = ("host", "device") if action == "pair" else ("device",)
     seen, laps = {}, {}
     for mode in modes:
@@ -261,14 +280,21 @@ def run(action, out, definition, *, windows, steps, width, recording, sample_eve
         host_decided={r: sum(o["handed_back"] == r for o in outcomes) for r in reasons},
         max_device_ratio={k: max(o["ratios"][k] for o in outcomes) for k in record["ledgers"]},
     )
-    spreads = [w["c2"] for w in (record.get("windows") or laps["device"]) if w.get("c2")]
+    # G2 and G4 read every window, those the device handed back included (the lead's ruling).
+    everything = [w["c2"] for w in (record.get("windows") or laps["device"]) if w.get("c2")]
+    decided = [s for s in everything if s["decided_by"] == "device"]
     record["c2_summary"] = dict(
-        windows=len(spreads),
+        windows=len(everything),
         max_spread={
-            k: max((s["spread"][k] for s in spreads), default=None) for k in record["ledgers"]
+            k: max((s["spread"][k] for s in everything), default=None) for k in record["ledgers"]
         },
-        criteria_failed=sorted({c[0] for s in spreads for c in s["criteria"] if c[3] is False}),
-        criteria_undeclared=sorted({c[0] for s in spreads for c in s["criteria"] if c[3] is None}),
+        max_spread_device_decided={
+            k: max((s["spread"][k] for s in decided), default=None) for k in record["ledgers"]
+        },
+        criteria_failed=sorted({c[0] for s in everything for c in s["criteria"] if c[3] is False}),
+        criteria_undeclared=sorted(
+            {c[0] for s in everything for c in s["criteria"] if c[3] is None}
+        ),
     )
     temp = [w for w in seen["device"] if w is not None]
     record["memory"] = dict(
@@ -277,6 +303,14 @@ def run(action, out, definition, *, windows, steps, width, recording, sample_eve
     )  # fmt: skip
     if action == "long":
         record["memory"]["check_temp_bytes"] = laps["device"][-1].get("check_temp_bytes")
+    if states and temp:  # Each device-mode window's final state, for compare only.
+        Path(states).mkdir(parents=True, exist_ok=True)
+        for k, window in enumerate(temp):
+            fields = window.final.state._asdict().items()
+            np.savez(
+                Path(states) / f"window-{k}.npz", **{f"final.{n}": np.asarray(v) for n, v in fields}
+            )
+        record["states_saved"] = str(states)
     if state and temp:  # The last device-mode window's final state, for compare only.
         final = temp[-1].final
         np.savez(state, **{f"final.{k}": np.asarray(v) for k, v in final.state._asdict().items()})
@@ -295,6 +329,28 @@ def run(action, out, definition, *, windows, steps, width, recording, sample_eve
     return record
 
 
+def _twice(out, record, spec, policy):
+    """Device mode twice in one process: per window, the arrays that differ between the runs."""
+    from cells.execution.windows import iter_windows  # noqa: PLC0415
+
+    runs = [list(iter_windows(spec, policy)) for _ in range(2)]
+    record["windows"] = []
+    for a, b in zip(*runs, strict=True):
+        x, y = dict(arrays(a)), dict(arrays(b))
+        record["windows"].append(
+            dict(
+                steps=len(a.times) - 1,
+                differs=sorted(k for k in x if x[k].tobytes() != y[k].tobytes()),
+                digests=[digest(a)[0], digest(b)[0]],
+            )
+        )
+    record["identical"] = all(not w["differs"] for w in record["windows"])
+    Path(out).write_text(json.dumps(record, indent=1, default=str))
+    print(json.dumps(dict(action="twice", identical=record["identical"],
+                          differing=[len(w["differs"]) for w in record["windows"]])))  # fmt: skip
+    return record
+
+
 def _outcome(window):
     o = window.row_checks
     return dict(decided_by=o.decided_by, handed_back=o.handed_back, ratios=dict(o.ratios),
@@ -305,6 +361,7 @@ def _c2(model, spec, p, constants, window, host_diagnostics):
     host = host_ratios(model, spec, p, constants, window)
     device = dict(window.row_checks.ratios)
     return dict(
+        decided_by=window.row_checks.decided_by,
         host_ratios=host,
         spread={k: abs(host[k] - device[k]) for k in host},
         criteria=criteria(spec, host_diagnostics, window.diagnostics),
@@ -315,7 +372,7 @@ def _device_window(model, spec, p, constants, window, *, sample):
     """The long run's record of one device-mode window (C2 on every SAMPLE-th)."""
     out = dict(outcome=_outcome(window), digest=digest(window)[0],
                check_temp_bytes=window.row_checks.temp_bytes)  # fmt: skip
-    if sample and window.row_checks.decided_by == "device":
+    if sample:
         first = window.final.step_index - (len(window.times) - 1)
         from cells.execution.runner import check_steps  # noqa: PLC0415
 
@@ -342,19 +399,19 @@ def _pair(model, spec, p, constants, host, device):
         whole, each = digest(d)
         item = dict(steps=len(d.times) - 1, c1_differs=differs, digest=whole, digests=each,
                     outcome=_outcome(d))  # fmt: skip
-        if d.row_checks.decided_by == "device":
-            item["c2"] = _c2(model, spec, p, constants, d, h.diagnostics)
+        item["c2"] = _c2(model, spec, p, constants, d, h.diagnostics)
         out.append(item)
     return out
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    parser.add_argument("action", choices=("pair", "long", "compare"))
+    parser.add_argument("action", choices=("pair", "long", "twice", "compare"))
     parser.add_argument("out")
     parser.add_argument("definition", help="a definition (pair, long), or state A (compare)")
     parser.add_argument("other", nargs="?", help="state B (compare)")
     parser.add_argument("--state", help="pair: save the last window's final state here")
+    parser.add_argument("--states", help="pair: save each window's final state in this folder")
     parser.add_argument("--windows", type=int, default=8)
     parser.add_argument("--steps", type=int, default=20000)
     parser.add_argument("--width", type=int, default=32)
@@ -367,7 +424,8 @@ def main(argv=None):
         compare(a.out, a.definition, a.other)
         return
     run(a.action, a.out, a.definition, windows=a.windows, steps=a.steps, width=a.width,
-        recording=a.recording, sample_every=a.sample_every, state=a.state)  # fmt: skip
+        recording=a.recording, sample_every=a.sample_every, state=a.state,
+        states=a.states)  # fmt: skip
 
 
 if __name__ == "__main__":

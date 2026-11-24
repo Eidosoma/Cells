@@ -873,6 +873,14 @@ live retiring operator stays refused on any backend.
   capacitor products are its pairwise folds; under version 2 they are a dense product.
 - **Not listed:** version 2 and version 3 on any model, and every other model. Their GPU spread is
   unmeasured.
+- **Deterministic ops are required** (`row_checks.deterministic_ops`; the lead's ruling, D335). On a
+  GPU, XLA adds scatter-adds atomically, in an order that varies between runs, and the composite's
+  operators accumulate with them. Block 2 found host and device mode differing in the amounts and the
+  operators' ledgers, while the sparse solver's field arrays (no scatter) agreed. So admit refuses GPU
+  device mode unless XLA_FLAGS sets `--xla_gpu_deterministic_ops=true`. That check is a tripwire: it
+  reads XLA_FLAGS when admit runs and cannot see what XLA itself parsed. The guard is the bitwise
+  evidence of G1 and G6 under the flag. In the installed XLA the flag "guarantees run-to-run
+  determinism on GPU", and its deterministic mode disables timing-based autotuning.
 
 ### 10.2 The criteria
 
@@ -881,9 +889,16 @@ GPU_CRITERIA.txt`, approved by the lead). On GJ-N1's 25 × 25 field at D = 0 (dt
 D = 1e-13 (dt 1/128 s), with `validation/execution/gpu_row_checks.py`:
 - **G1 (C1):** 8 windows of 32 steps per D, host mode then device mode in one process; every array
   identical by bytes.
-- **G2 (C2):** for each window the device decides and each ledger, |host ratio − device ratio| ≤ 0.1,
-  both ratios |residual| / bound over the window's rows; the host's from the model's own NumPy
-  ledger functions.
+- **G2 (C2):** for each window the device decides and each ledger, the spread |host ratio − device
+  ratio|, both ratios |residual| / bound over the window's rows, the host's from the model's own
+  NumPy ledger functions. As amended before any L4 measurement (the lead's ruling): each ledger's
+  largest spread on the L4 is at most min(0.4, max(0.1, 1.5 × the CPU's on the same definition)).
+  The GPU must be no worse than the CPU-qualified device mode, and the cap of 0.4 keeps every
+  decision safe: a window the device accepts at 0.5 lies at most 0.9 of its bound on the host. The
+  first declared bound, 0.1, failed on the CPU itself. In the field's first window the bound is still
+  the bare atol at steps 0 and 1, and the rounding noise of a 625-cell global sum is a large fraction
+  of it: the "total" ledger read 0.281 on the host and 0.088 on the device (a spread of 0.194),
+  falling to at most 0.003 from window 2.
 - **G3 (C3):** the GPU rows (`CELLS_TEST_GPU=1`) of `test_window_row_checks.py` and
   `test_window_row_checks_composite.py`.
 - **G4:** 20,000 steps at D = 1e-13 in device mode: no refusal, G2 on every 50th window, and the
@@ -902,7 +917,27 @@ in units of the bound, and the old criterion's results are reported beside it.
 
 ### 10.3 The evidence
 
-Pending (the L4 blocks of D330).
+**Block 1, the host core (12:48–12:54 UTC; `gpu/block1/`).** It asked why the field stepped at
+21.2 ms on the L4 on 23 November and at 13.1 ms the next night, with the same driver, world and
+field solver (version 2, D = 1e-13, the vector path, the host thread on CPU 6).
+- **The program is identical.** The traced programs and their constants are byte-identical between
+  the two snapshots (31fde682 and 044f07e6), and so is the device's peak memory.
+- **The host core sets the step.** The L4 step on this path is bound by its host thread, which
+  launches every kernel and waits on the device (its CPU time equals its wall time). Three arms, one
+  process each:
+  - snapshot 31fde682, CPU 6's hyperthread sibling (CPU 22) 15% busy: 15.6 ms per step, a 60 s
+    compile, 2.0 s of window preparation;
+  - snapshot 044f07e6, CPU 22 fully busy with another process: 19.3 ms, 88 s, 3.1 s;
+  - snapshot 044f07e6, a busy loop on CPU 22: 20.3 ms, 97 s, 3.3 s.
+  - A busy sibling slows the step about 1.3×, and compile and preparation about 1.5×. The 21.2 ms
+    run has that profile, and the 13.1 ms run had both CPUs quiet.
+  - **So an L4 run's host thread needs a whole physical core,** its sibling idle.
+- **The kernels differ between processes.** With metadata and source tables removed, the optimized
+  HLO of the window program (2.7 MB) differs in 16–27 lines between any two processes, one snapshot
+  or two. Each difference is a reduction that XLA's autotuner emitted either as a Triton kernel or
+  with its native emitter (24, 24 and 5 Triton fusions in the three arms). Some are f64 reductions,
+  so an unpinned rerun may differ at rounding. The autotune results can be pinned
+  (`--xla_gpu_load_autotune_results_from`): registered L4 runs load a fixed file (the lead's ruling).
 
 ## Sources
 

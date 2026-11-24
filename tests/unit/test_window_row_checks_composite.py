@@ -18,7 +18,12 @@ from cells.definitions.specs import parse_spec
 from cells.execution import row_checks
 from cells.execution.windows import WindowPolicy, run_windowed
 from cells.registry.models import get_model
-from tests.window_row_check_fixtures import assert_agreement, assert_same_windows, windows
+from tests.window_row_check_fixtures import (
+    assert_agreement,
+    assert_same_windows,
+    require_deterministic_gpu,
+    windows,
+)
 from validation.tissue import composite_crossrev as crossrev
 
 WIDTH = 4  # water_sheet's 10 steps: windows of 4, 4 and 2.
@@ -65,7 +70,8 @@ def test_device_and_host_decided_windows_merge_into_one_run(runs, monkeypatch):
 @GPU
 def test_on_a_gpu_the_composite_under_the_sparse_solver_keeps_agrees_and_merges(monkeypatch):
     """D330, the composite's GPU rows: GJ-N1's line (not blind) under the sparse field solver on
-    the GPU backend, at windows of WIDTH steps. Device mode keeps every array of host mode (C1);
+    the GPU backend, with XLA's deterministic ops (the qualified configuration), at windows of WIDTH
+    steps. Device mode keeps every array of host mode (C1);
     each device-decided window's ratios to the bounds lie within 0.1 of the host's on the same
     rows (C2 in units of the bound: the tests' absolute floors do not fit these worlds' large
     amounts, gpu_row_checks.host_ratios); and with the band between the windows' peaks, host- and
@@ -73,6 +79,7 @@ def test_on_a_gpu_the_composite_under_the_sparse_solver_keeps_agrees_and_merges(
     from validation.execution.gpu_row_checks import host_ratios
     from validation.gap_junction_tissue import neither
 
+    require_deterministic_gpu()
     dt = neither.step(1e-13, 2)
     raw = neither.coupled_world(1e-13, neither.STAGE1_END_UNITS, end=10 * dt, shape="line")
     raw["execution"].update(field_solver=SPARSE, backend="gpu")

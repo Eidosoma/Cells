@@ -16,11 +16,13 @@ then the device's maxima, reported and not judged (ruling 3); they agree with th
 rounding, not bitwise.
 
 Qualification (admit; design §9.2 and §10): the CPU, and on a GPU only the models, field solvers
-and ledgers whose host-against-device spread was measured there (GPU_QUALIFIED, D330). Anything
-else on a GPU is refused, and so is a composition with a live retiring operator.
+and ledgers whose host-against-device spread was measured there (GPU_QUALIFIED, D330), with XLA's
+deterministic ops in effect. Anything else on a GPU is refused, and so is a composition with a
+live retiring operator.
 """
 
 import inspect
+import os
 from dataclasses import dataclass, field, replace
 from time import perf_counter
 from types import MappingProxyType
@@ -69,6 +71,17 @@ GPU_REFUSAL = (
     "row_checks device is qualified on the CPU only for {}; a GPU backend is refused until a GPU "
     "measurement exists"
 )
+# On a GPU, XLA adds scatter-adds atomically, in an order that varies between runs, unless its
+# deterministic ops are set (D330 block 2: two runs of one compiled window differed in the amounts
+# and the operators' ledgers). The qualified configuration sets them, so device mode can keep host
+# mode's arrays and a rerun its first run's. Read from XLA_FLAGS, where XLA reads it.
+DETERMINISTIC_FLAG = "--xla_gpu_deterministic_ops"
+NONDETERMINISTIC_REFUSAL = (
+    "row_checks device on a GPU requires XLA's deterministic ops (XLA_FLAGS "
+    + DETERMINISTIC_FLAG
+    + "=true): without them the GPU's scatter-adds run in an order that varies between runs, so "
+    "device mode cannot keep host mode's arrays (D330)"
+)
 
 
 def _takes_margins(checks):
@@ -94,8 +107,8 @@ def admit(spec):
     Two cases are refused because they are not yet qualified (the lead's rulings of 16 November
     2026, D187: no claim without teeth):
     - a GPU backend, unless GPU_QUALIFIED lists the model and field solver with every ledger of
-      the definition's device checks (gpu_refusal; D330): elsewhere the GPU's
-      host-against-device spread is unmeasured;
+      the definition's device checks and XLA's deterministic ops are set (gpu_refusal; D330):
+      elsewhere the GPU's host-against-device spread is unmeasured;
     - a composition with a live retiring operator: its device checks read adjusted rows, and
       that branch's refusals have no planted test yet.
     """
@@ -137,7 +150,24 @@ def gpu_refusal(spec, model):
     unmeasured = [k for k in getattr(model, "DEVICE_CHECKS", ())[1:-1] if k not in measured]
     if unmeasured:
         return GPU_REFUSAL.format(f"the ledgers {', '.join(unmeasured)} of {named}")
+    if not deterministic_ops():
+        return NONDETERMINISTIC_REFUSAL
     return None
+
+
+def deterministic_ops():
+    """Whether XLA_FLAGS sets the GPU's deterministic ops (its last setting of the flag, bare or
+    =true; anything else, or none, is false).
+
+    A tripwire, not the guard: it reads XLA_FLAGS when admit runs, and cannot see whether XLA
+    parsed that value (XLA reads its flags once, when its first backend starts), so a flag set or
+    unset after that is misread. The guard is D330's bitwise evidence (G1, G6) under the flag."""
+    setting = None
+    for word in os.environ.get("XLA_FLAGS", "").split():
+        name, _, value = word.partition("=")
+        if name == DETERMINISTIC_FLAG:
+            setting = value in ("", "true", "True", "1")
+    return bool(setting)
 
 
 def _window_checks(start, history, count, first_step, parameters, constants, *, checks):
