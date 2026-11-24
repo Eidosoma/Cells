@@ -305,6 +305,13 @@ class InnerStructure:
     # every other definition: no structure, layout or program of those moves (D148 case 2). Added
     # by the face builder under the @3 owner's leave (a recorded exception in this file).
     forms_faces: tuple = ()
+    # FR-51 (D327, ruling 6): the channel populations that declare a block
+    # (open_channel_block_weighted_modes@1), their IDs sorted, and the static mode count M (the
+    # largest any declares, at most 4). They are () and 0 for every other definition, so no
+    # structure, layout or program of those moves. Added by the @3 owner at the lead's word (a
+    # recorded exception in this file).
+    blocked_channels: tuple = ()
+    block_modes: int = 0
 
     def __post_init__(self):
         ids = [kind_id for kind_id, _ in self.kinds]
@@ -337,6 +344,18 @@ class InnerStructure:
             and list(forms) == sorted(set(forms))
         ):
             raise ValueError("Forms faces are a sorted tuple of distinct face IDs")
+        blocked = self.blocked_channels
+        if not (
+            isinstance(blocked, tuple)
+            and all(isinstance(c, str) and c for c in blocked)
+            and list(blocked) == sorted(set(blocked))
+            and type(self.block_modes) is int
+            and (0 if not blocked else 1) <= self.block_modes <= (4 if blocked else 0)
+        ):
+            raise ValueError(
+                "Blocked channels are a sorted tuple of distinct channel IDs, with a mode count "
+                "from 1 to 4 where any is declared and 0 where none is"
+            )
         series = self.junction_series_kinds
         if (
             (junction_series_gates.LAW_ID in self.junction_laws) != bool(series)

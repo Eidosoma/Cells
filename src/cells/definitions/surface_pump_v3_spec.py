@@ -52,6 +52,7 @@ enters the constant-field flux, the affinities and the pumps only.
 """
 
 import copy
+import math
 from bisect import bisect_right
 from collections.abc import Mapping
 from dataclasses import asdict, dataclass, field, fields, replace
@@ -65,6 +66,7 @@ from cells.definitions import surface_pump_v2_spec as second
 from cells.definitions import surface_tissue_spec as tissue
 from cells.definitions.spec_values import fraction, identifier
 from cells.definitions.specs import ConfigError, ExtracellularFaceSpec, _fields, _integer, _number
+from cells.laws.channels import open_channel_block as block_law
 from cells.laws.junctions import junction_gate
 from cells.laws.junctions import junction_series_gates as series_gates
 from cells.laws.routes import logmean_electrodiffusion_forms as forms_law
@@ -169,7 +171,18 @@ CHANNEL_FIELDS = set(kinetic.ChannelPopulation.__dataclass_fields__)
 # B1's door (docs/CORE_SEAMS_DESIGN.md §4.3): a population's optional factor sources, parsed beside
 # the shared ChannelPopulation dataclass (whose fields and fingerprints other families share).
 CHANNEL_FACTORS = "factors"
-_NONE = object()  # A channel entry without factors.
+_NONE = object()  # A channel entry without factors, or without a block.
+# FR-51 (D327): a population's optional open-channel block, popped before the strict parse as
+# factors is. A population that declares neither stays a ChannelPopulation.
+CHANNEL_BLOCK = "block"
+BLOCK_KEYS = {"law", "blocker", "reference", "modes"}
+BLOCKER_KEYS = {"id", "valence", "side", "concentration_mM"}
+STEEPNESS_KEYS = ("electrical_distance", "effective_valence")  # Exactly one per mode (ruling 7).
+REVERSAL_OF = "reversal_of"
+BLOCK_N2_REFUSAL = (
+    "An implicit-conductance solver (N2) beside a blocked channel population is refused: a "
+    "negative slope in its operator could make it indefinite (FR-51, ruling 5)"
+)
 # The model fields @3's parse sets itself; the others are the @2 base's.
 OWN_FIELDS = (
     "channels",
@@ -336,18 +349,64 @@ def parse_channel(raw, ids, z, membranes):
 
 
 @dataclass(frozen=True)
+class BlockMode:
+    """One weighted mode of a block (FR-51): its weight w (dimensionless), K(0) in mM, and exactly
+    one steepness (ruling 7). That is the electrical distance delta in [0, 1] or the effective
+    valence z_eff > 0; the other is None."""
+
+    weight: float
+    k0_mM: float
+    electrical_distance: float | None = None
+    effective_valence: float | None = None
+
+
+@dataclass(frozen=True)
+class ChannelBlock:
+    """A population's open-channel blocker (FR-51, D327; open_channel_block_weighted_modes@1).
+
+    The blocker has valence z_B and is held at concentration_mM (mM, constant in version 1) on its
+    side. It is referenced to the patch voltage (reversal_of None) or to V - E of the named
+    permeant ion, and binds in weighted modes. The block declares no count, and the bound blocker
+    is taken from no row (trace binding)."""
+
+    law: str
+    blocker_id: str
+    valence: int
+    side: str
+    concentration_mM: float
+    reversal_of: str | None
+    modes: tuple[BlockMode, ...]
+
+    def steepness(self):
+        """Each mode's signed steepness s sgn(z_B) m_k (dimensionless), with m_k = |z_B| delta_k or
+        z_eff,k. a_k is this times F/(R T) (fr51-channel-block-v1 §1.1)."""
+        sign = block_law.SIDES[self.side] * (1 if self.valence > 0 else -1)
+        return tuple(
+            sign
+            * (
+                abs(self.valence) * m.electrical_distance
+                if m.effective_valence is None
+                else m.effective_valence
+            )
+            for m in self.modes
+        )
+
+
+@dataclass(frozen=True)
 class FactoredChannelPopulation(kinetic.ChannelPopulation):
     """A channel population whose entry declares factors (B1's door, docs/CORE_SEAMS_DESIGN.md
-    §4.3): the shared ChannelPopulation with its factor-source IDs, in declared order. A population
-    without factors stays a ChannelPopulation, so its form and fingerprint are today's."""
+    §4.3), a block (FR-51), or both: the shared ChannelPopulation with its factor-source IDs, in
+    declared order, and its block. A population with neither stays a ChannelPopulation, so its
+    form and fingerprint are today's."""
 
     factors: tuple[str, ...] = ()
+    block: ChannelBlock | None = None
 
 
-def factored(channel, factors):
-    """The population as a FactoredChannelPopulation with these factors."""
+def factored(channel, factors, block=None):
+    """The population as a FactoredChannelPopulation with these factors and this block."""
     values = {f.name: getattr(channel, f.name) for f in fields(kinetic.ChannelPopulation)}
-    return FactoredChannelPopulation(**values, factors=tuple(factors))
+    return FactoredChannelPopulation(**values, factors=tuple(factors), block=block)
 
 
 def channel_factors(model):
@@ -358,6 +417,154 @@ def channel_factors(model):
         for slot, c in enumerate(getattr(model, "channels", ()))
         if getattr(c, "factors", ())
     )
+
+
+def channel_blocks(model):
+    """((slot, channel ID, its ChannelBlock), ...) of the model's blocked populations, in channel
+    order; () for every definition of today's (FR-51)."""
+    return tuple(
+        (slot, c.id, c.block)
+        for slot, c in enumerate(getattr(model, "channels", ()))
+        if getattr(c, "block", None) is not None
+    )
+
+
+def _real(value, name):
+    """A finite real number, an int or a float (never a bool), its sign kept."""
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+        raise ConfigError(f"{name} must be a finite number")
+    return float(value)
+
+
+def parse_block(raw, channel, species_ids):
+    """A population's block (FR-51, D327). Each refusal names its reason
+    (fr51-channel-block-v1 §1.2)."""
+    name = f"Channel {channel.id}: block"
+    _fields(raw, BLOCK_KEYS, name)
+    if raw["law"] != block_law.LAW_ID:
+        raise ConfigError(f"{name}: law must be {block_law.LAW_ID}")
+    blocker = _fields(raw["blocker"], BLOCKER_KEYS, f"{name}'s blocker")
+    blocker_id = identifier(blocker["id"])
+    ions = tuple(i.species_id for i in channel.permeant_ions)
+    if blocker_id in species_ids or blocker_id in ions:
+        raise ConfigError(
+            f"{name}: the blocker {blocker_id!r} names a species row or a permeant ion; version "
+            "1's blocker is a declared constant, not a row"
+        )
+    valence = blocker["valence"]
+    if type(valence) is not int or valence == 0:
+        raise ConfigError(
+            f"{name}: the blocker's valence is a nonzero integer, kept for the charge's sign"
+        )
+    side = blocker["side"]
+    if side not in block_law.SIDES:
+        raise ConfigError(f"{name}: the blocker's side is outside or inside")
+    concentration = _real(blocker["concentration_mM"], f"{name}'s blocker concentration")
+    low, high = block_law.BLOCKER_RANGE_MM
+    if not low <= concentration <= high:
+        raise ConfigError(
+            f"{name}: the blocker concentration lies in [{low:g}, {high:g}] mM, the admitted domain"
+        )
+    reference = raw["reference"]
+    if reference == block_law.MEMBRANE_VOLTAGE:
+        reversal_of = None
+    elif isinstance(reference, dict) and set(reference) == {REVERSAL_OF}:
+        reversal_of = reference[REVERSAL_OF]
+        if reversal_of not in ions:
+            raise ConfigError(
+                f"{name}: the reversal reference names {reversal_of!r}, an ion the population "
+                "does not carry"
+            )
+    else:
+        raise ConfigError(
+            f"{name}: reference is {block_law.MEMBRANE_VOLTAGE!r} or {{{REVERSAL_OF!r}: ion}}"
+        )
+    modes = raw["modes"]
+    if type(modes) is not list or not modes:
+        raise ConfigError(f"{name}: modes is a non-empty list")
+    if len(modes) > block_law.MAX_MODES:
+        raise ConfigError(
+            f"{name}: at most {block_law.MAX_MODES} modes, since the mode axis is static and its "
+            "sums are unrolled"
+        )
+    parsed = tuple(_block_mode(m, valence, f"{name}'s mode {k}") for k, m in enumerate(modes))
+    if abs(math.fsum(m.weight for m in parsed) - 1.0) > block_law.SUM_ULPS * np.spacing(1.0):
+        raise ConfigError(
+            f"{name}: the modes' weights sum to 1 within {block_law.SUM_ULPS} ulps, since they are "
+            "fractions of one population"
+        )
+    return ChannelBlock(block_law.LAW_ID, blocker_id, valence, side, concentration, reversal_of,
+                        parsed)  # fmt: skip
+
+
+def _block_mode(raw, valence, name):
+    """One mode (FR-51): its weight, K(0) and its one steepness (ruling 7), in the admitted
+    domain."""
+    if not isinstance(raw, dict):
+        raise ConfigError(f"{name} must be an object")
+    steep = [key for key in STEEPNESS_KEYS if key in raw]
+    if len(steep) != 1:
+        raise ConfigError(
+            f"{name}: declare exactly one of electrical_distance and effective_valence (ruling 7: "
+            "one steepness per mode)"
+        )
+    _fields(raw, {"weight", "k0_mM", *steep}, name)
+    weight = _real(raw["weight"], f"{name}'s weight")
+    if not 0.0 <= weight <= 1.0:
+        raise ConfigError(f"{name}: the weight lies in [0, 1], a fraction of the population")
+    k0 = _real(raw["k0_mM"], f"{name}'s k0_mM")
+    low, high = block_law.K0_RANGE_MM
+    if not low <= k0 <= high:
+        raise ConfigError(f"{name}: k0_mM lies in [{low:g}, {high:g}] mM, the admitted domain")
+    value = _real(raw[steep[0]], f"{name}'s {steep[0]}")
+    if steep[0] == "electrical_distance":
+        if not 0.0 <= value <= 1.0:
+            raise ConfigError(
+                f"{name}: the electrical distance lies in [0, 1], a fraction of the field"
+            )
+        steepness, mode = abs(valence) * value, BlockMode(weight, k0, electrical_distance=value)
+    else:
+        if value <= 0.0:
+            raise ConfigError(
+                f"{name}: the effective valence is positive; its sign comes from s sgn(z_B)"
+            )
+        steepness, mode = value, BlockMode(weight, k0, effective_valence=value)
+    if steepness > block_law.MAX_STEEPNESS:
+        raise ConfigError(
+            f"{name}: the steepness {steepness:g} exceeds {block_law.MAX_STEEPNESS:g}, the "
+            "admitted domain's limit"
+        )
+    return mode
+
+
+def block_to_dict(block):
+    """A ChannelBlock as its declaration (FR-51)."""
+    return {
+        "law": block.law,
+        "blocker": {
+            "id": block.blocker_id,
+            "valence": block.valence,
+            "side": block.side,
+            "concentration_mM": block.concentration_mM,
+        },
+        "reference": (
+            block_law.MEMBRANE_VOLTAGE
+            if block.reversal_of is None
+            else {REVERSAL_OF: block.reversal_of}
+        ),
+        "modes": [
+            {
+                "weight": m.weight,
+                "k0_mM": m.k0_mM,
+                **(
+                    {"electrical_distance": m.electrical_distance}
+                    if m.effective_valence is None
+                    else {"effective_valence": m.effective_valence}
+                ),
+            }
+            for m in block.modes
+        ],
+    }
 
 
 def _factor_sources(given, channel_id):
@@ -385,7 +592,13 @@ def channel_to_dict(p):
         "permeant_ions": [asdict(i) for i in p.permeant_ions],
     }
     if type(p) is FactoredChannelPopulation:  # B1's door: its factors, in declared order.
-        out[CHANNEL_FACTORS] = list(p.factors)
+        out.pop(CHANNEL_BLOCK)  # FR-51: written only where declared, so no fingerprint moves.
+        if p.factors:
+            out[CHANNEL_FACTORS] = list(p.factors)
+        else:
+            out.pop(CHANNEL_FACTORS)
+        if p.block is not None:
+            out[CHANNEL_BLOCK] = block_to_dict(p.block)
     return out
 
 
@@ -605,8 +818,10 @@ def parse(data):
     heat_bookings = _heat_bookings(m.pop(HEAT_BOOKINGS_KEY, {}), x.get("solver"))
     if type(channels) is not list:
         raise ConfigError("channels requires an explicit list")
-    # B1's door: each entry's factors leave this copy before the strict channel parse.
+    # B1's door: each entry's factors leave this copy before the strict channel parse; so does
+    # FR-51's block.
     popped = [c.pop(CHANNEL_FACTORS, _NONE) if isinstance(c, dict) else _NONE for c in channels]
+    blocks = [c.pop(CHANNEL_BLOCK, _NONE) if isinstance(c, dict) else _NONE for c in channels]
     # The registry hook (§7.4 (f) 7): the registry's keys leave this copy's species entries and
     # model block before @2's strict species parse; None when the model declares none.
     declared = registry.parse_entries(m)
@@ -672,9 +887,19 @@ def parse(data):
     ids, z = base.model.species_ids, base.model.valence
     parsed = tuple(parse_channel(c, ids, z, {p.id for p in base.model.membranes}) for c in channels)
     parsed = tuple(
-        c if given is _NONE else factored(c, _factor_sources(given, c.id))
-        for c, given in zip(parsed, popped, strict=True)
+        c
+        if given is _NONE and block is _NONE
+        else factored(
+            c,
+            () if given is _NONE else _factor_sources(given, c.id),
+            None if block is _NONE else parse_block(block, c, ids),
+        )
+        for c, given, block in zip(parsed, popped, blocks, strict=True)
     )
+    if solver in imex.IMPLICIT_CONDUCTANCE_IDS and any(
+        getattr(c, "block", None) is not None for c in parsed
+    ):
+        raise ConfigError(BLOCK_N2_REFUSAL)
     model = base.model
     names = [
         p.id
@@ -751,6 +976,7 @@ def parse(data):
         declared = (
             spec.model.kinds
             or channel_factors(spec.model)
+            or channel_blocks(spec.model)  # FR-51: the structure holds the blocked populations.
             or any(c.kinetic_law not in LAW_CODES for c in spec.model.channels)
             or spec.model.heat_bookings  # Seam D: the structure holds the picks.
             or any(isinstance(j, kinetic.SeriesJunction) for j in spec.model.junctions)  # FR-30.
