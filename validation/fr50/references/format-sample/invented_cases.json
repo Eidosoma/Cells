@@ -1,0 +1,106 @@
+{
+ "kind": "cells.fr50_reference_spec@1",
+ "invented": true,
+ "purpose": "INVENTED inputs for the FR-50 references' format sample: one case of each kind (K1, K2, K3, K4, K4h, E1, E2, E3, E4, E6) in spec/cases.json's schema, so that the writer runs on them and every output they give is marked invented. No value here is declared by protocol fr50-one-way-records-v1, and no output from them is a reference value of any registered case. The time rules, voltage counts and availability counts are the declared ones, so the outputs have the registered results' shape.",
+ "units": {
+  "time": "s",
+  "temperature": "K",
+  "amount": "fmol",
+  "volume": "pL",
+  "concentration": "mM (1 fmol/pL)",
+  "area": "m^2",
+  "permeability": "m/s",
+  "diffusivity": "m^2/s",
+  "length": "m",
+  "voltage": "V (V = phi_in - phi_out)",
+  "one_way_flux": "fmol/s",
+  "one_way_record": "fmol (routes); fmol of cycles (transporters)",
+  "transporter_capacity": "fmol of cycles per s",
+  "half_saturation": "mM",
+  "standard_potential": "mu0/(R T), dimensionless",
+  "stoichiometry": "integer",
+  "unblocked_fraction": "dimensionless"
+ },
+ "constants": {"F_C_per_mol": "6.02214076e23 * 1.602176634e-19", "R_J_per_mol_K": "6.02214076e23 * 1.380649e-23"},
+ "cases": {
+  "INVENTED_K1_neutral_zero_net": {
+   "phase": 1, "route": "INVENTED: a neutral passive route on a patch, forward inward",
+   "T_K": "300", "P_m_per_s": "2e-9", "A_m2": "3e-10", "opening": "0.5",
+   "V_cell_pL": "2", "V_node_pL": "0.5", "c_cell_mM": "4e-3", "c_node_mM": "4e-3",
+   "record_times_s": {"rule": "t_i = 10 i, i = 0 ... 10"},
+   "requested": "forward and backward fluxes, and the records F(t_i), B(t_i)"
+  },
+  "INVENTED_K2_neutral_relaxation": {
+   "phase": 1, "route": "INVENTED: a neutral passive route on a patch, forward inward", "trajectory": "LAWS.md section 5",
+   "T_K": "300", "P_m_per_s": "5e-8", "A_m2": "2e-10", "opening": "1",
+   "V_cell_pL": "1.5", "V_node_pL": "0.5", "c_cell_mM_at_0": "2e-3", "c_node_mM_at_0": "1e-5",
+   "record_times_s": {"rule": "t_i = 5 i, i = 0 ... 40"},
+   "requested": "c_cell(t_i), c_node(t_i), and F(t_i), B(t_i)"
+  },
+  "INVENTED_K3_charged_kernel": {
+   "phase": 1, "route": "INVENTED: a constant-field route of a charged species on a patch, forward inward",
+   "T_K": "300", "valence": 2, "P_m_per_s": "3e-8", "A_m2": "2e-10", "opening": "1",
+   "c_in_mM": "2e-6", "c_out_mM": "3e-5",
+   "voltages_V": ["-0.070", "-0.020", "0", "0.045"],
+   "requested": "forward and backward fluxes at each voltage, and their ratio"
+  },
+  "INVENTED_K4_transporter_equilibrium": {
+   "phase": 1, "route": "INVENTED: the ATP-driven transporter at equilibrium",
+   "T_K": "300", "stoichiometry": 1, "capacity_fmol_cycles_per_s": "2e-3", "availability": "0.8",
+   "K_mM": "0.1", "K_ATP_mM": "0.3", "c0_mM": "1",
+   "mu0_over_RT": {"ATP": "0", "ADP": "0", "Pi": "0"},
+   "fuel_mM": {"ATP": "1", "ADP": "0.2", "Pi": "0.4"},
+   "c_in_mM": "0.08", "c_out_mM": "1",
+   "record_times_s": {"rule": "t_i = 10 i, i = 0 ... 10"},
+   "requested": "dG_cyc/(R T), J+ and J-, and the records F(t_i), B(t_i)"
+  },
+  "INVENTED_K4h_transporter_off_equilibrium": {
+   "phase": 1, "route": "INVENTED: the same transporter off equilibrium",
+   "T_K": "300", "stoichiometry": 1, "capacity_fmol_cycles_per_s": "2e-3", "availability": "0.8",
+   "K_mM": "0.1", "K_ATP_mM": "0.3", "c0_mM": "1",
+   "mu0_over_RT": {"ATP": "0", "ADP": "0", "Pi": "0"},
+   "fuel_mM": {"ATP": "1", "ADP": "0.2", "Pi": "0.4"},
+   "c_in_mM": "0.3", "c_out_mM": "1",
+   "requested": "dG_cyc/(R T), J+, J- and J-/J+"
+  },
+  "INVENTED_E1_membrane_route_at_reversal": {
+   "phase": 2, "route": "INVENTED: a membrane route of a cation, forward outward, at V = E_K",
+   "T_K": "300", "valence": 1, "P_m_per_s": "2e-9", "A_m2": "3e-9", "availability": "0.7",
+   "c_in_mM": "100", "c_out_mM": "4", "V": "E_K, to 50 digits",
+   "record_times_s": {"rule": "t_i = 0.01 i, i = 0 ... 10"},
+   "requested": "E_K, the forward and backward fluxes, and the records"
+  },
+  "INVENTED_E2_junction_neutral": {
+   "phase": 2, "route": "INVENTED: a junction route of a neutral species, equal concentrations",
+   "T_K": "300", "P_m_per_s": "3e-9", "A_m2": "5e-12", "gate": "0.8", "availability": "0.9",
+   "c_sender_mM": "2e-3", "c_receiver_mM": "2e-3",
+   "record_times_s": {"rule": "t_i = 10 i, i = 0 ... 10"},
+   "requested": "the fluxes and the records"
+  },
+  "INVENTED_E3_face_uncharged": {
+   "phase": 2, "route": "INVENTED: an uncharged face, equal concentrations",
+   "T_K": "300", "D_m2_per_s": "2e-10", "A_m2": "3e-10", "L_m": "2e-5",
+   "c_sender_mM": "5e-4", "c_receiver_mM": "5e-4",
+   "record_times_s": {"rule": "t_i = 10 i, i = 0 ... 10"},
+   "requested": "the fluxes and the records"
+  },
+  "INVENTED_E4_blocked_channel_at_reversal": {
+   "phase": 2, "route": "INVENTED: a blocked channel population, forward outward, at V = E_K",
+   "T_K": "300", "valence": 1, "P_m_per_s": "2e-8", "A_m2": "2e-9", "relative_permeability": "1", "abundance": "1.5", "open_fraction": "1", "availability": "1",
+   "c_in_mM": "100", "c_out_mM": "4", "V": "E_K, to 50 digits",
+   "block": {"blocker": {"valence": 1, "side": "inside", "concentration_mM": "0.5"}, "reference": {"reversal_of": "K"}, "modes": [{"weight": "1", "k0_mM": "2", "electrical_distance": "0.3"}]},
+   "record_times_s": {"rule": "t_i = 0.01 i, i = 0 ... 10"},
+   "requested": "E_K, u, the forward and backward fluxes, and the records"
+  },
+  "INVENTED_E6_blocked_channel_off_reversal": {
+   "phase": 2, "route": "INVENTED: the same population at declared voltages off reversal",
+   "T_K": "300", "valence": 1, "P_m_per_s": "2e-8", "A_m2": "2e-9", "relative_permeability": "1", "abundance": "1.5", "open_fraction": "1", "availability": "1",
+   "c_in_mM": "100", "c_out_mM": "4",
+   "block": {"blocker": {"valence": 1, "side": "inside", "concentration_mM": "0.5"}, "reference": {"reversal_of": "K"}, "modes": [{"weight": "1", "k0_mM": "2", "electrical_distance": "0.3"}]},
+   "voltages_V": ["-0.100", "-0.050", "0", "0.020", "0.050"],
+   "availabilities": ["1", "0.25"],
+   "requested": "u, the forward and backward fluxes, their ratio and their difference at each voltage and each availability"
+  }
+ },
+ "format": "one JSON file per case, INVENTED_<case>.json, in the results layout"
+}
