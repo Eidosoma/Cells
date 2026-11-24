@@ -24,6 +24,26 @@
     "cells.rate_equations@1": "molecular-assembly"
   },
   "comparisons": {
+    "xc0-charge-anchor": {
+      "kind": "engine",
+      "models": ["resolved_pump_tissue@3"],
+      "laws": [],
+      "engine_revision": "8760d5b338a1f7e9a930a8492c434efaa50815e7",
+      "record_revision": "39ddff47165473b96d594a23e5a7696f60f81c66",
+      "sources": {
+        "XC0 node builder": "validation/xenopus_bioelectric/xc0_worlds.py#L164",
+        "Public XC0 fixture inputs": "validation/xenopus_bioelectric/references/reference_inputs.json",
+        "Model parsing entry point": "src/cells/definitions/specs.py#L993",
+        "Definition check during model parsing": "src/cells/definitions/surface_tissue_spec.py#L362",
+        "Charge per fmol": "src/cells/laws/electrochemistry.py#L14",
+        "Fixed-background and anchor comparison": "src/cells/models/surface_tissue.py#L440"
+      },
+      "record_inputs": {
+        "Charge error and threshold separation theorems": "lean/CellsProofs/Tissue/ChargeAnchor.lean"
+      },
+      "driver": "lean/checks/charge_anchor.py",
+      "record": "lean/PROGRESS.md#xc0-charge-anchor"
+    },
     "fr47-shell-interval-heat-cpu": {
       "kind": "engine",
       "models": ["cells.assembly_lineages@2"],
@@ -159,6 +179,61 @@
       },
       "driver": "lean/checks/integer_segregation.py",
       "record": "lean/PROGRESS.md#fr43-integer-segregation"
+    },
+    "fr49-labelled-compartment-main": {
+      "kind": "engine",
+      "models": ["resolved_pump_composite@1", "resolved_pump_tissue@3"],
+      "laws": [],
+      "operators": ["cells.neutral_arrival_labels@1", "cells.cell_owned_compartments@1", "cells.templated_polymerisation@1"],
+      "engine_revision": "cd3b7b09d8252f445a976f0506767f1aaf38c53d",
+      "record_revision": "73e7e9d7b639ce366d3a9e26d4b6af8b977d7b67",
+      "sources": {
+        "Compartment admission with labels": "src/cells/operators/compartments.py#L584",
+        "Gene routes allowed beside a compartment": "src/cells/operators/templated_polymerisation.py#L1430",
+        "Native passive-label update": "src/cells/operators/species_labels.py",
+        "Allocation of a physical amount among labels": "src/cells/numerics/label_shares.py",
+        "Matched World L fixtures": "validation/fr49/worlds.py#L48",
+        "Twin and checkpoint comparisons": "validation/fr49/judge_l.py",
+        "Bitwise restart at 900 s": "tests/unit/test_fr49_world_l_resume.py#L18"
+      },
+      "record_inputs": {"Per-population label sum and pooled readout": "lean/CellsProofs/Chemistry/ArrivalCohort.lean"},
+      "driver": "tests/unit/test_fr49_world_l.py",
+      "record": "lean/PROGRESS.md#nov24-main-audit"
+    },
+    "fr43-shared-writers-main": {
+      "kind": "engine",
+      "models": ["resolved_pump_composite@1", "resolved_pump_tissue@3"],
+      "laws": [],
+      "operators": ["cells.local_species_reactions@1", "cells.templated_polymerisation@1", "cells.ideal_osmosis_linear_compliance_water@1"],
+      "engine_revision": "cd3b7b09d8252f445a976f0506767f1aaf38c53d",
+      "record_revision": "73e7e9d7b639ce366d3a9e26d4b6af8b977d7b67",
+      "sources": {
+        "Fixed and swelling two-writer worlds": "validation/tissue/shared_inventory_fixtures.py",
+        "Current volume passed to the split operators": "src/cells/models/pump_composite.py",
+        "Reaction network with a supplied volume": "src/cells/operators/species_reactions.py#L1076",
+        "Gene unit with current volumes": "src/cells/operators/templated_polymerisation.py#L2445",
+        "Volume supplied by water": "src/cells/operators/osmotic_water.py",
+        "Native run and restart": "src/cells/execution/runner.py",
+        "Saved state and checkpoint reader": "src/cells/records/io.py"
+      },
+      "record_inputs": {"Two-writer balance and current-volume identities": "lean/CellsProofs/Chemistry/SharedWriter.lean"},
+      "driver": "lean/checks/shared_writers.py",
+      "record": "lean/PROGRESS.md#nov24-main-audit"
+    },
+    "wash-export-admission-main": {
+      "kind": "engine",
+      "models": ["resolved_pump_composite@1"],
+      "laws": [],
+      "operators": ["cells.scheduled_compartment_wash@1", "cells.templated_polymerisation@1"],
+      "engine_revision": "cd3b7b09d8252f445a976f0506767f1aaf38c53d",
+      "record_revision": "73e7e9d7b639ce366d3a9e26d4b6af8b977d7b67",
+      "sources": {
+        "Gene destinations examined by the wash": "src/cells/operators/wash_schedule.py#L372",
+        "Export and degradation fixture": "validation/gene_regulation/worlds.py",
+        "Same-node refusals and separate-node control": "tests/unit/test_wash_schedule.py#L167"
+      },
+      "driver": "tests/unit/test_wash_schedule.py",
+      "record": "lean/PROGRESS.md#nov24-main-audit"
     },
     "fr43-shared-writers": {
       "kind": "engine",
@@ -4301,6 +4376,44 @@
   },
   "claims": [
     {
+      "id": "xc0-charge-anchor",
+      "category": "tissue-and-conservation",
+      "title": "Rounding and rejection of the initial charge balance",
+      "statement": "A balanced ionic inventory passes a closed charge tolerance T whenever T covers the accumulated rounding allowance E. A true charge error larger than T + E in magnitude is detected. At a midpoint in the 2²⁰-fmol range, rounding the fixed background alone can exceed the original 10⁻²⁰ C tolerance.",
+      "assumptions": [
+        "The builder and reader use the same finite stored valence-weighted ion amounts and positive charge conversion in C/fmol. The builder forms the background by subtracting their rounded sum from the declared charge divided by the conversion.",
+        "Each arithmetic result satisfies its stated absolute error allowance. Four allowances are in fmol and the final two in coulombs. Half a local spacing bounds a nearest-grid result with either tie choice. The native replay checks each rounding premise against exact rational arithmetic for the sampled inputs.",
+        "A planted background change is its actual stored difference in fmol. The distinction between a genuine mismatch and rounding is guaranteed when their bounds are separated."
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [],
+        "theorems": {
+          "CellsProofs.Tissue.ChargeAnchor.nearest_grid_error": "lean/CellsProofs/Tissue/ChargeAnchor.lean",
+          "CellsProofs.Tissue.ChargeAnchor.residual_error": "lean/CellsProofs/Tissue/ChargeAnchor.lean",
+          "CellsProofs.Tissue.ChargeAnchor.balanced_admitted": "lean/CellsProofs/Tissue/ChargeAnchor.lean",
+          "CellsProofs.Tissue.ChargeAnchor.defect_refused": "lean/CellsProofs/Tissue/ChargeAnchor.lean",
+          "CellsProofs.Tissue.ChargeAnchor.midpoint_residual": "lean/CellsProofs/Tissue/ChargeAnchor.lean",
+          "CellsProofs.Tissue.ChargeAnchor.midpoint_exceeds_floor": "lean/CellsProofs/Tissue/ChargeAnchor.lean"
+        },
+        "sources": {
+          "Mathlib nearest-integer distance, imported and rescaled to the local spacing": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/Order/Round.lean#L190",
+          "Charge-anchor diagnosis and scope of the engine correction D333": "https://github.com/Eidosoma/Cells/blob/23bf52341b6a096dc19d69d7dac509d4f46eeb00/docs/DECISIONS.md#L10542"
+        }
+      },
+      "numerical": {
+        "status": "failed",
+        "comparisons": ["xc0-charge-anchor"],
+        "result": "The native parser refused seven of 15 balanced inputs and correctly rejected both deliberately mischarged inputs on cd3b7b09 and 8760d5b3. The full results were byte-identical after FR-17 landed. The scale-aware criterion classified all 17. Exact rational arithmetic confirmed all six local allowances on each case. In the two signed midpoint controls at 1.5 × 2²⁰ fmol the unperturbed absolute residual was 1.123237099 × 10⁻²⁰ C. This check runs at definition time."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "This arithmetic tolerance compares two calculations on the same declared inputs. An experimental test of the charge balance itself would need mobile and fixed charge, capacitance and potential from the same cell.",
+        "unit": "C",
+        "evidence": []
+      }
+    },
+    {
       "id": "fr43-integer-segregation",
       "category": "tissue-and-conservation",
       "title": "Integer units at membrane-patch division",
@@ -4412,15 +4525,15 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
-          "fr43-shared-writers"
+          "fr43-shared-writers", "fr43-shared-writers-main"
         ],
-        "result": "On the FR-43 part 2B development revision 211a9c17, the fixed-volume network added 0.004997501 fmol and the gene unit spent a net 0.000664664 fmol. The 5 s disk restart reproduced all 78 state fields. Shifting 1% of a writer’s booking to its partner preserved the total and failed the independent reserve check. In a swelling cell both rate probes agreed at 2 and 3 s within 2.54 × 10⁻⁶ relative error. Supplying the initial volume to one writer at a time identified that writer in each control. These checks cover the saved-state rates and accounts. The FR-43 qualification compares the coupled trajectory separately."
+        "result": "On the FR-43 part 2B development revision 211a9c17, the fixed-volume network added 0.004997501 fmol and the gene unit spent a net 0.000664664 fmol. The 5 s disk restart reproduced all 78 state fields. Shifting 1% of a writer’s booking to its partner preserved the total and failed the independent reserve check. In a swelling cell both rate probes agreed at 2 and 3 s within 2.54 × 10⁻⁶ relative error. Supplying the initial volume to one writer at a time identified that writer in each control. These checks cover the saved-state rates and accounts. On main b06158e8 and cd3b7b09, all four replays gave byte-identical results, including the 78-field restart and both stale-volume controls. The registered part 2 coupled-trajectory comparisons also passed (D324, D328)."
       },
       "biology": {
         "status": "open",
         "observable": "A finite nucleotide pool, its upstream reserve and its consumption product measured together. For a changing-volume amount balance, each concentration also needs a matched volume.",
         "unit": "mM UTP",
-        "finding": "Under a common-volume assumption, the five archived metabolite means allow a check of net UTP supply and spending. Measurement independence, uncertainty of the full residual and gross reaction rates remain open.",
+        "finding": "Under a common-volume assumption, the five archived metabolite means allow a check of net UTP supply and spending. Measurement independence, uncertainty of the full residual and gross reaction rates remain open. In a separate rat hepatocyte study, swelling slightly increased ATP amount while the concentration calculated from measured cell-water volume fell. This directly illustrates the importance of the volume denominator. [Meijer et al., Figures 1 and 3E–F](https://doi.org/10.1111/j.1432-1033.1993.tb18053.x)",
         "evidence": [
           {
             "dataset_id": "huber2026_shared_UTP",
@@ -5004,9 +5117,9 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
-          "fr42-neutral-survival"
+          "fr42-neutral-survival", "fr49-labelled-compartment-main"
         ],
-        "result": "Five quadratic-loss pools kept their shares bit for bit. At one second, the three-unit pool held 0.7499996135 fmol including 0.2499998712 fmol from the new cohort, within 10⁻⁶ fmol of 3/4 and 1/4. The analytical two-unit blank gives a difference of 1/12 fmol. All 42 shared history fields and 76 shared observations, including energy records, matched bit for bit when labels were enabled. Diagnostics agreed."
+        "result": "Five quadratic-loss pools kept their shares bit for bit. At one second, the three-unit pool held 0.7499996135 fmol including 0.2499998712 fmol from the new cohort, within 10⁻⁶ fmol of 3/4 and 1/4. The analytical two-unit blank gives a difference of 1/12 fmol. All 42 shared history fields and 76 shared observations, including energy records, matched bit for bit when labels were enabled. Diagnostics agreed. In FR-49 World L the labelled and unlabelled twins also matched on shared physics beside a compartment. The development replay on cd3b7b09 adds label arrival, local expression exclusions and a 900 s restart through 1,260 s. A paired owner–compartment transfer proof remains open."
       },
       "biology": {
         "status": "open",
@@ -11068,7 +11181,7 @@
       "title": "A partial wash dilutes free tracer and preserves its inventory",
       "statement": "For a finite well of fixed volume V, a wash of fraction f changes free amount n to (1 − f)n + f V c_buffer. Adding sampled material and subtracting supplied material recovers the original total, including bound ligand retained through the event. Repeating k equal washes multiplies the initial excess above the buffer level by (1 − f)ᵏ. For each exchanged neutral species, ideal mixing heat is nonnegative and a whole wash releases zero mixing heat.",
       "assumptions": [
-        "The liquid is well mixed. Between the washes used in the repeated-wash formula there is no binding, release, synthesis or transport.",
+        "The liquid is well mixed. Between the washes used in the repeated-wash formula there is no binding, release, synthesis or transport. The landed tissue wash refuses a gene export into the washed node and outside degradation there. A different node remains eligible when its other admission conditions hold.",
         "The Lean positivity result assumes 0 < f ≤ 1 and strictly positive free and buffer amounts. Float64 whole-wash storage also requires sufficient resolution at the host’s amount anchor. Version 1 exchanges ions at their own concentration.",
         "For the heat, the well is ideal and isothermal with positive volume and concentrations and a nonnegative thermal energy scale."
       ],
@@ -11089,7 +11202,7 @@
           "Mathlib logarithm bound used in the default mixing-heat proof": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L293-L294",
           "Mathlib klFun_nonneg and klFun_eq_zero_iff, imported in the optional comparison": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/InformationTheory/KullbackLeibler/KLFun.lean#L145-L149",
           "Cells specialization of the relative-entropy formula": "lean/checks/mixing/KLFun.lean",
-          "Cells wash heat computed from the retained and supplied concentrations": "src/cells/operators/wash_schedule.py#L320"
+          "Cells wash heat computed from the retained and supplied concentrations": "https://github.com/Eidosoma/Cells/blob/b06158e8a8b2044d92183e8da8d646bf56c4a12b/src/cells/operators/wash_schedule.py#L448"
         }
       },
       "numerical": {
@@ -11097,9 +11210,9 @@
         "comparisons": [
           "wash-ion-counters-d272",
           "wash-main-nov21",
-          "compartment-wash-nov21"
+          "compartment-wash-nov21", "wash-export-admission-main"
         ],
-        "result": "Four compiled tracer schedules retained ions and site fields. The maximum tracer material discrepancy was 7.11 × 10⁻¹⁵ fmol. Whole-wash runs reached 2⁻⁵⁰ of the initial amount and reproduced the documented refusal at 2⁻⁶⁰. The repaired counter check completed at fractions 1/2 and 3/7 with exact agreement for each unchanged ion."
+        "result": "Four compiled tracer schedules retained ions and site fields. The maximum tracer material discrepancy was 7.11 × 10⁻¹⁵ fmol. Whole-wash runs reached 2⁻⁵⁰ of the initial amount and reproduced the documented refusal at 2⁻⁶⁰. The repaired counter check completed at fractions 1/2 and 3/7 with exact agreement for each unchanged ion. On b06158e8 and again after FR-49 landed at cd3b7b09, all 35 wash tests passed, including named same-node gene-route refusals and a separate-node admission."
       },
       "biology": {
         "status": "open",

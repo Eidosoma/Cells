@@ -57,15 +57,15 @@
     "cells.ubiquinol_cytochrome_c_proton_cycle@1": "src/cells/laws/cycles/ubiquinol_cytochrome_c_proton_cycle.py#L68"
   },
   "operator": {
-    "cells.cell_owned_compartments@1": "src/cells/operators/compartments.py#L638",
+    "cells.cell_owned_compartments@1": "src/cells/operators/compartments.py#L673",
     "cells.cytoplasmic_bridge_closure@1": "src/cells/operators/bridge_closure.py#L273",
     "cells.daughter_continuation@1": "src/cells/models/assembly_lineages/continuation.py#L55",
     "cells.electrode_current_injection@1": "src/cells/operators/current_injection.py#L245",
     "cells.ideal_osmosis_linear_compliance_water@1": "src/cells/operators/osmotic_water.py#L489",
     "cells.integer_unit_population@1": "src/cells/operators/integer_unit_population.py#L1241",
-    "cells.isopotential_partition@1": "src/cells/operators/partition.py#L1110",
+    "cells.isopotential_partition@1": "src/cells/operators/partition.py#L1112",
     "cells.k_anion_symport_mass_action@1": "src/cells/operators/k_anion_symport.py#L208",
-    "cells.local_species_reactions@1": "src/cells/operators/species_reactions.py#L1446",
+    "cells.local_species_reactions@1": "src/cells/operators/species_reactions.py#L1489",
     "cells.membrane_entity_state@1": "src/cells/operators/membrane_state.py#L193",
     "cells.neutral_arrival_labels@1": "src/cells/operators/species_labels.py#L932",
     "cells.pool_replacement@1": "src/cells/models/assembly_lineages_v2/replacement.py#L149",
@@ -74,9 +74,9 @@
     "cells.restricted_cleft_lumen@1": "src/cells/operators/restricted_lumen.py#L420",
     "cells.restricted_cleft_lumen@2": "src/cells/operators/restricted_lumen_v2.py#L298",
     "cells.scheduled_bath_composition@1": "src/cells/operators/bath_schedule.py#L553",
-    "cells.scheduled_cell_replacement@1": "src/cells/operators/cell_replacement.py#L613",
+    "cells.scheduled_cell_replacement@1": "src/cells/operators/cell_replacement.py#L637",
     "cells.scheduled_cell_replacement@2": "src/cells/operators/cell_replacement_v2.py#L398",
-    "cells.scheduled_compartment_wash@1": "src/cells/operators/wash_schedule.py#L543",
+    "cells.scheduled_compartment_wash@1": "src/cells/operators/wash_schedule.py#L566",
     "cells.scheduled_membrane_insertion@1": "src/cells/operators/membrane_insertion.py#L566",
     "cells.scheduled_membrane_insertion@2": "src/cells/operators/membrane_insertion_v2.py#L263",
     "cells.scheduled_membrane_trafficking@1": "src/cells/operators/membrane_trafficking.py#L827",
@@ -90,7 +90,7 @@
     "cells.size_threshold_fission@1": "src/cells/models/assembly_lineages/fission.py#L71",
     "cells.species_regulated_availability@1": "src/cells/operators/species_regulated_availability.py#L1725",
     "cells.species_regulated_availability@2": "src/cells/operators/species_regulated_availability.py#L1931",
-    "cells.templated_polymerisation@1": "src/cells/operators/templated_polymerisation.py#L2873",
+    "cells.templated_polymerisation@1": "src/cells/operators/templated_polymerisation.py#L2931",
     "cells.tension_hold@1": "src/cells/models/assembly_lineages_v2/tension_hold.py#L162"
   }
 }
