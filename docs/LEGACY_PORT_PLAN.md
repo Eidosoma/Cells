@@ -47,7 +47,8 @@ A test whose only subject is a legacy model is not a use, and neither is a histo
 **Tonight's checks of use:**
 - **No registered protocol in force names a legacy model.** None of the rename probe's 233 frozen files
   does.
-- **No current document claims a result from the 39 legacy-importing BETSE drivers.**
+- **No current document claims a result from the 39 legacy-importing BETSE drivers.** The claimed parity
+  ladder's own code reaches legacy only through one re-exported helper (§6, row G3).
   - The BETSE parity that PROGRESS claims (the default world, rungs D and F, P2 to P4b, CPU and L4) runs on
     `resolved_pump_tissue@1` to `@3` (`validation/betse/protocols/physical_*`).
   - The 18 REF-003 to REF-005 drivers are cited only by their own September and October design and closeout
@@ -65,8 +66,8 @@ A test whose only subject is a legacy model is not a use, and neither is a histo
 - **Documents that point at legacy capabilities** (paper reviews, two design notes) are claims to correct,
   not uses (§3, group H).
 
-**The coverage table (§3)** has 38 capability rows:
-- 15 canonical already;
+**The coverage table (§3)** has 39 capability rows:
+- 16 canonical already;
 - 5 expressible today;
 - 9 that need an engine feature: five for the calcium ensemble, one if Q2 keeps the physiology set, and
   three only if wanted;
@@ -191,6 +192,17 @@ use.
 "Uses" names only consumers that count under §2. Rows whose only consumers are the physiology set depend
 on Q2.
 
+**Evidence levels.** A wrong "Canonical" is the silent-loss direction, so each row's basis is stated.
+- **Read here,** at the cited lines: A1, A4–A6, A9, B2's refusal, B3–B5, C2, D9, E1–E3, P1, G1, G3, and
+  the refusal sites of §4.
+- **By registry name or protocol only:** A2, A7, A8, C1, D3, D4, D6 (the registry dump), and D7, D8 (the
+  parity protocols' model IDs).
+- **From a research read not repeated here:** A3, A10, A11, B1's standard state, B7, C3, C4, D1, D2, D5,
+  E4.
+
+The builder re-reads every row not read here before the deletion. A row found not canonical moves to
+Feature or Drop, and the user is told.
+
 ### A. The electrical tissue
 
 | # | Capability (legacy home) | Uses | Class | Canonical piece or gap |
@@ -263,6 +275,7 @@ on Q2.
 |---|---|---|---|---|
 | G1 | `source_decay@1`, the conftest's synthetic world | 9 infrastructure tests (U2): `tests/integration/test_cli.py`, `test_replay.py`; `tests/unit/test_continuity_gpu.py`, `test_continuity_loaders.py`, `test_numerical_refinement.py`, `test_numerics.py`, `test_specs.py`, `test_stationary_analysis.py`, `test_windows.py` | Expressible | retarget to `reaction_transport@1` or a minimal composite (Q6) |
 | G2 | `emt_mirna@1`, `passive_pair@1` | their own tests; pointed at by `docs/PAPER_REVIEW_GZMK_AGEING.md:139` | Drop | — |
+| G3 | The `identifier` check, imported from `legacy/core/multispecies_spec.py` | the BETSE-order emulator and ten tests (§6), the parity ladder's tooling (U3) | Canonical | the same function, re-exported from `definitions/spec_values.py:23–31`: retarget the import |
 
 ### H. Documents that point at legacy capabilities: claims to correct
 
@@ -273,13 +286,22 @@ These are not uses. Each pointer is corrected in the deletion's commit, to its r
 - `docs/PAPER_REVIEW_T_CELL_ORGANELLES.md:119–122`: the mitochondria family;
 - `docs/PAPER_REVIEW_GZMK_AGEING.md:134–139`: `finite_extracellular`, `network_reactions@1`,
   `finite_ecm_polygon_geometry` and `emt_mirna`;
-- `docs/ABUNDANCE_TO_FUNCTION_DESIGN.md:50–53` and `docs/CORE_LAWS_ROADMAP.md:73–75`.
+- `docs/ABUNDANCE_TO_FUNCTION_DESIGN.md:50–53` and `docs/CORE_LAWS_ROADMAP.md:73–75`;
+- `docs/ARCHITECTURE.md:11–14`, whose opening lists "finite and spatial extracellular inventories",
+  "compartment chemistry", "calcium/IP3" and "stochastic assembly with experimental cell coupling" as
+  implemented building blocks;
+- `docs/BIOELECTRIC_CELL.md:30–31`, `docs/FINITE_ENERGY_POOLS.md:3`, `docs/TISSUE_PHASES.md:301`,
+  `docs/TISSUE_RETURN_CURRENT.md` (lines 1327–1391 and 2616–2666 among others) and `docs/TISSUE_GEOMETRY.md:26`;
+- `docs/library/DECLARATIONS_FORMAT.md:349`, the manifest's legacy list.
+
+Design notes that only record past work (`SOURCE_LAYOUT_MOVES_DESIGN.md`, `LAW_DOCUMENTATION_DESIGN.md`) stay
+as records.
 
 `network_reactions@1`'s cell, mitochondrial, environment and growth reactions are canonical in part, as
 `local_species_reactions@1` and the secreted species. The legacy form is dropped.
 
-**Tally, 38 rows:**
-- **Canonical: 15** (A1, A2, A7, A8, A9, B1, C1, C3, C4, D3, D4, D6, D7, D8, E1). For C3 and C4, the
+**Tally, 39 rows:**
+- **Canonical: 16** (A1, A2, A7, A8, A9, B1, C1, C3, C4, D3, D4, D6, D7, D8, E1, G3). For C3 and C4, the
   legacy forms are dropped.
 - **Expressible: 5** (A10, B2, D1, E4, G1).
 - **Feature: 9:**
@@ -347,9 +369,33 @@ neutralise.
 - **Their use is the user's call (Q2).**
 
 **What BETSE parity rests on today.** The parity PROGRESS claims ("Plan: BETSE parity on CPU and L4", steps 3,
-3b and 5) uses `validation/betse/protocols/physical_*`, on `resolved_pump_tissue@1`, `@2` and `@3`. Legacy
-does not carry it. Parity "against saved outputs, out of process" stays possible after the deletion, because
-the BETSE outputs are saved under `/mnt/workspaces/Cells`.
+3b and 5) uses `validation/betse/protocols/physical_*`, on `resolved_pump_tissue@1`, `@2` and `@3`. Parity
+"against saved outputs, out of process" stays possible after the deletion, because the BETSE outputs are
+saved under `/mnt/workspaces/Cells`.
+
+**The code around it, traced through the import graph:**
+- **The world adapters** (`default_world_adapter.py`, `event_world_adapter.py`, `network_world_adapter.py`)
+  reach no legacy module.
+- **The BETSE-order emulator reaches legacy once.** `validation/betse/emulator/spatial_spec.py:23` imports
+  `identifier` from `cells.legacy.core.multispecies_spec`, which re-exports the live
+  `cells.definitions.spec_values.identifier` unchanged (`legacy/core/multispecies_spec.py:9`).
+  - Through it reach `emulator/junction_model.py`, `junction_spec.py` and `spatial_model.py`.
+  - So do ten tests: `test_betse_charge_precision.py`, `test_betse_gate_roundoff.py`,
+    `test_betse_junction_runtime.py`, `test_betse_spatial_junction*.py` (2), `test_betse_spatial_runtime.py`,
+    `test_channel_compensation_design.py`, `test_cue_separation_diagnostic.py`, `test_local_channel_design.py`
+    and `test_unstimulated_diagnostic.py`.
+  - This is row G3: a one-line retarget, in validation.
+- **The four helpers:**
+  - `native_environment_paths.py` is imported only by `tests/unit/test_betse_environment_transport.py`;
+  - `native_profile_conventions.py` by the physiology set and `tests/unit/test_betse_tissue_profiles.py`;
+  - `native_geometry_operators.py` by nothing;
+  - `emulator/spatial_spec.py`, as above.
+- **`alignment.py`, `trajectory.py`, `contact.py` and `cluster_alignment.py`** are imported only by
+  REF-era modules: the dispatch, expanded, full-loop, held-response, phase, profile and cluster panels.
+  No claimed path imports them.
+
+So the claimed ladder rests on no legacy capability except the re-exported `identifier`. The two BETSE
+tests on the helpers retire with the helpers (Q2, Q3).
 
 **Bearing on the rename's Q3 (§11):**
 - The rename's rewrite list holds 30 `validation/betse` files; about a dozen are in REF-era panel folders.
@@ -362,6 +408,7 @@ the BETSE outputs are saved under `/mnt/workspaces/Cells`.
 Both routes end in the same state: every used capability canonical, legacy deleted whole, the rename's IDs
 throughout. The tables count the used set as Q2 (retire the physiology set) and Q4 (keep the calcium
 ensemble) recommend. The gaps of §4 are the user's requests and are priced separately:
+These prices are rough guesses, not estimates from a design:
 - G-1: 2–4 agent-days;
 - G-4: 5–8;
 - G-5: 2–3;
@@ -436,12 +483,31 @@ That is about 15–24 agent-days more. Route A would also relocate the cores of 
 Each runs at h, h/2 and h/4. The capture tool halves dt and doubles `max_steps`; the admission bounds,
 such as `spatial_calcium`'s h·loss ≤ 0.25, still hold.
 
-**The tolerance is derived, never tuned,** and is fixed in the capture's record before any re-expressed run:
-- **Observed order:** from legacy's three runs, p̂ = log2(|X_h − X_{h/2}| / |X_{h/2} − X_{h/4}|) per
-  array. Only arrays with p̂ within 0.5 of the method's order (4 for RK4) are judged by the band. The others
-  are judged by the consumer's own registered acceptance and reported as such.
-- **The band:** tol = 2·|X_h − X_{h/2}| + 64 ulp · max|X|. That is twice legacy's own step-halving
-  estimate, plus a rounding floor of the size that A7's summation change moved arrays by (`ARCHITECTURE.md`).
+**Two kinds of row, told apart before any run:**
+- **Same equations:** the re-expression keeps the model's equations and changes only the code, the
+  splitting or the integrator. A numerical band applies.
+- **Changed model:** the equations change. Examples are an ER store without its own voltage (the
+  pools-at-the-cell's-potential branch of G-4), the PMCA at another standard state (B1), and NCX written as a
+  transporter cycle if its rate form changes. No band applies. These rows are judged by the consumer's own
+  registered criterion, such as the calcium ensemble's independent references at 3e-9 (`tests/unit/test_spatial_calcium.py:68–76`),
+  or by an independent reference written for the purpose.
+
+**The tolerance for same-equation rows is derived, never tuned.** It is fixed in the protocol before any
+re-expressed run, from both methods' own refinement:
+- **Observed order,** computed per array for each method from its own h, h/2 and h/4 runs:
+  p̂ = log2(|X_h − X_{h/2}| / |X_{h/2} − X_{h/4}|). The legacy runs come from the snapshot; the candidate's
+  runs are part of its qualification.
+  - An array is judged by the band only where each method's p̂ is within 0.5 of its declared order: 4 for
+    RK4, and the declared order of the candidate's splitting or IMEX scheme.
+  - Elsewhere, for example where the differences are already at rounding, it is judged by the consumer's
+    registered criterion, and reported so.
+- **What is compared:** each method's extrapolated solution, X* = X_{h/4} + (X_{h/4} − X_{h/2})/(2^p − 1),
+  at the declared output times.
+- **The band:** |X*_legacy − X*_candidate| ≤ 2·(U_legacy + U_candidate) + 64 ulp · max|X|, where
+  U = |X_{h/2} − X_{h/4}| / (2^p − 1) is each method's own error estimate.
+  - Each method's discretisation error enters, so an IMEX or split candidate at a coarser order is not held
+    to RK4's band.
+  - The floor is of the size that A7's summation change moved arrays by (`ARCHITECTURE.md`).
 - **Conservation ledgers** keep their own absolute bounds, for example 1e-9 pJ on energy. They are properties,
   not comparisons.
 - **Stochastic worlds:**
@@ -461,9 +527,16 @@ PYTHONPATH=SNAP/src:SNAP JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 CUDA_VISIBLE_DEVICES
 ```
 - **The full length** comes from `--max-steps` at or above the world's step count: the first window then
   holds the whole run.
-- **The assembly families** use `cells assembly-cell run` and `cells assembly-cluster run CONFIG --backend
-  cpu`. That path was not probed tonight. It must export `JAX_ENABLE_COMPILATION_CACHE=false` itself, since
-  `configure_caches()` sets a cache folder (`execution/output_paths.py:19–31`).
+- **The assembly families** run on the CPU command line, one run per config, seed and step. This path was
+  not probed tonight:
+  ```
+  CELLS_OUTPUT_ROOT=OUT JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=SNAP/src:SNAP JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 /mnt/workspaces/Cells/venv-cpu/bin/python -B -m cells assembly-cluster run ORIGIN/<config>.json --output OUT/<config>/<seed>/<step> --backend cpu
+  ```
+  - `assembly-cell run` is the same for `configs/assembly_regulated_cell.json`.
+  - It exports `JAX_ENABLE_COMPILATION_CACHE=false` itself, since `configure_caches()` sets a cache folder
+    (`execution/output_paths.py:19–31`). The run then checks OUT for cache entries
+    (`gate_steps.py jax-entries`).
+  - The compare reads `checkpoint/state.npz` and the observation numbers as arrays.
 - **The unit:**
   ```
   scripts/run_detached.sh legacy-capture 24G --cpus 0-3,16-19 --oom-first --wait-headroom 26G -- flock /mnt/workspaces/Cells/locks/gate-cores-0-3.lock bash CHECKOUT/validation/legacy_port/capture.sh SNAP ORIGIN OUT
@@ -672,7 +745,10 @@ and G-9 only when a consumer asks. **Recommendation:** follow Q2 and Q4.
 
 ## Appendix A. The 11 families of D348: closures, physics, sources and targets
 
-This is kept from the first version of this plan for the builders. Its route is now §7's.
+This is kept from the first version of this plan for the builders. Its route is now §7's. That version's
+per-family detail still applies to the families Route A relocates: consumers, neutral target homes, bitwise
+world sets and the capture commands, including the assembly families' CPU command line. It is in commit
+`87d0406b`, `docs/LEGACY_PORT_PLAN.md` §4 and §5 (`git show 87d0406b:docs/LEGACY_PORT_PLAN.md`).
 
 | # | ID (legacy, frozen) | Spec / parse | Model | Import-time closure in legacy |
 |---|---|---|---|---|
