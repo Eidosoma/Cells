@@ -51,6 +51,7 @@ changes an input or a definition becomes a dated amendment to this folder, never
 | `CRITERIA.md` | The criteria, bands and plants, fixed before any reference exists. The plants' predicted effects are yours to compute (SPEC.md §6) |
 | `AMENDMENT-2026-11-24.md` | Amendment 1: the answers to your four questions and your five readings. It governs where it differs from the files above |
 | `AMENDMENT-2-2026-11-24.md` | Amendment 2: the lead's layout rulings on provenance, extra keys and precision. It governs where it differs from the files above |
+| `AMENDMENT-3-2026-11-24.md` | Amendment 3: family D's energy identity judged at second order (a disclosed correction), release_check's scope, and four readout controls. It changes nothing the references compute |
 
 ## Where your work goes
 
