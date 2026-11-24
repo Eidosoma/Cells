@@ -46,7 +46,7 @@ CONSTANT, DERIVED, SPREAD = agreement.CONSTANT, agreement.DERIVED, agreement.SPR
 
 # ------------------------------------------------------------------ the seeds (the document's §3)
 
-SEEDS = {"first": 540001, "retry": 560001}  # seeds base .. base + M - 1, environment 0
+SEEDS = {"first": 670001, "retry": 690001}  # seeds base .. base + M - 1, environment 0
 EARLIER_SEEDS = (  # every stream seed range registered, used or probed before this registration
     ("Protocol D, first seeds", 1, 256),
     ("Protocol D, retry seeds", 100001, 100256),
@@ -343,9 +343,11 @@ def floppy_margins(spec, run, representation):
 
 def precondition(classes, margins_by_run):
     """The constant pairs' precondition, at each rung M reads: at every time of a constant pair,
-    every run's vesicle (each exact replica and (d), `margins_by_run` a list of floppy_margins) is
-    floppy, its margin finite and positive. Returns {"holds", "violations": [(vesicle, time
-    index, run index)]}."""
+    no run's vesicle (each exact replica and (d), `margins_by_run` a list of floppy_margins) is
+    tense by its recorded counts, a finite margin at or below 0. A run with no row at a time (it
+    ended before it, NaN) has no counts there: it is not called tense, its pairs stay judged, and
+    its missing value is not the constant (§5), as the first registration fails a censored
+    replica. Returns {"holds", "violations": [(vesicle, time index, run index)]}."""
     times = {}
     for key, row in classes.items():
         prefix = key.split(":")[0] + ":" if ":" in key else ""
@@ -357,7 +359,7 @@ def precondition(classes, margins_by_run):
         for prefix, js in times.items():
             for j in sorted(js):
                 m = margins[prefix][j]
-                if not (np.isfinite(m) and m > 0):
+                if np.isfinite(m) and not m > 0:
                     bad.append((prefix, j, r))
     return {"holds": not bad, "violations": bad}
 
@@ -367,13 +369,14 @@ def judge_world(exact_top, d_top, exact_below, d_below, classes_top, values_top,
     """One world's M with §6's precondition judged first. `margins_top` and `margins_below` hold
     each rung's floppy_margins, one per exact replica in seed order, then (d)'s.
 
-    - At each rung, a constant pair at a time where any run's vesicle is not floppy is marked
-      UNJUDGED: neither the constant rule nor the z sees it, so a tense replica can never fail
-      or pass it.
+    - At each rung, a constant pair at a time where any run's vesicle is tense by its recorded
+      counts (`precondition`) is marked UNJUDGED: neither the constant rule nor the z sees it, so
+      a tense replica can never fail or pass it. A run with no row there is not tense: its
+      missing value meets the constant rule.
     - The world **fails** when M fails on what is judged (a judged constant pair, or the z beyond
       lq.Z_FAIL). Otherwise it is **inconclusive** when the precondition fails anywhere or M is
       inconclusive. Otherwise it **passes**.
-    - `tense` per rung: the runs with a vesicle not floppy at a constant time (exact replicas and
+    - `tense` per rung: the runs with a vesicle tense at a constant time (exact replicas and
       whether (d)), and the count of such runs at each (vesicle, time index)."""
     judged, rungs = [], {}
     for label, classes, margins in (("top", classes_top, margins_top),
@@ -998,6 +1001,106 @@ def _reader_checks(rng, margins):
     return out
 
 
+def _end_to_end_checks(rng, margins):
+    """judge_world and P-D8 end to end, as the checker will feed them: invented runs of the
+    registered D5 and D6 at the two rungs M reads, 128 exact replicas in the exact row layout and
+    one (d) run in (d)'s, each through the registered reader (lq.observables) and floppy_margins.
+    D5's tense slot 0 has no constant pair, so its tension enters nothing. (d)'s spread values are
+    set to what makes e exactly 0, so that only the constant path and the precondition decide."""
+    out = {}
+
+    def read(name, spec, run, representation):
+        return (lq.observables(name, spec, run, representation),
+                floppy_margins(spec, run, representation))  # fmt: skip
+
+    def matching(exact, d, classes):
+        d = {k: np.array(v, dtype=np.float64) for k, v in d.items()}
+        for k, row in classes.items():
+            for j, c in enumerate(row):
+                if c != SPREAD:
+                    continue
+                column = exact[k][:, j][np.isfinite(exact[k][:, j])]
+                same = column.size >= 2 and np.all(column.view(np.uint64)
+                                                   == column[0:1].view(np.uint64))  # fmt: skip
+                d[k][j] = column[0] if same else np.nanmean(exact[k][:, j])
+        return d
+
+    def dropped_last(run):
+        return SimpleNamespace(rows={k: np.asarray(v)[:-1] for k, v in run.rows.items()})
+
+    for name in ("D5", "D6"):
+        prefix = "slot1:" if name == "D5" else ""
+        rungs = {}
+        for label, rung in (("top", 100.0), ("below", 50.0)):
+            classes, values = classify(name, rung, floppy_from_margins(name, rung, margins))
+            spec_x, spec_d = _parse(name, rung, False), _parse(name, rung, True)
+            runs = [_invented_rows(spec_x, False, rng) for _ in range(REPLICAS)]
+            reads = [read(name, spec_x, r, False) for r in runs]
+            exact = {k: np.stack([o[k] for o, _ in reads]) for k in reads[0][0]}
+            d_obs, d_margin = read(name, spec_d, _invented_rows(spec_d, True, rng), True)
+            rungs[label] = {"classes": classes, "values": values, "spec": spec_x, "runs": runs,
+                            "exact": exact, "d": d_obs,
+                            "margins": [m for _, m in reads] + [d_margin]}  # fmt: skip
+
+        def world(top=None, top_margins=None):
+            t, b = rungs["top"], rungs["below"]
+            exact_top = t["exact"] if top is None else top
+            return judge_world(
+                exact_top, matching(exact_top, t["d"], t["classes"]), b["exact"],
+                matching(b["exact"], b["d"], b["classes"]), t["classes"], t["values"],
+                b["classes"], b["values"], t["margins"] if top_margins is None else top_margins,
+                b["margins"])  # fmt: skip
+
+        top = rungs["top"]
+        honest = world()
+        wrong = {k: v.copy() for k, v in top["exact"].items()}
+        wrong[f"{prefix}sigma_N_per_m"][5, 3] = 1e-6  # a wrong σ on floppy counts
+        wrong_sigma = world(wrong)
+        tense_run = _invented_rows(top["spec"], False, rng, tense=True)
+        tense_obs, tense_margin = read(name, top["spec"], tense_run, False)
+        tensed = {k: v.copy() for k, v in top["exact"].items()}
+        for k in tensed:
+            tensed[k][9] = tense_obs[k]
+        tense_margins = list(top["margins"])
+        tense_margins[9] = tense_margin
+        tense = world(tensed, tense_margins)
+        short_obs, short_margin = read(name, top["spec"], dropped_last(top["runs"][11]), False)
+        shorted = {k: v.copy() for k, v in top["exact"].items()}
+        for k in shorted:
+            shorted[k][11] = short_obs[k]
+        short_margins = list(top["margins"])
+        short_margins[11] = short_margin
+        short = world(shorted, short_margins)
+        last = len(lq.times_of(name, 100.0)) - 1
+        want_short = sorted(f"{k}@{last}" for k, row in top["classes"].items()
+                            if row[last] == CONSTANT)  # fmt: skip
+        out[f"end to end, {name} at 100 against 50 nm: the reader's rows into judge_world"] = {
+            "verdicts": {"honest": honest["verdict"], "wrong_sigma_on_floppy_counts":
+                         wrong_sigma["verdict"], "tense_replica": tense["verdict"],
+                         "replica_without_its_last_row": short["verdict"]},
+            "tense": tense["precondition"]["top"]["tense"],
+            "ok": honest["verdict"] == "pass" and wrong_sigma["verdict"] == "fail"
+            and wrong_sigma["m"]["constant_failures"] == [f"{prefix}sigma_N_per_m@3"]
+            and wrong_sigma["precondition"]["top"]["holds"]
+            and tense["verdict"] == "inconclusive"
+            and tense["precondition"]["top"]["tense"] == {
+                "exact_replicas": 1, "d": False, "by_vesicle_time": {f"{prefix}{last}": 1}}
+            and short["verdict"] == "fail" and short["precondition"]["top"]["holds"]
+            and sorted(short["m"]["constant_failures"]) == want_short}  # fmt: skip
+        if name == "D6":
+            b = rungs["below"]
+            plant = pd8(top["exact"], matching(top["exact"], top["d"], top["classes"]),
+                        b["exact"], matching(b["exact"], b["d"], b["classes"]), top["classes"],
+                        top["values"], b["classes"], b["values"], top["margins"],
+                        b["margins"])  # fmt: skip
+            out["end to end, P-D8 on D6's read rows: all 22 single-pair plants caught"] = {
+                "planted": plant["planted"], "judged": plant["judged"],
+                "honest": plant["honest_verdict"],
+                "ok": plant["caught"] and plant["planted"] == plant["judged"] == 22
+                and plant["honest_verdict"] == "pass"}  # fmt: skip
+    return out
+
+
 def _classification_checks(margins):
     """From the model and (d)'s registered margins: D5's floppy slot's V and σ at every time and
     D6's σ at every time and V before the shear are the only constant pairs, at every rung."""
@@ -1047,6 +1150,7 @@ def check(margins_path=None):
     out |= _m_checks(rng)
     out |= _zero_se_checks()
     out |= _world_checks(rng)
+    out |= _end_to_end_checks(rng, margins)
     out |= _classification_checks(margins)
     out |= _reader_checks(rng, margins)
     out |= _parse_checks()

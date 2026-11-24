@@ -107,33 +107,42 @@ this registration, never from the first:
 | `limit_qualification.SEED_BASE` and `limit_qualification.seeds` (seeds 1 and 100001 onward) | `protocol_d_v2.SEEDS` and `protocol_d_v2.seeds` (§3) |
 | protocol_d.json's `constants.ladder.seeds` | protocol_d_v2.json's `seeds` |
 | §2's "Seeds: 1 to M ... the retry's seeds are 100001 to 100000 + M" | §3 |
-| §7.4's convergence seeds 1–6 | 540001–540006 (§3) |
-| Erratum 2's "seeds 1 to 256" for D0 (P-D1) | D0's first seeds here, 540001–540256 |
+| §7.4's convergence seeds 1–6 | 670001–670006 (§3) |
+| Erratum 2's "seeds 1 to 256" for D0 (P-D1) | D0's first seeds here, 670001–670256 |
 | `limit_qualification.criterion_m` for M's verdict | `protocol_d_v2.criterion_m` (§5); `limit_qualification.mean_error` stays its input |
 | Erratum 3, its document and `protocol_d_erratum_3.py` | §4 and §5 |
 | §11's cost (2–3 CPU-hours) | §9 |
 
 ## 3. The seeds
 
-- **First seeds:** 540001 to 540000 + M, with environment 0, lineage 0 and branch 0. M is 256 for
+- **First seeds:** 670001 to 670000 + M, with environment 0, lineage 0 and branch 0. M is 256 for
   D0–D3 and 128 for D4–D7.
-- **Retry seeds**, once and for inconclusive worlds only: 560001 to 560000 + M.
+- **Retry seeds**, once and for inconclusive worlds only: 690001 to 690000 + M.
 - **D7's clock convergence (§7.4 of the first registration)** reads the first six seeds of the set
-  it checks: 540001–540006.
+  it checks: 670001–670006.
 - **D2's β generator seed, 20261124,** is a world input and stays as registered.
-- **No run has used them.** No run of any world, in either representation, has been made on any
-  seed of either range. None will be before the run: in particular D7's (d) runs are not
-  pre-screened for the clock bound (§7).
+- **Unused, as far as the record shows.**
+  - The author has run nothing on either range, and nothing will be run on them before the
+    comparison. In particular, D7's (d) runs are not pre-screened for the clock bound (§7).
+  - No number of either range appears anywhere in the repository (docs/, validation/, tests/,
+    src/ and scripts/), in any context.
+  - Nor does any appear as a number in the run folders of OL6 and FR-46 to FR-48 under
+    /mnt/workspaces/Cells (JSON, Python, shell and Markdown files; searched 24 November). The only
+    matches there are digits after the decimal point of five timestamps' seconds.
 - **Why the ranges moved from those proposed at dbf17e84 (640001 and 740001).** A (d) run of D7
   consumes its seed. Its pore threshold is drawn from the replica's own stream:
-  - `rate_equations.py:1472`: `self.base_key = streams.base_key_data(x.seed, x.environment,
-    x.lineage, x.branch)`;
-  - `rate_equations.py:1517`: `u, energy = pore_clock.threshold(self.base_key, key, 0)`;
-  - `pore_clock.py:70–74`: domain 7 (`"pore"`), the vesicle's key, counter 0.
+  - `_Run.__init__` (rate_equations.py:1472): `self.base_key = streams.base_key_data(x.seed,
+    x.environment, x.lineage, x.branch)`;
+  - `_Run.draw_threshold` (rate_equations.py:1517): `u, energy = pore_clock.threshold(
+    self.base_key, key, 0)`;
+  - `pore_clock.threshold` (pore_clock.py:70–74): domain 7 (`"pore"`), the vesicle's key, counter 0.
 
   So **the D7 clock-room probe** (§8, §11), which ran D7's (d) alone on 640001–640128 at all three
   rungs, 384 runs, probed the first range proposed at dbf17e84. The retry range proposed there,
   740001–740256, was never run. Both are withdrawn, and both are now earlier ranges.
+- **A second move, before any run.** The ranges first chosen after that, 540001 and 560001, were
+  dropped unused: a repository search found those numbers as world identifiers of an unrelated
+  assay design (`validation/assays/channel_compensation_design.py`).
 - **Disjoint from every earlier range the author could find** (`EARLIER_SEEDS`, checked by
   `seeds_disjoint`): those registered in docs/ and validation/, those the decisions name, and the
   probes' and smokes' seeds the author knows. A range used only in an unrecorded run is outside
@@ -292,6 +301,10 @@ At the top rung K against K − 1, each rung's observables as the registered rea
   - It reads no σ, no V and no flag of the run.
   - So a replica whose counts are floppy is judged by the constant rule, whatever its σ or V. A
     wrong replica cannot read as tense and escape that rule.
+  - Only a finite margin at or below 0 is tense. **A run with no row at a time** (it ended before
+    it) has no counts there, so it is not called tense. Its pairs stay judged, and its missing value
+    is not the constant (§5): one wrong replica fails, as the first registration fails a censored
+    replica. A (d) run that did not end as registered is §9's own precondition, judged before M.
 - **`judge_world` judges it first, at each rung.** At a time where any run's vesicle is not floppy,
   that vesicle's constant pairs are not judged: neither the constant rule nor the z sees them. The
   world then:
@@ -346,7 +359,7 @@ At the top rung K against K − 1, each rung's observables as the registered rea
 ## 8. The checks, before the tag (`python -m validation.assembly_lineages_v2.protocol_d_v2 check`)
 
 They use invented inputs and made-up columns only, the registered constants, and the parse of the
-registered definitions. No world is run. All 25 pass, in about 2 s:
+registered definitions. No world is run. All 28 pass, in about 3 s:
 
 - **Seeds:** every seed of every world and both sets lies outside every earlier range of §3,
   including the withdrawn ones and the open range from 900001.
@@ -379,6 +392,16 @@ registered definitions. No world is run. All 25 pass, in about 2 s:
   - **P-D8 on made-up columns:** all 22 single-pair plants (11 pairs at each rung) are caught. With
     a tense replica at one time, the 20 pairs still judged are caught, and the 2 at that time are
     not judged.
+- **End to end, as the checker will feed it** (D5 and D6 at 100 against 50 nm): 128 invented exact
+  runs in the exact row layout and one (d) run in (d)'s, each through the registered reader and
+  `floppy_margins`, into `judge_world`. D5's tense slot 0 has no constant pair. (d)'s spread values
+  are set to make e exactly 0, so that only the constant path and the precondition decide.
+  - The honest worlds pass.
+  - A wrong σ (10⁻⁶ N/m) on one replica whose counts are floppy fails the world at that pair alone,
+    with the precondition holding.
+  - A replica made tense at the last time gives inconclusive, its tense count 1 there.
+  - A replica without its last row fails the world at the constant pairs of that time.
+  - P-D8 on D6's read rows: all 22 single-pair plants are judged and caught.
 - **The classification:** from the model and (d)'s registered margins, the constant pairs are exactly
   §4.2's at every rung. σ's value is +0.0, and V's is positive.
 - **The registered reader, on invented rows of the registered worlds, in both representations' row
@@ -453,17 +476,6 @@ alone (`cost` in the JSON).
   It reads the first registration, and erratum 1, which §7 folds in. §7 restates erratum 2's rules,
   so the checker need not read erratum 2, whose §1 and §4 quote the first check's plant findings in
   (d) alone. This document quotes none of the first results.
-- **What the files it executes hold.** The checker executes `protocol_d_erratum_2.py` and reads
-  `protocol_d.json`, both registered arithmetic. The lead asked whether either holds the first
-  check's results, since then the bar above could not hold.
-  - `protocol_d.json` holds none. It was last changed in 6300a829 (23 November, 06:27 UTC), before
-    the first registration's tag and before the first check began (its head, 3e50d48d, is 10:41
-    UTC). Its numbers are the first registration author's own (d)-alone sizing, plant effects and
-    clock table, part of the registered record.
-  - `protocol_d_erratum_2.py` holds no number, judgement or verdict of the first check. **Its module
-    docstring names one (d)-alone plant outcome of the first check in words:** P-D1's planted (d)
-    run, D0 at `min_count` 1, was refused ("in place of the refused (d) run"). That is the one first
-    finding the checker will meet. It has no number, and no comparison of (d) with exact events.
 - **Before any run,** at its own head, it runs `python -m validation.assembly_lineages_v2.
   protocol_d_v2 check` and stops if any check fails. Main may move between the tag and the run, and
   the reader's keys come from `rate_equations.enveloped`, so the check verifies them at the run's
@@ -490,8 +502,9 @@ alone (`cost` in the JSON).
   - D7's (d) records' `run_seconds`.
 
   No observable, judgement or verdict file of the first check was opened for this registration.
-- **Read for the lead's question of §10:** `protocol_d_erratum_2.py` in full, and `protocol_d.json`'s
-  keys and its non-constant sections. Both are registered files.
+- **Read for the lead's question whether the files the checker executes hold first-check results:**
+  `protocol_d_erratum_2.py` in full, and `protocol_d.json`'s keys and its non-constant sections. Both
+  are registered files. The answer went to the lead, and this document quotes none of it.
 - **Run for this registration:**
   - cells.rate_equations@1 alone on the registered D5 and D6 definitions at the three rungs (seed 1;
     (d) is deterministic here), for §4.3's margins. The script is
@@ -536,9 +549,12 @@ alone (`cost` in the JSON).
   - **Its registered effect:** each planted pair that the precondition lets M judge fails the world
     by the constant rule. M's constant failures are then the honest judgement's plus that pair.
     P-D8 is caught when every judged plant is, and at least one is judged.
-  - **Why one ulp:** it is the smallest error (d) can make, and no statistical rule sees it. It is
-    planted on the observables because the reader recomputes V and σ from counts: a floppy V reads
-    N_L through a logarithm, which can absorb a one-ulp change in the count.
+  - **Why one ulp, on the observables:** it is the smallest error (d) can make, and no statistical
+    rule sees it. It is planted on the read values, not in an engine run, because the reader
+    recomputes V and σ from counts. A floppy V reads N_L through a logarithm, and σ is +0.0 while
+    floppy. Moving N_L up by 1 to 16 ulps leaves V's bits as they were in D5 and D6 at 50 and 100
+    nm (32 at three of them), and σ's at every step, so a count-level plant of one ulp would not
+    be there to catch.
   - **Its cost** is none. It reads the honest D6 runs, with no new run.
 - **The other preconditions (§9),** the verdicts and the retry (§10), with the retry's seeds as §3
   gives them.

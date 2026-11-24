@@ -3,8 +3,8 @@
  "status": "proposed for registration: Protocol D's re-registration (D318), before any run of its comparison",
  "document": "docs/OL6_PROTOCOL_D_V2.md",
  "seeds": {
-  "first": 540001,
-  "retry": 560001,
+  "first": 670001,
+  "retry": 690001,
   "rule": "seeds base .. base + M - 1, environment 0, lineage 0, branch 0",
   "earlier": [
    [
