@@ -72,5 +72,14 @@ sha256 in `table/SHA256SUMS`, built from the run records alone:
 
 ## Notes
 
+- **D's swelling** (the protocol's §4 asks the builder to confirm it), by LAWS.md §4's law with
+  SPEC.md §1.6's inputs, as arithmetic with no engine run: the cell crosses 2 V0 at 1998.6 s,
+  inside the window [1800, 5400) s. V is 1.952 pL at 1800 s, 2.398 pL at 5400 s and 2.554 pL at
+  14,400 s, and its equilibrium, 2.5625 pL, is inside the 3.0 pL bound. The gene unit's own
+  change to the cell's osmolytes is about 1e-7 fmol/s, which this leaves out.
+- **G's identity with water closes at second order,** not at rounding: water's bookings are
+  second order (FR-43's C2.7). On the smoke's invented swelling cell it is 2.64e-5 pJ at 0.5 s and
+  6.59e-6 pJ at 0.25 s (observed order 2.003), 5.1e-8 of the bookings' magnitude. CRITERIA.md C4
+  holds family D's identity to the rounding form. Family C's closes at rounding (1.4e-14 pJ).
 - 24 November 2026: a reader and mapping were written by the builder under the lead's mistaken
   brief (which combined the builder's and the judge's roles), retired unused, and never tagged.
