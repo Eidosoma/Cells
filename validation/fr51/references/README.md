@@ -17,7 +17,7 @@ The readings the spec needed are in `NOTES.md`.
 | `fr51_reference.py` | The generator and writer: both routes, their comparison, the JSON files, the provenance |
 | `test_fr51_reference.py` | The self-check, about 5 s, with no engine import and no world |
 | `results/<case id>.json` | One file per registered case |
-| `format-sample/` | `invented_cases.json`, invented inputs, and the writer's output on them (`INVENTED_*.json`) |
+| `format-sample/` | `invented_cases.json`, invented inputs, and the writer's output on them (`INVENTED_*.json`). The five invented cases show each layout of `results/`: free at unequal and at equal concentrations, a zero blocker with three modes, two modes under the reversal reference, and one mode with a units count |
 | `NOTES.md` | The readings of ambiguous statements, and the check for inconsistent declared values |
 
 ## Running
@@ -79,8 +79,8 @@ that is exactly 0 is written `"0"`.
   - B′ for the slope;
   - each 1 − θ_k = K_k/(c_B + K_k) formed directly, and u = Σ w (1 − θ)/Σ w;
   - the analytic slopes of §4 and §5.
-- Why 120 digits: E_ion carries 50 digits, so the flux at V = E_ion is about 1e-51 of its two terms.
-  120 digits leave about 69 correct digits there.
+- Why 120 digits: E_ion carries 50 digits, so the flux at V = E_ion is at most about 2e-50 of its
+  two terms. 120 digits leave about 70 correct digits there.
 
 **Route B** shares only the parsed declarations with route A.
 - It works in exact rationals, with its own binary exp and ln. Results are rounded to 640 bits

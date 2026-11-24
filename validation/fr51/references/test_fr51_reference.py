@@ -212,6 +212,8 @@ def test_format_sample_has_the_results_layout_and_is_marked_invented():
 
     assert {path.stem for path in SAMPLE_FILES} == {case.id for case in SAMPLE_SPEC.cases}
     pairs = (("INVENTED_free", "P2_K_unequal"),
+             ("INVENTED_free_equal", "P1_K_equal"),  # E_ion = 0, exact zeros, the line
+             ("INVENTED_zero_blocker_three_modes", "Z1_zero_blocker"),  # three modes, theta 0
              ("INVENTED_two_modes_reversal", "B1_two_modes_E1"),
              ("INVENTED_units_one_mode", "B2_woodhull_inside"))
     for sample_name, real_name in pairs:

@@ -14,7 +14,8 @@ exponential, no logarithm and no formula.
   1 - (sum_k w_k theta_k)/(sum_k w_k).
 - **Every slope** is a central difference of route B's own values, with step H = 1e-50 V, or
   1e-50 times the concentration for the concentration slopes. Its truncation is about
-  H^2 |f'''/f'|/6, below 1e-95 here, and its rounding about 2^-640/H, below 1e-140.
+  H^2 |f'''/f'|/6, below about 1e-93 here (largest next to a slope's zero), and its rounding
+  about 2^-640/H, below 1e-140.
 - **E_ion** is recomputed from the concentrations with this module's ln, and rounded to 50
   significant digits by integer arithmetic; route A's string must match. For a concentration
   slope under the reversal reference, E at the perturbed concentration is recomputed unrounded and

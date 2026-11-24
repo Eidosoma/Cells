@@ -16,9 +16,10 @@ consistency. No reading changes a law; each fixes a detail the spec leaves open.
      - So V_ref is exactly 0 at V = E_ion.
      - So `u_at_reversal` is exactly the closed form (Σ w K(0)/(c_B + K(0)))/Σ w under the
        reversal reference.
-   - It differs from the exact Nernst potential by less than 5e-53 V. That moves no other reported
-     value by more than about 1e-49 relative.
-   - Hence the flux at V = E_ion is not 0. It is about 1e-51 of its two terms, the residue of E's
+   - It differs from the exact Nernst potential by at most half a unit in its last place, the 51st
+     decimal: 5e-52 V. The largest difference here is 4.8e-52 V. With |a_k| ≤ 300/V, that moves no
+     other reported value by more than about 1.5e-49 relative.
+   - Hence the flux at V = E_ion is not 0. It is at most about 2e-50 of its two terms, the residue of E's
      rounding, and it is reported to full accuracy with its sign. This is why route A works at 120
      digits.
 

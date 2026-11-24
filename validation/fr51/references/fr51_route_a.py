@@ -12,8 +12,8 @@ E_ion is the Nernst potential at 120 digits rounded half-even to E_DIGITS = 50 s
 (cases.json, extra_voltages). That 50-digit value is the E_ion of V_ref = V - E_ion and of the
 voltage list, so V_ref is exactly 0 at V = E_ion (NOTES.md, reading 2).
 
-Why 120 digits: at V = E_ion the flux is about 1e-51 of its two terms, because E_ion carries 50
-digits. 120 digits leave about 69 correct digits there, against the 30 required (LAWS.md 7).
+Why 120 digits: at V = E_ion the flux is at most about 2e-50 of its two terms, because E_ion carries
+50 digits. 120 digits leave about 70 correct digits there, against the 30 required (LAWS.md 7).
 """
 
 from __future__ import annotations

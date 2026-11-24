@@ -21,10 +21,16 @@
    {"weight": "0.25", "k0_mM": "0.2", "electrical_distance": "0.6"},
    {"weight": "0.75", "k0_mM": "7", "effective_valence": "2.5"}]},
   "invented_one_mode": {"blocker": {"valence": -2, "side": "inside", "concentration_mM": "3"}, "reference": "membrane_voltage", "modes": [
-   {"weight": "1", "k0_mM": "0.05", "electrical_distance": "0.35"}]}
+   {"weight": "1", "k0_mM": "0.05", "electrical_distance": "0.35"}]},
+  "invented_zero_three_modes": {"blocker": {"valence": 1, "side": "inside", "concentration_mM": "0"}, "reference": {"reversal_of": "X"}, "modes": [
+   {"weight": "0.5", "k0_mM": "0.3", "electrical_distance": "0.2"},
+   {"weight": "0.3", "k0_mM": "4", "effective_valence": "1.2"},
+   {"weight": "0.2", "k0_mM": "9", "electrical_distance": "0.9"}]}
  },
  "cases": [
   {"id": "INVENTED_free", "population": "X_invented", "c_i_mM": "50", "c_o_mM": "2", "block": null},
+  {"id": "INVENTED_free_equal", "population": "X_invented", "c_i_mM": "30", "c_o_mM": "30", "block": null},
+  {"id": "INVENTED_zero_blocker_three_modes", "population": "X_invented", "c_i_mM": "50", "c_o_mM": "2", "block": "invented_zero_three_modes"},
   {"id": "INVENTED_two_modes_reversal", "population": "X_invented", "c_i_mM": "50", "c_o_mM": "2", "block": "invented_two_modes"},
   {"id": "INVENTED_units_one_mode", "population": "X_invented", "c_i_mM": "50", "c_o_mM": "2", "block": "invented_one_mode", "units": {"count": "500", "reference_density_per_m2": "2.5e11"}}
  ]
