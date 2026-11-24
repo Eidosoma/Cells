@@ -2412,8 +2412,8 @@ loosens no bound beyond what that rounding requires. Every planted fault the che
 - Hirschberg's plateau and washout predict a 10.63 ms activation, against 4.1 ± 0.6 ms measured.
 - Oliver's high-dose washout bounds the low-dose rise at 48.1 ms, against about 80 ms reported.
 
-`cells.species_regulated_availability`'s closing rate is fixed and input-independent, so it cannot reproduce this. Under
-the user's rule for confirmed findings, this is a law-form gap.
+`cells.species_regulated_availability`'s closing rate is fixed and input-independent. D351 reads the two records as an
+indication pair in opposite directions, not a confirmed finding; the design note checks the plateau condition first.
 
 **The request.** An opt-in closing rate that depends on the input, for dose-dependent deactivation.
 - It keeps the state in [0, 1], with no overshoot and detailed balance where it applies.
@@ -2510,6 +2510,15 @@ prescribed flow cannot be expressed: buffer in at Q, through chambers in series,
     FR-54's qualification. At Q = 0, the run equals its diffusion-only twin, bitwise.
   - **In an initially empty chamber,** x ln(x/y) reads the trace level. The note states the trace and the expected
     refinement, as FR-59 must.
+
+**Addition (24 November 2026, later): a growing collector.**
+- **The case.** Start with an empty tube at zero volume. Deliver 1 pL of 1 mM neutral tracer, then 1 pL of 3 mM.
+  - The tube ends with 4 fmol in 2 pL, at 2 mM.
+  - The first portion has zero pooling loss.
+  - After both, the total ideal mixing loss is 0.523248 RT·fmol, which is 1 fmol·ln(1/2) + 3 fmol·ln(3/2).
+- **The reversed order** gives the same total, with different per-portion losses.
+- **This settles the collector's form:** a tube at zero volume holds no trace, so the collector starts as a record and
+  grows in volume.
 
 ## FR-58 — A label on an exchangeable group, carried through reversible conversions
 

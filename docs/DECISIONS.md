@@ -11423,3 +11423,37 @@ is untested.
 - external Na on the Kir route law;
 - one permeability across voltage on the constant-field law;
 - pH on Kv1.5, on its library page rather than its parity code.
+
+## D352: corrections and checks after D350 and D351; Lean's two-potassium rows for FR-51; FR-57's growing collector
+
+2026-11-24, about 17:36 UTC. The lead's checks, with the advisor.
+
+- **A correction to D350.** FR-51's test row with an effective valence of 9.0 is a refusal: "steepness above 8",
+  refused as "exceeds 8". So no test exercises an admitted effective valence above |z_B|. One admitted row (spermine,
+  z_B = +4, z_eff = 5) is queued on the slot-refusal follow-up branch, never on e4bbf0ec.
+- **FR-44's resume** cuts exactly at the wash row: the checkpoint holds the state the wash acts on, and the resumed run's
+  first step applies it, with planted redo and skip. That meets the request's "a checkpoint immediately before the
+  event".
+- **FR-50's pre-gate run:** one failure in 1,284, `test_library_pages.py`, because the generated library pages are
+  stale after FR-50's new records. FR-51's snapshot passes the same test. FR-50 regenerates them with
+  `scripts/library_pages.py --write` after each merge, as with the composition table.
+- **FR-38 v2's smoke-3** passed, with nothing failed.
+- **Lean's two-potassium rows for FR-51** (the user's relay):
+  - **External K.** Panama and Lopatin measured Kir2.1 at four external K levels in one preparation. The steep block's
+    midpoint moved 0.98 ± 0.01 mV per mV of measured reversal, over two patches. Ishihara and Yan give fixed-dose
+    conductance curves at 150, 50 and 20 mM external K.
+  - **Internal K.** Lopatin and Nichols report a slope of −0.15 when internal K changes, from one study.
+  - **What this means for FR-51's law.** A block referenced to V − E moves exactly 1 mV per mV of E for both changes,
+    and one referenced to V moves 0. So:
+    - the external arm gives FR-51's reference real teeth;
+    - the internal arm is an indication against V − E for internal changes, so the reference is supported for
+      external changes only. That scope line also touches `inward_rectifier_linear_driving_force@1`, which reads
+      u = V − E and runs in XC0.
+  - **Main's Kir2.1** (`kir2p1_mh2@1`, a parity law) gates on absolute V, so it has no external-K shift. Once a second
+    external slope is extracted (Ishihara and Yan's curves), the user's rule fires there, and the fix is a new law or
+    major.
+  - **Non-blind:** the lead has seen 0.98, so any comparison now is not blind.
+  - **Registration is the user's call** after FR-51 lands. It needs both an external and an internal arm.
+- **FR-57's growing collector** is appended to FR-57 and settles that open point: a tube at zero volume holds no trace,
+  so the collector starts as a record. The case's numbers check: 1 fmol·ln(1/2) + 3 fmol·ln(3/2) = 0.523248 RT·fmol. The
+  reversed order gives the same total with different per-portion losses.
