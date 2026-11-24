@@ -2334,6 +2334,22 @@ loosens no bound beyond what that rounding requires. Every planted fault the che
 
 **Status (24 November):** logged. A design note comes first.
 
+**Addition (24 November 2026, later; items 1 and 2 stand):**
+- **Two heat laws, one reference.** The default face heat and `exact_free_energy_heat@1` (D280's exact choice for
+  faces) both run against the closed form.
+  - **The reference** is the closed form's dissipated free energy.
+  - **The subject** is the default face heat, held to its derived tolerance.
+  - **The control** is `exact_free_energy_heat@1`, held to rounding alone. A miss there points at the harness, not
+    the law.
+- **Item 3 is one native run:** diffusion, then a withdrawal and a refill at a connected finite node. It has three
+  separate checks, each against its own independent expected value:
+  - the tracer removed: the fraction f of the node's amount just before the wash;
+  - the tracer supplied: the buffer's amount in the refilled volume;
+  - the heat released during the refill: the mixing heat in D246's small-ratio form.
+- **The refusal it lifts.** `scheduled_compartment_wash@1` version 1 refuses a node that a face touches (D246 item 5),
+  and any neutral species crossing the node's surface by a declared path. The qualification lifts that refusal only
+  for the qualified form: one neutral species crossing by a passive route.
+
 ## Backlog: external tools to look at (logged by the user, 23 November 2026)
 
 The user logged these suggestions to look at later. None is scheduled or adopted.
