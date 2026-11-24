@@ -1778,6 +1778,8 @@ exporter's zero-loss rule covered chain products but not release-fate rows. The 
 eligible local release-fate rows, class rows included, and the reader keeps requiring an explicit loss
 series. The physical balances were unaffected.
 
+**Status (24 November, later, D354):** the second comparison's amendment 3 is tagged. Three readout controls go to a later registration, FR-38 v3, with its own verdict: producers reordered and replaced; the same molecule leaving and returning through export; and zero loss, two loss routes on one row, and a constant-stock control.
+
 ## FR-39 — A vesicle that survives transient pores
 
 - **The request (the Lean lane's evidence, relayed by the user, 22 November 2026; D286).** One study imaged the
