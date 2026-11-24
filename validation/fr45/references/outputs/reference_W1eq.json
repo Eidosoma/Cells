@@ -487,106 +487,14 @@
    "against": "reference"
   },
   {
-   "criterion": "C3a",
-   "observable": "H:well",
-   "time_s": 0.8,
-   "start_s": 0.0,
-   "end_s": 0.8,
-   "class": "band",
-   "value": 2.831180886042806e-36,
-   "tolerance": 3.520475836167356e-07,
-   "against": "reference"
-  },
-  {
-   "criterion": "C3b",
-   "observable": "H:well",
-   "time_s": 0.8,
-   "start_s": 0.0,
-   "end_s": 0.8,
+   "criterion": "C5",
+   "observable": "sites:matrix",
+   "time_s": 0.0,
    "dt_s": 0.008,
    "class": "derived",
-   "value": null,
-   "tolerance": 4.116027744570401e-14,
-   "against": "engine: -dG of its own saved states (SPEC \u00a71.3, judge's side)"
-  },
-  {
-   "criterion": "C3c",
-   "observable": "cumulative_heat:well",
-   "time_s": 0.8,
-   "start_s": 0.0,
-   "end_s": 0.8,
-   "class": "derived",
-   "value": null,
-   "tolerance": 4.1160277445704007e-16,
-   "against": "engine: its own cumulative heat may not fall by more than the tolerance"
-  },
-  {
-   "criterion": "C3a",
-   "observable": "H:well",
-   "time_s": 4.0,
-   "start_s": 0.8,
-   "end_s": 4.0,
-   "class": "band",
-   "value": 1.1899814758771091e-37,
-   "tolerance": 3.520475836167356e-07,
-   "against": "reference"
-  },
-  {
-   "criterion": "C3b",
-   "observable": "H:well",
-   "time_s": 4.0,
-   "start_s": 0.8,
-   "end_s": 4.0,
-   "dt_s": 0.008,
-   "class": "derived",
-   "value": null,
-   "tolerance": 1.6464110978281605e-13,
-   "against": "engine: -dG of its own saved states (SPEC \u00a71.3, judge's side)"
-  },
-  {
-   "criterion": "C3c",
-   "observable": "cumulative_heat:well",
-   "time_s": 4.0,
-   "start_s": 0.8,
-   "end_s": 4.0,
-   "class": "derived",
-   "value": null,
-   "tolerance": 4.1160277445704007e-16,
-   "against": "engine: its own cumulative heat may not fall by more than the tolerance"
-  },
-  {
-   "criterion": "C3a",
-   "observable": "H:well",
-   "time_s": 8.0,
-   "start_s": 4.0,
-   "end_s": 8.0,
-   "class": "band",
-   "value": 1.4195790183941399e-39,
-   "tolerance": 3.520475836167356e-07,
-   "against": "reference"
-  },
-  {
-   "criterion": "C3b",
-   "observable": "H:well",
-   "time_s": 8.0,
-   "start_s": 4.0,
-   "end_s": 8.0,
-   "dt_s": 0.008,
-   "class": "derived",
-   "value": null,
-   "tolerance": 2.0580138722852005e-13,
-   "against": "engine: -dG of its own saved states (SPEC \u00a71.3, judge's side)"
-  },
-  {
-   "criterion": "C3c",
-   "observable": "cumulative_heat:well",
-   "time_s": 8.0,
-   "start_s": 4.0,
-   "end_s": 8.0,
-   "class": "derived",
-   "value": null,
-   "tolerance": 4.1160277445704007e-16,
-   "against": "engine: its own cumulative heat may not fall by more than the tolerance"
+   "value": 0.002400000361333301,
+   "tolerance": 8.526514112834964e-18,
+   "against": "reference: S_s"
   },
   {
    "criterion": "C5",
@@ -640,7 +548,7 @@
  },
  "plants": [],
  "provenance": {
-  "references_revision": "becbfe1cf7351ea3cfb73993f70b01508405eb0d",
+  "references_revision": "c28f06ed8a9dc9bdd218ec96c1576d801702c841",
   "tree_clean": true,
   "writer_version": "fr45-references-writer 1",
   "regeneration_hash_seeds": [
@@ -649,12 +557,14 @@
    2
   ],
   "spec": {
-   "label": "fr45-site-competition-v1-registered-2026-11-24",
+   "label": "fr45-site-competition-v1, amended and noted 2026-11-24 (ae25c28d)",
    "files": [
+    "validation/fr45/spec/AMENDMENT-2026-11-24.md",
+    "validation/fr45/spec/NOTE-2026-11-24.md",
     "validation/fr45/spec/CRITERIA.md",
     "validation/fr45/spec/SPEC.md"
    ],
-   "verified_against": "SHA256SUMS-fr45-spec-6e92d0ec.txt",
+   "verified_against": "SHA256SUMS-fr45-spec-ae25c28d.txt",
    "rows_matched": 83
   },
   "profile": "reference"

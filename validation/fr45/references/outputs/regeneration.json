@@ -19,95 +19,151 @@
    "hash_seed": 0,
    "cpu": 6,
    "sha256": {
-    "accuracy.json": "f3be5ed94e56870586d4e63eca9a4e6972297d207b261a2ca7cdf61729cd84a8",
-    "reference_W1.json": "92051007d4e5baffd94f58bd7a9242b0ec5e82fbf3840b63d64b1ee90b287ed9",
-    "reference_W1eq.json": "dc94013fd04c84a8b7f46505edad1691e113559377f9492a9f6f12764f30c8e8",
-    "reference_W1p.json": "61fc5319a4e313f8f0a910fe1174149b639370903e5ff530a2b1ca34a8560eea",
-    "reference_W2.json": "197d049e1fe7924dfe1686a7955196bf723b44d5bcb6bd7c585ce51b2b5f5626",
-    "reference_W3.json": "7556406d2ac5d4aa07d021c0bdc76c64ee0e8173a9379cfd2b427ef344a76a0f",
-    "reference_W4.json": "e2296c5799165d031cebea103348c7eebbea10e58213109ac06979c6c7c63cbb",
-    "reference_W5.json": "b224d6077ba44980d84701d5a9d858f2a705855d80a7b44d42777ee860e7144d",
-    "reference_W6.json": "c9e44a8f21903af1696c7c20ee3a42c3e1730a25a13353301f3478559e17af26"
+    "accuracy.json": "0b689df1dda070a528398f1391086094ea19a698f09e26de8d760018136bdf4c",
+    "reference_W1.json": "82819ad891627f4572d752623c6f7a1921a8658c89b79ffda04895364cd40d9e",
+    "reference_W1eq.json": "35fc2e83193ea04ecbaf10680ba303585cd7a8b73c06c48fa342060435738768",
+    "reference_W1p.json": "56d594843901fc83cd0468957a88a4fb12100f436d324375ada30b031d92e1ad",
+    "reference_W2.json": "b3a132f966d224c0f6c658673a0c3b5fb01ec4ea5e43358d0485de1b8431f54d",
+    "reference_W3.json": "bab9a35afa0bc07ef75ba6ee8c4725b571b1431e97fda7e0cec6cf284d8d84a9",
+    "reference_W4.json": "2df1df8ce62bd8fca0fd6d092e070b87aa31fdc31299907bd108386331264998",
+    "reference_W5.json": "e4f8e2cfe115db061fbd33948addabbe45ea7f9461e49ba1ae03ab04ff334e98",
+    "reference_W6.json": "8a4e249c04f5cfeeeebc706fa13c320d96938b295ac17e61ce4640fde69d3bad"
    },
-   "references_revision": "becbfe1cf7351ea3cfb73993f70b01508405eb0d",
+   "references_revision": "c28f06ed8a9dc9bdd218ec96c1576d801702c841",
    "tree_clean": true
   },
   {
    "hash_seed": 1,
    "cpu": 6,
    "sha256": {
-    "accuracy.json": "f3be5ed94e56870586d4e63eca9a4e6972297d207b261a2ca7cdf61729cd84a8",
-    "reference_W1.json": "92051007d4e5baffd94f58bd7a9242b0ec5e82fbf3840b63d64b1ee90b287ed9",
-    "reference_W1eq.json": "dc94013fd04c84a8b7f46505edad1691e113559377f9492a9f6f12764f30c8e8",
-    "reference_W1p.json": "61fc5319a4e313f8f0a910fe1174149b639370903e5ff530a2b1ca34a8560eea",
-    "reference_W2.json": "197d049e1fe7924dfe1686a7955196bf723b44d5bcb6bd7c585ce51b2b5f5626",
-    "reference_W3.json": "7556406d2ac5d4aa07d021c0bdc76c64ee0e8173a9379cfd2b427ef344a76a0f",
-    "reference_W4.json": "e2296c5799165d031cebea103348c7eebbea10e58213109ac06979c6c7c63cbb",
-    "reference_W5.json": "b224d6077ba44980d84701d5a9d858f2a705855d80a7b44d42777ee860e7144d",
-    "reference_W6.json": "c9e44a8f21903af1696c7c20ee3a42c3e1730a25a13353301f3478559e17af26"
+    "accuracy.json": "0b689df1dda070a528398f1391086094ea19a698f09e26de8d760018136bdf4c",
+    "reference_W1.json": "82819ad891627f4572d752623c6f7a1921a8658c89b79ffda04895364cd40d9e",
+    "reference_W1eq.json": "35fc2e83193ea04ecbaf10680ba303585cd7a8b73c06c48fa342060435738768",
+    "reference_W1p.json": "56d594843901fc83cd0468957a88a4fb12100f436d324375ada30b031d92e1ad",
+    "reference_W2.json": "b3a132f966d224c0f6c658673a0c3b5fb01ec4ea5e43358d0485de1b8431f54d",
+    "reference_W3.json": "bab9a35afa0bc07ef75ba6ee8c4725b571b1431e97fda7e0cec6cf284d8d84a9",
+    "reference_W4.json": "2df1df8ce62bd8fca0fd6d092e070b87aa31fdc31299907bd108386331264998",
+    "reference_W5.json": "e4f8e2cfe115db061fbd33948addabbe45ea7f9461e49ba1ae03ab04ff334e98",
+    "reference_W6.json": "8a4e249c04f5cfeeeebc706fa13c320d96938b295ac17e61ce4640fde69d3bad"
    },
-   "references_revision": "becbfe1cf7351ea3cfb73993f70b01508405eb0d",
+   "references_revision": "c28f06ed8a9dc9bdd218ec96c1576d801702c841",
    "tree_clean": true
   },
   {
    "hash_seed": 2,
    "cpu": 7,
    "sha256": {
-    "accuracy.json": "f3be5ed94e56870586d4e63eca9a4e6972297d207b261a2ca7cdf61729cd84a8",
-    "reference_W1.json": "92051007d4e5baffd94f58bd7a9242b0ec5e82fbf3840b63d64b1ee90b287ed9",
-    "reference_W1eq.json": "dc94013fd04c84a8b7f46505edad1691e113559377f9492a9f6f12764f30c8e8",
-    "reference_W1p.json": "61fc5319a4e313f8f0a910fe1174149b639370903e5ff530a2b1ca34a8560eea",
-    "reference_W2.json": "197d049e1fe7924dfe1686a7955196bf723b44d5bcb6bd7c585ce51b2b5f5626",
-    "reference_W3.json": "7556406d2ac5d4aa07d021c0bdc76c64ee0e8173a9379cfd2b427ef344a76a0f",
-    "reference_W4.json": "e2296c5799165d031cebea103348c7eebbea10e58213109ac06979c6c7c63cbb",
-    "reference_W5.json": "b224d6077ba44980d84701d5a9d858f2a705855d80a7b44d42777ee860e7144d",
-    "reference_W6.json": "c9e44a8f21903af1696c7c20ee3a42c3e1730a25a13353301f3478559e17af26"
+    "accuracy.json": "0b689df1dda070a528398f1391086094ea19a698f09e26de8d760018136bdf4c",
+    "reference_W1.json": "82819ad891627f4572d752623c6f7a1921a8658c89b79ffda04895364cd40d9e",
+    "reference_W1eq.json": "35fc2e83193ea04ecbaf10680ba303585cd7a8b73c06c48fa342060435738768",
+    "reference_W1p.json": "56d594843901fc83cd0468957a88a4fb12100f436d324375ada30b031d92e1ad",
+    "reference_W2.json": "b3a132f966d224c0f6c658673a0c3b5fb01ec4ea5e43358d0485de1b8431f54d",
+    "reference_W3.json": "bab9a35afa0bc07ef75ba6ee8c4725b571b1431e97fda7e0cec6cf284d8d84a9",
+    "reference_W4.json": "2df1df8ce62bd8fca0fd6d092e070b87aa31fdc31299907bd108386331264998",
+    "reference_W5.json": "e4f8e2cfe115db061fbd33948addabbe45ea7f9461e49ba1ae03ab04ff334e98",
+    "reference_W6.json": "8a4e249c04f5cfeeeebc706fa13c320d96938b295ac17e61ce4640fde69d3bad"
    },
-   "references_revision": "becbfe1cf7351ea3cfb73993f70b01508405eb0d",
+   "references_revision": "c28f06ed8a9dc9bdd218ec96c1576d801702c841",
    "tree_clean": true
   },
   {
    "hash_seed": 0,
    "cpu": 7,
    "sha256": {
-    "accuracy.json": "f3be5ed94e56870586d4e63eca9a4e6972297d207b261a2ca7cdf61729cd84a8",
-    "reference_W1.json": "92051007d4e5baffd94f58bd7a9242b0ec5e82fbf3840b63d64b1ee90b287ed9",
-    "reference_W1eq.json": "dc94013fd04c84a8b7f46505edad1691e113559377f9492a9f6f12764f30c8e8",
-    "reference_W1p.json": "61fc5319a4e313f8f0a910fe1174149b639370903e5ff530a2b1ca34a8560eea",
-    "reference_W2.json": "197d049e1fe7924dfe1686a7955196bf723b44d5bcb6bd7c585ce51b2b5f5626",
-    "reference_W3.json": "7556406d2ac5d4aa07d021c0bdc76c64ee0e8173a9379cfd2b427ef344a76a0f",
-    "reference_W4.json": "e2296c5799165d031cebea103348c7eebbea10e58213109ac06979c6c7c63cbb",
-    "reference_W5.json": "b224d6077ba44980d84701d5a9d858f2a705855d80a7b44d42777ee860e7144d",
-    "reference_W6.json": "c9e44a8f21903af1696c7c20ee3a42c3e1730a25a13353301f3478559e17af26"
+    "accuracy.json": "0b689df1dda070a528398f1391086094ea19a698f09e26de8d760018136bdf4c",
+    "reference_W1.json": "82819ad891627f4572d752623c6f7a1921a8658c89b79ffda04895364cd40d9e",
+    "reference_W1eq.json": "35fc2e83193ea04ecbaf10680ba303585cd7a8b73c06c48fa342060435738768",
+    "reference_W1p.json": "56d594843901fc83cd0468957a88a4fb12100f436d324375ada30b031d92e1ad",
+    "reference_W2.json": "b3a132f966d224c0f6c658673a0c3b5fb01ec4ea5e43358d0485de1b8431f54d",
+    "reference_W3.json": "bab9a35afa0bc07ef75ba6ee8c4725b571b1431e97fda7e0cec6cf284d8d84a9",
+    "reference_W4.json": "2df1df8ce62bd8fca0fd6d092e070b87aa31fdc31299907bd108386331264998",
+    "reference_W5.json": "e4f8e2cfe115db061fbd33948addabbe45ea7f9461e49ba1ae03ab04ff334e98",
+    "reference_W6.json": "8a4e249c04f5cfeeeebc706fa13c320d96938b295ac17e61ce4640fde69d3bad"
    },
-   "references_revision": "becbfe1cf7351ea3cfb73993f70b01508405eb0d",
+   "references_revision": "c28f06ed8a9dc9bdd218ec96c1576d801702c841",
    "tree_clean": true
   }
  ],
  "bitwise_identical": true,
  "one_clean_revision": true,
+ "precision_50_vs_70_digits": {
+  "compared": "every value of the eight reference files but provenance",
+  "differing_count": 10,
+  "differing": [
+   {
+    "file": "reference_W1.json",
+    "path": "equilibrium/wang/matrix/gap",
+    "relative_difference": 7.95102628736046e+19
+   },
+   {
+    "file": "reference_W1eq.json",
+    "path": "equilibrium/wang/matrix/gap",
+    "relative_difference": 7.95102628736046e+19
+   },
+   {
+    "file": "reference_W1eq.json",
+    "path": "heats/intervals/0/heat",
+    "relative_difference": 3.5401721282651356e-16
+   },
+   {
+    "file": "reference_W1eq.json",
+    "path": "heats/intervals/1/heat",
+    "relative_difference": 7.01892414995935e-16
+   },
+   {
+    "file": "reference_W1eq.json",
+    "path": "heats/intervals/2/heat",
+    "relative_difference": 9.859809071910847e-14
+   },
+   {
+    "file": "reference_W1p.json",
+    "path": "equilibrium/wang/matrix/gap",
+    "relative_difference": 7.95102628736046e+19
+   },
+   {
+    "file": "reference_W2.json",
+    "path": "equilibrium/wang/matrix/gap",
+    "relative_difference": 1.936941964285714e+20
+   },
+   {
+    "file": "reference_W3.json",
+    "path": "equilibrium/wang/C/gap",
+    "relative_difference": 1e+20
+   },
+   {
+    "file": "reference_W4.json",
+    "path": "equilibrium/wang/matrix/gap",
+    "relative_difference": 6.963486736076284e+19
+   },
+   {
+    "file": "reference_W6.json",
+    "path": "equilibrium/wang/D/gap",
+    "relative_difference": 1.0653357531760435e+20
+   }
+  ]
+ },
  "format_sample": {
-  "committed_sha256": "ec0ead68f20c6919b340391764b4b1a89dd668ce654375c363f3dfa8ea239008",
+  "committed_sha256": "2b7a19032415f75c4f0123fcf4b3d02cc7ed98e0014ab8f9967c8c1d65c85113",
   "runs": [
    {
     "hash_seed": 0,
     "cpu": 6,
-    "sha256": "ec0ead68f20c6919b340391764b4b1a89dd668ce654375c363f3dfa8ea239008"
+    "sha256": "2b7a19032415f75c4f0123fcf4b3d02cc7ed98e0014ab8f9967c8c1d65c85113"
    },
    {
     "hash_seed": 1,
     "cpu": 6,
-    "sha256": "ec0ead68f20c6919b340391764b4b1a89dd668ce654375c363f3dfa8ea239008"
+    "sha256": "2b7a19032415f75c4f0123fcf4b3d02cc7ed98e0014ab8f9967c8c1d65c85113"
    },
    {
     "hash_seed": 2,
     "cpu": 7,
-    "sha256": "ec0ead68f20c6919b340391764b4b1a89dd668ce654375c363f3dfa8ea239008"
+    "sha256": "2b7a19032415f75c4f0123fcf4b3d02cc7ed98e0014ab8f9967c8c1d65c85113"
    },
    {
     "hash_seed": 0,
     "cpu": 7,
-    "sha256": "ec0ead68f20c6919b340391764b4b1a89dd668ce654375c363f3dfa8ea239008"
+    "sha256": "2b7a19032415f75c4f0123fcf4b3d02cc7ed98e0014ab8f9967c8c1d65c85113"
    }
   ],
   "bitwise_identical_to_committed": true

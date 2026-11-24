@@ -2974,18 +2974,18 @@
    "class": "derived",
    "value": null,
    "tolerance": 2.3389764935235596e-14,
-   "against": "engine: -dG of its own saved states (SPEC \u00a71.3, judge's side)"
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
   },
   {
    "criterion": "C3c",
-   "observable": "cumulative_heat:well",
+   "observable": "cumulative_site_heat:well",
    "time_s": 0.1,
    "start_s": 0.0,
    "end_s": 0.1,
    "class": "derived",
    "value": null,
    "tolerance": 9.35590597409424e-16,
-   "against": "engine: its own cumulative heat may not fall by more than the tolerance"
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
   },
   {
    "criterion": "C3a",
@@ -3008,18 +3008,18 @@
    "class": "derived",
    "value": null,
    "tolerance": 2.4601885852218425e-14,
-   "against": "engine: -dG of its own saved states (SPEC \u00a71.3, judge's side)"
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
   },
   {
    "criterion": "C3c",
-   "observable": "cumulative_heat:well",
+   "observable": "cumulative_site_heat:well",
    "time_s": 0.2,
    "start_s": 0.1,
    "end_s": 0.2,
    "class": "derived",
    "value": null,
    "tolerance": 9.840754340887371e-16,
-   "against": "engine: its own cumulative heat may not fall by more than the tolerance"
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
   },
   {
    "criterion": "C3a",
@@ -3042,18 +3042,18 @@
    "class": "derived",
    "value": null,
    "tolerance": 7.484509974215568e-14,
-   "against": "engine: -dG of its own saved states (SPEC \u00a71.3, judge's side)"
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
   },
   {
    "criterion": "C3c",
-   "observable": "cumulative_heat:well",
+   "observable": "cumulative_site_heat:well",
    "time_s": 0.5,
    "start_s": 0.2,
    "end_s": 0.5,
    "class": "derived",
    "value": null,
    "tolerance": 9.979346632287424e-16,
-   "against": "engine: its own cumulative heat may not fall by more than the tolerance"
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
   },
   {
    "criterion": "C3a",
@@ -3076,18 +3076,18 @@
    "class": "derived",
    "value": null,
    "tolerance": 1.254992406349296e-13,
-   "against": "engine: -dG of its own saved states (SPEC \u00a71.3, judge's side)"
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
   },
   {
    "criterion": "C3c",
-   "observable": "cumulative_heat:well",
+   "observable": "cumulative_site_heat:well",
    "time_s": 1.0,
    "start_s": 0.5,
    "end_s": 1.0,
    "class": "derived",
    "value": null,
    "tolerance": 1.003993925079437e-15,
-   "against": "engine: its own cumulative heat may not fall by more than the tolerance"
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
   },
   {
    "criterion": "C3a",
@@ -3110,18 +3110,18 @@
    "class": "derived",
    "value": null,
    "tolerance": 2.512408104357246e-13,
-   "against": "engine: -dG of its own saved states (SPEC \u00a71.3, judge's side)"
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
   },
   {
    "criterion": "C3c",
-   "observable": "cumulative_heat:well",
+   "observable": "cumulative_site_heat:well",
    "time_s": 2.0,
    "start_s": 1.0,
    "end_s": 2.0,
    "class": "derived",
    "value": null,
    "tolerance": 1.0049632417428983e-15,
-   "against": "engine: its own cumulative heat may not fall by more than the tolerance"
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
   },
   {
    "criterion": "C3a",
@@ -3144,18 +3144,18 @@
    "class": "derived",
    "value": null,
    "tolerance": 5.025527190292292e-13,
-   "against": "engine: -dG of its own saved states (SPEC \u00a71.3, judge's side)"
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
   },
   {
    "criterion": "C3c",
-   "observable": "cumulative_heat:well",
+   "observable": "cumulative_site_heat:well",
    "time_s": 4.0,
    "start_s": 2.0,
    "end_s": 4.0,
    "class": "derived",
    "value": null,
    "tolerance": 1.0051054380584584e-15,
-   "against": "engine: its own cumulative heat may not fall by more than the tolerance"
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
   },
   {
    "criterion": "C3a",
@@ -3178,18 +3178,18 @@
    "class": "derived",
    "value": null,
    "tolerance": 1.0051202520008003e-12,
-   "against": "engine: -dG of its own saved states (SPEC \u00a71.3, judge's side)"
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
   },
   {
    "criterion": "C3c",
-   "observable": "cumulative_heat:well",
+   "observable": "cumulative_site_heat:well",
    "time_s": 8.0,
    "start_s": 4.0,
    "end_s": 8.0,
    "class": "derived",
    "value": null,
    "tolerance": 1.0051202520008003e-15,
-   "against": "engine: its own cumulative heat may not fall by more than the tolerance"
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
   },
   {
    "criterion": "C3a",
@@ -3212,18 +3212,18 @@
    "class": "derived",
    "value": null,
    "tolerance": 2.0102409430221223e-12,
-   "against": "engine: -dG of its own saved states (SPEC \u00a71.3, judge's side)"
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
   },
   {
    "criterion": "C3c",
-   "observable": "cumulative_heat:well",
+   "observable": "cumulative_site_heat:well",
    "time_s": 16.0,
    "start_s": 8.0,
    "end_s": 16.0,
    "class": "derived",
    "value": null,
    "tolerance": 1.0051204715110613e-15,
-   "against": "engine: its own cumulative heat may not fall by more than the tolerance"
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
   },
   {
    "criterion": "C3a",
@@ -3246,18 +3246,18 @@
    "class": "derived",
    "value": null,
    "tolerance": 3.517921650448497e-12,
-   "against": "engine: -dG of its own saved states (SPEC \u00a71.3, judge's side)"
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
   },
   {
    "criterion": "C3c",
-   "observable": "cumulative_heat:well",
+   "observable": "cumulative_site_heat:well",
    "time_s": 30.0,
    "start_s": 16.0,
    "end_s": 30.0,
    "class": "derived",
    "value": null,
    "tolerance": 1.0051204715567134e-15,
-   "against": "engine: its own cumulative heat may not fall by more than the tolerance"
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
   },
   {
    "criterion": "C3a",
@@ -3280,18 +3280,18 @@
    "class": "derived",
    "value": null,
    "tolerance": 1.0999023670467676e-14,
-   "against": "engine: -dG of its own saved states (SPEC \u00a71.3, judge's side)"
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
   },
   {
    "criterion": "C3c",
-   "observable": "cumulative_heat:specimen",
+   "observable": "cumulative_site_heat:specimen",
    "time_s": 0.1,
    "start_s": 0.0,
    "end_s": 0.1,
    "class": "derived",
    "value": null,
    "tolerance": 4.39960946818707e-16,
-   "against": "engine: its own cumulative heat may not fall by more than the tolerance"
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
   },
   {
    "criterion": "C3a",
@@ -3314,18 +3314,18 @@
    "class": "derived",
    "value": null,
    "tolerance": 1.1973967068719433e-14,
-   "against": "engine: -dG of its own saved states (SPEC \u00a71.3, judge's side)"
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
   },
   {
    "criterion": "C3c",
-   "observable": "cumulative_heat:specimen",
+   "observable": "cumulative_site_heat:specimen",
    "time_s": 0.2,
    "start_s": 0.1,
    "end_s": 0.2,
    "class": "derived",
    "value": null,
    "tolerance": 4.789586827487773e-16,
-   "against": "engine: its own cumulative heat may not fall by more than the tolerance"
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
   },
   {
    "criterion": "C3a",
@@ -3348,18 +3348,18 @@
    "class": "derived",
    "value": null,
    "tolerance": 3.6917224339663516e-14,
-   "against": "engine: -dG of its own saved states (SPEC \u00a71.3, judge's side)"
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
   },
   {
    "criterion": "C3c",
-   "observable": "cumulative_heat:specimen",
+   "observable": "cumulative_site_heat:specimen",
    "time_s": 0.5,
    "start_s": 0.2,
    "end_s": 0.5,
    "class": "derived",
    "value": null,
    "tolerance": 4.922296578621802e-16,
-   "against": "engine: its own cumulative heat may not fall by more than the tolerance"
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
   },
   {
    "criterion": "C3a",
@@ -3382,18 +3382,18 @@
    "class": "derived",
    "value": null,
    "tolerance": 6.225420551608503e-14,
-   "against": "engine: -dG of its own saved states (SPEC \u00a71.3, judge's side)"
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
   },
   {
    "criterion": "C3c",
-   "observable": "cumulative_heat:specimen",
+   "observable": "cumulative_site_heat:specimen",
    "time_s": 1.0,
    "start_s": 0.5,
    "end_s": 1.0,
    "class": "derived",
    "value": null,
    "tolerance": 4.980336441286802e-16,
-   "against": "engine: its own cumulative heat may not fall by more than the tolerance"
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
   },
   {
    "criterion": "C3a",
@@ -3416,18 +3416,18 @@
    "class": "derived",
    "value": null,
    "tolerance": 1.246816480355332e-13,
-   "against": "engine: -dG of its own saved states (SPEC \u00a71.3, judge's side)"
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
   },
   {
    "criterion": "C3c",
-   "observable": "cumulative_heat:specimen",
+   "observable": "cumulative_site_heat:specimen",
    "time_s": 2.0,
    "start_s": 1.0,
    "end_s": 2.0,
    "class": "derived",
    "value": null,
    "tolerance": 4.987265921421329e-16,
-   "against": "engine: its own cumulative heat may not fall by more than the tolerance"
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
   },
   {
    "criterion": "C3a",
@@ -3450,18 +3450,18 @@
    "class": "derived",
    "value": null,
    "tolerance": 2.493843203749189e-13,
-   "against": "engine: -dG of its own saved states (SPEC \u00a71.3, judge's side)"
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
   },
   {
    "criterion": "C3c",
-   "observable": "cumulative_heat:specimen",
+   "observable": "cumulative_site_heat:specimen",
    "time_s": 4.0,
    "start_s": 2.0,
    "end_s": 4.0,
    "class": "derived",
    "value": null,
    "tolerance": 4.987686407498378e-16,
-   "against": "engine: its own cumulative heat may not fall by more than the tolerance"
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
   },
   {
    "criterion": "C3a",
@@ -3484,18 +3484,18 @@
    "class": "derived",
    "value": null,
    "tolerance": 4.987695446596487e-13,
-   "against": "engine: -dG of its own saved states (SPEC \u00a71.3, judge's side)"
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
   },
   {
    "criterion": "C3c",
-   "observable": "cumulative_heat:specimen",
+   "observable": "cumulative_site_heat:specimen",
    "time_s": 8.0,
    "start_s": 4.0,
    "end_s": 8.0,
    "class": "derived",
    "value": null,
    "tolerance": 4.987695446596487e-16,
-   "against": "engine: its own cumulative heat may not fall by more than the tolerance"
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
   },
   {
    "criterion": "C3a",
@@ -3518,18 +3518,18 @@
    "class": "derived",
    "value": null,
    "tolerance": 9.97539092102339e-13,
-   "against": "engine: -dG of its own saved states (SPEC \u00a71.3, judge's side)"
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
   },
   {
    "criterion": "C3c",
-   "observable": "cumulative_heat:specimen",
+   "observable": "cumulative_site_heat:specimen",
    "time_s": 16.0,
    "start_s": 8.0,
    "end_s": 16.0,
    "class": "derived",
    "value": null,
    "tolerance": 4.987695460511695e-16,
-   "against": "engine: its own cumulative heat may not fall by more than the tolerance"
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
   },
   {
    "criterion": "C3a",
@@ -3552,18 +3552,48 @@
    "class": "derived",
    "value": null,
    "tolerance": 1.7456934111791056e-12,
-   "against": "engine: -dG of its own saved states (SPEC \u00a71.3, judge's side)"
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
   },
   {
    "criterion": "C3c",
-   "observable": "cumulative_heat:specimen",
+   "observable": "cumulative_site_heat:specimen",
    "time_s": 30.0,
    "start_s": 16.0,
    "end_s": 30.0,
    "class": "derived",
    "value": null,
    "tolerance": 4.98769546051173e-16,
-   "against": "engine: its own cumulative heat may not fall by more than the tolerance"
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:A",
+   "time_s": 0.0,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": 0.00498161720152154,
+   "tolerance": 1.7698259574393446e-17,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:B",
+   "time_s": 0.0,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": 0.000996323440304308,
+   "tolerance": 3.539651914878689e-18,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:C",
+   "time_s": 0.0,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": 0.00249080860076077,
+   "tolerance": 8.849129787196723e-18,
+   "against": "reference: S_s"
   },
   {
    "criterion": "C5",
@@ -3838,11 +3868,107 @@
   {
    "criterion": "C9",
    "observable": "theta:A_L1",
+   "time_s": 0.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 6.529218095005507e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.534706006501803e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:A_L2",
+   "time_s": 0.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 6.529218095005507e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.534706006501803e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:A_L3",
+   "time_s": 0.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 6.529218095005507e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.534706006501803e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:B_L2",
+   "time_s": 0.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 1.360253769792814e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.017809573980534e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:C_L4",
+   "time_s": 0.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 0.0,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.881784197001252e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:C_L5",
+   "time_s": 0.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 0.0,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.881784197001252e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:A_L1",
    "time_s": 0.1,
    "class": "derived",
    "value": null,
-   "tolerance": 9.425885704918379e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 5.441015079171256e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.425885704918379e-16
   },
   {
    "criterion": "C9",
@@ -3850,8 +3976,14 @@
    "time_s": 0.1,
    "class": "derived",
    "value": null,
-   "tolerance": 9.425885704918379e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 5.441015079171256e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.425885704918379e-16
   },
   {
    "criterion": "C9",
@@ -3859,8 +3991,14 @@
    "time_s": 0.1,
    "class": "derived",
    "value": null,
-   "tolerance": 9.425885704918379e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 5.441015079171256e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.425885704918379e-16
   },
   {
    "criterion": "C9",
@@ -3868,8 +4006,14 @@
    "time_s": 0.1,
    "class": "derived",
    "value": null,
-   "tolerance": 8.881784197001252e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 0.0,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.881784197001252e-16
   },
   {
    "criterion": "C9",
@@ -3877,8 +4021,14 @@
    "time_s": 0.1,
    "class": "derived",
    "value": null,
-   "tolerance": 9.317065403334952e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 4.352812063337005e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.317065403334952e-16
   },
   {
    "criterion": "C9",
@@ -3886,8 +4036,14 @@
    "time_s": 0.1,
    "class": "derived",
    "value": null,
-   "tolerance": 9.317065403334952e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 4.352812063337005e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.317065403334952e-16
   },
   {
    "criterion": "C9",
@@ -3895,8 +4051,14 @@
    "time_s": 0.2,
    "class": "derived",
    "value": null,
-   "tolerance": 9.099424800168103e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
   },
   {
    "criterion": "C9",
@@ -3904,8 +4066,14 @@
    "time_s": 0.2,
    "class": "derived",
    "value": null,
-   "tolerance": 9.099424800168103e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
   },
   {
    "criterion": "C9",
@@ -3913,8 +4081,14 @@
    "time_s": 0.2,
    "class": "derived",
    "value": null,
-   "tolerance": 9.099424800168103e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
   },
   {
    "criterion": "C9",
@@ -3922,8 +4096,14 @@
    "time_s": 0.2,
    "class": "derived",
    "value": null,
-   "tolerance": 9.425885704918379e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 5.441015079171256e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.425885704918379e-16
   },
   {
    "criterion": "C9",
@@ -3931,8 +4111,14 @@
    "time_s": 0.2,
    "class": "derived",
    "value": null,
-   "tolerance": 9.317065403334952e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 4.352812063337005e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.317065403334952e-16
   },
   {
    "criterion": "C9",
@@ -3940,8 +4126,14 @@
    "time_s": 0.2,
    "class": "derived",
    "value": null,
-   "tolerance": 9.317065403334952e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 4.352812063337005e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.317065403334952e-16
   },
   {
    "criterion": "C9",
@@ -3949,8 +4141,14 @@
    "time_s": 0.5,
    "class": "derived",
    "value": null,
-   "tolerance": 9.099424800168103e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
   },
   {
    "criterion": "C9",
@@ -3958,8 +4156,14 @@
    "time_s": 0.5,
    "class": "derived",
    "value": null,
-   "tolerance": 9.099424800168103e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
   },
   {
    "criterion": "C9",
@@ -3967,8 +4171,14 @@
    "time_s": 0.5,
    "class": "derived",
    "value": null,
-   "tolerance": 9.099424800168103e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
   },
   {
    "criterion": "C9",
@@ -3976,8 +4186,14 @@
    "time_s": 0.5,
    "class": "derived",
    "value": null,
-   "tolerance": 9.425885704918379e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 5.441015079171256e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.425885704918379e-16
   },
   {
    "criterion": "C9",
@@ -3985,8 +4201,14 @@
    "time_s": 0.5,
    "class": "derived",
    "value": null,
-   "tolerance": 9.099424800168103e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
   },
   {
    "criterion": "C9",
@@ -3994,8 +4216,14 @@
    "time_s": 0.5,
    "class": "derived",
    "value": null,
-   "tolerance": 9.099424800168103e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
   },
   {
    "criterion": "C9",
@@ -4003,8 +4231,14 @@
    "time_s": 1.0,
    "class": "derived",
    "value": null,
-   "tolerance": 9.099424800168103e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
   },
   {
    "criterion": "C9",
@@ -4012,8 +4246,14 @@
    "time_s": 1.0,
    "class": "derived",
    "value": null,
-   "tolerance": 9.099424800168103e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
   },
   {
    "criterion": "C9",
@@ -4021,8 +4261,14 @@
    "time_s": 1.0,
    "class": "derived",
    "value": null,
-   "tolerance": 9.099424800168103e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
   },
   {
    "criterion": "C9",
@@ -4030,8 +4276,14 @@
    "time_s": 1.0,
    "class": "derived",
    "value": null,
-   "tolerance": 9.425885704918379e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 5.441015079171256e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.425885704918379e-16
   },
   {
    "criterion": "C9",
@@ -4039,8 +4291,14 @@
    "time_s": 1.0,
    "class": "derived",
    "value": null,
-   "tolerance": 9.099424800168103e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
   },
   {
    "criterion": "C9",
@@ -4048,8 +4306,14 @@
    "time_s": 1.0,
    "class": "derived",
    "value": null,
-   "tolerance": 9.099424800168103e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
   },
   {
    "criterion": "C9",
@@ -4057,8 +4321,14 @@
    "time_s": 2.0,
    "class": "derived",
    "value": null,
-   "tolerance": 9.099424800168103e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
   },
   {
    "criterion": "C9",
@@ -4066,8 +4336,14 @@
    "time_s": 2.0,
    "class": "derived",
    "value": null,
-   "tolerance": 9.099424800168103e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
   },
   {
    "criterion": "C9",
@@ -4075,8 +4351,14 @@
    "time_s": 2.0,
    "class": "derived",
    "value": null,
-   "tolerance": 9.099424800168103e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
   },
   {
    "criterion": "C9",
@@ -4084,8 +4366,14 @@
    "time_s": 2.0,
    "class": "derived",
    "value": null,
-   "tolerance": 9.425885704918379e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 5.441015079171256e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.425885704918379e-16
   },
   {
    "criterion": "C9",
@@ -4093,8 +4381,14 @@
    "time_s": 2.0,
    "class": "derived",
    "value": null,
-   "tolerance": 9.534706006501803e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 6.529218095005507e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.534706006501803e-16
   },
   {
    "criterion": "C9",
@@ -4102,8 +4396,14 @@
    "time_s": 2.0,
    "class": "derived",
    "value": null,
-   "tolerance": 9.534706006501803e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 6.529218095005507e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.534706006501803e-16
   },
   {
    "criterion": "C9",
@@ -4111,8 +4411,14 @@
    "time_s": 4.0,
    "class": "derived",
    "value": null,
-   "tolerance": 8.881784197001252e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 0.0,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.881784197001252e-16
   },
   {
    "criterion": "C9",
@@ -4120,8 +4426,14 @@
    "time_s": 4.0,
    "class": "derived",
    "value": null,
-   "tolerance": 8.881784197001252e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 0.0,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.881784197001252e-16
   },
   {
    "criterion": "C9",
@@ -4129,8 +4441,14 @@
    "time_s": 4.0,
    "class": "derived",
    "value": null,
-   "tolerance": 8.881784197001252e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 0.0,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.881784197001252e-16
   },
   {
    "criterion": "C9",
@@ -4138,8 +4456,14 @@
    "time_s": 4.0,
    "class": "derived",
    "value": null,
-   "tolerance": 9.425885704918379e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 5.441015079171256e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.425885704918379e-16
   },
   {
    "criterion": "C9",
@@ -4147,8 +4471,14 @@
    "time_s": 4.0,
    "class": "derived",
    "value": null,
-   "tolerance": 9.099424800168103e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
   },
   {
    "criterion": "C9",
@@ -4156,8 +4486,14 @@
    "time_s": 4.0,
    "class": "derived",
    "value": null,
-   "tolerance": 9.099424800168103e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
   },
   {
    "criterion": "C9",
@@ -4165,8 +4501,14 @@
    "time_s": 8.0,
    "class": "derived",
    "value": null,
-   "tolerance": 8.881784197001252e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 0.0,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.881784197001252e-16
   },
   {
    "criterion": "C9",
@@ -4174,8 +4516,14 @@
    "time_s": 8.0,
    "class": "derived",
    "value": null,
-   "tolerance": 8.881784197001252e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 0.0,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.881784197001252e-16
   },
   {
    "criterion": "C9",
@@ -4183,8 +4531,14 @@
    "time_s": 8.0,
    "class": "derived",
    "value": null,
-   "tolerance": 8.881784197001252e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 0.0,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.881784197001252e-16
   },
   {
    "criterion": "C9",
@@ -4192,8 +4546,14 @@
    "time_s": 8.0,
    "class": "derived",
    "value": null,
-   "tolerance": 8.881784197001252e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 0.0,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.881784197001252e-16
   },
   {
    "criterion": "C9",
@@ -4201,8 +4561,14 @@
    "time_s": 8.0,
    "class": "derived",
    "value": null,
-   "tolerance": 9.099424800168103e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
   },
   {
    "criterion": "C9",
@@ -4210,8 +4576,14 @@
    "time_s": 8.0,
    "class": "derived",
    "value": null,
-   "tolerance": 9.099424800168103e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
   },
   {
    "criterion": "C9",
@@ -4219,8 +4591,14 @@
    "time_s": 16.0,
    "class": "derived",
    "value": null,
-   "tolerance": 9.099424800168103e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
   },
   {
    "criterion": "C9",
@@ -4228,8 +4606,14 @@
    "time_s": 16.0,
    "class": "derived",
    "value": null,
-   "tolerance": 9.099424800168103e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
   },
   {
    "criterion": "C9",
@@ -4237,8 +4621,14 @@
    "time_s": 16.0,
    "class": "derived",
    "value": null,
-   "tolerance": 9.099424800168103e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
   },
   {
    "criterion": "C9",
@@ -4246,8 +4636,14 @@
    "time_s": 16.0,
    "class": "derived",
    "value": null,
-   "tolerance": 9.425885704918379e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 5.441015079171256e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.425885704918379e-16
   },
   {
    "criterion": "C9",
@@ -4255,8 +4651,14 @@
    "time_s": 16.0,
    "class": "derived",
    "value": null,
-   "tolerance": 8.881784197001252e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 0.0,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.881784197001252e-16
   },
   {
    "criterion": "C9",
@@ -4264,8 +4666,14 @@
    "time_s": 16.0,
    "class": "derived",
    "value": null,
-   "tolerance": 8.881784197001252e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 0.0,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.881784197001252e-16
   },
   {
    "criterion": "C9",
@@ -4273,8 +4681,14 @@
    "time_s": 30.0,
    "class": "derived",
    "value": null,
-   "tolerance": 9.099424800168103e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
   },
   {
    "criterion": "C9",
@@ -4282,8 +4696,14 @@
    "time_s": 30.0,
    "class": "derived",
    "value": null,
-   "tolerance": 9.099424800168103e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
   },
   {
    "criterion": "C9",
@@ -4291,8 +4711,14 @@
    "time_s": 30.0,
    "class": "derived",
    "value": null,
-   "tolerance": 9.099424800168103e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
   },
   {
    "criterion": "C9",
@@ -4300,8 +4726,14 @@
    "time_s": 30.0,
    "class": "derived",
    "value": null,
-   "tolerance": 9.153834950959816e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.720507539585628e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.153834950959816e-16
   },
   {
    "criterion": "C9",
@@ -4309,8 +4741,14 @@
    "time_s": 30.0,
    "class": "derived",
    "value": null,
-   "tolerance": 9.099424800168103e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
   },
   {
    "criterion": "C9",
@@ -4318,8 +4756,14 @@
    "time_s": 30.0,
    "class": "derived",
    "value": null,
-   "tolerance": 9.099424800168103e-16,
-   "against": "engine: B_b / S_s of its own saved state (the judge adds that state's |R_s + sum B - S_s| / S_s)"
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
   },
   {
    "criterion": "C10",
@@ -4377,7 +4821,7 @@
   }
  ],
  "provenance": {
-  "references_revision": "becbfe1cf7351ea3cfb73993f70b01508405eb0d",
+  "references_revision": "c28f06ed8a9dc9bdd218ec96c1576d801702c841",
   "tree_clean": true,
   "writer_version": "fr45-references-writer 1",
   "regeneration_hash_seeds": [
@@ -4386,12 +4830,14 @@
    2
   ],
   "spec": {
-   "label": "fr45-site-competition-v1-registered-2026-11-24",
+   "label": "fr45-site-competition-v1, amended and noted 2026-11-24 (ae25c28d)",
    "files": [
+    "validation/fr45/spec/AMENDMENT-2026-11-24.md",
+    "validation/fr45/spec/NOTE-2026-11-24.md",
     "validation/fr45/spec/CRITERIA.md",
     "validation/fr45/spec/SPEC.md"
    ],
-   "verified_against": "SHA256SUMS-fr45-spec-6e92d0ec.txt",
+   "verified_against": "SHA256SUMS-fr45-spec-ae25c28d.txt",
    "rows_matched": 83
   },
   "profile": "reference"

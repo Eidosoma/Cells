@@ -176,7 +176,7 @@
   }
  ],
  "provenance": {
-  "references_revision": "becbfe1cf7351ea3cfb73993f70b01508405eb0d",
+  "references_revision": "c28f06ed8a9dc9bdd218ec96c1576d801702c841",
   "tree_clean": true,
   "writer_version": "fr45-references-writer 1",
   "regeneration_hash_seeds": [
@@ -185,12 +185,14 @@
    2
   ],
   "spec": {
-   "label": "fr45-site-competition-v1-registered-2026-11-24",
+   "label": "fr45-site-competition-v1, amended and noted 2026-11-24 (ae25c28d)",
    "files": [
+    "validation/fr45/spec/AMENDMENT-2026-11-24.md",
+    "validation/fr45/spec/NOTE-2026-11-24.md",
     "validation/fr45/spec/CRITERIA.md",
     "validation/fr45/spec/SPEC.md"
    ],
-   "verified_against": "SHA256SUMS-fr45-spec-6e92d0ec.txt",
+   "verified_against": "SHA256SUMS-fr45-spec-ae25c28d.txt",
    "rows_matched": 83
   },
   "profile": "reference"

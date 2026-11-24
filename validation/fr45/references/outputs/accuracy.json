@@ -28,6 +28,10 @@
      }
     }
    },
+   "trajectory_convergence_requirement": {
+    "misses": 0,
+    "worst_ratio": 0.018741251119823162
+   },
    "trajectory": {
     "tolerance_gap_over_scale_max": 1.936204088190774e-12,
     "pairs_with_gap_above_1e-10_of_scale": 0,
@@ -47,6 +51,10 @@
     "ligand_totals_written_over_s_node": 2.2587541859435065e-17,
     "moieties_high_precision_over_S": 1.2499998118056006e-69,
     "moieties_written_over_S": 4.517508371887013e-17
+   },
+   "heats_convergence_requirement": {
+    "misses": 0,
+    "worst_ratio": 0.0001390382024166126
    },
    "heats_C3a_bound_over_heat": {
     "min": 0.00020806134407940836,
@@ -89,6 +97,10 @@
      }
     }
    },
+   "trajectory_convergence_requirement": {
+    "misses": 0,
+    "worst_ratio": 3.652955290360527e-05
+   },
    "trajectory": {
     "tolerance_gap_over_scale_max": 0.0,
     "pairs_with_gap_above_1e-10_of_scale": 0,
@@ -108,6 +120,10 @@
     "ligand_totals_written_over_s_node": 9.67908160040042e-18,
     "moieties_high_precision_over_S": 4.166666039352002e-70,
     "moieties_written_over_S": 0.0
+   },
+   "heats_convergence_requirement": {
+    "misses": 0,
+    "worst_ratio": 5.0501732570047385e-06
    },
    "heats_C3a_bound_over_heat": {
     "min": 1.2434655282969185e+29,
@@ -153,6 +169,10 @@
      }
     }
    },
+   "trajectory_convergence_requirement": {
+    "misses": 0,
+    "worst_ratio": 0.018741251119823162
+   },
    "trajectory": {
     "tolerance_gap_over_scale_max": 3.385420773892128e-13,
     "pairs_with_gap_above_1e-10_of_scale": 0,
@@ -172,6 +192,10 @@
     "ligand_totals_written_over_s_node": 2.2587541859435065e-17,
     "moieties_high_precision_over_S": 1.2499998118056006e-69,
     "moieties_written_over_S": 4.517508371887013e-17
+   },
+   "heats_convergence_requirement": {
+    "misses": 0,
+    "worst_ratio": 0.0001390382024166126
    },
    "heats_C3a_bound_over_heat": {
     "min": 0.00020806134407940836,
@@ -238,6 +262,10 @@
     },
     "root_from_methodA_wash_state": 7.563559966646768e-17
    },
+   "trajectory_convergence_requirement": {
+    "misses": 0,
+    "worst_ratio": 0.0036376433871177075
+   },
    "trajectory": {
     "tolerance_gap_over_scale_max": 2.1110036773244426e-14,
     "pairs_with_gap_above_1e-10_of_scale": 0,
@@ -257,6 +285,11 @@
     "ligand_totals_written_over_s_node": 5.37673713700515e-17,
     "moieties_high_precision_over_S": 8e-70,
     "moieties_written_over_S": 5.329070518200751e-17
+   },
+   "wash_interval_site_heat_over_E_min": 0.0005641563759517554,
+   "heats_convergence_requirement": {
+    "misses": 0,
+    "worst_ratio": 0.00011443496571173089
    },
    "heats_C3a_bound_over_heat": {
     "min": 0.0005183477216575267,
@@ -304,6 +337,10 @@
      }
     }
    },
+   "trajectory_convergence_requirement": {
+    "misses": 0,
+    "worst_ratio": 0.2951614085006502
+   },
    "trajectory": {
     "tolerance_gap_over_scale_max": 4.1364151207596796e-13,
     "pairs_with_gap_above_1e-10_of_scale": 0,
@@ -323,6 +360,10 @@
     "ligand_totals_written_over_s_node": 4.352812063337005e-17,
     "moieties_high_precision_over_S": 1.6059042026666666e-69,
     "moieties_written_over_S": 6.529218095005507e-17
+   },
+   "heats_convergence_requirement": {
+    "misses": 0,
+    "worst_ratio": 0.00023531800905852198
    },
    "heats_C3a_bound_over_heat": {
     "min": 0.00014730947731591177,
@@ -372,6 +413,10 @@
      }
     }
    },
+   "trajectory_convergence_requirement": {
+    "misses": 0,
+    "worst_ratio": 0.008511249488010013
+   },
    "trajectory": {
     "tolerance_gap_over_scale_max": 9.701276818911235e-17,
     "pairs_with_gap_above_1e-10_of_scale": 0,
@@ -394,6 +439,10 @@
     "ligand_totals_written_over_s_node": 8.007006010192034e-17,
     "moieties_high_precision_over_S": 4.166666039352002e-70,
     "moieties_written_over_S": 4.517508371887013e-17
+   },
+   "heats_convergence_requirement": {
+    "misses": 0,
+    "worst_ratio": 1.9778875678157972e-05
    },
    "heats_C3a_bound_over_heat": {
     "min": 86494.79337668205,
@@ -443,6 +492,10 @@
      }
     }
    },
+   "trajectory_convergence_requirement": {
+    "misses": 0,
+    "worst_ratio": 0.04441878839325404
+   },
    "trajectory": {
     "tolerance_gap_over_scale_max": 5.843849709696869e-14,
     "pairs_with_gap_above_1e-10_of_scale": 0,
@@ -463,6 +516,10 @@
     "moieties_high_precision_over_S": 1.2500001577512313e-69,
     "moieties_written_over_S": 3.38813221660277e-17
    },
+   "heats_convergence_requirement": {
+    "misses": 0,
+    "worst_ratio": 7.988743282611208e-05
+   },
    "heats_C3a_bound_over_heat": {
     "min": 0.0001947551470622558,
     "max": 6.795035455359167e+18
@@ -479,7 +536,7 @@
   }
  },
  "provenance": {
-  "references_revision": "becbfe1cf7351ea3cfb73993f70b01508405eb0d",
+  "references_revision": "c28f06ed8a9dc9bdd218ec96c1576d801702c841",
   "tree_clean": true,
   "writer_version": "fr45-references-writer 1",
   "regeneration_hash_seeds": [
@@ -488,12 +545,14 @@
    2
   ],
   "spec": {
-   "label": "fr45-site-competition-v1-registered-2026-11-24",
+   "label": "fr45-site-competition-v1, amended and noted 2026-11-24 (ae25c28d)",
    "files": [
+    "validation/fr45/spec/AMENDMENT-2026-11-24.md",
+    "validation/fr45/spec/NOTE-2026-11-24.md",
     "validation/fr45/spec/CRITERIA.md",
     "validation/fr45/spec/SPEC.md"
    ],
-   "verified_against": "SHA256SUMS-fr45-spec-6e92d0ec.txt",
+   "verified_against": "SHA256SUMS-fr45-spec-ae25c28d.txt",
    "rows_matched": 83
   },
   "profile": "reference"

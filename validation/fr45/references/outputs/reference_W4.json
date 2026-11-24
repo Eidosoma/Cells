@@ -399,236 +399,14 @@
  },
  "pairs": [
   {
-   "criterion": "C3a",
-   "observable": "H:vat",
-   "time_s": 0.4,
-   "start_s": 0.0,
-   "end_s": 0.4,
-   "class": "band",
-   "value": 0.0075533792930280695,
-   "tolerance": 653.3279812461717,
-   "against": "reference"
-  },
-  {
-   "criterion": "C3b",
-   "observable": "H:vat",
-   "time_s": 0.4,
-   "start_s": 0.0,
-   "end_s": 0.4,
+   "criterion": "C5",
+   "observable": "sites:matrix",
+   "time_s": 0.0,
    "dt_s": 0.08,
    "class": "derived",
-   "value": null,
-   "tolerance": 1.4445482395695656e-06,
-   "against": "engine: -dG of its own saved states (SPEC \u00a71.3, judge's side)"
-  },
-  {
-   "criterion": "C3b",
-   "observable": "H:vat",
-   "time_s": 0.4,
-   "start_s": 0.0,
-   "end_s": 0.4,
-   "dt_s": 0.04,
-   "class": "derived",
-   "value": null,
-   "tolerance": 2.889096479139131e-06,
-   "against": "engine: -dG of its own saved states (SPEC \u00a71.3, judge's side)"
-  },
-  {
-   "criterion": "C3b",
-   "observable": "H:vat",
-   "time_s": 0.4,
-   "start_s": 0.0,
-   "end_s": 0.4,
-   "dt_s": 0.02,
-   "class": "derived",
-   "value": null,
-   "tolerance": 5.778192958278262e-06,
-   "against": "engine: -dG of its own saved states (SPEC \u00a71.3, judge's side)"
-  },
-  {
-   "criterion": "C3c",
-   "observable": "cumulative_heat:vat",
-   "time_s": 0.4,
-   "start_s": 0.0,
-   "end_s": 0.4,
-   "class": "derived",
-   "value": null,
-   "tolerance": 2.8890964791391313e-07,
-   "against": "engine: its own cumulative heat may not fall by more than the tolerance"
-  },
-  {
-   "criterion": "C3a",
-   "observable": "H:vat",
-   "time_s": 0.8,
-   "start_s": 0.4,
-   "end_s": 0.8,
-   "class": "band",
-   "value": 0.0012090018739584658,
-   "tolerance": 653.3279812550331,
-   "against": "reference"
-  },
-  {
-   "criterion": "C3b",
-   "observable": "H:vat",
-   "time_s": 0.8,
-   "start_s": 0.4,
-   "end_s": 0.8,
-   "dt_s": 0.08,
-   "class": "derived",
-   "value": null,
-   "tolerance": 1.4445482397252168e-06,
-   "against": "engine: -dG of its own saved states (SPEC \u00a71.3, judge's side)"
-  },
-  {
-   "criterion": "C3b",
-   "observable": "H:vat",
-   "time_s": 0.8,
-   "start_s": 0.4,
-   "end_s": 0.8,
-   "dt_s": 0.04,
-   "class": "derived",
-   "value": null,
-   "tolerance": 2.8890964794504335e-06,
-   "against": "engine: -dG of its own saved states (SPEC \u00a71.3, judge's side)"
-  },
-  {
-   "criterion": "C3b",
-   "observable": "H:vat",
-   "time_s": 0.8,
-   "start_s": 0.4,
-   "end_s": 0.8,
-   "dt_s": 0.02,
-   "class": "derived",
-   "value": null,
-   "tolerance": 5.778192958900867e-06,
-   "against": "engine: -dG of its own saved states (SPEC \u00a71.3, judge's side)"
-  },
-  {
-   "criterion": "C3c",
-   "observable": "cumulative_heat:vat",
-   "time_s": 0.8,
-   "start_s": 0.4,
-   "end_s": 0.8,
-   "class": "derived",
-   "value": null,
-   "tolerance": 2.8890964794504334e-07,
-   "against": "engine: its own cumulative heat may not fall by more than the tolerance"
-  },
-  {
-   "criterion": "C3a",
-   "observable": "H:vat",
-   "time_s": 1.2,
-   "start_s": 0.8,
-   "end_s": 1.2,
-   "class": "band",
-   "value": 0.00041545526346929555,
-   "tolerance": 653.3279812585606,
-   "against": "reference"
-  },
-  {
-   "criterion": "C3b",
-   "observable": "H:vat",
-   "time_s": 1.2,
-   "start_s": 0.8,
-   "end_s": 1.2,
-   "dt_s": 0.08,
-   "class": "derived",
-   "value": null,
-   "tolerance": 1.4445482397540728e-06,
-   "against": "engine: -dG of its own saved states (SPEC \u00a71.3, judge's side)"
-  },
-  {
-   "criterion": "C3b",
-   "observable": "H:vat",
-   "time_s": 1.2,
-   "start_s": 0.8,
-   "end_s": 1.2,
-   "dt_s": 0.04,
-   "class": "derived",
-   "value": null,
-   "tolerance": 2.8890964795081457e-06,
-   "against": "engine: -dG of its own saved states (SPEC \u00a71.3, judge's side)"
-  },
-  {
-   "criterion": "C3b",
-   "observable": "H:vat",
-   "time_s": 1.2,
-   "start_s": 0.8,
-   "end_s": 1.2,
-   "dt_s": 0.02,
-   "class": "derived",
-   "value": null,
-   "tolerance": 5.778192959016291e-06,
-   "against": "engine: -dG of its own saved states (SPEC \u00a71.3, judge's side)"
-  },
-  {
-   "criterion": "C3c",
-   "observable": "cumulative_heat:vat",
-   "time_s": 1.2,
-   "start_s": 0.8,
-   "end_s": 1.2,
-   "class": "derived",
-   "value": null,
-   "tolerance": 2.889096479508146e-07,
-   "against": "engine: its own cumulative heat may not fall by more than the tolerance"
-  },
-  {
-   "criterion": "C3a",
-   "observable": "H:vat",
-   "time_s": 1.6,
-   "start_s": 1.2,
-   "end_s": 1.6,
-   "class": "band",
-   "value": 0.00024278817394428182,
-   "tolerance": 653.3279812601736,
-   "against": "reference"
-  },
-  {
-   "criterion": "C3b",
-   "observable": "H:vat",
-   "time_s": 1.6,
-   "start_s": 1.2,
-   "end_s": 1.6,
-   "dt_s": 0.08,
-   "class": "derived",
-   "value": null,
-   "tolerance": 1.4445482397657657e-06,
-   "against": "engine: -dG of its own saved states (SPEC \u00a71.3, judge's side)"
-  },
-  {
-   "criterion": "C3b",
-   "observable": "H:vat",
-   "time_s": 1.6,
-   "start_s": 1.2,
-   "end_s": 1.6,
-   "dt_s": 0.04,
-   "class": "derived",
-   "value": null,
-   "tolerance": 2.8890964795315314e-06,
-   "against": "engine: -dG of its own saved states (SPEC \u00a71.3, judge's side)"
-  },
-  {
-   "criterion": "C3b",
-   "observable": "H:vat",
-   "time_s": 1.6,
-   "start_s": 1.2,
-   "end_s": 1.6,
-   "dt_s": 0.02,
-   "class": "derived",
-   "value": null,
-   "tolerance": 5.778192959063063e-06,
-   "against": "engine: -dG of its own saved states (SPEC \u00a71.3, judge's side)"
-  },
-  {
-   "criterion": "C3c",
-   "observable": "cumulative_heat:vat",
-   "time_s": 1.6,
-   "start_s": 1.2,
-   "end_s": 1.6,
-   "class": "derived",
-   "value": null,
-   "tolerance": 2.8890964795315315e-07,
-   "against": "engine: its own cumulative heat may not fall by more than the tolerance"
+   "value": 0.002400000361333301,
+   "tolerance": 8.526514112834964e-18,
+   "against": "reference: S_s"
   },
   {
    "criterion": "C5",
@@ -673,6 +451,16 @@
   {
    "criterion": "C5",
    "observable": "sites:matrix",
+   "time_s": 0.0,
+   "dt_s": 0.04,
+   "class": "derived",
+   "value": 0.002400000361333301,
+   "tolerance": 8.526514112834964e-18,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:matrix",
    "time_s": 0.4,
    "dt_s": 0.04,
    "class": "derived",
@@ -708,6 +496,16 @@
    "class": "derived",
    "value": 0.002400000361333301,
    "tolerance": 3.495870786262335e-16,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:matrix",
+   "time_s": 0.0,
+   "dt_s": 0.02,
+   "class": "derived",
+   "value": 0.002400000361333301,
+   "tolerance": 8.526514112834964e-18,
    "against": "reference: S_s"
   },
   {
@@ -1282,7 +1080,7 @@
  ],
  "plants": [],
  "provenance": {
-  "references_revision": "becbfe1cf7351ea3cfb73993f70b01508405eb0d",
+  "references_revision": "c28f06ed8a9dc9bdd218ec96c1576d801702c841",
   "tree_clean": true,
   "writer_version": "fr45-references-writer 1",
   "regeneration_hash_seeds": [
@@ -1291,12 +1089,14 @@
    2
   ],
   "spec": {
-   "label": "fr45-site-competition-v1-registered-2026-11-24",
+   "label": "fr45-site-competition-v1, amended and noted 2026-11-24 (ae25c28d)",
    "files": [
+    "validation/fr45/spec/AMENDMENT-2026-11-24.md",
+    "validation/fr45/spec/NOTE-2026-11-24.md",
     "validation/fr45/spec/CRITERIA.md",
     "validation/fr45/spec/SPEC.md"
    ],
-   "verified_against": "SHA256SUMS-fr45-spec-6e92d0ec.txt",
+   "verified_against": "SHA256SUMS-fr45-spec-ae25c28d.txt",
    "rows_matched": 83
   },
   "profile": "reference"
