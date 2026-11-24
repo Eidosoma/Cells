@@ -43,7 +43,19 @@ Uses [Restoring both respiratory carriers fixes the turnover ratio and outward c
 
 **Open.** Rotor proton count and ATP turnover for synthesis, plus the energetic cost of delivering ATP across the mitochondrial inner membrane.
 
+- [Exactly three protons per ATP is the intrinsic tight-coupling ratio of the mammalian mitochondrial ATP synthases represented by the Cells model.](../WET_LAB_EVIDENCE.md#pair-mammalian-rotor-coupling) · Independent replication unconfirmed
+
 **Unit** c-subunits per rotor, H⁺ per matrix ATP, charge equivalents per delivered ATP
+
+### pinke2020_ovine_rotor@1
+
+ATP synthase purified from sheep heart mitochondria, imaged by cryo-EM. State 1a, deposited EM map EMD-10573 and PDB 6TT7, entities 2 and 10. [Pinke et al. (2020), ovine cryo-EM structure 6TT7](https://doi.org/10.1038/s41594-020-0503-8)
+
+- **Evidence role** descriptive
+
+Subunit counts are structural observations. One H⁺ per c-subunit and three ATP per turn are the tight-coupling interpretation. There is no simultaneous H⁺ and ATP flux measurement.
+
+The ovine assembly has eight c-subunits and three catalytic β-subunits. Its new density corroborates the 8/3 tight-coupling interpretation, with a shared bovine starting model for the rotor. The delivered ATP cost also depends on the export and phosphate paths. [Dataset manifest](../checks/data/paired_wet_lab_measurements.json) · [Comparison verdict](../PROGRESS.md#paired-wet-lab-evidence)
 
 ### watt2010_bovine_rotor@1
 
