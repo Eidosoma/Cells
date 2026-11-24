@@ -141,7 +141,7 @@ GPU qualification (D330, D336). Since D336, the vector windows refuse the compos
   here unchanged. The design's CPU records (`out/v2`) and L4 records (`out/gpu`) are read beside them.
 - **Provenance of this note.** FR-43 part 1's builder wrote this text. The harness refused the builder's own write of
   a report draft, and the user approved the lead committing the builder's text (24 November 2026, D372).
-- **Corrections, 25 November 2026.** Rechecking the text against the twelve records after its gate, the builder found
+- **Corrections, 24 November 2026.** Rechecking the text against the twelve records after its gate, the builder found
   errors in it, and this version corrects them: a withdrawn claim that the step cost follows the sibling thread's
   load; what `performance.json` holds; the compile and memory percentages; the growth exponents; and the memory peak.
   The measured figures are unchanged.

@@ -12445,3 +12445,46 @@ the note's pairwise, lumen-free core, for about 3.25 to 4.5 in all.
   h with dt is withdrawn.
 - **Plant entries are keyed** (plant, criterion, world, time_s). P5 under C6 on W7 keeps two entries.
 - **Next:** the references agent regenerates W7 and W7s before the references' tag.
+
+## D376: FR-43 part 1's gaps land; FR-45's references v2 are tagged; a privacy slip on a Lean merge, the user's decision on the Lean tips, and the merge check that now runs
+
+2026-11-24, about 23:35 UTC.
+
+**FR-43 part 1's two gaps landed** at 14f19f9f (tag `fr43-part1-gaps-landed-2026-11-25`), with the selection gate at
+a4e638c2 done 0: 572 of 671 files, none changed. The landing trial passed 219 tests in 164 s.
+- **The tag's name is a day ahead:** the landing was at 23:34 UTC on 24 November. The pushed tag stays as named.
+- **The gate certifies the test rows and the report.** Two docs-and-record changes followed it: the report's text, and
+  the tier-3 record entry for the 256-row case (0 blocking and 0 reported against the run).
+- **The report's text was corrected.** The builder rechecked it against its twelve records after the gate and found
+  errors, among them a claim that the step cost follows the sibling thread's load, which it withdraws. The lead checked
+  each corrected figure from the records. The measured figures did not change. The landing message's own step-cost
+  sentence was wrong at 16 rows and was corrected before the commit: within 6% of the design note at 32, 256 and 1,024
+  rows, and 12% below it at 16.
+
+**FR-45's references v2 are tagged** `fr45-references-v2-2026-11-24` (b62ce23c). W7 and W7s conform to amendment 3:
+the methods agree to about 1e-68, every W7s interval's heat is resolved, and the files regenerate byte for byte
+(774,060 bytes). Its judge comes after the rename.
+
+**A privacy slip, and the user's decision.**
+- **The slip.** The lead merged a Lean branch (1b3bde45) without running the privacy scan on it, because the Lean check
+  looked at paths, citations and gates only. Five of its lines match the list kept for a private review. The matched
+  word is one main already carried in 37 files of published citations and viewer data. No project name appears in it,
+  in any Lean merge of the day or in any waiting Lean tip, and the lead's own commits and landings that day are clean
+  on both lists. A push cannot be undone, so it stays.
+- **What the user decided.** The waiting Lean tips add published-paper evidence that uses another word on that list,
+  as well as that one. The user asked Lean to reword first, and Lean is doing so. The tips are held until then. Since a
+  merge publishes every commit in its history, Lean rebuilds the unpublished commits instead of rewording on top. The
+  commit numbers the records cite will change, and Lean sends a map.
+- **The check now runs before every Lean merge,** as a tool in the lead's folder (`lean-ready.sh`, not in the
+  repository). It requires: the gate done 0 on exactly the tip; a clean trial merge that touches only `lean/`; every
+  cited commit on main, lean-only on the tip's history, or a tagged commit; and both lists at 0 in the merged lines, in
+  every unpublished commit and in every commit message. It held the waiting tip and passed an earlier clean one when
+  tested.
+
+**FR-52's note:** the lead accepted its rule that a merge or split declares exactly min(R, P) pairs, and ruled that a
+channel with only one legal pairing resolves by rule, with a declaration of it refused.
+
+**Also noted.**
+- **A correction to the lead's own summary:** the lead told the user on the evening of 24 November that the FR-51
+  holdout registration was waiting for Lean's answer on re-reading the 5.4 mM anchor. The request had not been sent. It
+  is now with Lean, through the user. Extraction waits for the registration's tag.
