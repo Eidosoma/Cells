@@ -376,7 +376,9 @@
   "/mnt/workspaces/Cells/fr43-part3-20261123/tiers-312f9581/measured.json",
   "/mnt/workspaces/Cells/fr43-part3-20261123/tiers-fd475b89/measured.json",
   "/mnt/workspaces/Cells/fr46-48-build-20261123/measure-d19b10c2/measured.json",
-  "/mnt/workspaces/Cells/fr43-20261123/part2/tiers/run-2b/measured.json"
+  "/mnt/workspaces/Cells/fr43-20261123/part2/tiers/run-2b/measured.json",
+  "/mnt/workspaces/Cells/wash-export-refusal-20261123/tiers-51bb58d5/measured.json",
+  "/mnt/workspaces/Cells/fr49-expression-labels-20261123/tiers-a9ea8915/measured.json"
  ],
  "measured_provenance": [
   {
@@ -3211,6 +3213,22 @@
    "root": "/mnt/workspaces/Cells/fr43-20261123/part2/snap-2b-253dce46",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-23T22:32:05+00:00"
+  },
+  {
+   "git_revision": "51bb58d54d2fed43b344d5bd2583f1d86857d8f0",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/wash-export-refusal-20261123/snap-51bb58d5",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-23T22:58:42+00:00"
+  },
+  {
+   "git_revision": "a9ea891554d7d16a72b1e466f9a8847a375530fe",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr49-expression-labels-20261123/snap2-a9ea8915",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-23T23:47:50+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -3899,10 +3917,10 @@
    },
    {
     "file": "tests/unit/test_cell_owned_compartments.py",
-    "seconds": 11.59,
+    "seconds": 15.08,
     "exit_code": 0,
     "counts": {
-     "passed": 220
+     "passed": 225
     }
    },
    {
@@ -6756,10 +6774,10 @@
    },
    {
     "file": "tests/unit/test_wash_schedule.py",
-    "seconds": 7.08,
+    "seconds": 7.73,
     "exit_code": 0,
     "counts": {
-     "passed": 33
+     "passed": 35
     }
    },
    {
@@ -7496,6 +7514,22 @@
     "exit_code": 0,
     "counts": {
      "passed": 4
+    }
+   },
+   {
+    "file": "tests/unit/test_fr49_world_l.py",
+    "seconds": 77.73,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
+   },
+   {
+    "file": "tests/unit/test_fr49_world_l_resume.py",
+    "seconds": 82.73,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
     }
    },
    {
@@ -8447,10 +8481,10 @@
    },
    {
     "file": "tests/unit/test_templated_polymerisation.py",
-    "seconds": 25.49,
+    "seconds": 25.34,
     "exit_code": 0,
     "counts": {
-     "passed": 53
+     "passed": 57
     }
    },
    {

@@ -275,6 +275,10 @@ Refused at the definition
   - an ID that another pool, route or release holds;
   - another in-step mover, at its node, of an exported row or of an outside degradation's
     monomer (check_writers; the monomers' is beyond §9.17.6's wording, and fails closed);
+  - beside cell_owned_compartments@1 (FR-49, D327; check_compartments), an outside degradation
+    at a declared compartment's node, then an export into one: a compartment lies behind its
+    owner's membrane, and secretion into it is a later step with its own books at the
+    compartment's node. Routes in the owner's cytosol never touch the compartment;
 - more than the species cap.
 
 At run time: a non-finite or non-positive amount (at the cells, and at the exported nodes), a
@@ -1418,6 +1422,39 @@ def single_writer_rows(spec, declaration):
 
         out |= {s.id for s in species_labels.derived(spec, owner)[0].species if s.labels}
     return out
+
+
+COMPARTMENTS_LAW = "cell_owned_compartments@1"
+
+
+def check_compartments(spec, declaration):
+    """FR-49 (D327; validation/fr49/REGISTRATION.md, Part H): beside cell_owned_compartments@1,
+    refuse an outside degradation at a declared compartment's node, then an export into one, each
+    with its reason. Degradations are checked first, so that each refusal has a world that reaches
+    it (a degradation needs an export carrying its polymer into its node). A world declaring no
+    compartment is unchanged."""
+    owners = {}
+    for op, other, _ in composite_spec.entries(spec):
+        if op.LAW_ID == COMPARTMENTS_LAW:
+            owners |= {c.node: (c.id, c.owner) for c in other.compartments}
+    if not owners:
+        return
+    for d in declaration.outside_degradations:
+        if d.node in owners:
+            cid, owner = owners[d.node]
+            raise ConfigError(
+                f"{LAW_ID}: outside degradation {d.id} is at {d.node!r}, compartment {cid!r} of "
+                f"{owner!r} ({COMPARTMENTS_LAW}); a compartment's content is cleared by turnover "
+                "or D152's reactions, and an export into a compartment is a later step (FR-49)"
+            )
+    for e in declaration.exports:
+        if e.node in owners:
+            cid, owner = owners[e.node]
+            raise ConfigError(
+                f"{LAW_ID}: export {e.id} opens onto {e.node!r}, compartment {cid!r} of {owner!r} "
+                f"({COMPARTMENTS_LAW}); secretion into a compartment is a later step, with its "
+                "own books at the compartment's node (FR-49)"
+            )
 
 
 def check_writers(spec, declaration):
@@ -3291,6 +3328,7 @@ class TemplatedPolymerisation(Operator):
     def check_definition(self, spec, declaration, schedule, model):
         common.check_species_cap(spec, LAW_ID)
         common.check_identities(spec, LAW_ID, declaration.species)
+        check_compartments(spec, declaration)
         species_reactions.check_volume_changers(spec, LAW_ID)
         check_writers(spec, declaration)
         check_occupants(spec, declaration, schedule)

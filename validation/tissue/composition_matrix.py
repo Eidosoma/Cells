@@ -942,6 +942,13 @@ _COMPARTMENTS_FIRST = tuple(
     for pair in _TRAFFICKING_OFF
     if pair not in _TRAFFICKING_FIRST and PRODUCER not in pair and WASH not in pair
 )
+# The laws those pairs name beside trafficking, in the matrix's order: the rule's text names them.
+_OFF_BOTH_LISTS = tuple(
+    sorted(
+        {law for pair in _COMPARTMENTS_FIRST for law in pair if law != TRAFFICKING},
+        key=LAWS.index,
+    )
+)
 # The compartment wash is off both lists too; its pairs with trafficking are refused there first.
 _WASH_FIRST = tuple(pair for pair in _TRAFFICKING_OFF if WASH in pair)
 
@@ -1302,8 +1309,10 @@ RULES = (
         tag=REAL,
         why="A new operator may treat outside nodes as environment (the closed-compartment design "
         "§4). It marks the off-list pairs the declarations admit (site occupancy: FR-1's door for "
-        "it, §4; the compartment wash, off the list until admitted) and stands behind the "
-        "declarations' refusals of the rest",
+        "it, §4; the compartment wash and site_occupant_replacement@1, off the list until FR-49's "
+        "later pieces admit them; expression and the labels have been on it, each with its own "
+        "check, since FR-49's first pieces, D327) and stands behind the declarations' refusals of "
+        "the rest",
         marks=_off_list(True),
         behind=_off_list(False),
     ),
@@ -1325,16 +1334,17 @@ RULES = (
     ),
     dict(
         rule="beside scheduled_membrane_trafficking@1, the compartments' admitted list refuses "
-        "site occupancy first",
-        laws=(TRAFFICKING, SITES),
+        "first each law that is on neither admitted list: " + ", ".join(_OFF_BOTH_LISTS),
+        laws=(TRAFFICKING, *_OFF_BOTH_LISTS),
         level="law",
         check=OPS + "compartments.py::check_definition",
         test=TESTS + "test_membrane_trafficking.py::test_each_refusal_fires_with_its_reason",
         tag=REAL,
-        why="Trafficking requires the compartments, whose check runs first, and site_occupancy@1 "
-        "is not on their admitted list: the case 'site occupancy beside it' asserts that "
-        "message. Trafficking's own reason, that sites move with their membrane only from "
-        "version 1.1, is a second wall this composition never reaches",
+        why="Trafficking requires the compartments, whose check runs first, and each law named "
+        "is on neither admitted list, so the compartments' message is the one given: the case "
+        "'site occupancy beside it' asserts it for site_occupancy@1. Trafficking's own reasons "
+        "(for sites, that they move with their membrane only from version 1.1) are a second wall "
+        "these compositions never reach",
         marks=_COMPARTMENTS_FIRST,
     ),
     dict(
@@ -1353,9 +1363,10 @@ RULES = (
     ),
     dict(
         rule="no declared path moves a washed node's neutral species across its surface: the "
-        "patch's own permeability, a kind's route, an exchange route through a facing patch or "
-        "a site population's internalisation from the node (fail closed)",
-        laws=(WASH, EXCHANGE, SITES),
+        "patch's own permeability, a kind's route, an exchange route through a facing patch, "
+        "a site population's internalisation from the node, or the gene unit's export into the "
+        "node or outside degradation there (fail closed)",
+        laws=(WASH, EXCHANGE, SITES, "templated_polymerisation@1"),
         level="data",
         check=OPS + "wash_schedule.py::surface_crossings",
         test=TESTS + "test_wash_schedule.py::test_each_refusal_fires_with_its_reason",
@@ -1363,7 +1374,9 @@ RULES = (
         why="The step's booking of a concentration step at the node is unmeasured, and the "
         "wash's books do not see the exchange (D263 finding 2, a second review: a registered "
         "route's crossing was admitted where the patch's own was refused). An operator law not "
-        "shown local is refused until it is classified",
+        "shown local is refused until it is classified. The gene unit's export and outside "
+        "degradation, which amendment T added after its classification as writing cells only, "
+        "are each refused by name (D327, the fail-open fix)",
     ),
     dict(
         rule="membrane state beside a compartment only together with its admitted writers, "
@@ -1392,6 +1405,30 @@ RULES = (
         tag=REAL,
         why="A newcomer would inherit the compartment's content, and a donor copy takes the "
         "donor's cytosolic amounts only (door R, the closed-compartment design §1.5)",
+    ),
+    dict(
+        rule="templated_polymerisation@1 exports into no compartment's node and degrades outside "
+        "at none",
+        laws=("templated_polymerisation@1", COMPARTMENTS),
+        level="data",
+        check=OPS + "templated_polymerisation.py::check_compartments",
+        test=TESTS + "test_templated_polymerisation.py::test_beside_a_compartment",
+        tag=REAL,
+        why="A compartment lies behind its owner's membrane: secretion into it is a later step, "
+        "with its own books at the compartment's node; routes in the owner's cytosol compose "
+        "(FR-49, D327)",
+    ),
+    dict(
+        rule="beside a compartment, neutral_arrival_labels@1 refuses membrane state",
+        laws=(COMPARTMENTS, LABELS, STATE),
+        level="data",
+        check=OPS + "compartments.py::refuse_labels_beside_membrane_state",
+        test=TESTS + "test_cell_owned_compartments.py::test_labels_beside_a_compartment",
+        tag=REAL,
+        why="FR-49 qualifies the labels beside a compartment without membrane state (World L; "
+        "ruling 4). Today the labels refuse membrane state's admitted writers anyway; the check "
+        "names the reason, before the membrane-state wall's rule, and stays refused if that list "
+        "widens",
     ),
     dict(
         rule="D152 refuses RK4",
