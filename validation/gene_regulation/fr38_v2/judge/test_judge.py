@@ -1,6 +1,6 @@
 """Host-only tests of FR-38's second comparison judge, on invented inputs only.
 
-**Seconds:** 19 to 39 s on one core (26 s for its 21 tests on CPU 7, 24 November 2026).
+**Seconds:** 19 to 39 s on one core (30 s for its 23 tests on CPU 7, 24 November 2026).
 **Reason (D224):** the judge decides FR-38's registered verdict, so each C0 refusal, each failure
 and inconclusive mode, the retry and each plant (caught and not caught) must be shown to move it
 the registered way before any engine run is judged.
@@ -1433,3 +1433,129 @@ def test_registered_af_p1_does_not_decide(registered):
     assert v["families"]["inv_AF"]["verdict"] == "pass"
     assert all(u["caught"] is False for u in v["plants"]["P1"]["reported_only"])
     assert plant_status(v, "P1") == "caught" and v["comparison"]["FR-38"] == "pass"
+
+
+def _honest_h(reg, family, run):
+    for fname in os.listdir(reg.export):
+        if fname.startswith(f"{family}_") and f"_honest_{run.replace(' ', '_')}_primary_0.5" in (
+            fname
+        ):
+            with open(os.path.join(reg.export, fname)) as fh:
+                return json.loads(fh.read())
+    raise AssertionError(f"no honest record of {family} {run}")
+
+
+def test_registered_c_and_d_verdicts(registered):
+    """C and D carry their own verdicts beside FR-38's and never decide it (CRITERIA.md §4)."""
+    hc = _honest_h(registered, "invented_C", "p_sched returned")
+    v = judge_registered(
+        registered,
+        edited(
+            registered,
+            "c_miss",
+            where("invented_C", role="plant", plant="P8", run="p_sched returned"),
+            lambda rec: rec.update(series=hc["series"]),
+        ),
+    )
+    assert plant_status(v, "P8") == "not caught" and v["comparison"]["C"] == "fail"
+    assert v["comparison"]["FR-38"] == "pass"
+
+    def pool0(rec):
+        rec["series"]["label_R_pool0"] = [x * (1 - 1e-3) for x in rec["series"]["label_R_pool0"]]
+
+    v = judge_registered(
+        registered,
+        edited(
+            registered,
+            "c_nc",
+            where("invented_C", role="plant", plant="P8", run="p_sched returned"),
+            pool0,
+        ),
+    )
+    assert plant_status(v, "P8") == "caught" and not v["plants"]["P8"]["negative_control_passes"]
+    assert v["comparison"]["C"] == "inconclusive" and v["comparison"]["FR-38"] == "pass"
+    hd = _honest_h(registered, "invented_D", "p_sched returned")
+    v = judge_registered(
+        registered,
+        edited(
+            registered,
+            "d_miss",
+            where("invented_D", role="plant", plant="P9"),
+            lambda rec: rec.update(series=hd["series"]),
+        ),
+    )
+    assert plant_status(v, "P9") == "not caught" and v["comparison"]["D"] == "fail"
+    assert v["comparison"]["FR-38"] == "pass"
+
+
+def test_registered_names_read_spec_inputs(mapping):
+    """A smoke over the five registered families on SPEC.md's own inputs (no engine output): every
+    definition the export must carry, and every accessor the rules read."""
+    for fam in spec.REAL_FAMILIES:
+        profile = spec.FAMILY_PROFILE[fam]
+        inputs = spec.spec_inputs(fam)
+        times = spec.grid(inputs)
+        window = tuple(inputs["window_s"])
+        samples = inputs["samples_s"]
+        assert samples[0] == window[1] and all(t in times for t in samples)
+        ref = types.SimpleNamespace(
+            inputs=inputs,
+            times=np.asarray(times),
+            window=window,
+            samples=samples,
+            plants=[],
+            accepted=True,
+        )
+        f = J.Family(fam, profile, ref)
+        assert f.inputs == inputs and f.role == fam
+        for fate in spec.FATES:
+            assert spec.fate_rate(inputs, fate) > 0.0
+        assert spec.chain_length(inputs) == 1200 and spec.pool_fmol(inputs, "pol") > 0.0
+        assert spec.residue_potential(inputs) == inputs["mu0_RT_at_1M"]["R"] / 1200
+        stubs = [(r, "honest", None, None) for r in spec.honest_runs(inputs)]
+        if spec.has_blank(profile):
+            stubs += [("blank", "blank", None, m) for m in f.blank_machines()]
+        stubs += [(r, "twin", None, None) for r in f.twin_runs()]
+        if f.restart():
+            stubs.append((f.restart()[0], "restart", None, None))
+        for plant, where_ in spec.PLANT_RUNS.items():
+            stubs += [(r, "plant", plant, "returned") for ff, r in where_ if ff == fam]
+        honest_def = {}
+        for run, role, plant, machine in stubs:
+            rec = types.SimpleNamespace(run=run, role=role, plant=plant, machine=machine)
+            d = records.expected_definition(
+                inputs, rec, restart=f.restart() and f.restart()[1], gene_unit_volume=profile == "D"
+            )
+            assert records.compare_inputs(d, copy.deepcopy(d)) == []
+            if role == "honest":
+                honest_def[run] = d
+            if role == "plant" and run != "blank":
+                changed = {k for k in d if d[k] != honest_def[run][k]}
+                assert len(changed) == 1, (fam, plant, changed)
+        for p in list(spec.CORE_PLANTS) + ["P8", "P9"]:
+            J.plant_units(f, p)
+        assert J.plant_units(f, "P4") == (
+            [("AN", "p_sched returned")]
+            if fam == "AN"
+            else [("B", "p=0.55 returned")]
+            if fam == "B"
+            else []
+        )
+        if fam == "B":
+            assert spec.pool_fmol(inputs, "rib") > 0.0
+        # every series' class rule, and the scales and identities on stand-in values
+        names = [
+            e["engine"].partition("/")[2]
+            for e in mapping["readouts"]
+            if e["status"].get(profile) and e["engine"].startswith("series/")
+        ]
+        vals = {n: np.linspace(1.0, 2.0, len(times)) for n in names}
+        for run in spec.honest_runs(inputs) + ["blank"] * spec.has_blank(profile):
+            idle = None if run == "blank" else spec.idle_fate(inputs["runs"][run]["p"])
+            for n in names:
+                spec.constant_mask(n, times, window, blank=run == "blank", idle=idle)
+        ctx = rules.ScaleContext(profile, inputs, vals, blank=False, blank_values=vals)
+        assert ctx.g_scale() > 0.0 and ctx.heat_scale() > 0.0
+        if profile == "D":
+            assert ctx.d_identity_scale() > 0.0
+        assert rules.identities(vals, inputs, profile, "held", 28800, blank=False)
