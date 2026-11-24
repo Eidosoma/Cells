@@ -18,7 +18,7 @@ Direct Lean claims cover [55 of 55 laws](COVERAGE.md#registered-laws) and [35 of
 | [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 2 of 2 | 29 of 29 | 28 checked · 1 failed | 22 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
 
-[Paired wet-lab evidence](WET_LAB_EVIDENCE.md) covers 17 comparisons across 14 claims. In 10 comparisons, two independent studies support the stated assumption.
+[Paired wet-lab evidence](WET_LAB_EVIDENCE.md) covers 28 comparisons across 21 claims. In 16 comparisons, two independent studies support the stated assumption.
 
 <!-- /generated -->
 
@@ -33,6 +33,8 @@ FR-38 follows a producer’s RNA from template release through cell replacement.
 ## Biological evidence
 
 The paired wet-lab register groups comparisons by outcome. Each row names the assumption, the two primary studies, their measurements and how independently the data were collected. The two work lists identify claims with several datasets ready for review and claims still seeking a second dataset. [Browse paired wet-lab evidence](WET_LAB_EVIDENCE.md)
+
+Two labs measured half-activation of rat SK2 near 0.7 µM calcium. Its timing is harder to reproduce with one closing rate. At low calcium a third study reported an approximately 80 ms rise from 20% to 80%, above the 48.1 ms ceiling inferred from its mean washout at high calcium. The low-dose recording lacks a paired washout. [Dose comparison](WET_LAB_EVIDENCE.md#pair-rsk2-calcium-midpoint) · [Timing proof, CPU replay and measurement limits](PROGRESS.md#paired-transport-and-membrane-measurements)
 
 In a measured nucleotide pool, upstream depletion and downstream product predicted 0.822 mM UTP at seven hours, compared with 0.955 ± 0.350 mM measured (SD). The FR-43 development replay checks how much each of two writers contributed and which volume each used. [Shared-pool proof, native runs and measurements](claims/fr43-shared-writers.md)
 

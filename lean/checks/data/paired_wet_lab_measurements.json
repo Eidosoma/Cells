@@ -184,5 +184,113 @@
       "n": 19
     },
     "uncertainty": "Separate sample counts per ion. The quoted equilibrium potentials for each species were calculated from concentrations. Those values cannot substitute for a measured membrane voltage in a charge balance."
+  },
+  "evans2003_dopc_tension_ramps@1": {
+    "doi": "10.1016/S1631-0705(03)00044-6",
+    "locator": "Fig. 3, middle column, experimental DOPC histograms, p. 268. Fig. 4 compares peak rupture tensions.",
+    "preparation": "Micropipette aspiration of giant DOPC vesicles with a sustained linear tension ramp until rupture.",
+    "ramp_rates_mN_per_m_per_s": [
+      0.07,
+      26
+    ],
+    "slow_high_count_region_mN_per_m_approx": [
+      4,
+      8
+    ],
+    "fast_high_count_region_mN_per_m_approx": [
+      10,
+      16
+    ],
+    "source": "https://heinrichlab.bme.ucdavis.edu/files/2010/11/2003_EvansHeinrich_ComptesRendusPhysique.pdf#page=4",
+    "uncertainty": "Intervals describe the high-count parts of the plotted histograms and carry no confidence interpretation. The overlaid theoretical curves were excluded."
+  },
+  "jarolimek1999_dendritic_chloride_reversal@1": {
+    "doi": "10.1523/JNEUROSCI.19-12-04695.1999",
+    "locator": "Fig. 6B and adjoining low-pipette-anion results.",
+    "preparation": "Dendrites of cultured rat midbrain neurons. The furosemide-induced shift in GABA-current reversal was measured at two external K⁺ concentrations.",
+    "permeant_pipette_anion_mM": 4.5,
+    "external_K_mM": [
+      2,
+      10
+    ],
+    "dendritic_blocker_shift_mV": [
+      7,
+      -5
+    ],
+    "sem_mV": [
+      0.9,
+      0.7
+    ],
+    "n": [
+      6,
+      7
+    ],
+    "uncertainty": "Values are mean ± SEM. Pipette permeant anion and local free chloride activity are distinct. Transport direction is inferred from the blocker-sensitive voltage shift."
+  },
+  "delpire1991_sheep_kcl_flux_null@1": {
+    "doi": "10.1085/jgp.97.2.173",
+    "locator": "Abstract and results on net potassium efflux at equal and reversed concentration products.",
+    "preparation": "Hyposmotically swollen low-K sheep red cells. Net K flux was compared across concentrations and temperatures.",
+    "external_over_internal_product_near_zero_approx": 2,
+    "uncertainty": "Approximate concentration-product ratio reported by the authors. The exact zero and an uncertainty were not reported for this summary."
+  },
+  "niu2002_cholesterol_sopc_dopc@1": {
+    "doi": "10.1016/S0006-3495(02)75340-X",
+    "locator": "Table 1, acyl-chain rows referenced to di18:1(n-9) PC, and Fig. 6.",
+    "preparation": "Equilibrium cholesterol partition between cyclodextrin and large unilamellar lipid vesicles at 37 °C.",
+    "temperature_C": 37,
+    "sopc_over_dopc_partition": 1.4,
+    "reported_plus_minus": 0.11,
+    "dopc_to_sopc_delta_g_cal_per_mol": -207,
+    "delta_g_reported_plus_minus_cal_per_mol": 19,
+    "uncertainty": "The table gives ± values for partition and derived energy. The DOPC normalization is specific to the acyl-chain rows."
+  },
+  "lange2013_cholesterol_partition_37c@1": {
+    "doi": "10.1021/bi400862q",
+    "locator": "Table 1, equilibrium distribution coefficient Q, and Fig. 3.",
+    "preparation": "Equilibrium distribution of radiolabeled cholesterol between large unilamellar vesicles and methyl-β-cyclodextrin at 37 °C, with lipid identity varied.",
+    "temperature_C": 37,
+    "DOPC_Q": 3.5,
+    "SOPC_Q": 4.8,
+    "total_phospholipid_mM": 0.8,
+    "total_cholesterol_mM": 0.1,
+    "methyl_beta_cyclodextrin_mM": 10,
+    "uncertainty": "The table reports 2–4 determinations, with no per-lipid error for Q. The study's oxidase assays measure a different observable."
+  },
+  "lange2013_dopc_partition_fraction@1": {
+    "doi": "10.1021/bi400862q",
+    "locator": "Fig. 4A, DOPC open circles, and equilibrium Eq. 3.",
+    "preparation": "At 25 °C cholesterol was equilibrated between DOPC vesicles and methyl-β-cyclodextrin across low cholesterol mole fractions.",
+    "temperature_C": 25,
+    "approx_x_extent": [
+      0.006,
+      0.14
+    ],
+    "approx_Q_extent": [
+      3.4,
+      5.6
+    ],
+    "observable": "Q = (membrane cholesterol per phospholipid)/(bound cholesterol per total cyclodextrin). The bath occupancy proxy is x/[(1−x)Q].",
+    "uncertainty": "The ranges are approximate figure readings. Pointwise errors and an uncertainty on the fitted slope are unavailable. No calibration to crystalline cholesterol was reported."
+  },
+  "tenchov2006_dopc_cholesterol_crystals@1": {
+    "doi": "10.1529/biophysj.106.083766",
+    "locator": "Fig. 7 and results on excess cholesterol in the initial lamellar phase.",
+    "preparation": "X-ray diffraction from dried-film, rehydrated DOPC/cholesterol dispersions in PBS at 20 °C.",
+    "temperature_C": 20,
+    "nominal_feed_chol_fraction": 0.5,
+    "dispersion_percent_w_v": 10,
+    "crystal_spacing_nm": 3.4,
+    "replication": "Some nominal 1:1 preparations contained detectable crystals; others at the same nominal ratio did not.",
+    "uncertainty": "The mixing ratio is feed composition. A bilayer mole fraction, hydration state of the crystals, and fitted saturation threshold with uncertainty were not reported."
+  },
+  "jennings2001_rabbit_kcl_flux@1": {
+    "doi": "10.1152/ajpcell.2001.281.3.C825",
+    "locator": "Fig. 5 and accompanying K:Cl outward-flux ratio results.",
+    "preparation": "N-ethylmaleimide-stimulated rabbit erythrocytes. The sulfate bath and anion-exchanger inhibition allowed comparison of K and Cl efflux.",
+    "K_over_Cl_outward_flux": 1.12,
+    "sd": 0.26,
+    "experiments": 5,
+    "uncertainty": "Mean ± SD over five experiments. The two ionic fluxes define a stoichiometric ratio away from the null."
   }
 }

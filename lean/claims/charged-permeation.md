@@ -42,6 +42,8 @@ Uses [Voltage and free proton concentrations set the leak reversal](proton-leak.
 
 **Mixed.** Electrical current at a second voltage and reversal at a known ion gradient. These experiments leave microscopic route heat unmeasured.
 
+- [At fixed concentrations in each preparation, one permeability fitted at one voltage suffices to predict current at a second voltage.](../WET_LAB_EVIDENCE.md#pair-single-permeability-current-voltage) · Challenged by both studies
+
 **Unit** mA per g Hb (red cells), nA (bilayer) and mV (reversal)
 
 ### freedman1997_chloride@1

@@ -8390,7 +8390,32 @@
         "observable": "Intact fraction of a vesicle cohort over time at known tension. The numerical area-unit invariance is tested on identical physical states in the engine.",
         "unit": "mN/m, seconds, fraction intact and inverse seconds",
         "finding": "Under strong hypotonic swelling, three pores resealed successively in the same vesicle, each within one second. This measures a surviving-vesicle outcome relevant to FR-39. The assembly rule books terminal lysis once per lineage. [Oglęcka et al., Figure 5](https://elifesciences.org/articles/03695/figures#fig5)",
+        "pairs": [
+          {
+            "id": "dopc-rupture-time-history",
+            "assumption": "A single, time-independent critical tension determines when a pure DOPC vesicle ruptures on a hold or ramp.",
+            "datasets": [
+              "karal2015_dopc_hold@1",
+              "evans2003_dopc_tension_ramps@1"
+            ],
+            "outcome": "both_challenge",
+            "independence": "Karal and Yamazaki followed separate aspirated DOPC vesicles at fixed tension. Evans and Heinrich measured the tension at breakage under increasing suction in another laboratory.",
+            "comparison": "During Karal’s 8 mN/m hold at 32 °C the intact fraction fell from 0.50 at 33 s to 0.111 at 125 s. Under Evans’s ramps, the high-count region of the rupture histogram moved from roughly 4–8 mN/m at 0.07 mN/m/s to 10–16 mN/m at 26 mN/m/s. The same fixed threshold cannot account for both time effects. A common numerical hazard across protocols remains untested."
+          }
+        ],
         "evidence": [
+          {
+            "dataset_id": "evans2003_dopc_tension_ramps@1",
+            "manifest": "lean/checks/data/paired_wet_lab_measurements.json",
+            "citation": "Evans and Heinrich (2003), Figs. 3–4",
+            "doi": "10.1016/S1631-0705(03)00044-6",
+            "locator": "Fig. 3, middle column, experimental DOPC histograms, p. 268. Fig. 4 compares peak rupture tensions.",
+            "context": "Micropipette aspiration of giant DOPC vesicles with a sustained linear tension ramp until rupture.",
+            "role": "descriptive",
+            "uncertainty": "Intervals describe the high-count parts of the plotted histograms and carry no confidence interpretation. The overlaid theoretical curves were excluded.",
+            "assessment": "The faster tension ramp shifted the distribution of rupture tensions upward in independently measured DOPC vesicles. This constrains application of a fixed rupture threshold; a tension ramp cannot establish the hazard at constant tension.",
+            "report": "lean/PROGRESS.md#paired-transport-and-membrane-measurements"
+          },
           {
             "dataset_id": "karal2015_dopc_tension_series@1",
             "manifest": "lean/checks/data/karal2015_rupture_rates.json",
@@ -8670,11 +8695,12 @@
       "id": "regulated-state-response",
       "category": "channels-and-junctions",
       "title": "A regulated channel approaches its held-dose plateau without overshoot",
-      "statement": "At fixed input a two-state gate stays in [0, 1] and moves toward its steady open fraction. Splitting a constant dose preserves its endpoint. For positive closing rate the rise time constant equals the zero-input washout time constant multiplied by one minus the plateau.",
+      "statement": "At fixed input a two-state gate stays in [0, 1] and moves toward its steady open fraction. Splitting a constant dose preserves its endpoint. The rise time constant equals the zero-input washout time constant multiplied by one minus the plateau. The time to rise from 20% to 80% of the excursion is at most ln(4) times the washout time constant.",
       "assumptions": [
         "The starting state lies in [0, 1]. During a half-step the opening rate a = k_on × input and the closing rate b are nonnegative and fixed. If both vanish, the state stays fixed. The time-constant relation requires b > 0 and complete removal of opening drive on washout.",
         "An enabled route maps a factor f to basal + (1 − basal)f with basal in [0, 1]. The switch-off value is one. The upstream Hill ordering applies at positive concentration, half-saturation and exponent.",
-        "For the SK2 comparison the state is absolute open probability with zero basal opening. A single Hill input sets the opening rate, the closing rate is calcium-independent, and the single-channel and macropatch recordings share model parameters."
+        "For the SK2 comparison the state is absolute open probability with zero basal opening. A single Hill input sets the opening rate, the closing rate is calcium-independent, and the single-channel and macropatch recordings share model parameters.",
+        "The 20–80% comparison requires a rising response, a fixed drive during the rise, the same positive closing rate on washout, and a signal proportional to the state change. Both thresholds are fractions of the excursion from the starting level to the held-dose plateau."
       ],
       "uses": [
         "scheduled-species-turnover"
@@ -8693,6 +8719,7 @@
           "CellsProofs.Transport.RegulatedAvailability.constant_input_split": "lean/CellsProofs/Transport/RegulatedAvailability.lean",
           "CellsProofs.Transport.RegulatedAvailability.washout": "lean/CellsProofs/Transport/RegulatedAvailability.lean",
           "CellsProofs.Transport.RegulatedAvailability.timing_identity": "lean/CellsProofs/Transport/RegulatedAvailability.lean",
+          "CellsProofs.Transport.RegulatedAvailability.rise_20_80": "lean/CellsProofs/Transport/RegulatedAvailability.lean",
           "CellsProofs.Transport.RegulatedAvailability.steady_hill": "lean/CellsProofs/Transport/RegulatedAvailability.lean",
           "CellsProofs.Transport.RegulatedAvailability.route_bounds": "lean/CellsProofs/Transport/RegulatedAvailability.lean",
           "CellsProofs.Transport.RegulatedAvailability.route_mono": "lean/CellsProofs/Transport/RegulatedAvailability.lean"
@@ -8700,7 +8727,9 @@
         "sources": {
           "grn-lean activation monotonicity": "https://github.com/marpaia/grn-lean/blob/070ba8da6a09bdc4b0550396c61611668768bc0b/GRN/Dynamics/Sensor.lean#L30",
           "grn-lean inhibition monotonicity": "https://github.com/marpaia/grn-lean/blob/070ba8da6a09bdc4b0550396c61611668768bc0b/GRN/Dynamics/Sensor.lean#L51",
-          "Optional Cells proof for both monotone responses with basal availability": "lean/checks/hill/Response.lean#L46"
+          "Optional Cells proof for both monotone responses with basal availability": "lean/checks/hill/Response.lean#L46",
+          "Imported Mathlib Real.exp_sub, specialized locally to the two response levels": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Complex/Exponential.lean#L231",
+          "Imported Mathlib Real.log_exp, specialized locally to elapsed time": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L70"
         }
       },
       "numerical": {
@@ -8716,7 +8745,65 @@
         "status": "open",
         "observable": "Absolute SK2 open probability at fixed free calcium and its relaxation time after calcium addition or removal.",
         "unit": "open probability",
+        "pairs": [
+          {
+            "id": "rsk2-calcium-midpoint",
+            "assumption": "In excised patches expressing rat SK2, free cytoplasmic calcium activates the steady current cooperatively with half-activation near 0.7 µM.",
+            "datasets": [
+              "hirschberg1998_sk2@1",
+              "syme2000_rsk2_calcium@1"
+            ],
+            "outcome": "both_support",
+            "independence": "The two groups recorded their own patches expressing the same rat isoform. The Hirschberg dose series calibrates Cells. Syme’s control was held out; unknown channel number permits a normalized dose comparison.",
+            "comparison": "Hirschberg’s single-channel fit gave 0.74 µM and Hill coefficient 2.2 (three-patch means 0.62 ± 0.14 µM and 3.2 ± 1.0). Syme’s untreated NPₒ curve gave 0.700 µM and 2.5. The Cells three-dose fit gives 0.728 µM and 2.58. Its predicted rise time of 10.63 ms versus 4.1 ± 0.6 ms in Hirschberg is still a separate kinetic discrepancy."
+          },
+          {
+            "id": "rsk2-single-closing-rate",
+            "assumption": "A single two-state SK2 gate with a calcium-independent closing rate transfers between the reported calcium step and washout recordings.",
+            "datasets": [
+              "hirschberg1998_sk2@1",
+              "oliver2000_rsk2_calcium_jumps@1"
+            ],
+            "outcome": "both_challenge",
+            "independence": "Hirschberg’s and Oliver’s groups collected separate recombinant SK2 data. Hirschberg combines single-channel plateaus with macropatch timings. Oliver’s low-dose record has no reported uncertainty, sample count or paired washout.",
+            "comparison": "Hirschberg’s plateau and washout give a 10.63 ms activation time constant versus 4.1 ± 0.6 ms measured. Oliver measured a 6.18 ± 1.91 ms 20–80% rise and 34.7 ± 6.5 ms washout time constant at 10 µM Ca²⁺. Reusing that mean closing rate at 0.5 µM gives an upper bound of ln(4) × 34.7 = 48.1 ms, below the reported rise of about 80 ms. These are two different tests of transferring one rate across recordings. A matched-patch statistical test remains open."
+          }
+        ],
         "evidence": [
+          {
+            "dataset_id": "syme2000_rsk2_calcium@1",
+            "manifest": "lean/checks/data/paired_transport_responses.json",
+            "citation": "Syme et al. (2000), Fig. 8C",
+            "doi": "10.1152/ajpcell.2000.278.3.C570",
+            "locator": "Fig. 8C, filled circles, free-calcium dose series in the absence of chlorzoxazone.",
+            "context": "Excised inside-out patch from a Xenopus oocyte expressing rat SK2. The readout is the number of active channels times open probability (NPₒ).",
+            "role": "held_out_from_fitting",
+            "fit": [
+              "Hirschberg Fig. 1B at 0.6, 0.8 and 5 µM"
+            ],
+            "evaluation": [
+              "Syme Fig. 8C untreated midpoint and Hill coefficient"
+            ],
+            "excluded": [
+              "Same-patch drug series",
+              "Jump kinetics"
+            ],
+            "uncertainty": "Fig. 8C gives a fitted midpoint and slope with no uncertainty or replication count. The drug series was recorded on the same patch; Fig. 8B’s n = 7 concerns another experiment.",
+            "assessment": "An independent steady dose response supports cooperative activation near 0.7 µM. At the independent fitted midpoint, the Cells curve calibrated on Hirschberg predicts about 0.475 of its own ceiling. Unknown channel count prevents comparison of absolute Pₒ. Rise and washout require calcium-jump measurements.",
+            "report": "lean/PROGRESS.md#paired-transport-and-membrane-measurements"
+          },
+          {
+            "dataset_id": "oliver2000_rsk2_calcium_jumps@1",
+            "manifest": "lean/checks/data/paired_transport_responses.json",
+            "citation": "Oliver et al. (2000), Fig. 3 and pp. 596–597",
+            "doi": "10.1016/S0896-6273(00)81197-6",
+            "locator": "Fig. 3A–B and pp. 596–597, recombinant SK2 recordings and the reported low-calcium rise time.",
+            "context": "Calcium jumps onto giant inside-out oocyte patches expressing SK2, −80 mV, solution exchange time constant ≤0.5 ms. Only recombinant-channel observations are included.",
+            "role": "descriptive",
+            "uncertainty": "High-dose values are means ± SD across ten patches. The low-dose time is approximate, with no sample count, error or matching washout/absolute plateau reported.",
+            "assessment": "With a shared closing rate, the 34.7 ms mean washout bounds the 20–80% rise at 48.1 ms. The 10 µM response satisfies the bound, while the reported 0.5 µM rise is about 80 ms. Applying the mean washout across doses is a transfer assumption.",
+            "report": "lean/PROGRESS.md#paired-transport-and-membrane-measurements"
+          },
           {
             "dataset_id": "hirschberg1998_sk2@1",
             "manifest": "lean/checks/data/hirschberg1998_sk2.json",
@@ -9447,7 +9534,32 @@
         "CellsProofs.Transport.IonChannels.patch_booking": "lean/CellsProofs/Transport/IonChannels.lean"
       }},
       "numerical": {"status": "checked", "comparisons": ["chloride-channel"], "result": "At the same initial voltage, 147 and 70 mM bath chloride gave opposite fluxes and initial electrode currents of +0.573 and −5.733 pA. The two tissue trajectories matched an independent solution within 1.58 × 10⁻¹² fmol of transfer, with zero off-ion and padding flux."},
-      "biology": {"status": "open", "observable": "Shift in the single-channel reversal potential when the nominal extracellular chloride concentration changes at fixed intracellular chloride and temperature.", "unit": "mV", "evidence": [{
+      "biology": {"status": "open", "observable": "Shift in the single-channel reversal potential when the nominal extracellular chloride concentration changes at fixed intracellular chloride and temperature.", "unit": "mV", "pairs": [
+          {
+            "id": "epithelial-chloride-gradient",
+            "assumption": "Lowering extracellular chloride shifts the reversal of a chloride-selective epithelial current in the positive direction.",
+            "datasets": [
+              "Ling 1994 chloride substitution",
+              "bajnath1993_chloride_reversal@1"
+            ],
+            "outcome": "both_support",
+            "independence": "Ling and Bajnath studied different epithelial preparations in separate laboratories. Both measured single-channel currents in cell-attached patches, with voltages relative to resting potential.",
+            "comparison": "Rabbit collecting-duct patches shifted about +45 mV for 145→15 mM external Cl⁻ at 37 °C (Cells +60.63). Human colon patches shifted +23 mV for 150→57 mM at 25 °C (Cells +24.86). Both support direction. The rabbit magnitude falls short of the ideal shift; endpoint errors and ion activities limit a quantitative comparison."
+          }
+        ],
+        "evidence": [
+          {
+            "dataset_id": "bajnath1993_chloride_reversal@1",
+            "manifest": "lean/checks/data/paired_transport_responses.json",
+            "citation": "Bajnath et al. (1993), Fig. 2",
+            "doi": "10.1007/BF00374509",
+            "locator": "Methods, Fig. 2 and accompanying Results, closed-to-open single-channel amplitudes.",
+            "context": "Forskolin-stimulated, cell-attached patches of human HT-29cl.19A epithelium at 25 °C. Pipette chloride was lowered with osmotic compensation.",
+            "role": "descriptive",
+            "uncertainty": "The high-chloride reversal was 2 ± 1 mV on the −Vₚ scale. The low-chloride endpoint was about 25 mV. No error on their difference was reported.",
+            "assessment": "Lowering external chloride shifted the reversal positive. Cells gives +24.86 mV at 25 °C for a fixed internal chloride concentration. The inside-out control at symmetric chloride was a separate experiment.",
+            "report": "lean/PROGRESS.md#paired-transport-and-membrane-measurements"
+          },{
         "dataset_id": "Ling 1994 chloride substitution",
         "manifest": "lean/claims/incoming/channel-gating-evidence.md#chloride-leak",
         "citation": "Ling et al., Fig. 1B", "doi": "10.1172/JCI117037",
@@ -9509,6 +9621,19 @@
         "status": "mixed",
         "observable": "Electrical current at a second voltage and reversal at a known ion gradient. These experiments leave microscopic route heat unmeasured.",
         "unit": "mA per g Hb (red cells), nA (bilayer) and mV (reversal)",
+        "pairs": [
+          {
+            "id": "single-permeability-current-voltage",
+            "assumption": "At fixed concentrations in each preparation, one permeability fitted at one voltage suffices to predict current at a second voltage.",
+            "datasets": [
+              "freedman1997_chloride@1",
+              "pfeffermann2026_potassium@1"
+            ],
+            "outcome": "both_challenge",
+            "independence": "Freedman and Novak inferred chloride flux and voltage from red-cell assays. Pfeffermann’s group directly recorded a valinomycin-containing planar bilayer. Each series has its own fit. Bilayer readings have about 1 nA digitization precision and no reported replicate error at these voltages.",
+            "comparison": "Human red-cell chloride at −59 mV gave −1.17 ± 0.13 mA/g Hb (SD), versus −1.97 predicted after fitting at −103 mV. Bilayer K⁺ at −110 mV gave about −13.5 nA, versus −3.84 after fitting at +110 mV. Its reversal was nevertheless −59.8 mV, close to −59.16 predicted. The current magnitude errors go in opposite directions."
+          }
+        ],
         "evidence": [
           {
             "dataset_id": "freedman1997_chloride@1",
@@ -10471,7 +10596,32 @@
         "status": "open",
         "observable": "Equilibrium cholesterol activity as a function of membrane mole fraction.",
         "unit": "dimensionless activity relative to crystalline cholesterol",
+        "pairs": [
+          {
+            "id": "cholesterol-dilute-dopc-direction",
+            "assumption": "Increasing the cholesterol mole fraction of a dilute DOPC membrane raises its equilibrium cholesterol activity.",
+            "datasets": [
+              "shaw2023_dopc_cholesterol_activity@1",
+              "lange2013_dopc_partition_fraction@1"
+            ],
+            "outcome": "both_support",
+            "independence": "Different groups equilibrated their own DOPC vesicles against cyclodextrin. They share an assay principle. Only Shaw calibrated activities against crystals.",
+            "comparison": "Shaw’s crystal-referenced activity rose from 0.10 ± 0.01 at 5.4 mol% to 0.22 ± 0.02 at 11.4 mol% (68% intervals). In Lange’s 25 °C data the distribution coefficient changed little across roughly 0.6–14 mol%. Eq. 3 then gives rising cyclodextrin loading x/[(1−x)Q], a relative activity proxy at low occupancy. The pair supports the dilute trend; the high-fraction ideal law and absolute calibration remain open."
+          }
+        ],
         "evidence": [
+          {
+            "dataset_id": "lange2013_dopc_partition_fraction@1",
+            "manifest": "lean/checks/data/paired_wet_lab_measurements.json",
+            "citation": "Lange et al. (2013), Eq. 3 and Fig. 4A",
+            "doi": "10.1021/bi400862q",
+            "locator": "Fig. 4A, DOPC open circles, and equilibrium Eq. 3.",
+            "context": "At 25 °C cholesterol was equilibrated between DOPC vesicles and methyl-β-cyclodextrin across low cholesterol mole fractions.",
+            "role": "descriptive",
+            "uncertainty": "The ranges are approximate figure readings. Pointwise errors and an uncertainty on the fitted slope are unavailable. No calibration to crystalline cholesterol was reported.",
+            "assessment": "The weak composition dependence of Q compared with the change in x implies increasing equilibrium bath loading in the dilute series. At low occupancy this supplies a relative activity proxy. The series ends near x = 0.14.",
+            "report": "lean/PROGRESS.md#paired-transport-and-membrane-measurements"
+          },
           {
             "dataset_id": "shaw2023_dopc_cholesterol_activity@1",
             "manifest": "lean/checks/data/shaw2023_dopc.json",
@@ -10535,7 +10685,67 @@
         "status": "open",
         "observable": "Equilibrium cholesterol activity as a function of membrane mole fraction under a binary interaction model.",
         "unit": "dimensionless activity relative to crystalline cholesterol",
+        "pairs": [
+          {
+            "id": "cholesterol-host-lipid-affinity",
+            "assumption": "At 37 °C, cholesterol partition favors SOPC over DOPC, so the host phospholipid affects its transfer free energy.",
+            "datasets": [
+              "niu2002_cholesterol_sopc_dopc@1",
+              "lange2013_cholesterol_partition_37c@1"
+            ],
+            "outcome": "both_support",
+            "independence": "Niu and Litman and Lange’s group collected separate equilibrium cyclodextrin–vesicle partition datasets. Both used a similar partition method. Only ratios within the same experiment and temperature are compared.",
+            "comparison": "Niu measured a SOPC/DOPC partition ratio of 1.40 ± 0.11 and reported −207 ± 19 cal/mol for transfer into SOPC. Lange’s separate Q measurements give 4.8/3.5 = 1.37. Both support the direction and approximate magnitude of this host effect. The ratios alone cannot identify the Cells pair coefficient χ or its dependence on cholesterol fraction."
+          },
+          {
+            "id": "dopc-crystal-onset-portability",
+            "assumption": "First detectable cholesterol crystals identify a transferable equilibrium bilayer cholesterol fraction across DOPC preparations.",
+            "datasets": [
+              "parker2004_dopc_crystal_onset@1",
+              "tenchov2006_dopc_cholesterol_crystals@1"
+            ],
+            "outcome": "inconclusive",
+            "independence": "Different groups prepared their own dispersions. Parker minimized demixing during preparation. Tenchov dried and rehydrated lipid films and used a different crystal-detection method.",
+            "comparison": "Parker detected cholesterol monohydrate by microscopy near a feed mole fraction of 0.66 ± 0.02 using low-temperature trapping. Tenchov detected a 3.40 nm diffraction line in some nominal 0.50 mixtures at 20 °C and none in other 0.50 mixtures. The observed appearances differ. Neither pair of feed fractions establishes two different equilibrium bilayer saturation fractions."
+          }
+        ],
         "evidence": [
+          {
+            "dataset_id": "niu2002_cholesterol_sopc_dopc@1",
+            "manifest": "lean/checks/data/paired_wet_lab_measurements.json",
+            "citation": "Niu and Litman (2002), Fig. 6 and Table 1",
+            "doi": "10.1016/S0006-3495(02)75340-X",
+            "locator": "Table 1, acyl-chain rows referenced to di18:1(n-9) PC, and Fig. 6.",
+            "context": "Equilibrium cholesterol partition between cyclodextrin and large unilamellar lipid vesicles at 37 °C.",
+            "role": "descriptive",
+            "uncertainty": "The table gives ± values for partition and derived energy. The DOPC normalization is specific to the acyl-chain rows.",
+            "assessment": "At the same temperature cholesterol favored SOPC over DOPC. The equilibrium transfer energy identifies a difference between lipid backgrounds but leaves the Cells interaction coefficient undetermined.",
+            "report": "lean/PROGRESS.md#paired-transport-and-membrane-measurements"
+          },
+          {
+            "dataset_id": "lange2013_cholesterol_partition_37c@1",
+            "manifest": "lean/checks/data/paired_wet_lab_measurements.json",
+            "citation": "Lange et al. (2013), Fig. 3 and Table 1",
+            "doi": "10.1021/bi400862q",
+            "locator": "Table 1, equilibrium distribution coefficient Q, and Fig. 3.",
+            "context": "Equilibrium distribution of radiolabeled cholesterol between large unilamellar vesicles and methyl-β-cyclodextrin at 37 °C, with lipid identity varied.",
+            "role": "descriptive",
+            "uncertainty": "The table reports 2–4 determinations, with no per-lipid error for Q. The study's oxidase assays measure a different observable.",
+            "assessment": "The within-study SOPC/DOPC ratio is 4.8/3.5 ≈ 1.37. The absolute distribution coefficients use the study’s own cyclodextrin reference.",
+            "report": "lean/PROGRESS.md#paired-transport-and-membrane-measurements"
+          },
+          {
+            "dataset_id": "tenchov2006_dopc_cholesterol_crystals@1",
+            "manifest": "lean/checks/data/paired_wet_lab_measurements.json",
+            "citation": "Tenchov et al. (2006), Fig. 7",
+            "doi": "10.1529/biophysj.106.083766",
+            "locator": "Fig. 7 and results on excess cholesterol in the initial lamellar phase.",
+            "context": "X-ray diffraction from dried-film, rehydrated DOPC/cholesterol dispersions in PBS at 20 °C.",
+            "role": "descriptive",
+            "uncertainty": "The mixing ratio is feed composition. A bilayer mole fraction, hydration state of the crystals, and fitted saturation threshold with uncertainty were not reported.",
+            "assessment": "Diffraction detected excess crystalline cholesterol at a lower nominal composition than Parker’s reported onset in a differently prepared dispersion. Preparation history and the concentration of cholesterol incorporated into the membrane limit the comparison.",
+            "report": "lean/PROGRESS.md#paired-transport-and-membrane-measurements"
+          },
           {
             "dataset_id": "shaw2023_dopc_cholesterol_activity@1",
             "manifest": "lean/checks/data/shaw2023_dopc.json",
@@ -11013,7 +11223,78 @@
         "observable": "External cation concentration at reversal normalized by internal potassium, plotted against the inside/outside chloride ratio.",
         "unit": "dimensionless normalized reversal slope",
         "finding": "Rabbit red cells gave an outward K:Cl flux ratio of 1.12 ± 0.26 (SD, five preparations), consistent with the model’s 1:1 stoichiometry. The investigators measured rubidium as a potassium tracer and calibrated its relative flux. [Jennings and Adame, Fig. 5](https://pubmed.ncbi.nlm.nih.gov/11502559/)",
-        "evidence": [{
+        "pairs": [
+          {
+            "id": "kcl-gradient-reverses-transport",
+            "assumption": "Changing external potassium can reverse the direction of K–Cl cotransport.",
+            "datasets": [
+              "lauf1996_sheep_kcc_reversal@1",
+              "jarolimek1999_dendritic_chloride_reversal@1"
+            ],
+            "outcome": "both_support",
+            "independence": "Separate groups studied sheep erythrocytes and rat neurons. The first measured K⁺ efflux and Rb⁺ influx. The second inferred transport direction from the blocker-sensitive electrical response.",
+            "comparison": "Lauf and Adragna located net-flux zeros in sheep red cells using external Rb⁺ as the K⁺ surrogate. In rat dendrites at 4.5 mM pipette anion, blocking transport shifted GABA reversal by +7.0 ± 0.9 mV at 2 mM external K⁺ and −5.0 ± 0.7 mV at 10 mM (SEM). The change of sign supports reversal. The neuronal voltage assay does not locate a flux zero or test a unit activity-product ratio."
+          },
+          {
+            "id": "kcl-null-across-sheep-protocols",
+            "assumption": "Equality of the nominal intracellular and extracellular K–Cl concentration products locates zero flux in swollen sheep erythrocytes across protocols.",
+            "datasets": [
+              "delpire1991_sheep_kcl_flux_null@1",
+              "lauf1996_sheep_kcc_reversal@1"
+            ],
+            "outcome": "not_independent",
+            "independence": "The later paper revisits the earlier same-laboratory result, with Lauf on both papers and a different protocol. These reports document sensitivity to the preparation. A second group’s direct measurement of the null remains open.",
+            "comparison": "The 1991 swelling experiment still had outward net K⁺ flux at equal products and approached zero near an outside/inside ratio of 2. In the later pH- and volume-clamped experiments, normalized reversal had slopes of 1.12 and 1.08 for normal and low internal Mg²⁺ (ideal 1). They report different apparent nulls. Activities and protocol differences preclude transferring the earlier value to the clamped preparation."
+          },
+          {
+            "id": "erythrocyte-kcl-stoichiometry",
+            "assumption": "The red-cell K–Cl cotransporter carries approximately one potassium ion per chloride ion.",
+            "datasets": [
+              "lauf1996_sheep_kcc_reversal@1",
+              "jennings2001_rabbit_kcl_flux@1"
+            ],
+            "outcome": "both_support",
+            "comparison": "In sheep red cells, normalized external Rb⁺ at the flux null had slopes of 1.12 and 1.08 against the chloride ratio (normal and low Mg²⁺, no slope errors). In rabbit red cells, a direct outward K:Cl flux ratio was 1.12 ± 0.26 (SD, five experiments). These readouts independently support approximately 1:1 coupling. Only the sheep series located the null.",
+            "independence": "Lauf and Adragna inferred stoichiometry from flux-reversal shifts. Jennings and Adame measured ion efflux in separate rabbit preparations."
+          }
+        ],
+        "evidence": [
+          {
+            "dataset_id": "jarolimek1999_dendritic_chloride_reversal@1",
+            "manifest": "lean/checks/data/paired_wet_lab_measurements.json",
+            "citation": "Jarolimek et al. (1999), Fig. 6B",
+            "doi": "10.1523/JNEUROSCI.19-12-04695.1999",
+            "locator": "Fig. 6B and adjoining low-pipette-anion results.",
+            "context": "Dendrites of cultured rat midbrain neurons. The furosemide-induced shift in GABA-current reversal was measured at two external K⁺ concentrations.",
+            "role": "descriptive",
+            "uncertainty": "Values are mean ± SEM. Pipette permeant anion and local free chloride activity are distinct. Transport direction is inferred from the blocker-sensitive voltage shift.",
+            "assessment": "The opposite dendritic voltage responses support a reversal in K–Cl transport direction as external K⁺ rises. No absolute K–Cl flux or independently measured product of activities at zero transport is available.",
+            "report": "lean/PROGRESS.md#paired-transport-and-membrane-measurements"
+          },
+          {
+            "dataset_id": "delpire1991_sheep_kcl_flux_null@1",
+            "manifest": "lean/checks/data/paired_wet_lab_measurements.json",
+            "citation": "Delpire and Lauf (1991), net-flux results",
+            "doi": "10.1085/jgp.97.2.173",
+            "locator": "Abstract and results on net potassium efflux at equal and reversed concentration products.",
+            "context": "Hyposmotically swollen low-K sheep red cells. Net K flux was compared across concentrations and temperatures.",
+            "role": "descriptive",
+            "uncertainty": "Approximate concentration-product ratio reported by the authors. The exact zero and an uncertainty were not reported for this summary.",
+            "assessment": "Net efflux persisted at equal concentration products and approached zero near twice the internal product. Lauf’s later pH- and volume-clamped study tested this discrepancy with a different protocol.",
+            "report": "lean/PROGRESS.md#paired-transport-and-membrane-measurements"
+          },
+          {
+            "dataset_id": "jennings2001_rabbit_kcl_flux@1",
+            "manifest": "lean/checks/data/paired_wet_lab_measurements.json",
+            "citation": "Jennings and Adame (2001), Fig. 5",
+            "doi": "10.1152/ajpcell.2001.281.3.C825",
+            "locator": "Fig. 5 and accompanying K:Cl outward-flux ratio results.",
+            "context": "N-ethylmaleimide-stimulated rabbit erythrocytes. The sulfate bath and anion-exchanger inhibition allowed comparison of K and Cl efflux.",
+            "role": "descriptive",
+            "uncertainty": "Mean ± SD over five experiments. The two ionic fluxes define a stoichiometric ratio away from the null.",
+            "assessment": "The independently measured outward K:Cl flux ratio of 1.12 ± 0.26 is compatible with 1:1 coupling in this preparation. Its zero-flux concentration product was not measured.",
+            "report": "lean/PROGRESS.md#paired-transport-and-membrane-measurements"
+          },{
           "dataset_id": "lauf1996_sheep_kcc_reversal@1",
           "manifest": "lean/checks/data/lauf1996_kcc_reversal.json",
           "citation": "Lauf and Adragna (1996), Fig. 8", "doi": "10.1085/jgp.108.4.341",

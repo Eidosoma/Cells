@@ -39,7 +39,40 @@ Uses [Whole-molecule counts set the ideal mixing cost of membrane entry](assembl
 
 **Open.** Equilibrium cholesterol activity as a function of membrane mole fraction under a binary interaction model.
 
+- [At 37 °C, cholesterol partition favors SOPC over DOPC, so the host phospholipid affects its transfer free energy.](../WET_LAB_EVIDENCE.md#pair-cholesterol-host-lipid-affinity) · Supported by both studies
+- [First detectable cholesterol crystals identify a transferable equilibrium bilayer cholesterol fraction across DOPC preparations.](../WET_LAB_EVIDENCE.md#pair-dopc-crystal-onset-portability) · Comparison unresolved
+
 **Unit** dimensionless activity relative to crystalline cholesterol
+
+### niu2002_cholesterol_sopc_dopc@1
+
+Equilibrium cholesterol partition between cyclodextrin and large unilamellar lipid vesicles at 37 °C. Table 1, acyl-chain rows referenced to di18:1(n-9) PC, and Fig. 6. [Niu and Litman (2002), Fig. 6 and Table 1](https://doi.org/10.1016/S0006-3495(02)75340-X)
+
+- **Evidence role** descriptive
+
+The table gives ± values for partition and derived energy. The DOPC normalization is specific to the acyl-chain rows.
+
+At the same temperature cholesterol favored SOPC over DOPC. The equilibrium transfer energy identifies a difference between lipid backgrounds but leaves the Cells interaction coefficient undetermined. [Dataset manifest](../checks/data/paired_wet_lab_measurements.json) · [Comparison verdict](../PROGRESS.md#paired-transport-and-membrane-measurements)
+
+### lange2013_cholesterol_partition_37c@1
+
+Equilibrium distribution of radiolabeled cholesterol between large unilamellar vesicles and methyl-β-cyclodextrin at 37 °C, with lipid identity varied. Table 1, equilibrium distribution coefficient Q, and Fig. 3. [Lange et al. (2013), Fig. 3 and Table 1](https://doi.org/10.1021/bi400862q)
+
+- **Evidence role** descriptive
+
+The table reports 2–4 determinations, with no per-lipid error for Q. The study's oxidase assays measure a different observable.
+
+The within-study SOPC/DOPC ratio is 4.8/3.5 ≈ 1.37. The absolute distribution coefficients use the study’s own cyclodextrin reference. [Dataset manifest](../checks/data/paired_wet_lab_measurements.json) · [Comparison verdict](../PROGRESS.md#paired-transport-and-membrane-measurements)
+
+### tenchov2006_dopc_cholesterol_crystals@1
+
+X-ray diffraction from dried-film, rehydrated DOPC/cholesterol dispersions in PBS at 20 °C. Fig. 7 and results on excess cholesterol in the initial lamellar phase. [Tenchov et al. (2006), Fig. 7](https://doi.org/10.1529/biophysj.106.083766)
+
+- **Evidence role** descriptive
+
+The mixing ratio is feed composition. A bilayer mole fraction, hydration state of the crystals, and fitted saturation threshold with uncertainty were not reported.
+
+Diffraction detected excess crystalline cholesterol at a lower nominal composition than Parker’s reported onset in a differently prepared dispersion. Preparation history and the concentration of cholesterol incorporated into the membrane limit the comparison. [Dataset manifest](../checks/data/paired_wet_lab_measurements.json) · [Comparison verdict](../PROGRESS.md#paired-transport-and-membrane-measurements)
 
 ### shaw2023_dopc_cholesterol_activity@1
 

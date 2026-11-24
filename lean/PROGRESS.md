@@ -1,5 +1,17 @@
 # Cells proof comparisons
 
+<a id="paired-transport-and-membrane-measurements"></a>
+
+## 24 November 2026 · Channel timing, membrane transport and rupture
+
+For the held-input gate, the time taken to rise from 20% to 80% of its excursion equals ln(4)/(a + b), where a and b are the opening and closing rates. It is bounded by ln(4) times the zero-input washout time constant whenever b is positive and shared. The Lean proof follows the actual state trajectory and uses the pinned Mathlib exponential and logarithm. The axiom audit reported `propext`, `Classical.choice` and `Quot.sound`. In a compiled held-dose world with a = b = 16/s and initial state 0.125, both versions of `species_regulated_availability` bracketed the interval at 42.97–43.95 ms on a 0.488 ms grid. The exact value is 43.32 ms. [Lean proof](CellsProofs/Transport/RegulatedAvailability.lean) · [Reproducible CPU comparison](checks/paired_transport.py) · [Measured inputs](checks/data/paired_transport_responses.json)
+
+Syme’s independent untreated rat SK2 dose response gives half-activation at 0.700 µM calcium. The Hirschberg-calibrated Cells curve gives 0.728 µM and reaches 47.45% of its own ceiling at 0.700 µM. For kinetics, Hirschberg’s single-channel plateau and macropatch washout predict a 10.63 ms activation time constant against 4.1 ± 0.6 ms measured. Oliver’s separate recombinant SK2 experiments report a 34.7 ± 6.5 ms mean washout and a 6.18 ± 1.91 ms 20–80% rise at 10 µM. Reusing that washout at 0.5 µM gives a 48.10 ms ceiling against a reported rise of about 80 ms. The low-dose result lacks an error bar and a paired washout. [Steady response](WET_LAB_EVIDENCE.md#pair-rsk2-calcium-midpoint) · [Closing-rate comparison](WET_LAB_EVIDENCE.md#pair-rsk2-single-closing-rate)
+
+Two epithelial chloride preparations agree on the sign of the reversal shift. Constant-field current magnitudes show larger discrepancies in red cells and a planar potassium bilayer when voltage changes. Separate DOPC hold and ramp experiments also show that rupture depends on time spent under tension. These comparisons concern the preparations in the linked records. The rupture observations constrain the fixed-threshold law; a separate Cells model already has a time-dependent pore hazard. [Chloride reversal](WET_LAB_EVIDENCE.md#pair-epithelial-chloride-gradient) · [Current magnitudes](WET_LAB_EVIDENCE.md#pair-single-permeability-current-voltage) · [Rupture timing](WET_LAB_EVIDENCE.md#pair-dopc-rupture-time-history) · [Kinetic pore model](claims/vesicle-pore-rate.md)
+
+Independent wet-lab data also support near-1:1 red-cell K–Cl coupling and preferential cholesterol partition into SOPC over DOPC. The neuronal K–Cl reversal is inferred from voltage. The two sheep red-cell null measurements came from the same laboratory under different volume and pH protocols. The cholesterol crystal measurements used feed composition and different preparation methods. [K–Cl stoichiometry](WET_LAB_EVIDENCE.md#pair-erythrocyte-kcl-stoichiometry) · [Sheep flux nulls](WET_LAB_EVIDENCE.md#pair-kcl-null-across-sheep-protocols) · [Equilibrium cholesterol partition](WET_LAB_EVIDENCE.md#pair-cholesterol-host-lipid-affinity) · [Crystal onset](WET_LAB_EVIDENCE.md#pair-dopc-crystal-onset-portability) · [Measurements](checks/data/paired_wet_lab_measurements.json)
+
 <a id="paired-wet-lab-evidence"></a>
 
 ## 24 November 2026 · Independent wet-lab comparisons

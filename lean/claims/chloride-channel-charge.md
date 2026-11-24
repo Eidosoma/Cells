@@ -37,7 +37,19 @@ Uses [Voltage and free proton concentrations set the leak reversal](proton-leak.
 
 **Open.** Shift in the single-channel reversal potential when the nominal extracellular chloride concentration changes at fixed intracellular chloride and temperature.
 
+- [Lowering extracellular chloride shifts the reversal of a chloride-selective epithelial current in the positive direction.](../WET_LAB_EVIDENCE.md#pair-epithelial-chloride-gradient) · Supported by both studies
+
 **Unit** mV
+
+### bajnath1993_chloride_reversal@1
+
+Forskolin-stimulated, cell-attached patches of human HT-29cl.19A epithelium at 25 °C. Pipette chloride was lowered with osmotic compensation. Methods, Fig. 2 and accompanying Results, closed-to-open single-channel amplitudes. [Bajnath et al. (1993), Fig. 2](https://doi.org/10.1007/BF00374509)
+
+- **Evidence role** descriptive
+
+The high-chloride reversal was 2 ± 1 mV on the −Vₚ scale. The low-chloride endpoint was about 25 mV. No error on their difference was reported.
+
+Lowering external chloride shifted the reversal positive. Cells gives +24.86 mV at 25 °C for a fixed internal chloride concentration. The inside-out control at symmetric chloride was a separate experiment. [Dataset manifest](../checks/data/paired_transport_responses.json) · [Comparison verdict](../PROGRESS.md#paired-transport-and-membrane-measurements)
 
 ### Ling 1994 chloride substitution
 
