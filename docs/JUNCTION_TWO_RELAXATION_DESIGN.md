@@ -1361,7 +1361,7 @@ Every G_ss and amplitude entry must carry the protocol's normalization.
 Every stage prints verdicts, statuses, labels and key paths only. Values go to the output files.
 
 **The tests** (`tests/unit/test_junction_benchmark_harness.py`) use invented files only. They run
-in 2.22 s, measured cold on the timed lane (tier 1, `tests/test_tiers.json`), and compile no
+in 2.17 s, measured cold on the timed lane (tier 1, `tests/test_tiers.json`), and compile no
 world. Each claim has its planted error:
 - **G1:** the passing path, a G_ss off by 0.06, and tau_slow off by 30% at two voltages;
 - **G2:** section 13.6's container;
