@@ -305,8 +305,8 @@ At the top rung K against K − 1, each rung's observables as the registered rea
     it) has no counts there, so it is not called tense. Its pairs stay judged, and its missing value
     is not the constant (§5): one wrong replica fails, as the first registration fails a censored
     replica. A (d) run that did not end as registered is §9's own precondition, judged before M.
-- **`judge_world` judges it first, at each rung.** At a time where any run's vesicle is not floppy,
-  that vesicle's constant pairs are not judged: neither the constant rule nor the z sees them. The
+- **`judge_world` judges it first, at each rung.** At a time where any run's vesicle is tense by its
+  counts, that vesicle's constant pairs are not judged: neither the constant rule nor the z sees them. The
   world then:
   - **fails** when M fails on what is judged: a judged constant pair is off, or the largest z is
     beyond 6;
@@ -324,8 +324,8 @@ At the top rung K against K − 1, each rung's observables as the registered rea
   - The retry's "the bands then fail" applies to the criteria's bands, such as M's z between 4.5
     and 6. It does not apply to a precondition.
 - **The judge reports, per world and rung:**
-  - the tense counts: the exact replicas with a vesicle not floppy at a constant time, whether (d)
-    is, and the count at each (vesicle, time);
+  - the tense counts: the exact replicas with a vesicle tense at a constant time, whether (d) is,
+    and the count at each (vesicle, time);
   - the constant pairs left unjudged.
 - **§4.3 predicts no tense replica** at the rungs M reads. So the precondition guards the model's
   claim; it is not expected to act.
