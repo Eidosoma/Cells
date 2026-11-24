@@ -59,7 +59,31 @@ Uses [Bilayer area is half the sum of the molecular footprints in its two leafle
 
 **Mixed.** Equilibrium volume after a bath osmolarity change, measured relative to the same vesicle’s spherical capacity or its initial volume, as specified for each study.
 
+- [Increasing external osmolarity reduces the enclosed volume of intact, solute-loaded vesicles.](../WET_LAB_EVIDENCE.md#pair-vesicle-deflation-direction) · Supported by both studies
+- [The optically measured relaxed radius is a hard cap on spherical vesicle size during hypotonic swelling before rupture.](../WET_LAB_EVIDENCE.md#pair-vesicle-resting-radius-cap) · Challenged by both studies
+- [The retained-osmole volume ratio transfers quantitatively from freely suspended to adhered deflating vesicles.](../WET_LAB_EVIDENCE.md#pair-vesicle-ideal-volume-transfer) · Comparison unresolved
+
 **Unit** volume ratio
+
+### viallat2004_sucrose_deflation@1
+
+One electroformed DOPC vesicle remained spherical during slow external glucose titration. The experiment also continued with separate gel-filled vesicles. Fig. 2, slow sucrose-vesicle results and accompanying text. [Viallat et al. (2004), Fig. 2](https://doi.org/10.1016/S0006-3495(04)74277-0)
+
+- **Evidence role** descriptive
+
+Rounded radii for one vesicle. No pointwise errors. The plotted internal pressure assumes retained sucrose.
+
+The ratio (17/25)³ = 0.314 is close to the nominal 50/162 = 0.309. The spherical surface area declined during this observation. [Dataset manifest](../checks/data/paired_wet_lab_measurements.json) · [Comparison verdict](../PROGRESS.md#paired-wet-lab-evidence)
+
+### chabanon2017_closed_swelling@1
+
+Giant POPC vesicles with 1 mol% fluorescent lipid, under a 200 mM hypotonic differential. Experimental Fig. 1c–d and Movie S2. [Chabanon et al. (2017), Fig. 1c–d](https://doi.org/10.1016/j.bpj.2017.03.018)
+
+- **Evidence role** descriptive
+
+Representative optical trace. The estimate of relaxed radius and unmeasured membrane slack limit inference of molecular area.
+
+Radius increased above the relaxed reference during closed swelling phases before pore opening. This observation limits use of the relaxed radius as a fixed size cap. [Dataset manifest](../checks/data/paired_wet_lab_measurements.json) · [Comparison verdict](../PROGRESS.md#paired-wet-lab-evidence)
 
 ### fujiwara2014_vesicle_deflation@1
 

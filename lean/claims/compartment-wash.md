@@ -6,7 +6,7 @@ For a finite well of fixed volume V, a wash of fraction f changes free amount n 
 
 ## Assumptions
 
-- The liquid is well mixed. Between the washes used in the repeated-wash formula there is no binding, release, synthesis or transport.
+- The liquid is well mixed. Between the washes used in the repeated-wash formula there is no binding, release, synthesis or transport. The landed tissue wash refuses a gene export into the washed node and outside degradation there. A different node remains eligible when its other admission conditions hold.
 - The Lean positivity result assumes 0 < f ≤ 1 and strictly positive free and buffer amounts. Float64 whole-wash storage also requires sufficient resolution at the host’s amount anchor. Version 1 exchanges ions at their own concentration.
 - For the heat, the well is ideal and isothermal with positive volume and concentrations and a nonnegative thermal energy scale.
 
@@ -23,11 +23,11 @@ For a finite well of fixed volume V, a wash of fraction f changes free amount n 
 
 Direct proof subject `cells.scheduled_compartment_wash@1`
 
-Proof sources [Mathlib logarithm bound used in the default mixing-heat proof](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L293-L294) · [Mathlib klFun_nonneg and klFun_eq_zero_iff, imported in the optional comparison](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/InformationTheory/KullbackLeibler/KLFun.lean#L145-L149) · [Cells specialization of the relative-entropy formula](../checks/mixing/KLFun.lean) · [Cells wash heat computed from the retained and supplied concentrations](../../src/cells/operators/wash_schedule.py#L320)
+Proof sources [Mathlib logarithm bound used in the default mixing-heat proof](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L293-L294) · [Mathlib klFun_nonneg and klFun_eq_zero_iff, imported in the optional comparison](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/InformationTheory/KullbackLeibler/KLFun.lean#L145-L149) · [Cells specialization of the relative-entropy formula](../checks/mixing/KLFun.lean) · [Cells wash heat computed from the retained and supplied concentrations](https://github.com/Eidosoma/Cells/blob/b06158e8a8b2044d92183e8da8d646bf56c4a12b/src/cells/operators/wash_schedule.py#L448)
 
 ## Numerical comparison
 
-**Checked.** Four compiled tracer schedules retained ions and site fields. The maximum tracer material discrepancy was 7.11 × 10⁻¹⁵ fmol. Whole-wash runs reached 2⁻⁵⁰ of the initial amount and reproduced the documented refusal at 2⁻⁶⁰. The repaired counter check completed at fractions 1/2 and 3/7 with exact agreement for each unchanged ion.
+**Checked.** Four compiled tracer schedules retained ions and site fields. The maximum tracer material discrepancy was 7.11 × 10⁻¹⁵ fmol. Whole-wash runs reached 2⁻⁵⁰ of the initial amount and reproduced the documented refusal at 2⁻⁶⁰. The repaired counter check completed at fractions 1/2 and 3/7 with exact agreement for each unchanged ion. On b06158e8 and again after FR-49 landed at cd3b7b09, all 35 wash tests passed, including named same-node gene-route refusals and a separate-node admission.
 
 **Engine** `resolved_pump_composite@1`
 
@@ -52,6 +52,14 @@ Proof sources [Mathlib logarithm bound used in the default mixing-heat proof](ht
 [Liquid, sample and supply](https://github.com/Eidosoma/Cells/blob/d74f519d40b9a9f7488b94b489c6dc4dd865504c/src/cells/operators/wash_schedule.py#L301) · [Host event and validity](https://github.com/Eidosoma/Cells/blob/d74f519d40b9a9f7488b94b489c6dc4dd865504c/src/cells/operators/wash_schedule.py#L325) · [Finite well with two bound populations](https://github.com/Eidosoma/Cells/blob/d74f519d40b9a9f7488b94b489c6dc4dd865504c/validation/tissue/wash_schedule_fixtures.py) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/ceeca19816acd761ab68379d67bb0f7426366a1c/lean/checks/compartment_wash.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/ceeca19816acd761ab68379d67bb0f7426366a1c/lean/PROGRESS.md#nov21-wash)
 
 [Tested engine d74f519d40b9](https://github.com/Eidosoma/Cells/commit/d74f519d40b9a9f7488b94b489c6dc4dd865504c) · [Evidence checkpoint ceeca19816ac](https://github.com/Eidosoma/Cells/commit/ceeca19816acd761ab68379d67bb0f7426366a1c)
+
+**Engine** `resolved_pump_composite@1`
+
+**Operators** `cells.scheduled_compartment_wash@1`, `cells.templated_polymerisation@1`
+
+[Gene destinations examined by the wash](https://github.com/Eidosoma/Cells/blob/cd3b7b09d8252f445a976f0506767f1aaf38c53d/src/cells/operators/wash_schedule.py#L372) · [Export and degradation fixture](https://github.com/Eidosoma/Cells/blob/cd3b7b09d8252f445a976f0506767f1aaf38c53d/validation/gene_regulation/worlds.py) · [Same-node refusals and separate-node control](https://github.com/Eidosoma/Cells/blob/cd3b7b09d8252f445a976f0506767f1aaf38c53d/tests/unit/test_wash_schedule.py#L167) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/73e7e9d7b639ce366d3a9e26d4b6af8b977d7b67/tests/unit/test_wash_schedule.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/73e7e9d7b639ce366d3a9e26d4b6af8b977d7b67/lean/PROGRESS.md#nov24-main-audit)
+
+[Tested engine cd3b7b09d825](https://github.com/Eidosoma/Cells/commit/cd3b7b09d8252f445a976f0506767f1aaf38c53d) · [Evidence checkpoint 73e7e9d7b639](https://github.com/Eidosoma/Cells/commit/73e7e9d7b639ce366d3a9e26d4b6af8b977d7b67)
 
 ## Biological evidence
 

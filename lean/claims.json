@@ -24,6 +24,26 @@
     "cells.rate_equations@1": "molecular-assembly"
   },
   "comparisons": {
+    "xc0-charge-anchor": {
+      "kind": "engine",
+      "models": ["resolved_pump_tissue@3"],
+      "laws": [],
+      "engine_revision": "8760d5b338a1f7e9a930a8492c434efaa50815e7",
+      "record_revision": "39ddff47165473b96d594a23e5a7696f60f81c66",
+      "sources": {
+        "XC0 node builder": "validation/xenopus_bioelectric/xc0_worlds.py#L164",
+        "Public XC0 fixture inputs": "validation/xenopus_bioelectric/references/reference_inputs.json",
+        "Model parsing entry point": "src/cells/definitions/specs.py#L993",
+        "Definition check during model parsing": "src/cells/definitions/surface_tissue_spec.py#L362",
+        "Charge per fmol": "src/cells/laws/electrochemistry.py#L14",
+        "Fixed-background and anchor comparison": "src/cells/models/surface_tissue.py#L440"
+      },
+      "record_inputs": {
+        "Charge error and threshold separation theorems": "lean/CellsProofs/Tissue/ChargeAnchor.lean"
+      },
+      "driver": "lean/checks/charge_anchor.py",
+      "record": "lean/PROGRESS.md#xc0-charge-anchor"
+    },
     "fr47-shell-interval-heat-cpu": {
       "kind": "engine",
       "models": ["cells.assembly_lineages@2"],
@@ -159,6 +179,61 @@
       },
       "driver": "lean/checks/integer_segregation.py",
       "record": "lean/PROGRESS.md#fr43-integer-segregation"
+    },
+    "fr49-labelled-compartment-main": {
+      "kind": "engine",
+      "models": ["resolved_pump_composite@1", "resolved_pump_tissue@3"],
+      "laws": [],
+      "operators": ["cells.neutral_arrival_labels@1", "cells.cell_owned_compartments@1", "cells.templated_polymerisation@1"],
+      "engine_revision": "cd3b7b09d8252f445a976f0506767f1aaf38c53d",
+      "record_revision": "73e7e9d7b639ce366d3a9e26d4b6af8b977d7b67",
+      "sources": {
+        "Compartment admission with labels": "src/cells/operators/compartments.py#L584",
+        "Gene routes allowed beside a compartment": "src/cells/operators/templated_polymerisation.py#L1430",
+        "Native passive-label update": "src/cells/operators/species_labels.py",
+        "Allocation of a physical amount among labels": "src/cells/numerics/label_shares.py",
+        "Matched World L fixtures": "validation/fr49/worlds.py#L48",
+        "Twin and checkpoint comparisons": "validation/fr49/judge_l.py",
+        "Bitwise restart at 900 s": "tests/unit/test_fr49_world_l_resume.py#L18"
+      },
+      "record_inputs": {"Per-population label sum and pooled readout": "lean/CellsProofs/Chemistry/ArrivalCohort.lean"},
+      "driver": "tests/unit/test_fr49_world_l.py",
+      "record": "lean/PROGRESS.md#nov24-main-audit"
+    },
+    "fr43-shared-writers-main": {
+      "kind": "engine",
+      "models": ["resolved_pump_composite@1", "resolved_pump_tissue@3"],
+      "laws": [],
+      "operators": ["cells.local_species_reactions@1", "cells.templated_polymerisation@1", "cells.ideal_osmosis_linear_compliance_water@1"],
+      "engine_revision": "cd3b7b09d8252f445a976f0506767f1aaf38c53d",
+      "record_revision": "73e7e9d7b639ce366d3a9e26d4b6af8b977d7b67",
+      "sources": {
+        "Fixed and swelling two-writer worlds": "validation/tissue/shared_inventory_fixtures.py",
+        "Current volume passed to the split operators": "src/cells/models/pump_composite.py",
+        "Reaction network with a supplied volume": "src/cells/operators/species_reactions.py#L1076",
+        "Gene unit with current volumes": "src/cells/operators/templated_polymerisation.py#L2445",
+        "Volume supplied by water": "src/cells/operators/osmotic_water.py",
+        "Native run and restart": "src/cells/execution/runner.py",
+        "Saved state and checkpoint reader": "src/cells/records/io.py"
+      },
+      "record_inputs": {"Two-writer balance and current-volume identities": "lean/CellsProofs/Chemistry/SharedWriter.lean"},
+      "driver": "lean/checks/shared_writers.py",
+      "record": "lean/PROGRESS.md#nov24-main-audit"
+    },
+    "wash-export-admission-main": {
+      "kind": "engine",
+      "models": ["resolved_pump_composite@1"],
+      "laws": [],
+      "operators": ["cells.scheduled_compartment_wash@1", "cells.templated_polymerisation@1"],
+      "engine_revision": "cd3b7b09d8252f445a976f0506767f1aaf38c53d",
+      "record_revision": "73e7e9d7b639ce366d3a9e26d4b6af8b977d7b67",
+      "sources": {
+        "Gene destinations examined by the wash": "src/cells/operators/wash_schedule.py#L372",
+        "Export and degradation fixture": "validation/gene_regulation/worlds.py",
+        "Same-node refusals and separate-node control": "tests/unit/test_wash_schedule.py#L167"
+      },
+      "driver": "tests/unit/test_wash_schedule.py",
+      "record": "lean/PROGRESS.md#nov24-main-audit"
     },
     "fr43-shared-writers": {
       "kind": "engine",
@@ -4301,6 +4376,82 @@
   },
   "claims": [
     {
+      "id": "xc0-charge-anchor",
+      "category": "tissue-and-conservation",
+      "title": "Rounding and rejection of the initial charge balance",
+      "statement": "A balanced ionic inventory passes a closed charge tolerance T whenever T covers the accumulated rounding allowance E. A true charge error larger than T + E in magnitude is detected. At a midpoint in the 2²⁰-fmol range, rounding the fixed background alone can exceed the original 10⁻²⁰ C tolerance.",
+      "assumptions": [
+        "The builder and reader use the same finite stored valence-weighted ion amounts and positive charge conversion in C/fmol. The builder forms the background by subtracting their rounded sum from the declared charge divided by the conversion.",
+        "Each arithmetic result satisfies its stated absolute error allowance. Four allowances are in fmol and the final two in coulombs. Half a local spacing bounds a nearest-grid result with either tie choice. The native replay checks each rounding premise against exact rational arithmetic for the sampled inputs.",
+        "A planted background change is its actual stored difference in fmol. The distinction between a genuine mismatch and rounding is guaranteed when their bounds are separated."
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [],
+        "theorems": {
+          "CellsProofs.Tissue.ChargeAnchor.nearest_grid_error": "lean/CellsProofs/Tissue/ChargeAnchor.lean",
+          "CellsProofs.Tissue.ChargeAnchor.residual_error": "lean/CellsProofs/Tissue/ChargeAnchor.lean",
+          "CellsProofs.Tissue.ChargeAnchor.balanced_admitted": "lean/CellsProofs/Tissue/ChargeAnchor.lean",
+          "CellsProofs.Tissue.ChargeAnchor.defect_refused": "lean/CellsProofs/Tissue/ChargeAnchor.lean",
+          "CellsProofs.Tissue.ChargeAnchor.midpoint_residual": "lean/CellsProofs/Tissue/ChargeAnchor.lean",
+          "CellsProofs.Tissue.ChargeAnchor.midpoint_exceeds_floor": "lean/CellsProofs/Tissue/ChargeAnchor.lean"
+        },
+        "sources": {
+          "Mathlib nearest-integer distance, imported and rescaled to the local spacing": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/Order/Round.lean#L190",
+          "Charge-anchor diagnosis and scope of the engine correction D333": "https://github.com/Eidosoma/Cells/blob/23bf52341b6a096dc19d69d7dac509d4f46eeb00/docs/DECISIONS.md#L10542"
+        }
+      },
+      "numerical": {
+        "status": "failed",
+        "comparisons": ["xc0-charge-anchor"],
+        "result": "The native parser refused seven of 15 balanced inputs and correctly rejected both deliberately mischarged inputs on cd3b7b09 and 8760d5b3. The full results were byte-identical after FR-17 landed. The scale-aware criterion classified all 17. Exact rational arithmetic confirmed all six local allowances on each case. In the two signed midpoint controls at 1.5 × 2²⁰ fmol the unperturbed absolute residual was 1.123237099 × 10⁻²⁰ C. This check runs at definition time."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "This arithmetic tolerance compares two calculations on the same declared inputs. An experimental test of the charge balance itself would need mobile and fixed charge, capacitance and potential from the same cell.",
+        "unit": "C",
+        "pairs": [
+          {
+            "id": "xc0-native-oocyte-charge",
+            "assumption": "The sum of independently measured mobile and fixed charge in a native oocyte equals its capacitive charge.",
+            "datasets": [
+              "guizouarn2004_native_oocyte_ions@1",
+              "costa1989_native_oocyte_ions@1"
+            ],
+            "outcome": "inconclusive",
+            "independence": "Guizouarn’s group assayed its own control oocytes. Costa’s group measured a separate set with ion-selective electrodes.",
+            "comparison": "Guizouarn reported Na/K/Cl means of 30.0/115.2/21.2 mM, a pooled water estimate of about 500 nL per oocyte and a group voltage of −56.8 ± 1.5 mV. Costa estimated free-ion concentrations of 10.1/109.5/37.7 mM. Assay type and sampling differ. Evaluating charge closure requires total ion amounts, independently measured fixed charge, capacitance and voltage on the same cell. Neither series supplies that set."
+          }
+        ],
+        "evidence": [
+          {
+            "dataset_id": "guizouarn2004_native_oocyte_ions@1",
+            "manifest": "lean/checks/data/paired_wet_lab_measurements.json",
+            "citation": "Guizouarn et al. (2004), Table I, controls",
+            "doi": "10.1074/jbc.M311920200",
+            "locator": "Experimental Procedures (ion and water measurements, electrophysiology) and Table I, noninjected controls.",
+            "context": "Native Xenopus oocytes. Na and K measured by flame photometry, Cl by equilibrium tracer uptake, and membrane potential by electrodes.",
+            "role": "descriptive",
+            "uncertainty": "Group means ± SE. The water estimate used pooled wet/dry weights and a trapped-water correction. Individual water uncertainty and overlap between the ion and voltage samples are unspecified.",
+            "assessment": "The same group previously reported the −56.8 mV control (Table 1, 2001). These observations supply partial mobile-ion and voltage measurements. Treating a difference of their means as measured fixed charge would make the closure test circular.",
+            "report": "lean/PROGRESS.md#paired-wet-lab-evidence"
+          },
+          {
+            "dataset_id": "costa1989_native_oocyte_ions@1",
+            "manifest": "lean/checks/data/paired_wet_lab_measurements.json",
+            "citation": "Costa et al. (1989), summary item 7",
+            "doi": "10.1113/jphysiol.1989.sp017649",
+            "locator": "Summary, item 7, intracellular ion-selective microelectrode measurements.",
+            "context": "Native Xenopus laevis oocytes, stages IV–V. Ion-selective electrodes estimated intracellular free ions on a concentration scale.",
+            "role": "descriptive",
+            "uncertainty": "Separate sample counts per ion. The quoted equilibrium potentials for each species were calculated from concentrations. Those values cannot substitute for a measured membrane voltage in a charge balance.",
+            "assessment": "The free-ion values give an independent scale for the three species. Converting activities to a total inventory additionally needs activity coefficients, binding and cell water. Fixed charge remains unmeasured.",
+            "report": "lean/PROGRESS.md#paired-wet-lab-evidence"
+          }
+        ]
+      }
+    },
+    {
       "id": "fr43-integer-segregation",
       "category": "tissue-and-conservation",
       "title": "Integer units at membrane-patch division",
@@ -4412,15 +4563,15 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
-          "fr43-shared-writers"
+          "fr43-shared-writers", "fr43-shared-writers-main"
         ],
-        "result": "On the FR-43 part 2B development revision 211a9c17, the fixed-volume network added 0.004997501 fmol and the gene unit spent a net 0.000664664 fmol. The 5 s disk restart reproduced all 78 state fields. Shifting 1% of a writer’s booking to its partner preserved the total and failed the independent reserve check. In a swelling cell both rate probes agreed at 2 and 3 s within 2.54 × 10⁻⁶ relative error. Supplying the initial volume to one writer at a time identified that writer in each control. These checks cover the saved-state rates and accounts. The FR-43 qualification compares the coupled trajectory separately."
+        "result": "On the FR-43 part 2B development revision 211a9c17, the fixed-volume network added 0.004997501 fmol and the gene unit spent a net 0.000664664 fmol. The 5 s disk restart reproduced all 78 state fields. Shifting 1% of a writer’s booking to its partner preserved the total and failed the independent reserve check. In a swelling cell both rate probes agreed at 2 and 3 s within 2.54 × 10⁻⁶ relative error. Supplying the initial volume to one writer at a time identified that writer in each control. These checks cover the saved-state rates and accounts. On main b06158e8 and cd3b7b09, all four replays gave byte-identical results, including the 78-field restart and both stale-volume controls. The registered part 2 coupled-trajectory comparisons also passed (D324, D328)."
       },
       "biology": {
         "status": "open",
         "observable": "A finite nucleotide pool, its upstream reserve and its consumption product measured together. For a changing-volume amount balance, each concentration also needs a matched volume.",
         "unit": "mM UTP",
-        "finding": "Under a common-volume assumption, the five archived metabolite means allow a check of net UTP supply and spending. Measurement independence, uncertainty of the full residual and gross reaction rates remain open.",
+        "finding": "Under a common-volume assumption, the five archived metabolite means allow a check of net UTP supply and spending. Measurement independence, uncertainty of the full residual and gross reaction rates remain open. In a separate rat hepatocyte study, swelling slightly increased ATP amount while the concentration calculated from measured cell-water volume fell. This directly illustrates the importance of the volume denominator. [Meijer et al., Figures 1 and 3E–F](https://doi.org/10.1111/j.1432-1033.1993.tb18053.x)",
         "evidence": [
           {
             "dataset_id": "huber2026_shared_UTP",
@@ -4477,6 +4628,19 @@
         "result": "In a closed A + B ⇌ C run, A+C and B+C started at 11,000 and 3,000 molecule units. The first accepted endpoint matched the first saved row bit for bit. All six stages and five dense samples preserved both totals within float64 rounding. Across 64 accepted steps the four saved observations had a maximum relative drift of 9.10 × 10⁻¹⁶ against the native 10⁻¹² tolerance. The unweighted molecule count changed by 653.29."
       },
       "biology": {
+        "pairs": [
+          {
+            "id": "pgi-pair-closure",
+            "assumption": "G6P and F6P alone form a closed measured inventory throughout these enzyme assays.",
+            "datasets": [
+              "kahana1960_pgi_recovery",
+              "eicher2012_pgi_direction"
+            ],
+            "outcome": "inconclusive",
+            "independence": "Kahana’s group assayed a partially purified preparation. Eicher’s group measured a separate cell extract capable of additional reactions.",
+            "comparison": "The purified assay recovered 2.505 of the initial 2.500 mM at 30 min. Eicher’s dataset 2 lost 22.29% of the measured sum, while dataset 3 gained 1.04%. Recovery error and unmeasured species prevent treating the extract as a matched closed pool. These data cannot establish a failure of the integration invariant."
+          }
+        ],
         "status": "not_assessable",
         "observable": "Total soluble glucose-6-phosphate and fructose-6-phosphate during their reversible interconversion.",
         "unit": "mM",
@@ -4713,6 +4877,19 @@
         "result": "The two compiled reaction fluxes matched independent linear rates within 1.10 × 10⁻¹¹ events/s across five states, including relative changes of 10⁻⁹ on each side of exact stall. Both padded slots returned zero. At 4 mM product with a 2 mM reservoir, omitting the reservoir work reversed the predicted direction."
       },
       "biology": {
+        "pairs": [
+          {
+            "id": "pgi-reversal",
+            "assumption": "Phosphoglucose isomerase can convert G6P to F6P or F6P to G6P, depending on the starting mixture.",
+            "datasets": [
+              "eicher2012_pgi_direction",
+              "dyson1968_pgi_equilibrium"
+            ],
+            "outcome": "both_support",
+            "independence": "Eicher’s group measured cell-extract time courses by NMR. Dyson and Noltmann independently assayed purified rabbit-muscle enzyme.",
+            "comparison": "F6P fell by 3.787 mM in the F6P-start extract series and rose by 1.172 mM in the G6P-start series. The purified enzyme approached F6P/G6P ≈ 0.30 from both sides. Both assays support the direction of conversion. Instantaneous dissipation remains unmeasured."
+          }
+        ],
         "status": "open",
         "observable": "Direction of glucose-6-phosphate (G6P) and fructose-6-phosphate (F6P) conversion from opposite starting conditions, the equilibrium ratio, and dissipated heat per unit time.",
         "unit": "F6P/G6P (dimensionless)",
@@ -5004,9 +5181,9 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
-          "fr42-neutral-survival"
+          "fr42-neutral-survival", "fr49-labelled-compartment-main"
         ],
-        "result": "Five quadratic-loss pools kept their shares bit for bit. At one second, the three-unit pool held 0.7499996135 fmol including 0.2499998712 fmol from the new cohort, within 10⁻⁶ fmol of 3/4 and 1/4. The analytical two-unit blank gives a difference of 1/12 fmol. All 42 shared history fields and 76 shared observations, including energy records, matched bit for bit when labels were enabled. Diagnostics agreed."
+        "result": "Five quadratic-loss pools kept their shares bit for bit. At one second, the three-unit pool held 0.7499996135 fmol including 0.2499998712 fmol from the new cohort, within 10⁻⁶ fmol of 3/4 and 1/4. The analytical two-unit blank gives a difference of 1/12 fmol. All 42 shared history fields and 76 shared observations, including energy records, matched bit for bit when labels were enabled. Diagnostics agreed. In FR-49 World L the labelled and unlabelled twins also matched on shared physics beside a compartment. The development replay on cd3b7b09 adds label arrival, local expression exclusions and a 900 s restart through 1,260 s. A paired owner–compartment transfer proof remains open."
       },
       "biology": {
         "status": "open",
@@ -6376,6 +6553,19 @@
       }},
       "numerical": {"status": "checked", "comparisons": ["mitochondrial-kinase-supply"], "result": "Across 21 Mg and nucleotide loads, the largest flux discrepancy was 7.04 × 10⁻¹⁵ of the forward rate. The three nucleotide changes followed their signed extents in two tissue steps. With the declared binding constants the predicted maximum is 1.5104 at 0.299 mM free Mg. At the 3.809 mM buffer match, omitting the Mg prefactor reduced the nonzero flux by a factor of 159.69."},
       "biology": {
+        "pairs": [
+          {
+            "id": "adenylate-kinase-magnesium",
+            "assumption": "The apparent adenylate-kinase equilibrium quotient formed from total nucleotides depends on free Mg²⁺.",
+            "datasets": [
+              "lawson1979_myokinase@1",
+              "kleczkowski1991_maize_kinase@1"
+            ],
+            "outcome": "both_support",
+            "independence": "Lawson and Veech measured a myokinase preparation. Kleczkowski and Randall measured their own purified maize-leaf enzyme.",
+            "comparison": "The first assay gave 0.391 at zero free Mg²⁺ and 1.05 at 1 mM. The maize assay reported a span of 0.30–1.27 across 0.0014–8.3 mM and 0.76 ± 0.10 at 1.8–1.9 mM. Both resolve dependence on Mg²⁺. They leave the position of the Cells maximum and its transfer to heart mitochondria open."
+          }
+        ],
         "status": "open",
         "observable": "Total-nucleotide equilibrium quotient as a function of free Mg in a defined preparation.",
         "unit": "dimensionless quotient and mM free Mg",
@@ -6556,6 +6746,19 @@
         "result": "All seven registered columns were checked against independently written material balances. Per forward turnover the respiratory complexes added 4, 2 and 8 net charges on P, while each added four explicit P protons. In two checked steps of a finite-matrix/lumen world, the redox, adenine and phosphate changes matched predictions from the measured extents within 8.28 × 10⁻²⁵ fmol."
       },
       "biology": {
+        "pairs": [
+          {
+            "id": "complex-i-protons",
+            "assumption": "Forward bovine complex I translocates about four protons per pair of electrons.",
+            "datasets": [
+              "galkin1999_complex_i@1",
+              "jones2017_complex_i@1"
+            ],
+            "outcome": "both_support",
+            "independence": "The Moscow and Cambridge groups prepared their own bovine heart submitochondrial particles and used different assays.",
+            "comparison": "Galkin measured 4.00 ± 0.05 H⁺/2e⁻ from proton and NADH rates. Jones obtained 4.21 ± 0.15, 4.10 ± 0.17 and 4.02 ± 0.19 from three flux comparisons on the same four preparations. This constrains complex I. The complete three-complex charge cycle remains unmeasured here."
+          }
+        ],
         "status": "open",
         "observable": "Protons transported per NADH, including correction for proton consumption by quinone reduction, and net charge transport during a carrier-balanced respiratory sequence.",
         "unit": "H⁺ per NADH or two electrons, charge equivalents per O₂",
@@ -6628,7 +6831,32 @@
         "status": "open",
         "observable": "Rotor proton count and ATP turnover for synthesis, plus the energetic cost of delivering ATP across the mitochondrial inner membrane.",
         "unit": "c-subunits per rotor, H⁺ per matrix ATP, charge equivalents per delivered ATP",
+        "pairs": [
+          {
+            "id": "mammalian-rotor-coupling",
+            "assumption": "Exactly three protons per ATP is the intrinsic tight-coupling ratio of the mammalian mitochondrial ATP synthases represented by the Cells model.",
+            "datasets": [
+              "watt2010_bovine_rotor@1",
+              "pinke2020_ovine_rotor@1"
+            ],
+            "outcome": "not_independent",
+            "independence": "The sheep particles and cryo-EM density are new. The initial reconstruction and atomic fit used bovine 5ARA, which itself used Watt’s 2XND. Independence of the eight-subunit count from the starting model is unconfirmed.",
+            "comparison": "Both structures contain eight c-subunits. One proton per c-subunit and three ATP per turn imply 8/3 H⁺ per synthesized ATP, compared with 3 in Cells. The distinction concerns ideal rotor coupling. Effective proton cost under load or during ATP export requires flux measurements."
+          }
+        ],
         "evidence": [
+          {
+            "dataset_id": "pinke2020_ovine_rotor@1",
+            "manifest": "lean/checks/data/paired_wet_lab_measurements.json",
+            "citation": "Pinke et al. (2020), ovine cryo-EM structure 6TT7",
+            "doi": "10.1038/s41594-020-0503-8",
+            "locator": "State 1a, deposited EM map EMD-10573 and PDB 6TT7, entities 2 and 10.",
+            "context": "ATP synthase purified from sheep heart mitochondria, imaged by cryo-EM.",
+            "role": "descriptive",
+            "uncertainty": "Subunit counts are structural observations. One H⁺ per c-subunit and three ATP per turn are the tight-coupling interpretation. There is no simultaneous H⁺ and ATP flux measurement.",
+            "assessment": "The ovine assembly has eight c-subunits and three catalytic β-subunits. Its new density corroborates the 8/3 tight-coupling interpretation, with a shared bovine starting model for the rotor. The delivered ATP cost also depends on the export and phosphate paths.",
+            "report": "lean/PROGRESS.md#paired-wet-lab-evidence"
+          },
           {
             "dataset_id": "watt2010_bovine_rotor@1",
             "manifest": "lean/checks/data/mitochondrial_stoichiometry.json",
@@ -7728,10 +7956,47 @@
         "result": "Doubling radius quadrupled molecular entry under both lipid-encounter conventions. The compiled exit rate per molecule at counts 1, 7 and 14 was 1.7500 s⁻¹ at the calibration radius and 1.2971 s⁻¹ at the second radius. All rate controls agreed with their independent calculations within 2 × 10⁻¹³ relative error."
       },
       "biology": {
+        "pairs": [
+          {
+            "id": "popc-urea-permeability",
+            "assumption": "Urea crosses a protein-free POPC membrane down its concentration gradient, with comparable apparent permeability in influx and efflux assays.",
+            "datasets": [
+              "branden2010_urea_permeability@1",
+              "peterlin2012_urea_permeability@1"
+            ],
+            "outcome": "both_support",
+            "independence": "Brändén’s group recorded washout from tethered nanovesicles. Peterlin’s group followed individual giant vesicles taking up urea.",
+            "comparison": "The reported efflux estimate converts to 0.0129 µm/s at 22 °C. The influx estimate was 0.013 ± 0.001 µm/s at 0.10 and 0.20 M. Central values differ by under 1%. Both coefficients were inferred from optical data. Curvature, temperature reporting and error conventions limit transfer of a single fitted value. Permeability is an input to Cells."
+          }
+        ],
         "status": "open",
         "observable": "Neutral-solute washout rate in fixed-size liposomes, and inward molecular uptake as a function of membrane area.",
         "unit": "s⁻¹",
         "evidence": [
+          {
+            "dataset_id": "branden2010_urea_permeability@1",
+            "manifest": "lean/checks/data/paired_wet_lab_measurements.json",
+            "citation": "Brändén et al. (2010), Fig. 3A",
+            "doi": "10.1016/j.bpj.2010.03.059",
+            "locator": "Fig. 3A and Passive diffusion results.",
+            "context": "Protein-free tethered POPC liposomes, mean diameter about 71 nm, 22 °C.",
+            "role": "descriptive",
+            "uncertainty": "Uncertainty reported on the fitted rate. The article converts rate to permeability using the size and bilayer thickness.",
+            "assessment": "The fitted efflux rate of 1.23 ± 0.06 s⁻¹ gave a permeability of 1.29 × 10⁻⁶ cm/s at 22 °C.",
+            "report": "lean/PROGRESS.md#paired-wet-lab-evidence"
+          },
+          {
+            "dataset_id": "peterlin2012_urea_permeability@1",
+            "manifest": "lean/checks/data/paired_wet_lab_measurements.json",
+            "citation": "Peterlin et al. (2012), Fig. 6a",
+            "doi": "10.1039/C1SM06670F",
+            "locator": "Fig. 6a and Results §V.",
+            "context": "Individual giant POPC vesicles exposed to external urea. Permeability inferred from swelling.",
+            "role": "descriptive",
+            "uncertainty": "The ± convention and assay temperature are unspecified here. The authors distinguish variation between vesicles from the uncertainty of individual fits.",
+            "assessment": "The reported urea permeability was 0.013 ± 0.001 µm/s at 0.10 and 0.20 M.",
+            "report": "lean/PROGRESS.md#paired-wet-lab-evidence"
+          },
           {
             "dataset_id": "branden2010_glycerol_radius@1",
             "manifest": "lean/checks/data/vesicle_exchange_measurements.json",
@@ -7926,10 +8191,69 @@
         "result": "Two compiled trajectories each crossed between 34 slack and 64 tense records. Across both runs the relative volume error stayed below 1.07 × 10⁻¹⁴, tension error below 2.24 × 10⁻¹⁷ N/m, and osmotic energy error below 2.54 × 10⁻¹⁴ k_BT against a 70-digit reference. Separate 64-osmole worlds reproduce the macroscopic reduced-volume and tension-per-radius predictions at matched density."
       },
       "biology": {
+        "pairs": [
+          {
+            "id": "vesicle-deflation-direction",
+            "assumption": "Increasing external osmolarity reduces the enclosed volume of intact, solute-loaded vesicles.",
+            "datasets": [
+              "fujiwara2014_vesicle_deflation@1",
+              "viallat2004_sucrose_deflation@1"
+            ],
+            "outcome": "both_support",
+            "independence": "Fujiwara and Yanagisawa followed five DOPE/DOPC liposomes. Viallat’s group independently tracked a spherical DOPC vesicle during slow titration.",
+            "comparison": "Fujiwara’s final/initial volume was about 0.25 (70/285 = 0.246). Viallat reported radius shrinking from 25 to 17 µm, giving a spherical volume fraction of 0.314 (50/162 = 0.309). Its apparent area fell by about half. The direction is reproduced. Conservation of membrane area and individual retained-solute counts remain open."
+          },
+          {
+            "id": "vesicle-resting-radius-cap",
+            "assumption": "The optically measured relaxed radius is a hard cap on spherical vesicle size during hypotonic swelling before rupture.",
+            "datasets": [
+              "shibly2016_dopc_swelling@1",
+              "chabanon2017_closed_swelling@1"
+            ],
+            "outcome": "both_challenge",
+            "independence": "Shibly’s group transferred DOPC vesicles to mildly hypotonic glucose. Chabanon’s group tracked POPC vesicles during a stronger hypotonic challenge.",
+            "comparison": "An initially full, inextensible sphere predicts zero further swelling. Shibly saw mean volume rises of 1.7 ± 0.1% and 2.6 ± 0.1% (14 and 17 vesicles). Chabanon’s closed pre-pore optical traces rose above the estimated relaxed radius. Both challenge using resting optical geometry as the cap. Available membrane area, slack and elastic dilation were not separately measured in both assays."
+          },
+          {
+            "id": "vesicle-ideal-volume-transfer",
+            "assumption": "The retained-osmole volume ratio transfers quantitatively from freely suspended to adhered deflating vesicles.",
+            "datasets": [
+              "fujiwara2014_vesicle_deflation@1",
+              "wolfisberg2025_deflation@1"
+            ],
+            "outcome": "inconclusive",
+            "independence": "The Fujiwara and Wolfisberg groups used separate preparations. Wolfisberg’s illustrated vesicle and ensemble belong to one study.",
+            "comparison": "Fujiwara’s plateau was about 0.25 versus 0.246 expected. At 58 mOsm/L the adhered example in Wolfisberg Fig. 2B gave reduced volume 0.30 versus 0.431 from prepared sucrose (0.439 from the first point). The authors report overall agreement across their 21-vesicle series in Fig. 3. Reduced volume depends on area, and a matched single-vesicle uncertainty is missing."
+          }
+        ],
         "status": "mixed",
         "observable": "Equilibrium volume after a bath osmolarity change, measured relative to the same vesicle’s spherical capacity or its initial volume, as specified for each study.",
         "unit": "volume ratio",
         "evidence": [
+          {
+            "dataset_id": "viallat2004_sucrose_deflation@1",
+            "manifest": "lean/checks/data/paired_wet_lab_measurements.json",
+            "citation": "Viallat et al. (2004), Fig. 2",
+            "doi": "10.1016/S0006-3495(04)74277-0",
+            "locator": "Fig. 2, slow sucrose-vesicle results and accompanying text.",
+            "context": "One electroformed DOPC vesicle remained spherical during slow external glucose titration. The experiment also continued with separate gel-filled vesicles.",
+            "role": "descriptive",
+            "uncertainty": "Rounded radii for one vesicle. No pointwise errors. The plotted internal pressure assumes retained sucrose.",
+            "assessment": "The ratio (17/25)³ = 0.314 is close to the nominal 50/162 = 0.309. The spherical surface area declined during this observation.",
+            "report": "lean/PROGRESS.md#paired-wet-lab-evidence"
+          },
+          {
+            "dataset_id": "chabanon2017_closed_swelling@1",
+            "manifest": "lean/checks/data/paired_wet_lab_measurements.json",
+            "citation": "Chabanon et al. (2017), Fig. 1c–d",
+            "doi": "10.1016/j.bpj.2017.03.018",
+            "locator": "Experimental Fig. 1c–d and Movie S2.",
+            "context": "Giant POPC vesicles with 1 mol% fluorescent lipid, under a 200 mM hypotonic differential.",
+            "role": "descriptive",
+            "uncertainty": "Representative optical trace. The estimate of relaxed radius and unmeasured membrane slack limit inference of molecular area.",
+            "assessment": "Radius increased above the relaxed reference during closed swelling phases before pore opening. This observation limits use of the relaxed radius as a fixed size cap.",
+            "report": "lean/PROGRESS.md#paired-wet-lab-evidence"
+          },
           {
             "dataset_id": "fujiwara2014_vesicle_deflation@1",
             "manifest": "lean/checks/data/fujiwara2014_vesicle.json",
@@ -8567,7 +8891,55 @@
         "status": "open",
         "observable": "Initial neutral-solute uptake rate versus external concentration and a matched time course of extracellular depletion and intracellular gain.",
         "unit": "µmol/L/min",
+        "pairs": [
+          {
+            "id": "cold-red-cell-sugar-affinity",
+            "assumption": "Early 3-O-methylglucose influx into sugar-depleted human erythrocytes is half-saturated near 1–2 mM under cold conditions.",
+            "datasets": [
+              "sage2014_zero_trans@1",
+              "klepper2001_cold_red_cell_influx@1"
+            ],
+            "outcome": "both_support",
+            "independence": "Sage and Carruthers measured three independent experiments on ice. Klepper’s group measured its own healthy donor four times per concentration at 4 °C.",
+            "comparison": "Sage’s fitted Kₘ was 1.4 ± 0.2 mM, and Klepper’s control gave 1.3 mM across 0.3–6 mM with no Kₘ uncertainty reported. Cells uses two Sage points for calibration (1.19 mM). The separate donor supports the concentration scale. Absolute capacity, long-time depletion and transfer between two cells remain open."
+          },
+          {
+            "id": "red-cell-sugar-saturation",
+            "assumption": "Initial 3-O-methylglucose influx saturates with increasing extracellular sugar in intact human erythrocytes on ice and at 15 °C.",
+            "datasets": [
+              "sage2014_zero_trans@1",
+              "batt1973_red_cell_influx@1"
+            ],
+            "outcome": "both_support",
+            "independence": "Batt and Schachter measured two blood specimens at 15 °C. Sage and Carruthers collected a separate cold series, also used in the cold-affinity comparison.",
+            "comparison": "Batt’s influx Kₜ values were 5.0 and 6.1 mM, compared with 1.4 ± 0.2 mM on ice in Sage. Both studies resolve saturation. A single Kₘ across these conditions would miss the 15 °C values. Preparation and assay differences confound attribution to temperature alone."
+          }
+        ],
         "evidence": [
+          {
+            "dataset_id": "klepper2001_cold_red_cell_influx@1",
+            "manifest": "lean/checks/data/paired_wet_lab_measurements.json",
+            "citation": "Klepper et al. (2001), Fig. 3B–C and Table 1",
+            "doi": "10.1016/S0014-5793(01)02463-2",
+            "locator": "§2.4, Fig. 3B–C, Table 1 (pp. 105–108).",
+            "context": "Washed human erythrocytes, healthy adult intra-assay control, zero-trans radiolabeled 3-O-methyl-D-glucose influx.",
+            "role": "descriptive",
+            "uncertainty": "No uncertainty reported for the control Km. The larger healthy reference group in Fig. 3A is a different comparison.",
+            "assessment": "The healthy control gave Kₘ 1.3 mM and maximal rate 1,275 ± 32 fmol/s per million cells (SD). It independently supports the half-saturation scale of the cold Cells calibration. Differing rate denominators limit the capacity comparison.",
+            "report": "lean/PROGRESS.md#paired-wet-lab-evidence"
+          },
+          {
+            "dataset_id": "batt1973_red_cell_influx@1",
+            "manifest": "lean/checks/data/paired_wet_lab_measurements.json",
+            "citation": "Batt and Schachter (1973), Table V",
+            "doi": "10.1172/JCI107350",
+            "locator": "Table V (p. 1692), influx column for 3-O-methyl-D-glucose.",
+            "context": "Two separate human blood samples, intact erythrocytes with zero trans sugar.",
+            "role": "descriptive",
+            "uncertainty": "Each row is a separate blood sample. Table V gives point estimates without errors.",
+            "assessment": "The two influx Kₜ estimates, 5.0 and 6.1 mM at 15 °C, support saturable entry. They set a limit on transferring the cold calibration across preparations.",
+            "report": "lean/PROGRESS.md#paired-wet-lab-evidence"
+          },
           {
             "dataset_id": "sage2014_zero_trans@1",
             "manifest": "lean/checks/data/sage2014_zero_trans.json",
@@ -9268,11 +9640,36 @@
         "result": "Across three matrix/bath pH pairs and outside buffers of 1 and 100 mM, all six clamped reversals agreed with the independent Nernst calculation within 10⁻⁶ mV. The sign changed across every root. Substituting stored total proton equivalents gave nonzero flux at each free-proton reversal."
       },
       "biology": {
+        "pairs": [
+          {
+            "id": "proton-reversal-ph",
+            "assumption": "The reversal voltage of a selective proton current shifts with the free pH gradient in the Nernst direction.",
+            "datasets": [
+              "bertholet-2019-proton-reversal",
+              "cherny1995_proton_reversal@1"
+            ],
+            "outcome": "both_support",
+            "independence": "Bertholet’s group recorded mouse skeletal-muscle mitoplasts. Cherny’s group recorded rat alveolar epithelial cells with a different proton pathway.",
+            "comparison": "The three mitoplast groups reversed at means of −62.2, −91.1 and +28.8 mV at outside-minus-inside pH differences of +1, +1.5 and −0.5. The alveolar tail-current reversal shifted in the same direction by about 52 mV per pH unit over four units. The shared result concerns the zero-current voltage. Permeability and gating remain separate questions."
+          }
+        ],
         "status": "open",
         "observable": "Measured voltage at zero proton current at controlled pH on each side, with a separate comparison for current magnitude under a buffer change.",
         "unit": "mV, matrix minus bath",
         "finding": "The three mitochondrial mean reversal voltages have the predicted directions. All three model values lie within the descriptive 95% Student t intervals for the corresponding means. The endpoint comparison leaves intact mitochondrial compartment pH and absolute leak current open.",
         "evidence": [
+          {
+            "dataset_id": "cherny1995_proton_reversal@1",
+            "manifest": "lean/checks/data/paired_wet_lab_measurements.json",
+            "citation": "Cherny et al. (1995), Fig. 2",
+            "doi": "10.1085/jgp.105.6.861",
+            "locator": "Fig. 2 and abstract.",
+            "context": "Isolated rat alveolar epithelial cells, whole-cell clamp.",
+            "role": "descriptive",
+            "uncertainty": "Rounded slope reported across gradients. No standard error for this slope is used.",
+            "assessment": "With strongly buffered solutions the reversal shifted about 52 mV per pH unit over four units. This tests pH dependence in alveolar cells.",
+            "report": "lean/PROGRESS.md#paired-wet-lab-evidence"
+          },
           {
             "dataset_id": "bertholet-2019-proton-reversal",
             "manifest": "lean/checks/data/bertholet2019_proton_reversal.json",
@@ -9331,6 +9728,19 @@
       }},
       "numerical": {"status": "checked", "comparisons": ["atp-cycle", "vacuolar-pump-reversal"], "result": "Across 92 compiled tissue states, 72 ran forward, 16 reversed and four were within the stall tolerance. Cycle flux agreed with frozen references to 7.50 × 10⁻¹⁶ fmol/s and heat was nonnegative in all cases. Offsetting the voltage by ±10 mV about proton stall reversed the rate. The same voltage perturbations preserved all three flowing neutral controls. Eight capacity and availability controls gave exactly zero flux, heat and work. For the eight yeast assay conditions, the registered proton law also bracketed 32 stall voltages. At fixed fuel the pH-induced shift was −112.40 mV for every supported coupling."},
       "biology": {
+        "pairs": [
+          {
+            "id": "vacuolar-pump-low-ph",
+            "assumption": "The yeast vacuolar pump reversal exceeds +40 mV at cytosolic pH 7.5 and lumen pH 3.1.",
+            "datasets": [
+              "kettner2003_vacuolar_pump@1",
+              "kettner_workshop_low_ph"
+            ],
+            "outcome": "not_independent",
+            "independence": "The workshop and journal reports come from the same Kettner research group. An independent preparation or dataset lineage for the workshop value is undocumented.",
+            "comparison": "The journal reports a lower bound of +40 mV for three vacuoles. The workshop reports +50 ± 8 mV with no replicate count, and its low-pH figure is a time trace at 0 mV. The values are compatible. The two publications cannot establish an independent replication."
+          }
+        ],
         "status": "open",
         "observable": "Reversal voltage of ATP-dependent proton transport at known fuel and proton activities, and neutral-cargo flux at fixed activities under varied voltage.",
         "finding": "Vesicles showed ATP-dependent riboflavin uptake. Neutral-cargo reversal and voltage independence remain open. [Van Herwaarden et al., Fig. 3E](https://pmc.ncbi.nlm.nih.gov/articles/PMC1800714/)",
@@ -10371,6 +10781,19 @@
         "result": "The capacity repair passed the original controls and all four extreme/zero capacity cases on NumPy and compiled CPU. At 10⁻³⁰² fmol/s the net readouts both gave 7.09691 × 10⁻³⁰⁵ fmol/s and reverse readouts gave 2.67423 × 10⁻³⁰⁷ fmol/s. The previous 100-fold diagnostic error remains recorded at its tested revision."
       },
       "biology": {
+        "pairs": [
+          {
+            "id": "smct-propionate-saturation",
+            "assumption": "Human SMCT1 substrate-induced current saturates as external propionate increases at −50 mV.",
+            "datasets": [
+              "miyauchi2004_propionate@1",
+              "paroder2006_propionate@1"
+            ],
+            "outcome": "both_support",
+            "independence": "Miyauchi’s and Paroder’s groups recorded their own oocytes expressing human SMCT1.",
+            "comparison": "The published half-saturation concentrations were 127 ± 14 and 162 ± 26 µM. The dose responses independently support saturation and an affinity scale around 0.1–0.2 mM. The exact affinity, eight transition rates and sodium coupling ratio remain separate questions."
+          }
+        ],
         "status": "open",
         "observable": "Baseline-subtracted steady current as external monocarboxylate concentration or clamped voltage changes. The dose series tests the functional form. A biological assignment for the individual transition rates and voltage coefficients remains open.",
         "unit": "nA inward magnitude (propionate), µA signed current (lactate)",
@@ -10469,10 +10892,35 @@
         "result": "All 120 stages agreed with independent 60-digit free energies, saturation, rates and heat. The panel covered both orientations, all four sodium counts and twelve active stalls. The two-step tissue run gained exactly the lactate amount recorded as transported cycles and reported zero global charge error."
       },
       "biology": {
+        "pairs": [
+          {
+            "id": "smct-propionate-stoichiometry",
+            "assumption": "Each human SMCT1 cycle imports two Na⁺ per propionate.",
+            "datasets": [
+              "gopal2004_propionate_charge@1",
+              "coady2007_smct1@1"
+            ],
+            "outcome": "different_results",
+            "independence": "Gopal’s and Coady’s groups studied human SMCT1 in separate oocyte experiments. Coady is the source of the Cells two-sodium choice.",
+            "comparison": "Gopal reported 2.7 ± 0.2 net positive charges per propionate. With monovalent propionate and fully coupled current that implies 3.7 ± 0.2 Na⁺ per substrate. Coady measured 2.3 ± 0.3 Na⁺ per propionate from paired shifts in zero-current voltage (n = 7, SEM). Uncoupled current and passive propionic-acid uptake affect the inference. The two assays give different estimates for this substrate."
+          }
+        ],
         "status": "open",
         "observable": "Charge per lactate, particles per charge and the ratio of voltage shifts with external sodium and substrate halving in human SMCT1.",
         "unit": "net positive charges per lactate",
         "evidence": [
+          {
+            "dataset_id": "gopal2004_propionate_charge@1",
+            "manifest": "lean/checks/data/paired_wet_lab_measurements.json",
+            "citation": "Gopal et al. (2004), Fig. 9B",
+            "doi": "10.1074/jbc.M405365200",
+            "locator": "Fig. 9B and accompanying human SLC5A8 results, p. 44530.",
+            "context": "Human SMCT expressed in Xenopus oocytes. Integrated substrate-induced current and radiolabel uptake.",
+            "role": "descriptive",
+            "uncertainty": "The ± is the authors' reported SE. The human series is distinct from the mouse series and from Fig. 9A lactate.",
+            "assessment": "Human SMCT1 gave 2.7 ± 0.2 net charges per propionate. With a monovalent anion and entirely coupled current, the implied sodium count is 3.7 ± 0.2.",
+            "report": "lean/PROGRESS.md#paired-wet-lab-evidence"
+          },
           {
             "dataset_id": "coady2007_smct1@1",
             "manifest": "lean/checks/data/coady2007_smct1.json",
@@ -10620,10 +11068,47 @@
         "result": "Five accepted CPU float64 runs tested water alone and water coupled to potassium–anion transport. Halving the step in two coupled worlds reduced the errors in both transfers and both heats by factors of 4.00–4.11 against an independent two-extent calculation. Separate oversized water and cotransport inputs triggered their respective step bounds."
       },
       "biology": {
+        "pairs": [
+          {
+            "id": "hypertonic-water-efflux",
+            "assumption": "A hyperosmotic external bath draws water out of protein-free phospholipid vesicles.",
+            "datasets": [
+              "mathai2008_osmotic_water@1",
+              "frallicciardi2022_osmotic_water@1"
+            ],
+            "outcome": "both_support",
+            "independence": "Mathai’s and Frallicciardi’s groups performed separate stopped-flow experiments. Only the latter paper’s experimental panels are used.",
+            "comparison": "Both experiments detected shrinkage by dye quenching. Their fitted DOPC/POPC water permeabilities were 15.8/13.0 at 30 °C and 16.0/12.0 at 20 °C, in 10⁻³ cm/s. Flow direction is the shared prediction. Lipid ordering constrains mobility inputs and heat was unmeasured."
+          }
+        ],
         "status": "open",
         "observable": "Equilibrium swelling in vesicles and red cells, water flow after pressure steps in a Chara internode, and the water change accompanying net solute movement in trout red cells. A pathway-specific rate for K–anion cotransport during swelling remains open.",
         "unit": "% swelling, fL cell volume, nL/s inward flow, g water per g dry cell solids",
         "evidence": [
+          {
+            "dataset_id": "mathai2008_osmotic_water@1",
+            "manifest": "lean/checks/data/paired_wet_lab_measurements.json",
+            "citation": "Mathai et al. (2008), Fig. 1A and Table I",
+            "doi": "10.1085/jgp.200709848",
+            "locator": "Fig. 1A, Table I and water-permeability methods.",
+            "context": "Protein-free vesicles under a 50% increase in external osmotic pressure, 30 °C. Entrapped dye self-quenching reported volume loss.",
+            "role": "descriptive",
+            "uncertainty": "8–12 traces averaged for a fluorescence curve. The Table I ± convention is unspecified here.",
+            "assessment": "The hyperosmotic bath induced water efflux. DOPC and POPC water permeability were 15.8 ± 0.58 and 13.0 ± 0.44 in units of 10⁻³ cm/s at 30 °C.",
+            "report": "lean/PROGRESS.md#paired-wet-lab-evidence"
+          },
+          {
+            "dataset_id": "frallicciardi2022_osmotic_water@1",
+            "manifest": "lean/checks/data/paired_wet_lab_measurements.json",
+            "citation": "Frallicciardi et al. (2022), Figs. 1A, 3A and 4A",
+            "doi": "10.1038/s41467-022-29272-x",
+            "locator": "Fig. 1A and experimental panels 3A and 4A.",
+            "context": "Lipid vesicles under an external osmotic upshift, 20 °C. Only stopped-flow fluorescence data are used.",
+            "role": "descriptive",
+            "uncertainty": "Figures report SEM. Methods propagate uncertainty in vesicle size distributions. Individual repeated size determinations do not establish independent preparations.",
+            "assessment": "The hyperosmotic stopped-flow experiment detected shrinkage. DOPC and POPC water permeability were 16.0 ± 1.7 and 12.0 ± 1.4 in units of 10⁻³ cm/s at 20 °C.",
+            "report": "lean/PROGRESS.md#paired-wet-lab-evidence"
+          },
           {
             "dataset_id": "shibly2016_dopc_swelling@1",
             "manifest": "lean/checks/data/shibly2016_swelling.json",
@@ -11068,7 +11553,7 @@
       "title": "A partial wash dilutes free tracer and preserves its inventory",
       "statement": "For a finite well of fixed volume V, a wash of fraction f changes free amount n to (1 − f)n + f V c_buffer. Adding sampled material and subtracting supplied material recovers the original total, including bound ligand retained through the event. Repeating k equal washes multiplies the initial excess above the buffer level by (1 − f)ᵏ. For each exchanged neutral species, ideal mixing heat is nonnegative and a whole wash releases zero mixing heat.",
       "assumptions": [
-        "The liquid is well mixed. Between the washes used in the repeated-wash formula there is no binding, release, synthesis or transport.",
+        "The liquid is well mixed. Between the washes used in the repeated-wash formula there is no binding, release, synthesis or transport. The landed tissue wash refuses a gene export into the washed node and outside degradation there. A different node remains eligible when its other admission conditions hold.",
         "The Lean positivity result assumes 0 < f ≤ 1 and strictly positive free and buffer amounts. Float64 whole-wash storage also requires sufficient resolution at the host’s amount anchor. Version 1 exchanges ions at their own concentration.",
         "For the heat, the well is ideal and isothermal with positive volume and concentrations and a nonnegative thermal energy scale."
       ],
@@ -11089,7 +11574,7 @@
           "Mathlib logarithm bound used in the default mixing-heat proof": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L293-L294",
           "Mathlib klFun_nonneg and klFun_eq_zero_iff, imported in the optional comparison": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/InformationTheory/KullbackLeibler/KLFun.lean#L145-L149",
           "Cells specialization of the relative-entropy formula": "lean/checks/mixing/KLFun.lean",
-          "Cells wash heat computed from the retained and supplied concentrations": "src/cells/operators/wash_schedule.py#L320"
+          "Cells wash heat computed from the retained and supplied concentrations": "https://github.com/Eidosoma/Cells/blob/b06158e8a8b2044d92183e8da8d646bf56c4a12b/src/cells/operators/wash_schedule.py#L448"
         }
       },
       "numerical": {
@@ -11097,9 +11582,9 @@
         "comparisons": [
           "wash-ion-counters-d272",
           "wash-main-nov21",
-          "compartment-wash-nov21"
+          "compartment-wash-nov21", "wash-export-admission-main"
         ],
-        "result": "Four compiled tracer schedules retained ions and site fields. The maximum tracer material discrepancy was 7.11 × 10⁻¹⁵ fmol. Whole-wash runs reached 2⁻⁵⁰ of the initial amount and reproduced the documented refusal at 2⁻⁶⁰. The repaired counter check completed at fractions 1/2 and 3/7 with exact agreement for each unchanged ion."
+        "result": "Four compiled tracer schedules retained ions and site fields. The maximum tracer material discrepancy was 7.11 × 10⁻¹⁵ fmol. Whole-wash runs reached 2⁻⁵⁰ of the initial amount and reproduced the documented refusal at 2⁻⁶⁰. The repaired counter check completed at fractions 1/2 and 3/7 with exact agreement for each unchanged ion. On b06158e8 and again after FR-49 landed at cd3b7b09, all 35 wash tests passed, including named same-node gene-route refusals and a separate-node admission."
       },
       "biology": {
         "status": "open",
