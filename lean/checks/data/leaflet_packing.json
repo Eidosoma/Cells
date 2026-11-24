@@ -1,0 +1,40 @@
+{
+  "finer1971_egg_pc@1": {
+    "doi": "10.1016/0014-5793(71)80479-9",
+    "locator": "p. 333, paragraph following Fig. 2",
+    "preparation": "Fraction II of sonicated egg-yolk lecithin. External manganese broadened the solvent-accessible choline proton signal.",
+    "protected_headgroup_fraction": 0.28,
+    "outer_radius_A": 115,
+    "bilayer_thickness_A": 46,
+    "geometry_source": "The authors took radius and thickness from Huang (1969), DOI 10.1021/bi00829a048. They reported an expected inner fraction of 0.265.",
+    "uncertainty": "No error reported on the protected fraction. The cited geometry is external to the NMR sample."
+  },
+  "huang1978_egg_pc@1": {
+    "doi": "10.1073/pnas.75.1.308",
+    "locator": "Methods and Tables 1–2, pp. 308–309",
+    "preparation": "Homogeneous egg phosphatidylcholine vesicles. The group combined its earlier phosphorus NMR and hydrodynamic measurements.",
+    "nmr_outer_to_inner": 2.1,
+    "outer_headgroup_radius_A": 99,
+    "inner_headgroup_radius_A": 62,
+    "inferred_headgroup_counts": {"inner": 790, "outer": 1658},
+    "inferred_area_per_head_A2": {"inner": 61, "outer": 74},
+    "geometry_source": "The authors subtracted a 6 Å hydration layer from the 105 Å hydrodynamic radius and assumed equal molecular volumes. Total count was inferred from mass.",
+    "uncertainty": "Table 1 input errors were at most 5% according to the authors. Table 2 gives rounded inferences without propagated intervals."
+  },
+  "kucerka2011_popc_temperature@1": {
+    "doi": "10.1016/j.bbamem.2011.07.022",
+    "locator": "Table 1, pure POPC at 30 and 50 °C, with Eq. 2",
+    "temperature_C": [30, 50],
+    "area_per_lipid_A2": [64.3, 67.3],
+    "reported_uncertainty_A2": [1.3, 1.3],
+    "measurement": "Area inferred from joint neutron and X-ray scattering. The 30 °C entry is also the existing Cells calibration."
+  },
+  "leftin2014_popc_temperature@1": {
+    "doi": "10.1016/j.bpj.2014.07.044",
+    "locator": "Table 1, pure POPC, carbon-13 NMR columns",
+    "temperature_C": [28, 48],
+    "area_per_lipid_A2": [60.4, 70.5],
+    "propagated_sd_A2": [3.6, 4.2],
+    "measurement": "Molecular areas inferred from chain order using the mean-torque model. The SDs propagate repeated dipolar-coupling measurements."
+  }
+}

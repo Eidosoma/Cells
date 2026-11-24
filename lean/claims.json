@@ -7949,6 +7949,19 @@
             "assessment": "Larger vesicles generally elongated faster. The authors could resolve neither a linear nor a quadratic dependence uniquely from this length readout.",
             "report": "lean/PROGRESS.md#vesicle-phase-exchange"
           }
+        ],
+        "pairs": [
+          {
+            "id": "vesicle-insertion-size-exponent",
+            "assumption": "At fixed external lipid supply, the measured whole-vesicle insertion flux can discriminate radius-proportional from area-proportional capture.",
+            "datasets": [
+              "jin2021_pazepc_insertion@1",
+              "hentrich2014_oleate_growth@1"
+            ],
+            "outcome": "inconclusive",
+            "independence": "Jin and Baumgart studied aspirated POPC vesicles exposed to an oxidized lipid. Hentrich and Szostak independently tracked oleate vesicles growing under flow.",
+            "comparison": "Jin measured a pooled fractional-area rate constant of 0.0027 ± 0.0005 µM⁻¹ s⁻¹ (SEM, 11 vesicles). Hentrich measured filament elongation against starting diameter. The data did not distinguish linear and quadratic size dependence. Absolute inserted molecules per second by radius under matched supply would resolve the comparison."
+          }
         ]
       }
     },
@@ -8132,7 +8145,7 @@
       "id": "bilayer-footprint",
       "category": "molecular-assembly",
       "title": "Bilayer area is half the sum of the molecular footprints in its two leaflets",
-      "statement": "The integer footprint adds across lipid inventories. Refining the area unit preserves the physical area. A common per-lipid error bound gives a bilayer area bound of half the total lipid count times that error. The area-equivalent sphere gives the same volume from its radius and its area.",
+      "statement": "The integer footprint adds across lipid inventories. Refining the area unit preserves the physical area. A common per-lipid error bound gives a bilayer area bound of half the total lipid count times that error. The area-equivalent sphere gives the same volume from its radius and its area. For two spherical headgroup surfaces with measured positive radii and lipid counts, equal area per head holds exactly when the inner lipid fraction equals the inner surface-area fraction.",
       "assumptions": [
         "Each membrane species has a fixed footprint expressed in integer quanta. Both leaflets contribute to the counted lipid inventory.",
         "When the quantum is refined by a positive integer factor, every lipid’s integer weight and the integer floor scale by that factor. The physical quantum scales inversely.",
@@ -8151,7 +8164,11 @@
           "CellsProofs.Chemistry.Vesicle.area_error_bound": "lean/CellsProofs/Chemistry/Vesicle.lean",
           "CellsProofs.Chemistry.Vesicle.radius_area": "lean/CellsProofs/Chemistry/Vesicle.lean",
           "CellsProofs.Chemistry.Vesicle.sphere_radius": "lean/CellsProofs/Chemistry/Vesicle.lean",
-          "CellsProofs.Chemistry.Vesicle.sphere_area": "lean/CellsProofs/Chemistry/Vesicle.lean"
+          "CellsProofs.Chemistry.Vesicle.sphere_area": "lean/CellsProofs/Chemistry/Vesicle.lean",
+          "CellsProofs.Chemistry.Vesicle.equal_leaflet_footprint_iff": "lean/CellsProofs/Chemistry/Vesicle.lean"
+        },
+        "sources": {
+          "Mathlib cross-multiplication at nonzero denominators, imported for the leaflet area criterion": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/GroupWithZero/Units/Basic.lean#L426-L427"
         }
       },
       "numerical": {
@@ -8181,6 +8198,82 @@
             "uncertainty": "The reported uncertainty is ±0.013 nm² per lipid.",
             "assessment": "This calibrates the area of each lipid. An independent whole-vesicle check would require both its total lipid count and its measured membrane area.",
             "report": "lean/PROGRESS.md#bilayer-footprint"
+          },
+          {
+            "dataset_id": "kucerka2011_popc_temperature@1",
+            "manifest": "lean/checks/data/leaflet_packing.json",
+            "citation": "Kučerka, Nieh and Katsaras (2011), Table 1 temperature series",
+            "doi": "10.1016/j.bbamem.2011.07.022",
+            "locator": "Table 1, pure POPC at 30 and 50 °C, with Eq. 2",
+            "context": "Area inferred from joint neutron and X-ray scattering. The 30 °C entry is also the existing Cells calibration.",
+            "role": "calibration",
+            "uncertainty": "The authors give ±1.3 Å² at both temperatures. The 30 °C entry also appears in the pre-existing calibration record.",
+            "assessment": "The mean area rises from 64.3 to 67.3 Å² per lipid between 30 and 50 °C. These measurements can supply temperature-specific input footprints.",
+            "report": "lean/PROGRESS.md#paired-calibration-and-leaflet-packing",
+            "fit": [
+              "30 °C and 50 °C molecular footprints used as inputs to their respective native replays"
+            ]
+          },
+          {
+            "dataset_id": "leftin2014_popc_temperature@1",
+            "manifest": "lean/checks/data/leaflet_packing.json",
+            "citation": "Leftin et al. (2014), Table 1, ¹³C NMR",
+            "doi": "10.1016/j.bpj.2014.07.044",
+            "locator": "Table 1, pure POPC, carbon-13 NMR columns",
+            "context": "Molecular areas inferred from chain order using the mean-torque model. The SDs propagate repeated dipolar-coupling measurements.",
+            "role": "descriptive",
+            "uncertainty": "Propagated SDs are 3.6 and 4.2 Å². The area inference uses the authors’ chain-order model.",
+            "assessment": "The mean POPC footprint rises from 60.4 to 70.5 Å² over 28–48 °C. The different endpoints and methods limit comparison of thermal expansion coefficients.",
+            "report": "lean/PROGRESS.md#paired-calibration-and-leaflet-packing"
+          },
+          {
+            "dataset_id": "finer1971_egg_pc@1",
+            "manifest": "lean/checks/data/leaflet_packing.json",
+            "citation": "Finer, Flook and Hauser (1971), p. 333",
+            "doi": "10.1016/0014-5793(71)80479-9",
+            "locator": "p. 333, paragraph following Fig. 2",
+            "context": "Fraction II of sonicated egg-yolk lecithin. External manganese broadened the solvent-accessible choline proton signal.",
+            "role": "descriptive",
+            "uncertainty": "No error reported on the protected fraction. The cited geometry is external to the NMR sample.",
+            "assessment": "The protected headgroup fraction was 0.28. Using outer radius 115 Å and thickness 46 Å from Huang (1969) gives an equal-footprint fraction of 0.2647. The authors interpreted this as compatible with equal areas.",
+            "report": "lean/PROGRESS.md#paired-calibration-and-leaflet-packing"
+          },
+          {
+            "dataset_id": "huang1978_egg_pc@1",
+            "manifest": "lean/checks/data/leaflet_packing.json",
+            "citation": "Huang and Mason (1978), Tables 1–2",
+            "doi": "10.1073/pnas.75.1.308",
+            "locator": "Methods and Tables 1–2, pp. 308–309",
+            "context": "Homogeneous egg phosphatidylcholine vesicles. The group combined its earlier phosphorus NMR and hydrodynamic measurements.",
+            "role": "descriptive",
+            "uncertainty": "Table 1 input errors were at most 5% according to the authors. Table 2 gives rounded inferences without propagated intervals.",
+            "assessment": "An outer:inner NMR ratio of 2.1 gives an inner fraction of 0.3226. Radii of 62 and 99 Å give 0.2817 at equal footprint. Their inferred outer and inner molecular areas were 74 and 61 Å².",
+            "report": "lean/PROGRESS.md#paired-calibration-and-leaflet-packing"
+          }
+        ],
+        "finding": "Fluid POPC footprints increased with temperature in two independent measurements. Two egg-PC studies constrain how curved leaflets pack, although the reported data leave equal inner and outer area per lipid unresolved.",
+        "pairs": [
+          {
+            "id": "popc-temperature-footprint",
+            "assumption": "One fixed molecular footprint describes fluid POPC across a roughly 20 °C temperature increase.",
+            "datasets": [
+              "kucerka2011_popc_temperature@1",
+              "leftin2014_popc_temperature@1"
+            ],
+            "outcome": "both_challenge",
+            "independence": "Kučerka’s group used neutron and X-ray scattering. Leftin’s group independently used solid-state carbon-13 NMR. Each method infers area from structural data.",
+            "comparison": "Scattering gave 64.3 ± 1.3 to 67.3 ± 1.3 Å² at 30→50 °C. NMR gave 60.4 ± 3.6 to 70.5 ± 4.2 Å² at 28→48 °C. Both central estimates rise on warming, by 4.7% and 16.7% respectively. The evidence supports choosing a footprint for the experimental temperature. A common expansion coefficient remains open."
+          },
+          {
+            "id": "egg-pc-leaflet-packing",
+            "assumption": "The inner and outer headgroup surfaces of a small spherical egg-PC vesicle have equal area per lipid.",
+            "datasets": [
+              "finer1971_egg_pc@1",
+              "huang1978_egg_pc@1"
+            ],
+            "outcome": "inconclusive",
+            "independence": "The NMR preparations are separate. Finer used earlier radius and thickness estimates from Huang, so the geometric evidence has a shared source lineage.",
+            "comparison": "Finer measured 28% inner heads against 26.47% from equal-area geometry and judged the packing compatible with equality. Huang and Mason inferred 32.26% against 28.17% and reported different areas per head. Both residuals point toward larger outer footprints. The radii, model assumptions and missing propagated errors leave the magnitude and exact equality unresolved."
           }
         ]
       }
@@ -9392,7 +9485,7 @@
       },
       "biology": {
         "status": "not_assessable",
-        "observable": "How much peak outward potassium current remains at 0 mV when external pH falls from 7.3 to 6.8, given the separately normalized peak-tail activation curves.",
+        "observable": "Peak outward current remaining at 0 mV after acidification, the activation midpoint and the effect of extracellular potassium on current at strong depolarization.",
         "unit": "fraction of control current",
         "evidence": [
           {
@@ -9414,6 +9507,67 @@
             "uncertainty": "Figure 1B reports SEM 0.019 over eight cells. Figure 1F normalizes each condition separately and gives neither the absolute maxima nor enough information to propagate experimental uncertainty. Reading both plotted fractions within ±0.01 gives 0.703–0.740 from graph precision alone. Both assays come from one study.",
             "assessment": "The equal-maximum projection is 0.0237 below the measured fraction. The control midpoint explains why imposing the measured shift on the default Cells gate gives a smaller ratio. Quantitative pH validation needs comparable maximum conductances and matched activation kinetics.",
             "report": "lean/PROGRESS.md#kv15-ph-activation"
+          },
+          {
+            "dataset_id": "longobardo2001_kv15_controls@1",
+            "manifest": "lean/checks/data/paired_calibration_measurements.json",
+            "citation": "Longobardo et al. (2001), Fig. 1 and control results",
+            "doi": "10.1038/sj.bjp.0704251",
+            "locator": "Figure 1 and drug-free control results",
+            "context": "Wild-type human Kv1.5 in Ltk− cells, whole-cell clamp, 4 mM extracellular K, 21–23 °C. The tail voltage changed from −40 to −30 mV between pH conditions.",
+            "role": "descriptive",
+            "uncertainty": "Mean ± SEM. Midpoint groups included 38 control and 27 acidic recordings. Tail voltages differed by 10 mV between conditions.",
+            "assessment": "At pH 7.4 and 6.5 the midpoint was −14.2 ± 2.1 and +3.1 ± 0.7 mV. The dominant activation time constant at +60 mV also increased from 2.10 ± 0.20 to 4.23 ± 0.30 ms. Separately normalized curves leave the absolute conductance scale open.",
+            "report": "lean/PROGRESS.md#paired-calibration-and-leaflet-packing"
+          },
+          {
+            "dataset_id": "trapani2003_kv15_high_voltage@1",
+            "manifest": "lean/checks/data/paired_calibration_measurements.json",
+            "citation": "Trapani and Korn (2003), Figs. 1C/D and 9B",
+            "doi": "10.1016/S0006-3495(03)74842-5",
+            "locator": "Figures 1C/D and 9B, +100 mV",
+            "context": "Wild-type human Kv1.5 in HEK293. Same study as the existing 0 mV pulse and activation curves.",
+            "role": "descriptive",
+            "uncertainty": "At 0 and 3 mM external K, reported errors are SEM, n = 3 each. At 10 mM the text gives a qualitative group result, n = 5.",
+            "assessment": "For the same pH change and 10 mM external K as the 0 mV comparison, the current at +100 mV was essentially unchanged. At zero external K only 38.0 ± 1.5% remained. This constrains the maximal-current interpretation at strong depolarization.",
+            "report": "lean/PROGRESS.md#paired-calibration-and-leaflet-packing"
+          },
+          {
+            "dataset_id": "kehl2002_kv15_potassium@1",
+            "manifest": "lean/checks/data/paired_calibration_measurements.json",
+            "citation": "Kehl et al. (2002), Fig. 2",
+            "doi": "10.1113/jphysiol.2001.014456",
+            "locator": "Figure 2 and Results, external potassium and the conductance response",
+            "context": "WT human Kv1.5 in HEK293, 20–25 °C, whole-cell tails after 300-ms prepulses.",
+            "role": "descriptive",
+            "uncertainty": "Reported ± as printed. Methods generally use SEM and specify SD for nonlinear least-squares outputs.",
+            "assessment": "At 0, 3.5 and 140 mM extracellular K, acid/control maximum conductance was 0.19 ± 0.02, 0.56 ± 0.01 and 0.81 ± 0.12 (n = 12, 6, 6). At 3.5 mM K the activation midpoint also shifted by +7.8 mV.",
+            "report": "lean/PROGRESS.md#paired-calibration-and-leaflet-packing"
+          }
+        ],
+        "finding": "Independent human Kv1.5 recordings support a positive shift in activation voltage with acidification and less acid-induced current suppression at higher external potassium. The absolute 0 mV response still depends on activation kinetics and the available conductance in the pulse protocol.",
+        "pairs": [
+          {
+            "id": "kv15-acid-activation-shift",
+            "assumption": "Extracellular acidification shifts human Kv1.5 activation toward more positive voltages.",
+            "datasets": [
+              "trapani2003_kv15_ph",
+              "longobardo2001_kv15_controls@1"
+            ],
+            "outcome": "both_support",
+            "independence": "Trapani and Korn recorded HEK293 cells. Longobardo’s group independently recorded drug-free Ltk− cells.",
+            "comparison": "The midpoint moved by +11.7 mV at pH 7.3→6.8 with 10 mM K, and by +17.3 mV at pH 7.4→6.5 with 4 mM K. Both support the sign. The different acid steps, cells and pulse protocols leave a common mV-per-pH coefficient unresolved."
+          },
+          {
+            "id": "kv15-potassium-protection",
+            "assumption": "Higher external potassium reduces the suppression of Kv1.5 current by extracellular acidification at strong depolarization.",
+            "datasets": [
+              "trapani2003_kv15_high_voltage@1",
+              "kehl2002_kv15_potassium@1"
+            ],
+            "outcome": "both_support",
+            "independence": "The Connecticut and British Columbia groups collected separate whole-cell recordings. Trapani’s high-voltage panels and activation curve belong to one publication.",
+            "comparison": "Trapani found 38.0 ± 1.5% and 97.7 ± 0.3% of control current at +100 mV with 0 and 3 mM K (pH 7.3→6.8). Kehl found 19%, 56% and 81% of maximal conductance with 0, 3.5 and 140 mM K (pH 7.4→6.4). The direction agrees across a high-voltage current and a fitted maximum. The pH steps and readouts differ."
           }
         ]
       }
@@ -10222,6 +10376,34 @@
             "uncertainty": "Zhang et al. report SD 4.9 µM over four measurements. Graph-reading precision is about ±5 µM in free Mg and ±0.1 in bound/unbound ratio. Ward et al. give no sampling uncertainty for this individual marker.",
             "assessment": "A single transferred apparent Kd misses the aggregate fraction in this preparation. Quantitative validation of individual H/Mg occupancies requires matched solution conditions and form-resolved evidence.",
             "report": "lean/PROGRESS.md#binding-form-ensemble"
+          },
+          {
+            "dataset_id": "zhang1997_mgatp_affinity@1",
+            "manifest": "lean/checks/data/mgatp_binding.json",
+            "citation": "Zhang et al. (1997), normal muscle-like solution at pH 7.2",
+            "doi": "10.1006/abio.1997.2238",
+            "locator": "Primary report, pH 7.2 in the normal muscle-like background. Numerical series in the linked manifest.",
+            "context": "Mg-sensitive macroelectrode with EDTA calibration, 37 °C and ionic strength 0.156 M.",
+            "role": "calibration",
+            "fit": [
+              "Apparent Mg–ATP affinity used for the Ward prediction"
+            ],
+            "uncertainty": "SD 4.9 µM across four measurements.",
+            "assessment": "The apparent dissociation constant was 87.4 µM. This supplied the external affinity used to predict Ward’s aggregate Mg-bound ATP fraction.",
+            "report": "lean/PROGRESS.md#paired-calibration-and-leaflet-packing"
+          }
+        ],
+        "pairs": [
+          {
+            "id": "mgatp-apparent-affinity",
+            "assumption": "A single apparent Mg–ATP dissociation constant transfers between these near-matched pH and temperature conditions.",
+            "datasets": [
+              "zhang1997_mgatp_affinity@1",
+              "ward1998_mgatp_zhang1997_affinity"
+            ],
+            "outcome": "different_results",
+            "independence": "Zhang’s group measured free Mg using a macroelectrode. Ward’s group used matched fluorescence and phosphorus-NMR aliquots. Its regression and plotted point use the same experiment.",
+            "comparison": "At pH 7.2 and 37 °C, apparent Kd was 87.4 ± 4.9 µM (SD, n = 4) in the muscle-like medium and 27.7 ± 0.4 µM (reported fit error) in MOPS/KCl. This 3.16-fold difference matters for occupancy. Ionic composition and assay differ, so the cause remains unresolved."
           }
         ]
       }
@@ -10230,7 +10412,7 @@
       "id": "binding-ligand-response",
       "category": "reactions-and-binding",
       "title": "Total ligand increases with its own free concentration",
-      "statement": "At fixed binder totals and other free ligand concentrations, increasing one free ligand strictly increases its total. The matrix of derivatives of totals with respect to free log concentrations is symmetric positive definite. Filling unheld coordinates with the engine’s identity block preserves this property.",
+      "statement": "At fixed binder totals and other free ligand concentrations, increasing one free ligand strictly increases its total. The matrix of derivatives of totals with respect to free log concentrations is symmetric positive definite. Filling unheld coordinates with the engine’s identity block preserves this property. With the same binder totals and other free ligands fixed, the increase in total ligand is at least the increase between any two positive free concentrations.",
       "uses": [
         "binding-form-ensemble"
       ],
@@ -10251,13 +10433,15 @@
           "CellsProofs.Chemistry.BindingResponse.totalAlong_strictMono": "lean/CellsProofs/Chemistry/BindingResponse.lean",
           "CellsProofs.Chemistry.BindingResponse.total_strictMonoOn_free": "lean/CellsProofs/Chemistry/BindingResponse.lean",
           "CellsProofs.Chemistry.BindingResponse.response_posDef": "lean/CellsProofs/Chemistry/BindingResponse.lean",
-          "CellsProofs.Chemistry.BindingResponse.masked_response_posDef": "lean/CellsProofs/Chemistry/BindingResponse.lean"
+          "CellsProofs.Chemistry.BindingResponse.masked_response_posDef": "lean/CellsProofs/Chemistry/BindingResponse.lean",
+          "CellsProofs.Chemistry.BindingResponse.free_increment_le_total_increment": "lean/CellsProofs/Chemistry/BindingResponse.lean"
         },
         "sources": {
           "Mathlib positive definite diagonal, imported": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/LinearAlgebra/Matrix/PosDef.lean#L362-L370",
           "Mathlib weighted positive semidefinite matrix product, imported": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/LinearAlgebra/Matrix/PosDef.lean#L69-L76",
           "Mathlib sum of a positive definite and a positive semidefinite matrix, imported": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/LinearAlgebra/Matrix/PosDef.lean#L420-L426",
-          "Mathlib strict monotonicity from a positive derivative, imported": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/Deriv/MeanValue.lean#L382-L385"
+          "Mathlib strict monotonicity from a positive derivative, imported": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/Deriv/MeanValue.lean#L382-L385",
+          "Mathlib monotonicity from a nonnegative derivative, imported for the finite concentration increment": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/Deriv/MeanValue.lean#L413-L416"
         }
       },
       "numerical": {
@@ -10269,9 +10453,9 @@
       },
       "biology": {
         "status": "open",
-        "observable": "ATP Mg occupancy at fixed ATP, pH and temperature across measured free Mg. Quantitative self and cross-responses would require measured changes in total Mg and proton inventory.",
+        "observable": "ATP Mg occupancy and proton release during Mg titration, and the paired change in measured total and ionized calcium at fixed bovine albumin concentration.",
         "unit": "change in fraction of ATP carrying Mg",
-        "finding": "Two titration points support increasing ATP Mg occupancy. A separate ATP preparation acidified on magnesium addition. The total-Mg slope and the fixed-pH proton response remain open.",
+        "finding": "Independent albumin experiments show total calcium rising by at least the free-calcium increment. The total-Mg slope and fixed-pH proton response in the separate ATP system remain open.",
         "evidence": [
           {
             "dataset_id": "ward1998_mgatp_direction",
@@ -10307,6 +10491,43 @@
             "uncertainty": "Figure 2 gives no free-Mg measurement or proton-equivalent count. A temperature specific to the titration could not be verified.",
             "assessment": "The acidification supports the direction of proton release in this ATP preparation. A fixed-pH measurement is still needed to quantify the cross-response.",
             "report": "lean/PROGRESS.md#binding-proton-release-observation"
+          },
+          {
+            "dataset_id": "besarab1981_bsa_calcium@1",
+            "manifest": "lean/checks/data/paired_calibration_measurements.json",
+            "citation": "Besarab, DeGuzman and Swanson (1981), Table 1",
+            "doi": "10.1136/jcp.34.12.1361",
+            "locator": "Table 1, retentate after filtration, ionized and total calcium columns",
+            "context": "Bovine albumin 4.97 g/dL in retentate at 37 °C. Paired ion-selective electrode and atomic-absorption determinations.",
+            "role": "descriptive",
+            "uncertainty": "Duplicate ionized readings, other entries based on at least four measurements. Reported assay CVs 2.6% for ionized and 2.1% for total calcium. Pointwise errors and free Mg are unavailable.",
+            "assessment": "At five dose levels total Ca increased from 1.03 to 3.23 mM and ionized Ca from 0.45 to 1.56 mM. Each of the four successive increases in total exceeded the corresponding free increment.",
+            "report": "lean/PROGRESS.md#paired-calibration-and-leaflet-packing"
+          },
+          {
+            "dataset_id": "gunther1998_bsa_calcium@1",
+            "manifest": "lean/checks/data/paired_calibration_measurements.json",
+            "citation": "Günther and Ising (1998), Table 1, rows C and D",
+            "url": "https://www.magnesium-ges.de/download/binding-of-mg2-and-ca2-to-serum-albumin-no-effect-of-free-fatty-acids/?wpdmdl=505#page=2",
+            "locator": "Table 1, rows C and D, second page of the paper, Magnesium-Bulletin 20 (1998)",
+            "context": "40 g/L bovine albumin with 2.7 mM palmitate at 37 °C. Ion-selective electrode and atomic absorption.",
+            "role": "descriptive",
+            "uncertainty": "Nine measurements per condition pooled across a magnesium-addition series (0.2–4.15 mM). Values for free calcium are means ± SEM. No sampling error for total calcium is given.",
+            "assessment": "At pH 7.324 and 7.323, free Ca rose from 0.416 ± 0.008 to 1.934 ± 0.023 mM and total Ca from 0.523 to 2.605 mM. The endpoint ratio was 1.37. Pooling across Mg additions limits a fixed-free-Mg interpretation.",
+            "report": "lean/PROGRESS.md#paired-calibration-and-leaflet-packing"
+          }
+        ],
+        "pairs": [
+          {
+            "id": "albumin-calcium-buffering",
+            "assumption": "At fixed albumin concentration near neutral pH, increasing measured free calcium by a finite amount requires at least as large an increase in total calcium.",
+            "datasets": [
+              "besarab1981_bsa_calcium@1",
+              "gunther1998_bsa_calcium@1"
+            ],
+            "outcome": "both_support",
+            "independence": "Besarab’s and Günther’s groups independently measured free Ca with an ion-selective electrode and total Ca by atomic absorption. Each comparison stays within one albumin preparation.",
+            "comparison": "All four adjacent steps in the 4.97 g/dL series satisfy Δtotal ≥ Δfree > 0 (endpoint ratio 1.98). The pH-matched 4.0 g/dL pair with palmitate gives 1.37. Both support finite buffering in those solutions. Neither provides a slope at measured, fixed free Mg or an ATP proton–Mg cross-response."
           }
         ]
       }
@@ -10965,7 +11186,7 @@
       },
       "biology": {
         "status": "mixed",
-        "observable": "Kir4.1 unitary current 60 mV below each measured reversal potential as external potassium changes.",
+        "observable": "Kir4.1 unitary current 60 mV below reversal, inward unitary slope conductance and the shift in reversal as external potassium changes.",
         "unit": "pA",
         "evidence": [
           {
@@ -10990,6 +11211,55 @@
             "report": "lean/PROGRESS.md#19-november-2026--inward-rectification-and-sodium-anion-symport",
             "observed": -0.59,
             "predicted": -0.385
+          },
+          {
+            "dataset_id": "edvinsson2011_kir41_conductance@1",
+            "manifest": "lean/checks/data/paired_calibration_measurements.json",
+            "citation": "Edvinsson, Shah and Palmer (2011), Fig. 7B–C",
+            "doi": "10.4161/chan.5.3.15827",
+            "locator": "Figure 7B–C and adjacent Results",
+            "context": "Human Kir4.1 in cell-attached Xenopus oocyte patches, pH 7.4, pipette magnesium 1 mM. Changes in pipette KCl were balanced by NaCl.",
+            "role": "descriptive",
+            "uncertainty": "10 and 40 mM are approximate figure readings. The 110 mM value is in the text. Figure errors were plotted without numerical errors or a stated sample count for each point.",
+            "assessment": "At 10, 40 and 110 mM external K the inward slope was approximately 8, 19 and 23 pS. The authors fitted saturation (maximum 24.4 pS, half-maximal K 16.7 mM, exponent 1.4). Their modeled reversal offsets supply no independent reversal measurement.",
+            "report": "lean/PROGRESS.md#paired-calibration-and-leaflet-packing"
+          },
+          {
+            "dataset_id": "kucheryavykh2008_muller_reversal@1",
+            "manifest": "lean/checks/data/paired_calibration_measurements.json",
+            "citation": "Kucheryavykh et al. (2008), Fig. 5B",
+            "doi": "10.1002/glia.20652",
+            "locator": "Figure 5B, two raw current–voltage curves in a frog Müller cell",
+            "context": "Whole-cell recording from retinal glia with 100 mM intracellular K and 3 mM added intracellular spermine.",
+            "role": "descriptive",
+            "uncertainty": "Approximate visual shifts within one cell. No numerical uncertainty on the crossings. Native current may include other channels.",
+            "assessment": "A tenfold increase in external K moved the raw current crossing about +50 mV. The separate breakpoint for fast block moved about +100 mV. Native Müller-cell current supports the direction of reversal with a less specific channel assignment.",
+            "report": "lean/PROGRESS.md#paired-calibration-and-leaflet-packing"
+          }
+        ],
+        "finding": "Reversal moved toward positive voltages when external potassium rose in two preparations. The inward unitary conductance increased with potassium in both recombinant series, with different concentration dependence.",
+        "pairs": [
+          {
+            "id": "kir41-slope-scaling",
+            "assumption": "Inward Kir4.1 unitary slope conductance follows the square root of external potassium across preparations.",
+            "datasets": [
+              "tada1998_kir41@1",
+              "edvinsson2011_kir41_conductance@1"
+            ],
+            "outcome": "different_results",
+            "independence": "Tada’s group recorded rat Kir4.1 in HEK293T. Edvinsson’s group recorded human Kir4.1 in cell-attached oocyte patches.",
+            "comparison": "Tada fitted a concentration exponent of 0.51 at 15–153 mM (three patches per level). Edvinsson fitted saturation. Anchoring a square root at their 110 mM value of 23 pS gives 13.9 pS at 40 mM, against about 19 pS in Fig. 7C. Both series rise. The figure precision, species and solutions limit inference about the difference."
+          },
+          {
+            "id": "kir-potassium-reversal",
+            "assumption": "Raising external potassium shifts the reversal of Kir4.1 or a Kir-dominated Müller-cell current to more positive voltages.",
+            "datasets": [
+              "tada1998_kir41@1",
+              "kucheryavykh2008_muller_reversal@1"
+            ],
+            "outcome": "both_support",
+            "independence": "The recombinant rat-channel study and native frog retinal-glia study used separate preparations in different laboratories.",
+            "comparison": "The recombinant crossing moved about +60 mV from 15 to 153 mM K. One frog Müller cell gave about +50 mV from 1 to 10 mM at fixed pipette spermine. The measurements support the reversal direction. Neither the representative native trace nor its block breakpoint determines a universal reversal slope."
           }
         ]
       }

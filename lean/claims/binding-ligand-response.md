@@ -2,7 +2,7 @@
 
 # Total ligand increases with its own free concentration
 
-At fixed binder totals and other free ligand concentrations, increasing one free ligand strictly increases its total. The matrix of derivatives of totals with respect to free log concentrations is symmetric positive definite. Filling unheld coordinates with the engine’s identity block preserves this property.
+At fixed binder totals and other free ligand concentrations, increasing one free ligand strictly increases its total. The matrix of derivatives of totals with respect to free log concentrations is symmetric positive definite. Filling unheld coordinates with the engine’s identity block preserves this property. With the same binder totals and other free ligands fixed, the increase in total ligand is at least the increase between any two positive free concentrations.
 
 ## Assumptions
 
@@ -21,10 +21,11 @@ At fixed binder totals and other free ligand concentrations, increasing one free
 - [CellsProofs.Chemistry.BindingResponse.total_strictMonoOn_free](../CellsProofs/Chemistry/BindingResponse.lean#L92)
 - [CellsProofs.Chemistry.BindingResponse.response_posDef](../CellsProofs/Chemistry/BindingResponse.lean#L147)
 - [CellsProofs.Chemistry.BindingResponse.masked_response_posDef](../CellsProofs/Chemistry/BindingResponse.lean#L161)
+- [CellsProofs.Chemistry.BindingResponse.free_increment_le_total_increment](../CellsProofs/Chemistry/BindingResponse.lean#L178)
 
 Direct proof subject `cells.rapid_binding@1`
 
-Proof sources [Mathlib positive definite diagonal, imported](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/LinearAlgebra/Matrix/PosDef.lean#L362-L370) · [Mathlib weighted positive semidefinite matrix product, imported](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/LinearAlgebra/Matrix/PosDef.lean#L69-L76) · [Mathlib sum of a positive definite and a positive semidefinite matrix, imported](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/LinearAlgebra/Matrix/PosDef.lean#L420-L426) · [Mathlib strict monotonicity from a positive derivative, imported](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/Deriv/MeanValue.lean#L382-L385)
+Proof sources [Mathlib positive definite diagonal, imported](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/LinearAlgebra/Matrix/PosDef.lean#L362-L370) · [Mathlib weighted positive semidefinite matrix product, imported](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/LinearAlgebra/Matrix/PosDef.lean#L69-L76) · [Mathlib sum of a positive definite and a positive semidefinite matrix, imported](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/LinearAlgebra/Matrix/PosDef.lean#L420-L426) · [Mathlib strict monotonicity from a positive derivative, imported](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/Deriv/MeanValue.lean#L382-L385) · [Mathlib monotonicity from a nonnegative derivative, imported for the finite concentration increment](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/Deriv/MeanValue.lean#L413-L416)
 
 Uses [Finite binding forms have normalized Boltzmann weights](binding-form-ensemble.md)
 
@@ -40,9 +41,11 @@ Uses [Finite binding forms have normalized Boltzmann weights](binding-form-ensem
 
 ## Biological evidence
 
-**Open.** ATP Mg occupancy at fixed ATP, pH and temperature across measured free Mg. Quantitative self and cross-responses would require measured changes in total Mg and proton inventory.
+**Open.** ATP Mg occupancy and proton release during Mg titration, and the paired change in measured total and ionized calcium at fixed bovine albumin concentration.
 
-Two titration points support increasing ATP Mg occupancy. A separate ATP preparation acidified on magnesium addition. The total-Mg slope and the fixed-pH proton response remain open.
+- [At fixed albumin concentration near neutral pH, increasing measured free calcium by a finite amount requires at least as large an increase in total calcium.](../WET_LAB_EVIDENCE.md#pair-albumin-calcium-buffering) · Supported by both studies
+
+Independent albumin experiments show total calcium rising by at least the free-calcium increment. The total-Mg slope and fixed-pH proton response in the separate ATP system remain open.
 
 **Unit** change in fraction of ATP carrying Mg
 
@@ -70,5 +73,25 @@ The controlled variable was added magnesium salt. Bulk pH could change during th
 Figure 2 gives no free-Mg measurement or proton-equivalent count. A temperature specific to the titration could not be verified.
 
 The acidification supports the direction of proton release in this ATP preparation. A fixed-pH measurement is still needed to quantify the cross-response. [Dataset manifest](../checks/data/binding_equilibrium_measurements.json) · [Comparison verdict](../PROGRESS.md#binding-proton-release-observation)
+
+### besarab1981_bsa_calcium@1
+
+Bovine albumin 4.97 g/dL in retentate at 37 °C. Paired ion-selective electrode and atomic-absorption determinations. Table 1, retentate after filtration, ionized and total calcium columns [Besarab, DeGuzman and Swanson (1981), Table 1](https://doi.org/10.1136/jcp.34.12.1361)
+
+- **Evidence role** descriptive
+
+Duplicate ionized readings, other entries based on at least four measurements. Reported assay CVs 2.6% for ionized and 2.1% for total calcium. Pointwise errors and free Mg are unavailable.
+
+At five dose levels total Ca increased from 1.03 to 3.23 mM and ionized Ca from 0.45 to 1.56 mM. Each of the four successive increases in total exceeded the corresponding free increment. [Dataset manifest](../checks/data/paired_calibration_measurements.json) · [Comparison verdict](../PROGRESS.md#paired-calibration-and-leaflet-packing)
+
+### gunther1998_bsa_calcium@1
+
+40 g/L bovine albumin with 2.7 mM palmitate at 37 °C. Ion-selective electrode and atomic absorption. Table 1, rows C and D, second page of the paper, Magnesium-Bulletin 20 (1998) [Günther and Ising (1998), Table 1, rows C and D](https://www.magnesium-ges.de/download/binding-of-mg2-and-ca2-to-serum-albumin-no-effect-of-free-fatty-acids/?wpdmdl=505#page=2)
+
+- **Evidence role** descriptive
+
+Nine measurements per condition pooled across a magnesium-addition series (0.2–4.15 mM). Values for free calcium are means ± SEM. No sampling error for total calcium is given.
+
+At pH 7.324 and 7.323, free Ca rose from 0.416 ± 0.008 to 1.934 ± 0.023 mM and total Ca from 0.523 to 2.605 mM. The endpoint ratio was 1.37. Pooling across Mg additions limits a fixed-free-Mg interpretation. [Dataset manifest](../checks/data/paired_calibration_measurements.json) · [Comparison verdict](../PROGRESS.md#paired-calibration-and-leaflet-packing)
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

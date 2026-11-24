@@ -18,7 +18,7 @@ Direct Lean claims cover [55 of 55 laws](COVERAGE.md#registered-laws) and [35 of
 | [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 2 of 2 | 29 of 29 | 28 checked · 1 failed | 22 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
 
-[Paired wet-lab evidence](WET_LAB_EVIDENCE.md) covers 28 comparisons across 21 claims. In 16 comparisons, two independent studies support the stated assumption.
+[Paired wet-lab evidence](WET_LAB_EVIDENCE.md) covers 37 comparisons across 27 claims. In 20 comparisons, two independent studies support the stated assumption.
 
 <!-- /generated -->
 
@@ -33,6 +33,8 @@ FR-38 follows a producer’s RNA from template release through cell replacement.
 ## Biological evidence
 
 The paired wet-lab register groups comparisons by outcome. Each row names the assumption, the two primary studies, their measurements and how independently the data were collected. The two work lists identify claims with several datasets ready for review and claims still seeking a second dataset. [Browse paired wet-lab evidence](WET_LAB_EVIDENCE.md)
+
+In two independent albumin experiments, total calcium rose by at least as much as free calcium, as the equilibrium binding proof predicts with other free ligands fixed. The experiments leave free magnesium incompletely controlled. Two fluid POPC studies also found larger molecular areas on warming. A Cells vesicle reproduces that difference when supplied the footprint for each temperature. [Albumin measurements](WET_LAB_EVIDENCE.md#pair-albumin-calcium-buffering) · [POPC measurements](WET_LAB_EVIDENCE.md#pair-popc-temperature-footprint) · [Proofs and CPU results](PROGRESS.md#paired-calibration-and-leaflet-packing)
 
 Two labs measured half-activation of rat SK2 near 0.7 µM calcium. Its timing is harder to reproduce with one closing rate. At low calcium a third study reported an approximately 80 ms rise from 20% to 80%, above the 48.1 ms ceiling inferred from its mean washout at high calcium. The low-dose recording lacks a paired washout. [Dose comparison](WET_LAB_EVIDENCE.md#pair-rsk2-calcium-midpoint) · [Timing proof, CPU replay and measurement limits](PROGRESS.md#paired-transport-and-membrane-measurements)
 
@@ -64,7 +66,7 @@ In a purified *E. coli* experiment, polymerase remained on DNA after RNA release
 
 In a matched Cells control, a donor loses the same amount of labelled protein under transfer and degradation. A receiver gain or a clearance record distinguishes the mechanisms. Imaging of PSD-95 shows label spreading from one spine to two neighbors. The fate of the original label across the whole neuron over 48 hours remains open. Representing a neutral tracer by separate species rows can also change the heat attributed to mixing. [Matched donors](claims/transfer-or-degradation.md) · [Whole-cell balance](claims/regional-pulse-balance.md) · [Neutral label diffusion](claims/neutral-label-diffusion.md) · [Effect on booked heat](claims/label-mixing-power.md)
 
-At 0 mV, the published Kv1.5 activation curves predict 72.1% retained current at pH 6.8 if both preparations share a maximum conductance. A separate pulse in the same study gave 74.5 ± 1.9% (SEM). Applying only the measured midpoint shift to the default Cells gate gives 40.5%. [Kv1.5 pH comparison](claims/kv15-ph-activation.md)
+At 0 mV, the published Kv1.5 activation curves predict 72.1% retained current at pH 6.8 if both preparations share a maximum conductance. A separate pulse in the same study gave 74.5 ± 1.9% (SEM). At +100 mV with the same 10 mM external potassium, acidification had little effect on current. Applying only the measured midpoint shift to the default Cells gate gives 40.5% at 0 mV. Independent recordings support the direction of the voltage shift and the protection by external potassium. [Kv1.5 pH comparison](claims/kv15-ph-activation.md) · [Potassium dependence](WET_LAB_EVIDENCE.md#pair-kv15-potassium-protection)
 
 For Kv1.5 in HEK293 cells, a density-inhibition curve fitted to the two endpoints predicts a conducting fraction of 0.22 at 300 channels/µm². The same figure gives about 0.23 there, without a pointwise uncertainty. An independent channel count lets a fixed-gate current comparison distinguish changes in availability. [Density comparison](claims/channel-density-availability.md) · [Clamp proof](claims/clamped-channel-current.md)
 
