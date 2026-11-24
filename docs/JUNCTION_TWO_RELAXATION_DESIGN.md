@@ -1370,6 +1370,14 @@ that first carried this entry and its code (record:
 - **Nothing is confounded,** since every ±80 mV window overlaps.
 - **The inputs were unchanged** after the run (`logs/08-compare.txt`: 43 of 43 checks).
 
+**Rehearsed again at 13:20 UTC on 24 November 2026,** from a clean full snapshot of d643a1e9, the
+commit that holds the final code. This run adds `resolve` for both roles (record:
+`/mnt/workspaces/Cells/fr30-next-20261124/rehearsal-d643a1e9/`).
+- **Every stage exited 0,** and `resolve` printed key paths only. On the held-out file they are the
+  six of D320's own `resolve`, one for one.
+- **All 43 checks passed again,** and the six comparison lines are byte-identical to D320's.
+- **Later commits change this note only.**
+
 #### Part 9. Roles and exclusions
 
 - **The extractor (E)** reads the paper and follows E1 to E12. It is a fresh agent.
