@@ -210,6 +210,26 @@ def cohort_limits(spec):
     return replace(reduced, worlds=worlds), bound
 
 
+def refuse_unqualified_gpu(simulation):
+    """Refuse a GPU backend for a model whose device checks failed their GPU qualification.
+
+    D330 measured resolved_pump_composite@1's device checks on a GPU and they failed (D336): in the
+    first window the device's reading of the global material ledger departed from the host's beyond
+    the declared bound, and without XLA's deterministic ops the composite's scatter-adds accumulate
+    in an order that varies between runs. Vector windows decide on the device's word alone, so the
+    composite is refused there under every field solver, before any device is touched. Other models
+    keep their GPU path (their earlier evidence's re-check is a logged follow-up, D336)."""
+    from cells.definitions.pump_composite_spec import MODEL_ID, CompositeModel  # noqa: PLC0415
+
+    if simulation.execution.backend != "cpu" and isinstance(simulation.model, CompositeModel):
+        raise ConfigError(
+            f"vector windows' device checks are not qualified on a GPU for {MODEL_ID} (D330, "
+            "D336): the device's first-window reading of its global material ledger departs from "
+            "the host's beyond the declared bound, and its scatter-adds accumulate "
+            "nondeterministically without XLA's deterministic ops; a GPU backend is refused"
+        )
+
+
 def plan_vector_windows(spec, policy=DEFAULT_POLICY, checkpoints=None):
     """Admission before any device allocation; one executable shape per run.
 
@@ -232,6 +252,7 @@ def _plan_vector_windows(spec, policy, checkpoints, record):
         _checkpoint_map(spec, checkpoints)
     model = get_model(spec.worlds[0].simulation.model)
     require_device_checks(model)
+    refuse_unqualified_gpu(spec.worlds[0].simulation)
     if not spec.worlds[0].simulation.execution.jit:
         raise ConfigError("Vectorized worlds require JIT execution")
     plans, shared, initial = [], {}, {}
