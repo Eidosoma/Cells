@@ -391,6 +391,10 @@ def _mutations(doc):
         ("provenance key", lambda d: d["provenance"].pop("writer_version")),
         ("samples", lambda d: d.update(samples_s=d["samples_s"][:-1])),
         (
+            "no plant entry of a core plant",
+            lambda d: d.update(plants=[e for e in d["plants"] if e["plant"] != "P6"]),
+        ),
+        (
             "window",
             lambda d: d["inputs"].update(
                 window_s=[d["inputs"]["window_s"][0] + 10.0, d["inputs"]["window_s"][1]]

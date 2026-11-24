@@ -334,7 +334,24 @@ def read_reference(path, family, profile, mapping, *, expected_inputs=None):
     _read_plants(doc["plants"], ref)
     _read_method(doc["method"], ref)
     _read_provenance(doc["provenance"], ref)
+    if family == "invented":
+        _check_invented_exercises(ref)
     return ref
+
+
+def _check_invented_exercises(ref):
+    """SPEC.md §8: the invented file has at most 61 outputs, an idle fate, a blank with
+    `excess_over_blank`, and an entry for each core plant (every arm-A series is required above)."""
+    if len(ref.times) > 61:
+        ref.faults.append(f"the invented grid has {len(ref.times)} outputs, more than 61")
+    if not any(r.idle for r in ref.runs.values()):
+        ref.faults.append("the invented file has no idle fate (SPEC.md §8)")
+    if "blank" not in ref.runs or not any(r.excess for r in ref.runs.values()):
+        ref.faults.append("the invented file has no blank and excess_over_blank (SPEC.md §8)")
+    sized = {e["plant"] for e in ref.plants}
+    missing = [p for p in spec.CORE_PLANTS if p not in sized]
+    if missing:
+        ref.faults.append(f"the invented file sizes no entry of {missing} (SPEC.md §8)")
 
 
 def _series_from(obj, n, where, faults, *, judged_constant_ok=True):
