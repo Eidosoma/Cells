@@ -1,11 +1,13 @@
-[12:01:09] revision c28f06ed8a9dc9bdd218ec96c1576d801702c841 clean=True; spec verified against SHA256SUMS-fr45-spec-ae25c28d.txt; 83 SPEC rows matched
-[12:01:10] W1 integrated
-[12:01:10] W1eq integrated
-[12:01:11] W1p integrated, plants sized
-[12:01:13] W2 integrated, plants sized
-[12:01:17] W3 integrated, W3p plants sized
-[12:01:17] W4 integrated
-[12:01:17] W5 loads
-[12:01:17] W6 integrated
-[12:01:17] wrote 8 reference files and accuracy.json in 8.2 s
-[12:01:17] python 3.13.5 numpy 2.5.3 scipy 1.18.1 PYTHONHASHSEED=0 cpus=[6] blas_threads=[1]
+[22:41:50] revision d50aef74d35c6b93dfaa65e95effdb7462125fcc clean=True; spec verified against SHA256SUMS-fr45-spec-ff99fead.txt; 106 SPEC rows matched
+[22:41:51] W1 integrated
+[22:41:51] W1eq integrated
+[22:41:52] W1p integrated, plants sized
+[22:41:53] W2 integrated, plants sized
+[22:41:55] W3 integrated, W3p plants sized
+[22:41:55] W4 integrated
+[22:41:55] W5 loads
+[22:41:56] W6 integrated
+[22:41:57] W7 integrated, plants sized
+[22:41:57] W7s integrated
+[22:41:57] wrote 10 reference files and accuracy.json in 6.5 s
+[22:41:57] python 3.13.5 numpy 2.5.3 scipy 1.18.1 PYTHONHASHSEED=0 cpus=[4] blas_threads=[1]

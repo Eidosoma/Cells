@@ -9,7 +9,9 @@
   "reference_W3.json",
   "reference_W4.json",
   "reference_W5.json",
-  "reference_W6.json"
+  "reference_W6.json",
+  "reference_W7.json",
+  "reference_W7s.json"
  ],
  "excluded": [
   "run.log (seed, CPU and timings)"
@@ -17,78 +19,86 @@
  "runs": [
   {
    "hash_seed": 0,
-   "cpu": 6,
+   "cpu": 4,
    "sha256": {
-    "accuracy.json": "0b689df1dda070a528398f1391086094ea19a698f09e26de8d760018136bdf4c",
-    "reference_W1.json": "82819ad891627f4572d752623c6f7a1921a8658c89b79ffda04895364cd40d9e",
-    "reference_W1eq.json": "35fc2e83193ea04ecbaf10680ba303585cd7a8b73c06c48fa342060435738768",
-    "reference_W1p.json": "56d594843901fc83cd0468957a88a4fb12100f436d324375ada30b031d92e1ad",
-    "reference_W2.json": "b3a132f966d224c0f6c658673a0c3b5fb01ec4ea5e43358d0485de1b8431f54d",
-    "reference_W3.json": "bab9a35afa0bc07ef75ba6ee8c4725b571b1431e97fda7e0cec6cf284d8d84a9",
-    "reference_W4.json": "2df1df8ce62bd8fca0fd6d092e070b87aa31fdc31299907bd108386331264998",
-    "reference_W5.json": "e4f8e2cfe115db061fbd33948addabbe45ea7f9461e49ba1ae03ab04ff334e98",
-    "reference_W6.json": "8a4e249c04f5cfeeeebc706fa13c320d96938b295ac17e61ce4640fde69d3bad"
+    "accuracy.json": "4cab56ac6bf0d9021b6f6282d7b79360dce9b67586abc4a2691fd384034b0490",
+    "reference_W1.json": "09cbe5254a8bae6c01a9738b77249b9b3579369505fa9a8cbefd42596f490d44",
+    "reference_W1eq.json": "60c24d5c39019b16e59365787a8938899209967c2cb08bd4a4d10cdf0bba9c8c",
+    "reference_W1p.json": "c4f022270dbc1a1956719c239d8847fd21621ec4e9e357230d255346748f001a",
+    "reference_W2.json": "049ce3f699cf5e88cb697cba6169a7feda2266360bd70a1baaf35d634160b2dd",
+    "reference_W3.json": "738b9c945736be0345472bb10aaa3b524aa665fc40555f2fb4154a741fcd46c9",
+    "reference_W4.json": "ca2631ac84b6284a2d247d62b9a078d7d60c51128c866c6c11955de8fa7296b2",
+    "reference_W5.json": "932ce91aebee6e9afc51773275157fdeb5d1ddd9509e6e8b9ce63e24cdadd41e",
+    "reference_W6.json": "4db6ac6228b02ce288f0395eac401b45ac5a35d480e2b64dc9e86ba6d280de19",
+    "reference_W7.json": "1a701436ea48f595566336bd411c802b9b599b405b2b372e0ec70289807983dd",
+    "reference_W7s.json": "0b1bae7290f8d5bf47da6969d368add73bbcb4fb56b02440d396989ac232d692"
    },
-   "references_revision": "c28f06ed8a9dc9bdd218ec96c1576d801702c841",
+   "references_revision": "d50aef74d35c6b93dfaa65e95effdb7462125fcc",
    "tree_clean": true
   },
   {
    "hash_seed": 1,
-   "cpu": 6,
+   "cpu": 4,
    "sha256": {
-    "accuracy.json": "0b689df1dda070a528398f1391086094ea19a698f09e26de8d760018136bdf4c",
-    "reference_W1.json": "82819ad891627f4572d752623c6f7a1921a8658c89b79ffda04895364cd40d9e",
-    "reference_W1eq.json": "35fc2e83193ea04ecbaf10680ba303585cd7a8b73c06c48fa342060435738768",
-    "reference_W1p.json": "56d594843901fc83cd0468957a88a4fb12100f436d324375ada30b031d92e1ad",
-    "reference_W2.json": "b3a132f966d224c0f6c658673a0c3b5fb01ec4ea5e43358d0485de1b8431f54d",
-    "reference_W3.json": "bab9a35afa0bc07ef75ba6ee8c4725b571b1431e97fda7e0cec6cf284d8d84a9",
-    "reference_W4.json": "2df1df8ce62bd8fca0fd6d092e070b87aa31fdc31299907bd108386331264998",
-    "reference_W5.json": "e4f8e2cfe115db061fbd33948addabbe45ea7f9461e49ba1ae03ab04ff334e98",
-    "reference_W6.json": "8a4e249c04f5cfeeeebc706fa13c320d96938b295ac17e61ce4640fde69d3bad"
+    "accuracy.json": "4cab56ac6bf0d9021b6f6282d7b79360dce9b67586abc4a2691fd384034b0490",
+    "reference_W1.json": "09cbe5254a8bae6c01a9738b77249b9b3579369505fa9a8cbefd42596f490d44",
+    "reference_W1eq.json": "60c24d5c39019b16e59365787a8938899209967c2cb08bd4a4d10cdf0bba9c8c",
+    "reference_W1p.json": "c4f022270dbc1a1956719c239d8847fd21621ec4e9e357230d255346748f001a",
+    "reference_W2.json": "049ce3f699cf5e88cb697cba6169a7feda2266360bd70a1baaf35d634160b2dd",
+    "reference_W3.json": "738b9c945736be0345472bb10aaa3b524aa665fc40555f2fb4154a741fcd46c9",
+    "reference_W4.json": "ca2631ac84b6284a2d247d62b9a078d7d60c51128c866c6c11955de8fa7296b2",
+    "reference_W5.json": "932ce91aebee6e9afc51773275157fdeb5d1ddd9509e6e8b9ce63e24cdadd41e",
+    "reference_W6.json": "4db6ac6228b02ce288f0395eac401b45ac5a35d480e2b64dc9e86ba6d280de19",
+    "reference_W7.json": "1a701436ea48f595566336bd411c802b9b599b405b2b372e0ec70289807983dd",
+    "reference_W7s.json": "0b1bae7290f8d5bf47da6969d368add73bbcb4fb56b02440d396989ac232d692"
    },
-   "references_revision": "c28f06ed8a9dc9bdd218ec96c1576d801702c841",
+   "references_revision": "d50aef74d35c6b93dfaa65e95effdb7462125fcc",
    "tree_clean": true
   },
   {
    "hash_seed": 2,
-   "cpu": 7,
+   "cpu": 22,
    "sha256": {
-    "accuracy.json": "0b689df1dda070a528398f1391086094ea19a698f09e26de8d760018136bdf4c",
-    "reference_W1.json": "82819ad891627f4572d752623c6f7a1921a8658c89b79ffda04895364cd40d9e",
-    "reference_W1eq.json": "35fc2e83193ea04ecbaf10680ba303585cd7a8b73c06c48fa342060435738768",
-    "reference_W1p.json": "56d594843901fc83cd0468957a88a4fb12100f436d324375ada30b031d92e1ad",
-    "reference_W2.json": "b3a132f966d224c0f6c658673a0c3b5fb01ec4ea5e43358d0485de1b8431f54d",
-    "reference_W3.json": "bab9a35afa0bc07ef75ba6ee8c4725b571b1431e97fda7e0cec6cf284d8d84a9",
-    "reference_W4.json": "2df1df8ce62bd8fca0fd6d092e070b87aa31fdc31299907bd108386331264998",
-    "reference_W5.json": "e4f8e2cfe115db061fbd33948addabbe45ea7f9461e49ba1ae03ab04ff334e98",
-    "reference_W6.json": "8a4e249c04f5cfeeeebc706fa13c320d96938b295ac17e61ce4640fde69d3bad"
+    "accuracy.json": "4cab56ac6bf0d9021b6f6282d7b79360dce9b67586abc4a2691fd384034b0490",
+    "reference_W1.json": "09cbe5254a8bae6c01a9738b77249b9b3579369505fa9a8cbefd42596f490d44",
+    "reference_W1eq.json": "60c24d5c39019b16e59365787a8938899209967c2cb08bd4a4d10cdf0bba9c8c",
+    "reference_W1p.json": "c4f022270dbc1a1956719c239d8847fd21621ec4e9e357230d255346748f001a",
+    "reference_W2.json": "049ce3f699cf5e88cb697cba6169a7feda2266360bd70a1baaf35d634160b2dd",
+    "reference_W3.json": "738b9c945736be0345472bb10aaa3b524aa665fc40555f2fb4154a741fcd46c9",
+    "reference_W4.json": "ca2631ac84b6284a2d247d62b9a078d7d60c51128c866c6c11955de8fa7296b2",
+    "reference_W5.json": "932ce91aebee6e9afc51773275157fdeb5d1ddd9509e6e8b9ce63e24cdadd41e",
+    "reference_W6.json": "4db6ac6228b02ce288f0395eac401b45ac5a35d480e2b64dc9e86ba6d280de19",
+    "reference_W7.json": "1a701436ea48f595566336bd411c802b9b599b405b2b372e0ec70289807983dd",
+    "reference_W7s.json": "0b1bae7290f8d5bf47da6969d368add73bbcb4fb56b02440d396989ac232d692"
    },
-   "references_revision": "c28f06ed8a9dc9bdd218ec96c1576d801702c841",
+   "references_revision": "d50aef74d35c6b93dfaa65e95effdb7462125fcc",
    "tree_clean": true
   },
   {
    "hash_seed": 0,
-   "cpu": 7,
+   "cpu": 22,
    "sha256": {
-    "accuracy.json": "0b689df1dda070a528398f1391086094ea19a698f09e26de8d760018136bdf4c",
-    "reference_W1.json": "82819ad891627f4572d752623c6f7a1921a8658c89b79ffda04895364cd40d9e",
-    "reference_W1eq.json": "35fc2e83193ea04ecbaf10680ba303585cd7a8b73c06c48fa342060435738768",
-    "reference_W1p.json": "56d594843901fc83cd0468957a88a4fb12100f436d324375ada30b031d92e1ad",
-    "reference_W2.json": "b3a132f966d224c0f6c658673a0c3b5fb01ec4ea5e43358d0485de1b8431f54d",
-    "reference_W3.json": "bab9a35afa0bc07ef75ba6ee8c4725b571b1431e97fda7e0cec6cf284d8d84a9",
-    "reference_W4.json": "2df1df8ce62bd8fca0fd6d092e070b87aa31fdc31299907bd108386331264998",
-    "reference_W5.json": "e4f8e2cfe115db061fbd33948addabbe45ea7f9461e49ba1ae03ab04ff334e98",
-    "reference_W6.json": "8a4e249c04f5cfeeeebc706fa13c320d96938b295ac17e61ce4640fde69d3bad"
+    "accuracy.json": "4cab56ac6bf0d9021b6f6282d7b79360dce9b67586abc4a2691fd384034b0490",
+    "reference_W1.json": "09cbe5254a8bae6c01a9738b77249b9b3579369505fa9a8cbefd42596f490d44",
+    "reference_W1eq.json": "60c24d5c39019b16e59365787a8938899209967c2cb08bd4a4d10cdf0bba9c8c",
+    "reference_W1p.json": "c4f022270dbc1a1956719c239d8847fd21621ec4e9e357230d255346748f001a",
+    "reference_W2.json": "049ce3f699cf5e88cb697cba6169a7feda2266360bd70a1baaf35d634160b2dd",
+    "reference_W3.json": "738b9c945736be0345472bb10aaa3b524aa665fc40555f2fb4154a741fcd46c9",
+    "reference_W4.json": "ca2631ac84b6284a2d247d62b9a078d7d60c51128c866c6c11955de8fa7296b2",
+    "reference_W5.json": "932ce91aebee6e9afc51773275157fdeb5d1ddd9509e6e8b9ce63e24cdadd41e",
+    "reference_W6.json": "4db6ac6228b02ce288f0395eac401b45ac5a35d480e2b64dc9e86ba6d280de19",
+    "reference_W7.json": "1a701436ea48f595566336bd411c802b9b599b405b2b372e0ec70289807983dd",
+    "reference_W7s.json": "0b1bae7290f8d5bf47da6969d368add73bbcb4fb56b02440d396989ac232d692"
    },
-   "references_revision": "c28f06ed8a9dc9bdd218ec96c1576d801702c841",
+   "references_revision": "d50aef74d35c6b93dfaa65e95effdb7462125fcc",
    "tree_clean": true
   }
  ],
  "bitwise_identical": true,
  "one_clean_revision": true,
  "precision_50_vs_70_digits": {
-  "compared": "every value of the eight reference files but provenance",
-  "differing_count": 10,
+  "compared": "every value of the reference files but provenance",
+  "differing_count": 42,
   "differing": [
    {
     "file": "reference_W1.json",
@@ -139,31 +149,191 @@
     "file": "reference_W6.json",
     "path": "equilibrium/wang/D/gap",
     "relative_difference": 1.0653357531760435e+20
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "equilibrium/wang/matrix/gap",
+    "relative_difference": 1.5416666666666666e+20
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "equilibrium/theta/matrix_L1/gap",
+    "relative_difference": 1.5476190476190476e+20
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "equilibrium/theta/matrix_L2/gap",
+    "relative_difference": 1.5454545454545453e+20
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "heats/intervals/0/heat",
+    "relative_difference": 1.2950778126789587e-16
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "heats/intervals/1/heat",
+    "relative_difference": 4.7598035827864884e-14
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "pairs/60/value",
+    "relative_difference": 1.2950778126789587e-16
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "pairs/63/value",
+    "relative_difference": 4.7598035827864884e-14
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "pairs/137/tolerance_terms/moiety_term_information",
+    "relative_difference": null
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "pairs/137/tolerance_information",
+    "relative_difference": 0.02083333333333326
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "pairs/138/tolerance_terms/moiety_term_information",
+    "relative_difference": null
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "pairs/138/tolerance_information",
+    "relative_difference": 0.02083333333333326
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "distance_at_horizon/n:L1@well",
+    "relative_difference": 2.425213672068492e-16
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "distance_at_horizon/n:L2@well",
+    "relative_difference": 1.5074616155008686e-16
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "distance_at_horizon/R:matrix",
+    "relative_difference": 2.1872294344595192e-16
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "distance_at_horizon/B:matrix_L1",
+    "relative_difference": 2.425213672068492e-16
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "distance_at_horizon/B:matrix_L2",
+    "relative_difference": 1.5074616155008686e-16
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "plants/0/compared/observable",
+    "relative_difference": null
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "plants/0/honest",
+    "relative_difference": 0.5
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "plants/0/planted",
+    "relative_difference": 0.5
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "plants/0/distance_in_bounds",
+    "relative_difference": 0.9999999999999998
+   },
+   {
+    "file": "reference_W7s.json",
+    "path": "equilibrium/theta/matrix_L1/gap",
+    "relative_difference": 5.905797101449276e+19
+   },
+   {
+    "file": "reference_W7s.json",
+    "path": "heats/intervals/3/heat",
+    "relative_difference": 6.149512526243903e-10
+   },
+   {
+    "file": "reference_W7s.json",
+    "path": "heats/intervals/4/heat",
+    "relative_difference": 50223166640970.15
+   },
+   {
+    "file": "reference_W7s.json",
+    "path": "heats/intervals/5/heat",
+    "relative_difference": 9.999999999999998e+19
+   },
+   {
+    "file": "reference_W7s.json",
+    "path": "heats/intervals/6/heat",
+    "relative_difference": 9.999999999999998e+19
+   },
+   {
+    "file": "reference_W7s.json",
+    "path": "pairs/33/value",
+    "relative_difference": 6.149512526243903e-10
+   },
+   {
+    "file": "reference_W7s.json",
+    "path": "pairs/36/value",
+    "relative_difference": 50223166640970.15
+   },
+   {
+    "file": "reference_W7s.json",
+    "path": "pairs/39/value",
+    "relative_difference": 9.999999999999998e+19
+   },
+   {
+    "file": "reference_W7s.json",
+    "path": "pairs/42/value",
+    "relative_difference": 9.999999999999998e+19
+   },
+   {
+    "file": "reference_W7s.json",
+    "path": "distance_at_horizon/n:L1@well",
+    "relative_difference": 1.27180224099846e+22
+   },
+   {
+    "file": "reference_W7s.json",
+    "path": "distance_at_horizon/R:matrix",
+    "relative_difference": 1.2717941460002744e+22
+   },
+   {
+    "file": "reference_W7s.json",
+    "path": "distance_at_horizon/B:matrix_L1",
+    "relative_difference": 1.2718021841132995e+22
    }
   ]
  },
  "format_sample": {
-  "committed_sha256": "2b7a19032415f75c4f0123fcf4b3d02cc7ed98e0014ab8f9967c8c1d65c85113",
+  "committed_sha256": "fb9e32772295d5770560c661ddf3f1842c7a806242d6d812a427e0be924e781f",
   "runs": [
    {
     "hash_seed": 0,
-    "cpu": 6,
-    "sha256": "2b7a19032415f75c4f0123fcf4b3d02cc7ed98e0014ab8f9967c8c1d65c85113"
+    "cpu": 4,
+    "sha256": "fb9e32772295d5770560c661ddf3f1842c7a806242d6d812a427e0be924e781f"
    },
    {
     "hash_seed": 1,
-    "cpu": 6,
-    "sha256": "2b7a19032415f75c4f0123fcf4b3d02cc7ed98e0014ab8f9967c8c1d65c85113"
+    "cpu": 4,
+    "sha256": "fb9e32772295d5770560c661ddf3f1842c7a806242d6d812a427e0be924e781f"
    },
    {
     "hash_seed": 2,
-    "cpu": 7,
-    "sha256": "2b7a19032415f75c4f0123fcf4b3d02cc7ed98e0014ab8f9967c8c1d65c85113"
+    "cpu": 22,
+    "sha256": "fb9e32772295d5770560c661ddf3f1842c7a806242d6d812a427e0be924e781f"
    },
    {
     "hash_seed": 0,
-    "cpu": 7,
-    "sha256": "2b7a19032415f75c4f0123fcf4b3d02cc7ed98e0014ab8f9967c8c1d65c85113"
+    "cpu": 22,
+    "sha256": "fb9e32772295d5770560c661ddf3f1842c7a806242d6d812a427e0be924e781f"
    }
   ],
   "bitwise_identical_to_committed": true

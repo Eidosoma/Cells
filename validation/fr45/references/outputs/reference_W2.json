@@ -2119,24 +2119,26 @@
   }
  ],
  "provenance": {
-  "references_revision": "c28f06ed8a9dc9bdd218ec96c1576d801702c841",
+  "references_revision": "d50aef74d35c6b93dfaa65e95effdb7462125fcc",
   "tree_clean": true,
-  "writer_version": "fr45-references-writer 1",
+  "writer_version": "fr45-references-writer 2",
   "regeneration_hash_seeds": [
    0,
    1,
    2
   ],
   "spec": {
-   "label": "fr45-site-competition-v1, amended and noted 2026-11-24 (ae25c28d)",
+   "label": "fr45-site-competition-v1, amendment 2 of 2026-11-24 (ff99fead)",
    "files": [
+    "docs/FR45_SITE_COMPETITION_PROTOCOL.md",
+    "validation/fr45/spec/AMENDMENT-2-2026-11-24.md",
     "validation/fr45/spec/AMENDMENT-2026-11-24.md",
-    "validation/fr45/spec/NOTE-2026-11-24.md",
     "validation/fr45/spec/CRITERIA.md",
+    "validation/fr45/spec/NOTE-2026-11-24.md",
     "validation/fr45/spec/SPEC.md"
    ],
-   "verified_against": "SHA256SUMS-fr45-spec-ae25c28d.txt",
-   "rows_matched": 83
+   "verified_against": "SHA256SUMS-fr45-spec-ff99fead.txt",
+   "rows_matched": 106
   },
   "profile": "reference"
  }
