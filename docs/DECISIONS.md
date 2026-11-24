@@ -12002,3 +12002,72 @@ block, and it does not.
 - FR-53's design note.
 
 FR-43's builder takes the next free slot.
+
+## D366: FR-30's Revilla diagnostic, second deliverable: the registered split had little power to test the law; D320 stands; Ek-Vitorín's fit waits for a power check
+
+2026-11-24, about 21:21 UTC. The lead, with the advisor.
+
+**The terms.** The diagnostic is labelled and non-blind (D343, D344). It decides nothing (W6), and changes no verdict
+and no law. D320 stands. Every result is one study's indication, and D334's caveat applies to the steady-state
+polarity difference, since Revilla's one-cell protocol ties V_j's sign to one oocyte's V_m.
+
+**Identity, checked before the search, with no refit:**
+- the tagged `predict` stage reproduced `predictions.json` byte for byte, apart from its time stamp;
+- the objective at the judged parameters is bit-equal to the record;
+- one shared slope and midpoint per gate set both the rates and the steady target.
+
+**The declared reading, on the law's full box (free split).** This box has ten parameters on nine distinct targets,
+so it is saturated (D1), and "could not test" was nearly forced there by counting.
+- **The compatible sets:** 383, 397 and 411 at margins 0.5, 1.0 and 2.0 of excess over the polarity floor.
+- **Their predictions at 80 mV,** all inner bounds:
+  - τ_slow(80) spans 4.15 to 135 s;
+  - τ_fast(80) spans 1.10 to 3.77 s;
+  - G_ss/G_0(80) spans 0.332 to 0.473 (the lead, from `exact.jsonl`).
+
+  Each covers both polarities' windows.
+- **A witness on the floor,** S804 (excess 0.0000), predicts τ_slow(80) = 15.81 s, passing both ±80 lines.
+
+**The judged family (split ½, eight parameters).** This is beside and post hoc, since the declaration gave the slice
+no meaning on a premise the run refuted. Three sets fit the training data comparably and score differently on the six
+judged lines:
+- S59, at excess 0.0125: 3 of 6;
+- S444, at 0.1456: 5 of 6;
+- the judged fit, at 1.1242: 4 of 6.
+
+What follows from that:
+- **The local minimum cost no pass.** The registered fit stopped in one, but the family's better minimum scores fewer
+  lines. D1's reading of the 1.124 excess, as the cost of eight parameters on nine targets, is superseded; no entry
+  had quoted it.
+- **In this family G_ss/G_0(80) is pinned,** at 0.434 to 0.450 (margins 0.5 and 1.0, 116 sets), just above +80's
+  window top of 0.4339.
+
+**Narrowed:**
+- **"Could not test" holds for the two time constants.** The −80 steady-state line is failed by 79 of the 91 sets
+  scoring 5 of 6. That is the polarity difference again, confounded as D350 left it.
+- **The one set passing all six lines** (S247, post hoc) is recorded only:
+  - it is 1 of 383, and one split sits on the box edge;
+  - its G_ss(80) lies in a band 0.0094 wide, against a 0.007 digitising error;
+  - it was checked with uncommitted code.
+- **"Kinetics alone, feasible"** fits six distinct numbers with eight or more parameters, and supports nothing.
+
+**The named witnesses** are scored through the tagged predict, readout and scorer (`d2/verify_key_sets.txt`): S804, S444
+and S913 score 5 of 6, and S59 3 of 6.
+
+**What it means.**
+- **D344's "voltage dependence unvalidated"** now has its reason: two training magnitudes do not pin the law's
+  interpolation to the held-out magnitude.
+- **FR-30's next fit, Ek-Vitorín's** (tag A and amendment 1), fits `junction_series_gates@1` to `train.json` and
+  predicts the held-out voltages. It has no power check and no stated starts. Before any fit, an amendment adds two
+  rules:
+  1. **A power check, judged first from the training data alone.** Over the parameter sets compatible with the
+     training fit within a declared margin, compare each held-out prediction's span with its pass band. A comparison
+     whose span covers both a pass and a fail is "not tested by the split", reported and not judged. The benchmark
+     counts only tested comparisons, and is undetermined if too few remain.
+  2. **Multistart,** with declared starts and a reported check of the global minimum.
+
+  The fitter starts only after that amendment's tag. The extraction is not yet tagged (no tag B).
+- **The diagnostic lands by merge** in the next stack with no src change, keeping its declaration (7c9f6ea0) ahead of
+  its driver (64fbd84a). Branch `fr30-revilla-diagnostic`.
+
+**Cost:** 3 h 33 min of wall time and 10.8 CPU-hours, on CPUs 6, 7, 22 and 23. The record is
+`/mnt/workspaces/Cells/fr30-revilla-diagnostic-20261124/d2/`, with its SHA256SUMS.
