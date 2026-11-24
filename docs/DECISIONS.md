@@ -11280,3 +11280,33 @@ IDs together.
 
 **A correction to D346:** `kinetic_pump_binding.py` does not import legacy. It only names its origin in a docstring,
 so there is nothing to port there.
+
+## D349: an umbrella request on shared finite pools, checked: covered, apart from one restart row and a per-solver view
+
+2026-11-24, about 17:05 UTC. The user's request on operators that share a finite pool maps onto existing work, checked
+read-only at main:
+- FR-43 part 2 (judged, D324);
+- the gene unit beside the unit producer (`test_shared_inventory_unit_writers.py`);
+- FR-38, FR-42, FR-33, FR-34 and FR-44 for tracking;
+- regulated availability and FR-51 for availability;
+- the wash against the bath schedule (FR-27, FR-10);
+- the generated composition table.
+
+Its acceptance check (stock identity, the sink off, the source off) is C2.2 and C2.4. Three points were checked
+separately:
+1. **Material already in production at the start is covered, as a bound.**
+   - The gene unit's production bound caps release at κ times the pool's machines, whatever is already in
+     production, since occupied chains never exceed the machines.
+   - The unit producer takes it times the horizon once, and counts its own units in transit at the start
+     separately.
+   - No exact "total available over an interval" readout exists. None is built until a target needs one.
+2. **A restart exactly at a production source's switch-off is a gap.**
+   - Restarts at a change are tested for cell-owned compartments, in process and through a snapshot, and for the
+     surface-repair pulse's end. FR-44's resume through a wash plants a redo and a skip.
+   - **Queued:** one row in the existing shared-inventory test, cut exactly at the switch, compared bitwise with the
+     uninterrupted run, with a planted redo and a planted skip of the switch caught.
+3. **Support per solver is partly listed.**
+   - The generated composition table lists each solver refusal as its own row, with source and test.
+   - There is no operator × solver view, and the species cap (1,024) is global.
+   - **Queued:** a per-solver view, generated from the existing refusal rows, with no engine change. It belongs to the
+     catalogue work of 25 November.
