@@ -383,7 +383,8 @@
   "/mnt/workspaces/Cells/fr47-build-20261124/measure-4a533a2c/measured.json",
   "/mnt/workspaces/Cells/fr47-build-20261124/measure-94bf2a97/measured.json",
   "/mnt/workspaces/Cells/fr47-build-20261124/measure-c0aa0bd3/measured.json",
-  "/mnt/workspaces/Cells/fr51-build-20261124/tiers-d3b3cf0b/measured.json"
+  "/mnt/workspaces/Cells/fr51-build-20261124/tiers-d3b3cf0b/measured.json",
+  "/mnt/workspaces/Cells/fr50-build-20261124/tiers/measured.json/measured.json"
  ],
  "measured_provenance": [
   {
@@ -3274,6 +3275,13 @@
    "root": "/mnt/workspaces/Cells/fr51-build-20261124/snap-d3b3cf0b",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-24T14:35:46+00:00"
+  },
+  {
+   "git_revision": "e7e574d587f82bcb622963cec047230865a1223c",
+   "dirty": false,
+   "root": ".claude/worktrees/fr50-one-way-records",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-24T16:26:46+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -5438,7 +5446,7 @@
    },
    {
     "file": "tests/unit/test_modules_surface.py",
-    "seconds": 3.07,
+    "seconds": 2.92,
     "exit_code": 0,
     "counts": {
      "passed": 5
@@ -7924,10 +7932,10 @@
    },
    {
     "file": "tests/unit/test_neutral_labels_kinds.py",
-    "seconds": 64.27,
+    "seconds": 64.18,
     "exit_code": 0,
     "counts": {
-     "passed": 25
+     "passed": 27
     }
    },
    {
@@ -7944,6 +7952,22 @@
     "exit_code": 0,
     "counts": {
      "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_one_way_records.py",
+    "seconds": 75.2,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
+   },
+   {
+    "file": "tests/unit/test_one_way_records_transporter.py",
+    "seconds": 28.88,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
     }
    },
    {
@@ -8020,10 +8044,10 @@
    },
    {
     "file": "tests/unit/test_passive_routes_kind.py",
-    "seconds": 72.13,
+    "seconds": 72.34,
     "exit_code": 0,
     "counts": {
-     "passed": 22
+     "passed": 28
     }
    },
    {
@@ -8584,10 +8608,10 @@
    },
    {
     "file": "tests/unit/test_transporter_kind.py",
-    "seconds": 79.55,
+    "seconds": 78.85,
     "exit_code": 0,
     "counts": {
-     "passed": 30
+     "passed": 34
     }
    },
    {
