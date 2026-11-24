@@ -10538,3 +10538,20 @@ fail stands.**
   - **C6:** state B_out and the domain, and keep B_in within float64's charge resolution.
   - **The engine, separately:** the parse check's absolute 1e-20 C tolerance could scale with float64 resolution.
 - **What follows is the user's decision.**
+
+## D333: the user's decision on XC0: a v2 for the diagnosed rows, and a separate engine fix
+
+2026-11-24, about 12:36 UTC, following D332.
+- **D329's fail stays on record.**
+- **XC0 v2 is registered as rule erratum 2,** disclosed as not blind on these rows. It changes only what D332 found:
+  - **C7:** declare the SI constants the engine uses, or the deviation, with no band tighter than the two sides'
+    constants agree.
+  - **C8b:** define "final" once, and settle whether the bare node is compared.
+  - **C6:** state B_out and the reading's domain, keep every B_in within float64's charge resolution, and count the
+    points a parse drops in a scan's refusal.
+  - Only those families are rerun, on the same frozen engine (260d7c7f), by an independent runner, with code-blind
+    references regenerated where a declared constant changes.
+- **The engine fix, separately:** surface_tissue.check_definition's absolute 1e-20 C tolerance on the charge anchor
+  scales with float64's resolution of the terms.
+  - It is a definition-time check, so no program changes.
+  - It is a gated src change, after FR-17 lands, since FR-17 also edits that file.
