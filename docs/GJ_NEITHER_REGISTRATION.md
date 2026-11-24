@@ -369,3 +369,55 @@ references' specification, and BITSEY's role (reported, never judged).
   (`judged/snapshot-diff-from-tag.txt`).
 - **It started at 19:19 UTC on 23 November,** before this amendment, under no src change that GJ-N1's
   worlds run.
+
+## Amendment 2: the field runs on CPUs (draft, 24 November 2026, for the lead)
+
+**Status.** A draft for the lead's tag, written before any field point has run. It changes nothing
+for the line. The user's decision of D330 was to qualify the device row checks on the GPU and then
+run the field's longest points on the L4, with a tagged amendment fixing in advance which points run
+where. That qualification closed as failed (D336), so this amendment keeps every field point on CPUs.
+
+**1. Where the field runs.**
+- **No field point runs on a GPU.** neither.py's field definitions declare the CPU backend
+  (`execution.backend = "cpu"`).
+- **On a gate lane, under its lock, one point per CPU, as amendment 1 places them:** stage 1, the
+  base-step points, the bisection's rounds and C's half-step reruns of the points that ran there.
+- **On one CPU outside the gate lanes:** the bracket's upper end, D = 1e-13 at h = 1/128 s, and its
+  half-step rerun if C needs it. The lead assigns that CPU at launch, and the run record names it.
+  This keeps the lane's lock for the bisection's few hours, not for the upper end's day or more.
+- **The driver,** tagged with this amendment (D308): `--upper-cpu N` runs the upper end, and its
+  half-step rerun, in a pool of their own pinned to CPU N; `--lane-lock PATH` holds the lane's lock
+  only while a lane point runs or waits, and releases it before the search waits for the upper end
+  alone. Every record keeps its format; the upper end's is appended to points.jsonl as any point's.
+- **Placement changes time, not results.** On the CPU a second process repeats every window by
+  bytes (D330's CPU baseline: 8 of 8 windows, and 37 of 37 arrays of the final state), so a point's
+  record does not depend on the CPU or the lane it ran on.
+
+**2. The pairs the judge compares stay on one device.**
+- C's pairs (each final bracket end at h and at h/2), the final bracket's two ends and every point
+  that R reads run on CPUs, from one execution snapshot.
+- XLA's CPU backend is deterministic, so a rerun of a point reproduces its record exactly. No tie
+  rule is needed, and R is read on one device.
+
+**3. The cost, from measured steps** (the sparse field solver on the production path, with device
+row checks, on one CPU; D330):
+- **Per step:** 32.0 ms at D = 1e-13 and 28.3 ms at D = 0 on a core whose sibling is idle; about
+  1.2 to 1.6 times that when both siblings run, as on a gate lane run one point per CPU.
+- **The upper end** (2.56 million steps): about 23 h on a whole core, 27 to 36 h on a shared one. It
+  is the critical path. Its half-step rerun (5.12 million steps, 45 to 73 h) runs only if the upper
+  end ends as a final bracket end.
+- **A base-step point** (1/8 s, 160,000 steps): 1.3 to 2.3 h; its half-step rerun 2.8 to 4.6 h.
+- **The whole search:** about 70 to 115 CPU thread-hours (amendment 1 estimated about 90).
+
+**4. D330, for the reader of the verdict.**
+- On the L4, with XLA's deterministic ops, host and device mode agreed by bytes (G1), and two new
+  processes reproduced every window (G6).
+- G2 failed: in the first window the device read the global material ledger at 0.715 of its bound
+  and the host 0.202, a spread of 0.514 against the declared bound of 0.291 and its cap of 0.4.
+- The engine refuses GPU device mode on the scalar path (`row_checks.admit`, D187), and from D336's
+  landing the vector path refuses the composite on a GPU (`vector_windows.refuse_unqualified_gpu`).
+  The record: D336 and docs/WINDOW_DEVICE_CHECKS_DESIGN.md §10.
+
+**5. Unchanged:** the model, the geometry, the criterion, the bracket, the search and its tolerance,
+the step rule (dt × rate ≤ 0.04), the windows (32 steps), stage 1, the verdict (R, C, A), the
+references' specification, BITSEY's role, and amendment 1.
