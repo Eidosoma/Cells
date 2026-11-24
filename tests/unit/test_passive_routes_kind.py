@@ -654,3 +654,51 @@ def test_k5_every_one_way_refusal_names_its_cause_and_its_control_is_admitted():
     _, _, engine, judge, _ = _fr50()
     results = judge.check_refusals("K5", engine.engine(dict(kind="K5", plant=None)))
     assert all(row["passed"] for row in results.values()), results
+
+
+def test_an_unresolved_step_marks_the_record_and_refuses_nothing(monkeypatch):
+    """FR-50's passive records (the lead's ruling, 24 November 2026): where a step's end-of-step
+    solve fails (planted: the third step's reports no convergence), the step is not refused and
+    every other field is the unrecorded twin's, bit for bit. The record keeps its value for that
+    step, and its gap becomes ONE_WAY_UNRESOLVED (2, above r's [0, 1]) and stays there. So the
+    tagged judge fails closed on it: its gap and absolute checks fail."""
+    cases, closed_forms, engine, judge, _ = _fr50()
+    case = cases["K1_neutral_zero_net"]
+    honest, calls = surface_pump_v3.crossing_view, []
+
+    def third_fails(*args, **kwargs):
+        view, valid = honest(*args, **kwargs)
+        calls.append(None)
+        return view, (False if len(calls) == 3 else valid)
+
+    monkeypatch.setattr(surface_pump_v3, "crossing_view", third_fails)
+    states = []
+    for one_way in (True, False):
+        spec = parse_spec(engine.route_world(case, dt=0.1, end=1.0, one_way=one_way))
+        impl = get_model(spec.model)
+        state, p = impl.initial_values(spec)
+        control = impl.Control(*(v[0] for v in control_values(spec, [0.0])))
+        run_states = [state]
+        for _ in range(10):
+            state, valid = impl.imex_step(state, 0.1, control, p, xp=np)
+            assert bool(valid)
+            run_states.append(state)
+        states.append(run_states)
+    recorded, twin = states
+    for a, b in zip(recorded, twin, strict=True):
+        for name in type(b)._fields:
+            assert np.asarray(getattr(a, name)).tobytes() == np.asarray(getattr(b, name)).tobytes()
+    s = list(spec.model.species_ids).index(fx.SPECIES)
+    rows = {
+        "n": np.arange(11),
+        "F": np.asarray([x.passive_inward_fmol[0] for x in recorded]),
+        "B": np.asarray([x.passive_outward_fmol[0] for x in recorded]),
+        "net": np.asarray([x.passive_transferred[s, 0] for x in recorded]),
+        "gap": np.asarray([x.passive_one_way_gap_relative[0] for x in recorded]),
+    }
+    assert rows["F"][3] == rows["F"][2] and rows["F"][4] > rows["F"][3]
+    assert np.all(rows["gap"][:3] == 0.0) and np.all(rows["gap"][3:] == 2.0)
+    assert surface_pump_v3.ONE_WAY_UNRESOLVED == 2.0
+    reference = closed_forms.k1("K1_neutral_zero_net", case, times=("0", "0.5", "1.0"))
+    assert not judge.check_gap(rows)["passed"]
+    assert not judge.check_absolute(reference, rows, "0.1")["passed"]

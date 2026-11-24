@@ -2632,6 +2632,13 @@ def step_transfers(start, end, p, dt, rows, *, xp=jnp, direct=None):
 # book: each record F += F_t + max(g, 0), B += B_t + max(-g, 0), and its gap field max(gap, r),
 # r the step's relative gap measured before the correction. Without a declared record nothing is
 # traced.
+#
+# The records are passive (the lead's ruling, 24 November 2026): they never refuse a step. A pair
+# whose step is unresolved (its end-of-step solve failed, or an amount came out not finite) keeps
+# its records where they were, and its gap becomes ONE_WAY_UNRESOLVED. That value lies above r's
+# range [0, 1], and the running maximum keeps it for the rest of the run, so every reading of the
+# gap fails closed.
+ONE_WAY_UNRESOLVED = 2.0
 
 
 def one_way_kinds(kinds):
@@ -2654,10 +2661,14 @@ def _step_ends(state, stage, read, start, control, p, *, xp, kinds, structure, e
     return begin, end, None, valid
 
 
-def one_way_records(recording, begin, end, start, stage, p, dt, *, weight=None, xp=jnp):
+def one_way_records(
+    recording, begin, end, start, stage, p, dt, *, weight=None, resolved=True, xp=jnp
+):
     """FR-50: {record field: value at the step's end} for every recording kind's records, from its
     one-way fluxes at the step's two ends (LabelViews; under the Euler IMEX `weight` times the
-    start's) and its net record's change from `start` to `stage`, by the shared rule."""
+    start's) and its net record's change from `start` to `stage`, by the shared rule. Where the
+    step is unresolved (`resolved` false: its end view's solve failed) or a pair's amounts are not
+    finite, the pair keeps its records, and its gap becomes ONE_WAY_UNRESOLVED (see above)."""
     out = {}
     for kind in recording:
         at_start = kind.one_way_fluxes(begin, p, xp=xp)
@@ -2671,10 +2682,14 @@ def one_way_records(recording, begin, end, start, stage, p, dt, *, weight=None, 
             split = one_way_split.close_one_way(
                 forward, backward, after[record.net] - before[record.net], xp=xp
             )
-            out[record.forward] = getattr(start, record.forward) + split.forward
-            out[record.backward] = getattr(start, record.backward) + split.backward
+            before_f, before_b = getattr(start, record.forward), getattr(start, record.backward)
+            after_f, after_b = before_f + split.forward, before_b + split.backward
+            relative = one_way_split.one_way_gap_relative(split, xp=xp)
+            ok = resolved & xp.isfinite(after_f) & xp.isfinite(after_b) & xp.isfinite(relative)
+            out[record.forward] = xp.where(ok, after_f, before_f)
+            out[record.backward] = xp.where(ok, after_b, before_b)
             out[record.gap] = xp.maximum(
-                getattr(start, record.gap), one_way_split.one_way_gap_relative(split, xp=xp)
+                getattr(start, record.gap), xp.where(ok, relative, ONE_WAY_UNRESOLVED)
             )
     return out
 
@@ -3038,10 +3053,10 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
         )  # fmt: skip
         begin, end, weight, solved = ends
         gated = presence_gated(p, structure, xp=xp)  # The layout the kinds' rates see (Q2).
-        stage = stage._replace(
-            **one_way_records(recording, begin, end, state, stage, gated, dt, weight=weight, xp=xp)
+        records = one_way_records(
+            recording, begin, end, state, stage, gated, dt, weight=weight, resolved=solved, xp=xp
         )
-        valid &= solved
+        stage = stage._replace(**records)  # Passive: the step's validity is its own.
     valid &= domain_valid(stage, p, p.active, xp=xp, structure=structure)
     for value in stage:
         valid &= xp.all(xp.isfinite(value))

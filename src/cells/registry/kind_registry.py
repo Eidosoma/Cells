@@ -413,7 +413,11 @@ class Kind:
     bound() sets both hooks to None where the declaration declares no record. @3's IMEX step applies
     the shared rule (numerics/one_way_split.py) to each record over the step, at the same ends as
     FR-42's labels (one end view serves both), and writes the record fields after the kinds book:
-    F += F_t + max(g, 0), B += B_t + max(-g, 0) and gap = max(gap, r).
+    F += F_t + max(g, 0), B += B_t + max(-g, 0) and gap = max(gap, r). The records are passive, so
+    they never refuse a step. A pair whose step is unresolved (the end view's solve failed, or an
+    amount is not finite) keeps its records. Its gap becomes surface_pump_v3.ONE_WAY_UNRESOLVED,
+    2, above r's range [0, 1], and the running maximum keeps it, so every reading fails closed (the
+    lead's ruling, 24 November 2026).
     """
 
     kind_id: str
