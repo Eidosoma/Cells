@@ -12488,3 +12488,43 @@ channel with only one legal pairing resolves by rule, with a declaration of it r
 - **A correction to the lead's own summary:** the lead told the user on the evening of 24 November that the FR-51
   holdout registration was waiting for Lean's answer on re-reading the 5.4 mM anchor. The request had not been sent. It
   is now with Lean, through the user. Extraction waits for the registration's tag.
+
+## D377: FR-51's judged pass is recorded; PROGRESS and the feature index are brought up to date; three design notes are final; corrections to the legacy plan's figures
+
+2026-11-24, about 23:57 UTC.
+
+**FR-51's judged comparison (fr51-channel-block-v1) passes.** It ran once, at the clean snapshot d3b3cf0b, whose code
+equals the landed head's, with the tagged judge (`fr51-channel-block-v1-judge-2026-11-24`, 5b9b4c90), against the
+code-blind references (`fr51-references-2026-11-24`, 1360c925). Every registered criterion passes and none is
+inconclusive: P (4 cases), B-u (18), B-ratio (7), R (8), S (2), G (12) and E (8). All eleven reference-judged plants
+are caught, and RUN, Z and C hold in the tests. The record is
+`/mnt/workspaces/Cells/fr51-build-20261124/judged-d3b3cf0b/` (`verdict.json`, sha256 bb04eeba…). The landing message
+(955765ef) and the FR's index row stated it, but no decision entry did until now.
+
+**PROGRESS.md** is refreshed from the decision log and the tags, after 22 November. An agent drafted it
+(`progress-refresh`, 619cfa47, not merged); the lead reviewed it, replaced 33 tag-object hashes with the commits they
+point at, and corrected the stale lines it flagged. **The feature index** had five rows behind the decisions (FR-17,
+FR-38, FR-44, FR-45, FR-47), which are now current. FR-45 has no engine code on main.
+
+**Three design notes are final,** each on its own branch, landing in the next no-src stack:
+- **FR-52** (`fr52-design`, c43f9a4a): the declared pairings need exactly min(R, P) pairs; a channel with one legal
+  pairing resolves by rule, and declaring it is refused (D376). The reviewer's gap is closed: a host test of the update
+  against enumeration on small random tables, whose plant applies one pair per channel, and a row G in the same compile
+  (a channel carrying two identities). The compiled qualification world also gains the declared pairing's two
+  channels; if the file passes tier 2's cap it falls back to the host row, and the landing text says which.
+- **FR-65** (`fr65-design`, df473a02): the lumen by the host-only hook, which changes no lumen program; parse rows and
+  one tier-3 run each for the two pairings that newly parse; first build 3.1 to 4.45 agent-days, the coupling step 2 to
+  2.5 more. Turnover's readouts (solute amount and volume at every accepted row) already exist in the run files, as
+  read from the code; the build checks them against a saved file. The note cites its commit 3dd81578, whose message
+  claimed a review that had not happened: the author disclosed it, and the history is kept because D375 cites it.
+- **FR-64** (`fr64-design`, 377a1b34).
+
+**Corrections to the legacy plan's figures** (plan at `legacy-port-plan`, ef344334):
+- Route C's first batch removes at least 58% of legacy's lines, not the 63% the lead had called firm. Higher figures are
+  estimates.
+- "About 15 hand edits" is 15 direct edits, with another 50 fixture files open.
+- `resolved_tissue@1` and `@2` are used by live-subject tests, and their code is live; only their dispatch sits in
+  legacy. The kept set now includes them, with `@8`, and route C's first batch moves their dispatch to the live
+  registry, using exact-type checks, since legacy classes that stay derive from the two spec classes.
+- The choice for the user is whether a CPU re-expression of the calcium ensemble counts as leaving legacy, with its GPU
+  path parked, or whether legacy's core waits for the GPU. The plan recommends the first.
