@@ -1,0 +1,31 @@
+{
+  "meijer1993-hepatocyte-swelling": {
+    "doi": "10.1111/j.1432-1033.1993.tb18053.x",
+    "preparation": "Isolated hepatocytes from fasted rats at 37 °C.",
+    "pool_readout": "Figure 3E reports cellular ATP amount. Figure 3F uses cell water from the 45 min measurement in Figure 1 to calculate ATP concentration. In the no-added-amino-acid series the amount rose slightly with swelling and calculated concentration fell by at most about 10%.",
+    "proteolysis": {
+      "locator": "Table 2, accumulated valine production without added amino acids",
+      "time_min": [30, 60, 90],
+      "unit": "micromol valine per g dry cells",
+      "conditions": [
+        {"NaCl_mM": 70, "n": 4, "mean": [5.3, 10.2, 15.5], "SEM": [0.3, 0.8, 1.2]},
+        {"NaCl_mM": 120, "n": 8, "mean": [5.1, 10.4, 15.5], "SEM": [0.4, 0.6, 0.9]}
+      ]
+    },
+    "amino_acid_interaction": {
+      "locator": "Figure 2B and Results, physiological amino-acid mixture at 90 min",
+      "approximate_inhibition_percent": {"70_mM_NaCl": 40, "120_mM_NaCl": 15},
+      "denominator": "Each value uses the no-added-amino-acid control at its own osmolarity."
+    }
+  },
+  "haussinger1991-perfused-liver-swelling": {
+    "doi": "10.1016/0014-5793(91)80556-I",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/1645299/",
+    "locator": "Figure 1, hypo-osmotic perfusions, and Methods",
+    "preparation": "Perfused livers from fed rats at 37 °C. Isotonic control 305 mOsm/L, hypo-osmotic perfusion 185–275 mOsm/L.",
+    "water_readout": "Difference between urea and inulin distribution spaces, measured about 30 min apart.",
+    "proteolysis_readout": "Leucine label released from previously labelled liver proteins, relative to each liver's baseline. The perfusate contained 0.1 mM unlabelled leucine.",
+    "observation": "The hypo-osmotic protocols increased intracellular water space and decreased labelled leucine release.",
+    "uncertainty": "Water and label release came from separate groups under matched protocols. Figure 1 reports means and SEM with 3–15 experiments per point across conditions. Some values were reused from earlier work by the group."
+  }
+}

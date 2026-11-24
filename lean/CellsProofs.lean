@@ -41,6 +41,7 @@ import CellsProofs.Chemistry.SharedPool
 import CellsProofs.Chemistry.SingleSiteBinding
 import CellsProofs.Chemistry.SiteOccupancy
 import CellsProofs.Chemistry.SpeciesTurnover
+import CellsProofs.Chemistry.TurnoverVolume
 import CellsProofs.Chemistry.Vesicle
 import CellsProofs.Chemistry.VesicleArea
 import CellsProofs.Chemistry.VesicleEvent
@@ -72,6 +73,7 @@ import CellsProofs.Transport.FormsFace
 import CellsProofs.Transport.InwardRectifier
 import CellsProofs.Transport.IonChannels
 import CellsProofs.Transport.OpenChannelBlock
+import CellsProofs.Transport.BlockMaterialSlope
 import CellsProofs.Transport.JunctionGate
 import CellsProofs.Transport.LabelDiffusion
 import CellsProofs.Transport.LabelMixingPower
