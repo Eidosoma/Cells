@@ -1537,11 +1537,11 @@ C8_RUNS = {"dir": None}  # The folder of the saved P1LB runs (xc0_engine c8b-run
 
 
 def c8b_horizon(reading):
-    """Erratum 2: a P1LB reading's horizon (s), the reader's setting: the bare run's reaches the
-    node's end state, the coupled run's stays erratum 1's 64 s."""
+    """Erratum 2: a P1LB reading's horizon (s): the bare run's is the reader's setting, where the
+    node reaches its end state; every other reading's stays erratum 1's 64 s."""
     from validation.xenopus_bioelectric.xc0_compare import SETTINGS
 
-    return float(SETTINGS["c8b_horizon_s"][reading])
+    return float(SETTINGS["c8b_horizon_s"].get(reading, C8_END_S))
 
 
 def c8b_definition(reading, factor, until, *, d, x2_cap, v0):
@@ -1676,19 +1676,13 @@ def m_c8b_end(field):
         bare = saved(cache, "bare", params["horizon_s"], x2_cap)
         if field == "end_psi":
             return float(bare["psi"][-1])
-        c_f = float(bare["c"][-1, bare["species"].index(params["species"])])
-        if field == "end_c":
-            return c_f
-        r = saved(cache, "coupled", params["coupled_horizon_s"], x2_cap)
-        return one_over_e_time(r["t"], r["c"][:, r["species"].index(params["species"])], c_f)
+        return float(bare["c"][-1, bare["species"].index(params["species"])])
 
     reading.__doc__ = (f"C8 (b) (erratum 2): 'final' is the bare node's end state, read as the "
                        "saved bare P1LB run's last observation, at its horizon (the row's "
                        "horizon_s, the run refused unless it ends there): end_c its node "
-                       "concentration, end_psi its node potential (the bath held at 0), t_e_end "
-                       "the coupled run's first time (c(t) - c_f)/(c(0) - c_f) falls to 1/e with "
-                       "c_f that end state (the coupled run refused unless it ends at the row's "
-                       f"coupled_horizon_s), linear between two observations. This one: {field}.")
+                       "concentration, end_psi its node potential (the bath held at 0). This one: "
+                       f"{field}.")
     return reading
 
 
@@ -1788,7 +1782,6 @@ MEASURES = {
     "sym_eq_x_e2": m_sym_eq_x_e2,
     "c8b_end_c": m_c8b_end("end_c"),
     "c8b_end_psi": m_c8b_end("end_psi"),
-    "c8b_t_e_end": m_c8b_end("t_e_end"),
 }
 
 
@@ -1830,7 +1823,7 @@ RUN_MEASURES = frozenset({
     "c7_relax_dQ", "c7_relax_identity", "c8b_final_saved", "c8b_psi_final_saved", "c8b_at_saved",
     "c8b_psi_at_saved", "c8b_t_e_saved",
     # Erratum 2.
-    "c8b_end_c", "c8b_end_psi", "c8b_t_e_end",
+    "c8b_end_c", "c8b_end_psi",
 })  # fmt: skip
 
 
@@ -2045,11 +2038,11 @@ def selfcheck(out):
         a_outcome = "a parse refusal inside the scan's bracket (an error row in a table)"
     a_dropped = SCANS[-1]["parse"] if SCANS else None
 
-    # 4. The C8 (b) readings on invented saved runs (no engine): end state, potential, t_e.
+    # 4. The C8 (b) readings on invented saved runs (no engine): the end state and its potential.
     runs = out / "c8b-runs"
     shutil.rmtree(runs, ignore_errors=True)
     source = provenance()
-    tau_bare, tau_coupled, c0, cf = 5.0, 4.0, 4.0, 0.75
+    tau_bare, c0, cf = 5.0, 4.0, 0.75
 
     def save(folder, t, c, psi, until):
         folder.mkdir(parents=True)
@@ -2068,7 +2061,6 @@ def selfcheck(out):
 
     horizon = SETTINGS["c8b_horizon_s"]
     invented_run("bare", tau_bare, [0.0, 64.0, 128.0, horizon["bare"]])
-    invented_run("coupled", tau_coupled, [0.0, horizon["coupled"]])
     C8_RUNS["dir"] = str(runs)
     cache = {}
     end_k = measure("c8b_end_c", dict(species="K", horizon_s=horizon["bare"]), x2_cap=0.002,
@@ -2077,16 +2069,11 @@ def selfcheck(out):
            abs(end_k - (cf + (c0 - cf) * math.exp(-horizon["bare"] / tau_bare))) < 1e-12)
     psi = measure("c8b_end_psi", dict(horizon_s=horizon["bare"]), x2_cap=0.002, cache=cache)
     expect("end_psi: the bare run's last potential", abs(psi + 0.03) < 1e-12)
-    t_e = measure("c8b_t_e_end", dict(species="Cl", horizon_s=horizon["bare"],
-                                      coupled_horizon_s=horizon["coupled"]),
-                  x2_cap=0.002, cache=cache)  # fmt: skip
-    expect("t_e_end: the coupled run's 1/e time from the bare end state",
-           abs(t_e - tau_coupled) < 1e-3)
     for name, measure_name, params in (
             ("erratum 1's final on a 192 s bare run", "c8b_final_saved", dict(species="K")),
             ("an end state at another horizon", "c8b_end_c", dict(species="K", horizon_s=128.0)),
-            ("a coupled run at another horizon", "c8b_t_e_end",
-             dict(species="K", horizon_s=horizon["bare"], coupled_horizon_s=32.0))):  # fmt: skip
+            ("an end-state potential at another horizon", "c8b_end_psi",
+             dict(horizon_s=64.0))):  # fmt: skip
         try:
             measure(measure_name, params, x2_cap=0.002, cache={})
             failures.append(f"{name}: not refused")
@@ -2094,12 +2081,13 @@ def selfcheck(out):
             pass
     C8_RUNS["dir"] = None
 
-    # 5. A short split bare run on the invented inputs (the engine), and the horizon refusal.
-    try:
-        c8b_segment("coupled", 1.0, horizon["coupled"] + 1.0, out / "beyond", x2_cap=0.002, d=d)
-        failures.append("a coupled segment beyond its horizon: not refused")
-    except SystemExit:
-        pass
+    # 5. A short split bare run on the invented inputs (the engine), and the horizons' refusals.
+    for reading, until in (("bare", horizon["bare"] + 1.0), ("coupled", C8_END_S + 1.0)):
+        try:
+            c8b_segment(reading, 1.0, until, out / "beyond", x2_cap=0.002, d=d)
+            failures.append(f"a {reading} segment beyond its horizon: not refused")
+        except SystemExit:
+            pass
     split = out / "c8b-split"
     shutil.rmtree(split, ignore_errors=True)
     whole = c8b_segment("bare", 1.0, 0.04, split / "whole" / "bare-1" / "seg", x2_cap=0.002, d=d)
@@ -2114,11 +2102,10 @@ def selfcheck(out):
            np.array_equal(w["t"], joined["t"]) and np.array_equal(w["c"], joined["c"])
            and np.array_equal(w["psi"], joined["psi"]) and len(joined["t"]) == 5)  # fmt: skip
 
-    # 6. Every P1LB definition the procedure's segments use parses (no run), at h, h/2 and h/4, its
-    # observation grid ending at the segment's end, one observation per 0.01 s.
+    # 6. Every P1LB definition the procedure's segments use (the bare reading's) parses (no run), at
+    # h, h/2 and h/4, its observation grid ending at the segment's end, one observation per 0.01 s.
     v0 = m_v_zero(dict(ion_set="primary", exterior="local", T=291.15), d=d, cache={})
-    ends = {"bare": (64.0, 128.0, horizon["bare"]), "coupled": (32.0, horizon["coupled"])}
-    for reading, untils in ends.items():
+    for reading, untils in {"bare": (64.0, 128.0, horizon["bare"])}.items():
         for factor in (1.0, 0.5, 0.25):
             for until in untils:
                 raw = c8b_definition(reading, factor, until, d=d, x2_cap=0.002, v0=v0)

@@ -347,16 +347,33 @@ SETTINGS = dict(
     # C6.v1_eq_ratio and C6.v1_eq_x: the reader's B_out (mM) and the ratio's search domain; every
     # searched world's charge-anchor terms stay below anchor_bound_fmol, where the parse's 1e-20 C
     # anchor check cannot fail in float64 (D332: the residual is at most 2^(k-52) fmol in the binade
-    # [2^k, 2^(k+1)), 5.6e-21 C below 2^19 fmol).
+    # [2^k, 2^(k+1)), 5.6e-21 C below 2^19 fmol). B_out is the largest power of ten whose scan keeps
+    # the cell's B below the bound at the domain's top: 2^19 fmol / (1e8 x 65.45 pL) = 8.0e-5 mM.
     eq_ratio=dict(B_out_mM=1e-5, domain=[1e-6, 1e8], anchor_bound_fmol=2.0**19),
-    # C8 (b): each P1LB reading's horizon (s). "Final" is the bare node's end state, read at the
-    # bare run's horizon; the coupled run keeps erratum 1's 64 s.
-    c8b_horizon_s=dict(bare=192.0, coupled=64.0),
+    # C8 (b): the bare P1LB run's horizon (s), where "final", the bare node's end state, is read.
+    # Every other reading's horizon stays erratum 1's 64 s (xc0_engine.c8b_horizon).
+    c8b_horizon_s=dict(bare=192.0),
     # A floor on a proposed tolerance, which REFERENCES_USAGE.md leaves open to the lead's ruling by
-    # a dated note: this erratum proposes it, and the lead's tag of the erratum makes it the ruling.
-    # The stored band is still checked against the band rule first.
-    tolerance_rulings={"C7.pump_cell_charge_per_fmol": dict(tol_rel=1e-10)},
+    # a dated note (this erratum, once tagged): the relative tolerance is the two sides' Faraday
+    # constants' disagreement plus a float64 evaluation's allowance, |F_declared - N_A e| / (N_A e)
+    # + G u (the references' floor model: G = 16 roundings of u = 2^-53), evaluated exactly
+    # (constants_tol_rel). The stored band is still checked against the band rule first.
+    tolerance_rulings={"C7.pump_cell_charge_per_fmol": dict(
+        F_declared_C_per_mol="96485.33212", N_A_per_mol="6.02214076e23", e_C="1.602176634e-19",
+        roundings_G=16, unit_roundoff_log2=-53)},
 )  # fmt: skip
+INPUTS = HERE / "references" / "reference_inputs.json"  # The declared inputs (byte copy).
+
+
+def constants_tol_rel(ruling):
+    """Erratum 2's relative tolerance for an identity in F (C7.pump_cell_charge_per_fmol), exact:
+    |F_declared - N_A e| / (N_A e) + G u, with F_declared the declared inputs' F and N_A e the SI
+    F the engine uses. 3.4307699621628870747e-11 at the registered settings."""
+    decimal.getcontext().prec = 60
+    f_si = decimal.Decimal(ruling["N_A_per_mol"]) * decimal.Decimal(ruling["e_C"])
+    gap = abs(decimal.Decimal(ruling["F_declared_C_per_mol"]) - f_si) / f_si
+    roundoff = decimal.Decimal(2) ** ruling["unit_roundoff_log2"]
+    return gap + decimal.Decimal(ruling["roundings_G"]) * roundoff
 
 
 def eq_ratio_e2(family, params):
@@ -381,13 +398,6 @@ def c8_end_psi(family, params):
     """Erratum 2: C8.b_final_psi, the bare node's end-state potential, at the bare run's horizon."""
     c8_psi(family, params)
     return {"horizon_s": SETTINGS["c8b_horizon_s"]["bare"]}
-
-
-def c8_t_e_end(family, params):
-    """Erratum 2: C8.bc_t_e, the coupled run's 1/e time from the bare node's end state (the same
-    "final" as C8.b_final_c: SEMANTICS.md's c_f), each run checked to end at its horizon."""
-    h = SETTINGS["c8b_horizon_s"]
-    return {**c8_species(family, params), "horizon_s": h["bare"], "coupled_horizon_s": h["coupled"]}
 
 
 SYM = ("n", "Nain", "Naout", "BP", "rB", "T")
@@ -499,7 +509,6 @@ E2_RULES = (
     (r"^C7\.pump_cell_charge_per_fmol$", "pump_cell_charge_per_fmol", pump_cell, (), ("word",)),
     (r"^C8\.b_final_c$", "c8b_end_c", c8_end_species, ("word",), ("word",)),
     (r"^C8\.b_final_psi$", "c8b_end_psi", c8_end_psi, (), ("word",)),
-    (r"^C8\.bc_t_e$", "c8b_t_e_end", c8_t_e_end, ("word",), ("word",)),
 )  # fmt: skip
 E2 = {rule[0]: rule for rule in E2_RULES}
 if not set(E2) <= {rule[0] for rule in MAPPING_E1}:
@@ -622,6 +631,11 @@ def check_rule(path=ERRATUM):
     erratum = json.loads(Path(path).read_text())
     if erratum.get("erratum") != 2 or erratum["mapping"] != rule_mapping():
         raise SystemExit(f"refused: {path}'s mapping is not the reader's")
+    declared = decimal.Decimal(str(json.loads(INPUTS.read_text())["conventions"]["F_C_per_mol"]))
+    for family, ruling in SETTINGS["tolerance_rulings"].items():
+        if decimal.Decimal(ruling["F_declared_C_per_mol"]) != declared:
+            raise SystemExit(f"refused: {family}'s ruled tolerance names an F the declared inputs "
+                             "do not declare")  # fmt: skip
     rule = json.loads(RULE.read_text())
     first = json.loads(ERRATUM_1.read_text())
     merged = {**rule, **{k: v for k, v in first.items() if k in rule}}
@@ -895,7 +909,7 @@ def judge(table, values, bands, *, after_retry=False, only=None):
                 raise SystemExit(f"refused: {family} | {key}: stored band disagrees with the rule")
             ruling = SETTINGS["tolerance_rulings"].get(family)
             if ruling is not None:  # Erratum 2: a floor on the row's tol_rel, the stored band kept.
-                ruled = band_of(dict(entry, tol_rel=ruling["tol_rel"]), row, reference)
+                ruled = band_of(dict(entry, tol_rel=constants_tol_rel(ruling)), row, reference)
                 band, stored_band = max(band, ruled), band
         elif kind == "sign":  # The stored band decides power (|aux| > band).
             band = number(str(row["band"]))
@@ -1298,7 +1312,7 @@ def selfcheck_e2(out):
            first["not_run"] == ours["not_run"] and first["not_mappable"] == ours["not_mappable"])
     expect("the changed families", CHANGED == (
         "C6.v1_eq_ratio", "C6.v1_eq_x", "C7.pump_cell_charge_per_fmol", "C8.b_final_c",
-        "C8.b_final_psi", "C8.bc_t_e"))  # fmt: skip
+        "C8.b_final_psi"))  # fmt: skip
 
     # 2. The changed rows' readings, their settings in their parameters (invented keys).
     eq_key = "n3|Nain17|Naout55|V-0.06"
@@ -1313,9 +1327,8 @@ def selfcheck_e2(out):
            mapped("C8.b_final_c", "K") == ("c8b_end_c", dict(species="K", horizon_s=192.0)))
     expect("C8.b_final_psi: the bare run at its 192 s horizon",
            mapped("C8.b_final_psi", "psi") == ("c8b_end_psi", dict(horizon_s=192.0)))
-    expect("C8.bc_t_e: c_f the bare end state, the coupled run to 64 s",
-           mapped("C8.bc_t_e", "Na") == ("c8b_t_e_end", dict(
-               species="Na", horizon_s=192.0, coupled_horizon_s=64.0)))  # fmt: skip
+    expect("C8.bc_t_e stays erratum 1's (D336)",
+           mapped("C8.bc_t_e", "Na") == ("c8b_t_e_saved", dict(species="Na")))
     expect("C8.bc_c_t stays erratum 1's", mapped("C8.bc_c_t", "Na|t4")[0] == "c8b_at_saved")
     expect("C7's reading stays erratum 1's",
            mapped("C7.pump_cell_charge_per_fmol", "cell") == ("pump_cell_charge_per_fmol", {}))
@@ -1330,7 +1343,14 @@ def selfcheck_e2(out):
         "C8.b_c_t": ("info", 0.0, 0.05, {"K|t64": ("0.81", "1e-16")}),
     }  # fmt: skip
     values, bands = interface_of(fams)
-    engine = {("C7.pump_cell_charge_per_fmol", "cell"): repr(-1.0e-10 * (1 + 3.4e-11)),
+    tol = constants_tol_rel(SETTINGS["tolerance_rulings"]["C7.pump_cell_charge_per_fmol"])
+    expect("C7's tolerance: |F_declared - N_A e| / (N_A e) + 16 u, evaluated exactly",
+           abs(tol - decimal.Decimal("3.4307699621628870747e-11")) < decimal.Decimal("1e-30"))
+
+    def c7_at(relative_gap):  # The invented reference -1e-10 C, moved by a relative gap.
+        return str(decimal.Decimal("-1.0e-10") * (1 + relative_gap))
+
+    engine = {("C7.pump_cell_charge_per_fmol", "cell"): c7_at(tol - decimal.Decimal("1e-14")),
               ("C8.b_final_c", "Na"): "40.00001", ("C8.b_final_c", "K"): "0.8000004",
               ("C8.b_final_c", "Cl"): "2.999999",
               ("C6.v1_eq_ratio", eq_key): "2500.001"}  # fmt: skip
@@ -1344,16 +1364,16 @@ def selfcheck_e2(out):
            new["families"] == {"C7.pump_cell_charge_per_fmol": "pass", "C8.b_final_c": "pass",
                                "C6.v1_eq_ratio": "pass"})  # fmt: skip
     c7 = next(r for r in new["rows"] if r["family"] == "C7.pump_cell_charge_per_fmol")
-    expect("C7's ruled band is 1e-10 relative, the stored band recorded beside it",
-           decimal.Decimal(c7["band"]) == decimal.Decimal("1e-20")
+    expect("C7's ruled band is the formula's tolerance times |reference|, the stored one beside it",
+           decimal.Decimal(c7["band"]) == tol * decimal.Decimal("1.0e-10")
            and decimal.Decimal(c7["band_stored"]) == decimal.Decimal("1e-22"))
-    expect("a 3.4e-11 relative gap fails the stored 1e-12 band",
+    expect("a gap just inside the formula's tolerance fails the stored 1e-12 band",
            compare("abs", engine[("C7.pump_cell_charge_per_fmol", "cell")],
                    decimal.Decimal("-1.0e-10"), decimal.Decimal("1e-22")) == "fail")  # fmt: skip
     wide = copy.deepcopy(rerun)
-    wide["rows"][0]["value"] = repr(-1.0e-10 * (1 + 2e-10))
+    wide["rows"][0]["value"] = c7_at(tol + decimal.Decimal("1e-14"))
     widened = judge(wide, values, bands, only=CHANGED)
-    expect("a 2e-10 relative gap fails the ruled band",
+    expect("a gap just beyond the formula's tolerance fails",
            widened["families"]["C7.pump_cell_charge_per_fmol"] == "fail")
     disagree = copy.deepcopy(bands)
     disagree["families"]["C7.pump_cell_charge_per_fmol"]["rows"]["cell"]["band"] = "1e-20"
@@ -1457,9 +1477,10 @@ def selfcheck_e2(out):
         ("ratio domain", (*settings, "eq_ratio", "domain"), [1e-6, 1e6]),
         ("anchor bound", (*settings, "eq_ratio", "anchor_bound_fmol"), 2.0**20),
         ("bare horizon", (*settings, "c8b_horizon_s", "bare"), 128.0),
-        ("coupled horizon", (*settings, "c8b_horizon_s", "coupled"), 192.0),
-        ("C7's ruled tolerance", (*settings, "tolerance_rulings", "C7.pump_cell_charge_per_fmol",
-                                  "tol_rel"), 1e-11),
+        ("C7's declared F", (*settings, "tolerance_rulings", "C7.pump_cell_charge_per_fmol",
+                             "F_declared_C_per_mol"), "96485.3321"),
+        ("C7's float64 allowance", (*settings, "tolerance_rulings",
+                                    "C7.pump_cell_charge_per_fmol", "roundings_G"), 32),
         ("changed families", ("mapping", "changed"), list(CHANGED[:-1])),
         ("rule's measure", ("mapping", "rules", 0, "measure"), "v_zero"),
         ("erratum number", ("erratum",), 1),
@@ -1480,6 +1501,15 @@ def selfcheck_e2(out):
         refuses("check_rule with the module's B_out changed", check_rule)
     finally:
         SETTINGS["eq_ratio"]["B_out_mM"] = saved
+    ruling = SETTINGS["tolerance_rulings"]["C7.pump_cell_charge_per_fmol"]
+    ruling["F_declared_C_per_mol"] = "96485.3321"  # Erratum and module agree; the inputs do not.
+    try:
+        agreeing = dict(json.loads(text), mapping=rule_mapping())
+        (out / "mutated.json").write_text(json.dumps(agreeing))
+        refuses("check_rule with an F the declared inputs do not declare", check_rule,
+                out / "mutated.json")  # fmt: skip
+    finally:
+        ruling["F_declared_C_per_mol"] = "96485.33212"
 
     # 5. The same-engine check and the carried file's digest, on invented records.
     with tempfile.TemporaryDirectory() as tmp:
