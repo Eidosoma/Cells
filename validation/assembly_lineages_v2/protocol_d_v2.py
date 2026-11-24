@@ -818,6 +818,46 @@ def _m_checks(rng):
     return out
 
 
+def _moments_checks(rng):
+    """`moments` against the registered lq.mean_error, e and SE bit for bit, at every observable
+    and time whose replicas are not all identical: made-up columns at a V's, a count's and a σ's
+    magnitudes, one with NaN replicas (runs that ended early) and one with a single finite
+    replica; and one mixed observable, its first three columns identical at (d)'s bits (there
+    `moments` gives e 0 and SE 0 exactly) and the rest varying (there bit for bit the registered)."""
+    exact, d = {}, {}
+    for key, value, spread in (("V_L", 2.7488312e-19, 1e-3), ("L@pool", 8378.0, 1e-2),
+                               ("sigma_N_per_m", 1.3e-4, 3e-1)):  # fmt: skip
+        exact[key], d[key] = _made_up(rng, value, spread)
+    nan, d["with_nan"] = _made_up(rng, 0.7316, 1e-3)
+    nan[[3, 50, 99], 2] = np.nan
+    nan[7, 5] = np.nan
+    exact["with_nan"] = nan
+    single, d["one_finite"] = _made_up(rng, 3.1, 2e-2)
+    single[1:, 4] = np.nan
+    exact["one_finite"] = single
+    mixed, d["mixed"] = _made_up(rng, 0.6113, 2e-3, ties=(0, 1, 2))
+    exact["mixed"] = mixed
+    import warnings
+
+    with warnings.catch_warnings():  # the single-replica column's ddof=1 SD is NaN in both
+        warnings.simplefilter("ignore", RuntimeWarning)
+        ours, registered = moments(exact, d), lq.mean_error(exact, d)
+    same, exact_ties = True, True
+    for key in exact:
+        for j in range(TIMES):
+            if key == "mixed" and j < 3:
+                exact_ties &= bool(ours[key][0][j] == 0.0 and ours[key][1][j] == 0.0)
+                continue
+            for a, b in zip(ours[key], registered[key]):
+                same &= bool(np.float64(a[j]).view(np.uint64) == np.float64(b[j]).view(np.uint64))
+    residues = int(sum(registered["mixed"][1][j] > 0 for j in range(3)))
+    return {"moments equals the registered mean_error bit for bit wherever replicas differ (e and "
+            "SE, every observable and time; NaN and single-replica columns; one mixed case)": {
+                "observables": len(exact), "mixed_identical_columns_exact": exact_ties,
+                "registered_residues_at_the_mixed_ties": residues,
+                "ok": same and exact_ties}}
+
+
 def _zero_se_checks():
     """The zero-SE path on the registered constants: every constant pair of D5 and D6 at the rungs
     M reads, as 128 identical replicas at the registered value with (d) at it, classed spread at
@@ -1148,6 +1188,7 @@ def check(margins_path=None):
     ok, overlaps = seeds_disjoint()
     out = {"the seeds are disjoint from every earlier range": {"overlaps": overlaps, "ok": ok}}
     out |= _m_checks(rng)
+    out |= _moments_checks(rng)
     out |= _zero_se_checks()
     out |= _world_checks(rng)
     out |= _end_to_end_checks(rng, margins)

@@ -56,7 +56,7 @@ it in the decision entry. The checker runs that revision, with the tagged files 
   rung, is as it was.
 - **Rerun at the merged head 0087818d** (`/mnt/workspaces/Cells/ol6-protocol-d-v2-20261124/
   at-0087818d/`):
-  - §8's checks: 28 of 28 pass;
+  - §8's checks: 28 of 28 pass (at the tagged head, 29 of 29, with `moments`' row added);
   - (d)'s margins, the linear-noise table and the classification equal the registered ones
     exactly, and protocol_d_v2.json is registered from them;
   - (d)'s half of the constant rule: 16, 16, 11 and 11 pairs bitwise, and the 12.5 nm reader
@@ -292,7 +292,8 @@ At the top rung K against K − 1, each rung's observables as the registered rea
   - **Identical replicas are not excluded.** At a spread pair they are judged, exactly, by the
     registered inequality. No pair here is expected to have them: §4 marks every pair where the
     model holds the replicas at one value constant.
-  - Away from identical replicas, the z is bitwise the registered one (§8).
+  - Away from identical replicas, e and SE are bitwise the registered `mean_error`'s, and so is
+    the z (§8).
   - A NaN term, at a time after a run's end, enters no maximum, as registered.
 - **The verdict:**
   - M **passes** when every constant pair passes and the largest spread z is at most 4.5;
@@ -370,7 +371,7 @@ At the top rung K against K − 1, each rung's observables as the registered rea
 ## 8. The checks, before the tag (`python -m validation.assembly_lineages_v2.protocol_d_v2 check`)
 
 They use invented inputs and made-up columns only, the registered constants, and the parse of the
-registered definitions. No world is run. All 28 pass, in about 3 s:
+registered definitions. No world is run. All 29 pass, in about 3 s:
 
 - **Seeds:** every seed of every world and both sets lies outside every earlier range of §3,
   including the withdrawn ones and the open range from 900001.
@@ -389,6 +390,12 @@ registered definitions. No world is run. All 28 pass, in about 3 s:
     `mean_error` gave 11.27 on the same columns;
   - **genuine spread columns** give a z bitwise equal to the registered one;
   - **an observable without a class is refused.**
+- **`moments` against the registered `mean_error`** (§5): e and SE bit for bit at every observable
+  and time whose replicas are not all identical. The columns are made up at a V's, a count's and a
+  σ's magnitudes, one with NaN replicas, one with a single finite replica, and one mixed
+  observable. In the mixed one, the three columns identical at (d)'s bits give e 0 and SE 0
+  exactly, where the registered function leaves a residue at two; its other columns match it bit
+  for bit.
 - **The zero-SE path on the registered constants** (§5): every constant pair M reads, 54 in all, as
   128 identical replicas at its registered value with (d) at it. `moments` gives SE 0, e 0 and −∞
   at all 54. The registered `mean_error` leaves a residue at 14, each at z = 11.27.
