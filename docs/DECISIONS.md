@@ -10941,3 +10941,32 @@ inert wall places, in progress, is not in the judged engine.
 `atol_count` can fail their own ledger: its tolerance is 100·rtol·max(1, |Q| + |W| + events), with no atol term. The
 fix is an atol term derived from the integrator's declared `atol_count`. It is a follow-up after Protocol D's
 re-registration.
+
+## D340: two parameter-transfer flags from the Lean lane (a bilayer footprint across temperature; Kir4.1's square-root potassium scaling across preparations)
+
+2026-11-24, about 15:01 UTC. These come from the Lean lane's paired wet-lab records (candidate 8634e566, in its gate).
+They concern carrying a parameter across conditions. No law's form changes.
+
+**A bilayer's molecular footprint is declared for one temperature.**
+- `cells.bilayer_geometry@1` takes each membrane species' area per molecule as a declaration, and the engine does
+  not vary it with temperature.
+- Two independent methods find fluid POPC expanding on warming:
+  - scattering (Kučerka's group): 64.3 ± 1.3 to 67.3 ± 1.3 Å² over 30 to 50 °C, +4.7%;
+  - solid-state NMR (Leftin's group): 60.4 ± 3.6 to 70.5 ± 4.2 Å² over 28 to 48 °C, +16.7%.
+- The Lean lane's compiled replay shows that a fixed footprint hides that expansion completely.
+- **So a world compared across temperatures declares the footprint measured at each temperature.** A common
+  expansion coefficient is still open: the two methods disagree on its size.
+
+**Kir4.1's square-root potassium scaling stays scoped to its preparation.**
+- `inward_rectifier_linear_driving_force@1` scales as (c_o/K_ref)^(1/2), and its coefficients are the route's
+  declaration (its docstring already says they must be sourced before a claim rests on them).
+- **One preparation supports the exponent.** Tada's group (rat Kir4.1 in HEK293T, three patches per level) fitted
+  0.51 over 15–153 mM.
+- **Another departs from it.** Edvinsson's series (human Kir4.1) reaches about 19 pS at 40 mM, against 13.9 pS
+  from a square root anchored at their 110 mM value of 23 pS.
+- Figure precision, species and solutions limit what the difference shows. One dataset is an indication, so the law's
+  form stays, and a calibration carries only within its preparation.
+
+**Both scope lines** go into the laws' docstrings (`geometry.py`, `inward_rectifier_linear_driving_force.py`) in
+the next docstring-only landing, with the regulated-availability one closing rate (D337, D338) and the charge-anchor
+fix's citation of the Lean claim, merged at 29d69f1d.
