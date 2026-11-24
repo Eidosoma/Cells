@@ -1,5 +1,22 @@
 # Cells proof comparisons
 
+<a id="fr44-label-wash"></a>
+
+## 24 November 2026 · Tracer collected and retained in a compartment wash
+
+For a well-mixed pool of amount $n$, withdrawal $r$, supply $a$, and initial label share $s$, the label contributes $rs$ to the sample and keeps $(n-r)s$. Only the unlabelled base receives $a$. Lean proves the balance for each label and that the resulting shares sum to one. A whole wash with positive refill leaves only the base. If the pool is emptied without refill, its stored shares carry zero physical amount. For equal carrier concentrations in the old liquid and refill, an old label is diluted by the retained volume fraction. The six theorems use the pinned Mathlib and report only `propext`, `Classical.choice` and `Quot.sound`. [Wash proofs](CellsProofs/Tissue/CompartmentWash.lean) · [Engine exchange](https://github.com/Eidosoma/Cells/blob/3552e6cd19ddd1b3c12f709dd48df24b7a9aba6b/src/cells/numerics/label_shares.py#L159-L182)
+
+On frozen main `3552e6cd`, `resolved_pump_composite@1` with `resolved_pump_tissue@3`, `neutral_arrival_labels@1` and `scheduled_compartment_wash@1` ran four isolated wells in one CPU float64 run. Each well started with 1 fmol of tagged carrier. Each refill supplied the same concentration of unlabelled carrier during an open tagging window. The largest discrepancy in either label’s inventory was about 4.44 × 10⁻¹⁶ fmol over twelve exchanges. The nine exchange controls and the compiled labelled/unlabelled twin test also passed. The twin tests cover complete exchange, cumulative samples and unchanged physical histories. [Compiled assay replay](checks/label_wash.py) · [Engine twin test](https://github.com/Eidosoma/Cells/blob/3552e6cd19ddd1b3c12f709dd48df24b7a9aba6b/tests/unit/test_neutral_labels_events.py#L163)
+
+| Experimental readout | Observed | Cells |
+| --- | --- | --- |
+| Vloemans, diluted plug / undiluted diverted stock, at blank fractions 0.5, 0.8 and 0.9 of the final plug | 0.498, 0.193, 0.093 | 0.500, 0.200, 0.100 |
+| Stubbington, fluorescence remaining in the same chamber after 1, 5 and 9 exchanges of 20% | ≈0.90, 0.21 and 0.05 | 0.800, 0.328 and 0.134 |
+
+Vloemans assayed aliquots of both branches and reported wall adsorption. The metered part was diluted downstream, and no total recovery for the split was measured. Stubbington imaged one focal plane after equilibration, with SEM across three repeats. The withdrawal was unassayed. At wash five the plotted intensity is about 0.21 ± 0.06 SEM. Late signals fall below ideal dilution, and the author discusses possible fluorescence nonlinearity. Figure 3.6 has data markers through wash nine. The reference line reaches wash ten and follows the stated exchange fraction, while printed Eq. 3.7 would rise. Both experiments support the direction of dilution. The same-wash balance of measured withdrawn and remaining tracer stays open. [Vloemans, Fig. 4A](https://doi.org/10.1039/D4LC00195H) · [Stubbington, Fig. 3.6](https://etheses.durham.ac.uk/id/eprint/12771/1/ThesisLS_final.pdf#page=61)
+
+Run `JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 python -B checks/label_wash.py` from `lean/` with the tested engine and its `src/` on `PYTHONPATH`. It reports each measured signal, predicted concentration ratio, residual and maximum label-balance error. [Chip concentrations](checks/data/vloemans2024_dilution.json) · [Chamber readings](checks/data/stubbington2018_wash.json)
+
 <a id="fr51-two-potassium"></a>
 
 ## 24 November 2026 · Does a Kir2.1 block curve transfer to a second potassium level?

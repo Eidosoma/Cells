@@ -14,12 +14,12 @@ For a finite well of fixed volume V, a wash of fraction f changes free amount n 
 
 **Proved**
 
-- [CellsProofs.Tissue.CompartmentWash.inventory](../CellsProofs/Tissue/CompartmentWash.lean#L16)
-- [CellsProofs.Tissue.CompartmentWash.positive](../CellsProofs/Tissue/CompartmentWash.lean#L30)
-- [CellsProofs.Tissue.CompartmentWash.whole](../CellsProofs/Tissue/CompartmentWash.lean#L34)
-- [CellsProofs.Tissue.CompartmentWash.repeated](../CellsProofs/Tissue/CompartmentWash.lean#L56)
-- [CellsProofs.Tissue.CompartmentWash.mixingHeat_nonneg](../CellsProofs/Tissue/CompartmentWash.lean#L42)
-- [CellsProofs.Tissue.CompartmentWash.whole_mixing_heat](../CellsProofs/Tissue/CompartmentWash.lean#L51)
+- [CellsProofs.Tissue.CompartmentWash.inventory](../CellsProofs/Tissue/CompartmentWash.lean#L18)
+- [CellsProofs.Tissue.CompartmentWash.positive](../CellsProofs/Tissue/CompartmentWash.lean#L32)
+- [CellsProofs.Tissue.CompartmentWash.whole](../CellsProofs/Tissue/CompartmentWash.lean#L36)
+- [CellsProofs.Tissue.CompartmentWash.repeated](../CellsProofs/Tissue/CompartmentWash.lean#L58)
+- [CellsProofs.Tissue.CompartmentWash.mixingHeat_nonneg](../CellsProofs/Tissue/CompartmentWash.lean#L44)
+- [CellsProofs.Tissue.CompartmentWash.whole_mixing_heat](../CellsProofs/Tissue/CompartmentWash.lean#L53)
 
 Direct proof subject `cells.scheduled_compartment_wash@1`
 

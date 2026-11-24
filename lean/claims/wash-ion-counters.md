@@ -12,7 +12,7 @@ For an unchanged ion in a well of positive volume, replacing a fraction of liqui
 
 **Proved**
 
-- [CellsProofs.Tissue.CompartmentWash.same_concentration_ion](../CellsProofs/Tissue/CompartmentWash.lean#L23)
+- [CellsProofs.Tissue.CompartmentWash.same_concentration_ion](../CellsProofs/Tissue/CompartmentWash.lean#L25)
 
 Direct proof subject `cells.scheduled_compartment_wash@1`
 
