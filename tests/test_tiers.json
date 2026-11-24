@@ -382,7 +382,8 @@
   "/mnt/workspaces/Cells/fr17-sparse-20261123/tiers-044f07e6/measure/measured.json",
   "/mnt/workspaces/Cells/fr47-build-20261124/measure-4a533a2c/measured.json",
   "/mnt/workspaces/Cells/fr47-build-20261124/measure-94bf2a97/measured.json",
-  "/mnt/workspaces/Cells/fr47-build-20261124/measure-c0aa0bd3/measured.json"
+  "/mnt/workspaces/Cells/fr47-build-20261124/measure-c0aa0bd3/measured.json",
+  "/mnt/workspaces/Cells/fr47-inert-wall-20261124/measure-b581efae/measured.json"
  ],
  "measured_provenance": [
   {
@@ -3265,6 +3266,14 @@
    "root": "/mnt/workspaces/Cells/fr47-build-20261124/snapshot-c0aa0bd3",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-24T11:44:47+00:00"
+  },
+  {
+   "git_revision": "b581efaea0a2a848c3abc58fa53d8a74f894ec46",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr47-inert-wall-20261124/snapshot-b581efae",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-24T14:06:05+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -7204,10 +7213,10 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_rate_equations.py",
-    "seconds": 48.93,
+    "seconds": 73.47,
     "exit_code": 0,
     "counts": {
-     "passed": 19
+     "passed": 24
     }
    },
    {
