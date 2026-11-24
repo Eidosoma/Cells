@@ -71,14 +71,16 @@ from cells.definitions.surface_pump_v3_spec import (
     SERIES_GATE_LAW_ID,
     TRAPEZOID_JUNCTION_HEAT,
     Control,
+    channel_blocks,
     channel_factors,
     channel_laws,
     law_codes,
     projection,
 )
 from cells.execution.errors import NumericalError
+from cells.laws.channels import open_channel_block as block_law
 from cells.laws.channels import sodium_channels, voltage_gates
-from cells.laws.electrochemistry import CHARGE_PER_FMOL, MOL_PER_FMOL, F, R
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, MOL_PER_FMOL, F, R, bernoulli
 from cells.laws.junctions import junction_gate
 from cells.laws.junctions import junction_series_gates as series_gates
 from cells.laws.junctions.selective import selective_flux
@@ -177,6 +179,33 @@ FORMS_LAYOUT_FIELDS = (
     "forms_face_form",  # [mover] a binder form's index among its binder's forms (-1 for a row)
     "forms_face_form_movers",  # [form mover] the binder forms' movers; its size is static
     "forms_face_incidence",  # [floating component, forms face] (field.bind's face_incidence's form)
+)
+# FR-51 (D327): a blocked population's layout, present only where some population declares a block
+# (InnerStructure.blocked_channels, _kind_types), so no other world's types, layouts or programs
+# carry anything of it (D148). [mode, channel] and [channel] fields, M modes. A population without
+# a block in a blocked world, and every padding slot, carries one mode with w = 1, K(0) = 1,
+# steepness 0 and c_B = 0, so u = 1.0 exactly; a population's unused mode slots carry w = 0.
+BLOCK_LAYOUT_FIELDS = (
+    "channel_block_weight",  # [mode, channel] w_k (dimensionless)
+    "channel_block_k0_mM",  # [mode, channel] K_k(0) (mM)
+    "channel_block_steepness",  # [mode, channel] s sgn(z_B) m_k (dimensionless; a_k = this F/RT)
+    "channel_block_concentration_mM",  # [channel] c_B (mM)
+    "channel_block_reversal",  # [channel] True where V_ref = V - E of channel_block_ion
+    "channel_block_ion",  # [channel] the reversal ion's species row (0 where none is named)
+)
+UNBLOCKED_FRACTION = "channel_unblocked_fraction"  # FR-51's readout column, only where declared.
+UNBLOCKED_FRACTION_NOTE = (
+    "the unblocked fraction u of each channel population at the row's read state: (sum_k w_k "
+    "K_k/(c_B + K_k)) / (sum_k w_k) at the row's patch voltage V (or V - E of the reversal ion), "
+    "which multiplies its flux (FR-51, open_channel_block_weighted_modes@1); 1 for a population "
+    "without a block. Recorded only where a population declares a block. It is separate from "
+    "channel_availability and channel_effective_availability, which carry the controls and the "
+    "routing door's factors"
+)
+BLOCK_STRUCTURE_REFUSAL = (
+    f"{block_law.LAW_ID} runs in @3 through its structure's implementation (registry.get_model), "
+    "which holds the blocked populations' layout; a path without that structure would drop the "
+    "block, so it refuses it"
 )
 FORMS_STRUCTURE_REFUSAL = (
     f"{forms_law.LAW_ID} runs in @3 through its structure's implementation (registry.get_model), "
@@ -306,9 +335,17 @@ def initial_values(spec, *, structure=None):
     declared_forms = getattr(spec.model, "forms_faces", ())
     if bool(declared_forms) != forms_faces_declared(structure):
         raise ConfigError(FORMS_STRUCTURE_REFUSAL)  # Fail closed: a path without them drops them.
+    blocked = bool(channel_blocks(spec.model))  # FR-51.
+    if blocked != block_declared(structure):
+        raise ConfigError(BLOCK_STRUCTURE_REFUSAL)  # Fail closed, as the forms faces are.
     with forms_return_paths(spec.model):  # Left before anything else runs.
         state, layout = _todays_initial_values(spec)
-    if (structure is None or not structure.kinds) and not series and not declared_forms:
+    if (
+        (structure is None or not structure.kinds)
+        and not series
+        and not declared_forms
+        and not blocked
+    ):
         return state, layout
     # Schema A (§7.4 (j), (k)): each declared kind adds its state and layout fields, by name, in
     # canonical order, into its structure's types.
@@ -335,6 +372,8 @@ def initial_values(spec, *, structure=None):
         own_state, own_layout = forms_initial_values(spec, entries)
         fields |= own_state
         entries |= own_layout
+    if blocked:  # FR-51: the blocked populations' layout, last.
+        entries |= block_initial_values(spec, structure)
     kind = (
         types.FLOOR_LAYOUT_TYPE
         if "field_current_floor" in entries
@@ -431,6 +470,40 @@ def forms_faces_declared(structure):
 def _has_forms(p):
     """Static: the layout of a world that declares forms faces (its type holds their fields)."""
     return "forms_face_active" in type(p)._fields
+
+
+def block_declared(structure):
+    """Whether the structure declares a blocked population (FR-51; static)."""
+    return structure is not None and bool(structure.blocked_channels)
+
+
+def _has_block(p):
+    """Static: the layout of a world that declares a block (FR-51; its type holds its fields)."""
+    return "channel_block_weight" in type(p)._fields
+
+
+def block_initial_values(spec, structure):
+    """The blocked populations' layout fields (BLOCK_LAYOUT_FIELDS), M = structure.block_modes
+    mode slots per population."""
+    m, nc, modes = spec.model, spec.execution.channel_capacity, structure.block_modes
+    weight, k0, steepness = np.zeros((modes, nc)), np.ones((modes, nc)), np.zeros((modes, nc))
+    weight[0] = 1.0  # One unblocked mode, where no block is declared (u = 1.0 exactly).
+    concentration, reversal = np.zeros(nc), np.zeros(nc, dtype=bool)
+    ion = np.zeros(nc, dtype=np.int64)
+    for slot, _, block in channel_blocks(m):
+        for k, (mode, steep) in enumerate(zip(block.modes, block.steepness(), strict=True)):
+            weight[k, slot], k0[k, slot], steepness[k, slot] = mode.weight, mode.k0_mM, steep
+        concentration[slot] = block.concentration_mM
+        if block.reversal_of is not None:
+            reversal[slot], ion[slot] = True, m.species_ids.index(block.reversal_of)
+    return dict(
+        channel_block_weight=weight,
+        channel_block_k0_mM=k0,
+        channel_block_steepness=steepness,
+        channel_block_concentration_mM=concentration,
+        channel_block_reversal=reversal,
+        channel_block_ion=ion,
+    )
 
 
 def forms_initial_values(spec, layout):
@@ -594,7 +667,153 @@ def channel_rates(
         xp=xp,
     )
     flux = xp.where(p.channel_active, flux, 0.0)
+    if _has_block(p):  # FR-51 (static): the unblocked fraction u multiplies the population's flux.
+        flux = flux * channel_block(ci, co, voltage, p, xp=xp).u
     return flux, 1e-3 * flux * delta_mu[:, patch], target, tau, voltage
+
+
+class ChannelBlockValues(NamedTuple):
+    """FR-51: each population's block at a stage (open_channel_block_weighted_modes@1)."""
+
+    u: object  # [channel] the unblocked fraction; 1.0 on an inactive slot
+    theta: object  # [mode, channel] the blocked fraction of each mode
+    free: object  # [mode, channel] 1 - theta, formed directly
+    slope: object  # [channel] (sum_k w_k |a_k| theta_k (1 - theta_k)) / (sum_k w_k), 1/V
+    reversal: object  # [channel] E of the reversal ion (V); 0 where none is named
+    valid: object  # Every active population's K_k and c_B + K_k finite and normal
+
+
+def channel_block(ci, co, voltage, p, *, xp=jnp):
+    """FR-51: each population's block (ChannelBlockValues) at a stage.
+
+    The inputs are the concentrations [species, cell] and [species, outside] (mM) and the
+    populations' voltages [channel] (V, channel_voltage). V_ref is V, or V - E for a population
+    under the reversal reference, with E = (R T/(z F)) ln(c_o/c_i) of its ion at its cell and
+    outside node. The fraction's form is exact at both ends (fr51-channel-block-v1 §1.3). It needs
+    the layout's block fields: a world with a block (_has_block)."""
+    patch, ion, named = p.channel_membranes, p.channel_block_ion, p.channel_block_reversal
+    inside = xp.where(named, ci[ion, p.membrane_cell[patch]], 1.0)
+    outside = xp.where(named, co[ion, p.membrane_outside[patch]], 1.0)
+    z = xp.where(named, xp.reshape(p.valence, (-1,))[ion], 1.0)
+    reversal = R * p.temperature * (xp.log(outside) - xp.log(inside)) / (z * F)
+    v_ref = xp.where(named, voltage - reversal, voltage)
+    k = block_law.dissociation(
+        p.channel_block_k0_mM, p.channel_block_steepness, v_ref, p.temperature, xp=xp
+    )
+    blocker = p.channel_block_concentration_mM
+    theta, free = block_law.fractions(blocker, k)
+    weight = p.channel_block_weight
+    u = block_law.unblocked_fraction(weight, free)
+    slope = block_law.slope(weight, p.channel_block_steepness, p.temperature, theta, free, xp=xp)
+    domain = xp.all(block_law.domain_valid(blocker, k, xp=xp), axis=0)
+    return ChannelBlockValues(
+        xp.where(p.channel_active, u, 1.0),
+        theta,
+        free,
+        xp.where(p.channel_active, slope, 0.0),
+        xp.where(named, reversal, 0.0),
+        xp.all(xp.where(p.channel_active, domain, True)),
+    )
+
+
+class ChannelBlockTerms(NamedTuple):
+    """FR-51's per-stage terms of each population [channel] (fr51-channel-block-v1 §2)."""
+
+    block: ChannelBlockValues
+    voltage_term_S: object  # T_V = u G_max + |I_free| slope (S)
+    outside_term: object  # T_c,o (fmol/s per mM) under the reversal reference; else 0
+    inside_term: object  # T_c,i (fmol/s per mM) under the reversal reference; else 0
+
+
+def channel_block_terms(gate, ci, co, voltage, availability, p, *, xp=jnp, structure=None):
+    """FR-51: each blocked population's per-stage terms (ChannelBlockTerms), at the concentrations
+    [species, node] (mM), the populations' voltages [channel] (V) and their availabilities. These
+    are the terms the stability rules use: membrane_rate's T_V and material_rate's T_c.
+    - G_max is membrane_rate's own term, F^2/(R T) sum z^2 P r max(c_i, c_o) a o v A.
+    - I_free and J_free are the population's unblocked current and flux at V.
+    - T_c,o = u 1e15 A P r a o v B(x) + |J_free| slope R T/(|z| F c_o), at the outside end; T_c,i
+      is the same with B(-x) and c_i. They are zero for a population under the membrane-voltage
+      reference, whose u does not depend on E, so a world without one keeps today's rule.
+    Inactive slots give zeros."""
+    block = channel_block(ci, co, voltage, p, xp=xp)
+    patch = p.channel_membranes
+    cell, outside = p.membrane_cell[patch], p.membrane_outside[patch]
+    opening = channel_opening(gate, p.channel_laws, xp=xp, structure=structure)
+    open_fraction = xp.where(p.channel_active, p.channel_abundance * opening, 0.0)
+    largest = xp.maximum(ci[:, cell], co[:, outside])
+    channel = species_sum(
+        p.valence**2 * p.channel_permeability * p.channel_relative_permeability * largest, xp=xp
+    ) * (open_fraction * availability)
+    g_max = F * F / (R * p.temperature) * (channel * p.membrane_area[patch])
+    free = selective_flux(
+        ci[:, cell],
+        co[:, outside],
+        voltage,
+        p.valence,
+        p.temperature,
+        p.membrane_area[patch],
+        p.channel_permeability * p.channel_relative_permeability,
+        0.0,
+        p.channel_abundance,
+        opening * availability,
+        xp=xp,
+    )
+    free = xp.where(p.channel_active, free, 0.0)
+    voltage_term = block.u * g_max + xp.abs(channel_current_A(free, p, xp=xp)) * block.slope
+    ion, named = p.channel_block_ion, p.channel_block_reversal
+    z = xp.reshape(p.valence, (-1,))[ion]
+    x = z * F * voltage / (R * p.temperature)
+    conductance = (
+        p.membrane_area[patch]
+        * (p.channel_permeability * p.channel_relative_permeability[ion, xp.arange(ion.size)])
+        * ((opening * availability) * p.channel_abundance)
+        / MOL_PER_FMOL
+    )
+    flux_ion = xp.abs(free[ion, xp.arange(ion.size)])
+    through_e = flux_ion * block.slope * (R * p.temperature / (xp.abs(z) * F))
+    c_out = xp.where(named, co[ion, outside], 1.0)
+    c_in = xp.where(named, ci[ion, cell], 1.0)
+    outside_term = block.u * conductance * bernoulli(x, xp=xp) + through_e / c_out
+    inside_term = block.u * conductance * bernoulli(-x, xp=xp) + through_e / c_in
+    live = p.channel_active & named
+    return ChannelBlockTerms(
+        block,
+        xp.where(p.channel_active, voltage_term, 0.0),
+        xp.where(live, outside_term, 0.0),
+        xp.where(live, inside_term, 0.0),
+    )
+
+
+def block_material_rates(state, p, potentials, *, xp=jnp, structure=None, control=None):
+    """FR-51: the blocked populations' material rates (1/s) per node [cells, then outside nodes]:
+    T_c,i over the cell's volume and T_c,o over the outside node's (criterion E), at the stage's
+    amounts and potentials."""
+    n = p.active.size
+    ci, co = physical_amounts(state, p)
+    ci = xp.where(p.active, ci / p.volume, 1.0)
+    co = xp.where(p.outside_active, co / p.extracellular_volume, 1.0)
+    patch_voltage = xp.where(
+        p.membrane_active, potentials[p.membrane_cell] - potentials[n + p.membrane_outside], 0.0
+    )
+    terms = channel_block_terms(
+        state.channel_gate,
+        ci,
+        co,
+        channel_voltage(patch_voltage, p, xp=xp),
+        control.channel,
+        p,
+        xp=xp,
+        structure=structure,
+    )
+    patch = p.channel_membranes
+    cell, outside = p.membrane_cell[patch], p.membrane_outside[patch]
+    volume = xp.where(p.active, p.volume, 1.0)[cell]
+    outside_volume = xp.where(p.outside_active, p.extracellular_volume, 1.0)[outside]
+    cells = scatter(terms.inside_term / volume, xp.zeros(n), (cell,), xp=xp)
+    nodes = scatter(
+        terms.outside_term / outside_volume, xp.zeros(p.outside_active.size), (outside,), xp=xp
+    )
+    return xp.concatenate((cells, nodes))
 
 
 def channel_to_membrane(value, p, *, xp=jnp):
@@ -618,7 +837,7 @@ def channel_current_A(flux, p, *, xp=np):
     return CHARGE_PER_FMOL * species_sum(charge, xp=xp)
 
 
-def clamped_channel_flux(state, control, p, voltages_V, *, xp=np, structure=None):
+def clamped_channel_flux(state, control, p, voltages_V, *, xp=np, structure=None, block=False):
     """FR-34, current at a declared voltage: each channel population's outward flux
     [species, channel] (fmol/s, the sign of channel_flux_fmol_s) and its current [channel] (A,
     outward-positive, channel_current_A) at the patch voltages phi_in - phi_out given [membrane]
@@ -634,7 +853,13 @@ def clamped_channel_flux(state, control, p, voltages_V, *, xp=np, structure=None
     The controls are the ones @3 receives: in a composite, the composite's control view
     (control_view(control, state, p), with the operators' factors and writes, as held_schedules
     holds them for its observations), never the composite's stored controls, which leave an
-    operator's factor out (D265, finding 1)."""
+    operator's factor out (D265, finding 1).
+
+    block (FR-51): where a population declares a block, also return, third, its
+    ChannelBlockTerms at the same inputs (u, each mode's fractions, T_V, T_c,o and T_c,i), the
+    stability rules' own terms. Refused in a world without a block."""
+    if block and not _has_block(p):
+        raise ConfigError("clamped_channel_flux(block=True) needs a world that declares a block")
     kinds = _kinds(structure)
     read = _stage_read(state, p, kinds, xp=xp)[0] if kinds else state
     if kinds and structure.routes:  # §7.4 (n): the routing door, after the read (static).
@@ -656,7 +881,19 @@ def clamped_channel_flux(state, control, p, voltages_V, *, xp=np, structure=None
         xp=xp,
         structure=structure,
     )[0]
-    return flux, channel_current_A(flux, p, xp=xp)
+    if not block:
+        return flux, channel_current_A(flux, p, xp=xp)
+    terms = channel_block_terms(
+        state.channel_gate,
+        ci,
+        co,
+        channel_voltage(voltage, p, xp=xp),
+        control.channel,
+        p,
+        xp=xp,
+        structure=structure,
+    )
+    return flux, channel_current_A(flux, p, xp=xp), terms
 
 
 def nak_pump_rates(ci, co, delta_mu, control, p, *, xp=jnp, structure=None):
@@ -1380,6 +1617,8 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None
     if ca_args is not None:
         valid &= xp.all(calcium_atpase.domain_valid(*ca_args, xp=xp))
     valid &= channel_domain_valid(cv, target, tau, p, xp=xp)
+    if _has_block(p):  # FR-51 (static): every K_k and c_B + K_k finite and normal.
+        valid &= channel_block(ci, co, cv, p, xp=xp).valid
     if process is not None:
         valid &= process.valid
     if kinds:  # A failed stage read, a kind's domain or a stage check refuses the row.
@@ -1686,6 +1925,8 @@ def explicit_rates(
     if ca_args is not None:
         valid &= xp.all(calcium_atpase.domain_valid(*ca_args, xp=xp))
     valid &= channel_domain_valid(cv, target, tau, p, xp=xp)
+    if _has_block(p):  # FR-51 (static): every K_k and c_B + K_k finite and normal.
+        valid &= channel_block(ci, co, cv, p, xp=xp).valid
     if series_junctions(structure):  # FR-30: each gate on its law's domain.
         valid &= series_junction_domain(state, r.junction_voltage_V, control.junction, p, structure,
                                         xp=xp)  # fmt: skip
@@ -3280,11 +3521,31 @@ def membrane_rate(
         p.valence**2 * p.channel_permeability * p.channel_relative_permeability * largest[:, patch],
         xp=xp,
     ) * (open_fraction * control.channel)
+    blocked = None
+    if _has_block(p):  # FR-51 (static): each population enters with its T_V (S), not G_max alone.
+        if potentials is None:
+            raise ValueError("A blocked world's membrane rate needs the stage's potentials")
+        patch_voltage = xp.where(
+            p.membrane_active, potentials[p.membrane_cell] - potentials[n + p.membrane_outside], 0.0
+        )
+        blocked = channel_block_terms(
+            state.channel_gate,
+            ci,
+            co,
+            channel_voltage(patch_voltage, p, xp=xp),
+            control.channel,
+            p,
+            xp=xp,
+            structure=structure,
+        ).voltage_term_S
+        channel = xp.zeros_like(channel)
     membrane = xp.where(p.membrane_active, passive * p.membrane_area, 0.0)
     membrane += scatter(channel * p.membrane_area[patch], membrane, (patch,), xp=xp)
     if explicit_only:  # N2 (static): the patches' and channels' slopes are implicit.
         membrane = xp.zeros_like(membrane)
     total = slope * scatter(membrane, xp.zeros(n), (p.membrane_cell,), xp=xp)
+    if blocked is not None:  # FR-51: the blocked populations' T_V at their cells.
+        total = total + scatter(blocked, xp.zeros(n), (p.membrane_cell[patch],), xp=xp)
     capacitance = scatter(p.membrane_capacitance, xp.zeros(n), (p.membrane_cell,), xp=xp)
     kinds = _kinds(structure)
     if not kinds:  # Today's rate: the cells' rows.
@@ -3303,6 +3564,8 @@ def membrane_rate(
     cells = xp.max(xp.where(p.active, total / xp.where(p.active, capacitance, 1.0), 0.0))
     o = p.outside_active.size
     node_total = slope * scatter(membrane, xp.zeros(o), (p.membrane_outside,), xp=xp) + nodes[n:]
+    if blocked is not None:  # FR-51: and at their outside nodes.
+        node_total = node_total + scatter(blocked, xp.zeros(o), (p.membrane_outside[patch],), xp=xp)
     patches = xp.where(p.membrane_active, p.membrane_capacitance, 0.0)
     node_capacitance = scatter(patches, xp.zeros(o), (p.membrane_outside,), xp=xp)
     free = free_outside_nodes(p, xp=xp) & (node_capacitance > 0)
@@ -3319,15 +3582,21 @@ def material_rate(state, control, p, *, xp=jnp, structure=None, potentials=None)
     every explicit stage, as membrane_rate's charge rule (the FR-4/FR-5 note's §17, D4)."""
     kinds = _kinds(structure)
     sloped = [kind for kind in kinds if kind.material_term is not None]
-    if not sloped:
+    blocked = _has_block(p)  # FR-51 (static).
+    if not sloped and not blocked:
         return None
-    read, _ = _stage_read(state, p, kinds, xp=xp)
-    control, _ = _route(structure, kinds, read, control, p, xp=xp)  # Validity: the stage's.
     n = p.active.size
     nodes = xp.zeros(n + p.outside_active.size)
-    gated = presence_gated(p, structure, xp=xp)  # Q2 (static).
-    for kind in sloped:
-        nodes = nodes + kind.material_term(read, potentials, control, gated, xp=xp)
+    if blocked:  # FR-51: the blocked populations' T_c at their two ends, at the held availability.
+        nodes = nodes + block_material_rates(
+            state, p, potentials, xp=xp, structure=structure, control=control
+        )
+    if sloped:
+        read, _ = _stage_read(state, p, kinds, xp=xp)
+        control, _ = _route(structure, kinds, read, control, p, xp=xp)  # Validity: the stage's.
+        gated = presence_gated(p, structure, xp=xp)  # Q2 (static).
+        for kind in sloped:
+            nodes = nodes + kind.material_term(read, potentials, control, gated, xp=xp)
     cells = xp.max(xp.where(p.active, nodes[:n], 0.0), initial=0.0)
     moving = p.outside_active & ~p.reservoir
     return xp.maximum(cells, xp.max(xp.where(moving, nodes[n:], 0.0), initial=0.0))
@@ -4408,7 +4677,7 @@ def view_declarations(structure):
     where the reference is a field of the structure's layout). A structure without kinds gets the
     module's own objects."""
     kinds = _kinds(structure)
-    if not kinds and not series_junctions(structure):
+    if not kinds and not series_junctions(structure) and not block_declared(structure):
         names = (*_VIEW_MAPS, "VIEW_LAYERS", "VIEW_AXIS_SETS", *_RECORD_ROLES)
         return {name: globals()[name] for name in names}
     types = kind_types(structure)
@@ -4450,6 +4719,12 @@ def view_declarations(structure):
         for name, value in zip(("UNITS", "RECORD_KINDS", "RECORD_LAYERS", "OBSERVATION_AXES"),
                                declared, strict=True):  # fmt: skip
             merged[name][EFFECTIVE_AVAILABILITY] = value
+    if block_declared(structure):  # FR-51: the unblocked fraction's record.
+        notes[UNBLOCKED_FRACTION] = UNBLOCKED_FRACTION_NOTE
+        declared = ("1", "level", "channels", ("channel_slot",))
+        for name, value in zip(("UNITS", "RECORD_KINDS", "RECORD_LAYERS", "OBSERVATION_AXES"),
+                               declared, strict=True):  # fmt: skip
+            merged[name][UNBLOCKED_FRACTION] = value
     out = {name: MappingProxyType(value) for name, value in merged.items()}
     return out | dict(
         VIEW_LAYERS=tuple(layers),
@@ -4490,6 +4765,15 @@ EFFECTIVE_AVAILABILITY_NOTE = (
     "order (B1's door); recorded only where a population declares factors, since elsewhere it "
     "is channel_availability"
 )
+
+
+def row_unblocked_fraction(read, membrane_voltage, p):
+    """FR-51's readout at an observed row, on the host: each population's u at the row's read
+    concentrations and patch voltages (channel_unblocked_fraction)."""
+    ci, co = physical_amounts(read, p)
+    ci = np.where(p.active, ci / p.volume, 1.0)
+    co = np.where(p.outside_active, co / p.extracellular_volume, 1.0)
+    return channel_block(ci, co, channel_voltage(membrane_voltage, p, xp=np), p, xp=np).u
 
 
 def observe_history(times, history, layout, requested, spec, *, structure=None):
@@ -4560,6 +4844,12 @@ def observe_history(times, history, layout, requested, spec, *, structure=None):
                         presence_gated(p, structure, xp=np),
                         xp=np,
                     )
+                ),
+                # FR-51: the unblocked fraction, where a population declares a block.
+                *(
+                    (row_unblocked_fraction(read, r.membrane_voltage_V, p),)
+                    if _has_block(p)
+                    else ()
                 ),
                 # FR-34: the routed availability, where the door routes into @3's channels.
                 *((routed.channel,) if routes_into_channels(structure) else ()),
@@ -4650,6 +4940,8 @@ def structure(model):
         junction_series_kinds=_series_kinds(model),  # FR-30 (D262): () by default.
         crossing_junctions=crossing_junctions(model),  # Fix (A) (D273): () by default.
         forms_faces=tuple(sorted(f.id for f in getattr(model, "forms_faces", ()))),  # () default.
+        blocked_channels=tuple(sorted(c_id for _, c_id, _ in channel_blocks(model))),  # FR-51.
+        block_modes=max((len(b.modes) for _, _, b in channel_blocks(model)), default=0),
     )
 
 
@@ -4934,7 +5226,7 @@ TODAYS_TYPES = KindTypes(
 
 
 @cache
-def _kind_types(fields, registry, series=False, forms=False):
+def _kind_types(fields, registry, series=False, forms=False, block=False):
     """fields: ((kind ID, the bound kind's KindFields), ...) in canonical order. Classes are cached
     by field set (§7.4 (j); (n) 5): structures whose kinds carry the same fields share them, and a
     kind bound to fields other than its static ones (a declaration-dependent variant) names its
@@ -4942,8 +5234,10 @@ def _kind_types(fields, registry, series=False, forms=False):
     junctions take junction_series_gates@1, whose gates are a state field (SERIES_GATES, after the
     kinds' state fields) and whose parameters a layout field (SERIES_PARAMETERS). forms: the
     structure declares forms faces, whose state fields (FORMS_STATE_AXES) follow those and whose
-    layout fields (FORMS_LAYOUT_FIELDS) follow the others."""
-    if not fields and not series and not forms:
+    layout fields (FORMS_LAYOUT_FIELDS) follow the others. block (FR-51): a population declares a
+    block, whose layout fields (BLOCK_LAYOUT_FIELDS) come last and whose readout column
+    (UNBLOCKED_FRACTION) follows the kinds' readout columns."""
+    if not fields and not series and not forms and not block:
         return TODAYS_TYPES
 
     def label(kind_id, own):
@@ -4962,6 +5256,7 @@ def _kind_types(fields, registry, series=False, forms=False):
     suffix = "".join(label(kind_id, own) for kind_id, own in fields)  # Deterministic.
     suffix += "_" + SERIES_GATES if series else ""
     suffix += "_forms_faces" if forms else ""
+    suffix += "_channel_block" if block else ""
     axes = dict(STATE_AXES)
     for kind_id, own in fields:
         for name, name_axes in own.state_axes:  # Not `field`: the field-solver module's name.
@@ -4978,6 +5273,7 @@ def _kind_types(fields, registry, series=False, forms=False):
     layout_extra = [name for _, own in fields for name in own.layout_fields]
     layout_extra += [SERIES_PARAMETERS] if series else []
     layout_extra += list(FORMS_LAYOUT_FIELDS) if forms else []
+    layout_extra += list(BLOCK_LAYOUT_FIELDS) if block else []
     layout = NamedTuple(
         "SurfacePumpChannelLayout" + suffix,
         [(k, object) for k in (*LAYOUT_TYPE._fields, *layout_extra)],
@@ -4997,6 +5293,8 @@ def _kind_types(fields, registry, series=False, forms=False):
             for k in (*Control._fields, *(f for _, own in fields for f in own.control_fields))
         ],
     )
+    if not fields and not series and not forms:  # FR-51's block alone adds no state or control.
+        state, control = STATE_TYPE, Control
     # Rule (b): a kind's state fields are observation columns right after today's state fields
     # (the windowed runner rebuilds states from observations by name); its readouts follow
     # today's readouts.
@@ -5008,6 +5306,7 @@ def _kind_types(fields, registry, series=False, forms=False):
         *forms_state,
         *OBSERVATION_FIELDS[today_state:],
         *(column for _, own in fields for column in own.readout_columns),
+        *((UNBLOCKED_FRACTION,) if block else ()),
     )
     observations = make_dataclass(
         "SurfacePumpChannelObservations" + suffix, [(k, np.ndarray) for k in columns], frozen=True
@@ -5030,15 +5329,16 @@ def kind_types(structure):
         fields.append((kind_id, own))
     series = series_junctions(structure)
     forms = forms_faces_declared(structure)
+    block = block_declared(structure)  # FR-51.
     if routes_into_channels(structure):
-        return _routed_kind_types(tuple(fields), registry, series, forms)
-    return _kind_types(tuple(fields), registry, series, forms)
+        return _routed_kind_types(tuple(fields), registry, series, forms, block)
+    return _kind_types(tuple(fields), registry, series, forms, block)
 
 
 @cache
-def _routed_kind_types(fields, registry, series=False, forms=False):
+def _routed_kind_types(fields, registry, series=False, forms=False, block=False):
     """_kind_types' classes with one more observation column, EFFECTIVE_AVAILABILITY, last."""
-    types = _kind_types(fields, registry, series, forms)
+    types = _kind_types(fields, registry, series, forms, block)
     columns = (*types.OBSERVATION_FIELDS, EFFECTIVE_AVAILABILITY)
     observations = make_dataclass(
         types.Observations.__name__ + "_" + EFFECTIVE_AVAILABILITY,

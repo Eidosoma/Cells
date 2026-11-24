@@ -1931,19 +1931,20 @@ class Composition:
             self.view(p, state, xp=xp),
         )
 
-    def clamped_channel_flux(self, state, control, p, voltages_V, *, xp=np):
+    def clamped_channel_flux(self, state, control, p, voltages_V, *, xp=np, block=False):
         """FR-34 in a composite (D265 finding 1): @3's clamped_channel_flux, each channel
         population's outward flux [species, channel] (fmol/s) and current [channel] (A,
         outward-positive) at the patch voltages given [membrane] (V; a scalar applies to every
         patch), at the composite's clamp_inputs; @3 then applies its structure's stage read and
         routing door. Given the stored control and layout instead, @3's helper loses every
         operator factor: a population held at 0.5 by species_regulated_availability@1 read
-        11.10328 pA at -50 mV, where the composite runs at 5.55164 pA. Pure: it records nothing."""
+        11.10328 pA at -50 mV, where the composite runs at 5.55164 pA. Pure: it records nothing.
+        block (FR-51): also the blocked populations' terms at the same inputs, as @3 gives them."""
         inner_state, inner_control, view = self.clamp_inputs(state, control, p, xp=xp)
         clamp = (
             getattr(self.inner, "clamped_channel_flux", None) or pump3.ionic.clamped_channel_flux
         )
-        return clamp(inner_state, inner_control, view, voltages_V, xp=xp)
+        return clamp(inner_state, inner_control, view, voltages_V, xp=xp, block=block)
 
     def clamped_kind(self, function, state, control, p, voltages_V, *, xp=np):
         """FR-34's kinds in a composite (D265 finding 1's check: the same gap): a kind's clamped

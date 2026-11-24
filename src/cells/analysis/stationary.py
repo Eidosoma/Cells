@@ -648,6 +648,10 @@ def _carries(p, control, k, m):
     return False
 
 
+BLOCK_REFUSAL = (
+    "A blocked channel population (open_channel_block_weighted_modes@1) is refused until a judge "
+    "reads the block in the stationary analysis (FR-51, fail closed)"
+)
 FORMS_FACE_REFUSAL = (
     "logmean_electrodiffusion_forms@1's faces join outside nodes outside the faces' arrays, and "
     "their movers carry several rows: the structural laws read neither (version 1)"
@@ -848,6 +852,8 @@ def problem(
     if state is None:
         state, layout = initial_state, initial_layout
     state, p = _numpy(state), _numpy(model.parameters(spec, _numpy(layout)))
+    if "channel_block_weight" in type(p)._fields:  # FR-51 (fail closed, static).
+        raise ConfigError(BLOCK_REFUSAL)
     for name, a, b in zip(type(initial_layout)._fields, p, _numpy(initial_layout), strict=True):
         if a.shape != b.shape or a.dtype != b.dtype or not np.array_equal(a, b):
             raise ConfigError(f"Checkpoint layout {name} differs from the definition")
