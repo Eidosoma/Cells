@@ -11840,3 +11840,98 @@ its reference would be refused through drift or rounding. The note must state th
 
 **Order:** D353's two-arm registration must not straddle the key move. It is written after the migration, or pinned
 to FR-51's landed revision (955765ef). The note lands with the rename note as one stack with no src change.
+
+## D362: FR-54 and FR-57's design note: one liquid router that takes over the wash; the user's decisions; a correction to D352's reversed-order line
+
+2026-11-24, about 20:35 UTC. The note is `docs/LIQUID_ROUTING_DESIGN.md` on branch `fr54-57-design` (df9361a4). It
+contains no engine code.
+
+**The recommendation.** One new operator, `liquid_routing@1`, moves well-mixed liquid between inlets, finite nodes and
+records, as portions at declared times (a wash is one case) or as prescribed flows.
+- **A flow is stepped exactly,** by the matrix exponential of the declared network. It is computed once per schedule
+  segment on the host, so the trajectory, the volume and every solute are exact to rounding.
+- **Heat is booked per portion,** in the wash's ideal-mixing form, never as a remainder. Its split among holders is
+  first order in the step.
+- **The collector** starts from zero volume, and its first portion loses exactly 0.
+- **The estimate** is 7.25 to 9 agent-days, plus 1 to 1.5 to retire the wash.
+
+**The user's decisions:**
+- **The router takes over the wash.** `scheduled_compartment_wash@1` is retired after a bitwise check, under the
+  pre-alpha rule.
+  - The retirement waits for FR-49's registered World B and C1 runs, or pins them to an earlier snapshot.
+  - FR-45's worlds W2 and W7 also wash. Its protocol, not yet tagged, is written against the router or pinned the same
+    way.
+- **The collector is a record that can later open as a node** whose liquid keeps reacting. That adds 1 to 1.5
+  agent-days now.
+
+**The lead's rulings,** as the note recommends:
+- **One operator for events and flows,** with flows by the exact network step.
+- **Networks:** any balanced network of up to 64 nodes, qualified on a chain, a split and merge, and a loop.
+- **Heat:** records outside the energy check's flow bound, like the wash's.
+- **The default face heat** at a face-connected exchanged node is admitted for events within the resolved domain, and
+  a flow's face-connected nodes take the exact heat only. The domain edge is the author's desk arithmetic, so it is
+  measured before any tag, with the 8 and 2 fmol world confirmed inside.
+- **Flow beside diffusion** comes in the same build, once FR-54's two arms pass.
+- **One registered protocol,** with a verdict per request.
+- **FR-54's item 3** is read plainly: the wash's events at a connected finite node, on the dt grid.
+
+**Cautions for the build:**
+- **The exponential's bits.** The host routine is pinned or its version recorded, since its bits set restart identity
+  and crossrev.
+- **Three readout classes:**
+  - flow alone is exact, judged with a rounding bound, never an order window;
+  - flow beside diffusion carries Strang's second order;
+  - the heat's split is first order.
+- **The references** need the repeated-eigenvalue closed form for a chain of identical wells. FR-57's 26.42% is that
+  case.
+- **The label owner's new field,** `label_collected_fmol`, is absent where there is no collector, or else FR-49's
+  judge needs an erratum first, as today's erratum 1 did for one field.
+- **The build comes after the rename,** so the operator's ID is minted once. The note lands in that no-src stack. Its
+  author has read the engine, so a separate code-blind agent writes the references.
+
+**A correction to D352 and FR-57's addition.** "The reversed order gives the same total, with different per-portion
+losses" was wrong for two deliveries.
+- **The first delivery** into the empty tube loses 0 in either order, so the second carries the whole 0.523248
+  RT·fmol. Only the second delivery's split between resident and arriving liquid differs: 0.306853 and 0.216395
+  forward, reversed in the other order.
+- **A third delivery** makes the per-delivery losses differ, with the same total:
+  - 1, 3 and 3 mM gives (0, 0.523248, 0.137341);
+  - 3, 3 and 1 mM gives (0, 0, 0.660589).
+- **The case's control** is that three-delivery form, with the two-delivery split recorded too. The line was the
+  lead's, on the advisor's suggestion. The author's figures check by hand.
+
+## D363: FR-50 phase 1's registered comparison passes (fr50-one-way-records-v1)
+
+2026-11-24, about 20:35 UTC.
+
+**The run.** At 4872266d, once, from a clean snapshot frozen before the run, on the timed lane (CPUs 4 and 5 under
+its lock, siblings idle). It took 2 min 31 s of wall time.
+- **The order:** the tagged reader's pre-flight read the results first, and all ten cases parsed, none invented. The
+  judge ran after it.
+- **The sources:** the tagged judge (3cec272b) with erratum 1 (a6e48ce9), and the code-blind references (5a59b3c5),
+  taken with `git archive`.
+
+**Every criterion passes:**
+
+| Criterion | Measured | Band |
+| --- | --- | --- |
+| K1-1 | 8.4e-15 relative | 1e-11 |
+| K1-2 | gap 0 | 1e-12 |
+| K1-3 | closure 0 | rounding bound |
+| K2-1 | order ratios 4.0021 and 4.0019 | 3.6–4.4 |
+| K2-2 | gap 9.98e-7 at 0.1 s; ratio 4.000 | ≤ 1e-5; ratio 3–5 |
+| K2-3 | closure 0.040 of its bound | ≤ 1 |
+| K2-4 | restart at 100 s, bit for bit | bitwise |
+| K3 | 2.3e-16 | 1e-12 |
+| K4-1 | 5.7e-15 | 1e-11 |
+| K4-2 | gap 0 | 1e-12 |
+| K4-3 | closure 0.026 of its bound | ≤ 1 |
+| K4h | 1.8e-16 | 1e-12 |
+| K5 | the four refusal rows | all pass |
+
+- **All five plants** are caught as registered.
+- **The record** is `/mnt/workspaces/Cells/fr50-build-20261124/judged-4872266d/`.
+
+**The landing head** will be 4872266d plus the ruling's docstring and comment (452db412), plus a merge of main after
+FR-51's follow-up lands. The merge message states that FR-50's src differs from the judged head in docstrings and
+comments only. The gate follows, on lane B, with the FR set.

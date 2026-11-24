@@ -2228,6 +2228,8 @@ outward flux, and the face and junction records. So equal flows in opposite dire
 
 **Status (23 November):** logged.
 
+**Status (24 November, evening; D363):** phase 1's registered comparison passes at 4872266d. Every criterion passes, and all five plants are caught. The gate follows after FR-51's follow-up lands.
+
 ## FR-51 — Two voltage-dependent blocking modes on one channel population
 
 **Logged 23 November 2026 by the user, priority high.**
@@ -2573,6 +2575,11 @@ prescribed flow cannot be expressed: buffer in at Q, through chambers in series,
 - **The reversed order** gives the same total, with different per-portion losses.
 - **This settles the collector's form:** a tube at zero volume holds no trace, so the collector starts as a record and
   grows in volume.
+
+**Correction (24 November, later; D362):** two deliveries book (0, 0.523248) RT·fmol in either order; only the second
+delivery's split between resident and arriving liquid differs. The order-dependence check uses a third delivery: 1, 3
+and 3 mM gives (0, 0.523248, 0.137341), and 3, 3 and 1 mM gives (0, 0, 0.660589). Design note: `docs/LIQUID_ROUTING_DESIGN.md`
+on `fr54-57-design`, one router that takes over the wash.
 
 ## FR-58 — A label on an exchangeable group, carried through reversible conversions
 
