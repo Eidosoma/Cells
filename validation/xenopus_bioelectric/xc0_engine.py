@@ -1959,7 +1959,8 @@ def selfcheck(out):
     bound refusing a B_out that the parse could refuse; the equilibrium ratio at B_out 1e-5 mM on
     [1e-6, 1e8], every scan point evaluated and x = 0 at the root, for a key whose root lies
     between 1e6 and 1e8 and one below; the same keys at erratum 1's settings; the C8 (b) readings
-    on invented saved runs; a short split bare run. Returns the failures."""
+    on invented saved runs; a short split bare run; every P1LB definition the procedure's segments
+    use, parsed at h, h/2 and h/4. Returns the failures."""
     from validation.xenopus_bioelectric.xc0_compare import SETTINGS
 
     failures = []
@@ -2112,6 +2113,24 @@ def selfcheck(out):
     expect("a split bare run is bitwise its whole (t, c, psi)",
            np.array_equal(w["t"], joined["t"]) and np.array_equal(w["c"], joined["c"])
            and np.array_equal(w["psi"], joined["psi"]) and len(joined["t"]) == 5)  # fmt: skip
+
+    # 6. Every P1LB definition the procedure's segments use parses (no run), at h, h/2 and h/4, its
+    # observation grid ending at the segment's end, one observation per 0.01 s.
+    v0 = m_v_zero(dict(ion_set="primary", exterior="local", T=291.15), d=d, cache={})
+    ends = {"bare": (64.0, 128.0, horizon["bare"]), "coupled": (32.0, horizon["coupled"])}
+    for reading, untils in ends.items():
+        for factor in (1.0, 0.5, 0.25):
+            for until in untils:
+                raw = c8b_definition(reading, factor, until, d=d, x2_cap=0.002, v0=v0)
+                times = raw["experiment"]["observation_times"]
+                try:
+                    parse_spec(copy.deepcopy(raw))
+                    parsed = True
+                except ConfigError:
+                    parsed = False
+                expect(f"the {reading} definition to {until:g} s at factor {factor:g} parses, its "
+                       f"grid ending there", parsed and abs(times[-1] - until) < 1e-9
+                       and len(times) == round(until / 0.01) + 1)  # fmt: skip
     print(json.dumps(dict(seconds=round(time.perf_counter() - started, 1),
                           key_A_at_erratum_1s_settings=a_outcome,
                           key_A_scan_points_refused_at_parse_at_erratum_1s_settings=a_dropped,

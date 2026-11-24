@@ -352,9 +352,9 @@ SETTINGS = dict(
     # C8 (b): each P1LB reading's horizon (s). "Final" is the bare node's end state, read at the
     # bare run's horizon; the coupled run keeps erratum 1's 64 s.
     c8b_horizon_s=dict(bare=192.0, coupled=64.0),
-    # The lead's ruling on a proposed tolerance (REFERENCES_USAGE.md: proposed tolerances are open
-    # to the lead's ruling by a dated note): a floor on the row's relative tolerance, the stored
-    # band still checked against the band rule first.
+    # A floor on a proposed tolerance, which REFERENCES_USAGE.md leaves open to the lead's ruling by
+    # a dated note: this erratum proposes it, and the lead's tag of the erratum makes it the ruling.
+    # The stored band is still checked against the band rule first.
     tolerance_rulings={"C7.pump_cell_charge_per_fmol": dict(tol_rel=1e-10)},
 )  # fmt: skip
 
@@ -1411,6 +1411,27 @@ def selfcheck_e2(out):
             pass
         except AssertionError:
             failures.append(f"erratum 2: the values file opened before another {name} refused")
+    # The retry through the carry: a refused rerun row, re-measured once, judged after the retry.
+    refused = copy.deepcopy(rerun)
+    first_row = next(r for r in refused["rows"] if r["family"] == "C6.v1_eq_ratio")
+    first_row.update(type="refused", reason="invented")
+    first_row.pop("value")
+    retry_rows = retry_manifest(refused)["entries"]
+    expect("the retry's manifest holds the refused rerun row alone",
+           [(e["family"], e["key"]) for e in retry_rows] == [("C6.v1_eq_ratio", eq_key)])
+    refuses("the refused rerun row before the retry", judge, refused, values, bands, only=CHANGED)
+    again = dict(rows=[dict(e, type="refused", reason="again") for e in retry_rows])
+    still = carry(carried, judge(merge(refused, again), values, bands, after_retry=True,
+                                 only=CHANGED), bands)  # fmt: skip
+    expect("after the retry, a row still refused is engine_refused, its family and XC0 untestable",
+           still["families"]["C6.v1_eq_ratio"] == "not_testable"
+           and still["counts"].get("engine_refused") == 1 and still["overall"] == "not_testable")
+    fixed = dict(rows=[dict(e, type="number", value="2500.001") for e in retry_rows])
+    recovered = carry(carried, judge(merge(refused, fixed), values, bands, after_retry=True,
+                                     only=CHANGED), bands)  # fmt: skip
+    expect("after the retry, a recovered row is judged",
+           recovered["families"]["C6.v1_eq_ratio"] == "pass" and recovered["overall"] == "pass")
+
     key_list = {f: dict(kind=k, unit="u", keys=sorted(rows)) for f, (k, _, _, rows) in fams.items()}
     counts, unmapped = check_keys(key_list)
     expect("check-keys counts the changed rows by family", unmapped == [] and counts["changed"] == {
