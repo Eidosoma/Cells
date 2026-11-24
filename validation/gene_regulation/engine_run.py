@@ -67,6 +67,21 @@ The checks name the nodes (exported_nodes). A node that another cell's export al
 refused, since that export's heat is booked at its own cell, so G over this cell and its nodes
 would not close against their heat: a shared node's cells are not exported (version 1). Without
 an export from the exported cell nothing here is read, and the record is unchanged.
+
+**Beside a second writer or water** (FR-43's parts 2A and 2B; FR-38's second comparison, families C
+and D, validation/gene_regulation/fr38_v2/spec/READOUTS.md):
+- **local_species_reactions@1** (D152) on the exported cell adds the rows of its own that the gene
+  unit does not list (n_<row>, n_Mx in family C), its heat there, H_store
+  (reaction_dissipated_energy_pJ), and its bookings' magnitude. G_minus_G0 adds those rows at the
+  network's potentials, converted to the gene unit's c0.
+- **ideal_osmosis_linear_compliance_water@1** makes the cell's volume current, V (pL). It adds
+  water's heat H_water (water_dissipated_energy_pJ, summed) and the held baths' water work W_bath
+  (bath_water_work_pJ, summed). G_minus_G0 then reads every species row at the current V, K and Y
+  included at mu° 0 (their amounts move by nothing, their terms by dilution; n_K and n_Y are
+  exported), and the elastic energy U(V) is 0 at no modulus.
+- G's identity closes over them: G(t) - G(0) + H_total + H_store + H_water - W_bath.
+
+Without either operator nothing here is read, and the record is unchanged.
 """
 
 import argparse
@@ -95,6 +110,8 @@ ROOT = Path(__file__).resolve().parents[2]
 SHEET_TAG = "gr1-sheet-2026-11-20b"
 RELEASE_SHEET_TAG = "gr1-sheet-fr38-erratum-c-2026-11-22"  # The sheet's §9, as amended (FR-38).
 LABELS = "neutral_arrival_labels@1"  # FR-42's label owner (D289).
+REACTIONS = "local_species_reactions@1"  # D152's network: family C's store (FR-43 part 2A).
+WATER = "ideal_osmosis_linear_compliance_water@1"  # Family D's swelling cell (FR-43 part 2B).
 POLICY = WindowPolicy(window_steps=10000, recording="observations")
 DIGITS = 60
 
@@ -319,6 +336,8 @@ def readouts(spec, states, cell=None):
     rows = [s.id for s in block.species] + (["X"] if "X" in species else [])
     mu = dict(zip([s.id for s in block.species], block.mu_RT, strict=True))
     volume = float(next(c.volume_pL for c in spec.model.cells if c.id == cell))
+    network, watered, g_mu = _second_writers(spec, block, mu)  # FR-43, FR-38's C and D.
+    rows += [row for row in g_mu if row not in rows]
     residue_mu = {
         c.id: (mu[c.product] - float(np.log(block.c0_mM / sheet_c0()))) / c.residues
         for c in block.chains
@@ -414,6 +433,14 @@ def readouts(spec, states, cell=None):
             put(name, np.asarray(s.poly_transferred_fmol)[i])
         if nodes:  # Amendment T (§9.17): the nodes' rows, labels and counters, and their G.
             g_nodes = _node_readouts(put, s, spec, block, nodes, here, p, shared, mu, residue_mu)
+        current = volume
+        if watered:  # Family D: the cell's current volume, water's heat and the bath's work.
+            current = float(np.asarray(p.volume)[at] + np.asarray(s.volume_increment_pL)[at])
+            put("V", current)
+            put("H_water", math.fsum(float(x) for x in np.asarray(s.water_dissipated_energy_pJ)))
+            put("W_bath", math.fsum(float(x) for x in np.asarray(s.bath_water_work_pJ)))
+        if network is not None:  # Family C: the store's heat at the cell.
+            put("H_store", np.asarray(s.reaction_dissipated_energy_pJ)[at])
         heats = {
             "chain": np.asarray(s.poly_chain_heat_pJ),
             "degradation": np.asarray(s.poly_degradation_heat_pJ),
@@ -448,7 +475,7 @@ def readouts(spec, states, cell=None):
         for i, c, _ in releases:
             residues[c.id] = residues[c.id] + c.residues * float(np.sum(hold[i]))
         g = free_energy(
-            {row: amounts[row] for row in mu}, residues, mu, residue_mu, volume, block.c0_mM
+            {row: amounts[row] for row in g_mu}, residues, g_mu, residue_mu, current, block.c0_mM
         )
         if nodes:  # §9.17.2: G extends over the nodes the operator writes.
             with localcontext() as ctx:
@@ -468,13 +495,23 @@ def readouts(spec, states, cell=None):
     if uneven:
         raise ValueError(f"the export holds {uneven[:3]} with other than one value per output")
     scale = max(abs(v) for v in out["H_total"]) or 1.0
-    identity = [g + h for g, h in zip(out["G_minus_G0"], out["H_total"], strict=True)]
+    zeros = [0.0] * len(times)
+    beside = zeros  # The second writer's heat and water's heat less the bath's work.
+    for name, sign in (("H_store", 1.0), ("H_water", 1.0), ("W_bath", -1.0)):
+        beside = [b + sign * v for b, v in zip(beside, out.get(name, zeros), strict=True)]
+    identity = [
+        g + h + b for g, h, b in zip(out["G_minus_G0"], out["H_total"], beside, strict=True)
+    ]
     split = [a - b for a, b in zip(out["H_routes_sum"], out["H_total"], strict=True)]
     last = states[max(states)]
     magnitude = float(np.asarray(last.poly_energy_magnitude_pJ)[at])
     if nodes:  # Amendment T: the bookings at the nodes.
         node_magnitude = np.asarray(last.poly_outside_energy_magnitude_pJ)
         magnitude = math.fsum([magnitude, *(float(node_magnitude[axis.index(o)]) for o in nodes)])
+    if network is not None:  # FR-43 2A: the network's bookings at the cell.
+        magnitude += float(np.asarray(last.reaction_energy_magnitude_pJ)[at])
+    if watered:  # FR-43 2B: water's heat (non-negative) and the bath's work.
+        magnitude += max(abs(v) for v in out["H_water"]) + max(abs(v) for v in out["W_bath"])
     checks = dict(
         G_identity_largest_pJ=max(abs(x) for x in identity),
         G_identity_over_sum_H_at_end=max(abs(x) for x in identity) / scale,
@@ -490,6 +527,24 @@ def readouts(spec, states, cell=None):
         **({"exported_nodes": nodes} if nodes else {}),
     )
     return times, out, checks
+
+
+def _second_writers(spec, block, mu):
+    """(the D152 network or None, whether water changes the volumes, G's potentials {row: mu°/RT
+    at the gene unit's c0}) (module docstring): the gene unit's rows, then the network's own rows
+    at its potentials converted to that c0 (mu°' = mu° + ln(c0_gene/c0_network)), then, under
+    water, every other species row at mu° 0 (LAWS.md §5 of FR-38's second comparison)."""
+    network = next((d for d in spec.model.operators if d.law == REACTIONS), None)
+    watered = any(d.law == WATER for d in spec.model.operators)
+    g_mu = dict(mu)
+    if network is not None:
+        shift = math.log(block.c0_mM / network.standard_concentration_mM)
+        for entry in network.species:
+            g_mu.setdefault(entry.identity.id, float(entry.standard_mu_RT) + shift)
+    if watered:
+        for row in spec.model.species_ids:
+            g_mu.setdefault(row, 0.0)
+    return network, watered, g_mu
 
 
 def _node_readouts(put, s, spec, block, nodes, here, p, shared, mu, residue_mu):

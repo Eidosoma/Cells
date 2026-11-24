@@ -60,6 +60,13 @@ number:
     also agree with the net reading (cohort.survival on the fate row's own n, int_Q and int_D)
     within both grid errors plus SURVIVORS: erratum F's item 4, the two agree only where e^(y_f)
     << 1, as at the sheet's state (about 9.4e-9; §9.10).
+  - **That net agreement is scoped to e^(y_f) << 1** (FR-38's second comparison, protocol §5: it
+    fails by design in its AN family, where e^(y_f) is about 0.13). The net reading departs from
+    the gross one by about k_f (ts - t1) max e^(y_f), relative, since re-synthesis returns
+    molecules at k_f e^(y_f) per molecule present. So the sub-check applies where that reach is
+    within SURVIVORS, its own allowance (net_scope, from the record's own rows and potentials),
+    and is reported as out of scope, neither pass nor fail, elsewhere. R1's runs stay in scope:
+    their reach is at most 2.6e-8.
 
 Run: python -m validation.gene_regulation.release_check DIR
 """
@@ -410,28 +417,62 @@ def cohorts(checks, runs, machine):
         survival(checks, f"R1 p=0.75 {machine}", plain["path"], row, f)
 
 
-def survival(checks, name, path, row, fate):
+def net_scope(record, row, k, t1, ts):
+    """Whether the net agreement applies (the module docstring): {exp_y_largest, reach, in_scope}.
+    e^(y_f), y_f = sum_m nu_m (mu°_m + ln(c_m/c0)) - (mu°_f + ln(c_f/c0))/L per residue (the sheet's
+    §4.4), is formed at each output from the record's own rows (n/V, V its exported V where water
+    moves it, else the cell's declared volume) and its definition's potentials and degradation."""
+    raw = record["definition"]
+    (block,) = [o for o in raw["model"]["operators"] if o["law"] == worlds.POLYMERISATION]
+    cell = cohort.exported_cell(record, block)
+    route = next(d for d in block["degradations"] if d["polymer"] == row and d["cell"] == cell)
+    mu = {s["id"]: float(s["standard_mu_RT"]) for s in block["species"]}
+    c0 = float(block["standard_concentration_mM"])
+    x = record["readouts"]
+    missing = sorted(({f"n_{m}" for m in route["monomers"]} | {f"n_{row}"}) - set(x))
+    if missing:  # A record that cannot show e^(y_f): the sub-check applies, as before its scope.
+        return dict(exp_y_largest=None, reach=None, in_scope=True,
+                    why=f"the record lacks {missing}, so e^(y_f) is not formed")  # fmt: skip
+    declared = next(c["volume_pL"] for c in raw["model"]["cells"] if c["id"] == cell)
+    volume = x.get("V", [float(declared)] * len(record["t"]))
+    largest = 0.0
+    for i, v in enumerate(volume):
+        y = math.fsum(nu * (mu[m] + math.log(x[f"n_{m}"][i] / (v * c0)))
+                      for m, nu in route["monomers"].items())  # fmt: skip
+        y -= (mu[row] + math.log(x[f"n_{row}"][i] / (v * c0))) / route["residues"]
+        largest = max(largest, math.exp(y))
+    reach = k * (ts - t1) * largest
+    return dict(exp_y_largest=largest, reach=reach, in_scope=reach <= SURVIVORS)
+
+
+def survival(checks, name, path, row, fate, *, window=None, ts=None, k_expected=None):
     """The requester's survival readout (FR-38's (c) and (e), 22 November 2026) by route 2 at the
     fate's gross k (erratum F; cohort.known_survival): the window's members alive at its end, the
-    same alive an hour later, and their ratio, against the closed forms' ratio, e^(-k_f 3600 s),
-    within the counts' grid errors. Its counts must also agree with the net reading on the row's
-    own counters (cohort.survival) within both grid errors plus SURVIVORS (the module docstring),
-    so that a record whose booked loss is not its declared k fails. It fails closed (the Lean
-    lane's finding at a6acbc27): an empty cohort (none alive at the window's end, an undefined
-    ratio) is reported as such, and counts whose grid error cannot be estimated (outputs too far
-    apart) as insufficient resolution; neither passes."""
-    t1, t2 = worlds.R1_WINDOW
+    same alive at ts (an hour later in R1), and their ratio, against the closed forms' ratio,
+    e^(-k_f (ts - t2)), within the counts' grid errors. Its counts must also agree with the net
+    reading on the row's own counters (cohort.survival) within both grid errors plus SURVIVORS
+    (the module docstring), so that a record whose booked loss is not its declared k fails, where
+    e^(y_f) << 1 (net_scope); elsewhere that agreement is reported out of scope. It fails closed
+    (the Lean lane's finding at a6acbc27): an empty cohort (none alive at the window's end, an
+    undefined ratio) is reported as such, and counts whose grid error cannot be estimated (outputs
+    too far apart) as insufficient resolution; neither passes. window, ts and k_expected default
+    to R1's window, 2 t2 and the sheet's k_f; another world (FR-38's second comparison) gives its
+    own."""
+    t1, t2 = worlds.R1_WINDOW if window is None else window
+    ts = 2 * t2 if ts is None else ts
+    record = json.loads(Path(path).read_text())
     t, n, Q, D = cohort.read(path, row)
-    gross = gross_rate(json.loads(Path(path).read_text()), row)
-    counted = cohort.known_survival(t, Q, gross, t1, t2, 2 * t2)
-    net = cohort.survival(t, n, Q, D, t1, t2, 2 * t2)
-    k = float(sheet.RELEASE["k_durable" if fate == "durable" else "k_short"])
-    expected = math.exp(-k * t2)
+    gross = gross_rate(record, row)
+    counted = cohort.known_survival(t, Q, gross, t1, t2, ts)
+    net = cohort.survival(t, n, Q, D, t1, t2, ts)
+    k = (float(sheet.RELEASE["k_durable" if fate == "durable" else "k_short"])
+         if k_expected is None else float(k_expected))  # fmt: skip
+    expected = math.exp(-k * (ts - t2))
     alive, later = counted["alive_at_window_end"], counted["alive_at_sample"]
     ends = ("window_end", "sample")
     errors = [counted[f"grid_error_at_{e}"] for e in ends]
     net_errors = [net[f"grid_error_at_{e}"] for e in ends]
-    what = f"{name}: route 2's {fate} survival, alive at {t2:g} s and at {2 * t2:g} s"
+    what = f"{name}: route 2's {fate} survival, alive at {t2:g} s and at {ts:g} s"
     detail = dict(
         alive_copies=alive / COPY_FMOL,
         later_copies=later / COPY_FMOL,
@@ -461,8 +502,10 @@ def survival(checks, name, path, row, fate):
         - (a + b + SURVIVORS * counted[f"alive_at_{e}"])
         for e, a, b in zip(ends, errors, net_errors, strict=True)
     ]
-    agree = max(gaps) <= 0.0
-    checks.add(what, ok and agree, status="compared", bound=bound, net_agrees=agree, **detail)
+    scope = net_scope(record, row, gross, t1, ts)
+    agree = max(gaps) <= 0.0 if scope["in_scope"] else None  # None: out of scope, not judged.
+    checks.add(what, ok and agree is not False, status="compared", bound=bound,
+               net_agrees=agree, net_scope=scope, **detail)  # fmt: skip
 
 
 def r2_cohorts(checks, name, run):
