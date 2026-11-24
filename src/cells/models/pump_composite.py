@@ -1670,7 +1670,7 @@ class Composition:
                     rows = self.label_owner.rows(p)
                     current, ok, report = op.event(
                         current, control, p, xp=xp, labels=rows, **keywords
-                    )  # A pool reporter's event reports its emptied pools, any other its slots.
+                    )  # Its report by its kind: replaced slots, emptied pools or an exchange.
                     pool = self.label_pools.get(op)
                     kind = self.label_event_kinds[op]  # FR-44: read by its kind.
                     current = self.label_owner.advance_event(

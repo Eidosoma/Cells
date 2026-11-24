@@ -15,9 +15,9 @@ The share update alone, in NumPy (no world; about 2 s):
   each of two plants failing.
 
 Host rows on parsed worlds (no compile; a few seconds): exchange's export and a passive reaction
-route report the material they move (stage 3), a replaced slot takes the newcomer label, and a
-wash and a replacement in one composite step (NumPy) commute, with the buffer joining the base
-(FR-44).
+route report the material they move (stage 3), a replaced slot takes the newcomer label, a
+wash and a replacement in the composite's event stage (NumPy) commute, with the buffer joining
+the base, and turnover's clearance at a washed node keeps the shares the wash diluted (FR-44).
 
 One compiled world, run labelled and unlabelled (two compiles, about 80 s on a light CPU; FR-42's
 own checks as engine rows, so a regression in the composite's hook or a reporter shows here).
@@ -481,9 +481,34 @@ def replaced_and_washed(wash_first):
     )  # fmt: skip
 
 
+def event_stage(model, state, control, p):
+    """The composite's event stage alone, as split_step's first loop runs it, in NumPy: each event
+    in declared order, with a labels-taking one's report read by its kind. No operator of these
+    worlds retires slots."""
+    current, valid = state, True
+    for op in model.events:
+        assert not op.RETIRES
+        keywords = model._inner_keyword(op)
+        if model._passes_view(op):
+            keywords["view"] = model._view_for(op, p, xp=np)
+        before = current
+        if op in model.label_events:
+            current, ok, report = op.event(
+                current, control, p, xp=np, labels=model.label_owner.rows(p), **keywords
+            )
+            current = model.label_owner.advance_event(
+                before, current, report, control, p, kind=model.label_event_kinds[op], xp=np,
+                pool=model.label_pools.get(op),
+            )  # fmt: skip
+        else:
+            current, ok = op.event(current, control, p, xp=np, **keywords)
+        valid &= ok is None or bool(ok)
+    return current, valid
+
+
 def test_a_wash_and_a_replacement_in_one_step_commute_and_the_buffer_joins_the_base():
-    """FR-44 (D327), one composite step in NumPy (split_step) leaving 0.02 s, where both events are
-    due (parses and NumPy only; a few seconds):
+    """FR-44 (D327), the composite's event stage in NumPy at 0.02 s, where both events are due
+    (parses and NumPy only; a few seconds):
     - in either declaration order every field is the same, bit for bit, since each event reports
       only its own material;
     - at the well, what left is 30 x (2/3, 1/3) fmol by label, and the buffer's 5 fmol join the
@@ -500,8 +525,8 @@ def test_a_wash_and_a_replacement_in_one_step_commute_and_the_buffer_joins_the_b
         model = get_model(spec.model)
         state, p = model.initial_values(spec)
         control = model.CONTROL_TYPE(*(v[0] for v in cs.control_values(spec, [0.02])))
-        new, ok = model.split_step(state, spec.execution.dt, control, p, xp=np)
-        assert bool(ok)
+        new, ok = event_stage(model, state, control, p)
+        assert ok
         steps[wash_first] = (new, state, p, spec)
     (a, state, p, spec), (b, *_) = steps[False], steps[True]
     assert set(type(a)._fields) == set(type(b)._fields)
@@ -527,6 +552,45 @@ def test_a_wash_and_a_replacement_in_one_step_commute_and_the_buffer_joins_the_b
         state.label_share[:, :, cells.index("wall_surface")]
     )
     assert bits(a.label_outside_share[:, :, bath]) == bits(state.label_outside_share[:, :, bath])
+
+
+def test_clearance_at_a_washed_node_keeps_the_shares_the_wash_diluted():
+    """FR-44 (D327): the labels, the wash and turnover at the washed node, a triple FR-44 newly
+    admits, in NumPy (a parse and two calls; about a second).
+    - **The composite's event stage at 0.02 s** half washes the well for a rich buffer. It dilutes
+      S's shares exactly: label_shares.exchange on the bound amounts and the wash's own records.
+    - **Turnover's half-step** then clears S at the well at 1 /s. That is a reported loss with no
+      arrivals, so it keeps those shares bit for bit while S's amount there falls."""
+    from cells.definitions import pump_composite_spec as cs
+    from cells.registry.models import get_model
+
+    raw = wfx.well(sites=False, dt=0.01, end=0.1)
+    raw = fx.with_turnover(raw, [("clear", "well", "clearance")], [("clear", None, [(0.0, 1.0)])])
+    raw = wfx.with_wash(raw, ["well"], [(0.02, "well", 0.5, {wfx.TRACER: 1e-5})])
+    spec = parse_spec(
+        with_labels(raw, [(wfx.TRACER, ("base", "cohort"), {"well": {"base": 2 / 3,
+                                                                     "cohort": 1 / 3}})])
+    )  # fmt: skip
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    control = model.CONTROL_TYPE(*(v[0] for v in cs.control_values(spec, [0.02])))
+    washed, ok = event_stage(model, state, control, p)
+    assert ok
+    w = [c.id for c in spec.model.extracellular].index("well")
+    rows = p.label_rows
+    at = np.arange(p.outside_active.shape[0]) == w
+    n0 = (p.extracellular_amount_reference + state.extracellular_amount_increment)[rows]
+    removed = np.where(at, washed.wash_last_sample_fmol[rows], 0.0)
+    supplied = np.where(at, washed.wash_last_supply_fmol[rows], 0.0)
+    expected = ls.exchange(state.label_outside_share, n0, removed, supplied, p.label_present, xp=np)
+    assert bits(washed.label_outside_share) == bits(expected)
+    assert washed.label_outside_share[0, 1, w] < 1 / 3  # Diluted: the buffer joined the base.
+    turnover = next(op for op in model.splits if op.LAW_ID == "scheduled_species_turnover@1")
+    cleared, ok = model._half_step(turnover, washed, 0.5 * spec.execution.dt, control, p, xp=np)
+    assert ok is None or bool(ok)
+    assert bits(cleared.label_outside_share) == bits(washed.label_outside_share)
+    s = list(spec.model.species_ids).index(wfx.TRACER)
+    assert cleared.extracellular_amount_increment[s, w] < washed.extracellular_amount_increment[s, w]
 
 
 def test_each_source_takes_its_own_schedule_or_its_species(monkeypatch):

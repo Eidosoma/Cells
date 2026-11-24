@@ -603,7 +603,7 @@ twin row checks this on every row.
 
 | File | Rows |
 | --- | --- |
-| `test_neutral_arrival_labels.py` (NumPy) | The map on six rows, with two plants failing; a wash and a replacement in one composite step, in both orders; the report kinds on planted declarations; `same_physics`'s set |
-| `test_wash_schedule.py` (NumPy) | Either order parses; the labelled event's report, in NumPy and compiled; a whole wash after an earlier one, with plant 5 failing on its two cases; FR-49's C1 world refused |
+| `test_neutral_arrival_labels.py` (NumPy) | The map on six rows, with two plants failing; a wash and a replacement in the composite's event stage, in both orders; turnover's clearance at a washed node keeping the diluted shares; the report kinds on planted declarations; `same_physics`'s set |
+| `test_wash_schedule.py` (NumPy) | Either order parses; the labelled event's report, in NumPy and compiled; a whole wash after an earlier one, with plant 5 failing on its two cases; a labelled gene-unit export and a labelled exchange route at the washed node refused, each parsing beside a wash of another node; FR-49's C1 world refused |
 | `test_neutral_labels_events.py` (compiled) | The twins: five washes, three of them at 3/7 (D266's condition); every physical record bit for bit; the identities, the records and the books on every row |
 | `test_wash_schedule_resume.py` (compiled) | The resume across a wash, at the wash row through a snapshot and one step after, with the redo and skip plants |

@@ -9,8 +9,10 @@ too, and each plant breaks it; the host's domain check reads every event's heat;
 node keep their own fractions and buffers. FR-44 (D327): the label owner beside the wash parses in
 either order; with labels= the event reports its own sample and supply, in NumPy and compiled;
 a whole wash after an earlier one leaves no label behind, where the cumulative gain (plant 5)
-would; and FR-49's C1 world, labels beside a compartment with a wash at another node, is refused
-by the compartments' admitted list until FR-49's wash narrowing. About 8 s together.
+would; a labelled gene unit's export and a labelled exchange route at the washed node are refused,
+each parsing beside a wash of another node; and FR-49's C1 world, labels beside a compartment with
+a wash at another node, is refused by the compartments' admitted list until FR-49's wash
+narrowing. About 10 s together.
 """
 
 import copy
@@ -112,6 +114,33 @@ def _gene_unit(*, outside=True, other_node=False):
         control = next(c for c in e["membrane_controls"] if c["membrane_id"] != "patch_0")
         e["membrane_controls"].append(dict(copy.deepcopy(control), membrane_id=patch["id"]))
     return raw
+
+
+def _labelled(raw, species):
+    """raw with the label owner labelling `species` (base and cohort, every node at the base)."""
+    out = copy.deepcopy(raw)
+    out["model"]["operators"].append(dict(law="neutral_arrival_labels@1", species=[
+        dict(id=s, labels=["base", "cohort"], initial=[]) for s in species
+    ]))  # fmt: skip
+    out["experiment"]["label_arrivals"] = []
+    return out
+
+
+def _second_well(raw):
+    """raw with well_2, a copy of the well, joined to the specimen by a copy of its patch."""
+    out = copy.deepcopy(raw)
+    m, e, x = out["model"], out["experiment"], out["execution"]
+    node = copy.deepcopy(next(n for n in m["extracellular"] if n["id"] == "well"))
+    node["id"] = "well_2"
+    m["extracellular"].append(node)
+    x["extracellular_capacity"] = len(m["extracellular"])
+    patch = copy.deepcopy(next(p for p in m["membranes"] if p["id"] == "specimen_face"))
+    patch.update(id="specimen_face_2", outside="well_2")
+    m["membranes"].append(patch)
+    x["membrane_capacity"] = len(m["membranes"])
+    for c in [c for c in e["membrane_controls"] if c["membrane_id"] == "specimen_face"]:
+        e["membrane_controls"].append(dict(copy.deepcopy(c), membrane_id="specimen_face_2"))
+    return out
 
 
 def _c1_world():
@@ -217,6 +246,15 @@ REFUSALS = {
         ),
         "scheduled_compartment_wash@1 is not on its admitted list",
     ),
+    # FR-44 (D327): the paths that FR-44's labels would follow unmeasured stay refused by name.
+    "a labelled gene unit's export into the node": (
+        lambda: _washed_at(_labelled(_gene_unit(outside=False), ["R", "R_s"]), "space_0"),
+        "R may cross node space_0's surface by templated_polymerisation@1's export export_R",
+    ),
+    "a labelled exchange route through a patch facing the node": (
+        lambda: washed(_labelled(_route(wfx.well(sites=False)), [S])),
+        "S may cross node well's surface by scheduled_species_exchange@1's route uptake",
+    ),
     # D327, FR-44 landing second (FR-49's parts H and L first): FR-49's C1 world, also the
     # inherited three-way composition, is refused by name until FR-49's wash narrowing and its C1
     # judgement.
@@ -297,6 +335,27 @@ def test_admitted_beside_the_label_owner_in_either_order(owner_first):
     state, _ = get_model(spec.model).initial_values(spec)
     shape = (1, 2, spec.execution.extracellular_capacity)
     assert np.shape(state.label_outside_removed_fmol) == shape
+
+
+LABELLED_ELSEWHERE = {  # FR-44 (D327): each refused path above, labelled, beside a wash elsewhere.
+    "the gene unit, its export node unwashed": lambda: _washed_at(
+        _labelled(_gene_unit(other_node=True), ["R", "R_s"]), "space_1"
+    ),
+    "an exchange route facing another node": lambda: washed(
+        _labelled(_route(_second_well(wfx.well(sites=False))), [S]),
+        events=((T_E, "well_2", 0.5, {S: wfx.TRACE_mM}),),
+        nodes=("well_2",),
+    ),
+}
+
+
+@pytest.mark.parametrize("case", sorted(LABELLED_ELSEWHERE))
+def test_a_labelled_path_beside_a_wash_of_another_node_is_admitted(case):
+    """FR-44 (D327; parses only): the passing controls of the two labelled refusals above. The gene
+    unit with labelled R and R_s, and an exchange route with labelled S, each parse beside a wash
+    of a node their paths do not cross. These are the newly admitted triples of the labels, the
+    wash and each of the two laws."""
+    parse_spec(LABELLED_ELSEWHERE[case]())
 
 
 # ------------------------------------------------------------------ the event map, in NumPy
