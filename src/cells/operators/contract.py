@@ -248,6 +248,23 @@ Declarations (class attributes):
     the amount before the event times its shares just before it, cumulative from t = 0, rows
     (``label_removed_fmol``) and pools (``label_pool_removed_fmol``) apart; a pool reporter
     whose event takes no labels is refused there.
+  - **An event that exchanges a node's liquid** (FR-44, D327: the compartment wash) reports the
+    exchange: its ``event`` with ``labels=rows`` returns ``(state, valid, LiquidExchange)``,
+    removed and supplied [m, outside node] >= 0, the amounts of each labelled row that this
+    step's sample took away and its buffer brought, zero at every node not exchanged in the step.
+    The axis is the outside nodes, as the owner's record of what left
+    (``label_outside_removed_fmol``) is. An exchange of a cell's own liquid cannot be expressed in
+    version 1. The sample leaves with the node's shares, since the liquid is well mixed. The
+    buffer carries no label and joins the base, whatever window is open. The owner records what
+    left by label, at the shares just before the event.
+  - **Each labels-taking event has one report kind** (``LABEL_EVENT``, one of
+    LABEL_EVENT_KINDS; label_event, static):
+    - "replaced" is a replacing event's (``EVENT_REPLACES``) by default;
+    - "emptied" is a pool reporter's (``LABEL_POOLS``);
+    - "exchanged" is declared.
+    The composite passes the kind to the owner, which reads the report by it. A labels-taking
+    event with no kind, or one its declarations contradict, is refused (label_event_error), so no
+    report is read as another kind's.
 * The run view (docs/RUN_VIEW_DESIGN.md §3; cells/records/run_view.py reads them, host side only):
   - ``VIEW_LAYERS``: its layers, each {"id", "label", "representation"}; None: undeclared,
     which the run-view writer refuses;
@@ -310,6 +327,9 @@ COMMUTING = ("add", "multiply", "and")  # Overlaps admitted, applied in declared
 CHANGE_STAGES = ("event", "split")
 READ_MODES = ("reference", "current", "fixed")
 READ_STAGES = ("event", "split", "inner", "end", "observe")  # In step order.
+# The reports a labels-taking event gives the label owner (FR-42's events, FR-44; label_event).
+REPLACED, EMPTIED, EXCHANGED = "replaced", "emptied", "exchanged"
+LABEL_EVENT_KINDS = (REPLACED, EMPTIED, EXCHANGED)
 
 
 class Change(NamedTuple):
@@ -332,6 +352,17 @@ class Read(NamedTuple):
     mode: str
     stage: str
     scoped: bool = False
+
+
+class LiquidExchange(NamedTuple):
+    """An exchanging event's report to the label owner (FR-44; module docstring), in fmol, each
+    [labelled species, outside node] and >= 0, zero at every node not exchanged in the step.
+
+    removed: what this step's sample took away, which carries the node's shares. supplied: what
+    its buffer brought, which carries no label."""
+
+    removed: object
+    supplied: object
 
 
 def reads_of(operator, field):
@@ -365,6 +396,52 @@ def reports_labels(operator):
     """Whether a split part reports its one-way moves to a label owner (FR-42, module
     docstring): its half_step takes labels=."""
     return operator.SPLIT and takes_labels(operator.half_step)
+
+
+def label_event(operator):
+    """The kind of report a labels-taking event gives the label owner (FR-42, FR-44; module
+    docstring), static.
+    - Its declared LABEL_EVENT where it declares one.
+    - Otherwise "emptied" for a pool reporter's event and "replaced" for a replacing event's.
+    - None for an event that takes no labels, and for one that declares no kind and is neither
+      (label_event_error refuses that one)."""
+    if not (operator.EVENT and takes_labels(operator.event)):
+        return None
+    if operator.LABEL_EVENT is not None:
+        return operator.LABEL_EVENT
+    if operator.LABEL_POOLS:
+        return EMPTIED
+    return REPLACED if operator.EVENT_REPLACES else None
+
+
+def label_event_error(operator):
+    """Why an operator's label event kind contradicts its declarations, or None (fail closed: no
+    report is read as another kind's). check_declarations raises it for a class, and the label
+    owner refuses it in a composition."""
+    if not (operator.EVENT and takes_labels(operator.event)):
+        if operator.LABEL_EVENT is None:
+            return None
+        return "it declares a report kind (LABEL_EVENT), which only an event taking labels= has"
+    kind = label_event(operator)
+    if kind is None:
+        return (
+            "its event takes labels= but has no report kind: it declares no LABEL_EVENT and is "
+            "neither a pool reporter's nor a replacing event's, so no reader would read its report"
+        )
+    if kind not in LABEL_EVENT_KINDS:
+        return f"its report kind {kind!r} is not one of {LABEL_EVENT_KINDS}"
+    if kind == EMPTIED and not operator.LABEL_POOLS:
+        return "an emptied report is a pool reporter's (LABEL_POOLS)"
+    if kind == REPLACED and (operator.LABEL_POOLS or not operator.EVENT_REPLACES):
+        return "a replaced report is a replacing event's (EVENT_REPLACES), not a pool reporter's"
+    if kind == EXCHANGED and (
+        operator.LABEL_POOLS or operator.EVENT_REPLACES or not operator.ENTITY_WRITES
+    ):
+        return (
+            "an exchanged report is an event's that writes amounts (ENTITY_WRITES), replaces "
+            "none and holds no label pools"
+        )
+    return None
 
 
 def part_stages(operator):
@@ -470,6 +547,9 @@ class Operator:
     LABEL_OWNER = False
     LABEL_SOURCES = False
     LABEL_POOLS = False
+    # FR-44: a labels-taking event's report kind, one of LABEL_EVENT_KINDS, where its flags do
+    # not give it (label_event): "exchanged" is declared.
+    LABEL_EVENT = None
 
     @classmethod
     def observed_columns(cls):
@@ -951,6 +1031,9 @@ def check_declarations(operator):
         raise ValueError(f"{name}: a label owner has no part; the composite advances its shares")
     if (operator.LABEL_SOURCES or operator.LABEL_POOLS) and not reports_labels(operator):
         raise ValueError(f"{name}: sources and pools are a label reporter's (FR-42, D296)")
+    error = label_event_error(operator)
+    if error:
+        raise ValueError(f"{name}: {error} (FR-44)")
     for field in operator.STATE_AXES:
         booked = field in operator.HEAT_FIELDS or field in operator.WORK_FIELDS
         if field.endswith((HEAT_SUFFIX, WORK_SUFFIX)) != booked:

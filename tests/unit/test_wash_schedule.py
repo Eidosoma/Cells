@@ -6,7 +6,13 @@ washed with buffer at the trace) books the sample, the supply and the free-energ
 every site field and every ion amount bit for bit, and closes @3's ledgers at the event; the
 whole wash is FR-20's booking; the mixing heat stands against a 50-digit reference, at the trace
 too, and each plant breaks it; the host's domain check reads every event's heat; two washes of one
-node keep their own fractions and buffers. About 8 s together.
+node keep their own fractions and buffers. FR-44 (D327): the label owner beside the wash parses in
+either order; with labels= the event reports its own sample and supply, in NumPy and compiled;
+a whole wash after an earlier one leaves no label behind, where the cumulative gain (plant 5)
+would; a labelled gene unit's export and a labelled exchange route at the washed node are refused,
+each parsing beside a wash of another node; and FR-49's C1 world, labels beside a compartment with
+a wash at another node, is refused by the compartments' admitted list until FR-49's wash
+narrowing. About 10 s together.
 """
 
 import copy
@@ -24,6 +30,7 @@ from cells.execution.errors import NumericalError
 from cells.laws.electrochemistry import R
 from cells.models import surface_pump as first
 from cells.numerics import ideal_mixing
+from cells.numerics import label_shares as ls
 from cells.operators import OPERATORS
 from cells.operators import site_occupancy as so
 from cells.operators import wash_schedule as ws
@@ -109,6 +116,61 @@ def _gene_unit(*, outside=True, other_node=False):
     return raw
 
 
+def _labelled(raw, species):
+    """raw with the label owner labelling `species` (base and cohort, every node at the base)."""
+    out = copy.deepcopy(raw)
+    out["model"]["operators"].append(dict(law="neutral_arrival_labels@1", species=[
+        dict(id=s, labels=["base", "cohort"], initial=[]) for s in species
+    ]))  # fmt: skip
+    out["experiment"]["label_arrivals"] = []
+    return out
+
+
+def _second_well(raw):
+    """raw with well_2, a copy of the well, joined to the specimen by a copy of its patch."""
+    out = copy.deepcopy(raw)
+    m, e, x = out["model"], out["experiment"], out["execution"]
+    node = copy.deepcopy(next(n for n in m["extracellular"] if n["id"] == "well"))
+    node["id"] = "well_2"
+    m["extracellular"].append(node)
+    x["extracellular_capacity"] = len(m["extracellular"])
+    patch = copy.deepcopy(next(p for p in m["membranes"] if p["id"] == "specimen_face"))
+    patch.update(id="specimen_face_2", outside="well_2")
+    m["membranes"].append(patch)
+    x["membrane_capacity"] = len(m["membranes"])
+    for c in [c for c in e["membrane_controls"] if c["membrane_id"] == "specimen_face"]:
+        e["membrane_controls"].append(dict(copy.deepcopy(c), membrane_id="specimen_face_2"))
+    return out
+
+
+def _c1_world():
+    """FR-49's C1 shape (validation/fr49/REGISTRATION.md §5; D327), which is also the inherited
+    three-way composition (cell_owned_compartments@1, neutral_arrival_labels@1, and the wash at an
+    external node). It is World L, a compartment with labelled S (validation/fr49/worlds.py), plus
+    a well joined to cell_0 by a copy of the bounding patch, which carries no S route. The well's S
+    is labelled x 0.6 and base 0.4, and the well is washed by half at 900 s for a buffer with S at
+    1e-9 mM."""
+    from validation.fr49 import worlds as fr49
+
+    raw = fr49.world_l()
+    m, e, x = raw["model"], raw["experiment"], raw["execution"]
+    node = copy.deepcopy(next(n for n in m["extracellular"] if n["id"] == fr49.NODE))
+    node["id"] = "well"
+    m["extracellular"].append(node)
+    x["extracellular_capacity"] = len(m["extracellular"])
+    patch = copy.deepcopy(next(p for p in m["membranes"] if p["id"] == fr49.PATCH))
+    patch.update(id="patch_cell_0_well", outside="well")
+    m["membranes"].append(patch)
+    x["membrane_capacity"] = len(m["membranes"])
+    control = next(c for c in e["membrane_controls"] if c["membrane_id"] == fr49.PATCH)
+    e["membrane_controls"].append(dict(copy.deepcopy(control), membrane_id=patch["id"]))
+    owner = next(o for o in m["operators"] if o["law"] == fr49.LABELS)
+    owner["species"][0]["initial"].append(dict(node="well", shares={"x": 0.6, "base": 0.4}))
+    neutral = [s["id"] for s in m["species"] if s["valence"] == 0]
+    buffer = {s: node["initial_amount_fmol"][s] / node["volume_pL"] for s in neutral}
+    return wfx.with_wash(raw, ["well"], [(900.0, "well", 0.5, buffer | {fr49.S: 1e-9})])
+
+
 def _washed_at(raw, node):
     """raw with half of `node` washed at 300 s, its buffer every neutral species at the node's
     own declared concentration."""
@@ -184,6 +246,22 @@ REFUSALS = {
         ),
         "scheduled_compartment_wash@1 is not on its admitted list",
     ),
+    # FR-44 (D327): the paths that FR-44's labels would follow unmeasured stay refused by name.
+    "a labelled gene unit's export into the node": (
+        lambda: _washed_at(_labelled(_gene_unit(outside=False), ["R", "R_s"]), "space_0"),
+        "R may cross node space_0's surface by templated_polymerisation@1's export export_R",
+    ),
+    "a labelled exchange route through a patch facing the node": (
+        lambda: washed(_labelled(_route(wfx.well(sites=False)), [S])),
+        "S may cross node well's surface by scheduled_species_exchange@1's route uptake",
+    ),
+    # D327, FR-44 landing second (FR-49's parts H and L first): FR-49's C1 world, also the
+    # inherited three-way composition, is refused by name until FR-49's wash narrowing and its C1
+    # judgement.
+    "FR-49's C1 world: labels beside a compartment and a wash at another node": (
+        _c1_world,
+        "scheduled_compartment_wash@1 is not on its admitted list",
+    ),
 }
 
 
@@ -237,6 +315,47 @@ def test_admitted_beside_a_dose_at_a_held_bath_and_the_declaration_round_trips()
     assert op.read_slots(spec, declaration) == dict.fromkeys(
         ws.ScheduledCompartmentWash.SCOPED_READS, (well,)
     )
+
+
+@pytest.mark.parametrize("owner_first", [False, True])
+def test_admitted_beside_the_label_owner_in_either_order(owner_first):
+    """FR-44 (D327; parses only): the label owner beside the wash parses with either one declared
+    first. The owner is shown local to the wash, and it admits the wash's exchanging event. Its
+    record of what left is then sized [labelled species, label, outside node]."""
+    raw = washed(wfx.well(sites=False))
+    block = dict(law="neutral_arrival_labels@1", species=[dict(
+        id=S, labels=["base", "cohort"], initial=[dict(node="well", shares={"cohort": 1.0})]
+    )])  # fmt: skip
+    operators = raw["model"]["operators"]
+    operators.insert(len(operators) - 1 if owner_first else len(operators), block)
+    raw["experiment"]["label_arrivals"] = []
+    spec = parse_spec(raw)
+    laws = [op.LAW_ID for op, _, _ in cs.entries(spec)]
+    assert (laws.index("neutral_arrival_labels@1") < laws.index(ws.LAW_ID)) == owner_first
+    state, _ = get_model(spec.model).initial_values(spec)
+    shape = (1, 2, spec.execution.extracellular_capacity)
+    assert np.shape(state.label_outside_removed_fmol) == shape
+
+
+LABELLED_ELSEWHERE = {  # FR-44 (D327): each refused path above, labelled, beside a wash elsewhere.
+    "the gene unit, its export node unwashed": lambda: _washed_at(
+        _labelled(_gene_unit(other_node=True), ["R", "R_s"]), "space_1"
+    ),
+    "an exchange route facing another node": lambda: washed(
+        _labelled(_route(_second_well(wfx.well(sites=False))), [S]),
+        events=((T_E, "well_2", 0.5, {S: wfx.TRACE_mM}),),
+        nodes=("well_2",),
+    ),
+}
+
+
+@pytest.mark.parametrize("case", sorted(LABELLED_ELSEWHERE))
+def test_a_labelled_path_beside_a_wash_of_another_node_is_admitted(case):
+    """FR-44 (D327; parses only): the passing controls of the two labelled refusals above. The gene
+    unit with labelled R and R_s, and an exchange route with labelled S, each parse beside a wash
+    of a node their paths do not cross. These are the newly admitted triples of the labels, the
+    wash and each of the two laws."""
+    parse_spec(LABELLED_ELSEWHERE[case]())
 
 
 # ------------------------------------------------------------------ the event map, in NumPy
@@ -463,6 +582,95 @@ def test_two_washes_of_one_node_keep_their_own_fractions_and_buffers():
     assert second.wash_mixing_heat_pJ[w] == total
     residual, bound, _ = energy(spec, model, second, p)
     assert abs(residual) <= 1e-3 * bound
+
+
+def test_with_labels_the_event_reports_its_own_sample_and_supply():
+    """FR-44 (D327), the wash alone on the review's well at t_e, in NumPy and compiled (the event
+    map alone; about 1 s). With labels= (S's and Cl's rows):
+    - the state and validity are the unlabelled call's, bit for bit;
+    - the LiquidExchange report is the two per-event level records at those rows where the wash is
+      due: S's 30 fmol sample and its buffer, and Cl's sample twice, since an ion's supply is its
+      sample. It is zero at the held bath.
+    Called again at the same control, nothing is due: the report is zero, though the records
+    persist."""
+    spec, model, state, p, control, _, _ = at_event(washed())
+    op = next(op for op in model.events if op.LAW_ID == ws.LAW_ID)
+    ids = list(spec.model.species_ids)
+    rows = np.array([ids.index(S), ids.index("Cl")])
+    w = [c.id for c in spec.model.extracellular].index("well")
+    calls = {
+        "NumPy": (
+            lambda s: op.event(s, control, p, xp=np, labels=rows),
+            lambda s: op.event(s, control, p, xp=np),
+        ),
+        "compiled": (
+            jax.jit(lambda s: op.event(s, control, p, xp=jnp, labels=rows)),
+            jax.jit(lambda s: op.event(s, control, p, xp=jnp)),
+        ),
+    }
+    for name, (labelled, plain) in calls.items():
+        new, ok, report = labelled(state)
+        base, ok_plain = plain(state)
+        assert all(
+            np.asarray(a).tobytes() == np.asarray(b).tobytes()
+            for a, b in zip(new, base, strict=True)
+        ), name
+        assert bool(ok) and bool(ok_plain), name
+        removed, supplied = np.asarray(report.removed), np.asarray(report.supplied)
+        sample = np.asarray(new.wash_last_sample_fmol)[rows]
+        supply = np.asarray(new.wash_last_supply_fmol)[rows]
+        assert removed[:, w].tobytes() == sample[:, w].tobytes(), name
+        assert supplied[:, w].tobytes() == supply[:, w].tobytes(), name
+        assert removed[0, w] == 30.0 and supplied[0, w] == 0.5 * wfx.V_WELL * wfx.TRACE_mM, name
+        assert removed[1, w].tobytes() == supplied[1, w].tobytes(), name  # Cl: its own sample.
+        others = np.arange(removed.shape[1]) != w
+        assert not np.any(removed[:, others]) and not np.any(supplied[:, others]), name
+        again, ok_again, nothing = labelled(new)
+        assert bool(ok_again), name
+        assert not np.any(np.asarray(nothing.removed)), name
+        assert not np.any(np.asarray(nothing.supplied)), name
+        assert np.asarray(again.wash_last_sample_fmol)[rows[0], w] == 30.0, name  # It persists.
+
+
+@pytest.mark.parametrize("free, buffer, sign", [(60.0, 3e-5, -1.0), (70.0, 1e-5, 1.0)])
+def test_a_whole_wash_after_an_earlier_one_leaves_no_label_behind(free, buffer, sign):
+    """FR-44's regression (D327), the wash alone in NumPy: 3/7 of the well at 1 s, then all of it
+    at 1.5 s.
+    - The second report removes that event's own sample, fl(1.0 n) = n, so the kept part is
+      exactly 0. The label map then leaves the cohort's share exactly 0 and the base's exactly 1.
+    - Plant 5 takes the cumulative record's gain as the removed amount instead. On these numbers it
+      leaves a kept part of about 7e-15 fmol: negative on the first row, a negative share that the
+      owner's domain refuses, and positive on the second, a cohort share that should be 0."""
+    events = [_event(fraction=3 / 7, buffer={S: buffer}),
+              _event(time=1.5, fraction=1.0, buffer={S: buffer})]  # fmt: skip
+    spec = parse_spec(washed(wfx.well(free=free), events=events))
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    op = next(op for op in model.events if op.LAW_ID == ws.LAW_ID)
+    rows = np.array([list(spec.model.species_ids).index(S)])
+    w = [c.id for c in spec.model.extracellular].index("well")
+    states, reports = [state], []
+    for time in (T_E, 1.5):
+        control = model.CONTROL_TYPE(*(v[0] for v in cs.control_values(spec, [time])))
+        state, ok, report = op.event(state, control, p, xp=np, labels=rows)
+        assert ok
+        states.append(state)
+        reports.append(report)
+    n0 = (p.extracellular_amount_reference + states[1].extracellular_amount_increment)[rows]
+    removed, supplied = reports[1]
+    assert removed[0, w] == n0[0, w] and n0[0, w] - removed[0, w] == 0.0
+    shares = np.zeros((1, 2, n0.shape[1]))
+    shares[0, 0] = 1.0
+    shares[0, :, w] = (2 / 3, 1 / 3)
+    present = np.ones((1, 2), dtype=bool)
+    new = ls.exchange(shares, n0, removed, supplied, present, xp=np)
+    assert new[0, 1, w] == 0.0 and new[0, 0, w] == 1.0
+    gain = (states[2].wash_collected_fmol - states[1].wash_collected_fmol)[rows]  # Plant 5.
+    kept = n0[0, w] - gain[0, w]
+    assert np.sign(kept) == sign and abs(kept) < 1e-13
+    planted = ls.exchange(shares, n0, gain, supplied, present, xp=np)
+    assert planted[0, 1, w] != 0.0 and (planted[0, 1, w] < 0) == (sign < 0)
+    assert bool(ls.domain_valid(planted, present, xp=np)) == (sign > 0)
 
 
 # ------------------------------------------------------------------ the mixing heat, a kernel table

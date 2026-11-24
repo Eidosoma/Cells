@@ -49,7 +49,7 @@ and a general feature, never one built for one study (D144).
 | [FR-41](#fr-41--vesicle-shrinkage-validation-records) | Vesicle shrinkage validation records for the osmotic lumen law | **High** (user, via the Lean lane, 22 November 2026; D286) | **One agreement, retention open:** shrinkage matches (24.56% against about 25%). The data-only retention check is undetermined for all three sources; the one point estimate (gel-phase LUVs) suggests partial release | Parked until a study with paired, tabulated volume and small-solute retention appears |
 | [FR-42](#fr-42--neutral-arrival-time-labels-that-leave-the-dynamics-unchanged) | Neutral arrival-time labels that leave the dynamics unchanged: loss computed once per physical population and shared by label | **High** (a user, 22 November 2026) | **Landed and accepted (D306):** labels as share vectors on the physical row (option A, D289; the label owner, D296), across kinds, pools and sources, with the kinds hook (`label_refusals`, `label_transfers`) | Done for its consumers; FR-38's comparison reads its shares |
 | [FR-43](#fr-43--shared-inventories-larger-networks-shared-pools-and-low-count-populations) | Shared inventories: larger sparse reaction networks; one pool spent and replenished by separate processes, at fixed and changing volume; a low-count integer population coupled to continuous chemistry | **Very high** (logged by the user, 23 November 2026) | **All three parts on main (D328):** part 1 (bbc99163), part 2A (c9687d68) and 2B (2ca07dcb), part 3 (7fb0ad87); part 3's registered check passes (D319), and part 2's (D324) | The factor-width term, and the request's item-by-item check (A1: turnover in swelling cells) |
-| [FR-44](#fr-44--labels-across-a-wash-arrival-time-labels-through-scheduled-compartment-washes) | Labels across a wash: neutral arrival-time labels through scheduled compartment washes | **High** (logged by the user, 23 November 2026) | **Logged:** `neutral_arrival_labels@1` (FR-42) and `scheduled_compartment_wash@1` (FR-27) refuse each other at parse | A design note: the wash dilutes each washed node's label shares exactly with unlabelled buffer |
+| [FR-44](#fr-44--labels-across-a-wash-arrival-time-labels-through-scheduled-compartment-washes) | Labels across a wash: neutral arrival-time labels through scheduled compartment washes | **High** (logged by the user, 23 November 2026) | **Core built** (D327), on branch `fr44-labels-wash` for its gate and landing: the wash reports a typed exchange and the label owner dilutes each label exactly | The landing; then Admission by species (D327's step 3) |
 | [FR-45](#fr-45--several-ligands-competing-for-one-shared-wash-retained-site-capacity) | Several ligands competing for one shared, wash-retained site capacity | **High** (logged by the user, 23 November 2026) | **Logged:** FR-28's node-owned sites bind one ligand per population, and sites modelled as dissolved species wash out with the fluid | A design note: competing ligands in one site pool, or immobile anchored species that a wash leaves in place |
 | [FR-46](#fr-46--binding-from-a-shells-inner-face-lumen-ligands-on-membrane-sites) | Binding from a shell's inner face: lumen ligands on membrane sites | **High** (logged by the user, 23 November 2026) | **Landed** (merge d702f13a, D323): a site pair declares its face; an inner pair binds a lumen ligand in a prescribed shell; the face rule refuses carriers by name | Inner-face binding stays refused in the deterministic representation until a qualification covers it |
 | [FR-47](#fr-47--shell-exchange-and-scheduled-washes-in-the-deterministic-representation) | Shell exchange and scheduled washes in the deterministic representation | **High** (logged by the user, 23 November 2026) | **Built, admitted, development-only until fr47-shell-exchange's verdict (D323):** `cells.rate_equations@1` runs the prescribed shell, its full and fractional washes, E2's true zeros and autonomous gates in a prescribed shell's world; each is refused by name elsewhere, until a qualification covers it | A design note and a registered qualification against an analytical mass balance and an exact-event ensemble |
@@ -2001,6 +2001,24 @@ parse (`operators/wash_schedule.py`, `operators/species_labels.py`).
 - a restart through a wash reproduces the run.
 
 **Status (23 November):** logged. A design note comes first.
+
+**Status (24 November): the core is built** (D327; `docs/NEUTRAL_LABELS_DESIGN.md` §13), on
+branch `fr44-labels-wash` for its gate and landing.
+- **The report.** The wash reports a typed `LiquidExchange`, read from each event's own sample and
+  supply records, never from a cumulative record's gain.
+- **The map.** The label owner dilutes each label exactly. The buffer joins the base, even inside
+  an open window.
+- **Labelled ions** keep their amount while their shares dilute.
+- **The record** `label_outside_removed_fmol` holds what left, by label.
+- **The acceptance cases are rows:**
+  - the cohort scaled by (1 − f), with the base taking the buffer;
+  - the cells unchanged;
+  - the physical rows bitwise, in compiled twins washed five times;
+  - a restart across a wash, bitwise, with the redo and skip planted.
+- **The version-1 limit** (approved): the report's axis is the outside nodes, so an exchange of a
+  cell's own liquid cannot be expressed.
+- **Combinations (D327):** FR-49's C1 world, labels beside a compartment with a wash at another
+  node, stays refused by the compartments' admitted list until FR-49's wash narrowing.
 
 **Acceptance targets (24 November 2026, later; checked against the build after landing):**
 - **The example.** A 1 µL well holds 12 fmol of solute: 3 tagged and 9 base. A half-volume wash supplies 2 fmol of

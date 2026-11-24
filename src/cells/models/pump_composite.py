@@ -68,6 +68,7 @@ from cells.operators.contract import (
     READ_STAGES,
     WORK_SUFFIX,
     factor_reads,
+    label_event,
     monotone_heat,
     part_stages,
     reads_of,
@@ -1303,10 +1304,14 @@ class Composition:
             op: k for k, op in enumerate(o for o in self.label_reporters_in_order if o.LABEL_POOLS)
         }
         # D296: the events that report what they replace, the slots or (a pool reporter's) the
-        # pools they empty (erratum E; static: by their signature).
+        # pools they empty (erratum E), or (FR-44) the liquid they exchange (static: by their
+        # signature).
         self.label_events = frozenset(
             op for op in self.events if self.label_owner is not None and takes_labels(op.event)
         )
+        # FR-44: each one's report kind, by which the owner reads its report (static; the
+        # contract refuses a labels-taking event with none, label_event_error).
+        self.label_event_kinds = {op: label_event(op) for op in self.label_events}
         # FR-42's stage 2: the inner step reports its one-way transfers where it takes labels=
         # (static: by the inner implementation's signature; none without an owner). Declared
         # kinds report theirs through their hook (D303 item 6), and the owner's definition check
@@ -1670,14 +1675,15 @@ class Composition:
                         partial(self._owned_lifecycle, p) if owned else self._lifecycle
                     )
                 before = current
-                if op in self.label_events:  # Static (D296; erratum E): what it replaced.
+                if op in self.label_events:  # Static (D296; erratum E; FR-44): what it moved.
                     rows = self.label_owner.rows(p)
                     current, ok, report = op.event(
                         current, control, p, xp=xp, labels=rows, **keywords
-                    )  # A pool reporter's event reports its emptied pools, any other its slots.
+                    )  # Its report by its kind: replaced slots, emptied pools or an exchange.
                     pool = self.label_pools.get(op)
+                    kind = self.label_event_kinds[op]  # FR-44: read by its kind.
                     current = self.label_owner.advance_event(
-                        before, current, report, control, p, xp=xp, pool=pool
+                        before, current, report, control, p, kind=kind, xp=xp, pool=pool
                     )
                 else:
                     current, ok = op.event(current, control, p, xp=xp, **keywords)
