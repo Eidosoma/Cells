@@ -536,3 +536,121 @@ def test_the_readout_key_round_trips_states_its_records_and_refuses_a_non_boolea
         rectified = rectifier.closed_pair(rectifier.route(readout=bad))
         with pytest.raises(ConfigError, match="readout is true or false"):
             parse_spec(rectified)
+
+
+# ------------------------------------------------------------------ FR-50's one-way records
+# fr50-one-way-records-v1 (D327): host rows, each judged by the tagged judge's own checks
+# (validation/fr50/judge.py) against the builder's closed forms (validation/fr50/closed_forms.py),
+# on the registered cases (validation/fr50/references/spec/cases.json). The compiled rows are
+# tests/unit/test_one_way_records.py and test_one_way_records_transporter.py.
+
+
+def _fr50():
+    import json
+
+    from validation.fr50 import closed_forms, engine, judge, plants
+
+    cases = json.loads(judge.SPEC.read_text())["cases"]
+    return cases, closed_forms, engine, judge, plants
+
+
+def test_one_way_records_exist_only_where_a_route_asks():
+    """D148: without the key the structure entry, the bound kind's fields and its two record hooks
+    are today's; with it, OneWay, the records' fields, the mask and the hooks, and the key round
+    trips through to_dict."""
+    cases, _, engine, _, _ = _fr50()
+    case = cases["K1_neutral_zero_net"]
+    plain = parse_spec(engine.route_world(case, dt=0.1, end=0.1, one_way=False))
+    asked = parse_spec(engine.route_world(case, dt=0.1, end=0.1))
+    entries = [
+        passive_routes.structure_entry(dict(s.model.kinds)[passive_routes.KIND_ID])
+        for s in (plain, asked)
+    ]
+    assert entries[0] == (passive_routes.LAW_ID,) and isinstance(entries[1], passive_routes.OneWay)
+    today = kind_registry.bound(passive_routes.PASSIVE_ROUTES, entries[0])
+    recorded = kind_registry.bound(passive_routes.PASSIVE_ROUTES, entries[1])
+    assert today.state_axes == passive_routes.STATE_AXES and today.one_way_records == ()
+    assert today.one_way_fluxes is None and today.one_way_nets is None
+    assert "passive_one_way" not in today.layout_fields
+    assert recorded.one_way_records == (passive_routes.ONE_WAY_RECORD,)
+    assert recorded.state_axes == passive_routes.STATE_AXES + passive_routes.ONE_WAY_STATE_AXES
+    assert recorded.one_way_fluxes is passive_routes.record_fluxes
+    declared = dict(asked.model.kinds)[passive_routes.KIND_ID]
+    assert passive_routes.to_dict(declared)[0][passive_routes.ONE_WAY_KEY] is True
+    assert passive_routes.ONE_WAY_KEY not in passive_routes.to_dict(
+        dict(plain.model.kinds)[passive_routes.KIND_ID]
+    )[0]
+    bad = engine.route_world(case, dt=0.1, end=0.1)
+    bad["model"][passive_routes.MODEL_KEY][0][passive_routes.ONE_WAY_KEY] = 1
+    with pytest.raises(ConfigError, match="one_way is true or false"):
+        parse_spec(bad)
+
+
+def test_k3_the_charged_routes_one_way_fluxes_meet_ussing_and_the_swap_plant_fails():
+    """K3 at the four registered voltages (check_k3: each direction and inward/outward within
+    1e-12); plant K3, B(x) and B(-x) exchanged, fails at every nonzero voltage and only there."""
+    cases, closed_forms, engine, judge, _ = _fr50()
+    reference = closed_forms.k3("K3_charged_kernel", cases["K3_charged_kernel"])
+    request = judge.request_for(reference)
+    honest = judge.check_k3(reference, engine.engine(request))
+    assert honest["passed"], honest
+    planted = engine.engine(dict(request, plant="K3_bernoulli_exchanged"))
+    per = judge.check_k3(reference, planted)["per_voltage"]
+    assert [v["passed"] for v in per] == [v["zero"] for v in per] == [False, False, True, False]
+
+
+def _host_rows(engine, world, steps, dt):
+    """The K1 route's rows (n, F, B, net, gap) over `steps` NumPy steps of @3 at dt."""
+    spec = parse_spec(world)
+    impl = get_model(spec.model)
+    state, p = impl.initial_values(spec)
+    control = impl.Control(*(v[0] for v in control_values(spec, [0.0])))
+    s = list(spec.model.species_ids).index(fx.SPECIES)
+    rows = {q: [] for q in ("n", "F", "B", "net", "gap")}
+    for n in range(steps + 1):
+        if n:
+            state, valid = impl.imex_step(state, dt, control, p, xp=np)
+            assert bool(valid)
+        values = (
+            n,
+            state.passive_inward_fmol[0],
+            state.passive_outward_fmol[0],
+            state.passive_transferred[s, 0],
+            state.passive_one_way_gap_relative[0],
+        )
+        for q, value in zip(rows, values, strict=True):
+            rows[q].append(value)
+    return {q: np.asarray(v, dtype=np.int64 if q == "n" else np.float64) for q, v in rows.items()}
+
+
+@pytest.mark.parametrize(
+    "plant,failed",
+    [(None, []), ("K1a_backward_halved", ["K1-2"]), ("K1b_both_halved", ["K1-1"])],
+)
+def test_k1_plants_fail_only_their_criterion(plant, failed):
+    """K1 on ten host steps at 0.1 s, by the judge's checks: honest, it passes K1-1, K1-2 and
+    K1-3. Plant (a), the backward kernel halved: the rule restores the records from the booked net
+    (K1-1 and closure pass) and the gap shows it, r = 1/3 (K1-2 fails). Plant (b), both halved:
+    no gap, and the records are half (K1-1 fails)."""
+    cases, closed_forms, engine, judge, plants = _fr50()
+    case = cases["K1_neutral_zero_net"]
+    reference = closed_forms.k1("K1_neutral_zero_net", case, times=("0", "0.5", "1.0"))
+    with plants.planted(plant):
+        rows = _host_rows(engine, engine.route_world(case, dt=0.1, end=1.0), 10, 0.1)
+    results = {
+        "K1-1": judge.check_absolute(reference, rows, "0.1"),
+        "K1-2": judge.check_gap(rows),
+        "K1-3": judge.check_closure(rows),
+    }
+    assert sorted(k for k, r in results.items() if not r["passed"]) == failed
+    if plant == "K1a_backward_halved":
+        assert abs(float(results["K1-2"]["worst"]) - 1 / 3) <= 1e-12
+
+
+def test_k5_every_one_way_refusal_names_its_cause_and_its_control_is_admitted():
+    """K5's four rows (the engine adapter's worlds; the judge's erratum 1 for RK4's control): a
+    rectifier route, a net-flow population, RK4 and a slot-changing operator, each refused with
+    its reason, naming one_way, where the same world without the cause is admitted."""
+    _, _, engine, judge, _ = _fr50()
+    results = judge.check_refusals("K5", engine.engine(dict(kind="K5", plant=None)))
+    assert all(row["passed"] for row in results.values()), results

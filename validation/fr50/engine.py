@@ -154,6 +154,41 @@ def route_world(case, *, dt, end, one_way=True):
     return raw
 
 
+def routes_world(k1_case, k2_case, *, dt, end):
+    """K1 and K2 in one world with two species (the registration's §5, for the tests): K1's world
+    with S on route_0 (K1's values) and S2 on route_1 (K2's permeability and concentrations). The
+    two cases declare the same volumes, area, opening and temperature, which the world takes from
+    K1's (refused where they differ)."""
+    shared = ("T_K", "A_m2", "opening", "V_cell_pL", "V_node_pL")
+    if any(k1_case[key] != k2_case[key] for key in shared):
+        raise ConfigError(f"K1 and K2 share one world only where they declare the same {shared}")
+    raw = route_world(k1_case, dt=dt, end=end)
+    raw = add_inventory_species(
+        raw, "S2", trace_mM=TRACE_mM, diffusivity_m2_per_s=fx.D_S, floor_fmol=fx.FLOOR_FMOL,
+        concentrations_mM={
+            CELL: _value(k2_case["c_cell_mM_at_0"]), NODE: _value(k2_case["c_node_mM_at_0"])
+        },
+    )  # fmt: skip
+    raw["model"][passive_routes.MODEL_KEY].append(
+        dict(id="route_1", patch=CONTACT, law=passive_routes.LAW_ID, species="S2",
+             permeability_m_per_s=_value(k2_case["P_m_per_s"]), one_way=True)
+    )  # fmt: skip
+    return raw
+
+
+def route_rows(result, dt, route, species):
+    """A run's rows for one route of a routes world: n, F, B, net and gap at every accepted step."""
+    s = list(result.spec.model.species_ids).index(species)
+    return _rows(
+        result, dt, lambda h: (
+            np.asarray(h.passive_inward_fmol)[:, route],
+            np.asarray(h.passive_outward_fmol)[:, route],
+            np.asarray(h.passive_transferred)[:, s, route],
+            np.asarray(h.passive_one_way_gap_relative)[:, route],
+        ),
+    )  # fmt: skip
+
+
 def charged_world(case):
     """K3's host world (module docstring) from its spec case."""
     raw = fx.world(
@@ -246,6 +281,12 @@ def _transporter_fields(spec):
         np.asarray(h.transporter_cycles)[:, j],
         np.asarray(h.transporter_one_way_gap_relative)[:, j],
     )
+
+
+def transporter_rows(result, dt):
+    """A transporter world's run's rows (the wall patch's population): n, F, B, net and gap at
+    every accepted step, from its history (the inner or the composite form)."""
+    return _rows(result, dt, _transporter_fields(result.spec))
 
 
 def _state(result):
