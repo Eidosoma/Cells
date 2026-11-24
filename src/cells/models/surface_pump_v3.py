@@ -2635,9 +2635,9 @@ def step_transfers(start, end, p, dt, rows, *, xp=jnp, direct=None):
 #
 # The records are passive (the lead's ruling, 24 November 2026): they never refuse a step. A pair
 # whose step is unresolved (its end-of-step solve failed, or an amount came out not finite) keeps
-# its records where they were, and its gap becomes ONE_WAY_UNRESOLVED. That value lies above r's
-# range [0, 1], and the running maximum keeps it for the rest of the run, so every reading of the
-# gap fails closed.
+# its records where they were, and its gap becomes ONE_WAY_UNRESOLVED, 2.0. That value is outside
+# r's range [0, 1] by design, and the running maximum keeps it for the rest of the run, so every
+# reading of the gap fails closed.
 ONE_WAY_UNRESOLVED = 2.0
 
 
