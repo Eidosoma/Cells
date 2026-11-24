@@ -1,0 +1,873 @@
+{
+ "provenance": {
+  "references_revision": "266baec88333a8c9f157bf4de117da8be6caa32d",
+  "references_clean": true,
+  "writer_version": "fr47-references-writer 1",
+  "regeneration_hash_seeds": [
+   "random (unset)",
+   0,
+   1,
+   4242
+  ]
+ },
+ "method_1": "closed forms in decimal arithmetic at 60 digits (fr47_exact.py): the written values",
+ "method_2": "independent float64 numerics (fr47_numeric.py): expm and pmf enumeration, DOP853 for the rate equations, and Radau on the moment hierarchy over every gate state",
+ "normalisation": {
+  "mean_z": "|m2 - m1| / sqrt(var / 128): CRITERIA's mean z per unit difference",
+  "var_spread_z": "|v2 - v1| / sqrt((mu4 - var^2 (M-3)/(M-1)) / 128): the spread z",
+  "mu4_spread_z_relative": "|q2 - q1| / (2 (mu4 - var^2 (M-3)/(M-1))): the spread z's relative change, so |dz| = |z| times this",
+  "bounds": "|y2 - y1| / (1e-5 s_y): C1's bound, with CRITERIA's scales",
+  "gap.z": "|gap2 - gap1| / (SD / sqrt(128))",
+  "plants": "planted and honest in the criterion's own bound; distance relative"
+ },
+ "precision_check": {
+  "prec": 60,
+  "check_prec": 100,
+  "files": {
+   "W1": true,
+   "W1D": true,
+   "W2_Ng1024": true,
+   "W2_Ng256": true,
+   "W2_Ng4096": true,
+   "W2_Ng64": true,
+   "invented_gate": true,
+   "invented_shell": true
+  },
+  "all_identical": true
+ },
+ "worlds": {
+  "W1": {
+   "largest": {
+    "pairs.mean_z": {
+     "value": 9.268165581391021e-13,
+     "at": "S@pool at 1.25 s"
+    },
+    "pairs.var_spread_z": {
+     "value": 1.0415122666198213e-14,
+     "at": "S@pool at 2.0 s"
+    },
+    "pairs.mu4_spread_z_relative": {
+     "value": 3.563145260463061e-15,
+     "at": "S@pool at 1.25 s"
+    },
+    "pairs.mean_relative": {
+     "value": 6.428125759417839e-16,
+     "at": "S@lumen at 1.25 s"
+    },
+    "pairs.var_relative": {
+     "value": 1.3070741140922731e-15,
+     "at": "S@pool at 2.0 s"
+    },
+    "pairs.mu4_relative": {
+     "value": 4.788507974416348e-15,
+     "at": "S@pool at 1.25 s"
+    },
+    "d.pairs.bounds": {
+     "value": 3.7418372372937163e-10,
+     "at": "S@lumen at 2.0 s"
+    },
+    "stops.removed.mean_z": {
+     "value": 2.4523281503123857e-13,
+     "at": "removed at 7.0 s"
+    },
+    "stops.removed.var_spread_z": {
+     "value": 5.852516354337009e-15,
+     "at": "removed at 2.5 s"
+    },
+    "stops.removed.mu4_spread_z_relative": {
+     "value": 1.3390369687358803e-15,
+     "at": "removed at 2.5 s"
+    },
+    "stops.removed.mean_relative": {
+     "value": 4.161474623351376e-16,
+     "at": "removed at 9.0 s"
+    },
+    "stops.removed.var_relative": {
+     "value": 7.344271551802653e-16,
+     "at": "removed at 2.5 s"
+    },
+    "stops.removed.mu4_relative": {
+     "value": 1.799421596930676e-15,
+     "at": "removed at 2.5 s"
+    },
+    "stops.mixing_heat.mean_z": {
+     "value": 3.444358470224472e-13,
+     "at": "mixing heat at 2.5 s"
+    },
+    "stops.mixing_heat.var_spread_z": {
+     "value": 5.0755191669771144e-15,
+     "at": "mixing heat at 2.5 s"
+    },
+    "stops.mixing_heat.mu4_spread_z_relative": {
+     "value": 1.3051885082247727e-15,
+     "at": "mixing heat at 2.5 s"
+    },
+    "stops.mixing_heat.mean_relative": {
+     "value": 3.0018694009471484e-16,
+     "at": "mixing heat at 9.0 s"
+    },
+    "stops.mixing_heat.var_relative": {
+     "value": 6.369224581668318e-16,
+     "at": "mixing heat at 2.5 s"
+    },
+    "stops.mixing_heat.mu4_relative": {
+     "value": 1.7539354361385346e-15,
+     "at": "mixing heat at 2.5 s"
+    },
+    "d.stops.removed_bounds": {
+     "value": 6.71049230467491e-11,
+     "at": "removed at 7.0 s"
+    },
+    "d.stops.mixing_heat_bounds": {
+     "value": 2.9043581909634137e-11,
+     "at": "mixing heat at 5.0 s"
+    },
+    "d.intervals.bounds": {
+     "value": 9.746048855184066e-10,
+     "at": "interval 0.0-2.5 s"
+    },
+    "plants.planted_in_bounds": {
+     "value": 2.7189124350259898e-06,
+     "at": "P6/C5 ('tracer_moiety', 10.5)"
+    },
+    "plants.honest_in_bounds": {
+     "value": 2.598946361382443e-10,
+     "at": "P9/C9 ('heat', 7.0, 9.0)"
+    },
+    "plants.distance_relative": {
+     "value": 1.3260134043312281e-14,
+     "at": "P9/C9 ('heat', 7.0, 9.0)"
+    }
+   },
+   "flags": {
+    "constants_equal_founder": true,
+    "plants_same_quantity": true
+   }
+  },
+  "W1D": {
+   "largest": {
+    "pairs.mean_z": {
+     "value": 2.1778824167530107e-12,
+     "at": "S@pool at 1.25 s"
+    },
+    "pairs.var_spread_z": {
+     "value": 2.2422719099086635e-14,
+     "at": "S@pool at 8.0 s"
+    },
+    "pairs.mu4_spread_z_relative": {
+     "value": 3.256166131214871e-15,
+     "at": "S@pool at 6.5 s"
+    },
+    "pairs.mean_relative": {
+     "value": 2.4786452905768398e-15,
+     "at": "S@lumen at 10.5 s"
+    },
+    "pairs.var_relative": {
+     "value": 2.815042641676654e-15,
+     "at": "S@pool at 8.0 s"
+    },
+    "pairs.mu4_relative": {
+     "value": 4.375698645501983e-15,
+     "at": "S@pool at 6.5 s"
+    },
+    "d.pairs.bounds": {
+     "value": 5.542524596843863e-10,
+     "at": "S@lumen at 2.0 s"
+    },
+    "stops.removed.mean_z": {
+     "value": 2.380261431677817e-13,
+     "at": "removed at 2.5 s"
+    },
+    "stops.removed.var_spread_z": {
+     "value": 5.549463076657374e-15,
+     "at": "removed at 5.0 s"
+    },
+    "stops.removed.mu4_spread_z_relative": {
+     "value": 8.6684555028879595e-16,
+     "at": "removed at 5.0 s"
+    },
+    "stops.removed.mean_relative": {
+     "value": 2.4395214442164945e-16,
+     "at": "removed at 5.0 s"
+    },
+    "stops.removed.var_relative": {
+     "value": 6.964269253825601e-16,
+     "at": "removed at 5.0 s"
+    },
+    "stops.removed.mu4_relative": {
+     "value": 1.164914959817286e-15,
+     "at": "removed at 5.0 s"
+    },
+    "stops.mixing_heat.mean_z": {
+     "value": 4.270579143191943e-13,
+     "at": "mixing heat at 5.0 s"
+    },
+    "stops.mixing_heat.var_spread_z": {
+     "value": 2.9293021172880852e-15,
+     "at": "mixing heat at 9.0 s"
+    },
+    "stops.mixing_heat.mu4_spread_z_relative": {
+     "value": 6.038208866613188e-16,
+     "at": "mixing heat at 9.0 s"
+    },
+    "stops.mixing_heat.mean_relative": {
+     "value": 2.8266405612575303e-16,
+     "at": "mixing heat at 5.0 s"
+    },
+    "stops.mixing_heat.var_relative": {
+     "value": 3.6786670411108777e-16,
+     "at": "mixing heat at 9.0 s"
+    },
+    "stops.mixing_heat.mu4_relative": {
+     "value": 8.11817698100583e-16,
+     "at": "mixing heat at 9.0 s"
+    },
+    "d.stops.removed_bounds": {
+     "value": 3.860088664056143e-11,
+     "at": "removed at 7.0 s"
+    },
+    "d.stops.mixing_heat_bounds": {
+     "value": 2.7844653865127515e-11,
+     "at": "mixing heat at 5.0 s"
+    },
+    "d.intervals.bounds": {
+     "value": 3.0712803857565763e-09,
+     "at": "interval 0.0-2.5 s"
+    },
+    "plants.planted_in_bounds": {
+     "value": 2.4333034815412215e-10,
+     "at": "P1/C1 ('S@lumen', 3.5)"
+    },
+    "plants.honest_in_bounds": {
+     "value": 2.8388540617980915e-10,
+     "at": "P1/C1 ('S@lumen', 3.5)"
+    },
+    "plants.distance_relative": {
+     "value": 5.112971387513011e-15,
+     "at": "P1/C1 ('S@lumen', 3.5)"
+    }
+   },
+   "flags": {
+    "constants_equal_founder": true,
+    "plants_same_quantity": true
+   }
+  },
+  "W2_Ng1024": {
+   "largest": {
+    "pairs.mean_z": {
+     "value": 1.0364249151410325e-12,
+     "at": "G@wall at 4.0 s"
+    },
+    "pairs.var_spread_z": {
+     "value": 9.086787506602509e-13,
+     "at": "S@pool at 4.0 s"
+    },
+    "pairs.mu4_spread_z_relative": {
+     "value": 1.4389936908502823e-13,
+     "at": "S@pool at 4.0 s"
+    },
+    "pairs.mean_relative": {
+     "value": 3.6758391756739195e-15,
+     "at": "G@wall at 4.0 s"
+    },
+    "pairs.var_relative": {
+     "value": 1.1403721738114922e-13,
+     "at": "S@pool at 4.0 s"
+    },
+    "pairs.mu4_relative": {
+     "value": 1.933833295371463e-13,
+     "at": "S@pool at 4.0 s"
+    },
+    "d.pairs.bounds": {
+     "value": 3.108624468950438e-09,
+     "at": "G@wall at 2.0 s"
+    },
+    "gap.z": {
+     "value": 1.1136906094228881e-11,
+     "at": "G@wall at 2.0 s"
+    },
+    "gap.resolution_absolute": {
+     "value": 1.1136906095869339e-11,
+     "at": "G@wall at 2.0 s"
+    },
+    "hierarchy.mass_minus_one": {
+     "value": 3.552713678800501e-15,
+     "at": "all times"
+    },
+    "hierarchy.cut_edge_mass": {
+     "value": 4.8697706276597987e-67,
+     "at": "all times"
+    }
+   },
+   "flags": {
+    "constants_equal_founder": true,
+    "hierarchy_window": {
+     "k_lo": 136,
+     "k_hi": 762,
+     "N_g": 1024
+    },
+    "c8_same_largest_pair": true
+   }
+  },
+  "W2_Ng256": {
+   "largest": {
+    "pairs.mean_z": {
+     "value": 1.4509948811980816e-11,
+     "at": "H@wall at 6.0 s"
+    },
+    "pairs.var_spread_z": {
+     "value": 8.107673810825888e-13,
+     "at": "G@wall at 6.0 s"
+    },
+    "pairs.mu4_spread_z_relative": {
+     "value": 8.192688420753433e-14,
+     "at": "S@pool at 1.5 s"
+    },
+    "pairs.mean_relative": {
+     "value": 1.0277646335207166e-13,
+     "at": "G@wall at 6.0 s"
+    },
+    "pairs.var_relative": {
+     "value": 1.0157199137758518e-13,
+     "at": "G@wall at 6.0 s"
+    },
+    "pairs.mu4_relative": {
+     "value": 1.1009952729227692e-13,
+     "at": "S@pool at 1.5 s"
+    },
+    "d.pairs.bounds": {
+     "value": 2.675637489346627e-09,
+     "at": "G@wall at 2.0 s"
+    },
+    "gap.z": {
+     "value": 1.4592778365594766e-11,
+     "at": "H@wall at 6.0 s"
+    },
+    "gap.resolution_absolute": {
+     "value": 1.4592778365594026e-11,
+     "at": "H@wall at 6.0 s"
+    },
+    "hierarchy.mass_minus_one": {
+     "value": 1.028066520802895e-13,
+     "at": "all times"
+    },
+    "hierarchy.cut_edge_mass": {
+     "value": 0.0,
+     "at": "all times"
+    },
+    "plants.planted_in_bounds": {
+     "value": 7.587948842246333e-10,
+     "at": "P5/C7 ('S@lumen', 6.0)"
+    },
+    "plants.honest_in_bounds": {
+     "value": 6.562550350050883e-10,
+     "at": "P5/C7 ('S@lumen', 6.0)"
+    },
+    "plants.distance_relative": {
+     "value": 1.5207993772242514e-15,
+     "at": "P5/C7 ('S@lumen', 6.0)"
+    }
+   },
+   "flags": {
+    "constants_equal_founder": true,
+    "hierarchy_window": {
+     "k_lo": 0,
+     "k_hi": 256,
+     "N_g": 256
+    },
+    "c8_same_largest_pair": true,
+    "plants_same_quantity": true
+   }
+  },
+  "W2_Ng4096": {
+   "largest": {
+    "pairs.mean_z": {
+     "value": 9.203453246456395e-12,
+     "at": "G@wall at 5.0 s"
+    },
+    "pairs.var_spread_z": {
+     "value": 1.6731076027089549e-12,
+     "at": "S@pool at 4.0 s"
+    },
+    "pairs.mu4_spread_z_relative": {
+     "value": 2.6700570713681954e-13,
+     "at": "S@pool at 4.0 s"
+    },
+    "pairs.mean_relative": {
+     "value": 1.632072594002849e-14,
+     "at": "G@wall at 5.0 s"
+    },
+    "pairs.var_relative": {
+     "value": 2.0997135594762945e-13,
+     "at": "S@pool at 4.0 s"
+    },
+    "pairs.mu4_relative": {
+     "value": 3.5882331079038855e-13,
+     "at": "S@pool at 4.0 s"
+    },
+    "d.pairs.bounds": {
+     "value": 3.0642155479654316e-09,
+     "at": "G@wall at 2.0 s"
+    },
+    "gap.z": {
+     "value": 2.7384969272605626e-11,
+     "at": "H@wall at 2.0 s"
+    },
+    "gap.resolution_absolute": {
+     "value": 2.7384969266598482e-11,
+     "at": "H@wall at 2.0 s"
+    },
+    "hierarchy.mass_minus_one": {
+     "value": 1.5765166949677223e-14,
+     "at": "all times"
+    },
+    "hierarchy.cut_edge_mass": {
+     "value": 2.7217079297567653e-59,
+     "at": "all times"
+    }
+   },
+   "flags": {
+    "constants_equal_founder": true,
+    "hierarchy_window": {
+     "k_lo": 1056,
+     "k_hi": 2538,
+     "N_g": 4096
+    },
+    "c8_same_largest_pair": true
+   }
+  },
+  "W2_Ng64": {
+   "largest": {
+    "pairs.mean_z": {
+     "value": 9.276900045596526e-13,
+     "at": "S@pool at 5.0 s"
+    },
+    "pairs.var_spread_z": {
+     "value": 1.5650709587924597e-13,
+     "at": "S@pool at 4.0 s"
+    },
+    "pairs.mu4_spread_z_relative": {
+     "value": 4.105137175478922e-14,
+     "at": "S@pool at 0.5 s"
+    },
+    "pairs.mean_relative": {
+     "value": 7.498711918391495e-15,
+     "at": "G@wall at 6.0 s"
+    },
+    "pairs.var_relative": {
+     "value": 1.9641286397777997e-14,
+     "at": "S@pool at 4.0 s"
+    },
+    "pairs.mu4_relative": {
+     "value": 5.509216363763562e-14,
+     "at": "S@pool at 0.5 s"
+    },
+    "d.pairs.bounds": {
+     "value": 2.819966482547897e-09,
+     "at": "G@wall at 2.0 s"
+    },
+    "gap.z": {
+     "value": 6.487176981652935e-12,
+     "at": "S@pool at 5.0 s"
+    },
+    "gap.resolution_absolute": {
+     "value": 6.487359260898273e-12,
+     "at": "S@pool at 5.0 s"
+    },
+    "hierarchy.mass_minus_one": {
+     "value": 7.771561172376096e-15,
+     "at": "all times"
+    },
+    "hierarchy.cut_edge_mass": {
+     "value": 0.0,
+     "at": "all times"
+    }
+   },
+   "flags": {
+    "constants_equal_founder": true,
+    "hierarchy_window": {
+     "k_lo": 0,
+     "k_hi": 64,
+     "N_g": 64
+    },
+    "c8_same_largest_pair": true
+   }
+  },
+  "invented_gate": {
+   "largest": {
+    "pairs.mean_z": {
+     "value": 2.7580919471996383e-13,
+     "at": "S@pool at 1.1 s"
+    },
+    "pairs.var_spread_z": {
+     "value": 1.6908550828467207e-14,
+     "at": "S@pool at 1.1 s"
+    },
+    "pairs.mu4_spread_z_relative": {
+     "value": 1.785653254754702e-15,
+     "at": "S@pool at 1.1 s"
+    },
+    "pairs.mean_relative": {
+     "value": 1.2398876180265547e-15,
+     "at": "G@wall at 1.1 s"
+    },
+    "pairs.var_relative": {
+     "value": 2.1236879284393503e-15,
+     "at": "S@pool at 1.1 s"
+    },
+    "pairs.mu4_relative": {
+     "value": 2.400963332004884e-15,
+     "at": "S@pool at 1.1 s"
+    },
+    "d.pairs.bounds": {
+     "value": 1.056932319443149e-09,
+     "at": "G@wall at 2.7 s"
+    },
+    "gap.z": {
+     "value": 8.203976730785489e-13,
+     "at": "S@pool at 2.7 s"
+    },
+    "gap.resolution_absolute": {
+     "value": 8.203854262589516e-13,
+     "at": "S@pool at 2.7 s"
+    },
+    "hierarchy.mass_minus_one": {
+     "value": 1.3322676295501878e-15,
+     "at": "all times"
+    },
+    "hierarchy.cut_edge_mass": {
+     "value": 0.0,
+     "at": "all times"
+    },
+    "plants.planted_in_bounds": {
+     "value": 1.4486195198401134e-10,
+     "at": "P5/C7 ('S@lumen', 2.7)"
+    },
+    "plants.honest_in_bounds": {
+     "value": 4.828731732800378e-11,
+     "at": "P5/C7 ('S@lumen', 2.7)"
+    },
+    "plants.distance_relative": {
+     "value": 6.122378370981894e-15,
+     "at": "P5/C7 ('S@lumen', 2.7)"
+    }
+   },
+   "flags": {
+    "constants_equal_founder": true,
+    "hierarchy_window": {
+     "k_lo": 0,
+     "k_hi": 16,
+     "N_g": 16
+    },
+    "c8_same_largest_pair": true,
+    "plants_same_quantity": true
+   }
+  },
+  "invented_shell": {
+   "largest": {
+    "pairs.mean_z": {
+     "value": 1.5403164112660763e-13,
+     "at": "S@pool at 2.0 s"
+    },
+    "pairs.var_spread_z": {
+     "value": 7.026876703419341e-15,
+     "at": "S@lumen at 2.0 s"
+    },
+    "pairs.mu4_spread_z_relative": {
+     "value": 9.793880409845979e-16,
+     "at": "S@lumen at 3.1 s"
+    },
+    "pairs.mean_relative": {
+     "value": 1.979881315785598e-16,
+     "at": "S@pool at 3.1 s"
+    },
+    "pairs.var_relative": {
+     "value": 8.819077530761592e-16,
+     "at": "S@lumen at 2.0 s"
+    },
+    "pairs.mu4_relative": {
+     "value": 1.3162721482258262e-15,
+     "at": "S@lumen at 3.1 s"
+    },
+    "d.pairs.bounds": {
+     "value": 1.8075625833059145e-10,
+     "at": "S@lumen at 2.0 s"
+    },
+    "stops.removed.mean_z": {
+     "value": 8.201693136587745e-14,
+     "at": "removed at 1.5 s"
+    },
+    "stops.removed.var_spread_z": {
+     "value": 2.762925683907464e-15,
+     "at": "removed at 1.5 s"
+    },
+    "stops.removed.mu4_spread_z_relative": {
+     "value": 3.5811865825022455e-16,
+     "at": "removed at 1.5 s"
+    },
+    "stops.removed.mean_relative": {
+     "value": 1.5389533960750635e-16,
+     "at": "removed at 1.5 s"
+    },
+    "stops.removed.var_relative": {
+     "value": 3.4669544825080017e-16,
+     "at": "removed at 1.5 s"
+    },
+    "stops.removed.mu4_relative": {
+     "value": 4.812264515044139e-16,
+     "at": "removed at 1.5 s"
+    },
+    "stops.mixing_heat.mean_z": {
+     "value": 6.454259505240899e-14,
+     "at": "mixing heat at 4.25 s"
+    },
+    "stops.mixing_heat.var_spread_z": {
+     "value": 7.518615757895178e-15,
+     "at": "mixing heat at 1.5 s"
+    },
+    "stops.mixing_heat.mu4_spread_z_relative": {
+     "value": 9.944789396516275e-16,
+     "at": "mixing heat at 1.5 s"
+    },
+    "stops.mixing_heat.mean_relative": {
+     "value": 3.768143058059487e-16,
+     "at": "mixing heat at 4.25 s"
+    },
+    "stops.mixing_heat.var_relative": {
+     "value": 9.434273432015832e-16,
+     "at": "mixing heat at 1.5 s"
+    },
+    "stops.mixing_heat.mu4_relative": {
+     "value": 1.336326687163536e-15,
+     "at": "mixing heat at 1.5 s"
+    },
+    "d.stops.removed_bounds": {
+     "value": 3.587798797092859e-11,
+     "at": "removed at 2.75 s"
+    },
+    "d.stops.mixing_heat_bounds": {
+     "value": 1.964606186396625e-11,
+     "at": "mixing heat at 1.5 s"
+    },
+    "d.intervals.bounds": {
+     "value": 8.370830258671529e-10,
+     "at": "interval 1.5-2.75 s"
+    },
+    "plants.planted_in_bounds": {
+     "value": 1.0431653112761824e-06,
+     "at": "P6/C5 ('tracer_moiety', 5.5)"
+    },
+    "plants.honest_in_bounds": {
+     "value": 1.2715185203045377e-10,
+     "at": "P9/C9 ('heat', 2.75, 4.25)"
+    },
+    "plants.distance_relative": {
+     "value": 1.2008922283997386e-14,
+     "at": "P1/C1 ('S@lumen', 3.1)"
+    }
+   },
+   "flags": {
+    "constants_equal_founder": true,
+    "plants_same_quantity": true
+   }
+  }
+ },
+ "identities": {
+  "W1": {
+   "moiety_present_plus_removed_ulps_of_founder": 0.0,
+   "d_moiety_present_plus_removed_ulps_of_founder": 0.0,
+   "d_pairs_equal_exact_means_bitwise": true,
+   "d_stops_equal_exact_means_bitwise": true
+  },
+  "W1D": {
+   "moiety_present_plus_removed_ulps_of_founder": 0.0,
+   "d_moiety_present_plus_removed_ulps_of_founder": 0.0,
+   "d_pairs_equal_exact_means_bitwise": true,
+   "d_stops_equal_exact_means_bitwise": true
+  },
+  "W2_Ng1024": {
+   "pool_plus_lumen_mean_ulps": 0.0,
+   "G_plus_H_mean_ulps": 0.0,
+   "var_pool_vs_lumen_ulps": 0.0,
+   "mu4_pool_vs_lumen_ulps": 0.0,
+   "var_G_vs_H_ulps": 0.0,
+   "mu4_G_vs_H_ulps": 0.0,
+   "d_pool_plus_lumen_ulps": 0.0,
+   "d_G_plus_H_ulps": 0.0,
+   "gap_pool_plus_lumen_ulps": 0.0,
+   "resolution_pool_vs_lumen_ulps": 0.0
+  },
+  "W2_Ng256": {
+   "pool_plus_lumen_mean_ulps": 0.0,
+   "G_plus_H_mean_ulps": 0.0,
+   "var_pool_vs_lumen_ulps": 0.0,
+   "mu4_pool_vs_lumen_ulps": 0.0,
+   "var_G_vs_H_ulps": 0.0,
+   "mu4_G_vs_H_ulps": 0.0,
+   "d_pool_plus_lumen_ulps": 0.0,
+   "d_G_plus_H_ulps": 0.0,
+   "gap_pool_plus_lumen_ulps": 0.0,
+   "resolution_pool_vs_lumen_ulps": 0.0
+  },
+  "W2_Ng4096": {
+   "pool_plus_lumen_mean_ulps": 0.0,
+   "G_plus_H_mean_ulps": 0.0,
+   "var_pool_vs_lumen_ulps": 0.0,
+   "mu4_pool_vs_lumen_ulps": 0.0,
+   "var_G_vs_H_ulps": 0.0,
+   "mu4_G_vs_H_ulps": 0.0,
+   "d_pool_plus_lumen_ulps": 0.0,
+   "d_G_plus_H_ulps": 0.0,
+   "gap_pool_plus_lumen_ulps": 0.0,
+   "resolution_pool_vs_lumen_ulps": 0.0
+  },
+  "W2_Ng64": {
+   "pool_plus_lumen_mean_ulps": 0.0,
+   "G_plus_H_mean_ulps": 0.0,
+   "var_pool_vs_lumen_ulps": 0.0,
+   "mu4_pool_vs_lumen_ulps": 0.0,
+   "var_G_vs_H_ulps": 0.0,
+   "mu4_G_vs_H_ulps": 0.0,
+   "d_pool_plus_lumen_ulps": 0.0,
+   "d_G_plus_H_ulps": 0.0,
+   "gap_pool_plus_lumen_ulps": 0.0,
+   "resolution_pool_vs_lumen_ulps": 0.0
+  },
+  "invented_gate": {
+   "pool_plus_lumen_mean_ulps": 0.0,
+   "G_plus_H_mean_ulps": 0.0,
+   "var_pool_vs_lumen_ulps": 0.0,
+   "mu4_pool_vs_lumen_ulps": 0.0,
+   "var_G_vs_H_ulps": 0.0,
+   "mu4_G_vs_H_ulps": 0.0,
+   "d_pool_plus_lumen_ulps": 0.0,
+   "d_G_plus_H_ulps": 0.0,
+   "gap_pool_plus_lumen_ulps": 0.0,
+   "resolution_pool_vs_lumen_ulps": 0.0
+  },
+  "invented_shell": {
+   "moiety_present_plus_removed_ulps_of_founder": 0.0,
+   "d_moiety_present_plus_removed_ulps_of_founder": 0.0,
+   "d_pairs_equal_exact_means_bitwise": true,
+   "d_stops_equal_exact_means_bitwise": true
+  }
+ },
+ "largest_over_worlds": {
+  "pairs.mean_z": {
+   "value": 1.4509948811980816e-11,
+   "at": "W2_Ng256: H@wall at 6.0 s"
+  },
+  "pairs.var_spread_z": {
+   "value": 1.6731076027089549e-12,
+   "at": "W2_Ng4096: S@pool at 4.0 s"
+  },
+  "pairs.mu4_spread_z_relative": {
+   "value": 2.6700570713681954e-13,
+   "at": "W2_Ng4096: S@pool at 4.0 s"
+  },
+  "pairs.mean_relative": {
+   "value": 1.0277646335207166e-13,
+   "at": "W2_Ng256: G@wall at 6.0 s"
+  },
+  "pairs.var_relative": {
+   "value": 2.0997135594762945e-13,
+   "at": "W2_Ng4096: S@pool at 4.0 s"
+  },
+  "pairs.mu4_relative": {
+   "value": 3.5882331079038855e-13,
+   "at": "W2_Ng4096: S@pool at 4.0 s"
+  },
+  "d.pairs.bounds": {
+   "value": 3.108624468950438e-09,
+   "at": "W2_Ng1024: G@wall at 2.0 s"
+  },
+  "stops.removed.mean_z": {
+   "value": 2.4523281503123857e-13,
+   "at": "W1: removed at 7.0 s"
+  },
+  "stops.removed.var_spread_z": {
+   "value": 5.852516354337009e-15,
+   "at": "W1: removed at 2.5 s"
+  },
+  "stops.removed.mu4_spread_z_relative": {
+   "value": 1.3390369687358803e-15,
+   "at": "W1: removed at 2.5 s"
+  },
+  "stops.removed.mean_relative": {
+   "value": 4.161474623351376e-16,
+   "at": "W1: removed at 9.0 s"
+  },
+  "stops.removed.var_relative": {
+   "value": 7.344271551802653e-16,
+   "at": "W1: removed at 2.5 s"
+  },
+  "stops.removed.mu4_relative": {
+   "value": 1.799421596930676e-15,
+   "at": "W1: removed at 2.5 s"
+  },
+  "stops.mixing_heat.mean_z": {
+   "value": 4.270579143191943e-13,
+   "at": "W1D: mixing heat at 5.0 s"
+  },
+  "stops.mixing_heat.var_spread_z": {
+   "value": 7.518615757895178e-15,
+   "at": "invented_shell: mixing heat at 1.5 s"
+  },
+  "stops.mixing_heat.mu4_spread_z_relative": {
+   "value": 1.3051885082247727e-15,
+   "at": "W1: mixing heat at 2.5 s"
+  },
+  "stops.mixing_heat.mean_relative": {
+   "value": 3.768143058059487e-16,
+   "at": "invented_shell: mixing heat at 4.25 s"
+  },
+  "stops.mixing_heat.var_relative": {
+   "value": 9.434273432015832e-16,
+   "at": "invented_shell: mixing heat at 1.5 s"
+  },
+  "stops.mixing_heat.mu4_relative": {
+   "value": 1.7539354361385346e-15,
+   "at": "W1: mixing heat at 2.5 s"
+  },
+  "d.stops.removed_bounds": {
+   "value": 6.71049230467491e-11,
+   "at": "W1: removed at 7.0 s"
+  },
+  "d.stops.mixing_heat_bounds": {
+   "value": 2.9043581909634137e-11,
+   "at": "W1: mixing heat at 5.0 s"
+  },
+  "d.intervals.bounds": {
+   "value": 3.0712803857565763e-09,
+   "at": "W1D: interval 0.0-2.5 s"
+  },
+  "plants.planted_in_bounds": {
+   "value": 2.7189124350259898e-06,
+   "at": "W1: P6/C5 ('tracer_moiety', 10.5)"
+  },
+  "plants.honest_in_bounds": {
+   "value": 6.562550350050883e-10,
+   "at": "W2_Ng256: P5/C7 ('S@lumen', 6.0)"
+  },
+  "plants.distance_relative": {
+   "value": 1.3260134043312281e-14,
+   "at": "W1: P9/C9 ('heat', 7.0, 9.0)"
+  },
+  "gap.z": {
+   "value": 2.7384969272605626e-11,
+   "at": "W2_Ng4096: H@wall at 2.0 s"
+  },
+  "gap.resolution_absolute": {
+   "value": 2.7384969266598482e-11,
+   "at": "W2_Ng4096: H@wall at 2.0 s"
+  },
+  "hierarchy.mass_minus_one": {
+   "value": 1.028066520802895e-13,
+   "at": "W2_Ng256: all times"
+  },
+  "hierarchy.cut_edge_mass": {
+   "value": 2.7217079297567653e-59,
+   "at": "W2_Ng4096: all times"
+  }
+ }
+}

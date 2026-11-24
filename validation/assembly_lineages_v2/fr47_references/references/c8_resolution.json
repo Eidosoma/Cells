@@ -1,0 +1,71 @@
+{
+ "rule": "CRITERIA C8 as amended (AMENDMENT-2026-11-24 section 1): reported from the reference alone, not claimed. Each rung's gap is taken at its largest pair, the largest |gap| over S@pool and S@lumen at the observation times (ties to S@pool, then the earliest time); resolution = |gap| / (SD / sqrt(128)). The slope on ln|gap| against ln N_g is fitted from the reference files' gap lists by the checker: the references fit nothing (SPEC.md section 4)",
+ "M": 128,
+ "rungs": [
+  {
+   "world": "W2_Ng64",
+   "N_g": 64,
+   "N_w": 164,
+   "largest_pair": {
+    "observable": "S@pool",
+    "time_s": 1.5,
+    "gap": -1.1308390117021132,
+    "sd": 52.50090569826676,
+    "resolution": 0.24369070909380708,
+    "replicas_for_resolution_4.5": 43647.266856886425
+   }
+  },
+  {
+   "world": "W2_Ng256",
+   "N_g": 256,
+   "N_w": 356,
+   "largest_pair": {
+    "observable": "S@pool",
+    "time_s": 1.5,
+    "gap": -0.2608786441643614,
+    "sd": 43.46599218706644,
+    "resolution": 0.06790377454133427,
+    "replicas_for_resolution_4.5": 562143.4638067262
+   }
+  },
+  {
+   "world": "W2_Ng1024",
+   "N_g": 1024,
+   "N_w": 1124,
+   "largest_pair": {
+    "observable": "S@pool",
+    "time_s": 1.5,
+    "gap": -0.06202569447856735,
+    "sd": 40.909239277370844,
+    "resolution": 0.017153597553347097,
+    "replicas_for_resolution_4.5": 8808958.495339628
+   }
+  },
+  {
+   "world": "W2_Ng4096",
+   "N_g": 4096,
+   "N_w": 4196,
+   "largest_pair": {
+    "observable": "S@pool",
+    "time_s": 1.5,
+    "gap": -0.015234885539671167,
+    "sd": 40.24548769827477,
+    "resolution": 0.0042827920313319124,
+    "replicas_for_resolution_4.5": 141312644.997397
+   }
+  }
+ ],
+ "slope_se_linearised_all_rungs": 50.7223680594783,
+ "slope_se_note": "the standard error of a least-squares slope of ln|gap| on ln N_g over all rungs if each rung's ln|gap| were measured with SD 1/resolution (linearised; meaningless where a resolution is below about 3)",
+ "provenance": {
+  "references_revision": "266baec88333a8c9f157bf4de117da8be6caa32d",
+  "references_clean": true,
+  "writer_version": "fr47-references-writer 1",
+  "regeneration_hash_seeds": [
+   "random (unset)",
+   0,
+   1,
+   4242
+  ]
+ }
+}

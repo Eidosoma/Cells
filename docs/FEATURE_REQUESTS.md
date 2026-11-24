@@ -52,7 +52,7 @@ and a general feature, never one built for one study (D144).
 | [FR-44](#fr-44--labels-across-a-wash-arrival-time-labels-through-scheduled-compartment-washes) | Labels across a wash: neutral arrival-time labels through scheduled compartment washes | **High** (logged by the user, 23 November 2026) | **Logged:** `neutral_arrival_labels@1` (FR-42) and `scheduled_compartment_wash@1` (FR-27) refuse each other at parse | A design note: the wash dilutes each washed node's label shares exactly with unlabelled buffer |
 | [FR-45](#fr-45--several-ligands-competing-for-one-shared-wash-retained-site-capacity) | Several ligands competing for one shared, wash-retained site capacity | **High** (logged by the user, 23 November 2026) | **Logged:** FR-28's node-owned sites bind one ligand per population, and sites modelled as dissolved species wash out with the fluid | A design note: competing ligands in one site pool, or immobile anchored species that a wash leaves in place |
 | [FR-46](#fr-46--binding-from-a-shells-inner-face-lumen-ligands-on-membrane-sites) | Binding from a shell's inner face: lumen ligands on membrane sites | **High** (logged by the user, 23 November 2026) | **Logged:** `cells.prescribed_shell@1` admits outer-face binding of a pool ligand and refuses the lumen's | A design note: reversible inner-face binding with detailed balance, and the occupied state usable in a gate rule |
-| [FR-47](#fr-47--shell-exchange-and-scheduled-washes-in-the-deterministic-representation) | Shell exchange and scheduled washes in the deterministic representation | **High** (logged by the user, 23 November 2026) | **Logged:** `cells.rate_equations@1` refuses prescribed-shell geometry and replacement or withdrawal schedules (OL6's refusal 1) | A design note and a registered qualification against an analytical mass balance and an exact-event ensemble |
+| [FR-47](#fr-47--shell-exchange-and-scheduled-washes-in-the-deterministic-representation) | Shell exchange and scheduled washes in the deterministic representation | **High** (logged by the user, 23 November 2026) | **Built, admitted, development-only until fr47-shell-exchange's verdict (D323):** `cells.rate_equations@1` runs the prescribed shell, its full and fractional washes, E2's true zeros and autonomous gates in a prescribed shell's world; each is refused by name elsewhere, until a qualification covers it | A design note and a registered qualification against an analytical mass balance and an exact-event ensemble |
 | [FR-48](#fr-48--a-lumen-standard-potential-a-reversible-free-energy-difference-across-a-prescribed-shell) | A lumen standard potential: a reversible free-energy difference for one neutral solute across a prescribed shell | **High** (logged by the user, 23 November 2026) | **Logged:** `cells.assembly_lineages@2` gives the pool and the lumen one solution standard potential per species | A design note with FR-46 and FR-47 (the same files) |
 | [FR-49](#fr-49--compartment-composition-qualifications-expression-site-occupancy-and-labels-beside-cell-owned-compartments) | Compartment composition qualifications: expression, site occupancy and labels beside cell-owned compartments | **High** (logged by the user, 23 November 2026) | **Logged:** each is refused by the compartments' admitted list alone (refusal 7) | Qualify each pairing with its smallest feature and one world |
 | [FR-50](#fr-50--one-way-cumulative-transfer-records-per-route) | One-way cumulative transfer records per route | **High** (logged by the user, 23 November 2026) | **Logged:** most transfer records are net, so equal opposite flows cancel | Opt-in one-way records from the existing one-way kernels, closing to the net |
@@ -2047,6 +2047,18 @@ So large-count vesicle worlds with a shell and washes can run only as exact even
   checker.
 
 **Status (23 November):** logged. A design note comes first.
+
+**Status (24 November): built; admitted, development-only until fr47-shell-exchange's verdict.**
+- The build (D323, D327) admits, in a prescribed shell's world only: the shell's limits, the washes
+  as operators of the deterministic representation, E2's true zeros at first-order places and
+  autonomous switching gates. Outside a shell's world each is refused by name, until a
+  qualification covers it; site binding in a shell's world and gates driven by bound states are
+  refused too.
+- The qualification is registered (tag `fr47-shell-exchange-registered-2026-11-24`), with its
+  code-blind references (tag `fr47-references-2026-11-24`). Its independent checker writes the
+  driver and runs it after the landing. Until that verdict, these paths are development-only: the
+  representation's registered `qualified` field says so, and each run that uses them records it
+  (`representation.qualification` in its run.json).
 
 ## FR-48 — A lumen standard potential: a reversible free-energy difference across a prescribed shell
 
