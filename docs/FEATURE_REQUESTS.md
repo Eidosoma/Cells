@@ -62,6 +62,7 @@ and a general feature, never one built for one study (D144).
 | [FR-54](#fr-54--passive-neutral-diffusion-between-two-finite-liquid-regions-qualified-against-the-exact-two-well-solution-then-a-wash-at-a-diffusion-connected-node) | Passive neutral diffusion between two finite liquid regions, qualified against the exact two-well solution; then a wash at a diffusion-connected node | **High** (logged by the user, 24 November 2026; D341) | **Logged:** a wash at a diffusion-connected node stays refused (D246) until measured | A design note: closed-form, code-blind references; a stopped run reports its residual and tolerance; then the wash's qualification |
 | [FR-55](#fr-55--an-input-dependent-closing-rate-for-regulated-availability) | An input-dependent closing rate for regulated availability (dose-dependent deactivation) | **High** (logged by the user, 24 November 2026; D344) | **Logged:** one fixed closing rate; two groups' SK2 records contradict carrying it across doses | A design note, then qualification against both groups' records |
 | [FR-56](#fr-56--a-temperature-dependent-molecular-footprint) | A temperature-dependent molecular footprint with a declared, sourced expansion coefficient | Normal (logged by the user, 24 November 2026; D344) | **Logged:** a fixed footprint per species; two methods confirm POPC's expansion on warming | A design note |
+| [FR-57](#fr-57--passive-tracer-carried-by-a-prescribed-liquid-flow-between-finite-liquid-regions) | Passive tracer carried by a prescribed liquid flow between finite liquid regions | To be set by the user (logged 24 November 2026) | **Logged:** a wash's sample goes to a record; no operator carries one region's liquid into another | A design note with FR-54's: one mechanism, rows only a flow passes |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -2396,6 +2397,55 @@ sourced per lipid. The two methods disagree on its size, so α is a declaration,
 statically absent unless declared.
 
 **Status (24 November):** logged. A design note comes first.
+
+## FR-57 — Passive tracer carried by a prescribed liquid flow between finite liquid regions
+
+**Logged 24 November 2026 by the user.** Priority: to be set by the user.
+
+**Why.** This follows FR-37. Today a wash (`scheduled_compartment_wash@1`) exchanges a node's liquid with a declared
+buffer, and its sample goes to a record (D246). No operator carries one finite region's liquid into another, so a
+prescribed flow cannot be expressed: buffer in at Q, through chambers in series, and out to a collector.
+
+**The acceptance example:**
+- **The setup:**
+  - two equal, internally well-mixed chambers A and B, of volume V each;
+  - all the tracer starts in A;
+  - clean buffer enters at a constant flow Q, and the outlet is collected at the same rate;
+  - no diffusion and no binding.
+- **The targets,** after one residence time V/Q:
+  - flow A → B → collector collects 1 − 2/e = 26.42% of the tracer;
+  - in a fresh run, flow B → A → collector collects 1 − 1/e = 63.21%.
+- **The report:** the tracer in each chamber and in the collector. Their sum equals the starting amount.
+- **Both targets follow from the fluid balance,** with no fitting.
+
+**First reading (the lead, with the advisor), for the design note to settle:**
+- **The two targets alone do not test a flow.** Any two-stage first-order chain gives them, so a first-order transfer
+  between two nodes would reach them with no liquid moving. That does not count as shown. The note adds rows that
+  only a flow passes:
+  - unequal volumes, so the rates come from Q/V;
+  - two dissolved species carried by one declared Q, while a bound species stays;
+  - a plant reversing the order, which must give the other row's number;
+  - a plant that skips the mixing in B, which must fail.
+- **One mechanism.** A flow is D246's liquid exchange, with the sample routed into a node and the supply drawn from a
+  node or a declared inlet. It is written as a general operator, not a one-experiment one, with FR-54's note, after
+  FR-44 lands.
+- **The inlet and the collector** are records or nodes. A collector node grows in volume.
+- **Volume:** at every chamber, inflow equals outflow. Anything else is refused by name.
+- **Scheme and tolerance.**
+  - The references are closed forms, and a train of small exchanges reaches them only in the limit. So the note
+    states an exact coupled step, or a split with its order.
+  - It derives the tolerance at the declared steps.
+  - The sum closes to a derived rounding bound.
+- **Energy:** the note says what mixing dissipation the flow books. Otherwise the composite's energy check stops the
+  run.
+- **Version-1 refusals:**
+  - ions, since D246 requires same-composition ions;
+  - a flow beside diffusion or binding at the same node.
+- **Wording:** "one residence time" is V/Q of one chamber, and "clean buffer" is D246's trace-level buffer.
+- **D148:** statically absent unless declared. Existing washed worlds stay bitwise unchanged, and a restart mid-flow
+  is bitwise.
+
+**Status (24 November):** logged. A design note comes first, with FR-54's.
 
 ## Backlog: external tools to look at (logged by the user, 23 November 2026)
 
