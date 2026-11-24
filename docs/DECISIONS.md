@@ -12159,3 +12159,289 @@ under the shared agreement rule.
 - **D318's failure stays on record:** the first registration failed on D6's M alone, the zero-spread artifact. Version 2
   passes on fresh seeds after M's repair.
 - **FR-47's** schedule supplement and independent check are next in this lane.
+
+## D369: the user's direction on legacy: everything actually used leaves legacy, in Cells' canonical formats
+
+2026-11-24, about 22:18 UTC. The user, on reading the port plan's summary: "the legacy work is clearly important cleanup we
+need to make sure to get everything we're actually using out of there in our canonical formats".
+
+**What it settles:**
+- **The end state is canonical.** Everything Cells uses from legacy is re-expressed in the engine's canonical forms:
+  its laws, models, operators and definitions, under the rename's IDs. Relocation alone, a legacy island moved into
+  `src/cells`, is ruled out as an end state. That is the port plan's Q2 (c).
+- **The scope is a test of use, not a list of IDs.** The port plan's "the 11 families" (D348) gives way to everything
+  actually used. This restates the user's 17 November rule: legacy is removed in one batch after a check that covers
+  every capability.
+
+**Not settled: the sequence.** Whether a bitwise relocation comes first, as an interim step, is still the user's call;
+D348 never defined "port". The morning's review prices both routes.
+
+**The port plan is reworked** (plan only, by its author) around:
+1. **A coverage table by capability and consumer,** not by ID or import closure. Each row gets one class: canonical
+   already, expressible today, needs an engine feature, or dropped.
+2. **A definition of "used," fixed before counting.** A test whose only subject is a legacy model is not a use. The
+   plan's dry-run deletion, with a tiers run, measures it.
+3. **The 18 BETSE drivers on other legacy IDs:** whether their evidence is still claimed anywhere. That decides the
+   plan's Q1 and the rename's Q3.
+4. **The "blocked today" list,** checked by reading each refusal site: calcium-permeant channels on @3, finite fuel,
+   an ER store, and assembly coupling. Each confirmed gap is a candidate request for the user, not a logged FR.
+5. **The BETSE rule (AGENTS.md, 8 November):** nothing in `src/cells` re-hosts or copies BETSE code or carries its
+   conventions or names. A relocated family must meet that, which may rule relocation out for some families.
+6. **Qualifying a re-expression** needs science-length runs, with a tolerance derived, never tuned. Five-step captures
+   prove only a bitwise move.
+
+**Order:**
+- **The rename's Q3,** the 18 live pieces also spelled inside legacy, waits until the sequence is chosen.
+- **In the morning,** before the rename's move lands, main is tagged and the pre-rename snapshot frozen. Every capture
+  can run from it later.
+
+## D370: a correction to FR-53's premise (the global ledgers' row-1 bound), from its design note
+
+2026-11-24, about 22:19 UTC. The note is `docs/LEDGER_ROUNDING_DESIGN.md` on branch `fr53-design` (774fdcd5). Its
+probe ran four worlds on CPU 4 under the timed lock: GJ-N1's line and 9×9 sheet, and synthetic sheets of 15×15 and
+27×27 cells. The evidence is in `/mnt/workspaces/Cells/fr53-design-20261124/`.
+
+**The correction.** In the `ledger_limits` family (`resolved_pump_tissue@1` to `@3`, the water models, the replacement
+model and the composite), the bound at row 1 is not the bare material atol.
+- **Row 0** has every residual exactly zero.
+- **From row 1** the running allowance (2.5 ε k M) is already 97.6% to 99.9% of the total ledger's bound.
+
+So FR-53's "zero at steps 0 and 1", and the "bare material atol" in D335 and the GPU criteria, do not hold for these
+models. They do hold for `resolved_tissue@1` to `@10`, reached through legacy.
+
+**What grows is the check's own summation, not the stored state:**
+- **The row's exact residual** stays at or below 0.12 of the bound, and does not grow with the cell count.
+- **The check's sum** reaches 0.12 of the bound on the host at 225 and 729 cells, and up to 0.19 on the CPU device. It
+  is also the part that differs between host and device: D336 recorded the L4's two sums 0.51 apart.
+- **No clean √N law fits.** The host's first-window shares are 0.044, 0.122, 0.169 and 0.115 at 25, 81, 225 and 729
+  cells.
+
+**The note recommends:**
+- **One compensated sum** (fixed-order TwoSum), with the same code on host and device.
+- **One bound form for every ledger,** with three declared classes: exact, rounding, and truncation. The truncation
+  class carries its own term, as FR-38's amendment 3 taught, and FR-47's `atol_count` term belongs there.
+
+Its five questions go to the user in the morning batch with the advisor.
+
+**A note on the probe:** it held the timed lock for about four minutes while an FR-43 profile, the user's top priority,
+was waiting. Briefs now say to release the lock between probes.
+
+## D371: the user's decisions on the rename's family words, FR-52's form and scope, and FR-53's priority; the lead's rulings on the notes' other questions
+
+2026-11-24, about 22:29 UTC. The lead brought the three notes' questions to the advisor, as the user asked; four went to
+the user.
+
+**The user's decisions:**
+- **The rename's family words:** short where unambiguous, prefixed where a collision could come. For the five missing
+  interfaces and the block law:
+
+| Old ID | New ID |
+| --- | --- |
+| `rapid_binding@1` | `cells.binding.rapid_binding@1` |
+| `shared_pool@1` | `cells.population.shared_pool@1` |
+| `bilayer_geometry@1` | `cells.assembly_geometry.bilayer_geometry@1` |
+| `pore_nucleation@1` | `cells.assembly_hazard.pore_nucleation@1` |
+| `rate_equations@1` | `cells.assembly_representation.rate_equations@1` |
+| `open_channel_block_weighted_modes@1` | `cells.channel_block.open_channel_block_weighted_modes@1` |
+
+  The note's `block` is not used, since "block" already names a definition section throughout the code.
+- **FR-52's form:** an engine record kept at each event, with the trace reader kept in `validation/` as the
+  independent check.
+- **FR-52's scope:** chains are needed now. Version 1 covers dimer-to-tetramer chains and single-subunit activation,
+  through a declared identity map across states, rather than the note's two-state limit.
+- **FR-53 goes to normal.** Its premise was corrected (D370), and on CPU nothing fails. FR-47's small ledger fix, an
+  atol term for counts, lands on its own now that Protocol D has passed.
+
+**The lead's rulings, as the notes recommend, with the advisor's cautions:**
+- **FR-52:**
+  - **Q3:** an observed state on both sides of a channel is refused in version 1; the page states how returns are
+    counted.
+  - **Q4:** the new tier-2 file, with one integer-unit world added to G1 and crossrev at landing, rather than a routine
+    twin.
+  - **Q5:** an optional `cohorts` key on `@1`; omission is the only spelling, and an empty list is refused.
+  - **Independence:** the author's enumerated fractions are frozen in the note before the build, and the note states
+    the float record's rounding bound.
+- **FR-53:**
+  - **Q3:** X2's registered floor is unchanged.
+  - **Q4:** the fixed multipliers stay until evidence retires each one.
+  - **Q1, Q2 and Q5** wait for the build, now normal priority, after reads of what the new sum changes in G1's and
+    crossrev's saved fields, its compiled cost, and evidence on the L4.
+- **The rename:**
+  - **Q2:** the block law gets its own family, `channel_block`, with its law and interface registered in the hand
+    refactors, so the mapping holds no seeded law row. The interface's name follows the family word.
+  - **Q3:** the 18 live pieces also spelled inside legacy are re-spelled in legacy's files too, after a check for
+    pinned legacy config digests. Every route left after D369 has legacy outliving the rename.
+  - **Q4:** the ten sub-laws and the field closure law are in scope, since D346 names laws; the 35 recorded labels are
+    not. Any that needs a new family word comes back to the user.
+  - **Q5:** folders move separately, after the rename.
+  - **Q6:** the manifest keeps `@2`'s keys, with its ID rule amended. The note checks the library pages' paths, and
+    the viewer session is told.
+  - **Q7:** tagged files are pinned or translated at live drivers, with an erratum only where a judge must change. The
+    note lists every tagged registration with a run still to come (FR-38, FR-45, FR-49, Ek-Vitorín), each marked
+    pinned or translated.
+  - **Q8:** test plants take the three-part shape. The note states the grammar for outside modules, and the user is
+    told that private IDs change shape.
+- **The move's order:**
+  - FR-38's build runs its judged run before it merges main after the rename.
+  - The scripted move stays pure, with the long-line rewrap as a separate commit.
+  - The scope map is refreshed right after the landing.
+
+**FR-45, a coordinator's ruling.** P5's sizing on W7 covers both C6 and C4a, as for W2. CRITERIA's plant row, as
+amendment 2 amended it, names both, and it governs the narrower per-world table in amendment 2 §3.
+
+## D372: FR-50 phase 1 lands; FR-43 part 1's two gaps are closed on their branch, with the report committed by the lead on the user's approval; FR-66 is logged
+
+2026-11-24, about 22:41 UTC.
+
+**FR-50 phase 1 landed** at 1939563e (tag `fr50-phase1-landed-2026-11-24`). The landing trial passed 261 tests in 376 s.
+- **The judged comparison passed** (D363).
+- **The gate:** crossrev 11 of 11 identical; tiers 1+2, 671 files, none changed; G1 113 of 113 equal.
+- **FR's set** passed.
+- **The landing engine is the judged engine,** apart from docstrings and comments, by an AST comparison.
+
+**FR-43 part 1's two gaps (D365)** are closed on branch `fr43-part1-gaps` (10338924). Its selection gate follows.
+- **The missing cases are rows (D224), each with a plant:**
+  - the 16-row control in tier 2 (24.35 s);
+  - the 256-row case in tier 3 (35.5 s), which would push the tier-2 file past its 90 s cap.
+
+  The planted fast link is caught at 9.3× to 10.1× the accuracy.
+- **The CPU performance report (C1.4)** is `validation/fr43_part1/PERFORMANCE.md`, with `performance.json`. It ran on CPU
+  4 under the timed lock, three fresh-process repeats per size, at 4f4c4812's frozen snapshot. Every repeat met the
+  declared accuracy.
+
+| Rows | Compile s | ms per step | s per simulated s | Peak RSS MiB |
+| --- | --- | --- | --- | --- |
+| 16 | 18.4 | 0.23 | 0.046 | 833 |
+| 32 | 21.0 | 0.48 | 0.095 | 866 |
+| 256 | 24.3 | 16.5 | 3.3 | 939 |
+| 1,024 | 47.0 | 455 | 91 | 1,746 |
+
+- **Against the design note:**
+  - its comparable arms agree;
+  - its headline 1,024-row figures (214 s, 3.9 GiB) are its unrolled arm, which the landed engine never runs above 16
+    terms;
+  - its L4 column is kept, labelled as taken on the path D336 found unqualified.
+- **The refusal, and the user's decision.**
+  - The harness refused the builder's write of a report draft ("Subagents should return findings as text, not write
+    report files"). The builder held and did not retry.
+  - The user approved the lead committing the report: the builder's text, and its measured JSON byte-identical.
+- **For the morning:**
+  - **Verify a finding:** the builder reports that the plain `runner.run` still admits the composite on a GPU, where
+    only the vector windows refuse it (D336, D338). Check this against D187.
+  - **Stale texts** go to the docstring batch: the large file's 1,024-row bullet, and the runs file's docstring (66 s
+    against the record's 70.48 s).
+
+**FR-66 is logged** (medium, the user): a passive fluorescence reader over FR-33's regional amount exports, with several
+masks over one accepted trajectory.
+
+## D373: FR-47's independent check passes, and its schedule supplement passes separately; FR-47's development-only status is lifted
+
+2026-11-24, about 22:50 UTC. The checker is fresh: not FR-47's builder, its protocol's author or its references agent. It
+ran under the tag `fr47-shell-exchange-registered-2026-11-24`, with the supplement and its erratum 1 at their tags.
+
+**The frozen scorer's verdict: pass.**
+- **The worlds:** all six pass (W1, W1Δ, and W2 at N_g 64, 256, 1,024 and 4,096). None was inconclusive, so no retry
+  ran. No pair fell in the band; the largest |z| was 3.67.
+- **The plants:** all nine are caught. Each predicted size the references gave is matched: for example P3 at 2.90e4
+  bounds, P8 at 191.6 fail bands and P9 at 428.7.
+- **The first read and regeneration:** the judge's first read of both invented files passed before any engine run.
+  The references regenerate bitwise under two other hash seeds.
+- **The books:** every ledger closes in 768 exact replicas and 6 (d) runs.
+- **The snapshot:** f8c6c326, clean. Every tagged FR-47 file in it is byte-identical to its tag.
+- **The record:** `/mnt/workspaces/Cells/fr47-checker-20261124/judgement/verdict.json`.
+
+**The schedule supplement passes,** a separate result, never merged into the verdict.
+- **The controls,** run before any saved run was read: the honest invented record passes, and cases A, B and C fail
+  as designed.
+- **The schedule:** every exact replica and (d) run records exactly the scheduled stops, in count, order, kind and
+  time, with a clock bound of 0 s derived from the code beforehand.
+- **The heats:** every scheduled withdrawal carries a finite heat. Every (d) run's intervals have the scheduled
+  edges.
+
+**So FR-47's development-only status is lifted** (D339: both must pass).
+
+**The checker's disclosures:**
+- **The plants** are scoped patches in its own driver, with its readings of P1, P3, P5, P6 and P7 stated.
+- **Supplementary variants:** for P1 and P7, CRITERIA names only C1 and C2. Variants with the refusing check made a
+  no-op exercised those criteria, and were kept out of the plant verdicts.
+- **Two driver faults** (v1) were fixed and rerun (v2), with the v1 folders kept as evidence.
+- **Cost:** about 1.06 CPU-hours, against the estimate of about 3.
+- **Cleanup:** its two worktrees are pruned.
+
+## D374: the user's decisions on legacy: keep and re-express the calcium ensemble; retire the physiology stack
+
+2026-11-24, about 22:53 UTC. The port plan reworked for D369 is on branch `legacy-port-plan` (3b7c729f). Its finding:
+measured by use, most of D348's eleven IDs are not used. Only the calcium ensemble is substantial, together with
+`spatial_extracellular@2` for the JUPITER readiness check, `resolved_tissue@8` as @3's reference world, and
+`source_decay@1` as the test conftest's world. The advisor sent two questions to the user, because both revisit the
+user's answer of earlier the same day, "keep BETSE and ensemble".
+
+**The calcium ensemble is kept, and re-expressed in canonical form.**
+- **What it is:** the assembly-regulated cell and cluster on `spatial_calcium@1` to `@4`, run by the GPU ensemble
+  runner and the JUPITER readiness check.
+- **What it needs:** five engine features, the plan's G-1, G-4, G-5, G-7 and G-8: calcium-permeant channels on @3,
+  an ER store, IP3-gated release, assembly coupling, and the composite on a GPU. The author's rough guess is 16 to 28
+  agent-days. These are candidate requests, sized by their own design notes, not FRs yet.
+- **The route** comes back to the user with prices:
+  - relocate first, then re-express (route A);
+  - re-express directly (route B);
+  - prune legacy in place to the used cores, then re-express.
+
+**The physiology stack is retired.**
+- **What goes:** the 17 drivers on legacy's five BETSE IDs and the 18 REF-era drivers. No current document claims a
+  result from them, and their helpers are BETSE glue throughout.
+- **What stays:** the BETSE parity that PROGRESS claims, which runs on the live `resolved_pump_tissue@1` to `@3`
+  ladder, and BETSE itself as an outside reference. The ladder's one legacy import, a re-export of a live helper,
+  becomes a direct import.
+- **How:** the drivers and their tests retire in the approved deletion batch, with their records kept. That batch
+  needs the dry-run deletion, a tag, and a removal list the user approves.
+
+**The lead's rulings,** with the advisor:
+- **No retirement before the rename's move.** It would save about a dozen files, but a deletion needs the measured
+  dry run and the user's approved batch.
+- **Inside that batch:**
+  - the plan's Q5: @3's checks against `resolved_tissue@8` stay for now, and move to an independent validation
+    reference at the end;
+  - the plan's Q6: `source_decay@1`, `emt_mirna@1` and `passive_pair@1` are deleted, and the conftest's users point at
+    a live world.
+- **Waiting for the route:** which engine gaps to request, and the plan's three lead rulings. Tolerances are derived
+  in each re-expression's registration, never ruled.
+- **For the plan:** check that its coverage table has the protein inventory's law records that point into legacy
+  (13 of 81 on 17 November).
+
+**Tonight:** a dry-run deletion of legacy in a scratch copy of a frozen snapshot measures what depends on it, on lane B
+after FR-43's gate. It changes nothing on main.
+
+## D375: the user's decisions on FR-52's splits and FR-65's scope; FR-45's amendment 3 is tagged
+
+2026-11-24, about 23:10 UTC.
+
+**FR-52: a split makes a new unit.** When a tetramer formed from two original dimers splits back into two dimers inside
+the window, one dimer keeps the original identity, and the other counts as newly assembled.
+- **What follows:** "initial" stays a true survival count, and every split adds one to "newly assembled". The round
+  trip ends at 1 initial and 1 new.
+- **This refines D371's sentence:** a partial-assembly step does not count a unit as new, but a split does create one.
+- **The note** (`fr52-design`, ed0bd135) froze both readings' values in advance, so this needs no erratum. It now keeps
+  reading (a).
+- **The lead's rulings, as recommended:**
+  - P1: a channel step with one tracked unit on each side keeps its identity with no declaration;
+  - P3: the G1 and crossrev world is added with its cohort declared.
+- **The price** is 4.25 to 5 agent-days, after the rename.
+
+**FR-65: the first build also admits a lumen,** at nodes turnover does not read. That adds about 1 to 1.5 agent-days to
+the note's pairwise, lumen-free core, for about 3.25 to 4.5 in all.
+- **The note** is `fr65-design` (3dd81578).
+- **The lead's rulings,** as the note recommends:
+  - Q1 (b): turnover first, then the coupling's reads of the current volume, so that A1 in a swelling cell is admitted.
+    It adds about 2 to 2.5 agent-days, and the coupling's contract extension is designed in that step.
+  - Q2 (a): the builder's tests, with no new registered criterion. The Q5 assertion of D150 flips, amended in place with
+    disclosure as on 20 November.
+- **Not now:** partition beside water (M4) and water's current area and masks (M2).
+
+**FR-45's amendment 3 is tagged** `fr45-site-competition-v1-amendment-3-2026-11-24` (98cd33db).
+- **W7s's horizon** is 2.0 s (47 time constants), so every interval's heat stays resolved. The sizing rule gains an
+  upper side.
+- **dt · max L ≤ 0.03** holds, as §4 registers. W7 and W7s now step at 0.0025 s, and amendment 2's sentence confusing
+  h with dt is withdrawn.
+- **Plant entries are keyed** (plant, criterion, world, time_s). P5 under C6 on W7 keeps two entries.
+- **Next:** the references agent regenerates W7 and W7s before the references' tag.

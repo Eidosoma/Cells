@@ -55,10 +55,10 @@ and a general feature, never one built for one study (D144).
 | [FR-47](#fr-47--shell-exchange-and-scheduled-washes-in-the-deterministic-representation) | Shell exchange and scheduled washes in the deterministic representation | **High** (logged by the user, 23 November 2026) | **Built, admitted, development-only until fr47-shell-exchange's verdict (D323):** `cells.rate_equations@1` runs the prescribed shell, its full and fractional washes, E2's true zeros and autonomous gates in a prescribed shell's world; each is refused by name elsewhere, until a qualification covers it | A design note and a registered qualification against an analytical mass balance and an exact-event ensemble |
 | [FR-48](#fr-48--a-lumen-standard-potential-a-reversible-free-energy-difference-across-a-prescribed-shell) | A lumen standard potential: a reversible free-energy difference for one neutral solute across a prescribed shell | **High** (logged by the user, 23 November 2026) | **Landed** (merge d702f13a, D323): an absolute lumen standard potential per species in a prescribed shell, read by every law through the lumen place's standard potential | None open |
 | [FR-49](#fr-49--compartment-composition-qualifications-expression-site-occupancy-and-labels-beside-cell-owned-compartments) | Compartment composition qualifications: expression, site occupancy and labels beside cell-owned compartments | **High** (logged by the user, 23 November 2026) | **Parts H and L landed** (merge 7d021548): the gene unit and neutral arrival labels beside cell-owned compartments; World L's registered judgement passes (D331) | World B and the combination checks C1 and C2, after FR-49's site pairing (following FR-45) and its wash narrowing (following FR-44); C4's four-way form by amendment, once admission by species lands |
-| [FR-50](#fr-50--one-way-cumulative-transfer-records-per-route) | One-way cumulative transfer records per route | **High** (logged by the user, 23 November 2026) | **Logged:** most transfer records are net, so equal opposite flows cancel | Opt-in one-way records from the existing one-way kernels, closing to the net |
+| [FR-50](#fr-50--one-way-cumulative-transfer-records-per-route) | One-way cumulative transfer records per route | **High** (logged by the user, 23 November 2026) | **Phase 1 landed** 24 November 2026 at 1939563e (tag `fr50-phase1-landed-2026-11-24`); judged against fr50-one-way-records-v1, passing (D363) | Opt-in one-way records from the existing one-way kernels, closing to the net |
 | [FR-51](#fr-51--two-voltage-dependent-blocking-modes-on-one-channel-population) | Two voltage-dependent blocking modes on one channel population | **High** (logged by the user, 23 November 2026) | **Landed** 24 November 2026 at 955765ef (tag `fr51-landed-2026-11-24`); judged against fr51-channel-block-v1, every criterion passing | The slot-refusal follow-up; the law's registration after FR-64's note; the two-arm registration (D353, D356) |
 | [FR-52](#fr-52--passive-cohort-observations-for-integer-functional-units) | Passive cohort observations for integer functional units: the expected surviving initial and newly assembled units at one site | **High** (logged by the user, 24 November 2026) | **Logged:** `integer_unit_population@1` records its events in a bounded trace, with no cohort readout; labels follow species rows, not units | A design note: a validation reader or a statically absent in-engine expected-cohort record, with classes that partition the count and fail-closed truncation |
-| [FR-53](#fr-53--a-rounding-allowance-for-global-ledgers-at-every-row) | A rounding allowance for global ledgers at every row: the first window's bound no tighter than the sum's own rounding | **High** (logged by the user, 24 November 2026) | **Logged:** at steps 0 and 1 the bound is the bare atol, and the host reads 0.28 of it on 625 cells, growing about as √N | A design note: a derived summation allowance per row, or compensated global sums, with the planted faults still caught |
+| [FR-53](#fr-53--a-rounding-allowance-for-global-ledgers-at-every-row) | A rounding allowance for global ledgers at every row: the first window's bound no tighter than the sum's own rounding | Normal (logged by the user, 24 November 2026 as high; lowered by the user, D371) | **Logged:** at steps 0 and 1 the bound is the bare atol, and the host reads 0.28 of it on 625 cells, growing about as √N | A design note: a derived summation allowance per row, or compensated global sums, with the planted faults still caught |
 | [FR-54](#fr-54--passive-neutral-diffusion-between-two-finite-liquid-regions-qualified-against-the-exact-two-well-solution-then-a-wash-at-a-diffusion-connected-node) | Passive neutral diffusion between two finite liquid regions, qualified against the exact two-well solution; then a wash at a diffusion-connected node | **High** (logged by the user, 24 November 2026; D341) | **Logged:** a wash at a diffusion-connected node stays refused (D246) until measured | A design note: closed-form, code-blind references; a stopped run reports its residual and tolerance; then the wash's qualification |
 | [FR-55](#fr-55--an-input-dependent-closing-rate-for-regulated-availability) | An input-dependent closing rate for regulated availability (dose-dependent deactivation) | Normal (logged by the user, 24 November 2026; D344; lowered by D351) | **Logged:** one fixed closing rate; two groups' SK2 records contradict carrying it, in opposite directions (an indication pair, D351) | A design note, then qualification against both groups' records |
 | [FR-56](#fr-56--a-temperature-dependent-molecular-footprint) | A temperature-dependent molecular footprint with a declared, sourced expansion coefficient | Normal (logged by the user, 24 November 2026; D344) | **Logged:** a fixed footprint per species; two methods confirm POPC's expansion on warming | A design note |
@@ -71,6 +71,7 @@ and a general feature, never one built for one study (D144).
 | [FR-63](#fr-63--a-ph-dependent-kv15-activation) | A pH-dependent Kv1.5 activation, re-formed as a declared pH shift on its population (FR-64, D356) | Normal (logged by the user, 24 November 2026; D353) | **Logged:** three labs confirm the acid shift's direction; `kv1p5_mh@1` has no pH input | A design note |
 | [FR-64](#fr-64--a-declared-voltage-shift-on-a-channel-population) | A declared voltage shift on a channel population: an ion's reversal or a sourced shift per pH unit, read by its gates or its block | Normal (logged by the user, 24 November 2026; D356, D361) | **Logged:** one mechanism for FR-51's reversal reference and FR-63's pH shift | A design note, before FR-51's law is registered |
 | [FR-65](#fr-65--turnover-beside-a-changing-volume) | Turnover beside a changing volume: reading the current volume and masks beside water, partition or insertion | **High** (logged by the user, 24 November 2026, as part of FR-43; D365) | **Logged:** refused at parse today (D347's gap 4); D301's composition M3 | A design note |
+| [FR-66](#fr-66--a-passive-fluorescence-reader-over-regional-amount-exports) | A passive fluorescence reader over regional amount exports: several masks over one trajectory, against a prebleach state | Medium (logged by the user, 24 November 2026; D372) | **Logged:** nothing on main reads fluorescence or a prebleach state | A short design note |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -2144,6 +2145,8 @@ So large-count vesicle worlds with a shell and washes can run only as exact even
 
 **Status (24 November, later):** a reviewer found that the frozen scorer does not check the washes against the registered schedule. The frozen scorer stays official, and a separate schedule supplement is registered before any judged run (`validation/assembly_lineages_v2/FR47_SCHEDULE_SUPPLEMENT.md`, D339). FR-47 stays development-only unless both pass. A fix for inert wall places, which no rate or geometry reads, is in its gate.
 
+**Status (24 November, late; D373):** the independent check passes, under the frozen scorer, and the schedule supplement passes separately. FR-47's development-only status is lifted.
+
 ## FR-48 — A lumen standard potential: a reversible free-energy difference across a prescribed shell
 
 **Logged 23 November 2026 by the user, priority high** (raised the same day, with FR-46 and FR-47).
@@ -2375,6 +2378,10 @@ count and the expected newly assembled count, conditional on the recorded events
 - **A mutant:** a reader that assumes one unit per event gives 4/3 and 2/3, a total of 2 against the engine's 1. It must fail the integrity check.
 - **For the design note:** whether a channel may list the active state on both sides. If it may, the stored change is net there, which conflicts with the gross reading.
 
+**Design (D371; the user):** an engine record kept at each event, with the trace reader as the independent check. Version 1 covers chains (dimer to tetramer) and single-subunit activation, through a declared identity map across states. The note on `fr52-design` is being revised accordingly.
+
+**Splits (D375; the user):** a split makes a new unit. One half keeps the original identity, and the other counts as newly assembled, so "initial" stays a survival count.
+
 ## FR-53 — A rounding allowance for global ledgers at every row
 
 **Logged 24 November 2026 by the user, priority high.**
@@ -2412,6 +2419,10 @@ loosens no bound beyond what that rounding requires. Every planted fault the che
 - **A new GPU qualification is separate,** and the user's decision (D336).
 
 **Status (24 November):** logged. A design note comes first.
+
+**Correction and design note (24 November, D370):** in the `ledger_limits` family the row-1 bound is not the bare atol, since the running allowance is already about 98% to 99.9% of it. What grows with the cell count is the check's own summation. Design note: `docs/LEDGER_ROUNDING_DESIGN.md` on `fr53-design`, recommending one compensated sum and one bound form with declared classes.
+
+**Priority (D371):** normal, by the user, after D370's correction.
 
 ## FR-54 — Passive neutral diffusion between two finite liquid regions, qualified against the exact two-well solution; then a wash at a diffusion-connected node
 
@@ -2867,6 +2878,56 @@ Concentrations then follow amounts over the current volume, with the material an
 plus references.
 
 **Status (24 November):** logged. A design note comes first.
+
+**Design note and scope (D375):** `docs/TURNOVER_CHANGING_VOLUME_DESIGN.md` on `fr65-design`. The first build covers turnover beside water, partition or insertion, pairwise, and admits a lumen at nodes turnover does not read (the user). It is followed by the coupling's reads of the current volume, so that A1 in a swelling cell is admitted.
+
+## FR-66 — A passive fluorescence reader over regional amount exports
+
+**Logged 24 November 2026 by the user, priority medium.**
+
+**Why.** Imaging reads a labelled amount through a microscope's collection, region by region, against a prebleach
+reference. Several masks may read the same accepted trajectory. FR-33's regional exports give the amounts, but no reader
+turns them into a mask's signal and its ratio to prebleach.
+
+**The request.** A passive reader beside FR-33's regional amount exports.
+- **Inputs:**
+  - the ordered region IDs;
+  - the bright-label amounts per region, in fmol;
+  - one collection fraction per region and mask, from 0 to 1;
+  - a separately supplied prebleach state.
+- **The output, per mask:**
+  - the weighted bright amount, Σ_r w_r a_r;
+  - its weighted prebleach amount, Σ_r w_r p_r;
+  - their ratio.
+- **Concentration exports** are converted once, as mM × the region's volume in pL to fmol.
+- **A trajectory starting at light-off** needs its own prebleach reference; none is taken from the trajectory by
+  default.
+
+**The acceptance case, with three unequal regions:**
+
+| | Region 1 | Region 2 | Region 3 |
+| --- | ---: | ---: | ---: |
+| Prebleach (fmol) | 1 | 2 | 1 |
+| Later (fmol) | 0.25 | 1.50 | 0.75 |
+
+- Mask [1, 1, 1] gives 2.50 / 4.00 = 62.5%.
+- Mask [1, 0.5, 0] gives 1.00 / 2.00 = 50.0%.
+
+**Also checked:**
+- uniform 50% dimming reads 50% through either mask;
+- subdividing a region, at the same weight, preserves its signal;
+- observation leaves the trajectory unchanged, bit for bit.
+
+**Refused:**
+- a region order that does not match the export's;
+- invalid weights: outside [0, 1], or not finite;
+- a zero selected prebleach signal.
+
+**First reading (the lead).** Nothing on main reads fluorescence, collection fractions or a prebleach state today. The
+reader is a host computation over saved regional amounts, with no engine state. It belongs in `src` as a readout,
+since it computes a consequence for users, with a closed-form check in the tests.
+
+**Status (24 November):** logged. A short design note comes first.
 
 ## Backlog: external tools to look at (logged by the user, 23 November 2026)
 
