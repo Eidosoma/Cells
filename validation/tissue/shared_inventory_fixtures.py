@@ -131,6 +131,84 @@ def network_alone(kind="sink", *, copies=COPIES, k=None, dt=0.5, end=None, every
     return _horizon(raw, end, every)
 
 
+# ------------------------------------------------------------------ at changing volume (2B)
+
+WATER = "ideal_osmosis_linear_compliance_water@1"
+PF_M_S = 5e-4  # Osmotic permeability (m/s): the doubling probe's (design note §2.3).
+DILUTION = 0.4  # The held bath's osmolytes, as a fraction of the cell's: the cell swells.
+MAXIMUM_FRACTION = 3.0  # Water's maximum volume over the reference (a synthetic world).
+AB_mM = 20.0  # C2.6's A and B in the cell (mM).
+K_BIND = 0.05  # 1/s at c0: C2.6's passive A + B <-> C.
+MU_C = -1.0  # mu°/RT of C at c0 (A's and B's 0).
+
+
+def with_water_first(raw, *, pf_m_s=PF_M_S, dilution=DILUTION, maximum_fraction=MAXIMUM_FRACTION,
+                     keep=()):  # fmt: skip
+    """A frozen composite world in a swelling cell: water (ideal_osmosis_linear_compliance_water@1,
+    no modulus or pressure offset) declared first, so the readers after it take its current
+    volumes, and the held bath's species but `keep` diluted to `dilution` of their amounts."""
+    from cells.definitions import pump_composite_spec as cs
+    from validation.tissue import pump_water_fixtures as wfx
+
+    out = copy.deepcopy(raw)
+    inner = copy.deepcopy(out)
+    m = inner["model"]
+    m["id"] = m.pop("inner_model")
+    m.pop("operators")
+    for key in [k for k in inner["experiment"] if k.endswith("_controls")]:
+        if key not in ("membrane_controls", "junction_controls", "pump_controls",
+                       "calcium_pump_controls", "channel_controls"):  # fmt: skip
+            inner["experiment"].pop(key)
+    water = cs.frozen_definition(
+        wfx.with_water(
+            inner,
+            pf_m_s=pf_m_s,
+            bulk_modulus_Pa=0.0,
+            pressure_offset_Pa=0.0,
+            maximum_fraction=maximum_fraction,
+        )  # fmt: skip
+    )
+    (block,) = water["model"]["operators"]
+    out["model"]["operators"] = [block, *out["model"]["operators"]]
+    out["experiment"]["water_controls"] = water["experiment"]["water_controls"]
+    for bath in out["model"]["extracellular"]:
+        if bath.get("reservoir", False):
+            for name in bath["initial_amount_fmol"]:
+                if name not in keep:
+                    bath["initial_amount_fmol"][name] *= dilution
+    return out
+
+
+def swelling_pair(kind="sink", *, dt=0.01, end=40.0, every=1.0, **kwargs):
+    """C2.8: the pair (pair()) in a swelling cell, water first."""
+    return with_water_first(pair(kind, dt=dt, end=end, every=every), **kwargs)
+
+
+def swelling_cell(*, network_multiplier=1.0, dt=0.01, end=40.0, every=0.5, **kwargs):
+    """C2.5 to C2.7: one quiescent 1 pL cell (secreted_species_fixtures.world, its impermeant
+    tracer S at 1 uM) with A and B at AB_mM and C at a trace, the passive A + B <-> C (ideal
+    detailed balance, k_f = K_BIND at c0 = 1 mM, mu°/RT 0, 0 and MU_C; sum nu = -1, so the
+    reaction moves the osmolarity and with it the volume), in a swelling cell. network_multiplier
+    0 is C2.5's world: the network declared, every multiplier zero."""
+    raw = fx.world(
+        nodes=(), contacts=(), faces=(), dt=dt, end=end,
+        observation_times=fx.grid_times(end, dt, every), concentrations_mM={"cell_0": 1e-3},
+    )  # fmt: skip
+    for name, mM in (("A", AB_mM), ("B", AB_mM), ("C", 1e-6)):
+        raw = add_inventory_species(
+            raw, name, trace_mM=fx.TRACE_mM, diffusivity_m2_per_s=fx.D_S,
+            floor_fmol=fx.FLOOR_FMOL, concentrations_mM={"cell_0": mM},
+        )  # fmt: skip
+    species = [
+        rfx.species("A", moieties={"a": 1}, mu=0.0),
+        rfx.species("B", moieties={"b": 1}, mu=0.0),
+        rfx.species("C", moieties={"a": 1, "b": 1}, mu=MU_C),
+    ]
+    reactions = [rfx.passive("bind", {"cells": ["cell_0"]}, {"A": 1, "B": 1}, {"C": 1}, K_BIND)]
+    raw = rfx.with_reactions(raw, species, reactions, rfx.always(["bind"], network_multiplier))
+    return with_water_first(raw, keep=(fx.SPECIES, "A", "B", "C"), **kwargs)
+
+
 # ------------------------------------------------------------------ beside the unit producer
 
 UNIT_PRODUCER = "population_unit_turnover@1"
