@@ -59,6 +59,7 @@ and a general feature, never one built for one study (D144).
 | [FR-51](#fr-51--two-voltage-dependent-blocking-modes-on-one-channel-population) | Two voltage-dependent blocking modes on one channel population | **High** (logged by the user, 23 November 2026) | **Logged:** not expressible; a channel law's kinetics read the voltage only, and there is no block law | An optional weighted-mode block on a channel population, qualified for permeation and block separately |
 | [FR-52](#fr-52--passive-cohort-observations-for-integer-functional-units) | Passive cohort observations for integer functional units: the expected surviving initial and newly assembled units at one site | **High** (logged by the user, 24 November 2026) | **Logged:** `integer_unit_population@1` records its events in a bounded trace, with no cohort readout; labels follow species rows, not units | A design note: a validation reader or a statically absent in-engine expected-cohort record, with classes that partition the count and fail-closed truncation |
 | [FR-53](#fr-53--a-rounding-allowance-for-global-ledgers-at-every-row) | A rounding allowance for global ledgers at every row: the first window's bound no tighter than the sum's own rounding | **High** (logged by the user, 24 November 2026) | **Logged:** at steps 0 and 1 the bound is the bare atol, and the host reads 0.28 of it on 625 cells, growing about as √N | A design note: a derived summation allowance per row, or compensated global sums, with the planted faults still caught |
+| [FR-54](#fr-54--passive-neutral-diffusion-between-two-finite-liquid-regions-qualified-against-the-exact-two-well-solution-then-a-wash-at-a-diffusion-connected-node) | Passive neutral diffusion between two finite liquid regions, qualified against the exact two-well solution; then a wash at a diffusion-connected node | To be set by the user (logged 24 November 2026) | **Logged:** a wash at a diffusion-connected node stays refused (D246) until measured | A design note: closed-form, code-blind references; a stopped run reports its residual and tolerance; then the wash's qualification |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -2300,6 +2301,36 @@ loosens no bound beyond what that rounding requires. Every planted fault the che
   - the line's, the sheet's and the field's first-window shares, before and after;
   - the existing seeded-fault rows.
 - **A new GPU qualification is separate,** and the user's decision (D336).
+
+**Status (24 November):** logged. A design note comes first.
+
+## FR-54 — Passive neutral diffusion between two finite liquid regions, qualified against the exact two-well solution; then a wash at a diffusion-connected node
+
+**Logged 24 November 2026 by the user.** Priority: to be set by the user.
+
+**The request:**
+1. **Qualify the diffusion.** Passive neutral diffusion between two finite liquid regions in
+   `resolved_pump_composite@1` is compared with the exact two-well solution: the first step's mass transfer and
+   dissipated free energy, across positive background concentrations and time steps.
+2. **Explain a stopped run.** When the energy check stops a run, it reports the residual it computed and the
+   tolerance it allowed.
+3. **Qualify the wash on that basis.** Use the diffusion benchmark to qualify withdrawal and refill on a
+   diffusion-connected finite node: `scheduled_compartment_wash@1`'s liquid exchange (D246), with FR-10's
+   schedule.
+
+**First reading (the lead), for the design note to settle:**
+- **The reference is a closed form.** For permeance PA between volumes V₁ and V₂, a step h moves
+  Δn = (c₁ − c₂)(1 − e^(−kh))/(1/V₁ + 1/V₂), with k = PA(1/V₁ + 1/V₂). The dissipated free energy is the drop in
+  the two wells' ideal free energy. Both can be evaluated exactly, so the references are code-blind and tagged
+  before any engine reading.
+- **Tolerances come from the integrator's order and the step,** by derivation. Each case is compared at the step
+  sizes declared in advance.
+- **The background concentrations:** the note states what a positive background changes in the composite's
+  neutral route (activity, volume or nothing) before the cases are fixed.
+- **The stopped-run report is a small engine change.** It is tested by a refusal row whose message carries both
+  numbers.
+- **The wash at a diffusion-connected node** stays refused today (D246: faces at an exchanged node stay refused until
+  measured). This qualification is that measurement. It lifts the refusal only for the qualified form.
 
 **Status (24 November):** logged. A design note comes first.
 
