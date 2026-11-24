@@ -2454,6 +2454,22 @@ prescribed flow cannot be expressed: buffer in at Q, through chambers in series,
 
 **Status (24 November):** logged. A design note comes first, with FR-54's.
 
+**Addition (24 November 2026, later): a free-energy check for the flow.**
+- **The check.** At volume flow Q, incoming concentration x and resident concentration y, the ideal mixing loss rate
+  over RT is Q[x ln(x/y) − x + y]. It is checked against the chambers' storage and the inlet and outlet free-energy
+  fluxes.
+- **The cases:**
+  - a uniform stream (x = y) carries tracer with zero mixing loss;
+  - flow off gives zero flow contribution while diffusion continues.
+- **First reading (the lead, with the advisor):**
+  - **The one-mechanism link.** Expanding D246's per-event mixing heat to first order in f, with fV = QΔt, should give
+    this rate. The remainder sets the scheme's order.
+  - **The identity closes only with the −n term** in the free energy. The note names the engine's convention.
+  - **"Flow off while diffusion continues"** meets the version-1 refusal of flow beside diffusion, so it arrives with
+    FR-54's qualification. At Q = 0, the run equals its diffusion-only twin, bitwise.
+  - **In an initially empty chamber,** x ln(x/y) reads the trace level. The note states the trace and the expected
+    refinement, as FR-59 must.
+
 ## FR-58 — A label on an exchangeable group, carried through reversible conversions
 
 **Logged 24 November 2026 by the user.** Priority: to be set by the user.

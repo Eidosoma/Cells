@@ -11310,3 +11310,66 @@ separately:
    - There is no operator × solver view, and the species cap (1,024) is global.
    - **Queued:** a per-solver view, generated from the existing refusal rows, with no engine change. It belongs to the
      catalogue work of 25 November.
+
+## D350: FR-30's symmetric law stands; no FR-51 registration against V − E_K yet; an external review's findings (an FR-47 supplement erratum, the rename's design inputs, follow-ups)
+
+2026-11-24, about 17:21 UTC. These are the lead's decisions with the advisor, under the user's delegation ("decide on the
+two questions with adviser").
+
+**1. FR-30: D334 stands, and `junction_series_gates@1` keeps one symmetric block.**
+- **The diagnostic's first deliverable** (non-blind, deciding nothing) found G_ss/G_0's ±60 mV windows disjoint in
+  Revilla's data: a gap of 0.052, which is robust. At ±100 the gap is 0.0016, which is marginal. The +V windows sit on
+  the registered 0.05 floor, since 2·SEM is smaller there (n = 6 pairs).
+- **It is confounded.** Revilla steps one cell from a common holding level (`protocol.json`; `JUNCTION_GATE_POLARITY.md`),
+  so under §13.7 W3's reading the difference is confounded by that cell's V_m, neither a pass nor a fail. It is one
+  study.
+- **D334 was made with it in view:** the polarity note at Tag A already weighed Revilla's oocyte asymmetry, which
+  prompted that check.
+- **Corrections:**
+  - D320 had 4 of 6 comparisons passing and 2 missing, both at −80 mV (τ_slow and G_ss). It failed on the 75% rule.
+  - D343's "says nothing against symmetry" holds for those two judged ±80 lines only.
+  - D344's narrow scope names a signed V_j and the stepped cell, since −100 and +100 differ.
+- **The second deliverable is running.** It asks whether parameter sets compatible with the training data can reach
+  the −80 τ_slow window.
+
+**2. FR-51 against V − E_K: no registration now.**
+- Two independent fits put Kir2.1's steep spermine valence above 4. "About 5" is less firm: 5.33–5.37 derives from one
+  fit's e-fold, which has no stated uncertainty.
+- FR-51's law admits a declared effective valence above |z_B| (ruling 7), and its test rows use values up to 9, so it
+  is representable by declaration.
+- The testable content is block against V − E_K at a second K level in one preparation, and no such source is in hand.
+- **Next:** FR-51's entry gets a dated status line once it lands, and Lean is asked, through the user, for a two-K,
+  same-preparation row.
+- Cells' Kir2.1 law is a parity law with its own rectifying gates. A block on top could double-count, which is a later
+  design question.
+
+**3. An external code review, read-only over main and the active branches, checked and triaged:**
+- **FR-47's schedule supplement has two defects, both confirmed in the code:**
+  - `d.stops` carries no `kind`;
+  - check 4 would confirm itself.
+
+  Erratum 1 is registered before any judged run: `validation/assembly_lineages_v2/FR47_SCHEDULE_SUPPLEMENT_ERRATUM_1.md`,
+  tagged `fr47-schedule-supplement-erratum-1-2026-11-24`.
+- **The rename's design inputs, settled in the design note on 25 November before any script runs:**
+  - **Five live interfaces are missing from D346's family list:** `cells.binding_law@1`, `cells.assembly_geometry@1`,
+    `cells.population_structure@1`, `cells.assembly_hazard@1` and `cells.assembly_representation@1`. Whether
+    `cells.lineage_operator@1` and `cells.assembly_operator@1` share `cells.operator.*` is also open.
+  - **A folder does not always match its interface.** `rapid_binding@1` sits under `laws/reactions` but implements
+    `cells.binding_law@1`.
+  - **FR-51's `open_channel_block_weighted_modes@1` has no Law record or model-table home.** A mapping built from the
+    registries would miss it. It gets registered on the slot-refusal follow-up branch, never on e4bbf0ec.
+  - **The ID grammar.** `laws._ID` admits one dot, and `kind_registry.qualified()` would read `<family>.<name>@major`
+    as an outside namespace. `registry/declarations.py` splits on the first dot.
+  - **A name collision.** The declarations manifest already uses a field named `family` for the host model family,
+    and the viewer reads it, so the ID segment's word and that field must not collide.
+  - **Judged runs and Lean.** A judged run not finished before the rename runs from a pre-rename snapshot. Lean's
+    check drivers need the mapping table before their next gate merge.
+- **Follow-ups:**
+  - **Before gating FR-50,** it merges the slot refusal (fr51-slot-refusal) or main after that lands, so
+    `block_slot_errors` is not dropped.
+  - **FR-44's two new wash records** join every washed world's state. Any frozen checkpoint of a washed world needs
+    renewing, which goes in FR-44's landing text.
+  - **The charge-anchor budget** is exact for valences 0, ±1, ±2, ±4 and ±8. Builders summing ±3, ±5, ±6 or ±7 terms
+    rationally may add half a spacing per term. That check is queued.
+  - **Two untracked files** in the main checkout's `lean/claims/incoming/` belong to the Lean lane. The lead leaves
+    them, and the user asks that lane to file them.
