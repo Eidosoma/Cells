@@ -24,6 +24,26 @@
     "cells.rate_equations@1": "molecular-assembly"
   },
   "comparisons": {
+    "xc0-charge-anchor": {
+      "kind": "engine",
+      "models": ["resolved_pump_tissue@3"],
+      "laws": [],
+      "engine_revision": "8760d5b338a1f7e9a930a8492c434efaa50815e7",
+      "record_revision": "39ddff47165473b96d594a23e5a7696f60f81c66",
+      "sources": {
+        "XC0 node builder": "validation/xenopus_bioelectric/xc0_worlds.py#L164",
+        "Public XC0 fixture inputs": "validation/xenopus_bioelectric/references/reference_inputs.json",
+        "Model parsing entry point": "src/cells/definitions/specs.py#L993",
+        "Definition check during model parsing": "src/cells/definitions/surface_tissue_spec.py#L362",
+        "Charge per fmol": "src/cells/laws/electrochemistry.py#L14",
+        "Fixed-background and anchor comparison": "src/cells/models/surface_tissue.py#L440"
+      },
+      "record_inputs": {
+        "Charge error and threshold separation theorems": "lean/CellsProofs/Tissue/ChargeAnchor.lean"
+      },
+      "driver": "lean/checks/charge_anchor.py",
+      "record": "lean/PROGRESS.md#xc0-charge-anchor"
+    },
     "fr47-shell-interval-heat-cpu": {
       "kind": "engine",
       "models": ["cells.assembly_lineages@2"],
@@ -4355,6 +4375,44 @@
     }
   },
   "claims": [
+    {
+      "id": "xc0-charge-anchor",
+      "category": "tissue-and-conservation",
+      "title": "Rounding and rejection of the initial charge balance",
+      "statement": "A balanced ionic inventory passes a closed charge tolerance T whenever T covers the accumulated rounding allowance E. A true charge error larger than T + E in magnitude is detected. At a midpoint in the 2²⁰-fmol range, rounding the fixed background alone can exceed the original 10⁻²⁰ C tolerance.",
+      "assumptions": [
+        "The builder and reader use the same finite stored valence-weighted ion amounts and positive charge conversion in C/fmol. The builder forms the background by subtracting their rounded sum from the declared charge divided by the conversion.",
+        "Each arithmetic result satisfies its stated absolute error allowance. Four allowances are in fmol and the final two in coulombs. Half a local spacing bounds a nearest-grid result with either tie choice. The native replay checks each rounding premise against exact rational arithmetic for the sampled inputs.",
+        "A planted background change is its actual stored difference in fmol. The distinction between a genuine mismatch and rounding is guaranteed when their bounds are separated."
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [],
+        "theorems": {
+          "CellsProofs.Tissue.ChargeAnchor.nearest_grid_error": "lean/CellsProofs/Tissue/ChargeAnchor.lean",
+          "CellsProofs.Tissue.ChargeAnchor.residual_error": "lean/CellsProofs/Tissue/ChargeAnchor.lean",
+          "CellsProofs.Tissue.ChargeAnchor.balanced_admitted": "lean/CellsProofs/Tissue/ChargeAnchor.lean",
+          "CellsProofs.Tissue.ChargeAnchor.defect_refused": "lean/CellsProofs/Tissue/ChargeAnchor.lean",
+          "CellsProofs.Tissue.ChargeAnchor.midpoint_residual": "lean/CellsProofs/Tissue/ChargeAnchor.lean",
+          "CellsProofs.Tissue.ChargeAnchor.midpoint_exceeds_floor": "lean/CellsProofs/Tissue/ChargeAnchor.lean"
+        },
+        "sources": {
+          "Mathlib nearest-integer distance, imported and rescaled to the local spacing": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/Order/Round.lean#L190",
+          "Charge-anchor diagnosis and scope of the engine correction D333": "https://github.com/Eidosoma/Cells/blob/23bf52341b6a096dc19d69d7dac509d4f46eeb00/docs/DECISIONS.md#L10542"
+        }
+      },
+      "numerical": {
+        "status": "failed",
+        "comparisons": ["xc0-charge-anchor"],
+        "result": "The native parser refused seven of 15 balanced inputs and correctly rejected both deliberately mischarged inputs on cd3b7b09 and 8760d5b3. The full results were byte-identical after FR-17 landed. The scale-aware criterion classified all 17. Exact rational arithmetic confirmed all six local allowances on each case. In the two signed midpoint controls at 1.5 × 2²⁰ fmol the unperturbed absolute residual was 1.123237099 × 10⁻²⁰ C. This check runs at definition time."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "This arithmetic tolerance compares two calculations on the same declared inputs. An experimental test of the charge balance itself would need mobile and fixed charge, capacitance and potential from the same cell.",
+        "unit": "C",
+        "evidence": []
+      }
+    },
     {
       "id": "fr43-integer-segregation",
       "category": "tissue-and-conservation",
