@@ -229,6 +229,109 @@ and `scale` (amendment 2, Q6). P1′ also carries `route2_bound` (3 g(ts)) and
   - P8 (the store rate × 1.01, with its own blank), in C;
   - P9 (the gene unit at V₀), in D.
 
+## Results
+
+The published files are seed 0's. Seeds 1 and 4242 reproduce them byte for byte, with every BLAS
+pinned to one thread (`out/provenance.json`, `out/SHA256SUMS`). The generating commit is in each
+file's provenance and in `out/provenance.json`.
+
+### Accuracy, and the agreement of the two methods
+
+Each figure is the largest over the family's runs, outputs and quantities, relative to the
+quantity's scale s_y (READOUTS.md §3). The requirement for judged values is accuracy ≤
+10⁻¹¹ s_y.
+
+| Family | Worst judged accuracy / s_y | Worst any accuracy / s_y | Primary vs second, max / s_y | Primary vs refinement, max / s_y | Gauss stage iterations, max |
+| --- | --- | --- | --- | --- | --- |
+| AF | 1.2e-16 | 1.3e-16 | 1.4e-17 | 1.3e-17 | 20 |
+| AN | 1.3e-16 | 1.3e-16 | 1.3e-17 | 1.3e-17 | 20 |
+| B | 1.3e-16 | 1.4e-16 | 1.1e-17 | 8.1e-18 | 21 |
+| C | 1.2e-16 | 1.2e-16 | 1.1e-17 | 1.3e-17 | 20 |
+| D | 1.2e-16 | 1.2e-16 | 1.4e-17 | 1.3e-17 | 20 |
+| invented | 1.1e-16 | 9.7e-15 | 2.4e-15 | 2.4e-15 | 21 |
+
+- The worst judged entry is far inside the requirement.
+- The invented family's larger worst case (a reported stage complex) comes from its coarser
+  declared steps; its judged entries are like the others'.
+
+### The identities (largest residual over each family's runs)
+
+| Check (largest over runs) | AF | AN | B | C | D | invented |
+| --- | --- | --- | --- | --- | --- | --- |
+| `membership_sum_largest_relative` | 4.1e-18 | 3.6e-18 | 2.8e-18 | 2.1e-18 | 1.9e-18 | 4.1e-19 |
+| `hold_identity_largest_fmol` | 2.4e-24 | 2.9e-24 | 7.9e-24 | 1.6e-24 | 1.1e-24 | 9.0e-26 |
+| `producer_identity_largest_fmol` | 5.4e-24 | 2.5e-24 | 6.6e-24 | 1.9e-24 | 8.0e-25 | 6.5e-26 |
+| `fate_row_identity_largest_fmol` | 6.5e-24 | 2.6e-24 | 4.4e-24 | 1.7e-24 | 1.1e-24 | 8.4e-26 |
+| `machine_identity_largest_fmol` | 1.7e-25 | 2.7e-25 | 1.7e-24 | 2.9e-26 | 4.3e-27 | 1.9e-26 |
+| `residue_identity_largest_fmol` | 4.2e-21 | 2.8e-21 | 8.7e-21 | 1.6e-21 | 2.8e-21 | 6.6e-23 |
+| `moiety_phosphorus_largest_fmol` | 4.3e-21 | 4.2e-21 | 8.7e-18 | 1.1e-20 | 3.1e-21 | 1.2e-22 |
+| `moiety_nucleoside_largest_fmol` | 4.4e-21 | 4.1e-21 | 1.0e-18 | 1.1e-20 | 3.1e-21 | 8.4e-23 |
+| `G_identity_largest_pJ` | 3.7e-19 | 1.9e-18 | 7.6e-16 | 1.4e-18 | 2.0e-15 | 1.2e-20 |
+| `pool0_closed_form_largest_fmol` | 5.2e-26 | 5.7e-26 | 2.7e-30 | 5.2e-26 | 5.2e-26 | 4.6e-27 |
+| `excess_route_vs_subtraction_largest_fmol` | 2.9e-24 | 3.3e-24 | n/a | 4.3e-25 | 5.3e-25 | 3.2e-26 |
+| `moiety_adenine_largest_fmol` | n/a | n/a | 0.0e+00 | n/a | n/a | n/a |
+| `moiety_amino_acid_largest_fmol` | n/a | n/a | 6.4e-19 | n/a | n/a | n/a |
+| `product_P_identity_largest_fmol` | n/a | n/a | 4.8e-21 | n/a | n/a | n/a |
+| `residue_identity_tl_largest_fmol` | n/a | n/a | 1.6e-18 | n/a | n/a | n/a |
+| `ribosome_identity_largest_fmol` | n/a | n/a | 1.2e-23 | n/a | n/a | n/a |
+
+- `pool0_closed_form_largest_fmol` is the integrated `pool0` class against P(0)e^{−k_f t} in
+  50-digit `decimal`.
+- B's absolute figure is smaller only because its pool0 starts at the 10⁻¹² mM trace.
+
+### The plants against CRITERIA.md §6's 10× rule
+
+Each ratio is the strongest catching readout's relative distance over 10 × the expected honest
+relative tolerance (CRITERIA.md §6). A ratio above 1 meets the rule.
+- For P1′ it is the smaller of that ratio and its distance in route-2 bounds (3 g(ts)).
+- P2, and P1″ at an idle fate, are judged by C1: any nonzero planted value is caught.
+
+| Plant | Where | Entries | Strongest catching entry, ratio to the 10x rule |
+| --- | --- | --- | --- |
+| P1 | AN | 6 | 5.38e+05 |
+| P1′ | AN | 18 | 159 |
+| P1″ | AF idle fates | 4 | C1: nonzero |
+| P1″ | AN | 8 | C1: nonzero |
+| P2 | AF | 5 | C1: nonzero |
+| P3a | AN | 2 | 786 |
+| P3b | AN | 2 | 1.56e+03 |
+| P4 | AN | 2 | 1.81e+06 |
+| P4 | B | 2 | 1.72e+06 |
+| P5 | AF | 8 | 9.94e+03 |
+| P6 | AF | 1 | 71.8 |
+| P7 | AF | 2 | 1e+08 |
+| P8 | C | 6 | 2.91e+05 |
+| P8 negative control | C | 8 | largest change 0.0e+00 (predicted unchanged) |
+| P9 | D | 15 | 1.21e+08 |
+
+Every must-catch plant meets the rule in its must-catch worlds, so no plant needs enlarging.
+
+### Generation, regeneration and size
+
+- **Generating commit:** 55c52c4b2bd02a511adac5f25a30a4ed26aa968b, from a clean tree. Every file's
+  provenance records `dirty_paths: []`.
+- **The run:** `regenerate.py` ran as a detached unit (`scripts/run_detached.sh`, CPUs 6, 7, 22
+  and 23).
+- **The bitwise check:** each family was written under `PYTHONHASHSEED` 0, 1 and 4242, with every
+  BLAS pinned to one thread. All six files were byte-identical across the three seeds. The
+  published files are seed 0's.
+- **The files and their sha256** (`out/SHA256SUMS`):
+
+```
+f55629b227c2ac63da3ba170d8b8ba33c5fc37bb2c32683dff8f77608f421eb1  reference_AF.json
+cd36841df3105f72c7ee95c2bccb4e95d0db7c62290a9285076b62d9d3c7eab1  reference_AN.json
+33f40b464643e16954886faed282572c0d2bd438e9eb9b9d051572505d8db0d4  reference_B.json
+45466b7e18d760cfdb9dceb5d26fb04712d076e63dd8ccd23c45b8bf653db479  reference_C.json
+ec0051fa1ce786eded6f917dd6513daeb95ef39a2b1e601a9c97d90ecf028f89  reference_D.json
+9edbaf34c42ba7f7cdfda91520b091a3e1cfcb6b1073b9a34d040d006f6d9066  reference_invented.json
+```
+
+- **Size.** `out/` totals 19,957,976 bytes (19.958 MB), of which the six reference files are 19,955,453
+  bytes. That is within the user's 20 MB limit for a committed set. The files are compact JSON
+  (sorted keys, fixed separators, `repr` floats), as SPEC.md §7 asks.
+- **The self-check** takes about 6 s. It regenerates `reference_invented.json` and matches it
+  bitwise with the committed copy, provenance aside.
+
 ## Questions and answers (24 November 2026), kept with the references
 
 The references agent asked the lead in writing. The answers became the spec's dated amendments.
