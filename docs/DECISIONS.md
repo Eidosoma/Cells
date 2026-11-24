@@ -11715,3 +11715,52 @@ backstop: a nightly failure still stops selection until it is explained.
 - The queued Lean gates are Lean's, and the lead does not stop them.
 - The user passes Lean the advice: one gate per merge point. 647b4c15 covers d5a2c138, 3a5f40d7 and af4a8000.
   fccbb5e5 is superseded by c1924c89, which cannot merge before FR-51's follow-up lands.
+
+## D359: XC0 v2 (rule erratum 2) passes on its independent run; D329's fail stays on record
+
+2026-11-24, about 19:57 UTC. The independent runner's report, under the tag `xc0-erratum-2-2026-11-24` (b477f433) and
+D333's terms: only the diagnosed families rerun, on the same frozen engine, disclosed as not blind on those rows.
+
+**The verdict: pass.** The judge (step 7, exit 0) gives every claim, C0 to C8, a pass. Its counts:
+
+| Pass | Not mappable | Not run | Information |
+| ---: | ---: | ---: | ---: |
+| 7,430 | 272 | 242 | 736 |
+
+- **The five changed families pass:** C6.v1_eq_ratio, C6.v1_eq_x, C7.pump_cell_charge_per_fmol, C8.b_final_c and
+  C8.b_final_psi.
+- **The rows:** all 349 rerun rows pass, and 8,331 are carried from D329.
+- **Of 129 families,** 98 pass, 19 are information, 7 not mappable and 5 not run. None fails, none is not testable,
+  and none lacks power.
+- **The record** is `/mnt/workspaces/Cells/xenopus-lane-20261119/xc0-erratum2-run/`: `step7/judge.json`,
+  `verdict/verdict.json` and `RUN.json`.
+
+**The engine's identity:**
+- **The tree:** the tag's src tree equals 260d7c7f's (tree 2c5a51cb).
+- **The snapshot** is clean: 5,345 files at b477f433, with an empty patch, frozen with `--scope full --require-clean`.
+- **The imports:** all 109 loaded cells and validation modules came from the snapshot.
+- **The judge's checks** pass: the same engine as D329's snapshot, the base record's digest, and the carried judge
+  record's digest.
+
+**The runner's procedure:**
+- **Coverage.** The key check and the carry check pass, and the changed manifest equals the builder's.
+- **The charge anchor** bounds all 344 rows below 524,288 fmol.
+- **The segments.** All six bare segments, at factors 1 and 0.5, end cleanly and pass the segment check.
+- **The table** has 349 numeric rows, and every C8b step check converged. No retry was needed.
+- **Refusals and errors:** none.
+- **Cost:** about 3.78 core-hours, over the estimate of about 3.5. The wall time was about 5.5 h, of which about 2.5 h
+  was spent waiting for lane locks.
+
+**The runner's disclosures, recorded here; the sealed record is unchanged:**
+- **Batches.** Two of three lane batches ran slightly over 45 minutes (45:55 and 45:16). The lane flock is not first
+  in, first out, so a batch may have gone ahead of a waiting gate.
+- **The launcher.** It used main's `scripts/run_detached.sh`, which is newer than the tag's and turns JAX's
+  compilation cache off, adding `python -B`, `/usr/bin/time -v` and CPU pinning.
+- **One small scratch file** went to `/tmp` against the brief, and was removed.
+- **The sealed not_blind file is slightly inaccurate:**
+  - it says lines 1530 to 2193 of `xc0_engine.py` were read, but lines 1930 to 1948 were not;
+  - it omits that a grep of DECISIONS.md printed D332's title line.
+
+**What it means.** XC0's registered comparison failed in v1 (D329). The diagnosed rows were rule-side definitions and
+an engine parse tolerance, not physics (D332). They now pass in v2, on the same frozen engine. The engine fix of
+D333, the charge anchor, landed separately (82c26ddd).
