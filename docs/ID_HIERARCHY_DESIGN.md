@@ -350,7 +350,8 @@ in tests, 327 in validation, 23 in configs, 7 in examples and 5 in scripts (`rew
   D188's maps in `scripts/moves/`.
 - **Legacy's own IDs,** wherever they appear (§5, source 3).
 
-**How the 94 frozen files with old spellings are read, by the advisor's test:**
+**How the 94 frozen files with old spellings are read** (the merged side branches' files, such as FR-43 part 2's 26
+references, are sorted by the dry run):
 
 | How | Cases |
 | --- | --- |
