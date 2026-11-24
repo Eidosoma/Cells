@@ -1,4 +1,4 @@
-"""FR-47's worlds in the engine's form (FR47_SHELL_EXCHANGE_PROTOCOL.md; fr47_spec/SPEC.md §2; D323).
+"""FR-47's worlds in the engine's form (the FR-47 protocol; fr47_spec/SPEC.md §2; D323).
 
 W1, W1Δ and W2's four rungs, as `cells.assembly_lineages@2` definitions:
 - for exact events, in population mode with one slot (the washes need a population);
