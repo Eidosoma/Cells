@@ -19,6 +19,19 @@ are equal bit for bit at any fraction (D266). The sample f n_s and the supply f 
 recorded cumulatively for every species, ions included. Bound material, which is not liquid, stays
 where it is.
 
+The latest event's sample and supply at each node are level records too, `wash_last_sample_fmol`
+and `wash_last_supply_fmol` [species, outside], as the latest heat is (an ion's supply record is
+its sample record, one expression). They exist in every washed world, labelled or not.
+
+Labels (FR-44, D327). Beside the label owner the event takes labels= (the labelled rows) and also
+returns a LiquidExchange (operators/contract.py). Its removed and supplied amounts are those two
+level records at the labelled rows where a wash is due this step, and zero elsewhere, so each is
+the event's own sample and supply, never a cumulative record's gain (a gain is inexact, and at
+f = 1 it leaves a kept part that is nonzero or negative). The state and validity are the
+unlabelled call's, bit for bit, since the report only reads the records. The owner, not the wash,
+decides the labels: the sample leaves with the node's shares, and the buffer joins the base,
+whatever window is open.
+
 For the exchanged (neutral) species it records the free energy of the sample, F_sample = f F(n, V),
 taken to its sink, and of the buffer, F_buffer = F(f V c_buf, f V), drawn from its source, with
 F(n, V) = 1e-3 RT n (ln(n / V) - 1) (@3's chemical term, concentrations in mM), and the heat of
@@ -96,7 +109,7 @@ from cells.models import surface_pump as first
 from cells.numerics import ideal_mixing
 from cells.numerics.clock_instants import ON_THE_GRID, on_grid  # D283's one predicate.
 from cells.numerics.species_sums import entity_sum, species_sum
-from cells.operators.contract import Operator, Read
+from cells.operators.contract import EXCHANGED, LiquidExchange, Operator, Read
 
 LAW_ID = "scheduled_compartment_wash@1"
 EVENTS_KEY = "compartment_wash_events"
@@ -131,6 +144,8 @@ SHOWN_LOCAL = {
     # templated_polymerisation@1 left this list for READ (D327, the fail-open fix): it was entered
     # here as writing only amount_increment (gene regulation's option A, G4), and amendment T
     # then gave it exports into finite nodes and outside degradations there.
+    # FR-44 (D327): the label owner moves no amount and follows each wash by its report.
+    "neutral_arrival_labels@1": "moves no amount; it follows each wash by the wash's report",
     LAW_ID: "is this law",
 }
 REFUSED = {
@@ -139,10 +154,6 @@ REFUSED = {
     "scheduled_membrane_insertion@2": "opens and retires nodes and patches",
     "restricted_cleft_lumen@1": "fills a lumen node with bath fluid as it grows",
     "restricted_cleft_lumen@2": "fills a lumen node with bath fluid as it grows",
-    # FR-42 (D289; the lead's direction): the label owner refuses a wash, an event writing species
-    # amounts that does not report them (no FR-42 stage plans it yet).
-    "neutral_arrival_labels@1": "follows labelled material only through reported moves, and a "
-    "wash reports none (no FR-42 stage plans it yet)",
     "integer_unit_population@1": "moves species across its sites' patches, between cells and "
     "outside nodes, by transfers a wash does not read",
 }
@@ -156,6 +167,9 @@ STATE_AXES = {
     "wash_buffer_free_energy_pJ": ["extracellular_slot"],  # F of the exchanged species' buffer.
     "wash_mixing_heat_pJ": ["extracellular_slot"],  # H_mix, cumulative (a record).
     "wash_last_mixing_heat_pJ": ["extracellular_slot"],  # The latest event's H_mix (a record).
+    # FR-44: the latest event's sample and supply (level records; an ion's supply is its sample).
+    "wash_last_sample_fmol": ["species", "extracellular_slot"],
+    "wash_last_supply_fmol": ["species", "extracellular_slot"],
     "wash_energy_magnitude_pJ": ["extracellular_slot"],  # Magnitudes of the energy bookings.
     "wash_applied": ["extracellular_slot"],  # int64: the events applied at each node.
 }
@@ -435,6 +449,8 @@ def bind(spec, declaration):
         "wash_buffer_free_energy_pJ": np.zeros(o),
         "wash_mixing_heat_pJ": np.zeros(o),
         "wash_last_mixing_heat_pJ": np.zeros(o),
+        "wash_last_sample_fmol": np.zeros((s, o)),
+        "wash_last_supply_fmol": np.zeros((s, o)),
         "wash_energy_magnitude_pJ": np.zeros(o),
         "wash_applied": np.zeros(o, dtype=np.int64),
     }
@@ -469,8 +485,10 @@ def wash_terms(n, volume, fraction, buffer_mM, ion, temperature, *, xp):
     return sample, supply, change, f_sample, f_buffer, heat
 
 
-def apply_events(state, control, p, *, xp=jnp):
-    """(state after the washes due at the step start, their validity)."""
+def apply_events(state, control, p, *, xp=jnp, labels=None):
+    """(state after the washes due at the step start, their validity). With labels (FR-44; the
+    labelled rows [m], static), also its LiquidExchange report [m, outside]: the new level records
+    at those rows where a wash is due, zero elsewhere (module docstring)."""
     node = p.wash_node
     applied = state.wash_applied
     count = control.wash_count
@@ -516,6 +534,7 @@ def apply_events(state, control, p, *, xp=jnp):
     # one product into its sum and not the other (D266: three washes of 3/7 of a 1 uL well left
     # chloride's records one ulp, 2^-25 fmol, apart, and the outside ledger refused the step).
     collected = add("wash_collected_fmol", sample, on)
+    last_sample = xp.where(on, sample, state.wash_last_sample_fmol)  # FR-44's level records.
     new = state._replace(
         extracellular_amount_increment=add("extracellular_amount_increment", change, on),
         wash_collected_fmol=collected,
@@ -526,12 +545,24 @@ def apply_events(state, control, p, *, xp=jnp):
         wash_buffer_free_energy_pJ=add("wash_buffer_free_energy_pJ", buffer_energy, due),
         wash_mixing_heat_pJ=add("wash_mixing_heat_pJ", heat_node, due),
         wash_last_mixing_heat_pJ=xp.where(due, heat_node, state.wash_last_mixing_heat_pJ),
+        wash_last_sample_fmol=last_sample,
+        wash_last_supply_fmol=xp.where(
+            p.wash_ion[:, None], last_sample, xp.where(on, supply, state.wash_last_supply_fmol)
+        ),
         wash_energy_magnitude_pJ=add("wash_energy_magnitude_pJ", magnitude, due),
         wash_applied=xp.where(due, applied + 1, applied),
     )
     flowing = xp.any(due)  # Nothing due: the start state, bitwise.
     selected = type(state)(*(xp.where(flowing, a, b) for a, b in zip(new, state, strict=True)))
-    return selected, valid
+    if labels is None:
+        return selected, valid
+    # The records persist past their event, so the report is this step's alone: masked by due.
+    now = due[None, :]
+    report = LiquidExchange(
+        removed=xp.where(now, selected.wash_last_sample_fmol[labels], 0.0),
+        supplied=xp.where(now, selected.wash_last_supply_fmol[labels], 0.0),
+    )
+    return selected, valid, report
 
 
 def own_valid(state, p, *, xp):
@@ -539,7 +570,12 @@ def own_valid(state, p, *, xp):
     read on every accepted row) >= 0."""
     on = p.wash_node
     valid = xp.all(state.wash_applied >= 0) & xp.all(xp.where(on, True, state.wash_applied == 0))
-    for name in ("wash_collected_fmol", "wash_supplied_fmol"):
+    for name in (
+        "wash_collected_fmol",
+        "wash_supplied_fmol",
+        "wash_last_sample_fmol",
+        "wash_last_supply_fmol",
+    ):
         value = getattr(state, name)
         valid &= xp.all(xp.isfinite(value) & (value >= 0))
         valid &= xp.all(xp.where(on[None, :], True, value == 0))
@@ -566,6 +602,7 @@ def removed(row, p, *, xp):
 class ScheduledCompartmentWash(Operator):
     LAW_ID = LAW_ID
     EVENT = True
+    LABEL_EVENT = EXCHANGED  # FR-44: beside the label owner its event reports a LiquidExchange.
     STATE_AXES = STATE_AXES
     STATE_DTYPES = {k: np.int64 for k in INTEGER_FIELDS}
     LAYOUT_FIELDS = LAYOUT_FIELDS
@@ -584,12 +621,14 @@ class ScheduledCompartmentWash(Operator):
     LEDGER_DIAGNOSTICS = LEDGER_DIAGNOSTICS
     LEDGER_MESSAGE = LEDGER_MESSAGE
     # Its run view (docs/RUN_VIEW_DESIGN.md §3): one prescribed layer, every record a total since
-    # the start but the latest event's H_mix, and each wash an event at its node.
+    # the start but the latest event's H_mix, sample and supply, and each wash an event at its node.
     VIEW_LAYERS = ({"id": "wash", "label": "Compartment wash", "representation": "prescribed"},)
     UNITS = {"wash_applied": "1"}
     RECORD_KINDS = {
         **dict.fromkeys(STATE_AXES, "cumulative"),
         "wash_last_mixing_heat_pJ": "level",
+        "wash_last_sample_fmol": "level",
+        "wash_last_supply_fmol": "level",
     }
     ORIENTATION = {
         "wash_collected_fmol": {
@@ -601,6 +640,16 @@ class ScheduledCompartmentWash(Operator):
             "from": "exterior",
             "to": "node",
             "says": "the buffer supplied to the node's liquid, into the world from its source",
+        },
+        "wash_last_sample_fmol": {
+            "from": "node",
+            "to": "exterior",
+            "says": "the latest wash's sample from the node's liquid, out of the world",
+        },
+        "wash_last_supply_fmol": {
+            "from": "exterior",
+            "to": "node",
+            "says": "the latest wash's buffer supplied to the node's liquid, into the world",
         },
     }
 
@@ -670,7 +719,7 @@ class ScheduledCompartmentWash(Operator):
 
     def working_size(self, spec):
         x = spec.execution
-        return 8 * (3 * len(spec.model.species_ids) + 7) * x.extracellular_capacity
+        return 8 * (5 * len(spec.model.species_ids) + 7) * x.extracellular_capacity
 
     def summary(self, spec, declaration, schedule, history):
         outside = [c.id for c in spec.model.extracellular]
@@ -714,8 +763,10 @@ class ScheduledCompartmentWash(Operator):
 
     # ------------------------------------------------------------ step parts
 
-    def event(self, state, control, p, *, xp):
-        return apply_events(state, control, p, xp=xp)
+    def event(self, state, control, p, *, xp, labels=None):
+        """The event map (apply_events). labels (FR-44; static): the labelled rows; the call then
+        also returns its LiquidExchange report."""
+        return apply_events(state, control, p, xp=xp, labels=labels)
 
     def control_valid(self, control, p, *, xp):
         on = p.wash_node

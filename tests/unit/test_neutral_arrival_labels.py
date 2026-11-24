@@ -106,6 +106,7 @@ def same_physics(labelled, plain):
         "label_pool_share",
         "label_removed_fmol",  # Erratum E's records: zero-size without a replacing event.
         "label_pool_removed_fmol",
+        "label_outside_removed_fmol",  # FR-44's: zero-size without an exchanging event.
     }
 
 
@@ -355,28 +356,30 @@ def test_an_event_records_what_leaves_and_relabels_what_it_replaced():
     before = start._replace(amount_increment=np.array([[0.5]]))  # R's 1.5 fmol at the event.
     after = start._replace(amount_increment=np.array([[1.0]]))  # The template's, after the swap.
     arrival = SimpleNamespace(label_arrival=np.array([[0.0, 1.0]]))  # "cohort" is in force.
-    kept = labels.advance_event(before, after, np.array([False]), arrival, layout, xp=np)
+    replaced = dict(kind="replaced", xp=np)
+    emptied = dict(kind="emptied", xp=np, pool=0)
+    kept = labels.advance_event(before, after, np.array([False]), arrival, layout, **replaced)
     assert all(bits(a) == bits(b) for a, b in zip(kept, after, strict=True))
-    rows = labels.advance_event(before, after, np.array([True]), arrival, layout, xp=np)
+    rows = labels.advance_event(before, after, np.array([True]), arrival, layout, **replaced)
     assert rows.label_share[0, :, 0].tolist() == [0.0, 1.0]  # The newcomer's label.
     assert rows.label_removed_fmol[0, :, 0].tolist() == [1.5 * 0.4, 1.5 * 0.6]
     assert bits(rows.label_pool_share) == bits(after.label_pool_share)  # Its pools: not its own.
     assert bits(rows.label_pool_removed_fmol) == bits(after.label_pool_removed_fmol)
-    held = labels.advance_event(before, after, np.array([0.0]), arrival, layout, xp=np, pool=0)
+    held = labels.advance_event(before, after, np.array([0.0]), arrival, layout, **emptied)
     assert all(bits(a) == bits(b) for a, b in zip(held, after, strict=True))  # It emptied none.
-    pools = labels.advance_event(before, after, np.array([0.3]), arrival, layout, xp=np, pool=0)
+    pools = labels.advance_event(before, after, np.array([0.3]), arrival, layout, **emptied)
     assert pools.label_pool_share[0, :, 0].tolist() == [1.0, 0.0]  # Emptied: the base label.
     assert pools.label_pool_removed_fmol[0, :, 0].tolist() == [0.3 * 0.25, 0.3 * 0.75]
     assert bits(pools.label_share) == bits(after.label_share)  # Its rows: not its own.
     assert bits(pools.label_removed_fmol) == bits(after.label_removed_fmol)
-    again = labels.advance_event(before, pools, np.array([0.3]), arrival, layout, xp=np, pool=0)
+    again = labels.advance_event(before, pools, np.array([0.3]), arrival, layout, **emptied)
     twice = [0.3 * 0.25 + 0.3 * 0.25, 0.3 * 0.75 + 0.3 * 0.75]  # Cumulative.
     assert again.label_pool_removed_fmol[0, :, 0].tolist() == twice
     bare = [s._replace(label_removed_fmol=np.zeros((0, 2, 1)), label_pool_removed_fmol=np.zeros(
         (0, 2, 1))) for s in (before, after)]  # fmt: skip
-    plain = labels.advance_event(*bare, np.array([True]), arrival, layout, xp=np)
+    plain = labels.advance_event(*bare, np.array([True]), arrival, layout, **replaced)
     assert plain.label_share[0, :, 0].tolist() == [0.0, 1.0] and plain.label_removed_fmol.size == 0
-    plain = labels.advance_event(*bare, np.array([0.3]), arrival, layout, xp=np, pool=0)
+    plain = labels.advance_event(*bare, np.array([0.3]), arrival, layout, **emptied)
     assert plain.label_pool_share[0, :, 0].tolist() == [1.0, 0.0]
 
 
@@ -500,7 +503,7 @@ def test_a_replaced_slot_takes_the_newcomer_label():
     assert all(bits(a) == bits(b) for a, b in zip(plain, new, strict=True))
     owner = model.label_owner
     assert np.asarray(state.label_share)[0, :, 0].tolist() == [1.0, 0.0]
-    after = owner.advance_event(state, new, replaced, control, p, xp=np)
+    after = owner.advance_event(state, new, replaced, control, p, kind="replaced", xp=np)
     assert np.asarray(after.label_share)[0, :, 0].tolist() == [0.0, 1.0]
     s = list(spec.model.species_ids).index("S")  # What left (erratum E): S's 1 fmol, all base.
     leaving = float(p.amount_reference[s, 0] + state.amount_increment[s, 0])
@@ -828,33 +831,36 @@ REFUSED = {
 }
 
 
+def _part(law, **over):
+    """A planted operator declaration (no class): the attributes operator_errors reads."""
+    from types import SimpleNamespace
+
+    base = dict(
+        LAW_ID=law, LABEL_OWNER=False, LABEL_POOLS=False, EVENT=False, SPLIT=False,
+        RETIRES=False, CLOSES=False, EVENT_REPLACES={}, STATE_RESETS=(), ENTITY_WRITES=(),
+        VIEW_FIELDS=(), LABEL_EVENT=None, event=lambda state, control, p, *, xp: None,
+    )  # fmt: skip
+    return SimpleNamespace(**(base | over))
+
+
+def _labelled_event(state, control, p, *, xp, labels=None):
+    return None
+
+
 def test_a_pool_reporter_whose_event_reports_nothing_is_refused_beside_a_replacement(monkeypatch):
     """Erratum E, fail-closed (the owner's operator check on planted declarations, no world):
     beside a replacing event (one that swaps slots' amounts and reports them), a pool reporter
     whose event takes no labels could empty its pools unreported, so it is refused; one whose
     event takes labels= reports them, and without a replacing event neither is refused."""
-    from types import SimpleNamespace
-
     from cells.operators import species_labels as labels
 
-    def part(law, **over):
-        base = dict(
-            LAW_ID=law, LABEL_OWNER=False, LABEL_POOLS=False, EVENT=False, SPLIT=False,
-            RETIRES=False, CLOSES=False, EVENT_REPLACES={}, STATE_RESETS=(), ENTITY_WRITES=(),
-            VIEW_FIELDS=(), event=lambda state, control, p, *, xp: None,
-        )  # fmt: skip
-        return SimpleNamespace(**(base | over))
-
-    def labelled_event(state, control, p, *, xp, labels=None):
-        return None
-
-    swap = part("tests.swap@1", EVENT=True, EVENT_REPLACES={"amount_increment": ()},
-                event=labelled_event)  # fmt: skip
-    pools = part("tests.pools@1", LABEL_POOLS=True, EVENT=True)
+    swap = _part("tests.swap@1", EVENT=True, EVENT_REPLACES={"amount_increment": ()},
+                 event=_labelled_event)  # fmt: skip
+    pools = _part("tests.pools@1", LABEL_POOLS=True, EVENT=True)
     message = "tests.pools@1 beside neutral_arrival_labels@1 and a replacing event"
     for declared, refused in (
         ((swap, pools), True),
-        ((swap, part("tests.pools@1", LABEL_POOLS=True, EVENT=True, event=labelled_event)), False),
+        ((swap, _part("tests.pools@1", LABEL_POOLS=True, EVENT=True, event=_labelled_event)), False),
         ((pools,), False),
     ):
         entries = tuple((op, None, None) for op in declared)
