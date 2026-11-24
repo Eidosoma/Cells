@@ -936,10 +936,14 @@ doi:10.1016/j.bpj.2015.10.054, PMC4805864.
 - **From training data:** the approximate title, "Determinants of Cx43 channel gating and
   permeation: the amino terminus", and so its subject. No figure, protocol, voltage or value.
 - **The exposure sweep (file names only; no matching file opened):**
-  - **In the checkout,** an Ek-Vitorín paper is named only in `docs/DECISIONS.md`,
-    `docs/FEATURE_REQUESTS.md` and this note, and in their copies in worktrees. Those mentions are of
-    the 2016 paper and the 2018 one, and the 2016 DOI or PMC ID appears only in section 13.4.
-    `lean/` has no hit.
+  - **In the checkout,** before this entry, an Ek-Vitorín paper was named only in
+    `docs/DECISIONS.md`, `docs/FEATURE_REQUESTS.md` and this note, and in their copies in worktrees.
+    - Those mentions are of the 2016 paper and the 2018 one.
+    - The 2016 DOI or PMC ID appears only in section 13.4.
+    - This entry adds a fourth file, `docs/JUNCTION_GATE_POLARITY.md`.
+    - `lean/` has no hit.
+  - **Git's full history,** 5,207 commits on every branch, has no other path that ever carried these
+    names. So the snapshot copies of tracked files in run folders can hold nothing else.
   - **In `/mnt/workspaces/Cells` and `/mnt/datasets/Cells`:** [pass 3's result, recorded before
     Tag A].
   - **The 2018 extraction names this paper.** Counts only, with no file opened: one line naming it
@@ -1207,24 +1211,95 @@ doi:10.1016/j.bpj.2015.10.054, PMC4805864.
 - They are generic (D334): a later benchmark of the law reuses them with its own files.
 
 **The layout, binding on the extractor.** Both data files have the same container (section 13.6's
-lesson), and every entry carries all of these keys.
-- **The top level:** `schema` (`fr30-junction-observations@1`), `role` (`train` or `held_out`),
-  `registration`, `paper`, `arm`, E3's `convention`, the `split` and the `observables`, one flat
-  list.
-  - `withheld` is empty in `fit.json`, and it lists E6's summaries in `held_out.json`.
-  - `not_used` lists data left out.
-- **The `split` block:** `rule` (`section 13.7 S0-S7`), `classes_mV` (S0's four classes),
-  `seen_mV`, and `held_out` (`decay_mV`, `steady_mV`).
-- **Each entry:**
-  - `id`, `vj_mV` (the canonical sign, and |V_j| if pooled), `polarity` (`+`, `-` or `pooled`) and
-    the paper's `observable`;
-  - `maps_to` (`tau_fast`, `tau_slow`, `A_fast`, `A_slow`, `G_ss/G_0`, or null), `value` and
-    `units` (`s`, `ms`, `G/G_0` or `fraction`);
-  - `normalization`, for G_ss and amplitudes, and `amplitude_definition`, for amplitudes;
-  - `dispersion`: null, or `type` (`SEM`, `SD` or `range`), `value`, `units`, `n` and `n_counts`;
-  - `n`, `source`, `method` (`printed` or `digitized`) and `digitizing_error`.
-- **`protocol.json`:** `schema` (`fr30-junction-protocol@1`), `role` (`protocol`), `paper`,
-  `convention` and E7's `fields`.
+lesson), and every entry carries every key below. Angle brackets show a type or a placeholder, never
+a value expected from the paper.
+
+```json
+{
+  "schema": "fr30-junction-observations@1",
+  "role": "train | held_out",
+  "registration": {},
+  "paper": {"citation": "<string>", "doi": "10.1016/j.bpj.2015.10.054", "pdf_sha256": "<hex>"},
+  "arm": "<string>",
+  "convention": {
+    "paper_vj_definition": "<as printed, or not stated>",
+    "protocol_type": "one_sided | symmetric | other | not_stated",
+    "stepped_cell": "cell_1 | cell_2 | null",
+    "holding_mV": {"cell_1": "<number or null>", "cell_2": "<number or null>"},
+    "sign_map": "as_printed | negated | not_stated"
+  },
+  "split": {
+    "rule": "section 13.7 S0-S7",
+    "classes_mV": {"decay_list": [], "training_only": [], "steady_list": [], "training": []},
+    "seen_mV": [],
+    "held_out": {"decay_mV": [], "steady_mV": []}
+  },
+  "observables": [
+    {
+      "id": "<string>",
+      "vj_mV": "<number: the canonical signed mV; |V_j| if pooled>",
+      "polarity": "+ | - | pooled",
+      "observable": "<the paper's name>",
+      "maps_to": "tau_fast | tau_slow | A_fast | A_slow | G_ss/G_0 | null",
+      "value": "<number>",
+      "units": "s | ms | G/G_0 | fraction",
+      "normalization": "prepulse | instantaneous | reference_step | fitted_gmax | not_stated | null",
+      "amplitude_definition": "of_G0 | of_decaying_part | null",
+      "dispersion": {"type": "SEM | SD | range", "value": "<number, or [low, high]>",
+                     "units": "<the entry's units>", "n": "<integer or null>",
+                     "n_counts": "<what n counts, as the paper states, or null>"},
+      "n": "<integer or null>",
+      "source": "<figure or table, page>",
+      "method": "printed | digitized",
+      "digitizing_error": "<number in the entry's units, or null>"
+    }
+  ],
+  "withheld": [{"name": "<string>", "why": "<string>"}],
+  "not_used": []
+}
+```
+
+**Notes on the layout.**
+- **Normalization.** G_ss and amplitude entries carry the protocol's normalization (`not_stated`
+  where its field is not stated). Times carry null.
+- **Amplitude definition.** Only amplitudes carry one.
+- **The dispersion** is null or an object. A range's value is `[low, high]`, and `n` and `n_counts`
+  matter only for an SD (P2).
+- **`withheld`** is empty in `fit.json`.
+- **An unmapped entry** (`maps_to` null) still carries every key. Only its voltage, polarity, `n`
+  and digitizing error are checked.
+- **Extra keys** are ignored.
+
+`protocol.json` carries the data files' convention block, identical, and E7's 17 fields. Each field
+has every key below.
+
+```json
+{
+  "schema": "fr30-junction-protocol@1",
+  "role": "protocol",
+  "paper": {},
+  "convention": "<the data files' block>",
+  "fields": {
+    "<field>": {"value": "<as below, or null>", "status": "stated | read | not_stated",
+                "quote": "<string where stated>", "place": "<string where stated>",
+                "how": "<string where read>"}
+  }
+}
+```
+
+**Field values,** with null where the status is `not_stated`:
+- **A positive number:** `step_duration_s`, `gss_time_s`, `sampling_Hz` and `filter_Hz`.
+- **A nonnegative number:** `prepulse_s`.
+- **A number:** `prepulse_mV`, `reference_mV` and `temperature_C`.
+- **Lists:**
+  - `step_durations_s`: a non-empty list of positive numbers;
+  - `fit_window_s`: `[start, end]` with 0 ≤ start < end.
+- **One of a fixed set:**
+  - `normalization`: `prepulse`, `instantaneous`, `reference_step` or `fitted_gmax`;
+  - `fit_offset`: `free`, `fixed_constant` or `fixed_from_data`;
+  - `amplitude_definition`: `of_G0` or `of_decaying_part`.
+- **A string:** `fit_form`, `cells` and `construct`.
+- **A positive integer:** `n`.
 
 **The reader's checks.** The reader fails closed, and every refusal names key paths only, never a
 value.
@@ -1273,15 +1348,27 @@ in about 1.5 s on one CPU and compile no world. Each claim has its planted error
 - **G12:** no value printed, and `score.py`'s imports from the standard library only.
 
 **The rehearsal on Revilla's spent files** (D334) runs Tag A's whole chain in this layout:
-convert, `check`, `conventions`, `predict` with Revilla's registered parameter block, `verify`, and
-`score`.
+convert, `check`, `resolve` for both roles, `conventions`, `predict` with Revilla's registered
+parameter block, `verify`, and `score`.
 - **What it must reproduce:**
   - section 13.5's conventions;
   - the registered `predictions.json` (20ca2a4a...) within `verify`'s tolerance;
   - D320's six comparison lines, and their verdict.
 - **What it shows of the new rule:** with Revilla's one-cell protocol, P4 confounds nothing, since
   every ±80 mV window overlaps (D320).
-- Its record is cited in the dated line below, before Tag A.
+**Rehearsed at 13:07 UTC on 24 November 2026,** from a clean full snapshot of a1fd52d0, the commit
+that first carried this entry and its code (record:
+`/mnt/workspaces/Cells/fr30-next-20261124/rehearsal-a1fd52d0/`, with `logs/exits.txt`).
+- **Every stage exited 0:** convert, `check`, `conventions`, `predict`, `verify`, `score` (with
+  `--expect-sha256`) and the comparison.
+- **The conventions are section 13.5's:** the hold, the +10-mV prepulse at dt = 0, the 30-s step,
+  the 5 ms to 30 s window, the 33-pair grid and the 300-s cutoff.
+- **The predictions equal the registered `predictions.json` bitwise** at −80 and +80 mV, in G_0,
+  both times, both amplitudes, C and G_ss/G_0.
+- **The six comparison lines are byte-identical to D320's,** with the verdict fail, 4 of 6 judged
+  pass.
+- **Nothing is confounded,** since every ±80 mV window overlaps.
+- **The inputs were unchanged** after the run (`logs/08-compare.txt`: 43 of 43 checks).
 
 #### Part 9. Roles and exclusions
 
@@ -1313,9 +1400,14 @@ convert, `check`, `conventions`, `predict` with Revilla's registered parameter b
 
 **Exclusions.** They bind F, P and C until C scores. E is held only from the polarity check, until
 sealing.
-- **The fitter is barred** (D334) from D311 and D320, from the polarity check
-  ([JUNCTION_GATE_POLARITY.md](JUNCTION_GATE_POLARITY.md)) and its sources in
-  `/mnt/workspaces/Cells/fr30-next-20261124/`, and from Revilla's extraction.
+- **The fitter is barred** (D334) from:
+  - D311 and D320;
+  - the polarity check ([JUNCTION_GATE_POLARITY.md](JUNCTION_GATE_POLARITY.md));
+  - all of `/mnt/workspaces/Cells/fr30-next-20261124/`, whose rehearsal holds Revilla's held-out
+    values in this layout;
+  - Revilla's extraction;
+  - sections 1 to 12 of this note, which print other preparations' values, as section 13.5 barred
+    them.
 - **The paper:** the paper itself and `/mnt/datasets/Cells/papers/incoming/`.
 - **The sealed files:** `held_out.json` (for F and P), `extraction_notes.md` and the sealed
   digitizers.
@@ -1353,6 +1445,12 @@ Each step expected to run for 10 minutes or more runs detached, with durable log
 #### Part 11. Not decided here
 
 - **The tag names and dates** (part 10).
+- **The 2018 extraction's two lines, before Tag A.**
+  - `fr30-ekvitorin2018-benchmark/extraction/protocol.json` and `extraction_notes.md` each name this
+    paper (disclosure).
+  - Should someone who will never fit read only those lines, as the lead did for BITSEY's file, and
+    record whether any value or protocol of this paper is on record there?
+  - S1's "none seen" rests on the fitter never reading that folder.
 - **Retiring section 13.5's modules on main** (`revilla1999.py`, `revilla1999_score.py` and their
   tests). Their tags keep them. The generic modules reproduce them (part 8), so retiring them is the
   lead's call under the pre-alpha rule.

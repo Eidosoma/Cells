@@ -37,8 +37,8 @@ planted error it must catch:
     are each refused.
 - **G11, verify** recomputes predictions from their one block. Planted: a time moved by 1e-5
   relative.
-- **G12, values never printed.** `check` and `score` print no value, and a refusal names its key
-  path. score.py imports the standard library only.
+- **G12, values never printed.** `check`, `resolve` (both roles; the wrong role refused) and `score`
+  print no value, and a refusal names its key path. score.py imports the standard library only.
 
 Cost: about 1.5 s on one CPU (host arithmetic, no world compiled), most of it two readouts of
 10,001-sample traces in G11. Reason: the harness is registered code (D308), and these are its
@@ -367,7 +367,11 @@ def test_g12_values_are_never_printed(tmp_path, capsys):
     code = scorer.main(["score", str(preds), str(paths["held"]), str(paths["fit"]),
                         str(tmp_path / "verdict.json")])  # fmt: skip
     assert code == 0
+    for name, role in (("fit", "train"), ("held", "held_out")):  # the checker's resolve stage
+        assert scorer.main(["resolve", str(paths[name]), "--role", role]) == 0
+    assert scorer.main(["resolve", str(paths["held"]), "--role", "train"]) == 2  # the wrong role
     out = capsys.readouterr()
+    assert "+60 mV (+) G_ss/G_0: observables[" in out.out and "role: absent or not" in out.err
     assert str(PLANTED / 10)[:6] not in out.out + out.err
     held["observables"][0]["value"] = str(PLANTED)
     paths["held"].write_text(json.dumps(held))
