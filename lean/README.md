@@ -18,7 +18,7 @@ Direct Lean claims cover [55 of 55 laws](COVERAGE.md#registered-laws) and [35 of
 | [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 2 of 2 | 29 of 29 | 28 checked · 1 failed | 22 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
 
-[Paired wet-lab evidence](WET_LAB_EVIDENCE.md) covers 37 comparisons across 27 claims. In 20 comparisons, two independent studies support the stated assumption.
+[Paired wet-lab evidence](WET_LAB_EVIDENCE.md) covers 46 comparisons across 34 claims. In 25 comparisons, two independent studies support the stated assumption.
 
 <!-- /generated -->
 
@@ -33,6 +33,8 @@ FR-38 follows a producer’s RNA from template release through cell replacement.
 ## Biological evidence
 
 The paired wet-lab register groups comparisons by outcome. Each row names the assumption, the two primary studies, their measurements and how independently the data were collected. The two work lists identify claims with several datasets ready for review and claims still seeking a second dataset. [Browse paired wet-lab evidence](WET_LAB_EVIDENCE.md)
+
+Two labs saw both fast and slow closure of wild-type Cx43 at the same −100 mV step. A single relaxation time misses a phase in both preparations. In squid axons, two studies agree that replacing external sodium with potassium depolarizes the membrane, while transferring the original permeability ratios overpredicts the shift in a perfused axon. [Cx43 timing](WET_LAB_EVIDENCE.md#pair-cx43-single-exponential-clamp) · [Squid voltage](WET_LAB_EVIDENCE.md#pair-squid-potassium-substitution) · [Measured values and native comparisons](PROGRESS.md#paired-membrane-physiology)
 
 In two independent albumin experiments, total calcium rose by at least as much as free calcium, as the equilibrium binding proof predicts with other free ligands fixed. The experiments leave free magnesium incompletely controlled. Two fluid POPC studies also found larger molecular areas on warming. A Cells vesicle reproduces that difference when supplied the footprint for each temperature. [Albumin measurements](WET_LAB_EVIDENCE.md#pair-albumin-calcium-buffering) · [POPC measurements](WET_LAB_EVIDENCE.md#pair-popc-temperature-footprint) · [Proofs and CPU results](PROGRESS.md#paired-calibration-and-leaflet-packing)
 

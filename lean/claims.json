@@ -24,6 +24,28 @@
     "cells.rate_equations@1": "molecular-assembly"
   },
   "comparisons": {
+    "membrane-physiology-reversals": {
+      "kind": "engine",
+      "models": [],
+      "laws": [
+        "cells.passive_constant_field_permeation@1",
+        "cells.proton_constant_field_leak@1"
+      ],
+      "engine_revision": "0455ce787fd8c36ec2eb51389e4f5a5a5012f253",
+      "record_revision": "34e1f9dfc1628af1f81e66cf8166d5c6f4207407",
+      "sources": {
+        "Three-ion constant-field flux": "src/cells/laws/routes/constant_field_permeation.py#L59",
+        "Open-route proton flux": "src/cells/laws/transport/proton_leak.py#L31",
+        "Thermodynamic constants": "src/cells/laws/electrochemistry.py#L10",
+        "Flux evaluation": "src/cells/laws/electrochemistry.py#L32"
+      },
+      "record_inputs": {
+        "1949 squid permeability ratios": "lean/checks/data/hodgkin_katz1949_rest.json",
+        "1979 substitutions and measured proton reversals": "lean/checks/data/membrane_physiology_pairs.json"
+      },
+      "driver": "lean/checks/paired_membrane_physiology.py",
+      "record": "lean/PROGRESS.md#paired-membrane-physiology"
+    },
     "bilayer-warm-footprint": {
       "kind": "engine",
       "models": [
@@ -7065,6 +7087,32 @@
             "uncertainty": "Mean ± SEM across seven capacitance and ten fluorescence recordings. Seven were simultaneous. Fluorescence depends on vesicle re-acidification.",
             "assessment": "After a 1.52 ± 0.21 pF capacitance rise, 0.33 ± 0.06 of peak excess capacitance and 0.47 ± 0.07 of peak fluorescence remained at 60 s. These measurements constrain net retrieval and cargo recovery separately. Absolute internal channel counts remain open.",
             "report": "lean/PROGRESS.md#membrane-retrieval-recycling"
+          },
+          {
+            "dataset_id": "bruneau2005_achr_recycling@1",
+            "manifest": "lean/checks/data/membrane_physiology_pairs.json",
+            "citation": "Bruneau et al. (2005), Fig. 7A–B",
+            "doi": "10.1523/JNEUROSCI.3169-05.2005",
+            "locator": "Figure 7A–B and Results, days 1 and 4 after transient receptor block",
+            "context": "Adult mouse sternomastoid endplates. Repeat surface labelling distinguishes previously exposed receptors that resurfaced from newly inserted receptors.",
+            "role": "descriptive",
+            "uncertainty": "Four-day values and SDs from Results. The graph shows SEM. The denominator is the initial surface fluorescence. The study did not measure the final size of the internal receptor pool or the area of membrane returned.",
+            "assessment": "At four days, resurfaced receptors contributed 26 ± 5% of the original surface fluorescence and newly inserted receptors 24 ± 5% (SD, 29 junctions). The original and recycled tags were distinguished experimentally.",
+            "report": "lean/PROGRESS.md#paired-membrane-physiology"
+          }
+        ],
+        "finding": "Independent neuronal AMPA and muscle nicotinic receptor preparations both detected previously exposed receptors returning to the surface. Neither closes the full membrane-area and receptor-pool balance.",
+        "pairs": [
+          {
+            "id": "receptor-return-to-surface",
+            "assumption": "Some previously surface-exposed neurotransmitter receptors return to the membrane after internalization.",
+            "datasets": [
+              "ojima2021_ampar_recycling@1",
+              "bruneau2005_achr_recycling@1"
+            ],
+            "outcome": "both_support",
+            "independence": "Ojima’s group followed endogenous AMPA receptors in cultured hippocampal neurons. Bruneau’s group independently tracked nicotinic receptors at living mouse neuromuscular junctions.",
+            "comparison": "Ojima found resurfaced label equal to 12.5 ± 2.8% of reference surface signal after 15 min (SEM, three biological replicates). Bruneau found 26 ± 5% of initial surface signal after four days (SD, 29 junctions). The return is replicated. Different denominators, cargo and times prevent a common recycling-rate estimate, and terminal internal stocks were unmeasured."
           }
         ]
       }
@@ -7280,6 +7328,67 @@
             "uncertainty": "The observations describe relative labelling of receptors arriving at the membrane. The report gives no numerical fraction or error for the 3.5-hour observation.",
             "assessment": "Few labelled receptors reached the surface during the first three hours. By 3.5 hours virtually all receptors entering the membrane carried label. This supports a lag in appearance and leaves the pool count and transit-time distribution open.",
             "report": "lean/PROGRESS.md#surface-population-turnover"
+          },
+          {
+            "dataset_id": "bruneau2010_active_achr@1",
+            "manifest": "lean/checks/data/membrane_physiology_pairs.json",
+            "citation": "Bruneau and Akaaboune (2010), Results and Fig. 3D",
+            "doi": "10.1523/JNEUROSCI.4595-09.2010",
+            "locator": "Results, pp. 616–617 and Fig. 3D",
+            "context": "Active adult mouse sternomastoid synapses. Fewer than 20% of AChRs labelled, muscle fibers expressing rapsyn–GFP.",
+            "role": "descriptive",
+            "uncertainty": "Values and times from Results (SD). The figure caption specifies SEM for the plotted bars. Two follow-ups cannot identify the decay law.",
+            "assessment": "The labelled fraction remaining was 93 ± 5% at 24 h and 75 ± 8% at 72 h. These observations constrain the direction of loss in an active synapse.",
+            "report": "lean/PROGRESS.md#paired-membrane-physiology"
+          },
+          {
+            "dataset_id": "strack2011_achr_two_components@1",
+            "manifest": "lean/checks/data/membrane_physiology_pairs.json",
+            "citation": "Strack et al. (2011), Table 2",
+            "doi": "10.1371/journal.pone.0020524",
+            "locator": "Table 2, innervated adult mouse muscles, fitted components",
+            "context": "Labelled AChR in innervated tibialis anterior. The two-component fit is normalized at day 2. The pre-existing claim's Fig. 3D uses a day-7 anchor in the same study.",
+            "role": "descriptive",
+            "uncertainty": "Table 2 means and SD for ten muscles. These fitted components and the Fig. 3 observations have common provenance.",
+            "assessment": "In innervated muscles, the authors fitted a 13 ± 2% fast component with half-life 1.1 ± 0.3 days and an 87 ± 2% slow component with half-life 13.1 ± 0.4 days.",
+            "report": "lean/PROGRESS.md#paired-membrane-physiology"
+          },
+          {
+            "dataset_id": "stanley1983_achr_turnover@1",
+            "manifest": "lean/checks/data/membrane_physiology_pairs.json",
+            "citation": "Stanley and Drachman (1983), component estimates",
+            "doi": "10.1126/science.6623057",
+            "locator": "Primary report, Science 222, 67–69, abstract with component estimates",
+            "context": "Normally innervated mouse diaphragm neuromuscular junctions.",
+            "role": "descriptive",
+            "uncertainty": "Published component estimates. The public abstract gives no pointwise time series, errors or sample counts. The inferred subpopulation fractions are approximate.",
+            "assessment": "The authors reported a fast fraction of approximately 20% with an 18.7 h half-life and a slow component with a 12.4 day half-life. Each component is a fit to a subpopulation.",
+            "report": "lean/PROGRESS.md#paired-membrane-physiology"
+          }
+        ],
+        "finding": "Independent labelled cohorts decline over time. Two innervated mouse preparations resolved fast and slow receptor populations. A common loss constant across the entire pool would miss that heterogeneity. The precursor and removal inventories remain open.",
+        "pairs": [
+          {
+            "id": "innervated-receptor-cohort-loss",
+            "assumption": "A labelled surface acetylcholine-receptor cohort declines over time at an active, innervated adult mouse neuromuscular junction.",
+            "datasets": [
+              "strack2011_innervated_cohort@1",
+              "bruneau2010_active_achr@1"
+            ],
+            "outcome": "both_support",
+            "independence": "Strack’s group followed hindlimb muscle. Bruneau and Akaaboune independently followed sternomastoid synapses with less than 20% of receptors labelled.",
+            "comparison": "Strack’s labelled signal fell to approximately 67% seven days after its day-7 anchor. The sternomastoid series retained 93 ± 5% at 24 h and 75 ± 8% at 72 h (SD, five synapses each). Both support loss of the detectable cohort. Different anchors and labelling protocols preclude transfer of one fitted rate."
+          },
+          {
+            "id": "innervated-receptor-single-rate",
+            "assumption": "All labelled junctional acetylcholine receptors in a normally innervated mouse muscle share one first-order loss rate.",
+            "datasets": [
+              "strack2011_achr_two_components@1",
+              "stanley1983_achr_turnover@1"
+            ],
+            "outcome": "both_challenge",
+            "independence": "The hindlimb and diaphragm curves were collected by different laboratories. Strack’s Table 2 fit and day-7 observations are from the same publication.",
+            "comparison": "Strack fitted 1.1 ± 0.3 and 13.1 ± 0.4 day half-lives (SD, ten muscles). Stanley and Drachman reported 18.7 hours and 12.4 days. Fast fractions were about 13% and 20%, respectively. Both support a mixture of lifetimes. A separately tracked cohort can still have first-order loss."
           }
         ]
       }
@@ -7336,6 +7445,32 @@
             "uncertainty": "Estimated standard errors include systematic uncertainties in current and density. The table gives condition means without a biological sample count per row.",
             "assessment": "Scaling by central density gave 3.42 and 2.88 nA against 4.0 ± 0.7 and 2.5 ± 0.5 nA. Both values are within the reported current uncertainties. The measurements leave the functional unit count and the effect of varying area at fixed count open.",
             "report": "lean/PROGRESS.md#membrane-population-flow"
+          },
+          {
+            "dataset_id": "ohno2002_achr_count_current@1",
+            "manifest": "lean/checks/data/membrane_physiology_pairs.json",
+            "citation": "Ohno et al. (2002), Table 2, patient 3 and controls",
+            "doi": "10.1086/339465",
+            "locator": "Table 2 and footnotes. Patient 3 and controls for the adult comparison",
+            "context": "Human intercostal endplates. A receptor-scaffold deficiency reduced available binding sites. Miniature endplate currents were recorded at −80 mV and 22 ± 0.5 °C.",
+            "role": "descriptive",
+            "uncertainty": "Table reports SE. No error or replicate count for this patient’s binding-site estimate. The measurements were not linked by individual endplate. Endplate geometry, local opening and transmitter exposure could differ. Patient 4 was a child and has no age-matched site count in the table.",
+            "assessment": "The adult patient had 5.7 million binding sites per endplate and a 1.83 ± 0.15 nA mean current. Controls had 12.82 ± 0.79 million sites and 3.95 ± 0.10 nA. The patient retained 44.5% of the adult mean sites and 46.3% of control current.",
+            "report": "lean/PROGRESS.md#paired-membrane-physiology"
+          }
+        ],
+        "finding": "Two preparations link a smaller receptor binding-site count or density to a smaller miniature endplate current. Exact proportionality at fixed unit drive and the effect of changing area at fixed count remain open.",
+        "pairs": [
+          {
+            "id": "receptor-sites-and-current",
+            "assumption": "Within each preparation, fewer available postsynaptic acetylcholine-receptor binding sites accompany a smaller miniature endplate current.",
+            "datasets": [
+              "land1980_receptor_sites_and_current@1",
+              "ohno2002_achr_count_current@1"
+            ],
+            "outcome": "both_support",
+            "independence": "Land’s group compared experimentally reduced site density at lizard endplates. Ohno’s group assayed human intercostal muscle with a receptor-scaffold deficiency.",
+            "comparison": "In lizard muscle, available sites fell from 18,000 to 8,200 and 6,900 per µm² as mean peak currents fell from 7.5 to 4.0 and 2.5 nA. In the adult human comparison, sites and current retained 44.5% and 46.3% of control. Current and binding measurements lack matching by individual human endplate. Geometry, occupancy and transmitter exposure limit a test of exact proportionality."
           }
         ]
       }
@@ -9325,9 +9460,10 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
-          "mixed-ion-reversal"
+          "mixed-ion-reversal",
+          "membrane-physiology-reversals"
         ],
-        "result": "Four roots of the Cells membrane current matched the analytic voltage within 2 × 10⁻¹⁵ V. At −47.168248 mV, outward Na, K and Cl currents were −0.557437, +0.491856 and +0.065581 pA. All three also matched on both sides of reversal and in a two-step run."
+        "result": "Four roots of the Cells membrane current matched the analytic voltage within 2 × 10⁻¹⁵ V. At −47.168248 mV, outward Na, K and Cl currents were −0.557437, +0.491856 and +0.065581 pA. All three also matched on both sides of reversal and in a two-step run. Seven native roots with the 1949 permeability ratios reproduced the analytical changes to within 10⁻¹⁰ mV. Transferring that ratio to the 1979 perfusate gave +12.63 mV for 10→30 mM external K against +2.0 mV measured."
       },
       "biology": {
         "status": "open",
@@ -9356,6 +9492,32 @@
             "uncertainty": "Table 7 gives means rounded to mV without row-specific uncertainties. The calculation adopts 21 °C from Table 3.",
             "assessment": "For B, C and E, observed shifts were +2, +4 and −2 mV. The reconstructed Cells shifts were +2.10, +4.03 and −1.58 mV. The displayed pair is solution C. The three ionic currents were unmeasured.",
             "report": "lean/PROGRESS.md#mixed-membrane-reversal"
+          },
+          {
+            "dataset_id": "ohki1979_squid_perfusion@1",
+            "manifest": "lean/checks/data/membrane_physiology_pairs.json",
+            "citation": "Ohki and Aono (1979), Table 1a",
+            "doi": "10.2170/jjphysiol.29.373",
+            "locator": "Table 1a, p. 378, internal solution Id-1, seven artificial external solutions",
+            "context": "Six Loligo pealii giant axons. Electrodes measured steady resting voltage during successive K-for-Na substitutions in a perfused axon at about 20 °C. The authors checked that the voltage returned near its initial level.",
+            "role": "descriptive",
+            "uncertainty": "Reported ± for the six successful axons. Table 1 gives no definition of these errors or covariance between solution means. Electrode-tip corrections were applied, up to about 3 mV.",
+            "assessment": "Raising external K from 10 to 30 mM gave +2.0 mV. With the 1949 ratios and the nominal chloride-free internal solution, the native three-ion flux projection gives +12.63 mV. At 100 mM the measured change was +19.8 mV against +34.50 mV. A separate interpolation anchored within the perfused preparation is recorded with the comparison.",
+            "report": "lean/PROGRESS.md#paired-membrane-physiology"
+          }
+        ],
+        "finding": "Independent squid recordings agree on depolarization when external K replaces Na. The same fitted 1949 permeability ratio overpredicts the voltage changes in the 1979 perfused preparation.",
+        "pairs": [
+          {
+            "id": "squid-potassium-substitution",
+            "assumption": "Replacing external sodium with potassium at fixed total external monovalent cation concentration depolarizes the resting squid axon.",
+            "datasets": [
+              "hodgkin_katz1949_rest@1",
+              "ohki1979_squid_perfusion@1"
+            ],
+            "outcome": "both_support",
+            "independence": "Hodgkin and Katz assayed intact squid axons. Ohki and Aono later recorded an independent set of six internally perfused axons at Woods Hole.",
+            "comparison": "Hodgkin and Katz observed +2 and +4 mV from 10 to 15 and 20 mM K. Ohki and Aono observed +2.0 and +7.2 mV from 10 to 30 and 50 mM K at 500 mM internal K. The direction agrees. The transfer of the earlier permeability ratios misses the later magnitudes in a three-ion projection of the nominal perfusate. Individual ionic currents and residual intracellular chloride were unmeasured."
           }
         ]
       }
@@ -9435,9 +9597,47 @@
       "biology": {
         "status": "open",
         "observable": "Plateau and amplitudes at the fast, slow and summed rates in the same wild-type Cx43 conductance trace at a fixed voltage.",
-        "finding": "In wild-type rat Cx43 oocyte pairs, a −100 mV step gave fast and slow fitted time constants of 417 ± 175 ms and 7.06 ± 1.28 s, with a fast-to-slow amplitude ratio of 3. Figure 3 shows the voltage series for six pairs (mean ± SEM). The two-component fit leaves the mixed amplitude open. [Revilla et al., Fig. 3 and p. 1377](https://doi.org/10.1016/S0006-3495(99)76986-9)",
+        "finding": "In wild-type rat Cx43 oocyte pairs, a −100 mV step gave fast and slow fitted time constants of 417 ± 175 ms and 7.06 ± 1.28 s, with a fast-to-slow amplitude ratio of 3. Figure 3 shows the voltage series for six pairs (mean ± SEM). The two-component fit leaves the mixed amplitude open. An independent untagged Cx43 series also resolved large fast and small slow amplitudes. Both studies fitted two decays, leaving the predicted mixed amplitude unmeasured. [Revilla et al., Fig. 3 and p. 1377](https://doi.org/10.1016/S0006-3495(99)76986-9)",
         "unit": "conductance normalized to a common reference",
-        "evidence": []
+        "evidence": [
+          {
+            "dataset_id": "revilla1999_cx43_kinetics@1",
+            "manifest": "lean/checks/data/membrane_physiology_pairs.json",
+            "citation": "Revilla, Castro and Barrio (1999), Fig. 3A–B",
+            "doi": "10.1016/S0006-3495(99)76986-9",
+            "locator": "Figure 3A–C and Results, wild-type rat Cx43 homotypic junctions",
+            "context": "Paired Xenopus oocytes. Untagged rat Cx43 on both sides. Same publication as the registered Cx43 steady-conductance fits.",
+            "role": "descriptive",
+            "uncertainty": "Reported rounded ratio. The paper presents kinetic and conductance series from six pairs. No separate sampling interval for this amplitude ratio.",
+            "assessment": "At −100 mV, fitted fast and slow times were 417 ± 175 ms and 7.06 ± 1.28 s. The fast-to-slow amplitude ratio was 3. The fitted model contains two decay terms.",
+            "report": "lean/PROGRESS.md#paired-membrane-physiology"
+          },
+          {
+            "dataset_id": "desplantez2011_cx43_kinetics@1",
+            "manifest": "lean/checks/data/membrane_physiology_pairs.json",
+            "citation": "Desplantez et al. (2011), Table 3",
+            "doi": "10.1007/s00232-011-9352-z",
+            "locator": "Results on current deactivation and Table 3, wt-Cx43/wt-Cx43 row",
+            "context": "Homotypic untagged Cx43 in paired HeLa cells, dual whole-cell clamp at 22–25 °C. The fast and slow contributions are fractions of the initial decaying component.",
+            "role": "descriptive",
+            "uncertainty": "Table 3 reports mean ± SEM across seven pairs. The WT fast time-constant comparison in their Fig. 5 and Table 2 reuses their 2004 series. The authors describe slow time constants as difficult to estimate.",
+            "assessment": "At 110 mV the untagged pairs gave initial fast and slow fractions of 80.0 ± 3.8% and 20.0 ± 3.8%. The fitted components share a normalization. There is no separately measured term at the sum of the fast and slow rates.",
+            "report": "lean/PROGRESS.md#paired-membrane-physiology"
+          }
+        ],
+        "pairs": [
+          {
+            "id": "cx43-series-mixed-amplitude",
+            "assumption": "For two independent Cx43 gates in series, the measured plateau times the mixed amplitude equals the product of the fast and slow amplitudes at fixed voltage.",
+            "datasets": [
+              "revilla1999_cx43_kinetics@1",
+              "desplantez2011_cx43_kinetics@1"
+            ],
+            "outcome": "inconclusive",
+            "independence": "The rat Cx43 oocyte recordings and the HeLa wild-type controls came from independent teams. The 2011 paper identifies reused 2004 fast-rate data. Only the 2011 Table 3 amplitudes enter here.",
+            "comparison": "At −100 mV the oocyte fast-to-slow fitted amplitude ratio was 3. At 110 mV the independent wild-type series reported 80 ± 3.8% fast and 20 ± 3.8% slow (SEM, seven pairs). Both fit two decays. Neither reports a third amplitude at the summed rate in the same trace, so the product identity remains untested."
+          }
+        ]
       }
     },
     {
@@ -9459,20 +9659,63 @@
         "CellsProofs.Transport.JunctionGate.two_decay_samples": "lean/CellsProofs/Transport/JunctionGate.lean"
       }},
       "numerical": {"status": "checked", "comparisons": ["junction-gate", "junction-cx43-polarity"], "result": "Across 45 constant-voltage samples the compiled gate matched the independent reference within 1.12 × 10⁻¹⁶. In three tissue cell pairs the intrinsic gates continued moving during a 31.25 ms block, and tracer transfer after release matched the integrated reference within 8.68 × 10⁻¹⁸ fmol. At −80 and +80 mV the intrinsic steady target was 0.1003927 at each polarity."},
-      "biology": {"status": "open", "observable": "Normalized junction conductance at each clamp polarity and the number and duration of decay components during a fixed-voltage step.", "finding": "Seven wild-type Cx43 cell pairs gave residual conductances of 0.35 ± 0.01 and 0.33 ± 0.01 relative to the prepulse at positive and negative voltages. At −100 mV the same decay had two time constants, 70 ± 5 and 931 ± 54 ms (SEM). The Cells reference parameters give one time constant of 50.0 ms. An independent wild-type Cx43 series in N2a pairs reported fast and slow times of 0.25 ± 0.04 and 3.18 ± 0.12 s at 60 mV. The experiments leave exact transient polarity symmetry and the independent availability multiplier open. [Sahu and Bera, Table 2 and Fig. S2](https://pmc.ncbi.nlm.nih.gov/articles/PMC3607587/) · [Moreno et al., Fig. 5A and Table 2](https://doi.org/10.1161/hh0402.105667)", "unit": "dimensionless normalized conductance and ms", "evidence": [
-        {
-          "dataset_id": "revilla1999_cx43_polarity@1",
-          "manifest": "lean/checks/data/revilla1999_cx43.json",
-          "citation": "Revilla, Castro and Barrio (1999)",
-          "doi": "10.1016/S0006-3495(99)76986-9",
-          "locator": "Table 1, RCx43–RCx43 row, and Fig. 3C.",
-          "context": "Homotypic wild-type rat Cx43 in paired Xenopus oocytes, with conductance normalized to a 10 mV prepulse.",
-          "role": "descriptive",
-          "uncertainty": "Table 1 reports rounded parameters for both fitted curves. Uncertainties for those parameters and their covariance are unavailable.",
-          "assessment": "At −80 and +80 mV the published fits give 0.48745 and 0.38171. A model predicting the same value at both voltages must miss at least one fit by 0.05287 in normalized conductance (rounded). A significance test on paired observations remains open.",
-          "report": "lean/PROGRESS.md#cx43-series-gates"
-        }
-      ]}
+      "biology": {
+        "status": "mixed",
+        "observable": "Normalized junction conductance at each clamp polarity and the number and duration of decay components during a fixed-voltage step.",
+        "finding": "Seven wild-type Cx43 cell pairs gave residual conductances of 0.35 ± 0.01 and 0.33 ± 0.01 relative to the prepulse at positive and negative voltages. At −100 mV the same decay had two time constants, 70 ± 5 and 931 ± 54 ms (SEM). The Cells reference parameters give one time constant of 50.0 ms. An independent wild-type Cx43 series in N2a pairs reported fast and slow times of 0.25 ± 0.04 and 3.18 ± 0.12 s at 60 mV. The experiments leave exact transient polarity symmetry and the independent availability multiplier open. Both oocyte and N2a controls show voltage-dependent relaxation and two decay times at −100 mV. The registered single-time-constant law captures relaxation but misses the two measured phases at this voltage. [Sahu and Bera, Table 2 and Fig. S2](https://pmc.ncbi.nlm.nih.gov/articles/PMC3607587/) · [Moreno et al., Fig. 5A and Table 2](https://doi.org/10.1161/hh0402.105667)",
+        "unit": "dimensionless normalized conductance and ms",
+        "evidence": [
+          {
+            "dataset_id": "revilla1999_cx43_polarity@1",
+            "manifest": "lean/checks/data/revilla1999_cx43.json",
+            "citation": "Revilla, Castro and Barrio (1999)",
+            "doi": "10.1016/S0006-3495(99)76986-9",
+            "locator": "Table 1, RCx43–RCx43 row, and Fig. 3C.",
+            "context": "Homotypic wild-type rat Cx43 in paired Xenopus oocytes, with conductance normalized to a 10 mV prepulse.",
+            "role": "descriptive",
+            "uncertainty": "Table 1 reports rounded parameters for both fitted curves. Uncertainties for those parameters and their covariance are unavailable.",
+            "assessment": "At −80 and +80 mV the published fits give 0.48745 and 0.38171. A model predicting the same value at both voltages must miss at least one fit by 0.05287 in normalized conductance (rounded). A significance test on paired observations remains open.",
+            "report": "lean/PROGRESS.md#cx43-series-gates"
+          },
+          {
+            "dataset_id": "revilla1999_cx43_kinetics@1",
+            "manifest": "lean/checks/data/membrane_physiology_pairs.json",
+            "citation": "Revilla, Castro and Barrio (1999), Fig. 3A–B",
+            "doi": "10.1016/S0006-3495(99)76986-9",
+            "locator": "Figure 3A–C and Results, wild-type rat Cx43 homotypic junctions",
+            "context": "Paired Xenopus oocytes. Untagged rat Cx43 on both sides. Same publication as the registered Cx43 steady-conductance fits.",
+            "role": "descriptive",
+            "uncertainty": "Reported rounded ratio. The paper presents kinetic and conductance series from six pairs. No separate sampling interval for this amplitude ratio.",
+            "assessment": "At −100 mV, fitted fast and slow times were 417 ± 175 ms and 7.06 ± 1.28 s. The fast-to-slow amplitude ratio was 3. The fitted model contains two decay terms.",
+            "report": "lean/PROGRESS.md#paired-membrane-physiology"
+          },
+          {
+            "dataset_id": "sahu2013_cx43_clamp@1",
+            "manifest": "lean/checks/data/membrane_physiology_pairs.json",
+            "citation": "Sahu and Bera (2013), Table 2 and Fig. S2",
+            "doi": "10.1371/journal.pone.0060506",
+            "locator": "Table 2, wild-type Cx43 row, Fig. S2 and Results on current decay",
+            "context": "Homotypic Cx43 in N2a cell pairs, transjunctional step to −100 mV for kinetics.",
+            "role": "descriptive",
+            "uncertainty": "Means ± SEM for seven pairs. These are fitted time constants in a fixed-voltage clamp.",
+            "assessment": "At −100 mV, fitted fast and slow times were 70 ± 5 and 931 ± 54 ms. Steady residual conductances at positive and negative voltages were 0.35 ± 0.01 and 0.33 ± 0.01 of the prepulse. The same trace requires more than one relaxation time.",
+            "report": "lean/PROGRESS.md#paired-membrane-physiology"
+          }
+        ],
+        "pairs": [
+          {
+            "id": "cx43-single-exponential-clamp",
+            "assumption": "One relaxation time describes the decay of homotypic wild-type Cx43 junction current during a sustained −100 mV step.",
+            "datasets": [
+              "revilla1999_cx43_kinetics@1",
+              "sahu2013_cx43_clamp@1"
+            ],
+            "outcome": "both_challenge",
+            "independence": "Revilla’s group recorded paired oocytes. Sahu and Bera independently recorded N2a cell pairs. Both compared homotypic wild-type Cx43 at the same voltage.",
+            "comparison": "The oocyte fit gave 417 ± 175 ms and 7.06 ± 1.28 s. The N2a fit gave 70 ± 5 ms and 931 ± 54 ms. Both resolved a fast and a slow phase. The time scales differ across preparations. The measured phases constrain the existing one-state gate and motivate the separate two-gate comparison."
+          }
+        ]
+      }
     },
     {
       "id": "channel-gate-bounds",
@@ -9943,14 +10186,15 @@
         "status": "checked",
         "comparisons": [
           "proton-leak",
-          "mt1b-local-proton-read"
+          "mt1b-local-proton-read",
+          "membrane-physiology-reversals"
         ],
-        "result": "Twelve compiled CPU cases agreed with the 70-digit flux reference within 1.55 × 10⁻²⁰ fmol/s. In a buffered tissue cell, using free H⁺ gave the observed inward rate of 3.31 × 10⁻⁶ fmol/s. Substituting total intracellular proton equivalents reversed the predicted direction. Eight additional composite clamps tracked lumen pH at fixed voltage when bath pH varied independently. Version 1 refused the general-binding node. [Version 2](buffered-proton-reversal.md) exercises that endpoint."
+        "result": "Twelve compiled CPU cases agreed with the 70-digit flux reference within 1.55 × 10⁻²⁰ fmol/s. In a buffered tissue cell, using free H⁺ gave the observed inward rate of 3.31 × 10⁻⁶ fmol/s. Substituting total intracellular proton equivalents reversed the predicted direction. Eight additional composite clamps tracked lumen pH at fixed voltage when bath pH varied independently. Version 1 refused the general-binding node. [Version 2](buffered-proton-reversal.md) exercises that endpoint. Six compiled roots agreed with the Nernst values at nominal pipette and bath pH to within 10⁻¹⁰ mV. At microglial pipette/bath pH 5.5/7.8 the model gave −135.15 mV at 23 °C against an approximate −86 mV measured."
       },
       "biology": {
         "status": "open",
         "observable": "Reversal voltage of an open H⁺ path across measured pH gradients at known temperature. Predicting the signed flux magnitude also requires permeability, area and opening.",
-        "finding": "In Jurkat T cells the proton-current reversal shifted −47 mV per pH unit, versus an ideal −58 mV per pH unit. The fitted slope uncertainty and intracellular pH limit a quantitative verdict. [Schilling et al., Fig. 2E](https://doi.org/10.1113/jphysiol.2002.028878)",
+        "finding": "In Jurkat T cells the proton-current reversal shifted −47 mV per pH unit, versus an ideal −58 mV per pH unit. The fitted slope uncertainty and intracellular pH limit a quantitative verdict. Independent macrophage and microglia tail currents also show the sign of the pH response, with the largest departures when nominal pipette and bath pH are furthest apart. Two inner-membrane measurements share a laboratory. [Schilling et al., Fig. 2E](https://doi.org/10.1113/jphysiol.2002.028878)",
         "unit": "mV at reversal, fmol/s for signed proton flux",
         "evidence": [
           {
@@ -9964,6 +10208,78 @@
             "uncertainty": "The authors reported ranges across conditions. The abstract leaves the replicate errors and respiratory state for each reading unspecified.",
             "assessment": "Relative to the bath, the intermembrane space was 0.4–0.5 pH units more acidic in the condensed configuration and 0–0.2 more acidic in the orthodox configuration. This supports a compartment-specific proton input. The uncoupled gradient and leak rate remain open.",
             "report": "lean/PROGRESS.md#mt1b-local-proton-read"
+          },
+          {
+            "dataset_id": "kapus1993_macrophage_proton@1",
+            "manifest": "lean/checks/data/membrane_physiology_pairs.json",
+            "citation": "Kapus et al. (1993), Table II and Fig. 8",
+            "doi": "10.1085/jgp.102.4.729",
+            "locator": "Table II, symmetric Cs-aspartate rows, and Fig. 8 on pH changes during prolonged depolarization",
+            "context": "Native mouse peritoneal macrophages, whole-cell proton tail currents at approximately 22 °C. Voltage is cell interior relative to bath.",
+            "role": "descriptive",
+            "uncertainty": "Table II reports means ± SEM. Estimated residual junction offsets below 6 mV were uncorrected. The intracellular dye indicated good initial dialysis and a rise in pH of up to 0.8 during a 9 s pulse in a separate experiment.",
+            "assessment": "At bath pH 7.5 and pipette pH 6.0 or 6.8 the observed reversals were −69.17 ± 9.25 and −38.07 ± 3.60 mV. The nominal Cells roots at 22 °C were −87.85 and −40.99 mV. The independently observed intracellular alkalinization can shift an experimental reversal.",
+            "report": "lean/PROGRESS.md#paired-membrane-physiology"
+          },
+          {
+            "dataset_id": "morihata2000_microglia_proton@1",
+            "manifest": "lean/checks/data/membrane_physiology_pairs.json",
+            "citation": "Morihata et al. (2000), Fig. 2B–C",
+            "doi": "10.1523/JNEUROSCI.20-19-07220.2000",
+            "locator": "Figure 2B–C, reversal from proton current tails",
+            "context": "Native rat microglia, pipette pH 5.5, bath pH stepped across four solutions. Temperature 22–24 °C. Voltage is cell interior relative to bath.",
+            "role": "descriptive",
+            "uncertainty": "Means and SEMs read approximately from the figure. The 45 mV/pH slope over the first three baths is printed in the text. Liquid junction potential was corrected before sealing. Intracellular pH at tail measurement was unmeasured.",
+            "assessment": "The reported shift was about −45 mV per unit increase in bath pH from 6.3 to 7.3. At bath pH 7.8 the crossing was approximately −86 mV against the nominal −135.15 mV at 23 °C. These values constrain the direction of proton transport under voltage clamp.",
+            "report": "lean/PROGRESS.md#paired-membrane-physiology"
+          },
+          {
+            "dataset_id": "fedorenko2012_ucp1_reversal@1",
+            "manifest": "lean/checks/data/membrane_physiology_pairs.json",
+            "citation": "Fedorenko, Lishko and Kirichok (2012), Figs. 1F and 6E",
+            "doi": "10.1016/j.cell.2012.09.010",
+            "locator": "Figure 1F, reversal across gradients, and Fig. 6E, an example with two bath pH values",
+            "context": "Mouse brown-adipose mitoplasts with UCP1-associated current. Figure 6E used bath oleic acid and 15 mM pipette α-cyclodextrin to impose asymmetric fatty-acid availability. Voltage is matrix relative to bath.",
+            "role": "descriptive",
+            "uncertainty": "Approximate crossings in Fig. 6E lack individual voltage error estimates. The manuscript Results and Fig. 6E caption disagree on the bath oleic-acid unit, so its concentration is excluded from the comparison. The separate multi-gradient comparison in Fig. 1F used 3–10 recordings per condition and a 24 °C Nernst reference. This study and the 2019 skeletal-muscle study share the Kirichok laboratory.",
+            "assessment": "At fixed matrix pH 7, raising bath pH from 7 to 8 moved the example reversal from approximately 0 to −60 mV. The asymmetric ligand conditions limit transfer of current magnitude.",
+            "report": "lean/PROGRESS.md#paired-membrane-physiology"
+          },
+          {
+            "dataset_id": "bertholet-2019-proton-reversal",
+            "manifest": "lean/checks/data/bertholet2019_proton_reversal.json",
+            "citation": "Bertholet et al. (2019), Nature 571, 515–520",
+            "doi": "10.1038/s41586-019-1400-3",
+            "locator": "Extended Data Figure 3d and its source workbook.",
+            "context": "Fatty-acid-activated proton current in mouse skeletal muscle mitoplasts. Three matrix/bath pH pairs, 13 individual voltages. The group means are −62.23, −91.13 and +28.82 mV.",
+            "role": "descriptive",
+            "uncertainty": "Calculated sample SEMs are 1.92, 1.82 and 6.70 mV (n = 6, 3 and 4). The workbook gives individual readings and sample SD. Group intervals use the 95% Student t interval for independent observations. The figure specifies 24 °C for the Nernst reference.",
+            "assessment": "The unfitted Cells roots were −58.96, −88.44 and +29.48 mV. Each lies within its group interval. This retrospective check concerns reversal of the observed proton current. It supplies no absolute permeability calibration.",
+            "report": "lean/PROGRESS.md#mt1b-buffered-reversal"
+          }
+        ],
+        "pairs": [
+          {
+            "id": "proton-gradient-tail-reversal",
+            "assumption": "An increased bath-minus-intracellular pH difference moves the open proton-current reversal to more negative intracellular voltages.",
+            "datasets": [
+              "kapus1993_macrophage_proton@1",
+              "morihata2000_microglia_proton@1"
+            ],
+            "outcome": "both_support",
+            "independence": "Toronto macrophage recordings and Osaka microglial recordings used separate animals and independent laboratories. Each group measured the current crossing following activation.",
+            "comparison": "At bath pH 7.5, changing macrophage pipette pH from 6.8 to 6.0 moved the mean reversal from −38.1 to −69.2 mV. At fixed pipette pH 5.5, increasing microglial bath pH from 6.3 to 7.3 moved it from about −31 to −75 mV. Both support direction. The free pH gradient during the tail and basal mitochondrial leak conductance remain open."
+          },
+          {
+            "id": "mitoplast-proton-reversal-independence",
+            "assumption": "In brown-fat and skeletal-muscle mitochondrial inner membranes, a one-unit bath-minus-matrix pH difference produces a proton-current reversal near −59 mV at 24 °C.",
+            "datasets": [
+              "fedorenko2012_ucp1_reversal@1",
+              "bertholet-2019-proton-reversal"
+            ],
+            "outcome": "not_independent",
+            "independence": "Brown-fat UCP1 and skeletal-muscle ADP/ATP-carrier measurements used different mouse tissues and proteins. Both came from Kirichok’s laboratory. The 2019 data also appear on the buffered-proton claim.",
+            "comparison": "At a one-unit bath-minus-matrix pH difference the brown-fat example crossed near −60 mV. The muscle group mean was −62.23 mV (six observations). Both are compatible with about −59 mV at 24 °C. Absolute permeability, activation conditions and independent laboratory replication of this mitochondrial comparison remain open."
           }
         ]
       }
