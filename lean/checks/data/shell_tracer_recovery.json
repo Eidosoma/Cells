@@ -1,0 +1,39 @@
+{
+  "scope": "Published measurements related to tracer release after an exterior wash and redistribution into a finite receiver. Both comparisons are descriptive.",
+  "experiments": [
+    {
+      "id": "boyer-2007-dppc-release",
+      "citation": "Boyer and Zasadzinski (2007), ACS Nano, Figure 2 and accompanying text on page 179",
+      "doi": "10.1021/nn7002025",
+      "source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC2536751/",
+      "system": "Single-bilayer DPPC vesicles loaded with carboxyfluorescein, buffer-only control after removal of external dye by chromatography.",
+      "pH": 7.4,
+      "temperature_deg_C": 37,
+      "loading_solution_mM": 20,
+      "suspension_aliquot_mL": 1,
+      "release_half_time_h": {"relation": "greater_than", "value": 20},
+      "readout": "Suspension fluorescence dequenching. A lysed-sample measurement supplies the total-dye reference.",
+      "limits": "The reported half-time is a lower bound. Absolute retained molecule counts, trapped aqueous volume and separate exterior concentrations are unavailable for this comparison."
+    },
+    {
+      "id": "bachler-2021-finite-droplet-transfer",
+      "citation": "Bachler et al. (2021), Analytical Chemistry, Figures 2A-B and 5B-C and label-free permeation analysis",
+      "doi": "10.1021/acs.analchem.0c04939",
+      "source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8014892/",
+      "system": "Rhodamine 6G in one aqueous droplet, initially dye-free buffer in the other, across a symmetric DOPC bilayer.",
+      "pH": 6.0,
+      "incubation_temperature_deg_C": 37,
+      "nominal_each_droplet_nL": 25,
+      "donor_loading_uM": 50,
+      "receiver_loading_uM": 0,
+      "fluorescence_pairs": 27,
+      "LC_MS_n": 4,
+      "apparent_permeability_cm_per_s": {
+        "two_compartments_full_series": {"fit": 6.28e-6, "reported_plus_minus": 0.68e-6},
+        "initial_sink_approximation_first_two_points": {"fit": 9.42e-6, "reported_plus_minus": 2.17e-6}
+      },
+      "readout": "Each fluorescence image was normalized to its total signal. At sampling, the investigators separated donor and receiver droplets and measured each side's LC-MS peak area.",
+      "limits": "Both permeability estimates use the observations in the paper. Later sampling may have cooled the droplets. The planar interface and the charge of rhodamine 6G limit comparison with a neutral vesicle tracer. The experiment used no wash."
+    }
+  ]
+}

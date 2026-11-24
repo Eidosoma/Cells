@@ -1,5 +1,65 @@
 # Cells proof comparisons
 
+<a id="fr47-shell-interval-heat"></a>
+
+## 24 November 2026 · Free energy as tracer refills an empty pool
+
+For `cells.rate_equations@1` and `cells.shell_permeation@1`, Lean proves that the ideal free energy of the two mean counts is nonincreasing between washes. The proof uses the fixed shell rates and each compartment’s reference capacity in molecules. Mathlib gives continuity of n ln n at zero. On the interior the flux and its log ratio give the sign of the derivative. This covers an empty pool, an empty lumen and zero total tracer. A sealed shell releases zero. The registered P9 substitution changes an empty starting place’s contribution by exactly (μ° − ln X − 1) kBT when the ending counts are positive (μ° in RT units). With unit reference counts and zero standard potentials, two retained tracers reach means (½, 1½) at t = (ln 2)/2 for unit rates. The correct heat is 4 ln 2 − (3/2) ln 3 kBT. Lean checks that subtracting one kBT still leaves it positive. [Proof](CellsProofs/Chemistry/ShellIntervalHeat.lean) · [Exact controls and axiom audit](checks/chemistry/ShellIntervalHeat.lean) · [Registered C9](https://github.com/Eidosoma/Cells/blob/231aae399bd9f8d5db35bc31fe95207ec664ab7b/validation/assembly_lineages_v2/fr47_spec/CRITERIA.md#L50) · [Definition of P9](https://github.com/Eidosoma/Cells/blob/231aae399bd9f8d5db35bc31fe95207ec664ab7b/validation/assembly_lineages_v2/fr47_spec/AMENDMENT-2026-11-24.md)
+
+On frozen FR-47 build `43763a36`, a made-up CPU float64 world began with 240 exterior tracers. The shell took up tracer before a full wash at 0.625 s. The wash retained 18.47743757 molecules in the lumen on average. A quarter withdrawal followed at 1.75 s. All three continuous ledger amounts passed the preselected comparison rule of 10⁻⁵ times the largest predicted interval heat (0.00038347 kBT here). The largest absolute difference was 6.59 × 10⁻⁸ kBT. The instantaneous wash bookings are excluded from these intervals. The native run closed its material and dissipation checks. These are development inputs for a separate comparison from FR-47’s registered worlds. The input parameters, count reads, wash records and interval amounts are in `shell-interval-heat.json` in run `lean-fr47-interval-heat-20261124`. [Reproducible comparison](checks/shell_interval_heat.py) · [Engine interval reader](https://github.com/Eidosoma/Cells/blob/43763a36f27d4dcf8381770649d6a59e4747ddf5/validation/assembly_lineages_v2/fr47_judge.py#L195)
+
+| Interval (s) | Place empty at start | Booked (kBT) | Predicted (kBT) | P9 (kBT) |
+| --- | --- | ---: | ---: | ---: |
+| 0–0.625 | Lumen | 27.89470516 | 27.89470515 | 15.90123990 |
+| 0.625–1.75 | Exterior | 38.34719503 | 38.34719500 | 24.33882673 |
+| 1.75–2.5 | Neither | 1.69962899 | 1.69962893 | 1.69962893 |
+
+The evidence Search agent found no matched measurement of this free-energy drop. The existing tracer experiments measure release and redistribution. Westh derived the equilibrium free energy for transferring DMPC vesicles from water into glycerol solution and measured that transfer’s enthalpy by calorimetry. A direct test of the shell ledger could use reversible work or a chemical-potential difference measured over tracer transfer between the two compartments. [Tracer observations](claims/fr47-shell-wash-recovery.md#biological-evidence) · [Westh, Figures 3 and 5](https://pmc.ncbi.nlm.nih.gov/articles/PMC1302615/)
+
+<a id="fr47-shell-wash-recovery"></a>
+
+## 23 November 2026 · How much tracer returns after a pool wash
+
+For `cells.shell_permeation@1`, `cells.pool_replacement@1` and `cells.pool_withdrawal@1` on a prescribed shell, Lean derives the exterior mean flux from the two-state forward equation of each tracer. A full tracer-free replacement empties the exterior while preserving the mean lumen count L. Between washes the pool recovers as L k_out (1 − exp(−s t))/s, with s = k_in + k_out > 0. Its initial right derivative is k_out L. Mathlib’s ODE uniqueness theorem identifies this curve on the whole interval. At a later withdrawal of a fraction f on the sampler’s word grid, the expected removal is f times the recovered exterior mean. [Proof](CellsProofs/Chemistry/ShellWashRecovery.lean) · [Exact controls and axiom audit](checks/chemistry/ShellWashRecovery.lean)
+
+On frozen engine candidate `cf5ddcff`, a synthetic one-shell example started at replacement with five exterior and seven lumen molecules. The native pool reset removed all five. Using the engine’s rates over the eight possible counts, the exterior means were 1.3607043414 at 0.75 s and 2.8910229384 at 2 s. The half-withdrawal at 2 s removed 1.4455114692 on average across all possible draw outcomes. Both reads agreed with the recovery formula within 10⁻¹² molecules. Omitting return from the exterior into the lumen gave 3.1583185473 at 2 s. The driver propagates the host rates with a matrix exponential and enumerates the threshold outcomes of the native withdrawal. The subsequent deterministic shell check used independently chosen counts and compared the continuous heat as well. [Host comparison driver](checks/shell_wash_recovery.py) · [Deterministic interval comparison](#fr47-shell-interval-heat)
+
+Two measurements cover different parts of the prediction. After external dye removal, carboxyfluorescein release from single-bilayer DPPC vesicles had a half-time above 20 h at 37 °C. In paired finite droplets, LC–MS measured rhodamine 6G on both sides of a DOPC bilayer. The full-series apparent permeability was (6.28 ± 0.68) × 10⁻⁶ cm/s. It was fitted to those same observations. A held-out post-wash time course with known retained tracer, volumes and an independently measured permeability remains open. [Boyer and Zasadzinski, Fig. 2](https://doi.org/10.1021/nn7002025) · [Bachler et al., Fig. 5](https://doi.org/10.1021/acs.analchem.0c04939) · [Measurements and limits](checks/data/shell_tracer_recovery.json)
+
+To reproduce, build the Lean library and run `lake env lean -DwarningAsError=true checks/chemistry/ShellWashRecovery.lean` from `lean/`. Run `python -B lean/checks/shell_wash_recovery.py` with the Cells CPU environment and the tested checkout’s `src` and root on `PYTHONPATH`. Inputs, outputs and verification logs are in the Lean run directory `lean-fr47-wash-recovery-20261123`.
+
+<a id="fr46-shell-ligand-faces"></a>
+
+## 23 November 2026 · A second ligand can carry bound X across a shell
+
+For `cells.stochastic_mass_action@1` on `cells.prescribed_shell@1`, Lean proves that an initially empty lumen stays empty for any finite sequence of admitted events when each event balances X, every possible transfer of X stays on one face, and all inner-accessible places initially contain zero copies of X. The places include bound ligand. An initially occupied inner site can release X into an empty free lumen. The exact controls include a same-face isomerization and a release from a preloaded site. [Theorem](CellsProofs/Chemistry/ShellLigandFaces.lean) · [Exact controls](checks/chemistry/ShellLigandFaces.lean)
+
+The development parser at `61d823be` admitted a two-ligand route. Start with one X outside, one Y inside and one empty wall site R. The events are X_out + R → A, Y_in + A → C, C → D, then D → B + X_in. The Y-binding step carries the X already on A. Every event balances X, Y and the scaffold. The engine’s host kernel gave rates of 0.00166054, 0.0166054, 1 and 1 per second at the four successive states. Following the enabled events left zero X outside and one X inside. Removing Y binding gave a sealed control that the parser admitted. This is a finite path with positive rates. The host check follows those events directly. [Tested parser](https://github.com/Eidosoma/Cells/blob/61d823be7e3913f44a4dd497507a8e8256151584/src/cells/models/assembly_lineages_v2/spec.py#L451-L505) · [Comparison driver](checks/shell_ligand_faces.py)
+
+To repeat, set `PYTHONPATH` to the engine checkout’s `src` and root directories, in that order, and run `python -B lean/checks/shell_ligand_faces.py` with the Cells CPU environment. Its exit code is one when a row disagrees. The frozen engine, per-case JSON and logs are in the Lean run directory `lean-fr48-fr46-shell-laws-20261123`.
+
+<a id="fr46-shell-ligand-faces-replay"></a>
+
+The face rule at `2fbf2975` includes ligand already bound to the membrane reactant of a binding event. The unchanged Lean-lane reproducer passed on frozen revisions `d19b10c2` and `cf5ddcff`. Both refused the carrier by identifying X through wall forms A, C and D, and both admitted the sealed control. The owner’s regression and FR-48 equilibrium test also passed on `cf5ddcff`. The earlier failed result remains recorded above. The new run directory `lean-fr47-wash-recovery-20261123` contains both machine-readable replays. [Corrected face rule](https://github.com/Eidosoma/Cells/blob/cf5ddcff0054eac89a02f34c6cfe740ed5d833ce/src/cells/models/assembly_lineages_v2/spec.py#L456-L509) · [Owner’s regression](https://github.com/Eidosoma/Cells/blob/cf5ddcff0054eac89a02f34c6cfe740ed5d833ce/tests/unit/test_assembly_lineages_v2_shell_interior.py#L354-L363)
+
+<a id="fr48-shell-equilibrium"></a>
+
+## 23 November 2026 · Tracer equilibrium in a prescribed shell
+
+For `cells.shell_permeation@1` on `cells.prescribed_shell@1`, Lean checked the normalized count distribution for every fixed total, detailed balance across each entry/exit pair, and zero net probability flow for every count observable in continuous time. At equal volumes a lumen cost of ln 2 in units of RT gives a one-third fraction inside and a one-half ratio of mean concentrations. [Claim, assumptions and engine status](claims/fr48-shell-equilibrium.md)
+
+With two tracers the exact probabilities at zero, one and two inside are 4/9, 4/9 and 1/9. With no tracer the only state has mass one. Setting the solution potential to ln 2 and the absolute lumen potential to ln 4 distinguishes the correct fraction (1/3) from using the lumen value as an offset (1/5) or reversing the gap (2/3). After the build, run `lake env lean -DwarningAsError=true checks/chemistry/ShellEquilibrium.lean` from `lean/` to repeat the controls and print the proof axioms. [Exact checks](checks/chemistry/ShellEquilibrium.lean)
+
+On the frozen FR-48/FR-46 development stack at `61d823be`, the CPU test passed for 12 tracers. The stationary probabilities from the kernel rates agreed with the binomial reference within 10⁻¹² for a lumen cost of ln 2, equal potentials and the undeclared default. The test used a nonzero solution potential, detected an intentionally incorrect offset and closed the ledger from initially all-outside and all-inside populations. To repeat in that checkout, run `python -B -m pytest -q tests/unit/test_assembly_lineages_v2_geometry.py::test_a_lumen_potential_sets_the_equilibrium_ratio_and_keeps_detailed_balance`. [Engine comparison](https://github.com/Eidosoma/Cells/blob/61d823be7e3913f44a4dd497507a8e8256151584/tests/unit/test_assembly_lineages_v2_geometry.py#L806-L866)
+
+<a id="passive-reaction-cycles"></a>
+
+## 23 November 2026 · Equilibrium around a closed reaction cycle
+
+For the passive routes of `local_species_reactions@1`, Lean checked the sign of the equilibrium activity quotient, the zero standard-energy sum for real extents, the unit product for signed integer traversals, and the residual from changing one route’s energy. All four proofs use only Mathlib’s usual axioms (`propext`, `Classical.choice`, `Quot.sound`). The claim records the engine formula and the separate work needed to compare a compiled loop or measured equilibrium constants. [Proof and source register](claims/passive-reaction-cycles.md)
+
+As a sign check, take the columns A → B, B → C and A → C in that order. Lean checked that traversals (2, 2, −2) return every species to its start and have product one for arbitrary species potentials. Adding an energy offset δ to the third route gives a residual of −2δ. Traversals (2, 2, 2) leave the cycle open. Run `lake env lean -DwarningAsError=true checks/chemistry/PassiveCycle.lean` from `lean/` after the build. [Exact example and axiom check](checks/chemistry/PassiveCycle.lean)
+
 <a id="fr43-integer-segregation"></a>
 
 ## 23 November 2026 · Integer counts at membrane-patch division
