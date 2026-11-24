@@ -1,0 +1,31 @@
+{
+ "kind": "cells.fr51_reference_spec@1",
+ "invented": true,
+ "purpose": "INVENTED inputs for the FR-51 references' format sample. They follow spec/cases.json's schema so that the writer runs on them, and every output they give is marked invented. No value here is declared by protocol fr51-channel-block-v1, and no output from them is a reference value of any registered case. The voltage grid is the declared one, so the arrays have the registered results' shape.",
+ "constants": {
+  "F_C_per_mol": "6.02214076e23 * 1.602176634e-19",
+  "R_J_per_mol_K": "6.02214076e23 * 1.380649e-23",
+  "T_K": "300"
+ },
+ "voltage_grid_V": {
+  "rule": "V_j = start + j * step, j = 0 ... count - 1, formed in decimal arithmetic",
+  "start": "-0.120",
+  "step": "0.0005",
+  "count": 361
+ },
+ "populations": {
+  "X_invented": {"law": "invented", "ion": "X", "valence": 2, "relative_permeability": "1", "area_m2": "2e-9", "permeability_m_per_s": "3e-8", "abundance": "1", "open_fraction": "1", "availability": "1"}
+ },
+ "blocks": {
+  "invented_two_modes": {"blocker": {"valence": 3, "side": "outside", "concentration_mM": "0.25"}, "reference": {"reversal_of": "X"}, "modes": [
+   {"weight": "0.25", "k0_mM": "0.2", "electrical_distance": "0.6"},
+   {"weight": "0.75", "k0_mM": "7", "effective_valence": "2.5"}]},
+  "invented_one_mode": {"blocker": {"valence": -2, "side": "inside", "concentration_mM": "3"}, "reference": "membrane_voltage", "modes": [
+   {"weight": "1", "k0_mM": "0.05", "electrical_distance": "0.35"}]}
+ },
+ "cases": [
+  {"id": "INVENTED_free", "population": "X_invented", "c_i_mM": "50", "c_o_mM": "2", "block": null},
+  {"id": "INVENTED_two_modes_reversal", "population": "X_invented", "c_i_mM": "50", "c_o_mM": "2", "block": "invented_two_modes"},
+  {"id": "INVENTED_units_one_mode", "population": "X_invented", "c_i_mM": "50", "c_o_mM": "2", "block": "invented_one_mode", "units": {"count": "500", "reference_density_per_m2": "2.5e11"}}
+ ]
+}
