@@ -68,6 +68,7 @@ and a general feature, never one built for one study (D144).
 | [FR-60](#fr-60--work-at-a-scheduled-change-of-a-states-energy) | Work at a scheduled change of a state's energy | To be set by the user (logged 24 November 2026) | **Logged:** no level change books its work | A design note: exact events, an ensemble spread class |
 | [FR-61](#fr-61--an-overdamped-rotational-load-angle-speed-work-and-dissipation) | An overdamped rotational load: angle, speed, work and dissipation | To be set by the user (logged 24 November 2026) | **Logged:** no torque ledger (MODULE_SYSTEM §7 rule (a)) | One design note with FR-62 |
 | [FR-62](#fr-62--ion-transfer-coupled-to-a-rotary-step) | Ion transfer coupled to a rotary step | To be set by the user (logged 24 November 2026) | **Logged:** cycles book ions, not angle or load work | One design note with FR-61 |
+| [FR-63](#fr-63--a-ph-dependent-kv15-activation) | A pH-dependent Kv1.5 activation, as a new law beside the parity law | Normal (logged by the user, 24 November 2026; D353) | **Logged:** three labs confirm the acid shift's direction; `kv1p5_mh@1` has no pH input | A design note |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -2232,6 +2233,14 @@ This lets consumers check permeation and block separately.
 
 **Status (23 November):** logged.
 
+**Next, after landing (D353, the user):** a registration tests the block's reference voltage against Lean's
+two-potassium rows, read at their commit. It has two arms:
+- **external:** Panama and Lopatin's 0.98 ± 0.01 mV per mV of reversal; Ishihara and Yan's curves at 150, 50 and 20 mM;
+- **internal:** Lopatin and Nichols' −0.15.
+
+It is non-blind, since the lead has seen 0.98. Also queued: one admitted row with an effective valence above |z_B|
+(D352).
+
 ## FR-52 — Passive cohort observations for integer functional units
 
 **Logged 24 November 2026 by the user, priority high.**
@@ -2705,6 +2714,33 @@ exchanged with an external load, and the electrochemical free energy drawn from 
   host-side angle falls on.
 - The force-table readout may have no host law yet. If so, it is logged as waiting.
 - It shares one design note with FR-61, and so reopens MODULE_SYSTEM §7 rule (a).
+
+**Status (24 November):** logged. A design note comes first.
+
+## FR-63 — A pH-dependent Kv1.5 activation
+
+**Logged 24 November 2026 by the user, priority normal (D353).**
+
+**Why.** Three labs agree in direction that acidification shifts Kv1.5's activation positive. Under D351's definition
+this is confirmed in direction.
+
+| Lab | System | n | Shift |
+| --- | --- | --- | --- |
+| Trapani | HEK293 | 5/3 | +11.7 mV |
+| Longobardo | Ltk− | 38/27 | +17.3 mV |
+| Kehl | — | 6 | +7.8 mV |
+
+The sizes differ. `kv1p5_mh@1` is a parity law with no pH input.
+
+**The request.** A new law, leaving the parity law unchanged: Kv1.5's activation reads the local proton activity, with
+a declared and sourced shift per pH unit. The size is a declaration, since the labs differ.
+
+**First reading:**
+- **pH comes from the cell's proton row,** through the existing pH machinery.
+- **Qualification:** against the three labs' direction, with each preparation's own solutions. The size is calibrated
+  per preparation.
+- **The K–pH interaction** (external K protecting the available current under acid) is an indication pair. It is
+  reported, not judged.
 
 **Status (24 November):** logged. A design note comes first.
 

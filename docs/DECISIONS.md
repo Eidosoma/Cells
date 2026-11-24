@@ -11457,3 +11457,17 @@ is untested.
 - **FR-57's growing collector** is appended to FR-57 and settles that open point: a tube at zero volume holds no trace,
   so the collector starts as a record. The case's numbers check: 1 fmol·ln(1/2) + 3 fmol·ln(3/2) = 0.523248 RT·fmol. The
   reversed order gives the same total with different per-portion losses.
+
+## D353: the user's decisions: FR-63 (a pH-dependent Kv1.5 activation, normal) and FR-51's two-potassium registration after its landing
+
+2026-11-24, about 17:40 UTC.
+- **FR-63 is logged, normal.** D351 found Kv1.5's acid shift confirmed in direction by three labs, and `kv1p5_mh@1` is a
+  parity law with no pH input. The fix is a new law: the parity law stays unchanged, for BETSE parity. The size of the
+  shift is a declaration, since the labs differ.
+- **FR-51's reference voltage gets a registration after FR-51 lands.** It has two arms:
+  - **external:** Panama and Lopatin's slope of 0.98 ± 0.01 mV per mV of measured reversal; Ishihara and Yan's
+    fixed-dose curves at 150, 50 and 20 mM;
+  - **internal:** Lopatin and Nichols' −0.15.
+
+  It is recorded as non-blind, since the lead has seen 0.98. The data come through Lean's rows, read at their commit
+  before the registration is written.
