@@ -42,6 +42,7 @@ import hashlib
 import json
 import math
 import platform
+import shutil
 import subprocess
 import sys
 import time
@@ -82,10 +83,16 @@ ION = {"K": "K", "Na": "Na", "Cl": "Cl", "Kir": "K"}
 STEP = {"factor": 1.0}
 SCAN_POINTS = {"n": SCAN}
 REPARSED = []  # Each root's re-parse check, for the row that read it (build_table records them).
+SCANS = []  # Erratum 2: each bracket scan's points and drops, for the row that read it.
 
 
 class Refused(Exception):
-    """A reading the engine cannot give at its world (its reason is recorded in the table)."""
+    """A reading the engine cannot give at its world (its reason is recorded in the table); a scan's
+    refusal carries the scan's counts (erratum 2)."""
+
+    def __init__(self, reason, *, scan=None):
+        super().__init__(reason)
+        self.scan = scan
 
 
 # ------------------------------------------------------------------ the engine at a state
@@ -195,24 +202,39 @@ class World:
 
 def bracket(f, lo, hi, n=None):
     """A sign change of f on a scan of [lo, hi]: (a, b, f(a), f(b)); refused if none, or if f
-    changes sign more than once (no unique root)."""
+    changes sign more than once (no unique root). Erratum 2: the scan counts the points it could not
+    evaluate (the parse refused the world, the engine's readouts refused the state, or f was not
+    finite) and a refusal states them, so that "no sign change" cannot hide a stretch never
+    evaluated; which scans are accepted is unchanged."""
     n = SCAN_POINTS["n"] if n is None else n
     xs = np.linspace(lo, hi, n)
     ys = []
+    scan = dict(points=n, parse=0, domain=0, nonfinite=0)
     for x in xs:
         try:
             ys.append(f(float(x)))
-        except (Refused, ConfigError):  # Outside a law's domain or the parse's: no point there.
+        except ConfigError:  # Outside the parse's: no point there.
+            scan["parse"] += 1
             ys.append(np.nan)
-    ys = np.asarray(ys)
+        except Refused:  # Outside a law's domain: no point there.
+            scan["domain"] += 1
+            ys.append(np.nan)
+    ys = np.asarray(ys, dtype=float)
     ok = np.isfinite(ys)
+    scan["nonfinite"] = int(n - np.sum(ok) - scan["parse"] - scan["domain"])
+    scan["evaluated"] = int(np.sum(ok))
+    SCANS.append(scan)
     signs = [(float(xs[i]), float(xs[i + 1]), float(ys[i]), float(ys[i + 1]))
              for i in range(n - 1) if ok[i] and ok[i + 1] and ys[i] * ys[i + 1] <= 0]  # fmt: skip
     exact = [s for s in signs if s[2] == 0.0 or s[3] == 0.0]
+    counted = (f"{scan['evaluated']} of {n} points evaluated; not evaluated: {scan['parse']} "
+               f"refused at parse, {scan['domain']} outside a law's domain, "
+               f"{scan['nonfinite']} not finite")
     if len(signs) == 0:
-        raise Refused(f"no sign change on [{lo}, {hi}]")
+        raise Refused(f"no sign change on [{lo}, {hi}] ({counted})", scan=scan)
     if len(signs) > 1 and not (len(exact) and len(signs) <= 2):
-        raise Refused(f"{len(signs)} sign changes on [{lo}, {hi}]: no unique root")
+        raise Refused(f"{len(signs)} sign changes on [{lo}, {hi}]: no unique root ({counted})",
+                      scan=scan)  # fmt: skip
     return signs[0]
 
 
@@ -299,11 +321,8 @@ def tau_lin(world, v_inf, cell="cell_1"):
 # ------------------------------------------------------------------ the symporter (C6)
 
 
-def symport_world(n, na_in, na_out, b_out, r_b, temperature, *, capacity=None, d=None,
-                  version=1):  # fmt: skip
-    """One cell (the primary set's other ions) facing a held bath (0.1x MMR's other ions), Na and
-    B at the key's values; the symporter version 1 (n_Na = n) or version 2 on m_main."""
-    d = W.inputs() if d is None else d
+def symport_kw(n, na_in, na_out, b_out, r_b, temperature, *, capacity=None, d=None, version=1):
+    """xc0_worlds' keywords of symport_world's world."""
     base = d["symporter_v1"]["capacity_fmol_per_s"]["base"]
     k = base if capacity is None else capacity
     kw = dict(cells=(("cell_1", "primary"),), exterior_name="bath", temperature_K=temperature,
@@ -313,7 +332,16 @@ def symport_world(n, na_in, na_out, b_out, r_b, temperature, *, capacity=None, d
         kw["symport"] = {"cell_1": (k, int(n))}
     else:
         kw["diagram"] = {"cell_1": k}
-    world = World(d, **kw)
+    return kw
+
+
+def symport_world(n, na_in, na_out, b_out, r_b, temperature, *, capacity=None, d=None,
+                  version=1):  # fmt: skip
+    """One cell (the primary set's other ions) facing a held bath (0.1x MMR's other ions), Na and
+    B at the key's values; the symporter version 1 (n_Na = n) or version 2 on m_main."""
+    d = W.inputs() if d is None else d
+    world = World(d, **symport_kw(n, na_in, na_out, b_out, r_b, temperature, capacity=capacity, d=d,
+                                  version=version))  # fmt: skip
     world.domain = SYM_DOMAIN
     return world
 
@@ -337,6 +365,45 @@ def eq_ratio(n, na_in, na_out, b_out, temperature, v, *, d=None, version=1):
                                         version=version), v, "j")  # fmt: skip
 
     return log_root(j, 1e-6, 1e6)
+
+
+def anchor_terms_fmol(raw):
+    """The largest magnitude among the charge-anchor terms of a definition's nodes (fmol): each
+    node's fixed background and its ionic sum, whose two roundings surface_tissue.check_definition's
+    absolute 1e-20 C test meets (D332). Arithmetic on the definition's entries: nothing is
+    parsed."""
+    z = {s["id"]: s["valence"] for s in raw["model"]["species"]}
+    largest = 0.0
+    for node in (*raw["model"]["cells"], *raw["model"]["extracellular"]):
+        ionic = math.fsum(z[s] * a for s, a in node["initial_amount_fmol"].items())
+        largest = max(largest, abs(node["fixed_charge_equivalent_fmol"]), abs(ionic))
+    return largest
+
+
+def eq_anchor_terms(n, na_in, na_out, b_out, temperature, domain, *, d=None):
+    """The largest charge-anchor term over an equilibrium-ratio scan's worlds (fmol). Each term is
+    linear in B_in, so its magnitude is largest at an end of the domain: both ends are built."""
+    d = W.inputs() if d is None else d
+    return max(anchor_terms_fmol(W.world(d=d, **symport_kw(n, na_in, na_out, b_out, r, temperature,
+                                                           d=d)))  # fmt: skip
+               for r in domain)
+
+
+def eq_ratio_e2(n, na_in, na_out, b_out, temperature, v, *, domain, bound, d=None):
+    """Erratum 2 (D333): the root over B_in/B_out of J at a fixed V on `domain`, at the reader's
+    B_out, each B_in a parsed world; refused before any world is parsed when a world of the scan
+    would hold a charge-anchor term at or beyond `bound` fmol, where the parse's absolute 1e-20 C
+    check can refuse a correctly built world (D332)."""
+    terms = eq_anchor_terms(n, na_in, na_out, b_out, temperature, domain, d=d)
+    if not terms < bound:
+        raise Refused(f"the scan's worlds reach a charge-anchor term of {terms:.6g} fmol, not "
+                      f"below {bound:g} fmol (erratum 2): B_out {b_out:g} mM on "
+                      f"{list(domain)}")  # fmt: skip
+
+    def j(r):
+        return mode_value(symport_world(n, na_in, na_out, b_out, r, temperature, d=d), v, "j")
+
+    return log_root(j, *domain)
 
 
 # ------------------------------------------------------------------ runs
@@ -1298,6 +1365,32 @@ def m_sym_eq_x(params, *, d, cache, **_):
     return mode_value(symport_world(n, na_in, na_out, b_out, ratio, temperature, d=d), v, "x")
 
 
+def eq_ratio_e2_of(params, d, cache):
+    """Erratum 2's equilibrium ratio at a row's parameters (B_out, domain and anchor bound from the
+    reader's settings, carried in the row's parameters), found afresh for each row as erratum 1's
+    x row finds it: (ratio, V)."""
+    n, na_in, na_out, b_out, _, temperature = sym_params(dict(params, rB=1.0))
+    v = sym_voltage(params, d, cache)
+    domain = (float(params["domain"][0]), float(params["domain"][1]))
+    ratio = eq_ratio_e2(n, na_in, na_out, b_out, temperature, v, domain=domain, d=d,
+                        bound=float(params["anchor_bound_fmol"]))  # fmt: skip
+    return ratio, v
+
+
+def m_sym_eq_ratio_e2(params, *, d, cache, **_):
+    """C6.v1_eq_ratio (erratum 2): the root over B_in/B_out of J at the key's voltage, at the
+    reader's B_out on the reader's domain, every world of the scan within the anchor bound."""
+    return eq_ratio_e2_of(params, d, cache)[0]
+
+
+def m_sym_eq_x_e2(params, *, d, cache, **_):
+    """C6.v1_eq_x (erratum 2): x = dG_cyc/RT of the probe at B_in = erratum 2's equilibrium ratio
+    times B_out, at the key's voltage."""
+    ratio, v = eq_ratio_e2_of(params, d, cache)
+    n, na_in, na_out, b_out, _, temperature = sym_params(dict(params, rB=1.0))
+    return mode_value(symport_world(n, na_in, na_out, b_out, ratio, temperature, d=d), v, "x")
+
+
 def m_sym_s_at(params, *, d, cache, **_):
     """C6.S_hill: the probe's saturation S at the P end's Na (NaP) and B (BP); the factored form's
     S reads the P end alone (the N end and V of the world: the primary set, -0.04 V)."""
@@ -1443,14 +1536,23 @@ def m_c7_relax(field):
 C8_RUNS = {"dir": None}  # The folder of the saved P1LB runs (xc0_engine c8b-run), set by `table`.
 
 
+def c8b_horizon(reading):
+    """Erratum 2: a P1LB reading's horizon (s), the reader's setting: the bare run's reaches the
+    node's end state, the coupled run's stays erratum 1's 64 s."""
+    from validation.xenopus_bioelectric.xc0_compare import SETTINGS
+
+    return float(SETTINGS["c8b_horizon_s"][reading])
+
+
 def c8b_definition(reading, factor, until, *, d, x2_cap, v0):
     """P1LB at the primary set, 291.15 K: `coupled`, the cell's leaks open (no pump, route or
     GlyR), starting at v0, the engine's zero-current voltage of the primary set against the local
     node (SEMANTICS.md); `bare`, every patch closed (v0 the same). Observed every C8_EVERY steps
-    of the declared step (the same times at every step factor), to `until`."""
+    of the declared step (the same times at every step factor), to `until` (erratum 2: the grid is
+    counted to `until`, which may pass erratum 1's 64 s; to 64 s it is erratum 1's grid)."""
     dd = W.inputs() if d is None else d
     dt = float(dd["execution"]["dt_s"]) * factor
-    steps = int(round(C8_END_S / dt))
+    steps = int(round(max(until, C8_END_S) / dt))
     every = int(round(C8_EVERY / factor))
     times = [k * dt for k in range(0, steps + 1, every) if k * dt <= until + 1e-12]
     leaks = None if reading == "coupled" else {"cell_1": {"m_main": 0.0, "m_kleak": 0.0}}
@@ -1465,6 +1567,9 @@ def c8b_segment(reading, factor, until, out, *, x2_cap, resume=None, d=None):
     its snapshot for the next segment, and its record (the source, the cap, the diagnostics)."""
     from cells.records.io import load_snapshot, write_snapshot
 
+    if until > c8b_horizon(reading) + 1e-9:
+        raise SystemExit(f"refused: {reading}'s horizon is {c8b_horizon(reading)} s (erratum 2), "
+                         f"not beyond it to {until} s")  # fmt: skip
     out = Path(out)
     out.mkdir(parents=True, exist_ok=False)
     v0 = m_v_zero(dict(ion_set="primary", exterior="local", T=291.15), d=d, cache={})
@@ -1492,9 +1597,10 @@ def c8b_segment(reading, factor, until, out, *, x2_cap, resume=None, d=None):
     return record
 
 
-def c8b_loaded(reading, *, x2_cap):
+def c8b_loaded(reading, *, x2_cap, horizon=C8_END_S):
     """The saved run of a reading at the current step factor: its segments in order, checked
-    against the table's source and cap, joined (a time shared by two segments read once)."""
+    against the table's source and cap, joined (a time shared by two segments read once), and
+    refused unless it ends at `horizon` (erratum 1's 64 s; erratum 2's reading's horizon)."""
     folder = Path(C8_RUNS["dir"] or "") / f"{reading}-{STEP['factor']:g}"
     if C8_RUNS["dir"] is None or not folder.is_dir():
         raise Refused(f"no saved P1LB run {folder.name}")
@@ -1518,42 +1624,71 @@ def c8b_loaded(reading, *, x2_cap):
         psis.append(np.asarray(z["psi"])[keep])
         species = record["species"]
     t = np.concatenate(ts)
-    if abs(t[-1] - C8_END_S) > 1e-9:
-        raise Refused(f"{folder.name} ends at {t[-1]} s, not {C8_END_S} s")
+    if abs(t[-1] - horizon) > 1e-9:
+        raise Refused(f"{folder.name} ends at {t[-1]} s, not {horizon} s")
     return dict(t=t, c=np.concatenate(cs), psi=np.concatenate(psis), species=species)
+
+
+def saved(cache, reading, horizon, x2_cap):
+    """A saved run, loaded once per reading, step factor and horizon."""
+    return cached(cache, ("c8b_saved", reading, STEP["factor"], float(horizon)),
+                  lambda: c8b_loaded(reading, x2_cap=x2_cap, horizon=float(horizon)))  # fmt: skip
+
+
+def one_over_e_time(t, y, c_f):
+    """The first time (y - c_f)/(y(0) - c_f) falls to 1/e, linear between two observations."""
+    frac = (y - c_f) / (y[0] - c_f)
+    target = 1.0 / math.e
+    i = int(np.argmax(frac <= target))
+    if i == 0:
+        raise Refused("the species does not reach 1/e within the run")
+    w = (frac[i - 1] - target) / (frac[i - 1] - frac[i])
+    return float(t[i - 1] + w * (t[i] - t[i - 1]))
 
 
 def m_c8b_saved(field):
     def reading(params, *, d, x2_cap, cache, **_):
         if field in ("final", "psi_final"):
-            r = cached(cache, ("c8b_saved", "bare", STEP["factor"]),
-                       lambda: c8b_loaded("bare", x2_cap=x2_cap))  # fmt: skip
+            r = saved(cache, "bare", C8_END_S, x2_cap)
             if field == "psi_final":
                 return float(r["psi"][-1])
             return float(r["c"][-1, r["species"].index(params["species"])])
-        r = cached(cache, ("c8b_saved", "coupled", STEP["factor"]),
-                   lambda: c8b_loaded("coupled", x2_cap=x2_cap))  # fmt: skip
+        r = saved(cache, "coupled", C8_END_S, x2_cap)
         if field == "psi_at":
             return at_time(r["t"], r["psi"], float(params["t"]))
         y = r["c"][:, r["species"].index(params["species"])]
         if field == "at":
             return at_time(r["t"], y, float(params["t"]))
-        bare = cached(cache, ("c8b_saved", "bare", STEP["factor"]),
-                      lambda: c8b_loaded("bare", x2_cap=x2_cap))  # fmt: skip
+        bare = saved(cache, "bare", C8_END_S, x2_cap)
         c_f = float(bare["c"][-1, bare["species"].index(params["species"])])
-        frac = (y - c_f) / (y[0] - c_f)
-        target = 1.0 / math.e
-        i = int(np.argmax(frac <= target))
-        if i == 0:
-            raise Refused("the species does not reach 1/e within the run")
-        w = (frac[i - 1] - target) / (frac[i - 1] - frac[i])
-        return float(r["t"][i - 1] + w * (r["t"][i] - r["t"][i - 1]))
+        return one_over_e_time(r["t"], y, c_f)
 
     reading.__doc__ = (f"C8 (b) (erratum 1), from the saved P1LB runs: final (the bare run's node "
                        "concentration at 64 s), psi_final (its node potential), at and psi_at (the "
                        "coupled run's at t), t_e (the coupled run's first time (c(t) - c_f)/(c(0) - "
                        "c_f) falls to 1/e, c_f the bare run's 64 s value, linear between two "
                        f"observations). This one: {field}.")
+    return reading
+
+
+def m_c8b_end(field):
+    def reading(params, *, d, x2_cap, cache, **_):
+        bare = saved(cache, "bare", params["horizon_s"], x2_cap)
+        if field == "end_psi":
+            return float(bare["psi"][-1])
+        c_f = float(bare["c"][-1, bare["species"].index(params["species"])])
+        if field == "end_c":
+            return c_f
+        r = saved(cache, "coupled", params["coupled_horizon_s"], x2_cap)
+        return one_over_e_time(r["t"], r["c"][:, r["species"].index(params["species"])], c_f)
+
+    reading.__doc__ = (f"C8 (b) (erratum 2): 'final' is the bare node's end state, read as the "
+                       "saved bare P1LB run's last observation, at its horizon (the row's "
+                       "horizon_s, the run refused unless it ends there): end_c its node "
+                       "concentration, end_psi its node potential (the bath held at 0), t_e_end "
+                       "the coupled run's first time (c(t) - c_f)/(c(0) - c_f) falls to 1/e with "
+                       "c_f that end state (the coupled run refused unless it ends at the row's "
+                       f"coupled_horizon_s), linear between two observations. This one: {field}.")
     return reading
 
 
@@ -1648,6 +1783,12 @@ MEASURES = {
     "c8b_at_saved": m_c8b_saved("at"),
     "c8b_psi_at_saved": m_c8b_saved("psi_at"),
     "c8b_t_e_saved": m_c8b_saved("t_e"),
+    # Erratum 2 (D333).
+    "sym_eq_ratio_e2": m_sym_eq_ratio_e2,
+    "sym_eq_x_e2": m_sym_eq_x_e2,
+    "c8b_end_c": m_c8b_end("end_c"),
+    "c8b_end_psi": m_c8b_end("end_psi"),
+    "c8b_t_e_end": m_c8b_end("t_e_end"),
 }
 
 
@@ -1688,24 +1829,38 @@ RUN_MEASURES = frozenset({
     "c3_q_minus_cv", "c5_tau_fit_common", "c5_tau_fit_diff", "c5_junction_charge_sum",
     "c7_relax_dQ", "c7_relax_identity", "c8b_final_saved", "c8b_psi_final_saved", "c8b_at_saved",
     "c8b_psi_at_saved", "c8b_t_e_saved",
+    # Erratum 2.
+    "c8b_end_c", "c8b_end_psi", "c8b_t_e_end",
 })  # fmt: skip
 
 
 def evaluate(entry, *, d, x2_cap, cache, factor=1.0):
     STEP["factor"] = factor
     REPARSED.clear()
+    SCANS.clear()
     try:
         value = encode(measure(entry["measure"], entry["params"], d=d, x2_cap=x2_cap, cache=cache))
         if REPARSED:  # Every root the row read, re-parsed at its anchor: bitwise the same?
             value["reparsed_equal"] = all(REPARSED)
+        if SCANS:  # Erratum 2: the row's bracket scans, with the points they did not evaluate.
+            value["scans"] = scans_summary()
         return value
     except Refused as exc:
-        return dict(type="refused", reason=str(exc))
+        row = dict(type="refused", reason=str(exc))
+        if SCANS:
+            row["scans"] = scans_summary()
+        return row
     except Exception as exc:  # A failure is recorded, never hidden (the rule's retry reads it).
         return dict(type="error", reason=f"{type(exc).__name__}: {exc}",
                     trace=traceback.format_exc(limit=4))  # fmt: skip
     finally:
         STEP["factor"] = 1.0
+
+
+def scans_summary():
+    """A row's bracket scans (erratum 2): how many, their points, and the points not evaluated."""
+    keys = ("points", "evaluated", "parse", "domain", "nonfinite")
+    return dict(scans=len(SCANS), **{k: int(sum(s[k] for s in SCANS)) for k in keys})
 
 
 def step_check(value, half, tolerance):
@@ -1747,6 +1902,223 @@ def build_table(manifest, *, x2_cap, d=None, log=print, retry=False):
     return rows
 
 
+EQ_E2 = ("sym_eq_ratio_e2", "sym_eq_x_e2")
+
+
+def anchor_bound(manifest, d=None):
+    """Erratum 2: for every C6 equilibrium row of a manifest, the largest charge-anchor term of its
+    scan's worlds (both ends of its domain at its B_out) against its anchor bound. Arithmetic on the
+    worlds' entries at the declared inputs (or d): nothing is parsed and no engine value is read."""
+    rows, largest, below = 0, 0.0, True
+    for e in manifest["entries"]:
+        if e["measure"] not in EQ_E2:
+            continue
+        p = e["params"]
+        n, na_in, na_out, b_out, _, temperature = sym_params(dict(p, rB=1.0))
+        terms = eq_anchor_terms(n, na_in, na_out, b_out, temperature, tuple(p["domain"]), d=d)
+        rows, largest = rows + 1, max(largest, terms)
+        below = below and terms < float(p["anchor_bound_fmol"])
+    bounds = {float(e["params"]["anchor_bound_fmol"]) for e in manifest["entries"]
+              if e["measure"] in EQ_E2}  # fmt: skip
+    return dict(rows=rows, largest_term_fmol=largest, all_below=below, bound_fmol=sorted(bounds))
+
+
+def invented_inputs():
+    """An invented input set (not XC0's: other ion sets, baths, leaks, pump and symporter
+    constants), so that an engine value at it reveals nothing about the references (erratum 1's
+    development set). A symporter key sets n, the Na concentrations and V, which alone fix the
+    equilibrium ratio, so the selfcheck also uses invented keys."""
+    d = copy.deepcopy(W.inputs())
+    d["ion_sets"]["primary"]["cytosol_mM"] = dict(Na=15.0, K=120.0, Cl=20.0, A=115.0)
+    d["ion_sets"]["bracket_Cl_high"]["cytosol_mM"] = dict(Na=17.0, K=110.0, Cl=44.0, A=83.0)
+    d["ion_sets"]["bracket_second_hand_table"]["cytosol_mM"] = dict(Na=30.0, K=70.0, Cl=25.0,
+                                                                    A=75.0)  # fmt: skip
+    v = d["nodes"]["bath"]["node"]["volume_pL"]
+    d["nodes"]["bath"]["node"]["initial_amount_fmol"] = dict(Na=100.0 * v, K=3.0 * v, Cl=103.0 * v,
+                                                             A=0.0, B=0.0)  # fmt: skip
+    lv = d["nodes"]["local"]["node"]["volume_pL"]
+    d["nodes"]["local"]["node"]["initial_amount_fmol"] = dict(Na=60.0 * lv, K=8.0 * lv,
+                                                              Cl=40.0 * lv, A=28.0 * lv,
+                                                              B=0.0)  # fmt: skip
+    for m in d["membranes"]:
+        if m["id"] == "m_main":
+            m["permeability_m_per_s"] |= dict(Na=1.1e-9, Cl=4.0e-10)
+        if m["id"] == "m_kleak":
+            m["permeability_m_per_s"] |= dict(K=3.3e-9)
+        if m.get("pump"):
+            m["pump"]["metabolism"] |= dict(atp_mM=4.0, adp_mM=0.3, pi_mM=2.0,
+                                            delta_g0_J_per_mol=-31000.0)  # fmt: skip
+            m["pump"]["capacity_fmol_per_s"] = 0.02
+    d["symporter_v1"]["parameters"] |= dict(K_Na_mM=12.0, K_B_mM=0.4)
+    return d
+
+
+def selfcheck(out):
+    """Erratum 2's engine readings on invented inputs and invented keys (no registered state, no
+    reference; no value printed): the scan's counts of the points it did not evaluate; the anchor
+    bound refusing a B_out that the parse could refuse; the equilibrium ratio at B_out 1e-5 mM on
+    [1e-6, 1e8], every scan point evaluated and x = 0 at the root, for a key whose root lies
+    between 1e6 and 1e8 and one below; the same keys at erratum 1's settings; the C8 (b) readings
+    on invented saved runs; a short split bare run. Returns the failures."""
+    from validation.xenopus_bioelectric.xc0_compare import SETTINGS
+
+    failures = []
+
+    def expect(name, condition):
+        if not condition:
+            failures.append(name)
+
+    out = Path(out)
+    out.mkdir(parents=True, exist_ok=True)
+    started = time.perf_counter()
+
+    # 1. The scan's counts (an invented function: no engine).
+    def made(root):
+        def f(x):
+            if x > 0.6:
+                raise ConfigError("invented parse refusal")
+            if x < -0.7:
+                raise Refused("invented domain refusal")
+            return root - x
+
+        return f
+
+    xs = np.linspace(-1.0, 1.0, SCAN)
+    parse, domain = int(np.sum(xs > 0.6)), int(np.sum(xs < -0.7))
+    SCANS.clear()
+    expect("a bracket inside the evaluated stretch", bracket(made(0.3), -1.0, 1.0) is not None
+           and SCANS[-1] == dict(points=SCAN, parse=parse, domain=domain, nonfinite=0,
+                                 evaluated=SCAN - parse - domain))  # fmt: skip
+    try:
+        bracket(made(0.9), -1.0, 1.0)
+        failures.append("a root in the unevaluated stretch: not refused")
+    except Refused as exc:
+        expect("the refusal counts the points refused at parse",
+               exc.scan["parse"] == parse and f"{parse} refused at parse" in str(exc)
+               and f"{domain} outside a law's domain" in str(exc))  # fmt: skip
+
+    # 2. The anchor bound (arithmetic on invented worlds' entries).
+    d = invented_inputs()
+    s = SETTINGS["eq_ratio"]
+    domain_e2, bound = tuple(s["domain"]), float(s["anchor_bound_fmol"])
+    keys = {"A": (3, 17.0, 55.0, -0.06), "B": (4, 15.0, 100.0, -0.08)}  # B's root: 1e6 to 1e8.
+    for name, (n, na_in, na_out, _) in keys.items():
+        expect(f"key {name}: B_out 1e-5 mM keeps the scan below the bound",
+               eq_anchor_terms(n, na_in, na_out, s["B_out_mM"], 291.15, domain_e2, d=d) < bound)
+        expect(f"key {name}: B_out 10 mM on the domain reaches the bound",
+               eq_anchor_terms(n, na_in, na_out, 10.0, 291.15, domain_e2, d=d) >= bound)
+    try:
+        eq_ratio_e2(3, 17.0, 55.0, 10.0, 291.15, -0.06, domain=domain_e2, bound=bound, d=d)
+        failures.append("B_out 10 mM on erratum 2's domain: not refused")
+    except Refused as exc:
+        expect("the bound refuses before any world is parsed", "charge-anchor term" in str(exc))
+
+    # 3. The equilibrium ratio at erratum 2's settings, and at erratum 1's (invented keys).
+    ratios = {}
+    for name, (n, na_in, na_out, v) in keys.items():
+        SCANS.clear()
+        ratio = ratios[name] = eq_ratio_e2(n, na_in, na_out, s["B_out_mM"], 291.15, v,
+                                           domain=domain_e2, bound=bound, d=d)  # fmt: skip
+        scans = scans_summary()
+        x = mode_value(symport_world(n, na_in, na_out, s["B_out_mM"], ratio, 291.15, d=d), v, "x")
+        expect(f"key {name}: a ratio inside the domain", domain_e2[0] < ratio < domain_e2[1])
+        expect(f"key {name}: every scan point evaluated",
+               scans["scans"] == 1 and scans["evaluated"] == SCAN and scans["parse"] == 0
+               and scans["domain"] == 0 and scans["nonfinite"] == 0)  # fmt: skip
+        expect(f"key {name}: x = 0 at the root (|x| < 1e-9)", abs(x) < 1e-9)
+    expect("key B's root lies between 1e6 and 1e8", 1e6 < ratios["B"] < 1e8)
+    SCANS.clear()
+    try:
+        eq_ratio(4, 15.0, 100.0, 10.0, 291.15, -0.08, d=d)
+        failures.append("key B at erratum 1's settings: not refused")
+    except Refused as exc:
+        expect("key B at erratum 1's settings: refused, its unevaluated points counted",
+               exc.scan is not None and exc.scan["parse"] > 0 and "refused at parse" in str(exc))
+    SCANS.clear()
+    try:  # Information only: erratum 1's settings at key A (a root inside 1e6, above the limit).
+        eq_ratio(3, 17.0, 55.0, 10.0, 291.15, -0.06, d=d)
+        a_outcome = "a number"
+    except Refused:
+        a_outcome = "refused by its scan"
+    except ConfigError:
+        a_outcome = "a parse refusal inside the scan's bracket (an error row in a table)"
+    a_dropped = SCANS[-1]["parse"] if SCANS else None
+
+    # 4. The C8 (b) readings on invented saved runs (no engine): end state, potential, t_e.
+    runs = out / "c8b-runs"
+    shutil.rmtree(runs, ignore_errors=True)
+    source = provenance()
+    tau_bare, tau_coupled, c0, cf = 5.0, 4.0, 4.0, 0.75
+
+    def save(folder, t, c, psi, until):
+        folder.mkdir(parents=True)
+        np.savez(folder / "trajectory.npz", t=t, c=c, psi=psi)
+        digest = hashlib.sha256((folder / "trajectory.npz").read_bytes()).hexdigest()
+        (folder / "record.json").write_text(json.dumps(dict(
+            until=until, source=source, x2_cap=0.002, trajectory_sha256=digest,
+            species=["Na", "K", "Cl", "A", "B"])))  # fmt: skip
+
+    def invented_run(reading, tau, bounds):
+        for i, (lo, hi) in enumerate(zip(bounds[:-1], bounds[1:], strict=True)):
+            t = np.round(np.arange(round(lo * 100), round(hi * 100) + 1) * 0.01, 10)
+            k = cf + (c0 - cf) * np.exp(-t / tau)
+            c = np.column_stack([10 * k, k, 3 * k, np.full_like(t, 36.0), np.full_like(t, 1e-9)])
+            save(runs / f"{reading}-1" / f"seg{i + 1}", t, c, -0.03 * (1 - np.exp(-t / tau)), hi)
+
+    horizon = SETTINGS["c8b_horizon_s"]
+    invented_run("bare", tau_bare, [0.0, 64.0, 128.0, horizon["bare"]])
+    invented_run("coupled", tau_coupled, [0.0, horizon["coupled"]])
+    C8_RUNS["dir"] = str(runs)
+    cache = {}
+    end_k = measure("c8b_end_c", dict(species="K", horizon_s=horizon["bare"]), x2_cap=0.002,
+                    cache=cache)  # fmt: skip
+    expect("end_c: the bare run's last observation",
+           abs(end_k - (cf + (c0 - cf) * math.exp(-horizon["bare"] / tau_bare))) < 1e-12)
+    psi = measure("c8b_end_psi", dict(horizon_s=horizon["bare"]), x2_cap=0.002, cache=cache)
+    expect("end_psi: the bare run's last potential", abs(psi + 0.03) < 1e-12)
+    t_e = measure("c8b_t_e_end", dict(species="Cl", horizon_s=horizon["bare"],
+                                      coupled_horizon_s=horizon["coupled"]),
+                  x2_cap=0.002, cache=cache)  # fmt: skip
+    expect("t_e_end: the coupled run's 1/e time from the bare end state",
+           abs(t_e - tau_coupled) < 1e-3)
+    for name, measure_name, params in (
+            ("erratum 1's final on a 192 s bare run", "c8b_final_saved", dict(species="K")),
+            ("an end state at another horizon", "c8b_end_c", dict(species="K", horizon_s=128.0)),
+            ("a coupled run at another horizon", "c8b_t_e_end",
+             dict(species="K", horizon_s=horizon["bare"], coupled_horizon_s=32.0))):  # fmt: skip
+        try:
+            measure(measure_name, params, x2_cap=0.002, cache={})
+            failures.append(f"{name}: not refused")
+        except Refused:
+            pass
+    C8_RUNS["dir"] = None
+
+    # 5. A short split bare run on the invented inputs (the engine), and the horizon refusal.
+    try:
+        c8b_segment("coupled", 1.0, horizon["coupled"] + 1.0, out / "beyond", x2_cap=0.002, d=d)
+        failures.append("a coupled segment beyond its horizon: not refused")
+    except SystemExit:
+        pass
+    split = out / "c8b-split"
+    shutil.rmtree(split, ignore_errors=True)
+    whole = c8b_segment("bare", 1.0, 0.04, split / "whole" / "bare-1" / "seg", x2_cap=0.002, d=d)
+    c8b_segment("bare", 1.0, 0.02, split / "parts" / "bare-1" / "a", x2_cap=0.002, d=d)
+    c8b_segment("bare", 1.0, 0.04, split / "parts" / "bare-1" / "b", x2_cap=0.002, d=d,
+                resume=str(split / "parts" / "bare-1" / "a"))  # fmt: skip
+    C8_RUNS["dir"] = str(split / "parts")
+    joined = c8b_loaded("bare", x2_cap=0.002, horizon=0.04)
+    C8_RUNS["dir"] = None
+    w = np.load(split / "whole" / "bare-1" / "seg" / "trajectory.npz")
+    expect("a split bare run is bitwise its whole (t, c, psi)",
+           np.array_equal(w["t"], joined["t"]) and np.array_equal(w["c"], joined["c"])
+           and np.array_equal(w["psi"], joined["psi"]) and len(joined["t"]) == 5)  # fmt: skip
+    print(json.dumps(dict(seconds=round(time.perf_counter() - started, 1),
+                          key_A_at_erratum_1s_settings=a_outcome,
+                          key_A_scan_points_refused_at_parse_at_erratum_1s_settings=a_dropped,
+                          split_run_seconds=whole["seconds"])))  # fmt: skip
+    return failures
+
+
 def main(argv=None):
     a = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     sub = a.add_subparsers(dest="command", required=True)
@@ -1756,14 +2128,28 @@ def main(argv=None):
     t.add_argument("--x2-cap", type=float, required=True)
     t.add_argument("--retry", action="store_true", help="the rule's retry (once)")
     t.add_argument("--c8b", help="the folder of the saved P1LB runs (xc0_engine c8b-run)")
-    c = sub.add_parser("c8b-run", help="one segment of a saved P1LB run (erratum 1)")
+    c = sub.add_parser("c8b-run", help="one segment of a saved P1LB run (errata 1 and 2)")
     c.add_argument("reading", choices=("bare", "coupled"))
     c.add_argument("factor", type=float, help="the step factor: 1, 0.5 (the companion) or 0.25")
-    c.add_argument("until", type=float, help="the segment's end (s); the run's is C8_END_S")
+    c.add_argument("until", type=float,
+                   help="the segment's end (s); the run's is the reading's horizon (erratum 2)")
     c.add_argument("out", help="the segment's folder: <runs>/<reading>-<factor>/<segment>")
     c.add_argument("--x2-cap", type=float, required=True)
     c.add_argument("--resume", help="the previous segment's folder")
+    b = sub.add_parser("anchor-bound", help="erratum 2: the C6 rows' worlds against the bound")
+    b.add_argument("manifest")
+    s = sub.add_parser("selfcheck", help="erratum 2's engine readings on invented inputs and keys")
+    s.add_argument("out")
     args = a.parse_args(argv)
+    if args.command == "anchor-bound":
+        result = anchor_bound(json.loads(Path(args.manifest).read_text()))
+        print(json.dumps(result))
+        return 0 if result["rows"] and result["all_below"] else 1
+    if args.command == "selfcheck":
+        failures = selfcheck(args.out)
+        print("engine selfcheck: "
+              + ("passed" if not failures else "FAILED: " + "; ".join(failures)))
+        return 1 if failures else 0
     if args.command == "c8b-run":
         record = c8b_segment(args.reading, args.factor, args.until, args.out, x2_cap=args.x2_cap,
                              resume=args.resume)  # fmt: skip

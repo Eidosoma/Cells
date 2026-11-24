@@ -25,14 +25,23 @@ Stages (each a command):
   compared row is mapped, not run or not mappable, and every token of a mapped row's key is one
   its rule reads (MAPPING's `reads`), every word one its builder knows; any other row is listed
   with the reason (names and keys only) and the stage exits 1.
-- `manifest KEYS OUT`: each compared row's engine reading (MAPPING) as xc0_engine's manifest; it
-  refuses, writing nothing, where check-keys would (names and keys only).
-- `judge TABLE VALUES BANDS OUT [--retry RETRY_TABLE]`: first resolves every compared row to one table
-  row, with the values file unopened (a refusal prints family names and keys only); then loads the
-  values file, finds every compared key in it, and only then reads values, aux and bands, recomputes
-  each abs row's band by the rule from its stored floor and tolerances (a stored band that disagrees
-  refuses; a sign row's stored band decides its power), and gives the verdicts. With --retry, the
-  retry table's rows replace the first table's inconclusive rows and the judgement is after-retry.
+- `manifest KEYS OUT [--changed]`: each compared row's engine reading (MAPPING) as xc0_engine's
+  manifest; it refuses, writing nothing, where check-keys would (names and keys only). With
+  --changed (erratum 2), the changed families' rows alone: the rerun's manifest.
+- `judge TABLE VALUES BANDS OUT --carry D329_JUDGE [--retry RETRY_TABLE]` (erratum 2): checks the
+  rule (check_rule), the table's clean snapshot, cap and engine sources (the frozen engine of D329's
+  snapshot), and the carried file's digest; then resolves every row of the changed families to one
+  table row, with the values file unopened (a refusal prints family names and keys only), and
+  refuses a table row of another family or one built with other parameters; then loads the values
+  file, finds every compared key in it, and only then reads values, aux and bands, recomputes each
+  abs row's band by the rule from its stored floor and tolerances (a stored band that disagrees
+  refuses; a sign row's stored band decides its power; erratum 2's ruled tolerance floors C7's
+  band), and judges the changed families. D329's judged rows of every other family are carried
+  (family, key, outcome and reason), and the verdicts are given over every row, each judged once.
+  With --retry, the retry table's rows replace the first table's inconclusive rows and the
+  judgement is after-retry.
+- `carry-check KEYS D329_JUDGE` (erratum 2): the carried file's digest, and its rows against the
+  keys stage's rows (names and keys only).
 - `retry-manifest TABLE OUT`: the retry's manifest, the table's inconclusive rows.
 - `synthetic OUT`: an invented interface and table (no engine, no reference), for the end-to-end check.
 - `structure FILE`: the key layout of an interface-shaped file, no value (for the invented one).
@@ -112,6 +121,9 @@ def parse_key(key):
 
 
 def same(a, b):
+    if isinstance(a, (list, tuple)) or isinstance(b, (list, tuple)):  # Erratum 2's ratio domain.
+        return (isinstance(a, (list, tuple)) and isinstance(b, (list, tuple)) and len(a) == len(b)
+                and all(same(x, y) for x, y in zip(a, b, strict=True)))  # fmt: skip
     if isinstance(a, str) or isinstance(b, str):
         return a == b
     return a == b or abs(a - b) <= MATCH_RTOL * max(abs(a), abs(b))
@@ -328,6 +340,56 @@ def cl_sign_side(family, params):
             "ion": "Cl"}
 
 
+# Erratum 2 (D333): the settings of the changed readings, rendered in the erratum's mapping block so
+# that check_rule refuses unless they are this module's, and carried in each changed row's manifest
+# parameters so that the judge refuses a table row built with others (resolve).
+SETTINGS = dict(
+    # C6.v1_eq_ratio and C6.v1_eq_x: the reader's B_out (mM) and the ratio's search domain; every
+    # searched world's charge-anchor terms stay below anchor_bound_fmol, where the parse's 1e-20 C
+    # anchor check cannot fail in float64 (D332: the residual is at most 2^(k-52) fmol in the binade
+    # [2^k, 2^(k+1)), 5.6e-21 C below 2^19 fmol).
+    eq_ratio=dict(B_out_mM=1e-5, domain=[1e-6, 1e8], anchor_bound_fmol=2.0**19),
+    # C8 (b): each P1LB reading's horizon (s). "Final" is the bare node's end state, read at the
+    # bare run's horizon; the coupled run keeps erratum 1's 64 s.
+    c8b_horizon_s=dict(bare=192.0, coupled=64.0),
+    # The lead's ruling on a proposed tolerance (REFERENCES_USAGE.md: proposed tolerances are open
+    # to the lead's ruling by a dated note): a floor on the row's relative tolerance, the stored
+    # band still checked against the band rule first.
+    tolerance_rulings={"C7.pump_cell_charge_per_fmol": dict(tol_rel=1e-10)},
+)  # fmt: skip
+
+
+def eq_ratio_e2(family, params):
+    """Erratum 2: C6.v1_eq_ratio and C6.v1_eq_x at the reader's B_out of SETTINGS (the ratio is the
+    root where x = 0, whatever B_out is, since S > 0), its search domain and the anchor bound, at
+    291.15 K and the key's V<V> or Vrest_<exterior>."""
+    voltage = [n for n in ("V", "Vrest") if n in params]
+    if len(voltage) != 1:
+        raise KeyError("no voltage")
+    s = SETTINGS["eq_ratio"]
+    return {"BP": s["B_out_mM"], "T": 291.15, "domain": list(s["domain"]),
+            "anchor_bound_fmol": s["anchor_bound_fmol"],
+            **{n: params[n] for n in ("n", "Nain", "Naout", *voltage)}}  # fmt: skip
+
+
+def c8_end_species(family, params):
+    """Erratum 2: C8.b_final_c, the bare node's end state, read at the bare run's horizon."""
+    return {**c8_species(family, params), "horizon_s": SETTINGS["c8b_horizon_s"]["bare"]}
+
+
+def c8_end_psi(family, params):
+    """Erratum 2: C8.b_final_psi, the bare node's end-state potential, at the bare run's horizon."""
+    c8_psi(family, params)
+    return {"horizon_s": SETTINGS["c8b_horizon_s"]["bare"]}
+
+
+def c8_t_e_end(family, params):
+    """Erratum 2: C8.bc_t_e, the coupled run's 1/e time from the bare node's end state (the same
+    "final" as C8.b_final_c: SEMANTICS.md's c_f), each run checked to end at its horizon."""
+    h = SETTINGS["c8b_horizon_s"]
+    return {**c8_species(family, params), "horizon_s": h["bare"], "coupled_horizon_s": h["coupled"]}
+
+
 SYM = ("n", "Nain", "Naout", "BP", "rB", "T")
 OFF = (*SYM, "off")
 PUMP = ("ion_set", "exterior", "T")
@@ -335,10 +397,11 @@ EQ = ("n", "Nain", "Naout")
 V2 = ("NaP", "BP", "BN")
 C5 = ("word", "kir_g", "x_gly")
 C5_X = (*C5, "x")
-# The erratum's mapping (erratum 1, 23 November 2026, from the tagged reader's keys stage and the
-# confirmer's SEMANTICS.md and SEMANTICS-2.md). Each rule: (family pattern, engine measure, params
-# builder, needs, reads).
-MAPPING = (
+# Erratum 1's mapping (23 November 2026, from the tagged reader's keys stage and the confirmer's
+# SEMANTICS.md and SEMANTICS-2.md), kept verbatim: erratum 2 replaces the rules of its changed
+# families in place (E2_RULES, below). Each rule: (family pattern, engine measure, params builder,
+# needs, reads).
+MAPPING_E1 = (
     (r"^C0\.E_(K|Na|Cl)$", "e_zero", ion_from_family("C0.E_"), STATE, STATE),
     (r"^C0\.V_ghk_area$", "v_zero", keep(*STATE), STATE, STATE),
     (r"^C0\.k_effect_sign_area$", "effect_sign", keep(*STATE, ion="K"), STATE, STATE),
@@ -426,6 +489,25 @@ MAPPING = (
     (r"^C8\.bc_c_t$", "c8b_at_saved", c8_species_t, ("word", "t"), ("word", "t")),
     (r"^C8\.bc_psi_t$", "c8b_psi_at_saved", c8_t, ("t",), ("t",)),
 )  # fmt: skip
+# Erratum 2 (D333): the changed families' rules, each in place of erratum 1's rule of the same
+# pattern; every other rule stays erratum 1's. Deleting a line here returns that family to erratum
+# 1's rule and to D329's judged outcome (the judge carries it). C7's rule is erratum 1's reading,
+# listed because its band is ruled (SETTINGS) and it is rerun.
+E2_RULES = (
+    (r"^C6\.v1_eq_ratio$", "sym_eq_ratio_e2", eq_ratio_e2, EQ, (*EQ, "V", "Vrest")),
+    (r"^C6\.v1_eq_x$", "sym_eq_x_e2", eq_ratio_e2, EQ, (*EQ, "V", "Vrest")),
+    (r"^C7\.pump_cell_charge_per_fmol$", "pump_cell_charge_per_fmol", pump_cell, (), ("word",)),
+    (r"^C8\.b_final_c$", "c8b_end_c", c8_end_species, ("word",), ("word",)),
+    (r"^C8\.b_final_psi$", "c8b_end_psi", c8_end_psi, (), ("word",)),
+    (r"^C8\.bc_t_e$", "c8b_t_e_end", c8_t_e_end, ("word",), ("word",)),
+)  # fmt: skip
+E2 = {rule[0]: rule for rule in E2_RULES}
+if not set(E2) <= {rule[0] for rule in MAPPING_E1}:
+    raise RuntimeError("an erratum 2 rule replaces no rule of erratum 1")
+MAPPING = tuple(E2.get(rule[0], rule) for rule in MAPPING_E1)
+# The changed families (each E2 pattern names one family exactly): the rerun's rows; every other
+# family's outcome is D329's, carried by the judge.
+CHANGED = tuple(p[1:-1].replace("\\.", ".") for p in E2)
 NOT_RUN = (
     (r"^C6\.v2_early_ratio(_rest)?$", "not run on main: cells.na2_anion_symport_diagram@1 fixes "
      "zeta at 0 on e3/e5/e6/e7 (b_P, b_N, na2_N, na1_N), so DESIGN §3.4's charge placement cannot "
@@ -517,26 +599,33 @@ def refusal(family, key):
 
 
 RULE = HERE / "xc0_rule.json"  # Tagged xc0-rule-registered-2026-11-23; kept as tagged.
-ERRATUM = HERE / "xc0_rule_erratum_1.json"  # Erratum 1: the mapping this module now holds.
+ERRATUM_1 = HERE / "xc0_rule_erratum_1.json"  # Tag xc0-rule-erratum-1-2026-11-23; kept as tagged.
+ERRATUM = HERE / "xc0_rule_erratum_2.json"  # Erratum 2 (D333): the mapping this module now holds.
 
 
 def rule_mapping():
-    """The mapping as the erratum renders it, from this module (one source)."""
+    """The mapping as the erratum renders it, from this module (one source): the rules, the not-run
+    and not-mappable rows, and erratum 2's changed families and settings."""
     return dict(
         rules=[dict(family=p, measure=m, needs=list(n), reads=list(r)) for p, m, b, n, r in MAPPING],
         not_run=[dict(family=p, reason=r) for p, r in NOT_RUN],
         not_mappable=[dict(family=p, key_word=w, reason=r) for p, w, r in NOT_MAPPABLE],
+        changed=list(CHANGED),
+        settings=json.loads(json.dumps(SETTINGS)),
     )
 
 
 def check_rule(path=ERRATUM):
-    """Refuses when the registered erratum's mapping is not this module's. Returns the tagged rule
-    with the erratum's entries over its own, the erratum itself under "erratum"."""
+    """Refuses when the registered erratum's mapping (with erratum 2's changed families and
+    settings) is not this module's. Returns the tagged rule with erratum 1's entries over its own
+    and erratum 2's over both, erratum 2 itself under "erratum"."""
     erratum = json.loads(Path(path).read_text())
-    if erratum["mapping"] != rule_mapping():
+    if erratum.get("erratum") != 2 or erratum["mapping"] != rule_mapping():
         raise SystemExit(f"refused: {path}'s mapping is not the reader's")
     rule = json.loads(RULE.read_text())
-    return {**rule, **{k: v for k, v in erratum.items() if k in rule}, "erratum": erratum}
+    first = json.loads(ERRATUM_1.read_text())
+    merged = {**rule, **{k: v for k, v in first.items() if k in rule}}
+    return {**merged, **{k: v for k, v in erratum.items() if k in rule}, "erratum": erratum}
 
 
 def check_table(table, rule):
@@ -588,8 +677,10 @@ def check_keys(key_list):
     """The reader's guard over the keys stage's output ({family: {kind, unit, keys}}): each compared
     row (info rows aside) is mapped, with every token of its key read by its rule and every word
     known to its builder, or is not run or not mappable. Returns (counts, unmapped), each unmapped
-    row as (family, key, reason): names and keys only."""
+    row as (family, key, reason): names and keys only. counts["changed"] holds erratum 2's changed
+    families' mapped rows by family (the rerun's rows)."""
     counts, unmapped = dict(mapped=0, not_run=0, not_mappable=0, unmapped=0, info=0), []
+    changed = {}
     for family, entry in sorted(key_list.items()):
         if entry["kind"] == "info":
             counts["info"] += len(entry["keys"])
@@ -601,6 +692,9 @@ def check_keys(key_list):
                 counts["unmapped"] += 1
             else:
                 counts[m[0] if m[0] in ("not_run", "not_mappable") else "mapped"] += 1
+                if family in CHANGED and m[0] not in ("not_run", "not_mappable"):
+                    changed[family] = changed.get(family, 0) + 1
+    counts["changed"] = changed
     return counts, unmapped
 
 
@@ -610,12 +704,13 @@ def key_list_of(bands):
             for f, e in bands["families"].items()}  # fmt: skip
 
 
-def manifest(key_list):
+def manifest(key_list, *, changed_only=False):
     """The engine manifest for the compared rows, the not-run and not-mappable rows apart, and the
-    unmapped rows with check-keys' reasons (the manifest stage refuses where any is unmapped)."""
+    unmapped rows with check-keys' reasons (the manifest stage refuses where any is unmapped). With
+    changed_only (erratum 2's rerun), the rows of the changed families alone."""
     entries, unmapped, not_run = [], [], []
     for family, entry in sorted(key_list.items()):
-        if entry["kind"] == "info":
+        if entry["kind"] == "info" or (changed_only and family not in CHANGED):
             continue
         for key in entry["keys"]:
             m = mapped(family, key)
@@ -643,7 +738,8 @@ def table_rows(table):
 def resolve(table, key_list, *, after_retry=False):
     """Each compared row's table row, or the reasons it has none. Reads no value. Before the retry
     a refused, errored or step-unconverged table row is a problem (the judgement stops); after it,
-    such a row is judged as engine_refused."""
+    such a row is judged as engine_refused. A table row whose recorded parameters are not the
+    mapping's (erratum 2: its settings ride in them) is a problem."""
     rows = table_rows(table)
     resolved, problems = {}, []
     for family, entry in sorted(key_list.items()):
@@ -662,6 +758,9 @@ def resolve(table, key_list, *, after_retry=False):
                     and same_params(p, params)]  # fmt: skip
             if len(hits) != 1:
                 problems.append(("no table row" if not hits else "several table rows", family, key))
+            elif not same_params(hits[0].get("params", {}), m[1]):
+                problems.append(("a table row built with other parameters than the mapping's",
+                                 family, key))  # fmt: skip
             elif not inconclusive(hits[0]) and (hits[0]["type"] == "flag") != (entry["kind"] == "flag"):
                 problems.append((f"a {hits[0]['type']} row for a {entry['kind']} family", family, key))
             elif inconclusive(hits[0]):
@@ -747,14 +846,21 @@ def retry_manifest(table):
     return dict(entries=entries, unmapped=[], not_run=[])
 
 
-def judge(table, values, bands, *, after_retry=False):
+def judge(table, values, bands, *, after_retry=False, only=None):
     """The verdicts. `values` is the values file's content, or a function that loads it: it is
     loaded only after every compared row resolves to a table row (a refusal reads no value), and
-    then only after every compared key is found in it."""
+    then only after every compared key is found in it. With `only` (erratum 2's changed families),
+    only those families are judged, and a table row of any other family refuses."""
     key_list = key_list_of(bands)
     for family, entry in key_list.items():
         if entry["kind"] not in KINDS:
             raise SystemExit(f"refused: family {family} has kind {entry['kind']!r}")
+    if only is not None:
+        stray = sorted({r["family"] for r in table["rows"] if r["family"] not in only})
+        if stray:
+            raise SystemExit("refused before any value was read: the table holds rows of families "
+                             "it does not judge: " + ", ".join(stray))  # fmt: skip
+        key_list = {f: e for f, e in key_list.items() if f in only}
     resolved, problems = resolve(table, key_list, after_retry=after_retry)
     if problems:
         lines = [f"{why}: {family} | {key}" for why, family, key in problems]
@@ -780,26 +886,80 @@ def judge(table, values, bands, *, after_retry=False):
         kind = entry["kind"]
         ref_text = values["families"][family]["values"][key]
         reference, band = (ref_text, None) if kind == "flag" else (number(ref_text), None)
+        ruled = None
         if kind == "abs":  # The band rule is checked where REFERENCES_USAGE.md defines its terms.
             band = band_of(entry, row, reference)
             stored = number(str(row["band"]))
             if abs(stored - band) > decimal.Decimal("1e-12") * max(abs(band), decimal.Decimal(
                     "1e-300")):  # fmt: skip
                 raise SystemExit(f"refused: {family} | {key}: stored band disagrees with the rule")
+            ruling = SETTINGS["tolerance_rulings"].get(family)
+            if ruling is not None:  # Erratum 2: a floor on the row's tol_rel, the stored band kept.
+                ruled = band_of(dict(entry, tol_rel=ruling["tol_rel"]), row, reference)
+                band, stored_band = max(band, ruled), band
         elif kind == "sign":  # The stored band decides power (|aux| > band).
             band = number(str(row["band"]))
         aux = None
         if kind == "sign":
             aux = number(values["families"][family]["aux"][key])
         outcome = compare(kind, engine_text(item), reference, band, aux)
-        rows.append(dict(family=family, key=key, kind=kind, outcome=outcome, engine=item["value"],
-                         reference=ref_text, band=None if band is None else str(band),
-                         aux=None if aux is None else str(aux),
-                         retried=bool(item.get("retried"))))  # fmt: skip
+        out = dict(family=family, key=key, kind=kind, outcome=outcome, engine=item["value"],
+                   reference=ref_text, band=None if band is None else str(band),
+                   aux=None if aux is None else str(aux), retried=bool(item.get("retried")))
+        if ruled is not None:
+            out["band_stored"] = str(stored_band)
+        rows.append(out)
     for family, entry in bands["families"].items():
-        if entry["kind"] == "info":
+        if entry["kind"] == "info" and (only is None or family in only):
             rows.extend(dict(family=family, key=k, outcome="info") for k in entry["rows"])
     return verdicts(rows)
+
+
+def carry(carried, new, bands):
+    """Erratum 2's verdict (D333): D329's judged rows (`carried`, its judge.json) of every family
+    erratum 2 does not change, with `new`, the judged rows of the changed families. Reads only the
+    carried rows' family, key, outcome and reason. Refuses unless every row of the interface is
+    judged exactly once."""
+    keep = ("family", "key", "outcome", "reason")
+    rows = [{k: r[k] for k in keep if k in r} for r in carried["rows"]
+            if r["family"] not in CHANGED]  # fmt: skip
+    rows += [dict(r, erratum=2) for r in new["rows"]]
+    seen = {}
+    for r in rows:
+        seen[(r["family"], r["key"])] = seen.get((r["family"], r["key"]), 0) + 1
+    want = {(f, k) for f, e in bands["families"].items() for k in e["rows"]}
+    if set(seen) != want or any(n != 1 for n in seen.values()):
+        lacking = sorted(want - set(seen))[:20]
+        extra = sorted(set(seen) - want)[:20]
+        twice = sorted(fk for fk, n in seen.items() if n > 1)[:20]
+        raise SystemExit(f"refused: the carried and new rows do not judge every row once (lacking "
+                         f"{lacking}, not in the interface {extra}, twice {twice})")  # fmt: skip
+    return verdicts(rows)
+
+
+def file_digest(path, expected):
+    """A file's sha256 (its bytes only, nothing parsed), refused unless it is `expected`."""
+    digest = hashlib.sha256(Path(path).read_bytes()).hexdigest()
+    if digest != expected:
+        raise SystemExit(f"refused: {path} has sha256 {digest}, not the erratum's {expected}")
+    return digest
+
+
+def snapshot_sources(snapshot):
+    """{path: sha256} of a frozen snapshot's engine sources (src/), from its SNAPSHOT.json."""
+    record = json.loads((Path(snapshot) / "SNAPSHOT.json").read_text())
+    return {p: f["sha256"] for p, f in record["files"].items() if p.startswith("src/")}
+
+
+def same_engine(table, base_snapshot):
+    """D333: the rerun runs on the same frozen engine as D329's record. Refuses unless the table's
+    snapshot holds the engine sources (every src/ file, by sha256) of the base snapshot."""
+    ours = snapshot_sources(table["record"]["source"]["snapshot"])
+    base = snapshot_sources(base_snapshot)
+    differ = sorted(p for p in set(ours) | set(base) if ours.get(p) != base.get(p))
+    if differ:
+        raise SystemExit(f"refused: the table's engine sources are not the base snapshot's "
+                         f"({len(differ)} files differ, among them {differ[:10]})")  # fmt: skip
 
 
 def verdicts(rows):
@@ -1052,7 +1212,7 @@ def selfcheck(out):
         ("C7.pump_cell_charge_per_fmol", "cell", "pump_cell_charge_per_fmol"),
         ("C7.pump_cell_charge_per_fmol", "cells", None), ("C7.sym_cycle_counts", "n2|dA_in", None),
         ("C6.v1_V_stall", sym_key, "sym_stall"), ("C6.v1_V_stall", f"{sym_key}|off0.01", None),
-        ("C6.v1_eq_ratio", "n2|Nain21|Naout9.9|V-0.04", "sym_eq_ratio"),
+        ("C6.v1_eq_ratio", "n2|Nain21|Naout9.9|V-0.04", "sym_eq_ratio_e2"),
         ("C6.v1_eq_ratio", "n2|Nain21|Naout9.9|T291.15|V-0.04", None),
         ("C6.v1_eq_ratio", "n2|Nain21|Naout9.9|V-0.04|Vrest_bath", None),
         ("C6.v1_capacity_ratio", "a|f0.5", "sym_capacity_ratio"),
@@ -1060,7 +1220,7 @@ def selfcheck(out):
         ("C6.v2_V_stall", "NaP19.9|BP0.1|BN0.0001", "diag_stall"),
         ("C6.v2_ratio_Jm_Jp", f"{v2_key}|NaN21", None), ("C6.v2_alt_set_ratio", v2_key, "diag_ratio"),
         ("C6.v2_J_over_k", v2_key, "not_run"), ("C6.v2_early_ratio", "Vrest_bath", "not_run"),
-        ("C6.v2_unknown", v2_key, None), ("C8.b_final_psi", "psi", "c8b_psi_final_saved"),
+        ("C6.v2_unknown", v2_key, None), ("C8.b_final_psi", "psi", "c8b_end_psi"),
         ("C8.b_final_psi", "phi", None), ("C8.bc_c_t", "A|t1", None),
     )  # fmt: skip
     for family, key, want in guard:
@@ -1081,6 +1241,251 @@ def selfcheck(out):
         pass
     except AssertionError:
         failures.append("the values file opened before the token guard refused")
+    failures += selfcheck_e2(out)
+    return failures
+
+
+def interface_of(fams):
+    """An invented interface ({family: (kind, tol_abs, tol_rel, {key: (reference, floor)})}) as the
+    values and bands files' content, each band by the rule."""
+    values, bands = dict(families={}), dict(families={})
+    for f, (kind, tol_abs, tol_rel, rows) in fams.items():
+        values["families"][f] = dict(values={k: v for k, (v, _) in rows.items()})
+        bands["families"][f] = dict(claim=f.split(".")[0], quantity="invented", unit="invented",
+                                    kind=kind, tol_abs=tol_abs, tol_rel=tol_rel,
+                                    tol_source="invented", note="invented", rows={})  # fmt: skip
+        for k, (v, floor) in rows.items():
+            band = max(tol_abs + tol_rel * abs(float(v)), FLOOR_FACTOR * float(floor))
+            bands["families"][f]["rows"][k] = dict(floor=floor, band=repr(band))
+    return values, bands
+
+
+def selfcheck_e2(out):
+    """Erratum 2's cases on invented interfaces, tables and records (no engine, no reference): its
+    mapping is erratum 1's but for the changed families, whose settings ride in their parameters;
+    C7's ruled tolerance; the judge's carry of D329's rows and its refusals before any value is
+    read; check_rule's refusal of a mutated mapping or setting; the same-engine check. Returns the
+    failures."""
+    import copy
+    import tempfile
+
+    failures = []
+
+    def expect(name, condition):
+        if not condition:
+            failures.append(f"erratum 2: {name}")
+
+    def refuses(name, fn, *args, **kw):
+        try:
+            fn(*args, **kw)
+            failures.append(f"erratum 2: {name}: not refused")
+        except SystemExit:
+            pass
+
+    def unopened():
+        raise AssertionError("values opened")
+
+    # 1. The mapping is erratum 1's but for the changed families' rules, each in place.
+    first, ours = json.loads(ERRATUM_1.read_text())["mapping"], rule_mapping()
+    pairs = list(zip(first["rules"], ours["rules"], strict=False))
+    expect("as many rules as erratum 1", len(first["rules"]) == len(ours["rules"]))
+    expect("every rule in erratum 1's order", all(a["family"] == b["family"] for a, b in pairs))
+    expect("every unchanged rule is erratum 1's",
+           all(a == b for a, b in pairs if a["family"] not in E2))
+    expect("only changed families' rules differ",
+           {a["family"] for a, b in pairs if a != b} <= set(E2))
+    expect("the not-run and not-mappable rows are erratum 1's",
+           first["not_run"] == ours["not_run"] and first["not_mappable"] == ours["not_mappable"])
+    expect("the changed families", CHANGED == (
+        "C6.v1_eq_ratio", "C6.v1_eq_x", "C7.pump_cell_charge_per_fmol", "C8.b_final_c",
+        "C8.b_final_psi", "C8.bc_t_e"))  # fmt: skip
+
+    # 2. The changed rows' readings, their settings in their parameters (invented keys).
+    eq_key = "n3|Nain17|Naout55|V-0.06"
+    expect("an equilibrium ratio at B_out 1e-5 mM on [1e-6, 1e8], the anchor bound 2^19 fmol",
+           mapped("C6.v1_eq_ratio", eq_key) == ("sym_eq_ratio_e2", dict(
+               BP=1e-5, T=291.15, domain=[1e-6, 1e8], anchor_bound_fmol=2.0**19, n=3.0, Nain=17.0,
+               Naout=55.0, V=-0.06)))  # fmt: skip
+    x = mapped("C6.v1_eq_x", "n3|Nain17|Naout55|Vrest_bath")
+    expect("x at the equilibrium ratio, at Vrest", x[0] == "sym_eq_x_e2" and x[1]["Vrest"] == "bath"
+           and x[1]["BP"] == 1e-5 and "V" not in x[1])  # fmt: skip
+    expect("C8.b_final_c: the bare run at its 192 s horizon",
+           mapped("C8.b_final_c", "K") == ("c8b_end_c", dict(species="K", horizon_s=192.0)))
+    expect("C8.b_final_psi: the bare run at its 192 s horizon",
+           mapped("C8.b_final_psi", "psi") == ("c8b_end_psi", dict(horizon_s=192.0)))
+    expect("C8.bc_t_e: c_f the bare end state, the coupled run to 64 s",
+           mapped("C8.bc_t_e", "Na") == ("c8b_t_e_end", dict(
+               species="Na", horizon_s=192.0, coupled_horizon_s=64.0)))  # fmt: skip
+    expect("C8.bc_c_t stays erratum 1's", mapped("C8.bc_c_t", "Na|t4")[0] == "c8b_at_saved")
+    expect("C7's reading stays erratum 1's",
+           mapped("C7.pump_cell_charge_per_fmol", "cell") == ("pump_cell_charge_per_fmol", {}))
+
+    # 3. An invented interface with changed and unchanged families; a rerun table; D329-like rows.
+    fams = {
+        "C2.V_ghk_area": ("abs", 1e-6, 0.0, {"primary|bath|T291.15": ("-0.0123456", "1e-17")}),
+        "C7.pump_cell_charge_per_fmol": ("abs", 0.0, 1e-12, {"cell": ("-1.0e-10", "1e-27")}),
+        "C8.b_final_c": ("abs", 0.0, 1e-6, {"Na": ("40.0", "1e-16"), "K": ("0.8", "1e-16"),
+                                             "Cl": ("3.0", "1e-16")}),
+        "C6.v1_eq_ratio": ("abs", 0.0, 1e-6, {eq_key: ("2500.0", "1e-12")}),
+        "C8.b_c_t": ("info", 0.0, 0.05, {"K|t64": ("0.81", "1e-16")}),
+    }  # fmt: skip
+    values, bands = interface_of(fams)
+    engine = {("C7.pump_cell_charge_per_fmol", "cell"): repr(-1.0e-10 * (1 + 3.4e-11)),
+              ("C8.b_final_c", "Na"): "40.00001", ("C8.b_final_c", "K"): "0.8000004",
+              ("C8.b_final_c", "Cl"): "2.999999",
+              ("C6.v1_eq_ratio", eq_key): "2500.001"}  # fmt: skip
+    rerun = dict(rows=[])
+    for (family, key), value in engine.items():
+        measure, params = mapped(family, key)
+        rerun["rows"].append(dict(family=family, key=key, measure=measure, params=params,
+                                  type="number", value=value))  # fmt: skip
+    new = judge(rerun, values, bands, only=CHANGED)
+    expect("the rerun's families judged alone, and pass",
+           new["families"] == {"C7.pump_cell_charge_per_fmol": "pass", "C8.b_final_c": "pass",
+                               "C6.v1_eq_ratio": "pass"})  # fmt: skip
+    c7 = next(r for r in new["rows"] if r["family"] == "C7.pump_cell_charge_per_fmol")
+    expect("C7's ruled band is 1e-10 relative, the stored band recorded beside it",
+           decimal.Decimal(c7["band"]) == decimal.Decimal("1e-20")
+           and decimal.Decimal(c7["band_stored"]) == decimal.Decimal("1e-22"))
+    expect("a 3.4e-11 relative gap fails the stored 1e-12 band",
+           compare("abs", engine[("C7.pump_cell_charge_per_fmol", "cell")],
+                   decimal.Decimal("-1.0e-10"), decimal.Decimal("1e-22")) == "fail")  # fmt: skip
+    wide = copy.deepcopy(rerun)
+    wide["rows"][0]["value"] = repr(-1.0e-10 * (1 + 2e-10))
+    widened = judge(wide, values, bands, only=CHANGED)
+    expect("a 2e-10 relative gap fails the ruled band",
+           widened["families"]["C7.pump_cell_charge_per_fmol"] == "fail")
+    disagree = copy.deepcopy(bands)
+    disagree["families"]["C7.pump_cell_charge_per_fmol"]["rows"]["cell"]["band"] = "1e-20"
+    refuses("a stored band that disagrees with the rule, under a ruling", judge, rerun, values,
+            disagree, only=CHANGED)  # fmt: skip
+
+    carried = dict(rows=[
+        dict(family="C2.V_ghk_area", key="primary|bath|T291.15", outcome="pass", engine="x"),
+        dict(family="C8.b_c_t", key="K|t64", outcome="info"),
+        dict(family="C7.pump_cell_charge_per_fmol", key="cell", outcome="fail"),
+        *(dict(family="C8.b_final_c", key=s, outcome="fail") for s in ("Na", "K", "Cl")),
+        dict(family="C6.v1_eq_ratio", key=eq_key, outcome="engine_refused", reason="refused"),
+    ])  # fmt: skip
+    v = carry(carried, new, bands)
+    expect("the carry: the changed families' new outcomes, the others D329's",
+           v["overall"] == "pass" and v["families"]["C2.V_ghk_area"] == "pass"
+           and v["families"]["C8.b_c_t"] == "info" and v["families"]["C8.b_final_c"] == "pass"
+           and v["counts"] == {"pass": 6, "info": 1})
+    expect("a carried row keeps family, key, outcome and reason only",
+           all(set(r) <= {"family", "key", "outcome", "reason"} for r in v["rows"]
+               if r["family"] == "C2.V_ghk_area"))  # fmt: skip
+    failed = copy.deepcopy(carried)
+    failed["rows"][0]["outcome"] = "fail"
+    expect("a carried fail stands", carry(failed, new, bands)["overall"] == "fail")
+    lacking = dict(rows=carried["rows"][1:])
+    refuses("a carried file lacking an unchanged row", carry, lacking, new, bands)
+    extra = dict(rows=[*carried["rows"], dict(family="C2.V_ghk_area", key="x", outcome="pass")])
+    refuses("a carried file with a row outside the interface", carry, extra, new, bands)
+    stray = copy.deepcopy(rerun)
+    stray["rows"].append(dict(family="C2.V_ghk_area", key="primary|bath|T291.15", measure="v_zero",
+                              params=mapped("C2.V_ghk_area", "primary|bath|T291.15")[1],
+                              type="number", value="-0.0123459"))  # fmt: skip
+    refuses("a rerun table with a row of an unchanged family", judge, stray, unopened, bands,
+            only=CHANGED)  # fmt: skip
+    short = copy.deepcopy(rerun)
+    short["rows"] = [r for r in short["rows"] if r["key"] != "K"]
+    try:
+        judge(short, unopened, bands, only=CHANGED)
+        failures.append("erratum 2: a rerun table lacking a changed row: not refused")
+    except SystemExit:
+        pass
+    except AssertionError:
+        failures.append("erratum 2: the values file opened before a missing changed row refused")
+    for name, change in (("B_out", ("C6.v1_eq_ratio", "BP", 1e-4)),
+                         ("ratio domain", ("C6.v1_eq_ratio", "domain", [1e-6, 1e6])),
+                         ("bare horizon", ("C8.b_final_c", "horizon_s", 64.0))):
+        other = copy.deepcopy(rerun)
+        for r in other["rows"]:
+            if r["family"] == change[0]:
+                r["params"][change[1]] = change[2]
+        try:
+            judge(other, unopened, bands, only=CHANGED)
+            failures.append(f"erratum 2: a table row built with another {name}: not refused")
+        except SystemExit:
+            pass
+        except AssertionError:
+            failures.append(f"erratum 2: the values file opened before another {name} refused")
+    key_list = {f: dict(kind=k, unit="u", keys=sorted(rows)) for f, (k, _, _, rows) in fams.items()}
+    counts, unmapped = check_keys(key_list)
+    expect("check-keys counts the changed rows by family", unmapped == [] and counts["changed"] == {
+        "C6.v1_eq_ratio": 1, "C7.pump_cell_charge_per_fmol": 1, "C8.b_final_c": 3})
+    rerun_manifest = manifest(key_list, changed_only=True)["entries"]
+    expect("the rerun's manifest holds the changed rows alone, C8's with the step tolerance",
+           sorted((e["family"], e["key"]) for e in rerun_manifest) == sorted(engine)
+           and all(e.get("step_tolerance") == {"rel": 0.05} for e in rerun_manifest
+                   if e["family"].startswith("C8.")))  # fmt: skip
+
+    # 4. check_rule refuses unless erratum 2's mapping and settings are this module's.
+    if not ERRATUM.exists():
+        failures.append("erratum 2: no erratum 2 file to check")
+        return failures
+    text = ERRATUM.read_text()
+    try:
+        check_rule()
+    except SystemExit:
+        failures.append("erratum 2: check_rule refused the registered erratum 2")
+    settings = ("mapping", "settings")
+    mutations = (
+        ("B_out", (*settings, "eq_ratio", "B_out_mM"), 1e-4),
+        ("ratio domain", (*settings, "eq_ratio", "domain"), [1e-6, 1e6]),
+        ("anchor bound", (*settings, "eq_ratio", "anchor_bound_fmol"), 2.0**20),
+        ("bare horizon", (*settings, "c8b_horizon_s", "bare"), 128.0),
+        ("coupled horizon", (*settings, "c8b_horizon_s", "coupled"), 192.0),
+        ("C7's ruled tolerance", (*settings, "tolerance_rulings", "C7.pump_cell_charge_per_fmol",
+                                  "tol_rel"), 1e-11),
+        ("changed families", ("mapping", "changed"), list(CHANGED[:-1])),
+        ("rule's measure", ("mapping", "rules", 0, "measure"), "v_zero"),
+        ("erratum number", ("erratum",), 1),
+    )  # fmt: skip
+    out = Path(out) / "erratum-2"
+    out.mkdir(parents=True, exist_ok=True)
+    for name, path, value in mutations:
+        e = json.loads(text)
+        node = e
+        for step in path[:-1]:
+            node = node[step]
+        node[path[-1]] = value
+        (out / "mutated.json").write_text(json.dumps(e))
+        refuses(f"check_rule with a mutated {name}", check_rule, out / "mutated.json")
+    saved = SETTINGS["eq_ratio"]["B_out_mM"]
+    SETTINGS["eq_ratio"]["B_out_mM"] = 1e-4
+    try:
+        refuses("check_rule with the module's B_out changed", check_rule)
+    finally:
+        SETTINGS["eq_ratio"]["B_out_mM"] = saved
+
+    # 5. The same-engine check and the carried file's digest, on invented records.
+    with tempfile.TemporaryDirectory() as tmp:
+
+        def snap(name, files):
+            d = Path(tmp) / name
+            d.mkdir()
+            record = {"files": {p: {"sha256": h} for p, h in files.items()}}
+            (d / "SNAPSHOT.json").write_text(json.dumps(record))
+            return d
+
+        def table_at(d):
+            return {"record": {"source": {"snapshot": str(d)}}}
+
+        base = snap("base", {"src/a.py": "1", "src/b.py": "2", "validation/x.py": "3"})
+        try:
+            same_engine(table_at(snap("same", {"src/a.py": "1", "src/b.py": "2",
+                                               "validation/x.py": "4"})), base)  # fmt: skip
+        except SystemExit:
+            failures.append("erratum 2: the same engine sources refused")
+        refuses("a changed engine source", same_engine,
+                table_at(snap("other", {"src/a.py": "1", "src/b.py": "5"})), base)
+        refuses("a missing engine source", same_engine, table_at(snap("fewer", {"src/a.py": "1"})),
+                base)  # fmt: skip
+        (Path(tmp) / "carried.json").write_bytes(b"{}")
+        refuses("a carried file with another digest", file_digest, Path(tmp) / "carried.json",
+                "0" * 64)  # fmt: skip
     return failures
 
 
@@ -1106,10 +1511,16 @@ def main(argv=None):
     m.add_argument("keys")
     m.add_argument("out")
     m.add_argument("--calibrations", action="store_true", help="T1 and T2's readings (unscored)")
+    m.add_argument("--changed", action="store_true", help="erratum 2's rerun: the changed families")
     j = sub.add_parser("judge")
     for name in ("table", "values", "bands", "out"):
         j.add_argument(name)
     j.add_argument("--retry", help="the retry's table, merged over the first (after-retry)")
+    j.add_argument("--carry", required=True,
+                   help="erratum 2: D329's judge.json, its unchanged families' rows carried")
+    cc = sub.add_parser("carry-check", help="erratum 2: the carried judge.json against the keys")
+    cc.add_argument("keys")
+    cc.add_argument("carried")
     rm = sub.add_parser("retry-manifest")
     rm.add_argument("table")
     rm.add_argument("out")
@@ -1133,7 +1544,7 @@ def main(argv=None):
             print(f"unmapped: {family} | {key}: {why}")
         return 1 if unmapped else 0
     elif args.command == "manifest":
-        result = manifest(json.loads(Path(args.keys).read_text()))
+        result = manifest(json.loads(Path(args.keys).read_text()), changed_only=args.changed)
         if result["unmapped"]:  # The token guard and the mapping refuse before any table is built.
             for family, key, why in result["unmapped"]:
                 print(f"unmapped: {family} | {key}: {why}")
@@ -1144,21 +1555,40 @@ def main(argv=None):
         Path(args.out).write_text(json.dumps(result, indent=1))
         print(f"{len(result['entries'])} rows mapped, {len(result['not_run'])} not run or not "
               f"mappable, 0 unmapped")
+    elif args.command == "carry-check":
+        # Names and keys only: the carried file's digest and rows against the keys stage's rows.
+        base = check_rule()["erratum"]["rerun"]["base"]
+        file_digest(args.carried, base["judge_sha256"])
+        key_list = json.loads(Path(args.keys).read_text())
+        carried = json.loads(Path(args.carried).read_text())
+        rows = {(r["family"], r["key"]) for r in carried["rows"]}
+        want = {(f, k) for f, e in key_list.items() for k in e["keys"]}
+        kept = {(f, k) for f, k in rows if f not in CHANGED}
+        print(json.dumps(dict(carried_rows=len(carried["rows"]), distinct=len(rows),
+                              interface_rows=len(want), carried_unchanged=len(kept),
+                              changed_rows=len(want) - len(kept), equal=rows == want)))  # fmt: skip
+        return 0 if rows == want and len(rows) == len(carried["rows"]) else 1
     elif args.command == "judge":
         rule = check_rule()
+        base = rule["erratum"]["rerun"]["base"]
+        file_digest(Path(base["snapshot"]) / "SNAPSHOT.json", base["snapshot_record_sha256"])
         table = json.loads(Path(args.table).read_text())
         check_table(table, rule)
+        same_engine(table, base["snapshot"])
         digests = dict(engine_table_sha256=hashlib.sha256(Path(args.table).read_bytes()).hexdigest())
         if args.retry:
             retry = json.loads(Path(args.retry).read_text())
             check_table(retry, rule)
+            same_engine(retry, base["snapshot"])
             if not retry["record"].get("retry"):
                 raise SystemExit("refused: the retry table was not built with --retry")
             digests["retry_table_sha256"] = hashlib.sha256(Path(args.retry).read_bytes()).hexdigest()
             table = merge(table, retry)
+        digests["carried_judge_sha256"] = file_digest(args.carry, base["judge_sha256"])
         bands = json.loads(Path(args.bands).read_text())
-        result = judge(table, lambda: json.loads(Path(args.values).read_text()), bands,
-                       after_retry=bool(args.retry))  # fmt: skip
+        new = judge(table, lambda: json.loads(Path(args.values).read_text()), bands,
+                    after_retry=bool(args.retry), only=CHANGED)  # fmt: skip
+        result = carry(json.loads(Path(args.carry).read_text()), new, bands)
         result |= digests
         Path(args.out).write_text(json.dumps(result, indent=1))
         print(json.dumps(dict(overall=result["overall"], claims=result["claims"],
