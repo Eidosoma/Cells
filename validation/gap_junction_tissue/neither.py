@@ -50,6 +50,8 @@ spheres) and run.json; a refused view is recorded and the run written without on
 
 Usage (from a snapshot root, PYTHONPATH=src:. JAX_ENABLE_X64=1 JAX_PLATFORMS=cpu):
     python -B validation/gap_junction_tissue/neither.py OUTDIR --cpus 0,1,2,3,16,17,18,19
+    (the field, amendment 2: --shape field --upper-cpu N --lane-lock LANE.lock, the upper end on
+    CPU N outside the lane, the lane's lock held only while a lane point runs or waits)
     python -B validation/gap_junction_tissue/neither.py OUTDIR --points 1e-14 --end 600  (a probe)
     python -B validation/gap_junction_tissue/neither.py OUTDIR --record 6e-15,7.2e-15,9e-15
 """  # noqa: E501
@@ -1046,15 +1048,26 @@ def bracket(evaluated):
     return lo, hi, outcomes == sorted(outcomes), failed
 
 
-def search(out_dir, cpus, end, shape="line"):
+def search(out_dir, cpus, end, shape="line", *, upper_cpu=None, lane_lock=None, lane_after=None):
     """BITSEY's bisection, run in parallel: a worker that finishes takes a new point inside the
     current bracket at once (place), so the slow points near the bracket's upper end never hold
     the narrowing back. Stops submitting when converged (hi <= (1 + RTOL) lo) or when a stop
     condition holds; waits for the points still running (the upper end's result is required);
     then reruns the final bracket's two ends at half their step (the convergence condition of
-    docs/GJ_NEITHER_REGISTRATION.md; development runs reported it only)."""
-    from concurrent.futures import FIRST_COMPLETED, ProcessPoolExecutor, wait
+    docs/GJ_NEITHER_REGISTRATION.md; development runs reported it only).
 
+    Amendment 2's placement (docs/GJ_NEITHER_REGISTRATION.md): with upper_cpu, stage 1, the
+    bracket's upper end and its half-step rerun if C needs it run in a pool of their own pinned to
+    that CPU, started at launch, so the critical path starts at once; cpus (the lane) run every
+    other point. With lane_lock, the search takes that lock only before its first lane point, and
+    releases it once no lane point runs or waits, so it never holds the lane while it waits for the
+    upper end alone. With lane_after (an ISO time with its zone, UTC), the lane's first point, and
+    so its lock request, waits until that time: flock is not fair, and a lane taken between daytime
+    gates would hold it for hours. Every record keeps its format, and a point's record does not
+    depend on where it ran (the CPU repeats bitwise)."""
+    from concurrent.futures import ProcessPoolExecutor
+
+    after = _instant(lane_after)  # Refused here, before any pool, if it is not a zoned time.
     out_dir.mkdir(parents=True, exist_ok=True)
     ctx = multiprocessing.get_context("spawn")
     queue = ctx.Queue()
@@ -1062,7 +1075,8 @@ def search(out_dir, cpus, end, shape="line"):
         queue.put(cpu)
     workers = len(cpus)
     neighbours = tissue(shape)[3]
-    first = first_points(workers, shape)
+    own_upper = upper_cpu is not None
+    first = first_points(workers + own_upper, shape)
     state = dict(
         shape=shape,
         first_points=first,
@@ -1070,13 +1084,89 @@ def search(out_dir, cpus, end, shape="line"):
         rtol=RTOL,
         started_utc=_utc(),
         events=[],
+        cpus=list(cpus),
+        upper_cpu=upper_cpu,
+        lane_lock=lane_lock,
+        lane_after=lane_after,
     )
 
     def save():
         (out_dir / "search.json").write_text(json.dumps(state, indent=1))
 
+    holder = dict(lock=None)  # The lane's lock, once taken (_search).
+    upper_pool = None
+    if own_upper:
+        upper_queue = ctx.Queue()
+        upper_queue.put(upper_cpu)
+        upper_pool = ProcessPoolExecutor(
+            1, mp_context=ctx, initializer=_pin, initargs=(upper_queue,)
+        )
+    try:
+        return _search(
+            out_dir, workers, ctx, queue, end, shape, neighbours, first, state, save, upper_pool,
+            lane_lock, holder, after,
+        )  # fmt: skip
+    finally:
+        if upper_pool is not None:
+            upper_pool.shutdown()
+        if holder["lock"] is not None and not holder["lock"].closed:
+            _release(holder["lock"])
+
+
+def _instant(text):
+    """An ISO time with its zone ("2026-11-24T20:00:00Z") as seconds since the epoch, or None."""
+    if not text:
+        return None
+    import datetime
+
+    when = datetime.datetime.fromisoformat(text.replace("Z", "+00:00"))
+    if when.tzinfo is None:
+        raise ValueError(f"--lane-after needs a zone (UTC: a trailing Z): {text}")
+    return when.timestamp()
+
+
+def _hold(path):
+    """The lane's lock, held (flock on the lock file, as the gate scripts take it)."""
+    import fcntl
+
+    stream = open(path, "a")  # noqa: SIM115  (held until _release)
+    fcntl.flock(stream, fcntl.LOCK_EX)
+    return stream
+
+
+def _release(stream):
+    import fcntl
+
+    fcntl.flock(stream, fcntl.LOCK_UN)
+    stream.close()
+
+
+def _search(
+    out_dir, workers, ctx, queue, end, shape, neighbours, first, state, save, upper_pool,
+    lane_lock, holder, lane_after,
+):  # fmt: skip
+    """search's loop (its docstring)."""
+    from concurrent.futures import FIRST_COMPLETED, ProcessPoolExecutor, wait
+
+    def take_lane():
+        """Before the first lane point (amendment 2): wait for lane_after, then take the lock."""
+        if lane_after is not None and not holder.get("after"):
+            holder["after"] = True
+            state["events"].append(dict(utc=_utc(), lane_after="waiting"))
+            save()
+            while (left := lane_after - time.time()) > 0:
+                time.sleep(min(left, 60.0))
+            state["events"].append(dict(utc=_utc(), lane_after="reached"))
+        if lane_lock and holder["lock"] is None:
+            state["events"].append(dict(utc=_utc(), lane_lock="waiting"))
+            save()
+            holder["lock"] = _hold(lane_lock)
+            state["events"].append(dict(utc=_utc(), lane_lock="held"))
+
     with ProcessPoolExecutor(workers, mp_context=ctx, initializer=_pin, initargs=(queue,)) as pool:
-        stage1 = pool.submit(_uncoupled_work, shape).result()
+        if upper_pool is None:
+            take_lane()
+        stage1 = (upper_pool or pool).submit(_uncoupled_work, shape).result()
         (out_dir / "uncoupled.json").write_text(json.dumps(stage1, indent=1))
         if stage1["status"] != "done":
             state.update(stopped="the uncoupled stage failed")
@@ -1085,12 +1175,21 @@ def search(out_dir, cpus, end, shape="line"):
         start = stage1["start_units"]
         evaluated, running = {}, {}
 
+        def pool_for(d):
+            """The upper end's own pool (amendment 2), else the lane's."""
+            return upper_pool if upper_pool is not None and d == BRACKET[1] else pool
+
         def submit(d):
-            running[pool.submit(_work, (d, start, end, None, shape))] = d
+            running[pool_for(d).submit(_work, (d, start, end, None, shape))] = d
             state["events"].append(dict(utc=_utc(), submitted=d))
 
+        for d in first:  # The upper end first: on its own CPU it starts the critical path.
+            if pool_for(d) is not pool:
+                submit(d)
+        take_lane()
         for d in first:
-            submit(d)
+            if pool_for(d) is pool:
+                submit(d)
         save()
         submitting, halves = True, None
 
@@ -1099,14 +1198,17 @@ def search(out_dir, cpus, end, shape="line"):
             state["half_step_bracket"] = [lo, hi]
             state["events"].append(dict(utc=_utc(), half_step_submitted=[lo, hi]))
             return {
-                d: pool.submit(_work, (d, start, end, step(d, neighbours) / 2.0, shape))
+                d: pool_for(d).submit(_work, (d, start, end, step(d, neighbours) / 2.0, shape))
                 for d in (lo, hi)
             }
 
         while running:
-            finished, _ = wait(running, return_when=FIRST_COMPLETED)
+            pending = [f for f in (halves or {}).values() if not f.done()]
+            finished, _ = wait([*running, *pending], return_when=FIRST_COMPLETED)
             with (out_dir / "points.jsonl").open("a") as stream:
                 for future in finished:
+                    if future not in running:  # A half-step rerun: read once the loop ends.
+                        continue
                     d = running.pop(future)
                     result = future.result()
                     evaluated[d] = result
@@ -1135,12 +1237,23 @@ def search(out_dir, cpus, end, shape="line"):
             if converged or "stopped" in state:
                 submitting = False
             if submitting and lo is not None and hi is not None:
-                free = workers - len(running)
+                free = workers - sum(pool_for(x) is pool for x in running.values())
                 for d in place(lo, hi, list(running.values()), free):
                     submit(d)
             inside = any(lo < x < hi for x in running.values()) if converged else True
             if converged and halves is None and "stopped" not in state and not inside:
                 halves = submit_halves(lo, hi)  # The slow points above the bracket still run.
+            lane_points = any(pool_for(x) is pool for x in running.values())
+            lane_halves = any(
+                pool_for(d) is pool and not f.done() for d, f in (halves or {}).items()
+            )
+            awaiting_halves = converged and halves is None and "stopped" not in state
+            lock = holder["lock"]
+            if lock is not None and not lock.closed and not submitting and not lane_points:
+                if not lane_halves and not awaiting_halves:  # Only the upper end is left.
+                    pool.shutdown()  # The lane's idle workers exit; nothing more is sent there.
+                    _release(lock)
+                    state["events"].append(dict(utc=_utc(), lane_lock="released"))
             save()
         lo, hi, monotone, failed = bracket(evaluated)
         converged = lo is not None and hi is not None and hi <= (1.0 + RTOL) * lo
@@ -1164,6 +1277,10 @@ def search(out_dir, cpus, end, shape="line"):
                     same_as_step=result.get("normalized") == evaluated[d]["normalized"],
                 )
             state["half_step_check"] = check
+        lock = holder["lock"]
+        if lock is not None and not lock.closed:  # The lane's work ended with the loop.
+            _release(lock)
+            state["events"].append(dict(utc=_utc(), lane_lock="released"))
     state["finished_utc"] = _utc()
     save()
     return state
@@ -1182,6 +1299,11 @@ def main():
     parser.add_argument("--record", default="")
     parser.add_argument("--record-log", type=int, default=0)
     parser.add_argument("--shape", default="line", choices=SHAPES)
+    parser.add_argument("--upper-cpu", type=int, default=None)  # Amendment 2: the upper end's CPU.
+    # Amendment 2: the lane's lock, held only while a lane point runs or waits.
+    parser.add_argument("--lane-lock", default="")
+    # Amendment 2: the lane's first point (and its lock request) not before this UTC time.
+    parser.add_argument("--lane-after", default="")
     parser.add_argument("--sidecars", default="")
     args = parser.parse_args()
     out_dir = Path(args.out_dir)
@@ -1218,6 +1340,9 @@ def main():
         else None,
         points=args.points or None,
         cpus=args.cpus or None,
+        upper_cpu=args.upper_cpu,
+        lane_lock=args.lane_lock or None,
+        lane_after=args.lane_after or None,
     )
     (out_dir / "plan.json").write_text(json.dumps(plan, indent=1))
     if args.sidecars:  # Packaging for a finished run's tissue arms; no run is changed.
@@ -1255,7 +1380,11 @@ def main():
             print(json.dumps({k: result.get(k) for k in keys}), flush=True)
         return 0
     cpus = [int(c) for c in args.cpus.split(",") if c]
-    state = search(out_dir, cpus, args.end, args.shape)
+    state = search(
+        out_dir, cpus, args.end, args.shape, upper_cpu=args.upper_cpu,
+        lane_lock=args.lane_lock or None,
+        lane_after=args.lane_after or None,
+    )  # fmt: skip
     keys = ("lo", "hi", "threshold", "stopped")
     print(json.dumps({k: state.get(k) for k in keys}), flush=True)
     return 0 if "threshold" in state else 1

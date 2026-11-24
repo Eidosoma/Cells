@@ -11,12 +11,19 @@ run's or the code-blind references' output, which do not exist at the tag.
   stated w/3 passes), P-R1 (a refused point fails), P-R2 (non-monotone is inconclusive), P-C1 (a
   flipped half step is inconclusive), and P-I1 to P-I3 (refused interfaces).
 - BITSEY's saved logs, where present, are read as the reported rows.
+- Amendment 2's placement in the driver's search: the upper end on its own CPU from launch, and
+  the lane's lock taken before the first lane point and released before the upper end's wait,
+  with stand-in points on threads.
 
 No world is compiled or run: about 1 s.
 """
 
+import concurrent.futures
 import copy
+import fcntl
 import json
+import threading
+import time
 
 import pytest
 
@@ -156,3 +163,77 @@ def test_bitseys_saved_logs_are_reported(tmp_path):
     rows = nj.bitsey_rows(nj.cells(line), [nj.SAVED_LOGS / "tumor_isolate_1D_V1M"])
     assert rows[0]["bracket"] == [7.171630859375002e-15, 7.177734375000002e-15]
     assert rows[0]["common_points"] == rows[0]["common_outcomes_agree"] > 10
+
+
+LANE = {"lane_lock", "lane_after"}
+
+
+class Threads(concurrent.futures.ThreadPoolExecutor):
+    """A process pool's stand-in: its workers are threads named after their pool's size."""
+
+    def __init__(self, workers, *, mp_context=None, initializer=None, initargs=()):
+        super().__init__(workers, thread_name_prefix=f"pool{workers}")
+
+
+def test_amendment_2_runs_the_upper_end_on_its_own_cpu_and_frees_the_lane_before_its_wait(
+    tmp_path, monkeypatch
+):
+    """The search with --upper-cpu, --lane-lock and --lane-after, its points stand-ins on threads:
+    stage 1 and the upper end run in the upper end's own pool from launch; every other point in the
+    lane's, none before lane_after; the lane's lock is free by the time the upper end returns (the
+    stand-in waits for it), and every record keeps its format."""
+    lock_path = tmp_path / "lane.lock"
+    ran, started = {}, {}
+    free_before_upper = []
+
+    def lock_is_free():
+        with open(lock_path, "a") as stream:
+            try:
+                fcntl.flock(stream, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError:
+                return False
+            fcntl.flock(stream, fcntl.LOCK_UN)
+            return True
+
+    def work(args):
+        d, _, _, dt, _ = args
+        ran.setdefault(d, []).append(threading.current_thread().name.split("_")[0])
+        started.setdefault(d, time.time())
+        if d == neither.BRACKET[1] and dt is None:  # The upper end outlasts the lane's work:
+            deadline = time.monotonic() + 30.0  # it returns once the lane took and freed its lock.
+            while lock_is_free() and time.monotonic() < deadline:
+                time.sleep(0.01)
+            while not lock_is_free() and time.monotonic() < deadline:
+                time.sleep(0.01)
+            free_before_upper.append(time.monotonic() < deadline)
+        return dict(d=d, status="done", normalized=d >= THRESHOLD, dt_s=dt or neither.step(d))
+
+    def uncoupled(shape):
+        ran.setdefault("stage 1", []).append(threading.current_thread().name.split("_")[0])
+        return dict(status="done", start_units=neither.STAGE1_END_UNITS)
+
+    monkeypatch.setattr(concurrent.futures, "ProcessPoolExecutor", Threads)
+    monkeypatch.setattr(neither, "_work", work)
+    monkeypatch.setattr(neither, "_uncoupled_work", uncoupled)
+    monkeypatch.setattr(neither, "_pin", lambda queue: None)
+    after = time.time() + 0.5
+    zoned = time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(after)) + f".{int(after % 1 * 1e6):06d}Z"
+    state = neither.search(
+        tmp_path, [1, 2], 1.0, "line", upper_cpu=3, lane_lock=str(lock_path), lane_after=zoned
+    )
+    assert state["lane_after"] == zoned
+    assert (
+        started[neither.BRACKET[1]]
+        < after
+        <= min(s for d, s in started.items() if d != neither.BRACKET[1])
+    )
+    assert state["threshold"] == min(d for d in ran if isinstance(d, float) and d >= THRESHOLD)
+    assert ran["stage 1"] == ["pool1"] and ran[neither.BRACKET[1]] == ["pool1"]
+    assert all(p == ["pool2"] or p == ["pool2", "pool2"] for d, p in ran.items()
+               if d not in ("stage 1", neither.BRACKET[1]))  # fmt: skip
+    assert free_before_upper == [True]
+    events = [e.get("lane_lock") or e["lane_after"] for e in state["events"] if set(e) & LANE]
+    assert events == ["waiting", "reached", "waiting", "held", "released"]
+    points = [json.loads(x) for x in (tmp_path / "points.jsonl").read_text().splitlines()]
+    assert {p["d"] for p in points} >= {0.0, neither.BRACKET[1]}
+    assert all(set(p) == {"d", "status", "normalized", "dt_s"} for p in points)

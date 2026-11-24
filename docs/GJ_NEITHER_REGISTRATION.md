@@ -380,15 +380,27 @@ where. That qualification closed as failed (D336), so this amendment keeps every
 **1. Where the field runs.**
 - **No field point runs on a GPU.** neither.py's field definitions declare the CPU backend
   (`execution.backend = "cpu"`).
-- **On a gate lane, under its lock, one point per CPU, as amendment 1 places them:** stage 1, the
-  base-step points, the bisection's rounds and C's half-step reruns of the points that ran there.
-- **On one CPU outside the gate lanes:** the bracket's upper end, D = 1e-13 at h = 1/128 s, and its
-  half-step rerun if C needs it. The lead assigns that CPU at launch, and the run record names it.
-  This keeps the lane's lock for the bisection's few hours, not for the upper end's day or more.
-- **The driver,** tagged with this amendment (D308): `--upper-cpu N` runs the upper end, and its
-  half-step rerun, in a pool of their own pinned to CPU N; `--lane-lock PATH` holds the lane's lock
-  only while a lane point runs or waits, and releases it before the search waits for the upper end
-  alone. Every record keeps its format; the upper end's is appended to points.jsonl as any point's.
+- **On one CPU outside the gate lanes, from launch:** stage 1, the bracket's upper end (D = 1e-13 at
+  h = 1/128 s, the critical path) and its half-step rerun if C needs it. The CPU is assigned by the
+  lead (CPU 13, the user's approval, 24 November), with its hyperthread sibling (CPU 29) held idle,
+  and the run record names it (search.json's `upper_cpu`, each point's `cpus`).
+- **On a gate lane, under its lock, one point per CPU, as amendment 1 places them:** the base-step
+  points, the bisection's rounds and C's half-step reruns of the points that ran there. The search
+  takes the lane's lock only before its first lane point, and releases it once no lane point runs or
+  waits, so it never holds the lane while it waits for the upper end alone.
+- **Not before a set time:** the lane's first point, and so its lock request, waits until the
+  `--lane-after` time (UTC). flock is not fair, and a lane taken between daytime gates would be held
+  for about 10 h while gates and other batches queue. The lead launches the search soon after this
+  amendment's tag, so the upper end's critical path starts at once, with `--lane-after` set to
+  20:00 UTC, so the bisection runs overnight. search.json records the value.
+- **The driver,** tagged with this amendment (D308): `--upper-cpu N` runs stage 1, the upper end and
+  its half-step rerun in a pool of their own pinned to CPU N, started at launch; `--lane-lock PATH`
+  takes and releases the lane's lock as above; `--lane-after TIME` holds the lane's first point until
+  that UTC time. search.json records all three. Every record keeps its format; the upper end's is
+  appended to points.jsonl as any point's. tests/unit/test_gap_junction_neither_judge.py checks the
+  placement, the time and the lock with stand-in points (no world compiled, 0.5 s), and smokes on
+  the line (2 s, not blind) put the upper end and the lane points on their CPUs, held the lane until
+  its time, and released the lock.
 - **Placement changes time, not results.** On the CPU a second process repeats every window by
   bytes (D330's CPU baseline: 8 of 8 windows, and 37 of 37 arrays of the final state), so a point's
   record does not depend on the CPU or the lane it ran on.
@@ -403,9 +415,9 @@ where. That qualification closed as failed (D336), so this amendment keeps every
 row checks, on one CPU; D330):
 - **Per step:** 32.0 ms at D = 1e-13 and 28.3 ms at D = 0 on a core whose sibling is idle; about
   1.2 to 1.6 times that when both siblings run, as on a gate lane run one point per CPU.
-- **The upper end** (2.56 million steps): about 23 h on a whole core, 27 to 36 h on a shared one. It
-  is the critical path. Its half-step rerun (5.12 million steps, 45 to 73 h) runs only if the upper
-  end ends as a final bracket end.
+- **The upper end** (2.56 million steps): about 23 h on its whole core (CPU 13), against 27 to 36 h
+  on a shared one. It is the critical path. Its half-step rerun (5.12 million steps, about 45 h there)
+  runs only if the upper end ends as a final bracket end.
 - **A base-step point** (1/8 s, 160,000 steps): 1.3 to 2.3 h; its half-step rerun 2.8 to 4.6 h.
 - **The whole search:** about 70 to 115 CPU thread-hours (amendment 1 estimated about 90).
 
