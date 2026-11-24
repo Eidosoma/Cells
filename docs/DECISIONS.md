@@ -12288,3 +12288,48 @@ the user.
 
 **FR-45, a coordinator's ruling.** P5's sizing on W7 covers both C6 and C4a, as for W2. CRITERIA's plant row, as
 amendment 2 amended it, names both, and it governs the narrower per-world table in amendment 2 §3.
+
+## D372: FR-50 phase 1 lands; FR-43 part 1's two gaps are closed on their branch, with the report committed by the lead on the user's approval; FR-66 is logged
+
+2026-11-24, about 22:41 UTC.
+
+**FR-50 phase 1 landed** at 1939563e (tag `fr50-phase1-landed-2026-11-24`). The landing trial passed 261 tests in 376 s.
+- **The judged comparison passed** (D363).
+- **The gate:** crossrev 11 of 11 identical; tiers 1+2, 671 files, none changed; G1 113 of 113 equal.
+- **FR's set** passed.
+- **The landing engine is the judged engine,** apart from docstrings and comments, by an AST comparison.
+
+**FR-43 part 1's two gaps (D365)** are closed on branch `fr43-part1-gaps` (10338924). Its selection gate follows.
+- **The missing cases are rows (D224), each with a plant:**
+  - the 16-row control in tier 2 (24.35 s);
+  - the 256-row case in tier 3 (35.5 s), which would push the tier-2 file past its 90 s cap.
+
+  The planted fast link is caught at 9.3× to 10.1× the accuracy.
+- **The CPU performance report (C1.4)** is `validation/fr43_part1/PERFORMANCE.md`, with `performance.json`. It ran on CPU
+  4 under the timed lock, three fresh-process repeats per size, at 4f4c4812's frozen snapshot. Every repeat met the
+  declared accuracy.
+
+| Rows | Compile s | ms per step | s per simulated s | Peak RSS MiB |
+| --- | --- | --- | --- | --- |
+| 16 | 18.4 | 0.23 | 0.046 | 833 |
+| 32 | 21.0 | 0.48 | 0.095 | 866 |
+| 256 | 24.3 | 16.5 | 3.3 | 939 |
+| 1,024 | 47.0 | 455 | 91 | 1,746 |
+
+- **Against the design note:**
+  - its comparable arms agree;
+  - its headline 1,024-row figures (214 s, 3.9 GiB) are its unrolled arm, which the landed engine never runs above 16
+    terms;
+  - its L4 column is kept, labelled as taken on the path D336 found unqualified.
+- **The refusal, and the user's decision.**
+  - The harness refused the builder's write of a report draft ("Subagents should return findings as text, not write
+    report files"). The builder held and did not retry.
+  - The user approved the lead committing the report: the builder's text, and its measured JSON byte-identical.
+- **For the morning:**
+  - **Verify a finding:** the builder reports that the plain `runner.run` still admits the composite on a GPU, where
+    only the vector windows refuse it (D336, D338). Check this against D187.
+  - **Stale texts** go to the docstring batch: the large file's 1,024-row bullet, and the runs file's docstring (66 s
+    against the record's 70.48 s).
+
+**FR-66 is logged** (medium, the user): a passive fluorescence reader over FR-33's regional amount exports, with several
+masks over one accepted trajectory.
