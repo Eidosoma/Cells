@@ -97,6 +97,7 @@ from cells.models import surface_pump as first
 from cells.models import surface_pump_v2 as second
 from cells.models import surface_tissue as tissue
 from cells.numerics import exponential_gates as gates
+from cells.numerics import one_way_split
 from cells.numerics import surface_field as field
 from cells.numerics import surface_imex as imex
 from cells.numerics import surface_transport as surface
@@ -2601,7 +2602,7 @@ def step_transfers(start, end, p, dt, rows, *, xp=jnp, direct=None):
     if direct is None:
         a = one_way_fluxes(start, p, rows, xp=xp)
         b = one_way_fluxes(end, p, rows, xp=xp)
-        sums = {k: tuple(0.5 * dt * (a[k][i] + b[k][i]) for i in (0, 1)) for k in a}
+        sums = {k: one_way_split.step_one_way_amounts(a[k], b[k], dt) for k in a}
     else:
         sums = direct
     nodes = dict(
@@ -2615,11 +2616,67 @@ def step_transfers(start, end, p, dt, rows, *, xp=jnp, direct=None):
     for kind in ("face", "membrane", "junction"):
         forward, backward = sums[kind]
         net = (getattr(end.state, booked[kind]) - getattr(start.state, booked[kind]))[idx]
-        gap = net - (forward - backward)
+        split = one_way_split.close_one_way(forward, backward, net, xp=xp)  # The shared rule.
         source, destination = nodes[kind]
-        transfers.append((forward + xp.maximum(gap, 0.0), source, destination))
-        transfers.append((backward + xp.maximum(-gap, 0.0), destination, source))
+        transfers.append((split.forward, source, destination))
+        transfers.append((split.backward, destination, source))
     return tuple(transfers)
+
+
+# --- FR-50 (D327): the kinds' one-way records over an inner step -------------------------------
+#
+# A kind that declares one-way records (kind_registry.Kind's one_way_records, bound per definition)
+# gives each record's one-way fluxes at the step's two ends (one_way_fluxes) and its net record at
+# each end state (one_way_nets). The step applies the labels' rule (numerics/one_way_split.py) at
+# the labels' ends, one end view serving both where both are declared, and writes after the kinds
+# book: each record F += F_t + max(g, 0), B += B_t + max(-g, 0), and its gap field max(gap, r),
+# r the step's relative gap measured before the correction. Without a declared record nothing is
+# traced.
+
+
+def one_way_kinds(kinds):
+    """The kinds that declare one-way records (static: bound to their entries), in hook order."""
+    return tuple(kind for kind in kinds if kind.one_way_records)
+
+
+def _step_ends(state, stage, read, start, control, p, *, xp, kinds, structure, euler, weight):
+    """(begin, end, weight, valid): FR-42's and FR-50's ends of a step. begin is the start's
+    LabelView at its routed control; under the Euler IMEX end holds the end state alone and weight
+    is its one stage's (dt a[last, 0] >= 0); otherwise end is crossing_view's solve at the end
+    state, weight None, and valid that solve's."""
+    routed = control
+    if kinds and structure.routes:  # The routing door at the start, as readouts opens it.
+        routed = _route(structure, kinds, read, control, p, xp=xp)[0]
+    begin = LabelView(state, read, start, routed)
+    if euler:
+        return begin, LabelView(stage), weight, True
+    end, valid = crossing_view(stage, control, p, xp=xp, kinds=kinds, structure=structure)
+    return begin, end, None, valid
+
+
+def one_way_records(recording, begin, end, start, stage, p, dt, *, weight=None, xp=jnp):
+    """FR-50: {record field: value at the step's end} for every recording kind's records, from its
+    one-way fluxes at the step's two ends (LabelViews; under the Euler IMEX `weight` times the
+    start's) and its net record's change from `start` to `stage`, by the shared rule."""
+    out = {}
+    for kind in recording:
+        at_start = kind.one_way_fluxes(begin, p, xp=xp)
+        at_end = kind.one_way_fluxes(end, p, xp=xp) if weight is None else None
+        before, after = kind.one_way_nets(start, p, xp=xp), kind.one_way_nets(stage, p, xp=xp)
+        for record in kind.one_way_records:
+            forward, backward = one_way_split.step_one_way_amounts(
+                at_start[record.net], None if at_end is None else at_end[record.net], dt,
+                weight=weight,
+            )  # fmt: skip
+            split = one_way_split.close_one_way(
+                forward, backward, after[record.net] - before[record.net], xp=xp
+            )
+            out[record.forward] = getattr(start, record.forward) + split.forward
+            out[record.backward] = getattr(start, record.backward) + split.backward
+            out[record.gap] = xp.maximum(
+                getattr(start, record.gap), one_way_split.one_way_gap_relative(split, xp=xp)
+            )
+    return out
 
 
 def crosses_floating(structure):
@@ -2972,11 +3029,40 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
     if kinds:  # §7.4 (k), book: a kind's bookings from the step's applied rates.
         booked, ok = _kind_bookings(kinds, applied, state, stage, control, p, dt, xp=xp)
         stage, valid = stage._replace(**booked), valid & ok
+    recording, ends = one_way_kinds(kinds), None
+    if recording:  # FR-50 (static): the kinds' one-way records, after they book.
+        euler = stages == 2 and not n2  # The Euler IMEX: its one explicit stage, weights >= 0.
+        ends = _step_ends(
+            state, stage, read, start, control, p, xp=xp, kinds=kinds, structure=structure,
+            euler=euler, weight=dt * explicit_matrix[last, 0] if euler else None,
+        )  # fmt: skip
+        begin, end, weight, solved = ends
+        gated = presence_gated(p, structure, xp=xp)  # The layout the kinds' rates see (Q2).
+        stage = stage._replace(
+            **one_way_records(recording, begin, end, state, stage, gated, dt, weight=weight, xp=xp)
+        )
+        valid &= solved
     valid &= domain_valid(stage, p, p.active, xp=xp, structure=structure)
     for value in stage:
         valid &= xp.all(xp.isfinite(value))
     extra = ()
-    if labels is not None:  # FR-42 (static): the labelled rows' transfers; nothing else changes.
+    if labels is not None and ends is not None:  # FR-42 beside FR-50: the records' ends.
+        begin, end, weight, _ = ends
+        if weight is not None:  # The Euler IMEX: its one explicit stage, weights >= 0.
+            terms = one_way_fluxes(begin, p, labels, xp=xp)
+            direct = {k: (weight * f, weight * b) for k, (f, b) in terms.items()}
+            transfers = step_transfers(begin, end, p, dt, labels, xp=xp, direct=direct)
+            weighted = dict(weight=weight)
+        else:
+            transfers, weighted = step_transfers(begin, end, p, dt, labels, xp=xp), {}
+        gated = presence_gated(p, structure, xp=xp)
+        for kind in kinds:  # D303 item 6: each reporting kind's transfers, after the core's.
+            if kind.label_transfers is not None:
+                transfers += tuple(
+                    kind.label_transfers(begin, end, gated, dt, labels, xp=xp, **weighted)
+                )
+        extra = (transfers,)
+    elif labels is not None:  # FR-42 (static): the labelled rows' transfers; nothing else changes.
         routed = control
         if kinds and structure.routes:  # The routing door at the start, as readouts opens it.
             routed = _route(structure, kinds, read, control, p, xp=xp)[0]
@@ -3084,6 +3170,7 @@ def check_definition(spec, *, structure=None):
             channel_capacity=len(m.channels),
         ),
     )
+    _check_one_way_solver(spec)  # FR-50: ahead of the kinds' refusal, naming its own reason.
     _check_kinds_solver(spec)  # Ahead of the kinds' own checks: under RK4 they are moot.
     if structure is None and getattr(m, "heat_bookings", ()):
         # Seam D: the picks live in the structure, so a caller that ran @3 without one would book
@@ -3289,6 +3376,22 @@ def _check_presence(structure, kinds, state, p, controls):
                     + ", ".join(sorted(found))
                     + " do not vanish (the presence gate closes an entity by its absence)"
                 )
+
+
+def _check_one_way_solver(spec):
+    """FR-50 (fr50-one-way-records-v1's K5; erratum 1): a definition whose kinds keep one-way
+    records is refused under RK4, which has no end view of a step for the records' rule, as for
+    FR-42's labels. Checked ahead of the kinds' own RK4 refusal, so this reason is the one given."""
+    if spec.execution.solver != "rk4":
+        return
+    declared = kind_registry.declared_kinds(getattr(spec.model, "kinds", ()))
+    recording = [kind_id for kind_id, kind, _ in declared if kind.one_way_records]
+    if recording:
+        raise ConfigError(
+            f"one_way records ({', '.join(recording)}) are refused under RK4: the records' rule "
+            "reads each step's two ends, and RK4 has no end view of a step (as for FR-42's "
+            "labels); declare an IMEX solver (FR-50, version 1)"
+        )
 
 
 def _check_kinds_solver(spec):

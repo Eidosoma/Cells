@@ -66,6 +66,7 @@ HOMES = {  # Each name's own module: where it is defined.
         "MOVES_ENDS",
         "FreeEnergyEntry",
         "TEMPERATURE_INDEPENDENT",
+        "OneWayRecord",
         "parse_series",
         "series_to_dict",
         "qualified",
@@ -76,6 +77,7 @@ HOMES = {  # Each name's own module: where it is defined.
     "cells.models.surface_pump": ("EXPLICIT_STEP_BOUND",),
     "cells.numerics.extracellular_field": ("scatter",),
     "cells.numerics.species_sums": ("species_sum", "entity_sum"),
+    "cells.numerics.one_way_split": ("step_one_way_amounts", "close_one_way"),
     "cells.models.surface_tissue": ("physical_amounts",),
     "cells.models.surface_pump_v3": (
         "HOST_KINDS",

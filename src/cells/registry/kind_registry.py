@@ -59,6 +59,8 @@ __all__ = (
     "KindView",
     "KindRegistry",
     "LabelView",
+    "ONE_WAY_HOOKS",
+    "OneWayRecord",
     "PartitionRole",
     "Schedule",
     "active",
@@ -395,6 +397,23 @@ class Kind:
       cumulative field, end less start) is added on the side its sign gives, so forward less
       backward is the booked move at rounding and both stay >= 0. The core appends these after
       its own transfers. A kind declares it only beside label_refusals.
+
+    FR-50's one-way records (D327; the FR-49/50/51 design note §2.3; the registered protocol
+    fr50-one-way-records-v1), opt-in per route, so every definition without them keeps its fields,
+    entries and programs (D148):
+    - `one_way_records`: (OneWayRecord(net, forward, backward, gap), ...), the records the
+      declaration declares, from declared_fields' KindFields.one_way_records (bound() sets it). Each
+      names a net record of the kind (a cumulative state field) and the kind's own state fields of
+      its forward and backward records and its gap, `one_way_gap_relative`, all in one shape;
+    - `one_way_fluxes(view, p, *, xp)` -> {net field: (forward, backward)}: each record's one-way
+      fluxes (fmol/s, or fmol of cycles per s, each >= 0) at one end of a step (a LabelView), in the
+      record's shape, 0 where an entity does not record;
+    - `one_way_nets(state, p, *, xp)` -> {net field: value}: the net record at a state, in the
+      record's shape, 0 where an entity does not record.
+    bound() sets both hooks to None where the declaration declares no record. @3's IMEX step applies
+    the shared rule (numerics/one_way_split.py) to each record over the step, at the same ends as
+    FR-42's labels (one end view serves both), and writes the record fields after the kinds book:
+    F += F_t + max(g, 0), B += B_t + max(-g, 0) and gap = max(gap, r).
     """
 
     kind_id: str
@@ -453,6 +472,10 @@ class Kind:
     # FR-42's hook (the docstring's last list; D303 item 6): traced only where rows are labelled.
     label_refusals: Callable | None = None  # (declaration, species) -> [reason, ...]
     label_transfers: Callable | None = None  # (start, end, p, dt, rows, *, weight, xp) -> transfers
+    # FR-50's one-way records (the docstring's last list): only where a declaration declares one.
+    one_way_records: tuple = ()  # (OneWayRecord, ...), bound per declaration (declared_fields).
+    one_way_fluxes: Callable | None = None  # (view, p, *, xp) -> {net: (forward, backward)}
+    one_way_nets: Callable | None = None  # (state, p, *, xp) -> {net: its value, record-shaped}
 
     @property
     def state_fields(self):
@@ -477,6 +500,19 @@ class KindFields(NamedTuple):
     control_fields: tuple
     readout_columns: tuple
     without: tuple = ()
+    one_way_records: tuple = ()  # FR-50: (OneWayRecord, ...) the entry declares.
+
+
+class OneWayRecord(NamedTuple):
+    """FR-50: one of a kind's one-way record pairs, beside the net record it closes to."""
+
+    net: str  # The net record: a cumulative state field of the kind.
+    forward: str  # The forward record's state field (cumulative, in the net record's unit).
+    backward: str  # The backward record's.
+    gap: str  # one_way_gap_relative: the running maximum of each step's relative gap.
+
+
+ONE_WAY_HOOKS = ("one_way_fluxes", "one_way_nets")  # None wherever no record is declared.
 
 
 class KindRates(NamedTuple):
@@ -989,6 +1025,11 @@ def declaration_errors(kind):
             "it declares label_transfers only beside label_refusals, which say what its transfers "
             "cannot carry"
         )
+    one_way = (kind.one_way_fluxes, kind.one_way_nets)  # FR-50's hooks.
+    if any(h is not None and not callable(h) for h in one_way) or (one_way[0] is None) != (
+        one_way[1] is None
+    ):
+        out.append("it declares one_way_fluxes and one_way_nets together, each a callable")
     return out + _axis_errors(kind, static) + _dispatch_mask_errors(kind, static)
 
 
@@ -1257,6 +1298,15 @@ def bound(kind, entry):
             f"Kind {kind.kind_id}'s declared_fields' `without` names its hooks only, not "
             f"{sorted(set(without) - set(HOOKS)) if isinstance(without, tuple) else without!r}"
         )
+    records = tuple(fields.one_way_records)
+    names = {name for name, _ in fields.state_axes}
+    for record in records:
+        if type(record) is not OneWayRecord or not set(record) <= names:
+            raise ValueError(
+                f"Kind {kind.kind_id}'s one_way_records are OneWayRecords naming its own state "
+                f"fields, not {record!r}"
+            )
+    absent = dict.fromkeys(without) | ({} if records else dict.fromkeys(ONE_WAY_HOOKS))
     return replace(
         kind,
         state_axes=tuple(fields.state_axes),
@@ -1264,7 +1314,8 @@ def bound(kind, entry):
         control_fields=tuple(fields.control_fields),
         readout_columns=tuple(fields.readout_columns),
         declared_fields=None,
-        **dict.fromkeys(without),
+        one_way_records=records,
+        **absent,
     )
 
 
