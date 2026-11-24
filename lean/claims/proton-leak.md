@@ -47,7 +47,10 @@ Proof sources [Cells constant-field definitions](../CellsProofs/Transport/Consta
 
 **Open.** Reversal voltage of an open H⁺ path across measured pH gradients at known temperature. Predicting the signed flux magnitude also requires permeability, area and opening.
 
-In Jurkat T cells the proton-current reversal shifted −47 mV per pH unit, versus an ideal −58 mV per pH unit. The fitted slope uncertainty and intracellular pH limit a quantitative verdict. [Schilling et al., Fig. 2E](https://doi.org/10.1113/jphysiol.2002.028878)
+- [An increased bath-minus-intracellular pH difference moves the open proton-current reversal to more negative intracellular voltages.](../WET_LAB_EVIDENCE.md#pair-proton-gradient-tail-reversal) · Supported by both studies
+- [In brown-fat and skeletal-muscle mitochondrial inner membranes, a one-unit bath-minus-matrix pH difference produces a proton-current reversal near −59 mV at 24 °C.](../WET_LAB_EVIDENCE.md#pair-mitoplast-proton-reversal-independence) · Independent replication unconfirmed
+
+In Jurkat T cells the proton-current reversal shifted −47 mV per pH unit, versus an ideal −58 mV per pH unit. The fitted slope uncertainty and intracellular pH limit a quantitative verdict. Independent macrophage and microglia tail currents also show the sign of the pH response, with the largest departures when nominal pipette and bath pH are furthest apart. Two inner-membrane measurements share a laboratory. [Schilling et al., Fig. 2E](https://doi.org/10.1113/jphysiol.2002.028878)
 
 **Unit** mV at reversal, fmol/s for signed proton flux
 
@@ -60,5 +63,45 @@ Soluble FITC-dextran sampled intermembrane-space pH in intact isolated rat liver
 The authors reported ranges across conditions. The abstract leaves the replicate errors and respiratory state for each reading unspecified.
 
 Relative to the bath, the intermembrane space was 0.4–0.5 pH units more acidic in the condensed configuration and 0–0.2 more acidic in the orthodox configuration. This supports a compartment-specific proton input. The uncoupled gradient and leak rate remain open. [Dataset manifest](../checks/data/cortese1992_ims_ph.json) · [Comparison verdict](../PROGRESS.md#mt1b-local-proton-read)
+
+### kapus1993_macrophage_proton@1
+
+Native mouse peritoneal macrophages, whole-cell proton tail currents at approximately 22 °C. Voltage is cell interior relative to bath. Table II, symmetric Cs-aspartate rows, and Fig. 8 on pH changes during prolonged depolarization [Kapus et al. (1993), Table II and Fig. 8](https://doi.org/10.1085/jgp.102.4.729)
+
+- **Evidence role** descriptive
+
+Table II reports means ± SEM. Estimated residual junction offsets below 6 mV were uncorrected. The intracellular dye indicated good initial dialysis and a rise in pH of up to 0.8 during a 9 s pulse in a separate experiment.
+
+At bath pH 7.5 and pipette pH 6.0 or 6.8 the observed reversals were −69.17 ± 9.25 and −38.07 ± 3.60 mV. The nominal Cells roots at 22 °C were −87.85 and −40.99 mV. The independently observed intracellular alkalinization can shift an experimental reversal. [Dataset manifest](../checks/data/membrane_physiology_pairs.json) · [Comparison verdict](../PROGRESS.md#paired-membrane-physiology)
+
+### morihata2000_microglia_proton@1
+
+Native rat microglia, pipette pH 5.5, bath pH stepped across four solutions. Temperature 22–24 °C. Voltage is cell interior relative to bath. Figure 2B–C, reversal from proton current tails [Morihata et al. (2000), Fig. 2B–C](https://doi.org/10.1523/JNEUROSCI.20-19-07220.2000)
+
+- **Evidence role** descriptive
+
+Means and SEMs read approximately from the figure. The 45 mV/pH slope over the first three baths is printed in the text. Liquid junction potential was corrected before sealing. Intracellular pH at tail measurement was unmeasured.
+
+The reported shift was about −45 mV per unit increase in bath pH from 6.3 to 7.3. At bath pH 7.8 the crossing was approximately −86 mV against the nominal −135.15 mV at 23 °C. These values constrain the direction of proton transport under voltage clamp. [Dataset manifest](../checks/data/membrane_physiology_pairs.json) · [Comparison verdict](../PROGRESS.md#paired-membrane-physiology)
+
+### fedorenko2012_ucp1_reversal@1
+
+Mouse brown-adipose mitoplasts with UCP1-associated current. Figure 6E used bath oleic acid and 15 mM pipette α-cyclodextrin to impose asymmetric fatty-acid availability. Voltage is matrix relative to bath. Figure 1F, reversal across gradients, and Fig. 6E, an example with two bath pH values [Fedorenko, Lishko and Kirichok (2012), Figs. 1F and 6E](https://doi.org/10.1016/j.cell.2012.09.010)
+
+- **Evidence role** descriptive
+
+Approximate crossings in Fig. 6E lack individual voltage error estimates. The manuscript Results and Fig. 6E caption disagree on the bath oleic-acid unit, so its concentration is excluded from the comparison. The separate multi-gradient comparison in Fig. 1F used 3–10 recordings per condition and a 24 °C Nernst reference. This study and the 2019 skeletal-muscle study share the Kirichok laboratory.
+
+At fixed matrix pH 7, raising bath pH from 7 to 8 moved the example reversal from approximately 0 to −60 mV. The asymmetric ligand conditions limit transfer of current magnitude. [Dataset manifest](../checks/data/membrane_physiology_pairs.json) · [Comparison verdict](../PROGRESS.md#paired-membrane-physiology)
+
+### bertholet-2019-proton-reversal
+
+Fatty-acid-activated proton current in mouse skeletal muscle mitoplasts. Three matrix/bath pH pairs, 13 individual voltages. The group means are −62.23, −91.13 and +28.82 mV. Extended Data Figure 3d and its source workbook. [Bertholet et al. (2019), Nature 571, 515–520](https://doi.org/10.1038/s41586-019-1400-3)
+
+- **Evidence role** descriptive
+
+Calculated sample SEMs are 1.92, 1.82 and 6.70 mV (n = 6, 3 and 4). The workbook gives individual readings and sample SD. Group intervals use the 95% Student t interval for independent observations. The figure specifies 24 °C for the Nernst reference.
+
+The unfitted Cells roots were −58.96, −88.44 and +29.48 mV. Each lies within its group interval. This retrospective check concerns reversal of the observed proton current. It supplies no absolute permeability calibration. [Dataset manifest](../checks/data/bertholet2019_proton_reversal.json) · [Comparison verdict](../PROGRESS.md#mt1b-buffered-reversal)
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

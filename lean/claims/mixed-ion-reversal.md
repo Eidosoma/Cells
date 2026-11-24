@@ -35,6 +35,10 @@ Uses [Ion charge sets permeation reversal and bounds the current–voltage slope
 
 **Open.** Resting voltage shifts under known ion substitutions and separate currents for each ion at the same reversal.
 
+- [Replacing external sodium with potassium at fixed total external monovalent cation concentration depolarizes the resting squid axon.](../WET_LAB_EVIDENCE.md#pair-squid-potassium-substitution) · Supported by both studies
+
+Independent squid recordings agree on depolarization when external K replaces Na. The same fitted 1949 permeability ratio overpredicts the voltage changes in the 1979 perfused preparation.
+
 **Unit** mV
 
 ### hodgkin_katz1949_rest@1
@@ -51,5 +55,15 @@ Resting squid giant axon in two potassium-enriched artificial seawater solutions
 Table 7 gives means rounded to mV without row-specific uncertainties. The calculation adopts 21 °C from Table 3.
 
 For B, C and E, observed shifts were +2, +4 and −2 mV. The reconstructed Cells shifts were +2.10, +4.03 and −1.58 mV. The displayed pair is solution C. The three ionic currents were unmeasured. [Dataset manifest](../checks/data/hodgkin_katz1949_rest.json) · [Comparison verdict](../PROGRESS.md#mixed-membrane-reversal)
+
+### ohki1979_squid_perfusion@1
+
+Six Loligo pealii giant axons. Electrodes measured steady resting voltage during successive K-for-Na substitutions in a perfused axon at about 20 °C. The authors checked that the voltage returned near its initial level. Table 1a, p. 378, internal solution Id-1, seven artificial external solutions [Ohki and Aono (1979), Table 1a](https://doi.org/10.2170/jjphysiol.29.373)
+
+- **Evidence role** descriptive
+
+Reported ± for the six successful axons. Table 1 gives no definition of these errors or covariance between solution means. Electrode-tip corrections were applied, up to about 3 mV.
+
+Raising external K from 10 to 30 mM gave +2.0 mV. With the 1949 ratios and the nominal chloride-free internal solution, the native three-ion flux projection gives +12.63 mV. At 100 mM the measured change was +19.8 mV against +34.50 mV. A separate interpolation anchored within the perfused preparation is recorded with the comparison. [Dataset manifest](../checks/data/membrane_physiology_pairs.json) · [Comparison verdict](../PROGRESS.md#paired-membrane-physiology)
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)
