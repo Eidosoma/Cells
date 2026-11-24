@@ -36,21 +36,6 @@ MATERIAL = (
 ENERGY = ("max_energy_balance_error_pJ", "max_energy_balance_relative")
 
 
-def require_deterministic_gpu():
-    """GPU rows run only in D330's qualified configuration, XLA's deterministic ops set
-    (row_checks.deterministic_ops): without them two runs of one window differ, so no row can
-    compare host and device mode by bytes. They fail with this message rather than skip."""
-    import pytest  # noqa: PLC0415
-
-    from cells.execution import row_checks  # noqa: PLC0415
-
-    if not row_checks.deterministic_ops():
-        pytest.fail(
-            "GPU rows need XLA_FLAGS=" + row_checks.DETERMINISTIC_FLAG + "=true (D330's qualified "
-            "configuration: the GPU's scatter-adds are otherwise nondeterministic)"
-        )
-
-
 def windows(spec, width, mode, checkpoint=None):
     return list(iter_windows(spec, WindowPolicy(width, "checkpoints", mode), checkpoint))
 

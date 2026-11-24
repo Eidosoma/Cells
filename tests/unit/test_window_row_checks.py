@@ -10,15 +10,13 @@ docs/WINDOW_DEVICE_CHECKS_DESIGN.md §9, the lead's conditions C1–C3, on resol
   exactly as in host mode;
 - C3: a ledger residual over its bound that the device under-reads into the band (1/2, 1] is
   handed back and refused by the host, which a band at 1 would have accepted; a residual in the
-  band is handed back and the run goes on, bitwise. Both run on a GPU backend too (CELLS_TEST_GPU=1,
-  D330): the band's routing is the same code on any device.
+  band is handed back and the run goes on, bitwise.
 One step double serves every case, so the file compiles each program once: the model's own
 step, plus planted work or a dissipation drop at steps whose first pump availability is a
 marker value. Unmarked steps add exactly zero.
 """
 
 import json
-import os
 
 import jax
 import jax.numpy as jnp
@@ -33,12 +31,7 @@ from cells.execution.windows import WindowPolicy, iter_windows, run_windowed
 from cells.models import surface_pump
 from cells.numerics import surface_imex as imex
 from cells.records.window_io import write_windowed_run
-from tests.window_row_check_fixtures import (
-    assert_agreement,
-    assert_same_windows,
-    require_deterministic_gpu,
-    windows,
-)
+from tests.window_row_check_fixtures import assert_agreement, assert_same_windows, windows
 from validation.tissue import surface_pump_fixtures
 
 # The fixture's grid to 1.2 ms: 0.1 ms steps with its pump change at 0.73 ms, 13 steps.
@@ -47,7 +40,6 @@ DROP = 1e-9  # A marker that nearly stops the first pump, whose heat then drops 
 WORK = {SMALL: 1.05e-12, LARGE: 1e-10}  # pJ added to the first pump's metabolic work per step.
 HEAT_DROP_PJ = 2e-12  # A DROP step ends this far below its start's first-pump heat.
 LEDGER = "metabolic_work"  # Bound 3e-12 pJ: SMALL is 0.35 of it per marked step.
-GPU = pytest.mark.skipif(os.environ.get("CELLS_TEST_GPU") != "1", reason="explicit CUDA test")
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -97,11 +89,10 @@ def step_double():
         yield
 
 
-def definition(marks=(), observations=(0.0, 0.0007, 0.0012), backend="cpu"):
+def definition(marks=(), observations=(0.0, 0.0007, 0.0012)):
     """The fixture's release arm to 1.2 ms. marks: (first, last, marker): the first pump holds
     marker over steps first..last (last None: to the end), at the grid's own times."""
     raw = surface_pump_fixtures.definition("release", solver=imex.ARS222_ID)
-    raw["execution"]["backend"] = backend
     raw["experiment"]["end_time"] = 0.0012
     raw["experiment"]["observation_times"] = list(observations)
     control = raw["experiment"]["pump_controls"][0]
@@ -205,41 +196,10 @@ def report(spec, width):
     return run_windowed(spec, WindowPolicy(width, "checkpoints", "device")).resources["row_checks"]
 
 
-def admitted_on_a_gpu(monkeypatch, spec):
-    """The fixture's model admitted on a GPU by a test double of its qualification
-    (row_checks.GPU_QUALIFIED; D330): these rows test the band's routing on a GPU backend, which
-    no model's checks change. The composite's own GPU rows are in
-    test_window_row_checks_composite.py."""
-    require_deterministic_gpu()
-    key = (surface_pump.MODEL_ID, spec.execution.field_solver)
-    qualified = {**row_checks.GPU_QUALIFIED, key: frozenset(surface_pump.LEDGERS)}
-    monkeypatch.setattr(row_checks, "GPU_QUALIFIED", qualified)
-
-
 def test_a_ledger_the_device_under_reads_into_the_band_is_refused_by_the_host(monkeypatch):
-    under_read_into_the_band(monkeypatch, "cpu")
-
-
-def test_a_residual_in_the_band_is_handed_back_and_the_run_goes_on(monkeypatch):
-    residual_in_the_band(monkeypatch, "cpu")
-
-
-@GPU
-def test_on_a_gpu_a_ledger_under_read_into_the_band_is_refused_by_the_host(monkeypatch):
-    under_read_into_the_band(monkeypatch, "gpu")
-
-
-@GPU
-def test_on_a_gpu_a_residual_in_the_band_is_handed_back_and_the_run_goes_on(monkeypatch):
-    residual_in_the_band(monkeypatch, "gpu")
-
-
-def under_read_into_the_band(monkeypatch, backend):
     # Steps 9-12: 1.4 x the bound after them. Observed only before them, so that only the
     # window checks see the planted rows (the host checks observed rows across windows too).
-    spec = definition([(9, 12, SMALL)], observations=(0.0, 0.0007), backend=backend)
-    if backend != "cpu":
-        admitted_on_a_gpu(monkeypatch, spec)
+    spec = definition([(9, 12, SMALL)], observations=(0.0, 0.0007))
     host_seen, host_error = refusal(spec, 4, "host")
     assert str(host_error) == surface_pump.LEDGER_MESSAGE + LEDGER
     monkeypatch.setattr(surface_pump, "device_checks", UNDER_READ)
@@ -253,10 +213,8 @@ def under_read_into_the_band(monkeypatch, backend):
     assert 0.5 < accepted["max_ratios"][LEDGER] <= 1.0
 
 
-def residual_in_the_band(monkeypatch, backend):
-    spec = definition([(9, 10, SMALL)], backend=backend)  # Steps 9 and 10: 0.7 x the bound.
-    if backend != "cpu":
-        admitted_on_a_gpu(monkeypatch, spec)
+def test_a_residual_in_the_band_is_handed_back_and_the_run_goes_on():
+    spec = definition([(9, 10, SMALL)])  # Steps 9 and 10: 0.7 x the bound after them.
     host, device = windows(spec, 4, "host"), windows(spec, 4, "device")
     assert_same_windows(host, device)
     decided = [(w.row_checks.decided_by, w.row_checks.handed_back) for w in device]

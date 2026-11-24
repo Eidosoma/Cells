@@ -1,8 +1,10 @@
-"""Device row checks on a GPU: the evidence for execution/row_checks.GPU_QUALIFIED (D330).
+"""Device row checks against host checks, window by window: D330's evidence driver.
 
-docs/WINDOW_DEVICE_CHECKS_DESIGN.md §10. One definition per process, on the production path,
-cells.execution.windows.iter_windows with WindowPolicy(width, recording, mode), on the
-definition's own backend. Actions:
+docs/WINDOW_DEVICE_CHECKS_DESIGN.md §10. D330 qualified the device row checks on a GPU with it and
+closed as failed (G2), so execution/row_checks still refuses GPU device mode; on a GPU the driver
+ran from the branch snapshots that admitted it. It runs on any backend that admits device mode. One
+definition per process, on the production path, cells.execution.windows.iter_windows with
+WindowPolicy(width, recording, mode), on the definition's own backend. Actions:
 
 pair: WINDOWS windows in host mode, then the same windows in device mode, in one process, so that
 both modes compile the same program with the same compiler state.

@@ -7,12 +7,10 @@ The decision hands a window to the host on any failed check or any ratio above t
 NaN included. Device mode is refused, fail-closed, wherever it cannot serve: a run that is not
 compiled, a model without device checks or margins, a model whose device diagnostics are not
 its host diagnostics, the batch and vector paths, and from the CLI. It is also refused where
-it is not yet qualified: a composition with a live retiring operator, and a GPU backend outside
-the models, field solvers and ledgers measured on a GPU (row_checks.GPU_QUALIFIED, D330).
+it is not yet qualified: a GPU backend and a composition with a live retiring operator.
 """
 
 import json
-import re
 from typing import NamedTuple
 
 import jax
@@ -182,79 +180,6 @@ def test_device_mode_is_refused_on_a_gpu_backend():
     spec = parse_spec(definition(backend="gpu"))
     with pytest.raises(ConfigError, match="qualified on the CPU only"):
         plan_windows(spec, WindowPolicy(3, "checkpoints", "device"))
-    plan_windows(spec, WindowPolicy(3, "checkpoints"))  # Host mode admits it.
-
-
-SPARSE = "sparse_capacitive_reduction_gauged_damped_newton@1"
-
-
-DETERMINISTIC = "--xla_gpu_deterministic_ops=true"
-QUALIFIED_ONLY = ".*until a GPU measurement exists"
-
-
-@pytest.mark.parametrize(
-    ("field_solver", "unmeasured", "flags", "refusal"),
-    [
-        (
-            "capacitive_reduction_gauged_damped_newton@2",
-            None,
-            DETERMINISTIC,
-            re.escape("under capacitive_reduction_gauged_damped_newton@2;") + QUALIFIED_ONLY,
-        ),
-        (
-            "capacitive_reduction_gauged_damped_newton@3",
-            None,
-            DETERMINISTIC,
-            re.escape("under capacitive_reduction_gauged_damped_newton@3;") + QUALIFIED_ONLY,
-        ),
-        (SPARSE, None, DETERMINISTIC, None),
-        (
-            SPARSE,
-            "metabolic_work",
-            DETERMINISTIC,
-            re.escape(f"the ledgers metabolic_work of resolved_pump_composite@1 under {SPARSE};")
-            + QUALIFIED_ONLY,
-        ),
-        (SPARSE, None, "", re.escape(row_checks.NONDETERMINISTIC_REFUSAL)),
-        (
-            SPARSE,
-            None,
-            DETERMINISTIC + " --xla_gpu_deterministic_ops=false",
-            re.escape(row_checks.NONDETERMINISTIC_REFUSAL),
-        ),
-    ],
-    ids=[
-        "version-2",
-        "version-3",
-        "sparse",
-        "sparse-unmeasured-ledger",
-        "sparse-nondeterministic",
-        "sparse-deterministic-unset-later",
-    ],
-)
-def test_on_a_gpu_device_mode_is_admitted_only_as_measured(
-    field_solver, unmeasured, flags, refusal, monkeypatch
-):
-    """D330: a GPU backend is admitted for a model and field solver of GPU_QUALIFIED only when
-    every ledger of the definition's device checks was measured on a GPU and XLA's deterministic
-    ops are set (its last setting in XLA_FLAGS), and refused by name, before any device is
-    touched, otherwise. The composite is GJ-N1's line (not blind), parsed."""
-    from validation.gap_junction_tissue import neither
-
-    raw = neither.coupled_world(1e-13, neither.STAGE1_END_UNITS, shape="line")
-    raw["execution"].update(field_solver=field_solver, backend="gpu")
-    spec = parse_spec(raw)
-    monkeypatch.setenv("XLA_FLAGS", flags)  # Read at admission; no device is created here.
-    if unmeasured is not None:  # A qualification without one of the world's ledgers.
-        key = ("resolved_pump_composite@1", field_solver)
-        qualified = {key: row_checks.GPU_QUALIFIED[key] - {unmeasured}}
-        monkeypatch.setattr(row_checks, "GPU_QUALIFIED", qualified)
-    policy = WindowPolicy(3, "checkpoints", "device")
-    if refusal is None:
-        plan_windows(spec, policy)
-        return
-    with pytest.raises(ConfigError, match=refusal):
-        plan_windows(spec, policy)
     plan_windows(spec, WindowPolicy(3, "checkpoints"))  # Host mode admits it.
 
 

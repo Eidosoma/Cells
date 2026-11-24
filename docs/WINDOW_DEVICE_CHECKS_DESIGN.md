@@ -852,92 +852,85 @@ headline figures compare both modes on the same cores; the records' figures are 
   - The two "estimate" cells scale the same-core host arm's cost per row: the export's from 80,000
     steps, FR-4's from its 20 s pass (6.58 ms per row).
 
-## 10. Device row checks on a GPU (D330, 24 November 2026)
+## 10. Device row checks on a GPU (D330, closed as failed: D336, 24 November 2026)
 
 **The user's decision (D330):** qualify the device row checks on the GPU under the sparse field
 solver, on the production path, family by family, starting with the composite and GJ-N1's field
-worlds; then run the field's longest points on the L4.
+worlds, then run the field's longest points on the L4. **The qualification failed** on G2 (§10.3).
+D336 closed it, the field's longest points run on CPUs, and `row_checks.admit` keeps refusing GPU
+device mode as before (§9.2), with no src change. Records: `/mnt/workspaces/Cells/
+fr17-sparse-20261123/gpu/` (GPU_CRITERIA.txt with its amendments, each block's folder);
+`validation/execution/gpu_row_checks.py` is the driver.
 
-### 10.1 What is admitted
+### 10.1 What was to be admitted, and why it was not
 
-`row_checks.admit` admits a GPU backend only for a model and field solver listed in
-`row_checks.GPU_QUALIFIED`, and only when every ledger of the definition's device checks is among
-those measured on the GPU (`gpu_refusal`; the lead's ruling, the finer key). Anything else is
-refused by name with today's message ("qualified on the CPU only for ..."); a composition with a
-live retiring operator stays refused on any backend.
-- **Listed:** `resolved_pump_composite@1` under `sparse_capacitive_reduction_gauged_damped_newton@1`,
-  for the ledgers of GJ-N1's worlds: local, outside, total, charge, electrode, global_charge,
-  energy, reservoir_work, electrode_work and metabolic_work (with the domain and dissipation
-  checks).
-- **Why per field solver:** the check program differs by field solver. Under the sparse ID the
-  capacitor products are its pairwise folds; under version 2 they are a dense product.
-- **Not listed:** version 2 and version 3 on any model, and every other model. Their GPU spread is
-  unmeasured.
-- **Deterministic ops are required** (`row_checks.deterministic_ops`; the lead's ruling, D335). On a
-  GPU, XLA adds scatter-adds atomically, in an order that varies between runs, and the composite's
-  operators accumulate with them. Block 2 found host and device mode differing in the amounts and the
-  operators' ledgers, while the sparse solver's field arrays (no scatter) agreed. So admit refuses GPU
-  device mode unless XLA_FLAGS sets `--xla_gpu_deterministic_ops=true`. That check is a tripwire: it
-  reads XLA_FLAGS when admit runs and cannot see what XLA itself parsed. The guard is the bitwise
-  evidence of G1 and G6 under the flag. In the installed XLA the flag "guarantees run-to-run
-  determinism on GPU", and its deterministic mode disables timing-based autotuning.
+The branch admitted a GPU backend for `resolved_pump_composite@1` under
+`sparse_capacitive_reduction_gauged_damped_newton@1`, for the ledgers of GJ-N1's worlds measured on
+the L4 (the lead's finer key: model, field solver and ledgers), and only with XLA's deterministic ops
+set (D335). With G2 failed, none of that lands.
 
-### 10.2 The criteria
+### 10.2 The criteria (GPU_CRITERIA.txt, fixed before any production-path L4 run)
 
-Fixed before any production-path run on the L4 (`/mnt/workspaces/Cells/fr17-sparse-20261123/gpu/
-GPU_CRITERIA.txt`, approved by the lead). On GJ-N1's 25 × 25 field at D = 0 (dt 1/8 s) and
-D = 1e-13 (dt 1/128 s), with `validation/execution/gpu_row_checks.py`:
-- **G1 (C1):** 8 windows of 32 steps per D, host mode then device mode in one process; every array
+On GJ-N1's 25 × 25 field at D = 0 (dt 1/8 s) and D = 1e-13 (dt 1/128 s):
+- **G1:** 8 windows of 32 steps per D, host mode then device mode in one process: every array
   identical by bytes.
-- **G2 (C2):** for each window the device decides and each ledger, the spread |host ratio − device
-  ratio|, both ratios |residual| / bound over the window's rows, the host's from the model's own
-  NumPy ledger functions. As amended before any L4 measurement (the lead's ruling): each ledger's
-  largest spread on the L4 is at most min(0.4, max(0.1, 1.5 × the CPU's on the same definition)).
-  The GPU must be no worse than the CPU-qualified device mode, and the cap of 0.4 keeps every
-  decision safe: a window the device accepts at 0.5 lies at most 0.9 of its bound on the host. The
-  first declared bound, 0.1, failed on the CPU itself. In the field's first window the bound is still
-  the bare atol at steps 0 and 1, and the rounding noise of a 625-cell global sum is a large fraction
-  of it: the "total" ledger read 0.281 on the host and 0.088 on the device (a spread of 0.194),
-  falling to at most 0.003 from window 2.
-- **G3 (C3):** the GPU rows (`CELLS_TEST_GPU=1`) of `test_window_row_checks.py` and
-  `test_window_row_checks_composite.py`.
-- **G4:** 20,000 steps at D = 1e-13 in device mode: no refusal, G2 on every 50th window, and the
-  handback rate reported.
-- **G5–G7 (reported):** memory, a second-process repeat, and the production path's ms per step.
-
-**The CPU criterion did not fit these worlds.** The device-check tests' criterion
-(`tests/window_row_check_fixtures.agrees`: 2% of the smallest bound, the material floor taken as 2%
-of the material atol) fails on GJ-N1's large-amount worlds on the CPU already, under version 2 as
-under the sparse ID, in `max_global_balance_error_fmol`. On the line at D = 1e-13 (12 steps), host
-and device read 7.4e-20 and 1.1e-19 fmol in its first window, against a floor of 2e-22. These
-worlds' bound is dominated by its rounding allowance on large amounts, so the residual is rounding
-noise from two summation orders. In units of the bound the spread was 0.022 for "total", against
-the band of 0.5. That is a gap in the CPU qualification's criterion, not in the code: G2 is stated
-in units of the bound, and the old criterion's results are reported beside it.
+- **G2:** for every window, those the device hands back included (D335), and each ledger, the spread
+  |host ratio − device ratio| in units of the bound. The L4's largest is at most
+  min(0.4, max(0.1, 1.5 × the CPU's on the same definition)): no worse than the CPU-qualified device
+  mode, and capped so that a window the device accepts at 0.5 lies at most 0.9 of its bound on the
+  host. The first declared bound, 0.1, failed on the CPU itself (amendment 1).
+- **G3–G7:** the GPU test rows, a 20,000-step handback-rate run, memory, repeatability across
+  processes (fresh and with pinned autotune results), and the production path's timing.
+- **The stop rule (D335):** a fail of G1 or G6 under the chosen flag stops the qualification; no
+  criterion is amended again.
 
 ### 10.3 The evidence
 
-**Block 1, the host core (12:48–12:54 UTC; `gpu/block1/`).** It asked why the field stepped at
-21.2 ms on the L4 on 23 November and at 13.1 ms the next night, with the same driver, world and
-field solver (version 2, D = 1e-13, the vector path, the host thread on CPU 6).
-- **The program is identical.** The traced programs and their constants are byte-identical between
-  the two snapshots (31fde682 and 044f07e6), and so is the device's peak memory.
-- **The host core sets the step.** The L4 step on this path is bound by its host thread, which
-  launches every kernel and waits on the device (its CPU time equals its wall time). Three arms, one
-  process each:
-  - snapshot 31fde682, CPU 6's hyperthread sibling (CPU 22) 15% busy: 15.6 ms per step, a 60 s
-    compile, 2.0 s of window preparation;
-  - snapshot 044f07e6, CPU 22 fully busy with another process: 19.3 ms, 88 s, 3.1 s;
-  - snapshot 044f07e6, a busy loop on CPU 22: 20.3 ms, 97 s, 3.3 s.
-  - A busy sibling slows the step about 1.3×, and compile and preparation about 1.5×. The 21.2 ms
-    run has that profile, and the 13.1 ms run had both CPUs quiet.
-  - **So an L4 run's host thread needs a whole physical core,** its sibling idle.
-- **The kernels differ between processes.** With metadata and source tables removed, the optimized
-  HLO of the window program (2.7 MB) differs in 16–27 lines between any two processes, one snapshot
-  or two. Each difference is a reduction that XLA's autotuner emitted either as a Triton kernel or
-  with its native emitter (24, 24 and 5 Triton fusions in the three arms). Some are f64 reductions,
-  so an unpinned rerun may differ at rounding. The autotune results can be pinned
-  (`--xla_gpu_load_autotune_results_from`): registered L4 runs load a fixed file (the lead's ruling).
+**Block 1, the host core.** The 21.2 against 13.1 ms per step of 23 and 24 November ran the same
+program; the L4 step on this path is bound by its host thread, and a busy hyperthread sibling slowed
+it about 1.3× (15.6 against 19.3–20.3 ms). So an L4 run's host thread needs a whole physical core.
+The optimized HLO also differed between processes in which reductions XLA's autotuner emitted as
+Triton kernels.
+
+**Block 2, unflagged** (the host thread on the timed lane's CPU 4, sibling idle):
+- **G1 failed at both D.** From window 1 the amounts, the passive-route transfers and the reaction
+  ledgers differed between the modes; every field array agreed. Both modes ran one compiled rollout,
+  whose 94 scatters XLA's GPU backend adds atomically, in an order that varies between runs; the
+  sparse solver has no scatter.
+- Device mode stepped at 16.9 ms (D = 1e-13) and 13.7 ms (D = 0), host mode at 29.6 and 22.8 ms.
+
+**Block 3'a, with `--xla_gpu_deterministic_ops=true`:**
+- **G1 passed:** host and device mode identical by bytes in all 8 windows.
+- **G6 passed both ways:** a second process, autotuned afresh, and a third, loading the first's
+  autotune results, reproduced every window by bytes. Under the flag XLA's autotune dumps hold no
+  results: deterministic mode disables timing-based autotuning, so the flag, not a pinned file,
+  fixes the kernels.
+- **G2 failed.** In window 1 (steps 0–32) the device read the "total" ledger (the global material
+  balance) at 0.715 of its bound and handed the window back; the host read 0.202 on the same rows, a
+  spread of 0.514, against the bound of 0.291 and the cap of 0.4. Windows 2–8 spread at most 0.016.
+  The CPU's spread in that window was 0.194.
+- The flag cost 29% in device mode (21.8 against 16.9 ms per step).
+
+**What G2's window shows.** At steps 0 and 1 the bound's rounding allowance (proportional to the
+accepted steps) is still about zero, so the bound is the bare material atol, and the global sum's own
+rounding is a large fraction of it. On the host, window 1's fraction grows with the tissue: 0.044 on
+the line (25 cells, 24 junction routes), 0.12 on the 9 × 9 sheet (144 routes) and 0.28 on the field
+(625 cells, 1,200 routes), about as the square root of the routes (0.4–0.5 as an exponent). Extrapolated, the
+host would refuse window 1 on rounding alone near 15,000–29,000 routes (roughly 90 × 90 to
+120 × 120 cells), on any device. That is a finding on the ledger bound's first rows, not on the GPU.
+
+**The CPU against the L4.** After 32 s at D = 0 the amounts agree to one ulp (2.1e-16 of each amount);
+the 8.6e-8 first reported was measured against the increments' own small scale. A one-ulp change of
+one start value on the CPU gives the same picture and does not grow over the 8 windows. The CPU
+repeats every window by bytes across processes.
+
+**Not run:** blocks 3'b (the D = 0 and vector-path timings on the L4), 4' (the long run) and 5' (the
+GPU rows), cancelled once G2 had failed (D336).
+
+**The vector path.** `run_vector_windowed` runs the models' device checks on a GPU with no refusal and
+no host fallback (§3.1 of the speed-up note, R7). D330's two findings apply to it: without the flag
+the composite's GPU runs are not deterministic, and its device check program read window 1's global
+ledger 0.51 of the bound away from the host. That path's admission on a GPU is left to the lead.
 
 ## Sources
 

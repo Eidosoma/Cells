@@ -15,14 +15,11 @@ Only a window that is clean with that margin is accepted on the device's word. I
 then the device's maxima, reported and not judged (ruling 3); they agree with the host's to
 rounding, not bitwise.
 
-Qualification (admit; design §9.2 and §10): the CPU, and on a GPU only the models, field solvers
-and ledgers whose host-against-device spread was measured there (GPU_QUALIFIED, D330), with XLA's
-deterministic ops in effect. Anything else on a GPU is refused, and so is a composition with a
-live retiring operator.
+Qualification: CPU only, so a GPU backend is refused, and so is a composition with a live
+retiring operator (admit; design §9.2).
 """
 
 import inspect
-import os
 from dataclasses import dataclass, field, replace
 from time import perf_counter
 from types import MappingProxyType
@@ -41,47 +38,6 @@ HOST_DECIDES_ABOVE = 0.5  # The guard band: above this ratio to its bound, the h
 MODES = ("host", "device")
 HOOKS = ("device_checks", "device_check_constants", "DEVICE_CHECKS", "DEVICE_DIAGNOSTICS")
 HANDED_BACK = ("failed", "above_band")  # Why the host decided a window.
-# Device row checks on a GPU, by model and field solver: the ledgers whose host-against-device
-# spread, band and handback rate were measured on the GPU, an NVIDIA L4 (D330; design §10). A
-# definition on a GPU is admitted only when its model and field solver are listed and every ledger
-# of its device checks is among the measured ones. The check program differs by field solver (the
-# sparse solver's capacitor products are its pairwise folds, version 2's a dense product), so each
-# field solver is measured on its own.
-GPU_QUALIFIED = MappingProxyType(
-    {
-        ("resolved_pump_composite@1", "sparse_capacitive_reduction_gauged_damped_newton@1"): (
-            frozenset(
-                (
-                    "local",
-                    "outside",
-                    "total",
-                    "charge",
-                    "electrode",
-                    "global_charge",
-                    "energy",
-                    "reservoir_work",
-                    "electrode_work",
-                    "metabolic_work",
-                )
-            )
-        ),
-    }
-)
-GPU_REFUSAL = (
-    "row_checks device is qualified on the CPU only for {}; a GPU backend is refused until a GPU "
-    "measurement exists"
-)
-# On a GPU, XLA adds scatter-adds atomically, in an order that varies between runs, unless its
-# deterministic ops are set (D330 block 2: two runs of one compiled window differed in the amounts
-# and the operators' ledgers). The qualified configuration sets them, so device mode can keep host
-# mode's arrays and a rerun its first run's. Read from XLA_FLAGS, where XLA reads it.
-DETERMINISTIC_FLAG = "--xla_gpu_deterministic_ops"
-NONDETERMINISTIC_REFUSAL = (
-    "row_checks device on a GPU requires XLA's deterministic ops (XLA_FLAGS "
-    + DETERMINISTIC_FLAG
-    + "=true): without them the GPU's scatter-adds run in an order that varies between runs, so "
-    "device mode cannot keep host mode's arrays (D330)"
-)
 
 
 def _takes_margins(checks):
@@ -106,19 +62,18 @@ def admit(spec):
 
     Two cases are refused because they are not yet qualified (the lead's rulings of 16 November
     2026, D187: no claim without teeth):
-    - a GPU backend, unless GPU_QUALIFIED lists the model and field solver with every ledger of
-      the definition's device checks and XLA's deterministic ops are set (gpu_refusal; D330):
-      elsewhere the GPU's host-against-device spread is unmeasured;
+    - a GPU backend: the GPU's host-against-device spread is unmeasured;
     - a composition with a live retiring operator: its device checks read adjusted rows, and
       that branch's refusals have no planted test yet.
     """
     if not spec.execution.jit:
         raise ConfigError("row_checks device requires a compiled run (execution.jit true)")
-    model = get_model(spec.model)
     if spec.execution.backend != "cpu":
-        refused = gpu_refusal(spec, model)
-        if refused is not None:
-            raise ConfigError(refused)
+        raise ConfigError(
+            "row_checks device is qualified on the CPU only; a GPU backend is refused until a "
+            "GPU measurement exists"
+        )
+    model = get_model(spec.model)
     missing = [name for name in HOOKS if not hasattr(model, name)]
     if missing:
         raise ConfigError(
@@ -136,38 +91,6 @@ def admit(spec):
             "row_checks device is not yet qualified for a composition with a live retiring "
             "operator: its adjusted rows' refusals have no planted test"
         )
-
-
-def gpu_refusal(spec, model):
-    """Why device row checks on a GPU are refused for this definition (the message, naming the
-    model and field solver, or the ledgers not measured on a GPU), or None (GPU_QUALIFIED)."""
-    model_id = getattr(model, "MODEL_ID", None) or type(spec.model).__name__
-    solver = getattr(spec.execution, "field_solver", None)
-    named = model_id if solver is None else f"{model_id} under {solver}"
-    measured = GPU_QUALIFIED.get((model_id, solver))
-    if measured is None:
-        return GPU_REFUSAL.format(named)
-    unmeasured = [k for k in getattr(model, "DEVICE_CHECKS", ())[1:-1] if k not in measured]
-    if unmeasured:
-        return GPU_REFUSAL.format(f"the ledgers {', '.join(unmeasured)} of {named}")
-    if not deterministic_ops():
-        return NONDETERMINISTIC_REFUSAL
-    return None
-
-
-def deterministic_ops():
-    """Whether XLA_FLAGS sets the GPU's deterministic ops (its last setting of the flag, bare or
-    =true; anything else, or none, is false).
-
-    A tripwire, not the guard: it reads XLA_FLAGS when admit runs, and cannot see whether XLA
-    parsed that value (XLA reads its flags once, when its first backend starts), so a flag set or
-    unset after that is misread. The guard is D330's bitwise evidence (G1, G6) under the flag."""
-    setting = None
-    for word in os.environ.get("XLA_FLAGS", "").split():
-        name, _, value = word.partition("=")
-        if name == DETERMINISTIC_FLAG:
-            setting = value in ("", "true", "True", "1")
-    return bool(setting)
 
 
 def _window_checks(start, history, count, first_step, parameters, constants, *, checks):
