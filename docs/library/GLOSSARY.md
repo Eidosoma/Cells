@@ -280,7 +280,7 @@ or out. A held bath is not one.
 
 <!-- generated: used-by finite-node -->
 
-- **Used by:** no page yet.
+- **Used by:** [`cells.neutral_arrival_labels@1`](cells/operators/neutral_arrival_labels@1.md) and [`cells.scheduled_compartment_wash@1`](cells/operators/scheduled_compartment_wash@1.md).
 
 <!-- /generated -->
 
@@ -339,7 +339,7 @@ What flows into or out of it is booked as supply, with its work.
 
 <!-- generated: used-by held-bath -->
 
-- **Used by:** [`cells.ideal_osmosis_linear_compliance_water@1`](cells/operators/ideal_osmosis_linear_compliance_water@1.md).
+- **Used by:** [`cells.ideal_osmosis_linear_compliance_water@1`](cells/operators/ideal_osmosis_linear_compliance_water@1.md) and [`cells.scheduled_compartment_wash@1`](cells/operators/scheduled_compartment_wash@1.md).
 
 <!-- /generated -->
 
@@ -623,7 +623,7 @@ as osmotic water flow. A definition lists the operators it uses, in order.
 
 <!-- generated: used-by operator -->
 
-- **Used by:** [`cells.ideal_osmosis_linear_compliance_water@1`](cells/operators/ideal_osmosis_linear_compliance_water@1.md) and [`cells.integer_unit_population@1`](cells/operators/integer_unit_population@1.md).
+- **Used by:** [`cells.ideal_osmosis_linear_compliance_water@1`](cells/operators/ideal_osmosis_linear_compliance_water@1.md), [`cells.integer_unit_population@1`](cells/operators/integer_unit_population@1.md), [`cells.neutral_arrival_labels@1`](cells/operators/neutral_arrival_labels@1.md) and [`cells.scheduled_compartment_wash@1`](cells/operators/scheduled_compartment_wash@1.md).
 
 <!-- /generated -->
 
@@ -835,7 +835,7 @@ One species at one node: an entry of the inventory.
 
 <!-- generated: used-by species-row -->
 
-- **Used by:** no page yet.
+- **Used by:** [`cells.neutral_arrival_labels@1`](cells/operators/neutral_arrival_labels@1.md).
 
 <!-- /generated -->
 

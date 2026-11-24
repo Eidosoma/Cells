@@ -33,6 +33,8 @@ how to write one, the [glossary](GLOSSARY.md) defines the words, and
 | --- | --- | --- |
 | [`cells.ideal_osmosis_linear_compliance_water@1`](cells/operators/ideal_osmosis_linear_compliance_water@1.md) | Water crosses each cell membrane toward the side with more dissolved particles, so cells swell or shrink until an elastic back-pressure balances that pull. | Not stated |
 | [`cells.integer_unit_population@1`](cells/operators/integer_unit_population@1.md) | A few membrane machines switch on and off one at a time, each working machine moves a dissolved substance across the membrane, and switching depends on how much is there. | Not stated |
+| [`cells.neutral_arrival_labels@1`](cells/operators/neutral_arrival_labels@1.md) | It follows when material of one substance arrived, by keeping each pool's shares of older and newer material, without changing how the substance behaves. | Not stated |
+| [`cells.scheduled_compartment_wash@1`](cells/operators/scheduled_compartment_wash@1.md) | At set times, a chosen fraction of the liquid in a closed space outside the cells is drawn off and replaced by fresh buffer, as in a laboratory wash. | Not stated |
 
 ## Models
 
