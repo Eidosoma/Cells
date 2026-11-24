@@ -10486,3 +10486,24 @@ reviewers' additions. Names follow the notes.
     pair the judge compares (h against h/2, the bracket's ends) on one device, since the CPU and the L4 differ at
     rounding.
   - The visualizer is on hold (the user), so the L4 blocks need no notice for now.
+
+## D331: FR-49's first landing: World L's registered judgement passes
+
+2026-11-24, about 12:23 UTC.
+- **What landed:** parts H and L of fr49-compartment-compositions-v1 (with amendment 1 and the judge tag), at the
+  merge 7d021548.
+  - The gene unit and neutral arrival labels are admitted beside cell-owned compartments.
+  - Each has its own check: outside degradations and exports at a compartment's node are refused, and labels
+    beside membrane state are refused by name.
+- **World L's judgement:** run once from a clean snapshot of the tagged judge's head (0cfdffaa) against the code-blind
+  references fr49-references-2026-11-24 (35c91d25), at the registered 3600 s horizon with dt 2 s and 1 s. **It passes.**
+  - L1, L2, L3, L6 and L7 pass. L7 is a bitwise restart at 900 s.
+  - L4's order ratios are 4.0037, 4.0034, 4.0043 and 4.0011, in the band 3.6-4.4. L5's sizes are 1.0e-7 to 6.6e-7,
+    against 1e-3.
+  - Plants (a)-(c) fail L4 at a ratio of about 1, and plant (d) fails L7, as registered.
+  - The record is /mnt/workspaces/Cells/fr49-expression-labels-20261123/judged-0cfdffaa/ (verdict.json sha256 begins
+    509118c73f3fde72).
+- **Still to come:**
+  - World B and the combination checks C1 and C2, after FR-49's site pairing (following FR-45) and its wash
+    narrowing (following FR-44);
+  - C4's four-way form, by amendment, once admission by species lands.
