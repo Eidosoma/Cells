@@ -1987,6 +1987,8 @@ cases below are the request's own, condensed.
 
 No registered criterion for part 1 now.
 
+**Status (24 November, late; D376):** part 1's two gaps landed at 14f19f9f (tag `fr43-part1-gaps-landed-2026-11-25`): the 16-row control and the 256-row case as rows with plants, and the CPU performance report in `validation/fr43_part1/`. Turnover in a swelling cell is FR-65.
+
 ## FR-44 — Labels across a wash: arrival-time labels through scheduled compartment washes
 
 **Logged 23 November 2026 by the user, priority high.**
@@ -2085,6 +2087,8 @@ sites stay in place when the fluid is washed.
   is (c_A/K_A)/(1 + c_A/K_A + c_B/K_B), and B's is the analogue. The c are the free equilibrium concentrations, solved
   from each ligand's conserved amount in the finite volume.
 - **Conservation** of each ligand and of the shared site total holds across binding, washing and release.
+
+**Status (24 November, late; D376):** the references' version 2 is tagged (`fr45-references-v2-2026-11-24`, with W7 and W7s under amendments 2 and 3). The judge comes after the rename.
 
 ## FR-46 — Binding from a shell's inner face: lumen ligands on membrane sites
 

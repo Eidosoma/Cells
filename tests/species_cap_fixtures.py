@@ -14,7 +14,7 @@ or more terms NumPy's host sums over the species axis take the pairwise order, s
 charge_increment can differ from the explicit species-order sum that every ledger uses.
 
 FR-43's chain world (chain_world; docs/FR43_SHARED_INVENTORIES_DESIGN.md §1.2), any size from 5 to
-1,024 species, with its closed-form solution: below.
+1,024 species, with its closed-form solution and the checks its runs share (chain_checks): below.
 """
 
 import copy
@@ -237,3 +237,46 @@ def chain_free_energy_pJ(n, *, volume_pL, temperature_K, c0_mM):
     rt = 1e-3 * R * temperature_K  # pJ per fmol.
     standard = rt * (np.asarray(chain_mu_RT(k)) - math.log(c0_mM))
     return np.sum(rt * n * (np.log(n / volume_pL) - 1.0) + standard * n, axis=-1)
+
+
+def chain_checks(raw, spec, result):
+    """FR-43's C1.2 and C1.3 on a chain world's run, as numbers (the tests hold the bounds):
+    - "amounts": [T, k] fmol of the chain at every saved time;
+    - "error": the largest |n - expm(K t) n0| over every saved time and chain species, over the
+      largest initial amount (the declared accuracy bounds it);
+    - "seen": the same against the plant, the reference with the middle link's forward constant
+      0.1% high, which a comparison at the declared accuracy must see;
+    - "heat": the largest |booked heat - the engine's own free-energy drop F(n0) - F(n)|, over the
+      drop's largest magnitude (a passive network books H = -dG per half-step, D152 §3.3)."""
+    n = chain_amounts(spec, result)
+    times = np.asarray(result.times)
+    largest = float(np.max(n[0]))
+    error = float(np.max(np.abs(n - chain_reference(n[0], times)))) / largest
+    seen = float(np.max(np.abs(n - chain_reference(n[0], times, planted=True)))) / largest
+    model = raw["model"]
+    network = next(o for o in model["operators"] if o["law"] == rfx.REACTIONS)
+    free = chain_free_energy_pJ(
+        n,
+        volume_pL=model["cells"][0]["volume_pL"],
+        temperature_K=model["temperature_K"],
+        c0_mM=network["standard_concentration_mM"],
+    )
+    drop = free[0] - free
+    booked = np.asarray(result.history.reaction_dissipated_energy_pJ).sum(axis=1)
+    heat = float(np.max(np.abs(booked - drop))) / float(np.max(np.abs(drop)))
+    return dict(amounts=n, error=error, seen=seen, heat=heat)
+
+
+def nbytes(tree):
+    """Bytes of every array in a nest of tuples, lists, dicts and arrays."""
+    if isinstance(tree, dict):
+        return sum(nbytes(v) for v in tree.values())
+    if isinstance(tree, (tuple, list)):
+        return sum(nbytes(v) for v in tree)
+    return np.asarray(tree).nbytes if tree is not None else 0
+
+
+def held_bytes(result):
+    """Bytes a run's result holds: its accepted history, observations and final layout (what the
+    runner's trace estimate, execution/resources.trace_bytes, must cover)."""
+    return nbytes(tuple(result.history)) + nbytes(result.observations) + nbytes(result.final.layout)
