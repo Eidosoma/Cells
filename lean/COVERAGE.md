@@ -4,6 +4,8 @@
 
 Choose a claim for its assumptions, theorems, numerical results and sources. Partial evidence covers a measured part of a claim. A result marked not assessable has too much uncertainty for a verdict. [Topic overview](README.md#proof-index) · [Registered laws](#registered-laws) · [Registered operators](#registered-operators)
 
+[Paired wet-lab evidence](WET_LAB_EVIDENCE.md) covers 37 of 131 claims. Across 53 comparisons, two independent studies support the stated assumption in 29 and challenge it in 8. [Cells replay results](WET_LAB_EVIDENCE.md#cells-replay-results) identify 8 comparisons where the tested law misses a replicated observation.
+
 ## Failing numerical checks
 
 - [Rounding and rejection of the initial charge balance](claims/xc0-charge-anchor.md#numerical-comparison)

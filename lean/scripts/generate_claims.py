@@ -319,9 +319,10 @@ def wet_lab_register(claims):
             groups[outcome].append("| " + " | ".join(cells) + " |")
 
     summary = (
-        f"[Paired wet-lab evidence](WET_LAB_EVIDENCE.md) covers {len(seen)} comparisons "
-        f"across {reviewed_claims} claims. In {len(groups['both_support'])} comparisons, "
-        "two independent studies support the stated assumption. "
+        f"[Paired wet-lab evidence](WET_LAB_EVIDENCE.md) covers {reviewed_claims} of "
+        f"{len(claims)} claims. Across {len(seen)} comparisons, two independent studies support "
+        f"the stated assumption in {len(groups['both_support'])} and challenge it "
+        f"in {len(groups['both_challenge'])}. "
         "[Cells replay results](WET_LAB_EVIDENCE.md#cells-replay-results) "
         f"identify {len(misses)} comparisons where the tested law misses a replicated observation."
     )
@@ -447,7 +448,7 @@ def live_inventory(lane):
     }
 
 
-def coverage(inventory, claims, comparisons, repo, category_sections):
+def coverage(inventory, claims, comparisons, repo, category_sections, wet_lab_summary):
     direct, exercised = {}, {}
     for claim in claims.values():
         for piece in claim["formal"].get("about", []):
@@ -480,6 +481,7 @@ def coverage(inventory, claims, comparisons, repo, category_sections):
         "Partial evidence covers a measured part of a claim. A result marked not assessable "
         "has too much uncertainty for a verdict. [Topic overview](README.md#proof-index) · "
         "[Registered laws](#registered-laws) · [Registered operators](#registered-operators)",
+        wet_lab_summary,
         "## Failing numerical checks",
         "\n".join(failing) or "The register lists zero numerical failures.",
         *category_sections,
@@ -610,7 +612,7 @@ def render(lane, live_registry=False):
                 )
             )
     outputs[lane / "COVERAGE.md"], registry_summary = coverage(
-        inventory, claims, register["comparisons"], lane.parent, sections
+        inventory, claims, register["comparisons"], lane.parent, sections, wet_lab_summary
     )
     readme = lane / "README.md"
     before, start, rest = readme.read_text(encoding="utf-8").partition(BEGIN)
