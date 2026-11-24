@@ -314,7 +314,7 @@ def _tags():
             "(not shown nominal)",
             (),
         )
-    for reader in (TURNOVER, EXCHANGE, REACTIONS):
+    for reader in (TURNOVER, EXCHANGE):
         code = TURNOVER_CODE if reader == TURNOVER else ()
         for name in ("volume", "extracellular_volume"):
             tags[("reads", reader, WATER, name)] = (REAL, DECLARED_VOLUMES[reader], code)
@@ -834,16 +834,34 @@ def _tags():
     # operators owner): it declares common.CONFLICTS_VIEW, as turnover does, and reads the declared
     # volumes and masks at its routes' cells (fluxes, poly_half_step). None is shown nominal.
     poly = "templated_polymerisation@1"
-    volumes = "Its rates and exact dG read the declared cell volumes (fluxes, poly_half_step)"
-    masks = "It reads the declared masks at its routes' cells, as common.CONFLICTS_VIEW declares"
-    for name in ("volume", "extracellular_volume"):
-        tags[("reads", poly, WATER, name)] = (REAL, volumes, ())
-    for lumen in (LUMEN_1, LUMEN_2):
-        tags[("reads", poly, lumen, "extracellular_volume")] = (
-            REAL,
-            volumes + "; a lumen changes its node's volume (not shown nominal)",
-            (),
-        )
+    masks = "It reads the declared masks at its routes' cells (its CONFLICTS_VIEW)"
+    # FR-43 / D315: D152's network and the gene unit read the volumes current at their split parts,
+    # so water, their changer, is admitted declared before them and refused after them (C2's order
+    # rule); the lumens and replacement@2 are refused by name at the definition (a data rule).
+    current = (
+        "Its split part reads the volumes current (FR-43 / D315): declared before water it would "
+        "read them lagged by half a step (C2's order rule); declared after water it is admitted"
+    )
+    by_name = (
+        "; whatever the order, the definition refuses it beside the network and the gene unit, "
+        "where water is the one volume changer admitted (species_reactions.check_volume_changers)"
+    )
+    for reader in (REACTIONS, poly):
+        for name in ("volume", "extracellular_volume"):
+            tags[("order", reader, WATER, name)] = (REAL, current, ())
+            tags[("order", reader, REPLACEMENT_2, name)] = (
+                REAL,
+                "Replacement@2 writes a newcomer's volume into water's state at its split part, "
+                "after this reader reads it (C2's order rule)" + by_name,
+                (),
+            )
+        for lumen in (LUMEN_1, LUMEN_2):
+            tags[("order", reader, lumen, "extracellular_volume")] = (
+                REAL,
+                "A lumen changes its node's volume at its split part, after this reader reads it "
+                "(C2's order rule)" + by_name,
+                (),
+            )
     for name in ("outside_active", "membrane_active"):
         tags[("reads", poly, INSERTION_1, name)] = (
             REAL,
@@ -1261,6 +1279,16 @@ RULES = (
         + "test_species_cap.py::test_the_cap_refuses_1025_species_with_the_reason_and_admits_1024",
         tag=REAL,
         why="Probed to 1,024 (FR-43 / D315; 16 by FR-9 / D165); above it, another probe",
+    ),
+    dict(
+        rule="beside D152's network or the gene unit, water is the one volume changer admitted",
+        laws=(REACTIONS, "templated_polymerisation@1", LUMEN_1, LUMEN_2, REPLACEMENT_2),
+        level="data",
+        check=OPS + "species_reactions.py::check_volume_changers",
+        test=TESTS
+        + "test_species_reactions_refusals.py::test_the_other_volume_changers_are_refused_by_name",
+        tag=REAL,
+        why="Their current volume reads are probed beside water only (FR-43 / D315)",
     ),
     dict(
         rule="beside water@1 every bath step is isosmotic",

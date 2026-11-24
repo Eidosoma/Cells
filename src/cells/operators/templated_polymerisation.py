@@ -249,7 +249,13 @@ Refused at the definition
 - m not dividing L, and a draw without its K;
 - a transfer that is not a reaction (a sign missing), and a degradation whose polymer a chain makes
   at another length;
-- another writer of a listed row: an author, D152's reactions or an in-step mover;
+- another writer of a listed row: an author or an in-step mover. FR-43 / D315 admits a D152 network
+  writing or declaring one and the unit producer (population_unit_turnover@1) consuming one, the
+  two-writer rule of 19 November 2026 extended (check_writers): the row's potential from the species
+  registry, each writer's own books, and a labelled or exported row keeping this operator alone;
+- a volume changer other than water (the lumens, replacement@2 by its water): the volumes are
+  current reads at the split, the view's where water changes them, the declared ones otherwise
+  (C1's fallback; FR-43 / D315);
 - beside a replacement (check_occupants): a version other than replacement@1; a donor copy into or
   from a slot of this operator (version 1.1); a template that is not a replacement template; a
   newcomer whose template gives no value for a schedule of its slot; a template value for no such
@@ -300,7 +306,7 @@ from cells.numerics.clock_instants import ON_THE_GRID, on_grid  # D283's one pre
 from cells.numerics.species_sums import entity_sum, species_sum
 from cells.operators import species_common as common
 from cells.operators import species_reactions
-from cells.operators.contract import Operator
+from cells.operators.contract import Operator, Read
 from cells.registry import kind_registry, species_registry
 
 LAW_ID = "templated_polymerisation@1"
@@ -1569,6 +1575,18 @@ def check_occupants(spec, declaration, schedule):
             )
 
 
+def smallest_volumes(spec):
+    """{cell id: the smallest volume it can take}: its declared volume, or where water changes the
+    volumes (FR-43 / D315) its water compartment's declared minimum."""
+    out = {c.id: c.volume_pL for c in spec.model.cells}
+    for op, water, _ in composite_spec.entries(spec):
+        if op.LAW_ID == species_reactions.WATER:
+            for c in water.compartments:
+                if c.compartment_id in out:
+                    out[c.compartment_id] = min(out[c.compartment_id], c.minimum_volume_pL)
+    return out
+
+
 def check_rate_bound(spec, declaration, schedule):
     """Refuse dt times a route's largest static rate above RATE_BOUND: a chain's kappa, a
     degradation's k, and a gene-templated chain's initiation k_I c_T (the run-time stage
@@ -1578,7 +1596,7 @@ def check_rate_bound(spec, declaration, schedule):
     for _, values in declaration.templates:  # A newcomer's values (§9.16, item 6).
         for name, value in values:
             top[name] = max(top[name], value)
-    volumes = {c.id: c.volume_pL for c in spec.model.cells}
+    volumes = smallest_volumes(spec)  # c_T is largest at the smallest volume (FR-43 / D315).
     for c in declaration.chains:
         kappa = c.speed_per_s * c.stages / c.residues
         rate = kappa
@@ -2424,12 +2442,15 @@ def route_heats(n0, dn, d_transit, extents, volume, active, p, rt, *, xp):
     return (*heats, xp.where(on_release[:, None, None], release, 0.0))
 
 
-def poly_half_step(state, controls, h, p, *, xp=jnp, labels=None):
+def poly_half_step(state, controls, h, p, *, xp=jnp, labels=None, volumes=None):
     """(state after h, valid): SSPRK(3,3) on the operator's variables, every move booked. With
     labels (FR-42, D289; static), (state, valid, moves): moves (one_way_moves) from the same
-    combination of the stages' one-way fluxes as the booked move."""
+    combination of the stages' one-way fluxes as the booked move. volumes: (cell, outside) pL, the
+    view's current volumes where an operator changes them (FR-43 / D315), held over the half-step;
+    None reads the declared ones (C1's fallback, today's program)."""
     rows, active = p.poly_rows, p.active
-    volume = xp.where(active, p.volume, 1.0)
+    cell_volume, outside_volume = (p.volume, p.extracellular_volume) if volumes is None else volumes
+    volume = xp.where(active, cell_volume, 1.0)
     n0 = xp.where(active[None, :], p.amount_reference[rows] + state.amount_increment[rows], 1.0)
     f0, c0 = state.poly_free_machines_fmol, state.poly_complexes_fmol
     rel = releasing(p)  # Static: the release's variables only where a release is declared.
@@ -2441,7 +2462,7 @@ def poly_half_step(state, controls, h, p, *, xp=jnp, labels=None):
     n_o0 = volume_o = None
     if exp:  # The listed rows at the exported nodes, [k, node], and the nodes' volumes.
         slots = p.poly_out_slot_hot
-        volume_o = slots @ p.extracellular_volume
+        volume_o = slots @ outside_volume
         n_o0 = (
             p.extracellular_amount_reference[rows] + state.extracellular_amount_increment[rows]
         ) @ slots.T
@@ -2930,7 +2951,17 @@ class TemplatedPolymerisation(Operator):
     # maximum, so a routed p stays in [0, 1]).
     ROUTABLE_CONTROLS = MappingProxyType({INITIATION: "rate", RELEASE_FRACTION: "rate"})
     EXPERIMENT_KEYS = (EXPERIMENT_KEY,)
-    CONFLICTS_VIEW = common.CONFLICTS_VIEW
+    # Its own tuple, not species_common's, which turnover and exchange share (FR-43 / D315): the
+    # volumes are current reads at the split, as the reactions' are, so where water changes them
+    # its concentrations (c_T, its saturations and affinities) and bookings take the view's (C1's
+    # fallback without a changer). Water is the one changer admitted
+    # (species_reactions.check_volume_changers); the masks' providers and closers stay refused.
+    CONFLICTS_VIEW = ("active", "outside_active", "membrane_active")
+    VIEW_READS = ("volume", "extracellular_volume")
+    SCOPED_READS = {
+        "volume": Read("current", "split"),
+        "extracellular_volume": Read("current", "split", scoped=True),  # Its exported nodes.
+    }
     ENTITY_WRITES = {
         "amount_increment": ("poly_produced_fmol", "poly_consumed_fmol"),
         # Amendment T (§9.17): the exported nodes' rows, booked by its own outside accumulators.
@@ -3289,10 +3320,16 @@ class TemplatedPolymerisation(Operator):
             moves.append((f"outside degradation {d.id}", tuple(nu.items())))
         return tuple(moves)
 
+    def read_slots(self, spec, declaration):
+        """Door S: its outside reads are at its exported nodes only (amendment T, §9.17)."""
+        index = {c.id: i for i, c in enumerate(spec.model.extracellular)}
+        return {"extracellular_volume": tuple(index[n] for n in exported_nodes(declaration))}
+
     def check_definition(self, spec, declaration, schedule, model):
         common.check_species_cap(spec, LAW_ID)
         common.check_identities(spec, LAW_ID, declaration.species)
         check_compartments(spec, declaration)
+        species_reactions.check_volume_changers(spec, LAW_ID)
         check_writers(spec, declaration)
         check_occupants(spec, declaration, schedule)
         check_rate_bound(spec, declaration, schedule)
@@ -3400,10 +3437,11 @@ class TemplatedPolymerisation(Operator):
             p.poly_chain_kappa.shape[0] + p.poly_deg_length.shape[0] + p.poly_tr_share.shape[0]
         ) == 0
 
-    def event(self, state, control, p, *, xp, labels=None):
+    def event(self, state, control, p, *, xp, labels=None, view=None):
         """Amendment S's event (poly_event). labels (FR-42's pool reporter, erratum E; static):
         the call then also returns removed [release], the holds it emptied (hold_report), zeros
-        without a replacement."""
+        without a replacement. view: the reader view the composite passes to a current reader's
+        parts where an operator changes the volumes (FR-43 / D315); the event map reads none."""
         state, valid, removed = poly_event(state, control, p, xp=xp)
         if labels is None:
             return state, valid
@@ -3411,13 +3449,16 @@ class TemplatedPolymerisation(Operator):
             removed = xp.zeros(p.poly_rel_rate.shape[0])
         return state, valid, removed
 
-    def half_step(self, state, h, control, p, *, xp, labels=None):
+    def half_step(self, state, h, control, p, *, xp, labels=None, view=None):
         """labels (FR-42, D289, D296; static): (rows, arrival, source); the call then returns
-        (state, valid, (out, into, (), pools)), one_way_moves's. Without it, today's call."""
+        (state, valid, (out, into, (), pools)), one_way_moves's. view: the reader view the
+        composite passes where an operator changes the volumes (FR-43 / D315), whose current
+        volumes the half-step takes. Without either, today's call."""
         controls = tuple(getattr(control, name) for name in HALF_STEP_CONTROLS)
+        volumes = None if view is None else (view.volume, view.extracellular_volume)
         if labels is None:
-            return poly_half_step(state, controls, h, p, xp=xp)
-        return poly_half_step(state, controls, h, p, xp=xp, labels=labels)
+            return poly_half_step(state, controls, h, p, xp=xp, volumes=volumes)
+        return poly_half_step(state, controls, h, p, xp=xp, labels=labels, volumes=volumes)
 
     def control_valid(self, control, p, *, xp):
         valid = xp.asarray(True)
