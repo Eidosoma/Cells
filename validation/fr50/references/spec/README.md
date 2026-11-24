@@ -56,3 +56,24 @@ context.
 
 The spec gives no time step. The engine's step and its rule for each step's one-way amounts are
 the engine's own, and its step-halving study measures them.
+
+## Amendment 1 (24 November 2026): the cross-check where a case sits exactly at zero net
+
+**The point.** The references agent asked about the cross-check under "Accuracy": recompute each
+flux from Ussing's ratio and the net. In a steady case exactly at zero net, that route is 0/0. The
+cases are K1 (a neutral route at equal concentrations), E2 (a neutral junction at equal
+concentrations and potentials), E3 (an uncharged face at equal concentrations) and K4 (the
+transporter at ΔG_cyc = 0, by Hill's ratio).
+
+**The agent's reading is confirmed.** In those four cases the reference:
+1. reports the ratio-and-net route as degenerate;
+2. checks independently that the ratio is exactly 1 and the net exactly 0;
+3. recomputes each one-way flux by an independent route, in exact rationals with its own exp and ln.
+
+**E1 and E4 are not degenerate.** Their V is E_K formed to 50 digits, so the ratio differs from 1 at
+that precision. Their cross-check through Ussing's ratio and the net runs at high precision, as
+written.
+
+**Nothing else changes:** no declared value, no criterion of REGISTRATION.md, no requested output
+and no declared accuracy.
+
