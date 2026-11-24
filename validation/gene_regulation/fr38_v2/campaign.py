@@ -383,13 +383,13 @@ def _usable(record):
     return record if record is not None and not record.get("refused") else None
 
 
-def _run_entry(record, path, family, blank_name, blank):
+def _run_entry(record, path, grid, blank_name, blank):
     """A run's entry (amendment 4, §8.3): its record's keys, READOUTS.md §2's host-side quantities
     and its matched blank's name; or its refusal."""
     if record.get("refused"):
         return _refusal(record, path)
     entry = _entry(record, path)
-    extra = host_side(record, _window(family), _samples(family), _usable(blank))
+    extra = host_side(record, *grid, _usable(blank))
     entry["readouts"] = {**entry["readouts"], **extra.pop("series")}
     return entry | extra | {"blank": blank_name}
 
@@ -398,11 +398,13 @@ def _load(path):
     return json.loads(Path(path).read_text()) if Path(path).exists() else None
 
 
-def build_table(out, family, rungs=worlds.RUNGS):
-    """The family's table (module docstring) from the records under `out`."""
+def build_table(out, family, rungs=worlds.RUNGS, grid=None):
+    """The family's table (module docstring) from the records under `out`. grid: (the window, the
+    sample times) in place of the family's registered ones (the format sample's invented worlds)."""
     out = Path(out)
-    table = dict(kind=TABLE, family=family, window_s=list(_window(family)),
-                 samples_s=list(_samples(family)), rungs={}, missing=[])  # fmt: skip
+    grid = (_window(family), _samples(family)) if grid is None else grid
+    table = dict(kind=TABLE, family=family, window_s=list(grid[0]), samples_s=list(grid[1]),
+                 rungs={}, missing=[])  # fmt: skip
     for dt in rungs:
         records = {}
         for run in worlds.runs(family):
@@ -416,7 +418,7 @@ def build_table(out, family, rungs=worlds.RUNGS):
         for run, (record, path) in records.items():
             blank_name = _blank_of(family, run)
             blank = records.get(blank_name, (None,))[0] if blank_name else None
-            rung["runs"][run] = _run_entry(record, path, family, blank_name, blank)
+            rung["runs"][run] = _run_entry(record, path, grid, blank_name, blank)
         table["rungs"][repr(dt)] = rung
     family_r, run_r, _ = worlds.RESTART
     if family == family_r and rungs == worlds.RUNGS:  # The same form, with its checkpoint (§8.4).
@@ -427,14 +429,14 @@ def build_table(out, family, rungs=worlds.RUNGS):
         if record is None:
             table["restart"] = None
         else:
-            table["restart"] = _run_entry(record, path, family, blank_name, blank)
+            table["restart"] = _run_entry(record, path, grid, blank_name, blank)
             if not record.get("refused"):
                 table["restart"]["checkpoint"] = record.get("checkpoint")
-    table["plants"] = plants_table(out, family) if rungs == worlds.RUNGS else {}
+    table["plants"] = plants_table(out, family, grid) if rungs == worlds.RUNGS else {}
     return table
 
 
-def plants_table(out, family):
+def plants_table(out, family, grid=None):
     """The world-data plants of `family`, each in a run entry's form with `judged_as` and
     `host_patch` (amendment 4, §8.4); null where the record is missing. P8's excess is its own
     planted blank's (amendment 1, item 4)."""
@@ -449,19 +451,21 @@ def plants_table(out, family):
             continue
         blank_name = "P8 blank" if name == "P8" else None
         blank = _load(record_path(out, plant=blank_name)) if blank_name else None
-        found[name] = _run_entry(record, path, family, blank_name, blank) | {
+        grid = (_window(family), _samples(family)) if grid is None else grid
+        found[name] = _run_entry(record, path, grid, blank_name, blank) | {
             "judged_as": judged_as, "host_patch": record.get("host_patch")}  # fmt: skip
     return found
 
 
-def table(out, families=("AF", "AN", "B", "C", "D"), retry=False):
+def table(out, families=("AF", "AN", "B", "C", "D"), retry=False, grids=None):
     """Every family's table under out/table (out/table-retry with --retry), and their SHA256SUMS."""
     out = Path(out)
     folder = out / ("table-retry" if retry else "table")
     folder.mkdir(parents=True, exist_ok=True)
     sums = []
     for family in families:
-        built = build_table(out, family, worlds.RETRY_RUNGS if retry else worlds.RUNGS)
+        grid = (grids or {}).get(family)  # The format sample's invented grids; else the registered.
+        built = build_table(out, family, worlds.RETRY_RUNGS if retry else worlds.RUNGS, grid)
         path = folder / f"table_{family}.json"
         path.write_text(json.dumps(built, sort_keys=True, separators=(",", ":"), default=float))
         sums.append(f"{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.name}")
