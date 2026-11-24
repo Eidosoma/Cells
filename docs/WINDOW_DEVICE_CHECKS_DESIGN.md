@@ -857,8 +857,9 @@ headline figures compare both modes on the same cores; the records' figures are 
 **The user's decision (D330):** qualify the device row checks on the GPU under the sparse field
 solver, on the production path, family by family, starting with the composite and GJ-N1's field
 worlds, then run the field's longest points on the L4. **The qualification failed** on G2 (§10.3).
-D336 closed it, the field's longest points run on CPUs, and `row_checks.admit` keeps refusing GPU
-device mode as before (§9.2), with no src change. Records: `/mnt/workspaces/Cells/
+D336 closed it, and the field's longest points run on CPUs. The scalar path's `row_checks.admit`
+keeps refusing GPU device mode as before (§9.2), and from D336's landing the vector path refuses the
+composite on a GPU (`vector_windows.refuse_unqualified_gpu`; §10.4). Records: `/mnt/workspaces/Cells/
 fr17-sparse-20261123/gpu/` (GPU_CRITERIA.txt with its amendments, each block's folder);
 `validation/execution/gpu_row_checks.py` is the driver.
 
@@ -927,10 +928,16 @@ repeats every window by bytes across processes.
 **Not run:** blocks 3'b (the D = 0 and vector-path timings on the L4), 4' (the long run) and 5' (the
 GPU rows), cancelled once G2 had failed (D336).
 
-**The vector path.** `run_vector_windowed` runs the models' device checks on a GPU with no refusal and
-no host fallback (§3.1 of the speed-up note, R7). D330's two findings apply to it: without the flag
-the composite's GPU runs are not deterministic, and its device check program read window 1's global
-ledger 0.51 of the bound away from the host. That path's admission on a GPU is left to the lead.
+### 10.4 The vector path
+
+`run_vector_windowed` checks every row on the device, with no host fallback: the device's word
+decides. D330's two findings apply to it. Without the flag the composite's GPU runs are not
+deterministic, and its device check program read window 1's global ledger 0.51 of the bound away from
+the host. So from D336's landing the vector path refuses `resolved_pump_composite@1` on a GPU, under
+every field solver, at planning (`refuse_unqualified_gpu`; the lead's ruling, option (c)). Every other
+model keeps its GPU path: the ionic ensembles, @1's batched worlds of 9 November and @3's device
+checks of 10 November. Re-checking that earlier evidence under D330's criteria, run-to-run
+determinism included, is a logged follow-up (D336).
 
 ## Sources
 
