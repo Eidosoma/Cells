@@ -123,8 +123,14 @@ def washed_world(labelled=True, *, made=True):
     raw = wfx.well(sites=False, dt=WASH_DT, end=WASH_END, observation_times=times)
     buffer = {wfx.TRACER: BUFFER_mM}
     if made:
-        raw = add_inventory_species(raw, Q, trace_mM=wfx.TRACE_mM, diffusivity_m2_per_s=fx.D_S,
-                                    floor_fmol=fx.FLOOR_FMOL, concentrations_mM={"well": Q_mM})  # fmt: skip
+        raw = add_inventory_species(
+            raw,
+            Q,
+            trace_mM=wfx.TRACE_mM,
+            diffusivity_m2_per_s=fx.D_S,
+            floor_fmol=fx.FLOOR_FMOL,
+            concentrations_mM={"well": Q_mM},
+        )
         make = rfx.mass_action("make_q", {"outside": ["well"]}, {}, {Q: 1}, MAKE_Q)
         raw = rfx.with_reactions(raw, [rfx.species(Q, moieties={"Y": 1})], [make],
                                  rfx.always(["make_q"]))  # fmt: skip
@@ -196,7 +202,10 @@ def test_labels_follow_each_wash_exactly_and_leave_the_physics_bit_for_bit():
         for label in (0, 1):
             exact = (1 - Fraction(f)) * Fraction(n[k]) * Fraction(shares[k, label])
             exact += Fraction(a) if label == 0 else 0
-            assert abs(Fraction(after) * Fraction(shares[k + 1, label]) - exact) <= bound, (t, label)
+            assert abs(Fraction(after) * Fraction(shares[k + 1, label]) - exact) <= bound, (
+                t,
+                label,
+            )
         assert np.allclose(record[k + 1], record[k] + r * shares[k], rtol=2 * EPS, atol=0), t
         diluted = (1 - f) * cl_shares[k] + f * np.array([1.0, 0.0])
         assert np.allclose(cl_shares[k + 1], diluted, rtol=0, atol=4 * EPS), t
@@ -206,11 +215,14 @@ def test_labels_follow_each_wash_exactly_and_leave_the_physics_bit_for_bit():
     rows = np.arange(len(n))
     washes = np.searchsorted([round(t / WASH_DT) + 1 for t, _ in WASHES], rows, side="right")
     scale = abs(anchor) + n.max() + supplied.max()
-    books = n[:, None] * shares + record - supplied[:, None] * np.array([1.0, 0.0]) - n[0] * shares[0]
+    books = (
+        n[:, None] * shares + record - supplied[:, None] * np.array([1.0, 0.0]) - n[0] * shares[0]
+    )
     assert np.all(np.abs(books) <= ((1 + 4 * washes) * EPS * scale)[:, None])
-    cl_amount = float(p.extracellular_amount_reference[cl, w]) + np.asarray(
-        h.extracellular_amount_increment
-    )[:, cl, w]
+    cl_amount = (
+        float(p.extracellular_amount_reference[cl, w])
+        + np.asarray(h.extracellular_amount_increment)[:, cl, w]
+    )
     assert len({x.tobytes() for x in cl_amount}) == 1  # Kept bit for bit.
     assert shares[-1].tolist() == [1.0, 0.0] and cl_shares[-1].tolist() == [1.0, 0.0]
     cells = np.asarray(h.label_share)

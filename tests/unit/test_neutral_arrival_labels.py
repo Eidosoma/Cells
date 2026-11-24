@@ -590,7 +590,9 @@ def test_clearance_at_a_washed_node_keeps_the_shares_the_wash_diluted():
     assert ok is None or bool(ok)
     assert bits(cleared.label_outside_share) == bits(washed.label_outside_share)
     s = list(spec.model.species_ids).index(wfx.TRACER)
-    assert cleared.extracellular_amount_increment[s, w] < washed.extracellular_amount_increment[s, w]
+    assert (
+        cleared.extracellular_amount_increment[s, w] < washed.extracellular_amount_increment[s, w]
+    )
 
 
 def test_each_source_takes_its_own_schedule_or_its_species(monkeypatch):
@@ -1070,7 +1072,10 @@ def test_a_pool_reporter_whose_event_reports_nothing_is_refused_beside_a_replace
     message = "tests.pools@1 beside neutral_arrival_labels@1 and a replacing event"
     for declared, refused in (
         ((swap, pools), True),
-        ((swap, _part("tests.pools@1", LABEL_POOLS=True, EVENT=True, event=_labelled_event)), False),
+        (
+            (swap, _part("tests.pools@1", LABEL_POOLS=True, EVENT=True, event=_labelled_event)),
+            False,
+        ),
         ((pools,), False),
     ):
         entries = tuple((op, None, None) for op in declared)
@@ -1093,8 +1098,13 @@ KINDS = {  # FR-44: a planted event and the refusal it meets (None: admitted).
         "has no report kind",
     ),
     "an exchanging event that also replaces slots": (
-        dict(EVENT=True, ENTITY_WRITES=WRITES, EVENT_REPLACES={"amount_increment": ()},
-             LABEL_EVENT="exchanged", event=_labelled_event),
+        dict(
+            EVENT=True,
+            ENTITY_WRITES=WRITES,
+            EVENT_REPLACES={"amount_increment": ()},
+            LABEL_EVENT="exchanged",
+            event=_labelled_event,
+        ),
         "an exchanged report is an event's that writes amounts",
     ),  # fmt: skip
     "a report kind on an event that takes no labels": (
