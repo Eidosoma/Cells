@@ -2,7 +2,7 @@
 
 # Channel opening scales the signed transfer of sodium or potassium
 
-The seven gated K⁺ laws, one gated Na⁺ law and two single-ion leaks multiply the fully open constant-field flux by their opening and external availability. The opening is m h² for Kv1.1 and Kir2.1, m h for Kv1.2–Kv1.6, m³ h for NaV1.2 and one for the two leaks. With availability between zero and one the magnitude cannot exceed the fully open flux. Blocking gives zero. Only the declared ion crosses, debiting the cell and crediting the exterior.
+The seven gated K⁺ laws, one gated Na⁺ law and two single-ion leaks multiply the fully open constant-field flux by their opening and external availability. The opening is m h² for Kv1.1 and Kir2.1, m h for Kv1.2–Kv1.6, m³ h for NaV1.2 and one for the two leaks. With availability between zero and one the magnitude cannot exceed the fully open flux. Blocking gives zero. Only the declared ion crosses, debiting the cell and crediting the exterior. With a block fraction determined by V − E at fixed dose, matched driving voltages give equal blocked/free current ratios wherever the free currents are nonzero.
 
 ## Assumptions
 
@@ -19,8 +19,11 @@ The seven gated K⁺ laws, one gated Na⁺ law and two single-ion leaks multiply
 - [CellsProofs.Transport.IonChannels.other_flux](../CellsProofs/Transport/IonChannels.lean#L202)
 - [CellsProofs.Transport.IonChannels.blocked](../CellsProofs/Transport/IonChannels.lean#L206)
 - [CellsProofs.Transport.IonChannels.patch_booking](../CellsProofs/Transport/IonChannels.lean#L211)
+- [CellsProofs.Transport.IonChannels.relative_block_at_equal_drive](../CellsProofs/Transport/IonChannels.lean#L333)
 
 Direct proof subject `cells.kv1p1_mh2@1`, `cells.kv1p2_mh@1`, `cells.kv1p3_mh@1`, `cells.kv1p4_mh@1`, `cells.kv1p5_mh@1`, `cells.kv1p6_mh@1`, `cells.kir2p1_mh2@1`, `cells.nav1p2_m3h_regularized@1`, `cells.kleak_always_open@1`, `cells.naleak_always_open@1`
+
+Proof sources [Imported Mathlib cancellation of a shared voltage offset](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/Group/Defs.lean#L1104) · [Imported Mathlib cancellation of a nonzero free current](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/GroupWithZero/Defs.lean#L178)
 
 Uses [Voltage-gated channel openings stay between zero and one](channel-gate-bounds.md) · [Only boundary transfers change a region’s inventory during transport](transfer-inventory.md)
 
@@ -40,11 +43,18 @@ Uses [Voltage-gated channel openings stay between zero and one](channel-gate-bou
 
 [Tested engine 153449799f4d](https://github.com/Eidosoma/Cells/commit/153449799f4d301a34f2be58172becc4dc562806) · [Evidence checkpoint 01edbd968e18](https://github.com/Eidosoma/Cells/commit/01edbd968e182f91c0bd281fe776f5609a78e645)
 
+**Engine** `resolved_pump_tissue@3`, `cells.kir2p1_mh2@1`, `open_channel_block_weighted_modes@1`
+
+[FR-51 development block and reversal](https://github.com/Eidosoma/Cells/blob/7ca7c9c15f7f02983aeb103b989c5d0a739e9d31/src/cells/laws/channels/open_channel_block.py#L55) · [Native current clamp](https://github.com/Eidosoma/Cells/blob/7ca7c9c15f7f02983aeb103b989c5d0a739e9d31/src/cells/models/surface_pump_v3.py#L847) · [Validation world template](https://github.com/Eidosoma/Cells/blob/7ca7c9c15f7f02983aeb103b989c5d0a739e9d31/validation/fr51/engine.py#L98) · [Template case declaration](https://github.com/Eidosoma/Cells/blob/7ca7c9c15f7f02983aeb103b989c5d0a739e9d31/validation/fr51/references/spec/cases.json) · [Thermodynamic constants](https://github.com/Eidosoma/Cells/blob/7ca7c9c15f7f02983aeb103b989c5d0a739e9d31/src/cells/laws/electrochemistry.py#L10) · [Potassium levels, graph readings and assay scope](https://github.com/Eidosoma/Cells/blob/369431f74ae5108c8be47f3a0afc80623de7f028/lean/checks/data/kir_spermine_potassium.json) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/369431f74ae5108c8be47f3a0afc80623de7f028/lean/checks/kir_spermine_potassium.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/369431f74ae5108c8be47f3a0afc80623de7f028/lean/PROGRESS.md#fr51-two-potassium)
+
+[Tested engine 7ca7c9c15f7f](https://github.com/Eidosoma/Cells/commit/7ca7c9c15f7f02983aeb103b989c5d0a739e9d31) · [Evidence checkpoint 369431f74ae5](https://github.com/Eidosoma/Cells/commit/369431f74ae5108c8be47f3a0afc80623de7f028)
+
 ## Biological evidence
 
 **Open.** Ion-specific flux or current at known driving force, with an independently measured availability or single-channel open fraction.
 
 - [A single tetravalent blocker moving through at most the full electric field can account for the steep component of Kir2.1 spermine block.](../WET_LAB_EVIDENCE.md#pair-kir-spermine-steep-valence) · Challenged by both studies
+- [With a fixed intracellular spermine dose in each preparation, changing external potassium moves the half-conductance voltage of Kir2.1 approximately with its measured potassium reversal.](../WET_LAB_EVIDENCE.md#pair-kir-spermine-external-potassium) · Supported by both studies
 
 At −60 mV, 100 µM cytoplasmic spermine reduced the Kir2.1 single-channel current magnitude from 2.00 ± 0.04 to 1.40 ± 0.04 pA with no significant change in open probability. A voltage-only gate misses that change in unitary conductance. The two generic leak laws have no assigned molecular isoform or preparation-specific permeability. [Xie et al., Figs. 1–3](https://doi.org/10.1085/jgp.20028576)
 
@@ -78,6 +88,30 @@ Kir2.1 expressed in oocytes. Internal and external K were varied separately duri
 
 The shift ratios are fitted relationships in this preparation. Lopatin also coauthored the 2006 study.
 
-At 20 µM spermine the shift in rectification per change in K reversal was +0.91 for external K and −0.15 for internal K. A universal V−E offset would give +1 for both. [Dataset manifest](../checks/data/paired_preparation_controls.json) · [Comparison verdict](../PROGRESS.md#preparation-evidence-review)
+At 20 µM spermine the shift in rectification per change in K reversal was +0.91 for external K and −0.15 for internal K. A universal V−E offset would give +1 for both. In Fig. 3C, increasing internal K from 150 to 625 mM shifts half-block by about +5 mV while the reversal shifts about −36 mV. The native FR-51 controls predict −36.3 mV or zero. [Dataset manifest](../checks/data/paired_preparation_controls.json) · [Comparison verdict](../PROGRESS.md#fr51-two-potassium)
+
+### panama2006_external_k
+
+Mouse Kir2.1 in HEK293 outside-out patches, 30 µM total and about 7 µM free spermine. Fig. 3A and E supply approximate reversals and relative-current curves. [Panama and Lopatin (2006), Figs. 3A,E,F and Table 2](https://doi.org/10.1113/jphysiol.2005.097741)
+
+- **Evidence role** held out from fitting
+- **Fit** 5.4 mM external K, training curve
+- **Evaluation** 60 mM external K, no refit
+
+Representative curves lack pointwise errors. The unblocked current was extrapolated and matching of the example panels to one patch is unspecified.
+
+Half of the total normalized conductance shifted about +51.6 mV for a measured +53.2 mV reversal shift. The separate pooled steep-mode slope was 0.98 ± 0.01 across two patches. [Dataset manifest](../checks/data/kir_spermine_potassium.json) · [Comparison verdict](../PROGRESS.md#fr51-two-potassium)
+
+### ishihara2007_external_k
+
+Wild-type Kir2.1, HEK293T inside-out patches, 24–25 °C. Each K concentration uses different patches. Upward triangles at 1 µM, normalized to the 0.1 µM conductance maximum. [Ishihara and Yan (2007), Figs. 4 and 5A–B](https://doi.org/10.1113/jphysiol.2007.136028)
+
+- **Evidence role** held out from fitting
+- **Fit** 150 mM external K, training curve
+- **Evaluation** 50 mM external K, no refit, 20 mM external K, no refit
+
+150 mM n=5, 50 mM n=6–8 and 20 mM n=2. The 20 mM group has no reported errors. Graph reading is about 1 mV and 0.03 in conductance fraction near the transition.
+
+The total half-conductance shifts were about −26.1 and −48.1 mV against measured reversal shifts −26.9 and −48.9 mV. The resulting ratios of about 0.97 and 0.98 use measured curve points and share a calibration. [Dataset manifest](../checks/data/kir_spermine_potassium.json) · [Comparison verdict](../PROGRESS.md#fr51-two-potassium)
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

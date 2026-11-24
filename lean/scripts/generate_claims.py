@@ -324,7 +324,7 @@ def wet_lab_register(claims):
         f"the stated assumption in {len(groups['both_support'])} and challenge it "
         f"in {len(groups['both_challenge'])}. "
         "[Cells replay results](WET_LAB_EVIDENCE.md#cells-replay-results) "
-        f"identify {len(misses)} comparisons where the tested law misses a replicated observation."
+        f"identify {len(misses)} paired comparisons with an observed discrepancy in the tested law."
     )
     parts = [
         NOTE,
@@ -344,7 +344,17 @@ def wet_lab_register(claims):
         + "\n".join(f"| {label} | {replay_counts[s]} |" for s, label in REPLAY_STATUS.items()),
     ]
     if misses:
-        parts += ["### Replicated observations missed by the tested law", "\n".join(misses)]
+        parts += [
+            '<a id="replicated-observations-missed-by-the-tested-law"></a>',
+            "### Observations missed in the tested replays",
+            "Cells reviewed the original eight rows for independent measurements of the same "
+            "quantity on the same molecular system under like conditions. Three confirmed "
+            "features were the Kv1.5 acid shift, POPC expansion on warming and the two phases "
+            "of Cx43 decay. The review found each law consistent with its stated scope. "
+            "[Cells decision D351](https://github.com/Eidosoma/Cells/blob/"
+            "8eb9bc8b032fbbabe446e073a65cbd9b32fe1729/docs/DECISIONS.md#L11377)",
+            "\n".join(misses),
+        ]
     for outcome, rows in groups.items():
         if rows:
             parts += [

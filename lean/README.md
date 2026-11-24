@@ -18,7 +18,7 @@ Direct Lean claims cover [55 of 55 laws](COVERAGE.md#registered-laws) and [35 of
 | [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 2 of 2 | 29 of 29 | 29 checked | 22 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
 
-[Paired wet-lab evidence](WET_LAB_EVIDENCE.md) covers 46 of 131 claims. Across 68 comparisons, two independent studies support the stated assumption in 39 and challenge it in 10. [Cells replay results](WET_LAB_EVIDENCE.md#cells-replay-results) identify 8 comparisons where the tested law misses a replicated observation.
+[Paired wet-lab evidence](WET_LAB_EVIDENCE.md) covers 46 of 131 claims. Across 69 comparisons, two independent studies support the stated assumption in 40 and challenge it in 10. [Cells replay results](WET_LAB_EVIDENCE.md#cells-replay-results) identify 8 paired comparisons with an observed discrepancy in the tested law.
 
 <!-- /generated -->
 

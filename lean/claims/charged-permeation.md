@@ -54,6 +54,12 @@ Uses [Voltage and free proton concentrations set the leak reversal](proton-leak.
 
 [Tested engine 153449799f4d](https://github.com/Eidosoma/Cells/commit/153449799f4d301a34f2be58172becc4dc562806) · [Evidence checkpoint 9f27f80116ed](https://github.com/Eidosoma/Cells/commit/9f27f80116ed324e1adbbef7cddb5671d71f12f7)
 
+**Engine** `resolved_pump_tissue@3`, `cells.passive_constant_field_permeation@1`
+
+[Constant-field material flux](https://github.com/Eidosoma/Cells/blob/153449799f4d301a34f2be58172becc4dc562806/src/cells/laws/routes/constant_field_permeation.py#L59) · [Thermodynamic constants](https://github.com/Eidosoma/Cells/blob/153449799f4d301a34f2be58172becc4dc562806/src/cells/laws/electrochemistry.py#L10) · [Red-cell concentrations and voltages](https://github.com/Eidosoma/Cells/blob/369431f74ae5108c8be47f3a0afc80623de7f028/lean/checks/data/freedman1997_chloride.json) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/369431f74ae5108c8be47f3a0afc80623de7f028/lean/checks/red_cell_chloride_ratio.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/369431f74ae5108c8be47f3a0afc80623de7f028/lean/PROGRESS.md#red-cell-chloride-ratio)
+
+[Tested engine 153449799f4d](https://github.com/Eidosoma/Cells/commit/153449799f4d301a34f2be58172becc4dc562806) · [Evidence checkpoint 369431f74ae5](https://github.com/Eidosoma/Cells/commit/369431f74ae5108c8be47f3a0afc80623de7f028)
+
 ## Biological evidence
 
 **Mixed.** Electrical current at a second voltage and reversal at a known ion gradient. These experiments leave microscopic route heat unmeasured.
@@ -73,7 +79,7 @@ DIDS-treated human red cells, five donor series at 23 °C and pH 7.5. Optical sh
 
 Means and SD were digitized. Estimated figure-reading precision is ±1.5 mV and ±0.05 mA/g Hb. The within-donor covariance is unavailable.
 
-At −59 mV, the one-voltage fit predicted −1.97 mA/g Hb against −1.17 ± 0.13 measured. The ratio of reported mean slope conductances was 3.67. At the inferred fixed chloride concentrations the model permits a local slope ratio up to 1.49. [Dataset manifest](../checks/data/freedman1997_chloride.json) · [Comparison verdict](../PROGRESS.md#20-november-2026--charged-constant-field-permeation)
+At −59 mV, the one-voltage fit predicted −1.97 mA/g Hb against −1.17 ± 0.13 measured. The ratio of reported mean slope conductances was 3.67. At the inferred fixed chloride concentrations the model permits a local slope ratio up to 1.49. Inverting both Fig. 6 means requires a shared intracellular/extracellular chloride ratio of 0.187 against an initial 0.67 ± 0.02. Fig. 5A/C and Fig. 6 reuse the same five series. [Dataset manifest](../checks/data/freedman1997_chloride.json) · [Comparison verdict](../PROGRESS.md#20-november-2026--charged-constant-field-permeation)
 
 ### pfeffermann2026_potassium@1
 
