@@ -37,10 +37,13 @@ from cells.operators import partition
 from cells.registry import kind_registry
 from cells.registry.models import get_model
 from tests import kind_fixtures as kf
+from tests import membrane_insertion_fixtures as insertion_fixtures
+from tests import partition_fixtures
 from validation.fr51 import closed_forms as fr51_laws
 from validation.fr51 import engine as fr51
 from validation.fr51 import judge as fr51_judge
 from validation.fr51 import plants as fr51_plants
+from validation.tissue import cell_replacement_fixtures as replacement_fixtures
 from validation.tissue import pump_water_fixtures as water_fixtures
 from validation.tissue import surface_pump_v3_fixtures as v3_fixtures
 
@@ -588,6 +591,30 @@ def test_each_block_refusal_names_its_reason(name):
     change, reason = FR51_REFUSALS[name]
     with pytest.raises(ConfigError, match=reason):
         parse_spec(fr51_block(change=change))
+
+
+FR51_SLOT_WRITERS = {
+    "isopotential_partition@1": lambda: partition_fixtures.divided(),
+    "scheduled_membrane_insertion@1": lambda: insertion_fixtures.with_operators(
+        insertion_fixtures.cleft_cell(), insertion=insertion_fixtures.furrow_insertion()
+    ),
+    "scheduled_cell_replacement@1": lambda: replacement_fixtures.with_replacement(
+        replacement_fixtures.heredity_sheet(radius=1)
+    ),
+}
+
+
+@pytest.mark.parametrize("law", list(FR51_SLOT_WRITERS))
+def test_a_block_beside_an_operator_that_rewrites_channel_slots_is_refused(law):
+    """FR-51's follow-up (parse only, about 1 s each; one row per operator family): replacement,
+    partition and insertion rewrite channel slots but not the block's per-slot fields, so a blocked
+    population beside one is refused by name (pump_composite.SLOT_WRITERS, @1 and @2 alike)."""
+    raw = FR51_SLOT_WRITERS[law]()
+    raw["model"]["channels"][0]["block"] = fr51_block()["model"]["channels"][0]["block"] | {
+        "reference": "membrane_voltage"
+    }
+    with pytest.raises(ConfigError, match=f"{law} rewrites channel slots"):
+        parse_spec(raw)
 
 
 def test_a_block_round_trips_alone_and_beside_factors():
