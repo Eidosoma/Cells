@@ -1999,6 +1999,25 @@ parse (`operators/wash_schedule.py`, `operators/species_labels.py`).
 
 **Status (23 November):** logged. A design note comes first.
 
+**Acceptance targets (24 November 2026, later; checked against the build after landing):**
+- **The example.** A 1 µL well holds 12 fmol of solute: 3 tagged and 9 base. A half-volume wash supplies 2 fmol of
+  unlabelled solute, so the tagged share falls from 25% to 18.75%.
+
+  | fmol | Before | Collected | Supplied | After |
+  | --- | ---: | ---: | ---: | ---: |
+  | Tagged | 3 | 1.5 | 0 | 1.5 |
+  | Base | 9 | 4.5 | 2 | 6.5 |
+  | Total | 12 | 6 | 2 | 8 |
+
+- **The checks:**
+  - label shares inside the cell are unchanged at the exchange;
+  - enabling labels leaves the physical trajectory bitwise identical;
+  - a no-event control;
+  - a full wash;
+  - a checkpoint immediately before the event, with the resume booking the sample exactly once.
+- **What the build has:** a resume through a wash with planted redo and skip, a full wash after an earlier wash, and
+  no-wash worlds unchanged. The example's numbers become a row in an existing test after FR-44 lands.
+
 ## FR-45 — Several ligands competing for one shared, wash-retained site capacity
 
 **Logged 23 November 2026 by the user, priority high.**
@@ -2023,6 +2042,18 @@ sites stay in place when the fluid is washed.
 - the books close through bind, wash and unbind.
 
 **Status (23 November):** logged. A design note comes first, weighing (a) and (b).
+
+**Acceptance targets (24 November 2026, later):**
+- **The example.** The liquid holds 8 fmol of free A and 4 fmol of free B. The surface holds 3 fmol of empty sites,
+  2 fmol occupied by A and 1 fmol occupied by B.
+- **The wash.** A half-volume wash collects 4 fmol of A, 2 fmol of B and no sites. All 6 fmol of sites keep their
+  pre-wash occupancy at the instant of exchange.
+  - Event counters are read before a later sample is interpreted, since bound ligand can dissociate after the wash.
+  - Buffer-supplied solute is accounted separately.
+- **The single-ligand limit,** and competition after re-equilibration. For independent 1:1 sites, A's occupied fraction
+  is (c_A/K_A)/(1 + c_A/K_A + c_B/K_B), and B's is the analogue. The c are the free equilibrium concentrations, solved
+  from each ligand's conserved amount in the finite volume.
+- **Conservation** of each ligand and of the shared site total holds across binding, washing and release.
 
 ## FR-46 — Binding from a shell's inner face: lumen ligands on membrane sites
 
@@ -2363,6 +2394,14 @@ loosens no bound beyond what that rounding requires. Every planted fault the che
 - **The refusal it lifts.** `scheduled_compartment_wash@1` version 1 refuses a node that a face touches (D246 item 5),
   and any neutral species crossing the node's surface by a declared path. The qualification lifts that refusal only
   for the qualified form: one neutral species crossing by a passive route.
+
+**Acceptance target (24 November 2026, later):**
+- **The setup:** equal volumes holding 8 and 2 fmol of free solute just before the withdrawal.
+- **The wash:** half the volume of the first compartment collects 4 fmol.
+- **At the exchange:**
+  - the first compartment keeps 4 fmol, plus any solute in the refill;
+  - the second still holds 2 fmol.
+- **The diffusion** before and after the event is compared with the analytical solution at successively smaller steps.
 
 ## FR-55 — An input-dependent closing rate for regulated availability
 
