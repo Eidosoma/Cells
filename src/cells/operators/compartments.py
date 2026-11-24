@@ -57,7 +57,17 @@ Refused at the definition, each with its reason (§1.4, §1.5):
    lead's ruling of 20 November 2026, amending that of 19 November on FR-2's question 11). The
    producer acts in its populations' cells only, and species_regulated_availability@2 reads its
    sources in its elements' cells and refuses an outside-node element (FR-7's U2 world with a
-   releasing compartment, D217).
+   releasing compartment, D217). FR-49 (D327; validation/fr49/REGISTRATION.md, Part H) admits two
+   more laws, each with its own check:
+   - templated_polymerisation@1, whose own check refuses an export into a compartment's node and
+     an outside degradation there (an export into a compartment is a later step, with its books
+     at the compartment's node); its routes in the owner's cytosol never touch the compartment;
+   - neutral_arrival_labels@1, refused here beside membrane state (FR-49's ruling 4, World L's
+     scope): today the labels refuse membrane state's admitted writers anyway, and this check
+     names the reason and stays fail closed if the labels' list widens. It runs before the
+     membrane-state wall's rule, so its reason is the one given.
+   Site occupancy, the compartment wash and site_occupant_replacement@1 stay off the list until
+   their own FR-49 pieces land.
 The stationary analysis does not admit the composite (its own ID check).
 
 Identity is a host-side map (identity_map; ARCHITECTURE.md's modular core, D174): per compartment,
@@ -134,6 +144,11 @@ TRAFFICKING_LAW = "scheduled_membrane_trafficking@1"
 # FR-7's unit producer (docs/ABUNDANCE_TO_FUNCTION_DESIGN.md; D217, D232): it writes membrane
 # state's units only, in its populations' cells (the lead's ruling of 20 November 2026).
 PRODUCER_LAW = "population_unit_turnover@1"
+# FR-49 (D327): expression, whose own check refuses exports and outside degradations at a
+# compartment's node (templated_polymerisation.check_compartments), and the labels, refused here
+# beside membrane state (refuse_labels_beside_membrane_state).
+EXPRESSION_LAW = "templated_polymerisation@1"
+LABELS_LAW = "neutral_arrival_labels@1"
 # §4's admitted list (fails closed). @3 itself is the composite's inner model. Membrane state is
 # admitted only together with one of its admitted writers (check_definition).
 ADMITTED = (
@@ -149,6 +164,8 @@ ADMITTED = (
     TRAFFICKING_LAW,
     "species_regulated_availability@2",
     PRODUCER_LAW,
+    EXPRESSION_LAW,
+    LABELS_LAW,
 )
 # Membrane state's fields that its writers write (membrane_state.ACCEPTS_WRITES): the wall's door
 # admits a writer of any of them only if it is one of the admitted writers (check_definition).
@@ -564,9 +581,26 @@ def refuse_unwritten_state(entries):
             )
 
 
+def refuse_labels_beside_membrane_state(entries):
+    """7. FR-49's ruling 4 (D327): neutral_arrival_labels@1 is qualified beside a compartment
+    without membrane state (fr49-compartment-compositions-v1, World L), so a compartment world
+    that declares both is refused by name. Today the labels refuse membrane state's admitted
+    writers beside a compartment (trafficking and the unit producer), and membrane state alone is
+    the wall's own refusal, so no admitted world changes. The check names the reason and keeps the
+    pair refused if the labels' list widens before a world qualifies it."""
+    laws = {op.LAW_ID for op, _, _ in entries}
+    if LABELS_LAW in laws and STATE_LAW in laws:
+        raise ConfigError(
+            f"{LAW_ID}: {LABELS_LAW} beside a compartment is qualified without {STATE_LAW} "
+            "(FR-49's World L; ruling 4), so a compartment world that declares both is refused "
+            "until a world qualifies labels beside membrane state there"
+        )
+
+
 def check_definition(spec, declaration):
-    """7. The admitted list, which fails closed, replacement@1's owners, and membrane state only
-    with its admitted writers; then 5. (version 1.2), which reads the admitted operators' routes."""
+    """7. The admitted list, which fails closed, replacement@1's owners, the labels without
+    membrane state (FR-49), and membrane state only with its admitted writers; then 5. (version
+    1.2), which reads the admitted operators' routes."""
     owners = {c.owner for c in declaration.compartments}
     entries = composite_spec.entries(spec)
     for op, _, schedule in entries:
@@ -590,6 +624,7 @@ def check_definition(spec, declaration):
                     "a donor; a donor copy takes the donor's cytosolic amounts only, so the "
                     "newcomer would not be a copy (door R)"
                 )
+    refuse_labels_beside_membrane_state(entries)  # FR-49: before the wall's rule, so its reason.
     refuse_unwritten_state(entries)
     # 5., version 1.2: per compartment, in declared order (positional: bypasses in the silence
     # tests and FR-1's plants replace it with a positional-only lambda).
