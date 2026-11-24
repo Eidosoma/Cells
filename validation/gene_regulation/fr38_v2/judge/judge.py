@@ -131,27 +131,32 @@ def read_references(ref_dir, families, mapping):
 
 
 def sizing_report(ref):
-    """CRITERIA.md §6's sizing rule on the references' own plant entries: a must-catch C2 plant's
-    relative distance against 10 × the expected honest relative tolerance (reported)."""
-    rows = []
+    """CRITERIA.md §6's sizing rule on the references' own plant entries (reported, before any
+    run): each entry's relative distance against 10 × the expected honest relative tolerance of
+    its readout's kind, and per must-catch unit the best margin among the readouts that catch it.
+    C1 catches (P2, and P1″ at an idle fate) are bitwise, so the rule does not size them."""
+    rows, units = [], {}
     for e in ref.plants:
-        q = e["quantity"]
+        q, plant = e["quantity"], e["plant"]
         kind = (
-            "route2"
-            if q.startswith("route2_")
-            else "G"
-            if q == "G_minus_G0"
-            else "heat"
-            if q.startswith("H_") and q != "H_tx_release"
-            else "label"
-            if q.startswith(("label_", "released_present_gross_"))
+            "route2" if q.startswith("route2_") else "G" if q == "G_minus_G0"
+            else "heat" if q.startswith("H_") and q != "H_tx_release"
+            else "label" if q.startswith(("label_", "released_present_gross_"))
             else "amount"
-        )
-        by_c1 = e["plant"] == "P2" or (e["plant"] == "P1″" and e["honest"] == 0.0)
+        )  # fmt: skip
+        by_c1 = plant == "P2" or (plant == "P1″" and e["honest"] == 0.0)
         need = 10.0 * spec.SIZING_EXPECTATION[kind]
+        if ref.family == "AF" and plant == "P1":
+            role = "reported only"
+        elif plant == "P8" and q in spec.P8_NEGATIVE_CONTROL:
+            role = "negative control"
+        elif ref.family == "AF" and plant == "P1″" and not by_c1:
+            role = "not must-catch"
+        else:
+            role = "catch"
         rows.append(
             {
-                "plant": e["plant"],
+                "plant": plant,
                 "run": e["run"],
                 "quantity": q,
                 "time_s": e["time_s"],
@@ -159,10 +164,41 @@ def sizing_report(ref):
                 "expected_kind": kind,
                 "ten_times_expectation": need,
                 "caught_by": "C1" if by_c1 else "C2",
+                "role": role,
                 "below_ten_times": (not by_c1) and e["relative_distance"] < need,
             }
         )
-    return rows
+        if role != "catch":
+            continue
+        if by_c1:
+            unit = f"{e['run']} {q}"
+        elif plant in ("P1", "P1′", "P1″"):
+            unit = "any run"
+        else:
+            unit = e["run"]
+        margin = None if by_c1 else e["relative_distance"] / need
+        prev = units.get((plant, unit), 0.0)
+        units[(plant, unit)] = None if (margin is None or prev is None) else max(prev, margin)
+    summary = [
+        {
+            "plant": p,
+            "unit": u,
+            "caught_by": "C1" if m is None else "C2",
+            "best_margin_over_ten_times": m,
+            "below_ten_times": m is not None and m < 1.0,
+        }
+        for (p, u), m in sorted(units.items())
+    ]
+    return {"entries": rows, "units": summary}
+
+
+def _largest_checks(ref):
+    """The references' own checks (SPEC.md §3, item 7): each key's largest over the runs."""
+    out = {}
+    for run in ref.runs.values():
+        for k, v in run.checks.items():
+            out[k] = max(out.get(k, 0.0), abs(v))
+    return out
 
 
 # ------------------------------------------------------------------ the engine records
@@ -1084,6 +1120,7 @@ def judge(ref_dir, export_dir, families=None, mapping=None):
             "faults": ref.faults,
             "notes": ref.notes,
             "sizing": sizing_report(ref) if ref.accepted else [],
+            "reference_checks_largest": _largest_checks(ref),
         }
     first = order[0]
     if not refs[first].accepted:

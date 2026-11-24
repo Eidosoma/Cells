@@ -95,8 +95,9 @@ def close(a, b, rel=spec.REL_INPUT):
     return abs(a - b) <= rel * max(abs(a), abs(b))
 
 
-def compare_inputs(expected, got, path=""):
-    """Every expected key present and equal: numbers to 10⁻¹² relative, the rest exactly."""
+def compare_inputs(expected, got, path="", inexact=None):
+    """Every expected key present and equal: numbers to 10⁻¹² relative, the rest exactly. Numbers
+    within the tolerance but not the same double are listed in `inexact` (reported)."""
     faults = []
     if isinstance(expected, dict):
         if not isinstance(got, dict):
@@ -105,13 +106,13 @@ def compare_inputs(expected, got, path=""):
             if k not in got:
                 faults.append(f"{path}/{k}: missing")
             else:
-                faults += compare_inputs(v, got[k], f"{path}/{k}")
+                faults += compare_inputs(v, got[k], f"{path}/{k}", inexact)
         return faults
     if isinstance(expected, list):
         if not isinstance(got, list) or len(got) != len(expected):
             return [f"{path}: expected {expected!r}, found {got!r}"]
         for i, (a, b) in enumerate(zip(expected, got, strict=True)):
-            faults += compare_inputs(a, b, f"{path}[{i}]")
+            faults += compare_inputs(a, b, f"{path}[{i}]", inexact)
         return faults
     if isinstance(expected, bool) or isinstance(expected, str) or expected is None:
         return (
@@ -123,6 +124,8 @@ def compare_inputs(expected, got, path=""):
         return [f"{path}: expected the number {expected!r}, found {got!r}"]
     if not (math.isfinite(got) and close(float(expected), float(got))):
         return [f"{path}: expected {expected!r}, found {got!r} (beyond 10⁻¹² relative)"]
+    if inexact is not None and float(expected) != float(got):
+        inexact.append(f"{path}: {got!r} where SPEC.md's double is {expected!r}")
     return []
 
 
@@ -251,7 +254,9 @@ def read_reference(path, family, profile, mapping, *, expected_inputs=None):
     ref.inputs = inputs
     # inputs
     if expected_inputs is not None:
-        faults += [f"inputs{f}" for f in compare_inputs(expected_inputs, inputs)]
+        inexact = []
+        faults += [f"inputs{f}" for f in compare_inputs(expected_inputs, inputs, "", inexact)]
+        notes += [f"inputs{x} (within 10⁻¹² relative)" for x in inexact]
         notes.append(
             "SPEC.md inputs the echo does not carry (structure, not a fault): "
             + "; ".join(spec.UNECHOED_STRUCTURE)
