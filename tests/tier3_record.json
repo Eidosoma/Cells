@@ -40,12 +40,14 @@
   "/mnt/workspaces/Cells/d172-restructure-20261115-01/endgame/c1-3c10b833/tiers-3-attrib/c1-54",
   "/mnt/workspaces/Cells/d172-restructure-20261115-01/endgame/c1-3c10b833/tiers-3-attrib/c1-57",
   "/mnt/workspaces/Cells/fr43-20261123/part1/tiers/tier3-run3",
-  "/mnt/workspaces/Cells/fr43-20261123/part2/tiers/tier3-run-2b"
+  "/mnt/workspaces/Cells/fr43-20261123/part2/tiers/tier3-run-2b",
+  "/mnt/workspaces/Cells/fr43-part1-gaps-20261124/precheck/run-a4e638c2-tier3/tier-3"
  ],
  "collected": [
   "/mnt/workspaces/Cells/test-audit-20261116-01/collect/c1-3c10b833.json",
   "/mnt/workspaces/Cells/fr43-20261123/part1/tiers/tier3-run3/collected.json",
-  "/mnt/workspaces/Cells/fr43-20261123/part2/tiers/tier3-run-2b/collected.json"
+  "/mnt/workspaces/Cells/fr43-20261123/part2/tiers/tier3-run-2b/collected.json",
+  "/mnt/workspaces/Cells/fr43-part1-gaps-20261124/precheck/run-a4e638c2-tier3/tier-3/collected.json"
  ],
  "time": "file wall seconds only: the -q logs carry no per-test times",
  "outcomes": [
@@ -126,6 +128,15 @@
    ],
    "note": "FR-43 part 2B's world-running files, measured cold at 253dce46 (main c9687d68 merged): both reached the 90 s cap on the timed cores, then ran to their end on CPU 4 (test_shared_inventory_pair_volume 139.04 s, 3 passed; test_shared_inventory_volume 94.76 s, 2 passed)",
    "evidence": "/mnt/workspaces/Cells/fr43-20261123/part2/tiers/tier3-run-2b/"
+  },
+  {
+   "decision": "D365",
+   "tag": "fr43-part1-gaps-landed-2026-11-25",
+   "files": [
+    "tests/unit/test_species_cap_large.py"
+   ],
+   "note": "FR-43 part 1's 256-species case (D365, D372), run at a4e638c2 from its frozen snapshot on CPU 7 without a lock (283.16 s, 4 passed); added at the landing, which folded only the tier 1 and 2 rows. Its file's 1,024-row tests were in the record already.",
+   "evidence": "/mnt/workspaces/Cells/fr43-part1-gaps-20261124/precheck/run-a4e638c2-tier3/"
   }
  ],
  "files": {
@@ -4419,8 +4430,9 @@
    ["test_assembly_ensemble_calcium_aggregation", "passed"],
    ["test_cpu_gpu_agreement", "skipped"]
   ]},
-  "tests/unit/test_species_cap_large.py": {"run": "/mnt/workspaces/Cells/fr43-20261123/part1/tiers/tier3-run3", "log": "/mnt/workspaces/Cells/fr43-20261123/part1/tiers/tier3-run3/logs/tests__unit__test_species_cap_large.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 3}, "seconds": 238.48, "collected": 3, "reached": 3, "aligned": true, "tests": [
+  "tests/unit/test_species_cap_large.py": {"run": "/mnt/workspaces/Cells/fr43-part1-gaps-20261124/precheck/run-a4e638c2-tier3/tier-3", "log": "/mnt/workspaces/Cells/fr43-part1-gaps-20261124/precheck/run-a4e638c2-tier3/tier-3/logs/tests__unit__test_species_cap_large.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 4}, "seconds": 283.16, "collected": 4, "reached": 4, "aligned": true, "tests": [
    ["test_a_1024_species_chain_meets_its_closed_form_and_books_its_free_energy_drop", "passed"],
+   ["test_a_256_species_chain_meets_its_closed_form_under_the_default_trace_budget", "passed"],
    ["test_a_1025th_species_is_refused_at_the_parse", "passed"],
    ["test_its_windowed_run_and_a_two_world_batch_are_admitted_under_2_gib", "passed"]
   ]},

@@ -11,8 +11,12 @@ It asks for them at 16 rows (the control), 32, 256 and 1,024 rows. The design no
 asked for them on the CPU. These are the landed engine's figures.
 
 `performance.json`, beside this note, holds:
-- every repeat's figures, record, command and environment;
+- every repeat's timings, commands and busy fractions;
+- one shared source and one shared environment, the first record's (the twelve environments were equal, apart from the
+  listing order of the two BLAS libraries);
 - the design's records, which are compared below.
+
+The ledger residuals quoted below are in the run records on the workspace disk, not in the JSON.
 
 **Engine models it runs:**
 - `resolved_pump_composite@1` over `resolved_pump_tissue@3`, with `local_species_reactions@1`, whose links are
@@ -76,7 +80,9 @@ Each figure is the median of three repeats, with the range in parentheses.
 | 256 (3 + 253) | 24.3 (23.0–24.8) | 16.5 (15.9–18.2) | 3.3 (3.2–3.6) | 939 (938–942) | 1.4 (1.4–2.2) | 2.2 |
 | 1,024 (3 + 1,021) | 47.0 (44.1–47.1) | 455 (429–463) | 91 (86–93) | 1,746 (1,742–1,748) | 3.9 (3.5–4.4) | 5.4 |
 
-- **The step's cost** grows about as the square of the rows above 32, from the dense [rows, route] layout (§1.6).
+- **The step's cost** grows with local exponents of 1.7 between 32 and 256 rows and 2.4 between 256 and 1,024 rows
+  (957 times for 32 times the rows, an overall exponent of 2.0). §1.6 attributes the growth to the dense [rows, route]
+  layout; this report does not measure the cause.
 - **Compile time** grows slowly, since sums above 16 terms fold by a scan.
 
 ## Against the design note
@@ -89,16 +95,17 @@ the note's unrolled arm, and the larger sizes with its scan arm (§1.4).
 | --- | --- | --- | --- | --- |
 | 16 | unrolled | 20.4 / 18.4 | 0.26 / 0.23 | 835 / 833 |
 | 32 | scan | 20.2 / 21.0 | 0.47 / 0.48 | 867 / 866 |
-| 256 | scan | 23.1 / 24.3 | 16.4 / 16.5 | 937 / 939 |
+| 256 | scan | 23.1 / 24.3 | 16.4 / 16.5 | 935 / 939 |
 | 1,024 | scan | 42.2 / 47.0 | 431 / 455 | 1,738 / 1,746 |
 
 **They agree:**
-- The accuracy and the memory are the note's.
-- **The step's cost follows the sibling thread's load.**
-  - The least loaded repeats (CPU 20 at 7% to 9% busy) took 15.9 ms at 256 rows and 429 ms at 1,024, against the
-    note's 16.4 and 431.
-  - The most loaded (25% to 27% busy) took 18.2 and 463.
-- **Compile at 1,024 rows** is 5% to 12% above the note's single run, within the 25% spread the note reports.
+- The accuracy and the memory are the note's. (Peak memory compares the process's peak right after the run in both, at
+  256 rows 935 MiB in the note's record and 939 here.)
+- **The step's cost** is within 6% of the note's single runs at 32, 256 and 1,024 rows. At 16 rows it is 12% below
+  (0.23 against 0.26 ms). The note's figure lies inside our range at every size.
+- **The spread between the three repeats** is 57% at 16 rows (one slow repeat), 10% at 32, 15% at 256 and 8% at 1,024.
+  Three repeats per size cannot show a cause, so none is given.
+- **Compile at 1,024 rows** is 4.5% to 11.6% above the note's single 42.2 s, within the 25% spread the note reports.
 
 **The note's headline 1,024-row figures are its unrolled arm** (214 s to compile, 3.9 GiB). The landed engine never
 runs that arm above 16 terms.
@@ -129,8 +136,12 @@ GPU qualification (D330, D336). Since D336, the vector windows refuse the compos
 ## Records
 
 - **Each figure:** `/mnt/workspaces/Cells/fr43-part1-gaps-20261124/perf/out/run-ROWS-rREPEAT.json`, with its log. The
-  queue's log and the unit's memory peak (1.6 GB) are beside them.
+  queue's log and the unit's memory peak (1.56 GiB) are beside them.
 - **`performance.json`** is the output of `scripts/profile_species_chain.py summary` over the twelve records, copied
   here unchanged. The design's CPU records (`out/v2`) and L4 records (`out/gpu`) are read beside them.
 - **Provenance of this note.** FR-43 part 1's builder wrote this text. The harness refused the builder's own write of
   a report draft, and the user approved the lead committing the builder's text (24 November 2026, D372).
+- **Corrections, 25 November 2026.** Rechecking the text against the twelve records after its gate, the builder found
+  errors in it, and this version corrects them: a withdrawn claim that the step cost follows the sibling thread's
+  load; what `performance.json` holds; the compile and memory percentages; the growth exponents; and the memory peak.
+  The measured figures are unchanged.
