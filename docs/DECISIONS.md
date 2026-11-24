@@ -11180,3 +11180,51 @@ interfaces. Outside modules take the same shape in their own namespace.
 **Open until the morning:**
 - the scope: laws only, or models, operators and kinds too;
 - the advisor's review of identity stability across the module system and the Lean lane.
+
+## D346: the user's decisions on the ID rename's scope and on legacy (amends D345)
+
+2026-11-24, about 16:35 UTC. The advisor reviewed the plan with the lead. The decisions are the user's.
+
+**The scope is everything live.** Laws, models, operators, kinds, solvers, the heat choice and execution mappings all
+take `cells.<family>.<name>@major`, from a short closed list of families:
+- model, operator, kind, solver, heat and execution;
+- one family per law interface: channel, route, reaction, cycle, junction, exchange, rate_factor and free_energy.
+
+Interface IDs (`cells.route_law@1` and the like) and schema IDs (`cells.declarations@2`) keep their names.
+
+**No compatibility beyond this repository.** The user's private experiments run no legacy model, and the user renames
+them.
+
+**Legacy (`src/cells/legacy`, 321 files and about 75,600 lines; 195 of 888 test files import it):**
+- **The parts used by neither BETSE nor the calcium ensemble are deleted,** together with the tests and drivers that
+  depend only on them. The exact removal list is prepared read-only tonight, for the user's OK tomorrow.
+- **The legacy-based BETSE comparisons (39 drivers) and the calcium ensemble families, with their GPU tests, are
+  ported to the modern models first.** Their legacy remainder goes after the ports.
+- **The one live law that imports legacy, `kinetic_pump_binding.py`, is ported.**
+- **Main is tagged before any deletion,** as the BETSE-native removal was.
+- **Until legacy is gone,** its remaining IDs stay bare and frozen, and old live IDs are refused by a table that names
+  their new keys.
+
+**The scale priorities:**
+- **Catalogue size:** the rename.
+- **Gate throughput:** about an hour locked per gate on two lanes. The time the deletion saves is measured.
+
+**The order, from 25 November:**
+1. Land what is gated.
+2. Tag main.
+3. Delete legacy's unused part, with its own gate, a removal list (D224) and re-measured tiers.
+4. Run the rename's three read-only checks: IDs feeding numbers, the registry-built list, and the parse sites. Then
+   generate the mapping from the registries, with a collision report.
+5. The rename, with its own gate.
+6. Re-merge the branches in flight.
+
+The BETSE and ensemble ports are a separate, multi-day work item.
+
+**Never rewritten by the rename script:**
+- tagged specs, references, judges and their errata still in the tree (FR-50's `judge.py`, `REGISTRATION.md`,
+  `JUDGE_ERRATUM_1.md` and `references/` among them);
+- the crossrev replication record;
+- `lean/`;
+- past decision entries.
+
+The Lean lane gets the mapping table, through the user, before the landing.
