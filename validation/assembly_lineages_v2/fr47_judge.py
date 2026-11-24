@@ -57,6 +57,23 @@ def _quantity_problems(q, where):
     return []
 
 
+def founder_of(ref):
+    """The founder's molecules per place, as the references' world block echoes them."""
+    return dict(ref.get("world", {}).get("founder_molecules", {}))
+
+
+def rung_of(ref):
+    """A gated file's N_g, the founder's G@wall + H@wall (each rung is its own file), else None."""
+    f = founder_of(ref)
+    return int(f["G@wall"] + f["H@wall"]) if {"G@wall", "H@wall"} <= set(f) else None
+
+
+def engine_place(name):
+    """The engine's place for a reference observable: the references write the wall as `@wall`, the
+    engine as `@membrane`."""
+    return name.replace("@wall", "@membrane")
+
+
 def read_reference(path):
     """(doc, summary, problems): one reference file read by structure (SPEC.md §5, amended)."""
     doc = json.loads(Path(path).read_text())
@@ -109,7 +126,7 @@ def read_reference(path):
                "stops": len(doc.get("stops", [])),
                "d": {k: len(d.get(k) or []) for k in ("pairs", "stops", "intervals")},
                "gap": len(doc.get("gap", []) or []),
-               "plants": len(doc.get("plants", []))}  # fmt: skip
+               "plants": len(doc.get("plants", [])), "rung": rung_of(doc)}  # fmt: skip
     return doc, summary, problems
 
 
