@@ -2,6 +2,8 @@
 
 **Status: a plan for the morning's review,** reworked after D369 and D374, and corrected after the review
 (24 November 2026, night). Nothing in it is built. It was written read-only at main `ce4780d2`.
+- **Frozen after the widening below** (24 November), until the dry run reports and the user chooses the route in the
+  morning.
 - **Line citations are at `ce4780d2`,** with one exception. FR-50's landing (1939563e) moved lines in
   `kinds/transporter.py`, so those are given at main `c9da0fdb`, where the cited refusals still stand.
 - By name, no other file cited by line has changed up to `c9da0fdb`. An earlier version of this note said
@@ -43,6 +45,9 @@
   - **inside the deletion batch:** @3's checks against `resolved_tissue@8` stay for now and move to an
     independent validation reference at the end (Q5 (a)); `source_decay@1`, `emt_mirna@1` and
     `passive_pair@1` are deleted, and the conftest's users point at a live world (Q6 (a));
+  - **Q5 (a) is widened to `resolved_tissue@1` and `@2`** (the lead's ruling on the review, 24 November). Their
+    model code is live and live-subject tests parse both, so they are used (D369's test). In route C the first batch
+    moves their dispatch to the live registry, so that a kept legacy hub is not what live code needs;
   - **waiting for the route:** which engine gaps to request, and this plan's three lead rulings;
   - tolerances are derived in each re-expression's registration, never ruled.
 - **D371, on the rename's Q3:** the 18 live pieces that legacy also spells are re-spelled in legacy's files
@@ -73,15 +78,15 @@ Paths are repository paths unless they start with `/mnt/`.
   with their nested `er_calcium@1`, `spatial_extracellular@2` and `finite_extracellular@2`.
 - **`spatial_extracellular@2`,** for the JUPITER readiness check.
 - **`resolved_tissue@8`,** @3's reference world, kept for now (Q5 (a)).
-- **`resolved_tissue@1` and `@2`,** which earlier versions missed. Live-subject tests parse both, and their model
-  code is live; only legacy's dispatch of the IDs is at stake (rows A1 and A9, §7.3).
+- **`resolved_tissue@1` and `@2`,** which earlier versions missed. Live-subject tests parse both (row A12), and
+  their model code is live. Q5 (a), as widened, moves their dispatch to the live registry (§7.3).
 - **`source_decay@1`,** the conftest's world. It is deleted in the batch, and its users are retargeted
   (Q6 (a)).
 
 No registered protocol in force names a legacy model, and the claimed BETSE parity runs on live models.
 
-**The coverage table (§3)** has 50 rows by capability and consumer:
-- 39 capability rows;
+**The coverage table (§3)** has 51 rows by capability and consumer:
+- 40 capability rows;
 - 11 rows for the protein inventory's law records that still point into legacy (group I).
 
 Each row is classed as canonical, expressible today, needing an engine feature, or dropped, and states how
@@ -190,7 +195,8 @@ use.
    **Cost:** about 42 minutes of the lane. The measured full tiers stage was 2,531 s on 24 November
    (`/mnt/workspaces/Cells/fr51-slot-refusal-20261124/gate-e79cbade/gate.log`). Files that import legacy
    fail at collection, so it is no longer.
-4. Tier 3, the same command with `--tier 3`: estimated at 1–2 hours of a lane. Of its recorded 87,166
+4. Tier 3, the same command with `--tier 3`. It is not optional here: all six test files of row A12 are tier 3, so
+   tiers 1+2 alone cannot show those uses. The run is estimated at 1–2 hours of a lane. Of its recorded 87,166
    test-seconds, the 204 files that reach legacy mostly fail at collection.
 5. Classify every failing file. It is legacy-subject if it imports or names only legacy models; otherwise
    it is a U2 use, reviewed by hand. The list goes to §9's removal list. The passing files' seconds give
@@ -208,7 +214,7 @@ use.
 have no use left.
 
 **Evidence levels.** A wrong "Canonical" is the silent-loss direction, so each row's basis is stated.
-- **Read here,** at the cited lines: A1, A4–A6, A9, B2's refusal, B3–B5, C2, D9, E1–E3, P1, G1, G3, and
+- **Read here,** at the cited lines: A1, A4–A6, A9, A12 (each test's parse call), B2's refusal, B3–B5, C2, D9, E1–E3, P1, G1, G3, and
   the refusal sites of §4.
 - **By registry name or protocol only:** A2, A7, A8, C1, D3, D4, D6 (the registry dump), and D7, D8 (the
   parity protocols' model IDs).
@@ -223,7 +229,7 @@ Feature or Drop, and the user is told.
 
 | # | Capability (legacy home) | Uses | Class | Canonical piece or gap |
 |---|---|---|---|---|
-| A1 | Passive resolved tissue: membranes, outside regions, faces, field solver, capacitive closure (`resolved_tissue@1`, live `models/surface_tissue.py`) | @3 is built on its spec (`definitions/surface_tissue_spec.py`); `test_surface_tissue.py` and `test_scalar_tail_reuse.py` parse `resolved_tissue@1` (U2) | Canonical | the code is live; legacy's dispatch of the ID moves to the live registries |
+| A1 | Passive resolved tissue: membranes, outside regions, faces, field solver, capacitive closure (`resolved_tissue@1`, live `models/surface_tissue.py`) | @3 is built on its spec (`definitions/surface_tissue_spec.py`). The ID itself: row A12 | Canonical | the code is live; legacy's dispatch of the ID moves to the live registry (row A12) |
 | A2 | Gated Na, K and Cl channels registered on @3: Kv1.1–1.6, Kir2.1, Nav1.2, the three leaks | @3 | Canonical | the 11 `channel_law@1` laws |
 | A3 | The catalogue's other Na/K/Cl gated laws (Kv2, Kv3, `k_fast`, Nav1.3, Nav1.6 persistent, the `navrat` set) | D211's port programme: "port as is" in `visualizer/data/laws/law_port.json` | Expressible | register one module per law on @3, as the Kv1 extraction did (`laws/channels/kv1_channels.py:7–11`). Their kernels are live in `laws/channels/`, and the deletion leaves them |
 | A4 | Calcium-permeant channel laws: 14 CaV laws with `cav1p2_m2h@1`, cation leaks with a Ca share, HCN laws with a Ca share | the calcium ensemble (Cav1.2 in the gated and IP3 clusters); D211's port programme ("port as is" for all 22 CaV and HCN laws) | Feature | G-1 |
@@ -231,9 +237,10 @@ Feature or Drop, and the user is told.
 | A6 | Calcium-activated K (`cagpotassium_numeric_mM_scale@1`) | D211's port programme ("port as is", U33) | Feature | G-3 |
 | A7 | Junction gating | @3 | Canonical | `junction_voltage_relaxation@1`, `junction_series_gates@1` |
 | A8 | Na/K pump on maintained reservoirs | @3 | Canonical | `nak_atp_mass_action_positive@1` |
-| A9 | @3's reference world: the gated catalogue model `resolved_tissue@8` (live `models/surface_kinetic.py`, with the legacy wrapper `legacy/models/surface_catalog.py`) | `tests/unit/test_surface_pump_v3_gates_equivalence.py` and @3's tests through `validation/tissue/surface_pump_v3_fixtures.py:107–129` (U2). **`resolved_tissue@2`** is parsed by `test_surface_kinetic.py`, by `test_surface_pump.py` and `test_vector_windows.py` through `surface_pump_fixtures.reduction`, and by `test_rehost_probe.py` (`validation/assays/rehost_probe.py:304–307`). PROGRESS records that G0 probe (lines 4625–4635) and its plan step 8 cites it (U2, U3) | Canonical code, but its dispatch is legacy's | kept for now and moved to an independent validation reference at the end (Q5 (a), D374) |
+| A9 | @3's reference world: the gated catalogue model `resolved_tissue@8` (live `models/surface_kinetic.py`, with the legacy wrapper `legacy/models/surface_catalog.py`) | `tests/unit/test_surface_pump_v3_gates_equivalence.py` and @3's tests through `validation/tissue/surface_pump_v3_fixtures.py:107–129` (U2) | Canonical code, but its dispatch is legacy's | kept for now and moved to an independent validation reference at the end (Q5 (a), D374). Its dispatch moves to the live registry with row A12's |
 | A10 | Cell clusters in finite and spatial baths (`finite_extracellular@1`–`@3`, `spatial_extracellular@1`–`@2`) | the JUPITER check (`spatial_extracellular@2`, U3); nested in the calcium ensemble (`spatial_extracellular@2`, `finite_extracellular@2`); the REF-era drivers are not uses | Expressible | the same physics as @3 worlds (constant-field leaks, Kv1.5, the pump, junctions, faces), not bitwise |
 | A11 | The oldest families (`bioelectric_cell@1`, `bioelectric_pair@1`, `multispecies_membrane@1`, `voltage_gated_membrane@1`, `physical_ionic_graph@1`, `emt_mirna_pair@1`, `spatial_extracellular@3`) | none; helpers inside the A10 line | Drop | superseded by @3; group H's pointers corrected |
+| A12 | Two live tissue models reached only through legacy's dispatch: `resolved_tissue@1` (`models/surface_tissue.py`, `definitions/surface_tissue_spec.py`) and `resolved_tissue@2` (`models/surface_kinetic.py`, `definitions/surface_kinetic_spec.py`) | **@1 (U2):** `test_surface_tissue.py` (parses and runs it) and `test_scalar_tail_reuse.py` (parses it). **@2 (U2):** `test_surface_kinetic.py` (parses it); `test_surface_pump.py:161`, the reference for `resolved_pump_tissue@1`, and `test_vector_windows.py:241`, the ionic simulation that `vmap` refuses, both through `surface_pump_fixtures.reduction`; and `test_rehost_probe.py` through `validation/assays/rehost_probe.py:304–307`, which skips without its saved observation. PROGRESS records that G0 probe (lines 4625–4635) and its plan step 8 cites it (U3). **Both (U1):** `ensemble/ionic.py` admits them as simulations (`:177, 196`). All six test files are tier 3 | Canonical | the code is live. C-1 moves the dispatch to the live registry (Q5 (a), widened; §7.3) |
 
 ### B. Calcium
 
@@ -346,8 +353,8 @@ it is in `inventory_records_now.json`.
 | I10 | `cell_zone_transporter@1` (U46) | `legacy/processes/cell_zone_transport.py` | port as is | D211's port programme | Feature, or Drop. Not portable "as is": its equations are "those of the BETSE v1.5.0 transporter network", with that network's conventions (`cell_zone_transport.py:1–10`) | a neutral re-expression, the user's call beside D211 |
 | I11 | `mitochondrial_passive_continuous_si@1` (U47, inner-membrane permeability) | `legacy/processes/mitochondrial_passive.py` | not a port | none (row C4) | Drop | U47 is left with no law record. The nearest canonical pieces are the transporter kind's mitochondrial laws and the proton-leak routes |
 
-**Tally, 50 rows, after D374:**
-- **Canonical: 17** (A1, A2, A7, A8, A9, B1, C1, C3, C4, D3, D4, D6, D7, D8, E1, G3, I7). For C3, C4 and I7,
+**Tally, 51 rows, after D374 and the widening of Q5 (a):**
+- **Canonical: 18** (A1, A2, A7, A8, A9, A12, B1, C1, C3, C4, D3, D4, D6, D7, D8, E1, G3, I7). For C3, C4 and I7,
   the legacy forms are dropped.
 - **Expressible: 8** (A3, A10, B2, D1, E4, G1, I8, I9). D1 has no use since D374.
 - **Feature: 11:**
@@ -538,8 +545,18 @@ every route. Nothing supports that, so it is withdrawn.
 
 - **The deletion batch** (D374), with its dry run (§2), a tag and a removal list the user approves:
   - the physiology stack and the 18 REF-era drivers with their tests, records kept;
-  - Q5 (a): `resolved_tissue@8`'s dispatch moves into the live registries, and @3's checks keep it for now. The
-    ruling covers @8 only; `@1` and `@2` need the same move, which is the lead's to rule (§13);
+  - Q5 (a), widened by the lead: the dispatch of `resolved_tissue@1`, `@2` and `@8` moves into the live registry,
+    and @3's checks keep @8 for now.
+    - **What moves:** parse (`legacy/registration.py:1196–1211` and `:1444–1447`), `model_for` (`:794–795`,
+      `:806–807`, `:832–833`) and `to_dict` (`:1946–1949`, `:1977–1980`). The hub has no `control_values` entry for
+      them. The model table would gain their rows, for the builder to confirm, and
+      `ensemble/ionic.py`'s admitted rows for the three stay (`:177, 196, 202`). It is small, an estimated half agent-day inside C-1's range.
+    - **The entries match by exact type** (`type(spec) is X`). `SurfaceKineticModel` derives from
+      `SurfaceTissueModel` (`definitions/surface_kinetic_spec.py:114`), and legacy classes that stay in C's core
+      derive from one or the other: `SurfaceCalciumModel` (`legacy/core/surface_calcium_spec.py:41`), `SurfaceWaterModel`
+      (`legacy/core/surface_water_spec.py:40`) and `SurfaceRedistributionModel`
+      (`legacy/core/surface_redistribution_spec.py:40`). An `isinstance` check before the legacy miss would catch
+      them. This is a consequence for the lead to confirm: the general ruling on dispatch still waits (§13);
   - Q6 (a): the three inline families go, and the conftest's 9 users point at a live world;
   - the parity ladder's `identifier` import made direct (row G3);
   - group H's document pointers corrected.
@@ -557,7 +574,7 @@ every route. Nothing supports that, so it is withdrawn.
 | Step | Content | Agent-days | Gates and lanes |
 |---|---|---|---|
 | A-0 | Captures: bitwise windows for the cores, and the science set | 0.5 | about 2 lane-hours |
-| A-1 | The batch's live-side items: the @8 dispatch, with its wrapper `legacy/models/surface_catalog.py` folded into live code; the conftest; the `identifier` import; the JUPITER and integrated-ensemble worlds onto @3 (rows A10, E4) | 2.5–4 | one full gate |
+| A-1 | The batch's live-side items: the `resolved_tissue@1`, `@2` and `@8` dispatch (§7.3), with @8's wrapper `legacy/models/surface_catalog.py` folded into live code; the conftest; the `identifier` import; the JUPITER and integrated-ensemble worlds onto @3 (rows A10, E4) | 2.5–4 | one full gate |
 | A-2 | Relocate the used cores under neutral names, with `scripts/source_moves.py`: one map, its rewriter and verifier, 112 modules (§7.5). A neutralising commit follows (§5). The dispatch stays in the hub until A-3 (§12, risk 1). Proven bitwise | 4–6 | one full gate and the compare, about 2 lane-hours |
 | A-3 | The deletion batch: the dry run, the approved removal list, legacy deleted whole | 2–3 | dry run about 45 minutes; one full gate; tier 3 once (1–2 h); re-measure (about 1 h) |
 | A-4 | Re-express the relocated cores as the features land | 8–12 | 2–3 gates; judged runs 2–4 lane-hours |
@@ -592,7 +609,7 @@ every route. Nothing supports that, so it is withdrawn.
 used, and kept the rest until it was ported. D348, later the same afternoon, withdrew that: "no partial deletion",
 because 180 files outside legacy used both the kept and the deletable parts. Two things have changed.
 - **D374 retired the physiology stack,** so BETSE needs no legacy. What C keeps is the ensemble's core, with
-  `spatial_extracellular@2` for JUPITER and the @8 path.
+  `spatial_extracellular@2` for JUPITER. The `@1`, `@2` and `@8` paths leave for the live registry at C-1.
 - **D348's objection is smaller:** its 180 files are down to 15 direct hand edits and 50 fixture files still open,
   below.
 
@@ -601,7 +618,8 @@ because 180 files outside legacy used both the kept and the deletable parts. Two
 - the `ensemble/cluster.py` and `coupled.py` hooks;
 - the two assembly command lines (`assembly_cell.cli` and `assembly_cluster.cli`, with their `__main__`s), which
   run the ensemble on a CPU and which the captures use;
-- `resolved_tissue@8`'s wrapper, `legacy/models/surface_catalog.py`;
+- `resolved_tissue@8`'s wrapper, `legacy/models/surface_catalog.py`. C-1 folds it into live code, so the count below
+  is an upper bound;
 - every package `__init__` above them.
 
 **The firm figure: C-1 removes at least 58% of legacy's 75,559 lines.**
@@ -622,8 +640,8 @@ because 180 files outside legacy used both the kept and the deletable parts. Two
   about 49 modules and 11,500 lines. This is by subtraction, not computed.
 
 **Kept IDs:** the six of the ensemble, `er_calcium@1`, `compartment_reactions@1`, `spatial_extracellular@2`,
-`finite_extracellular@2` and `@3`, and `resolved_tissue@1`, `@2` and `@8` (live code, dispatched by the hub until it
-moves; only @8 is covered by Q5 (a)). The dry run may find more. `finite_extracellular@3` is the integrated
+`finite_extracellular@2` and `@3`. `resolved_tissue@1`, `@2` and `@8` are not kept in the hub: their dispatch moves
+to the live registry at C-1 (§7.3). The dry run may find more. `finite_extracellular@3` is the integrated
 ensemble's world (`configs/junction_finite_cluster.json`).
 
 **D348's objection, recounted** (`probe10.json` to `probe12.json`). A surviving file needs a hand edit if it
@@ -663,14 +681,15 @@ imports something that goes, or names a deleted model ID. By static evidence:
   `test_kinetic_finite_schema.py` and `test_finite_extracellular_production.py`;
 - for `spatial_extracellular@2`: `test_spatial_extracellular_acceptance_resources.py` and
   `test_spatial_extracellular_context.py`;
-- for the @8 path: `test_surface_catalog.py` and `test_surface_pump_v3_gates_equivalence.py`.
+- for the @8 path: `test_surface_catalog.py` and `test_surface_pump_v3_gates_equivalence.py`;
+- for `@1` and `@2`, whose dispatch leaves the hub at C-1: the six test files of row A12, all tier 3.
 
 Most are tier 3.
 
 | Step | Content | Agent-days | Gates and lanes |
 |---|---|---|---|
 | C-0 | Captures: bitwise windows for the kept core (the prune edits must leave its worlds bit for bit), and the science set | 0.5 | about 2 lane-hours |
-| C-1 | **The prune batch:** the dry run on the pruned tree; the approved removal list; 208 of legacy's 321 modules deleted; the hub pruned; the hand edits of §7.5; the batch's live-side items (as A-1, without the JUPITER and integrated-ensemble retargets, which wait for C-2). Further edits inside the cluster buy the estimates above, and are optional | 3.5–5.5 | dry run about 45 minutes; one full gate; tier 3 once (1–2 h); re-measure (about 1 h) |
+| C-1 | **The prune batch:** the dry run on the pruned tree; the approved removal list; 208 of legacy's 321 modules deleted; the hub pruned; the hand edits of §7.5; the batch's live-side items (as A-1, without the JUPITER and integrated-ensemble retargets, which wait for C-2). **Among them the dispatch of `resolved_tissue@1`, `@2` and `@8` moves to the live registry, by exact type, so that live code needs no kept hub (§7.3).** Further edits inside the cluster buy the estimates above, and are optional | 3.5–5.5 | dry run about 45 minutes; one full gate; tier 3 once (1–2 h); re-measure (about 1 h) |
 | C-2 | Re-express the ensemble and the JUPITER world as the features land (rows A10, E4 included) | 9–14 | 2–3 gates; judged runs 2–4 lane-hours |
 | C-3 | Delete the remaining core, the hub and `registry/legacy_entry.py` | 1–2 | one full gate; tier 3 once; re-measure |
 | **Total** | | **14–22, plus the features** | **4–5 full gates (two with tier 3), about 13–18 lane-hours** |
@@ -833,7 +852,7 @@ The counts are from the static evidence and the scope map (`probe4.json`). The d
 |---|---|---|
 | **Go:** the subject is a legacy model whose capability is canonical or dropped | Deleted in one batch with the deletion, by a removal list (D224) giving each file's capability row and reason | 109 / 141 by static evidence, after removing 18 live tests that a file-name heuristic had caught (`probe10.json`); the retired physiology set's 34 / 24 are among them (D374). Under Route C they go at C-1 |
 | **Move:** physics, conservation and reference tests of the used capabilities: `test_spatial_calcium.py`, `test_plasma_calcium.py`, `test_gated_calcium.py`, `test_ip3_calcium.py`, `test_er_calcium.py`, `test_assembly_cell.py`, `test_assembly_cluster.py`, `test_integrated_ensemble.py`, `test_assembly_controls.py`, the GPU integration tests | Under C they stay with the kept core until C-2. Under A they move with the relocation. Under B they stay until the deletion. Each is retargeted to the canonical form when its capability is re-expressed, and assertions on legacy structure are dropped | 28 / 14 reach the kept core, 6 / 10 of them directly |
-| **Stay:** live-subject tests with incidental reach: fixtures naming legacy IDs, dispatch misses, the conftest world, @3's reference | Fixtures are cleaned. A9 keeps `resolved_tissue@8` for now (Q5 (a)); G1's 9 users point at a live world (Q6 (a)) | not counted statically: the dry run lists them |
+| **Stay:** live-subject tests with incidental reach: fixtures naming legacy IDs, dispatch misses, the conftest world, @3's reference | Fixtures are cleaned. A9 and A12 keep `resolved_tissue@8`, `@1` and `@2` (Q5 (a), widened); G1's 9 users point at a live world (Q6 (a)) | not counted statically: the dry run lists them |
 | **New** | None in the tiers. A re-expression's judged qualification is a recorded run, not a tier test. A test that compiles a world states its seconds and reason (D224) | 0 |
 
 **Recorded tier-3 failures** stay as recorded in moved files: `test_assembly_cell.py` (1) and
@@ -850,7 +869,7 @@ kept core, the hub and `registry/legacy_entry.py`. Each runs as below.
 **The commit removes** (under C, the first takes everything outside the kept core, and the second the rest):
 - `src/cells/legacy/` and `registry/legacy_entry.py`;
 - the `legacy()` call sites of §2;
-- `ensemble/ionic.py`'s rows for capabilities not kept;
+- `ensemble/ionic.py`'s rows for capabilities not kept (the rows for `resolved_tissue@1`, `@2` and `@8` stay);
 - `registry/declarations.py`'s legacy list and the manifest's `legacy` key. That is coordinated with the
   viewer's agent first, and the format is the rename note's Q6.
 
@@ -912,6 +931,28 @@ make 2,272 occurrences in 102 legacy definitions and 67 in 33 code files.
 - **No retirement comes before the rename's move** (D374). The REF-era drivers' files, about a dozen of its 30
   `validation/betse` files, are re-spelled with the rest, and go in the deletion batch.
 
+### 11.1 Input for the rename's mapping: three live models whose dispatch sits in legacy
+
+**`resolved_tissue@1`, `@2` and `@8` are live models, not legacy's frozen ones.** Their spec classes, parsers and
+model modules are live; only their dispatch is in the hub. The lead's widening of Q5 (a) covers `@1` and `@2`; `@8`
+was already covered, and it is the same case.
+- **What the rename holds today.** Its candidate at `f8c6c326` lists all twelve `resolved_tissue` majors among
+  legacy's frozen models (`legacy_models.json`) and has none of them in `table.tsv`. The note's five live models outside
+  the model table (its §1.2) do not include them. Read on 24 November; nothing of the rename's was edited.
+- **Proposed IDs, to be named in the rename note:** `cells.model.resolved_tissue@1`, `@2` and `@8`, majors unchanged.
+
+| Old ID | Declared in | Spec class | Parser | Model module | Dispatch today, in `legacy/registration.py` |
+|---|---|---|---|---|---|
+| `resolved_tissue@1` | `MODEL_ID`, `definitions/surface_tissue_spec.py:22` | `SurfaceTissueModel` (`:74`) | `surface_tissue_spec.parse` | `models/surface_tissue.py` | parse `:1444–1447`, model `:832–833`, dict `:1977–1980` |
+| `resolved_tissue@2` | `MODEL_ID`, `definitions/surface_kinetic_spec.py:36` | `SurfaceKineticModel` (`:114`) | `surface_kinetic_spec.parse` | `models/surface_kinetic.py` | parse `:1196–1211`, model `:806–807`, dict `:1946–1949` |
+| `resolved_tissue@8` | `CATALOG_MODEL_ID`, `definitions/surface_kinetic_spec.py:42` | `SurfaceCatalogModel` (`:163`) | `surface_kinetic_spec.parse` | `models/surface_kinetic.py`, through legacy's wrapper `legacy/models/surface_catalog.py` | parse `:1196–1211`, model `:794–795`, dict `:1946–1949` |
+
+- **What the rename note has to settle:** mint the three at the rename, or leave them bare with legacy until C-1 moves
+  their dispatch and mints them there.
+  - If it mints them first, legacy's own places must be re-spelled with the rest (its Q3 (a)): the hub's literals above,
+    and the definitions and code that spell them. I have not counted those.
+  - Either way `ensemble/ionic.py` (`:177, 196, 202`) and the constants above carry the spellings live code reads.
+
 ## 12. Risks
 
 1. **Dispatch between landings (Routes A and C).** Under C it is the pruned hub that keeps the kept core's
@@ -921,7 +962,7 @@ make 2,272 occurrences in 102 legacy definitions and 67 in 33 code files.
    - `model_for`, `to_dict` and `control_values` are subclass-first isinstance chains, so until A-3 those
      entries stay in the hub, pointing at the moved modules. Only parse entries, which match exact IDs, go
      live.
-   - The alternative is exact-type checks.
+   - The alternative is exact-type checks. The three `resolved_tissue` entries that move at C-1 need them (§7.3).
 2. **A tolerance that cannot test.** Without the power check, a wide band passes anything. The order check
    and the planted change are judged before the comparison.
 3. **Features on the critical path.** Under B, four features stand before any deletion, and legacy's tests
@@ -962,7 +1003,8 @@ make 2,272 occurrences in 102 legacy definitions and 67 in 33 code files.
 - the physiology stack (17 drivers) and the 18 REF-era drivers retire in the deletion batch, with their
   records kept;
 - no retirement before the rename's move;
-- Q5 and Q6 are (a) each, inside the deletion batch;
+- Q5 and Q6 are (a) each, inside the deletion batch. The lead widened Q5 (a) to `resolved_tissue@1` and `@2` on
+  24 November;
 - tolerances are derived in each re-expression's registration.
 
 **Q1. What counts as leaving legacy?** This sets every lifetime in §7.1, and it is a choice about capability, not
@@ -1011,9 +1053,8 @@ engineering.
   answered for (a) in Q1.
 
 **For the lead, waiting for the route (D374):**
-- **whether Q5 (a) widens to `resolved_tissue@1` and `@2`.** Live-subject tests parse both (rows A1, A9), and the
-  ruling named @8 only;
-- exact-type dispatch or hub entries between landings (§12, risk 1);
+- exact-type dispatch or hub entries between landings (§12, risk 1). The three moved `resolved_tissue` entries
+  need exact types whichever way it goes (§7.3);
 - the manifest key;
 - a GPU block after the ensemble's re-expression, if Q1 or Q5 calls for one.
 
