@@ -11153,3 +11153,30 @@ retried.
 
 **The Lean tip d5a2c138** contains 8634e566, 41f3de69, 0bb50d8b, cb961e34 and 73e7e9d7. One merge covers them once
 its gate passes.
+
+## D345: the user's decision: law IDs become hierarchical, keyed by interface, starting on 25 November in the morning
+
+2026-11-24, about 16:18 UTC.
+
+**Today's IDs.** Law IDs are `namespace.name@major`, and 185 of 187 registered IDs are bare, in `cells`. The
+families exist as folders and as interfaces, but not in the key.
+
+**The decision: Option 1.** The key carries the law's family, read as its interface:
+`cells.<interface>.<name>@major`, for example `cells.channel.inward_rectifier_linear_driving_force@1`. Folders mirror
+interfaces. Outside modules take the same shape in their own namespace.
+
+**Rejected:**
+- family as metadata only, which leaves the key flat;
+- a family prefix inside a flat name.
+
+**The conditions:**
+- **Timing:** it starts on the morning of 25 November, after tonight's runs and this round of landings, so it never
+  collides with the branches in flight.
+- **One mechanical, scripted move,** as D188's source moves were, with a committed old→new mapping table. Past
+  decision entries and Lean's claims stay readable through the table, and old tags and snapshots keep their names.
+- **No aliases.** An old ID is refused at parse, and the refusal names its new ID.
+- **Codes and majors are unchanged.**
+
+**Open until the morning:**
+- the scope: laws only, or models, operators and kinds too;
+- the advisor's review of identity stability across the module system and the Lean lane.
