@@ -10970,3 +10970,48 @@ They concern carrying a parameter across conditions. No law's form changes.
 **Both scope lines** go into the laws' docstrings (`geometry.py`, `inward_rectifier_linear_driving_force.py`) in
 the next docstring-only landing, with the regulated-availability one closing rate (D337, D338) and the charge-anchor
 fix's citation of the Lean claim, merged at 29d69f1d.
+
+## D341: FR-30's Ek-Vitorín 2016 benchmark is undetermined by structure for the filed PDF; the user files its Supporting Material, added by a tagged amendment; FR-54 is high priority
+
+2026-11-24, about 15:16 UTC.
+
+**The extraction of the filed PDF** (the sealed extractor, under Tag A):
+- **The kinetic part is undetermined under any expression of the data.**
+  - Fig. 2B shows one illustrative record pair, labelled jointly ±100 mV.
+  - It carries the paper's own second-order exponential fits, with no amplitudes, dispersion or n.
+  - No other wild-type time constant appears in the text or the seven figures.
+  - So the decay list has at most one magnitude (S2, P6.1).
+- **The steady part cannot be expressed in the layout as tagged (E9).**
+  - Fig. 2C plots wild-type points individually: n = 3, with what n counts unstated, in 9 clusters per polarity
+    against the Methods' 10-step grid.
+  - Some markers share one abscissa (K3), or are hidden. Pairing them across polarities depends on digitizing
+    resolution.
+- **The lead's ruling (advisor concurring):**
+  - §13.7 applies as tagged;
+  - no rule for summarizing plotted points is written after the paper was opened. If the user wants one for Part S,
+    it is a separately tagged amendment, drafted by someone other than the extractor.
+- **The seal.** No `fit.json`, `held_out.json` or `protocol.json` was written, so there is no held-out digest.
+  - The folder `/mnt/workspaces/Cells/fr30-ekvitorin2016-extraction/` is read-only, and its SHA256SUMS digest
+    begins 066b20d2.
+  - It holds a value-free structure record, the LOG, and the unfinished digitizer scripts, with their working state
+    kept private.
+- **Disclosed by the extractor:** it read D334, which summarizes the polarity check's conclusions, and D337 at the
+  lead's direction, before sealing. The lead's brief had erred on that point, and on the training file's name.
+  `docs/JUNCTION_GATE_POLARITY.md` stays unopened (E11).
+
+**The user's decision: file the paper's Supporting Material.**
+- Two files, identified by their PDF metadata only and unopened, are filed read-only at
+  `ek-vitorin-2016/supporting-material/`:
+  - `mmc1.pdf`: 6 pages, the Supporting Material, sha256 d36e5964…;
+  - `mmc2.pdf`: 20 pages, the article with its Supporting Material, sha256 3ace545d….
+- **§13.7 amendment 1 adds them as a source before anyone opens them.** It is Part 12, tagged
+  `fr30-ekvitorin2016-amendment-1-2026-11-24` at b725c702.
+  - The same extractor reads them under the unchanged rules.
+  - If they give per-voltage τ_fast and τ_slow at two or more magnitudes, the extraction proceeds; otherwise the
+    benchmark is undetermined for the paper with its Supporting Material.
+- **The fitter, the predictor and the checker start only after a seal under amendment 1.**
+- A third file the user added, Tanis et al. (2017) on CALHM channels, is not part of this benchmark. Its use waits
+  for the user.
+
+**FR-54** (passive neutral diffusion against the exact two-well solution, then a wash at a diffusion-connected node)
+is **high priority, the user's decision.** It takes the next free builder after FR-50.

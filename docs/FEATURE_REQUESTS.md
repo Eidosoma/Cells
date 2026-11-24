@@ -59,7 +59,7 @@ and a general feature, never one built for one study (D144).
 | [FR-51](#fr-51--two-voltage-dependent-blocking-modes-on-one-channel-population) | Two voltage-dependent blocking modes on one channel population | **High** (logged by the user, 23 November 2026) | **Logged:** not expressible; a channel law's kinetics read the voltage only, and there is no block law | An optional weighted-mode block on a channel population, qualified for permeation and block separately |
 | [FR-52](#fr-52--passive-cohort-observations-for-integer-functional-units) | Passive cohort observations for integer functional units: the expected surviving initial and newly assembled units at one site | **High** (logged by the user, 24 November 2026) | **Logged:** `integer_unit_population@1` records its events in a bounded trace, with no cohort readout; labels follow species rows, not units | A design note: a validation reader or a statically absent in-engine expected-cohort record, with classes that partition the count and fail-closed truncation |
 | [FR-53](#fr-53--a-rounding-allowance-for-global-ledgers-at-every-row) | A rounding allowance for global ledgers at every row: the first window's bound no tighter than the sum's own rounding | **High** (logged by the user, 24 November 2026) | **Logged:** at steps 0 and 1 the bound is the bare atol, and the host reads 0.28 of it on 625 cells, growing about as √N | A design note: a derived summation allowance per row, or compensated global sums, with the planted faults still caught |
-| [FR-54](#fr-54--passive-neutral-diffusion-between-two-finite-liquid-regions-qualified-against-the-exact-two-well-solution-then-a-wash-at-a-diffusion-connected-node) | Passive neutral diffusion between two finite liquid regions, qualified against the exact two-well solution; then a wash at a diffusion-connected node | To be set by the user (logged 24 November 2026) | **Logged:** a wash at a diffusion-connected node stays refused (D246) until measured | A design note: closed-form, code-blind references; a stopped run reports its residual and tolerance; then the wash's qualification |
+| [FR-54](#fr-54--passive-neutral-diffusion-between-two-finite-liquid-regions-qualified-against-the-exact-two-well-solution-then-a-wash-at-a-diffusion-connected-node) | Passive neutral diffusion between two finite liquid regions, qualified against the exact two-well solution; then a wash at a diffusion-connected node | **High** (logged by the user, 24 November 2026; D341) | **Logged:** a wash at a diffusion-connected node stays refused (D246) until measured | A design note: closed-form, code-blind references; a stopped run reports its residual and tolerance; then the wash's qualification |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -2306,7 +2306,7 @@ loosens no bound beyond what that rounding requires. Every planted fault the che
 
 ## FR-54 — Passive neutral diffusion between two finite liquid regions, qualified against the exact two-well solution; then a wash at a diffusion-connected node
 
-**Logged 24 November 2026 by the user.** Priority: to be set by the user.
+**Logged 24 November 2026 by the user, priority high (D341).**
 
 **The request:**
 1. **Qualify the diffusion.** Passive neutral diffusion between two finite liquid regions in
