@@ -16,6 +16,16 @@
 - **Scrubbing.** Every number in the tables is then replaced by a meaningless one of the same
   type: an int by an int, a float by a float. Lists keep their lengths. Strings, booleans and nulls
   are kept, and so are the rungs' keys.
+  - **No source's number, by construction** (the lead's ruling, 24 November 2026). Before
+    scrubbing, the writer collects every number the sample must not show (forbidden_numbers):
+    - each number in the work folder's JSON files (the records, the unscrubbed tables and the
+      snapshot files);
+    - each number in every registered definition (every rung, the retry's, and the plants);
+    - each numeric literal of the spec folder's text.
+
+    Scrubbed ints count up from INT_BASE (10^12) and floats from FLOAT_BASE (2 x 10^12 + 0.5),
+    far outside every source's range. Each candidate is checked against that set and against the
+    leaf's original, and the next is taken if it matches either.
   - No value of any world can be read from the sample.
   - A1's internals in B would otherwise follow registered B's own trajectory, since X's turnover
     does not depend on the release.
@@ -33,6 +43,7 @@ import argparse
 import contextlib
 import hashlib
 import json
+import re
 from dataclasses import replace
 from pathlib import Path
 
@@ -129,21 +140,65 @@ def run_jobs(work):
 # ------------------------------------------------------------------ scrubbing
 
 
-class _Scrub:
-    """Every number replaced by a meaningless one of its own type, in walk order."""
+INT_BASE = 10**12  # Scrubbed ints count up from here, beyond every source's range.
+FLOAT_BASE = 2.0e12 + 0.5  # Scrubbed floats likewise; each is exactly representable.
+LITERAL = re.compile(r"(?<![\w.])-?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?(?![\w.])")
 
-    def __init__(self):
+
+def _numbers(x):
+    """Every numeric leaf of a JSON value (booleans are not numbers)."""
+    if isinstance(x, bool) or x is None or isinstance(x, str):
+        return
+    if isinstance(x, (int, float)):
+        yield x
+    elif isinstance(x, list):
+        for v in x:
+            yield from _numbers(v)
+    elif isinstance(x, dict):
+        for v in x.values():
+            yield from _numbers(v)
+
+
+def forbidden_numbers(work):
+    """Every number the sample must not show, as floats (the module docstring): the work folder's
+    JSON files, every registered definition, and the spec folder's numeric literals."""
+    found = set()
+    for path in sorted(Path(work).rglob("*.json")):
+        found.update(float(v) for v in _numbers(json.loads(path.read_text())))
+    for dt in sorted(set(worlds.RUNGS) | set(worlds.RETRY_RUNGS)):
+        for family in ("AF", "AN", "B", "C", "D"):
+            for run in worlds.runs(family):
+                found.update(float(v) for v in _numbers(worlds.world(family, run, dt=dt)))
+    for name in worlds.PLANTS:
+        found.update(float(v) for v in _numbers(worlds.plant(name)))
+    for path in sorted((Path(__file__).resolve().parent / "spec").glob("*.md")):
+        for match in LITERAL.finditer(path.read_text().replace("−", "-")):
+            found.add(float(match.group()))
+    return found
+
+
+class _Scrub:
+    """Every number replaced by one of its own type that no source holds and that differs from
+    the original, in walk order (the module docstring)."""
+
+    def __init__(self, forbidden):
+        self.forbidden = forbidden
         self.k = 0
+
+    def _fresh(self, original, base, kind):
+        while True:
+            self.k += 1
+            value = kind(base + self.k)
+            if float(value) not in self.forbidden and float(value) != float(original):
+                return value
 
     def __call__(self, x):
         if isinstance(x, bool) or x is None or isinstance(x, str):
             return x
         if isinstance(x, int):
-            self.k += 1
-            return 2 + self.k % 89
+            return self._fresh(x, INT_BASE, int)
         if isinstance(x, float):
-            self.k += 1
-            return float(f"{(1 + self.k % 9973) * 1.000003e-3:.9e}")
+            return self._fresh(x, FLOAT_BASE, float)
         if isinstance(x, list):
             return [self(v) for v in x]
         if isinstance(x, dict):
@@ -161,16 +216,20 @@ def _cut_paths(x, work):
     return x
 
 
-def scrub_tables(work, out):
+def scrub_tables(work, out, forbidden):
     """The tables of `work` scrubbed into `out` (table/ and table-retry/), each folder's SHA256SUMS
-    rewritten for its scrubbed files. Returns {relative file: sha256}."""
+    rewritten for its scrubbed files. Returns {relative file: sha256}. Refuses a scrubbed file that
+    still holds a forbidden number (the guarantee, checked once more on the written text)."""
     sums = {}
     for folder in ("table", "table-retry"):
         lines = []
         (out / folder).mkdir(parents=True, exist_ok=True)
         for source in sorted((Path(work) / folder).glob("table_*.json")):
             doc = _cut_paths(json.loads(source.read_text()), Path(work))
-            text = json.dumps(_Scrub()(doc), sort_keys=True, separators=(",", ":"))
+            text = json.dumps(_Scrub(forbidden)(doc), sort_keys=True, separators=(",", ":"))
+            left = [v for v in _numbers(json.loads(text)) if float(v) in forbidden]
+            if left:
+                raise RuntimeError(f"{source.name}: {len(left)} scrubbed numbers are a source's")
             target = out / folder / source.name
             target.write_text(text)
             digest = hashlib.sha256(target.read_bytes()).hexdigest()
@@ -284,7 +343,7 @@ def _describe(v):
     return _type(v)
 
 
-def readme(out, head, sums):
+def readme(out, head, sums, n_forbidden):
     """README.md: the layout, every key and its type to the leaf, and the lead's four answers."""
     tables = {p.stem.split("_", 1)[1]: json.loads(p.read_text())
               for p in sorted((out / "table").glob("table_*.json"))}  # fmt: skip
@@ -301,6 +360,9 @@ def readme(out, head, sums):
         "built into the tables by the campaign's own code. Every number is then replaced by a",
         "meaningless one of the same type: an int by an int and a float by a float, with lists",
         "keeping their lengths. Strings, booleans and nulls are kept, and so are the rungs' keys.",
+        f"Scrubbed ints count up from {INT_BASE} and floats from {FLOAT_BASE!r}. Each was checked",
+        f"against the {n_forbidden} distinct numbers of the records, the unscrubbed tables, the",
+        "registered definitions and the spec's text, and none equals one of them or its original.",
         "So the keys, nesting and types are the real table's, and no value of any world can be",
         "read here. Each entry's `record` is cut to its part under the campaign folder; in the",
         "real table it is the record's path as written.",
@@ -329,8 +391,8 @@ def readme(out, head, sums):
         "  - Its entry's `readouts` then carry no `label_*` series and no",
         "    `released_present_gross_*`, and the entry has no `survival` key.",
         "- **AN's restart checkpoint time:** `restart.checkpoint.time_s` in",
-        "  `table/table_AN.json`. `restart` is null in AF, B, C and D, and absent from the",
-        "  retry's tables.",
+        "  `table/table_AN.json`. The `restart` key is absent from AF, B, C and D, and from",
+        "  the retry's tables (amendment 4, §8.4: `restart` (AN)).",
         "- **P9's V0 patch:** `plants.P9.host_patch` in `table/table_D.json`, an object with",
         '  `id` ("V0"), `operator`, `change` and `code`. Every other plant\'s `host_patch` is',
         "  null. P9's `definition` is its honest run's: the patch is host-side, named only there.",
@@ -343,7 +405,7 @@ def readme(out, head, sums):
         '  `"1.0"`, `"0.5"`, `"0.25"`); each value holds:',
         "  - `dt_s`: float",
         "  - `runs`: object keyed by the run's name (below), each value a run entry",
-        "- `restart`: a run entry with `checkpoint` (AN); null elsewhere",
+        "- `restart`: a run entry with `checkpoint`, in AN only; the key is absent elsewhere",
         "- `plants`: object keyed by the plant's name, each value a run entry with `judged_as` and",
         "  `host_patch`, or null where its record is missing",
         "",
@@ -422,9 +484,10 @@ def main(argv=None):
     campaign.table(work, grids=GRIDS)
     campaign.table(work, (RETRY_FAMILY,), retry=True, grids=GRIDS)
     out.mkdir(parents=True, exist_ok=False)
-    sums = scrub_tables(work, out)
+    forbidden = forbidden_numbers(work)
+    sums = scrub_tables(work, out, forbidden)
     head = engine_run.git("rev-parse", "HEAD").strip()
-    readme(out, head, sums)
+    readme(out, head, sums, len(forbidden))
     print(json.dumps(dict(out=str(out), head=head, sha256=sums), indent=1))
     return 0
 
