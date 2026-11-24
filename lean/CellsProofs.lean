@@ -71,6 +71,7 @@ import CellsProofs.Transport.ElectrogenicPumps
 import CellsProofs.Transport.FormsFace
 import CellsProofs.Transport.InwardRectifier
 import CellsProofs.Transport.IonChannels
+import CellsProofs.Transport.OpenChannelBlock
 import CellsProofs.Transport.JunctionGate
 import CellsProofs.Transport.LabelDiffusion
 import CellsProofs.Transport.LabelMixingPower

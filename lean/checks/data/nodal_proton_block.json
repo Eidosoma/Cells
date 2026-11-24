@@ -1,0 +1,29 @@
+{
+  "observable": "Relief of extracellular proton block of sodium current during depolarization in nodal membranes",
+  "woodhull1973-nodal-protons": {
+    "doi": "10.1085/jgp.61.6.687",
+    "locator": "Fig. 4A and summary. Voltage is inside minus outside.",
+    "preparation": "Myelinated frog nerve, voltage clamp. The paper estimates sodium permeability from peak sodium current.",
+    "external_pH_control": 7,
+    "external_pH_acid": 5,
+    "voltage_mV": [20, 180],
+    "approximate_fractional_reduction": [0.60, 0.20],
+    "uncertainty": "Rounded examples in the paper. No pointwise uncertainty is attached to these two summary numbers. The +180 mV condition is above the Cells clamp range used here."
+  },
+  "mozhayeva1984-nodal-protons": {
+    "doi": "10.1016/0005-2736(84)90201-3",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/6087908/",
+    "locator": "Primary abstract, instantaneous sodium-current I–V under acidification.",
+    "preparation": "Nodal membrane, external pH 4.8–4.9. The authors compared inward and outward current reductions over voltage.",
+    "observation": "Increasing depolarization relieved block.",
+    "uncertainty": "The primary abstract supplies the direction and bath conditions. No pointwise values or slope uncertainty were extracted."
+  },
+  "zhang1991-cardiac-protons": {
+    "doi": "10.1085/jgp.98.6.1065",
+    "locator": "Fig. 3B, unitary sodium current amplitudes.",
+    "preparation": "Guinea-pig ventricular myocytes, extracellular pH 5.5 and 7.4.",
+    "voltage_range_mV": [-70, -20],
+    "observation": "External acid reduced unitary amplitude. Voltage dependence of the reduction was unresolved over this range.",
+    "uncertainty": "Different tissue, voltage interval and single-channel readout from the two nodal studies."
+  }
+}

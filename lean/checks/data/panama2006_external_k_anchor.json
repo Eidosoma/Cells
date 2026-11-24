@@ -1,0 +1,31 @@
+{
+  "study": "Panama and Lopatin (2006), Fig. 3E",
+  "doi": "10.1113/jphysiol.2005.097741",
+  "calibration_evidence_revision": "48fb7e0f4f001521be841903c78fe0f855026bcb",
+  "calibration_driver_revision": "369431f74ae5108c8be47f3a0afc80623de7f028",
+  "calibration_engine_revision": "7ca7c9c15f7f02983aeb103b989c5d0a739e9d31",
+  "calibration_result": "kir-replay.json, panama.fit_*",
+  "prospective_engine_revision": "955765efaed76601c182c2df26b1c7c5278d80f5",
+  "temperature_K": 300.0,
+  "internal_K_mM": 145.0,
+  "nominal_total_spermine_mM": 0.03,
+  "estimated_free_spermine_mM": 0.007,
+  "calibration": {
+    "fit_external_K_mM": 5.4,
+    "fit_measured_reversal_mV": -70.5,
+    "fit_cells_reversal_mV": -85.06173425866054,
+    "fit_half_voltage_mV": -73.67647058823529,
+    "fit_half_bracket_mV": [
+      -75,
+      -65
+    ],
+    "fit_parameters_weight_mid1_mid2_z1_z2": [
+      0.8309770802607913,
+      -75.66904056398175,
+      -47.900768721084674,
+      6.363639622555873,
+      2.928436346998458
+    ],
+    "fit_rms_absolute_fraction": 0.004409224809116126
+  }
+}
