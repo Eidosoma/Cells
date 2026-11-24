@@ -195,10 +195,18 @@
      "taylor_vs_dop853_distance_gap": 4.839234603693771e-09
     },
     "P3": {
-     "smallest_planted_heat_sign": "non-negative"
+     "smallest_planted_heat_sign": "non-negative",
+     "taylor_vs_dop853_relative_distance_gap": 9.405030832601634e-13
     },
     "P6": {
-     "smallest_planted_heat_sign": "non-negative"
+     "smallest_planted_heat_sign": "non-negative",
+     "taylor_vs_dop853_relative_distance_gap": 6.358550135004977e-12
+    },
+    "P8": {
+     "taylor_vs_dop853_relative_distance_gap": 5.942793047994538e-14
+    },
+    "P9": {
+     "taylor_vs_dop853_relative_distance_gap": 1.062707554012471e-13
     }
    }
   },
@@ -402,7 +410,12 @@
    "horizon_distance_over_C2a_band_max": 0.5143285999817058,
    "closed_form_gap_over_S_max": 1.9240547928335725e-10
   },
-  "W5": {},
+  "W5": {
+   "stage": {
+    "binary64_vs_exact_relative_max": 0.0,
+    "verdicts_agree": true
+   }
+  },
   "W6": {
    "equilibrium": {
     "newton_vs_bracket": 3.6466666666666664e-68,
@@ -466,7 +479,7 @@
   }
  },
  "provenance": {
-  "references_revision": "588029a55e8d1a470ca0eb804bafc2425b8e6eba",
+  "references_revision": "becbfe1cf7351ea3cfb73993f70b01508405eb0d",
   "tree_clean": true,
   "writer_version": "fr45-references-writer 1",
   "regeneration_hash_seeds": [
