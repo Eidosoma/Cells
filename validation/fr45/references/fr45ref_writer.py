@@ -16,26 +16,41 @@ inputs' floats. Each file's keys, in order:
   R:<set>, B:<population>; at every observation time. value is the high-precision Taylor
   solution rounded once; tolerance_gap is |DOP853(rtol 1e-12) - DOP853(rtol 1e-13)|.
 - balances: {ligands: [{ligand, node, time_s, total}], sets: [{set, time_s, sites}]}.
+- Only amounts a law moves appear anywhere (AMENDMENT answer 3): a declared free amount at a
+  node no population binds it from is left out, and listed under world.inert_amounts_information
+  when a world has one (no FR-45 world does).
 - wash (W2): {ligand: {removed, supplied}}.
 - heats: {intervals: [{node, start_s, end_s, heat, bound, tolerance_gap}],
   G: [{node, time_s, G}], wash_free_energy_change (W2): [{node, time_s,
   free_energy_change, sets_part}]}.
 - pairs: [{criterion, observable, time_s, [start_s, end_s], [dt_s], class, value,
-  tolerance, against, [scale], [minimum]}]; class is constant, derived or band; a constant
-  holds its value ("unchanged", "refused", "completes") and a null tolerance; a derived or
-  band pair holds its tolerance; value null means the judge compares the engine against its
-  own state (named in `against`). start_s and end_s are on heat pairs (C3a, C3b, C3c);
-  dt_s is on every pair whose tolerance counts steps (C2b, C3b, C4a, C5, C8, C10), in every
-  world; scale is on C8's pairs, whose tolerance is null except at the finest dt, and C8's
-  two ratio pairs carry minimum (time_s, value and tolerance null).
+  tolerance, against, [spans_wash], [tolerance_terms, tolerance_information], [scale],
+  [minimum]}]; class is constant, derived or band; a constant holds its value ("unchanged",
+  "refused", "completes") and a null tolerance; a derived or band pair holds its tolerance;
+  value null means the judge compares the engine against its own state (named in `against`).
+  - The rows of C4a, C5 and C9 are the saved rows: the start (time_s 0.0) and every
+    observation time (AMENDMENT answer 7).
+  - start_s and end_s are on heat pairs (C3a, C3b, C3c). C3c covers every interval, the
+    wash's included (spans_wash: true; its E is taken over the post-wash state and the next
+    row); C3a and C3b leave the wash's interval out. C3b's -dG is the references' own
+    fr45ref_free_energy.G on the engine's saved states (AMENDMENT §2.2).
+  - C9's and C4b's tolerances depend on the engine's own state (AMENDMENT answer 9): their
+    tolerance is null and tolerance_terms holds the terms the inputs fix (4 eps or 2 eps, and
+    f V c_buf), the state terms filled from R-ode marked _information, and the formula the
+    judge evaluates on the engine's state; tolerance_information is that formula on R-ode's
+    state.
+  - dt_s is on every pair whose tolerance counts steps (C2b, C3b, C4a, C5, C8, C10), in every
+    world; scale is on C8's pairs, whose tolerance is null except at the finest dt, and C8's
+    two ratio pairs carry minimum (time_s, value and tolerance null).
 - spread: "none" (nothing is drawn).
 - distance_at_horizon: {observable: |x(T) - x_eq|}.
 - closed_form (W4): [{observable, time_s, value, gap_from_ode}].
 - stage (W5): {h_s, loads_times_h {L_n, L_R_summed, L_R_per_population, L_B},
   max_hL_summed, max_hL_per_population, threshold, verdict_summed, verdict_per_population}.
 - plants: [{plant, criterion, compared, honest, planted, distance_in_bounds, [world],
-  [bound_used], [assumption], [verdict_honest, verdict_planted]}]; compared is
-  {observable, time_s} or, for a heat, {observable, start_s, end_s}.
+  [bound_used], [assumption], [information], [verdict_honest, verdict_planted]}]; compared
+  is {observable, time_s} or, for a heat, {observable, start_s, end_s}. An entry with
+  information: true is not a plant's criterion (P3's and P6's distances under C3a).
 - A refusal world (W5) has no trajectory: equilibrium and distance_at_horizon are null and
   trajectory, balances' and heats' lists are empty; it carries stage, C7 and P4.
 - provenance: {references_revision, tree_clean, writer_version, regeneration_hash_seeds,
@@ -57,17 +72,22 @@ WRITER_VERSION = "fr45-references-writer 1"
 REGENERATION_HASH_SEEDS = (0, 1, 2)
 FILE_ORDER = ("W1", "W1eq", "W1p", "W2", "W3", "W4", "W5", "W6")
 
+# Each world's pairs: AMENDMENT-2026-11-24 §3's registered table. C3 is judged in W1, W2, W3
+# and W6 only; C5 in every world but W5; C10 in every run but W5's refusal. W1p carries its
+# plants' criteria (P1, P2 under C1; P3, P6 under C3b; P8 under C10; P9 under C9) with C5.
 CRITERIA = {
     "W1": ["C1", "C2a", "C3a", "C3b", "C3c", "C5", "C9", "C10"],
-    "W1eq": ["C2b", "C3a", "C3b", "C3c", "C5", "C10"],
-    "W1p": ["C1", "C3a", "C3b", "C3c", "C5", "C9", "C10"],
+    "W1eq": ["C2b", "C5", "C10"],
+    "W1p": ["C1", "C3b", "C5", "C9", "C10"],
     "W2": ["C1", "C2a", "C3a", "C3b", "C3c", "C4a", "C4b", "C4c", "C5", "C6", "C10"],
     "W3": ["C1", "C2a", "C3a", "C3b", "C3c", "C5", "C9", "C10"],
-    "W4": ["C3a", "C3b", "C3c", "C5", "C8", "C10"],
+    "W4": ["C5", "C8", "C10"],
     "W5": ["C7"],
     "W6": ["C1", "C2a", "C3a", "C3b", "C3c", "C5", "C9", "C10"],
 }
-W2_WASH_ALONE_TIME = 5.0
+# The state C4b's and C6's event map acts on alone: the row at 4.0 s, the state the wash acts
+# on (NOTE-2026-11-24.md; CRITERIA.md's C4b and C6 rows as corrected that day).
+W2_WASH_ALONE_TIME = 4.0
 
 INVENTED_BANNER = (
     "INVENTED INPUTS. This file is the writer's format sample for the judge, written on "
@@ -503,7 +523,7 @@ def build_sample() -> dict:
         invented=True,
         equilibrium_note="INVENTED: the post-wash totals",
         extra_pairs={
-            "wash_alone_time": 0.5,
+            "wash_alone_time": world["wash"]["t"],
             "C8_finest": world["dt_texts"][-1],
             "C2b_root": r.eq["root"],
         },
@@ -516,10 +536,10 @@ def build_sample() -> dict:
     best, _, _ = BLD.plant_dynamics_C1(r, BLD.crossed_koff_world(world), prof, "P2")
     plants.append(BLD._plant_entry("P2", "C1", best))
     for plant in ("P3", "P6"):
-        entry, _ = BLD.plant_energy(r, plant)
-        plants.append(entry)
+        entries, _ = BLD.plant_energy(r, plant)
+        plants += entries
     plants.append(BLD.plant_P4(st))
-    p5, _ = BLD.plants_W2(r, prof, 0.5)
+    p5, _ = BLD.plants_W2(r, prof, world["wash"]["t"])
     plants += p5
     p7, _ = BLD.plants_W3p(r, world, prof, label=world["id"])
     plants += p7

@@ -13,6 +13,7 @@ against SPEC.md's rows.
 
 from __future__ import annotations
 
+import decimal
 import json
 import math
 import os
@@ -269,6 +270,47 @@ def test_format_sample_regenerates_bitwise():
         assert ("dt_s" in pair) == counts_steps, pair
     times = set(d["world"]["observation_times"])
     assert {r["time_s"] for r in d["trajectory"]} == times
+    # the saved rows of C4a, C5 and C9 include the start (AMENDMENT answer 7)
+    for crit in ("C4a", "C5", "C9"):
+        assert {p["time_s"] for p in d["pairs"] if p["criterion"] == crit} == times | {0.0}, crit
+    # C3c covers the wash's interval; C3a and C3b leave it out
+    assert any(p.get("spans_wash") for p in d["pairs"] if p["criterion"] == "C3c")
+    assert not any(p.get("spans_wash") for p in d["pairs"] if p["criterion"] in ("C3a", "C3b"))
+    # C9's and C4b's state-dependent tolerances are written as terms (AMENDMENT answer 9)
+    for pair in d["pairs"]:
+        state_dependent = pair["criterion"] == "C9" or (
+            pair["criterion"] == "C4b" and not pair["observable"].startswith("supplied:")
+        )
+        if state_dependent:
+            assert pair["tolerance"] is None and "formula" in pair["tolerance_terms"], pair
+    assert any(p.get("information") for p in d["plants"])
+
+
+def test_free_energy_function_is_the_references_own():
+    import fr45ref_free_energy as FE
+
+    world = WL.numeric(WL.world_W3()[0])
+    with decimal.localcontext(HP.make_context(FE.DIGITS)):
+        sysm = System(world)
+        y = list(sysm.start())
+        y[0] = y[0] * Decimal("0.75")  # any state will do
+    names = sysm.observables()
+    for node in sysm.facing_nodes():
+        amounts = {
+            names[i]: float(y[i]) for i in range(sysm.n) if sysm.node_of_component(i) == node
+        }
+        exact = [HP.D(float(v)) for v in y]
+        with decimal.localcontext(HP.make_context(FE.DIGITS)):
+            want = +sysm.G(exact, node)
+        assert FE.G("W3", node, amounts) == want
+        bad = dict(amounts)
+        bad.pop(sorted(bad)[0])
+        try:
+            FE.G("W3", node, bad)
+        except KeyError:
+            pass
+        else:
+            raise AssertionError("a missing amount must be refused")
 
 
 def test_no_engine_import():

@@ -27,6 +27,13 @@ PROFILES = {
         "coarse": (32, 1e-48),
         "rtols": (1e-12, 1e-13),
     },
+    # the first, 50-digit profile, kept to show which written values the precision moves
+    "reference50": {
+        "digits": 50,
+        "fine": (32, 1e-38),
+        "coarse": (24, 1e-30),
+        "rtols": (1e-12, 1e-13),
+    },
     "sample": {"digits": 50, "fine": (20, 1e-24), "coarse": (16, 1e-19), "rtols": (1e-12, 1e-13)},
 }
 
@@ -93,20 +100,21 @@ def integrate(sys: System, world: dict, profile: dict, wash_variant: bool = Fals
     out["Bc"] = run_taylor(*profile["coarse"])
     out["A"] = {}
     for rtol in profile["rtols"]:
-        y = np.array([f64(v) for v in y0], dtype=np.float64)
+        # method A starts from the exact start rounded once (the anchors), so it is pure
+        # binary64 and independent of the decimal working precision
+        y = np.array(sys.anchors(), dtype=np.float64)
         t_prev = 0.0
         states = [y.copy()]
         pre = post = rec = None
         nfev = 0
         for t in times:
-            atol = rtol * sys.atol_scale([D(float(v)) for v in y])
+            atol = rtol * sys.atol_scale(y)
             y, nf = sys.dop853(y, t_prev, t, rtol, atol)
             nfev += nf
             states.append(y.copy())
             if wash is not None and t == wash["t"]:
                 pre = y.copy()
-                yd, rec = sys.wash([D(float(v)) for v in y], wash, scale_bound=wash_variant)
-                y = np.array([f64(v) for v in yd], dtype=np.float64)
+                y = sys.wash_binary64(y, wash, scale_bound=wash_variant)
                 post = y.copy()
             t_prev = t
         out["A"][rtol] = {"states": states, "pre": pre, "post": post, "records": rec, "nfev": nfev}
@@ -418,9 +426,13 @@ class WorldRun:
         ab_max = ZERO
         bc_max = ZERO
         above = 0
+        misses = 0
+        worst = ZERO
+        c8 = "C8" in self.criteria
+        sysm = self.sys
         for k, t in enumerate(self.times, start=1):
             for i, name in enumerate(self.obs):
-                sn = self.snode[self.sys.node_of_component(i)]
+                sn = self.snode[sysm.node_of_component(i)]
                 gap = abs(D(float(A12[k][i])) - D(float(A13[k][i])))
                 ab = abs(D(float(A13[k][i])) - self.yB[k][i])
                 bc = abs(self.ode["Bc"]["states"][k][i] - self.yB[k][i])
@@ -429,6 +441,19 @@ class WorldRun:
                 bc_max = max(bc_max, bc / sn)
                 if gap > INCONCLUSIVE * sn:
                     above += 1
+                # AMENDMENT answer 2: Taylor within tolerance_gap + 1e-12 of the pair's scale of
+                # DOP853 at 1e-13: the node's scale, and S as well for C8's R and B
+                scales = [sn]
+                if c8 and i >= sysm.nP:
+                    if i < sysm.nP + sysm.nS:
+                        scales.append(sysm.Sd[i - sysm.nP])
+                    else:
+                        scales.append(sysm.Sd[sysm.pops[i - sysm.nP - sysm.nS]["set_index"]])
+                for sc in scales:
+                    allow = gap + D("1e-12") * sc
+                    worst = max(worst, ab / allow)
+                    if ab > allow:
+                        misses += 1
                 out.append(
                     {
                         "observable": name,
@@ -437,6 +462,10 @@ class WorldRun:
                         "tolerance_gap": f64(gap),
                     }
                 )
+        self.acc["trajectory_convergence_requirement"] = {
+            "misses": misses,
+            "worst_ratio": f64(worst),
+        }
         self.acc["trajectory"] = {
             "tolerance_gap_over_scale_max": f64(gap_max),
             "pairs_with_gap_above_1e-10_of_scale": above,
@@ -567,6 +596,39 @@ class WorldRun:
                         "gap": abs(H12 - H13),
                     }
                 )
+        # C3c covers every interval, the wash's included (AMENDMENT answer 7). Across the wash
+        # the site heat runs from the post-wash state to the next row, so its E is taken over
+        # those two states.
+        wash = self.world["wash"]
+        self.c3c_rows = []
+        wash_heats = []
+        for node in nodes:
+            for ka in range(len(self.times)):
+                kb = ka + 1
+                t_start = 0.0 if ka == 0 else self.times[ka - 1]
+                if wash is not None and ka > 0 and t_start == wash["t"]:
+                    post = self.ode["B"]["post"]
+                    E = sysm.E_terms(post, node) + sysm.E_terms(states[kb], node)
+                    H = sysm.G(post, node) - sysm.G(states[kb], node)
+                    wash_heats.append(H / E)
+                    self.c3c_rows.append(
+                        {"node": node, "ka": ka, "kb": kb, "E": E, "H": H, "wash": True}
+                    )
+                else:
+                    row = [r for r in self.heat_rows if r["node"] == node and r["ka"] == ka][0]
+                    self.c3c_rows.append(dict(row, wash=False))
+        if wash_heats:
+            self.acc["wash_interval_site_heat_over_E_min"] = f64(min(wash_heats))
+        # AMENDMENT answer 2: Taylor within tolerance_gap + 1e-12 of E of DOP853 at 1e-13
+        misses = 0
+        worst = ZERO
+        for row in self.heat_rows:
+            H13 = GA13[row["node"]][row["ka"]] - GA13[row["node"]][row["kb"]]
+            allow = row["gap"] + D("1e-12") * row["E"]
+            worst = max(worst, abs(H13 - row["H"]) / allow)
+            if abs(H13 - row["H"]) > allow:
+                misses += 1
+        self.acc["heats_convergence_requirement"] = {"misses": misses, "worst_ratio": f64(worst)}
         # the written heats' own precision: the fine Taylor run against the coarse one
         Gc = {node: [sysm.G(y, node) for y in self.ode["Bc"]["states"]] for node in nodes}
         fc_E = ZERO
@@ -705,13 +767,16 @@ class WorldRun:
                             )
                         )
             self.acc["C2b_reference_fraction_of_tolerance_max"] = fq(c2b_used)
+        rows = [(0.0, "0", 0)] + [
+            (t, self.time_text(t), k) for k, t in enumerate(self.times, start=1)
+        ]  # the saved rows: the start and every observation time (AMENDMENT answer 7)
         if any(c in crit for c in ("C3a", "C3b", "C3c")):
             tt = [0.0] + list(self.times)
             ttx = ["0"] + list(self.world["time_texts"])
-            for row in self.heat_rows:
+            for row in self.c3c_rows:
                 ka, kb, node = row["ka"], row["kb"], row["node"]
                 obs = f"H:{node}"
-                if "C3a" in crit:
+                if "C3a" in crit and not row["wash"]:
                     P.append(
                         _pair(
                             "C3a",
@@ -725,7 +790,7 @@ class WorldRun:
                             end_s=tt[kb],
                         )
                     )
-                if "C3b" in crit:
+                if "C3b" in crit and not row["wash"]:
                     for dt, dtt in dts:
                         ksteps = self.kt(ttx[kb], dtt) - self.kt(ttx[ka], dtt)
                         P.append(
@@ -736,25 +801,28 @@ class WorldRun:
                                 "derived",
                                 None,
                                 f64(16 * EPS * ksteps * row["E"]),
-                                "engine: -dG of its own saved states (SPEC §1.3, judge's side)",
+                                "engine: -dG of its own saved states, G by the references' "
+                                "fr45ref_free_energy.G (SPEC §1.3; AMENDMENT §2.2)",
                                 start_s=tt[ka],
                                 end_s=tt[kb],
                                 **dtkw(dt),
                             )
                         )
                 if "C3c" in crit:
+                    more = {"spans_wash": True} if row["wash"] else {}
                     P.append(
                         _pair(
                             "C3c",
-                            f"cumulative_heat:{node}",
+                            f"cumulative_site_heat:{node}",
                             tt[kb],
                             "derived",
                             None,
                             f64(16 * EPS * row["E"]),
-                            "engine: its own cumulative heat may not fall by more than "
+                            "engine: its own cumulative site heat may not fall by more than "
                             "the tolerance",
                             start_s=tt[ka],
                             end_s=tt[kb],
+                            **more,
                         )
                     )
         if "C4a" in crit:
@@ -762,8 +830,8 @@ class WorldRun:
             wash = self.world["wash"]
             rec = self.ode["B"]["records"]
             for dt, dtt in dts:
-                for k, t in enumerate(self.times, start=1):
-                    kt = self.kt(self.time_text(t), dtt)
+                for t, ttext, k in rows:
+                    kt = self.kt(ttext, dtt)
                     y = self.yB[k]
                     tot = sysm.pool_totals(y)
                     for p, pool in enumerate(sysm.pools):
@@ -785,43 +853,63 @@ class WorldRun:
                             )
                         )
         if "C4b" in crit:
+            # AMENDMENT answer 9: the terms the inputs fix are written; the terms from a state
+            # are R-ode's, marked as information, and the judge recomputes them from the
+            # engine's own state at the event.
             wash = self.world["wash"]
-            t5 = extra["wash_alone_time"]
-            k5 = self.times.index(t5) + 1
-            y5 = self.yB[k5]
+            tw = extra["wash_alone_time"]
+            yw = self.yB[self.times.index(tw) + 1]
             anchors = sysm.anchors()
+            f = Q(wash["f"])
             for p, pool in enumerate(sysm.pools):
                 if pool["node"] != wash["node"]:
                     continue
                 sup = supplied_exact(sysm, wash, p)
-                n = Q(y5[p])
+                n = Q(yw[p])
                 P.append(
                     _pair(
                         "C4b",
                         f"n:{pool['id']}",
-                        t5,
+                        tw,
                         "derived",
                         None,
-                        fq(4 * EPS_Q * (abs(Q(anchors[p])) + abs(n) + sup)),
-                        "engine: (1 - f) n + f V c_buf of its own saved state",
+                        None,
+                        "engine: (1 - f) n + f V c_buf of its own state at the event",
+                        tolerance_terms={
+                            "eps_factor": fq(4 * EPS_Q),
+                            "f_V_c_buf": fq(sup),
+                            "a_n_information": anchors[p],
+                            "n_information": f64(yw[p]),
+                            "formula": "eps_factor * (|a_n| + |n| + f_V_c_buf), with a_n and n "
+                            "the engine's anchor and amount at the event",
+                        },
+                        tolerance_information=fq(4 * EPS_Q * (abs(Q(anchors[p])) + abs(n) + sup)),
                     )
                 )
                 P.append(
                     _pair(
                         "C4b",
                         f"removed:{pool['ligand']}@{pool['node']}",
-                        t5,
+                        tw,
                         "derived",
                         None,
-                        fq(2 * EPS_Q * Q(wash["f"]) * abs(n)),
-                        "engine: f n of its own saved state",
+                        None,
+                        "engine: f n of its own state at the event",
+                        tolerance_terms={
+                            "eps_factor": fq(2 * EPS_Q),
+                            "f": wash["f"],
+                            "n_information": f64(yw[p]),
+                            "formula": "eps_factor * f * |n|, with n the engine's amount at the "
+                            "event",
+                        },
+                        tolerance_information=fq(2 * EPS_Q * f * abs(n)),
                     )
                 )
                 P.append(
                     _pair(
                         "C4b",
                         f"supplied:{pool['ligand']}@{pool['node']}",
-                        t5,
+                        tw,
                         "derived",
                         fq(sup),
                         fq(2 * EPS_Q * sup),
@@ -861,8 +949,8 @@ class WorldRun:
                 )
         if "C5" in crit:
             for dt, dtt in dts:
-                for _k, t in enumerate(self.times, start=1):
-                    kt = self.kt(self.time_text(t), dtt)
+                for t, ttext, _k in rows:
+                    kt = self.kt(ttext, dtt)
                     for _s, st in enumerate(sysm.sets):
                         P.append(
                             _pair(
@@ -957,7 +1045,9 @@ class WorldRun:
                     )
                 )
         if "C9" in crit:
-            for k, t in enumerate(self.times, start=1):
+            # AMENDMENT answer 9: 4 eps is the term the inputs fix; the moiety term is the
+            # engine's own state's, recomputed by the judge, and R-ode's is information.
+            for t, _ttext, k in rows:
                 yw = [Q(f64(v)) for v in self.yB[k]]
                 for _b, q in enumerate(sysm.pops):
                     s = q["set_index"]
@@ -965,7 +1055,7 @@ class WorldRun:
                     total = yw[sysm.i_set(s)] + sum(
                         (yw[sysm.i_pop(c)] for c in sysm.pops_of_set[s]), 0
                     )
-                    tol = 4 * EPS_Q + abs(total - Sq) / Sq
+                    moiety = abs(total - Sq) / Sq
                     P.append(
                         _pair(
                             "C9",
@@ -973,9 +1063,15 @@ class WorldRun:
                             t,
                             "derived",
                             None,
-                            fq(tol),
-                            "engine: B_b / S_s of its own saved state (the judge adds that state's "
-                            "|R_s + sum B - S_s| / S_s)",
+                            None,
+                            "engine: B_b / S_s of its own saved state",
+                            tolerance_terms={
+                                "eps_term": fq(4 * EPS_Q),
+                                "moiety_term_information": fq(moiety),
+                                "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety "
+                                "term from the engine's same saved state",
+                            },
+                            tolerance_information=fq(4 * EPS_Q + moiety),
                         )
                     )
         if "C10" in crit:
@@ -1017,6 +1113,8 @@ class WorldRun:
         if w.get("patches"):
             echo["patches"] = w["patches"]
         echo["ligands"] = list(w["ligands"])
+        if sysm.inert:
+            echo["inert_amounts_information"] = sysm.inert
         echo["free_amounts"] = [
             {"ligand": p["ligand"], "node": p["node"], "n": f64(p["n0"]), "declared": p["declared"]}
             for p in sysm.pools
@@ -1189,8 +1287,11 @@ def _energy_entries(run: WorldRun, plant: str, states) -> list:
     return entries
 
 
-def plant_energy(run: WorldRun, plant: str) -> tuple[dict, dict]:
-    """P3 or P6: the energy accounting changed on the honest trajectory, judged by C3b."""
+def plant_energy(run: WorldRun, plant: str) -> tuple[list, dict]:
+    """P3 or P6: the energy accounting changed on the honest trajectory, judged by C3b.
+
+    Their distances under C3a stay in the file as information (AMENDMENT §2.2).
+    """
     eB = _energy_entries(run, plant, run.yB)
     eA = _energy_entries(run, plant, _states_A(run))
     sign = "negative" if min(e["Hp"] for e in eB) < 0 else "non-negative"
@@ -1198,7 +1299,14 @@ def plant_energy(run: WorldRun, plant: str) -> tuple[dict, dict]:
         "smallest_planted_heat_sign": sign,
         "taylor_vs_dop853_relative_distance_gap": _method_gap(eB, eA),
     }
-    return _plant_entry(plant, "C3b", _largest(eB)), acc
+    c3a = []
+    for e, row in zip(eB, run.heat_rows, strict=True):
+        c3a.append(dict(e, distance=abs(e["Hp"] - row["H"]) / row["BH"]))
+    entries = [
+        _plant_entry(plant, "C3b", _largest(eB)),
+        _plant_entry(plant, "C3a", _largest(c3a), information=True),
+    ]
+    return entries, acc
 
 
 def _P8_entries(run: WorldRun, states) -> list:
@@ -1279,8 +1387,8 @@ def plants_W1p(run: WorldRun, profile) -> tuple[list, dict]:
     out.append(_plant_entry("P2", "C1", best))
     acc["P2"] = a
     for plant in ("P3", "P6"):
-        entry, a = plant_energy(run, plant)
-        out.append(entry)
+        entries, a = plant_energy(run, plant)
+        out += entries
         acc[plant] = a
     for plant, fn in (("P8", plant_P8), ("P9", plant_P9)):
         entry, a = fn(run)

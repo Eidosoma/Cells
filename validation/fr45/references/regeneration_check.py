@@ -3,6 +3,9 @@
   python validation/fr45/references/regeneration_check.py --spec-root <copy>/spec \
       --spec-sums <copy>/SHA256SUMS-...txt --spec-label <tag> --root <new dir> --cpus 6,7
 
+It also runs the first, 50-digit profile once and records which written values differ from
+the 70-digit ones (paths and relative differences only).
+
 Runs run_references.py four times, one after another, each with BLAS pinned to one thread:
 hash seeds 0, 1 and 2 (the writer's declared regeneration seeds) and seed 0 again, the first
 two on the first CPU and the last two on the second. Every output except run.log must be
@@ -23,6 +26,23 @@ import subprocess
 import sys
 
 HERE = pathlib.Path(__file__).resolve().parent
+
+
+def _diff(a, b, name, path, out):
+    """Record where two parsed files differ: the path and, for numbers, the relative size."""
+    if isinstance(a, dict) and isinstance(b, dict) and list(a) == list(b):
+        for k in a:
+            _diff(a[k], b[k], name, path + [k], out)
+    elif isinstance(a, list) and isinstance(b, list) and len(a) == len(b):
+        for i, (u, v) in enumerate(zip(a, b, strict=True)):
+            _diff(u, v, name, path + [i], out)
+    elif a != b:
+        rel = None
+        if isinstance(a, float) and isinstance(b, float) and a != 0:
+            rel = abs(a - b) / abs(a)
+        out.append(
+            {"file": name, "path": "/".join(str(x) for x in path), "relative_difference": rel}
+        )
 
 
 def main(argv=None) -> int:
@@ -129,6 +149,50 @@ def main(argv=None) -> int:
             flush=True,
         )
     sample_ok = all(r["sha256"] == committed_digest for r in sample_runs)
+    # the written values at the first, 50-digit profile, against the 70-digit ones: paths and
+    # relative differences only
+    seed, cpu = plan[0]
+    out50 = args.root / "profile50"
+    env = dict(
+        os.environ,
+        PYTHONHASHSEED=str(seed),
+        OMP_NUM_THREADS="1",
+        OPENBLAS_NUM_THREADS="1",
+        MKL_NUM_THREADS="1",
+    )
+    cmd = [
+        "taskset",
+        "-c",
+        cpu,
+        args.python,
+        str(HERE / "run_references.py"),
+        "--spec-root",
+        args.spec_root,
+        "--spec-sums",
+        args.spec_sums,
+        "--spec-label",
+        args.spec_label,
+        "--out",
+        str(out50),
+        "--profile",
+        "reference50",
+    ]
+    proc = subprocess.run(cmd, env=env, capture_output=True, text=True)
+    if proc.returncode != 0:
+        raise SystemExit(f"the 50-digit run failed:\n{proc.stdout}\n{proc.stderr}")
+    primary = args.root / f"seed{plan[0][0]}-cpu{plan[0][1]}"
+    differing = []
+    for p in sorted(primary.glob("reference_*.json")):
+        a = json.loads(p.read_text(encoding="utf-8"))
+        b = json.loads((out50 / p.name).read_text(encoding="utf-8"))
+        a.pop("provenance")
+        b.pop("provenance")
+        _diff(a, b, p.name, [], differing)
+    precision = {
+        "compared": "every value of the eight reference files but provenance",
+        "differing_count": len(differing),
+        "differing": differing,
+    }
     first = runs[0]["sha256"]
     identical = all(r["sha256"] == first for r in runs)
     same_rev = len({r["references_revision"] for r in runs}) == 1 and all(
@@ -141,6 +205,7 @@ def main(argv=None) -> int:
         "runs": runs,
         "bitwise_identical": identical,
         "one_clean_revision": same_rev,
+        "precision_50_vs_70_digits": precision,
         "format_sample": {
             "committed_sha256": committed_digest,
             "runs": sample_runs,

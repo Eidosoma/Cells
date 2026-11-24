@@ -82,6 +82,12 @@ def main(argv=None) -> int:
     )
     ap.add_argument("--only", default="", help="comma-separated world ids (development)")
     ap.add_argument("--sample", action="store_true", help="write the invented format sample only")
+    ap.add_argument(
+        "--profile",
+        default="reference",
+        choices=("reference", "reference50"),
+        help="working precision: reference (70 digits) or reference50 (the first 50-digit profile)",
+    )
     args = ap.parse_args(argv)
 
     sys.path.insert(0, str(HERE))
@@ -132,11 +138,11 @@ def main(argv=None) -> int:
         "verified_against": args.spec_sums.name,
         "rows_matched": len(rows),
     }
-    prov = WR.make_provenance(rev, clean, spec, "reference")
+    prov = WR.make_provenance(rev, clean, spec, args.profile)
     if not clean:
         prov["dirty_paths"] = dirty
     only = [w for w in args.only.split(",") if w] or None
-    files, acc = WR.build_all(prov, "reference", only=only, log=log)
+    files, acc = WR.build_all(prov, args.profile, only=only, log=log)
     for name, payload in files.items():
         (out / name).write_text(WR.dumps(payload), encoding="utf-8")
     acc["provenance"] = prov

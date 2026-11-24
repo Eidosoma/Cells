@@ -25,7 +25,7 @@ import math
 from decimal import Decimal
 
 import numpy as np
-from fr45ref_hp import ZERO, D, Q, f64, ln
+from fr45ref_hp import ZERO, D, Q, ln
 from fr45ref_worlds import STANDARD_MM_TEXT, TRACE_MM_TEXT, gas_constant_RT
 from scipy.integrate import solve_ivp
 
@@ -36,13 +36,7 @@ C_STD = D(STANDARD_MM_TEXT)
 class System:
     """One world's pools, sets and populations, with decimal and binary64 parameters."""
 
-    def __init__(
-        self,
-        world: dict,
-        unshared: bool = False,
-        dR_first_only: bool = False,
-        include_inert_traces: bool = False,
-    ):
+    def __init__(self, world: dict, unshared: bool = False, dR_first_only: bool = False):
         self.world = world
         self.unshared = unshared
         self.dR_first_only = dR_first_only
@@ -51,14 +45,19 @@ class System:
         lig_order = list(world["ligands"])
         declared = {(f["ligand"], f["node"]): f["n"] for f in world["free"]}
         set_by_id = {s["id"]: s for s in world["sets"]}
-        wanted = set(declared)
-        for p in world["populations"]:
-            wanted.add((p["ligand"], set_by_id[p["set"]]["faces"]))
-        if include_inert_traces:
-            for nid in node_order:
-                for lig in lig_order:
-                    wanted.add((lig, nid))
-        pool_keys = sorted(wanted, key=lambda k: (node_order.index(k[1]), lig_order.index(k[0])))
+
+        def order(k):
+            return (node_order.index(k[1]), lig_order.index(k[0]))
+
+        # Only amounts a law moves (AMENDMENT-2026-11-24 answer 3): a ligand's free amount at a
+        # node some population binds it from. A declared amount no population binds is a
+        # constant; it is left out of everything and listed as information.
+        binding = {(p["ligand"], set_by_id[p["set"]]["faces"]) for p in world["populations"]}
+        self.inert = [
+            {"ligand": k[0], "node": k[1], "n": declared[k]}
+            for k in sorted((k for k in declared if k not in binding), key=order)
+        ]
+        pool_keys = sorted(binding, key=order)
         self.pools = []
         for lig, nid in pool_keys:
             V = nodes[nid]["V"]
@@ -359,15 +358,38 @@ class System:
             dR = -np.bincount(self.np_ps, weights=J, minlength=S)
         return np.concatenate([dn, dR, J])
 
-    def atol_scale(self, y) -> np.ndarray:
-        """Each amount's natural bound: a pool's total, a set's capacity, min(S, pool total)."""
-        tot = self.pool_totals(y)
-        sc = [f64(abs(tot[p])) for p in range(self.nP)]
+    def atol_scale(self, y: np.ndarray) -> np.ndarray:
+        """Each amount's natural bound: a pool's total, a set's capacity, min(S, pool total).
+
+        Method A's inputs are exact functions of its binary64 state (Fraction, rounded once),
+        so they do not depend on the decimal working precision.
+        """
+        yq = [Q(float(v)) for v in y]
+        tot = [
+            yq[p] + sum((yq[self.i_pop(b)] for b in self.pops_of_pool[p]), 0)
+            for p in range(self.nP)
+        ]
+        sc = [float(abs(tot[p])) for p in range(self.nP)]
         sc += [s["S"] for s in self.sets]
         sc += [
-            min(self.sets[q["set_index"]]["S"], f64(abs(tot[q["pool_index"]]))) for q in self.pops
+            min(self.sets[q["set_index"]]["S"], float(abs(tot[q["pool_index"]]))) for q in self.pops
         ]
         return np.array([max(v, 1e-300) for v in sc], dtype=np.float64)
+
+    def wash_binary64(self, y: np.ndarray, wash: dict, scale_bound: bool = False) -> np.ndarray:
+        """SPEC §1.4's map on a binary64 state for method A: exact, then rounded once."""
+        f = Q(wash["f"])
+        node = wash["node"]
+        cbuf = {b["ligand"]: Q(b["c"]) for b in wash["buffer"]}
+        out = [Q(float(v)) for v in y]
+        for i, p in enumerate(self.pools):
+            if p["node"] == node:
+                out[i] = (1 - f) * out[i] + f * Q(p["V"]) * cbuf[p["ligand"]]
+        if scale_bound:
+            for b, q in enumerate(self.pops):
+                if self.sets[q["set_index"]]["faces"] == node:
+                    out[self.i_pop(b)] = (1 - f) * out[self.i_pop(b)]
+        return np.array([float(v) for v in out], dtype=np.float64)
 
     def dop853(self, y0: np.ndarray, t0: float, t1: float, rtol: float, atol: np.ndarray):
         sol = solve_ivp(self.rhs, (t0, t1), y0, method="DOP853", rtol=rtol, atol=atol)
