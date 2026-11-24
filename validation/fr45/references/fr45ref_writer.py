@@ -333,7 +333,7 @@ def build_all(provenance: dict, profile: str = "reference", only=None, log=print
             stage=st,
             plants=[BLD.plant_P4(st)],
         )
-        note("W5", r)
+        note("W5", r, {"stage": BLD.stage_binary64_check(r.sys, r.world["dt"][0], st)})
         log("W5 loads")
 
     if "W6" in want:
@@ -523,7 +523,7 @@ def build_sample() -> dict:
     plants += p5
     p7, _ = BLD.plants_W3p(r, world, prof, label=world["id"])
     plants += p7
-    plants.append(BLD.plant_P8(r))
-    plants.append(BLD.plant_P9(r))
+    plants.append(BLD.plant_P8(r)[0])
+    plants.append(BLD.plant_P9(r)[0])
     payload["plants"] = plants
     return payload

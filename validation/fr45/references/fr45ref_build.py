@@ -1152,39 +1152,62 @@ def crossed_koff_world(world: dict) -> dict:
     return w
 
 
-def plant_energy(run: WorldRun, plant: str) -> tuple[dict, dict]:
-    """P3 or P6: the energy accounting changed on the honest trajectory, judged by C3b."""
+def _states_A(run: WorldRun) -> list:
+    """Method A's (DOP853, rtol 1e-13) states, exactly in decimal, for a second sizing."""
+    return [[D(float(v)) for v in st] for st in run.ode["A"][run.profile["rtols"][-1]]["states"]]
+
+
+def _method_gap(eB: list, eA: list) -> float:
+    """Largest |d_B - d_A| / max(d_B, 1) between the two methods' distances, entry by entry."""
+    worst = ZERO
+    for b, a in zip(eB, eA, strict=True):
+        worst = max(worst, abs(b["distance"] - a["distance"]) / max(b["distance"], ONE))
+    return f64(worst)
+
+
+def _energy_entries(run: WorldRun, plant: str, states) -> list:
     sysm = run.sys
-    dt, dtt = _first_dt(run)
+    _dt, dtt = _first_dt(run)
     tt = [0.0] + list(run.times)
     ttx = ["0"] + list(run.world["time_texts"])
     entries = []
     for row in run.heat_rows:
         ka, kb, node = row["ka"], row["kb"], row["node"]
-        Hp = planted_G(sysm, run.yB[ka], node, plant) - planted_G(sysm, run.yB[kb], node, plant)
+        H = sysm.G(states[ka], node) - sysm.G(states[kb], node)
+        Hp = planted_G(sysm, states[ka], node, plant) - planted_G(sysm, states[kb], node, plant)
         ks = steps(ttx[kb], dtt) - steps(ttx[ka], dtt)
         tol = 16 * EPS * ks * row["E"]
         entries.append(
             {
                 "compared": {"observable": f"H:{node}", "start_s": tt[ka], "end_s": tt[kb]},
-                "honest": f64(row["H"]),
+                "honest": f64(H),
                 "planted": f64(Hp),
-                "distance": abs(Hp - row["H"]) / tol,
+                "distance": abs(Hp - H) / tol,
                 "Hp": Hp,
             }
         )
-    sign = "negative" if min(e["Hp"] for e in entries) < 0 else "non-negative"
-    return _plant_entry(plant, "C3b", _largest(entries)), {"smallest_planted_heat_sign": sign}
+    return entries
 
 
-def plant_P8(run: WorldRun) -> dict:
-    """P8: the moiety checked per population (R_s + B_b = S_s), refused by its own ledger."""
+def plant_energy(run: WorldRun, plant: str) -> tuple[dict, dict]:
+    """P3 or P6: the energy accounting changed on the honest trajectory, judged by C3b."""
+    eB = _energy_entries(run, plant, run.yB)
+    eA = _energy_entries(run, plant, _states_A(run))
+    sign = "negative" if min(e["Hp"] for e in eB) < 0 else "non-negative"
+    acc = {
+        "smallest_planted_heat_sign": sign,
+        "taylor_vs_dop853_relative_distance_gap": _method_gap(eB, eA),
+    }
+    return _plant_entry(plant, "C3b", _largest(eB)), acc
+
+
+def _P8_entries(run: WorldRun, states) -> list:
     sysm = run.sys
-    dt, dtt = _first_dt(run)
+    _dt, dtt = _first_dt(run)
     entries = []
     for k, t in enumerate(run.times, start=1):
         kt = steps(run.time_text(t), dtt)
-        y = run.yB[k]
+        y = states[k]
         for b, q in enumerate(sysm.pops):
             s = q["set_index"]
             v = y[sysm.i_set(s)] + y[sysm.i_pop(b)]
@@ -1197,21 +1220,29 @@ def plant_P8(run: WorldRun) -> dict:
                     "distance": abs(v - sysm.Sd[s]) / tol,
                 }
             )
-    return _plant_entry(
+    return entries
+
+
+def plant_P8(run: WorldRun) -> tuple[dict, dict]:
+    """P8: the moiety checked per population (R_s + B_b = S_s), refused by its own ledger."""
+    eB = _P8_entries(run, run.yB)
+    eA = _P8_entries(run, _states_A(run))
+    entry = _plant_entry(
         "P8",
         "C10",
-        _largest(entries),
+        _largest(eB),
         bound_used="C5's moiety tolerance 16 eps (k_t + 1) S_s, as the ledger's own",
     )
+    return entry, {"taylor_vs_dop853_relative_distance_gap": _method_gap(eB, eA)}
 
 
-def plant_P9(run: WorldRun) -> dict:
-    """P9: theta_b = B_b / (B_b + R_s), judged by C9."""
+def _P9_entries(run: WorldRun, states) -> list:
+    """C9's tolerance is held at the written values (R-ode's) for either route's states."""
     sysm = run.sys
     entries = []
     for k, t in enumerate(run.times, start=1):
-        y = run.yB[k]
-        sums = sysm.set_sums([D(f64(v)) for v in y])
+        y = states[k]
+        sums = sysm.set_sums([D(f64(v)) for v in run.yB[k]])
         for b, q in enumerate(sysm.pops):
             s = q["set_index"]
             B, R = y[sysm.i_pop(b)], y[sysm.i_set(s)]
@@ -1226,7 +1257,16 @@ def plant_P9(run: WorldRun) -> dict:
                     "distance": abs(tp - th) / tol,
                 }
             )
-    return _plant_entry("P9", "C9", _largest(entries))
+    return entries
+
+
+def plant_P9(run: WorldRun) -> tuple[dict, dict]:
+    """P9: theta_b = B_b / (B_b + R_s), judged by C9."""
+    eB = _P9_entries(run, run.yB)
+    eA = _P9_entries(run, _states_A(run))
+    return _plant_entry("P9", "C9", _largest(eB)), {
+        "taylor_vs_dop853_relative_distance_gap": _method_gap(eB, eA)
+    }
 
 
 def plants_W1p(run: WorldRun, profile) -> tuple[list, dict]:
@@ -1242,8 +1282,10 @@ def plants_W1p(run: WorldRun, profile) -> tuple[list, dict]:
         entry, a = plant_energy(run, plant)
         out.append(entry)
         acc[plant] = a
-    out.append(plant_P8(run))
-    out.append(plant_P9(run))
+    for plant, fn in (("P8", plant_P8), ("P9", plant_P9)):
+        entry, a = fn(run)
+        out.append(entry)
+        acc[plant] = a
     return out, acc
 
 
@@ -1389,6 +1431,45 @@ def stage_section(sysm: System, dt: float) -> dict:
         "verdict_summed": "refused" if m_sum > half else "admitted",
         "verdict_per_population": "refused" if m_per > half else "admitted",
         "_m": (m_sum, m_per),
+    }
+
+
+def stage_binary64_check(sysm: System, dt: float, stage: dict) -> dict:
+    """The same loads in plain binary64 from the declared start: a second route to SPEC §3.6."""
+    y = sysm.anchors()
+    h = dt / 2
+    per_pop = {}
+    for q in sysm.pops:
+        per_pop[q["id"]] = q["k_on"] * y[q["pool_index"]] / sysm.pools[q["pool_index"]]["V"]
+    summed = {}
+    for si, st in enumerate(sysm.sets):
+        acc = 0.0
+        for b in sysm.pops_of_set[si]:
+            acc += per_pop[sysm.pops[b]["id"]]
+        summed[st["id"]] = acc
+    Ln = {}
+    for p, pool in enumerate(sysm.pools):
+        if sysm.pops_of_pool[p]:
+            acc = 0.0
+            for b in sysm.pops_of_pool[p]:
+                acc += sysm.pops[b]["k_on"] * y[sysm.i_set(sysm.pops[b]["set_index"])]
+            Ln[pool["id"]] = acc / pool["V"]
+    LB = {q["id"]: q["k_off"] for q in sysm.pops}
+    loads = {"L_n": Ln, "L_R_summed": summed, "L_R_per_population": per_pop, "L_B": LB}
+    worst = ZERO
+    for kind, d in loads.items():
+        for name, v in d.items():
+            exact = D(stage["loads_times_h"][kind][name])
+            worst = max(worst, abs(D(h * v) - exact) / abs(exact))
+    common = list(Ln.values()) + list(LB.values())
+    m_sum = h * max(common + list(summed.values()))
+    m_per = h * max(common + list(per_pop.values()))
+    return {
+        "binary64_vs_exact_relative_max": f64(worst),
+        "verdicts_agree": (
+            ("refused" if m_sum > 0.5 else "admitted") == stage["verdict_summed"]
+            and ("refused" if m_per > 0.5 else "admitted") == stage["verdict_per_population"]
+        ),
     }
 
 
