@@ -11666,3 +11666,52 @@ chain. With a retry, at most about 27.
 
 **The checker** is fresh and independent: neither the builder nor the first checker. It is briefed with the tag, the
 document and §10, and with its CPUs. It reports before any retry.
+
+## D358: the user's decision on gate speed: refresh the scope map after engine landings, record the 37 unmapped files, and narrow D229's readers rule after a file-open check
+
+2026-11-24, about 18:32 UTC. The user: "think practically about testing as much as we can try to be optimized without
+sacrificing quality". The lead measured, with the advisor.
+
+**What a gate with no src change runs today.** The gate for the Lean calibration tip, whose diff is 52 files, all under
+`lean/`, selected 561 of 666 tier files: 12,633 of 13,307 test-seconds, and 2,354 s of wall time on lane A. Two terms
+dominate:
+- **Drift: 442 files.** `scope.py select` compares each test's recorded paths with the nightly map's snapshot (03:09),
+  so every test that touches src changed by the day's landings is re-run by every later gate, whatever the gate's own
+  change.
+- **D229's always-run readers: 469 files.** Every test that reads repository files always runs.
+
+The same estimate for two other diffs, with the drift term removed:
+
+| Always-run rule | Lean tip (52 files) | D356 (two docs files) | Protocol D v2 (three files) |
+| --- | --- | --- | --- |
+| Recorded reads only | 49 files, 735 s | 50 files, 794 s | 51 files, 815 s |
+| Folder scanners | 295 files, 7,824 s | 296 files, 7,930 s | 296 files, 7,930 s |
+| Readers (D229) | 479 files, 10,496 s | 480 files, 10,602 s | 480 files, 10,602 s |
+
+- **The floor.** In every variant, 37 files run because their child processes are not recorded, and a few because they
+  are missing from the map.
+- **No tier test reads `lean/`.**
+- **Tracing is nearly free.** The traced nightly ran 662 files in 2,301 s of wall time.
+
+**Why not simply select from the landing's own diff.** That would change what a gate certifies. Main also changes
+without a gate:
+- the lead's decision commits, which pass only the privacy scan;
+- the merged state after each `land.sh`, whose trial runs only the named test files.
+
+FR-50's stale library pages are that class of failure. So main's drift stays tested, once rather than in every gate.
+
+**The user's decision: build all three tomorrow.** Each is qualified before use, and the full nightly run stays the
+backstop: a nightly failure still stops selection until it is explained.
+1. **Refresh the map after each engine landing,** with one traced full run on main. Later gates then select against a
+   map of the current main. No rule changes, and no coverage is lost.
+2. **Record the 37 files whose children are unmapped,** so they run only when their inputs change.
+3. **Narrow D229's always-run readers rule,** amending D229 rule 3. Tests that read repository files then run when the
+   recorded files they read, or the folders they list, change.
+   - The evidence comes first: a file-open trace (`strace -f -e trace=openat`) of a sample of reader files, compared
+     with the map's paths. A repository path the map lacks is a hole, and it blocks the change.
+   - The guard set still always runs.
+
+**Tonight nothing changes** in `scripts/gates` or `gate-cache/scope-map.json`, because gates are queued.
+- The queued Lean gates are Lean's, and the lead does not stop them.
+- The user passes Lean the advice: one gate per merge point. 647b4c15 covers d5a2c138, 3a5f40d7 and af4a8000.
+  fccbb5e5 is superseded by c1924c89, which cannot merge before FR-51's follow-up lands.
