@@ -58,6 +58,7 @@ and a general feature, never one built for one study (D144).
 | [FR-50](#fr-50--one-way-cumulative-transfer-records-per-route) | One-way cumulative transfer records per route | **High** (logged by the user, 23 November 2026) | **Logged:** most transfer records are net, so equal opposite flows cancel | Opt-in one-way records from the existing one-way kernels, closing to the net |
 | [FR-51](#fr-51--two-voltage-dependent-blocking-modes-on-one-channel-population) | Two voltage-dependent blocking modes on one channel population | **High** (logged by the user, 23 November 2026) | **Logged:** not expressible; a channel law's kinetics read the voltage only, and there is no block law | An optional weighted-mode block on a channel population, qualified for permeation and block separately |
 | [FR-52](#fr-52--passive-cohort-observations-for-integer-functional-units) | Passive cohort observations for integer functional units: the expected surviving initial and newly assembled units at one site | **High** (logged by the user, 24 November 2026) | **Logged:** `integer_unit_population@1` records its events in a bounded trace, with no cohort readout; labels follow species rows, not units | A design note: a validation reader or a statically absent in-engine expected-cohort record, with classes that partition the count and fail-closed truncation |
+| [FR-53](#fr-53--a-rounding-allowance-for-global-ledgers-at-every-row) | A rounding allowance for global ledgers at every row: the first window's bound no tighter than the sum's own rounding | **High** (logged by the user, 24 November 2026) | **Logged:** at steps 0 and 1 the bound is the bare atol, and the host reads 0.28 of it on 625 cells, growing about as √N | A design note: a derived summation allowance per row, or compensated global sums, with the planted faults still caught |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -2245,6 +2246,44 @@ count and the expected newly assembled count, conditional on the recorded events
 
   Still to verify in the note: that the trace survives windows and a same-seed restart, and that one event moves
   exactly one unit.
+
+**Status (24 November):** logged. A design note comes first.
+
+## FR-53 — A rounding allowance for global ledgers at every row
+
+**Logged 24 November 2026 by the user, priority high.**
+
+**Why.** FR-17's GPU qualification (D330, D336) found a limit that applies on every device.
+- **Where the bound is thin.** At a run's first rows, a balance check's bound is the bare absolute tolerance: the
+  rounding allowance grows with the accepted steps, and is zero at steps 0 and 1.
+- **A global ledger sums every cell's terms,** and that sum's own rounding takes a growing share of the bare
+  tolerance. On the host (CPU), the first window's "total" ledger reads:
+
+  | World | Junction routes | Share of the bound |
+  | --- | ---: | ---: |
+  | 25-cell line | 24 | 0.044 |
+  | 9 × 9 sheet | 144 | 0.122 |
+  | 25 × 25 field | 1,200 | 0.281 |
+
+  That growth is about √N (exponents 0.40–0.48), as a sum's random rounding grows.
+- **Extrapolated,** the first window refuses on rounding alone at about 15,000–29,000 routes, roughly 90 × 90 to
+  120 × 120 cells, on any device. By the second window the allowance dominates, and the share falls.
+- **The organism targets are far larger,** so this limits tissue size before any physics does.
+
+**The request.** Give a global ledger's own summation a rounding allowance at every row. It is derived from the sum's
+term count and magnitudes, so that the bound at steps 0 and 1 is no tighter than float64 can resolve the sum. It
+loosens no bound beyond what that rounding requires. Every planted fault the checks catch today is still caught.
+
+**First reading (the lead), for the design note to settle:**
+- **Derive the allowance from the sum itself,** per row: for n terms, a bound of the form γ_n·Σ|x_i|. It is not a
+  constant.
+- **Or make the global sums compensated (Neumaier),** on the host and the device, which brings their rounding to
+  about one ulp of the total. That might also close D330's GPU gap. The two approaches can combine.
+- **Bitwise:** only a check-side quantity changes, so a world's state path does not move.
+- **The test:**
+  - the line's, the sheet's and the field's first-window shares, before and after;
+  - the existing seeded-fault rows.
+- **A new GPU qualification is separate,** and the user's decision (D336).
 
 **Status (24 November):** logged. A design note comes first.
 

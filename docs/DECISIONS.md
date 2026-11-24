@@ -10748,3 +10748,60 @@ fail stands.**
 **FR-47's judged run and its checker's driver use the landed engine,** main at ec7e8c7d (the merge of 43763a36),
 from a frozen snapshot. The registration was tagged before the build, so it names no engine revision. The fix for
 inert wall places, in progress, is not in the judged engine.
+
+## D337: XC0's erratum 2 and FR-30's Tag A are tagged before reading; the user's decisions on a core, FR-53 and a refused removal; SK2's one closing rate is flagged provisional
+
+2026-11-24, about 14:22 UTC.
+
+**XC0 rule erratum 2 is tagged `xc0-erratum-2-2026-11-24` at b477f433** (branch xc0-erratum-2). Its src/ tree equals
+260d7c7f's, D329's engine.
+- **What reruns:** 349 rows (C6 eq_ratio 172, C6 eq_x 172, C7 1, b_final_c 3, b_final_psi 1). C8.bc_t_e is
+  carried (D336).
+- **No reference changes.** No rerun row's key carries a B_out token, so no reference is regenerated.
+- **C7's tolerance:** |F_declared − N_A·e|/(N_A·e) + 16·2⁻⁵³, evaluated exactly as 3.4307699621628870747e-11.
+- **C6's B_out** is 1e-5 mM: the largest power of ten below 2¹⁹ fmol / (1e8 × 65.45 pL) = 8.0e-5 mM. The largest
+  charge-anchor term over the scan domain is then 81,100 fmol.
+- **Cost:** about 3.5 core-hours, or 2.5 h of wall time in three gate-lane batches of under 45 minutes plus the
+  table. A C8b retry would add about 4.4 core-hours, and the procedure asks the lead first.
+- **The runner** is a new independent agent, working from a frozen snapshot of the tag.
+
+**FR-30's Tag A is tagged `fr30-ekvitorin2016-tag-a-2026-11-24` at 9c53fd76** (branch fr30-next).
+- **The exposure sweep finished** (pass 5). It searched text files only, and never the sealed folder.
+- **The lead's two files are confirmed.** They name the 2016 paper only by name, identifier and status:
+  - LEAD-NOTES.md: its filing, the user's decision, and the registration's progress;
+  - MORNING-BRIEF-20261123.md: its name and PMC identifier.
+
+  Both stay barred for the fitter.
+- **The fourth choice is confirmed.** Part S judges every held-out G_ss, those at decay-list magnitudes included,
+  and starts from at least two held-out G_ss entries. Part S is reported only; FR-30's verdict does not depend on
+  it.
+- **Not exercised by any test, as the record states:**
+  - of_G0 amplitude scoring;
+  - reference_step predictions;
+  - a G_ss sampling time other than T;
+  - the symmetric protocol's holding difference.
+- **Next:**
+  - the branch lands later, with its tier measurement folded onto main's record (D222);
+  - the sealed extractor is a new agent, started when a slot frees.
+
+**The user's decisions:**
+- **GJ-N1's upper end runs on CPU 13, with its sibling 29 idle.** That is about 23 h, and another 45–73 h if its
+  h/2 is needed. The user lends this one visualizer core while the viewer is on hold. The rest of the search stays on
+  a gate lane under its lock; amendment 2 is tagged with its driver change.
+- **FR-53 is logged, high:** a rounding allowance for global ledgers at every row, from D336's finding.
+- **A refused removal.**
+  - The safety check refused the FR-38 references agent's `rm -f out/*`, a glob after a `cd`. No one retried it.
+  - The user gave permission to remove the four untracked smoke-test files by their explicit paths, and the lead did.
+  - The regeneration then runs from a clean tree.
+
+**SK2's timing is flagged provisional** (the Lean lane, 24 November).
+- **Half-activation.** Two independent labs place rat SK2's half-activation near 0.7 µM Ca²⁺. That is close to the
+  fit of 0.728 µM with `cells.species_regulated_availability`.
+- **The bound.** Lean proves that, with a fixed closing rate, the 20–80% rise time is at most ln 4 times the washout
+  time constant. Both compiled versions of the operator passed that check.
+- **One study indicates otherwise.** Oliver et al. (Neuron, doi:10.1016/S0896-6273(00)81197-6) report a mean
+  high-dose washout that implies a 48.1 ms ceiling, and about 80 ms at low calcium.
+- **So reusing one closing rate across doses is provisional.** A rise and a washout measured on the same low-dose
+  patch would settle it. One study is an indication, and no law's form changes on it.
+- **The operator's docstring gains this scope line** at its next src landing, batched with other docstring-only
+  updates.
