@@ -24,6 +24,51 @@
     "cells.rate_equations@1": "molecular-assembly"
   },
   "comparisons": {
+    "bilayer-warm-footprint": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.bilayer_geometry@1",
+        "cells.osmotic_lumen@1"
+      ],
+      "engine_revision": "1e40fc16ade2244aa45a3f18f3055dd60819a2e7",
+      "record_revision": "22587f8d5e38ae18d775b7a65c91fb10e9277991",
+      "sources": {
+        "Input molecular footprints": "src/cells/models/assembly_lineages_v2/geometry.py#L113",
+        "Area from counted footprint": "src/cells/models/assembly_lineages_v2/geometry.py#L249",
+        "Compiled count-weighted footprint": "src/cells/models/assembly_lineages_v2/kernel.py#L326",
+        "Footprints from the host run": "src/cells/models/assembly_lineages_v2/runner.py#L1013",
+        "Empty lumen convention": "src/cells/models/assembly_lineages_v2/lumen.py#L159",
+        "Closed world fixture": "tests/unit/test_assembly_lineages_v2_lumen.py#L59"
+      },
+      "record_inputs": {
+        "Leaflet surface and lipid fractions": "lean/CellsProofs/Chemistry/Vesicle.lean",
+        "POPC temperature and egg-PC leaflet measurements": "lean/checks/data/leaflet_packing.json"
+      },
+      "driver": "lean/checks/leaflet_packing.py",
+      "record": "lean/PROGRESS.md#paired-calibration-and-leaflet-packing"
+    },
+    "binding-finite-increment": {
+      "kind": "engine",
+      "models": [],
+      "laws": [
+        "cells.rapid_binding@1"
+      ],
+      "engine_revision": "1e40fc16ade2244aa45a3f18f3055dd60819a2e7",
+      "record_revision": "22587f8d5e38ae18d775b7a65c91fb10e9277991",
+      "sources": {
+        "Conservation residual from the equilibrium form weights": "src/cells/laws/reactions/rapid_binding.py#L124",
+        "Construction of the single-site test network": "src/cells/laws/reactions/rapid_binding.py#L546"
+      },
+      "record_inputs": {
+        "Finite total-ligand bound": "lean/CellsProofs/Chemistry/BindingResponse.lean",
+        "Observed ionized and total calcium in two albumin experiments": "lean/checks/data/paired_calibration_measurements.json"
+      },
+      "driver": "lean/checks/binding_buffer_capacity.py",
+      "record": "lean/PROGRESS.md#paired-calibration-and-leaflet-packing"
+    },
     "xc0-charge-anchor": {
       "kind": "engine",
       "models": ["resolved_pump_tissue@3"],
@@ -8174,9 +8219,10 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
-          "bilayer-footprint"
+          "bilayer-footprint",
+          "bilayer-warm-footprint"
         ],
-        "result": "A 64-lipid control calibrated to fluid POPC at 30 °C gave 20.576 nm² and an empty lumen. In two compiled 96-event trajectories with different molecular weights for two lipids, every recorded integer footprint matched the independent count sum. A 32-fold refinement preserved the molecule counts across all 98 records."
+        "result": "A 64-lipid control calibrated to fluid POPC at 30 °C gave 20.576 nm² and an empty lumen. In two compiled 96-event trajectories with different molecular weights for two lipids, every recorded integer footprint matched the independent count sum. A 32-fold refinement preserved the molecule counts across all 98 records. At a fixed 30 °C POPC footprint, the same native 64-lipid system gave 20.576 nm² at 30 and 50 °C. Using the 50 °C footprint gave 21.536 nm²."
       },
       "biology": {
         "status": "open",
@@ -10447,9 +10493,10 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
-          "binding-ligand-response"
+          "binding-ligand-response",
+          "binding-finite-increment"
         ],
-        "result": "NumPy, compiled JAX CPU and the differentiated conservation residual each matched all 303 entries of an 80-digit centered covariance across 80 S1–S7 states. The largest absolute error was 2.45 × 10⁻¹⁴ mM. All nine proton-release states had a negative H–Mg entry and a positive Mg diagonal. Checks included empty binders, unheld coordinates and a missing-covariance control."
+        "result": "NumPy, compiled JAX CPU and the differentiated conservation residual each matched all 303 entries of an 80-digit centered covariance across 80 S1–S7 states. The largest absolute error was 2.45 × 10⁻¹⁴ mM. All nine proton-release states had a negative H–Mg entry and a positive Mg diagonal. Checks included empty binders, unheld coordinates and a missing-covariance control. For free ligand of 0.25–4 mM and a single site with Kd = 1 mM, four finite total/free increment ratios matched the analytical values on compiled CPU. The empty buffer gave equality at each step. With 2 mM binder the ratios ranged from 2.067 to 1.133."
       },
       "biology": {
         "status": "open",
