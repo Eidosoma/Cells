@@ -52,6 +52,7 @@ changes an input or a definition becomes a dated amendment to this folder, never
 | `AMENDMENT-2026-11-24.md` | Amendment 1: the answers to your four questions and your five readings. It governs where it differs from the files above |
 | `AMENDMENT-2-2026-11-24.md` | Amendment 2: the lead's layout rulings on provenance, extra keys and precision. It governs where it differs from the files above |
 | `AMENDMENT-3-2026-11-24.md` | Amendment 3: family D's energy identity judged at second order (a disclosed correction), release_check's scope, and four readout controls. It changes nothing the references compute |
+| `AMENDMENT-4-2026-11-24.md` | Amendment 4: the judge's questions ruled, and the engine export contract (the table's layout, run names and definition vocabulary) that the builder and the judge both read. It changes no band |
 
 ## Where your work goes
 
