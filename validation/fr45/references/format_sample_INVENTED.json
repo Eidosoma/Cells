@@ -5449,6 +5449,8 @@
   {
    "plant": "P1",
    "criterion": "C1",
+   "world": "INVENTED-X",
+   "time_s": null,
    "compared": {
     "observable": "n:Q4@pod",
     "time_s": 0.5
@@ -5461,6 +5463,8 @@
   {
    "plant": "P2",
    "criterion": "C1",
+   "world": "INVENTED-X",
+   "time_s": null,
    "compared": {
     "observable": "B:lattice_Q1",
     "time_s": 0.5
@@ -5472,6 +5476,8 @@
   {
    "plant": "P3",
    "criterion": "C3b",
+   "world": "INVENTED-X",
+   "time_s": null,
    "compared": {
     "observable": "H:pod",
     "start_s": 0.0,
@@ -5484,6 +5490,8 @@
   {
    "plant": "P3",
    "criterion": "C3a",
+   "world": "INVENTED-X",
+   "time_s": null,
    "compared": {
     "observable": "H:pod",
     "start_s": 0.1,
@@ -5497,6 +5505,8 @@
   {
    "plant": "P6",
    "criterion": "C3b",
+   "world": "INVENTED-X",
+   "time_s": null,
    "compared": {
     "observable": "H:vessel",
     "start_s": 0.0,
@@ -5509,6 +5519,8 @@
   {
    "plant": "P6",
    "criterion": "C3a",
+   "world": "INVENTED-X",
+   "time_s": null,
    "compared": {
     "observable": "H:vessel",
     "start_s": 0.0,
@@ -5522,6 +5534,8 @@
   {
    "plant": "P4",
    "criterion": "C7",
+   "world": "INVENTED-X",
+   "time_s": null,
    "compared": {
     "observable": "stage:h*max_L",
     "time_s": 0.0
@@ -5536,6 +5550,8 @@
   {
    "plant": "P5",
    "criterion": "C6",
+   "world": "INVENTED-X",
+   "time_s": 0.0,
    "compared": {
     "observable": "B:sheet_Q2",
     "time_s": 0.0
@@ -5549,6 +5565,8 @@
   {
    "plant": "P5",
    "criterion": "C6",
+   "world": "INVENTED-X",
+   "time_s": 0.25,
    "compared": {
     "observable": "B:lattice_Q3",
     "time_s": 0.25
@@ -5562,6 +5580,8 @@
   {
    "plant": "P5",
    "criterion": "C4a",
+   "world": "INVENTED-X",
+   "time_s": null,
    "compared": {
     "observable": "books:Q3@vessel",
     "time_s": 0.26
@@ -5574,30 +5594,34 @@
   {
    "plant": "P7",
    "criterion": "C5",
+   "world": "INVENTED-X",
+   "time_s": null,
    "compared": {
     "observable": "sites:lattice",
     "time_s": 0.1
    },
    "honest": 0.00498161720152154,
    "planted": 0.005663939326769535,
-   "distance_in_bounds": 3504823954735.1064,
-   "world": "INVENTED-X"
+   "distance_in_bounds": 3504823954735.1064
   },
   {
    "plant": "P7",
    "criterion": "C1",
+   "world": "INVENTED-X",
+   "time_s": null,
    "compared": {
     "observable": "R:lattice",
     "time_s": 0.5
    },
    "honest": 0.0018271034783440335,
    "planted": 0.0030078639371910352,
-   "distance_in_bounds": 296279.40362578473,
-   "world": "INVENTED-X"
+   "distance_in_bounds": 296279.40362578473
   },
   {
    "plant": "P8",
    "criterion": "C10",
+   "world": "INVENTED-X",
+   "time_s": null,
    "compared": {
     "observable": "R:lattice+B:lattice_Q3",
     "time_s": 0.1
@@ -5610,6 +5634,8 @@
   {
    "plant": "P9",
    "criterion": "C9",
+   "world": "INVENTED-X",
+   "time_s": null,
    "compared": {
     "observable": "theta:liner_Q5",
     "time_s": 0.5

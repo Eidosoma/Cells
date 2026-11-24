@@ -1295,10 +1295,17 @@ def _largest(entries):
     return best
 
 
-def _plant_entry(plant, criterion, best, **extra):
+def _plant_entry(plant, criterion, best, world: str, time_s, **extra):
+    """One plant entry, keyed (plant, criterion, world, time_s) (AMENDMENT-3-2026-11-24 §3).
+
+    time_s is the state's time for a plant applied to a saved state (P5's event map alone,
+    under C6), and None (null) for a plant judged over a run.
+    """
     d = {
         "plant": plant,
         "criterion": criterion,
+        "world": world,
+        "time_s": time_s,
         "compared": best["compared"],
         "honest": best["honest"],
         "planted": best["planted"],
@@ -1417,8 +1424,8 @@ def plant_energy(run: WorldRun, plant: str) -> tuple[list, dict]:
     for e, row in zip(eB, run.heat_rows, strict=True):
         c3a.append(dict(e, distance=abs(e["Hp"] - row["H"]) / row["BH"]))
     entries = [
-        _plant_entry(plant, "C3b", _largest(eB)),
-        _plant_entry(plant, "C3a", _largest(c3a), information=True),
+        _plant_entry(plant, "C3b", _largest(eB), run.world["id"], None),
+        _plant_entry(plant, "C3a", _largest(c3a), run.world["id"], None, information=True),
     ]
     return entries, acc
 
@@ -1453,6 +1460,8 @@ def plant_P8(run: WorldRun) -> tuple[dict, dict]:
         "P8",
         "C10",
         _largest(eB),
+        run.world["id"],
+        None,
         bound_used="C5's moiety tolerance 16 eps (k_t + 1) S_s, as the ledger's own",
     )
     return entry, {"taylor_vs_dop853_relative_distance_gap": _method_gap(eB, eA)}
@@ -1486,7 +1495,7 @@ def plant_P9(run: WorldRun) -> tuple[dict, dict]:
     """P9: theta_b = B_b / (B_b + R_s), judged by C9."""
     eB = _P9_entries(run, run.yB)
     eA = _P9_entries(run, _states_A(run))
-    return _plant_entry("P9", "C9", _largest(eB)), {
+    return _plant_entry("P9", "C9", _largest(eB), run.world["id"], None), {
         "taylor_vs_dop853_relative_distance_gap": _method_gap(eB, eA)
     }
 
@@ -1495,10 +1504,10 @@ def plants_W1p(run: WorldRun, profile) -> tuple[list, dict]:
     out = []
     acc = {}
     best, _, a = plant_dynamics_C1(run, run.world, profile, "P1", skip_R=True, unshared=True)
-    out.append(_plant_entry("P1", "C1", best, assumption=P1_ASSUMPTION))
+    out.append(_plant_entry("P1", "C1", best, run.world["id"], None, assumption=P1_ASSUMPTION))
     acc["P1"] = a
     best, _, a = plant_dynamics_C1(run, crossed_koff_world(run.world), profile, "P2")
-    out.append(_plant_entry("P2", "C1", best))
+    out.append(_plant_entry("P2", "C1", best, run.world["id"], None))
     acc["P2"] = a
     for plant in ("P3", "P6"):
         entries, a = plant_energy(run, plant)
@@ -1559,6 +1568,8 @@ def plants_wash(run: WorldRun, profile, wash_alone_times) -> tuple[list, dict]:
                 "P5",
                 "C6",
                 _largest(eB),
+                run.world["id"],
+                t,
                 bound_used="ulps of the honest value (bit for bit)",
                 assumption=P5_ASSUMPTION,
             )
@@ -1601,7 +1612,11 @@ def plants_wash(run: WorldRun, profile, wash_alone_times) -> tuple[list, dict]:
                     "distance": d,
                 }
             )
-    out.append(_plant_entry("P5", "C4a", _largest(entries), assumption=P5_ASSUMPTION))
+    out.append(
+        _plant_entry(
+            "P5", "C4a", _largest(entries), run.world["id"], None, assumption=P5_ASSUMPTION
+        )
+    )
     acc["P5"] = {
         "C6_taylor_vs_dop853_relative_distance_gap": c6_gap,
         "C4a_taylor_vs_dop853_relative_distance_gap": f64(worst_ab),
@@ -1634,7 +1649,7 @@ def plants_W3p(
                     "distance": abs(sums[s] - sysp.Sd[s]) / tol,
                 }
             )
-    out.append(_plant_entry("P7", "C5", _largest(entries), world=label))
+    out.append(_plant_entry("P7", "C5", _largest(entries), label, None))
     # C1
     entries = []
     worst_ab = ZERO
@@ -1652,7 +1667,7 @@ def plants_W3p(
                     "distance": d,
                 }
             )
-    out.append(_plant_entry("P7", "C1", _largest(entries), world=label))
+    out.append(_plant_entry("P7", "C1", _largest(entries), label, None))
     acc["P7"] = {"C1_taylor_vs_dop853_distance_gap": f64(worst_ab)}
     return out, acc
 
@@ -1717,11 +1732,14 @@ def stage_binary64_check(sysm: System, dt: float, stage: dict) -> dict:
     }
 
 
-def plant_P4(stage: dict) -> dict:
+def plant_P4(stage: dict, world: str) -> dict:
+    """P4, judged over W5's run (its first step is refused or admitted): time_s is null."""
     m_sum, m_per = stage["_m"]
     return {
         "plant": "P4",
         "criterion": "C7",
+        "world": world,
+        "time_s": None,
         "compared": {"observable": "stage:h*max_L", "time_s": 0.0},
         "honest": fq(m_sum),
         "planted": fq(m_per),
@@ -1842,3 +1860,33 @@ def stated_start_checks(run: WorldRun) -> tuple[dict, dict]:
         ),
     }
     return eq0, acc
+
+
+def stated_horizon_check(run: WorldRun) -> dict:
+    """W7s (AMENDMENT-3-2026-11-24.md): SPEC.md states its horizon as 47 time constants of its
+    slowest mode. With one population on one set, the relaxation near the root is one mode,
+    at the rate k_on (c + R/V) + k_off from R-eq's root (the derivative of the net flux along
+    the reaction, n = N - B and R = S - B). The stated count must be that rate times the
+    horizon, rounded; a mismatch stops the run."""
+    sysm = run.sys
+    if sysm.nB != 1 or sysm.nS != 1:
+        raise RuntimeError("the one-mode rate is for one population on one set")
+    root = run.eq["root"]
+    p = sysm.pops[0]["pool_index"]
+    rate = sysm.kon[0] * (root[p] / sysm.Vd[p] + root[sysm.i_set(0)] / sysm.Vd[p]) + sysm.koff[0]
+    count = rate * D(run.world["horizon_text"])
+    stated = int(run.world["stated"]["horizon_time_constants"])
+    if round(count) != stated:
+        raise RuntimeError(f"W7s's horizon is {count} time constants, not the stated {stated}")
+    return {
+        "slowest_mode_per_s": f64(rate),
+        "horizon_time_constants": f64(count),
+        "stated": stated,
+    }
+
+
+def check_plant_keys(payload: dict) -> None:
+    """One plant entry per key (plant, criterion, world, time_s) (AMENDMENT-3-2026-11-24 §3)."""
+    keys = [(e["plant"], e["criterion"], e["world"], e["time_s"]) for e in payload["plants"]]
+    if len(keys) != len(set(keys)):
+        raise RuntimeError(f"two plant entries share a key: {keys}")

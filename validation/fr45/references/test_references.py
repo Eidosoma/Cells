@@ -37,7 +37,7 @@ from fr45ref_model import System  # noqa: E402
 
 SAMPLE = HERE / "format_sample_INVENTED.json"
 SPEC_ROOT = pathlib.Path(
-    os.environ.get("FR45_SPEC_ROOT", "/mnt/workspaces/Cells/fr45-references-v2-20261124/spec")
+    os.environ.get("FR45_SPEC_ROOT", "/mnt/workspaces/Cells/fr45-references-v2a3-20261124/spec")
 )
 
 
@@ -302,8 +302,15 @@ def test_format_sample_regenerates_bitwise():
     wash_t = d["world"]["wash"]["t"]
     for crit in ("C4b", "C6"):
         assert {p["time_s"] for p in d["pairs"] if p["criterion"] == crit} == {0.0, wash_t}
-    p5 = [(e["criterion"], e["compared"]["time_s"]) for e in d["plants"] if e["plant"] == "P5"]
-    assert [c for c, _ in p5] == ["C6", "C6", "C4a"] and [t for _, t in p5[:2]] == [0.0, wash_t]
+    # amendment 3: each plant entry is keyed (plant, criterion, world, time_s), one per key;
+    # time_s is the state's time for P5's event map alone, null for a plant judged over a run
+    keys = [(e["plant"], e["criterion"], e["world"], e["time_s"]) for e in d["plants"]]
+    assert len(keys) == len(set(keys))
+    assert all(list(e)[:4] == ["plant", "criterion", "world", "time_s"] for e in d["plants"])
+    assert {e["world"] for e in d["plants"]} == {d["world"]["id"]}
+    p5 = [(e["criterion"], e["time_s"]) for e in d["plants"] if e["plant"] == "P5"]
+    assert p5 == [("C6", 0.0), ("C6", wash_t), ("C4a", None)]
+    assert all(e["time_s"] is None for e in d["plants"] if e["plant"] != "P5")
 
 
 def test_free_energy_function_is_the_references_own():

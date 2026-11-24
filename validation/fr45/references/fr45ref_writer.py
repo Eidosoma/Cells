@@ -56,8 +56,11 @@ inputs' floats. Each file's keys, in order:
 - closed_form (W4): [{observable, time_s, value, gap_from_ode}].
 - stage (W5): {h_s, loads_times_h {L_n, L_R_summed, L_R_per_population, L_B},
   max_hL_summed, max_hL_per_population, threshold, verdict_summed, verdict_per_population}.
-- plants: [{plant, criterion, compared, honest, planted, distance_in_bounds, [world],
-  [bound_used], [assumption], [information], [verdict_honest, verdict_planted]}]; compared
+- plants: [{plant, criterion, world, time_s, compared, honest, planted, distance_in_bounds,
+  [bound_used], [assumption], [information], [verdict_honest, verdict_planted]}], one entry
+  per key (plant, criterion, world, time_s) (AMENDMENT-3-2026-11-24.md): world is the plant's
+  world (P7's is W3p, in W3's file); time_s is the state's time for a plant applied to a
+  saved state (P5's event map alone under C6) and null for a plant judged over a run. compared
   is {observable, time_s} or, for a heat, {observable, start_s, end_s}. An entry with
   information: true is not a plant's criterion (P3's and P6's distances under C3a). P5 has
   one C6 entry per state its map acts on (W2: 4.0 s; W7: 0.0 and 1.0 s) and one C4a entry.
@@ -369,7 +372,7 @@ def build_all(provenance: dict, profile: str = "reference", only=None, log=print
             invented=False,
             equilibrium_note=None,
             stage=st,
-            plants=[BLD.plant_P4(st)],
+            plants=[BLD.plant_P4(st, r.world["id"])],
         )
         note("W5", r, {"stage": BLD.stage_binary64_check(r.sys, r.world["dt"][0], st)})
         log("W5 loads")
@@ -412,9 +415,11 @@ def build_all(provenance: dict, profile: str = "reference", only=None, log=print
         files["W7s"] = _payload(
             r, provenance, invented=False, equilibrium_note="the start's totals", theta=True
         )
-        note("W7s", r)
+        note("W7s", r, {"stated_horizon": BLD.stated_horizon_check(r)})
         log("W7s integrated")
 
+    for payload in files.values():
+        BLD.check_plant_keys(payload)
     return {f"reference_{wid}.json": files[wid] for wid in FILE_ORDER if wid in files}, acc
 
 
@@ -586,13 +591,14 @@ def build_sample() -> dict:
     )
     plants = []
     best, _, _ = BLD.plant_dynamics_C1(r, world, prof, "P1", skip_R=True, unshared=True)
-    plants.append(BLD._plant_entry("P1", "C1", best, assumption=BLD.P1_ASSUMPTION))
+    wid = world["id"]
+    plants.append(BLD._plant_entry("P1", "C1", best, wid, None, assumption=BLD.P1_ASSUMPTION))
     best, _, _ = BLD.plant_dynamics_C1(r, BLD.crossed_koff_world(world), prof, "P2")
-    plants.append(BLD._plant_entry("P2", "C1", best))
+    plants.append(BLD._plant_entry("P2", "C1", best, wid, None))
     for plant in ("P3", "P6"):
         entries, _ = BLD.plant_energy(r, plant)
         plants += entries
-    plants.append(BLD.plant_P4(st))
+    plants.append(BLD.plant_P4(st, wid))
     p5, _ = BLD.plants_wash(r, prof, [0.0, world["wash"]["t"]])
     plants += p5
     p7, _ = BLD.plants_W3p(r, world, prof, label=world["id"])
@@ -600,4 +606,5 @@ def build_sample() -> dict:
     plants.append(BLD.plant_P8(r)[0])
     plants.append(BLD.plant_P9(r)[0])
     payload["plants"] = plants
+    BLD.check_plant_keys(payload)
     return payload

@@ -542,7 +542,7 @@ def _w7_literals():
         f="0.5",
         cb1="1.0e-12",
         cb2="8.0",
-        dt="0.005",
+        dt="0.0025",  # amendment 3 (was 0.005 s): dt * max L = 0.03, as registered
     )
 
 
@@ -561,8 +561,9 @@ def _w7_pop_row(L, n):
 
 
 def world_W7():
-    """W7, the user's example washed (AMENDMENT-2-2026-11-24.md). ``stated`` holds the facts
-    SPEC.md states about its start, as the literals written there, for the build to check."""
+    """W7, the user's example washed (AMENDMENT-2-2026-11-24.md; its step and first row after
+    the wash as AMENDMENT-3-2026-11-24.md corrects them). ``stated`` holds the facts SPEC.md
+    states about its start, as the literals written there, for the build to check."""
     L = _w7_literals()
     stated = dict(
         S="6.0",
@@ -572,9 +573,9 @@ def world_W7():
         removed_at_start={"L1": "4.0", "L2": "2.0"},
         supplied_at_start={"L2": "4.0"},
         rows_before_wash=["0.5", "1.0"],
-        first_row_after_wash="1.005",
+        first_row_after_wash="1.0025",
     )
-    times = ["0.5", "1.0", "1.005", "1.5", "2.0", "3.0", "5.0", "8.0", "12.0"]
+    times = ["0.5", "1.0", "1.0025", "1.5", "2.0", "3.0", "5.0", "8.0", "12.0"]
     world = {
         "id": "W7",
         "title": "the user's example, washed",
@@ -619,14 +620,14 @@ def world_W7():
         _w7_pop_row(L, 2),
         f"| The wash | t = {L['tw']} s, node `well`, f = {L['f']}; "
         f"buffer L1 {L['cb1']} mM, L2 {L['cb2']} mM |",
-        f"| dt | {L['dt']} s |",
-        f"| Observation times | {', '.join(times)} s |",
+        f"| dt | {L['dt']} s (amendment 3) |",
+        f"| Observation times | {', '.join(times)} s (amendment 3) |",
         "| Horizon | 12.0 s |",
         f"B = {B1} and {B2} fmol, and R = {stated['R_start']} fmol.",
         f"Both K are {stated['K_mM']} mM, so B_b/R_s = c_l/K_b holds at the start.",
         "Both of §1.2's net fluxes are 0.0 in binary64.",
         f"**The row at {L['tw']} s holds the state the wash acts on.** "
-        f"{stated['first_row_after_wash']} s is the first row after it.",
+        f"{stated['first_row_after_wash']} s is the first row after it\n  (amendment 3).",
         f"removes exactly {rem['L1']} fmol of L1 and {rem['L2']} fmol of L2, and supplies\n"
         f"  {stated['supplied_at_start']['L2']} fmol of L2.",
     ]
@@ -635,9 +636,12 @@ def world_W7():
 
 def world_W7s():
     """W7s, W7's single-ligand limit: L1 alone on W7's sites, from W7's occupancy, no wash.
-    L2 is absent (SPEC.md: moved by no law, so left out), so the world has one ligand."""
+    L2 is absent (SPEC.md: moved by no law, so left out), so the world has one ligand. Its
+    step, times and horizon are AMENDMENT-3-2026-11-24.md's: 2.0 s, which SPEC.md states as 47
+    time constants of its slowest mode (``stated``, checked by the build)."""
     L = _w7_literals()
-    times = ["0.5", "1.0", "2.0", "3.0", "5.0", "8.0", "12.0"]
+    times = ["0.25", "0.5", "1.0", "1.5", "2.0"]
+    horizon, constants = "2.0", "47"
     world = {
         "id": "W7s",
         "title": "W7's single-ligand limit",
@@ -657,16 +661,17 @@ def world_W7s():
         "populations": [_pop("matrix_L1", "matrix", "L1", L["kon1"], L["koff1"], L["occ1"])],
         "dt": [L["dt"]],
         "times": times,
-        "horizon": "12.0",
+        "horizon": horizon,
         "wash": None,
+        "stated": {"horizon_time_constants": constants},
     }
     own = [
         f"| Node `well` | V = {L['V']} pL; free L1 {L['n1']} fmol |",
         "| Set `matrix` (owner: node `well`) | as W7 |",
         "| Population `matrix_L1` | as W7, the set's only population |",
-        f"| dt | {L['dt']} s |",
-        f"| Observation times | {', '.join(times)} s |",
-        "| Horizon | 12.0 s |",
+        f"| dt | {L['dt']} s (amendment 3) |",
+        f"| Observation times | {', '.join(times)} s (amendment 3) |",
+        f"| Horizon | {horizon} s, {constants} time constants of its slowest mode (amendment 3) |",
         "**L2 is absent.**",
     ]
     return world, {"W7": [_w7_set_row(L), _w7_pop_row(L, 1)], "W7s": own}

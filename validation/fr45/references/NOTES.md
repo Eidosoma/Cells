@@ -2,8 +2,8 @@
 
 These are the references for `fr45-site-competition-v1`, built from the registered spec alone:
 `validation/fr45/spec/SPEC.md`, `CRITERIA.md`, `AMENDMENT-2026-11-24.md`,
-`NOTE-2026-11-24.md` and `AMENDMENT-2-2026-11-24.md`, with
-`docs/FR45_SITE_COMPETITION_PROTOCOL.md`, at the amendment-2 tag (ff99fead).
+`NOTE-2026-11-24.md`, `AMENDMENT-2-2026-11-24.md` and `AMENDMENT-3-2026-11-24.md`, with
+`docs/FR45_SITE_COMPETITION_PROTOCOL.md`, at the amendment-3 tag (98cd33db).
 - No engine code, test, output or other `validation/` code was read.
 - No engine module is imported.
 - The spec copy a run reads is checked against its sums file at run time.
@@ -101,39 +101,52 @@ P3 and P6.
   - **The record:** the coordinator records the ruling, citing both passages, in the decision
     log.
   - **The entries:** C6 has one entry per state (0.0 and 1.0 s), so a tie between the states
-    cannot hide one. C4a comes from a full planted W7 run, as in W2.
+    cannot hide one; amendment 3 registers that. C4a comes from a full planted W7 run, as in W2.
 - **The pairs and the judge's G.** The pairs follow amendment 2's §3 table. `fr45ref_free_energy.G`
   covers W7 and W7s.
-- **W1 to W6 are unchanged.** Regenerated under amendment 2, the eight earlier files are
-  byte-identical to the tag `fr45-references-2026-11-24`'s, apart from `provenance`.
+- **W1 to W6 are unchanged** but for the plant key (amendment 3, below). Regenerated, the
+  eight earlier files equal the tag `fr45-references-2026-11-24`'s apart from `provenance` and
+  the two keys each plant entry gains.
   - Their entries in `accuracy.json` are identical too, except for two added records for W2:
     each ligand's books across the wash, and a second route for P5's C6 sizing.
   - The writer is version 2, and the schema string is unchanged.
 
-## W7s's late heats lie below the working precision
+**AMENDMENT-3-2026-11-24, the references agent's three findings, ruled:**
+- **W7 and W7s step at 0.0025 s,** so dt·max L = 0.03, the registered bound (max L = 12 /s,
+  matrix_L1's k_off).
+  - W7's first row after its wash is 1.0025 s, and its excluded wash interval (C3a, C3b) is
+    1.0 to 1.0025 s. C3c covers that interval.
+  - C2b's tolerances do not move: k_t·h is t/2 at any step.
+- **W7s runs to 2.0 s,** with observation times 0.25, 0.5, 1.0, 1.5 and 2.0 s.
+  - SPEC.md states the horizon as 47 time constants of its slowest mode.
+    `fr45ref_build.stated_horizon_check` takes the one-mode rate k_on (c + R/V) + k_off from
+    R-eq's root: 23.32 /s, so 2.0 s is 46.6 time constants. A count that did not round to the
+    stated one would stop the run (`accuracy.json`, W7s's `stated_horizon`).
+  - Every interval's heat is now resolved (below).
+- **Every plant entry is keyed (plant, criterion, world, time_s),** one entry per key
+  (`fr45ref_build.check_plant_keys`), with the two keys right after `criterion`:
+  - time_s is the state's time for a plant applied to a saved state: P5's C6 entries, 4.0 s on
+    W2 and 0.0 and 1.0 s on W7;
+  - time_s is null for a plant judged over a run: every other entry, P4's included;
+  - world is the plant's world. P7's is W3p, in W3's file.
 
-W7s's horizon is 280 time constants of its slowest mode (23.3 /s). The protocol sizes every
-horizon to reach at least e^-30 of its slowest mode, and W7s reaches e^-280. So its heats from
-3 s on are far below what 70-digit G values (about 30 pJ) resolve, which is about 1e-68 pJ.
+## Every heat is resolved
 
-The exact sizes below are estimates. W7s relaxes along one reaction coordinate, so near its
-root a heat decays as e^(-2·23.3 t). The table calibrates that decay on the 2 to 3 s heat,
-which is resolved to about 26 digits; the same calibration gives the 3 to 5 s heat as 2.0e-62.
-
-| Interval | Exact size (estimated) | Written |
-| --- | --- | --- |
-| 3 to 5 s | about 2e-62 pJ | to about 7 significant digits |
-| 5 to 8 s | about 6e-103 pJ | ±1e-68 pJ, one unit in G's last digit |
-| 8 to 12 s | about 1e-163 pJ | ±1e-68 pJ; one of the two late heats is negative |
-
-- `accuracy.json` lists these intervals under W7s's `heats_below_binary64_resolution`.
-- **The distance at the horizon** is written as about 7e-62 fmol. That is the integrator's
-  floor; the exact solution's distance is near 1e-122 fmol.
-- **No criterion can see either.** Each is more than 50 orders of magnitude below its band:
-  - C3a's B_H is 7.4e-4 pJ in those intervals;
-  - C2a's band is 8e-9 fmol.
-- They are written as computed, not rounded. W7's heats, including its two near-zero ones before
-  the wash, are resolved to more than 30 digits.
+70-digit G values (about 30 pJ) resolve a heat to about 1e-68 pJ, roughly 1e-70 of E.
+- **The guard.** A heat with fewer than 17 significant digits left at the working precision
+  (|H| ≤ 10^(17 − digits)·E), or whose fine and coarse Taylor runs disagree beyond 1e-17 of it,
+  would be listed under `heats_below_binary64_resolution` in `accuracy.json`. No world has one.
+- **Under amendment 2, W7s ran to 12 s,** 280 time constants. Its heats from 3 s on were below
+  that resolution: two were written as ±1e-68 pJ against exact values near 6e-103 and 1e-163
+  pJ. That is why amendment 3 cut its horizon to 2.0 s.
+- **W7s now.** Its smallest heat is the last interval's, 1.5 to 2.0 s: 4.9e-32 pJ, 7.1e-34 of
+  E. That keeps about 36 significant digits at 70 digits, 19 more than binary64 needs.
+  - The fine and coarse Taylor runs agree to 1e-33 of every heat.
+  - The 1.0 to 1.5 s and 1.5 to 2.0 s heats add up to the 12 s run's 1.0 to 2.0 s heat, to the
+    six digits the written values can compare.
+  - Its distance at the horizon, 1.8e-21 fmol, is resolved too: it is far above the
+    integrator's floor of about 1e-61.
+- **W7.** Its smallest heat, 0.5 to 1.0 s before the wash, is 5.7e-37 of E, about 33 digits.
 
 ## Precision
 
@@ -141,7 +154,7 @@ The working precision is 70 digits. The first, 50-digit profile is kept as
 `--profile reference50`.
 
 At 50 and 70 digits the written values of the ten files are bitwise identical, apart from the
-entries below, 42 in all. The regeneration check reruns this comparison and records it in
+entries below, 31 in all. The regeneration check reruns this comparison and records it in
 `outputs/regeneration.json` under `precision_50_vs_70_digits`.
 - **The gaps between two routes that agree to the working precision.** They shrink with it by
   construction:
@@ -149,11 +162,9 @@ entries below, 42 in all. The regeneration check reruns this comparison and reco
   - the three θ gaps: W7's two and W7s's one.
 - **Near-zero heats, which 50 digits resolve to fewer digits than binary64 needs:**
   - W1eq's three;
-  - W7's two before its wash, with their C3a values. W7's start is its own root to rounding;
-  - W7s's four from 2 s on, with their C3a values.
-- **Two distances at the horizon:**
-  - W7's, at 52 time constants: 50 digits resolve its 3e-24 fmol to about 16 digits;
-  - W7s's, below either profile's integrator floor.
+  - W7's two before its wash, with their C3a values. W7's start is its own root to rounding.
+- **W7's distance at the horizon,** at 52 time constants: 50 digits resolve its 3e-24 fmol to
+  about 16 digits. W7s's heats and distance at the horizon agree at both precisions.
 - **W7's start-row entries that read the start in binary64:** C9's moiety term at 0.0 s and
   P5's C6 sizing at 0.0 s.
   - W7's start sits on binary64 ties. occupancy·S is 2 − 2^-53 and 1 − 2^-54 fmol exactly: the
@@ -178,9 +189,9 @@ heat = float(G("W2", "well", amounts_start) - G("W2", "well", amounts_end))
 
 **Setup.** Every run uses the venv's Python with BLAS pinned to one thread. `<copy>` is the spec
 copy's directory: it holds `validation/fr45/spec/`, the protocol under `docs/`, and their sums
-file. The copy of amendment 2 is
-`/mnt/workspaces/Cells/fr45-references-v2-20261124/spec`, with
-`SHA256SUMS-fr45-spec-ff99fead.txt` beside it.
+file. The copy of amendment 3 is
+`/mnt/workspaces/Cells/fr45-references-v2a3-20261124/spec`, with
+`SHA256SUMS-fr45-spec-98cd33db.txt` beside it.
 
 ```sh
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
