@@ -722,9 +722,9 @@ class WorldRun:
                 fc_rel = max(fc_rel, abs(Hc - row["H"]) / abs(row["H"]))
         # Heats this precision does not resolve to binary64: fewer than 17 significant digits
         # survive G's rounding at the working precision (|H| <= 10^(17 - digits) E), or the
-        # fine and coarse Taylor runs disagree beyond 1e-17 of the heat. Such a heat is written
-        # as computed; it lies far below every band (W7s's late intervals, 280 time constants
-        # from its start, are the case).
+        # fine and coarse Taylor runs disagree beyond 1e-17 of the heat. Such a heat would be
+        # written as computed and listed here. No world has one: W7s's late intervals were the
+        # case at 280 time constants under amendment 2, and amendment 3 cut its horizon to 47.
         floor = Decimal(10) ** (17 - decimal.getcontext().prec)
         unresolved = []
         for row in self.heat_rows:

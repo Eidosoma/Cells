@@ -82,7 +82,7 @@ P3 and P6.
 - **R-eq's totals.**
   - W7's are the post-wash totals: R-ode's state at 1.0 s through the map. Wang's root applies.
   - W7s's are the start's.
-  - Both also have the pooled quadratic, so each has three routes.
+  - Both also have the pooled quadratic: W7 has four routes to its root, W7s three.
 - **C2b on W7.**
   - It covers W7's rows before its wash, 0.5 and 1.0 s (`W7_C2B_TIMES`).
   - It compares them with "its start, its own root": R-eq at W7's start's totals, solved like
