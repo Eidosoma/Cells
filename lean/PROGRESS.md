@@ -20,6 +20,14 @@ Lamin B1 half-lives of 4.4 and 8.40 days came from hippocampal and cortical rat 
 
 Three proposed quantitative tests still lack a matched measurement. The ATP thermodynamic reconstructions use earlier reaction values and different Mg conventions. The full product of independently measured constants around one cycle remains open. Lagoy’s last bar is after **four** wash wells and a fill delay. Li’s fifth point is drained rinse liquid. A common fifth-rinse prediction for retained liquid would compare different quantities. Olbrich’s ramp lysis tensions at 21 °C supply neither a second temperature-resolved DOPC hold rate nor the time of first pore opening in the same vesicle. [ATP glutamine route](https://doi.org/10.1042/bj0710400) · [ATP acetyl route](https://pubmed.ncbi.nlm.nih.gov/4355193/) · [Lagoy, Fig. 1i](https://doi.org/10.1038/s41598-018-24504-x) · [Li, Fig. S-6A](https://doi.org/10.1039/C6LC01201A) · [Olbrich](https://doi.org/10.1016/S0006-3495(00)76294-1)
 
+Mathieson’s neuronal isotope data provide a separate test of the ordering of two proteins. GM130 and Lamin B1 had fitted half-lives of 1.9 and 4.4 days in Dörrbaum’s rat neuronal culture. In Mathieson’s two mouse neuronal replicates, GM130 was 1.46 and 1.68 days, while Lamin B1 was 7.04 and 8.71 days. The much longer Lamin B1 estimates in the first columns of the same worksheet belong to B cells. Dörrbaum, Kochen, Langer and Schuman authored the rat study. The author lists are disjoint, and the verified mouse culture has its own raw mass-spectrometry accession. [Dörrbaum, Fig. 2B](https://doi.org/10.7554/eLife.34202) · [Mathieson, Supplementary Data 2 and exact cells](checks/data/mathieson2018_neuronal_turnover.json) · [Mouse neuron raw data](https://www.ebi.ac.uk/pride/archive/projects/PXD008514)
+
+<a id="xc0-scale-aware-main"></a>
+
+### Initial charge admission after the main repair
+
+On Cells `82c26ddd`, the same 17 XC0 inputs admitted all 15 balanced definitions and rejected both deliberate offsets. Seven balanced definitions had been refused on `8760d5b3`. The midpoint residuals and the Lean allowance still hold. The preparation-specific membrane and binding replay also produced byte-identical JSON on the Lean candidate and the repaired engine. [XC0 driver](checks/charge_anchor.py) · [Repaired parser](https://github.com/Eidosoma/Cells/blob/82c26ddd3a7616130f8a5cbddcf2ba2b1492633b/src/cells/models/surface_tissue.py#L443) · [Numerical comparison history](claims/xc0-charge-anchor.md#numerical-comparison)
+
 <a id="paired-law-replays"></a>
 
 ## 24 November 2026 · Which replicated observations does Cells reproduce?
