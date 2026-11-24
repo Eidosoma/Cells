@@ -10805,3 +10805,73 @@ inert wall places, in progress, is not in the judged engine.
   patch would settle it. One study is an indication, and no law's form changes on it.
 - **The operator's docstring gains this scope line** at its next src landing, batched with other docstring-only
   updates.
+
+## D338: corrections and additions to D336 and D337: the vector path refuses the composite only; D330's G6 and CPU cost; SK2's evidence stated exactly; FR-30's earlier extractor never opened the 2016 paper
+
+2026-11-24, about 14:26 UTC.
+
+**The vector path refuses the composite only** (amends D336's admission line).
+- **Where things stood:**
+  - main's scalar row checks already refused a GPU (D187), so that path needed no src change;
+  - `run_vector_windowed` decides on the device alone and had no refusal.
+- **What changes:** the vector path refuses `resolved_pump_composite@1`, under every field solver, on a GPU. That
+  is the family D330 measured and failed.
+- **Why not a blanket refusal.** A blanket refusal would break GPU uses that have evidence:
+  - the calcium ensemble's ionic families;
+  - `resolved_pump_tissue@1` and @3's batched GPU runs (9 and 10 November);
+  - their GPU tests.
+- **A logged follow-up, not started:** re-check those families' GPU evidence under D330's criteria, run-to-run
+  determinism included.
+
+**D330's closing evidence:**
+- **G6 passes under the flag.** A fresh process and one loading the saved autotune file each reproduce the pair's 8
+  windows by bytes. The flagged autotune dumps hold no results.
+- **What D330 closes on:** G1 and G6 pass under the flag; G2 fails. G3–G5 and G7′ were not run; the flag's cost
+  was measured in block 3′a.
+
+**The CPU cost of GJ-N1's field search:**
+- about 70–115 thread-hours in all;
+- the upper end at h: 2.56 M steps, about 23 h on a whole core;
+- its h/2, if it ends as a final bracket end: another 45–73 h;
+- a base-step point: 1.3–2.3 h, or 2.8–4.6 h at h/2.
+
+**Correction to D337: amendment 2 is not yet tagged.**
+- It will be tagged with its driver change (`--upper-cpu`, `--lane-lock`, `--lane-after`).
+- The upper end starts at launch on CPU 13. The lane part takes its lock from 20:00 UTC, so the bisection runs
+  overnight rather than holding a lane for about 10 h of daytime gates.
+
+**SK2's evidence, stated exactly** (refines D337, from the Lean lane's record at lean-paired-transport-mechanics,
+41f3de69).
+- **The steady response.**
+  - Hirschberg et al. (1998, doi:10.1085/jgp.111.4.565) measured absolute open probability at four calcium doses in
+    one inside-out patch from a Xenopus oocyte expressing rat SK2.
+  - The Cells curve calibrated on those data gives half-activation at 0.728 µM.
+  - Syme's independent, untreated rat SK2 dose response gives 0.700 µM.
+- **The proved identity.** For a held input, the 20–80% rise time equals ln 4/(a + b). It is at most ln 4 times the
+  zero-input washout time constant when the closing rate b is positive and shared.
+- **The replay.** In a compiled held-dose world (a = b = 16/s), both versions of
+  `cells.species_regulated_availability` bracket the exact 43.32 ms within 42.97–43.95 ms, on a 0.488 ms grid.
+- **Two tests of carrying one closing rate across recordings disagree with it:**
+  - Hirschberg's single-channel plateau and macropatch washout predict a 10.63 ms activation time constant, against
+    4.1 ± 0.6 ms measured;
+  - Oliver et al. (2000, doi:10.1016/S0896-6273(00)81197-6), with separate recombinant SK2, measured a 6.18 ±
+    1.91 ms 20–80% rise and a 34.7 ± 6.5 ms washout at 10 µM Ca²⁺. Reusing that mean closing rate at 0.5 µM gives
+    a ceiling of ln 4 × 34.7 = 48.1 ms, against a reported rise of about 80 ms.
+- **Limits of the evidence.** The low-dose record has no reported uncertainty, no sample count and no paired washout,
+  and the two groups' data come from separate preparations.
+- **So reusing one closing rate across doses stays provisional,** as an indication, with no change of law. A rise and
+  a washout measured on the same low-dose patch would settle it.
+
+**FR-30: the earlier sealed extractor never opened the 2016 paper.**
+- It ran on 23 November and filed four candidates. Its README lists Ek-Vitorín 2016 as candidate 4, "not opened",
+  because the procedure stops at the first paper that qualifies: Revilla 1999.
+- Its folder holds extractions for Shibayama 2006, Elenes 2001 and Revilla 1999 only.
+- So Tag A's message ("tagged before the sealed extraction") and section 13.7's "no record shows anyone opening the
+  paper" stand.
+- At landing, the branch gains a dated pointer to D337 for the lead's two files and the fourth choice, with no
+  criteria change.
+
+**FR-47's inert-wall fix ran FR-47's registered worlds before their verdict,** for its before-and-after comparison.
+- It printed statuses and booleans only, never a value.
+- The folder (`/mnt/workspaces/Cells/fr47-inert-wall-20261124/`) is barred to FR-47's checker. Its brief will say
+  so.
