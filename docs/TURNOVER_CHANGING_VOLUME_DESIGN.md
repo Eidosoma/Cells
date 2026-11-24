@@ -1,7 +1,8 @@
 # FR-65: turnover beside a changing volume (design)
 
-**Status: decided on 24 November 2026 (D375); nothing is built.** The first version was proposed and decided that day.
-This revision, on branch `fr65-design` with main merged (the probes ran at 95559271, whose source is unchanged since):
+**Status: final, decided on 24 November 2026 (D375, and the lead's rulings on this revision, §8.2); nothing is built.**
+The first version was proposed and decided that day. This revision, on branch `fr65-design` with main merged (the probes
+ran at 95559271, whose source is unchanged since):
 - records the user's choice (Q3 b) and the lead's rulings (Q1 b, Q2 a) in §8;
 - designs the lumen case (§3.5) and lists the saved amounts and volumes (§4.2);
 - corrects the first version (§8.3).
@@ -42,11 +43,11 @@ the second step `species_regulated_availability@2`.
     volume.
   - At the view's volume that booking is the composite's exact free-energy change. So the composed energy identity
     carries water's second order, and adds nothing of turnover's.
-- **The cost:** 3–4.25 agent-days for the first build (turnover and the lumen), against D375's 3.25–4.5. Route B's lumen
-  is 0.35–0.5 cheaper than D375's, and 0.1–0.25 was added for rows the first version lacked (§3.9). The coupling's step
-  adds D375's 2–2.5, carried here, not re-derived.
-- **Open points for the lead** (§8.2): the lumen's route; runs or argument for two companion operators; the run-view
-  gap.
+- **The cost:** 3.1–4.45 agent-days for the first build (turnover and the lumen), against D375's 3.25–4.5. Route B's
+  lumen is 0.35–0.5 cheaper than D375's, and 0.2–0.45 was added for rows the first version lacked (§3.9). The coupling's
+  step adds D375's 2–2.5, carried here, not re-derived.
+- **The lead's rulings on this revision** (§8.2): route B for the lumen; the symport and the bath schedule each get a
+  parse row and one tier-3 run; the run view for water worlds is logged apart (§9.2).
 
 ## 1. What reads the declared volume or masks today, and why
 
@@ -74,7 +75,7 @@ were replaced in process by §3.1's set, under the same law ID.
 - **What the lift was.** Run 2 made four fields current reads, unscoped, declared no anchor read, and set them as class
   attributes after registration, so the contract's `check_declarations` never saw them. It also lifted the coupling, for
   row 2's last case. Run 3 put §3.1's set through `check_declarations` (it passes) and the parse of five worlds. The
-  anchor's read at the end was added since, and is unprobed.
+  anchor's read at the end was added since; the companions probe (§9.1) passed it through `check_declarations` too.
 - **The order after insertion and the lumen is the engine's word** (C2). Turnover declared before insertion@1 or @2 is
   refused with "reads the view outside_active at stage split before scheduled_membrane_insertion@… changes it there",
   and before a lumen with the volume's message above.
@@ -285,7 +286,7 @@ coupling.
 | Route | How | What it admits | Price (S) |
 | --- | --- | --- | --- |
 | A | Refuse any outside route of turnover beside a lumen. No lumen edit | Turnover in cells only | 0.5–0.75 |
-| **B** (recommended) | A host-only hook, `changed_volume_nodes(spec, declaration)`, with the default "every node". The lumens name their nodes. The rule asks it | A lumen at any node turnover has no route at | 0.65–1 |
+| **B** (chosen) | A host-only hook, `changed_volume_nodes(spec, declaration)`, with the default "every node". The lumens name their nodes. The rule asks it | A lumen at any node turnover has no route at | 0.65–1 |
 | C | Door S: the lumens declare a scoped change, `changed_slots` and `view_slots` | The same, plus turnover declared before the lumen, and water on another node later (gap 7a) | 1–1.5 (D375's figure) |
 
 - **What decides between them.** No known consumer clears at a finite node in a lumen world. The furrow consumers act in
@@ -295,8 +296,8 @@ coupling.
 - **Route C** adds a select to the view merge of every lumen world. The values stay bitwise, but the program text moves.
   So S3's and S5's judged worlds would need a pair check, and the crossrev sets that hold a lumen would be renewed. It
   buys order freedom and coexistence with water at another node. Neither is asked for today.
-- **The lead rules.** A and B need only that turnover is declared after the lumen, which the probe confirms. C relaxes
-  that too.
+- **The lead ruled route B** (§8.2). A and B need only that turnover is declared after the lumen, which the probe
+  confirms. C relaxes that too.
 
 **The lumen at a node turnover clears** stays refused by name, until a probe covers its dilution term for an outside
 booking. The identity is water's, and the fill is exact, so the same argument would hold there (S), but no probe has
@@ -330,8 +331,8 @@ stack with turnover has at least four operators, so it is parsed apart (§9). Re
 | + labels | Labels report turnover's moves | The labelled rung (run), beside water. Labels beside insertion or a lumen are refused by name (a row) |
 | + the gene unit | It reads V and writes its own rows | A1 without the coupling, one run; A1 with it, in the second step |
 | + replacement@2 | It writes water's volume | Refused by name (a row) |
-| + the K-anion symport | It reads water's volume factor; turnover reaches it only through V | A parse row, and the argument. A run is the lead's option (§8.2) |
-| + the bath schedule | Doses at held baths, isosmotic beside water | A parse row, and the argument. The same option |
+| + the K-anion symport | It reads water's volume factor; turnover reaches it only through V | A parse row, and one tier-3 run (below) |
+| + the bath schedule | Doses at held baths, isosmotic beside water | A parse row, and one tier-3 run (below) |
 | The partition, or insertion@2 | Closed slots, carriers, masks, anchors | The furrow and cleft worlds (run) |
 | Insertion@1, turnover on cells only | Masks and anchors, which the guard keeps away from turnover | A parse row, and the argument. The runs use insertion@2 |
 | Insertion with a lumen, and with the partition | The lumen's volume at its node | The furrow world with a lumen (run) |
@@ -340,6 +341,17 @@ stack with turnover has at least four operators, so it is parsed apart (§9). Re
 
 - **The argument** for the symport and the bath schedule: neither writes a row turnover writes, changes a mask or an
   anchor, or is read by turnover. Their own dependence on V, or their own isosmotic rule, is tested in their own worlds.
+- **Their runs** (the lead's ruling: a pairing that newly parses gets one composed-world check). Each is a row of
+  `test_shared_inventory_volume.py` (tier 3), with every host check on every row and S's amounts against its closed form
+  at rounding, over 100 steps of 1 ms.
+  - **The symport:** `with_symport(with_water(heredity_cell("D")))` with S and turnover. Reason: the symport's volume
+    factor reads the same V that turnover's osmolytes move. About 40 s or more (an estimate: the record of
+    `test_pump_composite_water.py`, 558 s over 15 tests, some of them parse-only, so a compiled run may take longer).
+  - **The bath schedule:** `bath_schedule_fixtures.water_world` with an isosmotic step and S. Reason: its event changes
+    the held bath's anchors, and water's exchange with it. About 60 s (an estimate: the recorded wall times of
+    the bath schedule's two compiled test files, 57 s and 67 s).
+  - **The measured seconds are stated at landing** (D224), where the tier record is re-measured. Both worlds parse under
+    §3.1's set (one parse per process, §9.1); without it they are refused by turnover's two volume reads.
 - **The composition-matrix cells** are regenerated and their tags rewritten in the landing's commit, per
   `composition_matrix --write`.
 
@@ -384,16 +396,18 @@ The coupling's step comes second. Its contract extension is designed there, and 
 | The occupant hook and tables, the founder rule moved | `contract.py`, `cell_replacement.py`, `partition.py`, `species_common.py` | 0.75–1 |
 | The tests, the regenerated matrix and library pages, Q5's split, D148's evidence | tests, `composition_matrix.py`, `PUMP_COMPOSITE.md`, D150's §5.5, `tests/tier3_record.json` | 0.75–1 |
 | *The first version's core* | | *2.25–3* |
-| Added since: the tables' zeros, the onset-node refusal, the companion and replay rows, plants P3 and P5 | tests, `species_common.py` | 0.1–0.25 |
+| Added since: the tables' zeros, the onset-node refusal, the companion rows and their two runs, the replay row and its saved-file check, plants P3 and P5 | tests, `species_common.py` | 0.2–0.45 |
 | The lumen (route B): the hook, both lumens, the per-node rule and its rows, the furrow world's runs | `contract.py`, `restricted_lumen.py`, `restricted_lumen_v2.py`, `species_common.py`, tests | 0.65–1 |
-| **The first build** | | **3–4.25** |
+| **The first build** | | **3.1–4.45** |
 | The coupling's step (D375, carried) | | 2–2.5 |
-| **In all** | | **5–6.75** |
+| **In all** | | **5.1–6.95** |
 
 - **Against D375's 3.25–4.5.** D375 took the first version's core (2.25–3) and priced the lumen at 1–1.5, the scoped
-  route C. Route B costs 0.65–1, 0.35–0.5 less, and D148 covers no lumen world. Against that, 0.1–0.25 was added. So the
-  first build comes to 0.25 less at both ends. With route C it is 3.35–4.75.
-- **The run-view gap** (§4.2) is priced apart, at 0.25–0.5 (S), for the water owner, and is not in these figures.
+  route C. Route B costs 0.65–1, 0.35–0.5 less, and D148 covers no lumen world. Against that, 0.2–0.45 was added, the two
+  companion runs among it. So the first build comes to 0.15 less at the low end and 0.05 less at the high end. With
+  route C it is 3.45–4.95.
+- **The run view for water worlds** (§9.2) is priced apart, at 0.25–0.5 (S), for the water owner, and is not in these
+  figures.
 - **Pre-alpha, so no backwards compatibility.** The moved helpers leave no alias. `occupants`' lookup of replacement@1 by
   law ID goes when the hook lands; `replacement_of` stays for its other callers.
 
@@ -483,15 +497,17 @@ outside the engine. They exist. What follows is read from `io.write_run` and the
 - **The files.** `io.write_run` writes both. In a windowed run the chunks hold the state arrays only with
   `recording: full`, and the observed columns unless it records checkpoints only. The anchors are then the definition's,
   in `checkpoint_initial`.
-- **No new export is needed.** One row checks that `observed_amount` equals anchor plus increment, and that c·V = n, in
-  the swelling world.
+- **No new export is needed.** These readouts are from the code and the bound model, not from a saved file, so the
+  build checks them against one saved file, once, and its test says so: it writes the swelling run with `io.write_run`,
+  reads `trajectory.npz` back, and checks the fields, that `observed_amount` equals anchor plus increment, and that
+  c·V = n.
 - **At a lumen's node,** `lumen_volume_pL` is filled to the area at the saved time, while the amount column is the
   state's. Amount over volume is not the concentration there; the lumen's own `lumen_concentration_mM` is.
 - **The run view is refused for a water world.** `run_view.prepare` on the swelling cell says: "ideal_osmosis_linear_compliance_water@1
   declares no VIEW_LAYERS; resolved_pump_tissue@3 declares no axes, unit or layer for its field energy_balance_pJ_s; …
   declares no axes for its readout column cell_volume_pL …". Water's layers, units, kinds and axes, its volume
-  increments' reference, and the balance rate it replaces are missing. That is a separate item for the water owner,
-  0.25–0.5 agent-day (S), and it does not block replay.
+  increments' reference, and the balance rate it replaces are missing. It is logged apart (§9.2) and does not block
+  replay.
 
 ## 5. IDs under the planned rename
 
@@ -519,8 +535,9 @@ Q2 (a), D375: the builder's tests, with no registered criterion. Everything belo
 | Nothing writes a closed slot, or a lumen's node | The NumPy half-step, given a view that closes a cell and a node, with positive rates there: the rows and fields there stay bitwise unchanged, and the declared-mask plant writes there. A lumen's node, with no route, stays bitwise zero | A row of `test_zero_rates_select_the_start_state_and_untouched_entries_stay_bitwise` (1) |
 | Admissions and refusals | Parse rows for §3.6's sets. Admitted: water, the partition, insertion@2 at a node, insertion@1 with cell routes, a lumen at a node turnover does not read. Refused, with their reasons: replacement@2, a lumen at a cleared node, insertion@1 at a node, the slot-keyed daughter, S crossing a bridge | Rows beside `test_definition_refusals` (1) |
 | The occupant tables | Host rows. A daughter's controls are zero before its birth and its own after. The parent's are zero after retirement. An outside rate before its node's onset is refused. Without a partition the tables are bitwise today's. Planted: a table without the leading zero, and one that keeps the parent's rate | `test_species_turnover.py` (1) |
-| The swelling cell | Three rungs (4h, 2h, h) of FR-43's swelling cell, the network active. S is produced strongly enough to move V, and stays far below P/k while V moves (§4.1). The checks: the amounts against the closed form, the concentrations, V against the in-test reference, the identity's stepped entry, the V₀ plant, the replay row of §4.2, and a resume mid-run, in process and through a written snapshot | Rows of `test_shared_inventory_volume.py` (3) |
+| The swelling cell | Three rungs (4h, 2h, h) of FR-43's swelling cell, the network active. S is produced strongly enough to move V, and stays far below P/k while V moves (§4.1). The checks: the amounts against the closed form, the concentrations, V against the in-test reference, the identity's stepped entry, the V₀ plant, the replay row of §4.2 (checked once against a saved file, which the test says), and a resume mid-run, in process and through a written snapshot | Rows of `test_shared_inventory_volume.py` (3) |
 | The gene unit beside turnover and water | A1 without the coupling: host checks on every row, and X's closed form | One row beside the swelling rows (3) |
+| The symport, and the bath schedule, beside water and turnover | §3.6's two runs: host checks on every row, and S's closed form | Two rows beside the swelling rows (3), about 40 s and 60 s (estimates; §3.6) |
 | The division, with insertion@2 and a lumen | S5's furrow world (`cleft_divided`, with its lumen) with turnover in its cells, keyed by carriers: closed slots bitwise, the closed forms from birth, every ledger including the lumen's, and a resume before, at and after the division | A turnover fixture beside `division_run`, used by `test_partition_runs.py`'s closure and restart tests (3) |
 | The onset | The cleft cell with insertion@2 and clearance at the cleft, lumen-free: idle before the onset, the closed form after it, and a resume across the onset. S's face diffusivity is set so low that its transport stays below rounding over the run, since a positive value is required | A turnover fixture beside `cleft_run`, used by `test_membrane_insertion_runs.py`'s closure and restart tests (3) |
 | Labels beside water | The swelling cell's h rung, labelled: its physical rows bitwise, and a production window's cohort against its closed form | One row beside the swelling rows (3) |
@@ -532,9 +549,10 @@ turnover's work, at a tolerance far below the engine's error. It is development 
 
 **Cost (D224).**
 - **Tier 1:** every item is a row, NumPy or parse only, a few seconds in all. These rows are the routine guard.
-- **Tier 3:** the compiled items are rows and fixtures in three existing files: about 7 runs of the swelling cell and A1
-  (3 rungs, the V₀ plant, the resume, the labelled rung, the gene unit), 3 of the furrow world (the run, its resume, and
-  the declared-mask twin, today's code, which must break S's ledger at a daughter), and 2 of the cleft.
+- **Tier 3:** the compiled items are rows and fixtures in three existing files: about 9 runs of the swelling cell and its
+  companions (3 rungs, the V₀ plant, the resume, the labelled rung, the gene unit, the symport, the bath schedule), 3 of
+  the furrow world (the run, its resume, and the declared-mask twin, today's code, which must break S's ledger at a
+  daughter), and 2 of the cleft.
 - **Their evidence is one deliberate run,** recorded at landing in `tests/tier3_record.json` (D187), which compares it
   with the last record per test ID. That holds these files' last passes: shared inventory 95 s, partition 289 s and
   insertion 383 s. Their seconds are stated at landing, and tiers 1 and 2 are re-measured.
@@ -575,11 +593,11 @@ numerics, which C2.6 judged in the same world family.
 - **Labelled turnover beside insertion@1 or @2, a lumen, or any closer** (the label owner refuses them), and FR-50's
   one-way records beside a closer.
 - **An energy identity at rounding in a swelling cell.** It closes at water's second order.
-- **A run view of a water world** (§4.2).
+- **A run view of a water world** (§9.2).
 - **Any biology.** The worlds are synthetic, and no consumer is registered (composition design §10). Nothing is judged.
   The composite on a GPU stays refused (D336).
 
-## 8. Decisions, open points and corrections
+## 8. Decisions and corrections
 
 ### 8.1 Decided (D375)
 
@@ -590,12 +608,16 @@ numerics, which C2.6 judged in the same world family.
 - **Q3 (b).** The first build also admits a lumen at nodes turnover does not read. Not now: the partition beside water
   (M4), and water's current area and masks (M2).
 
-### 8.2 Open points for the lead
+### 8.2 The lead's rulings on this revision
 
-- **The lumen's mechanism:** route B (recommended), A or C (§3.5). B and A need no D148 proof of a lumen world.
-- **The symport and the bath schedule beside water and turnover:** a parse row and the argument, or a run each in tier 3
-  (about 0.25 agent-day in all).
-- **The run-view gap** for water: a separate item, or left (§4.2).
+- **The lumen:** route B, the host-only hook. It changes no lumen program, so S3's and S5's judged worlds keep theirs.
+- **The symport and the bath schedule beside water and turnover:** each a parse row with the argument, and one tier-3
+  composed run (§3.6), since a pairing that newly parses gets one composed-world check. The seconds and the reason are
+  stated for each.
+- **The run view for water worlds** is not part of FR-65. It is logged in §9.2 for the water owner.
+- **Q1 (b):** the coupling's contract extension is designed in its own step; §3.8 lists its inputs.
+- **The readouts** of §4.2 come from the code and the bound model, so the build checks them against one saved file, and
+  says so in its test.
 
 ### 8.3 Corrections to the first version
 
@@ -608,7 +630,9 @@ numerics, which C2.6 judged in the same world family.
 - **Run 2** also patched the coupling's class attributes. The first version said turnover's only.
 - **e_round** was used without being defined. It is amendment 3's (§4.1).
 
-## 9. Evidence
+## 9. Evidence, and a logged item
+
+### 9.1 Evidence
 
 - **The probes** are host-only: parses, structure checks, binds, and one `run_view.prepare`. Nothing was compiled or
   run. Each ran on CPU 4 under the timed cores' lock; the first waited for another holder. Each patched class attributes
@@ -631,8 +655,21 @@ numerics, which C2.6 judged in the same world family.
     - **`bridge-probe.log`,** one parse per process: S impermeant on the bridge parses, and S crossing it is refused.
     - **`labels-probe-2.log`,** one parse per process: labels beside insertion@1, @2 and each lumen are refused by the
       label owner. Its first run failed in the probe's own label declaration and is kept as `labels-probe.log`.
+  - **In `probe3/`,** at 8ad40a72: **`companions-probe.log`,** one parse per process: water with the symport, and with the
+    bath schedule, each with S and turnover, refused today and parsed under §3.1's set. `check_declarations` passed with
+    the anchor's two reference reads.
 - **Read:** D150's design §5; OPERATOR_COMPOSITION_DESIGN §2–§6, §14 and §16; FR43_SHARED_INVENTORIES_DESIGN §2.3, and
   FR-43 part 2's registered CRITERIA.md; FR-38 v2's amendment 3, SPEC §1.6, LAWS §4 and READOUTS §2, at tag
   `fr38-v2-amendment-3-2026-11-24`; the lumens' and the coupling's source; FR-50's registration; the rename's candidate
   mapping at ce4780d2; D301, D324, D327, D328, D334, D345 to D347, D354, D363, D365 and D375. The Lean lane's evidence on
   clearance was relayed by the user through the lead and has not been read by this author.
+
+### 9.2 A run view for water worlds (logged apart; not part of FR-65)
+
+- **The owner:** the water operator's. **The price:** 0.25–0.5 agent-day (S). It is not in §3.9's figures.
+- **Today** `run_view.prepare` refuses a water world (§4.2): water declares no layers, axes, units or record kinds, and no
+  reference for its volume increments, and it replaces a balance rate that @3 gives no axes or layer.
+- **What it would give replay:** a `view.json` beside the run, with the unit, axes, kind and layer of each record, and for
+  each increment the anchor it is taken over. A reader outside the engine would then form n, V and c from declarations
+  rather than from the names and units in §4.2. The numbers themselves are already in `trajectory.npz`, so replay does
+  not wait for it.
