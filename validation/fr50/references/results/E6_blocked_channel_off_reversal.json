@@ -167,7 +167,8 @@
  ],
  "checks": {
   "E_K_50_digit_strings_equal": true,
-  "E_K_unrounded_relative_difference": "8.71e-121"
+  "E_K_unrounded_relative_difference": "8.71e-121",
+  "V_ref_largest_absolute_difference_V": "0"
  },
  "method": {
   "route_A": "LAWS.md's forms in Python's decimal arithmetic (libmpdec) at 120 significant digits, rounding half-even: the one-way fluxes of section 2's table with B(x) = x/(e^x - 1); the transporter of section 3 with dG_cyc/(R T) as the sum the law writes; u by section 4; K2 by section 5's closed form; each steady record as its flux times t. The reported values are route A's.",
@@ -204,11 +205,18 @@
   "declared_accuracy": "1e-20",
   "reported_strings_against_route_B": "4.72e-30",
   "difference_measure": "|A - B| / max(|A|, |B|), in exact rationals; 0 when both are equal. A net, which is 0 at these states by construction, is measured against its forward flux, and dG_cyc/(R T) absolutely.",
-  "other_routes": {},
+  "other_routes": {
+   "V_ref_exact_strings": {
+    "description": "V_ref = V - E_K in both routes, compared absolutely (V)",
+    "max": "0",
+    "declared_accuracy": "1e-20",
+    "within": true
+   }
+  },
   "within_declared_accuracy": true
  },
  "provenance": {
-  "git_revision": "733f794f82855fb297628597beb1d7fcb1b3720b",
+  "git_revision": "18ed39fc32e725d6f03fceaaa3fe42a81c254663",
   "dirty_paths": [],
   "dirty_paths_exclude": [
    "validation/fr50/references/results/*",

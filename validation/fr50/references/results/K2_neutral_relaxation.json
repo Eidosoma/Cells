@@ -250,6 +250,18 @@
   "reported_significant_digits": 30,
   "route_B": "Exact rationals (fractions.Fraction) with the package's own binary exp and ln, intermediate results rounded to 640 significant bits; no decimal module. Each one-way flux from Ussing's ratio and the net: the net from the one-exponential GHK form, rho = backward/forward from Ussing's ratio, forward = net/(1 - rho). Exactly at zero net (rho = 1) that is 0/0, and the one-way fluxes come from their direct forms in exact rationals. The transporter's dG_cyc/(R T) from one logarithm of the exact product of its concentration ratios; u from K = exp(ln K(0) + a V_ref); E_K from its own ln, rounded to 50 digits by integer arithmetic; K2 by the Taylor series of its linear system's matrix exponential.",
   "largest_relative_difference": {
+   "a_pL_per_s": {
+    "max": "0",
+    "index": 0
+   },
+   "k_per_s": {
+    "max": "0",
+    "index": 0
+   },
+   "c_bar_mM": {
+    "max": "0",
+    "index": 0
+   },
    "c_cell_mM": {
     "max": "1.02e-120",
     "index": 22
@@ -300,7 +312,7 @@
   "within_declared_accuracy": true
  },
  "provenance": {
-  "git_revision": "733f794f82855fb297628597beb1d7fcb1b3720b",
+  "git_revision": "18ed39fc32e725d6f03fceaaa3fe42a81c254663",
   "dirty_paths": [],
   "dirty_paths_exclude": [
    "validation/fr50/references/results/*",
