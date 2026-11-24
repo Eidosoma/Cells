@@ -172,15 +172,22 @@ library version is held.
   every physical field and mapped record bit for bit (§8.2, arm 7) before the wash is retired.
 - **What the retirement touches:**
   - FR-49's registration (`validation/fr49/REGISTRATION.md`) names the wash's ID in Worlds B and C1;
-  - FR-45's protocol, `fr45-site-competition-v1`, washes in W2 and W7. W7 comes from its amendment 2 on
-    branch `fr45-protocol` (ff99fead), which is not yet tagged;
+  - FR-45's protocol, `fr45-site-competition-v1`, washes in W2 and W7:
+    - its registration is tagged (`fr45-site-competition-v1-registered-2026-11-24`, at 6e92d0ec), and
+      names `scheduled_compartment_wash@1` for W2, in `docs/FR45_SITE_COMPETITION_PROTOCOL.md` and
+      `CRITERIA.md`;
+    - its amendment 1 is tagged too;
+    - only its amendment 2 (ff99fead, branch `fr45-protocol`), which adds W7, is untagged;
   - Lean's claims name the wash at their engine revisions, which old tags keep;
   - frozen checkpoints of washed worlds need renewing (D350).
 - **The timing (the user's decision).** The wash is retired after arm 7's bitwise check, and only once:
   - FR-49's registered B and C1 runs have finished, or are pinned to a snapshot from before the
     retirement;
-  - FR-45's protocol is written against the router before its tag, or its judged runs are pinned the
-    same way.
+  - FR-45's judged runs have finished, or are pinned the same way. W2's tagged registration cannot be
+    rewritten against the router.
+    - Amendment 2 could still name the router for W7 before its tag, but that would split one protocol
+      across two engines.
+    - So W2 and W7 run together, on the wash.
 
 ### 3.2 The collector at zero volume
 
@@ -212,7 +219,15 @@ fixes the record so that opening changes none of its meaning or bits.
 - **Every species stays positive once liquid arrives.** Every inlet and node liquid carries every neutral
   species at its trace or above. So a record that has received liquid holds every species above 0, as
   @3 requires of a node.
-- **The opening is additive** (D148: statically absent unless declared). At a declared grid time:
+- **The opening is additive in values, not in programs.**
+  - A world that declares no opening keeps every value bit for bit (D148).
+  - The opening's landing adds state and a provided view field, so the router's programs change. That
+    landing renews crossrev for router worlds and lists their frozen checkpoints for renewal, as D350 did
+    for FR-44's records.
+  - Worlds without the router are untouched.
+  - Reserving that state in version 1 was weighed: it would fix an unbuilt design's fields now.
+
+  At a declared grid time:
   - an outside node slot, declared closed until then, opens;
   - its anchor is the record's amounts and its volume the record's, bit for bit. The router provides both
     through the view for that slot alone, as insertion's onset anchors are provided (D057). Door S's scoping
@@ -250,6 +265,15 @@ fixes the record so that opening changes none of its meaning or bits.
   - P's columns, with their record entries, are checked on the host, as each segment's P is computed, to
     sum to 1 within 4 eps. The protocol also checks P̂ entry by entry against the references' decimal P,
     within 8 eps absolute (‖P‖ ≤ 1).
+  - **Both thresholds were probed** (S) on the pinned scipy against a 40-digit decimal exponential.
+    - The shapes: the equal-rate chain (a Jordan block), an unequal chain, and networks with loops of 8
+      and 64 nodes, at ρ up to 10.
+    - The results: the largest entry error was 1.0 eps, at 64 nodes, and the largest column-sum defect
+      0.97 eps.
+    - So the thresholds stand 4 and 8 times above what was seen.
+    - The probe is `/mnt/workspaces/Cells/fr54-57-design-20261124/probes/expm_probe.py`, with its output
+      beside it.
+    - The registration re-measures both on the engine's own call before the tag.
   - Each half-step's material error is then at most (K + 4) eps of the moved amounts, with K the routed
     nodes. Over S steps each amount lies within 2S (K + 12) eps of the total amount from the exact one,
     since P only contracts (S).
@@ -331,26 +355,36 @@ fixes the record so that opening changes none of its meaning or bits.
 ### 3.5 Composition
 
 **FR-44's labels and washes.**
-- **The report grows a carried part.** `LiquidExchange` gains `carried`: (amount, source, destination) for
-  liquid moved from node to node.
-  - `removed` is what leaves a node into a record: a sink by events, or a collector by events or flows.
-    It leaves with the node's shares just before the event or half-step.
+- **The report grows two parts.** `LiquidExchange` gains `carried`, (amount, source, destination) for
+  liquid moved from node to node, and `collected`, the same for liquid that reaches a collector.
+  - `removed` is what leaves a node into a sink, by events, with the node's shares just before the event.
+  - `collected` is what reaches a collector, by events or flows, from each node of origin with that node's
+    shares just before the event or half-step, and from inlets at the base.
   - `supplied` (from inlets) joins the base label, even inside an open window (D327).
   - `carried` keeps its source's shares just before the event or half-step.
   - `supplied` cannot stand for liquid from another node, since it means "no label".
 - **Collectors are records, not label pools.** The contract refuses an exchanged report from an operator
   that holds label pools (`label_event_error`). A record's labelled amounts only add, so it needs no
   shares of its own.
-- **No new field on the label owner.**
-  - `label_outside_removed_fmol` keeps its meaning: what left each outside node by label, into a record.
-    It covers collectors as well as sinks.
-  - In version 1 a node feeds at most one record, refused by name otherwise.
-  - So a collector's labelled contents are the sum of its feeding nodes' records, plus its direct inlet
-    deliveries at the base. Its shares are those contents over its total.
-  - So FR-49's judge, whose `LABELS_ONLY` names every owner field (its erratum 1 added this one), needs no
-    second erratum, and neither does the labels test's `same_physics`.
-  - Rejected: a field `label_collected_fmol`, zero-size elsewhere. It would need FR-49's judge erratum 2
-    before any of its later judged runs on an engine with the router.
+- **One new field on the label owner,** `label_collected_fmol` [labelled species, label, collector]: what
+  reached each collector, by label, cumulative from t = 0.
+  - **It is attributed by origin.** Each step adds every node's portion that ended in the collector, P_ci
+    n_i, at that node's start shares, plus the inlet liquid at the base. So it is exact for a chain too:
+    within one step of A → B → collector, some of A's start liquid reaches the collector and carries A's
+    shares, not B's.
+  - A collector's shares are that record over its total.
+  - **It is zero-size in a world without collectors,** as FR-44's field is.
+  - **FR-49's judge gains it by erratum 2.** Its `LABELS_ONLY` names every owner field, as its erratum 1
+    added FR-44's. Erratum 2 is written and tagged with the router's landing, before any FR-49 judged run
+    on an engine that has the router; a run pinned to an earlier snapshot needs none. The labels test's
+    `same_physics` gains the name in the landing, and a search lists any other explicit list.
+  - **The absent form was weighed.** A field absent, not zero-size, needs per-declaration field sets in the
+    contract (the FR-44/45 note §12.2, route (ii): central code, 0.75 to 1 agent-day). That is the lead's
+    call, and FR-44's precedent is the erratum.
+  - **The reuse of `label_outside_removed_fmol` was rejected.** Keyed by the node a collector's link leaves,
+    it books a chain's upstream liquid at the wrong shares. Keyed by origin, it would change that
+    record's meaning ("what left this node") and refuse any network whose node's liquid can reach two
+    records. It keeps its meaning: what left each node into a sink, at events.
 - **The exact map** at a node: x_k = kept s_k + Σ carried s_source,k + supplied [k = 0], with the shares
   x over its sum.
   - It is exact for a flow, not only for events. Each label's material obeys the same linear,
@@ -363,7 +397,8 @@ fixes the record so that opening changes none of its meaning or bits.
     declare a report kind (`contract.label_event`).
   - The router's half-step needs a declared kind that the exact map reads.
   - The owner refuses a report it does not read, so the kind and its handling land together.
-- **Worlds without the router** keep their label programs, by a static switch.
+- **Worlds without the router** keep every label value bit for bit, by a static switch. The zero-size
+  field is their one new input, as FR-44's was.
 - **The physical rows are bit for bit** with labels on or off (FR-42's promise).
 - **Sites beside labels** stay refused, as today (the labels note §13).
 - **The wash** becomes the router's event (§3.1). While the wash exists, the two are refused at a shared
@@ -585,7 +620,6 @@ sets its tolerance: a rounding bound or an order window, never the other.
   ligand's trace;
 - a link out of a record or into an inlet, and a record declared with contents but no volume;
 - a flow into a sink (flows end in collectors, §3.4);
-- a node that feeds more than one record (§3.5, labels);
 - a flow at a node that a face touches, unless the faces take `exact_free_energy_heat@1` (§4.3);
 - a path across a routed node's surface (`surface_crossings`), apart from §4.3's lift;
 - at a flow's nodes: binding, turnover, the reactions and species exchange;
@@ -623,7 +657,7 @@ until the rename's design note of 25 November settles D350's open points:
 
 | Today | Under the rename | Role here |
 | --- | --- | --- |
-| `liquid_routing@1` (new) | `cells.operator.liquid_routing@1` | The router. If it lands after the rename it is born in this form, with a registry record (the operator registry, the model table and the declarations manifest). If it lands before, it also gets a mapping row |
+| — (new) | `cells.operator.liquid_routing@1` | The router. It is minted once, after the rename, with a registry record (the operator registry, the model table and the declarations manifest). No bare form is ever registered, so it has no mapping row. This note writes `liquid_routing@1` as shorthand |
 | `scheduled_compartment_wash@1` | `cells.operator.scheduled_compartment_wash@1` | Kept until retired. Afterwards it is refused at parse, and the refusal names the router |
 | `neutral_arrival_labels@1`, `site_occupancy@1`, `cell_owned_compartments@1` | `cells.operator.…@1` | Composed with the router |
 | `resolved_pump_composite@1`, `resolved_pump_tissue@3` | `cells.model.…` | The models it runs |
@@ -673,7 +707,10 @@ FR-54's T2 and T4 carry the tableau's own orders, with derived bounds and ratios
 
 - **The references come from a separate, code-blind agent.** This note's author has read the engine, so
   writes none of them.
-  - They are written from this note and the requests, and tagged before any engine reading.
+  - **The agent works from a value-silent spec,** drawn from the two requests and the closed forms only,
+    never from this note. This note holds its author's reading of the tableau, the code and the desk
+    figures.
+  - The spec and references are tagged before any engine reading.
   - They compute P in decimal, and FR-57's equal-rate chain in its confluent form (§2).
 - **Before the tag,** a recorded dt study on the engine measures §4.1's and §4.3's desk edges. The
   measured edges replace the sketched ones.
@@ -720,7 +757,7 @@ Each plant fails the named check. No plant needs a world of its own.
 | 8 | No heat booked | The energy check stops the run, and item 2's message names the residual and bound |
 | 9 | The collector as a node at a trace | The first portion's zero loss |
 | 10 | P with h in place of h/2 | The targets, and the resume comparison |
-| 11 | A carried portion with the destination's shares; an inlet joining an open window's label | The label rows |
+| 11 | A carried portion with the destination's shares; an inlet joining an open window's label; a collector's portion booked at the outlet node's shares, not its origin's | The label rows, the last on a chain labelled in A alone, where the collector must hold A's label after one step |
 | 12 | The router writes bound material | The retention row |
 | 13 | A restart: a portion's count one over (a skip), one short (a redo); a collector's volume reset to 0 | The bitwise comparisons and the volume ledger |
 | 14 | k from V₁ alone | T2 at V₂/V₁ = 4 |
@@ -737,7 +774,7 @@ The seconds below are priced from measured rows in `tests/test_tiers.json`. The 
 | --- | --- | --- | --- |
 | `test_wash_schedule.py` (tier 1, 9.7 s; renamed with the operator when the wash is retired) | Kernel and refusal rows, NumPy | +3 | The operator's own rows, with no world compiled |
 | `test_heat_bookings_formula.py` (tier 2, 35 s) | §4.1's host one-step rows on `face_world`, both heats; the trace-start row reads item 2's numbers | +20 | No runner needed |
-| `test_neutral_arrival_labels.py` (tier 2, 60 s) | The exact map with `carried`, and plant 11 | +2 | NumPy |
+| `test_neutral_arrival_labels.py` (tier 2, 60 s) | The exact map with `carried` and `collected`, the chain row and plant 11; `same_physics` gains `label_collected_fmol` | +2 | NumPy |
 | One vector-window refusal test | Item 2's numbers | 0 | An extended row |
 | **New** `test_liquid_routing_runs.py` (tier 2) | Two compiles: the flow world with the label owner (forward and reversed on one compile) and the faced-node wash under exact heat | About 60 | The only path through the compiled split part, and the event at a faced node, under the runner's host checks. The wash's runs file (76 s) and the twins (70 s) have no room |
 | **New** `test_liquid_routing_resume.py` (tier 2) | Three compiles: the run and two resumes (§3.6) | About 60, priced from `test_wash_schedule_resume.py` (59 s, three compiles) | No other file restarts across a flow or at a flow switch |
@@ -773,13 +810,13 @@ rest as this note recommended.
 
 | Question | Decision | By |
 | --- | --- | --- |
-| Q1. The operator's identity | A new `liquid_routing@1` takes over the wash. The wash is retired after arm 7's bitwise check, once FR-49's B and C1 and FR-45's W2 and W7 allow, or with them pinned to an earlier snapshot (§3.1). Not a sibling beside the wash, nor the wash widened in place | The user |
+| Q1. The operator's identity | A new `liquid_routing@1` takes over the wash. The wash is retired after arm 7's bitwise check, once FR-49's B and C1 runs and FR-45's judged runs (W2 and W7) have finished, or with them pinned to an earlier snapshot. FR-45's registration is tagged and names the wash for W2, so its runs stay on the wash (§3.1). Not a sibling beside the wash, nor the wash widened in place | The user |
 | Q2. Events, flows, and how a flow runs | Both in one operator, a flow by its network's exact step. Not a train of D246 events (first order), nor rates in @3's tableau | The coordinator |
 | Q3. The collector | A record that a later landing can open as a node whose liquid keeps reacting. Version 1 fixes the record so the opening changes none of its meaning or bits (§3.2) | The user |
 | Q4. Networks | Any balanced network of at most 64 nodes, qualified on a chain, a split and merge, and a loop | The coordinator |
 | Q5. "Different per-portion losses" | Each delivery's loss, with a third delivery added: 1, 3 and 3 mM give (0, 0.523248, 0.137341); 3, 3 and 1 mM give (0, 0, 0.660589). The two-delivery resident and arriving split is recorded too. D362 corrects D352 | The coordinator |
 | Q6. The heat's form | Records outside the IMEX flow bound, as the wash's, with H ≥ 0 checked at every event and step | The coordinator |
-| Q7. The default face heat at a faced exchanged node | For events, admitted within §4.1's resolved domain and refused by name outside it. A flow's faced nodes take the exact heat. The edges are measured before any tag, and the 8 and 2 fmol world lies inside the domain (§4.3) | The coordinator |
+| Q7. The default face heat at a faced exchanged node | For events, admitted within §4.1's resolved domain and refused by name outside it. A flow's faced nodes take the exact heat. Both limits are desk figures, measured before any tag: the 8 and 2 fmol world lies inside the domain at kh ≤ 0.2, and is expected to complete under the default heat only at kh ≤ 0.05 (§4.3) | The coordinator |
 | Q8. Flow beside diffusion | In the same build, once arms 1 and 2 pass | The coordinator |
 | Q9. Qualification | One registered protocol, with a verdict per request: FR-54's and FR-57's (§8.2) | The coordinator |
 | Q10. "With FR-10's schedule" | The events' grid form. Item 3 says "a withdrawal and a refill at a connected finite node" | The coordinator |
@@ -790,7 +827,7 @@ rest as this note recommended.
 | --- | --- |
 | FR-54 item 2 | 0.25 |
 | The router: parse, holders, links, the exact step, books, records, refusals, summary and run view | 3 to 4 |
-| Labels: the report, the exact map and the collectors' labelled contents | 0.75 to 1 |
+| Labels: the report, the exact map, `label_collected_fmol` and FR-49's judge erratum 2 | 0.75 to 1 |
 | The faced-node lift and the default's domain | 0.5 |
 | Tests | 1 |
 | The registered protocol: the dt study, the references (a separate agent), judge and run | 1.5 to 2 |
@@ -808,5 +845,8 @@ rest as this note recommended.
    - Its dt study runs on today's engine first. The default face heat's edges need only @3's faces: the
      8 and 2 fmol world before and after the event is a two-well start.
    - Its references come from a separate code-blind agent (§8.2).
-4. **The wash is retired after arm 7,** when FR-49's and FR-45's runs allow (§3.1).
-5. **The collector's opening** follows as its own landing, statically absent until declared (§3.2).
+4. **FR-49's judge erratum 2** is tagged with the router's landing, before any FR-49 judged run on an
+   engine that has the router (§3.5).
+5. **The wash is retired after arm 7,** when FR-49's and FR-45's runs allow (§3.1).
+6. **The collector's opening** follows as its own landing. Worlds that declare none keep their values, and
+   router worlds have crossrev and their checkpoints renewed (§3.2).
