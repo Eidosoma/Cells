@@ -11615,3 +11615,54 @@ declared on the channel population:
   endpoints. So the registration can claim a prospective test of the two intermediate responses, with that exposure
   disclosed.
 - **The lead** keeps `kir_spermine_potassium.json` unopened.
+
+## D357: OL6 Protocol D v2 is registered; the judged revision is pinned at eced4ef8
+
+2026-11-24, about 18:29 UTC. The lead, with the advisor.
+
+**The tag.** `ol6-protocol-d-v2-registered-2026-11-24` is at eced4ef8 (branch `ol6-protocol-d-v2`).
+- **The judged revision is eced4ef8.** Its src is main 9d8c42be's, FR-47's inert-wall landing. The branch merged main
+  once, at 0087818d, and never again: main now carries FR-44's src.
+- **The authority** is `docs/OL6_PROTOCOL_D_V2.md`, with `protocol_d_v2.py` and `protocol_d_v2.json`. The files it
+  judges with are unchanged since their own tags.
+- **Checks at eced4ef8:**
+  - `protocol_d_v2 check`: 29 of 29;
+  - the JSON regenerates byte for byte;
+  - the guard set: 87 passed;
+  - the privacy scan of the branch's diff: clean.
+
+**Rulings on the builder's four calls:**
+- **The pin** goes in this entry, as the document says. 0087818d predates the last text commits.
+- **`moments` stays.** Without it, identical replicas would miss the zero-SE rule in 14 of the 54 constants. A pair
+  wrongly classed as spread would then read the same artifact that failed the first registration (D318).
+  - A check row shows that `moments` equals the registered `mean_error` bit for bit on columns whose replicas are not
+    all identical.
+- **A missing row keeps failing (§6).** An exact run that loses a vesicle that (d) keeps floppy is a real
+  disagreement. Counting it as tense would make it unfailable.
+- **Erratum 2's frozen module stays as it is.** One docstring line ("P-D1's (d) side, in place of the refused (d) run")
+  names a plant outcome of the first check. §7 already states that P-D1's (d) side is computed from the closed form and
+  never run. The tag message discloses the line, and the checker lists it.
+
+**Seeds:**
+- **First:** 670001 to 670000 + M.
+- **Retry:** 690001 to 690000 + M, once, and for inconclusive worlds only.
+- **D7's clock convergence** reads the first six seeds of the set it checks.
+- **Withdrawn:**
+  - 640001 onwards: its first 128 were consumed by a (d)-only clock-room probe; the retry range was never run;
+  - 740001 onwards: never run.
+
+**P-D8, the one-ulp plant,** moves a read value; it is not an engine run. This records its limit: moving N_L by 1 to
+16 ulps leaves V's bits unchanged, so these constant pairs cannot see a small lumen-count error.
+
+**Two routes to inconclusive** (a correction to the lead's "about 1 in 10²⁰" to the user, which covered the first
+only):
+- **A tense replica:** about 1.8e-20 at the worst rung M reads, from the linear-noise variance, which was checked
+  against 128 exact replicas of an unregistered 12.5 nm D5.
+- **A D7 clock refusal on the new seeds,** which are unscreened by design. It has no number. On the withdrawn seeds
+  the worst case used 0.39 of the bound.
+
+**Cost:** about 13.5 process-hours for the first seed set, with D5 at 6 hours and its 100 nm rung at 4.5 hours in one
+chain. With a retry, at most about 27.
+
+**The checker** is fresh and independent: neither the builder nor the first checker. It is briefed with the tag, the
+document and §10, and with its CPUs. It reports before any retry.
