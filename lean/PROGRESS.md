@@ -1,5 +1,17 @@
 # Cells proof comparisons
 
+<a id="paired-wet-lab-evidence"></a>
+
+## 24 November 2026 · Independent wet-lab comparisons
+
+The first paired review covers transport, enzyme kinetics, mitochondrial coupling, vesicle osmosis and initial charge balance. Each entry identifies the assumption, experimental conditions, outcome and independence of the two datasets. The register lists claims with one dataset and claims with several datasets awaiting a paired review. [Paired wet-lab evidence](WET_LAB_EVIDENCE.md) · [Additional primary measurements](checks/data/paired_wet_lab_measurements.json)
+
+For protein-free POPC membranes, optical urea efflux gave 0.0129 µm/s and an independent influx assay gave 0.013 ± 0.001 µm/s. For human SMCT1, the propionate dose responses independently support saturation, while estimates of Na⁺ per propionate differ. The earlier human charge/uptake ratio implies 3.7 ± 0.2 under complete coupling. A later zero-current shift experiment yielded 2.3 ± 0.3. These results motivate checking which observed currents enter a coupling estimate. [Urea comparison](WET_LAB_EVIDENCE.md#pair-popc-urea-permeability) · [Propionate dose response](WET_LAB_EVIDENCE.md#pair-smct-propionate-saturation) · [Stoichiometry discrepancy](WET_LAB_EVIDENCE.md#pair-smct-propionate-stoichiometry)
+
+Independent cold red-cell assays put the half-saturation concentration for 3-O-methylglucose influx at 1.3 and 1.4 mM. A third study at 15 °C found 5.0 and 6.1 mM in two blood specimens. For mitochondrial ATP synthase, the bovine and ovine structures both contain eight c-subunits. Search traced the sheep reconstruction’s starting model back to the bovine structure. The ideal 8/3 H⁺ per ATP is a structural inference with shared model ancestry. [Cold uptake](WET_LAB_EVIDENCE.md#pair-cold-red-cell-sugar-affinity) · [15 °C uptake](WET_LAB_EVIDENCE.md#pair-red-cell-sugar-saturation) · [Rotor evidence](WET_LAB_EVIDENCE.md#pair-mammalian-rotor-coupling)
+
+For initial charge balance, the two native oocyte studies cover different portions of the mobile inventory. Fixed charge, capacitance and voltage would be needed on the same cell. Search also checked a human erythrocyte study. Its Fig. 4 measures ion content and water, while Table III’s hemoglobin charge and absolute voltage are simulation values. [Oocyte comparison](WET_LAB_EVIDENCE.md#pair-xc0-native-oocyte-charge) · [Bisognano et al., Fig. 4 and Table III](https://doi.org/10.1085/jgp.102.1.99)
+
 <a id="xc0-charge-anchor"></a>
 
 ## 24 November 2026 · Resolution of the initial charge check
