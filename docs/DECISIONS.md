@@ -11228,3 +11228,30 @@ The BETSE and ensemble ports are a separate, multi-day work item.
 - past decision entries.
 
 The Lean lane gets the mapping table, through the user, before the landing.
+
+## D347: FR-43 checked item by item against its request: what is judged, what only tested, and four gaps
+
+2026-11-24, about 16:58 UTC. This is the lead's read-only check, with the advisor. Evidence counts only as a test body
+or a verdict file at main.
+- **The two texts.** The user's paste of 24 November differs from the request saved on 23 November only in part 1's
+  first lines, which now note that part 1 raised the limit to 1,024. Every acceptance clause is unchanged.
+- **Judged by a registered criterion:**
+  - C2.3, C2.6, C2.7 and C2.8 (D324). C2.7, the work of changing volume, was judged by convergence order (ratios
+    near 4), consistent with water's second-order bookings.
+  - C3.3, C3.4 and C3.5 (D319).
+- **Covered by the builder's tests only:**
+  - C1.1 at 32 and 1,024 rows, with C1.2 and C1.3 (`test_species_cap_runs.py`, `test_species_cap_large.py`);
+  - part 2's two baseline refusals, now admitted;
+  - C2.2, C2.4 and C2.5;
+  - C3.1 and C3.2;
+  - C3.6, the same-seed restart (`test_integer_unit_population.py`), which settles FR-52's restart premise.
+- **No FR-43 evidence test imports `legacy/`.**
+- **The gaps:**
+  1. **Part 1's 16-row control and 256-row case** have no test at main: they ran only in the design phase.
+  2. **Part 1's performance report** (compile time, time per simulated second, peak memory, device and precision,
+     C1.4) lives only in the design note. Its L4 numbers were taken on a path D336 now refuses: the composite on a
+     GPU.
+  3. **Part 1 has no registered criterion at all,** only the builder's tests.
+  4. **Turnover in a swelling cell** (D301's queue, A1) is still refused at parse ("reads volume as declared"), as
+     D334 logged.
+- **Any fix waits for the user:** a row in an existing test, or an FR. Nothing is built from this check.

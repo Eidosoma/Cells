@@ -1972,6 +1972,8 @@ cases below are the request's own, condensed.
 
 **Status (24 November):** all three parts are on main (D328): part 1 (bbc99163), part 2A (c9687d68) and 2B (2ca07dcb), and part 3 (7fb0ad87). Part 3's registered check passes (D319), and so does part 2's (D324). Still open: the factor-width term, and the request's item-by-item check (A1, turnover in swelling cells).
 
+**Status (24 November, later, D347):** checked item by item against the request. Judged: C2.3, C2.6, C2.7 and C2.8 (D324), and C3.3, C3.4 and C3.5 (D319). The rest are covered by the builder's tests only. Gaps: part 1's 16-row and 256-row cases have no test at main; part 1's performance report lives only in the design note, and its L4 path is now refused (D336); part 1 has no registered criterion; turnover in a swelling cell is still refused at parse.
+
 ## FR-44 — Labels across a wash: arrival-time labels through scheduled compartment washes
 
 **Logged 23 November 2026 by the user, priority high.**
