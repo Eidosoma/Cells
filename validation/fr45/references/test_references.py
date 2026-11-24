@@ -262,6 +262,11 @@ def test_format_sample_regenerates_bitwise():
         "C10",
     }
     assert {p["plant"] for p in d["plants"]} == {f"P{i}" for i in range(1, 10)}
+    for pair in d["pairs"]:
+        counts_steps = pair["criterion"] in ("C2b", "C3b", "C4a", "C5", "C10") or (
+            pair["criterion"] == "C8" and not pair["observable"].startswith("ratio:")
+        )
+        assert ("dt_s" in pair) == counts_steps, pair
     times = set(d["world"]["observation_times"])
     assert {r["time_s"] for r in d["trajectory"]} == times
 

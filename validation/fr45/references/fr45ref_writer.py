@@ -11,24 +11,33 @@ inputs' floats. Each file's keys, in order:
 - world: the inputs echoed (constants, nodes, patches, ligands, free amounts, sets with
   their capacity S, populations, the declared start a_x, dt, times, horizon, wash).
 - equilibrium: {totals, sets {id: R}, populations {id: B}, pools {"L@node": n}, residual,
-  residual_definition, wang {set: {gap}}}; null for W5.
+  residual_definition, wang {set: {gap}}}; wang is {} where no set has two ligands alone.
 - trajectory: [{observable, time_s, value, tolerance_gap}], observables n:<ligand>@<node>,
-  R:<set>, B:<population>; at every observation time.
+  R:<set>, B:<population>; at every observation time. value is the high-precision Taylor
+  solution rounded once; tolerance_gap is |DOP853(rtol 1e-12) - DOP853(rtol 1e-13)|.
 - balances: {ligands: [{ligand, node, time_s, total}], sets: [{set, time_s, sites}]}.
 - wash (W2): {ligand: {removed, supplied}}.
 - heats: {intervals: [{node, start_s, end_s, heat, bound, tolerance_gap}],
   G: [{node, time_s, G}], wash_free_energy_change (W2): [{node, time_s,
   free_energy_change, sets_part}]}.
 - pairs: [{criterion, observable, time_s, [start_s, end_s], [dt_s], class, value,
-  tolerance, against, ...}]; class is constant, derived or band; a constant holds its value
-  ("unchanged", "refused", "completes"); a derived or band pair holds its tolerance; value
-  null means the judge compares the engine against its own state (named in `against`).
+  tolerance, against, [scale], [minimum]}]; class is constant, derived or band; a constant
+  holds its value ("unchanged", "refused", "completes") and a null tolerance; a derived or
+  band pair holds its tolerance; value null means the judge compares the engine against its
+  own state (named in `against`). start_s and end_s are on heat pairs (C3a, C3b, C3c);
+  dt_s is on every pair whose tolerance counts steps (C2b, C3b, C4a, C5, C8, C10), in every
+  world; scale is on C8's pairs, whose tolerance is null except at the finest dt, and C8's
+  two ratio pairs carry minimum (time_s, value and tolerance null).
 - spread: "none" (nothing is drawn).
 - distance_at_horizon: {observable: |x(T) - x_eq|}.
 - closed_form (W4): [{observable, time_s, value, gap_from_ode}].
 - stage (W5): {h_s, loads_times_h {L_n, L_R_summed, L_R_per_population, L_B},
   max_hL_summed, max_hL_per_population, threshold, verdict_summed, verdict_per_population}.
-- plants: [{plant, criterion, compared, honest, planted, distance_in_bounds, ...}].
+- plants: [{plant, criterion, compared, honest, planted, distance_in_bounds, [world],
+  [bound_used], [assumption], [verdict_honest, verdict_planted]}]; compared is
+  {observable, time_s} or, for a heat, {observable, start_s, end_s}.
+- A refusal world (W5) has no trajectory: equilibrium and distance_at_horizon are null and
+  trajectory, balances' and heats' lists are empty; it carries stage, C7 and P4.
 - provenance: {references_revision, tree_clean, writer_version, regeneration_hash_seeds,
   spec, profile}.
 """
@@ -65,7 +74,9 @@ INVENTED_BANNER = (
     "invented volumes, constants, counts and times. It is not a reference for any "
     "registered world and none of its numbers belongs to FR-45. It carries every section "
     "and every criterion's pairs, so some (C2b against this world's own root, C7, C8 on "
-    "every set) are there for their format only."
+    "every set) are there for their format only. A refusal world (W5) differs: its "
+    "equilibrium and distance_at_horizon are null and its trajectory, balances' and heats' "
+    "lists are empty."
 )
 
 
@@ -500,8 +511,8 @@ def build_sample() -> dict:
         stage=st,
     )
     plants = []
-    best, _, _ = BLD.plant_dynamics_C1(r, world, prof, "P1", unshared=True)
-    plants.append(BLD._plant_entry("P1", "C1", best))
+    best, _, _ = BLD.plant_dynamics_C1(r, world, prof, "P1", skip_R=True, unshared=True)
+    plants.append(BLD._plant_entry("P1", "C1", best, assumption=BLD.P1_ASSUMPTION))
     best, _, _ = BLD.plant_dynamics_C1(r, BLD.crossed_koff_world(world), prof, "P2")
     plants.append(BLD._plant_entry("P2", "C1", best))
     for plant in ("P3", "P6"):

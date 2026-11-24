@@ -445,6 +445,27 @@ class WorldRun:
             "taylor_steps": {"fine": self.ode["B"]["steps"], "coarse": self.ode["Bc"]["steps"]},
             "dop853_nfev": {repr(r): self.ode["A"][r]["nfev"] for r in self.profile["rtols"]},
         }
+        if "C8" in self.criteria:
+            # C8's own scale is the set's capacity S, over R and the B_b only
+            g8 = ab8 = ZERO
+            above8 = 0
+            sysm = self.sys
+            for k in range(1, len(self.times) + 1):
+                for i in range(sysm.nP, sysm.n):
+                    if i < sysm.nP + sysm.nS:
+                        s = i - sysm.nP
+                    else:
+                        s = sysm.pops[i - sysm.nP - sysm.nS]["set_index"]
+                    S = sysm.Sd[s]
+                    gap = abs(D(float(A12[k][i])) - D(float(A13[k][i])))
+                    g8 = max(g8, gap / S)
+                    ab8 = max(ab8, abs(D(float(A13[k][i])) - self.yB[k][i]) / S)
+                    if gap > INCONCLUSIVE * S:
+                        above8 += 1
+            tr = self.acc["trajectory"]
+            tr["C8_tolerance_gap_over_S_max"] = f64(g8)
+            tr["C8_pairs_with_gap_above_1e-10_of_S"] = above8
+            tr["C8_taylor_vs_dop853_rtol1e-13_over_S_max"] = f64(ab8)
         return out
 
     def balances_section(self):
@@ -555,6 +576,14 @@ class WorldRun:
             fc_E = max(fc_E, abs(Hc - row["H"]) / row["E"])
             if row["H"] != 0:
                 fc_rel = max(fc_rel, abs(Hc - row["H"]) / abs(row["H"]))
+        ratios = [row["BH"] / abs(row["H"]) for row in self.heat_rows if row["H"] != 0]
+        self.acc["heats_C3a_bound_over_heat"] = {
+            "min": f64(min(ratios)) if ratios else None,
+            "max": f64(max(ratios)) if ratios else None,
+        }
+        self.acc["heat_pairs_with_gap_above_1e-10_of_E"] = sum(
+            1 for row in self.heat_rows if row["gap"] > INCONCLUSIVE * row["E"]
+        )
         self.acc["heats"] = {
             "tolerance_gap_over_E_max": f64(acc_gap),
             "taylor_vs_dop853_rtol1e-13_over_E_max": f64(acc_ab),
@@ -610,10 +639,10 @@ class WorldRun:
         P = []
         crit = self.criteria
         dts = list(zip(self.world["dt"], self.world["dt_texts"], strict=True))
-        multi_dt = len(dts) > 1
 
         def dtkw(dt):
-            return {"dt_s": dt} if multi_dt else {}
+            # every pair whose tolerance counts steps carries its dt, in every world
+            return {"dt_s": dt}
 
         if "C1" in crit:
             for k, t in enumerate(self.times, start=1):
@@ -648,9 +677,10 @@ class WorldRun:
                 + list(Lx["L_R_summed"].values())
                 + list(Lx["L_B"].values())
             )
+            c2b_used = Fraction(0)
             for dt, dtt in dts:
                 h = Q(dt) / 2
-                for _k, t in enumerate(self.times, start=1):
+                for k, t in enumerate(self.times, start=1):
                     kt = self.kt(self.time_text(t), dtt)
                     for i, name in enumerate(self.obs):
                         tol = (
@@ -659,6 +689,9 @@ class WorldRun:
                             * EPS_Q
                             * max(abs(Q(xroot[i])), abs(Q(anchors[i])))
                         )
+                        # the exact solution's own distance from the root, in this tolerance
+                        used = abs(Q(self.yB[k][i]) - Q(xroot[i])) / tol
+                        c2b_used = max(c2b_used, used)
                         P.append(
                             _pair(
                                 "C2b",
@@ -671,6 +704,7 @@ class WorldRun:
                                 **dtkw(dt),
                             )
                         )
+            self.acc["C2b_reference_fraction_of_tolerance_max"] = fq(c2b_used)
         if any(c in crit for c in ("C3a", "C3b", "C3c")):
             tt = [0.0] + list(self.times)
             ttx = ["0"] + list(self.world["time_texts"])
@@ -1034,9 +1068,17 @@ class WorldRun:
 
 
 def _largest(entries):
+    """The entry of largest distance. Distances equal to 30 significant digits (such as a
+    pool and its population, whose changes are equal and opposite) count as a tie, and a tie
+    keeps the first entry in observable order, so the choice does not depend on precision."""
+
+    def key(e):
+        d = e["distance"]
+        return d if d == 0 else d.quantize(Decimal(10) ** (d.adjusted() - 29))
+
     best = None
     for e in entries:
-        if best is None or e["distance"] > best["distance"]:
+        if best is None or key(e) > key(best):
             best = e
     return best
 
@@ -1054,7 +1096,18 @@ def _plant_entry(plant, criterion, best, **extra):
     return d
 
 
-def plant_dynamics_C1(honest: WorldRun, planted_world: dict, profile, plant: str, **variant):
+P1_ASSUMPTION = (
+    "ranked over the free and bound amounts only: the plant gives each population "
+    "S_s - B_b as its free sites and does not say what the set's R_s does"
+)
+P5_ASSUMPTION = (
+    "the planted map scales every B_b facing the washed node by (1 - f) and leaves R_s unchanged"
+)
+
+
+def plant_dynamics_C1(
+    honest: WorldRun, planted_world: dict, profile, plant: str, skip_R: bool = False, **variant
+):
     """A dynamics plant judged by C1: the planted trajectory against the honest one."""
     sysp = System(planted_world, **variant)
     ode = integrate(sysp, planted_world, profile)
@@ -1064,6 +1117,8 @@ def plant_dynamics_C1(honest: WorldRun, planted_world: dict, profile, plant: str
     worst_ab = ZERO
     for k, t in enumerate(honest.times, start=1):
         for i, name in enumerate(honest.obs):
+            if skip_R and name.startswith("R:"):
+                continue
             sn = honest.snode[honest.sys.node_of_component(i)]
             band = BAND_C1 * sn
             d = abs(yP[k][i] - honest.yB[k][i]) / band
@@ -1177,8 +1232,8 @@ def plant_P9(run: WorldRun) -> dict:
 def plants_W1p(run: WorldRun, profile) -> tuple[list, dict]:
     out = []
     acc = {}
-    best, _, a = plant_dynamics_C1(run, run.world, profile, "P1", unshared=True)
-    out.append(_plant_entry("P1", "C1", best))
+    best, _, a = plant_dynamics_C1(run, run.world, profile, "P1", skip_R=True, unshared=True)
+    out.append(_plant_entry("P1", "C1", best, assumption=P1_ASSUMPTION))
     acc["P1"] = a
     best, _, a = plant_dynamics_C1(run, crossed_koff_world(run.world), profile, "P2")
     out.append(_plant_entry("P2", "C1", best))
@@ -1219,7 +1274,11 @@ def plants_W2(run: WorldRun, profile, wash_alone_time: float) -> tuple[list, dic
         )
     out.append(
         _plant_entry(
-            "P5", "C6", _largest(entries), bound_used="ulps of the honest value (bit for bit)"
+            "P5",
+            "C6",
+            _largest(entries),
+            bound_used="ulps of the honest value (bit for bit)",
+            assumption=P5_ASSUMPTION,
         )
     )
     # C4a: the planted wash in the full run
@@ -1259,7 +1318,7 @@ def plants_W2(run: WorldRun, profile, wash_alone_time: float) -> tuple[list, dic
                     "distance": d,
                 }
             )
-    out.append(_plant_entry("P5", "C4a", _largest(entries)))
+    out.append(_plant_entry("P5", "C4a", _largest(entries), assumption=P5_ASSUMPTION))
     acc["P5"] = {"C4a_taylor_vs_dop853_relative_distance_gap": f64(worst_ab)}
     return out, acc
 
