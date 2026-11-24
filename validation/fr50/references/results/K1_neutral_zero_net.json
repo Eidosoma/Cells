@@ -1,0 +1,127 @@
+{
+ "kind": "cells.fr50_reference_result@1",
+ "protocol": "fr50-one-way-records-v1",
+ "case_id": "K1_neutral_zero_net",
+ "case_kind": "K1",
+ "inputs": {
+  "invented": false,
+  "spec_file": "validation/fr50/references/spec/cases.json",
+  "statement": "The registered cases: validation/fr50/references/spec/cases.json, in a byte-identical copy of the tag fr50-one-way-records-v1-registered-2026-11-23."
+ },
+ "declared": {
+  "phase": 1,
+  "route": "neutral passive route on a patch (LAWS.md section 2), forward inward",
+  "T_K": "310",
+  "P_m_per_s": "1e-9",
+  "A_m2": "1e-10",
+  "opening": "1",
+  "V_cell_pL": "1",
+  "V_node_pL": "1",
+  "c_cell_mM": "1e-3",
+  "c_node_mM": "1e-3",
+  "record_times_s": {
+   "rule": "t_i = 10 i, i = 0 ... 10"
+  },
+  "requested": "forward and backward fluxes, and the records F(t_i), B(t_i)"
+ },
+ "forward_direction": "inward: the outside node to the cell (a neutral route on a patch)",
+ "prefactor_pL_per_s": "1.00000000000000000000000000000e-4",
+ "forward_fmol_per_s": "1.00000000000000000000000000000e-7",
+ "backward_fmol_per_s": "1.00000000000000000000000000000e-7",
+ "net_fmol_per_s": "0",
+ "record_times_s": [
+  "0",
+  "10",
+  "20",
+  "30",
+  "40",
+  "50",
+  "60",
+  "70",
+  "80",
+  "90",
+  "100"
+ ],
+ "F_fmol": [
+  "0",
+  "1.00000000000000000000000000000e-6",
+  "2.00000000000000000000000000000e-6",
+  "3.00000000000000000000000000000e-6",
+  "4.00000000000000000000000000000e-6",
+  "5.00000000000000000000000000000e-6",
+  "6.00000000000000000000000000000e-6",
+  "7.00000000000000000000000000000e-6",
+  "8.00000000000000000000000000000e-6",
+  "9.00000000000000000000000000000e-6",
+  "1.00000000000000000000000000000e-5"
+ ],
+ "B_fmol": [
+  "0",
+  "1.00000000000000000000000000000e-6",
+  "2.00000000000000000000000000000e-6",
+  "3.00000000000000000000000000000e-6",
+  "4.00000000000000000000000000000e-6",
+  "5.00000000000000000000000000000e-6",
+  "6.00000000000000000000000000000e-6",
+  "7.00000000000000000000000000000e-6",
+  "8.00000000000000000000000000000e-6",
+  "9.00000000000000000000000000000e-6",
+  "1.00000000000000000000000000000e-5"
+ ],
+ "checks": {
+  "ussing_ratio_backward_over_forward": "1.00000000000000000000000000000e+0",
+  "ussing_ratio_minus_1": "0",
+  "second_route": "direct one-way forms in exact rationals: the state is exactly at zero net (rho = 1), where Ussing's recomputation from the net is 0/0"
+ },
+ "method": {
+  "route_A": "LAWS.md's forms in Python's decimal arithmetic (libmpdec) at 120 significant digits, rounding half-even: the one-way fluxes of section 2's table with B(x) = x/(e^x - 1); the transporter of section 3 with dG_cyc/(R T) as the sum the law writes; u by section 4; K2 by section 5's closed form; each steady record as its flux times t. The reported values are route A's.",
+  "route_A_working_precision_digits": 120,
+  "reported_significant_digits": 30,
+  "route_B": "Exact rationals (fractions.Fraction) with the package's own binary exp and ln, intermediate results rounded to 640 significant bits; no decimal module. Each one-way flux from Ussing's ratio and the net: the net from the one-exponential GHK form, rho = backward/forward from Ussing's ratio, forward = net/(1 - rho). Exactly at zero net (rho = 1) that is 0/0, and the one-way fluxes come from their direct forms in exact rationals. The transporter's dG_cyc/(R T) from one logarithm of the exact product of its concentration ratios; u from K = exp(ln K(0) + a V_ref); E_K from its own ln, rounded to 50 digits by integer arithmetic; K2 by the Taylor series of its linear system's matrix exponential.",
+  "largest_relative_difference": {
+   "prefactor_pL_per_s": {
+    "max": "0",
+    "index": 0
+   },
+   "forward_fmol_per_s": {
+    "max": "0",
+    "index": 0
+   },
+   "backward_fmol_per_s": {
+    "max": "0",
+    "index": 0
+   },
+   "net_fmol_per_s, against the forward flux": {
+    "max": "0",
+    "index": 0
+   },
+   "F_fmol": {
+    "max": "0",
+    "index": 0
+   },
+   "B_fmol": {
+    "max": "0",
+    "index": 0
+   }
+  },
+  "max": "0",
+  "declared_accuracy": "1e-20",
+  "reported_strings_against_route_B": "0",
+  "difference_measure": "|A - B| / max(|A|, |B|), in exact rationals; 0 when both are equal. A net, which is 0 at these states by construction, is measured against its forward flux, and dG_cyc/(R T) absolutely.",
+  "other_routes": {},
+  "within_declared_accuracy": true
+ },
+ "provenance": {
+  "git_revision": "733f794f82855fb297628597beb1d7fcb1b3720b",
+  "dirty_paths": [],
+  "dirty_paths_exclude": [
+   "validation/fr50/references/results/*",
+   "validation/fr50/references/format-sample/INVENTED_*"
+  ],
+  "python": "3.13.5 (main, Aug 10 2026, 12:06:59) [GCC 14.2.0]",
+  "numpy": "2.5.3",
+  "scipy": "1.18.1",
+  "libmpdec": "2.5.1",
+  "generator": "validation/fr50/references/fr50_reference.py"
+ }
+}

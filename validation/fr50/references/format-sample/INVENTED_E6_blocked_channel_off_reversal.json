@@ -1,0 +1,223 @@
+{
+ "kind": "cells.fr50_reference_result@1",
+ "protocol": "fr50-one-way-records-v1",
+ "case_id": "INVENTED_E6_blocked_channel_off_reversal",
+ "case_kind": "E6",
+ "inputs": {
+  "invented": true,
+  "spec_file": "validation/fr50/references/format-sample/invented_cases.json",
+  "statement": "INVENTED inputs, for a format sample only: this file shows the results layout. No value in it is a reference value of any registered case."
+ },
+ "declared": {
+  "phase": 2,
+  "route": "INVENTED: the same population at declared voltages off reversal",
+  "T_K": "300",
+  "valence": 1,
+  "P_m_per_s": "2e-8",
+  "A_m2": "2e-9",
+  "relative_permeability": "1",
+  "abundance": "1.5",
+  "open_fraction": "1",
+  "availability": "1",
+  "c_in_mM": "100",
+  "c_out_mM": "4",
+  "block": {
+   "blocker": {
+    "valence": 1,
+    "side": "inside",
+    "concentration_mM": "0.5"
+   },
+   "reference": {
+    "reversal_of": "K"
+   },
+   "modes": [
+    {
+     "weight": "1",
+     "k0_mM": "2",
+     "electrical_distance": "0.3"
+    }
+   ]
+  },
+  "voltages_V": [
+   "-0.100",
+   "-0.050",
+   "0",
+   "0.020",
+   "0.050"
+  ],
+  "availabilities": [
+   "1",
+   "0.25"
+  ],
+  "requested": "u, the forward and backward fluxes, their ratio and their difference at each voltage and each availability"
+ },
+ "forward_direction": "outward: the cell to the outside node (a channel population)",
+ "E_K_V": "-0.083214377137055223641171780039555965899452081917061",
+ "evaluations": [
+  {
+   "V_V": "-0.100",
+   "availability": "1",
+   "V_ref_V": "-0.016785622862944776358828219960444034100547918082939",
+   "u": "8.29357902770106138949372830463e-1",
+   "forward_fmol_per_s": "4.10813245247683002315785248126e-1",
+   "backward_fmol_per_s": "7.86376434765624771537360639684e-1",
+   "ratio_inward_over_outward": "1.91419445176727771449390031248e+0",
+   "ratio_backward_over_forward": "1.91419445176727771449390031248e+0",
+   "difference_forward_minus_backward_fmol_per_s": "-3.75563189517941769221575391558e-1"
+  },
+  {
+   "V_V": "-0.050",
+   "availability": "1",
+   "V_ref_V": "0.033214377137055223641171780039555965899452081917061",
+   "u": "7.31227143833893956626901488965e-1",
+   "forward_fmol_per_s": "1.43392006902703373415211073047e+0",
+   "backward_fmol_per_s": "3.96778348424670596029481432060e-1",
+   "ratio_inward_over_outward": "2.76708832657526688825412457347e-1",
+   "ratio_backward_over_forward": "2.76708832657526688825412457347e-1",
+   "difference_forward_minus_backward_fmol_per_s": "1.03714172060236313812262929841e+0"
+  },
+  {
+   "V_V": "0",
+   "availability": "1",
+   "V_ref_V": "0.083214377137055223641171780039555965899452081917061",
+   "u": "6.03634379582884221265166085975e-1",
+   "forward_fmol_per_s": "3.62180627749730532759099651585e+0",
+   "backward_fmol_per_s": "1.44872251099892213103639860634e-1",
+   "ratio_inward_over_outward": "4.00000000000000000000000000000e-2",
+   "ratio_backward_over_forward": "4.00000000000000000000000000000e-2",
+   "difference_forward_minus_backward_fmol_per_s": "3.47693402639741311448735665522e+0"
+  },
+  {
+   "V_V": "0.020",
+   "availability": "1",
+   "V_ref_V": "0.103214377137055223641171780039555965899452081917061",
+   "u": "5.46996177644993760698614020578e-1",
+   "forward_fmol_per_s": "4.71358400353870504732859125620e+0",
+   "backward_fmol_per_s": "8.69813272471488693511745444197e-2",
+   "ratio_inward_over_outward": "1.84533313041303544659905846190e-2",
+   "ratio_backward_over_forward": "1.84533313041303544659905846190e-2",
+   "difference_forward_minus_backward_fmol_per_s": "4.62660267629155617797741671178e+0"
+  },
+  {
+   "V_V": "0.050",
+   "availability": "1",
+   "V_ref_V": "0.133214377137055223641171780039555965899452081917061",
+   "u": "4.60185897598064852563656155749e-1",
+   "forward_fmol_per_s": "6.24264983722904692250581100227e+0",
+   "backward_fmol_per_s": "3.60965699708205083426497698100e-2",
+   "ratio_inward_over_outward": "5.78225127341802905023616552477e-3",
+   "ratio_backward_over_forward": "5.78225127341802905023616552477e-3",
+   "difference_forward_minus_backward_fmol_per_s": "6.20655326725822641416316123246e+0"
+  },
+  {
+   "V_V": "-0.100",
+   "availability": "0.25",
+   "V_ref_V": "-0.016785622862944776358828219960444034100547918082939",
+   "u": "8.29357902770106138949372830463e-1",
+   "forward_fmol_per_s": "1.02703311311920750578946312031e-1",
+   "backward_fmol_per_s": "1.96594108691406192884340159921e-1",
+   "ratio_inward_over_outward": "1.91419445176727771449390031248e+0",
+   "ratio_backward_over_forward": "1.91419445176727771449390031248e+0",
+   "difference_forward_minus_backward_fmol_per_s": "-9.38907973794854423053938478896e-2"
+  },
+  {
+   "V_V": "-0.050",
+   "availability": "0.25",
+   "V_ref_V": "0.033214377137055223641171780039555965899452081917061",
+   "u": "7.31227143833893956626901488965e-1",
+   "forward_fmol_per_s": "3.58480017256758433538027682618e-1",
+   "backward_fmol_per_s": "9.91945871061676490073703580151e-2",
+   "ratio_inward_over_outward": "2.76708832657526688825412457347e-1",
+   "ratio_backward_over_forward": "2.76708832657526688825412457347e-1",
+   "difference_forward_minus_backward_fmol_per_s": "2.59285430150590784530657324603e-1"
+  },
+  {
+   "V_V": "0",
+   "availability": "0.25",
+   "V_ref_V": "0.083214377137055223641171780039555965899452081917061",
+   "u": "6.03634379582884221265166085975e-1",
+   "forward_fmol_per_s": "9.05451569374326331897749128963e-1",
+   "backward_fmol_per_s": "3.62180627749730532759099651585e-2",
+   "ratio_inward_over_outward": "4.00000000000000000000000000000e-2",
+   "ratio_backward_over_forward": "4.00000000000000000000000000000e-2",
+   "difference_forward_minus_backward_fmol_per_s": "8.69233506599353278621839163804e-1"
+  },
+  {
+   "V_V": "0.020",
+   "availability": "0.25",
+   "V_ref_V": "0.103214377137055223641171780039555965899452081917061",
+   "u": "5.46996177644993760698614020578e-1",
+   "forward_fmol_per_s": "1.17839600088467626183214781405e+0",
+   "backward_fmol_per_s": "2.17453318117872173377936361049e-2",
+   "ratio_inward_over_outward": "1.84533313041303544659905846190e-2",
+   "ratio_backward_over_forward": "1.84533313041303544659905846190e-2",
+   "difference_forward_minus_backward_fmol_per_s": "1.15665066907288904449435417795e+0"
+  },
+  {
+   "V_V": "0.050",
+   "availability": "0.25",
+   "V_ref_V": "0.133214377137055223641171780039555965899452081917061",
+   "u": "4.60185897598064852563656155749e-1",
+   "forward_fmol_per_s": "1.56066245930726173062645275057e+0",
+   "backward_fmol_per_s": "9.02414249270512708566244245250e-3",
+   "ratio_inward_over_outward": "5.78225127341802905023616552477e-3",
+   "ratio_backward_over_forward": "5.78225127341802905023616552477e-3",
+   "difference_forward_minus_backward_fmol_per_s": "1.55163831681455660354079030812e+0"
+  }
+ ],
+ "checks": {
+  "E_K_50_digit_strings_equal": true,
+  "E_K_unrounded_relative_difference": "7.60e-121"
+ },
+ "method": {
+  "route_A": "LAWS.md's forms in Python's decimal arithmetic (libmpdec) at 120 significant digits, rounding half-even: the one-way fluxes of section 2's table with B(x) = x/(e^x - 1); the transporter of section 3 with dG_cyc/(R T) as the sum the law writes; u by section 4; K2 by section 5's closed form; each steady record as its flux times t. The reported values are route A's.",
+  "route_A_working_precision_digits": 120,
+  "reported_significant_digits": 30,
+  "route_B": "Exact rationals (fractions.Fraction) with the package's own binary exp and ln, intermediate results rounded to 640 significant bits; no decimal module. Each one-way flux from Ussing's ratio and the net: the net from the one-exponential GHK form, rho = backward/forward from Ussing's ratio, forward = net/(1 - rho). Exactly at zero net (rho = 1) that is 0/0, and the one-way fluxes come from their direct forms in exact rationals. The transporter's dG_cyc/(R T) from one logarithm of the exact product of its concentration ratios; u from K = exp(ln K(0) + a V_ref); E_K from its own ln, rounded to 50 digits by integer arithmetic; K2 by the Taylor series of its linear system's matrix exponential.",
+  "largest_relative_difference": {
+   "u": {
+    "max": "4.62e-120",
+    "index": 4
+   },
+   "forward_fmol_per_s": {
+    "max": "7.65e-120",
+    "index": 4
+   },
+   "backward_fmol_per_s": {
+    "max": "5.47e-120",
+    "index": 6
+   },
+   "ratio_inward_over_outward": {
+    "max": "6.41e-120",
+    "index": 4
+   },
+   "ratio_backward_over_forward": {
+    "max": "6.41e-120",
+    "index": 4
+   },
+   "difference_forward_minus_backward_fmol_per_s": {
+    "max": "9.67e-120",
+    "index": 9
+   }
+  },
+  "max": "9.67e-120",
+  "declared_accuracy": "1e-20",
+  "reported_strings_against_route_B": "4.53e-30",
+  "difference_measure": "|A - B| / max(|A|, |B|), in exact rationals; 0 when both are equal. A net, which is 0 at these states by construction, is measured against its forward flux, and dG_cyc/(R T) absolutely.",
+  "other_routes": {},
+  "within_declared_accuracy": true
+ },
+ "provenance": {
+  "git_revision": "733f794f82855fb297628597beb1d7fcb1b3720b",
+  "dirty_paths": [],
+  "dirty_paths_exclude": [
+   "validation/fr50/references/results/*",
+   "validation/fr50/references/format-sample/INVENTED_*"
+  ],
+  "python": "3.13.5 (main, Aug 10 2026, 12:06:59) [GCC 14.2.0]",
+  "numpy": "2.5.3",
+  "scipy": "1.18.1",
+  "libmpdec": "2.5.1",
+  "generator": "validation/fr50/references/fr50_reference.py"
+ }
+}

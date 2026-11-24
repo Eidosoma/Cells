@@ -1,0 +1,143 @@
+{
+ "kind": "cells.fr50_reference_result@1",
+ "protocol": "fr50-one-way-records-v1",
+ "case_id": "INVENTED_K4_transporter_equilibrium",
+ "case_kind": "K4",
+ "inputs": {
+  "invented": true,
+  "spec_file": "validation/fr50/references/format-sample/invented_cases.json",
+  "statement": "INVENTED inputs, for a format sample only: this file shows the results layout. No value in it is a reference value of any registered case."
+ },
+ "declared": {
+  "phase": 1,
+  "route": "INVENTED: the ATP-driven transporter at equilibrium",
+  "T_K": "300",
+  "stoichiometry": 1,
+  "capacity_fmol_cycles_per_s": "2e-3",
+  "availability": "0.8",
+  "K_mM": "0.1",
+  "K_ATP_mM": "0.3",
+  "c0_mM": "1",
+  "mu0_over_RT": {
+   "ATP": "0",
+   "ADP": "0",
+   "Pi": "0"
+  },
+  "fuel_mM": {
+   "ATP": "1",
+   "ADP": "0.2",
+   "Pi": "0.4"
+  },
+  "c_in_mM": "0.08",
+  "c_out_mM": "1",
+  "record_times_s": {
+   "rule": "t_i = 10 i, i = 0 ... 10"
+  },
+  "requested": "dG_cyc/(R T), J+ and J-, and the records F(t_i), B(t_i)"
+ },
+ "forward_direction": "forward cycles (the transporter)",
+ "dG_cyc_over_RT": "0",
+ "S": "3.41880341880341880341880341880e-1",
+ "J_plus_fmol_cycles_per_s": "5.47008547008547008547008547009e-4",
+ "J_minus_fmol_cycles_per_s": "5.47008547008547008547008547009e-4",
+ "net_fmol_cycles_per_s": "0",
+ "record_times_s": [
+  "0",
+  "10",
+  "20",
+  "30",
+  "40",
+  "50",
+  "60",
+  "70",
+  "80",
+  "90",
+  "100"
+ ],
+ "F_fmol_cycles": [
+  "0",
+  "5.47008547008547008547008547009e-3",
+  "1.09401709401709401709401709402e-2",
+  "1.64102564102564102564102564103e-2",
+  "2.18803418803418803418803418803e-2",
+  "2.73504273504273504273504273504e-2",
+  "3.28205128205128205128205128205e-2",
+  "3.82905982905982905982905982906e-2",
+  "4.37606837606837606837606837607e-2",
+  "4.92307692307692307692307692308e-2",
+  "5.47008547008547008547008547009e-2"
+ ],
+ "B_fmol_cycles": [
+  "0",
+  "5.47008547008547008547008547009e-3",
+  "1.09401709401709401709401709402e-2",
+  "1.64102564102564102564102564103e-2",
+  "2.18803418803418803418803418803e-2",
+  "2.73504273504273504273504273504e-2",
+  "3.28205128205128205128205128205e-2",
+  "3.82905982905982905982905982906e-2",
+  "4.37606837606837606837606837607e-2",
+  "4.92307692307692307692307692308e-2",
+  "5.47008547008547008547008547009e-2"
+ ],
+ "checks": {
+  "dG_cyc_over_RT_by_second_route": "0",
+  "ussing_ratio_J_minus_over_J_plus": "1.00000000000000000000000000000e+0",
+  "second_route": "direct one-way forms in exact rationals: the state is exactly at zero net (rho = 1), where Ussing's recomputation from the net is 0/0"
+ },
+ "method": {
+  "route_A": "LAWS.md's forms in Python's decimal arithmetic (libmpdec) at 120 significant digits, rounding half-even: the one-way fluxes of section 2's table with B(x) = x/(e^x - 1); the transporter of section 3 with dG_cyc/(R T) as the sum the law writes; u by section 4; K2 by section 5's closed form; each steady record as its flux times t. The reported values are route A's.",
+  "route_A_working_precision_digits": 120,
+  "reported_significant_digits": 30,
+  "route_B": "Exact rationals (fractions.Fraction) with the package's own binary exp and ln, intermediate results rounded to 640 significant bits; no decimal module. Each one-way flux from Ussing's ratio and the net: the net from the one-exponential GHK form, rho = backward/forward from Ussing's ratio, forward = net/(1 - rho). Exactly at zero net (rho = 1) that is 0/0, and the one-way fluxes come from their direct forms in exact rationals. The transporter's dG_cyc/(R T) from one logarithm of the exact product of its concentration ratios; u from K = exp(ln K(0) + a V_ref); E_K from its own ln, rounded to 50 digits by integer arithmetic; K2 by the Taylor series of its linear system's matrix exponential.",
+  "largest_relative_difference": {
+   "dG_cyc_over_RT, absolute": {
+    "max": "0",
+    "index": 0
+   },
+   "S": {
+    "max": "1.00e-120",
+    "index": 0
+   },
+   "J_plus_fmol_cycles_per_s": {
+    "max": "1.00e-120",
+    "index": 0
+   },
+   "J_minus_fmol_cycles_per_s": {
+    "max": "1.00e-120",
+    "index": 0
+   },
+   "net_fmol_cycles_per_s, against J_plus": {
+    "max": "0",
+    "index": 0
+   },
+   "F_fmol_cycles": {
+    "max": "3.44e-120",
+    "index": 3
+   },
+   "B_fmol_cycles": {
+    "max": "3.44e-120",
+    "index": 3
+   }
+  },
+  "max": "3.44e-120",
+  "declared_accuracy": "1e-20",
+  "reported_strings_against_route_B": "2.66e-30",
+  "difference_measure": "|A - B| / max(|A|, |B|), in exact rationals; 0 when both are equal. A net, which is 0 at these states by construction, is measured against its forward flux, and dG_cyc/(R T) absolutely.",
+  "other_routes": {},
+  "within_declared_accuracy": true
+ },
+ "provenance": {
+  "git_revision": "733f794f82855fb297628597beb1d7fcb1b3720b",
+  "dirty_paths": [],
+  "dirty_paths_exclude": [
+   "validation/fr50/references/results/*",
+   "validation/fr50/references/format-sample/INVENTED_*"
+  ],
+  "python": "3.13.5 (main, Aug 10 2026, 12:06:59) [GCC 14.2.0]",
+  "numpy": "2.5.3",
+  "scipy": "1.18.1",
+  "libmpdec": "2.5.1",
+  "generator": "validation/fr50/references/fr50_reference.py"
+ }
+}

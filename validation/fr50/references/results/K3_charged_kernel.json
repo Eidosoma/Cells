@@ -1,0 +1,103 @@
+{
+ "kind": "cells.fr50_reference_result@1",
+ "protocol": "fr50-one-way-records-v1",
+ "case_id": "K3_charged_kernel",
+ "case_kind": "K3",
+ "inputs": {
+  "invented": false,
+  "spec_file": "validation/fr50/references/spec/cases.json",
+  "statement": "The registered cases: validation/fr50/references/spec/cases.json, in a byte-identical copy of the tag fr50-one-way-records-v1-registered-2026-11-23."
+ },
+ "declared": {
+  "phase": 1,
+  "route": "constant-field route of a charged species of valence +1 on a patch, forward inward; a host evaluation at declared voltages, no trajectory",
+  "T_K": "310",
+  "valence": 1,
+  "P_m_per_s": "1e-8",
+  "A_m2": "1e-10",
+  "opening": "1",
+  "c_in_mM": "1e-6",
+  "c_out_mM": "1e-5",
+  "voltages_V": [
+   "-0.080",
+   "-0.040",
+   "0",
+   "0.030"
+  ],
+  "requested": "forward and backward fluxes at each voltage, and their ratio"
+ },
+ "forward_direction": "inward: the outside node to the cell (a constant-field route on a patch)",
+ "evaluations": [
+  {
+   "V_V": "-0.080",
+   "forward_fmol_per_s": "3.15249987916861739979355578852e-8",
+   "backward_fmol_per_s": "1.57785525220208985321624063287e-10",
+   "ratio_inward_over_outward": "1.99796519659767175302463989596e+2",
+   "ratio_backward_over_forward": "5.00509218930788510950939682888e-3"
+  },
+  {
+   "V_V": "-0.040",
+   "forward_fmol_per_s": "1.92888957476137783431335123278e-8",
+   "backward_fmol_per_s": "4.31532397787173627077385370162e-10",
+   "ratio_inward_over_outward": "4.46986039669884069750240367900e+1",
+   "ratio_backward_over_forward": "2.23720633588140124181539309824e-2"
+  },
+  {
+   "V_V": "0",
+   "forward_fmol_per_s": "1.00000000000000000000000000000e-8",
+   "backward_fmol_per_s": "1.00000000000000000000000000000e-9",
+   "ratio_inward_over_outward": "1.00000000000000000000000000000e+1",
+   "ratio_backward_over_forward": "1.00000000000000000000000000000e-1"
+  },
+  {
+   "V_V": "0.030",
+   "forward_fmol_per_s": "5.41443702462597845303416500471e-9",
+   "backward_fmol_per_s": "1.66446158519325100073039089743e-9",
+   "ratio_inward_over_outward": "3.25296604787507878046961436137e+0",
+   "ratio_backward_over_forward": "3.07411754467350115812225302353e-1"
+  }
+ ],
+ "method": {
+  "route_A": "LAWS.md's forms in Python's decimal arithmetic (libmpdec) at 120 significant digits, rounding half-even: the one-way fluxes of section 2's table with B(x) = x/(e^x - 1); the transporter of section 3 with dG_cyc/(R T) as the sum the law writes; u by section 4; K2 by section 5's closed form; each steady record as its flux times t. The reported values are route A's.",
+  "route_A_working_precision_digits": 120,
+  "reported_significant_digits": 30,
+  "route_B": "Exact rationals (fractions.Fraction) with the package's own binary exp and ln, intermediate results rounded to 640 significant bits; no decimal module. Each one-way flux from Ussing's ratio and the net: the net from the one-exponential GHK form, rho = backward/forward from Ussing's ratio, forward = net/(1 - rho). Exactly at zero net (rho = 1) that is 0/0, and the one-way fluxes come from their direct forms in exact rationals. The transporter's dG_cyc/(R T) from one logarithm of the exact product of its concentration ratios; u from K = exp(ln K(0) + a V_ref); E_K from its own ln, rounded to 50 digits by integer arithmetic; K2 by the Taylor series of its linear system's matrix exponential.",
+  "largest_relative_difference": {
+   "forward_fmol_per_s": {
+    "max": "2.85e-120",
+    "index": 3
+   },
+   "backward_fmol_per_s": {
+    "max": "1.82e-120",
+    "index": 1
+   },
+   "ratio_inward_over_outward": {
+    "max": "3.73e-120",
+    "index": 1
+   },
+   "ratio_backward_over_forward": {
+    "max": "4.56e-120",
+    "index": 0
+   }
+  },
+  "max": "4.56e-120",
+  "declared_accuracy": "1e-20",
+  "reported_strings_against_route_B": "2.68e-30",
+  "difference_measure": "|A - B| / max(|A|, |B|), in exact rationals; 0 when both are equal. A net, which is 0 at these states by construction, is measured against its forward flux, and dG_cyc/(R T) absolutely.",
+  "other_routes": {},
+  "within_declared_accuracy": true
+ },
+ "provenance": {
+  "git_revision": "733f794f82855fb297628597beb1d7fcb1b3720b",
+  "dirty_paths": [],
+  "dirty_paths_exclude": [
+   "validation/fr50/references/results/*",
+   "validation/fr50/references/format-sample/INVENTED_*"
+  ],
+  "python": "3.13.5 (main, Aug 10 2026, 12:06:59) [GCC 14.2.0]",
+  "numpy": "2.5.3",
+  "scipy": "1.18.1",
+  "libmpdec": "2.5.1",
+  "generator": "validation/fr50/references/fr50_reference.py"
+ }
+}
