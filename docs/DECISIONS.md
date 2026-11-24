@@ -10619,3 +10619,63 @@ fail stands.**
     R1's failure.
   - Its judge uses FR-47's agreement.py, which reaches main with FR-47. Its 8-12 CPU-hours queue behind Protocol D's
     re-registration and FR-47's ensemble.
+
+## D335: FR-17's GPU qualification (D330): block 2's findings, and the lead's rulings before block 3′
+
+2026-11-24, about 13:35 UTC.
+- **Block 2** ran on the L4 from snapshot 04032172, with the host thread on CPU 4 and its sibling 20 idle under
+  the timed lock. CPUs 6 and 22 were never quiet for 30 s. The autotune was unpinned and no determinism flag was
+  set.
+  - **G1 fails at both D.**
+    - Host and device modes differ by bytes from window 1 on: 16 arrays at D = 1e-13 (28 by window 8), and 12 at
+      D = 0. They are amount increments, passive-route transfers and heats, and reaction ledgers.
+    - The field arrays, which come from the sparse solver with no scatter, agree.
+    - The builder's diagnosis, inferred and not yet shown by a repeat: the rollout's 94 scatter-adds run as atomic
+      adds on the GPU, in an order that varies from run to run.
+    - On the CPU, G1 passes, and a second process repeats bit for bit (G6's baseline: 8 of 8 window digests, 37 of
+      37 arrays).
+  - **G2 has not passed.**
+    - Every window the device decided is within the amended bound: at D = 1e-13, "total" 0.0165 against 0.291; at
+      D = 0, energy 1e-17.
+    - Window 1 at D = 1e-13 was handed back to the host (device ratio 0.727, against the CPU device's 0.088). Its
+      host ratio was not recorded, so it is unassessed.
+  - **G5:** the device peak is 199 MB; the check's temporaries are 539 KB (D = 1e-13) and 459 KB (D = 0).
+  - **G7, ms per step on the production path, whole core:**
+
+    | | D = 1e-13 | D = 0 |
+    | --- | ---: | ---: |
+    | L4, device mode | 16.9 | 13.7 |
+    | L4, host mode | 29.6 | 22.8 |
+    | CPU timed lane, device mode | 32.0 | 28.3 |
+
+    That is about 2×, before any determinism cost. D326 and D330's decision rested on about 3×.
+  - **CPU against L4, final states:**
+    - D = 1e-13 (2 s): 29 of 37 arrays identical, the rest within 5.5e-16 of scale.
+    - D = 0 (32 s): reaction ledgers and amounts differ by up to 8.6e-8 of scale. That is well above rounding, and
+      its cause is unknown.
+- **The lead's rulings,** all made before any further L4 number:
+  1. **G2's bound, amended** (amendment 1 of GPU_CRITERIA.txt, recorded before any L4 G2 value): on each ledger,
+     the L4's largest spread ≤ min(0.4, max(0.1, 1.5 × the CPU's on the same definition)).
+     - The reason: at steps 0 and 1 the bound is the bare atol, 1e-20 fmol, and a 625-cell global sum's rounding is
+       a large fraction of it. The CPU's device mode, already in production, shows 0.194 there.
+     - **G4's sampled spread takes the same bound.**
+  2. **Handed-back windows count in G2 and G4.** Both read "every window", and the amendment changed the bound, not
+     the windows. Handback counts are reported beside G2.
+  3. **Registered and qualified GPU device mode requires XLA's deterministic-ops setting,** beside the pinned
+     autotune file.
+     - Before block 3′, the builder verifies the flag's effect in the installed jaxlib, including on autotuning, and
+       records which flag is used and what it implies.
+     - `admit` refuses GPU device mode without it. That check is a tripwire reading `XLA_FLAGS`, not enforcement;
+       the bitwise G1 and G6 evidence is the guard.
+     - It is an engine change, so tiers 1 and 2 and the admission gate run on its head.
+  4. **The stop rule.** If G1 or G6 fails with the flag, the fail is recorded and the qualification stops, with no
+     further amendment to G1, G2, G4 or G6. GPU device mode then stays unqualified, and the field's longest points
+     run on the CPU.
+  5. **Block 3′** adds:
+     - one unflagged device-mode repeat, labelled diagnostic, to show the run-to-run variation directly;
+     - the D = 0 CPU-against-L4 comparison, rerun, with Newton iteration counts per step on both devices.
+  6. **Amendment 2 does not let R be compared across devices** until the D = 0 spread is explained and shown to lie
+     below R's resolution.
+  7. **The user's D330 decision goes back to them** once G7′, which includes the determinism cost, is measured,
+     since its speed premise was about 3×.
+- Block 2's unpinned, nondeterministic results stay on record as found.

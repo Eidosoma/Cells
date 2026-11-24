@@ -217,6 +217,7 @@ def test_a_linear_network_follows_its_matrix_exponential(tmp_path):
     assert record["engine_models"]["representation"] == "cells.rate_equations@1"
     assert record["ledger"]["closes"] and record["moieties"]["closes"]
     assert all(law["limit_formulas"] for law in record["laws"])
+    assert "qualification" not in record["representation"]  # FR-47's status: its paths only
     saved = np.load(tmp_path / "bundle" / "rows.npz")
     assert np.array_equal(saved["counts"], run.rows["counts"])
 
@@ -238,3 +239,162 @@ def test_a_closed_membrane_relaxes_to_f_cont_s_minimum_with_its_books_closed():
     again = runner.run(spec)  # deterministic: the same bits
     for name, values in run.rows.items():
         assert np.array_equal(values, again.rows[name]), name
+
+
+# ------------------------------------------------------------------ FR-47's E2 and refusals (D323)
+
+
+def e2_shell(delta=0.5):
+    """A single-lineage entry-only shell (shell_interior's lumen_shell, equal pool and lumen
+    volumes) with both tracer places empty at the founder, so both are E2's; a lumen potential
+    Δ = 0.5, so the first-order law is J = κ_in n_A − κ_out n_C with κ_in = P A / V = 200 per s
+    and κ_out = κ_in e^Δ."""
+    from tests.unit.test_assembly_lineages_v2_shell_interior import lumen_shell
+
+    w = lumen_shell(solution=0.7, lumen=0.7 + delta, n_out=0, n_in=0)
+    spec = parse_spec(as_representation(definition(w), envelope={"min_count": 1.0,
+                                                                 "provenance": "a test"}))
+    problem = rate_equations.Problem(spec)
+    names = [p.name for p in spec.model.world.places]
+    return problem, names.index("S@pool"), names.index("S@lumen"), 200.0, 200.0 * np.exp(delta)
+
+
+def _factored(problem):
+    """The plant: the same problem with E2's steps in the old factored form."""
+    planted = copy.copy(problem)
+    planted.e2_step = np.zeros_like(problem.e2_step)
+    return planted
+
+
+@pytest.mark.parametrize("empty", ["reactant", "product"])
+def test_e2_s_flux_and_its_one_sided_derivative_are_the_first_order_law_s(empty):
+    """CRITERIA's E2 rows: at an empty reactant (n_A = 0, n_C = 1000) and an empty product (the
+    reverse), J and its derivatives equal the first-order law's, J = κ_in n_A − κ_out n_C with
+    dJ/dn_A = κ_in and dJ/dn_C = −κ_out, to rounding. The plant, the old factored form, gives
+    J = −0 and derivatives −0 at an empty reactant, and at an empty product treats the place as
+    one molecule, with dJ/dn_C = 0. No compile beyond a forward derivative: about 2 s."""
+    problem, a, c, k_in, k_out = e2_shell()
+    assert problem.e2[a] and problem.e2[c] and problem.e2_step[0]
+    n = np.zeros(problem.P)
+    n[a], n[c] = (0.0, 1000.0) if empty == "reactant" else (1000.0, 0.0)
+    law = (k_in * n[a] - k_out * n[c], k_in, -k_out)
+
+    def at(p):
+        def flux(m):
+            return p.flux(m)[0]
+
+        j, d = jax.jit(lambda m: (flux(m), jax.jacfwd(flux)(m)))(jnp.asarray(n))
+        return float(j[0]), float(d[0, a]), float(d[0, c])
+
+    got = at(problem)
+    assert np.allclose(got, law, rtol=1e-13, atol=0.0), (got, law)
+    planted = at(_factored(problem))
+    if empty == "reactant":
+        assert planted == (0.0, 0.0, 0.0) and all(np.signbit(planted))  # −0, −0, −0
+    else:
+        assert planted[2] == 0.0 and abs(planted[0] - (law[0] - k_out)) <= 1e-9 * law[0]
+
+
+def test_one_rodas4_step_from_a_zero_keeps_its_order_and_the_factored_form_loses_it():
+    """CRITERIA's step-halving row: from an empty pool and a full lumen (the full wash's state),
+    the error at a fixed time reached in 2, 4, 8 and 16 Rodas4 steps, against the two-place
+    matrix exponential, falls by about 2⁴ per halving (order 4; one step's local error would fall
+    by 2⁵). The plant, the factored form with its zero derivative, never leaves the zero: its
+    error does not fall. Host loop over the integrator's own step: about 3 s."""
+    from cells.numerics import rosenbrock_dense as rd
+
+    problem, a, c, k_in, k_out = e2_shell()
+    span = 0.004  # about two relaxation times (κ_in + κ_out = 530 per s)
+    exact = expm(np.array([[-k_in, k_out], [k_in, -k_out]]) * span) @ np.array([0.0, 3000.0])
+    y0 = np.zeros(2 * problem.P + 2)
+    y0[c] = 3000.0
+    alive = jnp.ones(1, dtype=bool)
+
+    def errors(p):
+        shape = rate_equations.Shape(p)
+
+        def f(z):
+            return shape.rhs(z, alive)
+
+        one = jax.jit(lambda y, h: rd.step(f, jax.jacfwd(f), y, h).y)  # h traced: one compile
+        out = []
+        for steps in (2, 4, 8, 16):
+            y = jnp.asarray(y0)
+            for _ in range(steps):
+                y = one(y, span / steps)
+            y = np.asarray(y)
+            out.append(max(abs(y[a] - exact[0]), abs(y[c] - exact[1])))
+        return out
+
+    honest = errors(problem)
+    ratios = [x / y for x, y in zip(honest, honest[1:], strict=False)]
+    assert all(2.0**3.5 <= r <= 2.0**4.5 for r in ratios), ratios
+    planted = errors(_factored(problem))
+    assert min(planted) >= 0.5 * exact[0] and max(planted) / min(planted) < 1.01, planted
+
+
+def _shell(edit):
+    """FR-21's shell fixture (the geometry tests'), edited, in this representation."""
+    from tests.unit.test_assembly_lineages_v2_geometry import shell_world
+
+    w = edit(shell_world())
+    return as_representation(definition(w), envelope={"min_count": 1.0, "provenance": "a test"})
+
+
+def _unbound(w):
+    """The shell without its site and ligand: a gate of fixed forms G and H, and a subunit B."""
+    w.pop("sites")
+    w["steps"] = [s for s in w["steps"] if s["id"] != "bind"]
+    w["species"] = [s for s in w["species"] if s["id"] not in ("X", "XR")]
+    w["phases"]["pool"]["species"] = [s for s in w["phases"]["pool"]["species"] if s["id"] != "X"]
+    w["phases"]["membrane"]["species"].remove("XR")
+    w["founder"] = {k: v for k, v in w["founder"].items() if not k.startswith("X")}
+    return w
+
+
+def _driven(w):
+    w = _unbound(w)
+    w["steps"].append(step("drive", {"B": 1, "H": 1}, {"B": 1, "G": 1}, 1.0, phase="membrane"))
+    return w
+
+
+def _gate_on_a_bilayer(raw):
+    from tests.unit.test_assembly_lineages_v2_lumen import K_L, osmotic_world
+
+    w = osmotic_world(L_pool=30, L_mem=8, S_pool=6, S_lumen=2, I_lumen=2, floor=4 * K_L)
+    for name in ("G", "H"):
+        w["species"].append(species(name, {"g": 1}, solution=0.0, bilayer=-2.0))
+        w["phases"]["membrane"]["species"].append(name)
+        w["phases"]["pool"]["species"].append({"id": name, "kind": "finite"})
+        w["geometry"]["area_per_leaflet"][name] = {"quanta": K_L, "provenance": "a test"}
+        w["founder"] |= {f"{name}@membrane": 1, f"{name}@pool": 0}
+    w["rate_factor"] = {"law": "cells.gate_factor@1", "forms": ["G", "H"],
+                        "entries": [{"form": "G", "step": "entry", "ddG_kT": 1.0}]}  # fmt: skip
+    return as_representation(definition(w), envelope={"min_count": 1.0, "provenance": "a test"})
+
+
+@pytest.mark.parametrize(
+    "raw, words",
+    [
+        (_shell(lambda w: w), "site binding in a cells.prescribed_shell@1 world"),
+        (_shell(_driven), "a gate driven by bound states, or by anything but its own forms"),
+        (_gate_on_a_bilayer(None), "cells.gate_factor@1 is refused in version 1 outside"),
+    ],
+)  # fmt: skip
+def test_fr47_s_refusals_by_name(raw, words):
+    """D323: site binding in a shell's world (R9), a gate driven by anything but its own forms
+    (R7) and the gate factor outside a shell's world, each by name at the parse. The shell without
+    its binding and with a fixed or an autonomously switching gate is admitted."""
+    with pytest.raises(ConfigError, match=words):
+        parse_spec(raw)
+
+
+def test_a_shell_with_a_fixed_or_an_autonomous_gate_is_admitted():
+    parse_spec(_shell(_unbound))
+
+    def flipping(w):
+        w = _unbound(w)
+        w["steps"].append(step("flip", {"G": 1}, {"H": 1}, 1.0, phase="membrane"))
+        return w
+
+    parse_spec(_shell(flipping))

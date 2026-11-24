@@ -52,11 +52,12 @@ and a general feature, never one built for one study (D144).
 | [FR-44](#fr-44--labels-across-a-wash-arrival-time-labels-through-scheduled-compartment-washes) | Labels across a wash: neutral arrival-time labels through scheduled compartment washes | **High** (logged by the user, 23 November 2026) | **Logged:** `neutral_arrival_labels@1` (FR-42) and `scheduled_compartment_wash@1` (FR-27) refuse each other at parse | A design note: the wash dilutes each washed node's label shares exactly with unlabelled buffer |
 | [FR-45](#fr-45--several-ligands-competing-for-one-shared-wash-retained-site-capacity) | Several ligands competing for one shared, wash-retained site capacity | **High** (logged by the user, 23 November 2026) | **Logged:** FR-28's node-owned sites bind one ligand per population, and sites modelled as dissolved species wash out with the fluid | A design note: competing ligands in one site pool, or immobile anchored species that a wash leaves in place |
 | [FR-46](#fr-46--binding-from-a-shells-inner-face-lumen-ligands-on-membrane-sites) | Binding from a shell's inner face: lumen ligands on membrane sites | **High** (logged by the user, 23 November 2026) | **Logged:** `cells.prescribed_shell@1` admits outer-face binding of a pool ligand and refuses the lumen's | A design note: reversible inner-face binding with detailed balance, and the occupied state usable in a gate rule |
-| [FR-47](#fr-47--shell-exchange-and-scheduled-washes-in-the-deterministic-representation) | Shell exchange and scheduled washes in the deterministic representation | **High** (logged by the user, 23 November 2026) | **Logged:** `cells.rate_equations@1` refuses prescribed-shell geometry and replacement or withdrawal schedules (OL6's refusal 1) | A design note and a registered qualification against an analytical mass balance and an exact-event ensemble |
+| [FR-47](#fr-47--shell-exchange-and-scheduled-washes-in-the-deterministic-representation) | Shell exchange and scheduled washes in the deterministic representation | **High** (logged by the user, 23 November 2026) | **Built, admitted, development-only until fr47-shell-exchange's verdict (D323):** `cells.rate_equations@1` runs the prescribed shell, its full and fractional washes, E2's true zeros and autonomous gates in a prescribed shell's world; each is refused by name elsewhere, until a qualification covers it | A design note and a registered qualification against an analytical mass balance and an exact-event ensemble |
 | [FR-48](#fr-48--a-lumen-standard-potential-a-reversible-free-energy-difference-across-a-prescribed-shell) | A lumen standard potential: a reversible free-energy difference for one neutral solute across a prescribed shell | **High** (logged by the user, 23 November 2026) | **Logged:** `cells.assembly_lineages@2` gives the pool and the lumen one solution standard potential per species | A design note with FR-46 and FR-47 (the same files) |
 | [FR-49](#fr-49--compartment-composition-qualifications-expression-site-occupancy-and-labels-beside-cell-owned-compartments) | Compartment composition qualifications: expression, site occupancy and labels beside cell-owned compartments | **High** (logged by the user, 23 November 2026) | **Logged:** each is refused by the compartments' admitted list alone (refusal 7) | Qualify each pairing with its smallest feature and one world |
 | [FR-50](#fr-50--one-way-cumulative-transfer-records-per-route) | One-way cumulative transfer records per route | **High** (logged by the user, 23 November 2026) | **Logged:** most transfer records are net, so equal opposite flows cancel | Opt-in one-way records from the existing one-way kernels, closing to the net |
 | [FR-51](#fr-51--two-voltage-dependent-blocking-modes-on-one-channel-population) | Two voltage-dependent blocking modes on one channel population | **High** (logged by the user, 23 November 2026) | **Logged:** not expressible; a channel law's kinetics read the voltage only, and there is no block law | An optional weighted-mode block on a channel population, qualified for permeation and block separately |
+| [FR-52](#fr-52--passive-cohort-observations-for-integer-functional-units) | Passive cohort observations for integer functional units: the expected surviving initial and newly assembled units at one site | **High** (logged by the user, 24 November 2026) | **Logged:** `integer_unit_population@1` records its events in a bounded trace, with no cohort readout; labels follow species rows, not units | A design note: a validation reader or a statically absent in-engine expected-cohort record, with classes that partition the count and fail-closed truncation |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -2048,6 +2049,18 @@ So large-count vesicle worlds with a shell and washes can run only as exact even
 
 **Status (23 November):** logged. A design note comes first.
 
+**Status (24 November): built; admitted, development-only until fr47-shell-exchange's verdict.**
+- The build (D323, D327) admits, in a prescribed shell's world only: the shell's limits, the washes
+  as operators of the deterministic representation, E2's true zeros at first-order places and
+  autonomous switching gates. Outside a shell's world each is refused by name, until a
+  qualification covers it; site binding in a shell's world and gates driven by bound states are
+  refused too.
+- The qualification is registered (tag `fr47-shell-exchange-registered-2026-11-24`), with its
+  code-blind references (tag `fr47-references-2026-11-24`). Its independent checker writes the
+  driver and runs it after the landing. Until that verdict, these paths are development-only: the
+  representation's registered `qualified` field says so, and each run that uses them records it
+  (`representation.qualification` in its run.json).
+
 ## FR-48 — A lumen standard potential: a reversible free-energy difference across a prescribed shell
 
 **Logged 23 November 2026 by the user, priority high** (raised the same day, with FR-46 and FR-47).
@@ -2161,6 +2174,79 @@ outward flux, and the face and junction records. So equal flows in opposite dire
 This lets consumers check permeation and block separately.
 
 **Status (23 November):** logged.
+
+## FR-52 — Passive cohort observations for integer functional units
+
+**Logged 24 November 2026 by the user, priority high.**
+
+**Why.** A population can keep the same number of active units while its members turn over. A general
+observation reports how many of a site's original units still contribute to transport, and how many formed
+during a named window. It leaves the physical trajectory unchanged for the same random stream.
+- `integer_unit_population@1` (FR-43 part 3) records integer assembly and disassembly events per site.
+- Its route conductance sums unit counts weighted by per-unit, per-state conductance.
+- FR-42's neutral labels follow species rows, not units, and the operator refuses a label owner.
+
+**The request.** For one exchangeable active-unit class at one fixed site, return the expected surviving initial
+count and the expected newly assembled count, conditional on the recorded events.
+- Each is given with its unit and labelled as an expectation.
+- A documented postprocessing reader over complete event traces would satisfy it.
+- The operator keeps the first `trace_events` events per site, and `integer_events` counts them all. An interval
+  beyond a truncated trace is flagged unresolved.
+- At one declared driving difference and additive per-unit conductance, each expected count gives a checkable
+  expected contribution to the route flux.
+
+**Acceptance example** (one site, identical activity, exchangeable removal within one class):
+
+| Event at the site | Total active | Expected initial | Expected newly assembled |
+| --- | ---: | ---: | ---: |
+| Start with two identical active units | 2 | 2 | 0 |
+| Assemble one during the observation window | 3 | 2 | 1 |
+| Disassemble one, chosen uniformly from the three | 2 | 4/3 | 2/3 |
+| Disassemble both remaining units | 0 | 0 | 0 |
+| Assemble one more inside the same window | 1 | 0 | 1 |
+
+- The mixed-cohort result is compared against the three equally likely choices of removed unit.
+- The cohort contributions sum to the route flux at every observation.
+- Event times, channel choices, physical inventories, fluxes and energy records are unchanged by observing.
+
+**First reading (the lead, with the advisor), for the design note to settle:**
+- **Classes partition the count.** "Initial" and "inside the window" alone leave out units that assemble outside
+  the window. The membership classes follow FR-38 erratum I's pattern: initial, and before, inside or after the
+  window. A re-assembled unit is new, a gross reading, not a net one.
+- **Sum-to-flux needs teeth.** Each contribution is the expected count times the declared per-unit conductance
+  times the recorded driving difference, and their sum is compared with the engine's flux. Shares of the flux
+  would sum to it by construction.
+- **Integrity:** the total rebuilt from the trace must equal the engine's saved integer count at every row,
+  exactly. A mismatch means unresolved.
+- **Fail closed on truncation:** return unresolved, never a number. No caller may read it as zero or infinity,
+  following the cohort readers' precedent.
+- **Carry expected counts, not shares.** E <- E*(n - d)/n gives an exact zero at an emptied site and avoids 0/0.
+  Any tolerance is derived from the event count.
+- **The bitwise test.** "Observation enabled against disabled" is vacuous for a pure reader. The real check is
+  the trace capacity raised against its default: events, inventories, fluxes and energy all bitwise, in a fresh
+  process, for scalar and batch runs.
+- **Two options to weigh:**
+  - a validation reader, limited by the trace's capacity;
+  - an in-engine expected-cohort record, statically absent unless declared. Uniform removal leaves shares
+    unchanged, so this is FR-42's share rule applied to the unit count.
+
+  The note says which side of AGENTS.md's "no physics in validation" line a reader falls on.
+- **Version-1 refusals by name:** several states with transitions between them, and division or retirement at the
+  site.
+- **Mutants:** oldest-first and newest-first removal both conserve totals, but must fail the 4/3 and 2/3 row,
+  checked in exact rationals. A window-edge tie row uses the cohort readers' half-open convention.
+- **Wording:** exchangeability is the operator's own law, one hazard per unit of a class. The output is an
+  expectation, not a realization. The operator's library page already states its scope.
+- **Premises checked at main by name:**
+  - the trace's capacity (`trace_events`, first T events per site, with channel -1 meaning not recorded);
+  - the total-event counter (`integer_events`);
+  - the additive per-state conductance;
+  - the label-owner refusal.
+
+  Still to verify in the note: that the trace survives windows and a same-seed restart, and that one event moves
+  exactly one unit.
+
+**Status (24 November):** logged. A design note comes first.
 
 ## Backlog: external tools to look at (logged by the user, 23 November 2026)
 

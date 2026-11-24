@@ -26,8 +26,25 @@ OL6 (D304); the design is docs/OL6_DETERMINISTIC_REPRESENTATION_DESIGN.md (tag
   applicable in the record; `trace`, `uniforms` and `diagnostic` are refused when true.
 - Slices S1 to S3 run OL1's laws, the bilayer geometry, the osmotic lumen, lysis, the shared
   pool, shear fission, serial transfer, the pore law's clock (`cells.pore_nucleation@1`) and held
-  tensions (`cells.tension_hold@1`). FR-21's shell, FR-20's replacement and FR-35's withdrawal are
-  refused in version 1.
+  tensions (`cells.tension_hold@1`).
+- **FR-47 (D323)** runs FR-21's prescribed shell (`cells.prescribed_shell@1`, its
+  `cells.shell_permeation@1` and its `cells.gate_factor@1`), with FR-48's lumen potential, and in a
+  shell's world FR-20's replacement and FR-35's withdrawal (its mean) and E2. Refused by name in
+  version 1, each until a qualification covers it: a replacement, a withdrawal or the gate factor
+  outside a shell's world, site binding in a shell's world, a gate driven by anything but its own
+  forms (bound states included) and FR-46's inner face.
+- **Their status:** admitted, development-only until fr47-shell-exchange's verdict (the registered
+  protocol, tag `fr47-shell-exchange-registered-2026-11-24`). A run whose world uses one of them
+  records it in `representation.qualification`.
+- **E2, true zeros at first-order places** (a shell's world). A finite dilute place that every step
+  reading it reads at first order (at most one finite molecule a side, by no excess term), and that
+  some founder holds below `min_count` or a declared wash acts on, is outside the envelope: each
+  step reading it takes the difference form, J = a⁺ − a⁻, each direction its law's at the place's
+  count 1 times that count. A step that starts with an E2 place at or below 0 books its heat by
+  the closure identity, Q1 = Q0 + (W1 − W0) − (F_cont(y1) − F_cont(y0)), and its heat leaves that
+  step's error control. A step result with an E2 place below −10·atol_count is rejected and
+  retried at h/4, or the run stops `stalled`. The rows may hold such a place slightly below 0, at
+  least −10·atol_count.
 - **The pore law's tension** is a hold's (the experiment's `tension_holds`, with tension_hold's
   cross-checks as for exact events) or, with no hold, the osmotic lumen's (σ from F, which needs
   σ_max ≤ σ_β/4). Under a hold, a step that changes a membrane place's count is refused (T2); with
@@ -49,15 +66,15 @@ OL6 (D304); the design is docs/OL6_DETERMINISTIC_REPRESENTATION_DESIGN.md (tag
 | --- | --- |
 | `world`, `model`, `definition_sha256` | As for exact events: the world's id, `cells.assembly_lineages@2`, and the definition's fingerprint |
 | `engine_models` | The world's laws and operators, and `representation: cells.rate_equations@1` |
-| `representation` | The declared envelope and integrator; `formulas`; `statuses`; `not_applicable`; and `statistics`: steps accepted and rejected, `restarts` (the lumen's kink), `crossings` (located roots), rtol, atol, the end time, `stop_reason` (`envelope` or `floor` for `outside_envelope`) and `schedule_draws` (Poisson gaps on domain 6, as exact) |
+| `representation` | The declared envelope and integrator; `formulas`; `statuses`; `not_applicable`; and `statistics`: steps accepted and rejected, `restarts` (the lumen's kink), `crossings` (located roots), rtol, atol, the end time, `stop_reason` (`envelope` or `floor` for `outside_envelope`) and `schedule_draws` (Poisson gaps on domain 6, as exact). A run whose world uses FR-47's paths adds `qualification`: `status` ("admitted, development-only until fr47-shell-exchange's verdict"), `protocol` (the registered tag) and `paths` (of `shell`, `washes`, `e2` and `gate`) |
 | `conventions` | The world's tokens, echoed |
 | `laws` | Each law as an exact run states it (id, interface, formulas, provenance, test), plus its `limit_formulas`; a law with no limit kernel (the bilayer geometry) states the representation's rule for it |
 | `status` | One of `complete`, `lysed`, `outside_envelope`, `stalled`, `step_limit`, `slots_full` |
-| `events` | The vesicle-level events in order: each lysis (time, slot, key, cause, `at_birth`, σ and σ_max, what returned to each pool place, its heat and reservoir work; a pore's rupture, cause `pore`, also records the hold or null, σ, the area, k_v, `threshold_E`, `counter` 0, `clock_H` at the located crossing, `work_kT` (the hold's, 0 with σ from F), `opening_heat_kT` and `delta_F_kT`, and books its release from the open state); each fission attempt (time, schedule, k, slot, parent key and counts, outcome; for a split its daughters' keys and counts, the followed daughter or −1 in a population, their slots, the shear work, the sink, and each daughter's lysis at birth); each transfer (time, schedule, its domain-6 draws, kept and removed slots, sink and work) |
+| `events` | The vesicle-level events in order: each lysis (time, slot, key, cause, `at_birth`, σ and σ_max, what returned to each pool place, its heat and reservoir work; a pore's rupture, cause `pore`, also records the hold or null, σ, the area, k_v, `threshold_E`, `counter` 0, `clock_H` at the located crossing, `work_kT` (the hold's, 0 with σ from F), `opening_heat_kT` and `delta_F_kT`, and books its release from the open state); each fission attempt (time, schedule, k, slot, parent key and counts, outcome; for a split its daughters' keys and counts, the followed daughter or −1 in a population, their slots, the shear work, the sink, and each daughter's lysis at birth); each transfer (time, schedule, its domain-6 draws, kept and removed slots, sink and work); FR-47's washes: each replacement (time, schedule, `removed` and `supplied` by finite pool place, real, `sink_kT` and `work_kT`) and each withdrawal (time, schedule, `fraction`, `before`, `removed`, `remaining` and `supplied` by finite pool place, real; `pool_loss_kT` (the sink), `buffer_F_kT` (the schedule's work) and `mixing_heat_kT` (the event heat)) |
 | `ledger` | At every row: `free_energy_kT` (F_cont with each living vesicle's closure cost), `residual_kT` (F_cont(n_t) − F_cont(n_0) − (W − Q − S)), `tolerance_kT`, and `closes`; a run whose ledger does not close is refused |
 | `moieties` | The moiety names, the largest relative drift of Σ_finite m·n − Σ_held m·supplied plus what left with the sinks (net of a transfer's fresh pool), its tolerance (1e-12) and `closes` |
 | `dissipation` | The smallest per-step margin of −J_r ΔF_r at the accepted states, its tolerance and `holds` |
-| `check` | The limit's check: the generic verdict (six probes, items 1 to 3 and parity's fitted orders) and the world's own items 1 to 3 |
+| `check` | The limit's check: the generic verdict (six probes, items 1 to 3 and parity's fitted orders) and the world's own items 1 to 3; in a shell's world also `parity` with the exact kernel's rates, and in an E2 world `e2_linearity` (each direction's linear form against its law's direction, ln units) |
 | `rows` | The row count, their kinds and the world's place names |
 | `pores` | Pore worlds only: the exact run's block (pore_clock.block: the law, its parameters, units and derived constants, the ruptures and the lyses counted by cause), with `reads` stating this representation's event fields |
 | `tension_hold` | Worlds with a hold only: each hold with its interval and payer, as for exact events |
@@ -68,20 +85,24 @@ clock's error (`largest_clock_error`), the largest fraction of its bound used
 (`largest_clock_error_fraction`, |U^H|/(1e-10 + 2e-3 |ΔH|), at most 1 in a run that was not
 refused), and the bound's two parts (`clock_error_bound`, 1e-10, and `clock_error_relative`,
 2e-3). The world's own check adds `pore`: the traced rate against the law's
-host form at the founders' areas and tensions.
+host form at the founders' areas and tensions. An E2 world adds `e2`: its places, the steps that
+started at a zero (`zero_starts`, their heat booked by closure), the step results rejected below
+zero (`below_zero_rejections`) and that bound (`below_zero_bound`, −10·atol_count). FR-47's
+formulas (`shell`, `washes`, `e2`) join `representation.formulas` only in the runs whose world
+uses them.
 
 ## rows.npz
 
 | Array | Shape | Contents |
 | --- | --- | --- |
-| `row_kind` | [K] | `start`, `observed`, `end`, `outside_envelope`, `lysis`, `shear`, `transfer` or `slots_full` |
+| `row_kind` | [K] | `start`, `observed`, `end`, `outside_envelope`, `lysis`, `shear`, `transfer`, `replacement`, `withdrawal` or `slots_full` |
 | `row_time_s` | [K] | The row's time (s) |
 | `counts` | [K, P] | Single lineage: every place's count, real, in place order (held places 0) |
 | `pool_counts`, `slot_counts` | [K, P], [K, S, P] | Population: the pool's places, and each slot's vesicle places (0 elsewhere and in an empty slot) |
 | `alive`, `keys` | [K, S] | Each slot's living vesicle and its carrier key (−1 when empty); S = 1 in a single lineage |
 | `supplied` | [K, P] | Each held place's net supply, real |
 | `heat_kT` | [K] | Q, cumulative: the continuous heat plus the events' (k_BT) |
-| `work_kT` | [K] | W summed over payers: the reservoir's (continuous and at releases), the shear's, the transfers' and the holds' |
-| `continuous_heat_kT`, `reservoir_work_kT`, `shear_work_kT`, `transfer_work_kT`, `sink_kT` | [K] | The parts, cumulative |
+| `work_kT` | [K] | W summed over payers: the reservoir's (continuous and at releases), the shear's, the transfers' and washes' (their schedules' work) and the holds' |
+| `continuous_heat_kT`, `reservoir_work_kT`, `shear_work_kT`, `transfer_work_kT`, `sink_kT` | [K] | The parts, cumulative; `transfer_work_kT` holds the washes' work too, and `heat_kT` the withdrawals' mixing heat |
 | `pore_clock_H` | [K, S] | Pore worlds only: each slot's clock H (0 in an empty slot, and after its vesicle's rupture) |
 | `tension_hold_work_kT` | [K, holds] | Worlds with a hold only: each hold's work, cumulative (paid by `source:tension_hold/<index>`); `work_kT` includes it |
