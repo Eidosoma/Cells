@@ -10619,3 +10619,259 @@ fail stands.**
     R1's failure.
   - Its judge uses FR-47's agreement.py, which reaches main with FR-47. Its 8-12 CPU-hours queue behind Protocol D's
     re-registration and FR-47's ensemble.
+
+## D335: FR-17's GPU qualification (D330): block 2's findings, and the lead's rulings before block 3′
+
+2026-11-24, about 13:35 UTC.
+- **Block 2** ran on the L4 from snapshot 04032172, with the host thread on CPU 4 and its sibling 20 idle under
+  the timed lock. CPUs 6 and 22 were never quiet for 30 s. The autotune was unpinned and no determinism flag was
+  set.
+  - **G1 fails at both D.**
+    - Host and device modes differ by bytes from window 1 on: 16 arrays at D = 1e-13 (28 by window 8), and 12 at
+      D = 0. They are amount increments, passive-route transfers and heats, and reaction ledgers.
+    - The field arrays, which come from the sparse solver with no scatter, agree.
+    - The builder's diagnosis, inferred and not yet shown by a repeat: the rollout's 94 scatter-adds run as atomic
+      adds on the GPU, in an order that varies from run to run.
+    - On the CPU, G1 passes, and a second process repeats bit for bit (G6's baseline: 8 of 8 window digests, 37 of
+      37 arrays).
+  - **G2 has not passed.**
+    - Every window the device decided is within the amended bound: at D = 1e-13, "total" 0.0165 against 0.291; at
+      D = 0, energy 1e-17.
+    - Window 1 at D = 1e-13 was handed back to the host (device ratio 0.727, against the CPU device's 0.088). Its
+      host ratio was not recorded, so it is unassessed.
+  - **G5:** the device peak is 199 MB; the check's temporaries are 539 KB (D = 1e-13) and 459 KB (D = 0).
+  - **G7, ms per step on the production path, whole core:**
+
+    | | D = 1e-13 | D = 0 |
+    | --- | ---: | ---: |
+    | L4, device mode | 16.9 | 13.7 |
+    | L4, host mode | 29.6 | 22.8 |
+    | CPU timed lane, device mode | 32.0 | 28.3 |
+
+    That is about 2×, before any determinism cost. D326 and D330's decision rested on about 3×.
+  - **CPU against L4, final states:**
+    - D = 1e-13 (2 s): 29 of 37 arrays identical, the rest within 5.5e-16 of scale.
+    - D = 0 (32 s): reaction ledgers and amounts differ by up to 8.6e-8 of scale. That is well above rounding, and
+      its cause is unknown.
+- **The lead's rulings,** all made before any further L4 number:
+  1. **G2's bound, amended** (amendment 1 of GPU_CRITERIA.txt, recorded before any L4 G2 value): on each ledger,
+     the L4's largest spread ≤ min(0.4, max(0.1, 1.5 × the CPU's on the same definition)).
+     - The reason: at steps 0 and 1 the bound is the bare atol, 1e-20 fmol, and a 625-cell global sum's rounding is
+       a large fraction of it. The CPU's device mode, already in production, shows 0.194 there.
+     - **G4's sampled spread takes the same bound.**
+  2. **Handed-back windows count in G2 and G4.** Both read "every window", and the amendment changed the bound, not
+     the windows. Handback counts are reported beside G2.
+  3. **Registered and qualified GPU device mode requires XLA's deterministic-ops setting,** beside the pinned
+     autotune file.
+     - Before block 3′, the builder verifies the flag's effect in the installed jaxlib, including on autotuning, and
+       records which flag is used and what it implies.
+     - `admit` refuses GPU device mode without it. That check is a tripwire reading `XLA_FLAGS`, not enforcement;
+       the bitwise G1 and G6 evidence is the guard.
+     - It is an engine change, so tiers 1 and 2 and the admission gate run on its head.
+  4. **The stop rule.** If G1 or G6 fails with the flag, the fail is recorded and the qualification stops, with no
+     further amendment to G1, G2, G4 or G6. GPU device mode then stays unqualified, and the field's longest points
+     run on the CPU.
+  5. **Block 3′** adds:
+     - one unflagged device-mode repeat, labelled diagnostic, to show the run-to-run variation directly;
+     - the D = 0 CPU-against-L4 comparison, rerun, with Newton iteration counts per step on both devices.
+  6. **Amendment 2 does not let R be compared across devices** until the D = 0 spread is explained and shown to lie
+     below R's resolution.
+  7. **The user's D330 decision goes back to them** once G7′, which includes the determinism cost, is measured,
+     since its speed premise was about 3×.
+- Block 2's unpinned, nondeterministic results stay on record as found.
+
+## D336: the user's decisions: XC0's t_e stays out of v2, and FR-17's GPU qualification closes as failed, with the field's longest points on CPUs
+
+2026-11-24, about 13:54 UTC. The user agreed with the lead's and the advisor's recommendation on both.
+
+**XC0 rule erratum 2 (D333): `C8.bc_t_e` stays out of v2.**
+- **Why it was raised.** The row passed in D329 under erratum 1's "final", the bare run's value at 64 s. SEMANTICS.md
+  measures t_e "not from a late value of the run", so that pass rests on a definition that conflicts with the
+  references.
+- **Why it stays out.** D332 diagnosed b_final_c only, and D333 limits v2 to D332's findings. The erratum's author has
+  seen the verdict, so adding a passed row would widen the user's decision.
+- **What v2 reruns:** 349 rows. D329's pass on t_e is carried, and the mismatch is recorded in the erratum as a
+  labelled post-verdict observation.
+- **The lead's other rulings before the tag:**
+  - **C7's tolerance:** |F_declared − F_SI|/F_SI plus the row's float64 allowance, evaluated and stated, so the
+    tolerance is exactly as loose as the two constants' disagreement.
+  - **C6:**
+    - the erratum names the law that makes v1_eq_ratio and v1_eq_x independent of B_out: DESIGN.md's equilibrium
+      ratio (B_in/B_out)_eq = (Na_out/Na_in)^n exp(−(n−1)FV/RT);
+    - it derives B_out = 1e-5 mM from the 2^19 fmol bound over the declared scan domain, not from where the roots
+      lie;
+    - a rerun row whose key carries a B_out token would need its references regenerated before the tag.
+  - **An independent cross-check of the C6 bound.** An exact-rational check of the frozen parser (17 controls)
+    finds every refused balanced input at or above 2^20 fmol. Below 2^19 fmol the worst-case budget, 5.6e-21 C, is
+    under the native 1e-20 C.
+  - **The judge's source check** compares at run time with D329's recorded snapshot manifest, with no source hash as
+    a literal. The six digests in the erratum are of D329's evidence files.
+- **Disclosure:** the lead has seen D329's numbers on these rows (D332).
+- **The tag** waits on the revised head and on the base rerun's CPU-hours. A new independent agent runs it.
+
+**FR-17's GPU qualification (D330, D335) closes as failed.**
+- **Block 3′a** ran from snapshot bc438c6c on the L4, with the host thread on CPU 4 and its sibling 20 idle under
+  the timed lock, and `--xla_gpu_deterministic_ops=true` set.
+  - **G1 passes.** Host and device modes are identical by bytes in all 8 windows, so the flag removes block 2's
+    scatter nondeterminism.
+  - **G2 fails as declared.**
+    - In window 1 (steps 0–32) the device read "total" at 0.715 and handed the window back; the host read 0.202.
+    - The spread, 0.514, is above the amended bound (0.291) and the cap (0.4). In windows 2–8 it is at most 0.016.
+    - The device erred high, so the window went to the host and safety held. The criterion still fails, and D335
+      bars amending it after the data.
+  - **G7 with the flag,** ms per step: device mode 21.8 (16.9 unflagged), host mode 34.0 (29.6). That is about 1.5×
+    the CPU's device mode (32.0), against the about 3× that D326 and D330 assumed.
+  - **G6** is recorded when it lands. G4 was not run, and blocks 3′b, 4′ and 5′ are cancelled.
+- **Consequences:**
+  - **GPU device mode is not qualified.** The field's longest points run on CPUs, as amendment 1 places them. A
+    tagged amendment 2 says so before any field point.
+  - **The admission code.** If main admits GPU device mode, a plain refusal lands, with no XLA_FLAGS check, which
+    nothing qualified could reach. If main already refuses it, only the driver and the criteria record land.
+  - **A new GPU attempt would be a fresh registration** and the user's decision: for example, compensated summation
+    in the device check, or the GH200.
+- **Corrections to D335:**
+  - **The D = 0 line.** The 8.6e-8 was measured against the increments' and gross ledgers' own scale. Against the
+    amounts, the CPU and the L4 differ by at most 2.1e-16, one ulp. A one-ulp change of the start on the CPU alone
+    gives the same picture, with no growth over 32 s.
+  - **The pinned autotune file plays no part under the flag.** The flag disables timing-based autotuning: the
+    flagged dumps hold no results.
+  - **Two items D335 ordered did not run:**
+    - the unflagged repeat, because the admit tripwire refused device mode;
+    - the Newton iteration counts, because the hypothesis is excluded by construction: the reaction operator is
+      explicit (SSPRK(3,3)), and the field arrays were identical between the devices.
+
+    The scatter diagnosis rests on one shared executable, together with the flag contrast.
+- **A finding for any device.** At steps 0–1 the bound is the bare atol, and the host itself reads 0.20–0.28 of it
+  on 625 cells. Whether that fraction grows with cell count is being estimated. If it does, a larger tissue could
+  refuse window 1 on rounding alone.
+
+**FR-47's judged run and its checker's driver use the landed engine,** main at ec7e8c7d (the merge of 43763a36),
+from a frozen snapshot. The registration was tagged before the build, so it names no engine revision. The fix for
+inert wall places, in progress, is not in the judged engine.
+
+## D337: XC0's erratum 2 and FR-30's Tag A are tagged before reading; the user's decisions on a core, FR-53 and a refused removal; SK2's one closing rate is flagged provisional
+
+2026-11-24, about 14:22 UTC.
+
+**XC0 rule erratum 2 is tagged `xc0-erratum-2-2026-11-24` at b477f433** (branch xc0-erratum-2). Its src/ tree equals
+260d7c7f's, D329's engine.
+- **What reruns:** 349 rows (C6 eq_ratio 172, C6 eq_x 172, C7 1, b_final_c 3, b_final_psi 1). C8.bc_t_e is
+  carried (D336).
+- **No reference changes.** No rerun row's key carries a B_out token, so no reference is regenerated.
+- **C7's tolerance:** |F_declared − N_A·e|/(N_A·e) + 16·2⁻⁵³, evaluated exactly as 3.4307699621628870747e-11.
+- **C6's B_out** is 1e-5 mM: the largest power of ten below 2¹⁹ fmol / (1e8 × 65.45 pL) = 8.0e-5 mM. The largest
+  charge-anchor term over the scan domain is then 81,100 fmol.
+- **Cost:** about 3.5 core-hours, or 2.5 h of wall time in three gate-lane batches of under 45 minutes plus the
+  table. A C8b retry would add about 4.4 core-hours, and the procedure asks the lead first.
+- **The runner** is a new independent agent, working from a frozen snapshot of the tag.
+
+**FR-30's Tag A is tagged `fr30-ekvitorin2016-tag-a-2026-11-24` at 9c53fd76** (branch fr30-next).
+- **The exposure sweep finished** (pass 5). It searched text files only, and never the sealed folder.
+- **The lead's two files are confirmed.** They name the 2016 paper only by name, identifier and status:
+  - LEAD-NOTES.md: its filing, the user's decision, and the registration's progress;
+  - MORNING-BRIEF-20261123.md: its name and PMC identifier.
+
+  Both stay barred for the fitter.
+- **The fourth choice is confirmed.** Part S judges every held-out G_ss, those at decay-list magnitudes included,
+  and starts from at least two held-out G_ss entries. Part S is reported only; FR-30's verdict does not depend on
+  it.
+- **Not exercised by any test, as the record states:**
+  - of_G0 amplitude scoring;
+  - reference_step predictions;
+  - a G_ss sampling time other than T;
+  - the symmetric protocol's holding difference.
+- **Next:**
+  - the branch lands later, with its tier measurement folded onto main's record (D222);
+  - the sealed extractor is a new agent, started when a slot frees.
+
+**The user's decisions:**
+- **GJ-N1's upper end runs on CPU 13, with its sibling 29 idle.** That is about 23 h, and another 45–73 h if its
+  h/2 is needed. The user lends this one visualizer core while the viewer is on hold. The rest of the search stays on
+  a gate lane under its lock; amendment 2 is tagged with its driver change.
+- **FR-53 is logged, high:** a rounding allowance for global ledgers at every row, from D336's finding.
+- **A refused removal.**
+  - The safety check refused the FR-38 references agent's `rm -f out/*`, a glob after a `cd`. No one retried it.
+  - The user gave permission to remove the four untracked smoke-test files by their explicit paths, and the lead did.
+  - The regeneration then runs from a clean tree.
+
+**SK2's timing is flagged provisional** (the Lean lane, 24 November).
+- **Half-activation.** Two independent labs place rat SK2's half-activation near 0.7 µM Ca²⁺. That is close to the
+  fit of 0.728 µM with `cells.species_regulated_availability`.
+- **The bound.** Lean proves that, with a fixed closing rate, the 20–80% rise time is at most ln 4 times the washout
+  time constant. Both compiled versions of the operator passed that check.
+- **One study indicates otherwise.** Oliver et al. (Neuron, doi:10.1016/S0896-6273(00)81197-6) report a mean
+  high-dose washout that implies a 48.1 ms ceiling, and about 80 ms at low calcium.
+- **So reusing one closing rate across doses is provisional.** A rise and a washout measured on the same low-dose
+  patch would settle it. One study is an indication, and no law's form changes on it.
+- **The operator's docstring gains this scope line** at its next src landing, batched with other docstring-only
+  updates.
+
+## D338: corrections and additions to D336 and D337: the vector path refuses the composite only; D330's G6 and CPU cost; SK2's evidence stated exactly; FR-30's earlier extractor never opened the 2016 paper
+
+2026-11-24, about 14:26 UTC.
+
+**The vector path refuses the composite only** (amends D336's admission line).
+- **Where things stood:**
+  - main's scalar row checks already refused a GPU (D187), so that path needed no src change;
+  - `run_vector_windowed` decides on the device alone and had no refusal.
+- **What changes:** the vector path refuses `resolved_pump_composite@1`, under every field solver, on a GPU. That
+  is the family D330 measured and failed.
+- **Why not a blanket refusal.** A blanket refusal would break GPU uses that have evidence:
+  - the calcium ensemble's ionic families;
+  - `resolved_pump_tissue@1` and @3's batched GPU runs (9 and 10 November);
+  - their GPU tests.
+- **A logged follow-up, not started:** re-check those families' GPU evidence under D330's criteria, run-to-run
+  determinism included.
+
+**D330's closing evidence:**
+- **G6 passes under the flag.** A fresh process and one loading the saved autotune file each reproduce the pair's 8
+  windows by bytes. The flagged autotune dumps hold no results.
+- **What D330 closes on:** G1 and G6 pass under the flag; G2 fails. G3–G5 and G7′ were not run; the flag's cost
+  was measured in block 3′a.
+
+**The CPU cost of GJ-N1's field search:**
+- about 70–115 thread-hours in all;
+- the upper end at h: 2.56 M steps, about 23 h on a whole core;
+- its h/2, if it ends as a final bracket end: another 45–73 h;
+- a base-step point: 1.3–2.3 h, or 2.8–4.6 h at h/2.
+
+**Correction to D337: amendment 2 is not yet tagged.**
+- It will be tagged with its driver change (`--upper-cpu`, `--lane-lock`, `--lane-after`).
+- The upper end starts at launch on CPU 13. The lane part takes its lock from 20:00 UTC, so the bisection runs
+  overnight rather than holding a lane for about 10 h of daytime gates.
+
+**SK2's evidence, stated exactly** (refines D337, from the Lean lane's record at lean-paired-transport-mechanics,
+41f3de69).
+- **The steady response.**
+  - Hirschberg et al. (1998, doi:10.1085/jgp.111.4.565) measured absolute open probability at four calcium doses in
+    one inside-out patch from a Xenopus oocyte expressing rat SK2.
+  - The Cells curve calibrated on those data gives half-activation at 0.728 µM.
+  - Syme's independent, untreated rat SK2 dose response gives 0.700 µM.
+- **The proved identity.** For a held input, the 20–80% rise time equals ln 4/(a + b). It is at most ln 4 times the
+  zero-input washout time constant when the closing rate b is positive and shared.
+- **The replay.** In a compiled held-dose world (a = b = 16/s), both versions of
+  `cells.species_regulated_availability` bracket the exact 43.32 ms within 42.97–43.95 ms, on a 0.488 ms grid.
+- **Two tests of carrying one closing rate across recordings disagree with it:**
+  - Hirschberg's single-channel plateau and macropatch washout predict a 10.63 ms activation time constant, against
+    4.1 ± 0.6 ms measured;
+  - Oliver et al. (2000, doi:10.1016/S0896-6273(00)81197-6), with separate recombinant SK2, measured a 6.18 ±
+    1.91 ms 20–80% rise and a 34.7 ± 6.5 ms washout at 10 µM Ca²⁺. Reusing that mean closing rate at 0.5 µM gives
+    a ceiling of ln 4 × 34.7 = 48.1 ms, against a reported rise of about 80 ms.
+- **Limits of the evidence.** The low-dose record has no reported uncertainty, no sample count and no paired washout,
+  and the two groups' data come from separate preparations.
+- **So reusing one closing rate across doses stays provisional,** as an indication, with no change of law. A rise and
+  a washout measured on the same low-dose patch would settle it.
+
+**FR-30: the earlier sealed extractor never opened the 2016 paper.**
+- It ran on 23 November and filed four candidates. Its README lists Ek-Vitorín 2016 as candidate 4, "not opened",
+  because the procedure stops at the first paper that qualifies: Revilla 1999.
+- Its folder holds extractions for Shibayama 2006, Elenes 2001 and Revilla 1999 only.
+- So Tag A's message ("tagged before the sealed extraction") and section 13.7's "no record shows anyone opening the
+  paper" stand.
+- At landing, the branch gains a dated pointer to D337 for the lead's two files and the fourth choice, with no
+  criteria change.
+
+**FR-47's inert-wall fix ran FR-47's registered worlds before their verdict,** for its before-and-after comparison.
+- It printed statuses and booleans only, never a value.
+- The folder (`/mnt/workspaces/Cells/fr47-inert-wall-20261124/`) is barred to FR-47's checker. Its brief will say
+  so.
