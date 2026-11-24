@@ -103,7 +103,7 @@ class ScaleContext:
             * abs(spec.residue_potential(self.inputs))
             * (self._v("W_tx") + L * self._v("H_tx_release"))
         )
-        if self.profile == "B" and spec.B_G_SCALE_TRANSLATION_RESIDUES:
+        if self.profile == "B":  # every chain's residues in transit (amendment 4, item 1)
             r = r + spec.RT_KJ * abs(float(self.inputs["mu_res_P_RT"])) * (
                 self._v("W_tl") + self._v("W_tl_s")
             )
@@ -249,14 +249,15 @@ def window_indices(times, t1, t2):
 
 
 def grid_error(times, A, k, t1, t2, ts):
-    """|known_rate on every output − on every second output, t1, t2 and ts kept|; None where the
-    window holds no output to drop (amendment 3, item 3d: then the entry is refused)."""
+    """|known_rate on every output − on every output of even index counted from the grid's first,
+    with t1, t2 and ts always kept| (amendment 4, item 7); None where the window holds no output to
+    drop (amendment 3, item 3d: then the entry is refused)."""
     times = list(times)
     if t1 not in times or t2 not in times or ts not in times:
         return None
     fine = window_indices(times, t1, t2)
-    i1 = fine[0]
-    coarse = sorted({i for i in fine if (i - i1) % 2 == 0} | {fine[0], fine[-1]})
+    keep = {times.index(t1), times.index(t2), times.index(ts)}
+    coarse = sorted({i for i in fine if i % 2 == 0} | (keep & set(fine)))
     if coarse == fine:
         return None
     return abs(

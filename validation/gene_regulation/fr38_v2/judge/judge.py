@@ -5,12 +5,15 @@
   from the three rungs, C4 at every rung with that rung's S. A run inconclusive at the primary
   attempt takes the retry when its retry records exist (judged at 0.25 s); otherwise it stays
   inconclusive, retry pending (CRITERIA.md §1, §4).
-- **Plants** (CRITERIA.md §6). P1 and P1″ act on copies of the mapping file; P1′ (the net-rate
-  host form) and P6 (G without the hold's standard term) on copies of the honest records at h;
-  the world-data plants and P9 are engine records at h. Each is scored with the honest run's
-  tolerance at h. A plant is caught by a failure of its own "By" readouts, or by the engine's
-  own refusal of its run; a C2 catch counts only where the honest tolerance does not exceed the
-  reference's predicted distance. A judge-side refusal is not a catch.
+- **Plants** (CRITERIA.md §6; amendment 4, items 5 and 7). P1 and P1″ act on copies of the
+  mapping file; P1′ (the net-rate host form) and P6 (G without the hold's standard term) on copies
+  of the honest records at h; the world-data plants and P9 are table entries at h, whose
+  declarations differ from their honest runs' only by their registered change. Each is scored
+  with the honest run's primary tolerance at h. A plant is caught by a failure of its own "By"
+  readouts, or by the engine's own refusal of its run; a C2 catch counts only where the honest
+  tolerance does not exceed the reference's largest predicted distance for that run and quantity.
+  A judge-side refusal is not a catch: an unscorable core plant leaves FR-38 at best inconclusive.
+- **The engine's export** is amendment 4, §8's table (`records.read_tables`).
 """
 
 import copy
@@ -105,6 +108,7 @@ class Family:
         self.times = [float(t) for t in reference.times]
         self.window = reference.window
         self.samples = reference.samples
+        self.held_blank_present = False
 
     def steps(self, dt):
         return int(round(float(self.inputs["horizon_s"]) / dt))
@@ -228,35 +232,67 @@ def _largest_checks(ref):
 # ------------------------------------------------------------------ the engine records
 
 
-def index_records(export, fams, mapping):
-    """C0 on every engine record, then an index by (family, role, run, plant, attempt, dt, …)."""
-    index, faults = {}, []
-    seen = {}
-    for rec in export["records"]:
-        fam = fams.get(rec.family)
+def index_records(tables, fams, mapping, index_faults):
+    """C0 on every table entry (amendment 4, §8), then an index by (family, role, run, plant,
+    attempt, dt, machine). Plants' declarations are compared with their honest runs' (§8.5)."""
+    from . import definitions
+
+    all_recs, notes = [], []
+    for tab in tables:
+        fam = fams.get(tab["family"])
         if fam is None:
-            rec.faults.append(f"family {rec.family!r} is not judged here")
-        else:
-            restart = fam.restart()
-            records.check_record(
-                rec,
-                fam.inputs,
-                fam.times,
-                mapping,
-                fam.profile,
-                restart=restart[1] if restart else None,
-                allowed_blank_machines=fam.blank_machines(),
-            )
+            continue
+        recs, tnotes = records.table_records(tab, fam.inputs)
+        notes += [f"{tab['family']} {tab['attempt']}: {n}" for n in tnotes]
+        if fam.restart() is None and any(r.role == "restart" for r in recs):
+            notes.append(f"{tab['family']}: a restart entry where none is registered: ignored")
+            recs = [r for r in recs if r.role != "restart"]
+        for rec in recs:
+            records.check_record(rec, fam.inputs, fam.times, mapping, fam.profile,
+                                 allowed_blank_machines=fam.blank_machines(),
+                                 two_blanks=fam.role == "AF" or (
+                                     fam.role is None and fam.held_blank_present))  # fmt: skip
+        all_recs += recs
+    seen = {}
+    for rec in all_recs:
         seen.setdefault(rec.key, []).append(rec)
+    index = {}
     for key, recs in seen.items():
         if len(recs) > 1:
             for r in recs:
-                r.faults.append(f"{len(recs)} records share the key {key!r}")
+                r.faults.append(f"{len(recs)} entries share the key {key!r}")
         index[key] = recs[0]
-    for rec in export["records"]:
-        if rec.faults:
-            faults.append({"path": rec.path, "faults": rec.faults})
-    return index, faults
+    for rec in all_recs:  # §8.5: a plant differs from its honest run only by its registered change
+        if rec.role != "plant" or rec.faults:
+            continue
+        fam = fams[rec.family]
+        if rec.plant == "P8" and rec.run == "blank":
+            honest = index.get((rec.family, "blank", "blank", None, "primary", 0.5, "returned"))
+        else:
+            honest = index.get((rec.family, "honest", rec.run, None, "primary", 0.5, None))
+        if honest is None or honest.definition is None:
+            rec.faults.append("its honest run's entry at 0.5 s, needed for the declaration check, "
+                              "is missing")  # fmt: skip
+            continue
+        rec.faults += definitions.plant_change_faults(rec.plant, honest.definition,
+                                                      rec.definition, fam.inputs)  # fmt: skip
+    faults = [{"table": r.table, "entry": r.name, "attempt": r.attempt, "dt": r.dt,
+               "faults": r.faults} for r in all_recs if r.faults]  # fmt: skip
+    rec_notes = [{"table": r.table, "entry": r.name, "dt": r.dt, "notes": r.notes}
+                 for r in all_recs if r.notes]  # fmt: skip
+    unchecked = {}
+    for r in all_recs:
+        for u in r.unchecked:
+            unchecked.setdefault(r.family, set()).add(u)
+        if r.role == "restart":  # §8.4 names the checkpoint's identity, not its time's key
+            unchecked.setdefault(r.family, set()).add("the restart's checkpoint time (7200 s)")
+        if r.plant == "P9":
+            unchecked.setdefault(r.family, set()).add(
+                f"P9's V₀ patch, which its record names (source {r.provenance.get('source')!r})"
+            )
+    return index, {"refused_records": faults, "notes": notes + index_faults, "record_notes":
+                   rec_notes, "unchecked": {f: sorted(u) for f, u in unchecked.items()},
+                   "entries": len(all_recs)}  # fmt: skip
 
 
 def _get(index, fam, role, run, attempt, dt, *, plant=None, machine=None):
@@ -448,7 +484,7 @@ def _physical(name):
     return not (name.startswith("label_") or name.startswith("released_present_gross_"))
 
 
-def compare_records(a, b, *, names, route2=True, survival=False, checks="subset"):
+def compare_records(a, b, *, names, route2=True, survival=False, checks=True):
     """The engine-only equalities of C1, bit for bit."""
     fails = []
     for n in names:
@@ -477,12 +513,22 @@ def compare_records(a, b, *, names, route2=True, survival=False, checks="subset"
                     or (x[2] is not None and rules.bit_equal([x[2]], [y[2]])["fails"])
                 ):
                     fails.append(f"survival/{k}: differs")
-    for k in b.checks:  # b is the twin or the resumed run
-        if k not in a.checks:
-            fails.append(f"checks/{k}: missing in the labelled run")
-        elif rules.bit_equal([a.checks[k]], [b.checks[k]])["fails"]:
-            fails.append(f"checks/{k}: differs")
+    if checks and not _deep_bit_equal(a.checks, b.checks):
+        fails.append("checks: the engine's checks differ")
     return {"passes": not fails, "fails": bool(fails), "differences": fails}
+
+
+def _deep_bit_equal(x, y):
+    """Two JSON values equal, floats bit for bit (the sign of zero included)."""
+    if isinstance(x, dict) and isinstance(y, dict):
+        return set(x) == set(y) and all(_deep_bit_equal(x[k], y[k]) for k in x)
+    if isinstance(x, list) and isinstance(y, list):
+        return len(x) == len(y) and all(_deep_bit_equal(a, b) for a, b in zip(x, y, strict=True))
+    if isinstance(x, float) or isinstance(y, float):
+        if not (isinstance(x, (int, float)) and isinstance(y, (int, float))):
+            return False
+        return not rules.bit_equal([float(x)], [float(y)])["fails"]
+    return x == y and type(x) is type(y)
 
 
 def judge_run(fam, unit, index, mapping, attempt):
@@ -564,10 +610,12 @@ def judge_run(fam, unit, index, mapping, attempt):
                     "C2": c,
                 }
             )
-        # C4 at every rung
+        # C4 at every rung, each with its own S (amendment 4, item 2); the machine option is the
+        # run's registered one (a blank's from its name)
+        option = machine if blank else fam.inputs["runs"][run]["machine"]
         for rec in rungs:
             ids = rules.identities(
-                rec.series, fam.inputs, fam.profile, rec.machine, fam.steps(rec.dt), blank=blank
+                rec.series, fam.inputs, fam.profile, option, fam.steps(rec.dt), blank=blank
             )
             out["identities"][repr(rec.dt)] = ids
     except (KeyError, ValueError) as exc:
@@ -690,10 +738,7 @@ def two_blanks(fam, index):
     """AF runs a blank per machine option; an invented family with no role may (optional)."""
     if fam.role is not None:
         return fam.role == "AF"
-    return (
-        _get(index, fam.name, "blank", "blank", "primary", spec.H_STEP_S, machine="held")
-        is not None
-    )
+    return fam.held_blank_present
 
 
 def matched_blank_machine(fam, run, index):
@@ -771,16 +816,12 @@ def _honest_tolerance(primary, readout, ts=None):
     return None
 
 
-def _distance(ref, plant, run, quantity, ts=None):
-    """The reference's predicted |planted − honest| for this plant entry (SPEC.md §6)."""
+def _distance(ref, plant, run, quantity):
+    """The reference's largest predicted |planted − honest| for that run and quantity (SPEC.md §6;
+    amendment 4, item 7), over its sample times for route 2."""
     best = None
     for e in ref.plants:
-        if (
-            e["plant"] == plant
-            and e["run"] == run
-            and e["quantity"] == quantity
-            and (ts is None or e["time_s"] == ts)
-        ):
+        if e["plant"] == plant and e["run"] == run and e["quantity"] == quantity:
             d = abs(e["planted"] - e["honest"])
             best = d if best is None else max(best, d)
     return best
@@ -809,7 +850,7 @@ def _score_readout(fam, plant, run, readout, ys_h, rs, honest_tau, *, ts=None):
 
 def _sized(item, fam, plant, quantity):
     """A C2 catch counts only where the honest tolerance does not exceed the predicted distance."""
-    d = _distance(fam.ref, plant, item["run"], quantity, item.get("ts_s"))
+    d = _distance(fam.ref, plant, item["run"], quantity)
     item["predicted_distance"] = d
     if item["C1_fails"]:
         item["caught"] = True
@@ -1148,14 +1189,15 @@ def provenance():
             "numpy": np.__version__}  # fmt: skip
 
 
-def judge(ref_dir, export_dir, families=None, mapping=None, roles=None):
+def judge(ref_dir, export_dir, families=None, mapping=None, roles=None, references=None):
     """C0 on the references (invented first), then every engine record, run, plant and verdict.
     `families` maps family -> profile, by default the invented family and the five registered;
-    `roles` gives an invented family the registered family whose structure it follows."""
+    `roles` gives an invented family the registered family whose structure it follows;
+    `references` is `read_references`'s result, for a caller judging several exports."""
     mapping = mapping or load_mapping()
     families = families or {"invented": "A", **spec.FAMILY_PROFILE}
     roles = roles or {}
-    refs, order = read_references(ref_dir, families, mapping)
+    refs, order = references or read_references(ref_dir, families, mapping)
     verdict = {
         "provenance": provenance(),
         "kind": VERDICT_KIND,
@@ -1181,23 +1223,40 @@ def judge(ref_dir, export_dir, families=None, mapping=None, roles=None):
         return verdict
     if export_dir is None:
         return verdict
-    export = records.read_export(export_dir)
-    present = {r.family for r in export["records"]}
-    # an invented family is judged only where the export carries its records; a registered
-    # family always is, so that its missing runs are refusals, never gaps
+    from . import definitions
+
+    tables = records.read_tables(export_dir, [f for f in order if refs[f].accepted])
+    present = {t["family"] for t in tables["tables"]}
+    # an invented family is judged only where the export carries its table; a registered family
+    # always is, so that its missing runs are refusals, never gaps
     fams = {
         f: Family(f, families[f], refs[f], role=roles.get(f))
         for f in order
         if refs[f].accepted and (f in spec.REAL_FAMILIES or f in present)
     }
-    index, rec_faults = index_records(export, fams, mapping)
+    for tab in tables["tables"]:  # an invented family with no role may carry a held blank
+        fam = fams.get(tab["family"])
+        doc = tab["doc"] if isinstance(tab["doc"], dict) else {}
+        rungs = doc.get("rungs") if isinstance(doc.get("rungs"), dict) else {}
+        if fam is not None and fam.role is None:
+            fam.held_blank_present = fam.held_blank_present or any(
+                isinstance(r, dict)
+                and isinstance(r.get("runs"), dict)
+                and "blank held" in r["runs"]
+                for r in rungs.values()
+            )
+    index, engine = index_records(tables["tables"], fams, mapping, tables["faults"])
     verdict["c0"]["engine"] = {
-        "manifest": export["manifest"],
-        "manifest_sha256": export["manifest_sha256"],
-        "faults": export["faults"],
-        "refused_records": rec_faults,
-        "records": {r.path: r.sha256 for r in export["records"]},
-    }
+        "tables": [{k: t.get(k) for k in ("family", "attempt", "path", "sha256", "faults")}
+                   for t in tables["tables"]],
+        "index": tables["index"],
+        "faults": tables["faults"],
+        "flags_for_the_checker": [n for n in tables["notes"] if n.startswith("FLAG")],
+        "table_notes": [n for n in tables["notes"] if not n.startswith("FLAG")],
+        "open_shapes": {"table": list(records.TABLE_OPEN_SHAPES),
+                        "declaration": list(definitions.OPEN_SHAPES)},
+        **engine,
+    }  # fmt: skip
     family_runs = {f: judge_family(fam, index, mapping) for f, fam in fams.items()}
     plants = judge_plants(fams, index, mapping, family_runs)
     verdict["families"] = {

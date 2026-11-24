@@ -251,13 +251,6 @@ UNECHOED_STRUCTURE = (
 )
 
 
-# READOUTS.md §3 writes G's scale with RT |μ°_res| (W_tx + L H), the hold worlds' one route. Arm
-# B's G (the sheet's §3.4) also holds translation's residues in transit, so the judge adds
-# RT |μ°_P,res| (W_tl + W_tl_s) there, as B's reference does. This reading was settled with B's
-# file in view: under the literal form C0 refuses B, its stated scale being off by more than
-# SCALE_REL. G is reported, not judged, in B, so no verdict depends on it. False: the literal form.
-B_G_SCALE_TRANSLATION_RESIDUES = True
-
 # ------------------------------------------------------------------ inputs, per family
 
 
@@ -436,31 +429,6 @@ PLANT_RUNS = {
 # the honest records at h.
 JUDGE_PLANT_FAMILIES = {"P1": ("AF", "AN"), "P1″": ("AF", "AN"), "P1′": ("AN",), "P6": ("AF",)}
 P6_RUN = "p_sched returned"
-
-
-def plant_delta(plant, definition, family_inputs):
-    """Apply a world-data plant's registered change to an expected definition, in place."""
-    if plant == "P2":
-        definition["p_schedule"] = [[0.0, 1.0 - 2.0**-30]]
-    elif plant == "P3a":
-        definition["label_schedule_s"]["win"] = float(family_inputs["window_s"][0]) + H_STEP_S
-    elif plant == "P3b":
-        definition["label_schedule_s"]["post"] = float(family_inputs["window_s"][1]) + H_STEP_S
-    elif plant == "P4":
-        definition["label_at"] = "completion"
-    elif plant == "P5":
-        definition["k_s_per_s"] = float(family_inputs["k_s_per_s"]) * (1.0 + 1e-4)
-    elif plant == "P7":
-        definition["machine"] = "returned"
-    elif plant == "P8":
-        definition["store"]["forward_per_s_at_c0"] = (
-            float(family_inputs["store"]["forward_per_s_at_c0"]) * 1.01
-        )
-    elif plant == "P9":
-        definition["gene_unit_volume"] = "declared"
-    else:
-        raise KeyError(f"{plant} has no engine-record definition")
-    return definition
 
 
 # The "By" readouts of each plant (CRITERIA.md §6), with P8's negative control.

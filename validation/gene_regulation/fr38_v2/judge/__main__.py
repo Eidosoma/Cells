@@ -5,9 +5,10 @@
         --out FILE
 
 `c0` is the reader's first read alone: `reference_invented.json`, then each reference file.
-`judge` adds the engine's export folder (`records.py` states its layout) and writes the verdict
-per family, arm and criterion. DIR for the references is their folder or its `out/`. The exit
-status is 0 when every read file is accepted (c0) or a verdict is written (judge), else 1.
+`judge` adds the engine's export, the folder holding amendment 4, §8's `table/` (and
+`table-retry/`), and writes the verdict per family, arm and criterion. DIR for the references is
+their folder or its `out/`. The exit status is 0 when every read file is accepted (c0) or a
+verdict is written (judge), else 1.
 """
 
 import argparse

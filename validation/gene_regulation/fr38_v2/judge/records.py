@@ -8,51 +8,30 @@ non-finite value, is a fault; any fault refuses the file. Unknown keys are ignor
 Q6). The invented family's inputs are its own, so they are checked for consistency, not against
 SPEC.md.
 
-**The engine's export folder**, as this judge reads it (the spec folder does not state one):
+**The engine's export** is amendment 4, §8's registered table (`read_tables`, `table_records`):
+`table/table_<family>.json` for AF, AN, B, C and D with `table/SHA256SUMS`, and `table-retry/` for
+the retry.
 
-    <export>/manifest.json   {"kind": "cells.fr38_v2.engine_export@1", "provenance": {...}}
-    <export>/**/<any>.json   one run record per file:
-    {
-     "kind": "cells.fr38_v2.engine_run@1",
-     "family": "AN",                    AF, AN, B, C or D
-     "run": "p_sched returned",         SPEC.md §1.3's name, "blank" for a blank
-     "role": "honest",                  honest, blank, twin, restart or plant
-     "plant": null,                     a world-data or host-side plant: P2, P3a, P3b, P4, P5,
-                                        P7, P8 (its run and its own blank) or P9
-     "attempt": "primary",              primary (rungs 2, 1, 0.5 s) or retry (1, 0.5, 0.25 s)
-     "dt_s": 0.5,                       the rung; a restart and every plant at 0.5 s
-     "status": "completed",             or "refused": the engine refused the run at run time
-     "refusal": null,                   the engine's own reason, when refused
-     "definition": {...},               the run as the engine built it (below)
-     "times_s": [0.0, 30.0, ...],       the family's output grid, exactly
-     "series": {"n_R": [...], ...},     READOUTS.md §1 and §2 names, one value per output time,
-                                        `excess_over_blank_<fate>` and `released_present_gross_
-                                        <fate>` among them
-     "route2": [{"fate": "durable", "ts_s": 5400.0, "value": ...}, ...],
-     "survival": [{"fate": "durable", "t2_s": 5400.0, "ts_s": 9000.0, "alive_t2": ...,
-                   "alive_ts": ..., "ratio": ... or null}, ...],
-     "checks": {"<name>": float, ...}   optional: the engine's own checks, compared with the
-                                        twin's bit for bit
-    }
-
-- **The definition** is the family's inputs in the references' echo vocabulary (`spec.
-  spec_inputs`, without `runs` and `blank`), with the run's own values in place, plus `machine`,
-  `p_schedule` ([[t, p], ...]), `label_at` (`release`, or `completion` under P4), `labelled`
-  (false for a twin), `gene_unit_volume` (family D: `current`, or `declared` under P9) and, for
-  the restart, `checkpoint_s`. A blank declares H0_copies 0 and k_I_per_mM_s 0.0; its p is not
-  read. A plant declares its registered change (`spec.plant_delta`) and nothing else.
-- **Required content.** Labelled runs, the restart and plants: every series the profile's mapping
-  names, with `route2` and `survival`. Blanks: every series the blank carries. Twins: every
-  physical series (no labels, no `released_present_gross`) and `route2`.
-- **The judge's own plants.** P1 and P1″ act on the judge's mapping file, P1′ and P6 on copies of
-  the honest records at h; a record naming any of them is refused.
+- **Runs.** `rungs` keyed by the step's repr, each with `dt_s` and `runs` by name: SPEC.md §1.3's
+  names (B's `p=0.55 returned` and `p=0.55 held`), `blank returned` and `blank held` (each judged
+  against the reference's one `blank`), and `<run> unlabelled` for a twin. Unknown names are
+  recorded and ignored.
+- **An entry** is a refusal (`refused`, `refusal`, `definition`) or holds `t`, `readouts`,
+  `route2`, `survival` (labelled runs), `excess_over_blank` (runs with a blank), `checks`,
+  `own_ledgers_at_end`, `steps`, `dt_s`, `definition`, `source`, `record` and `record_sha256`. A
+  completed run without `source`, `record` or `record_sha256` is refused (item 6).
+- **The restart** (AN) and **the plants** (rung "0.5", with `judged_as`; `P4 AN`, `P4 B`, `P8
+  blank`) are entries of the same form. Entries for P1, P1′, P1″ and P6 are excluded from scoring
+  and recorded: the judge forms those plants itself (item 5).
+- **The declaration** is read at §8.5's keys (`definitions.py`). The judge forms S from the
+  registered grid and g(ts) from the engine's counters; it never takes a tolerance term from the
+  export, and records `steps` and `grid_error` only.
+- **Open shapes.** Where §8 states a key but not its shape, the reader reads one narrow shape
+  (`TABLE_OPEN_SHAPES` here, `definitions.OPEN_SHAPES` for the declaration) and fails closed on any
+  other. Each needs a dated amendment before the judge's tag.
 - **Numbers** are finite, except a survival ratio, whose undefined, NaN or infinite values are
   judged by C1 at an idle fate (amendment 1, item 3); elsewhere a non-finite ratio is refused.
-  The engine writes floats with `repr`; NaN and Infinity tokens parse here so that C0 can name
-  them.
-- **The manifest** carries the export's provenance (revision, dirty paths, snapshot), copied into
-  the verdict; a missing or unreadable manifest is recorded there, not refused.
-- Extra series and keys are ignored. A refused record is never read as a gap.
+- Extra keys are ignored. A refused record is never read as a gap.
 """
 
 import dataclasses
@@ -66,8 +45,6 @@ import numpy as np
 from . import spec
 
 REFERENCE_KIND = "cells.fr38_v2.reference@1"
-EXPORT_KIND = "cells.fr38_v2.engine_export@1"
-RUN_KIND = "cells.fr38_v2.engine_run@1"
 UNITS = {"amount": "fmol", "energy": "pJ", "time": "s", "volume": "pL", "copy_fmol": spec.COPY_FMOL}
 
 
@@ -650,13 +627,21 @@ def _check_scales_and_accuracy(ref, mapping, rules):
                 continue
             if s is None:
                 continue
+            # amendment 4, item 1: a stated scale is checked where a judged entry's accuracy
+            # requirement rests on it; a reported entry's departure is recorded, not refused
             try:
                 mine = ctx.scale(e["scale"], rname)
             except (KeyError, ValueError) as exc:
-                faults.append(f"{where}: its scale cannot be formed ({exc})")
+                (faults if judged else ref.notes).append(
+                    f"{where}: its scale cannot be formed ({exc})"
+                )
                 continue
             if not close(s.scale, mine, spec.SCALE_REL):
-                faults.append(f"{where}: scale {s.scale!r} is not READOUTS.md §3's {mine!r}")
+                msg = f"{where}: scale {s.scale!r} is not READOUTS.md §3's {mine!r}"
+                if judged:
+                    faults.append(msg)
+                else:
+                    ref.notes.append(msg + " (a reported entry: recorded, not refused)")
                 continue
             if judged:
                 over = np.nonzero(~s.constant & (s.accuracy > spec.ACCURACY_FACTOR * mine))[0]
@@ -771,14 +756,33 @@ def _read_provenance(p, ref):
     ref.provenance = p
 
 
-# ------------------------------------------------------------------ the engine export
+# ------------------------------------------------------------------ the engine's tables (§8)
+
+TABLE_KIND = "cells.fr38_v2.engine_table@1"
+TABLE_DIRS = (("primary", "table"), ("retry", "table-retry"))
+RUNG_KEYS = {"primary": ("2.0", "1.0", "0.5"), "retry": ("1.0", "0.5", "0.25")}
+ROLES = ("honest", "blank", "twin", "restart", "plant")
+RECORD_PLANTS = ("P2", "P3a", "P3b", "P4", "P5", "P7", "P8", "P9")
+TABLE_PLANTS = {"P2": "P2", "P3a": "P3a", "P3b": "P3b", "P4 AN": "P4", "P4 B": "P4", "P4": "P4",
+                "P5": "P5", "P7": "P7", "P8": "P8", "P8 blank": "P8", "P9": "P9"}  # fmt: skip
+JUDGE_PLANTS = ("P1", "P1′", "P1″", "P6", "P1'", "P1''")  # formed by the judge (amendment 4, §5)
+TABLE_OPEN_SHAPES = (
+    "`route2`: a list of {fate, ts_s, value, grid_error}",
+    "`survival`: a list of {fate, t2_s, ts_s, alive_t2, alive_ts, ratio}",
+    '`excess_over_blank`: {"blank": <the matched blank\'s name>, "durable": [...], '
+    '"short_lived": [...]}',
+    '`plants`: under rung "0.5", an object keyed by the plant\'s name',
+    "`restart`: a top-level entry of AN's table; the checkpoint's identity under `checkpoint`",
+    "a `SHA256SUMS` line: `<sha256>  <file name>`",
+)
 
 
 @dataclasses.dataclass
 class EngineRun:
-    path: str
-    sha256: str
+    table: str
+    table_sha256: str
     family: str
+    name: str
     run: str
     role: str
     plant: object
@@ -787,260 +791,353 @@ class EngineRun:
     machine: str
     status: str
     refusal: object
-    definition: dict
-    series: dict  # name -> np.ndarray
-    route2: dict  # (fate, ts) -> float
-    survival: dict  # (fate, ts) -> (alive_t2, alive_ts, ratio or None)
-    checks: dict
-    faults: list
+    definition: object
+    series: dict = dataclasses.field(default_factory=dict)  # name -> np.ndarray
+    route2: dict = dataclasses.field(default_factory=dict)  # (fate, ts) -> value
+    survival: dict = dataclasses.field(default_factory=dict)  # (fate, ts) -> (a2, a3, ratio)
+    checks: object = None
+    faults: list = dataclasses.field(default_factory=list)
+    notes: list = dataclasses.field(default_factory=list)
     times: list = dataclasses.field(default_factory=list)
     has_route2: bool = False
     has_survival: bool = False
+    has_excess: bool = False
+    excess_blank: object = None
+    steps: object = None
+    provenance: dict = dataclasses.field(default_factory=dict)
+    extras: dict = dataclasses.field(default_factory=dict)
+    unchecked: list = dataclasses.field(default_factory=list)
 
     @property
     def key(self):
-        return (
-            self.family,
-            self.role,
-            self.run,
-            self.plant,
-            self.attempt,
-            self.dt,
-            self.machine
-            if self.role == "blank" or self.plant == "P8" and self.run == "blank"
-            else None,
-        )
+        blankish = self.role == "blank" or (self.plant == "P8" and self.run == "blank")
+        return (self.family, self.role, self.run, self.plant, self.attempt, self.dt,
+                self.machine if blankish else None)  # fmt: skip
 
 
-ROLES = ("honest", "blank", "twin", "restart", "plant")
-RECORD_PLANTS = ("P2", "P3a", "P3b", "P4", "P5", "P7", "P8", "P9")
-
-
-def read_export(folder):
-    """The engine export's manifest and run records (not yet checked against the references)."""
-    manifest_path = os.path.join(folder, "manifest.json")
-    faults = []
-    try:
-        manifest, msha = load_lenient(manifest_path)
-        if manifest.get("kind") != EXPORT_KIND:
-            faults.append(f"manifest kind {manifest.get('kind')!r} is not {EXPORT_KIND!r}")
-    except (OSError, ValueError) as exc:
-        manifest, msha = {}, ""
-        faults.append(f"manifest.json unreadable: {exc}")
-    records = []
-    for root, _, files in sorted(os.walk(folder)):
-        for fn in sorted(files):
-            if not fn.endswith(".json") or os.path.join(root, fn) == manifest_path:
+def _read_sums(path):
+    sums = {}
+    with open(path, encoding="utf-8") as fh:
+        for line in fh:
+            line = line.strip()
+            if not line:
                 continue
-            records.append(_read_record(os.path.join(root, fn)))
-    return {"manifest": manifest, "manifest_sha256": msha, "faults": faults, "records": records}
+            digest, _, name = line.partition("  ")
+            sums[name.strip().lstrip("*")] = digest.strip()
+    return sums
 
 
-def _read_record(path):
-    faults = []
-    try:
-        doc, sha = load_lenient(path)
-    except (OSError, ValueError) as exc:
-        return EngineRun(
-            path,
-            "",
-            "",
-            "",
-            "",
-            None,
-            "",
-            0.0,
-            "",
-            "unreadable",
-            None,
-            {},
-            {},
-            {},
-            {},
-            {},
-            [f"unreadable: {exc}"],
-        )
-    get = doc.get
-    definition = get("definition") if isinstance(get("definition"), dict) else {}
-    rec = EngineRun(
-        path,
-        sha,
-        str(get("family", "")),
-        str(get("run", "")),
-        str(get("role", "")),
-        get("plant"),
-        str(get("attempt", "")),
-        float(get("dt_s")) if _num(get("dt_s")) else 0.0,
-        str(definition.get("machine", "")),
-        str(get("status", "")),
-        get("refusal"),
-        definition,
-        {},
-        {},
-        {},
-        {},
-        faults,
-    )
-    if get("kind") != RUN_KIND:
-        faults.append(f"kind {get('kind')!r} is not {RUN_KIND!r}")
-    if rec.role not in ROLES:
-        faults.append(f"role {rec.role!r} is not one of {ROLES}")
-    if rec.role == "plant" and rec.plant not in RECORD_PLANTS:
-        faults.append(f"plant {rec.plant!r} is not an engine-record plant {RECORD_PLANTS}")
-    if rec.role != "plant" and rec.plant is not None:
-        faults.append("a record that is not a plant names no plant")
-    if rec.attempt not in ("primary", "retry"):
-        faults.append(f"attempt {rec.attempt!r} is not primary or retry")
-    if rec.status not in ("completed", "refused"):
-        faults.append(f"status {rec.status!r} is not completed or refused")
-    if rec.status == "refused":
-        return rec
-    times = get("times_s")
-    if not (isinstance(times, list) and all(isinstance(t, float) for t in times)):
-        faults.append("times_s is not a list of floats")
-        return rec
-    rec.times = times
-    series = get("series")
-    if not isinstance(series, dict):
-        faults.append("series is not a table")
-        return rec
-    for k, v in series.items():
-        try:
-            if not isinstance(v, list) or any(isinstance(x, (bool, str)) or x is None for x in v):
-                raise TypeError
-            arr = np.asarray(v, dtype=np.float64)
-        except (TypeError, ValueError):
-            arr = None
-        if arr is None or arr.ndim != 1 or not np.all(np.isfinite(arr)):
-            faults.append(f"series/{k}: not a list of finite numbers")
+def read_tables(export_dir, families):
+    """The engine's hashed tables: table/table_<family>.json with table/SHA256SUMS, and
+    table-retry/ for the retry (amendment 4, §8.1). A missing SHA256SUMS is recorded and flagged to
+    the checker (item 6); a table whose hash departs from an index that lists it is refused."""
+    out = {"tables": [], "faults": [], "notes": [], "index": {}}
+    for attempt, sub in TABLE_DIRS:
+        d = os.path.join(export_dir, sub)
+        if not os.path.isdir(d):
+            if attempt == "primary":
+                out["faults"].append(f"{sub}/ is missing: every primary run is missing")
             continue
-        rec.series[k] = arr
-    for e in get("route2") or []:
-        if not (
-            isinstance(e, dict)
-            and e.get("fate") in spec.FATES
-            and _num(e.get("ts_s"))
-            and _num(e.get("value"))
-        ):
-            faults.append(f"route2 entry {e!r}: fate, ts_s and a finite value")
-            continue
-        rec.route2[(e["fate"], float(e["ts_s"]))] = float(e["value"])
-    for e in get("survival") or []:
-        ok = (
-            isinstance(e, dict)
-            and e.get("fate") in spec.FATES
-            and _num(e.get("ts_s"))
-            and _num(e.get("t2_s"))
-            and _num(e.get("alive_t2"))
-            and _num(e.get("alive_ts"))
-            and (e.get("ratio") is None or isinstance(e.get("ratio"), (int, float)))
-        )
-        if not ok:
-            faults.append(f"survival entry {e!r}: fate, t2_s, ts_s, finite counts and a ratio")
-            continue
-        r = e["ratio"]
-        rec.survival[(e["fate"], float(e["ts_s"]))] = (
-            float(e["alive_t2"]),
-            float(e["alive_ts"]),
-            None if r is None else float(r),
-        )
-    checks = get("checks") or {}
-    if not isinstance(checks, dict):
-        faults.append("checks is not a table")
+        sums_path = os.path.join(d, "SHA256SUMS")
+        sums = _read_sums(sums_path) if os.path.exists(sums_path) else None
+        out["index"][sub] = {"SHA256SUMS": sums is not None}
+        if sums is None:
+            out["notes"].append(f"FLAG for the checker: {sub}/SHA256SUMS is missing (recorded, "
+                                "not refused; amendment 4, item 6)")  # fmt: skip
+        for fam in families:
+            fn = f"table_{fam}.json"
+            path = os.path.join(d, fn)
+            if not os.path.exists(path):
+                out["notes"].append(f"{sub}/{fn} is absent")
+                continue
+            tab = {"family": fam, "attempt": attempt, "path": path, "faults": [], "doc": None}
+            try:
+                tab["doc"], tab["sha256"] = load_lenient(path)
+            except (OSError, ValueError) as exc:
+                tab["faults"].append(f"{sub}/{fn} unreadable: {exc}")
+                tab["sha256"] = ""
+            if sums is not None:
+                if fn not in sums:
+                    tab["faults"].append(f"{sub}/{fn} is not in {sub}/SHA256SUMS")
+                elif sums[fn] != tab["sha256"]:
+                    tab["faults"].append(f"{sub}/{fn}'s sha256 departs from {sub}/SHA256SUMS "
+                                         "(refused: a table changed after its index)")  # fmt: skip
+            out["tables"].append(tab)
+    return out
+
+
+def _classify(name, honest_runs):
+    if name in honest_runs:
+        return "honest", name, None
+    if name in ("blank returned", "blank held"):
+        return "blank", "blank", name.split()[1]
+    if name.endswith(" unlabelled") and name[: -len(" unlabelled")] in honest_runs:
+        return "twin", name[: -len(" unlabelled")], None
+    return None
+
+
+def table_records(tab, family_inputs):
+    """Every run entry of one table, as engine records; unknown names and the judge's own plants
+    are recorded and left out (amendment 4, items 5 and 8)."""
+    doc, fam, attempt = tab["doc"], tab["family"], tab["attempt"]
+    notes, recs = [], []
+    table_faults = list(tab["faults"])
+    if isinstance(doc, dict):
+        if doc.get("kind") != TABLE_KIND:
+            table_faults.append(f"kind {doc.get('kind')!r} is not {TABLE_KIND!r}")
+        if doc.get("family") != fam:
+            table_faults.append(f"family {doc.get('family')!r} in table_{fam}.json")
+        for key in ("window_s", "samples_s"):
+            want = [float(x) for x in family_inputs[key]]
+            got = doc.get(key)
+            if not (
+                isinstance(got, list)
+                and len(got) == len(want)
+                and all(_num(a) and float(a) == b for a, b in zip(got, want, strict=True))
+            ):
+                table_faults.append(f"{key} {got!r} is not SPEC.md's {want!r}")
+        if doc.get("missing"):
+            notes.append(f"the table lists missing records: {doc.get('missing')!r}")
+        rungs = doc.get("rungs")
     else:
-        for k, v in checks.items():
-            if not _num(v):
-                faults.append(f"checks/{k}: {v!r} is not a finite number")
+        table_faults.append("the table is not an object")
+        rungs = None
+    if not isinstance(rungs, dict):
+        table_faults.append("rungs is not an object")
+        rungs = {}
+    honest = [r for r in family_inputs["runs"] if r != "blank"]
+
+    def make(entry, name, role, run, plant, dt, machine):
+        rec = EngineRun(tab["path"], tab.get("sha256", ""), fam, name, run, role, plant, attempt,
+                        dt, machine or "", "", None, None)  # fmt: skip
+        rec.faults += table_faults
+        _read_entry(rec, entry)
+        recs.append(rec)
+        return rec
+
+    for key, rung in rungs.items():
+        if key not in RUNG_KEYS[attempt]:
+            notes.append(f"rung {key!r} is not a rung of the {attempt} attempt: ignored")
+            continue
+        dt = float(key)
+        if not isinstance(rung, dict) or not isinstance(rung.get("runs"), dict):
+            table_faults.append(f"rung {key}: no runs")
+            continue
+        if not (_num(rung.get("dt_s")) and float(rung["dt_s"]) == dt):
+            table_faults.append(f"rung {key}: dt_s {rung.get('dt_s')!r}")
+        for name, entry in rung["runs"].items():
+            c = _classify(name, honest)
+            if c is None:
+                notes.append(f"rung {key}: run {name!r} is not a registered name: ignored")
+                continue
+            role, run, machine = c
+            make(entry, name, role, run, None, dt, machine)
+        plants = rung.get("plants")
+        if plants is None:
+            continue
+        if key != "0.5" or attempt != "primary" or not isinstance(plants, dict):
+            notes.append(f"rung {key}: plants outside the primary rung 0.5, or not an object: "
+                         "ignored")  # fmt: skip
+            continue
+        for name, entry in plants.items():
+            if name in JUDGE_PLANTS:
+                notes.append(f"plant entry {name!r}: formed by the judge itself, excluded from "
+                             "scoring and recorded (amendment 4, item 5)")  # fmt: skip
+                continue
+            if name not in TABLE_PLANTS:
+                notes.append(f"plant entry {name!r} is not a registered name: ignored")
+                continue
+            plant = TABLE_PLANTS[name]
+            judged_as = entry.get("judged_as") if isinstance(entry, dict) else None
+            if name == "P8 blank":
+                run, machine = "blank", "returned"
+                ok = judged_as in ("blank returned", "blank")
             else:
-                rec.checks[k] = float(v)
-    rec.has_route2 = "route2" in doc
-    rec.has_survival = "survival" in doc
-    return rec
+                run, machine = judged_as, None
+                ok = judged_as in honest
+            rec = make(entry, name, "plant", run if ok else str(judged_as), plant, dt, machine)
+            rec.extras["judged_as"] = judged_as
+            if not ok:
+                rec.faults.append(f"plant {name!r}: judged_as {judged_as!r} is not its honest run")
+    if attempt == "primary" and isinstance(doc, dict) and doc.get("restart") is not None:
+        rec = make(doc["restart"], "restart", "restart", "p_sched returned", None, 0.5, None)
+        cp = doc["restart"].get("checkpoint") if isinstance(doc["restart"], dict) else None
+        rec.extras["checkpoint"] = cp
+        if cp is None and rec.status == "completed":
+            rec.faults.append("the restart carries no checkpoint identity (`checkpoint`)")
+    return recs, notes
 
 
-def expected_definition(family_inputs, record, *, restart=None, gene_unit_volume=False):
-    """SPEC.md's definition of the run the record names, with a plant's registered change."""
-    d = {
-        k: json.loads(json.dumps(v)) for k, v in family_inputs.items() if k not in ("runs", "blank")
-    }
-    if record.run == "blank":
-        d["H0_copies"] = 0
-        d["k_I_per_mM_s"] = 0.0
-        d["machine"] = record.machine if record.machine in ("returned", "held") else "returned"
-    else:
-        rdef = family_inputs["runs"][record.run]
-        d["machine"] = rdef["machine"]
-        d["p_schedule"] = json.loads(json.dumps(rdef["p"]))
-    d["label_at"] = "release"
-    d["labelled"] = record.role != "twin"
-    if gene_unit_volume:
-        d["gene_unit_volume"] = "current"
-    if record.role == "restart" and restart is not None:
-        d["checkpoint_s"] = float(restart)
-    if record.role == "plant":
-        spec.plant_delta(record.plant, d, family_inputs)
-    return d
-
-
-def check_record(
-    record,
-    family_inputs,
-    times,
-    mapping,
-    profile,
-    *,
-    restart=None,
-    allowed_blank_machines=("returned",),
-):
-    """C0 on one engine record: its rung, grid, definition and required readouts."""
-    faults = record.faults
-    rungs = spec.PRIMARY_RUNGS if record.attempt == "primary" else spec.RETRY_RUNGS
-    if record.dt not in rungs:
-        faults.append(f"dt_s {record.dt!r} is not a rung of the {record.attempt} attempt {rungs}")
-    if record.role in ("restart", "plant") and (
-        record.dt != spec.H_STEP_S or record.attempt != "primary"
+def _read_entry(rec, entry):
+    """One run's entry (§8.3): a refusal, or its records with their provenance."""
+    faults = rec.faults
+    if not isinstance(entry, dict):
+        faults.append("the entry is not an object")
+        return
+    rec.definition = entry.get("definition")
+    if entry.get("refused"):
+        rec.status, rec.refusal = "refused", entry.get("refusal")
+        return
+    rec.status = "completed"
+    for k in ("source", "record", "record_sha256"):
+        v = entry.get(k)
+        if not (isinstance(v, str) and v):
+            faults.append(f"{k} is missing: a run without its provenance is refused")
+        rec.provenance[k] = v
+    sha = rec.provenance.get("record_sha256")
+    if (
+        isinstance(sha, str)
+        and sha
+        and not (len(sha) == 64 and all(c in "0123456789abcdef" for c in sha))
     ):
+        faults.append(f"record_sha256 {sha!r} is not a sha256")
+    t = entry.get("t")
+    if not (isinstance(t, list) and all(_num(x) for x in t)):
+        faults.append("t is not a list of output times")
+    else:
+        rec.times = [float(x) for x in t]
+    if not (_num(entry.get("dt_s")) and float(entry["dt_s"]) == rec.dt):
+        faults.append(f"dt_s {entry.get('dt_s')!r} is not its rung's {rec.dt!r}")
+    steps = entry.get("steps")
+    rec.steps = steps if isinstance(steps, int) and not isinstance(steps, bool) else None
+    readouts = entry.get("readouts")
+    if not isinstance(readouts, dict):
+        faults.append("readouts is not an object")
+        readouts = {}
+    for k, v in readouts.items():
+        arr = _finite_array(v)
+        if arr is None:
+            faults.append(f"readouts/{k}: not a list of finite numbers")
+        else:
+            rec.series[k] = arr
+    ex = entry.get("excess_over_blank")
+    if ex is not None:
+        rec.has_excess = True
+        if not isinstance(ex, dict):
+            faults.append("excess_over_blank is not an object")
+        else:
+            rec.excess_blank = ex.get("blank")
+            for fate in spec.FATES:
+                arr = _finite_array(ex.get(fate))
+                if arr is None:
+                    faults.append(f"excess_over_blank/{fate}: not a list of finite numbers")
+                else:
+                    rec.series[f"excess_over_blank_{fate}"] = arr
+    r2 = entry.get("route2")
+    if r2 is not None:
+        rec.has_route2 = True
+        for e in r2 if isinstance(r2, list) else [None]:
+            if not (isinstance(e, dict) and e.get("fate") in spec.FATES and _num(e.get("ts_s"))
+                    and _num(e.get("value"))):  # fmt: skip
+                faults.append(f"route2 entry {e!r}: fate, ts_s and a finite value")
+                continue
+            rec.route2[(e["fate"], float(e["ts_s"]))] = float(e["value"])
+    sv = entry.get("survival")
+    if sv is not None:
+        rec.has_survival = True
+        for e in sv if isinstance(sv, list) else [None]:
+            ok = (
+                isinstance(e, dict)
+                and e.get("fate") in spec.FATES
+                and _num(e.get("ts_s"))
+                and _num(e.get("t2_s"))
+                and _num(e.get("alive_t2"))
+                and _num(e.get("alive_ts"))
+                and (
+                    e.get("ratio") is None
+                    or (
+                        isinstance(e.get("ratio"), (int, float))
+                        and not isinstance(e.get("ratio"), bool)
+                    )
+                )
+            )
+            if not ok:
+                faults.append(f"survival entry {e!r}: fate, t2_s, ts_s, finite counts and a ratio")
+                continue
+            r = e["ratio"]
+            rec.survival[(e["fate"], float(e["ts_s"]))] = (
+                float(e["alive_t2"]),
+                float(e["alive_ts"]),
+                None if r is None else float(r),
+            )
+    rec.checks = entry.get("checks")
+    for k in ("own_ledgers_at_end", "source"):
+        if k in entry:
+            rec.extras[k] = entry[k] if k == "source" else "present"
+
+
+def _finite_array(v):
+    if not isinstance(v, list) or any(isinstance(x, (bool, str)) or x is None for x in v):
+        return None
+    try:
+        arr = np.asarray(v, dtype=np.float64)
+    except (TypeError, ValueError):
+        return None
+    if arr.ndim != 1 or not np.all(np.isfinite(arr)):
+        return None
+    return arr
+
+
+def matched_blank_name(family_inputs, run, two_blanks):
+    machine = family_inputs["runs"][run]["machine"] if two_blanks else "returned"
+    return f"blank {machine}"
+
+
+def check_record(rec, family_inputs, times, mapping, profile, *, allowed_blank_machines,
+                 two_blanks):  # fmt: skip
+    """C0 on one engine record: its rung, grid, provenance, readouts and declaration (plants'
+    declarations are compared with their honest runs' in the judge, §8.5)."""
+    from . import definitions
+
+    faults = rec.faults
+    rungs = spec.PRIMARY_RUNGS if rec.attempt == "primary" else spec.RETRY_RUNGS
+    if rec.dt not in rungs:
+        faults.append(f"dt {rec.dt!r} is not a rung of the {rec.attempt} attempt {rungs}")
+    if rec.role in ("restart", "plant") and (rec.dt != spec.H_STEP_S or rec.attempt != "primary"):
         faults.append("a restart or plant runs at h = 0.5 s, primary attempt only")
-    horizon = float(family_inputs["horizon_s"])
-    if record.dt > 0 and round(horizon / record.dt) * record.dt != horizon:
-        faults.append("the horizon is not a whole number of steps")
-    if record.run == "blank" and record.machine not in allowed_blank_machines:
-        faults.append(
-            f"a blank with machine {record.machine!r}; this family runs {allowed_blank_machines}"
+    if rec.run == "blank" and rec.machine not in allowed_blank_machines:
+        faults.append(f"a blank {rec.machine!r}; this family runs {allowed_blank_machines}")
+    if rec.role != "plant" and rec.status in ("completed", "refused"):
+        df, unchecked = definitions.check_definition(
+            rec.definition, family_inputs, profile, rec.run, rec.role, rec.machine, rec.dt
         )
-    if record.run != "blank" and record.run not in family_inputs["runs"]:
-        faults.append(f"run {record.run!r} is not a run of family {record.family}")
+        faults += df
+        rec.unchecked = unchecked
+    if rec.status != "completed":
         return
-    if record.role not in ROLES or (record.role == "plant" and record.plant not in RECORD_PLANTS):
-        return  # already refused: no registered definition to check it against
-    expected = expected_definition(
-        family_inputs, record, restart=restart, gene_unit_volume=profile == "D"
-    )
-    faults += [f"definition{f}" for f in compare_inputs(expected, record.definition)]
-    if record.status == "refused":
-        return
-    if list(getattr(record, "times", [])) != list(times):
-        faults.append("times_s is not the family's output grid (a missing output time)")
+    S = int(round(float(family_inputs["horizon_s"]) / rec.dt)) if rec.dt else None
+    if rec.steps is not None and rec.steps != S:
+        rec.notes.append(f"steps {rec.steps} where the registered grid gives S = {S}: C2 and C4 "
+                         "use the grid's S, never the export's")  # fmt: skip
+    if list(rec.times) != list(times):
+        faults.append("t is not the family's output grid (a missing output time)")
         return
     n = len(times)
-    for k, v in record.series.items():
+    for k, v in rec.series.items():
         if v.size != n:
-            faults.append(f"series/{k}: {v.size} values for {n} output times")
-    blank = record.run == "blank"
+            faults.append(f"{k}: {v.size} values for {n} output times")
+    blank = rec.run == "blank"
+    p8_blank = rec.plant == "P8" and blank
     for e in mapping_entries(mapping, profile, blank=True if blank else None):
         kind, _, name = e["engine"].partition("/")
         if kind == "series":
-            if record.role == "twin" and (
-                name.startswith("label_")
-                or name.startswith("released_present_gross_")
-                or name.startswith("excess_over_blank_")
+            if rec.role == "twin" and (
+                name.startswith("label_") or name.startswith("released_present_gross_")
             ):
                 continue
-            if name not in record.series:
-                faults.append(f"series/{name}: missing readout")
-        elif kind == "route2" and not blank:
-            if not getattr(record, "has_route2", False):
-                faults.append("route2: missing readout")
-        elif kind == "survival" and not blank and record.role != "twin":
-            if not getattr(record, "has_survival", False):
-                faults.append("survival: missing readout")
+            if name not in rec.series:
+                faults.append(f"readouts/{name}: missing readout")
+        elif kind == "route2" and not blank and not rec.has_route2:
+            faults.append("route2: missing readout")
+        elif kind == "survival" and not blank and rec.role != "twin" and not rec.has_survival:
+            faults.append("survival: missing readout")
+    if spec.has_blank(profile) and not blank and not p8_blank:
+        if rec.role == "plant" and rec.plant == "P8":
+            want = "P8 blank"
+        elif rec.role == "plant":
+            want = None  # its excess enters no criterion: the name is recorded only
+        else:
+            want = matched_blank_name(family_inputs, rec.run, two_blanks)
+        if want is not None and rec.excess_blank != want:
+            faults.append(f"excess_over_blank names the blank {rec.excess_blank!r}, not "
+                          f"its matched {want!r}")  # fmt: skip
