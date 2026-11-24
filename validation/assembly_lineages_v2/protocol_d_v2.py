@@ -218,10 +218,11 @@ def _judge_constant(values, d_value, expected):
             "fails": replicas["fails"] or not d_ok}  # fmt: skip
 
 
-def criterion_m(exact_top, d_top, exact_below, d_below, classes_top, values_top,
-                classes_below=None, values_below=None):  # fmt: skip
+def criterion_m(exact_top, d_top, exact_below, d_below, classes_top, values_top, classes_below,
+                values_below):  # fmt: skip
     """M at the top rung K against K - 1, each rung's observables as lq.observables gives them
-    ({key: [M, T]} and {key: [T]}), with the pairs' classes and constants from `classify`.
+    ({key: [M, T]} and {key: [T]}), with each rung's own classes and constants from `classify`
+    (a V constant's value differs between rungs, so both are required).
 
     - A pair constant at K is judged by the constant rule at K, and at K - 1 where it is constant
       there too; it is not in the z. One replica off, or (d) off, fails M.
@@ -230,8 +231,6 @@ def criterion_m(exact_top, d_top, exact_below, d_below, classes_top, values_top,
     - M passes when every constant pair passes and the largest z passes; it fails when a constant
       pair fails or the largest z fails; it is inconclusive otherwise. With no spread pair the
       largest z is -inf."""
-    classes_below = classes_top if classes_below is None else classes_below
-    values_below = values_top if values_below is None else values_below
     top, below = lq.mean_error(exact_top, d_top), lq.mean_error(exact_below, d_below)
     worst, judged, constants, failed = -np.inf, 0, {}, []
     for key, (e_k, se_k) in top.items():
@@ -427,11 +426,11 @@ def _m_checks(rng):
     count_top = np.full((REPLICAS, TIMES), 120.0)
     count_below = np.full((REPLICAS, TIMES), 60.0)
     m = criterion_m({"V": count_top}, {"V": np.full(TIMES, 120.0)}, {"V": count_below},
-                    {"V": np.full(TIMES, 60.0)}, spread_all, none)  # fmt: skip
+                    {"V": np.full(TIMES, 60.0)}, spread_all, none, spread_all, none)  # fmt: skip
     out["zero SE, zero error (identical integer replicas at (d)): the inequality holds"] = {
         "z": m["largest_z"], "ok": m["passes"] and m["largest_z"] == -np.inf}
     m = criterion_m({"V": count_top}, {"V": np.full(TIMES, 119.25)}, {"V": count_below},
-                    {"V": np.full(TIMES, 59.75)}, spread_all, none)  # fmt: skip
+                    {"V": np.full(TIMES, 59.75)}, spread_all, none, spread_all, none)  # fmt: skip
     old = lq.criterion_m(lq.mean_error({"V": count_top}, {"V": np.full(TIMES, 119.25)}),
                          lq.mean_error({"V": count_below}, {"V": np.full(TIMES, 59.75)}))
     out["zero SE, nonzero error: fails (the registered code took it as no limit)"] = {
@@ -440,19 +439,19 @@ def _m_checks(rng):
 
     a, d = _made_up(rng, 0.7316, 1e-3, ties=range(TIMES))
     b, db = _made_up(rng, 0.6113, 2e-3, ties=range(TIMES))
-    m = criterion_m({"V": a}, {"V": d}, {"V": b}, {"V": db}, spread_all, none)
+    m = criterion_m({"V": a}, {"V": d}, {"V": b}, {"V": db}, spread_all, none, spread_all, none)
     label = "identical replicas at a spread pair still face the test (the artifact, unclassified)"
     out[label] = {"z": m["largest_z"], "ok": not m["passes"]}
 
     a, d = _made_up(rng, 3.2, 1e-2)
     b, db = _made_up(rng, 3.1, 2e-2)
-    m = criterion_m({"V": a}, {"V": d}, {"V": b}, {"V": db}, spread_all, none)
+    m = criterion_m({"V": a}, {"V": d}, {"V": b}, {"V": db}, spread_all, none, spread_all, none)
     registered = lq.criterion_m(lq.mean_error({"V": a}, {"V": d}),
                                 lq.mean_error({"V": b}, {"V": db}))["largest_z"]  # fmt: skip
     out["genuine spread columns: z bitwise the registered one"] = {
         "z": m["largest_z"], "ok": _same(m["largest_z"], registered)}
     try:
-        criterion_m({"V": a}, {"V": d}, {"V": b}, {"V": db}, {}, {})
+        criterion_m({"V": a}, {"V": d}, {"V": b}, {"V": db}, {}, {}, {}, {})
         refused = False
     except ValueError:
         refused = True

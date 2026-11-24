@@ -87,6 +87,20 @@ Nothing else changes (§12). That covers the worlds, rungs, times, horizons, rep
 envelope, scales, criteria P, B, E, L and N, n_min's rule, the plants and their registered effects,
 the other preconditions, the verdicts and the retry rule.
 
+**Superseded, each with its replacement.** A checker using the registered functions takes these from
+this registration, never from the first:
+
+| In the first registration | Use instead |
+| --- | --- |
+| `limit_qualification.SEED_BASE` and `limit_qualification.seeds` (seeds 1 and 100001 onward) | `protocol_d_v2.SEEDS` and `protocol_d_v2.seeds` (§3) |
+| protocol_d.json's `constants.ladder.seeds` | protocol_d_v2.json's `seeds` |
+| §2's "Seeds: 1 to M ... the retry's seeds are 100001 to 100000 + M" | §3 |
+| §7.4's convergence seeds 1–6 | 640001–640006 (§3) |
+| Erratum 2's "seeds 1 to 256" for D0 (P-D1) | D0's first seeds here, 640001–640256 |
+| `limit_qualification.criterion_m` for M's verdict | `protocol_d_v2.criterion_m` (§5); `limit_qualification.mean_error` stays its input |
+| Erratum 3, its document and `protocol_d_erratum_3.py` | §4 and §5 |
+| §11's cost (2–3 CPU-hours) | §9 |
+
 ## 3. The seeds
 
 - **First seeds:** 640001 to 640000 + M, with environment 0, lineage 0 and branch 0. M is 256 for
@@ -95,7 +109,10 @@ the other preconditions, the verdicts and the retry rule.
 - **D7's clock convergence (§7.4 of the first registration)** reads the first six seeds of the set
   it checks: 640001–640006.
 - **D2's β generator seed, 20261124,** is a world input and stays as registered.
-- **Disjoint from every earlier range** (`EARLIER_SEEDS`, checked by `seeds_disjoint`):
+- **Disjoint from every earlier range the author could find** (`EARLIER_SEEDS`, checked by
+  `seeds_disjoint`): those registered in docs/ and validation/, those the decisions name, and the
+  probes' and smokes' seeds the author knows. A range used only in an unrecorded run is outside
+  what this check can see.
 
 | Range | Seeds |
 | --- | --- |
@@ -135,7 +152,10 @@ one value:
   - each A reads a footprint that the exchange moves;
   - W_res is a stochastic integral;
   - D4's lumen takes up its permeant S, so its V and σ move. Its tension's kink is crossed by each
-    replica at its own time, so a pre-kink σ is a mixture of the floppy 0.0 and a tense value.
+    replica at its own time, so a pre-kink σ is a mixture of the floppy 0.0 and a tense value;
+  - D6's V after the shear: the exact shear splits the lumen by a multinomial draw (division.py,
+    rule 10, on the parent's fission stream), so the followed daughter's lumen count, and its V,
+    vary between replicas. Its σ stays 0.0 while it is floppy (§4.2).
 - **No pair is derived.** A derived pair is one constant reached by two routes of different
   arithmetic. Here every constant is reached by the same function on the same bits, in both
   representations.
@@ -267,11 +287,26 @@ world is run. All 20 pass, in about 2 s:
 - **The parse:** every registered definition parses at this head, at its first seed. D0 is refused
   in (d) at `min_count` 10, as registered.
 
+**On the engine's own output** (`/mnt/workspaces/Cells/ol6-protocol-d-v2-20261124/probes/
+real_reader.py` and its JSON; booleans, keys and shapes only, no observable value printed):
+- **(d)'s half of the constant rule, at this head:** (d) alone on the registered D5 and D6 at 50 and
+  100 nm. At every constant pair, its value carries the model's bits: 16, 16, 11 and 11 pairs.
+- **The reader on real rows,** on an unregistered variant at 12.5 nm (D5 and D6), in exact events on
+  the smoke seeds 1 and 7 and in (d):
+  - the reader's keys equal `reader_keys` in both layouts, each array of shape [8];
+  - `floppy_margins` is finite, and the vesicle floppy at every constant time;
+  - every run's values at the variant's constant pairs carry the model's bits (16 in D5, 11 in
+    D6).
+
 ## 9. The cost
 
 Measured from the first check of the same worlds, with the same replicas and settings. The figures
 come from its exact folders' `seconds` and D7's (d) records' run seconds, read for these numbers
-alone (`cost` in the JSON):
+alone (`cost` in the JSON).
+- **Units:** each figure is one process's wall time, in a unit the first check pinned to light CPUs.
+- **So it is a CPU-hour figure only if each process held one CPU.** The first check's chains ran one
+  world-rung process at a time per unit, but a unit pinned to two CPUs could have let a process use
+  both, so the CPU-hours are between these figures and twice them.
 
 | Part | CPU-hours |
 | --- | --- |
@@ -295,7 +330,9 @@ alone (`cost` in the JSON):
 - **It should not read,** before its verdict:
   - the first check's folders, `/mnt/workspaces/Cells/ol6-checker-20261123/`;
   - decisions D317–D318;
-  - erratum 3, which is superseded and quotes the first check's findings.
+  - erratum 3, which is superseded and quotes the first check's findings;
+  - PROGRESS.md's Protocol D lines and the builders' notes
+    (`/mnt/workspaces/Cells/ol6-20261122/STATE.md`), which record the first results.
 
   It reads the first registration and errata 1 and 2, which §7 folds in. This document quotes none
   of the first results.
@@ -324,7 +361,9 @@ alone (`cost` in the JSON):
     (d) is deterministic here), for §4.3's margins. The script is
     `/mnt/workspaces/Cells/ol6-protocol-d-v2-20261124/probes/margins.py`, with its JSON;
   - §4.3's scale estimate (`fluctuation_scale.py`), which runs nothing;
-  - §8's checks.
+  - §8's checks, including (d) alone on the registered D5 and D6 at 50 and 100 nm for the constant
+    pairs' bits, and an unregistered 12.5 nm variant of D5 and D6 in exact events (smoke seeds 1 and
+    7) and in (d), printing booleans, keys and shapes only.
 - **Not run:** no exact-event run of any registered world.
 
 ## 12. What does not change
