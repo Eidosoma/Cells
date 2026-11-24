@@ -21,6 +21,9 @@ beyond D345, D346 and D348. It was written read-only against main at `ce4780d2`.
   - `probe.json`, `probe2.json`, `probe3.json` and `probe4.json`: the import graph, the runtime reach from
     the scope map, the closures and the test classification. Their scripts are in `tools/`.
   - `probe-capture-a/` and `probe-capture-b/`: the capture probes of §5.
+  - **Caveat:** `probe.json` and `probe2.json` hold superseded figures: 1,445 consumers through the
+    dispatch string, and a loose JSON-name match. `probe4.json` supersedes them. `inventory.json` lists
+    direct evidence only; the reach through fixtures is in `probe4.json`.
 
 Paths below are repository paths unless they start with `/mnt/`.
 
@@ -46,12 +49,17 @@ and 33,600 lines.
 out of `legacy/` under neutral names, its dispatch joins the live registries, and its ID is minted. That is
 D188's scripted move, run for the kept families, with its import rewriter and verifier. A re-expression on
 the modular core (`resolved_pump_tissue@3`, the composite, operators and kinds) cannot be bitwise. Its
-blockers today include @3's {Na, K, Cl} valence table, finite fuel, and no ER compartment or
-assembly-coupling law. This plan relocates first and proves the relocation bitwise. Re-expression is
-question Q2.
+blockers today include:
+- @3's channel valence table, {Na, K, Cl}, which refuses every calcium-permeant channel law (@3 does carry
+  a plasma-membrane calcium pump);
+- finite fuel;
+- no ER compartment or assembly-coupling law.
 
-**The proof is cheap and reuses G1's tool.** `validation/results_baseline.py save --from` captured legacy
-worlds unchanged in tonight's probe on CPU 4, for a 5-step first window, cold:
+This plan relocates first and proves the relocation bitwise. Re-expression is question Q2.
+
+**The proof reuses G1's tool.** `validation/results_baseline.py save --from` captured legacy worlds
+unchanged in tonight's probe on CPU 4, under the timed lock and a 4 GB scope, for a 5-step first window,
+cold. The two probe runs took 131 s and 324 s of wall:
 
 | World | Seconds | Arrays |
 |---|---|---|
@@ -60,7 +68,9 @@ worlds unchanged in tonight's probe on CPU 4, for a 5-step first window, cold:
 | `resolved_calcium_energy@5` | 154.9 | 140 |
 | `resolved_open_calcium_energy@1`, from a fixture, JIT off | 142.7 | 144 |
 
-The assembly families capture through their own CPU command line (§5.2, C4).
+- **The assembly families capture through their own CPU command line** (§5.2, C4). That path was not run
+  tonight, because the timed lock was taken by another agent's timed job. Its cost is an estimate.
+- **The capture's helper scripts do not exist yet** (§5.2).
 - **The full capture is estimated at 2.5–4 CPU-hours,** about 25–40 minutes on one lane.
 - **It is not for tonight:** both lanes are held and the load is about 17.
 - **It runs from the pre-rename tag's frozen snapshot** (§5, §13).
@@ -78,12 +88,15 @@ name a legacy ID themselves. 401 reach legacy only through a fixture, shared dri
 - The definitive list is a scratch dry-run deletion with a tiers run (§7.4). Its command is given; it has not
   been run.
 
-**Gate time (§9).** G1's 113 worlds and crossrev's sets name no legacy ID, so the deletion does not shorten
-them.
-- **Tiers 1+2:** the files certain or likely to go hold about 2,100 of 13,577 test-seconds, about 15%, or
-  about 4 minutes of a lane's wall. The upper bound is 9,554 test-seconds (70%).
+**Gate time (§9).** The deletion removes 13–70% of the test-seconds of tiers 1+2, which take about 42 of a
+gate's 55 locked minutes.
+- **The point estimate:** the files certain or likely to go hold about 2,100 of 13,577 test-seconds, about
+  15%. That is about 6.5 minutes of a gate's wall.
+- **The upper bound:** 9,554 test-seconds (70%), about 30 minutes.
+- **Unchanged:** G1's 113 worlds (about 10 minutes) and crossrev's sets (about 2.5 minutes), whose worlds
+  name no legacy ID.
 - **Tier 3** shrinks most: 204 of its 215 recorded files, 85,147 of 87,166 test-seconds, reach legacy.
-- The measured figure comes from the dry run.
+- The dry run measures the true figure.
 
 **Cost (§10).**
 - The relocation: about 8–11 agent-days, plus about 10–12 lane-hours of gates and captures. Tier 3's
@@ -116,6 +129,33 @@ them.
   which serve only the `resolved_*` derived families.
 - **Why it can be bitwise:** the kernels, their evaluation order and the compiled programs' inputs are
   unchanged. D188's moves were gated on G1 at 113 of 113, bitwise.
+- **What the verifier does not cover.** It refuses hand edits, so each landing is two commits:
+  - first the verified move;
+  - then the hand edits: neutral renames inside files, F1's fold, the dispatch re-plumbing and the ID
+    mint.
+
+  The verifier proves the first, and C5's bitwise comparison proves both.
+
+**Dispatch between the landings.**
+- `model_for`, `to_dict` and `control_values` are isinstance chains, subclass first, and the live dispatch
+  points run before the legacy miss.
+- **Unported legacy classes derive from the ported ones:**
+  - from `SurfaceHCNExtraModel` (F1): five, among them active excision and the active barrier, profile and
+    bath-event models;
+  - from `SurfaceCalciumHCNExtraModel` (F2): three, besides F4;
+  - from `SurfaceCalciumEnergyHCNExtraModel` (F3): eight, besides F5, among them the regulated, transport,
+    water and excision models;
+  - from F4 and F5: their bath-event models;
+  - from `IP3CalciumModel` (F9): `TissueCalciumModel` (`spatial_calcium@5`);
+  - from `SpatialJunctionSpec`: `TissueModel` (`spatial_extracellular@3`).
+- A ported base checked live with `isinstance` would therefore catch those subclasses until L3.
+- **So until the deletion:**
+  - a ported family's `model_for`, `to_dict` and `control_values` entries stay in the hub, retargeted by the
+    rewriter to the moved modules;
+  - only its parse entry, which matches an exact ID string, goes live.
+- L3 moves the remaining entries into the live dispatch points in the commit that deletes the subclasses.
+- **The alternative** is exact-type checks (`type(spec) is X`) in the live entries from L1. That is the
+  lead's ruling.
 
 **Re-expression (E), a later step per family.**
 - The family becomes a declared structure of @3 or of the composite: registered channel, cycle, route and
@@ -124,7 +164,9 @@ them.
   diagnostic arrays at rounding. The registered PMCA (`cells.ca_atp_mass_action_positive@1`) already uses
   another standard state (Δg0 − RT ln 1000).
 - **Today's blockers:**
-  - @3's valence table is {Na, K, Cl}, which refuses every calcium-permeant law;
+  - @3's channel valence table is {Na, K, Cl} (`definitions/surface_pump_v3_spec.py:169`, checked at
+    :327–329), which refuses every calcium-permeant channel law. @3 does carry a plasma-membrane calcium
+    pump (`cells.ca_atp_mass_action_positive@1`);
   - gate-free laws give no opening under @3's template, which excludes 8 instantaneous Morris–Lecar laws;
   - the channel-law seam reads voltage only;
   - finite fuel is a target, not a case (`ARCHITECTURE.md`, material identity and fuel);
@@ -453,20 +495,34 @@ importing legacy, so it is a 40th consumer.
 
 ### 5.2 Steps and commands
 
+**Verified tonight: only `results_baseline.py save --from`.** These are the probe's exact form and its
+origin layout (`ORIGIN/<set>/<world>.json` holding `{"name", "definition"}`):
+```
+flock -w 300 /mnt/workspaces/Cells/locks/timed-cores-4-5.lock systemd-run --user --scope -q -p MemoryMax=4G taskset -c 4 env PYTHONPATH=CHECKOUT/src:CHECKOUT JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 /mnt/workspaces/Cells/venv-cpu/bin/python -B CHECKOUT/validation/results_baseline.py save OUT --sets legacy-probe --from ORIGIN --max-steps 5
+```
+**Not yet run or not yet written:**
+- C4's assembly command lines were not run;
+- `validation/legacy_port/capture_worlds.py`, `capture.sh`, `compare_assembly.py` and `dry_delete.py`
+  do not exist;
+- `gate_steps.py g1-merge` is untested on sets other than G1's. C2 can do without it: each shard saves
+  its own sets to its own folder, and C5 compares folder by folder.
+
+**The default path assumes the tools miss the tag,** since nothing lands tonight. They run from the checkout
+with `PYTHONPATH=SNAP/src:SNAP`, and each run records both revisions.
+
 - **C0: freeze the tag's snapshot.** From a clean worktree at the tag (TAG below), in about a minute:
   ```
   python scripts/gates/freeze_snapshot.py <worktree-at-TAG> /mnt/workspaces/Cells/legacy-port-20261125/snapshot --scope full --require-clean
   ```
 - **C1: write the world definitions.** A small validation tool, `validation/legacy_port/capture_worlds.py`,
-  lands before the tag as a validation-only change. It writes `ORIGIN/<set>/<world>.json` (`{"name",
-  "definition"}`) from §4's configs and fixture builders, freezing the definitions as G1's `--from` does.
-  - It imports fixtures that the deletion will remove, so it runs on the snapshot.
+  writes `ORIGIN/<set>/<world>.json` from §4's configs and fixture builders. It freezes the definitions,
+  as G1's `--from` does.
+  - It imports fixtures that the deletion will remove, so it reads them from the snapshot.
   - No compile; under a minute:
   ```
-  cd SNAP && PYTHONPATH=SNAP/src:SNAP JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 /mnt/workspaces/Cells/venv-cpu/bin/python -B validation/legacy_port/capture_worlds.py ORIGIN
+  PYTHONPATH=SNAP/src:SNAP JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 /mnt/workspaces/Cells/venv-cpu/bin/python -B CHECKOUT/validation/legacy_port/capture_worlds.py ORIGIN
   ```
-  - If it misses the tag, it runs from the checkout with `PYTHONPATH=SNAP/src:SNAP`, and the run records
-    both revisions.
+  - If the tool lands before the tag, it runs from `SNAP/validation/legacy_port/` instead.
 - **C2: capture the scalar families (F1–F9 and the run paths) on one lane.** The capture logic is in a
   script file, never an inline `bash -c` (systemd expands `${...}`).
   - `validation/legacy_port/capture.sh` shards the sets over the lane's eight CPUs, one CPU per shard
@@ -479,7 +535,7 @@ importing legacy, so it is a 40th consumer.
   - The parts are then merged with `scripts/gates/gate_steps.py g1-merge`.
   - On lane A:
     ```
-    scripts/run_detached.sh legacy-capture 24G --cpus 0-3,16-19 --oom-first --wait-headroom 26G -- flock /mnt/workspaces/Cells/locks/gate-cores-0-3.lock bash SNAP/validation/legacy_port/capture.sh SNAP ORIGIN /mnt/workspaces/Cells/legacy-port-20261125/capture-tag
+    scripts/run_detached.sh legacy-capture 24G --cpus 0-3,16-19 --oom-first --wait-headroom 26G -- flock /mnt/workspaces/Cells/locks/gate-cores-0-3.lock bash CHECKOUT/validation/legacy_port/capture.sh SNAP ORIGIN /mnt/workspaces/Cells/legacy-port-20261125/capture-tag
     ```
   - Lane B is the same with `--cpus 8-11,24-27` and `/mnt/workspaces/Cells/locks/gate-cores-8-11.lock`.
     Never CPUs 12–15 or 28–31.
@@ -501,6 +557,12 @@ importing legacy, so it is a 40th consumer.
   - **T** is the horizon at which one run takes at most about 5 minutes on one CPU. The tool times one run
     first and records T.
   - These lines join `capture.sh` as a ninth queue on the same lane.
+  - **The cold cache.** The command line calls `configure_caches()` (`execution/output_paths.py:19`), which
+    points `JAX_COMPILATION_CACHE_DIR` under the output root. So C4 sets
+    `JAX_ENABLE_COMPILATION_CACHE=false` itself, as `run_detached.sh` does, and checks OUT for cache
+    entries afterwards (`gate_steps.py jax-entries`).
+  - **Recorded failures.** Before C4, read whether the recorded tier-3 failures of `test_assembly_cell.py`
+    (1) and `test_assembly_cluster.py` (2) touch the command line's run path.
 - **C5: the compare, after each port landing.**
   ```
   python SNAP2/validation/results_baseline.py compare CAPTURE PORTED --output compare.json
@@ -520,13 +582,13 @@ importing legacy, so it is a 40th consumer.
 | F4, F5 | 11 | 40–90 min | 142.7 s measured, eager; 16 steps |
 | F6–F9 | 4 | 3–5 min | 22.6 s measured for `@1` |
 | Run paths | ~9 | ~25 min | G1's run-paths set, scaled |
-| F10, F11 | 6 | 20–35 min | tier-3 seconds of their test files |
+| F10, F11 | 6 | 20–35 min | tier-3 seconds of their test files; not probed |
 | **Total** | **~53** | **2.5–4 CPU-hours** | **one lane, 8 shards: about 25–40 min wall, bounded by the slowest eager shard** |
 
 - **Placement:** lane A or B under its lock, like a gate.
 - **Tonight:** nothing heavy runs. Both lanes are held by gates and the load is about 17. C0 and C1 are
-  light, but C1's tool must land first. The probes above ran on CPU 4 under the timed lock, each under a
-  4 GB scope cap.
+  light, but C1's tool must be written first. The probes above ran on CPU 4 under the timed lock, each
+  under a 4 GB scope cap.
 - **GPU.** The ensemble's GPU tests compare the GPU with a same-run CPU at 3e-10 relative, not bitwise. The
   L4 has a recorded bitwise failure across the compilation cache, and D336 refuses the composite on a GPU.
   - So the CPU capture is the proof. After F11's landing, the GPU tests (`test_assembly_cluster_gpu.py`,
@@ -538,7 +600,7 @@ importing legacy, so it is a 40th consumer.
 
 | Step | Content | Depends on | Lands with |
 |---|---|---|---|
-| S0 | `validation/legacy_port/` capture tools; tag; C0–C4 | — | before the tag: a no-src landing (D223) |
+| S0 | `validation/legacy_port/` capture tools; tag; C0–C4 from the tag's snapshot | — | a no-src landing (D223), before or after the tag (§5.2) |
 | S1 | F1: the `resolved_tissue` dispatch into the live registries, and the wrappers folded | the rename | L1 |
 | S2 | The nested layers: `compartment_reactions@1`, `er_calcium@1`, the extracellular line (`finite_extracellular@1`–`@3`, `spatial_extracellular@1`–`@2` as modules, with their IDs per Q1) and the old families' helpers | the rename | L1 |
 | S3 | F6–F9 | S2 | L1 |
@@ -551,6 +613,9 @@ importing legacy, so it is a 40th consumer.
 - **Three full gates, not six.** Each landing changes src/, so it runs the full gate (D223): tiers 1+2,
   crossrev, G1 and the IDs, plus C5 for its families. Batching the six moves into two landings saves three
   gates; each landing's move map and verifier keep it mechanical.
+- **Dispatch:** in L1 and L2 the ported families' `model_for`, `to_dict` and `control_values` entries stay in
+  the hub, pointing at the moved modules, and only their parse entries go live. L3 moves the rest (§2,
+  "Dispatch between the landings").
 - **Two builders can work in parallel on disjoint files:**
   - builder 1 takes S2, S3 and S6, the ensemble line;
   - builder 2 takes S1, then S4 and S5 once S3 has landed in L1, the BETSE line.
@@ -669,20 +734,26 @@ They are kept or deleted in the same batch.
 
 | Stage | Today | After (estimate) | Basis |
 |---|---|---|---|
-| Tiers 1+2 | 669 files, 13,577 test-seconds (tier 1 2,615; tier 2 10,962) | −1,700 to −2,100 s (13–15%), about 4 min of a lane's wall at 8 workers; about −2,700 to −3,000 s if Q3 (c) also retires the physiology tests; upper bound −9,554 s (70%) if the dry run finds the fixture-reaching tests run legacy worlds | §7.1 |
+| Tiers 1+2 | 669 files, 13,577 test-seconds; 2,531 s of lane B's wall in the gate of 24 November, 20:12–20:54 (`/mnt/workspaces/Cells/fr51-slot-refusal-20261124/gate-e79cbade/gate.log`), 0.186 s of wall per test-second | Point estimate −1,700 to −2,100 test-seconds (13–15%), about 5.5–6.5 min of wall. About −2,700 to −3,000 (8.5–9.5 min) if Q3 (c) also retires the physiology tests. Upper bound −9,554 (70%, about 30 min) if the dry run finds the fixture-reaching tests run legacy worlds | §7.1; the same log |
 | The hub's import | Up to 354 processes import the hub's 97 module-level legacy modules on a dispatch miss | Gone | Measured by the dry run's file seconds |
-| G1 (113 worlds) and crossrev | Unchanged | Unchanged | No legacy world |
+| G1 (113 worlds) | 592 s in the same gate | Unchanged | No legacy world |
+| Crossrev (11 sets) | 152 s in the same gate | Unchanged | No legacy world |
+| Pre-lock (preflight, IDs, guard tests) | 406 s, unlocked, on one light CPU; the IDs listing collects about 21,800 test IDs | Shorter by the deleted files' test IDs | The same log |
 | IDs check and manifest | 132 legacy entries | Gone | Small |
 | Tier 3 (deliberate) | 215 recorded files, 87,166 test-seconds | 204 files (85,147 s) reach legacy. Most go; the moved ones stay | §7.1 |
 | No-src selection (D229) | Many files are reached by any change near legacy | Fewer reachers per change | Measured on the first nightly after |
 
-**The honest reading.**
-- The routine gate gains a few minutes of the hour D346 gives it, because G1 and crossrev dominate and are
-  untouched.
-- The large saving is tier 3's deliberate runs, about 24 test-hours today, and a narrower suite for every
-  later selection.
-- D189 measured a 2.1-minute saving per tier 1+2 gate for its retire list; this one is larger, and the dry
-  run measures it.
+**The reading.**
+- **Tiers dominate a gate.** In that gate, tiers 1+2 took 2,531 s of about 3,275 locked seconds (77%); G1
+  took 592 and crossrev 152.
+- **The saving is bounded by how many tests leave tiers 1+2:**
+  - the point estimate saves about 6.5 of about 55 locked minutes (12%);
+  - the upper bound saves about 30 (54%).
+
+  Which of these holds depends on the 285 fixture-reaching tests (§7.1), and only the dry run settles it.
+- **Tier 3's deliberate runs** shrink the most: about 24 test-hours today. Every later selection also gets a
+  narrower suite.
+- **For comparison,** D189 measured 2.1 minutes per tier 1+2 gate for its retire list.
 
 ## 10. Cost in agent-days
 
@@ -730,6 +801,9 @@ dispatch, IDs and consumers.
   - Identifiers carrying BETSE conventions are renamed neutral in the move, for example "native" in
     `native_geometry_passive_tissue@1` and `phase_clock_rk_stage_native_logistic@1`, and the
     `tissue_target_selectors as native` alias.
+  - The models' summary strings with BETSE wording are rewritten neutral in the hand-edit commit:
+    `legacy/models/surface_calcium.py:937`, `er_calcium.py:482`, `ip3_calcium.py:154`,
+    `spatial_calcium.py:546`, `plasma_calcium.py:402` and `open_calcium_runtime.py:336`.
   - Existing live modules already carry some, such as `NATIVE_CALCIUM_SCALE` and
     `cagpotassium_numeric_mM_scale@1`. They are the rename's to judge, not this port's.
 - **Concurrency.** Other agents' branches touching legacy, and the visualizer's reading of the manifest.
@@ -760,8 +834,8 @@ dispatch, IDs and consumers.
   an experiment needs it (D136, D144), judged at a declared tolerance against the relocation.
 - (b) Re-express now, judged at tolerances from the start: 15–25 agent-days more, with no bitwise proof.
 - (c) Relocate only, and never re-express.
-- **Recommendation: (a).** It is the only path the brief's bitwise proof fits. E's blockers (calcium in
-  @3, finite fuel, an ER store) are engine features in their own right.
+- **Recommendation: (a).** It is the only path the brief's bitwise proof fits. E's blockers
+  (calcium-permeant channels in @3, finite fuel, an ER store) are engine features in their own right.
 
 **Q3. Which BETSE drivers stay runnable after the deletion?**
 - (a) The 17 physiology drivers and their 58 tests, on the ported F1–F5. The 18 REF-era drivers and the
