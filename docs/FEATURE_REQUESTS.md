@@ -60,7 +60,7 @@ and a general feature, never one built for one study (D144).
 | [FR-52](#fr-52--passive-cohort-observations-for-integer-functional-units) | Passive cohort observations for integer functional units: the expected surviving initial and newly assembled units at one site | **High** (logged by the user, 24 November 2026) | **Logged:** `integer_unit_population@1` records its events in a bounded trace, with no cohort readout; labels follow species rows, not units | A design note: a validation reader or a statically absent in-engine expected-cohort record, with classes that partition the count and fail-closed truncation |
 | [FR-53](#fr-53--a-rounding-allowance-for-global-ledgers-at-every-row) | A rounding allowance for global ledgers at every row: the first window's bound no tighter than the sum's own rounding | **High** (logged by the user, 24 November 2026) | **Logged:** at steps 0 and 1 the bound is the bare atol, and the host reads 0.28 of it on 625 cells, growing about as √N | A design note: a derived summation allowance per row, or compensated global sums, with the planted faults still caught |
 | [FR-54](#fr-54--passive-neutral-diffusion-between-two-finite-liquid-regions-qualified-against-the-exact-two-well-solution-then-a-wash-at-a-diffusion-connected-node) | Passive neutral diffusion between two finite liquid regions, qualified against the exact two-well solution; then a wash at a diffusion-connected node | **High** (logged by the user, 24 November 2026; D341) | **Logged:** a wash at a diffusion-connected node stays refused (D246) until measured | A design note: closed-form, code-blind references; a stopped run reports its residual and tolerance; then the wash's qualification |
-| [FR-55](#fr-55--an-input-dependent-closing-rate-for-regulated-availability) | An input-dependent closing rate for regulated availability (dose-dependent deactivation) | **High** (logged by the user, 24 November 2026; D344) | **Logged:** one fixed closing rate; two groups' SK2 records contradict carrying it across doses | A design note, then qualification against both groups' records |
+| [FR-55](#fr-55--an-input-dependent-closing-rate-for-regulated-availability) | An input-dependent closing rate for regulated availability (dose-dependent deactivation) | Normal (logged by the user, 24 November 2026; D344; lowered by D351) | **Logged:** one fixed closing rate; two groups' SK2 records contradict carrying it, in opposite directions (an indication pair, D351) | A design note, then qualification against both groups' records |
 | [FR-56](#fr-56--a-temperature-dependent-molecular-footprint) | A temperature-dependent molecular footprint with a declared, sourced expansion coefficient | Normal (logged by the user, 24 November 2026; D344) | **Logged:** a fixed footprint per species; two methods confirm POPC's expansion on warming | A design note |
 | [FR-57](#fr-57--passive-tracer-carried-by-a-prescribed-liquid-flow-between-finite-liquid-regions) | Passive tracer carried by a prescribed liquid flow between finite liquid regions | **High** (logged by the user, 24 November 2026) | **Logged:** a wash's sample goes to a record; no operator carries one region's liquid into another | A design note with FR-54's: one mechanism, rows only a flow passes |
 | [FR-58](#fr-58--a-label-on-an-exchangeable-group-carried-through-reversible-conversions) | A label on an exchangeable group, carried through reversible conversions | To be set by the user (logged 24 November 2026) | **Logged:** labels follow species rows; nothing names the group that crosses | A design note, after FR-50 and FR-44 |
@@ -2405,7 +2405,7 @@ loosens no bound beyond what that rounding requires. Every planted fault the che
 
 ## FR-55 — An input-dependent closing rate for regulated availability
 
-**Logged 24 November 2026 by the user, priority high (D344).**
+**Logged 24 November 2026 by the user, priority high (D344); lowered to normal by the user (D351).**
 
 **Why.** Two separate groups' recordings each contradict carrying one closing rate across calcium doses for SK2
 (D338).
@@ -2426,6 +2426,8 @@ the user's rule for confirmed findings, this is a law-form gap.
   own bound.
 
 **Status (24 November):** logged. A design note comes first.
+
+**For the design note (D351):** under the confirmed-means-replicated definition, SK2 is an indication pair with opposite signs. Hirschberg's rise is faster than one rate allows, and Oliver's low-dose rise is slower; the one shared quantity, the high-dose rise, agrees (4.1 against 4.46 ms). A monotone input-dependent closing rate fits both only if the macropatch plateau is at least 0.93. A same-patch rise and washout would settle it.
 
 ## FR-56 — A temperature-dependent molecular footprint
 

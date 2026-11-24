@@ -11373,3 +11373,53 @@ two questions with adviser").
     rationally may add half a spacing per term. That check is queued.
   - **Two untracked files** in the main checkout's `lean/claims/incoming/` belong to the Lean lane. The lead leaves
     them, and the user asks that lane to file them.
+
+## D351: the wet-lab gap diagnosis: three rows confirmed, none wrong inside its claimed domain; FR-55 goes to normal (the user)
+
+2026-11-24, about 17:29 UTC.
+
+**What was done.** A read-only diagnosis of the Lean register's eight "law misses" rows at af4a8000, plus the vacuolar
+pump. It used one definition: confirmed means two independent labs measuring the same quantity on the same molecular
+system under like conditions. The records are in `/mnt/workspaces/Cells/wetlab-gap-diagnosis-20261124/`. Every engine
+revision Lean tested is on main.
+
+**Confirmed:**
+- **Kv1.5's acid shift**, in direction. Three labs agree in sign: +11.7, +17.3 and +7.8 mV, so the size differs.
+  `kv1p5_mh@1` is a parity law with no pH input. A scope line, kept off the parity law's code; no target needs
+  acidified worlds.
+- **POPC's expansion on warming**, in the direction of the central estimates. Covered by D340 and FR-56.
+- **Cx43's two decay phases**, in form. Covered by FR-30's narrowed reopening (D344, D350).
+
+**Indications, not confirmed:**
+- **Kv1.5's K–pH interaction:** different readouts. The same scope line.
+- **DOPC rupture timing:** hold against ramp, different observables. FR-31's pore model covers it.
+  - The registered worlds' fixed lysis thresholds are illustrative and claim nothing about DOPC: Protocol D's D4, D5, D6
+    and D7, and OL5's references.
+  - Recorded only.
+- **SK2's closing rate.** The two labs contradict one fixed closing rate in opposite directions:
+  - Hirschberg's rise is faster than one rate allows;
+  - Oliver's low-dose rise is slower;
+  - the one shared quantity agrees: the high-dose rise, 4.1 against 4.46 ms.
+
+  A monotone input-dependent closing rate fits both only if the macropatch plateau is at least 0.93.
+- **One permeability across voltage:** red-cell chloride and a valinomycin bilayer miss in opposite directions. A
+  scope line on the constant-field law.
+- **Kir in Na-poor solutions:** the same direction in two preparations, but the with-Na arm comes close to the square
+  root (exponent about 0.40). So `inward_rectifier_linear_driving_force@1` is silent on external Na. A scope line, kept
+  separate from D340's Kir4.1. No world runs it Na-free; XC0 uses it as Kir4.1, with sodium.
+- **The vacuolar pump:** yeast and Arabidopsis, two organisms. FR-29 stays parked (D268).
+
+**The verdict: no law is wrong inside its own claimed domain.** The confirmed gaps are a missing input (pH,
+temperature) or a known one-gate design.
+
+**The user's decision: FR-55 goes from high to normal.** D344 had read SK2 as firing. The plateau ≥ 0.93 condition, and
+a same-patch rise and washout, go to FR-55's design note.
+
+**FR-51 for the spermine target.** FR-51's law admits an effective valence up to 8, so the steep spermine component
+(5.0–5.37) can be declared on an @3 population once FR-51 lands. Its qualification ran only the leak laws, so that use
+is untested.
+
+**The docstring batch gains three scope lines:**
+- external Na on the Kir route law;
+- one permeability across voltage on the constant-field law;
+- pH on Kv1.5, on its library page rather than its parity code.
