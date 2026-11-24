@@ -41,6 +41,8 @@ Uses [Balanced reactions preserve a weighted inventory](reaction-inventory.md)
 
 **Open.** Protons transported per NADH, including correction for proton consumption by quinone reduction, and net charge transport during a carrier-balanced respiratory sequence.
 
+- [Forward bovine complex I translocates about four protons per pair of electrons.](../WET_LAB_EVIDENCE.md#pair-complex-i-protons) · Supported by both studies
+
 **Unit** H⁺ per NADH or two electrons, charge equivalents per O₂
 
 ### galkin1999_complex_i@1

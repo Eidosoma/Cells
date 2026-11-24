@@ -33,7 +33,12 @@ Uses [A fixed-gate current curve identifies the product of channel abundance and
 
 ## Biological evidence
 
-**Not assessable.** How much peak outward potassium current remains at 0 mV when external pH falls from 7.3 to 6.8, given the separately normalized peak-tail activation curves.
+**Not assessable.** Peak outward current remaining at 0 mV after acidification, the activation midpoint and the effect of extracellular potassium on current at strong depolarization.
+
+- [Extracellular acidification shifts human Kv1.5 activation toward more positive voltages.](../WET_LAB_EVIDENCE.md#pair-kv15-acid-activation-shift) · Supported by both studies
+- [Higher external potassium reduces the suppression of Kv1.5 current by extracellular acidification at strong depolarization.](../WET_LAB_EVIDENCE.md#pair-kv15-potassium-protection) · Supported by both studies
+
+Independent human Kv1.5 recordings support a positive shift in activation voltage with acidification and less acid-induced current suppression at higher external potassium. The absolute 0 mV response still depends on activation kinetics and the available conductance in the pulse protocol.
 
 **Unit** fraction of control current
 
@@ -50,5 +55,35 @@ Wild-type human Kv1.5 expressed in HEK293 cells, whole-cell at room temperature,
 Figure 1B reports SEM 0.019 over eight cells. Figure 1F normalizes each condition separately and gives neither the absolute maxima nor enough information to propagate experimental uncertainty. Reading both plotted fractions within ±0.01 gives 0.703–0.740 from graph precision alone. Both assays come from one study.
 
 The equal-maximum projection is 0.0237 below the measured fraction. The control midpoint explains why imposing the measured shift on the default Cells gate gives a smaller ratio. Quantitative pH validation needs comparable maximum conductances and matched activation kinetics. [Dataset manifest](../checks/data/trapani2003_kv15_ph.json) · [Comparison verdict](../PROGRESS.md#kv15-ph-activation)
+
+### longobardo2001_kv15_controls@1
+
+Wild-type human Kv1.5 in Ltk− cells, whole-cell clamp, 4 mM extracellular K, 21–23 °C. The tail voltage changed from −40 to −30 mV between pH conditions. Figure 1 and drug-free control results [Longobardo et al. (2001), Fig. 1 and control results](https://doi.org/10.1038/sj.bjp.0704251)
+
+- **Evidence role** descriptive
+
+Mean ± SEM. Midpoint groups included 38 control and 27 acidic recordings. Tail voltages differed by 10 mV between conditions.
+
+At pH 7.4 and 6.5 the midpoint was −14.2 ± 2.1 and +3.1 ± 0.7 mV. The dominant activation time constant at +60 mV also increased from 2.10 ± 0.20 to 4.23 ± 0.30 ms. Separately normalized curves leave the absolute conductance scale open. [Dataset manifest](../checks/data/paired_calibration_measurements.json) · [Comparison verdict](../PROGRESS.md#paired-calibration-and-leaflet-packing)
+
+### trapani2003_kv15_high_voltage@1
+
+Wild-type human Kv1.5 in HEK293. Same study as the existing 0 mV pulse and activation curves. Figures 1C/D and 9B, +100 mV [Trapani and Korn (2003), Figs. 1C/D and 9B](https://doi.org/10.1016/S0006-3495(03)74842-5)
+
+- **Evidence role** descriptive
+
+At 0 and 3 mM external K, reported errors are SEM, n = 3 each. At 10 mM the text gives a qualitative group result, n = 5.
+
+For the same pH change and 10 mM external K as the 0 mV comparison, the current at +100 mV was essentially unchanged. At zero external K only 38.0 ± 1.5% remained. This constrains the maximal-current interpretation at strong depolarization. [Dataset manifest](../checks/data/paired_calibration_measurements.json) · [Comparison verdict](../PROGRESS.md#paired-calibration-and-leaflet-packing)
+
+### kehl2002_kv15_potassium@1
+
+WT human Kv1.5 in HEK293, 20–25 °C, whole-cell tails after 300-ms prepulses. Figure 2 and Results, external potassium and the conductance response [Kehl et al. (2002), Fig. 2](https://doi.org/10.1113/jphysiol.2001.014456)
+
+- **Evidence role** descriptive
+
+Reported ± as printed. Methods generally use SEM and specify SD for nonlinear least-squares outputs.
+
+At 0, 3.5 and 140 mM extracellular K, acid/control maximum conductance was 0.19 ± 0.02, 0.56 ± 0.01 and 0.81 ± 0.12 (n = 12, 6, 6). At 3.5 mM K the activation midpoint also shifted by +7.8 mV. [Dataset manifest](../checks/data/paired_calibration_measurements.json) · [Comparison verdict](../PROGRESS.md#paired-calibration-and-leaflet-packing)
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

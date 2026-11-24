@@ -57,6 +57,8 @@ Uses [Sodium coupling sets net charge and the stall voltage of an anion carrier]
 
 **Open.** Baseline-subtracted steady current as external monocarboxylate concentration or clamped voltage changes. The dose series tests the functional form. A biological assignment for the individual transition rates and voltage coefficients remains open.
 
+- [Human SMCT1 substrate-induced current saturates as external propionate increases at −50 mV.](../WET_LAB_EVIDENCE.md#pair-smct-propionate-saturation) · Supported by both studies
+
 In an independent human SMCT oocyte series at −50 mV, the propionate half-saturation concentration was 128 ± 4 µM (SEM, n = 9). This pooled estimate constrains affinity. [Coady et al., Fig. 3A](https://doi.org/10.1113/jphysiol.2004.063859)
 
 **Unit** nA inward magnitude (propionate), µA signed current (lactate)

@@ -37,6 +37,28 @@ Proof sources [Mathlib nearest-integer distance, imported and rescaled to the lo
 
 **Open.** This arithmetic tolerance compares two calculations on the same declared inputs. An experimental test of the charge balance itself would need mobile and fixed charge, capacitance and potential from the same cell.
 
+- [The sum of independently measured mobile and fixed charge in a native oocyte equals its capacitive charge.](../WET_LAB_EVIDENCE.md#pair-xc0-native-oocyte-charge) · Comparison unresolved
+
 **Unit** C
+
+### guizouarn2004_native_oocyte_ions@1
+
+Native Xenopus oocytes. Na and K measured by flame photometry, Cl by equilibrium tracer uptake, and membrane potential by electrodes. Experimental Procedures (ion and water measurements, electrophysiology) and Table I, noninjected controls. [Guizouarn et al. (2004), Table I, controls](https://doi.org/10.1074/jbc.M311920200)
+
+- **Evidence role** descriptive
+
+Group means ± SE. The water estimate used pooled wet/dry weights and a trapped-water correction. Individual water uncertainty and overlap between the ion and voltage samples are unspecified.
+
+The same group previously reported the −56.8 mV control (Table 1, 2001). These observations supply partial mobile-ion and voltage measurements. Treating a difference of their means as measured fixed charge would make the closure test circular. [Dataset manifest](../checks/data/paired_wet_lab_measurements.json) · [Comparison verdict](../PROGRESS.md#paired-wet-lab-evidence)
+
+### costa1989_native_oocyte_ions@1
+
+Native Xenopus laevis oocytes, stages IV–V. Ion-selective electrodes estimated intracellular free ions on a concentration scale. Summary, item 7, intracellular ion-selective microelectrode measurements. [Costa et al. (1989), summary item 7](https://doi.org/10.1113/jphysiol.1989.sp017649)
+
+- **Evidence role** descriptive
+
+Separate sample counts per ion. The quoted equilibrium potentials for each species were calculated from concentrations. Those values cannot substitute for a measured membrane voltage in a charge balance.
+
+The free-ion values give an independent scale for the three species. Converting activities to a total inventory additionally needs activity coefficients, binding and cell water. Fixed charge remains unmeasured. [Dataset manifest](../checks/data/paired_wet_lab_measurements.json) · [Comparison verdict](../PROGRESS.md#paired-wet-lab-evidence)
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

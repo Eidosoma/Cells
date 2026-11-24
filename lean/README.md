@@ -15,8 +15,10 @@ Direct Lean claims cover [55 of 55 laws](COVERAGE.md#registered-laws) and [35 of
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 9 of 9 | 8 checked · 1 open | 9 |
 | [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 18 of 18 | 16 checked · 1 failed · 1 open | 13 |
 | [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 16 of 16 | 46 of 46 | 44 checked · 1 failed · 1 open | 28 |
-| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 2 of 2 | 29 of 29 | 28 checked · 1 failed | 21 |
+| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 2 of 2 | 29 of 29 | 28 checked · 1 failed | 22 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
+
+[Paired wet-lab evidence](WET_LAB_EVIDENCE.md) covers 37 comparisons across 27 claims. In 20 comparisons, two independent studies support the stated assumption.
 
 <!-- /generated -->
 
@@ -29,6 +31,12 @@ FR-42’s neutral arrival-time labels now have a proof and a compiled comparison
 FR-38 follows a producer’s RNA from template release through cell replacement. Lean bounds the old producer’s RNA inside a replacement cell by cumulative return. The public development fixture passed all 14 checks. The independent registered comparison **failed R1** and found **R2 inconclusive**. The follow-up traced route 1 to a gross-versus-net loss comparison. [Producer balance and restart](PROGRESS.md#fr38-extracellular-producer) · [Registered verdict D313](https://github.com/Eidosoma/Cells/blob/81a98ca025ee662a0846aa13868dfc93fa87ea22/docs/DECISIONS.md#L9867) · [Route-1 diagnosis D316](https://github.com/Eidosoma/Cells/blob/a8f9810c791986a25a38f8ecb718cbfdf7479fec/docs/DECISIONS.md#L9972)
 
 ## Biological evidence
+
+The paired wet-lab register groups comparisons by outcome. Each row names the assumption, the two primary studies, their measurements and how independently the data were collected. The two work lists identify claims with several datasets ready for review and claims still seeking a second dataset. [Browse paired wet-lab evidence](WET_LAB_EVIDENCE.md)
+
+In two independent albumin experiments, total calcium rose by at least as much as free calcium, as the equilibrium binding proof predicts with other free ligands fixed. The experiments leave free magnesium incompletely controlled. Two fluid POPC studies also found larger molecular areas on warming. A Cells vesicle reproduces that difference when supplied the footprint for each temperature. [Albumin measurements](WET_LAB_EVIDENCE.md#pair-albumin-calcium-buffering) · [POPC measurements](WET_LAB_EVIDENCE.md#pair-popc-temperature-footprint) · [Proofs and CPU results](PROGRESS.md#paired-calibration-and-leaflet-packing)
+
+Two labs measured half-activation of rat SK2 near 0.7 µM calcium. Its timing is harder to reproduce with one closing rate. At low calcium a third study reported an approximately 80 ms rise from 20% to 80%, above the 48.1 ms ceiling inferred from its mean washout at high calcium. The low-dose recording lacks a paired washout. [Dose comparison](WET_LAB_EVIDENCE.md#pair-rsk2-calcium-midpoint) · [Timing proof, CPU replay and measurement limits](PROGRESS.md#paired-transport-and-membrane-measurements)
 
 In a measured nucleotide pool, upstream depletion and downstream product predicted 0.822 mM UTP at seven hours, compared with 0.955 ± 0.350 mM measured (SD). The FR-43 development replay checks how much each of two writers contributed and which volume each used. [Shared-pool proof, native runs and measurements](claims/fr43-shared-writers.md)
 
@@ -58,7 +66,7 @@ In a purified *E. coli* experiment, polymerase remained on DNA after RNA release
 
 In a matched Cells control, a donor loses the same amount of labelled protein under transfer and degradation. A receiver gain or a clearance record distinguishes the mechanisms. Imaging of PSD-95 shows label spreading from one spine to two neighbors. The fate of the original label across the whole neuron over 48 hours remains open. Representing a neutral tracer by separate species rows can also change the heat attributed to mixing. [Matched donors](claims/transfer-or-degradation.md) · [Whole-cell balance](claims/regional-pulse-balance.md) · [Neutral label diffusion](claims/neutral-label-diffusion.md) · [Effect on booked heat](claims/label-mixing-power.md)
 
-At 0 mV, the published Kv1.5 activation curves predict 72.1% retained current at pH 6.8 if both preparations share a maximum conductance. A separate pulse in the same study gave 74.5 ± 1.9% (SEM). Applying only the measured midpoint shift to the default Cells gate gives 40.5%. [Kv1.5 pH comparison](claims/kv15-ph-activation.md)
+At 0 mV, the published Kv1.5 activation curves predict 72.1% retained current at pH 6.8 if both preparations share a maximum conductance. A separate pulse in the same study gave 74.5 ± 1.9% (SEM). At +100 mV with the same 10 mM external potassium, acidification had little effect on current. Applying only the measured midpoint shift to the default Cells gate gives 40.5% at 0 mV. Independent recordings support the direction of the voltage shift and the protection by external potassium. [Kv1.5 pH comparison](claims/kv15-ph-activation.md) · [Potassium dependence](WET_LAB_EVIDENCE.md#pair-kv15-potassium-protection)
 
 For Kv1.5 in HEK293 cells, a density-inhibition curve fitted to the two endpoints predicts a conducting fraction of 0.22 at 300 channels/µm². The same figure gives about 0.23 there, without a pointwise uncertainty. An independent channel count lets a fixed-gate current comparison distinguish changes in availability. [Density comparison](claims/channel-density-availability.md) · [Clamp proof](claims/clamped-channel-current.md)
 
@@ -95,6 +103,8 @@ In `formal.about`, list the canonical registry IDs whose law or operator propert
 In `biology.observable` and `unit`, name the quantity the claim needs. Use `biology.finding` for a brief published measurement, its scope and its primary citation. The generator puts that finding in the detailed catalog and the claim page. Formal experimental comparisons go in `biology.evidence`. The catalog reads their observed and predicted values, assessment and citation directly from those records. A claim awaiting measurements displays its requested observable.
 
 The Search agent collects primary biological references in `claims/incoming/`, with the preparation, protocol, measured quantity, uncertainty and figure or table. The Lean lane checks the corresponding engine observable and records the comparison in the register. Enter a biological verdict when a comparison has a documented outcome. [Reviewed measurements and follow-up](PROGRESS.md#19-november-2026--biological-evidence-review) · [Channel voltage-clamp sources](claims/incoming/channel-gating-evidence.md)
+
+To review two experiments together, add a `biology.pairs` entry to the claim and reference its two `biology.evidence` dataset IDs. State the shared assumption, outcome, data origins and comparison at the measured conditions. Use `not_independent` when reused data or a shared model underlying the observable prevent confirmation of an independent result. Use `inconclusive` when the observables or conditions cannot settle the question. A pair that supports one assumption can coexist with an open or mixed whole-claim verdict.
 
 A normal `lake build` checks that each named theorem exists in its declared module, then regenerates the topic overview, claim notes and catalog. With `CELLS_PYTHON` set to the Cells Python interpreter, the build also refreshes the registry inventory from the active checkout. A Lean-only build uses the last exported inventory. Commit the generated files alongside edits to the register. The documentation commands below run from `lean/`.
 

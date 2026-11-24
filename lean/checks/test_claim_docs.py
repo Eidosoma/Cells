@@ -17,6 +17,7 @@ from scripts.generate_claims import (
     coverage,
     experiment_text,
     generate,
+    wet_lab_register,
 )
 
 
@@ -122,6 +123,56 @@ class ClaimDocsTests(unittest.TestCase):
             generate(self.lane)
         self.assertEqual(candidate.read_text(), "Handwritten\n")
         self.assertEqual(self.readme.read_text(), original)
+        candidate.unlink()
+        self.save([self.claim])
+        ledger = self.lane / "WET_LAB_EVIDENCE.md"
+        ledger.write_text("Handwritten review\n")
+        with self.assertRaisesRegex(ValueError, "handwritten"):
+            generate(self.lane)
+        self.assertEqual(ledger.read_text(), "Handwritten review\n")
+
+    def test_pairs_require_distinct_records_and_preserve_source_dependence(self):
+        biology = self.claim["biology"]
+        first = {"dataset_id": "a", "citation": "First group", "doi": "10.1234/same"}
+        other = {"dataset_id": "b", "citation": "Second record", "doi": "10.1234/same#fig2"}
+        biology["evidence"] = [first, other]
+        claims = {"first": self.claim}
+        page, _ = wet_lab_register(claims)
+        self.assertIn("awaiting their first paired review (1)", page)
+        pair = {
+            "id": "uptake",
+            "assumption": "Uptake increases.",
+            "datasets": ["a", "b"],
+            "outcome": "both_support",
+            "independence": "The two groups collected their own data.",
+            "comparison": "The measured rates increased.",
+        }
+        biology["pairs"] = [pair]
+        with self.assertRaisesRegex(ValueError, "publications"):
+            wet_lab_register(claims)
+        pair["outcome"] = "not_independent"
+        page, _ = wet_lab_register(claims)
+        self.assertIn("| Independent replication unconfirmed | 1 |", page)
+        other["doi"] = "10.1234/different"
+        pair["outcome"] = "both_support"
+        page, summary = wet_lab_register(claims)
+        self.assertIn('<a id="pair-uptake"></a>', page)
+        self.assertIn("| Supported by both studies | 1 |", page)
+        self.assertIn("two independent studies support", summary)
+        for datasets in (["a", "a"], ["a", "unknown"]):
+            with (
+                self.subTest(datasets=datasets),
+                self.assertRaisesRegex(ValueError, "two distinct"),
+            ):
+                biology["pairs"] = [dict(pair, datasets=datasets)]
+                wet_lab_register(claims)
+        biology["pairs"] = [pair, dict(pair, id="uptake-again", datasets=["b", "a"])]
+        with self.assertRaisesRegex(ValueError, "repeated comparison"):
+            wet_lab_register(claims)
+        del biology["pairs"]
+        biology["evidence"] = [first]
+        page, _ = wet_lab_register(claims)
+        self.assertIn("Seeking a second dataset", page)
 
     def test_held_out_conditions_must_be_disjoint_from_calibration(self):
         evidence = {

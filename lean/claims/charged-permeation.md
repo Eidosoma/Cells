@@ -38,9 +38,19 @@ Uses [Voltage and free proton concentrations set the leak reversal](proton-leak.
 
 [Tested engine 239ab8cd23ec](https://github.com/Eidosoma/Cells/commit/239ab8cd23ecd41048fb89404bd5ba17e89c35c4) · [Evidence checkpoint 5f6437c5fead](https://github.com/Eidosoma/Cells/commit/5f6437c5fead7445109dcd24aaf3b0d458d379d6)
 
+**Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`, `clleak_always_open@1`, `passive_constant_field_permeation@1`
+
+**Operators** `cells.species_regulated_availability@1`, `cells.species_regulated_availability@2`
+
+[Held-input state update](https://github.com/Eidosoma/Cells/blob/afc28d1d200d3f926c831e6216eee8209a763f38/src/cells/operators/species_regulated_availability.py#L1363) · [Chloride-selective flux kernel](https://github.com/Eidosoma/Cells/blob/afc28d1d200d3f926c831e6216eee8209a763f38/src/cells/laws/junctions/selective.py#L19) · [Charged route flux kernel](https://github.com/Eidosoma/Cells/blob/afc28d1d200d3f926c831e6216eee8209a763f38/src/cells/laws/routes/constant_field_permeation.py#L59) · [Composite world fixture](https://github.com/Eidosoma/Cells/blob/afc28d1d200d3f926c831e6216eee8209a763f38/validation/tissue/secreted_species_fixtures.py#L92) · [Regulatory state fixture](https://github.com/Eidosoma/Cells/blob/afc28d1d200d3f926c831e6216eee8209a763f38/validation/tissue/regulated_availability_fixtures.py#L130) · [Independent chloride and SK2 measurements](https://github.com/Eidosoma/Cells/blob/bb2a42672ba8e3acd6fdb7055e68b4c3f5c5b8d9/lean/checks/data/paired_transport_responses.json) · [SK2 calibration measurements](https://github.com/Eidosoma/Cells/blob/bb2a42672ba8e3acd6fdb7055e68b4c3f5c5b8d9/lean/checks/data/hirschberg1998_sk2.json) · [Red-cell chloride readings](https://github.com/Eidosoma/Cells/blob/bb2a42672ba8e3acd6fdb7055e68b4c3f5c5b8d9/lean/checks/data/freedman1997_chloride.json) · [Bilayer potassium readings](https://github.com/Eidosoma/Cells/blob/bb2a42672ba8e3acd6fdb7055e68b4c3f5c5b8d9/lean/checks/data/pfeffermann2026_potassium.json) · [SK2 calcium clamp](https://github.com/Eidosoma/Cells/blob/bb2a42672ba8e3acd6fdb7055e68b4c3f5c5b8d9/lean/checks/regulated_availability.py#L337) · [Original chloride protocol](https://github.com/Eidosoma/Cells/blob/bb2a42672ba8e3acd6fdb7055e68b4c3f5c5b8d9/lean/checks/chloride_channel.py#L23) · [One-voltage calibrations](https://github.com/Eidosoma/Cells/blob/bb2a42672ba8e3acd6fdb7055e68b4c3f5c5b8d9/lean/checks/charged_permeation.py#L152) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/bb2a42672ba8e3acd6fdb7055e68b4c3f5c5b8d9/lean/checks/paired_transport.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/bb2a42672ba8e3acd6fdb7055e68b4c3f5c5b8d9/lean/PROGRESS.md#paired-transport-and-membrane-measurements)
+
+[Tested engine afc28d1d200d](https://github.com/Eidosoma/Cells/commit/afc28d1d200d3f926c831e6216eee8209a763f38) · [Evidence checkpoint bb2a42672ba8](https://github.com/Eidosoma/Cells/commit/bb2a42672ba8e3acd6fdb7055e68b4c3f5c5b8d9)
+
 ## Biological evidence
 
 **Mixed.** Electrical current at a second voltage and reversal at a known ion gradient. These experiments leave microscopic route heat unmeasured.
+
+- [At fixed concentrations in each preparation, one permeability fitted at one voltage suffices to predict current at a second voltage.](../WET_LAB_EVIDENCE.md#pair-single-permeability-current-voltage) · Challenged by both studies
 
 **Unit** mA per g Hb (red cells), nA (bilayer) and mV (reversal)
 

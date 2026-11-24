@@ -45,6 +45,8 @@ Direct proof subject `cells.proton_atp_mass_action_positive@1`, `cells.atp_drive
 
 **Open.** Reversal voltage of ATP-dependent proton transport at known fuel and proton activities, and neutral-cargo flux at fixed activities under varied voltage.
 
+- [The yeast vacuolar pump reversal exceeds +40 mV at cytosolic pH 7.5 and lumen pH 3.1.](../WET_LAB_EVIDENCE.md#pair-vacuolar-pump-low-ph) · Independent replication unconfirmed
+
 Vesicles showed ATP-dependent riboflavin uptake. Neutral-cargo reversal and voltage independence remain open. [Van Herwaarden et al., Fig. 3E](https://pmc.ncbi.nlm.nih.gov/articles/PMC1800714/)
 
 **Unit** mV for reversal, fmol/s for signed cargo flux

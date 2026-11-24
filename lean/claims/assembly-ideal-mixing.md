@@ -37,7 +37,19 @@ Direct proof subject `cells.ideal_mixing@1`
 
 **Open.** Equilibrium cholesterol activity as a function of membrane mole fraction.
 
+- [Increasing the cholesterol mole fraction of a dilute DOPC membrane raises its equilibrium cholesterol activity.](../WET_LAB_EVIDENCE.md#pair-cholesterol-dilute-dopc-direction) · Supported by both studies
+
 **Unit** dimensionless activity relative to crystalline cholesterol
+
+### lange2013_dopc_partition_fraction@1
+
+At 25 °C cholesterol was equilibrated between DOPC vesicles and methyl-β-cyclodextrin across low cholesterol mole fractions. Fig. 4A, DOPC open circles, and equilibrium Eq. 3. [Lange et al. (2013), Eq. 3 and Fig. 4A](https://doi.org/10.1021/bi400862q)
+
+- **Evidence role** descriptive
+
+The ranges are approximate figure readings. Pointwise errors and an uncertainty on the fitted slope are unavailable. No calibration to crystalline cholesterol was reported.
+
+The weak composition dependence of Q compared with the change in x implies increasing equilibrium bath loading in the dilute series. At low occupancy this supplies a relative activity proxy. The series ends near x = 0.14. [Dataset manifest](../checks/data/paired_wet_lab_measurements.json) · [Comparison verdict](../PROGRESS.md#paired-transport-and-membrane-measurements)
 
 ### shaw2023_dopc_cholesterol_activity@1
 
