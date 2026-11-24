@@ -117,6 +117,7 @@ from cells.numerics.species_sums import entity_sum
 from cells.operators.contract import (
     EMPTIED,
     EXCHANGED,
+    LABEL_EVENT_KINDS,
     LiquidExchange,
     Operator,
     label_event,
@@ -903,6 +904,8 @@ def advance_event(before, end, report, control, p, *, kind, xp=jnp, pool=None):
       label_pool_removed_fmol[k]. An entry it emptied (removed > 0) takes the base label: it holds
       no material, so no later share depends on it, and its next arrivals set its shares.
     - "exchanged" (pool None): report is a LiquidExchange [m, outside node] (advance_exchange)."""
+    if kind not in LABEL_EVENT_KINDS:  # Fail closed: no report is read as another kind's.
+        raise ValueError(f"{LAW_ID}: an event's report kind is one of {LABEL_EVENT_KINDS}")
     if (kind == EMPTIED) != (pool is not None):
         raise ValueError(f"{LAW_ID}: an emptied report names its pool reporter, and no other does")
     if kind == EXCHANGED:
