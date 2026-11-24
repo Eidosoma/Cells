@@ -28,6 +28,8 @@ from cells.operators import OPERATORS
 from cells.operators import site_occupancy as so
 from cells.operators import wash_schedule as ws
 from cells.registry.models import get_model
+from validation.gene_regulation import kernel as gene_kernel
+from validation.gene_regulation import worlds as gene_worlds
 from validation.tissue import bath_schedule_fixtures as bfx
 from validation.tissue import compartment_fixtures as cfx
 from validation.tissue import secreted_species_fixtures as fx
@@ -84,6 +86,39 @@ def _event(time=T_E, fraction=0.5, buffer=None, node="well"):
     return (time, node, fraction, {S: wfx.TRACE_mM} if buffer is None else buffer)
 
 
+def _gene_unit(*, outside=True, other_node=False):
+    """The gene unit's export world (validation/gene_regulation/worlds.with_export on R1 at
+    p = 0.75, truncated to 600 s): R exported from cell_0 into the finite node space_0, with its
+    outside degradation there unless outside is False. other_node adds space_1, a copy of space_0
+    and of its patch that nothing exports into (D327's passing control)."""
+    raw = gene_worlds.with_export(
+        gene_kernel.truncated(gene_worlds.r1(0.75), 600.0), k_E=1e-3, outside=outside
+    )
+    if other_node:
+        m, e, x = raw["model"], raw["experiment"], raw["execution"]
+        node = copy.deepcopy(next(n for n in m["extracellular"] if n["id"] == gene_worlds.SPACE))
+        node["id"] = "space_1"
+        m["extracellular"].append(node)
+        x["extracellular_capacity"] = len(m["extracellular"])
+        patch = copy.deepcopy(next(p for p in m["membranes"] if p["outside"] == gene_worlds.SPACE))
+        patch.update(id="patch_cell_0_space_1", outside="space_1")
+        m["membranes"].append(patch)
+        x["membrane_capacity"] = len(m["membranes"])
+        control = next(c for c in e["membrane_controls"] if c["membrane_id"] != "patch_0")
+        e["membrane_controls"].append(dict(copy.deepcopy(control), membrane_id=patch["id"]))
+    return raw
+
+
+def _washed_at(raw, node):
+    """raw with half of `node` washed at 300 s, its buffer every neutral species at the node's
+    own declared concentration."""
+    m = raw["model"]
+    entry = next(n for n in m["extracellular"] if n["id"] == node)
+    neutral = [s["id"] for s in m["species"] if s["valence"] == 0]
+    buffer = {s: entry["initial_amount_fmol"][s] / entry["volume_pL"] for s in neutral}
+    return wfx.with_wash(raw, [node], [(300.0, node, 0.5, buffer)])
+
+
 REFUSALS = {
     "a held bath": (lambda: washed(nodes=("bath",), events=[]), "is a held bath"),
     "an undeclared node": (lambda: washed(nodes=("pond",), events=[]), "undeclared outside node"),
@@ -129,6 +164,15 @@ REFUSALS = {
         lambda: washed(changed(wfx.well(), _internalising)),
         "by site_occupancy@1's internalisation specimen_sites",
     ),
+    # D327, the fail-open fix: amendment T's export and outside degradation, each by name.
+    "a gene unit's export into the node": (
+        lambda: _washed_at(_gene_unit(outside=False), "space_0"),
+        "R may cross node space_0's surface by templated_polymerisation@1's export export_R",
+    ),
+    "a gene unit's outside degradation at the node": (
+        lambda: _washed_at(_gene_unit(), "space_0"),
+        "by templated_polymerisation@1's outside degradation deg_R_space_0",
+    ),
     "a buffer below a site ligand's trace": (
         lambda: washed(events=[_event(buffer={S: 1e-13})]),
         "below its declared trace",
@@ -152,18 +196,21 @@ def test_each_refusal_fires_with_its_reason(name):
 
 def test_every_path_across_a_washed_surface_is_classified(monkeypatch):
     """D263 finding 2, fail closed (host only, parse): every registered operator law is read for its
-    routes (exchange, sites), shown local or refused with its reason, so a new law is refused
-    beside the wash until it is classified here. Planted: turnover unclassified, a world with it is
-    refused. The review's well with its sites, and a route-free wash, stay admitted."""
+    routes (exchange, sites, the gene unit's exports and outside degradations), shown local or
+    refused with its reason, so a new law is refused beside the wash until it is classified here.
+    Planted: turnover unclassified, a world with it is refused. The review's well with its sites,
+    a route-free wash, and the gene unit's export world washed at a node it neither exports into
+    nor degrades at (D327's passing control) stay admitted."""
     from cells.operators import OPERATORS
     from cells.operators import wash_schedule as wash
 
-    read = {wash.EXCHANGE, wash.SITES}
+    read = set(wash.READ)
     lists = [read, set(wash.SHOWN_LOCAL), set(wash.REFUSED)]
     assert sorted(set(OPERATORS) - set().union(*lists)) == [], "classify the new law here"
     assert sum(len(x) for x in lists) == len(set().union(*lists))
     parse_spec(washed())
     parse_spec(washed(wfx.well(sites=False)))
+    parse_spec(_washed_at(_gene_unit(other_node=True), "space_1"))
     raw = fx.with_turnover(
         wfx.well(sites=False),
         [("make", "specimen", "production")],
