@@ -11471,3 +11471,26 @@ is untested.
 
   It is recorded as non-blind, since the lead has seen 0.98. The data come through Lean's rows, read at their commit
   before the registration is written.
+
+## D354: FR-38 v2's amendment 3 is tagged; the user's decision: three uncovered readout controls go to a later registration; FR-47's wall-marker fix landed
+
+2026-11-24, about 17:49 UTC.
+- **FR-38 v2's amendment 3** is tagged `fr38-v2-amendment-3-2026-11-24` at 5859006b (branch fr38-registration). The
+  protocol author wrote it:
+  - **Family D's energy identity** is now a stepped entry with p = 2, passing if max|r_h| ≤ 3 est + e_round in C3's
+    order window. Holding it to rounding was an error carried over from the fixed-volume worlds, and the amendment
+    discloses it. The builder's invented-cell figures (order 2.003) were seen before the ruling. D is reported only,
+    and no registered world has run.
+  - **`release_check`'s narrowed scope** is as the spec intended. It is not a registered criterion: the gross against
+    net discrimination rests on C2 with plants P1, P1′ and P1″.
+  - **The four readout controls,** from a user's note:
+    - (b), survival by detachment, is covered and judged in arms A and B;
+    - (a), producers reordered and replaced, is not covered (D334). D306's checker holds development evidence;
+    - (c): the degradation is covered, but the same molecule leaving and returning through export is not;
+    - (d): zero loss, two loss routes on one row, and a constant-stock control are not covered. The resolution limit is
+      covered in host form.
+- **The user's decision:** the three uncovered controls, (a), (c) and (d), go to a later registration (FR-38 v3) with
+  its own verdict. v2 stays as registered, so its judge and judged run are not delayed.
+- **FR-47's wall-marker fix landed** at 9d8c42be (tag `fr47-inert-wall-landed-2026-11-24`): gate G1 113 of 113, and
+  the D148 proofs identical but for provenance. The origin branch `fr47-inert-wall`, pushed by mistake, is deleted, as
+  the user approved in D342.
