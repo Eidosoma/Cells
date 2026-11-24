@@ -10875,3 +10875,843 @@ inert wall places, in progress, is not in the judged engine.
 - It printed statuses and booleans only, never a value.
 - The folder (`/mnt/workspaces/Cells/fr47-inert-wall-20261124/`) is barred to FR-47's checker. Its brief will say
   so.
+
+## D339: a reviewer's four points (FR-47's scorer gets a registered schedule supplement and a tightened acceptance; FR-52's premise is corrected; the GPU guard; the feature index); GJ-N1 amendment 2 and FR-38 v2's references are tagged
+
+2026-11-24, about 14:46 UTC. The advisor reviewed the four points with the lead.
+
+**FR-47's frozen scorer does not check the washes against the registered schedule.**
+- **Confirmed by reading `fr47_judge.py` at the registration tag:**
+  - `judge_d` takes each stop's kind from the run, and never compares stop times or the heat intervals' ends;
+  - `judge_exact` indexes each replica's stops by the references' count, and ignores time, kind and any extra
+    stop.
+
+  The reviewer's three invented cases pass it: a relabelled withdrawal with its heat removed, both washes 10 s late,
+  and an extra trailing wash in every replica.
+- **The frozen scorer stays the official verdict, unchanged.** There is no erratum.
+- **A schedule supplement is registered before any judged run.** It is
+  `validation/assembly_lineages_v2/FR47_SCHEDULE_SUPPLEMENT.md`, tagged `fr47-schedule-supplement-2026-11-24`.
+  It checks, exactly:
+  - count, order, time and kind, for the references and for every saved run;
+  - a heat at every scheduled withdrawal;
+  - the heat intervals' ends.
+
+  Before any saved run is read, its controls must behave: the three cases fail and an honest record passes.
+- **The lead tightens D323:** FR-47 leaves development-only only if both the frozen verdict and the supplement pass.
+  D323 named the verdict alone. The user is told.
+- **FR-47's independent checker implements the supplement.** Its brief also bars the inert-wall fix's
+  before-and-after folder (D338).
+
+**FR-52: one event can move several units.**
+- A channel carries integer stoichiometry over the unit states, and `integer_change` is products minus reactants.
+  So the reader uses each event's declared change, E <- E·(n − d)/n. Restricting version 1 to single-unit events,
+  by name, is the fallback.
+- **An acceptance row:** two original units and one new; one event removes two, chosen uniformly. The expected
+  survivors are 2/3 original and 1/3 new.
+- **A mutant:** a reader assuming one unit per event gives a total of 2 against the engine's 1, and must fail the
+  integrity check.
+- **For the design note:** whether a channel may list the active state on both sides. If so, the stored change is
+  net there.
+
+**The GPU guard.**
+- 478664a0 refuses the composite on a GPU in the vector path. It waits for lane B, with FR's set and the D148
+  proofs.
+- After it lands, its refusal row is rerun at main's head and recorded.
+- Judged runs of the composite run on CPUs (D338, GJ-N1 amendment 2).
+
+**The feature index is brought up to date:**
+- FR-43: all three parts on main (D328);
+- FR-46 and FR-48: landed at d702f13a;
+- FR-49: parts H and L at 7d021548, with World L passing (D331); World B, C1, C2 and C4 are still to come.
+
+**Tags:**
+- **`gj-n1-amendment-2-2026-11-24` at 750076a7.**
+  - The field runs on CPUs. The upper end runs on CPU 13 from launch; the base-step points, bisection and half steps
+    run on lane A from 20:00 UTC.
+  - One engine revision serves both geometries: the line's stage 1 and one line point are checked by bytes at the
+    field's snapshot before launch.
+- **`fr38-v2-references-2026-11-24` at 8bd81c7e** (generated at 55c52c4b from a clean tree).
+  - Six files, 19,957,976 bytes in `out/`, byte-identical across PYTHONHASHSEED 0, 1 and 4242. The hashes are in
+    `out/SHA256SUMS` at the tag.
+  - The worst judged accuracy is 1.3e-16 of scale, against 1e-11. Every must-catch plant is at least 72 times its
+    honest tolerance.
+  - **The user's limit:** about 20 MB is the ceiling for any committed data set. This one is at it.
+
+**The ledger limit, recorded here** because the builder's note sits in a scratch folder. Small E2 worlds at a loose
+`atol_count` can fail their own ledger: its tolerance is 100·rtol·max(1, |Q| + |W| + events), with no atol term. The
+fix is an atol term derived from the integrator's declared `atol_count`. It is a follow-up after Protocol D's
+re-registration.
+
+## D340: two parameter-transfer flags from the Lean lane (a bilayer footprint across temperature; Kir4.1's square-root potassium scaling across preparations)
+
+2026-11-24, about 15:01 UTC. These come from the Lean lane's paired wet-lab records (candidate 8634e566, in its gate).
+They concern carrying a parameter across conditions. No law's form changes.
+
+**A bilayer's molecular footprint is declared for one temperature.**
+- `cells.bilayer_geometry@1` takes each membrane species' area per molecule as a declaration, and the engine does
+  not vary it with temperature.
+- Two independent methods find fluid POPC expanding on warming:
+  - scattering (Kučerka's group): 64.3 ± 1.3 to 67.3 ± 1.3 Å² over 30 to 50 °C, +4.7%;
+  - solid-state NMR (Leftin's group): 60.4 ± 3.6 to 70.5 ± 4.2 Å² over 28 to 48 °C, +16.7%.
+- The Lean lane's compiled replay shows that a fixed footprint hides that expansion completely.
+- **So a world compared across temperatures declares the footprint measured at each temperature.** A common
+  expansion coefficient is still open: the two methods disagree on its size.
+
+**Kir4.1's square-root potassium scaling stays scoped to its preparation.**
+- `inward_rectifier_linear_driving_force@1` scales as (c_o/K_ref)^(1/2), and its coefficients are the route's
+  declaration (its docstring already says they must be sourced before a claim rests on them).
+- **One preparation supports the exponent.** Tada's group (rat Kir4.1 in HEK293T, three patches per level) fitted
+  0.51 over 15–153 mM.
+- **Another departs from it.** Edvinsson's series (human Kir4.1) reaches about 19 pS at 40 mM, against 13.9 pS
+  from a square root anchored at their 110 mM value of 23 pS.
+- Figure precision, species and solutions limit what the difference shows. One dataset is an indication, so the law's
+  form stays, and a calibration carries only within its preparation.
+
+**Both scope lines** go into the laws' docstrings (`geometry.py`, `inward_rectifier_linear_driving_force.py`) in
+the next docstring-only landing, with the regulated-availability one closing rate (D337, D338) and the charge-anchor
+fix's citation of the Lean claim, merged at 29d69f1d.
+
+## D341: FR-30's Ek-Vitorín 2016 benchmark is undetermined by structure for the filed PDF; the user files its Supporting Material, added by a tagged amendment; FR-54 is high priority
+
+2026-11-24, about 15:16 UTC.
+
+**The extraction of the filed PDF** (the sealed extractor, under Tag A):
+- **The kinetic part is undetermined under any expression of the data.**
+  - Fig. 2B shows one illustrative record pair, labelled jointly ±100 mV.
+  - It carries the paper's own second-order exponential fits, with no amplitudes, dispersion or n.
+  - No other wild-type time constant appears in the text or the seven figures.
+  - So the decay list has at most one magnitude (S2, P6.1).
+- **The steady part cannot be expressed in the layout as tagged (E9).**
+  - Fig. 2C plots wild-type points individually: n = 3, with what n counts unstated, in 9 clusters per polarity
+    against the Methods' 10-step grid.
+  - Some markers share one abscissa (K3), or are hidden. Pairing them across polarities depends on digitizing
+    resolution.
+- **The lead's ruling (advisor concurring):**
+  - §13.7 applies as tagged;
+  - no rule for summarizing plotted points is written after the paper was opened. If the user wants one for Part S,
+    it is a separately tagged amendment, drafted by someone other than the extractor.
+- **The seal.** No `fit.json`, `held_out.json` or `protocol.json` was written, so there is no held-out digest.
+  - The folder `/mnt/workspaces/Cells/fr30-ekvitorin2016-extraction/` is read-only, and its SHA256SUMS digest
+    begins 066b20d2.
+  - It holds a value-free structure record, the LOG, and the unfinished digitizer scripts, with their working state
+    kept private.
+- **Disclosed by the extractor:** it read D334, which summarizes the polarity check's conclusions, and D337 at the
+  lead's direction, before sealing. The lead's brief had erred on that point, and on the training file's name.
+  `docs/JUNCTION_GATE_POLARITY.md` stays unopened (E11).
+
+**The user's decision: file the paper's Supporting Material.**
+- Two files, identified by their PDF metadata only and unopened, are filed read-only at
+  `ek-vitorin-2016/supporting-material/`:
+  - `mmc1.pdf`: 6 pages, the Supporting Material, sha256 d36e5964…;
+  - `mmc2.pdf`: 20 pages, the article with its Supporting Material, sha256 3ace545d….
+- **§13.7 amendment 1 adds them as a source before anyone opens them.** It is Part 12, tagged
+  `fr30-ekvitorin2016-amendment-1-2026-11-24` at b725c702.
+  - The same extractor reads them under the unchanged rules.
+  - If they give per-voltage τ_fast and τ_slow at two or more magnitudes, the extraction proceeds; otherwise the
+    benchmark is undetermined for the paper with its Supporting Material.
+- **The fitter, the predictor and the checker start only after a seal under amendment 1.**
+- A third file the user added, Tanis et al. (2017) on CALHM channels, is not part of this benchmark. Its use waits
+  for the user.
+
+**FR-54** (passive neutral diffusion against the exact two-well solution, then a wash at a diffusion-connected node)
+is **high priority, the user's decision.** It takes the next free builder after FR-50.
+
+## D342: FR-30 stays undetermined with the Supporting Material, and stays development-only; FR-38 v2's roles are restored; a branch pushed by mistake is deleted after its landing
+
+2026-11-24, about 15:23 UTC.
+
+**FR-30: the Supporting Material doesn't decide it.** The extractor read it under §13.7 amendment 1.
+- **mmc1** (6 pages) is almost all single-channel work. Its only wild-type macroscopic decay record (Fig. S1 C's
+  inset) is under halothane, a treated arm (E1), and is not fitted (E2).
+- **mmc2** (20 pages) is the article followed by mmc1. Its pages and images are identical to theirs.
+- **So Part 12's condition is not met.** The benchmark is undetermined by structure, now for the paper with its
+  Supporting Material.
+- **The seal:** no data file was written, and no held-out digest exists. The new folder
+  `/mnt/workspaces/Cells/fr30-ekvitorin2016-extraction-a1/` is read-only, and its SHA256SUMS digest begins 5f410db7.
+  It stays barred like the first, since its scratch holds the paper's text and figures.
+- **FR-30 stays development-only (D262).** As the user's choice of 24 November provides, the next step is a
+  metadata-only search for another source. It is registered before anything is opened, and every paper the record
+  names as exposed is excluded. It queues behind FR-50's builder for an agent slot.
+
+**FR-38 v2's roles are restored.**
+- The lead's brief gave one agent both the builder's and the judge's role. The protocol
+  (`docs/FR38_SECOND_COMPARISON_PROTOCOL.md` §5) requires a different agent for each.
+- **The builder's reader is retired unused and never tagged.** It was 9dc73d57, and history keeps it.
+- **The builder continues as builder:** the worlds, and `engine_run.py`'s exports for families C and D.
+- **A new judge, blind to the first comparison and to the builder's retired reader, writes its own reader and
+  mapping.** It starts when a slot frees.
+
+**A branch was pushed by mistake.**
+- The OL6 builder pushed `fr47-inert-wall` to origin at 14:37 UTC. Its own delete was refused by the safety
+  check, and nobody retried it.
+- The branch holds only the inert-wall fix's commits, which passed the privacy scan.
+- **The user's decision:** the lead deletes it once the fix has landed on main. If the deletion is refused, the user
+  is told.
+
+**FR-50's phase-1 builder has started.** Its judge comes first (D308), on the branch from FR-51's head.
+
+## D343: the user's decision: FR-30 is parked, development-only, with one labelled diagnostic on Revilla's data; D342's metadata search is withdrawn
+
+2026-11-24, about 15:30 UTC. The advisor reviewed FR-30's record with the lead; the decision is the user's.
+
+**The record since FR-30's benchmark began: twelve papers, one qualified, and it failed.**
+- **Undetermined by their data's structure:**
+  - Lin 2003, Desplantez 2004, Moreno 2002 and Snipas 2020;
+  - Sahu and Bera 2013;
+  - Xu 2013, Lin 2010 and Ek-Vitorín 2018 (D291);
+  - Shibayama 2006 and Elenes 2001;
+  - Ek-Vitorín 2016, with its Supporting Material (D341, D342).
+- **Revilla 1999 qualified, and failed** (D320: 4 of 6). Its ±80 mV windows overlap, so the fit missed (§13.7 W2), which
+  says nothing against symmetry.
+- **§13.7 W5:** "undetermined" means no test, and triggers nothing.
+
+**Nothing depends on FR-30's law.** `junction_series_gates@1` is used only by the Revilla benchmark's scripts. GJ-N1
+runs the single gate, pinned open. Under the single-study rule, a second paper passing would leave one pass and one
+fail, and D262 would stand either way.
+
+**The decision: FR-30 is parked.**
+- **It stays development-only (D262).**
+- **Its scope line:** two relaxation times at the cited voltages; the voltage dependence is unvalidated.
+- **It reopens:**
+  - when an experiment or a registered world needs the series-gate law beyond development; or
+  - when a source with per-voltage τ_fast and τ_slow at two or more magnitudes, at both polarities, is in hand.
+
+  The three papers still registered unopened in §13.4's order (Bukauskas 2001, Rackauskas 2007 and Moreno 1994) come
+  first then. Wang 1992 and Lin, Xu and Veenstra 2014 are exposed.
+- **Not done:** pooling across papers. Parameters fail to carry across preparations, as D338 and D340 record today
+  for SK2, Kir4.1 and POPC, so a miss would say nothing about the law.
+
+**One diagnostic, labelled and non-blind.**
+- **What:** a joint fit of `junction_series_gates@1`, with one symmetric block, to all six of Revilla's voltages.
+- **Who:** an agent that never fits FR-30 again.
+- **What it reports:** whether one parameter set can sit inside every registered window, with each residual in
+  window units. It decides nothing (W6), and changes no verdict and no law.
+- **When:** it takes the next free small slot.
+
+**Correction to D342.** D342 called a metadata-only search "the user's choice of 24 November". The user's answer then
+only filed the Supporting Material. That search is withdrawn.
+
+## D344: the user's rule for confirmed findings; four Lean wet-lab rows sorted by it; FR-30 reopened narrowly; FR-55 and FR-56 logged; FR-50's judge tagged
+
+2026-11-24, about 15:48 UTC. The advisor reviewed this with the lead. The decisions are the user's.
+
+**The user's rule.** "For Cells, if we have something confirmed that doesn't work the same in Cells, we should find
+out why and fix." Confirmed means two or more independent wet-lab studies agree. One study stays an indication.
+- Each confirmed row is read at the Lean lane's record (`lean/WET_LAB_EVIDENCE.md`), not from a handoff.
+- **The test:** does Cells reproduce the confirmed part when run with that preparation's own inputs?
+  - **Yes:** a comparison rule or a scope line.
+  - **No, because the law cannot produce it:** a law-form gap, diagnosed and then fixed by a general FR.
+  - **Not run:** running it is the first step.
+
+**Four rows, read at the Lean tip d5a2c138:**
+1. **Cx43, the decay at −100 mV.**
+   - **What is confirmed:** two phases. Revilla's paired oocytes gave 417 ± 175 ms and 7.06 ± 1.28 s; Sahu and
+     Bera's N2a pairs gave 70 ± 5 and 931 ± 54 ms. Both data sets are already in D343's table.
+   - **What is not:** a shared magnitude. The time scales differ six- to eightfold across preparations.
+   - **The rule fires.** The shipped single gate, `junction_voltage_relaxation@1`, has one relaxation by design.
+2. **Mixed-ion reversal** (Hodgkin and Katz's intact squid axons; Ohki and Aono's six perfused axons).
+   - **What is confirmed:** the direction. Raising K depolarizes.
+   - **Cells reproduces the direction.** Its +12.63 mV against the measured +2.0 mV carried intact-axon permeability
+     ratios to perfused axons, whose own ratios were never measured.
+   - **A comparison rule:** quantitative comparisons use preparation-specific ratios.
+3. **Receptor turnover** (Strack, ten muscles: 1.1 and 13.1 day half-lives; Stanley and Drachman: 18.7 h and 12.4
+   days).
+   - **What is confirmed:** a mixture of lifetimes, with a fast fraction of 13–20%.
+   - **Cells can represent it.** `population_unit_turnover@1` declares one removal rate per population, so the fast
+     and slow cohorts are two declared populations.
+   - **Guidance, no engine change.**
+4. **Proton reversal** (Kapus's macrophages and Morihata's microglia; Bertholet's mitoplasts and Cherny's alveolar
+   cells).
+   - **What is confirmed:** the Nernst direction.
+   - **Cells reproduces it.** At large gradients the nominal pipette and bath pH overstate the magnitude.
+   - **A comparison rule:** quantitative comparisons use the intracellular pH at the time of the current measurement.
+
+**Earlier flags, re-sorted by the rule:**
+- **SK2 (D338) fires.** Two separate groups' recordings each contradict carrying one closing rate across conditions,
+  and the operator's closing rate cannot depend on the dose.
+- **POPC (D340) partly fires.** Two methods confirm expansion on warming, and Cells shows it only through a footprint
+  declared per temperature.
+- **Kir4.1 (D340) does not fire.** It rests on one series.
+
+**The user's decisions:**
+- **FR-30 reopens narrowly** (amends D343).
+  - `junction_series_gates@1` becomes usable for two phases at a declared voltage, calibrated per preparation.
+  - The voltage dependence stays marked unvalidated, and the law's predicted third amplitude stays flagged as
+    unmeasured.
+  - The Revilla joint fit, labelled and non-blind, moves up as the first diagnosis step.
+  - D262's development flag is narrowed to that scope by a design note and a gated landing, never by this entry alone.
+- **FR-55, high:** an input-dependent closing rate for regulated availability (dose-dependent deactivation).
+- **FR-56, normal:** a temperature-dependent molecular footprint with a declared, sourced expansion coefficient per
+  lipid.
+- **Lean is asked, through the user,** for every row of its 46 where two studies agree and the Cells replay does not.
+
+**The comparison rules and guidance** go into the docstring-only batch, with D337's and D340's scope lines.
+
+**FR-50's judge is tagged** `fr50-judge-2026-11-24` (3cec272b). Its builder reads the references' spec folder only
+after that tag, by the user's permission. The read was refused once earlier, before the judge existed, and was not
+retried.
+
+**The Lean tip d5a2c138** contains 8634e566, 41f3de69, 0bb50d8b, cb961e34 and 73e7e9d7. One merge covers them once
+its gate passes.
+
+## D345: the user's decision: law IDs become hierarchical, keyed by interface, starting on 25 November in the morning
+
+2026-11-24, about 16:18 UTC.
+
+**Today's IDs.** Law IDs are `namespace.name@major`, and 185 of 187 registered IDs are bare, in `cells`. The
+families exist as folders and as interfaces, but not in the key.
+
+**The decision: Option 1.** The key carries the law's family, read as its interface:
+`cells.<interface>.<name>@major`, for example `cells.channel.inward_rectifier_linear_driving_force@1`. Folders mirror
+interfaces. Outside modules take the same shape in their own namespace.
+
+**Rejected:**
+- family as metadata only, which leaves the key flat;
+- a family prefix inside a flat name.
+
+**The conditions:**
+- **Timing:** it starts on the morning of 25 November, after tonight's runs and this round of landings, so it never
+  collides with the branches in flight.
+- **One mechanical, scripted move,** as D188's source moves were, with a committed old→new mapping table. Past
+  decision entries and Lean's claims stay readable through the table, and old tags and snapshots keep their names.
+- **No aliases.** An old ID is refused at parse, and the refusal names its new ID.
+- **Codes and majors are unchanged.**
+
+**Open until the morning:**
+- the scope: laws only, or models, operators and kinds too;
+- the advisor's review of identity stability across the module system and the Lean lane.
+
+## D346: the user's decisions on the ID rename's scope and on legacy (amends D345)
+
+2026-11-24, about 16:35 UTC. The advisor reviewed the plan with the lead. The decisions are the user's.
+
+**The scope is everything live.** Laws, models, operators, kinds, solvers, the heat choice and execution mappings all
+take `cells.<family>.<name>@major`, from a short closed list of families:
+- model, operator, kind, solver, heat and execution;
+- one family per law interface: channel, route, reaction, cycle, junction, exchange, rate_factor and free_energy.
+
+Interface IDs (`cells.route_law@1` and the like) and schema IDs (`cells.declarations@2`) keep their names.
+
+**No compatibility beyond this repository.** The user's private experiments run no legacy model, and the user renames
+them.
+
+**Legacy (`src/cells/legacy`, 321 files and about 75,600 lines; 195 of 888 test files import it):**
+- **The parts used by neither BETSE nor the calcium ensemble are deleted,** together with the tests and drivers that
+  depend only on them. The exact removal list is prepared read-only tonight, for the user's OK tomorrow.
+- **The legacy-based BETSE comparisons (39 drivers) and the calcium ensemble families, with their GPU tests, are
+  ported to the modern models first.** Their legacy remainder goes after the ports.
+- **The one live law that imports legacy, `kinetic_pump_binding.py`, is ported.**
+- **Main is tagged before any deletion,** as the BETSE-native removal was.
+- **Until legacy is gone,** its remaining IDs stay bare and frozen, and old live IDs are refused by a table that names
+  their new keys.
+
+**The scale priorities:**
+- **Catalogue size:** the rename.
+- **Gate throughput:** about an hour locked per gate on two lanes. The time the deletion saves is measured.
+
+**The order, from 25 November:**
+1. Land what is gated.
+2. Tag main.
+3. Delete legacy's unused part, with its own gate, a removal list (D224) and re-measured tiers.
+4. Run the rename's three read-only checks: IDs feeding numbers, the registry-built list, and the parse sites. Then
+   generate the mapping from the registries, with a collision report.
+5. The rename, with its own gate.
+6. Re-merge the branches in flight.
+
+The BETSE and ensemble ports are a separate, multi-day work item.
+
+**Never rewritten by the rename script:**
+- tagged specs, references, judges and their errata still in the tree (FR-50's `judge.py`, `REGISTRATION.md`,
+  `JUDGE_ERRATUM_1.md` and `references/` among them);
+- the crossrev replication record;
+- `lean/`;
+- past decision entries.
+
+The Lean lane gets the mapping table, through the user, before the landing.
+
+## D347: FR-43 checked item by item against its request: what is judged, what only tested, and four gaps
+
+2026-11-24, about 16:58 UTC. This is the lead's read-only check, with the advisor. Evidence counts only as a test body
+or a verdict file at main.
+- **The two texts.** The user's paste of 24 November differs from the request saved on 23 November only in part 1's
+  first lines, which now note that part 1 raised the limit to 1,024. Every acceptance clause is unchanged.
+- **Judged by a registered criterion:**
+  - C2.3, C2.6, C2.7 and C2.8 (D324). C2.7, the work of changing volume, was judged by convergence order (ratios
+    near 4), consistent with water's second-order bookings.
+  - C3.3, C3.4 and C3.5 (D319).
+- **Covered by the builder's tests only:**
+  - C1.1 at 32 and 1,024 rows, with C1.2 and C1.3 (`test_species_cap_runs.py`, `test_species_cap_large.py`);
+  - part 2's two baseline refusals, now admitted;
+  - C2.2, C2.4 and C2.5;
+  - C3.1 and C3.2;
+  - C3.6, the same-seed restart (`test_integer_unit_population.py`), which settles FR-52's restart premise.
+- **No FR-43 evidence test imports `legacy/`.**
+- **The gaps:**
+  1. **Part 1's 16-row control and 256-row case** have no test at main: they ran only in the design phase.
+  2. **Part 1's performance report** (compile time, time per simulated second, peak memory, device and precision,
+     C1.4) lives only in the design note. Its L4 numbers were taken on a path D336 now refuses: the composite on a
+     GPU.
+  3. **Part 1 has no registered criterion at all,** only the builder's tests.
+  4. **Turnover in a swelling cell** (D301's queue, A1) is still refused at parse ("reads volume as declared"), as
+     D334 logged.
+- **Any fix waits for the user:** a row in an existing test, or an FR. Nothing is built from this check.
+
+## D348: the user's decision: port legacy's used families first, then delete legacy whole (amends D346)
+
+2026-11-24, about 17:03 UTC.
+
+**The removal list** (read-only; `/mnt/workspaces/Cells/legacy-removal-20261124/`) traced imports and legacy model
+IDs together.
+- **What is used:**
+  - BETSE's legacy-based comparisons use 5 legacy model IDs.
+  - The calcium ensemble's tests and drivers exercise 6: `assembly_regulated_cell@1`, `assembly_regulated_cluster@1`
+    and `spatial_calcium@1` to `@4`. Its adapter table, `ensemble/ionic.py`, lists 98.
+- **What keeping those 11 would mean:**
+  - 133 of legacy's 321 modules stay;
+  - 187 modules could go now, but 180 files outside legacy use both the kept and the deletable parts. 101 of them
+    are unit tests, mostly through shared fixtures and legacy's core.
+
+**The decision: no partial deletion.**
+- A builder ports the 11 legacy families that BETSE and the calcium ensemble use to the modern models.
+- Then legacy is deleted whole, with one gate. The 195 test files go with it.
+- The ID rename of live code goes ahead from the morning of 25 November, with legacy's IDs bare and frozen until the
+  deletion.
+- **The parity rule holds throughout:** BETSE stays an outside reference, and nothing named BETSE enters `src/`.
+
+**A correction to D346:** `kinetic_pump_binding.py` does not import legacy. It only names its origin in a docstring,
+so there is nothing to port there.
+
+## D349: an umbrella request on shared finite pools, checked: covered, apart from one restart row and a per-solver view
+
+2026-11-24, about 17:05 UTC. The user's request on operators that share a finite pool maps onto existing work, checked
+read-only at main:
+- FR-43 part 2 (judged, D324);
+- the gene unit beside the unit producer (`test_shared_inventory_unit_writers.py`);
+- FR-38, FR-42, FR-33, FR-34 and FR-44 for tracking;
+- regulated availability and FR-51 for availability;
+- the wash against the bath schedule (FR-27, FR-10);
+- the generated composition table.
+
+Its acceptance check (stock identity, the sink off, the source off) is C2.2 and C2.4. Three points were checked
+separately:
+1. **Material already in production at the start is covered, as a bound.**
+   - The gene unit's production bound caps release at κ times the pool's machines, whatever is already in
+     production, since occupied chains never exceed the machines.
+   - The unit producer takes it times the horizon once, and counts its own units in transit at the start
+     separately.
+   - No exact "total available over an interval" readout exists. None is built until a target needs one.
+2. **A restart exactly at a production source's switch-off is a gap.**
+   - Restarts at a change are tested for cell-owned compartments, in process and through a snapshot, and for the
+     surface-repair pulse's end. FR-44's resume through a wash plants a redo and a skip.
+   - **Queued:** one row in the existing shared-inventory test, cut exactly at the switch, compared bitwise with the
+     uninterrupted run, with a planted redo and a planted skip of the switch caught.
+3. **Support per solver is partly listed.**
+   - The generated composition table lists each solver refusal as its own row, with source and test.
+   - There is no operator × solver view, and the species cap (1,024) is global.
+   - **Queued:** a per-solver view, generated from the existing refusal rows, with no engine change. It belongs to the
+     catalogue work of 25 November.
+
+## D350: FR-30's symmetric law stands; no FR-51 registration against V − E_K yet; an external review's findings (an FR-47 supplement erratum, the rename's design inputs, follow-ups)
+
+2026-11-24, about 17:21 UTC. These are the lead's decisions with the advisor, under the user's delegation ("decide on the
+two questions with adviser").
+
+**1. FR-30: D334 stands, and `junction_series_gates@1` keeps one symmetric block.**
+- **The diagnostic's first deliverable** (non-blind, deciding nothing) found G_ss/G_0's ±60 mV windows disjoint in
+  Revilla's data: a gap of 0.052, which is robust. At ±100 the gap is 0.0016, which is marginal. The +V windows sit on
+  the registered 0.05 floor, since 2·SEM is smaller there (n = 6 pairs).
+- **It is confounded.** Revilla steps one cell from a common holding level (`protocol.json`; `JUNCTION_GATE_POLARITY.md`),
+  so under §13.7 W3's reading the difference is confounded by that cell's V_m, neither a pass nor a fail. It is one
+  study.
+- **D334 was made with it in view:** the polarity note at Tag A already weighed Revilla's oocyte asymmetry, which
+  prompted that check.
+- **Corrections:**
+  - D320 had 4 of 6 comparisons passing and 2 missing, both at −80 mV (τ_slow and G_ss). It failed on the 75% rule.
+  - D343's "says nothing against symmetry" holds for those two judged ±80 lines only.
+  - D344's narrow scope names a signed V_j and the stepped cell, since −100 and +100 differ.
+- **The second deliverable is running.** It asks whether parameter sets compatible with the training data can reach
+  the −80 τ_slow window.
+
+**2. FR-51 against V − E_K: no registration now.**
+- Two independent fits put Kir2.1's steep spermine valence above 4. "About 5" is less firm: 5.33–5.37 derives from one
+  fit's e-fold, which has no stated uncertainty.
+- FR-51's law admits a declared effective valence above |z_B| (ruling 7), and its test rows use values up to 9, so it
+  is representable by declaration.
+- The testable content is block against V − E_K at a second K level in one preparation, and no such source is in hand.
+- **Next:** FR-51's entry gets a dated status line once it lands, and Lean is asked, through the user, for a two-K,
+  same-preparation row.
+- Cells' Kir2.1 law is a parity law with its own rectifying gates. A block on top could double-count, which is a later
+  design question.
+
+**3. An external code review, read-only over main and the active branches, checked and triaged:**
+- **FR-47's schedule supplement has two defects, both confirmed in the code:**
+  - `d.stops` carries no `kind`;
+  - check 4 would confirm itself.
+
+  Erratum 1 is registered before any judged run: `validation/assembly_lineages_v2/FR47_SCHEDULE_SUPPLEMENT_ERRATUM_1.md`,
+  tagged `fr47-schedule-supplement-erratum-1-2026-11-24`.
+- **The rename's design inputs, settled in the design note on 25 November before any script runs:**
+  - **Five live interfaces are missing from D346's family list:** `cells.binding_law@1`, `cells.assembly_geometry@1`,
+    `cells.population_structure@1`, `cells.assembly_hazard@1` and `cells.assembly_representation@1`. Whether
+    `cells.lineage_operator@1` and `cells.assembly_operator@1` share `cells.operator.*` is also open.
+  - **A folder does not always match its interface.** `rapid_binding@1` sits under `laws/reactions` but implements
+    `cells.binding_law@1`.
+  - **FR-51's `open_channel_block_weighted_modes@1` has no Law record or model-table home.** A mapping built from the
+    registries would miss it. It gets registered on the slot-refusal follow-up branch, never on e4bbf0ec.
+  - **The ID grammar.** `laws._ID` admits one dot, and `kind_registry.qualified()` would read `<family>.<name>@major`
+    as an outside namespace. `registry/declarations.py` splits on the first dot.
+  - **A name collision.** The declarations manifest already uses a field named `family` for the host model family,
+    and the viewer reads it, so the ID segment's word and that field must not collide.
+  - **Judged runs and Lean.** A judged run not finished before the rename runs from a pre-rename snapshot. Lean's
+    check drivers need the mapping table before their next gate merge.
+- **Follow-ups:**
+  - **Before gating FR-50,** it merges the slot refusal (fr51-slot-refusal) or main after that lands, so
+    `block_slot_errors` is not dropped.
+  - **FR-44's two new wash records** join every washed world's state. Any frozen checkpoint of a washed world needs
+    renewing, which goes in FR-44's landing text.
+  - **The charge-anchor budget** is exact for valences 0, ±1, ±2, ±4 and ±8. Builders summing ±3, ±5, ±6 or ±7 terms
+    rationally may add half a spacing per term. That check is queued.
+  - **Two untracked files** in the main checkout's `lean/claims/incoming/` belong to the Lean lane. The lead leaves
+    them, and the user asks that lane to file them.
+
+## D351: the wet-lab gap diagnosis: three rows confirmed, none wrong inside its claimed domain; FR-55 goes to normal (the user)
+
+2026-11-24, about 17:29 UTC.
+
+**What was done.** A read-only diagnosis of the Lean register's eight "law misses" rows at af4a8000, plus the vacuolar
+pump. It used one definition: confirmed means two independent labs measuring the same quantity on the same molecular
+system under like conditions. The records are in `/mnt/workspaces/Cells/wetlab-gap-diagnosis-20261124/`. Every engine
+revision Lean tested is on main.
+
+**Confirmed:**
+- **Kv1.5's acid shift**, in direction. Three labs agree in sign: +11.7, +17.3 and +7.8 mV, so the size differs.
+  `kv1p5_mh@1` is a parity law with no pH input. A scope line, kept off the parity law's code; no target needs
+  acidified worlds.
+- **POPC's expansion on warming**, in the direction of the central estimates. Covered by D340 and FR-56.
+- **Cx43's two decay phases**, in form. Covered by FR-30's narrowed reopening (D344, D350).
+
+**Indications, not confirmed:**
+- **Kv1.5's K–pH interaction:** different readouts. The same scope line.
+- **DOPC rupture timing:** hold against ramp, different observables. FR-31's pore model covers it.
+  - The registered worlds' fixed lysis thresholds are illustrative and claim nothing about DOPC: Protocol D's D4, D5, D6
+    and D7, and OL5's references.
+  - Recorded only.
+- **SK2's closing rate.** The two labs contradict one fixed closing rate in opposite directions:
+  - Hirschberg's rise is faster than one rate allows;
+  - Oliver's low-dose rise is slower;
+  - the one shared quantity agrees: the high-dose rise, 4.1 against 4.46 ms.
+
+  A monotone input-dependent closing rate fits both only if the macropatch plateau is at least 0.93.
+- **One permeability across voltage:** red-cell chloride and a valinomycin bilayer miss in opposite directions. A
+  scope line on the constant-field law.
+- **Kir in Na-poor solutions:** the same direction in two preparations, but the with-Na arm comes close to the square
+  root (exponent about 0.40). So `inward_rectifier_linear_driving_force@1` is silent on external Na. A scope line, kept
+  separate from D340's Kir4.1. No world runs it Na-free; XC0 uses it as Kir4.1, with sodium.
+- **The vacuolar pump:** yeast and Arabidopsis, two organisms. FR-29 stays parked (D268).
+
+**The verdict: no law is wrong inside its own claimed domain.** The confirmed gaps are a missing input (pH,
+temperature) or a known one-gate design.
+
+**The user's decision: FR-55 goes from high to normal.** D344 had read SK2 as firing. The plateau ≥ 0.93 condition, and
+a same-patch rise and washout, go to FR-55's design note.
+
+**FR-51 for the spermine target.** FR-51's law admits an effective valence up to 8, so the steep spermine component
+(5.0–5.37) can be declared on an @3 population once FR-51 lands. Its qualification ran only the leak laws, so that use
+is untested.
+
+**The docstring batch gains three scope lines:**
+- external Na on the Kir route law;
+- one permeability across voltage on the constant-field law;
+- pH on Kv1.5, on its library page rather than its parity code.
+
+## D352: corrections and checks after D350 and D351; Lean's two-potassium rows for FR-51; FR-57's growing collector
+
+2026-11-24, about 17:36 UTC. The lead's checks, with the advisor.
+
+- **A correction to D350.** FR-51's test row with an effective valence of 9.0 is a refusal: "steepness above 8",
+  refused as "exceeds 8". So no test exercises an admitted effective valence above |z_B|. One admitted row (spermine,
+  z_B = +4, z_eff = 5) is queued on the slot-refusal follow-up branch, never on e4bbf0ec.
+- **FR-44's resume** cuts exactly at the wash row: the checkpoint holds the state the wash acts on, and the resumed run's
+  first step applies it, with planted redo and skip. That meets the request's "a checkpoint immediately before the
+  event".
+- **FR-50's pre-gate run:** one failure in 1,284, `test_library_pages.py`, because the generated library pages are
+  stale after FR-50's new records. FR-51's snapshot passes the same test. FR-50 regenerates them with
+  `scripts/library_pages.py --write` after each merge, as with the composition table.
+- **FR-38 v2's smoke-3** passed, with nothing failed.
+- **Lean's two-potassium rows for FR-51** (the user's relay):
+  - **External K.** Panama and Lopatin measured Kir2.1 at four external K levels in one preparation. The steep block's
+    midpoint moved 0.98 ± 0.01 mV per mV of measured reversal, over two patches. Ishihara and Yan give fixed-dose
+    conductance curves at 150, 50 and 20 mM external K.
+  - **Internal K.** Lopatin and Nichols report a slope of −0.15 when internal K changes, from one study.
+  - **What this means for FR-51's law.** A block referenced to V − E moves exactly 1 mV per mV of E for both changes,
+    and one referenced to V moves 0. So:
+    - the external arm gives FR-51's reference real teeth;
+    - the internal arm is an indication against V − E for internal changes, so the reference is supported for
+      external changes only. That scope line also touches `inward_rectifier_linear_driving_force@1`, which reads
+      u = V − E and runs in XC0.
+  - **Main's Kir2.1** (`kir2p1_mh2@1`, a parity law) gates on absolute V, so it has no external-K shift. Once a second
+    external slope is extracted (Ishihara and Yan's curves), the user's rule fires there, and the fix is a new law or
+    major.
+  - **Non-blind:** the lead has seen 0.98, so any comparison now is not blind.
+  - **Registration is the user's call** after FR-51 lands. It needs both an external and an internal arm.
+- **FR-57's growing collector** is appended to FR-57 and settles that open point: a tube at zero volume holds no trace,
+  so the collector starts as a record. The case's numbers check: 1 fmol·ln(1/2) + 3 fmol·ln(3/2) = 0.523248 RT·fmol. The
+  reversed order gives the same total with different per-portion losses.
+
+## D353: the user's decisions: FR-63 (a pH-dependent Kv1.5 activation, normal) and FR-51's two-potassium registration after its landing
+
+2026-11-24, about 17:40 UTC.
+- **FR-63 is logged, normal.** D351 found Kv1.5's acid shift confirmed in direction by three labs, and `kv1p5_mh@1` is a
+  parity law with no pH input. The fix is a new law: the parity law stays unchanged, for BETSE parity. The size of the
+  shift is a declaration, since the labs differ.
+- **FR-51's reference voltage gets a registration after FR-51 lands.** It has two arms:
+  - **external:** Panama and Lopatin's slope of 0.98 ± 0.01 mV per mV of measured reversal; Ishihara and Yan's
+    fixed-dose curves at 150, 50 and 20 mM;
+  - **internal:** Lopatin and Nichols' −0.15.
+
+  It is recorded as non-blind, since the lead has seen 0.98. The data come through Lean's rows, read at their commit
+  before the registration is written.
+
+## D354: FR-38 v2's amendment 3 is tagged; the user's decision: three uncovered readout controls go to a later registration; FR-47's wall-marker fix landed
+
+2026-11-24, about 17:49 UTC.
+- **FR-38 v2's amendment 3** is tagged `fr38-v2-amendment-3-2026-11-24` at 5859006b (branch fr38-registration). The
+  protocol author wrote it:
+  - **Family D's energy identity** is now a stepped entry with p = 2, passing if max|r_h| ≤ 3 est + e_round in C3's
+    order window. Holding it to rounding was an error carried over from the fixed-volume worlds, and the amendment
+    discloses it. The builder's invented-cell figures (order 2.003) were seen before the ruling. D is reported only,
+    and no registered world has run.
+  - **`release_check`'s narrowed scope** is as the spec intended. It is not a registered criterion: the gross against
+    net discrimination rests on C2 with plants P1, P1′ and P1″.
+  - **The four readout controls,** from a user's note:
+    - (b), survival by detachment, is covered and judged in arms A and B;
+    - (a), producers reordered and replaced, is not covered (D334). D306's checker holds development evidence;
+    - (c): the degradation is covered, but the same molecule leaving and returning through export is not;
+    - (d): zero loss, two loss routes on one row, and a constant-stock control are not covered. The resolution limit is
+      covered in host form.
+- **The user's decision:** the three uncovered controls, (a), (c) and (d), go to a later registration (FR-38 v3) with
+  its own verdict. v2 stays as registered, so its judge and judged run are not delayed.
+- **FR-47's wall-marker fix landed** at 9d8c42be (tag `fr47-inert-wall-landed-2026-11-24`): gate G1 113 of 113, and
+  the D148 proofs identical but for provenance. The origin branch `fr47-inert-wall`, pushed by mistake, is deleted, as
+  the user approved in D342.
+
+## D355: Lean's two-potassium evidence for FR-51: the external arm meets D351 in direction and rough size; FR-51's reversal reference answers it; the internal arm and chloride are indications
+
+2026-11-24, about 18:07 UTC. The lead, with the advisor, on Lean's results relayed by the user.
+
+**What arrived.** Lean's results are at Lean commit fccbb5e5 (branch lean-paired-replay-audit-20261124), with its
+readings and drivers at 59fe4896. They are non-blind exploratory results for the registration after FR-51's landing
+(D353).
+- **The engine:** FR-51's follow-up at 7ca7c9c1 (branch fr51-slot-refusal), not e4bbf0ec, with
+  `resolved_pump_tissue@3`, `kir2p1_mh2@1` and `open_channel_block_weighted_modes@1`.
+- **What ran is FR-51's block factor, not Kir2.1.** Lean divides a blocked population's current by a matched free
+  population's, with their Kir gates held equal. "Absolute voltage" below is FR-51's block on the membrane-voltage
+  reference.
+
+**The external arm.** The half-conductance shift against the measured reversal shift, with each preparation's
+two-mode block fitted to its first K level and then held fixed:
+
+| Series, external K (mM) | Half-conductance shift (mV) | Measured reversal shift (mV) | Cells, from concentrations (mV) | RMS: reversal reference | RMS: membrane voltage | RMS: measured shift (diagnostic) |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Panama, 5.4 → 60 | +51.6 | +53.2 | +62.3 | 0.226 | 0.397 | 0.044 |
+| Ishihara, 150 → 50 | −26.1 | −26.9 | −28.2 | 0.026 | 0.479 | 0.010 |
+| Ishihara, 150 → 20 | −48.1 | −48.9 | −51.7 | 0.043 | 0.533 | 0.015 |
+
+- **The definition is met in direction and rough size only.** The independent pair is Panama against Ishihara.
+  Ishihara's two rows share one 150 mM calibration. On Lean's half-conductance reading the slopes are 0.97 (Panama),
+  and 0.97 and 0.98 (Ishihara). The exact slope stays open, since readings are good to about 1 mV and some half
+  crossings sit in 10 mV brackets.
+- **A correction to D352 and D353:** Panama's 0.98 ± 0.01, which they quote, is a fitted steep component, a different
+  observable. The pair is on the half-conductance reading.
+- **The user's rule (D344) is answered by FR-51's `{"reversal_of": ion}` reference,** which is in flight. D352's "a
+  new law or major" for main's Kir2.1 is withdrawn: FR-51's block law is that new law. `kir2p1_mh2@1` stays unchanged,
+  as a parity law, with a scope line on its library page:
+  - its own gates read absolute voltage, so they do not shift with external K;
+  - a world in which external K changes declares FR-51's block with a reversal reference.
+- **Concentration-based against measured reversal: no cause is assigned.**
+  - Cells' shift is larger in all three series, by 9.1, 1.3 and 2.8 mV, and only Panama's difference is large.
+  - Panama's zero crossings and curves come from different panels, with unspecified specimen linkage.
+  - The measured-shift arm is a clamp offset in Lean's driver: one lab's indication, and no request.
+
+**The internal arm is an indication.** It comes from one lab (Lopatin and Nichols), with one to three patches per K
+level.
+- Raising internal K from 150 to 625 mM moved the half-block voltage about +5 mV, from about −20 to −15.
+- FR-51 predicts −36.3 mV with the reversal reference and 0 with the membrane-voltage reference.
+- The full series' slope is −0.15.
+
+D352's scope line stands, now with numbers: the reversal reference is supported for external-K changes only. One study
+adds no reference option.
+
+**Red-cell chloride is recorded only.** One permeability fits both of Freedman and Novak's mean currents only with an
+intracellular to extracellular chloride ratio of 0.187, against a measured initial 0.67 ± 0.02. Intracellular chloride
+was not measured at each test voltage, so D351's scope finding stands.
+
+**Where the scope lines go:**
+- FR-51's landing message, which the lead writes;
+- the block law's docstring on `fr51-slot-refusal`, never on e4bbf0ec, which is in its gate.
+
+They cite Lean by commit (fccbb5e5), since Lean's files are not on main.
+
+**Lean's tip fccbb5e5 merges only when both hold:**
+- the slot-refusal branch has landed by merge with 7ca7c9c1 in its history (its builder adds commits, and never
+  rebases or squashes);
+- a gate has run on fccbb5e5 itself, since the branch has moved past 59fe4896.
+
+**For the registration (after FR-51 lands, D353), before any run:**
+- **Judged quantities.** Fix which slope and which reversal are judged. The lead's proposal: judge the
+  concentration-based reversal, and report the measured one.
+- **Panama's other K levels.** Panama recorded four K levels, and Lean scored one pair. The lead asks Lean, through
+  the user, whether the other levels are unscored. Until then `kir_spermine_potassium.json` stays unopened, since those
+  levels could be the one arm still blind.
+
+## D356: Kir2.1 is a composition, not a law; the user's decision: one declared voltage shift on the channel population (FR-64), with FR-63 re-formed; Panama's 10 and 20 mM become holdouts
+
+2026-11-24, about 18:19 UTC.
+
+**Kir2.1 (the lead with the advisor, at the user's request for the cleanest form).** There is no Kir2.1 law. Kir2.1
+is an always-open K population (`kleak_always_open@1`) carrying FR-51's block on a K reversal reference.
+- **Why no law.** The two labs confirm the block's shift (D355), each with its own fitted modes. A Kir2.1 law would
+  freeze one lab's fit. The confirmed part is the form, and FR-51's reference gives it to any channel population.
+- **The block stays off `kir2p1_mh2@1`.**
+  - Its m target falls with depolarisation at absolute voltage, so stacking the block on it would rectify twice, and
+    the gate half could not shift.
+  - Lean's ratio cancelled the gates, and no gates on V − E have evidence here.
+- **FR-51's registration already runs this pairing:** `validation/fr51/REGISTRATION.md` names the always-open hosts,
+  and its references' cases use them. D353's registration judges the composition itself. Until it passes, both
+  library pages (`kir2p1_mh2@1`'s and the block law's) call the composition development-only.
+- **What the pages say is not claimed:**
+  - the unblocked current's shape and size against external K, which Lean leaves open;
+  - internal K, an indication (D355);
+  - the block's own limits in version 1: the blocker is held at a declared constant concentration rather than a
+    species row; the block has no kinetics; and binding is trace, with no count.
+- **No values tonight.** The fitted modes stay in Lean's driver and JSON, unopened.
+
+**The user's decision: one general mechanism, logged as FR-64.** FR-51's reversal reference and FR-63's pH shift have
+one shape: the voltage a factor reads, shifted by a declared function of a local activity. It becomes one mechanism,
+declared on the channel population:
+- **The shifts are a small closed set:** an ion's reversal, V − E from its compartment concentrations, and a sourced
+  shift per pH unit.
+- **Who reads it:** the factors that declare it, the gates and the block.
+- **Parity laws are untouched.** A population that declares no shift runs bit for bit as now.
+- **FR-63** becomes a declared pH shift on Kv1.5's population, instead of a new law.
+- **FR-51** lands as is. Its block's `reference` key then moves into the mechanism, with no aliases (pre-alpha).
+- **A design note comes first,** before FR-51's block law is registered and before the rename's design note
+  (25 November).
+- **Where it sits today** (the lead's read of `fr51-slot-refusal`):
+  - `channel_block` in `surface_pump_v3.py` computes V − E per population, for the block only;
+  - `channel_kinetics` hands the gating laws the plain membrane voltage;
+  - the block law, `open_channel_block.py`, already takes any reference voltage.
+
+  So the change is in the model's plumbing, not in any law.
+
+**Lean's answer on Panama's other levels** (relayed by the user):
+- **What Lean scored.** Its frozen replay fitted Panama at 5.4 mM and scored only 60 mM. Panama's 10 and 20 mM
+  normalized-current curves and half-conductance shifts are unscored; the 20 mM row in D355's table is Ishihara's. Lean
+  verified this from the saved run output and left the input data file unopened.
+- **The registration** (after FR-51 lands, D353) reserves both levels as within-study holdouts. The 5.4 mM fit, the
+  readout and the scoring rule are frozen before the two levels are extracted.
+- **Prior exposure, disclosed.** Lean's search saw the full figure, including the intermediate traces, and had read
+  their reversal voltages and the published four-level fit. By its recall it extracted normalized currents only at the
+  endpoints. So the registration can claim a prospective test of the two intermediate responses, with that exposure
+  disclosed.
+- **The lead** keeps `kir_spermine_potassium.json` unopened.
+
+## D357: OL6 Protocol D v2 is registered; the judged revision is pinned at eced4ef8
+
+2026-11-24, about 18:29 UTC. The lead, with the advisor.
+
+**The tag.** `ol6-protocol-d-v2-registered-2026-11-24` is at eced4ef8 (branch `ol6-protocol-d-v2`).
+- **The judged revision is eced4ef8.** Its src is main 9d8c42be's, FR-47's inert-wall landing. The branch merged main
+  once, at 0087818d, and never again: main now carries FR-44's src.
+- **The authority** is `docs/OL6_PROTOCOL_D_V2.md`, with `protocol_d_v2.py` and `protocol_d_v2.json`. The files it
+  judges with are unchanged since their own tags.
+- **Checks at eced4ef8:**
+  - `protocol_d_v2 check`: 29 of 29;
+  - the JSON regenerates byte for byte;
+  - the guard set: 87 passed;
+  - the privacy scan of the branch's diff: clean.
+
+**Rulings on the builder's four calls:**
+- **The pin** goes in this entry, as the document says. 0087818d predates the last text commits.
+- **`moments` stays.** Without it, identical replicas would miss the zero-SE rule in 14 of the 54 constants. A pair
+  wrongly classed as spread would then read the same artifact that failed the first registration (D318).
+  - A check row shows that `moments` equals the registered `mean_error` bit for bit on columns whose replicas are not
+    all identical.
+- **A missing row keeps failing (§6).** An exact run that loses a vesicle that (d) keeps floppy is a real
+  disagreement. Counting it as tense would make it unfailable.
+- **Erratum 2's frozen module stays as it is.** One docstring line ("P-D1's (d) side, in place of the refused (d) run")
+  names a plant outcome of the first check. §7 already states that P-D1's (d) side is computed from the closed form and
+  never run. The tag message discloses the line, and the checker lists it.
+
+**Seeds:**
+- **First:** 670001 to 670000 + M.
+- **Retry:** 690001 to 690000 + M, once, and for inconclusive worlds only.
+- **D7's clock convergence** reads the first six seeds of the set it checks.
+- **Withdrawn:**
+  - 640001 onwards: its first 128 were consumed by a (d)-only clock-room probe; the retry range was never run;
+  - 740001 onwards: never run.
+
+**P-D8, the one-ulp plant,** moves a read value; it is not an engine run. This records its limit: moving N_L by 1 to
+16 ulps leaves V's bits unchanged, so these constant pairs cannot see a small lumen-count error.
+
+**Two routes to inconclusive** (a correction to the lead's "about 1 in 10²⁰" to the user, which covered the first
+only):
+- **A tense replica:** about 1.8e-20 at the worst rung M reads, from the linear-noise variance, which was checked
+  against 128 exact replicas of an unregistered 12.5 nm D5.
+- **A D7 clock refusal on the new seeds,** which are unscreened by design. It has no number. On the withdrawn seeds
+  the worst case used 0.39 of the bound.
+
+**Cost:** about 13.5 process-hours for the first seed set, with D5 at 6 hours and its 100 nm rung at 4.5 hours in one
+chain. With a retry, at most about 27.
+
+**The checker** is fresh and independent: neither the builder nor the first checker. It is briefed with the tag, the
+document and §10, and with its CPUs. It reports before any retry.
+
+## D358: the user's decision on gate speed: refresh the scope map after engine landings, record the 37 unmapped files, and narrow D229's readers rule after a file-open check
+
+2026-11-24, about 18:32 UTC. The user: "think practically about testing as much as we can try to be optimized without
+sacrificing quality". The lead measured, with the advisor.
+
+**What a gate with no src change runs today.** The gate for the Lean calibration tip, whose diff is 52 files, all under
+`lean/`, selected 561 of 666 tier files: 12,633 of 13,307 test-seconds, and 2,354 s of wall time on lane A. Two terms
+dominate:
+- **Drift: 442 files.** `scope.py select` compares each test's recorded paths with the nightly map's snapshot (03:09),
+  so every test that touches src changed by the day's landings is re-run by every later gate, whatever the gate's own
+  change.
+- **D229's always-run readers: 469 files.** Every test that reads repository files always runs.
+
+The same estimate for two other diffs, with the drift term removed:
+
+| Always-run rule | Lean tip (52 files) | D356 (two docs files) | Protocol D v2 (three files) |
+| --- | --- | --- | --- |
+| Recorded reads only | 49 files, 735 s | 50 files, 794 s | 51 files, 815 s |
+| Folder scanners | 295 files, 7,824 s | 296 files, 7,930 s | 296 files, 7,930 s |
+| Readers (D229) | 479 files, 10,496 s | 480 files, 10,602 s | 480 files, 10,602 s |
+
+- **The floor.** In every variant, 37 files run because their child processes are not recorded, and a few because they
+  are missing from the map.
+- **No tier test reads `lean/`.**
+- **Tracing is nearly free.** The traced nightly ran 662 files in 2,301 s of wall time.
+
+**Why not simply select from the landing's own diff.** That would change what a gate certifies. Main also changes
+without a gate:
+- the lead's decision commits, which pass only the privacy scan;
+- the merged state after each `land.sh`, whose trial runs only the named test files.
+
+FR-50's stale library pages are that class of failure. So main's drift stays tested, once rather than in every gate.
+
+**The user's decision: build all three tomorrow.** Each is qualified before use, and the full nightly run stays the
+backstop: a nightly failure still stops selection until it is explained.
+1. **Refresh the map after each engine landing,** with one traced full run on main. Later gates then select against a
+   map of the current main. No rule changes, and no coverage is lost.
+2. **Record the 37 files whose children are unmapped,** so they run only when their inputs change.
+3. **Narrow D229's always-run readers rule,** amending D229 rule 3. Tests that read repository files then run when the
+   recorded files they read, or the folders they list, change.
+   - The evidence comes first: a file-open trace (`strace -f -e trace=openat`) of a sample of reader files, compared
+     with the map's paths. A repository path the map lacks is a hole, and it blocks the change.
+   - The guard set still always runs.
+
+**Tonight nothing changes** in `scripts/gates` or `gate-cache/scope-map.json`, because gates are queued.
+- The queued Lean gates are Lean's, and the lead does not stop them.
+- The user passes Lean the advice: one gate per merge point. 647b4c15 covers d5a2c138, 3a5f40d7 and af4a8000.
+  fccbb5e5 is superseded by c1924c89, which cannot merge before FR-51's follow-up lands.

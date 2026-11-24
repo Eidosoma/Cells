@@ -173,6 +173,27 @@ theorem masked_response_posDef (held : L → Bool) (x : L → ℝ) (hx : ∀ j, 
     simp_all [response, binderResponse, mean, Matrix.diagonal_apply, Matrix.one_apply,
       Matrix.sum_apply, d, m]
 
+/-- At fixed binder totals and other free ligands, the increase in total concentration
+is at least the increase in free concentration between any two positive doses. -/
+theorem free_increment_le_total_increment (T : B → ℝ) (hT : ∀ b, 0 ≤ T b)
+    (a n : (b : B) → Forms b → ℝ) {x y : ℝ} (hx : 0 < x) (hxy : x ≤ y) :
+    y - x ≤ totalAlong T a n (Real.log y) - totalAlong T a n (Real.log x) := by
+  have hy := hx.trans_le hxy
+  have log_le := Real.strictMonoOn_log.monotoneOn hx hy hxy
+  have means (b : B) : Monotone (fun t => mean (fun i => a b i + t * n b i) (n b)) := by
+    apply monotone_of_deriv_nonneg
+    · exact fun t => (hasDerivAt_mean (a b) (n b) (n b) t).differentiableAt
+    · intro t
+      rw [(hasDerivAt_mean (a b) (n b) (n b) t).deriv, covariance_eq_centered]
+      apply Finset.sum_nonneg
+      intro i _
+      rw [mul_assoc]
+      exact mul_nonneg (div_nonneg (Real.exp_pos _).le (partition_pos _).le) (mul_self_nonneg _)
+  have bound := Finset.sum_le_sum (s := Finset.univ)
+    (fun b _ => mul_le_mul_of_nonneg_left (means b log_le) (hT b))
+  simp only [totalAlong, Real.exp_log hx, Real.exp_log hy]
+  linarith
+
 end
 
 end CellsProofs.Chemistry.BindingResponse

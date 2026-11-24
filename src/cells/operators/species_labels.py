@@ -41,7 +41,9 @@ label, cell] and `label_outside_share` [..., outside node], each row's shares at
 labels 0, the presence mask bound in `label_present`); beside a replacing event (`replacing`;
 zero-size elsewhere), `label_removed_fmol` [labelled species, label, cell] and
 `label_pool_removed_fmol` [pool reporter, label, pool], what left at its events by label, cumulative
-from t = 0 (erratum E); `label_closure_relative` [labelled species],
+from t = 0 (erratum E); beside an exchanging event (`exchanging`, FR-44; zero-size elsewhere),
+`label_outside_removed_fmol` [labelled species, label, outside node], what left at its liquid
+exchanges by label, cumulative from t = 0 (fmol); `label_closure_relative` [labelled species],
 a diagnostic: the largest closure residual of any reporter's half-step so far
 (label_shares.closure_residual), relative to the amounts involved. It measures each reporter's own
 consistency, its booked move against its reported one-way parts, at rounding; that no other mover
@@ -63,6 +65,19 @@ label (source_controls); replacement@1's event reports the slots it replaced, wh
 newcomer label, and a pool reporter's event the pools it emptied, which take the base label, what
 left recorded by label (advance_event; erratum E, TEMPLATED_POLYMERISATION_LAWS §9.18).
 
+Liquid exchanges (FR-44, D327; docs/NEUTRAL_LABELS_DESIGN.md §13): an exchanging event (the
+compartment wash) reports a LiquidExchange at the outside nodes. The owner reads each report by
+its event's declared kind (contract.label_event), never by its shape.
+- The sample is well mixed, so it leaves with the node's shares; what left is recorded by label at
+  the shares just before the event.
+- The buffer carries no label and joins the base, even while a window is open: a buffer is not an
+  arrival.
+- Each label's material is then (n - removed) s_k + supplied [k = 0], exactly
+  (label_shares.exchange). A labelled ion's amount is kept while its shares dilute toward the
+  base, since the exchanged liquid is replaced by unlabelled liquid of the same composition.
+- Cells' shares are not touched: the report's axis is the outside nodes, so an exchange of a
+  cell's own liquid cannot be expressed in version 1.
+
 Refused (fail closed), each refusal naming the FR-42 stage that lifts it:
 - a labelled species moved inside the inner step (registry moved_in_step) by anything the inner
   step does not report: every mover before @3's side lands (stage 2); afterwards a charged face,
@@ -75,8 +90,11 @@ Refused (fail closed), each refusal naming the FR-42 stage that lifts it:
 - an operator whose split part writes species amounts without reporting (turnover, exchange,
   reactions and templated polymerisation report; FR-42's stage 3 added exchange and the reactions'
   passive routes);
-- an event that writes species amounts without reporting the slots it replaced, a closer or
-  retirer of slots, and a provider of the amount references (no FR-42 stage plans them yet);
+- an event that writes species amounts and reports neither the slots it replaced nor a liquid
+  exchange, a closer or retirer of slots, and a provider of the amount references (no FR-42 stage
+  plans them yet);
+- a labels-taking event whose report kind is missing or contradicts its declarations
+  (contract.label_event_error, FR-44), so that no report is read as another kind's;
 - beside a replacing event, a pool reporter whose event takes no labels (it could empty its pools
   unreported; erratum E).
 A second label owner is refused by the composite's parser, as a second declaration of its schedule
@@ -96,7 +114,17 @@ from cells.models import inner_laws
 from cells.numerics import label_shares
 from cells.numerics.clock_instants import ON_THE_GRID, on_grid, same_instant  # D283's predicate.
 from cells.numerics.species_sums import entity_sum
-from cells.operators.contract import Operator, reports_labels, takes_labels
+from cells.operators.contract import (
+    EMPTIED,
+    EXCHANGED,
+    LABEL_EVENT_KINDS,
+    LiquidExchange,
+    Operator,
+    label_event,
+    label_event_error,
+    reports_labels,
+    takes_labels,
+)
 from cells.registry import kind_registry, species_registry
 
 LAW_ID = "neutral_arrival_labels@1"
@@ -126,6 +154,13 @@ STATE_AXES = {
     # cumulative from t = 0 (fmol); zero-size along the first axis without a replacing event.
     "label_removed_fmol": ["label_removed_species", "label_slot", "cell_slot"],
     "label_pool_removed_fmol": ["label_removed_pool_owner", "label_slot", "label_pool"],
+    # FR-44: what left outside nodes at liquid exchanges, by label, cumulative from t = 0 (fmol);
+    # zero-size along the first axis without an exchanging event.
+    "label_outside_removed_fmol": [
+        "label_outside_removed_species",
+        "label_slot",
+        "extracellular_slot",
+    ],
 }
 LAYOUT_FIELDS = (
     "label_rows",  # [labelled species] int64: their rows of the model's species axis.
@@ -506,14 +541,20 @@ def operator_errors(spec):
         replaces = set(AMOUNT_FIELDS) & {*op.EVENT_REPLACES, *op.STATE_RESETS}
         writes = set(AMOUNT_FIELDS) & set(op.ENTITY_WRITES) - replaces
         where = f"{op.LAW_ID} beside {LAW_ID}"
+        kind_error = label_event_error(op)  # FR-44: no report is read as another kind's.
         if op.RETIRES or op.CLOSES:
             errors.append(f"{where}: it closes or retires slots ({NOT_PLANNED})")
         elif set(AMOUNT_VIEWS) & set(op.VIEW_FIELDS):
             errors.append(f"{where}: its view changes species amounts ({NOT_PLANNED})")
+        elif kind_error:
+            errors.append(f"{where}: {kind_error} (fail closed)")
         elif replaces and not (op.EVENT and takes_labels(op.event)):
             errors.append(f"{where}: its events write species amounts ({NOT_PLANNED})")
-        elif writes and op.EVENT and not op.SPLIT:
-            errors.append(f"{where}: its events write species amounts ({NOT_PLANNED})")
+        elif writes and op.EVENT and not op.SPLIT and label_event(op) != EXCHANGED:
+            errors.append(
+                f"{where}: its events write species amounts and report neither replaced slots "
+                f"nor a liquid exchange ({NOT_PLANNED})"
+            )
         elif writes and op.SPLIT and not reports_labels(op):
             errors.append(
                 f"{where}: it writes species amounts without reporting its one-way moves "
@@ -648,6 +689,13 @@ def replacing(spec):
     )
 
 
+def exchanging(spec):
+    """Whether the composition declares an event that exchanges liquid and reports it (FR-44: the
+    compartment wash), static: the record of what left at an exchange exists only then, zero-size
+    elsewhere, so every other labelled world keeps its fields (D148 case 2)."""
+    return any(label_event(op) == EXCHANGED for op, _, _ in composite_spec.entries(spec))
+
+
 def bind(spec, declaration):
     declaration = derived(spec, declaration)[0]  # Amendment G: the producers' labels too.
     m, x = spec.model, spec.execution
@@ -694,6 +742,7 @@ def bind(spec, declaration):
         label_pool_cells=pool_cells,
     )
     events = replacing(spec)  # Static: the records' first axes (erratum E).
+    exchanges = exchanging(spec)  # FR-44, likewise.
     state = dict(
         label_share=share,
         label_outside_share=outside_share,
@@ -701,6 +750,9 @@ def bind(spec, declaration):
         label_pool_share=pool_share,
         label_removed_fmol=np.zeros((count if events else 0, width, x.capacity)),
         label_pool_removed_fmol=np.zeros((len(pools) if events else 0, width, size)),
+        label_outside_removed_fmol=np.zeros(
+            (count if exchanges else 0, width, x.extracellular_capacity)
+        ),
     )
     return state, layout
 
@@ -836,19 +888,28 @@ def _set_pool(values, pool, size, new, *, xp):
     return out
 
 
-def advance_event(before, end, report, control, p, *, xp=jnp, pool=None):
-    """end after an event that reports what it replaced (D296; erratum E, TEMPLATED_POLYMERISATION_
-    LAWS §9.18). Each event reports only its own material, so two reporting events commute. What
-    leaves is recorded by label: its amount before the event times its shares just before it, in
-    the cumulative records (zero-size without a replacing event, `replacing`).
-    - pool None: report is replaced [cell], the slots whose rows the event swapped (replacement@1).
-      Every labelled row there leaves whole, into label_removed_fmol [m, label, cell], and its
-      shares become the label in force for its species this step, the newcomer's: the template's
-      material is newcomer material, a donor copy's included.
-    - pool k, the reporter's position among the pool reporters: report is removed [P] >= 0, the
-      amounts its event emptied from its pool entries (its label_pools, in order), into
+def advance_event(before, end, report, control, p, *, kind, xp=jnp, pool=None):
+    """end after an event that reports what it moved, its report read by the event's kind
+    (contract.label_event; D296; erratum E, TEMPLATED_POLYMERISATION_LAWS §9.18; FR-44), never by
+    its shape. Each event reports only its own material, so reporting events commute. What leaves
+    is recorded by label: its amount before the event times its shares just before it, in the
+    cumulative records (zero-size where no event of the kind is declared: `replacing`,
+    `exchanging`).
+    - "replaced" (pool None): report is replaced [cell], the slots whose rows the event swapped
+      (replacement@1). Every labelled row there leaves whole, into label_removed_fmol [m, label,
+      cell], and its shares become the label in force for its species this step, the newcomer's:
+      the template's material is newcomer material, a donor copy's included.
+    - "emptied" (pool k, the reporter's position among the pool reporters): report is removed [P]
+      >= 0, the amounts its event emptied from its pool entries (its label_pools, in order), into
       label_pool_removed_fmol[k]. An entry it emptied (removed > 0) takes the base label: it holds
-      no material, so no later share depends on it, and its next arrivals set its shares."""
+      no material, so no later share depends on it, and its next arrivals set its shares.
+    - "exchanged" (pool None): report is a LiquidExchange [m, outside node] (advance_exchange)."""
+    if kind not in LABEL_EVENT_KINDS:  # Fail closed: no report is read as another kind's.
+        raise ValueError(f"{LAW_ID}: an event's report kind is one of {LABEL_EVENT_KINDS}")
+    if (kind == EMPTIED) != (pool is not None):
+        raise ValueError(f"{LAW_ID}: an emptied report names its pool reporter, and no other does")
+    if kind == EXCHANGED:
+        return advance_exchange(before, end, report, p, xp=xp)
     if pool is None:
         replaced = report
         newcomer = control.label_arrival[:, :, None]  # [m, label, 1] one-hot.
@@ -870,6 +931,24 @@ def advance_event(before, end, report, control, p, *, xp=jnp, pool=None):
     return out._replace(
         label_pool_removed_fmol=_set_pool(end.label_pool_removed_fmol, pool, size, record, xp=xp)
     )
+
+
+def advance_exchange(before, end, report, p, *, xp=jnp):
+    """end after a liquid exchange at the outside nodes (FR-44; module docstring), from its
+    LiquidExchange report [m, outside node].
+    - The sample (removed) leaves with each node's shares just before the event, recorded by label
+      in label_outside_removed_fmol [m, label, outside node].
+    - The buffer (supplied) joins the base, whatever window is open (label_shares.exchange).
+    - Where nothing is exchanged the shares and the record keep their bits, and cells' shares are
+      never touched."""
+    if not isinstance(report, LiquidExchange):
+        raise ValueError(f"{LAW_ID}: an exchanged report is a LiquidExchange (operators/contract)")
+    removed, supplied = report
+    shares = before.label_outside_share  # [m, label, outside node] just before the event.
+    n0 = amounts(before, p, xp=xp)[1]  # [m, outside node], the rows the sample was taken from.
+    new = label_shares.exchange(shares, n0, removed, supplied, p.label_present, xp=xp)
+    record = end.label_outside_removed_fmol + removed[:, None, :] * shares
+    return end._replace(label_outside_share=new, label_outside_removed_fmol=record)
 
 
 def advance_inner(start, end, transfers, p, *, xp=jnp):
@@ -920,8 +999,12 @@ def labels_domain_valid(state, p, *, xp):
         & label_shares.domain_valid(state.label_pool_share, p.label_pool_present, xp=xp)
         & xp.all(xp.isfinite(closure) & (closure >= 0))
     )
-    for record in (state.label_removed_fmol, state.label_pool_removed_fmol):
-        if record.shape[0]:  # Static: present beside a replacing event alone.
+    for record in (
+        state.label_removed_fmol,
+        state.label_pool_removed_fmol,
+        state.label_outside_removed_fmol,
+    ):
+        if record.shape[0]:  # Static: present beside a replacing or an exchanging event alone.
             valid = valid & xp.all(xp.isfinite(record) & (record >= 0))
     return valid
 
@@ -947,6 +1030,7 @@ class NeutralArrivalLabels(Operator):
         "label_pool_share": "1",
         "label_removed_fmol": "fmol",
         "label_pool_removed_fmol": "fmol",
+        "label_outside_removed_fmol": "fmol",
     }
     RECORD_KINDS = {
         "label_share": "level",
@@ -955,6 +1039,7 @@ class NeutralArrivalLabels(Operator):
         "label_pool_share": "level",
         "label_removed_fmol": "cumulative",
         "label_pool_removed_fmol": "cumulative",
+        "label_outside_removed_fmol": "cumulative",
     }
     RECORD_DIAGNOSTICS = ("label_closure_relative",)
 
@@ -963,8 +1048,8 @@ class NeutralArrivalLabels(Operator):
         species' labels in declared order, the base first; padding past its own); the pool
         reporters; their pool positions (each reporter's label_pools in order); and the records'
         first axes, the labelled species and the pool reporters again where a replacing event is
-        declared, empty elsewhere (erratum E). A species' labels include its producers' (amendment
-        G)."""
+        declared (erratum E), and the labelled species where an exchanging one is (FR-44), empty
+        elsewhere. A species' labels include its producers' (amendment G)."""
         declaration = derived(spec, declaration)[0]
         width = max(len(s.labels) for s in declaration.species)
         owners = reporters(spec, "LABEL_POOLS")
@@ -972,12 +1057,20 @@ class NeutralArrivalLabels(Operator):
         size = max(map(len, pools.values()), default=0)
         events = replacing(spec)
         removed = tuple(s.id for s in declaration.species) if events else ()
+        exchanged = tuple(s.id for s in declaration.species) if exchanging(spec) else ()
         return {
             "label_removed_species": {
                 "id": "label_removed_species",
                 "ids": removed,
                 "holds": "labelled species, its departing material at replacement events recorded",
                 "carries": removed,
+            },
+            "label_outside_removed_species": {
+                "id": "label_outside_removed_species",
+                "ids": exchanged,
+                "holds": "labelled species, its material leaving outside nodes at liquid "
+                "exchanges recorded",
+                "carries": exchanged,
             },
             "label_removed_pool_owner": {
                 "id": "label_removed_pool_owner",
@@ -1093,12 +1186,14 @@ class NeutralArrivalLabels(Operator):
         nodes = x.capacity + x.extracellular_capacity
         if replacing(spec):  # Erratum E's record of the rows' departing material, per cell.
             nodes += x.capacity
+        if exchanging(spec):  # FR-44's record of what left at liquid exchanges, per node.
+            nodes += x.extracellular_capacity
         return 8 * 6 * len(declaration.species) * width * nodes
 
     def summary(self, spec, declaration, schedule, history):
         declaration, producers = derived(spec, declaration)  # Amendment G's labels, schedules.
         schedule = (*schedule, *producers)
-        return {
+        out = {
             "label_law": LAW_ID,
             "labelled_species": {
                 s.id: dict(
@@ -1120,6 +1215,12 @@ class NeutralArrivalLabels(Operator):
             "label_update": "shares of each physical row, advanced after each reporter's "
             "half-step from its one-way moves (numerics/label_shares.advance)",
         }
+        if exchanging(spec):  # FR-44: only a world with an exchanging event says it.
+            out["label_exchange"] = (
+                "at each liquid exchange, the sample leaves with the node's shares and the buffer "
+                "joins the base, whatever window is open (numerics/label_shares.exchange)"
+            )
+        return out
 
     # ------------------------------------------------------------ binding
 
@@ -1145,8 +1246,8 @@ class NeutralArrivalLabels(Operator):
     def advance_inner(self, start, end, transfers, p, *, xp):
         return advance_inner(start, end, transfers, p, xp=xp)
 
-    def advance_event(self, before, end, report, control, p, *, xp, pool=None):
-        return advance_event(before, end, report, control, p, xp=xp, pool=pool)
+    def advance_event(self, before, end, report, control, p, *, kind, xp, pool=None):
+        return advance_event(before, end, report, control, p, kind=kind, xp=xp, pool=pool)
 
     def rate_checks(self, state, control, p, valid, *, xp):
         return valid & labels_domain_valid(state, p, xp=xp)

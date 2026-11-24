@@ -189,6 +189,35 @@ theorem ramp_midpoint_difference {t h : ℝ} (ht : 0 ≤ t) (hh : 0 ≤ h) :
   field_simp [ha, hb, hc]
   ring
 
+/-- For a rising response, the time between 20% and 80% of the excursion is
+`log 4` times the relaxation time. A common positive closing rate bounds this
+interval using the zero-input washout time, even when the plateau is unknown. -/
+theorem rise_20_80 {s a b t20 t80 : ℝ} (ha : 0 ≤ a) (hb : 0 < b)
+    (hs : s < plateau a b)
+    (h20 : step s a b t20 = s + (1 / 5 : ℝ) * (plateau a b - s))
+    (h80 : step s a b t80 = s + (4 / 5 : ℝ) * (plateau a b - s)) :
+    t80 - t20 = Real.log 4 * tau a b ∧ t80 - t20 ≤ Real.log 4 * tau 0 b := by
+  have hp := add_pos_of_nonneg_of_pos ha hb
+  have remaining (t f : ℝ) (ht : step s a b t = s + f * (plateau a b - s)) :
+      Real.exp (-((a + b) * t)) = 1 - f := by
+    have h : step s a b t - plateau a b =
+        (s - plateau a b) * Real.exp (-((a + b) * t)) := equilibrium_offset s a t hp.ne'
+    apply mul_left_cancel₀ (sub_ne_zero.mpr hs.ne)
+    rw [← h, ht]
+    ring
+  have hratio : Real.exp ((a + b) * (t80 - t20)) = 4 := by
+    rw [show (a + b) * (t80 - t20) = -((a + b) * t20) - (-((a + b) * t80)) by ring,
+      Real.exp_sub, remaining _ _ h20, remaining _ _ h80]
+    norm_num
+  have elapsed := congrArg Real.log hratio
+  rw [Real.log_exp] at elapsed
+  have interval : t80 - t20 = Real.log 4 * tau a b := by
+    rw [tau, mul_one_div, eq_div_iff hp.ne', mul_comm]
+    exact elapsed
+  refine ⟨interval, interval.le.trans ?_⟩
+  apply mul_le_mul_of_nonneg_left _ (Real.log_nonneg (by norm_num))
+  simpa [tau] using one_div_le_one_div_of_le hb (show b ≤ a + b by linarith)
+
 end
 
 end CellsProofs.Transport.RegulatedAvailability

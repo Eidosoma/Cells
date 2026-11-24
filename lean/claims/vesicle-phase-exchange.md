@@ -45,6 +45,8 @@ Uses [Bilayer area is half the sum of the molecular footprints in its two leafle
 
 **Open.** Lipid molecules inserted per vesicle per second at measured radius and matched free-monomer concentration, composition and temperature.
 
+- [At fixed external lipid supply, the measured whole-vesicle insertion flux can discriminate radius-proportional from area-proportional capture.](../WET_LAB_EVIDENCE.md#pair-vesicle-insertion-size-exponent) · Comparison unresolved
+
 **Unit** molecules/s per vesicle
 
 ### jin2021_pazepc_insertion@1

@@ -373,18 +373,93 @@ def _gate_on_a_bilayer(raw):
     return as_representation(definition(w), envelope={"min_count": 1.0, "provenance": "a test"})
 
 
+def _inert_on_a_bilayer(raw):
+    """An osmotic bilayer vesicle with a membrane species J that no step moves, at 1 copy against
+    min_count 2: its quanta enter the footprint W(n), which the bilayer's extents read."""
+    from tests.unit.test_assembly_lineages_v2_lumen import K_L, osmotic_world
+
+    w = osmotic_world(L_pool=30, L_mem=8, S_pool=6, S_lumen=2, I_lumen=2, floor=4 * K_L)
+    w["species"].append(species("J", {"j": 1}, solution=0.0, bilayer=-2.0))
+    w["phases"]["membrane"]["species"].append("J")
+    w["phases"]["pool"]["species"].append({"id": "J", "kind": "finite"})
+    w["geometry"]["area_per_leaflet"]["J"] = {"quanta": K_L, "provenance": "a test"}
+    w["founder"] |= {"J@membrane": 1, "J@pool": 0}
+    return as_representation(definition(w), envelope={"min_count": 2.0, "provenance": "a test"})
+
+
+def inert_wall_definition(wall, *, wall_reads=None, population=False):
+    """One prescribed shell (a single lineage, or with `population` one slot of a population: the
+    envelope's rule is the same) with equal pool and lumen volumes, passive exchange at 1 per s
+    each way (P A / V = 1), one tracer in the lumen and none outside, and a wall species W at
+    `wall` copies, in (d) at min_count 2 (rtol 1e-9, atol_count 1e-9). W is inert: no step,
+    factor or law reads it. With `wall_reads` "gate", W and a second form V gate the entry; with
+    "step", W switches to V by a wall step: either way a rate reads W's count."""
+    from cells.models.assembly_lineages_v2 import (
+        GATE_FACTOR,
+        PRESCRIBED_SHELL,
+        SHARED_POOL,
+        SHELL_PERMEATION,
+    )
+
+    u = "unsourced; test"
+    names = [("S", {"s": 1}, {"solution": 0.0}), ("W", {"w": 1}, {"bilayer": -1.0})]
+    slot = {"S@lumen": 1, "W@membrane": wall}
+    if wall_reads is not None:
+        names.append(("V", {"w": 1}, {"bilayer": -1.0}))
+        slot["V@membrane"] = 5
+    w = {
+        "units": {"time": "s", "temperature_K": 296.15, "standard_concentration_mM": 1000.0},
+        "conventions": dict(CONVENTIONS, condensed_measure="multinomial", lumen_volume="declared",
+                            last_molecule="kept"),
+        "species": [species(n, m, **mu) for n, m, mu in names],
+        "phases": {"pool": {"volume_L": 1e-18, "species": [{"id": "S", "kind": "finite"}]},
+                   "membrane": {"species": [n for n, _, mu in names if "bilayer" in mu]},
+                   "lumen": {"volume_L": 1e-18, "species": ["S"]}},
+        "steps": [{"id": "entry", "locus": "membrane", "reactants": {"S@pool": 1},
+                   "products": {"S@lumen": 1}, "law": SHELL_PERMEATION,
+                   "permeability_m_per_s": {"value": 1e-6, "provenance": u}}],
+        "free_energy": [{"law": IDEAL_MIXING}],
+        "founder": {"S@pool": 0, **slot},
+        "geometry": {"law": PRESCRIBED_SHELL, "area_m2": {"value": 1e-15, "provenance": u}},
+    }  # fmt: skip
+    if wall_reads == "gate":
+        w["rate_factor"] = {"law": GATE_FACTOR, "forms": ["W", "V"],
+                            "entries": [{"form": "W", "step": "entry", "ddG_kT": 0.5}]}
+    elif wall_reads == "step":
+        w["steps"].append(step("switch", {"W": 1}, {"V": 1}, 1.0, phase="membrane"))
+    if population:
+        w["founder"] = {"S@pool": 0, **{k: 0 for k in slot}}
+        w["population"] = {"structure": SHARED_POOL, "slots": 1, "founders": [slot]}
+    d = as_representation(definition(w, horizon=1.0, observations=(1.0,)),
+                          envelope={"min_count": 2.0, "provenance": "a test"},
+                          integrator=dict(INTEGRATOR, atol_count=1e-9))  # fmt: skip
+    if population:
+        d["execution"]["mode"] = "population"
+    return d
+
+
+def _wall_read(reads):
+    return inert_wall_definition(1, wall_reads=reads)
+
+
 @pytest.mark.parametrize(
     "raw, words",
     [
         (_shell(lambda w: w), "site binding in a cells.prescribed_shell@1 world"),
         (_shell(_driven), "a gate driven by bound states, or by anything but its own forms"),
         (_gate_on_a_bilayer(None), "cells.gate_factor@1 is refused in version 1 outside"),
+        (_wall_read("gate"), "the founder's W@membrane holds 1, below the envelope"),
+        (_wall_read("step"), "the founder's W@membrane holds 1, below the envelope"),
+        (_inert_on_a_bilayer(None), "J@membrane holds 1, below the envelope"),
     ],
 )  # fmt: skip
 def test_fr47_s_refusals_by_name(raw, words):
     """D323: site binding in a shell's world (R9), a gate driven by anything but its own forms
     (R7) and the gate factor outside a shell's world, each by name at the parse. The shell without
-    its binding and with a fixed or an autonomously switching gate is admitted."""
+    its binding and with a fixed or an autonomously switching gate is admitted. The envelope's
+    guard stays wherever a rate or the geometry reads a wall count (FR-47's inert-wall fix): a
+    gate's form, a wall step's species and a bilayer's membrane species (its footprint W(n)), each
+    at 1 copy against min_count 2. Parse only."""
     with pytest.raises(ConfigError, match=words):
         parse_spec(raw)
 
@@ -398,3 +473,25 @@ def test_a_shell_with_a_fixed_or_an_autonomous_gate_is_admitted():
         return w
 
     parse_spec(_shell(flipping))
+
+
+@pytest.mark.parametrize("wall", [1, 2])
+def test_an_inert_wall_species_is_outside_the_envelope(wall):
+    """FR-47's inert-wall fix: a prescribed shell reads no wall count (its extent is constant) and
+    its permeation moves no membrane molecule, so a wall species that no step, factor or law reads
+    is outside the envelope, at 1 copy as at 2, below and at min_count 2. The one tracer in the
+    lumen relaxes to the two-state mean, (1 + e^-2)/2 inside at 1 s, within 1e-7, and the tracer
+    is conserved to the moieties' tolerance with the books closed. The guard stays where a rate
+    reads the wall (test_fr47_s_refusals_by_name). The one-slot population form is admitted too
+    (parse only). Two small programs (the founders differ, so do the worlds) and two short runs:
+    about 20 s."""
+    parse_spec(inert_wall_definition(wall, population=True))
+    spec = parse_spec(inert_wall_definition(wall))
+    run = runner.run(spec)
+    assert run.status == "complete" and run.moieties["closes"] and run.ledger["closes"]
+    names = [p.name for p in spec.model.world.places]
+    seen = run.rows["row_kind"] == "observed"
+    inside = run.rows["counts"][seen][0, names.index("S@lumen")]
+    outside = run.rows["counts"][seen][0, names.index("S@pool")]
+    assert abs(inside - (1.0 + np.exp(-2.0)) / 2.0) <= 1e-7
+    assert abs(inside + outside - 1.0) <= 1e-12

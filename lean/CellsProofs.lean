@@ -51,6 +51,7 @@ import CellsProofs.Chemistry.VesicleRelease
 import CellsProofs.Chemistry.VesicleBirth
 import CellsProofs.Tissue.BathSchedule
 import CellsProofs.Tissue.CellReplacement
+import CellsProofs.Tissue.ChargeAnchor
 import CellsProofs.Tissue.CompartmentWash
 import CellsProofs.Tissue.CurrentInjection
 import CellsProofs.Tissue.DivisionBridge
