@@ -11764,3 +11764,34 @@ D333's terms: only the diagnosed families rerun, on the same frozen engine, disc
 **What it means.** XC0's registered comparison failed in v1 (D329). The diagnosed rows were rule-side definitions and
 an engine parse tolerance, not physics (D332). They now pass in v2, on the same frozen engine. The engine fix of
 D333, the charge anchor, landed separately (82c26ddd).
+
+## D360: a correction to D352: admitted effective valences above |z_B| were already tested; FR-51's follow-up is gating
+
+2026-11-24, about 20:06 UTC.
+
+**The correction.** D352 said that no FR-51 test exercises an admitted effective valence above |z_B|. That was wrong:
+the lead read only the refusal row at 9.0 ("exceeds 8").
+- **B5** is D352's spermine case itself: z_B = +4, inside, z_eff = 5, on a K reversal reference. It is a host row
+  compared with the 60-digit closed forms at 40 voltages.
+- **B4** (1.5 on |z_B| = 1) and **G1, G3 and G5** (8 on |z_B| = 1) are admitted rows too.
+- **The judged run covered them:** REGISTRATION.md's B-u cases include B4, B5 and G1 to G5.
+
+**What the follow-up adds instead** (branch `fr51-slot-refusal`, head e79cbade, with 7ca7c9c1 kept in its history):
+- **A plant** that caps each effective valence at |z_B|. It is a row in the existing plants test, and it must fail B5's
+  B-u. It does: planted, the relative error is about 2.4e2 at +60 mV, while unplanted B5 sits at 0.4% of the 1e-12
+  band.
+- **B5's round trip:** it parses with steepness exactly −5.0, and round-trips through `to_dict`. That is the
+  effective-valence form's first round trip.
+- **The slot refusal:** a blocked population beside cell replacement @1 or @2, partition@1, or membrane insertion @1
+  or @2 is refused by name at `Composition.check_definition`.
+- **The block law's scope lines (D355, D356),** in its module docstring only. The law is not registered (D356).
+
+**State.**
+- **The gate** is on lane B and the FR set follows it (`/mnt/workspaces/Cells/fr51-slot-refusal-20261124/`).
+- **Fifteen related files** matched their rows at the head, in 171 s.
+- **The populations file's tier row** is 23.65 s, 61 passed, measured cold.
+
+**Two notes for later:**
+- The slot refusal has no entry yet in `composition_matrix.RULES`.
+- `kir2p1_mh2@1` has no library page, so D355's and D356's page line waits for the docstring batch. A docstring edit
+  would change a parity law's source.

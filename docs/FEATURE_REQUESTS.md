@@ -2284,6 +2284,8 @@ tests in 601 s. Next:
 - the law's registration, after FR-64's design note;
 - the two-arm registration (D353, D356).
 
+**Correction (D360):** the admitted row already existed: B5 is the spermine case, with B4, G1, G3 and G5 also admitted. The follow-up adds a plant that caps the valence at |z_B| and fails B5, plus B5's round trip.
+
 ## FR-52 — Passive cohort observations for integer functional units
 
 **Logged 24 November 2026 by the user, priority high.**
