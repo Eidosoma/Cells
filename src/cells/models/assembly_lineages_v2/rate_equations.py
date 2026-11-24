@@ -620,7 +620,6 @@ def enveloped(world, exempt=None):
     lumen), and cells.shell_permeation@1 moves no membrane molecule. So a wall species that no step,
     factor or law reads (an inert marker) is outside the envelope (FR-47's inert-wall fix). Every
     other world's places are enveloped as before."""
-    registry = law_registry.active()
     index = {p.name: i for i, p in enumerate(world.places)}
     membrane = [i for i, p in enumerate(world.places) if p.phase == world_rules.MEMBRANE]
     out = [False] * len(world.places)
@@ -629,9 +628,14 @@ def enveloped(world, exempt=None):
         names = [name for name, _ in (*step.reactants, *step.products)]
         for name in names:  # rule 1
             out[index[name]] = True
-        touches = any(index[name] in membrane for name in names)
-        geometric = getattr(registry.lookup(step.law), "extent", "locus") == "geometric"
-        total_read |= touches or (step.locus == world_rules.MEMBRANE and not geometric)  # rule 2
+        if any(index[name] in membrane for name in names):  # rule 2: its normalisation and μ
+            total_read = True
+        elif step.locus == world_rules.MEMBRANE and not total_read:
+            # rule 2: a law at the membrane locus reads N through its extent unless the extent is
+            # the geometry's. Only this case reads the registry, so a world whose steps are on a
+            # scoped (planted) law is read the same outside the scope.
+            law = law_registry.active().lookup(step.law)
+            total_read = getattr(law, "extent", "locus") != "geometric"
     if world.rate_factor is not None:
         if world.rate_factor[0] == GATE_FACTOR:  # rule 3
             forms = set(world.rate_factor[1]["forms"])

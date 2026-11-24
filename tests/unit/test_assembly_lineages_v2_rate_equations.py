@@ -387,14 +387,19 @@ def _inert_on_a_bilayer(raw):
     return as_representation(definition(w), envelope={"min_count": 2.0, "provenance": "a test"})
 
 
-def inert_wall_definition(wall, *, wall_reads=None):
-    """One prescribed shell (a single lineage: the envelope's rule is the same for one slot of a
-    population) with equal pool and lumen volumes, passive exchange at 1 per s each way
-    (P A / V = 1), one tracer in the lumen and none outside, and a wall species W at `wall`
-    copies, in (d) at min_count 2 (rtol 1e-9, atol_count 1e-9). W is inert: no step, factor or law
-    reads it. With `wall_reads` "gate", W and a second form V gate the entry; with "step", W
-    switches to V by a wall step: either way a rate reads W's count."""
-    from cells.models.assembly_lineages_v2 import GATE_FACTOR, PRESCRIBED_SHELL, SHELL_PERMEATION
+def inert_wall_definition(wall, *, wall_reads=None, population=False):
+    """One prescribed shell (a single lineage, or with `population` one slot of a population: the
+    envelope's rule is the same) with equal pool and lumen volumes, passive exchange at 1 per s
+    each way (P A / V = 1), one tracer in the lumen and none outside, and a wall species W at
+    `wall` copies, in (d) at min_count 2 (rtol 1e-9, atol_count 1e-9). W is inert: no step,
+    factor or law reads it. With `wall_reads` "gate", W and a second form V gate the entry; with
+    "step", W switches to V by a wall step: either way a rate reads W's count."""
+    from cells.models.assembly_lineages_v2 import (
+        GATE_FACTOR,
+        PRESCRIBED_SHELL,
+        SHARED_POOL,
+        SHELL_PERMEATION,
+    )
 
     u = "unsourced; test"
     names = [("S", {"s": 1}, {"solution": 0.0}), ("W", {"w": 1}, {"bilayer": -1.0})]
@@ -422,9 +427,14 @@ def inert_wall_definition(wall, *, wall_reads=None):
                             "entries": [{"form": "W", "step": "entry", "ddG_kT": 0.5}]}
     elif wall_reads == "step":
         w["steps"].append(step("switch", {"W": 1}, {"V": 1}, 1.0, phase="membrane"))
+    if population:
+        w["founder"] = {"S@pool": 0, **{k: 0 for k in slot}}
+        w["population"] = {"structure": SHARED_POOL, "slots": 1, "founders": [slot]}
     d = as_representation(definition(w, horizon=1.0, observations=(1.0,)),
                           envelope={"min_count": 2.0, "provenance": "a test"},
                           integrator=dict(INTEGRATOR, atol_count=1e-9))  # fmt: skip
+    if population:
+        d["execution"]["mode"] = "population"
     return d
 
 
@@ -472,8 +482,10 @@ def test_an_inert_wall_species_is_outside_the_envelope(wall):
     is outside the envelope, at 1 copy as at 2, below and at min_count 2. The one tracer in the
     lumen relaxes to the two-state mean, (1 + e^-2)/2 inside at 1 s, within 1e-7, and the tracer
     is conserved to the moieties' tolerance with the books closed. The guard stays where a rate
-    reads the wall (test_fr47_s_refusals_by_name). Two small programs (the founders differ, so do
-    the worlds) and two short runs: about 20 s."""
+    reads the wall (test_fr47_s_refusals_by_name). The one-slot population form is admitted too
+    (parse only). Two small programs (the founders differ, so do the worlds) and two short runs:
+    about 20 s."""
+    parse_spec(inert_wall_definition(wall, population=True))
     spec = parse_spec(inert_wall_definition(wall))
     run = runner.run(spec)
     assert run.status == "complete" and run.moieties["closes"] and run.ledger["closes"]
