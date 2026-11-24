@@ -1,0 +1,89 @@
+{
+ "schema": "fr45-reference-regeneration/1",
+ "compared": [
+  "accuracy.json",
+  "reference_W1.json",
+  "reference_W1eq.json",
+  "reference_W1p.json",
+  "reference_W2.json",
+  "reference_W3.json",
+  "reference_W4.json",
+  "reference_W5.json",
+  "reference_W6.json"
+ ],
+ "excluded": [
+  "run.log (seed, CPU and timings)"
+ ],
+ "runs": [
+  {
+   "hash_seed": 0,
+   "cpu": 6,
+   "sha256": {
+    "accuracy.json": "4ca637204612dec5af33a084dfe74b3ed117ab89bbe39bd4094865cd21166915",
+    "reference_W1.json": "de578fbe769c3e32204ecc845a6a71a08f44b388399b0440d7725ddfec88a5e8",
+    "reference_W1eq.json": "8a14664d7ba4b8dda5a493ad680c75c01372c8cef2b8aeca750eaa31f197e545",
+    "reference_W1p.json": "6f7bf77a95286ef7331f8c54720dbedcf67245feb54fb2ec799c5c3a60400ad4",
+    "reference_W2.json": "bb1a8c0384960f1ed70bfd0d235ca6965b161fec604cf812908f896406a58adf",
+    "reference_W3.json": "651b5220c41d2a00bb40f28a5f6442e39b33377d762afe20ac0fa86a5b6eb19f",
+    "reference_W4.json": "43c2944664bfab96f8e6c06eeab72778d411f22bd1a155715c9ff9f1a3863604",
+    "reference_W5.json": "ad88cfeddcd7fc8e78fa50884f9f426f7e07070bf1e90adaa8036f0c2bd6af6a",
+    "reference_W6.json": "98b374edd74c6dcc20a4ac4478e9bcabc735fdd773b9f984fa35c6e98ae519a5"
+   },
+   "references_revision": "588029a55e8d1a470ca0eb804bafc2425b8e6eba",
+   "tree_clean": true
+  },
+  {
+   "hash_seed": 1,
+   "cpu": 6,
+   "sha256": {
+    "accuracy.json": "4ca637204612dec5af33a084dfe74b3ed117ab89bbe39bd4094865cd21166915",
+    "reference_W1.json": "de578fbe769c3e32204ecc845a6a71a08f44b388399b0440d7725ddfec88a5e8",
+    "reference_W1eq.json": "8a14664d7ba4b8dda5a493ad680c75c01372c8cef2b8aeca750eaa31f197e545",
+    "reference_W1p.json": "6f7bf77a95286ef7331f8c54720dbedcf67245feb54fb2ec799c5c3a60400ad4",
+    "reference_W2.json": "bb1a8c0384960f1ed70bfd0d235ca6965b161fec604cf812908f896406a58adf",
+    "reference_W3.json": "651b5220c41d2a00bb40f28a5f6442e39b33377d762afe20ac0fa86a5b6eb19f",
+    "reference_W4.json": "43c2944664bfab96f8e6c06eeab72778d411f22bd1a155715c9ff9f1a3863604",
+    "reference_W5.json": "ad88cfeddcd7fc8e78fa50884f9f426f7e07070bf1e90adaa8036f0c2bd6af6a",
+    "reference_W6.json": "98b374edd74c6dcc20a4ac4478e9bcabc735fdd773b9f984fa35c6e98ae519a5"
+   },
+   "references_revision": "588029a55e8d1a470ca0eb804bafc2425b8e6eba",
+   "tree_clean": true
+  },
+  {
+   "hash_seed": 2,
+   "cpu": 7,
+   "sha256": {
+    "accuracy.json": "4ca637204612dec5af33a084dfe74b3ed117ab89bbe39bd4094865cd21166915",
+    "reference_W1.json": "de578fbe769c3e32204ecc845a6a71a08f44b388399b0440d7725ddfec88a5e8",
+    "reference_W1eq.json": "8a14664d7ba4b8dda5a493ad680c75c01372c8cef2b8aeca750eaa31f197e545",
+    "reference_W1p.json": "6f7bf77a95286ef7331f8c54720dbedcf67245feb54fb2ec799c5c3a60400ad4",
+    "reference_W2.json": "bb1a8c0384960f1ed70bfd0d235ca6965b161fec604cf812908f896406a58adf",
+    "reference_W3.json": "651b5220c41d2a00bb40f28a5f6442e39b33377d762afe20ac0fa86a5b6eb19f",
+    "reference_W4.json": "43c2944664bfab96f8e6c06eeab72778d411f22bd1a155715c9ff9f1a3863604",
+    "reference_W5.json": "ad88cfeddcd7fc8e78fa50884f9f426f7e07070bf1e90adaa8036f0c2bd6af6a",
+    "reference_W6.json": "98b374edd74c6dcc20a4ac4478e9bcabc735fdd773b9f984fa35c6e98ae519a5"
+   },
+   "references_revision": "588029a55e8d1a470ca0eb804bafc2425b8e6eba",
+   "tree_clean": true
+  },
+  {
+   "hash_seed": 0,
+   "cpu": 7,
+   "sha256": {
+    "accuracy.json": "4ca637204612dec5af33a084dfe74b3ed117ab89bbe39bd4094865cd21166915",
+    "reference_W1.json": "de578fbe769c3e32204ecc845a6a71a08f44b388399b0440d7725ddfec88a5e8",
+    "reference_W1eq.json": "8a14664d7ba4b8dda5a493ad680c75c01372c8cef2b8aeca750eaa31f197e545",
+    "reference_W1p.json": "6f7bf77a95286ef7331f8c54720dbedcf67245feb54fb2ec799c5c3a60400ad4",
+    "reference_W2.json": "bb1a8c0384960f1ed70bfd0d235ca6965b161fec604cf812908f896406a58adf",
+    "reference_W3.json": "651b5220c41d2a00bb40f28a5f6442e39b33377d762afe20ac0fa86a5b6eb19f",
+    "reference_W4.json": "43c2944664bfab96f8e6c06eeab72778d411f22bd1a155715c9ff9f1a3863604",
+    "reference_W5.json": "ad88cfeddcd7fc8e78fa50884f9f426f7e07070bf1e90adaa8036f0c2bd6af6a",
+    "reference_W6.json": "98b374edd74c6dcc20a4ac4478e9bcabc735fdd773b9f984fa35c6e98ae519a5"
+   },
+   "references_revision": "588029a55e8d1a470ca0eb804bafc2425b8e6eba",
+   "tree_clean": true
+  }
+ ],
+ "bitwise_identical": true,
+ "one_clean_revision": true
+}
