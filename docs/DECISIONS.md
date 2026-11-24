@@ -10410,3 +10410,79 @@ reviewers' additions. Names follow the notes.
     FR-51, then FR-50. Amended the same evening, after the FR-17 builder's report; FR-17 is on GJ-N1's critical path;
   - **FR-49's other pieces** proceed in parallel.
   - Each registered protocol and its spec are tagged before its engine build. Gates wait for FR-43 2B's landing.
+
+## D328: FR-43's three planned parts are on main; a correction to 2B's merge message
+
+2026-11-24, about 11:37 UTC.
+- **The landings:**
+  - part 1, the 1,024-species capacity (bbc99163);
+  - part 2A, two writers of one shared pool at fixed volume (c9687d68);
+  - part 3, the integer-unit population with its division hook (7fb0ad87);
+  - part 2B, both writers reading the current volume (2ca07dcb).
+- **Every registered comparison passed:** part 2's C2.3, C2.6/C2.7 and C2.8 (D324), and part 3's (D319).
+- **A correction.** 2B's merge message says "FR-43's build is complete". That overstates it, and the commit is
+  pushed, so the correction is recorded here.
+  - Part 3 stays open until D152 reactions and the gene unit can co-write a moved row.
+  - The version-1 refusals stand: integer_unit_population@1 beside scheduled_compartment_wash@1, and in the region
+    readouts.
+  - Each lifts only as its own qualified extension.
+- **The follow-up queued for after FR-43:** fixed_working_size gains a factor-width term. It is pre-existing, and
+  covered far above any declared network.
+
+## D329: the Xenopus lane's XC0 registered comparison fails; diagnostics before any next step
+
+2026-11-24, about 11:37 UTC.
+- **The run:** an independent runner, who built none of XC0, ran the procedure of erratum 1
+  (xc0-rule-erratum-1-2026-11-23) exactly.
+  - the snapshot of 260d7c7f;
+  - the manifest, equal to coverage.counts;
+  - the six P1LB segments on lane A;
+  - the table;
+  - the tagged retry, once, under the lead's ruling: the first judge refused, reading no value, on 46 refused table rows,
+    none of them C8b;
+  - the judge.
+- **The record:** /mnt/workspaces/Cells/xenopus-lane-20261119/xc0-judged/, with verdict.json
+  79bd2b243b0552a1a0b342d8d6e274edb4968e1ebf315c822a11c1400fc53669 and VERDICT.md.
+- **The registered verdict: fail.**
+  - C0-C5 pass. C6 is not testable. C7 and C8 fail.
+  - Rows: 7,382 pass, 4 fail, 44 engine-refused, 242 not run, 272 not mappable, 736 info.
+- **The four failures:**
+  - C7.pump_cell_charge_per_fmol: a relative gap of 3.43e-11 against a band of 1e-12;
+  - C8.b_final_c for Cl, K and Na: the bare run's 64 s node concentrations miss their 1e-6 bands by 6.4e-6, 5.0e-4
+    and 1.1e-5 relative. The engine's h and h/2 values agree to about 1e-13.
+- **C6:** 44 rows are refused by the engine's scan, with no sign change found at 24 or at 48 points. The retry
+  recovered 2 rows, which pass.
+- **No cause is attributed yet.** The runner flagged candidates without settling them:
+  - for C7, a rounded Faraday constant on one side;
+  - for C8, whether the reference's "final" is its own 64 s value or an end state;
+  - for C6, a root that the coarse scan misses.
+- **Three labelled diagnostics come first,** run by someone who built none of XC0:
+  - C7: the declared constant, and whether the rule has the engine read it;
+  - C8: each ion's miss at 32 s against 64 s, and the rule's and DESIGN's own text for "final";
+  - C6: where the reference's roots sit in the scan domain, and how many there are.
+- **Any v2 cannot be blind on these rows.**
+- **T1 and T2** are reported as unconstrained calibrations. Where they rest on one wet-lab source, they are
+  indications only.
+
+## D330: GJ-N1: the 1D line's engine table is hashed; the user's decision, qualify the device checks on the GPU and run the field's longest points on the L4
+
+2026-11-24, about 11:37 UTC.
+- **The line search finished** (search_exit 0, cells_exit 0) from main 23593267 under amendment 1's record. The hashes
+  are in /mnt/workspaces/Cells/gap-junction-20261123/judged/line-01/SHA256SUMS:
+  - cells-line.json 92fad3a4f938288fe500a12e5f2006f7b8a373fe00d66cb3fd6d1f1af8b1bf7b
+  - run/search.json 0ee59228bdc9b0f25c0e72fa4faba969319611f32dba0234e456ba23175d8d37
+  - run/points.jsonl 798afd4bd7f7222c56364dff6ae72d0ac0c291d491dd575bc84d59499afea24b
+  - run/half_step.jsonl ea8d6567d1bf1fea1f5c016bf407863589766f7a6b6e3975de6379ff266a3613
+  - run/uncoupled.json 870025e978ece6685b24d5c8842fc5ed665ef87ad0f8d0843a2e0be686285e98
+- **The references stay sealed** until the field's table is hashed too.
+- **The four placement numbers** (FR-17), in ms per world-step for the field at D = 1e-13:
+  - on one CPU: @2 53.3, the sparse solver 29.2;
+  - on the L4: @2 13.1, the sparse solver 10.1.
+  - On the production path on a CPU, the sparse solver is bitwise equal to @2.
+- **The user's decision: qualify the device row checks on the GPU, then run the field's longest points on the L4.**
+  - The qualification uses the sparse solver on the production path: the host-against-device spread, the bitwise
+    and band tests, and memory.
+  - A tagged amendment 2 comes before any field point. It fixes in advance which points run where, and keeps every
+    pair the judge compares (h against h/2, the bracket's ends) on one device, since the CPU and the L4 differ at
+    rounding.
+  - The visualizer is on hold (the user), so the L4 blocks need no notice for now.
