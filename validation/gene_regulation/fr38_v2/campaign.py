@@ -479,6 +479,69 @@ def table(out, families=("AF", "AN", "B", "C", "D"), retry=False):
     return folder
 
 
+def _fabricated(raw, **identity):
+    """A record with made-up counters on `raw`'s output grid (no engine run): positive rows far
+    above every cumulative counter, each counter non-decreasing, and the labels summing to their
+    rows. For table_check only."""
+    t = [float(x) for x in raw["experiment"]["observation_times"]]
+    horizon = t[-1]
+
+    def grow(scale):
+        return [scale * x / horizon for x in t]
+
+    x = {f"n_{row}": [1.0 + 0.1 * s / horizon for s in t]
+         for row in ("N", "M", "Pi", "R", "R_s", "Mx")}  # fmt: skip
+    for fate, row in FATES.items():
+        x[f"int_Q_tx_release_{fate}"] = grow(1e-3)
+        x[f"int_D_{row}"] = grow(2e-3)
+        shares = {"resyn": 0.1, "pool0": 0.6, "pre": 0.1, "win": 0.1, "post": 0.1}
+        for c, share in shares.items():
+            x[f"label_{row}_{c}"] = [share * n for n in x[f"n_{row}"]]
+    x["H_tx_release"] = [1e-3] * len(t)
+    x["G_minus_G0"] = grow(-1.0)
+    checks = dict(G_identity_largest_pJ=0.0, energy_magnitude_at_end_pJ=1.0, exported_cell="cell_0")
+    return dict(kind=RECORD, **identity, cell="cell_0", dt_s=raw["execution"]["dt"],
+                steps=int(round(horizon / raw["execution"]["dt"])), wall_s=0.0, t=t, readouts=x,
+                checks=checks, own_ledgers_at_end={}, definition=raw, refused=False)  # fmt: skip
+
+
+def table_check(out):
+    """The table's code on fabricated records (no engine run): every planned job's record made up
+    on its own registered definition, then every family's table built and hashed. Returns
+    {family: summary}; raises on any fault."""
+    out = Path(out)
+    for job in plan():
+        if "plant" in job:
+            family, run, judged_as, _ = worlds.PLANTS[job["plant"]]
+            raw, identity = (
+                worlds.plant(job["plant"]),
+                dict(plant=job["plant"], judged_as=judged_as),
+            )
+        else:
+            family, run = job["family"], job["run"]
+            raw, identity = (
+                worlds.world(family, run, dt=job["dt"]),
+                dict(restart=job.get("restart")),
+            )
+        _write(job_path(out, job), _fabricated(raw, family=family, run=run, **identity),
+               {"fabricated": True})  # fmt: skip
+    folder = table(out)
+    summary = {}
+    for family in ("AF", "AN", "B", "C", "D"):
+        built = json.loads((folder / f"table_{family}.json").read_text())
+        rungs = built["rungs"]
+        runs = {name for rung in rungs.values() for name in rung["runs"]}
+        host = next(iter(rungs.values()))["runs"][worlds.LABELLED[family][0]]
+        summary[family] = dict(
+            rungs=sorted(rungs), runs=len(runs), missing=built["missing"],
+            route2=len(host["route2"]), survival=len(host["survival"]),
+            excess="excess_over_blank" in host, plants=sorted(built["plants"]),
+            restart="restart" in built)  # fmt: skip
+        if built["missing"] or len(runs) != len(worlds.runs(family)):
+            raise ValueError(f"{family}'s table misses runs: {built['missing']}")
+    return summary
+
+
 # ------------------------------------------------------------------ the command line
 
 

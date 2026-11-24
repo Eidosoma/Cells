@@ -10,6 +10,10 @@
   - out of scope at AN's synthetic potentials (e^(y_f) about 0.13), so the check stands on route 2;
   - in scope at AF's (about 1e-8), where it passes on consistent counters and fails on counters
     whose booked loss is not the declared k.
+- **The table builds from records alone** (campaign.table_check): every planned job's record made
+  up on its own registered definition (no engine run), then each family's table built and hashed,
+  with every run at every rung, route 2, survival, the excess, the plants and the restart (about
+  5 s).
 - **The C and D exports** (engine_run.readouts): one made-up world (no registered input) with the
   store and water together runs 30 s of model time. It exports n_Mx, H_store, V, H_water and
   W_bath, and they enter G's identity with their signs: what is left is far below them, water's
@@ -118,3 +122,14 @@ def test_a_twin_is_its_labelled_run_without_the_label_owner():
         ]
         del labelled["experiment"]["label_arrivals"]
         assert labelled == worlds.world(family, run + worlds.UNLABELLED, dt=2.0), family
+
+
+def test_the_table_builds_from_records_alone(tmp_path):
+    summary = campaign.table_check(tmp_path)
+    expect = {"AF": ["P2", "P5", "P6", "P7"], "AN": ["P1′", "P3a", "P3b", "P4 AN"], "B": ["P4 B"],
+              "C": ["P8", "P8 blank"], "D": ["P9"]}  # fmt: skip
+    for family, plants in expect.items():
+        s = summary[family]
+        assert s["rungs"] == ["0.5", "1.0", "2.0"] and not s["missing"], (family, s)
+        assert (s["route2"], s["survival"], s["plants"]) == (6, 4, plants), (family, s)
+        assert s["excess"] == (family != "B") and s["restart"] == (family == "AN"), (family, s)
