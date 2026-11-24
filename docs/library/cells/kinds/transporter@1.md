@@ -58,7 +58,7 @@ Ledgers: not yet extracted. Energy roles: not yet extracted. Its records are on 
 
 <details><summary>For developers</summary>
 
-Hooks: `bound_rate`, `check_definition`, `control_values`, `declared_fields`, `domain`, `held_rows`, `initial`, `label_refusals`, `label_transfers`, `ledger_terms`, `material_term`, `moved_rows`, `parse`, `parse_schedule`, `rates`, `readouts`, `role_species`, `schedule_to_dict`, `stage_term`, `standard_free_energies`, `structure_entry`, `to_dict` and `view_sets`. Layout fields: `transporter_present`, `transporter_neutral`, `transporter_proton`, `transporter_role`, `transporter_fuel_rows`, `transporter_held`, `transporter_capacity_fmol_s`, `transporter_stoichiometry`, `transporter_km_role_mM`, `transporter_km_atp_mM`, `transporter_drive0_J_mol`, `transporter_c0_mM`, `transporter_ph_ref` and `transporter_ph_band`. Experiment keys: `transporter_controls`.
+Hooks: `bound_rate`, `check_definition`, `control_values`, `declared_fields`, `domain`, `held_rows`, `initial`, `label_refusals`, `label_transfers`, `ledger_terms`, `material_term`, `moved_rows`, `one_way_fluxes`, `one_way_nets`, `parse`, `parse_schedule`, `rates`, `readouts`, `role_species`, `schedule_to_dict`, `stage_term`, `standard_free_energies`, `structure_entry`, `to_dict` and `view_sets`. Layout fields: `transporter_present`, `transporter_neutral`, `transporter_proton`, `transporter_role`, `transporter_fuel_rows`, `transporter_held`, `transporter_capacity_fmol_s`, `transporter_stoichiometry`, `transporter_km_role_mM`, `transporter_km_atp_mM`, `transporter_drive0_J_mol`, `transporter_c0_mM`, `transporter_ph_ref` and `transporter_ph_band`. Experiment keys: `transporter_controls`.
 
 </details>
 

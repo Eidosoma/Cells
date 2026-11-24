@@ -37,7 +37,10 @@ whose path does not move, re-exporting what a law, kind or module needs from Cel
 - the constants: R, F and CHARGE_PER_FMOL (laws/electrochemistry.py), and
   EXPLICIT_STEP_BOUND (models/surface_pump.py);
 - the array helpers kinds use: scatter (numerics/extracellular_field.py), species_sum and
-  entity_sum (numerics/species_sums.py), and physical_amounts (models/surface_tissue.py).
+  entity_sum (numerics/species_sums.py), and physical_amounts (models/surface_tissue.py);
+- the one-way step rule FR-42's labels and FR-50's records share: step_one_way_amounts and
+  close_one_way (numerics/one_way_split.py), with OneWayRecord, a kind's record pair
+  (registry/kind_registry.py).
 - the general closure's free_log_sensitivity, d ln c_free / d n_total at a stage, for a kind's
   material term (kinds/proton_buffer.py, the binding owner's).
 
@@ -91,6 +94,7 @@ HOMES = MappingProxyType(
             "MOVES_ENDS",
             "FreeEnergyEntry",
             "TEMPERATURE_INDEPENDENT",
+            "OneWayRecord",
             "parse_series",
             "series_to_dict",
             "qualified",
@@ -106,6 +110,7 @@ HOMES = MappingProxyType(
         "cells.models.surface_pump": ("EXPLICIT_STEP_BOUND",),
         "cells.numerics.extracellular_field": ("scatter",),
         "cells.numerics.species_sums": ("species_sum", "entity_sum"),
+        "cells.numerics.one_way_split": ("step_one_way_amounts", "close_one_way"),
         "cells.models.surface_tissue": ("physical_amounts",),
         "cells.models.surface_pump_v3": (
             "HOST_KINDS",
@@ -152,6 +157,7 @@ __all__ = (
     "MOVES_ENDS",
     "FreeEnergyEntry",
     "TEMPERATURE_INDEPENDENT",
+    "OneWayRecord",  # FR-50: a kind's one-way record pair.
     # The law readers a kind uses.
     "hosted_laws",
     "cycle_changes",
@@ -178,6 +184,8 @@ __all__ = (
     "species_sum",
     "entity_sum",
     "physical_amounts",
+    "step_one_way_amounts",  # FR-42's and FR-50's step rule (numerics/one_way_split.py).
+    "close_one_way",
     # The host table's readers.
     "HOST_KINDS",
     "HostTable",

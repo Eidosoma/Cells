@@ -868,6 +868,13 @@ def structure_errors(inner, operators):
             )
         if kinds and (op.CLOSES or op.RETIRES or masks & set(op.VIEW_FIELDS)):
             errors.extend(_kinds_beside_closer(op, kinds, blocked, bound=bound, gated=gated))
+            errors.extend(
+                f"{op.LAW_ID} opens, closes or retires slots, and the kind {kind_id} keeps one_way "
+                "records, which version 1 refuses beside an operator that retires or closes slots "
+                "until its lifecycle covers them (FR-50; fails closed)"
+                for kind_id, kind in bound.items()
+                if kind.one_way_records
+            )
         required = {kind_registry.qualified(k) for k in op.REQUIRES_KINDS}
         for kind_id in sorted(required - declared):
             errors.append(
