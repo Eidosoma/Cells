@@ -24,6 +24,27 @@
     "cells.rate_equations@1": "molecular-assembly"
   },
   "comparisons": {
+    "fr47-shell-interval-heat-cpu": {
+      "kind": "engine",
+      "models": ["cells.assembly_lineages@2"],
+      "laws": ["cells.rate_equations@1", "cells.ideal_mixing@1", "cells.prescribed_shell@1", "cells.shell_permeation@1"],
+      "operators": ["cells.pool_replacement@1", "cells.pool_withdrawal@1"],
+      "engine_revision": "43763a36f27d4dcf8381770649d6a59e4747ddf5",
+      "record_revision": "499980de46f30e883d968db7e3d7e6dc9e337434",
+      "sources": {
+        "Continuous ideal free energy at real counts": "src/cells/models/assembly_lineages_v2/ideal_mixing.py#L106",
+        "Deterministic one-way shell fluxes": "src/cells/models/assembly_lineages_v2/rate_equations.py#L822",
+        "Heat booking for a step starting at zero": "src/cells/models/assembly_lineages_v2/rate_equations.py#L1784",
+        "Reader for continuous heat between stops": "validation/assembly_lineages_v2/fr47_judge.py#L195",
+        "Nonregistered shell fixture": "tests/unit/test_assembly_lineages_v2_rate_equations_population.py#L86"
+      },
+      "record_inputs": {
+        "Passive interval heat theorem": "lean/CellsProofs/Chemistry/ShellIntervalHeat.lean",
+        "Two-molecule and whole-term controls": "lean/checks/chemistry/ShellIntervalHeat.lean"
+      },
+      "driver": "lean/checks/shell_interval_heat.py",
+      "record": "lean/PROGRESS.md#fr47-shell-interval-heat"
+    },
     "fr47-shell-wash-recovery-host": {
       "kind": "engine",
       "models": ["cells.assembly_lineages@2"],
@@ -10812,6 +10833,52 @@
       }
     },
     {
+      "id": "fr47-shell-interval-heat",
+      "category": "molecular-assembly",
+      "title": "Dissipated free energy as tracer refills a washed pool",
+      "statement": "Between washes the free energy of the two mean tracer counts is nonincreasing, including at an empty starting place. Its drop is the deterministic continuous interval heat. Replacing an empty place’s initial term by its one-molecule value shifts the heat by (μ° − ln X − 1) kBT when both final counts are positive.",
+      "assumptions": [
+        "Two well-mixed compartments of fixed positive volumes exchange a single passive tracer during the interval. Temperature, standard potentials and the shell conductance are fixed. The surviving mean counts are nonnegative and their sum is conserved. Unchanged wall terms cancel in the difference.",
+        "The free energy of a place in kBT is n(μ° − ln X) + n ln n − n, with μ° in RT units, X = N_A V c₀ in molecules and the continuous value zero at n = 0. Positive entry and exit rates obey ln k_in − ln k_out = (μ°outside − ln Xoutside) − (μ°inside − ln Xinside). A completely impermeable shell has both rates zero.",
+        "The interval runs from just after the preceding wash to just before the following wash, or to the observation horizon. Each wash carries its own work, sink and mixing entries."
+      ],
+      "uses": ["fr47-shell-wash-recovery", "assembly-ideal-mixing"],
+      "formal": {
+        "status": "proved",
+        "about": ["cells.rate_equations@1", "cells.ideal_mixing@1", "cells.prescribed_shell@1", "cells.shell_permeation@1"],
+        "theorems": {
+          "CellsProofs.Chemistry.ShellIntervalHeat.site_continuous": "lean/CellsProofs/Chemistry/ShellIntervalHeat.lean",
+          "CellsProofs.Chemistry.ShellIntervalHeat.site_zero": "lean/CellsProofs/Chemistry/ShellIntervalHeat.lean",
+          "CellsProofs.Chemistry.ShellIntervalHeat.shell_rate_balance": "lean/CellsProofs/Chemistry/ShellIntervalHeat.lean",
+          "CellsProofs.Chemistry.ShellIntervalHeat.energy_derivative": "lean/CellsProofs/Chemistry/ShellIntervalHeat.lean",
+          "CellsProofs.Chemistry.ShellIntervalHeat.energy_antitone": "lean/CellsProofs/Chemistry/ShellIntervalHeat.lean",
+          "CellsProofs.Chemistry.ShellIntervalHeat.postwash_heat_nonneg": "lean/CellsProofs/Chemistry/ShellIntervalHeat.lean",
+          "CellsProofs.Chemistry.ShellIntervalHeat.impermeable_heat": "lean/CellsProofs/Chemistry/ShellIntervalHeat.lean",
+          "CellsProofs.Chemistry.ShellIntervalHeat.one_molecule_bias": "lean/CellsProofs/Chemistry/ShellIntervalHeat.lean"
+        },
+        "sources": {
+          "Registered FR-47 mean-state energy and units": "https://github.com/Eidosoma/Cells/blob/231aae399bd9f8d5db35bc31fe95207ec664ab7b/validation/assembly_lineages_v2/fr47_spec/SPEC.md#L109-L118",
+          "Registered whole-term P9 substitution": "https://github.com/Eidosoma/Cells/blob/231aae399bd9f8d5db35bc31fe95207ec664ab7b/validation/assembly_lineages_v2/fr47_spec/CRITERIA.md#L65-L69",
+          "Mathlib continuity and derivative of x log x, imported for each ideal place": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/NegMulLog.lean#L27-L60",
+          "Mathlib nonpositive interior derivative, specialized to a closed interval starting at zero": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/Deriv/MeanValue.lean#L488-L496",
+          "Cells ideal concentration term, reused locally": "lean/CellsProofs/Chemistry/ReleaseEnergy.lean#L17",
+          "Cells finite-pool derivative, specialized to a conserved tracer": "lean/CellsProofs/Chemistry/ShellWashRecovery.lean#L31",
+          "Exact positive-heat and P9 controls": "lean/checks/chemistry/ShellIntervalHeat.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": ["fr47-shell-interval-heat-cpu"],
+        "result": "On development build 43763a36, all three synthetic intervals agreed within 6.60 × 10⁻⁸ kBT. After full replacement the engine booked 38.34719503 kBT against 38.34719500 predicted. The whole-term substitution gave 24.33882673 kBT. It also changed the empty-lumen interval and had zero effect on the interval with two occupied places. This comparison uses invented inputs."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Free energy dissipated as tracer returns to a freshly washed finite exterior, measured by reversible work or inferred from independent chemical-potential differences over the transfer.",
+        "unit": "kBT per wash-free interval",
+        "evidence": []
+      }
+    },
+    {
       "id": "fr47-shell-wash-recovery",
       "category": "molecular-assembly",
       "title": "Tracer returns to a finite exterior pool after a wash",
@@ -10836,7 +10903,7 @@
           "CellsProofs.Chemistry.ShellWashRecovery.removed_after_recovery": "lean/CellsProofs/Chemistry/ShellWashRecovery.lean"
         },
         "sources": {
-          "Cells FR-47 draft rates, finite bath and wash actions": "https://github.com/Eidosoma/Cells/blob/c6d7667ec184e50e881a2cdfcb3075738892fb56/validation/assembly_lineages_v2/fr47_spec/SPEC.md#L37-L79",
+          "Registered FR-47 rates, finite bath and wash actions": "https://github.com/Eidosoma/Cells/blob/231aae399bd9f8d5db35bc31fe95207ec664ab7b/validation/assembly_lineages_v2/fr47_spec/SPEC.md#L37-L79",
           "Mathlib ODE uniqueness on a closed time interval, imported and specialized to shell exchange": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/ODE/Gronwall.lean#L351-L364",
           "Mathlib derivative of a finite sum, imported to close the mean equation": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/Deriv/Add.lean#L184-L186",
           "Cells constant-source interval solution, reused with source k_out times surviving total": "lean/CellsProofs/Chemistry/SpeciesTurnover.lean#L73",
@@ -10845,8 +10912,8 @@
       },
       "numerical": {
         "status": "checked",
-        "comparisons": ["fr47-shell-wash-recovery-host"],
-        "result": "Synthetic exact-event host comparison on cf5ddcff. Replacement removed five exterior tracers and left seven in the lumen. The eight-state rate matrix gave exterior means of 1.3607043414 at 0.75 s and 2.8910229384 at 2 s. The native half-withdrawal averaged 1.4455114692 removed. All agreed with the formula within 10⁻¹² molecules. The FR-47 deterministic solver and registered qualification still require their own comparison."
+        "comparisons": ["fr47-shell-wash-recovery-host", "fr47-shell-interval-heat-cpu"],
+        "result": "On cf5ddcff replacement removed five exterior tracers and left seven in the lumen. The eight-state host rate matrix gave exterior means of 1.3607043414 at 0.75 s and 2.8910229384 at 2 s. The native half-withdrawal averaged 1.4455114692 removed. All agreed within 10⁻¹² molecules. On the separate deterministic development build 43763a36, all six compartment reads and both removed amounts met a 0.00024-molecule tolerance on an invented 240-tracer shell."
       },
       "biology": {
         "status": "open",
