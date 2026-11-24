@@ -16,6 +16,8 @@ references agent's work, is `fr45-protocol-registered-2026-11-2x`.
   - `NOTE-2026-11-24.md`, C4b's and C6's state;
   - `AMENDMENT-2-2026-11-24.md`, the user's acceptance targets: W7, the user's example washed, and
     W7s, its single-ligand limit;
+  - `AMENDMENT-3-2026-11-24.md`, the references agent's findings on them: W7 and W7s step at
+    0.0025 s, W7s runs to 2.0 s, and P5's entries are keyed by state;
 - at the tag, the code-blind references' code and files, in `validation/fr45/references/`.
 
 **Engine models it runs:** `resolved_pump_composite@1` over `resolved_pump_tissue@3`, with
@@ -115,7 +117,9 @@ only:
 
 **Every world's step meets dt·max L ≤ 0.03,** sized before this spec by a NumPy probe of the same
 law. Two worlds are exceptions by design: W4's coarser runs (the order study) and W5 (the
-refusal). **Every horizon of W1, W2, W3, W6, W7 and W7s reaches e⁻³⁰ of its slowest mode.** W1eq starts at
+refusal). **Every horizon of W1, W2, W3, W6, W7 and W7s reaches e⁻³⁰ of its slowest mode,** and
+none goes so far beyond it that an interval's heat falls below the references' resolution
+(amendment 3: W7s's 2.0 s is 47 time constants). W1eq starts at
 its root, and W1p, W3p, W4 and W5 are short by design.
 
 ## 5. The judged run

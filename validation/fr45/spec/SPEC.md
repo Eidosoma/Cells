@@ -223,14 +223,15 @@ W3's inputs, with observation times 0.1, 0.2, 0.5, 1.0 and 2.0 s and a horizon o
 | Population `matrix_L1` | L1; k_on 1.0; k_off 12.0; initial occupancy 0.3333333333333333 |
 | Population `matrix_L2` | L2; k_on 0.25; k_off 3.0; initial occupancy 0.16666666666666666 |
 | The wash | t = 1.0 s, node `well`, f = 0.5; buffer L1 1.0e-12 mM, L2 8.0 mM |
-| dt | 0.005 s |
-| Observation times | 0.5, 1.0, 1.005, 1.5, 2.0, 3.0, 5.0, 8.0, 12.0 s |
+| dt | 0.0025 s (amendment 3) |
+| Observation times | 0.5, 1.0, 1.0025, 1.5, 2.0, 3.0, 5.0, 8.0, 12.0 s (amendment 3) |
 | Horizon | 12.0 s |
 
 - **The start is the user's example:** B = 2.0 and 1.0 fmol, and R = 3.0 fmol.
   - Both K are 12 mM, so B_b/R_s = c_l/K_b holds at the start.
   - Both of §1.2's net fluxes are 0.0 in binary64.
-- **The row at 1.0 s holds the state the wash acts on.** 1.005 s is the first row after it.
+- **The row at 1.0 s holds the state the wash acts on.** 1.0025 s is the first row after it
+  (amendment 3).
 - **§1.4's map on the start** removes exactly 4.0 fmol of L1 and 2.0 fmol of L2, and supplies
   4.0 fmol of L2.
 
@@ -241,9 +242,9 @@ W3's inputs, with observation times 0.1, 0.2, 0.5, 1.0 and 2.0 s and a horizon o
 | Node `well` | V = 1.0 pL; free L1 8.0 fmol |
 | Set `matrix` (owner: node `well`) | as W7 |
 | Population `matrix_L1` | as W7, the set's only population |
-| dt | 0.005 s |
-| Observation times | 0.5, 1.0, 2.0, 3.0, 5.0, 8.0, 12.0 s |
-| Horizon | 12.0 s |
+| dt | 0.0025 s (amendment 3) |
+| Observation times | 0.25, 0.5, 1.0, 1.5, 2.0 s (amendment 3) |
+| Horizon | 2.0 s, 47 time constants of its slowest mode (amendment 3) |
 
 - **L2 is absent.** It sits at its trace, moved by no law, so it is left out (amendment answer 3).
 
@@ -307,7 +308,7 @@ W3's inputs, with observation times 0.1, 0.2, 0.5, 1.0 and 2.0 s and a horizon o
   node's pools plus the sets that face it.
 - **Every interval's heat** H = G(t_k) − G(t_{k+1}), between consecutive times from the start. In
   W2 the interval across the wash (4.0 to 4.0125 s) is excluded, and in W7 the interval from 1.0 to
-  1.005 s.
+  1.0025 s (amendment 3).
 - **The heat bound B_H of each interval** (CRITERIA.md, C3a). Its log terms take max(x, δ_x) in
   place of x, so an amount that starts at zero, such as an empty population, gives a finite
   bound.
@@ -331,6 +332,10 @@ W3's inputs, with observation times 0.1, 0.2, 0.5, 1.0 and 2.0 s and a horizon o
 - **For each plant** (CRITERIA.md), from the reference alone: the compared quantity as the plant
   would change it, and its distance from the honest value in units of the criterion's bound.
 - **Each entry** names its compared quantity of largest distance.
+- **Each entry is keyed (plant, criterion, world, time_s)** (amendment 3):
+  - time_s is the state's time for a plant applied to a saved state: P5's 4.0 s on W2, and its 0.0
+    and 1.0 s on W7, two entries;
+  - time_s is null for a plant judged over a run.
 - **W5 is a refusal world,** so its plant is sized by loads:
   - the four loads at the start, multiplied by h = dt/2: each pool's L_n, the set's L_R summed and
     per population, and each population's L_B;
@@ -378,7 +383,8 @@ the per-population rule.
   - `"distance_at_horizon"`: {observable: r_T};
   - W4: `"closed_form"`: [{observable, time_s, value, gap_from_ode}, ...];
   - W5: `"stage"`: {loads: {...}, verdict_summed, verdict_per_population};
-  - `"plants"`: [{plant, criterion, compared, honest, planted, distance_in_bounds}, ...];
+  - `"plants"`: [{plant, criterion, world, time_s, compared, honest, planted, distance_in_bounds},
+    ...], one per (plant, criterion, world, time_s) (amendment 3);
   - `"provenance"`: the references' revision, the writer's version, and the hash seeds of the
     regeneration check.
 - **Floats** are written with `repr` (round-trip exact). **Times** are the inputs' floats.

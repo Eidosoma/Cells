@@ -12,6 +12,13 @@ These are fixed before any engine run (`docs/FR45_SITE_COMPETITION_PROTOCOL.md`;
 user's example washed, and W7s, its single-ligand limit, enter the criteria its §3 names. Their
 honest margins are below. No band is changed.
 
+**Amendment 3 the same day** (`AMENDMENT-3-2026-11-24.md`):
+- W7 and W7s step at 0.0025 s, so dt·max L = 0.03 as registered;
+- W7s runs to 2.0 s, 47 time constants, so every interval's heat is resolved;
+- each plant entry is keyed (plant, criterion, world, time_s), with P5's two on W7.
+
+No band is changed.
+
 **Corrected the same day** (`NOTE-2026-11-24.md`): C4b and C6 read the engine's saved state at
 4.0 s, the row the wash acts on, as the amendment's §3 registers. The rows' earlier 5.0 s was a
 leftover from the first draft.
@@ -92,8 +99,8 @@ a few percent from the registered ones, never the registered inputs themselves; 
 | C3a | 10⁻³ |
 | C5 | 2·10⁻³ |
 | C8 | ratios 8.35 and 8.17; e(0.02) is 2·10⁻⁷ of S |
-| W7 (amendment 2) | C1 0.124; C2a 0.039; C3a and C5 negligible |
-| W7s (amendment 2) | below W7's |
+| W7 (amendments 2 and 3, at dt 0.0025 s) | C1 0.008; C2a 0.005; C3a and C5 negligible |
+| W7s (amendments 2 and 3, at dt 0.0025 s, to 2.0 s) | below W7's |
 
 C2a's earlier derived form, 8ε at the horizon, failed the honest emulation at up to 141 times its
 tolerance, which is why it is a band.
