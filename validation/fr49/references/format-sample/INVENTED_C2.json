@@ -700,7 +700,7 @@
   "reported_significant_digits": 30,
   "second_routes": {
    "ode_radau": {
-    "description": "scipy.integrate.solve_ivp, Radau, rtol 1e-12, atol 1e-30, on (B1, B2, n1, n2, R), binary64",
+    "description": "scipy.integrate.solve_ivp, Radau, rtol 1e-12, atol 1e-30, on (B1, B2, n1, n2, R), binary64, with its own S",
     "largest_relative_difference": {
      "B1": {
       "max": "4.91e-14",
@@ -735,7 +735,7 @@
     "within": true
    },
    "ode_dop853": {
-    "description": "scipy.integrate.solve_ivp, DOP853, rtol 1e-13, atol 1e-30, on (B1, B2, n1, n2, R), binary64",
+    "description": "scipy.integrate.solve_ivp, DOP853, rtol 1e-13, atol 1e-30, on (B1, B2, n1, n2, R), binary64, with its own S",
     "largest_relative_difference": {
      "B1": {
       "max": "3.82e-13",
@@ -797,8 +797,18 @@
     "within": true
    },
    "root_two_equation_newton": {
-    "description": "Newton on LAWS.md 5's two equations in (c1, c2) as written, at 70 digits, from Radau's state at the horizon",
-    "largest_relative_difference": "4.88e-70",
+    "description": "Newton on LAWS.md 5's two equations in (c1, c2) as written, at 70 digits, from Radau's state at the horizon, with S in exact rationals; R* = S/(1 + c1/K1 + c2/K2)",
+    "relative_difference": {
+     "c1*": "1.82e-60",
+     "c2*": "1.06e-60",
+     "B1*": "2.08e-61",
+     "B2*": "9.67e-61",
+     "R*": "2.03e-60",
+     "S": "6.27e-61",
+     "K_1": "0",
+     "K_2": "0"
+    },
+    "largest_relative_difference": "2.03e-60",
     "declared_accuracy": "1e-20",
     "within": true
    }
@@ -808,7 +818,7 @@
   "within_declared_accuracy": true
  },
  "provenance": {
-  "git_revision": "e695473d13c95b49c6a87fbd9438ad3f26f7b5d4",
+  "git_revision": "29319a593c7a7df5da122db1cea9e67601e22433",
   "dirty_paths": [],
   "dirty_paths_exclude": [
    "validation/fr49/references/results/*",

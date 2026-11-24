@@ -583,7 +583,7 @@
     "within": true
    },
    "ode_radau": {
-    "description": "scipy.integrate.solve_ivp, Radau, rtol 1e-12, atol 1e-30, on (B, n_L), binary64",
+    "description": "scipy.integrate.solve_ivp, Radau, rtol 1e-12, atol 1e-30, on (B, n_L), binary64, with its own S from the declared values",
     "largest_relative_difference": {
      "B": {
       "max": "5.32e-14",
@@ -607,6 +607,24 @@
     "declared_accuracy": "1e-10",
     "within": true
    },
+   "once_values": {
+    "description": "each once value by a second route: S, K_d, L_T and b in exact rationals; d from b^2 + 4 V_C L_T K_d; B1 = (s - d)/2 and B2 = (s + d)/2, since B2 - B1 = d; lambda = k_on d/V_C; c* = (L_T - B1)/V_C; B* = B1. The Taylor and Radau routes use their own S and L_T",
+    "relative_difference": {
+     "S": "1.80e-60",
+     "K_d": "0",
+     "b": "1.79e-60",
+     "c*": "8.33e-61",
+     "B*": "8.46e-61",
+     "B1": "8.46e-61",
+     "B2": "4.74e-61",
+     "lambda": "3.39e-60",
+     "L_T": "0",
+     "d": "1.11e-61"
+    },
+    "max": "3.39e-60",
+    "declared_accuracy": "1e-20",
+    "within": true
+   },
    "equilibrium": {
     "description": "B* = L_T - V_C c* from the root's formula, against B1 from the quadratic in B",
     "relative_difference": "0",
@@ -619,7 +637,7 @@
   "within_declared_accuracy": true
  },
  "provenance": {
-  "git_revision": "e695473d13c95b49c6a87fbd9438ad3f26f7b5d4",
+  "git_revision": "29319a593c7a7df5da122db1cea9e67601e22433",
   "dirty_paths": [],
   "dirty_paths_exclude": [
    "validation/fr49/references/results/*",

@@ -681,53 +681,53 @@
      "within": true
     },
     "ode_radau": {
-     "description": "scipy.integrate.solve_ivp, Radau, rtol 1e-12, atol 1e-30, its steps stopped at t1 and t2 (one solve per piece), binary64",
+     "description": "scipy.integrate.solve_ivp, Radau, rtol 1e-13, atol 1e-30, its steps stopped at t1 and t2 (one solve per piece), binary64. It is held to World L's declared 1e-13, the stricter of that and the ODE integrations' 1e-10",
      "largest_relative_difference": {
       "n_O": {
-       "max": "5.55e-15",
-       "sample_index": 59
+       "max": "2.89e-15",
+       "sample_index": 49
       },
       "n_C": {
-       "max": "1.74e-13",
-       "sample_index": 5
+       "max": "1.48e-14",
+       "sample_index": 6
       },
       "x_O": {
-       "max": "1.12e-14",
-       "sample_index": 56
+       "max": "2.41e-15",
+       "sample_index": 46
       },
       "x_C": {
-       "max": "2.27e-13",
-       "sample_index": 56
+       "max": "2.23e-14",
+       "sample_index": 59
       },
       "base_O": {
-       "max": "1.06e-14",
-       "sample_index": 56
+       "max": "4.33e-15",
+       "sample_index": 22
       },
       "base_C": {
-       "max": "1.74e-13",
-       "sample_index": 5
+       "max": "2.29e-14",
+       "sample_index": 24
       },
       "share_x_O": {
-       "max": "1.64e-14",
-       "sample_index": 56
+       "max": "3.46e-15",
+       "sample_index": 59
       },
       "share_x_C": {
-       "max": "2.35e-13",
-       "sample_index": 16
+       "max": "2.28e-14",
+       "sample_index": 24
       }
      },
-     "max": "2.35e-13",
+     "max": "2.29e-14",
      "max_normalised_difference": {
-      "n_O": "5.49e-15",
-      "n_C": "3.56e-14",
-      "x_O": "8.24e-15",
-      "x_C": "1.87e-13",
-      "base_O": "9.89e-15",
-      "base_C": "6.90e-14",
-      "share_x_O": "7.54e-15",
-      "share_x_C": "1.48e-13"
+      "n_O": "2.57e-15",
+      "n_C": "3.42e-15",
+      "x_O": "1.95e-15",
+      "x_C": "1.84e-14",
+      "base_O": "3.46e-15",
+      "base_C": "9.20e-15",
+      "share_x_O": "2.28e-15",
+      "share_x_C": "2.10e-14"
      },
-     "declared_accuracy": "1e-10",
+     "declared_accuracy": "1e-13",
      "within": true
     }
    },
@@ -739,7 +739,7 @@
   "within_declared_accuracy": true
  },
  "provenance": {
-  "git_revision": "e695473d13c95b49c6a87fbd9438ad3f26f7b5d4",
+  "git_revision": "29319a593c7a7df5da122db1cea9e67601e22433",
   "dirty_paths": [],
   "dirty_paths_exclude": [
    "validation/fr49/references/results/*",

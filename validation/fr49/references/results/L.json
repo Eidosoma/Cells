@@ -649,53 +649,53 @@
     "within": true
    },
    "ode_radau": {
-    "description": "scipy.integrate.solve_ivp, Radau, rtol 1e-12, atol 1e-30, its steps stopped at t1 and t2 (one solve per piece), binary64",
+    "description": "scipy.integrate.solve_ivp, Radau, rtol 1e-13, atol 1e-30, its steps stopped at t1 and t2 (one solve per piece), binary64. It is held to World L's declared 1e-13, the stricter of that and the ODE integrations' 1e-10",
     "largest_relative_difference": {
      "n_O": {
-      "max": "3.94e-15",
-      "sample_index": 8
+      "max": "2.71e-15",
+      "sample_index": 57
      },
      "n_C": {
-      "max": "1.57e-13",
-      "sample_index": 6
+      "max": "1.98e-14",
+      "sample_index": 3
      },
      "x_O": {
-      "max": "7.99e-15",
-      "sample_index": 38
+      "max": "5.25e-15",
+      "sample_index": 57
      },
      "x_C": {
-      "max": "1.75e-13",
-      "sample_index": 49
+      "max": "2.59e-14",
+      "sample_index": 45
      },
      "base_O": {
-      "max": "3.94e-15",
-      "sample_index": 8
+      "max": "2.66e-15",
+      "sample_index": 42
      },
      "base_C": {
-      "max": "1.57e-13",
-      "sample_index": 6
+      "max": "1.98e-14",
+      "sample_index": 3
      },
      "share_x_O": {
-      "max": "6.66e-15",
-      "sample_index": 49
+      "max": "3.86e-15",
+      "sample_index": 33
      },
      "share_x_C": {
-      "max": "1.72e-13",
-      "sample_index": 49
+      "max": "2.41e-14",
+      "sample_index": 45
      }
     },
-    "max": "1.75e-13",
+    "max": "2.59e-14",
     "max_normalised_difference": {
-     "n_O": "1.47e-15",
-     "n_C": "4.15e-14",
-     "x_O": "7.30e-15",
-     "x_C": "1.70e-13",
-     "base_O": "2.01e-15",
-     "base_C": "4.80e-14",
-     "share_x_O": "5.10e-15",
-     "share_x_C": "1.31e-13"
+     "n_O": "2.62e-15",
+     "n_C": "3.43e-15",
+     "x_O": "4.62e-15",
+     "x_C": "2.55e-14",
+     "base_O": "2.29e-15",
+     "base_C": "4.15e-15",
+     "share_x_O": "2.74e-15",
+     "share_x_C": "1.96e-14"
     },
-    "declared_accuracy": "1e-10",
+    "declared_accuracy": "1e-13",
     "within": true
    }
   },
@@ -704,7 +704,7 @@
   "within_declared_accuracy": true
  },
  "provenance": {
-  "git_revision": "e695473d13c95b49c6a87fbd9438ad3f26f7b5d4",
+  "git_revision": "29319a593c7a7df5da122db1cea9e67601e22433",
   "dirty_paths": [],
   "dirty_paths_exclude": [
    "validation/fr49/references/results/*",
