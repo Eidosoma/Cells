@@ -10,6 +10,7 @@ import CellsProofs.Chemistry.Enzyme
 import CellsProofs.Chemistry.GardCache
 import CellsProofs.Chemistry.GardRange
 import CellsProofs.Chemistry.RateEquations
+import CellsProofs.Chemistry.ReactionCycles
 import CellsProofs.Chemistry.RosenbrockInventory
 import CellsProofs.Chemistry.SharedWriter
 import CellsProofs.Chemistry.ArrivalCohort
@@ -31,6 +32,10 @@ import CellsProofs.Chemistry.TerminalRelease
 import CellsProofs.Chemistry.ReleaseEnergy
 import CellsProofs.Chemistry.PopulationUnits
 import CellsProofs.Chemistry.PrescribedShell
+import CellsProofs.Chemistry.ShellEquilibrium
+import CellsProofs.Chemistry.ShellIntervalHeat
+import CellsProofs.Chemistry.ShellLigandFaces
+import CellsProofs.Chemistry.ShellWashRecovery
 import CellsProofs.Chemistry.ReservoirExchange
 import CellsProofs.Chemistry.SharedPool
 import CellsProofs.Chemistry.SingleSiteBinding
@@ -46,6 +51,7 @@ import CellsProofs.Chemistry.VesicleRelease
 import CellsProofs.Chemistry.VesicleBirth
 import CellsProofs.Tissue.BathSchedule
 import CellsProofs.Tissue.CellReplacement
+import CellsProofs.Tissue.ChargeAnchor
 import CellsProofs.Tissue.CompartmentWash
 import CellsProofs.Tissue.CurrentInjection
 import CellsProofs.Tissue.DivisionBridge

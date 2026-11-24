@@ -26,7 +26,7 @@ Proof sources [Imported Mathlib telescoping sum specialized to a saved interval]
 
 ## Numerical comparison
 
-**Checked.** On the FR-43 part 2B development revision 211a9c17, the fixed-volume network added 0.004997501 fmol and the gene unit spent a net 0.000664664 fmol. The 5 s disk restart reproduced all 78 state fields. Shifting 1% of a writer’s booking to its partner preserved the total and failed the independent reserve check. In a swelling cell both rate probes agreed at 2 and 3 s within 2.54 × 10⁻⁶ relative error. Supplying the initial volume to one writer at a time identified that writer in each control. These checks cover the saved-state rates and accounts. The FR-43 qualification compares the coupled trajectory separately.
+**Checked.** On the FR-43 part 2B development revision 211a9c17, the fixed-volume network added 0.004997501 fmol and the gene unit spent a net 0.000664664 fmol. The 5 s disk restart reproduced all 78 state fields. Shifting 1% of a writer’s booking to its partner preserved the total and failed the independent reserve check. In a swelling cell both rate probes agreed at 2 and 3 s within 2.54 × 10⁻⁶ relative error. Supplying the initial volume to one writer at a time identified that writer in each control. These checks cover the saved-state rates and accounts. On main b06158e8 and cd3b7b09, all four replays gave byte-identical results, including the 78-field restart and both stale-volume controls. The registered part 2 coupled-trajectory comparisons also passed (D324, D328).
 
 **Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`
 
@@ -36,11 +36,19 @@ Proof sources [Imported Mathlib telescoping sum specialized to a saved interval]
 
 [Tested engine 211a9c17441a](https://github.com/Eidosoma/Cells/commit/211a9c17441ae6c17b00d3d239b5baa05a261d9f) · [Evidence checkpoint 6831a0113ffe](https://github.com/Eidosoma/Cells/commit/6831a0113ffed609f060d495b205e119235d4768)
 
+**Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`
+
+**Operators** `cells.local_species_reactions@1`, `cells.templated_polymerisation@1`, `cells.ideal_osmosis_linear_compliance_water@1`
+
+[Fixed and swelling two-writer worlds](https://github.com/Eidosoma/Cells/blob/cd3b7b09d8252f445a976f0506767f1aaf38c53d/validation/tissue/shared_inventory_fixtures.py) · [Current volume passed to the split operators](https://github.com/Eidosoma/Cells/blob/cd3b7b09d8252f445a976f0506767f1aaf38c53d/src/cells/models/pump_composite.py) · [Reaction network with a supplied volume](https://github.com/Eidosoma/Cells/blob/cd3b7b09d8252f445a976f0506767f1aaf38c53d/src/cells/operators/species_reactions.py#L1076) · [Gene unit with current volumes](https://github.com/Eidosoma/Cells/blob/cd3b7b09d8252f445a976f0506767f1aaf38c53d/src/cells/operators/templated_polymerisation.py#L2445) · [Volume supplied by water](https://github.com/Eidosoma/Cells/blob/cd3b7b09d8252f445a976f0506767f1aaf38c53d/src/cells/operators/osmotic_water.py) · [Native run and restart](https://github.com/Eidosoma/Cells/blob/cd3b7b09d8252f445a976f0506767f1aaf38c53d/src/cells/execution/runner.py) · [Saved state and checkpoint reader](https://github.com/Eidosoma/Cells/blob/cd3b7b09d8252f445a976f0506767f1aaf38c53d/src/cells/records/io.py) · [Two-writer balance and current-volume identities](https://github.com/Eidosoma/Cells/blob/73e7e9d7b639ce366d3a9e26d4b6af8b977d7b67/lean/CellsProofs/Chemistry/SharedWriter.lean) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/73e7e9d7b639ce366d3a9e26d4b6af8b977d7b67/lean/checks/shared_writers.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/73e7e9d7b639ce366d3a9e26d4b6af8b977d7b67/lean/PROGRESS.md#nov24-main-audit)
+
+[Tested engine cd3b7b09d825](https://github.com/Eidosoma/Cells/commit/cd3b7b09d8252f445a976f0506767f1aaf38c53d) · [Evidence checkpoint 73e7e9d7b639](https://github.com/Eidosoma/Cells/commit/73e7e9d7b639ce366d3a9e26d4b6af8b977d7b67)
+
 ## Biological evidence
 
 **Open.** A finite nucleotide pool, its upstream reserve and its consumption product measured together. For a changing-volume amount balance, each concentration also needs a matched volume.
 
-Under a common-volume assumption, the five archived metabolite means allow a check of net UTP supply and spending. Measurement independence, uncertainty of the full residual and gross reaction rates remain open.
+Under a common-volume assumption, the five archived metabolite means allow a check of net UTP supply and spending. Measurement independence, uncertainty of the full residual and gross reaction rates remain open. In a separate rat hepatocyte study, swelling slightly increased ATP amount while the concentration calculated from measured cell-water volume fell. This directly illustrates the importance of the volume denominator. [Meijer et al., Figures 1 and 3E–F](https://doi.org/10.1111/j.1432-1033.1993.tb18053.x)
 
 **Unit** mM UTP
 

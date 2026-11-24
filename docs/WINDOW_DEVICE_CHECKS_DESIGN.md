@@ -852,6 +852,93 @@ headline figures compare both modes on the same cores; the records' figures are 
   - The two "estimate" cells scale the same-core host arm's cost per row: the export's from 80,000
     steps, FR-4's from its 20 s pass (6.58 ms per row).
 
+## 10. Device row checks on a GPU (D330, closed as failed: D336, 24 November 2026)
+
+**The user's decision (D330):** qualify the device row checks on the GPU under the sparse field
+solver, on the production path, family by family, starting with the composite and GJ-N1's field
+worlds, then run the field's longest points on the L4. **The qualification failed** on G2 (§10.3).
+D336 closed it, and the field's longest points run on CPUs. The scalar path's `row_checks.admit`
+keeps refusing GPU device mode as before (§9.2), and from D336's landing the vector path refuses the
+composite on a GPU (`vector_windows.refuse_unqualified_gpu`; §10.4). Records: `/mnt/workspaces/Cells/
+fr17-sparse-20261123/gpu/` (GPU_CRITERIA.txt with its amendments, each block's folder);
+`validation/execution/gpu_row_checks.py` is the driver.
+
+### 10.1 What was to be admitted, and why it was not
+
+The branch admitted a GPU backend for `resolved_pump_composite@1` under
+`sparse_capacitive_reduction_gauged_damped_newton@1`, for the ledgers of GJ-N1's worlds measured on
+the L4 (the lead's finer key: model, field solver and ledgers), and only with XLA's deterministic ops
+set (D335). With G2 failed, none of that lands.
+
+### 10.2 The criteria (GPU_CRITERIA.txt, fixed before any production-path L4 run)
+
+On GJ-N1's 25 × 25 field at D = 0 (dt 1/8 s) and D = 1e-13 (dt 1/128 s):
+- **G1:** 8 windows of 32 steps per D, host mode then device mode in one process: every array
+  identical by bytes.
+- **G2:** for every window, those the device hands back included (D335), and each ledger, the spread
+  |host ratio − device ratio| in units of the bound. The L4's largest is at most
+  min(0.4, max(0.1, 1.5 × the CPU's on the same definition)): no worse than the CPU-qualified device
+  mode, and capped so that a window the device accepts at 0.5 lies at most 0.9 of its bound on the
+  host. The first declared bound, 0.1, failed on the CPU itself (amendment 1).
+- **G3–G7:** the GPU test rows, a 20,000-step handback-rate run, memory, repeatability across
+  processes (fresh and with pinned autotune results), and the production path's timing.
+- **The stop rule (D335):** a fail of G1 or G6 under the chosen flag stops the qualification; no
+  criterion is amended again.
+
+### 10.3 The evidence
+
+**Block 1, the host core.** The 21.2 against 13.1 ms per step of 23 and 24 November ran the same
+program; the L4 step on this path is bound by its host thread, and a busy hyperthread sibling slowed
+it about 1.3× (15.6 against 19.3–20.3 ms). So an L4 run's host thread needs a whole physical core.
+The optimized HLO also differed between processes in which reductions XLA's autotuner emitted as
+Triton kernels.
+
+**Block 2, unflagged** (the host thread on the timed lane's CPU 4, sibling idle):
+- **G1 failed at both D.** From window 1 the amounts, the passive-route transfers and the reaction
+  ledgers differed between the modes; every field array agreed. Both modes ran one compiled rollout,
+  whose 94 scatters XLA's GPU backend adds atomically, in an order that varies between runs; the
+  sparse solver has no scatter.
+- Device mode stepped at 16.9 ms (D = 1e-13) and 13.7 ms (D = 0), host mode at 29.6 and 22.8 ms.
+
+**Block 3'a, with `--xla_gpu_deterministic_ops=true`:**
+- **G1 passed:** host and device mode identical by bytes in all 8 windows.
+- **G6 passed both ways:** a second process, autotuned afresh, and a third, loading the first's
+  autotune results, reproduced every window by bytes. Under the flag XLA's autotune dumps hold no
+  results: deterministic mode disables timing-based autotuning, so the flag, not a pinned file,
+  fixes the kernels.
+- **G2 failed.** In window 1 (steps 0–32) the device read the "total" ledger (the global material
+  balance) at 0.715 of its bound and handed the window back; the host read 0.202 on the same rows, a
+  spread of 0.514, against the bound of 0.291 and the cap of 0.4. Windows 2–8 spread at most 0.016.
+  The CPU's spread in that window was 0.194.
+- The flag cost 29% in device mode (21.8 against 16.9 ms per step).
+
+**What G2's window shows.** At steps 0 and 1 the bound's rounding allowance (proportional to the
+accepted steps) is still about zero, so the bound is the bare material atol, and the global sum's own
+rounding is a large fraction of it. On the host, window 1's fraction grows with the tissue: 0.044 on
+the line (25 cells, 24 junction routes), 0.12 on the 9 × 9 sheet (144 routes) and 0.28 on the field
+(625 cells, 1,200 routes), about as the square root of the routes (0.4–0.5 as an exponent). Extrapolated, the
+host would refuse window 1 on rounding alone near 15,000–29,000 routes (roughly 90 × 90 to
+120 × 120 cells), on any device. That is a finding on the ledger bound's first rows, not on the GPU.
+
+**The CPU against the L4.** After 32 s at D = 0 the amounts agree to one ulp (2.1e-16 of each amount);
+the 8.6e-8 first reported was measured against the increments' own small scale. A one-ulp change of
+one start value on the CPU gives the same picture and does not grow over the 8 windows. The CPU
+repeats every window by bytes across processes.
+
+**Not run:** blocks 3'b (the D = 0 and vector-path timings on the L4), 4' (the long run) and 5' (the
+GPU rows), cancelled once G2 had failed (D336).
+
+### 10.4 The vector path
+
+`run_vector_windowed` checks every row on the device, with no host fallback: the device's word
+decides. D330's two findings apply to it. Without the flag the composite's GPU runs are not
+deterministic, and its device check program read window 1's global ledger 0.51 of the bound away from
+the host. So from D336's landing the vector path refuses `resolved_pump_composite@1` on a GPU, under
+every field solver, at planning (`refuse_unqualified_gpu`; the lead's ruling, option (c)). Every other
+model keeps its GPU path: the ionic ensembles, @1's batched worlds of 9 November and @3's device
+checks of 10 November. Re-checking that earlier evidence under D330's criteria, run-to-run
+determinism included, is a logged follow-up (D336).
+
 ## Sources
 
 - **Code** at 3c10b833:

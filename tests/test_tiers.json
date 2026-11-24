@@ -383,6 +383,8 @@
   "/mnt/workspaces/Cells/fr47-build-20261124/measure-4a533a2c/measured.json",
   "/mnt/workspaces/Cells/fr47-build-20261124/measure-94bf2a97/measured.json",
   "/mnt/workspaces/Cells/fr47-build-20261124/measure-c0aa0bd3/measured.json",
+  "/mnt/workspaces/Cells/fr17-sparse-20261123/measure-478664a0/measure/measured.json",
+  "/mnt/workspaces/Cells/charge-anchor-tolerance-20261124/measure-bb7afe7d/measured.json",
   "/mnt/workspaces/Cells/fr44-core-20261124/tiers-78f72bc0/measured.json",
   "/mnt/workspaces/Cells/fr44-core-20261124/tiers-compartments-f60232c0/measured.json"
  ],
@@ -3269,6 +3271,21 @@
    "utc": "2026-11-24T11:44:47+00:00"
   },
   {
+   "git_revision": "478664a0a9c352d9b1718dd035aafda351b8d7f0",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/fr17-sparse-20261123/measure-478664a0/wt",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-24T16:49:18+00:00"
+  },
+  {
+   "git_revision": "bb7afe7d7dd218c3a590b9a27e539533d494ae2d",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/charge-anchor-tolerance-20261124/snapshot-bb7afe7d",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-24T13:53:49+00:00"
+  },
+  {
    "git_revision": "78f72bc07acf4d599fa11807e9516f7056a0d794",
    "dirty": false,
    "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -4100,10 +4117,10 @@
    },
    {
     "file": "tests/unit/test_component_net_charge.py",
-    "seconds": 13.81,
+    "seconds": 16.07,
     "exit_code": 0,
     "counts": {
-     "passed": 11
+     "passed": 29
     }
    },
    {
@@ -6081,10 +6098,10 @@
    },
    {
     "file": "tests/unit/test_row_checks_program.py",
-    "seconds": 7.84,
+    "seconds": 9.9,
     "exit_code": 0,
     "counts": {
-     "passed": 16
+     "passed": 17
     }
    },
    {

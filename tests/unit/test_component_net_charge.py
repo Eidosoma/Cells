@@ -26,6 +26,14 @@ a closed patch that is the residual itself, so the 3e-25 C floor alone refused M
 step 64,756 (D305). The ledger now also allows the component rule's rounding on the grounded nodes'
 increments (surface_field.grounded_tolerance): a closed-patch world the floor refused passes far
 inside it, and a planted supply leak at twice the bound still fails, on the host and the device.
+
+A node's charge anchor is refused at definition too when it disagrees with its inventory and fixed
+background (surface_tissue.check_definition). Its 1e-20 C floor alone is finer than float64 from
+2^19 fmol and refused XC0's balanced nodes (D332's C6). Above the floor the residual is now held to
+the rounding budget of the anchor rule that writes a node (D333), the bound of an independent
+exact-rational check of 24 November 2026. Its 17 controls are rows here, as data. The 15 balanced
+nodes are admitted (the floor alone refused seven), and the two backgrounds four spacings off are
+refused, as is one small inventory's anchor 2e-20 C off. Parse only: no program is compiled.
 """
 
 import copy
@@ -292,3 +300,143 @@ def test_supply_leak_behind_the_closed_patch_is_refused_on_both_sides_of_the_bou
     assert surface_pump.DEVICE_CHECKS[int(np.argmax(failed))] == first
     ratio = float(np.asarray(values)[-1])  # max_global_charge_bound_ratio.
     assert (ratio > 1) == (factor > 1) and abs(ratio - factor) < 0.01 * factor
+
+
+# --- a charge anchor at large inventories (D333) -------------------------------------------------
+
+ANCHOR_Z = dict(Na=1, K=1, Cl=-1, A=-1, B=-1)  # XC0's cell rows, in this order below.
+XC0_ANCHOR_C = -3.1415926535897935e-12  # XC0's anchor, C_total V0.
+NA21, NA38 = 1374.4467859455344, 2487.0941840919195  # XC0's cell Na (fmol) at 21 and 38 mM.
+TRACE_B = 0.006544984694978736  # XC0's cell B (fmol) at its trace.
+
+
+def xc0_row(sodium, b, background, admitted=True, anchor=XC0_ANCHOR_C):
+    """XC0's 65.45 pL cell at its K, Cl and A, with Na and the impermeant B as given."""
+    amounts = (sodium, 5890.486225480862, 1963.4954084936207, 5301.437602932776, b)
+    return amounts, 65.44984694978736, background, anchor, admitted
+
+
+def sum_row(total, background, anchor):
+    """An exact ionic sum, Na = total fmol in 1 pL beside 3, 1, 1 and 1 fmol."""
+    return (total, 3.0, 1.0, 1.0, 1.0), 1.0, background, anchor, True
+
+
+# The independent exact-rational check's controls (24 November 2026), row for row: case ->
+# (amounts in ANCHOR_Z's order, volume pL, fixed background fmol, anchor C, admitted). Each
+# background is the anchor rule's fl(fl(anchor / CHARGE_PER_FMOL) - fsum(z n)), or four of its
+# spacings off that (offset). (*): the 1e-20 C floor alone refused the balanced node. The last row
+# is not one of the check's.
+ANCHORS = {
+    "baseline": xc0_row(NA21, TRACE_B, -0.026015328716958122),
+    "Na21-B-binade18": xc0_row(NA21, 393216.0, 393215.9674396866),
+    "Na21-B-binade19": xc0_row(NA21, 786432.0, 786431.9674396865),
+    "Na21-B-binade20": xc0_row(NA21, 1572864.0, 1572863.9674396866),
+    "Na21-B-binade21": xc0_row(NA21, 3145728.0, 3145727.9674396864),  # (*)
+    "Na21-B-binade22": xc0_row(NA21, 6291456.0, 6291455.967439687),  # (*)
+    "Na38-B-binade18": xc0_row(NA38, 393216.0, 392103.3200415402),
+    "Na38-B-binade19": xc0_row(NA38, 786432.0, 785319.3200415402),
+    "Na38-B-binade20": xc0_row(NA38, 1572864.0, 1571751.3200415403),  # (*)
+    "Na38-B-binade20-offset-4": xc0_row(NA38, 1572864.0, 1571751.3200415394, admitted=False),
+    "Na38-B-binade20-offset+4": xc0_row(NA38, 1572864.0, 1571751.3200415412, admitted=False),
+    "Na38-B-binade21": xc0_row(NA38, 3145728.0, 3144615.32004154),  # (*)
+    "Na38-B-binade22": xc0_row(NA38, 6291456.0, 6290343.32004154),  # (*)
+    # The anchor half a spacing of the exact ionic sum 1.5 x 2^p fmol off zero (each sign), or 0.
+    "binade19-half-spacings+1": sum_row(786432.0, -786432.0, 5.616185495356914e-21),
+    "binade20-half-spacings+1": sum_row(1572864.0, -1572864.0, 1.1232370990713828e-20),  # (*)
+    "binade20-half-spacings-1": sum_row(1572864.0, -1572864.0, -1.1232370990713828e-20),  # (*)
+    "binade26-half-spacings+0": sum_row(100663296.0, -100663296.0, 0.0),
+    # A small inventory's anchor 2e-20 C off (XC0_ANCHOR_C + 2e-20), twice the floor.
+    "baseline-anchor+2e-20": xc0_row(
+        NA21, TRACE_B, -0.026015328716958122, False, -3.1415926335897933e-12
+    ),
+}
+
+
+def anchor_world(amounts, volume, background, anchor, dt=4.7e-5):
+    """A control's node as one cell beside a held bath (XC0's bath amounts), behind a closed patch
+    of 2 pi x 10 pF (-50 mV at XC0's anchor): @1 under ARS(2,2,2)."""
+    bath = dict(Na=9900.0, K=200.0, Cl=10100.0, A=1e-6, B=1e-6)
+    capacitance = 6.283185307179586e-11
+    patch = dict(
+        id="plasma_0",
+        inside="cell_0",
+        outside="bath_0",
+        area_m2=capacitance / 1e-2,
+        capacitance_F=capacitance,
+        law="constant_field@1",
+        pump=None,
+        permeability_m_per_s=dict.fromkeys(ANCHOR_Z, 0.0),
+    )
+    return dict(
+        schema_version=1,
+        model=dict(
+            id="resolved_pump_tissue@1",
+            temperature_K=291.15,
+            species=[dict(id=s, valence=v) for s, v in ANCHOR_Z.items()],
+            cells=[
+                dict(
+                    id="cell_0",
+                    volume_pL=volume,
+                    initial_amount_fmol=dict(zip(ANCHOR_Z, amounts, strict=True)),
+                    fixed_charge_equivalent_fmol=background,
+                    initial_charge_C=anchor,
+                )
+            ],
+            extracellular=[
+                dict(
+                    id="bath_0",
+                    volume_pL=1000.0,
+                    initial_amount_fmol=bath,
+                    fixed_charge_equivalent_fmol=-math.fsum(
+                        ANCHOR_Z[s] * a for s, a in bath.items()
+                    ),
+                    initial_charge_C=0.0,
+                    reservoir=True,
+                    boundary_potential_V=0.0,
+                )
+            ],
+            membranes=[patch],
+            junctions=[],
+            faces=[],
+            closure=dict(
+                law="resolved_capacitor_components_current_continuity@1", gauge_reference=None
+            ),
+        ),
+        experiment=dict(
+            end_time=dt,
+            observation_times=[0.0, dt],
+            membrane_controls=[
+                dict(membrane_id="plasma_0", schedule=[dict(time=0.0, availability=1.0)])
+            ],
+            junction_controls=[],
+            pump_controls=[],
+        ),
+        execution=dict(
+            dt=dt,
+            capacity=1,
+            extracellular_capacity=1,
+            membrane_capacity=1,
+            edge_capacity=0,
+            face_capacity=0,
+            backend="cpu",
+            jit=True,
+            precision="float64",
+            solver=imex.ARS222_ID,
+            field_solver="capacitive_reduction_gauged_damped_newton@2",
+            max_steps=8,
+            max_trace_bytes=2**30,
+            material_balance_atol_fmol=dict.fromkeys(ANCHOR_Z, 1e-10),
+        ),
+    )
+
+
+@pytest.mark.parametrize("case", ANCHORS)
+def test_a_charge_anchor_is_admitted_within_its_rounding_budget_and_refused_beyond_it(case):
+    """The whole parse admits each balanced control and refuses each off one at the anchor."""
+    amounts, volume, background, anchor, admitted = ANCHORS[case]
+    raw = anchor_world(amounts, volume, background, anchor)
+    if admitted:
+        parse_spec(raw)
+    else:
+        with pytest.raises(ConfigError, match="explicit charge anchor disagree"):
+            parse_spec(raw)
