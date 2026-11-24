@@ -15,8 +15,9 @@ Only a window that is clean with that margin is accepted on the device's word. I
 then the device's maxima, reported and not judged (ruling 3); they agree with the host's to
 rounding, not bitwise.
 
-Qualification: CPU only, so a GPU backend is refused, and so is a composition with a live
-retiring operator (admit; design §9.2).
+Qualification (admit; design §9.2 and §10): the CPU, and on a GPU only the models, field solvers
+and ledgers whose host-against-device spread was measured there (GPU_QUALIFIED, D330). Anything
+else on a GPU is refused, and so is a composition with a live retiring operator.
 """
 
 import inspect
@@ -38,6 +39,36 @@ HOST_DECIDES_ABOVE = 0.5  # The guard band: above this ratio to its bound, the h
 MODES = ("host", "device")
 HOOKS = ("device_checks", "device_check_constants", "DEVICE_CHECKS", "DEVICE_DIAGNOSTICS")
 HANDED_BACK = ("failed", "above_band")  # Why the host decided a window.
+# Device row checks on a GPU, by model and field solver: the ledgers whose host-against-device
+# spread, band and handback rate were measured on the GPU, an NVIDIA L4 (D330; design §10). A
+# definition on a GPU is admitted only when its model and field solver are listed and every ledger
+# of its device checks is among the measured ones. The check program differs by field solver (the
+# sparse solver's capacitor products are its pairwise folds, version 2's a dense product), so each
+# field solver is measured on its own.
+GPU_QUALIFIED = MappingProxyType(
+    {
+        ("resolved_pump_composite@1", "sparse_capacitive_reduction_gauged_damped_newton@1"): (
+            frozenset(
+                (
+                    "local",
+                    "outside",
+                    "total",
+                    "charge",
+                    "electrode",
+                    "global_charge",
+                    "energy",
+                    "reservoir_work",
+                    "electrode_work",
+                    "metabolic_work",
+                )
+            )
+        ),
+    }
+)
+GPU_REFUSAL = (
+    "row_checks device is qualified on the CPU only for {}; a GPU backend is refused until a GPU "
+    "measurement exists"
+)
 
 
 def _takes_margins(checks):
@@ -62,18 +93,19 @@ def admit(spec):
 
     Two cases are refused because they are not yet qualified (the lead's rulings of 16 November
     2026, D187: no claim without teeth):
-    - a GPU backend: the GPU's host-against-device spread is unmeasured;
+    - a GPU backend, unless GPU_QUALIFIED lists the model and field solver with every ledger of
+      the definition's device checks (gpu_refusal; D330): elsewhere the GPU's
+      host-against-device spread is unmeasured;
     - a composition with a live retiring operator: its device checks read adjusted rows, and
       that branch's refusals have no planted test yet.
     """
     if not spec.execution.jit:
         raise ConfigError("row_checks device requires a compiled run (execution.jit true)")
-    if spec.execution.backend != "cpu":
-        raise ConfigError(
-            "row_checks device is qualified on the CPU only; a GPU backend is refused until a "
-            "GPU measurement exists"
-        )
     model = get_model(spec.model)
+    if spec.execution.backend != "cpu":
+        refused = gpu_refusal(spec, model)
+        if refused is not None:
+            raise ConfigError(refused)
     missing = [name for name in HOOKS if not hasattr(model, name)]
     if missing:
         raise ConfigError(
@@ -91,6 +123,21 @@ def admit(spec):
             "row_checks device is not yet qualified for a composition with a live retiring "
             "operator: its adjusted rows' refusals have no planted test"
         )
+
+
+def gpu_refusal(spec, model):
+    """Why device row checks on a GPU are refused for this definition (the message, naming the
+    model and field solver, or the ledgers not measured on a GPU), or None (GPU_QUALIFIED)."""
+    model_id = getattr(model, "MODEL_ID", None) or type(spec.model).__name__
+    solver = getattr(spec.execution, "field_solver", None)
+    named = model_id if solver is None else f"{model_id} under {solver}"
+    measured = GPU_QUALIFIED.get((model_id, solver))
+    if measured is None:
+        return GPU_REFUSAL.format(named)
+    unmeasured = [k for k in getattr(model, "DEVICE_CHECKS", ())[1:-1] if k not in measured]
+    if unmeasured:
+        return GPU_REFUSAL.format(f"the ledgers {', '.join(unmeasured)} of {named}")
+    return None
 
 
 def _window_checks(start, history, count, first_step, parameters, constants, *, checks):

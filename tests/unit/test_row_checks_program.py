@@ -7,10 +7,12 @@ The decision hands a window to the host on any failed check or any ratio above t
 NaN included. Device mode is refused, fail-closed, wherever it cannot serve: a run that is not
 compiled, a model without device checks or margins, a model whose device diagnostics are not
 its host diagnostics, the batch and vector paths, and from the CLI. It is also refused where
-it is not yet qualified: a GPU backend and a composition with a live retiring operator.
+it is not yet qualified: a composition with a live retiring operator, and a GPU backend outside
+the models, field solvers and ledgers measured on a GPU (row_checks.GPU_QUALIFIED, D330).
 """
 
 import json
+import re
 from typing import NamedTuple
 
 import jax
@@ -180,6 +182,55 @@ def test_device_mode_is_refused_on_a_gpu_backend():
     spec = parse_spec(definition(backend="gpu"))
     with pytest.raises(ConfigError, match="qualified on the CPU only"):
         plan_windows(spec, WindowPolicy(3, "checkpoints", "device"))
+    plan_windows(spec, WindowPolicy(3, "checkpoints"))  # Host mode admits it.
+
+
+SPARSE = "sparse_capacitive_reduction_gauged_damped_newton@1"
+
+
+@pytest.mark.parametrize(
+    ("field_solver", "unmeasured", "refusal"),
+    [
+        (
+            "capacitive_reduction_gauged_damped_newton@2",
+            None,
+            "under capacitive_reduction_gauged_damped_newton@2;",
+        ),
+        (
+            "capacitive_reduction_gauged_damped_newton@3",
+            None,
+            "under capacitive_reduction_gauged_damped_newton@3;",
+        ),
+        (SPARSE, None, None),
+        (
+            SPARSE,
+            "metabolic_work",
+            f"the ledgers metabolic_work of resolved_pump_composite@1 under {SPARSE};",
+        ),
+    ],
+    ids=["version-2", "version-3", "sparse", "sparse-unmeasured-ledger"],
+)
+def test_on_a_gpu_device_mode_is_admitted_only_as_measured(
+    field_solver, unmeasured, refusal, monkeypatch
+):
+    """D330: a GPU backend is admitted for a model and field solver of GPU_QUALIFIED only when
+    every ledger of the definition's device checks was measured on a GPU, and refused by name,
+    before any device is touched, otherwise. The composite is GJ-N1's line (not blind), parsed."""
+    from validation.gap_junction_tissue import neither
+
+    raw = neither.coupled_world(1e-13, neither.STAGE1_END_UNITS, shape="line")
+    raw["execution"].update(field_solver=field_solver, backend="gpu")
+    spec = parse_spec(raw)
+    if unmeasured is not None:  # A qualification without one of the world's ledgers.
+        key = ("resolved_pump_composite@1", field_solver)
+        qualified = {key: row_checks.GPU_QUALIFIED[key] - {unmeasured}}
+        monkeypatch.setattr(row_checks, "GPU_QUALIFIED", qualified)
+    policy = WindowPolicy(3, "checkpoints", "device")
+    if refusal is None:
+        plan_windows(spec, policy)
+        return
+    with pytest.raises(ConfigError, match=re.escape(refusal) + ".*until a GPU measurement exists"):
+        plan_windows(spec, policy)
     plan_windows(spec, WindowPolicy(3, "checkpoints"))  # Host mode admits it.
 
 

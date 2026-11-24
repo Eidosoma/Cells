@@ -852,6 +852,58 @@ headline figures compare both modes on the same cores; the records' figures are 
   - The two "estimate" cells scale the same-core host arm's cost per row: the export's from 80,000
     steps, FR-4's from its 20 s pass (6.58 ms per row).
 
+## 10. Device row checks on a GPU (D330, 24 November 2026)
+
+**The user's decision (D330):** qualify the device row checks on the GPU under the sparse field
+solver, on the production path, family by family, starting with the composite and GJ-N1's field
+worlds; then run the field's longest points on the L4.
+
+### 10.1 What is admitted
+
+`row_checks.admit` admits a GPU backend only for a model and field solver listed in
+`row_checks.GPU_QUALIFIED`, and only when every ledger of the definition's device checks is among
+those measured on the GPU (`gpu_refusal`; the lead's ruling, the finer key). Anything else is
+refused by name with today's message ("qualified on the CPU only for ..."); a composition with a
+live retiring operator stays refused on any backend.
+- **Listed:** `resolved_pump_composite@1` under `sparse_capacitive_reduction_gauged_damped_newton@1`,
+  for the ledgers of GJ-N1's worlds: local, outside, total, charge, electrode, global_charge,
+  energy, reservoir_work, electrode_work and metabolic_work (with the domain and dissipation
+  checks).
+- **Why per field solver:** the check program differs by field solver. Under the sparse ID the
+  capacitor products are its pairwise folds; under version 2 they are a dense product.
+- **Not listed:** version 2 and version 3 on any model, and every other model. Their GPU spread is
+  unmeasured.
+
+### 10.2 The criteria
+
+Fixed before any production-path run on the L4 (`/mnt/workspaces/Cells/fr17-sparse-20261123/gpu/
+GPU_CRITERIA.txt`, approved by the lead). On GJ-N1's 25 × 25 field at D = 0 (dt 1/8 s) and
+D = 1e-13 (dt 1/128 s), with `validation/execution/gpu_row_checks.py`:
+- **G1 (C1):** 8 windows of 32 steps per D, host mode then device mode in one process; every array
+  identical by bytes.
+- **G2 (C2):** for each window the device decides and each ledger, |host ratio − device ratio| ≤ 0.1,
+  both ratios |residual| / bound over the window's rows; the host's from the model's own NumPy
+  ledger functions.
+- **G3 (C3):** the GPU rows (`CELLS_TEST_GPU=1`) of `test_window_row_checks.py` and
+  `test_window_row_checks_composite.py`.
+- **G4:** 20,000 steps at D = 1e-13 in device mode: no refusal, G2 on every 50th window, and the
+  handback rate reported.
+- **G5–G7 (reported):** memory, a second-process repeat, and the production path's ms per step.
+
+**The CPU criterion did not fit these worlds.** The device-check tests' criterion
+(`tests/window_row_check_fixtures.agrees`: 2% of the smallest bound, the material floor taken as 2%
+of the material atol) fails on GJ-N1's large-amount worlds on the CPU already, under version 2 as
+under the sparse ID, in `max_global_balance_error_fmol`. On the line at D = 1e-13 (12 steps), host
+and device read 7.4e-20 and 1.1e-19 fmol in its first window, against a floor of 2e-22. These
+worlds' bound is dominated by its rounding allowance on large amounts, so the residual is rounding
+noise from two summation orders. In units of the bound the spread was 0.022 for "total", against
+the band of 0.5. That is a gap in the CPU qualification's criterion, not in the code: G2 is stated
+in units of the bound, and the old criterion's results are reported beside it.
+
+### 10.3 The evidence
+
+Pending (the L4 blocks of D330).
+
 ## Sources
 
 - **Code** at 3c10b833:
