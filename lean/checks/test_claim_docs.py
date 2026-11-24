@@ -165,7 +165,7 @@ class ClaimDocsTests(unittest.TestCase):
         page, summary = wet_lab_register(claims)
         self.assertIn('<a id="pair-uptake"></a>', page)
         self.assertIn("| Supported by both studies | 1 |", page)
-        self.assertIn("| Law misses the observation | 1 |", page)
+        self.assertIn("| Replay discrepancy | 1 |", page)
         self.assertIn("[Uptake increases.](#pair-uptake)", page)
         self.assertIn("support the stated assumption in 1 and challenge it in 0", summary)
         pair["outcome"] = "both_challenge"

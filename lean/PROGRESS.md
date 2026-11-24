@@ -60,7 +60,7 @@ On Cells `82c26ddd`, the same 17 XC0 inputs admitted all 15 balanced definitions
 
 ## 24 November 2026 · Which replicated observations does Cells reproduce?
 
-All 46 previously paired observations have a Cells assessment. Seven additional comparisons bring the register to 53. Eight rows identify a replicated response missed by the particular law or declaration tested. They include the existing Cx43, SK2 and POPC decisions and the deterministic vesicle rupture threshold. Each row names the observable, the two experiments and the scope of the replay. [All results and unresolved inputs](WET_LAB_EVIDENCE.md#cells-replay-results)
+All 46 previously paired observations have a Cells assessment. Seven additional comparisons bring the register to 53. This first pass flagged eight replay discrepancies for review, including Cx43, SK2, POPC and the deterministic vesicle rupture threshold. Each row names the observable, the two experiments and the scope of the replay. [Replay results and D351’s subsequent ruling](WET_LAB_EVIDENCE.md#cells-replay-results)
 
 | Preparation and test | Cells result | Measurement and interpretation |
 | --- | --- | --- |

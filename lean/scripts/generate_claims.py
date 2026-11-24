@@ -15,6 +15,10 @@ from urllib.parse import quote
 
 LANE = Path(__file__).resolve().parents[1]
 REPOSITORY = "https://github.com/Eidosoma/Cells"
+D351 = (
+    f"{REPOSITORY}/blob/main/docs/DECISIONS.md#d351-the-wet-lab-gap-diagnosis-"
+    "three-rows-confirmed-none-wrong-inside-its-claimed-domain-fr-55-goes-to-normal-the-user"
+)
 BEGIN = "<!-- generated: claims-index -->"
 END = "<!-- /generated -->"
 NOTE = "<!-- Generated from lean/claims.json by scripts/generate_claims.py. -->"
@@ -28,7 +32,7 @@ PAIR_OUTCOMES = {
     "not_independent": "Independent replication unconfirmed",
 }
 REPLAY_STATUS = {
-    "missed": "Law misses the observation",
+    "missed": "Replay discrepancy",
     "reproduced": "Shared observable reproduced",
     "represented": "Representable with declared inputs",
     "partial": "Partial replay or missing inputs",
@@ -299,11 +303,11 @@ def wet_lab_register(claims):
             replay = pair.get("replay")
             state = replay["status"] if replay else "pending"
             note = replay["assessment"].strip() if replay else "Awaiting an engine comparison."
-            confirmed = outcome in ("both_support", "both_challenge")
+            studies_agree = outcome in ("both_support", "both_challenge")
             if state not in REPLAY_STATUS or not note:
                 raise ValueError(f"{pair_id}: invalid Cells replay status or assessment")
-            if (state in ("missed", "reproduced") and not confirmed) or (
-                state == "unconfirmed" and confirmed
+            if (state in ("missed", "reproduced") and not studies_agree) or (
+                state == "unconfirmed" and studies_agree
             ):
                 raise ValueError(f"{pair_id}: replay status conflicts with the paired evidence")
             replay_counts[state] += 1
@@ -324,7 +328,9 @@ def wet_lab_register(claims):
         f"the stated assumption in {len(groups['both_support'])} and challenge it "
         f"in {len(groups['both_challenge'])}. "
         "[Cells replay results](WET_LAB_EVIDENCE.md#cells-replay-results) "
-        f"identify {len(misses)} paired comparisons with an observed discrepancy in the tested law."
+        f"flag {len(misses)} discrepancies. Of the original eight, D351 confirmed three "
+        "findings and classified five as indications. It found no errors within the laws’ "
+        f"stated domains. [D351 ruling on main]({D351})"
     )
     parts = [
         NOTE,
@@ -347,12 +353,14 @@ def wet_lab_register(claims):
         parts += [
             '<a id="replicated-observations-missed-by-the-tested-law"></a>',
             "### Observations missed in the tested replays",
-            "Cells reviewed the original eight rows for independent measurements of the same "
-            "quantity on the same molecular system under like conditions. Three confirmed "
-            "features were the Kv1.5 acid shift, POPC expansion on warming and the two phases "
-            "of Cx43 decay. The review found each law consistent with its stated scope. "
-            "[Cells decision D351](https://github.com/Eidosoma/Cells/blob/"
-            "8eb9bc8b032fbbabe446e073a65cbd9b32fe1729/docs/DECISIONS.md#L11377)",
+            "D351 requires at least two independent labs to measure the same quantity on the "
+            "same molecular system under comparable conditions to confirm a finding. Of the "
+            "original eight discrepancies, three met that rule. Acidification shifts Kv1.5 "
+            "activation toward more positive voltages, and the central estimates show POPC "
+            "expands on warming. Both findings concern direction. For Cx43, the confirmed "
+            "finding is the two-phase decay of junctional current. Five rows remained "
+            "indications. The review found no errors within the laws’ stated domains. "
+            f"[D351 definition and row-by-row ruling on main]({D351})",
             "\n".join(misses),
         ]
     for outcome, rows in groups.items():

@@ -4,7 +4,7 @@
 
 Choose a claim for its assumptions, theorems, numerical results and sources. Partial evidence covers a measured part of a claim. A result marked not assessable has too much uncertainty for a verdict. [Topic overview](README.md#proof-index) · [Registered laws](#registered-laws) · [Registered operators](#registered-operators)
 
-[Paired wet-lab evidence](WET_LAB_EVIDENCE.md) covers 46 of 131 claims. Across 69 comparisons, two independent studies support the stated assumption in 40 and challenge it in 10. [Cells replay results](WET_LAB_EVIDENCE.md#cells-replay-results) identify 8 paired comparisons with an observed discrepancy in the tested law.
+[Paired wet-lab evidence](WET_LAB_EVIDENCE.md) covers 46 of 131 claims. Across 69 comparisons, two independent studies support the stated assumption in 40 and challenge it in 10. [Cells replay results](WET_LAB_EVIDENCE.md#cells-replay-results) flag 8 discrepancies. Of the original eight, D351 confirmed three findings and classified five as indications. It found no errors within the laws’ stated domains. [D351 ruling on main](https://github.com/Eidosoma/Cells/blob/main/docs/DECISIONS.md#d351-the-wet-lab-gap-diagnosis-three-rows-confirmed-none-wrong-inside-its-claimed-domain-fr-55-goes-to-normal-the-user)
 
 ## Failing numerical checks
 

@@ -18,7 +18,7 @@ Direct Lean claims cover [55 of 55 laws](COVERAGE.md#registered-laws) and [35 of
 | [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 2 of 2 | 29 of 29 | 29 checked | 22 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
 
-[Paired wet-lab evidence](WET_LAB_EVIDENCE.md) covers 46 of 131 claims. Across 69 comparisons, two independent studies support the stated assumption in 40 and challenge it in 10. [Cells replay results](WET_LAB_EVIDENCE.md#cells-replay-results) identify 8 paired comparisons with an observed discrepancy in the tested law.
+[Paired wet-lab evidence](WET_LAB_EVIDENCE.md) covers 46 of 131 claims. Across 69 comparisons, two independent studies support the stated assumption in 40 and challenge it in 10. [Cells replay results](WET_LAB_EVIDENCE.md#cells-replay-results) flag 8 discrepancies. Of the original eight, D351 confirmed three findings and classified five as indications. It found no errors within the laws’ stated domains. [D351 ruling on main](https://github.com/Eidosoma/Cells/blob/main/docs/DECISIONS.md#d351-the-wet-lab-gap-diagnosis-three-rows-confirmed-none-wrong-inside-its-claimed-domain-fr-55-goes-to-normal-the-user)
 
 <!-- /generated -->
 
@@ -74,7 +74,7 @@ At 0 mV, the published Kv1.5 activation curves predict 72.1% retained current at
 
 For Kv1.5 in HEK293 cells, a density-inhibition curve fitted to the two endpoints predicts a conducting fraction of 0.22 at 300 channels/µm². The same figure gives about 0.23 there, without a pointwise uncertainty. An independent channel count lets a fixed-gate current comparison distinguish changes in availability. [Density comparison](claims/channel-density-availability.md) · [Clamp proof](claims/clamped-channel-current.md)
 
-The 20 November review examined yeast vacuolar pump reversal, vesicle rupture under steady tension, and fast and slow closure of Cx43 gap junctions. The paired register tracks which replicated observations the tested laws still miss. [20 November measurements and proposals](PROGRESS.md#biological-model-review) · [Current Cells replay results](WET_LAB_EVIDENCE.md#cells-replay-results)
+The 20 November review examined yeast vacuolar pump reversal, vesicle rupture under steady tension, and fast and slow closure of Cx43 gap junctions. [20 November measurements and proposals](PROGRESS.md#biological-model-review) · [Current Cells replay results](WET_LAB_EVIDENCE.md#cells-replay-results)
 
 The Cx43 polarity measurements bound the error of the registered single-gate law. The registered two-gate law satisfies the predicted amplitude relation on synthetic clamps and runs in the tissue host under its development flag. Resolving the mixed amplitude in a measured Cx43 trace remains open. [Measurements](PROGRESS.md#cx43-series-gates) · [Compiled comparison and host replay](PROGRESS.md#nov21-registered-series-and-withdrawal)
 
