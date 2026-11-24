@@ -37,10 +37,13 @@ from cells.operators import partition
 from cells.registry import kind_registry
 from cells.registry.models import get_model
 from tests import kind_fixtures as kf
+from tests import membrane_insertion_fixtures as insertion_fixtures
+from tests import partition_fixtures
 from validation.fr51 import closed_forms as fr51_laws
 from validation.fr51 import engine as fr51
 from validation.fr51 import judge as fr51_judge
 from validation.fr51 import plants as fr51_plants
+from validation.tissue import cell_replacement_fixtures as replacement_fixtures
 from validation.tissue import pump_water_fixtures as water_fixtures
 from validation.tissue import surface_pump_v3_fixtures as v3_fixtures
 
@@ -465,11 +468,38 @@ def test_a_blocked_population_s_current_fraction_and_terms_follow_the_laws(case_
     assert all(found.values()), found
 
 
-@pytest.mark.parametrize("name", list(fr51_plants.JUDGED))
+def capped_valence():
+    """D352's plant, engine-only like zero_plant (JUDGED keeps its eleven): each effective valence
+    capped at the blocker's |z_B|, its sign kept."""
+    original = spec_v3.ChannelBlock.steepness
+
+    def planted(self):
+        return tuple(
+            s
+            if m.effective_valence is None
+            else (1.0 if s > 0 else -1.0) * min(abs(s), abs(self.valence))
+            for s, m in zip(original(self), self.modes, strict=True)
+        )
+
+    return fr51_plants._patched(spec_v3.ChannelBlock, "steepness", planted)
+
+
+FR51_PLANTS = fr51_plants.JUDGED | {
+    # D352: an admitted effective valence above |z_B| (B5: z_B = +4 inside, z_eff = 5).
+    "D352: the effective valence capped at the blocker's valence": (
+        capped_valence,
+        "B-u",
+        ("B5_effective_valence_5",),
+    ),
+}
+
+
+@pytest.mark.parametrize("name", list(FR51_PLANTS))
 def test_each_registered_plant_fails_its_criterion(name):
     """FR-51's plants (host, about 0.5 s each): each, planted in this process only
-    (validation/fr51/plants), fails its registered criterion on one of its cases."""
-    plant, criterion, cases = fr51_plants.JUDGED[name]
+    (validation/fr51/plants), fails its registered criterion on one of its cases. D352's row: the
+    cap fails B5's u against the closed forms, which B5's host row meets unplanted."""
+    plant, criterion, cases = FR51_PLANTS[name]
     with plant():
         found = [fr51_criteria(case_id)[criterion] for case_id in cases]
     assert not all(found)
@@ -590,14 +620,42 @@ def test_each_block_refusal_names_its_reason(name):
         parse_spec(fr51_block(change=change))
 
 
+FR51_SLOT_WRITERS = {
+    "isopotential_partition@1": lambda: partition_fixtures.divided(),
+    "scheduled_membrane_insertion@1": lambda: insertion_fixtures.with_operators(
+        insertion_fixtures.cleft_cell(), insertion=insertion_fixtures.furrow_insertion()
+    ),
+    "scheduled_cell_replacement@1": lambda: replacement_fixtures.with_replacement(
+        replacement_fixtures.heredity_sheet(radius=1)
+    ),
+}
+
+
+@pytest.mark.parametrize("law", list(FR51_SLOT_WRITERS))
+def test_a_block_beside_an_operator_that_rewrites_channel_slots_is_refused(law):
+    """FR-51's follow-up (parse only, about 1 s each; one row per operator family): replacement,
+    partition and insertion rewrite channel slots but not the block's per-slot fields, so a blocked
+    population beside one is refused by name (pump_composite.SLOT_WRITERS, @1 and @2 alike)."""
+    raw = FR51_SLOT_WRITERS[law]()
+    raw["model"]["channels"][0]["block"] = fr51_block()["model"]["channels"][0]["block"] | {
+        "reference": "membrane_voltage"
+    }
+    with pytest.raises(ConfigError, match=f"{law} rewrites channel slots"):
+        parse_spec(raw)
+
+
 def test_a_block_round_trips_alone_and_beside_factors():
     """FR-51's declaration (host): a blocked definition round-trips through to_dict, alone and on a
     population that also declares factors (B1's door). A population without either keeps today's
-    form."""
+    form. D352: B5's effective valence of 5, above its blocker's |z_B| = 4, is admitted, with the
+    signed steepness s sgn(z_B) z_eff, and round-trips."""
     spec = parse_spec(fr51.raw_world("B1_two_modes_E1"))
     assert parse_spec(spec_v3.to_dict(spec)) == spec
     assert type(spec.model.channels[0]) is spec_v3.FactoredChannelPopulation
     assert spec_v3.channel_factors(spec.model) == ()
+    b5 = parse_spec(fr51.raw_world("B5_effective_valence_5"))
+    assert b5.model.channels[0].block.steepness() == (-5.0,)  # Inside (s = -1), z_B = +4.
+    assert parse_spec(spec_v3.to_dict(b5)) == b5
     with scoped():
         raw = heredity(("f_b", "f_c"))
         raw["model"]["channels"][0]["block"] = fr51.raw_world("B1_two_modes_E1")["model"][

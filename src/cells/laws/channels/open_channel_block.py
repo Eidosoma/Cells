@@ -35,6 +35,20 @@ which the per-stage rules use.
 The block is instantaneous and has no state. Arrays are [mode, ...], in NumPy or JAX. The admitted
 domain (fr51-channel-block-v1 §1.2) keeps every intermediate a normal binary64 number, and
 domain_valid refuses one that is not, since compiled CPU code flushes subnormals to zero.
+
+**Scope (D355, D356).**
+- The reversal reference ({"reversal_of": ion}) is supported for changes of that ion outside the
+  cell only.
+  - When external K changes, a non-blind two-lab replay (Lean commit fccbb5e5, run on engine
+    revision 7ca7c9c1) finds the half-conductance shift tracking the measured reversal at about
+    0.97 to 0.98 mV per mV.
+  - One lab finds that raising internal K moves the half-block voltage about +5 mV, where V - E_K
+    predicts -36 mV. That is an indication.
+- kir2p1_mh2@1's gates read absolute voltage. A world in which external K changes declares Kir2.1
+  as an always-open K population carrying this block on a K reversal reference (D356). That
+  composition is development-only until the post-landing registration (D353) passes.
+- Version 1's limits: the blocker is held at a declared constant concentration, not a species row;
+  the block has no kinetics; and binding is trace, with no count.
 """
 
 import numpy as np

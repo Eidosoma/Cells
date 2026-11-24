@@ -218,6 +218,33 @@ def occupant_event_times(spec):
     }
 
 
+# FR-51's follow-up (D327's operator gap). These operators repopulate, move or open channel slots:
+# they rewrite a slot's law, permeability, patch or activity, never the block's per-slot fields
+# (channel_block_*). So a slot they rewrite would keep its old block, and a blocked population
+# beside one is refused by name until a world qualifies the pair.
+SLOT_WRITERS = (
+    "scheduled_cell_replacement@1",
+    "scheduled_cell_replacement@2",
+    "isopotential_partition@1",
+    "scheduled_membrane_insertion@1",
+    "scheduled_membrane_insertion@2",
+)
+
+
+def block_slot_errors(pairs, spec):
+    """FR-51: one message per slot-rewriting operator (SLOT_WRITERS) beside a blocked population
+    (open_channel_block_weighted_modes@1); [] without a block."""
+    blocked = [c.id for c in getattr(spec.model, "channels", ()) if getattr(c, "block", None)]
+    if not blocked:
+        return []
+    return [
+        f"{op.LAW_ID} rewrites channel slots but not the block's per-slot fields, so it is refused "
+        f"beside the blocked population(s) {blocked} until a world qualifies the pair (FR-51)"
+        for op, _ in pairs
+        if op.LAW_ID in SLOT_WRITERS
+    ]
+
+
 def check_definition(spec):
     model_for(spec.model).check_definition(spec)
 
@@ -2051,6 +2078,9 @@ class Composition:
         )
         if scoped:
             raise ConfigError("Invalid operator composition: " + "; ".join(scoped))
+        blocked = block_slot_errors(pairs, spec)  # FR-51's follow-up.
+        if blocked:
+            raise ConfigError("Invalid operator composition: " + "; ".join(blocked))
         # The operators' in-step writers beside declared kinds (held_row_errors,
         # exact_row_errors): only with kinds and an in-step process, so no world without them
         # makes either call.
