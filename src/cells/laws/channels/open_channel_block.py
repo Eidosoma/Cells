@@ -52,6 +52,11 @@ MEMBRANE_VOLTAGE = "membrane_voltage"  # The reference V; {"reversal_of": ion} i
 NORMAL = float(np.finfo(np.float64).tiny)  # The smallest normal binary64 number.
 
 
+def reversal_potential(inside_mM, outside_mM, valence, temperature, *, xp=np):
+    """E (V) of an ion of this valence: (R T/(z F)) ln(c_o/c_i), as a difference of logarithms."""
+    return R * temperature * (xp.log(outside_mM) - xp.log(inside_mM)) / (valence * F)
+
+
 def exponent_per_volt(steepness, temperature):
     """a_k (1/V): the signed steepness s sgn(z_B) m_k times F/(R T)."""
     return steepness * (F / (R * temperature))

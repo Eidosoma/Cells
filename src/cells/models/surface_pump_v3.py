@@ -695,7 +695,7 @@ def channel_block(ci, co, voltage, p, *, xp=jnp):
     inside = xp.where(named, ci[ion, p.membrane_cell[patch]], 1.0)
     outside = xp.where(named, co[ion, p.membrane_outside[patch]], 1.0)
     z = xp.where(named, xp.reshape(p.valence, (-1,))[ion], 1.0)
-    reversal = R * p.temperature * (xp.log(outside) - xp.log(inside)) / (z * F)
+    reversal = block_law.reversal_potential(inside, outside, z, p.temperature, xp=xp)
     v_ref = xp.where(named, voltage - reversal, voltage)
     k = block_law.dissociation(
         p.channel_block_k0_mM, p.channel_block_steepness, v_ref, p.temperature, xp=xp
@@ -720,9 +720,12 @@ class ChannelBlockTerms(NamedTuple):
     """FR-51's per-stage terms of each population [channel] (fr51-channel-block-v1 §2)."""
 
     block: ChannelBlockValues
+    g_max_S: object  # today's term G_max (S)
     voltage_term_S: object  # T_V = u G_max + |I_free| slope (S)
     outside_term: object  # T_c,o (fmol/s per mM) under the reversal reference; else 0
     inside_term: object  # T_c,i (fmol/s per mM) under the reversal reference; else 0
+    outside_through_e: object  # T_c,o's part through E, |J_free| slope R T/(|z| F c_o); else 0
+    inside_through_e: object  # T_c,i's part through E, with c_i; else 0
 
 
 def channel_block_terms(gate, ci, co, voltage, availability, p, *, xp=jnp, structure=None):
@@ -773,14 +776,18 @@ def channel_block_terms(gate, ci, co, voltage, availability, p, *, xp=jnp, struc
     through_e = flux_ion * block.slope * (R * p.temperature / (xp.abs(z) * F))
     c_out = xp.where(named, co[ion, outside], 1.0)
     c_in = xp.where(named, ci[ion, cell], 1.0)
-    outside_term = block.u * conductance * bernoulli(x, xp=xp) + through_e / c_out
-    inside_term = block.u * conductance * bernoulli(-x, xp=xp) + through_e / c_in
+    outside_e, inside_e = through_e / c_out, through_e / c_in
+    outside_term = block.u * conductance * bernoulli(x, xp=xp) + outside_e
+    inside_term = block.u * conductance * bernoulli(-x, xp=xp) + inside_e
     live = p.channel_active & named
     return ChannelBlockTerms(
         block,
+        xp.where(p.channel_active, g_max, 0.0),
         xp.where(p.channel_active, voltage_term, 0.0),
         xp.where(live, outside_term, 0.0),
         xp.where(live, inside_term, 0.0),
+        xp.where(live, outside_e, 0.0),
+        xp.where(live, inside_e, 0.0),
     )
 
 

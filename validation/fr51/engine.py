@@ -31,8 +31,8 @@ engine(case_id, voltages_V) returns {name: array over the voltages}:
   stability rules' own terms (surface_pump_v3.channel_block_terms) at the same inputs.
 
 Every value is the compiled clamped program (jax.jit of the model's clamped_channel_flux, mapped
-over the voltages), one compile per world. A case without a block has no terms: u is 1 and the
-terms are NaN, which no criterion reads.
+over the voltages), one compile per world; host() gives the same on NumPy, for the tests. A case
+without a block has no terms: u is 1 and the terms are NaN, which no criterion reads.
 """
 
 import copy
@@ -144,8 +144,8 @@ def raw_world(case_id, *, blocked=True):
         channel["block"] = _block_declaration(spec["blocks"][case["block"]])
     m["channels"] = [channel]
     e["pump_controls"] = []
-    e["channel_controls"] = [dict(channel_id="population", schedule=[dict(time=0.0,
-                                                                          availability=1.0)])]  # fmt: skip
+    always = [dict(time=0.0, availability=1.0)]
+    e["channel_controls"] = [dict(channel_id="population", schedule=always)]
     x["channel_capacity"] = 1
     x["material_balance_atol_fmol"] = dict.fromkeys(z, 1e-10)
     if "units" not in case:
@@ -169,43 +169,53 @@ def raw_world(case_id, *, blocked=True):
 
 @cache
 def world(case_id, blocked=True):
-    """(the jitted clamped program mapped over voltages, state, control, layout) of the case's
-    world. C2's state carries its units beyond the declared 1000 as the increment dN."""
+    """(model, state, control, layout, block) of the case's world, on the host. C2's state carries
+    its units beyond the declared 1000 as the increment dN."""
     raw = raw_world(case_id, blocked=blocked)
     spec = parse_spec(raw)
     model = get_model(spec.model)
     state, p = model.initial_values(spec)
-    composite = "operators" in raw["model"]
-    if composite:
+    if "operators" in raw["model"]:  # C2's composite.
         control = model.CONTROL_TYPE(*(v[0] for v in cs.control_values(spec, [0.0])))
         case = next(c for c in spec_of()["cases"] if c["id"] == case_id)
-        declared = 1.0 * _decimal(spec_of()["populations"][case["population"]]["area_m2"])
+        area = _decimal(spec_of()["populations"][case["population"]]["area_m2"])
         density = _decimal(case["units"]["reference_density_per_m2"])
-        extra = _decimal(case["units"]["count"]) - round(declared * density)
         increment = np.asarray(state.population_abundance_increment).copy()
-        increment[0] = extra
+        increment[0] = _decimal(case["units"]["count"]) - round(area * density)
         state = state._replace(population_abundance_increment=increment)
+        structure = model.inner.structure
     else:
         control = model.Control(*(v[0] for v in control_values(spec, [0.0])))
-    block = blocked and bool(getattr(model, "structure", None) and model.structure.blocked_channels)
-    if composite:
-        block = blocked and bool(model.inner.structure.blocked_channels)
-    clamp = partial(model.clamped_channel_flux, xp=jnp, block=block)
-    program = jax.jit(jax.vmap(clamp, in_axes=(None, None, None, 0)))
-    return program, state, control, p, block
+        structure = model.structure
+    return model, state, control, p, blocked and bool(structure.blocked_channels)
 
 
 @cache
-def _values(case_id, voltages):
+def program(case_id, blocked=True):
+    """The case's compiled clamped program, mapped over voltages (one compile per world)."""
+    model, _, _, _, block = world(case_id, blocked)
+    clamp = partial(model.clamped_channel_flux, xp=jnp, block=block)
+    return jax.jit(jax.vmap(clamp, in_axes=(None, None, None, 0)))
+
+
+def _clamped(case_id, blocked, voltages, compiled):
+    model, state, control, p, block = world(case_id, blocked)
+    if compiled:
+        return program(case_id, blocked)(state, control, p, voltages)
+    rows = [model.clamped_channel_flux(state, control, p, v, xp=np, block=block) for v in voltages]
+    stack = partial(jax.tree.map, lambda *x: np.stack(x))
+    return tuple(stack(*column) for column in zip(*rows, strict=True))
+
+
+@cache
+def _values(case_id, voltages, compiled=True):
     voltages = np.asarray(voltages, dtype=float)
-    program, state, control, p, _ = world(case_id, blocked=False)
-    free = np.asarray(program(state, control, p, voltages)[1])[:, 0]
-    program, state, control, p, block = world(case_id, blocked=True)
-    out = program(state, control, p, voltages)
+    free = np.asarray(_clamped(case_id, False, voltages, compiled)[1])[:, 0]
+    out = _clamped(case_id, True, voltages, compiled)
     blocked = np.asarray(out[1])[:, 0]
     n = voltages.size
     values = dict(I_free=free, I_blocked=blocked)
-    if not block:
+    if len(out) == 2:  # No block: no terms.
         nan = np.full(n, np.nan)
         return values | dict(u=np.ones(n), slope_part=np.zeros((0, n)), T_V=nan, T_co=nan,
                              T_ci=nan)  # fmt: skip
@@ -220,6 +230,49 @@ def _values(case_id, voltages):
     )
 
 
+def host(case_id, voltages_V):
+    """The same values on the host (NumPy), for the tests' host rows."""
+    return _values(case_id, tuple(float(v) for v in np.asarray(voltages_V, dtype=float)), False)
+
+
 def engine(case_id, voltages_V):
     """The judge's engine function: {name: array} over voltages_V (V)."""
     return _values(case_id, tuple(float(v) for v in np.asarray(voltages_V, dtype=float)))
+
+
+RUN_SOLVER = "imex_ars222_face_electromigration@1"
+
+
+def run_world(*, start_V=0.055, dt=1e-4, steps=300, na_m_per_s=3e-11, blocked=True):
+    """RUN's world (fr51-channel-block-v1 §3): B1's block on a gate-free K population and an
+    unblocked Na leak on the same patch of one cell on a held bath. The cell starts at start_V,
+    inside the K population's negative-slope region (above -17.5 mV), and is observed every step
+    under the IMEX solver. The Na leak is weak, so the K population's slope dominates the per-stage
+    rate there and RUN's plant shows."""
+    raw = raw_world("B1_two_modes_E1", blocked=blocked)
+    m, e, x = raw["model"], raw["experiment"], raw["execution"]
+    cell, capacitance = m["cells"][0], m["membranes"][0]["capacitance_F"]
+    charge = capacitance * start_V
+    z = dict(SPECIES)
+    cell["initial_charge_C"] = charge
+    cell["fixed_charge_equivalent_fmol"] = charge / CHARGE_PER_FMOL - math.fsum(
+        z[s] * a for s, a in cell["initial_amount_fmol"].items()
+    )
+    m["channels"].append(
+        dict(
+            id="na_leak",
+            membrane_id=m["membranes"][0]["id"],
+            kinetic_law="naleak_always_open@1",
+            max_permeability_m_per_s=na_m_per_s,
+            abundance=1.0,
+            initial_gate=[],
+            permeant_ions=[dict(species_id="Na", relative_permeability=1.0)],
+        )
+    )
+    e["channel_controls"].append(
+        dict(channel_id="na_leak", schedule=[dict(time=0.0, availability=1.0)])
+    )
+    e["end_time"] = steps * dt
+    e["observation_times"] = [i * dt for i in range(steps + 1)]
+    x.update(dt=dt, solver=RUN_SOLVER, channel_capacity=2, max_steps=steps + 2)
+    return raw
