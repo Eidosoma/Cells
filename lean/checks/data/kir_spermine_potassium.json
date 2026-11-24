@@ -1,0 +1,74 @@
+{
+  "observable": "Kir2.1 steady-state conductance at fixed spermine, scaled to each paper's estimate of unblocked conductance. Voltages are intracellular minus extracellular in mV. Each study's first external-K curve supplies all fitted parameters. Subsequent curves are evaluation only.",
+  "panama2006_external_k": {
+    "doi": "10.1113/jphysiol.2005.097741",
+    "figure": "https://cdn.ncbi.nlm.nih.gov/pmc/blobs/c153/1796793/3fc730d2ddd6/tjp0571-0287-f3.jpg",
+    "locator": "Fig. 3A zero crossings and 3E relative currents, outside-out HEK293 with mouse Kir2.1. The 5.4 and 60 mM traces are the leftmost and rightmost in 3E. A and E are representative panels. The caption does not identify them as the same patch.",
+    "digitization": "Original 654 × 408 image, coordinates from upper left. The 3E x ticks at −100/+20 mV are x=238.6/403.0. Fractions 1 and 0.01 are y≈249.7/393.5 on a log scale. Sampled at the listed voltages, excluding the overlaid concentration labels. Panel A roots are approximate to 1 mV. One to two vertical pixels correspond to roughly 3–7% of the ordinate. Printed Table 2 fits use all four concentrations and were excluded from calibration.",
+    "uncertainty": "Two Kir2.1 patches underlie the four-concentration regressions. No errors for individual points on the representative curves. The unblocked current was extrapolated linearly from negative voltage. Room-temperature fits used 300 K. The intracellular FVPP solution contained about 145 mM K. The estimated free spermine was about 7 µM from 30 µM total. Junction shifts were not corrected.",
+    "temperature_K": 300,
+    "internal_K_mM": 145,
+    "declared_spermine_mM": 0.007,
+    "conditions": [
+      {
+        "external_K_mM": 5.4,
+        "measured_reversal_mV": -70.5,
+        "voltage_mV": [-95, -90, -80, -75, -65, -60, -55, -50, -45, -40, -35],
+        "relative": [0.989, 0.988, 0.778, 0.545, 0.205, 0.151, 0.121, 0.096, 0.071, 0.05, 0.032]
+      },
+      {
+        "external_K_mM": 60,
+        "measured_reversal_mV": -17.3,
+        "voltage_mV": [-32, -27, -20, -12, -7, -2, 3, 8, 13],
+        "relative": [0.869, 0.718, 0.405, 0.163, 0.112, 0.085, 0.068, 0.052, 0.037]
+      }
+    ],
+    "reported_steep_component_slope": 0.98,
+    "reported_slope_SE": 0.01
+  },
+  "ishihara2007_external_k": {
+    "doi": "10.1113/jphysiol.2007.136028",
+    "figure": "https://cdn.ncbi.nlm.nih.gov/pmc/blobs/ed17/2277198/e13d95ad08bc/tjp0583-0891-f5.jpg",
+    "locator": "Fig. 5A–B, wild-type Kir2.1 in excised inside-out HEK293T patches. Upward triangles are 1 µM intracellular spermine. The other markers and the shared-slope Boltzmann fits were excluded. The 150, 50 and 20 mM curves use different patches within that lab.",
+    "digitization": "Original 624 × 465 image. Fig. 5A at 150/50/20 mM has voltage-zero x≈116.5/341.0/576.0 and about 1.065 px/mV. A has G/Gmax=1 and 0 at y≈40.5 and 101. Fig. 5B resolves small fractions using log ticks 1 and 0.1 at y≈175 and 226. The 20 mM markers lie about 1–2 mV left of multiples of five. Marker reads near the transition have a resolution of about 1 mV and 0.03 in normalized conductance. The paper supplies reversal means directly.",
+    "uncertainty": "150 mM n=5 and 50 mM n=6–8, plotted SEM where readable. At 20 mM n=2 and the authors did not calculate statistical errors. For each K, Gmax from 0.1 µM spermine was the denominator. The 1 µM bath dose is nominal. No independent free-dose measurement is reported. External KCl was reduced at 50 and 20 mM without replacement osmolyte. Nominal intracellular K is about 150 mM after titration. The replay uses the midpoint of the reported 24–25 °C range. Each concentration ratio is independent of that common intracellular estimate. Figures 5C–D share assumed slope scales across K.",
+    "temperature_K": 297.65,
+    "internal_K_mM": 150,
+    "declared_spermine_mM": 0.001,
+    "conditions": [
+      {
+        "external_K_mM": 150,
+        "measured_reversal_mV": 2,
+        "reversal_SEM_mV": 0.4,
+        "voltage_mV": [-40, -30, -25, -20, -15, -10, -5, 5, 10, 15, 20, 25, 30],
+        "relative": [0.96, 0.95, 0.95, 0.94, 0.92, 0.84, 0.7, 0.26, 0.14, 0.09, 0.068, 0.06, 0.049]
+      },
+      {
+        "external_K_mM": 50,
+        "measured_reversal_mV": -24.9,
+        "reversal_SEM_mV": 0.5,
+        "voltage_mV": [-55, -50, -45, -40, -35, -30, -20, -15, -10, -5, 0],
+        "relative": [0.95, 0.95, 0.94, 0.91, 0.81, 0.65, 0.22, 0.13, 0.084, 0.072, 0.059]
+      },
+      {
+        "external_K_mM": 20,
+        "measured_reversal_mV": -46.9,
+        "voltage_mV": [-81.5, -76.5, -71.5, -66.5, -61.5, -56.5, -51.5, -41.5, -36.5, -31.5, -26.5, -21.5, -16.5],
+        "relative": [0.94, 0.94, 0.93, 0.9, 0.88, 0.79, 0.62, 0.21, 0.117, 0.085, 0.078, 0.064, 0.052]
+      }
+    ]
+  },
+  "lopatin1996_internal_k": {
+    "doi": "10.1085/jgp.108.2.105",
+    "locator": "Figs. 3A–B are one inside-out patch; 3C pools the half-block measurements (n=1–3 per K level). Nominal external K 150 mM, 20 µM internal spermine. The two K arms of this paper are not independent studies.",
+    "uncertainty": "The midpoint and E values are approximate readings of Fig. 3C in mV. The paper gives no pointwise precision or error-bar definition sufficient for a formal agreement bound. The authors report the fitted internal slope over the full series.",
+    "temperature_K": 295.15,
+    "temperature_note": "The paper states room temperature. The concentration calculation assumes 22 °C. The measured-shift comparison uses Figure 3C's E values and is independent of the choice of temperature.",
+    "external_K_mM": 150,
+    "internal_K_mM": [150, 625],
+    "figure_reversal_mV": [0, -36],
+    "figure_half_block_mV": [-20, -15],
+    "reported_internal_slope": -0.15,
+    "reported_external_slope": 0.91
+  }
+}
