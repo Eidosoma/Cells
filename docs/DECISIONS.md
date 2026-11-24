@@ -12159,3 +12159,38 @@ under the shared agreement rule.
 - **D318's failure stays on record:** the first registration failed on D6's M alone, the zero-spread artifact. Version 2
   passes on fresh seeds after M's repair.
 - **FR-47's** schedule supplement and independent check are next in this lane.
+
+## D369: the user's direction on legacy: everything actually used leaves legacy, in Cells' canonical formats
+
+2026-11-24, about 22:18 UTC. The user, on reading the port plan's summary: "the legacy work is clearly important cleanup we
+need to make sure to get everything we're actually using out of there in our canonical formats".
+
+**What it settles:**
+- **The end state is canonical.** Everything Cells uses from legacy is re-expressed in the engine's canonical forms:
+  its laws, models, operators and definitions, under the rename's IDs. Relocation alone, a legacy island moved into
+  `src/cells`, is ruled out as an end state. That is the port plan's Q2 (c).
+- **The scope is a test of use, not a list of IDs.** The port plan's "the 11 families" (D348) gives way to everything
+  actually used. This restates the user's 17 November rule: legacy is removed in one batch after a check that covers
+  every capability.
+
+**Not settled: the sequence.** Whether a bitwise relocation comes first, as an interim step, is still the user's call;
+D348 never defined "port". The morning's review prices both routes.
+
+**The port plan is reworked** (plan only, by its author) around:
+1. **A coverage table by capability and consumer,** not by ID or import closure. Each row gets one class: canonical
+   already, expressible today, needs an engine feature, or dropped.
+2. **A definition of "used," fixed before counting.** A test whose only subject is a legacy model is not a use. The
+   plan's dry-run deletion, with a tiers run, measures it.
+3. **The 18 BETSE drivers on other legacy IDs:** whether their evidence is still claimed anywhere. That decides the
+   plan's Q1 and the rename's Q3.
+4. **The "blocked today" list,** checked by reading each refusal site: calcium-permeant channels on @3, finite fuel,
+   an ER store, and assembly coupling. Each confirmed gap is a candidate request for the user, not a logged FR.
+5. **The BETSE rule (AGENTS.md, 8 November):** nothing in `src/cells` re-hosts or copies BETSE code or carries its
+   conventions or names. A relocated family must meet that, which may rule relocation out for some families.
+6. **Qualifying a re-expression** needs science-length runs, with a tolerance derived, never tuned. Five-step captures
+   prove only a bitwise move.
+
+**Order:**
+- **The rename's Q3,** the 18 live pieces also spelled inside legacy, waits until the sequence is chosen.
+- **In the morning,** before the rename's move lands, main is tagged and the pre-rename snapshot frozen. Every capture
+  can run from it later.
