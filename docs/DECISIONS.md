@@ -11255,3 +11255,28 @@ or a verdict file at main.
   4. **Turnover in a swelling cell** (D301's queue, A1) is still refused at parse ("reads volume as declared"), as
      D334 logged.
 - **Any fix waits for the user:** a row in an existing test, or an FR. Nothing is built from this check.
+
+## D348: the user's decision: port legacy's used families first, then delete legacy whole (amends D346)
+
+2026-11-24, about 17:03 UTC.
+
+**The removal list** (read-only; `/mnt/workspaces/Cells/legacy-removal-20261124/`) traced imports and legacy model
+IDs together.
+- **What is used:**
+  - BETSE's legacy-based comparisons use 5 legacy model IDs.
+  - The calcium ensemble's tests and drivers exercise 6: `assembly_regulated_cell@1`, `assembly_regulated_cluster@1`
+    and `spatial_calcium@1` to `@4`. Its adapter table, `ensemble/ionic.py`, lists 98.
+- **What keeping those 11 would mean:**
+  - 133 of legacy's 321 modules stay;
+  - 187 modules could go now, but 180 files outside legacy use both the kept and the deletable parts. 101 of them
+    are unit tests, mostly through shared fixtures and legacy's core.
+
+**The decision: no partial deletion.**
+- A builder ports the 11 legacy families that BETSE and the calcium ensemble use to the modern models.
+- Then legacy is deleted whole, with one gate. The 195 test files go with it.
+- The ID rename of live code goes ahead from the morning of 25 November, with legacy's IDs bare and frozen until the
+  deletion.
+- **The parity rule holds throughout:** BETSE stays an outside reference, and nothing named BETSE enters `src/`.
+
+**A correction to D346:** `kinetic_pump_binding.py` does not import legacy. It only names its origin in a docstring,
+so there is nothing to port there.
