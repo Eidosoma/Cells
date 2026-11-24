@@ -10507,3 +10507,34 @@ reviewers' additions. Names follow the notes.
   - World B and the combination checks C1 and C2, after FR-49's site pairing (following FR-45) and its wash
     narrowing (following FR-44);
   - C4's four-way form, by amendment, once admission by species lands.
+
+## D332: XC0's failures diagnosed (labelled, post-verdict): rule-side definitions and an engine parse tolerance, not physics
+
+2026-11-24, about 12:26 UTC. These are labelled diagnostics by an agent who built none of XC0, run after D329's verdict and
+re-judging nothing. They are in /mnt/workspaces/Cells/xenopus-lane-20261119/xc0-diagnostics/DIAGNOSTICS.md. **D329's
+fail stands.**
+- **C7 (pump_cell_charge_per_fmol): two Faraday constants.**
+  - The rule declares F = 96485.33212, to 10 digits, 3.43e-11 below the exact SI value N_A*e. The reference uses the
+    declared value.
+  - The engine uses its SI constant. No XC0 code has the engine read the declared F, and the rule's
+    declared_deviations doesn't mention it.
+  - The gap equals the ratio of the two constants, 34 times the 1e-12 band.
+- **C8 (b_final_c): "final" means two things.**
+  - The reference, its README, SEMANTICS.md and DESIGN's erratum mean the analytic Donnan end state. Erratum 1 maps
+    "final" to the bare run's value at 64 s.
+  - The engine's bare run matches the reference's own RK4 bare values to 1.1e-10 at every time. The reference's own
+    64 s values miss its b_final_c by the same amounts.
+  - The miss decays at the run's slow mode, tau 9.35 s, a charge-neutral exchange of K for Na. That accounts for K's
+    47-78 times larger relative miss.
+  - 64 s was set from Na's single-ion time, which is too short for the slowest mode.
+- **C6 (v1_eq_ratio and v1_eq_x, 44 rows): the reader's settings meet a parse check.**
+  - Each key has exactly one root. At the reader's B_out of 10 mM, the cell holds 1e6-1e10 fmol of B at the roots.
+  - There the parse check |q - initial_charge_C| > 1e-20 C is finer than float64 can resolve, so the worlds are
+    refused, and the scans see no sign change.
+  - Four roots also lie beyond the reading's domain of 1e6.
+- **What a v2 would change (it cannot be blind on these rows):**
+  - **C7:** declare the SI constants, or the deviation, with no band tighter than the constants agree.
+  - **C8b:** define "final" once, and settle whether the bare node is compared.
+  - **C6:** state B_out and the domain, and keep B_in within float64's charge resolution.
+  - **The engine, separately:** the parse check's absolute 1e-20 C tolerance could scale with float64 resolution.
+- **What follows is the user's decision.**
