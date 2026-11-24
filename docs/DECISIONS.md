@@ -12113,3 +12113,49 @@ the judge's code, and value-silent:
 1. The judge adapts on its branch, then the lead tags it.
 2. The builder's table follows §8.
 3. The judged run waits for both, and for the lead's go.
+
+## D368: OL6 Protocol D v2 passes its independent check on the first seed set; D318's failure stays on record
+
+2026-11-24, about 21:38 UTC. The checker is fresh, neither the builder nor the first checker, working under the tag
+`ol6-protocol-d-v2-registered-2026-11-24` (D357).
+- **The snapshot** is at eced4ef8 (`snap-eced4ef8`), clean. Its src is exactly main 9d8c42be's, and the four files it
+  judges with are byte-identical to their own tags.
+- **The check:** `protocol_d_v2 check` passes 29 of 29.
+- **The verdict** is `/mnt/workspaces/Cells/ol6-protocol-d-v2-checker-20261124/verdict/verdict.json`, with its
+  disclosures and choices in `record.json`.
+
+**The verdict: pass.** All seven worlds pass on the first seed set (670001 to 670000 + M), so no retry is needed.
+
+| World | M (z) | B | Other |
+| --- | --- | --- | --- |
+| D1 | 1.38 | passes at all 4 rungs | P slope −0.504 |
+| D2 | 2.52 | passes at all 4 rungs | P −0.512 |
+| D3 | 2.23 | passes at all 4 rungs | P −0.500 |
+| D4 | 1.57 | passes at all 3 rungs | E: mean z 0.38, SD ratio 0.19 |
+| D5 | 1.94, on 56 spread pairs | passes at all 3 rungs | 16 constant pairs exact at both rungs |
+| D6 | 1.97, on 29 spread pairs | passes at all 3 rungs | 11 constant pairs exact at both rungs |
+| D7 | — | — | E on the paired Δ: mean z −0.15, RMS ratio 0.2385 |
+
+- **The constant pairs:** all 27 hold, 128 replicas each, with (d)'s bits matching.
+- **The precondition:** no exact replica and no (d) run was tense, and no pair was left unjudged.
+- **The plants,** P-D1 to P-D8, are all caught. P-D8, the one-ulp plant, is caught 22 of 22.
+- **The bounds:**
+  - L: all 423 honest (d) runs close, with the largest moiety drift 1.5e-14 against 1e-12;
+  - n_min is 98;
+  - no clock refusal in 384 paired runs, the largest fraction of the bound used being 0.389.
+- **Cost:** 7.79 CPU-hours against the estimated 13.5. Lane B was held for 59 minutes in batches between gates.
+
+**The checker's disclosures:**
+- **Erratum 2's module:** it read it in full to use `pd1_b`, including the disclosed docstring line.
+- **Erratum 3's module:** three of its searches spanned that module's text, and none printed a line.
+- **Commit subjects:** a `git log` printed one merge subject (9dac867b), which states no result. The session context
+  showed main's recent commit subjects, D357's included.
+- **A probe of other locks:** a non-blocking shared-lock probe briefly took, and at once released, the timed-cores,
+  GPU and gap-junction locks. A checker should not probe locks it does not use, so this goes into future briefs.
+- **PROGRESS:** following the brief, it wrote only to its own folder, so the PROGRESS line §10 asks for is the lead's.
+
+**What it means.** OL6's deterministic representation (d) agrees with the exact stochastic chemistry on D1 to D7,
+under the shared agreement rule.
+- **D318's failure stays on record:** the first registration failed on D6's M alone, the zero-spread artifact. Version 2
+  passes on fresh seeds after M's repair.
+- **FR-47's** schedule supplement and independent check are next in this lane.
