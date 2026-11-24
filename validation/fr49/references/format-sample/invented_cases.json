@@ -1,0 +1,66 @@
+{
+ "kind": "cells.fr49_reference_spec@1",
+ "invented": true,
+ "purpose": "INVENTED inputs for the FR-49 references' format sample. They follow spec/cases.json's schema so that the writer runs on them, and every output they give is marked invented and named INVENTED_<world>.json. No value here is declared by protocol fr49-compartment-compositions-v1, and no output from them is a reference value of any registered world. The sample-time rules are the declared ones, so the arrays have the registered results' shape.",
+ "units": {
+  "time": "s",
+  "amount": "fmol",
+  "volume": "pL",
+  "concentration": "mM (1 fmol/pL = 1 mM)",
+  "route_conductance": "pL/s (a x c is fmol/s)",
+  "production": "fmol/s",
+  "first_order_rate": "1/s",
+  "association_rate": "1/(mM s)",
+  "dissociation_rate": "1/s",
+  "copies": "molecules (a count)",
+  "sites_per_copy": "integer",
+  "accessible_fraction": "dimensionless",
+  "sites_per_fmol": "602214076 (exact)",
+  "share": "dimensionless fraction of a species' amount at a node",
+  "wash_fraction": "dimensionless, (0, 1]"
+ },
+ "worlds": {
+  "L": {
+   "description": "INVENTED values in world L's schema",
+   "V_O_pL": "2.5",
+   "V_C_pL": "0.4",
+   "a_pL_per_s": "7e-4",
+   "k_d_per_s": "2.5e-3",
+   "P_fmol_per_s": "3e-6",
+   "initial_fmol": {"n_O": "2e-3", "n_C": "5e-6", "x_O": "0", "x_C": "0"},
+   "pulse_s": {"t1": "420", "t2": "1500"},
+   "horizon_s": "3600",
+   "sample_times_s": {"rule": "t_i = 60 i, i = 0 ... 60"}
+  },
+  "B": {
+   "description": "INVENTED values in world B's schema",
+   "V_C_pL": "0.3",
+   "sites": {"copies": "90000", "sites_per_copy": 2, "accessible_fraction": "0.5"},
+   "k_on_per_mM_per_s": "2e3",
+   "k_off_per_s": "4e-3",
+   "initial_fmol": {"n_L": "3e-4", "B": "0"},
+   "horizon_s": "600",
+   "sample_times_s": {"rule": "t_i = 5 i, i = 0 ... 120"},
+   "wash_elsewhere": {"node": "an invented well, not C", "time_s": "200", "fraction": "0.3", "note": "invented"}
+  },
+  "C1": {
+   "description": "INVENTED values in C1's schema",
+   "world_L": "as world L above, unchanged",
+   "V_W_pL": "2.0",
+   "initial_fmol": {"x_W": "3e-4", "b_W": "7e-4"},
+   "wash": {"time_s": "600", "fraction": "0.25", "buffer_mM": {"S": "2e-9"}, "buffer_label": "base"}
+  },
+  "C2": {
+   "description": "INVENTED values in C2's schema",
+   "V_C_pL": "0.2",
+   "sites": {"copies": "40000", "sites_per_copy": 1, "accessible_fraction": "1"},
+   "ligands": [
+    {"id": "L1", "k_on_per_mM_per_s": "8e2", "k_off_per_s": "2e-3", "total_fmol": "4e-5"},
+    {"id": "L2", "k_on_per_mM_per_s": "3e2", "k_off_per_s": "6e-3", "total_fmol": "5e-5"}
+   ],
+   "initial_bound_fmol": {"B1": "0", "B2": "0"},
+   "horizon_s": "2000",
+   "sample_times_s": {"rule": "t_i = 20 i, i = 0 ... 100"}
+  }
+ }
+}
