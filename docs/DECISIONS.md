@@ -11935,3 +11935,45 @@ its lock, siblings idle). It took 2 min 31 s of wall time.
 **The landing head** will be 4872266d plus the ruling's docstring and comment (452db412), plus a merge of main after
 FR-51's follow-up lands. The merge message states that FR-50's src differs from the judged head in docstrings and
 comments only. The gate follows, on lane B, with the FR set.
+
+## D364: corrections to D362 (FR-45 is registered; the label field); FR-54 and FR-57's note is final; no gap in the standalone replacement model
+
+2026-11-24, about 20:54 UTC.
+
+**FR-45's registration is tagged.** D362 said FR-45's protocol was not yet tagged and would be written against the
+router. That was wrong.
+- **The tags:** `fr45-site-competition-v1-registered-2026-11-24` (6e92d0ec) names `scheduled_compartment_wash@1` for
+  W2, and its amendment 1 is tagged. Only amendment 2 (ff99fead on `fr45-protocol`, which adds W7) is untagged.
+- **So:** FR-45's judged runs (W2 and W7) stay on the wash, or are pinned to an earlier snapshot. The wash's
+  retirement waits for them, as it does for FR-49's B and C1 runs.
+
+**The label field.** The router's label owner gains `label_collected_fmol` [labelled species, label, collector],
+attributed to each portion's node of origin. That is exact for a chain, where reusing FR-44's field is not.
+- **Without collectors** the field is zero-size, as FR-44's field is.
+- **FR-49's judge erratum 2** (the name added to `LABELS_ONLY`) lands with the router, before any FR-49 judged run on
+  an engine that has the router. A run pinned to an earlier snapshot needs none.
+- **The absent-field form,** with per-declaration field sets in the contract (0.75 to 1 day of central code), is not
+  taken now. It stays a candidate if owner fields keep growing.
+
+**The note is final:** `docs/LIQUID_ROUTING_DESIGN.md` at f66a4828 on `fr54-57-design`.
+- **The exponential** is `scipy.linalg.expm`, with scipy pinned and recorded in each run's identity, and BLAS at one
+  thread (D190). Each source node's kept part absorbs the column-sum remainder.
+  - The author probed it against a 40-digit exponential on equal-rate and unequal chains, and on looped networks of 8
+    and 64 nodes. It was within 1.0 eps per entry.
+  - The note's 4 and 8 eps checks are re-measured before the tag.
+- **The three readout classes** are judged as D362 set out.
+- **The default face heat's domain** and the energy check's stop are desk arithmetic, measured on today's engine
+  before the protocol is tagged. By that arithmetic the 8 and 2 fmol world lies inside the domain at kh ≤ 0.2, and it
+  completes under the default heat only at kh ≤ 0.05.
+- **The price** is 8.25 to 10.5 agent-days with the wash's takeover, plus 1 to 1.5 for the collector's later opening
+  as a node.
+
+**No gap in the standalone replacement model.** The lead suspected that `resolved_pump_replacement@1` admits FR-51's
+block, and it does not.
+- **On `fr51-slot-refusal`:** its `check_definition` calls the composite's, so a block there is refused at parse by
+  the slot refusal.
+- **On main:** @3's `BLOCK_STRUCTURE_REFUSAL` already refused it.
+- **Only the composite form** carries the stale-slot hazard, and the follow-up covers it. The probes are in
+  `/mnt/workspaces/Cells/fr51-replacement-refusal-20261124/probe/`.
+- **Two small follow-ups** go to the next no-src stack: a `composition_matrix.RULES` entry for the slot refusal, and
+  the replacement row moved to the composite form, where that refusal is the only wall.
