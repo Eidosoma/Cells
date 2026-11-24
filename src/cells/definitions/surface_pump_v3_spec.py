@@ -69,6 +69,7 @@ from cells.laws.junctions import junction_gate
 from cells.laws.junctions import junction_series_gates as series_gates
 from cells.laws.routes import logmean_electrodiffusion_forms as forms_law
 from cells.numerics import surface_imex as imex
+from cells.numerics.surface_field import SPARSE_SOLVER_ID
 from cells.registry import kind_registry
 from cells.registry import species_registry as registry
 
@@ -226,6 +227,17 @@ FORMS_FACE_SOLVERS = (imex.EULER_ID, imex.ARS222_ID)
 FORMS_FACE_SOLVER_REFUSAL = (
     f"{forms_law.LAW_ID} runs on the plain IMEX tableaux in version 1 "
     f"({', '.join(FORMS_FACE_SOLVERS)}): RK4 and N2 refuse it"
+)
+# FR-17 stage 1 (D317): @3 admits the sparse field solver (surface_field.SPARSE_SOLVER_ID), and
+# the models that parse through it do; @1's and @2's parses refuse it. In its first stage it runs
+# the plain IMEX tableaux alone, with plain faces: RK4, N2's implicit conductances (a dense
+# conductance Laplacian) and the forms faces (a dense forms Laplacian) are refused under it, as is
+# any field-input provider (pump_composite_adapter.check_field_inputs).
+SPARSE_FIELD_SOLVERS = (imex.EULER_ID, imex.ARS222_ID)
+SPARSE_FIELD_REFUSAL = (
+    f"{SPARSE_SOLVER_ID} runs the plain IMEX tableaux ({', '.join(SPARSE_FIELD_SOLVERS)}) "
+    "with plain faces in its first stage (FR-17): RK4, N2's implicit conductances and "
+    f"{forms_law.LAW_ID} are refused under it"
 )
 
 
@@ -635,10 +647,15 @@ def parse(data):
     )
     if forms_count and type(declared_faces) is int:
         x["face_capacity"] = declared_faces + forms_count
+    if x.get("field_solver") == SPARSE_SOLVER_ID and (
+        solver not in SPARSE_FIELD_SOLVERS or forms_count
+    ):
+        raise ConfigError(SPARSE_FIELD_REFUSAL)
     # FR-30 (D262): @3 alone admits junction_series_gates@1; @1's and @2's parses refuse it.
     with first.admitting({SERIES_GATE_LAW_ID: parse_series_gate}):
         with tissue.admitting_faces({forms_law.LAW_ID: FormsFace}):
-            base = second.parse(raw)
+            with first.admitting_field_solvers((SPARSE_SOLVER_ID,)):
+                base = second.parse(raw)
     series_junction_errors(base.model)
     forms_faces = tuple(f for f in base.model.faces if type(f) is FormsFace)
     if forms_faces:

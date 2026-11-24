@@ -591,7 +591,10 @@ def _blocks(spec, p, base, mode):
                 blocks.append(Block(name, "volume", flat, unit, labels))
     else:
         flat = np.flatnonzero(np.r_[np.asarray(p.active), finite])
-        capacitance = np.diagonal(np.asarray(p.field_capacitor_matrix))[flat]
+        from cells.models import surface_tissue as tissue
+        from cells.numerics import surface_field as field
+
+        capacitance = np.asarray(field.capacitor_diagonal(tissue.field_layout(p), xp=np))[flat]
         unit = np.where(capacitance > 0, capacitance, 1e-12) * CHARGE_UNIT_V
         names = cells + outside
         labels = tuple(f"charge@{names[i]}" for i in flat)

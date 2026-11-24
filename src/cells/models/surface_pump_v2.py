@@ -64,6 +64,10 @@ FLOOR_LAYOUT_TYPE = NamedTuple(  # Declared field solver surface_field.FLOOR_SOL
     "SurfacePumpCalciumFloorLayout",
     [(k, object) for k in (*first.FLOOR_LAYOUT_TYPE._fields, *CALCIUM_LAYOUT_FIELDS)],
 )
+SPARSE_LAYOUT_TYPE = NamedTuple(  # Declared field solver surface_field.SPARSE_SOLVER_ID.
+    "SurfacePumpCalciumSparseLayout",
+    [(k, object) for k in (*first.SPARSE_LAYOUT_TYPE._fields, *CALCIUM_LAYOUT_FIELDS)],
+)
 ENERGY_RTOL = first.ENERGY_RTOL
 EXPLICIT_STEP_BOUND = first.EXPLICIT_STEP_BOUND
 # The ledger protocol (docs/INNER_MODEL_V4_DESIGN.md §7.4 (p)): @1's lists, which the shared
@@ -141,7 +145,13 @@ def initial_values(spec):
         for name, value in zip(declared._fields[1:], declared[1:], strict=True):
             v["calcium_pump_" + name][i] = value
     zero = np.zeros(nm)
-    kind = FLOOR_LAYOUT_TYPE if "field_current_floor" in v else LAYOUT_TYPE
+    kind = (
+        FLOOR_LAYOUT_TYPE
+        if "field_current_floor" in v
+        else SPARSE_LAYOUT_TYPE
+        if "field_capacitor_values" in v
+        else LAYOUT_TYPE
+    )
     return STATE_TYPE(*state, zero, zero.copy(), zero.copy()), kind(**v)
 
 
@@ -234,7 +244,9 @@ def readouts(state, control, p, *, xp=jnp):
     qdot = CHARGE_PER_FMOL * xp.sum(p.valence * xp.concatenate((cell, outside), axis=1), axis=0)
     dphi = field._capacitor_solve(qdot, xp.zeros_like(qdot), tissue.field_layout(p), xp=xp)
     dvm = xp.where(p.membrane_active, dphi[p.membrane_cell] - dphi[n + p.membrane_outside], 0.0)
-    electrode = xp.where(p.reservoir, (p.field_capacitor_matrix @ dphi)[n:], 0.0)
+    electrode = xp.where(
+        p.reservoir, field.capacitor_product(tissue.field_layout(p), dphi, xp=xp)[n:], 0.0
+    )
     chemical = 1e-3 * R * p.temperature * (xp.sum(xp.log(ci) * cell) + xp.sum(xp.log(co) * outside))
     capacitor = 1e12 * xp.sum(p.membrane_capacitance * r.membrane_voltage_V * dvm)
     mu = R * p.temperature * xp.log(co) + p.valence * F * v.potential_V[n:]
@@ -475,8 +487,9 @@ def imex_step(state, dt, control, p, *, xp=jnp):
     valid &= xp.all(xp.isfinite(predicted) & (predicted > 0))
     weight, _ = imex.face_weights(xp.where(predicted > 0, predicted, 1.0), s, xp=xp)
     operator, ok = imex.factor_operator(
-        implicit_matrix[-1, -1] * dt, imex.face_laplacian(weight, s, xp=xp), p.boundary_V, f, xp=xp
-    )
+        implicit_matrix[-1, -1] * dt, imex.operator_laplacian(weight, s, f, xp=xp), p.boundary_V, f,
+        xp=xp,
+    )  # fmt: skip
     valid &= ok
     rates, ok = explicit_rates(state, start, control, p, xp=xp)
     explicit, implicit, valid = [rates], [None], valid & ok
@@ -490,7 +503,9 @@ def imex_step(state, dt, control, p, *, xp=jnp):
         )
         charge = node_charge(known, p, xp=xp)
         potential, residual = imex.solve_operator(charge, operator, xp=xp)
-        scale = xp.maximum(xp.abs(charge), xp.abs(operator.matrix @ potential))
+        scale = xp.maximum(  # Today's order of evaluation (crossrev compares the program text).
+            xp.abs(charge), xp.abs(imex.operator_product(operator, potential, xp=xp))
+        )
         valid &= xp.all(xp.isfinite(potential))
         valid &= xp.all(xp.abs(residual) <= field.CHARGE_ATOL_C + field.CHARGE_RTOL * scale)
         drift = implicit_rates(weight, potential, state, p, xp=xp)

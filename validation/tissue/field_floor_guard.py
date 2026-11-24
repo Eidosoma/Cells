@@ -22,10 +22,15 @@ the floor in ulps (field_current_floor). The guards check that nothing else chan
   module's own: G2-Q1's vectorized cohorts, and the 825-node world (the study tissue, closed
   water, event-free replacement) with device row checks.
 
+FR-17 stage 1 (docs/FIELD_SOLVER_INTERFACE_DESIGN.md §8.5) reuses guard 2's runs with another
+candidate: runs --candidate ID pairs version 2 with ID (here the sparse field solver) instead of
+version 3, every part alike.
+
 Usage (PYTHONPATH at the revision under test):
   python -m validation.tissue.field_floor_guard jaxprs OUT.json [SET [DEFINITION.json ...]]
   python -m validation.tissue.field_floor_guard bindings OUT.json [SET [DEFINITION.json ...]]
   python -m validation.tissue.field_floor_guard runs PART --output DIR [--worlds NAME,...]
+                                                    [--candidate ID]
 """
 
 import collections
@@ -37,6 +42,7 @@ from pathlib import Path
 import numpy as np
 
 CLEAN, CONTROL, VALUE = 0, 1, 2
+CANDIDATE = "capacitive_reduction_gauged_damped_newton@3"  # runs' second declaration (--candidate)
 
 
 def declared(raw, solver):
@@ -52,7 +58,7 @@ def version_pair(raw):
 
     return (
         parse_spec(declared(raw, field.FACTORED_SOLVER_ID)),
-        parse_spec(declared(raw, field.FLOOR_SOLVER_ID)),
+        parse_spec(declared(raw, CANDIDATE)),
     )
 
 
@@ -388,7 +394,7 @@ def part_g2_vmap(args, record):
             from cells.definitions.specs import parse_spec
 
             results = []
-            for solver in (field.FACTORED_SOLVER_ID, field.FLOOR_SOLVER_ID):
+            for solver in (field.FACTORED_SOLVER_ID, CANDIDATE):
                 specs = [parse_spec(declared(r, solver)) for r in raws]
                 cohort = BatchSpec(
                     tuple(WorldSpec(i + 1, s) for i, s in enumerate(specs)),
@@ -443,9 +449,15 @@ def part_scale(args, record):
 
 
 def runs(argv):
+    global CANDIDATE
     from validation.tissue import composite_guard as guard
 
-    guard.pair_specs = version_pair  # Every part's pair: version 2, then version 3.
+    argv = list(argv)
+    if "--candidate" in argv:
+        at = argv.index("--candidate")
+        CANDIDATE = argv[at + 1]
+        del argv[at : at + 2]
+    guard.pair_specs = version_pair  # Every part's pair: version 2, then the candidate.
     guard.PARTS = dict(
         w1=guard.part_w1,
         w2=guard.part_w2,

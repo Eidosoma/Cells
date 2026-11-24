@@ -238,6 +238,7 @@ class FamilyModel:
         "STATE_TYPE",
         "LAYOUT_TYPE",
         "FLOOR_LAYOUT_TYPE",
+        "SPARSE_LAYOUT_TYPE",
         "checked_step",
         "readouts",
         "field_values",
@@ -1391,6 +1392,10 @@ class Composition:
             "CompositeFloorLayout",
             [(k, object) for k in (*inner.FLOOR_LAYOUT_TYPE._fields, *extra)],
         )
+        self.SPARSE_LAYOUT_TYPE = NamedTuple(  # The sparse field (surface_field.SPARSE_SOLVER_ID).
+            "CompositeSparseLayout",
+            [(k, object) for k in (*inner.SPARSE_LAYOUT_TYPE._fields, *extra)],
+        )
         self.CONTROL_FIELDS = (
             *inner.CONTROL_FIELDS,
             *(k for op in operators for k in op.CONTROL_FIELDS),
@@ -1499,7 +1504,11 @@ class Composition:
         for field, name in (*self.KIND_RECORDS.items(), *self.KIND_MOVED.items()):
             values[name] = np.zeros_like(np.asarray(values[field], dtype=float))
         kind = (
-            self.FLOOR_LAYOUT_TYPE if type(p) is self.inner.FLOOR_LAYOUT_TYPE else self.LAYOUT_TYPE
+            self.FLOOR_LAYOUT_TYPE
+            if type(p) is self.inner.FLOOR_LAYOUT_TYPE
+            else self.SPARSE_LAYOUT_TYPE
+            if type(p) is self.inner.SPARSE_LAYOUT_TYPE
+            else self.LAYOUT_TYPE
         )
         if self.owns_view_energy:
             values = self._closed_initial_state(self.STATE_TYPE(**values), kind, layout)

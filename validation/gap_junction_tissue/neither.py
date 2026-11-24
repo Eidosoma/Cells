@@ -297,16 +297,31 @@ def switch_world(cells, start, *, junctions=(), d=0.0, end, dt, observe):
     return rfx.with_reactions(raw, [rfx.species(n) for n in NAMES], reactions, controls)
 
 
-def uncoupled_world(*, end=UNCOUPLED_S, dt=None, neighbours=2):
+def declared_field_solver(raw, shape):
+    """raw with the field solver its shape runs under GJ-N1's amendment 1 (docs/
+    GJ_NEITHER_REGISTRATION.md, tag gj-n1-amendment-1-2026-11-23): the field's worlds, its stage 1
+    among them, declare FR-17's sparse field solver, qualified against version 2 (docs/
+    FIELD_SOLVER_INTERFACE_DESIGN.md §8.5); the line and the sheet keep the version 2 their
+    definitions declare, as they ran."""
+    if shape == "field":
+        from cells.numerics.surface_field import SPARSE_SOLVER_ID
+
+        raw["execution"]["field_solver"] = SPARSE_SOLVER_ID
+    return raw
+
+
+def uncoupled_world(*, end=UNCOUPLED_S, dt=None, neighbours=2, shape=None):
     """Stage 1: one tumor cell and one healthy cell, no junctions, from BITSEY's seeds. Its dt is
     the finest coupled step (the bracket's upper end, with the shape's neighbours: 1/64 s on the
-    line, 1/128 s on the field), so stage 1 is never the coarser stage."""
+    line, 1/128 s on the field), so stage 1 is never the coarser stage. shape: the search it seeds,
+    for its field solver (declared_field_solver)."""
     dt = step(BRACKET[1], neighbours) if dt is None else dt
     observe = sorted(
         {0.0, *(k * 100.0 for k in range(int(end // 100.0) + 1) if k * 100.0 < end), end}
     )
     cells = (("tumor", "tumor"), ("healthy", "healthy"))
-    return switch_world(cells, SEEDS, end=end, dt=dt, observe=observe)
+    raw = switch_world(cells, SEEDS, end=end, dt=dt, observe=observe)
+    return declared_field_solver(raw, shape)
 
 
 def coupled_world(d, start, *, end=COUPLED_S, dt=None, shape="line"):
@@ -318,7 +333,8 @@ def coupled_world(d, start, *, end=COUPLED_S, dt=None, shape="line"):
         {0.0, *(k * OBSERVE_EVERY_S for k in range(int(end // OBSERVE_EVERY_S) + 1)), end}
     )
     observe = [t for t in observe if t <= end]
-    return switch_world(cells, start, junctions=junctions, d=d, end=end, dt=dt, observe=observe)
+    raw = switch_world(cells, start, junctions=junctions, d=d, end=end, dt=dt, observe=observe)
+    return declared_field_solver(raw, shape)
 
 
 def execute(raw, n_cells, window_steps=WINDOW_STEPS):
@@ -384,7 +400,7 @@ def uncoupled(shape="line"):
     started = time.perf_counter()
     out = dict(stage="uncoupled", end_s=UNCOUPLED_S, seeds_units=SEEDS, shape=shape)
     try:
-        run = execute(uncoupled_world(neighbours=STAGE1_NEIGHBOURS[shape]), 2)
+        run = execute(uncoupled_world(neighbours=STAGE1_NEIGHBOURS[shape], shape=shape), 2)
         start = {
             kind: {name: run["final_units"][name][k] for name in NAMES}
             for k, kind in enumerate(("tumor", "healthy"))
