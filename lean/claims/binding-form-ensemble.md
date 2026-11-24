@@ -40,6 +40,8 @@ Proof sources [Physlib finite partition, specialized on the optional v4.22.0 pin
 
 **Open.** ATP fraction carrying Mg at measured free Mg, pH, temperature and solution composition. The individual H/Mg microscopic forms would require additional resolved measurements.
 
+- [A single apparent Mg–ATP dissociation constant transfers between these near-matched pH and temperature conditions.](../WET_LAB_EVIDENCE.md#pair-mgatp-apparent-affinity) · Different experimental results
+
 At pH 7.2 and 37 °C, transferring an independently measured apparent affinity between two preparations underpredicted Mg-bound ATP by about 0.17. Their solution compositions and measurement methods differ.
 
 **Unit** fraction of ATP carrying Mg
@@ -58,5 +60,16 @@ Three mM ATP in MOPS/KCl at pH 7.2, 37 °C and ionic strength 0.15 M. Matched al
 Zhang et al. report SD 4.9 µM over four measurements. Graph-reading precision is about ±5 µM in free Mg and ±0.1 in bound/unbound ratio. Ward et al. give no sampling uncertainty for this individual marker.
 
 A single transferred apparent Kd misses the aggregate fraction in this preparation. Quantitative validation of individual H/Mg occupancies requires matched solution conditions and form-resolved evidence. [Dataset manifest](../checks/data/mgatp_binding.json) · [Comparison verdict](../PROGRESS.md#binding-form-ensemble)
+
+### zhang1997_mgatp_affinity@1
+
+Mg-sensitive macroelectrode with EDTA calibration, 37 °C and ionic strength 0.156 M. Primary report, pH 7.2 in the normal muscle-like background. Numerical series in the linked manifest. [Zhang et al. (1997), normal muscle-like solution at pH 7.2](https://doi.org/10.1006/abio.1997.2238)
+
+- **Evidence role** calibration
+- **Fit** Apparent Mg–ATP affinity used for the Ward prediction
+
+SD 4.9 µM across four measurements.
+
+The apparent dissociation constant was 87.4 µM. This supplied the external affinity used to predict Ward’s aggregate Mg-bound ATP fraction. [Dataset manifest](../checks/data/mgatp_binding.json) · [Comparison verdict](../PROGRESS.md#paired-calibration-and-leaflet-packing)
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

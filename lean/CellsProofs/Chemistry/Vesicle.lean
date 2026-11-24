@@ -195,6 +195,17 @@ theorem fixed_survival_error (early late prediction : ℝ) :
     (le_max_right |early - prediction| |late - prediction|)
   linarith
 
+/-- On two spherical headgroup surfaces, equal area per lipid is equivalent to
+the inner lipid fraction equalling the inner fraction of their combined areas. -/
+theorem equal_leaflet_footprint_iff {ri ro ni no : ℝ}
+    (hri : 0 < ri) (hro : 0 < ro) (hni : 0 < ni) (hno : 0 < no) :
+    4 * Real.pi * ri ^ 2 / ni = 4 * Real.pi * ro ^ 2 / no ↔
+      ni / (ni + no) = ri ^ 2 / (ri ^ 2 + ro ^ 2) := by
+  rw [mul_div_assoc, mul_div_assoc, mul_right_inj' (by positivity : 4 * Real.pi ≠ 0),
+    div_eq_div_iff hni.ne' hno.ne',
+    div_eq_div_iff (add_pos hni hno).ne' (by positivity : ri ^ 2 + ro ^ 2 ≠ 0)]
+  constructor <;> intro h <;> linarith only [h]
+
 end
 
 end CellsProofs.Chemistry.Vesicle

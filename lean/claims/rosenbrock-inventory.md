@@ -37,6 +37,8 @@ Proof sources [Imported Mathlib chain rule for Fréchet derivatives](https://git
 
 **Not assessable.** Total soluble glucose-6-phosphate and fructose-6-phosphate during their reversible interconversion.
 
+- [G6P and F6P alone form a closed measured inventory throughout these enzyme assays.](../WET_LAB_EVIDENCE.md#pair-pgi-pair-closure) · Comparison unresolved
+
 A partially purified enzyme preparation recovered approximately the starting total. One cell-extract time course lost 22.29% of the measured pair. Recovery uncertainty and the disposition of material outside the pair are unresolved.
 
 **Unit** mM
