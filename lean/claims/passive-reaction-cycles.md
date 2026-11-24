@@ -31,6 +31,28 @@ Proof sources [Cells stoichiometric columns and shared species potentials](https
 
 **Open.** Independently determined equilibrium activity quotients for all reactions in one cycle at matched temperature, pH, free Mg and ionic strength.
 
+- [Independent equilibrium constants for all legs of one matched ATP reaction cycle give a product of one.](../WET_LAB_EVIDENCE.md#pair-atp-hydrolysis-route-closure) · Comparison unresolved
+
 **Unit** dimensionless equilibrium quotient
+
+### benzinger1959_glutamine
+
+A measured glutaminase equilibrium and literature glutamine-synthetase equilibria were combined at 37 °C. pp. 405–406, calorimetric equilibrium and thermodynamic cycle. [Benzinger et al. (1959)](https://doi.org/10.1042/bj0710400)
+
+- **Evidence role** descriptive
+
+The quoted uncertainty belongs to the derived reaction under its stated Mg convention.
+
+For the specific MgATP to MgADP and hydrogen phosphate reaction the inferred standard energy was −7.0 ± 0.17 kcal/mol. The synthetase leg came from other investigators. [Dataset manifest](../checks/data/paired_preparation_controls.json) · [Comparison verdict](../PROGRESS.md#preparation-evidence-review)
+
+### guynn1973_acetyl
+
+At pH 7.0, 38 °C and ionic strength 0.25 M the authors combined their equilibrium measurement with a prior acetyl-CoA hydrolysis energy. Combined acetate kinase and phosphate acetyltransferase equilibrium, pp. 6966–6972. [Guynn and Veech (1973)](https://pubmed.ncbi.nlm.nih.gov/4355193/)
+
+- **Evidence role** descriptive
+
+Free Mg and transformed nucleotide species materially change the reported standard energy.
+
+ATP hydrolysis at 1 mM free Mg gave −31.80 kJ/mol. The ATP–citrate lyase equilibrium was derived using the ATP result. [Dataset manifest](../checks/data/paired_preparation_controls.json) · [Comparison verdict](../PROGRESS.md#preparation-evidence-review)
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

@@ -89,6 +89,7 @@ Direct proof subject `cells.k_anion_symport_mass_action@1`
 - [Changing external potassium can reverse the direction of K–Cl cotransport.](../WET_LAB_EVIDENCE.md#pair-kcl-gradient-reverses-transport) · Supported by both studies
 - [Equality of the nominal intracellular and extracellular K–Cl concentration products locates zero flux in swollen sheep erythrocytes across protocols.](../WET_LAB_EVIDENCE.md#pair-kcl-null-across-sheep-protocols) · Independent replication unconfirmed
 - [The red-cell K–Cl cotransporter carries approximately one potassium ion per chloride ion.](../WET_LAB_EVIDENCE.md#pair-erythrocyte-kcl-stoichiometry) · Supported by both studies
+- [Chloride contributes to the direction of volume-sensitive erythrocyte K–Cl cotransport.](../WET_LAB_EVIDENCE.md#pair-erythrocyte-kcl-combined-gradient) · Supported by both studies
 
 Rabbit red cells gave an outward K:Cl flux ratio of 1.12 ± 0.26 (SD, five preparations), consistent with the model’s 1:1 stoichiometry. The investigators measured rubidium as a potassium tracer and calibrated its relative flux. [Jennings and Adame, Fig. 5](https://pubmed.ncbi.nlm.nih.gov/11502559/)
 
@@ -134,5 +135,15 @@ Low-potassium sheep red cells with pH and volume clamped. The assay compared out
 Eight points contributed to the normal-magnesium fit and ten to the low-magnesium fit. The paper gives correlations of 0.912 and 0.976. It gives no uncertainty for either slope.
 
 The ideal product rule predicts a slope of 1. The measured slopes were 1.12 at normal magnesium and 1.08 at low magnesium. Rubidium substitutes for external potassium. The volume dependence of net flux remains open. [Dataset manifest](../checks/data/lauf1996_kcc_reversal.json) · [Comparison verdict](../PROGRESS.md#19-november-2026--potassium-and-anion-cotransport)
+
+### brugnara1989_human_kcl
+
+Volume-sensitive transport in human red cells. Permeant substitute anions stabilized membrane potential while anion exchange was inhibited. Net K flux under opposed gradients, pp. C994–C1003. [Brugnara, Van Ha and Tosteson (1989)](https://doi.org/10.1152/ajpcell.1989.256.5.C994)
+
+- **Evidence role** descriptive
+
+The direction is reported directly. A matched sweep of internal and external activities through a measured zero is unavailable here.
+
+An outward chloride gradient drove net K efflux against the K gradient. This constrains the direction under combined ion gradients. [Dataset manifest](../checks/data/paired_preparation_controls.json) · [Comparison verdict](../PROGRESS.md#preparation-evidence-review)
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

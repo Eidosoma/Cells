@@ -41,6 +41,8 @@ Uses [Vesicle area variation bounds survival during a tension hold](vesicle-area
 
 **Open.** First-rupture rate at known temperature, tension and initial vesicle area. Separately resolving an opening that reseals would test the assumed equivalence of first opening and terminal rupture.
 
+- [Lysis tension during pressurization gives an independent temperature-resolved first-rupture rate at fixed DOPC tension and area.](../WET_LAB_EVIDENCE.md#pair-rupture-rate-transfer-hold-ramp) · Comparison unresolved
+
 **Unit** first ruptures per intact vesicle per second
 
 ### karal2015_dopc_rate_temperatures
@@ -55,5 +57,15 @@ The endpoint was complete aspiration. The linked six-row measurement table conta
 Three repeat experiments per setting. The registered typical tolerance was about 0.25 in log rate. The six fit rows had χ² = 98.6 on four degrees of freedom.
 
 Five of five held-out rates passed. Two were below the viscosity calibration range. Individual areas and reversible openings were unresolved. [Dataset manifest](../../validation/vesicle_pores/predictions_registered.json) · [Measurements](../checks/data/karal2015_rupture_rates.json) · [Comparison verdict](../../docs/DECISIONS.md#d298-the-vesicle-rupture-blind-test-passes-set-1-five-of-five-set-2-five-of-five-one-sided-weak)
+
+### olbrich2000_tension_ramp
+
+Giant fluid phosphatidylcholine vesicles were driven to lysis by increasing tension. Micropipette pressurization and composition series at 21 °C. [Olbrich et al. (2000)](https://doi.org/10.1016/S0006-3495(00)76294-1)
+
+- **Evidence role** descriptive
+
+This measurement is lysis tension on a ramp at one temperature. The ramp cohort provides no independent temperature series of constant-tension waiting times.
+
+Mono- and dimono-unsaturated phospholipids lysed around 9–10 mN/m. The data do not determine a DOPC area-normalized first-rupture rate on a hold. [Dataset manifest](../checks/data/paired_preparation_controls.json) · [Comparison verdict](../PROGRESS.md#preparation-evidence-review)
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

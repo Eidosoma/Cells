@@ -42,6 +42,7 @@ Uses [Ion charge sets permeation reversal and bounds the current–voltage slope
 **Open.** Resting voltage shifts under known ion substitutions and separate currents for each ion at the same reversal.
 
 - [Replacing external sodium with potassium at fixed total external monovalent cation concentration depolarizes the resting squid axon.](../WET_LAB_EVIDENCE.md#pair-squid-potassium-substitution) · Supported by both studies
+- [Raising external potassium depolarizes internally perfused squid axons at high internal potassium.](../WET_LAB_EVIDENCE.md#pair-perfused-squid-potassium) · Supported by both studies
 
 Independent squid recordings agree on depolarization when external K replaces Na. The same fitted 1949 permeability ratio overpredicts the voltage changes in the 1979 perfused preparation.
 
@@ -71,5 +72,15 @@ Six Loligo pealii giant axons. Electrodes measured steady resting voltage during
 Reported ± for the six successful axons. Table 1 gives no definition of these errors or covariance between solution means. Electrode-tip corrections were applied, up to about 3 mV.
 
 Raising external K from 10 to 30 mM gave +2.0 mV. With the 1949 ratios and the nominal chloride-free internal solution, the native three-ion flux projection gives +12.63 mV. At 100 mM the measured change was +19.8 mV against +34.50 mV. A separate interpolation anchored within the perfused preparation is recorded with the comparison. [Dataset manifest](../checks/data/membrane_physiology_pairs.json) · [Comparison verdict](../PROGRESS.md#paired-membrane-physiology)
+
+### baker1962_axon_perfused
+
+Perfused Plymouth squid axons with controlled internal salts. The external K series includes changes in other ions. Fig. 2 and Tables 1–3. [Baker, Hodgkin and Shaw (1962)](https://doi.org/10.1113/jphysiol.1962.sp007026)
+
+- **Evidence role** descriptive
+
+Figure ranges are approximate. A 100 mM point was from a damaged axon. Symmetric-solution recovery was poor.
+
+At about 600 mM internal K, resting voltage rose from roughly −62 to −52 mV at external 10 mM K to −38 to −34 mV at 100 mM and about −5 to −2 mV near 540 mM. The records constrain direction. [Dataset manifest](../checks/data/paired_preparation_controls.json) · [Comparison verdict](../PROGRESS.md#preparation-evidence-review)
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

@@ -38,6 +38,8 @@ Uses [Vesicle pore rates scale with area and increase on warming](vesicle-pore-r
 
 **Open.** First opening and eventual rupture observed separately during the same constant-tension hold. A time-resolved opening or resealing measurement would test the model’s choice of biological endpoint.
 
+A lysis tension on a ramp and the closure of a pore after it opens address different endpoints. Checking the clock against first opening and terminal rupture requires both events in the same hold. [Olbrich et al.](https://doi.org/10.1016/S0006-3495(00)76294-1)
+
 **Unit** time to first opening or rupture in seconds
 
 ### portet2010_dopc_pore_closure

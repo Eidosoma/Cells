@@ -80,6 +80,8 @@ Uses [Neutral arrival-time cohorts share one physical loss rate](fr42-cohort-sha
 
 **Open.** Cohort membership requires the time of release from the template and survival of the same molecules to a later sample.
 
+- [Removing the extracellular labelled nucleotide precursor immediately ends incorporation of the old label into newly made RNA.](../WET_LAB_EVIDENCE.md#pair-rna-label-washout-tail) · Challenged by both studies
+
 Bellecourt et al. measured detachment among terminator-length RNAs. Ntini et al. measured chromatin association after a synthesis pulse, and Tutucci et al. counted yeast RNA during mitosis. A direct survival comparison still requires marking RNA at detachment and measuring the same cohort at window close and during chase.
 
 **Unit** Fraction (0–1)
@@ -114,5 +116,25 @@ Endogenously tagged ASH1 RNA spots were counted per cell in 21 yeast cells every
 The authors report ±2.8 min with the 6.1 min value. The type of uncertainty is unspecified.
 
 The mitotic decline in detected ASH1 spots had a reported half-life of 6.1 min. A per-cell count gives a population decay timescale. The release time and subsequent survival of a detachment-marked cohort remain unmeasured. [Dataset manifest](../checks/data/rna_chase_observables.json) · [Comparison verdict](../PROGRESS.md#fr38-marked-fates)
+
+### pendleton2018_rna_wash
+
+New reporter RNA was assayed after removal of extracellular 4-thiouridine. Fig. 2A and Supplementary Fig. S2. [Pendleton et al. (2018)](https://rnajournal.cshlp.org/content/24/6/778.full)
+
+- **Evidence role** descriptive
+
+Timing is specific to this preparation. Intracellular nucleotide-triphosphate concentration was not measured.
+
+Incorporation continued after medium exchange and became negligible after about one hour. [Dataset manifest](../checks/data/paired_preparation_controls.json) · [Comparison verdict](../PROGRESS.md#preparation-evidence-review)
+
+### gasser2020_dual_label
+
+Sequencing distinguished old-label-only and double-labelled transcripts during a metabolic-label switch. Fig. 5A–B, incorporation following the label switch. [Gasser et al. (2020)](https://doi.org/10.1002/anie.201916272)
+
+- **Evidence role** descriptive
+
+The increased cumulative signal over that interval does not give the instantaneous incorporation rate at its endpoint.
+
+Old-label-only transcript signal increased during the first two hours after the switch. The result supports continued incorporation during this window. [Dataset manifest](../checks/data/paired_preparation_controls.json) · [Comparison verdict](../PROGRESS.md#preparation-evidence-review)
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

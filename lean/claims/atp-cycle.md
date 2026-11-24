@@ -41,13 +41,20 @@ Direct proof subject `cells.proton_atp_mass_action_positive@1`, `cells.atp_drive
 
 [Tested engine 6318b7d4f8d3](https://github.com/Eidosoma/Cells/commit/6318b7d4f8d33251760834b6079aa27d88a81831) · [Evidence checkpoint 78acb6bccc69](https://github.com/Eidosoma/Cells/commit/78acb6bccc69cabbd8639a22975d87b5eabb42a2)
 
+**Engine** `resolved_pump_tissue@3`, `cells.proton_atp_mass_action_positive@1`, `cells.proton_constant_field_leak@1`, `cells.inward_rectifier_linear_driving_force@1`, `cells.kir2p1_mh2@1`, `cells.rapid_binding@1`
+
+[Tight-coupled proton pump](https://github.com/Eidosoma/Cells/blob/153449799f4d301a34f2be58172becc4dc562806/src/cells/laws/pumps/proton_pump.py#L91) · [Proton flux](https://github.com/Eidosoma/Cells/blob/153449799f4d301a34f2be58172becc4dc562806/src/cells/laws/transport/proton_leak.py#L31) · [Kir slope conductance](https://github.com/Eidosoma/Cells/blob/153449799f4d301a34f2be58172becc4dc562806/src/cells/laws/routes/inward_rectifier_linear_driving_force.py#L127) · [Two binding forms](https://github.com/Eidosoma/Cells/blob/153449799f4d301a34f2be58172becc4dc562806/src/cells/laws/reactions/rapid_binding.py#L340) · [Tissue channel current](https://github.com/Eidosoma/Cells/blob/153449799f4d301a34f2be58172becc4dc562806/src/cells/models/surface_pump_v3.py#L621) · [Thermodynamic constants](https://github.com/Eidosoma/Cells/blob/153449799f4d301a34f2be58172becc4dc562806/src/cells/laws/electrochemistry.py#L10) · [Preparation records](https://github.com/Eidosoma/Cells/blob/01edbd968e182f91c0bd281fe776f5609a78e645/lean/checks/data/paired_preparation_controls.json) · [Kir slopes and controls](https://github.com/Eidosoma/Cells/blob/01edbd968e182f91c0bd281fe776f5609a78e645/lean/checks/data/paired_replay_measurements.json) · [Fixed-drive Kir evaluation](https://github.com/Eidosoma/Cells/blob/01edbd968e182f91c0bd281fe776f5609a78e645/lean/checks/paired_law_replays.py) · [Native proton roots](https://github.com/Eidosoma/Cells/blob/01edbd968e182f91c0bd281fe776f5609a78e645/lean/checks/paired_membrane_physiology.py) · [Tissue clamp specimen](https://github.com/Eidosoma/Cells/blob/01edbd968e182f91c0bd281fe776f5609a78e645/lean/checks/clamped_channel_current.py) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/01edbd968e182f91c0bd281fe776f5609a78e645/lean/checks/paired_preparation_controls.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/01edbd968e182f91c0bd281fe776f5609a78e645/lean/PROGRESS.md#preparation-evidence-review)
+
+[Tested engine 153449799f4d](https://github.com/Eidosoma/Cells/commit/153449799f4d301a34f2be58172becc4dc562806) · [Evidence checkpoint 01edbd968e18](https://github.com/Eidosoma/Cells/commit/01edbd968e182f91c0bd281fe776f5609a78e645)
+
 ## Biological evidence
 
 **Open.** Reversal voltage of ATP-dependent proton transport at known fuel and proton activities, and neutral-cargo flux at fixed activities under varied voltage.
 
 - [The yeast vacuolar pump reversal exceeds +40 mV at cytosolic pH 7.5 and lumen pH 3.1.](../WET_LAB_EVIDENCE.md#pair-vacuolar-pump-low-ph) · Independent replication unconfirmed
+- [At fixed nominal cytosolic pH 7.5, acidifying the lumen shifts the ATP-dependent vacuolar current reversal toward positive voltages.](../WET_LAB_EVIDENCE.md#pair-vacuolar-pump-lumen-gradient) · Supported by both studies
 
-Vesicles showed ATP-dependent riboflavin uptake. Neutral-cargo reversal and voltage independence remain open. [Van Herwaarden et al., Fig. 3E](https://pmc.ncbi.nlm.nih.gov/articles/PMC1800714/)
+Vesicles showed ATP-dependent riboflavin uptake. Neutral-cargo reversal and voltage independence remain open. [Van Herwaarden et al., Fig. 3E](https://pmc.ncbi.nlm.nih.gov/articles/PMC1800714/) Two red-cell ghost studies observed ouabain-sensitive phosphate incorporation into ATP. Exchange can contribute at zero net ATP production. [Garrahan and Glynn](https://doi.org/10.1113/jphysiol.1967.sp008298) · [Lant and Whittam](https://doi.org/10.1113/jphysiol.1968.sp008663) Davies measured reversal in red-beet vacuoles at the same pH difference with different absolute pH values. Kettner Fig. 4 replots those beet data. Independent replication of the yeast lumen-pH-3.1 bound remains open. [Davies et al., Table 1](https://doi.org/10.1073/pnas.91.18.8547)
 
 **Unit** mV for reversal, fmol/s for signed cargo flux
 
@@ -70,5 +77,15 @@ The same research group reported the journal reversal bound above +40 mV. Worksh
 The table gives +50 ± 8 mV (SE) without a replicate count or a matched low-pH sweep resolving the crossing. Independence from the journal recordings is unknown.
 
 The earlier estimate is compatible with the journal’s lower bound. The low-pH measurement required to reopen FR-29 remains outstanding. [Dataset manifest](../checks/data/kettner_low_ph_reversal.json) · [Comparison verdict](../PROGRESS.md#fr29-low-ph-current)
+
+### rienmuller2012_vacuole
+
+Arabidopsis mesophyll vacuoles, cytosolic pH 7.5 during the lumen titration. Fig. 2, ATP-dependent current. [Rienmüller et al. (2012)](https://doi.org/10.1074/jbc.M111.310367)
+
+- **Evidence role** descriptive
+
+Reported errors and sample counts are retained per voltage. A cytosolic ATP/ADP/Pi activity quotient during each ramp was unavailable.
+
+Acidifying the lumen by two pH units shifted the mean reversal by +44.9 mV. A constant fuel driving force and tight coupling give a larger shift at every tested stoichiometry. [Dataset manifest](../checks/data/paired_preparation_controls.json) · [Comparison verdict](../PROGRESS.md#preparation-evidence-review)
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

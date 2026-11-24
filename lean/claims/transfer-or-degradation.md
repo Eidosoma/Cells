@@ -38,6 +38,8 @@ Uses [Production and first-order clearance preserve a positive pool and account 
 
 **Open.** Labelled protein at its source, at receiving synapses and across the cell, sampled over the same period.
 
+- [Regional Bassoon measurements identify how much loss from a labelled source was transfer and how much was degradation.](../WET_LAB_EVIDENCE.md#pair-bassoon-regional-transfer-budget) · Comparison unresolved
+
 **Unit** fmol in Cells and per-spine green/red fluorescence ratio in the experiment
 
 ### gray2006_psd95_exchange
@@ -49,5 +51,25 @@ After local photoactivation of PSD-95 in mouse neocortex, signal fell in the sou
 The figure reports relative fluorescence in selected spines. A recovered mass fraction and a same-cohort whole-neuron total are unavailable from those traces.
 
 The receiver signals document local redistribution. The protein and cause of the 48-hour decline in the Cells study remain unresolved. [Dataset manifest](../checks/data/regional_tracer_measurements.json) · [Comparison verdict](../PROGRESS.md#fr33-evidence)
+
+### tomdieck2015_bassoon
+
+Fixed neuronal cultures labelled throughout. Soma and dendritic signal were compared across time points. Fig. 3b–d, endogenous Bassoon pulse and chase. [tom Dieck et al. (2015)](https://doi.org/10.1038/nmeth.3319)
+
+- **Evidence role** descriptive
+
+The regional mask omits much of the axon. The observations use sampled groups and lack a whole-cell balance.
+
+Somatic Bassoon label decreased while dendrite-associated label increased. Dörrbaum Fig. 2C reuses these data. [Dataset manifest](../checks/data/paired_preparation_controls.json) · [Comparison verdict](../PROGRESS.md#preparation-evidence-review)
+
+### tsuriel2009_bassoon
+
+Neuronal cultures with local photoactivation of tagged Bassoon at boutons. Fig. 5D,F. [Tsuriel et al. (2009)](https://doi.org/10.1523/JNEUROSCI.4777-08.2009)
+
+- **Evidence role** descriptive
+
+The experiment does not measure surviving tagged Bassoon over the entire cell.
+
+Label from a selectively activated region appeared at nearby unilluminated boutons. The regional increase is direct evidence for transfer. [Dataset manifest](../checks/data/paired_preparation_controls.json) · [Comparison verdict](../PROGRESS.md#preparation-evidence-review)
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

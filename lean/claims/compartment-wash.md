@@ -65,6 +65,8 @@ Proof sources [Mathlib logarithm bound used in the default mixing-heat proof](ht
 
 **Open.** Free tracer after successive known-fraction washes, together with independently measured ligand retained on the surface.
 
+- [Repeated buffer washes lower the signal from a preceding dye exposure in fluid collected or delivered by microfluidic devices.](../WET_LAB_EVIDENCE.md#pair-serial-rinse-carryover) · Supported by both studies
+
 **Unit** µg/mL
 
 ### vloemans2024-dilution
@@ -78,5 +80,25 @@ Free fluorescein in PBS, successive 10 µL plugs. For the numerical row, use the
 At least three replicates per point, with one SD drawn graphically. The comparison uses rounded printed means. The study notes wall adsorption and a limited instrument range.
 
 The first two 80% washes measured 0.332 and 0.067 µg/mL against 0.3424 and 0.06848. The third mean was 46% above ideal dilution. The experiments address freely dissolved dye. Instantaneous bound-site retention in a biological well remains open. [Dataset manifest](../checks/data/vloemans2024_dilution.json) · [Comparison verdict](../PROGRESS.md#nov21-wash)
+
+### lagoy2018_tubing_wash
+
+Well-to-well fluorescein carryover read in the channel 30 s after a change of well. Fig. 1i, printed bar labels. [Lagoy and Albrecht (2018)](https://doi.org/10.1038/s41598-018-24504-x)
+
+- **Evidence role** descriptive
+
+The last bar follows four wash wells. Each plotted residual already includes the fill delay.
+
+Carryover was 0.23%, 0.07% and 0.02% after 0, 1 and 4 wash wells. [Dataset manifest](../checks/data/paired_preparation_controls.json) · [Comparison verdict](../PROGRESS.md#preparation-evidence-review)
+
+### li2017_multiplexer_wash
+
+A fluorescein-filled reservoir was rinsed with buffer. Drained liquid was collected per outlet and read by fluorometry. Methods and Supplementary Fig. S-6A, also reproduced as Li’s dissertation Fig. 2.7A. [Li et al. (2017)](https://doi.org/10.1039/C6LC01201A)
+
+- **Evidence role** descriptive
+
+Panel A gives no replicate count or definition of the error bars. The volume SD in panel B belongs to a separate experiment.
+
+The authors report under 1% after rinse 2. Rinse 5 is roughly 0.1% on the log inset, a reading of collected effluent. [Dataset manifest](../checks/data/paired_preparation_controls.json) · [Comparison verdict](../PROGRESS.md#preparation-evidence-review)
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)
