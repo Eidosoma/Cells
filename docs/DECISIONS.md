@@ -12367,3 +12367,47 @@ ran under the tag `fr47-shell-exchange-registered-2026-11-24`, with the suppleme
 - **Two driver faults** (v1) were fixed and rerun (v2), with the v1 folders kept as evidence.
 - **Cost:** about 1.06 CPU-hours, against the estimate of about 3.
 - **Cleanup:** its two worktrees are pruned.
+
+## D374: the user's decisions on legacy: keep and re-express the calcium ensemble; retire the physiology stack
+
+2026-11-24, about 22:53 UTC. The port plan reworked for D369 is on branch `legacy-port-plan` (3b7c729f). Its finding:
+measured by use, most of D348's eleven IDs are not used. Only the calcium ensemble is substantial, together with
+`spatial_extracellular@2` for the JUPITER readiness check, `resolved_tissue@8` as @3's reference world, and
+`source_decay@1` as the test conftest's world. The advisor sent two questions to the user, because both revisit the
+user's answer of earlier the same day, "keep BETSE and ensemble".
+
+**The calcium ensemble is kept, and re-expressed in canonical form.**
+- **What it is:** the assembly-regulated cell and cluster on `spatial_calcium@1` to `@4`, run by the GPU ensemble
+  runner and the JUPITER readiness check.
+- **What it needs:** five engine features, the plan's G-1, G-4, G-5, G-7 and G-8: calcium-permeant channels on @3,
+  an ER store, IP3-gated release, assembly coupling, and the composite on a GPU. The author's rough guess is 16 to 28
+  agent-days. These are candidate requests, sized by their own design notes, not FRs yet.
+- **The route** comes back to the user with prices:
+  - relocate first, then re-express (route A);
+  - re-express directly (route B);
+  - prune legacy in place to the used cores, then re-express.
+
+**The physiology stack is retired.**
+- **What goes:** the 17 drivers on legacy's five BETSE IDs and the 18 REF-era drivers. No current document claims a
+  result from them, and their helpers are BETSE glue throughout.
+- **What stays:** the BETSE parity that PROGRESS claims, which runs on the live `resolved_pump_tissue@1` to `@3`
+  ladder, and BETSE itself as an outside reference. The ladder's one legacy import, a re-export of a live helper,
+  becomes a direct import.
+- **How:** the drivers and their tests retire in the approved deletion batch, with their records kept. That batch
+  needs the dry-run deletion, a tag, and a removal list the user approves.
+
+**The lead's rulings,** with the advisor:
+- **No retirement before the rename's move.** It would save about a dozen files, but a deletion needs the measured
+  dry run and the user's approved batch.
+- **Inside that batch:**
+  - the plan's Q5: @3's checks against `resolved_tissue@8` stay for now, and move to an independent validation
+    reference at the end;
+  - the plan's Q6: `source_decay@1`, `emt_mirna@1` and `passive_pair@1` are deleted, and the conftest's users point at
+    a live world.
+- **Waiting for the route:** which engine gaps to request, and the plan's three lead rulings. Tolerances are derived
+  in each re-expression's registration, never ruled.
+- **For the plan:** check that its coverage table has the protein inventory's law records that point into legacy
+  (13 of 81 on 17 November).
+
+**Tonight:** a dry-run deletion of legacy in a scratch copy of a frozen snapshot measures what depends on it, on lane B
+after FR-43's gate. It changes nothing on main.
