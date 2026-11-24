@@ -378,7 +378,11 @@
   "/mnt/workspaces/Cells/fr46-48-build-20261123/measure-d19b10c2/measured.json",
   "/mnt/workspaces/Cells/fr43-20261123/part2/tiers/run-2b/measured.json",
   "/mnt/workspaces/Cells/wash-export-refusal-20261123/tiers-51bb58d5/measured.json",
-  "/mnt/workspaces/Cells/fr49-expression-labels-20261123/tiers-a9ea8915/measured.json"
+  "/mnt/workspaces/Cells/fr49-expression-labels-20261123/tiers-a9ea8915/measured.json",
+  "/mnt/workspaces/Cells/fr17-sparse-20261123/tiers-044f07e6/measure/measured.json",
+  "/mnt/workspaces/Cells/fr47-build-20261124/measure-4a533a2c/measured.json",
+  "/mnt/workspaces/Cells/fr47-build-20261124/measure-94bf2a97/measured.json",
+  "/mnt/workspaces/Cells/fr47-build-20261124/measure-c0aa0bd3/measured.json"
  ],
  "measured_provenance": [
   {
@@ -3229,6 +3233,38 @@
    "root": "/mnt/workspaces/Cells/fr49-expression-labels-20261123/snap2-a9ea8915",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-23T23:47:50+00:00"
+  },
+  {
+   "git_revision": "044f07e632b39b5fa316e35d5fef81f7ed3ec12a",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr17-sparse-20261123/snap-head-044f07e6",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-24T00:04:24+00:00"
+  },
+  {
+   "git_revision": "4a533a2c2f5b106f54cd86a6dbb37321d88ebdc4",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr47-build-20261124/snapshot-4a533a2c",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-24T01:22:36+00:00"
+  },
+  {
+   "git_revision": "94bf2a9798c183df4b66a05484ab9676681ddfd4",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr47-build-20261124/snapshot-94bf2a97",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-24T01:42:15+00:00"
+  },
+  {
+   "git_revision": "c0aa0bd3887d82f7d6b4207d645d531e2406e321",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr47-build-20261124/snapshot-c0aa0bd3",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-24T11:44:47+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -3587,6 +3623,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 6
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_lineages_v2_fr47_tools.py",
+    "seconds": 10.95,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
     }
    },
    {
@@ -4359,10 +4403,10 @@
    },
    {
     "file": "tests/unit/test_field_solver_composite.py",
-    "seconds": 8.04,
+    "seconds": 10.5,
     "exit_code": 0,
     "counts": {
-     "passed": 33
+     "passed": 34
     }
    },
    {
@@ -5835,7 +5879,7 @@
    },
    {
     "file": "tests/unit/test_pump_composite_adapter.py",
-    "seconds": 6.89,
+    "seconds": 5.98,
     "exit_code": 0,
     "counts": {
      "passed": 5
@@ -6059,7 +6103,7 @@
    },
    {
     "file": "tests/unit/test_secreted_species.py",
-    "seconds": 5.18,
+    "seconds": 5.43,
     "exit_code": 0,
     "counts": {
      "passed": 20
@@ -7160,18 +7204,18 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_rate_equations.py",
-    "seconds": 37.9,
+    "seconds": 48.93,
     "exit_code": 0,
     "counts": {
-     "passed": 12
+     "passed": 19
     }
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_rate_equations_population.py",
-    "seconds": 43.01,
+    "seconds": 66.54,
     "exit_code": 0,
     "counts": {
-     "passed": 2
+     "passed": 7
     }
    },
    {
@@ -7192,15 +7236,15 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_replacement.py",
-    "seconds": 58.85,
+    "seconds": 76.05,
     "exit_code": 0,
     "counts": {
-     "passed": 34
+     "passed": 35
     }
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_shell_interior.py",
-    "seconds": 21.14,
+    "seconds": 22.19,
     "exit_code": 0,
     "counts": {
      "passed": 12
@@ -7486,10 +7530,10 @@
    },
    {
     "file": "tests/unit/test_field_solver_composite_runs.py",
-    "seconds": 57.13,
+    "seconds": 55.49,
     "exit_code": 0,
     "counts": {
-     "passed": 3
+     "passed": 5
     }
    },
    {
@@ -8230,6 +8274,14 @@
     }
    },
    {
+    "file": "tests/unit/test_sparse_cholesky.py",
+    "seconds": 30.72,
+    "exit_code": 0,
+    "counts": {
+     "passed": 38
+    }
+   },
+   {
     "file": "tests/unit/test_species_cap_runs.py",
     "seconds": 40.53,
     "exit_code": 0,
@@ -8439,10 +8491,10 @@
    },
    {
     "file": "tests/unit/test_surface_pump_v3_definitions.py",
-    "seconds": 33.16,
+    "seconds": 28.47,
     "exit_code": 0,
     "counts": {
-     "passed": 19
+     "passed": 21
     }
    },
    {
@@ -9047,7 +9099,7 @@
    },
    {
     "file": "tests/unit/test_field_floor.py",
-    "seconds": 90.18,
+    "seconds": 90.11,
     "exit_code": null,
     "counts": {}
    },

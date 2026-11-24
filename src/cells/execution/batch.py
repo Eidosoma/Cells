@@ -170,7 +170,24 @@ def parse_batch(data):
             s.model
         ) != model.batch_signature(first.model):
             raise ConfigError("A batch requires matching model array axes; use separate batches")
+        if field_pattern_signature(s) != field_pattern_signature(first):
+            raise ConfigError(
+                f"A batch under {s.execution.field_solver} requires one face topology: its "
+                "bound sparsity patterns hold the faces; use separate batches"
+            )
     return BatchSpec(tuple(worlds), maximum, steps, storage)
+
+
+def field_pattern_signature(spec):
+    """The face topology ((sender, receiver), ...) of a world whose declared field solver binds
+    static sparsity patterns (surface_field.SPARSE_SOLVER_ID, FR-17 stage 1, whose patterns hold
+    the faces, so its arrays' shapes follow them); () for every other world, whose batches are
+    admitted as before (the batch signature, BATCH_CAPACITIES and the field solver's equality)."""
+    from cells.numerics.surface_field import SPARSE_SOLVER_ID
+
+    if getattr(spec.execution, "field_solver", None) != SPARSE_SOLVER_ID:
+        return ()
+    return tuple((f.sender, f.receiver) for f in spec.model.faces)
 
 
 def load_batch(path):

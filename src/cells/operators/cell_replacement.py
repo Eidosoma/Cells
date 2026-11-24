@@ -146,7 +146,13 @@ def formation_parameters(p):
 
 def ionic_layout(p, state=None, *, xp=jnp):
     """The @3 layout: declared values, or each slot's occupant route values."""
-    kind = ionic.FLOOR_LAYOUT_TYPE if hasattr(p, "field_current_floor") else ionic.LAYOUT_TYPE
+    kind = (
+        ionic.SPARSE_LAYOUT_TYPE
+        if hasattr(p, "field_capacitor_values")
+        else ionic.FLOOR_LAYOUT_TYPE
+        if hasattr(p, "field_current_floor")
+        else ionic.LAYOUT_TYPE
+    )
     q = kind(*(getattr(p, k) for k in kind._fields))
     if state is None:
         return q
@@ -210,10 +216,28 @@ def held_cells(p):
     component whose net charge the field law holds constant, and an event changes
     the replaced cell's charge (the inner step then refuses).
     """
-    matrix = np.asarray(p.field_capacitor_matrix)
     active = np.asarray(p.field_active)
     fixed = np.concatenate((np.zeros(p.active.size, dtype=bool), np.asarray(p.reservoir)))
-    nodes = matrix.shape[0]
+    nodes = active.size
+    if hasattr(p, "field_capacitor_values"):  # The sparse field: C's nonzero entries.
+        pattern = [[] for _ in range(nodes)]
+        entries = zip(
+            np.asarray(p.field_capacitor_product_row).tolist(),
+            np.asarray(p.field_capacitor_product_column).tolist(),
+            np.asarray(p.field_capacitor_values).tolist(),
+            strict=True,
+        )
+        for i, j, value in entries:
+            if value != 0:
+                pattern[i].append(j)
+
+        def coupled(i):
+            return [j for j in pattern[i] if active[j]]
+    else:
+        matrix = np.asarray(p.field_capacitor_matrix)
+
+        def coupled(i):
+            return np.flatnonzero((matrix[i] != 0) & active)
     label = -np.ones(nodes, dtype=np.int64)
     held = []
     for start in range(nodes):
@@ -224,7 +248,7 @@ def held_cells(p):
         while stack:
             i = stack.pop()
             members.append(i)
-            for j in np.flatnonzero((matrix[i] != 0) & active):
+            for j in coupled(i):
                 if label[j] < 0:
                     label[j] = start
                     stack.append(j)

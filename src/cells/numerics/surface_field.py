@@ -16,6 +16,7 @@ import jax.scipy.linalg
 import numpy as np
 
 from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
+from cells.numerics import sparse_cholesky as sparse
 from cells.numerics import surface_transport as surface
 from cells.numerics.extracellular_field import logmean
 from cells.numerics.tissue_field import _bernoulli_derivative
@@ -67,12 +68,26 @@ NEWTON_TARGET = 0.01
 # its potential, so its net charge is carried by its electrodes instead, and the
 # global charge ledger allows it the same rounding (grounded_tolerance).
 COMPONENT_STEP_ROUNDING = 2.5
+# FR-17 stage 1 (docs/FIELD_SOLVER_INTERFACE_DESIGN.md §8, D317): version 2's method (the same
+# capacitive reduction, gauge, damped Newton on the floating offsets and acceptance checks) with the
+# node-space linear algebra on static sparsity patterns bound once per definition: the capacitor
+# matrix C on its pattern, the capacitor solve's factor, and the IMEX operator C + a L assembled,
+# factored and solved on its pattern (numerics/sparse_cholesky: minimum degree, level-scheduled
+# left-looking Cholesky, pairwise sums in a fixed order). No n x n array is bound or formed. The
+# floating offsets keep version 2's dense algebra in their own dimension (floating components x
+# components and x routes). Its bounds: SPARSE_MAX_NODES nodes, and SPARSE_MAX_ENTRIES entries in
+# its bound arrays together (plans, factors and the floating basis), so the factor's fill, not the
+# node count, sets the size it admits (§8.2).
+SPARSE_SOLVER_ID = "sparse_capacitive_reduction_gauged_damped_newton@1"
 MAX_NODES = 256
 FACTORED_MAX_NODES = 2048
+SPARSE_MAX_NODES = 65536
+SPARSE_MAX_ENTRIES = 1 << 24
 NODE_BOUNDS = {
     SOLVER_ID: MAX_NODES,
     FACTORED_SOLVER_ID: FACTORED_MAX_NODES,
     FLOOR_SOLVER_ID: FACTORED_MAX_NODES,
+    SPARSE_SOLVER_ID: SPARSE_MAX_NODES,
 }
 
 
@@ -99,6 +114,71 @@ FactoredLayout = NamedTuple(
 FloorLayout = NamedTuple(
     "FloorLayout", [(k, object) for k in (*FactoredLayout._fields, "current_floor")]
 )
+# The sparse layout (SPARSE_SOLVER_ID): version 1's fields without its two n x n matrices, then
+# C's values on its pattern (capacitor_values, sparse_cholesky.ProductPlan order) with that
+# pattern's product plan; the capacitor solve's factor on its pattern (capacitor_factor_values)
+# with its solve plan; and the IMEX operator's pattern: C's values on it, its product plan, the
+# face Laplacian's terms on it (each face's conductance, signed, in face order), the map of its
+# entries into the reduced operator's factor positions (and the reduced operator's held diagonals,
+# which hold 1), and the reduced operator's factor and solve plans. Every field is an array whose
+# shape fixes the static choices, so a checkpoint carries them and validate_checkpoint compares
+# them.
+_PRODUCT_FIELDS = sparse.ProductPlan._fields
+_SOLVE_FIELDS = sparse.SolvePlan._fields
+_FACTOR_FIELDS = sparse.FactorPlan._fields
+SparseLayout = NamedTuple(
+    "SparseLayout",
+    [
+        (k, object)
+        for k in (
+            *(k for k in Layout._fields if k not in ("capacitor_matrix", "capacitor_solve_matrix")),
+            "capacitor_values",
+            *("capacitor_product_" + k for k in _PRODUCT_FIELDS),
+            "capacitor_factor_values",
+            *("capacitor_solve_" + k for k in _SOLVE_FIELDS),
+            "operator_capacitor_values",
+            *("operator_product_" + k for k in _PRODUCT_FIELDS),
+            "operator_laplacian_face",
+            "operator_laplacian_sign",
+            "operator_laplacian_pairs",
+            "operator_laplacian_out",
+            "operator_assembly_position",
+            "operator_assembly_entry",
+            "operator_assembly_ones",
+            *("operator_factor_" + k for k in _FACTOR_FIELDS),
+            *("operator_solve_" + k for k in _SOLVE_FIELDS),
+        )
+    ],
+)
+
+
+def _plan(p, prefix, kind):
+    return kind(*(getattr(p, prefix + k) for k in kind._fields))
+
+
+def capacitor_product_plan(p):
+    """The ProductPlan of C's pattern in a SparseLayout."""
+    return _plan(p, "capacitor_product_", sparse.ProductPlan)
+
+
+def capacitor_solve_plan(p):
+    """The SolvePlan of the capacitor solve's factor in a SparseLayout."""
+    return _plan(p, "capacitor_solve_", sparse.SolvePlan)
+
+
+def operator_product_plan(p):
+    """The ProductPlan of the IMEX operator's pattern in a SparseLayout."""
+    return _plan(p, "operator_product_", sparse.ProductPlan)
+
+
+def operator_factor_plan(p):
+    """The FactorPlan of the reduced IMEX operator in a SparseLayout."""
+    return _plan(p, "operator_factor_", sparse.FactorPlan)
+
+
+def operator_solve_plan(p):
+    """The SolvePlan of the reduced IMEX operator in a SparseLayout."""
+    return _plan(p, "operator_solve_", sparse.SolvePlan)
 
 
 class FormsField(NamedTuple):
@@ -165,7 +245,8 @@ def bind(layout, gauge_mask, *, solver=SOLVER_ID):
     need a charged outside-face path to a clamp/gauge even if junctions close:
     a face of the layout, or a forms face's return path (return_paths).
     The factored solver returns a FactoredLayout with the same reduction, and
-    the floor solver a FloorLayout.
+    the floor solver a FloorLayout. The sparse solver (SPARSE_SOLVER_ID) returns
+    a SparseLayout: the same reduction on its patterns, no n x n array formed.
     """
     if solver not in NODE_BOUNDS:
         raise ValueError("Unknown resolved field solver")
@@ -174,6 +255,7 @@ def bind(layout, gauge_mask, *, solver=SOLVER_ID):
     size = n + o
     if size > NODE_BOUNDS[solver]:
         raise ValueError("Resolved field exceeds the declared bounded dense node limit")
+    sparse_field = solver == SPARSE_SOLVER_ID
     gauge = np.asarray(gauge_mask)
     if gauge.shape != (o,) or gauge.dtype != np.bool_:
         raise ValueError("Resolved field gauge must be an outside boolean mask")
@@ -190,11 +272,18 @@ def bind(layout, gauge_mask, *, solver=SOLVER_ID):
     def join(i, j):
         parent[root(j)] = root(i)
 
-    capacitor = np.zeros((size, size))
+    # The sparse field accumulates C's entries in the same membrane order with the same additions,
+    # so each of its entries is the dense matrix's, bit for bit.
+    capacitor = None if sparse_field else np.zeros((size, size))
+    entries = {}
     for k in np.flatnonzero(p.membrane_active):
         i, j = int(p.membrane_cell[k]), n + int(p.membrane_outside[k])
         c = p.membrane_capacitance[k]
         join(i, j)
+        if sparse_field:
+            for key, value in (((i, i), c), ((j, j), c), ((i, j), -c), ((j, i), -c)):
+                entries[key] = entries.get(key, 0.0) + value
+            continue
         capacitor[i, i] += c
         capacitor[j, j] += c
         capacitor[i, j] -= c
@@ -233,6 +322,8 @@ def bind(layout, gauge_mask, *, solver=SOLVER_ID):
         raise ValueError(
             "Floating capacitor components require an outside return path to a clamp/gauge"
         )
+    if sparse_field:
+        return _bind_sparse(p, gauge, active, fixed, entries, basis, offset_free)
     scale = np.max(np.abs(capacitor))
     solve_matrix = np.where((~fixed)[:, None] & (~fixed)[None, :], capacitor / scale, 0.0)
     solve_matrix += np.diag(fixed.astype(float))
@@ -256,6 +347,132 @@ def bind(layout, gauge_mask, *, solver=SOLVER_ID):
     if solver == FLOOR_SOLVER_ID:
         return FloorLayout(*values, factor, np.asarray(CURRENT_FLOOR_ULPS))
     return Layout(*values)
+
+
+def _coordinates(pairs):
+    """Two int64 arrays (rows, columns) of an iterable of (row, column) pairs."""
+    pairs = list(pairs)
+    return (np.asarray([i for i, _ in pairs], dtype=np.int64),
+            np.asarray([j for _, j in pairs], dtype=np.int64))  # fmt: skip
+
+
+def _bind_sparse(p, gauge, active, fixed, entries, basis, offset_free):
+    """bind's SparseLayout (host, once per definition): entries holds C's nonzero entries {(i, j):
+    value}, accumulated as the dense matrix is (bind); fixed, basis and offset_free are bind's
+    own."""
+    n, o = p.cell_active.size, p.outside_active.size
+    size = n + o
+    scale = np.max(np.abs(np.fromiter(entries.values(), dtype=float, count=len(entries))),
+                   initial=0.0)  # fmt: skip
+    off = [(i, j) for i, j in entries if i != j]
+    c_plan = sparse.product_plan(size, *_coordinates(off))
+    c_values = np.asarray(
+        [entries.get(key, 0.0)
+         for key in zip(c_plan.row.tolist(), c_plan.column.tolist(), strict=True)]  # fmt: skip
+    )
+    # The capacitor solve: C / scale on the solved rows and columns, 1 on the fixed diagonal (the
+    # dense path's solve matrix entry by entry), factored here once, as version 2 factors it.
+    solved = ~fixed
+    keep = [(i, j) for i, j in off if solved[i] and solved[j]]
+    symbolic = sparse.bind(size, *_coordinates(keep))
+    lower = [(i, j) for i, j in keep if i > j] + [(i, i) for i in range(size)]
+    values = np.zeros(symbolic.row.size)
+    values[sparse.positions(symbolic, *_coordinates(lower))] = [
+        entries.get((i, j), 0.0) / scale + 0.0 if solved[i] else 0.0 + 1.0 for i, j in lower
+    ]
+    with np.errstate(invalid="ignore", divide="ignore"):
+        factor = sparse.factor(values, sparse.factor_plan(symbolic), xp=np)
+    pivots = factor[symbolic.column_start[:-1]]
+    if not (bool(sparse.finite(factor, xp=np)) and np.all(pivots > 0)):
+        # A singular capacitance reduction is an invalid layout, never regularized.
+        raise ValueError("The capacitor reduction is not positive definite")
+    # The IMEX operator's pattern: C's and every face slot's (n + sender, n + receiver), then the
+    # reduced operator on the free nodes (every active node but the clamps, factor_operator's).
+    clamp = np.r_[np.zeros(n, dtype=bool), p.reservoir | gauge]
+    free = active & ~clamp
+    faces = [(n + int(a), n + int(b)) for a, b in zip(p.face_sender, p.face_receiver, strict=True)]
+    m_pairs = set(off) | {(a, b) for a, b in faces if a != b} | {(b, a) for a, b in faces if a != b}
+    m_plan = sparse.product_plan(size, *_coordinates(m_pairs))
+    m_keys = zip(m_plan.row.tolist(), m_plan.column.tolist(), strict=True)
+    m_index = {key: e for e, key in enumerate(m_keys)}
+    m_capacitor = np.asarray([entries.get(key, 0.0) for key in m_index])
+    # The face Laplacian on the pattern: each face's conductance +g at (a, a) and (b, b) and -g at
+    # (a, b) and (b, a); an entry's terms in face order, then in that order of the four.
+    contributions = [[] for _ in m_index]
+    for f, (a, b) in enumerate(faces):
+        for key, sign in (((a, a), 1.0), ((b, b), 1.0), ((a, b), -1.0), ((b, a), -1.0)):
+            contributions[m_index[key]].append((f, sign))
+    segments, face, sign = [], [], []
+    for terms in contributions:
+        segments.append(list(range(len(face), len(face) + len(terms))))
+        face += [f for f, _ in terms]
+        sign += [s for _, s in terms]
+    l_pairs, l_out = sparse.pairwise_plan(segments, len(face))
+    reduced = [(i, j) for i, j in m_pairs if free[i] and free[j]]
+    operator = sparse.bind(size, *_coordinates(reduced))
+    from_m = [(i, j) for i, j in reduced if i > j] + [(i, i) for i in range(size) if free[i]]
+    held = [i for i in range(size) if not free[i]]
+    values = dict(
+        surface=p,
+        gauge_mask=gauge,
+        active=active,
+        fixed=fixed,
+        capacitor_scale=np.asarray(scale),
+        floating_basis=basis,
+        offset_free=offset_free,
+        face_incidence=(basis[n + p.face_sender] - basis[n + p.face_receiver]).T,
+        junction_incidence=(basis[p.junction_sender] - basis[p.junction_receiver]).T,
+        capacitor_values=c_values,
+        capacitor_factor_values=factor,
+        operator_capacitor_values=m_capacitor,
+        operator_laplacian_face=np.asarray(face, dtype=np.int64),
+        operator_laplacian_sign=np.asarray(sign, dtype=float),
+        operator_laplacian_pairs=l_pairs,
+        operator_laplacian_out=l_out,
+        operator_assembly_position=sparse.positions(operator, *_coordinates(from_m)),
+        operator_assembly_entry=np.asarray([m_index[key] for key in from_m], dtype=np.int64),
+        operator_assembly_ones=sparse.positions(operator, held, held),
+    )
+    for prefix, plan in (
+        ("capacitor_product_", c_plan),
+        ("capacitor_solve_", sparse.solve_plan(symbolic)),
+        ("operator_product_", m_plan),
+        ("operator_factor_", sparse.factor_plan(operator)),
+        ("operator_solve_", sparse.solve_plan(operator)),
+    ):
+        values.update({prefix + k: v for k, v in plan._asdict().items()})
+    total = sum(np.asarray(v).size for k, v in values.items() if k != "surface")
+    if total > SPARSE_MAX_ENTRIES:
+        raise ValueError(
+            f"The sparse field's bound arrays hold {total} entries, above its bound of "
+            f"{SPARSE_MAX_ENTRIES} (SPARSE_MAX_ENTRIES)"
+        )
+    return SparseLayout(**values)
+
+
+def capacitor_product(p, x, *, xp):
+    """C x for a field layout: the dense layouts' matrix product (their program as before), or the
+    SparseLayout's product on C's pattern. x is [nodes] or [nodes, ...]."""
+    if isinstance(p, SparseLayout):
+        return sparse.product(p.capacitor_values, x, capacitor_product_plan(p), xp=xp)
+    return p.capacitor_matrix @ x
+
+
+def capacitor_diagonal(p, *, xp):
+    """diag(C) for a field layout."""
+    if isinstance(p, SparseLayout):
+        return xp.asarray(p.capacitor_values)[p.capacitor_product_diagonal]
+    return xp.diagonal(p.capacitor_matrix)
+
+
+def capacitor_factor_solve(rhs, p, *, xp):
+    """The capacitor solve matrix's solve of rhs ([nodes] or [nodes, ...], zero on the fixed rows):
+    version 1's dense solve, version 2's and 3's bound factor, or the SparseLayout's."""
+    if isinstance(p, SparseLayout):
+        return sparse.solve(p.capacitor_factor_values, rhs, capacitor_solve_plan(p), xp=xp)
+    if isinstance(p, (FactoredLayout, FloorLayout)):
+        return cholesky_solve(p.capacitor_factor, rhs, xp=xp)
+    return xp.linalg.solve(p.capacitor_solve_matrix, rhs)
 
 
 def representatives(p, *, xp=np):
@@ -331,7 +548,10 @@ def check_neutral_components(charge_C, potential_V, p):
     which the families' parsers report as a ConfigError.
     """
     charge_C = np.asarray(charge_C, dtype=float)
-    residual = np.asarray(p.capacitor_matrix) @ np.asarray(potential_V) - charge_C
+    if isinstance(p, SparseLayout):
+        residual = capacitor_product(p, np.asarray(potential_V), xp=np) - charge_C
+    else:
+        residual = np.asarray(p.capacitor_matrix) @ np.asarray(potential_V) - charge_C
     bound = charge_tolerance(charge_C, np.zeros_like(charge_C), 0, p)
     charged = representatives(p) & ~(np.abs(residual) <= bound)  # NaN is refused too.
     if np.any(charged):
@@ -362,10 +582,10 @@ def cholesky_solve(factor, rhs, *, xp):
 
 
 def _capacitor_solve(charge, boundary, p, *, xp):
-    rhs = xp.where(~p.fixed, (charge - p.capacitor_matrix @ boundary) / p.capacitor_scale, 0.0)
-    if isinstance(p, (FactoredLayout, FloorLayout)):
-        return cholesky_solve(p.capacitor_factor, rhs, xp=xp) + boundary
-    return xp.linalg.solve(p.capacitor_solve_matrix, rhs) + boundary
+    rhs = xp.where(
+        ~p.fixed, (charge - capacitor_product(p, boundary, xp=xp)) / p.capacitor_scale, 0.0
+    )
+    return capacitor_factor_solve(rhs, p, xp=xp) + boundary
 
 
 def _offset_solve(matrix, rhs, p, *, xp):
@@ -559,7 +779,7 @@ def solve(
         floor = p.current_floor * np.finfo(float).eps * incident
         rooted |= xp.all(xp.abs(current_residual) <= floor)
     patch_charge = s.membrane_capacitance * rates.membrane_voltage_V
-    cap_charge = p.capacitor_matrix @ phi
+    cap_charge = capacitor_product(p, phi, xp=xp)
     residual = xp.where(required, cap_charge - charge, 0.0)
     charge_scale = xp.maximum(xp.abs(charge), xp.abs(cap_charge))
     charge_bound = CHARGE_ATOL_C + CHARGE_RTOL * charge_scale
@@ -573,7 +793,7 @@ def solve(
     vm_rate = xp.where(
         s.membrane_active, derivative[s.membrane_cell] - derivative[n + s.membrane_outside], 0.0
     )
-    electrode_current = xp.where(s.reservoir, (p.capacitor_matrix @ derivative)[n:], 0.0)
+    electrode_current = xp.where(s.reservoir, capacitor_product(p, derivative, xp=xp)[n:], 0.0)
     supply_charge = CHARGE_PER_FMOL * xp.sum(z * rates.reservoir_supply_fmol_s, axis=0)
     chemical_rate = (
         1e-3

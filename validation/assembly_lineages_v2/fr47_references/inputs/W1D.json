@@ -1,0 +1,20 @@
+{
+ "name": "W1D",
+ "type": "shell_washes",
+ "spec": "SPEC.md section 2, W1 with a lumen potential (W1 Delta)",
+ "V_out_L": "2e-18",
+ "V_in_L": "2.5e-19",
+ "A_sh_m2": "1.2e-15",
+ "P_s_m_per_s": "1.5e-7",
+ "tracer_potentials_kBT": {"solution": "0.7", "lumen": "0.7 + ln(2)"},
+ "founder_molecules": {"S@pool": 30000, "S@lumen": 0, "B@wall": 120},
+ "stops": [
+  {"time_s": "2.5", "kind": "withdrawal", "f": "1/2"},
+  {"time_s": "5.0", "kind": "withdrawal", "f": "1/4"},
+  {"time_s": "7.0", "kind": "replacement"},
+  {"time_s": "9.0", "kind": "withdrawal", "f": "1/2"}
+ ],
+ "observation_times_s": ["1.25", "2.0", "3.5", "4.5", "6.0", "6.5", "8.0", "10.5"],
+ "horizon_s": "11.0",
+ "plants": ["P1", "P7"]
+}

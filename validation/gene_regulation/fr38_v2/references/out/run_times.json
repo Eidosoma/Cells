@@ -1,0 +1,29 @@
+{
+ "note": "wall times; excluded from the bitwise check",
+ "wall_time_s_per_seed_and_family": {
+  "0": {
+   "AF": 642.3,
+   "AN": 153.7,
+   "B": 572.6,
+   "C": 140.3,
+   "D": 142.1,
+   "invented": 5.3
+  },
+  "1": {
+   "AF": 171.9,
+   "AN": 138.9,
+   "B": 769.5,
+   "C": 141.0,
+   "D": 260.6,
+   "invented": 28.1
+  },
+  "4242": {
+   "AF": 342.6,
+   "AN": 208.9,
+   "B": 848.3,
+   "C": 195.7,
+   "D": 144.8,
+   "invented": 5.1
+  }
+ }
+}
