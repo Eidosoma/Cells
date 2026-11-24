@@ -11977,3 +11977,28 @@ block, and it does not.
   `/mnt/workspaces/Cells/fr51-replacement-refusal-20261124/probe/`.
 - **Two small follow-ups** go to the next no-src stack: a `composition_matrix.RULES` entry for the slot refusal, and
   the replacement row moved to the composite form, where that refusal is the only wall.
+
+## D365: the user's decisions on FR-43's gaps (two closed next, turnover at changing volume logged as FR-65) and FR-58 to FR-62's priority
+
+2026-11-24, about 21:10 UTC.
+
+**FR-43's four gaps (D347).** The user chose three to close next:
+- **Part 1's 16-row control and 256-row case,** as rows in the existing species-cap tests (D224).
+- **Part 1's performance report, measured on CPU:** compile time, time per simulated second and peak memory. Its L4
+  figures were taken on a path D336 now refuses, the composite on a GPU. FR-43 is the user's top priority, so its
+  timing takes the timed cores under their lock.
+- **Turnover in a swelling cell,** logged as FR-65 (high, as part of FR-43's request). This is D301's composition M3:
+  turnover beside water, partition or insertion, reading the current volume and masks.
+
+**Not now:** a registered criterion for part 1.
+
+**FR-58 to FR-62 are normal priority.** Their design notes follow the high items.
+
+**Tonight's slots** (the user: "use tonight well even if we have to pause something in the morning for the big delete
+/ rename"). Four agents write without CPU:
+- the rename's design note, with a read-only candidate mapping;
+- the legacy families' port plan;
+- FR-52's design note;
+- FR-53's design note.
+
+FR-43's builder takes the next free slot.

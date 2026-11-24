@@ -63,13 +63,14 @@ and a general feature, never one built for one study (D144).
 | [FR-55](#fr-55--an-input-dependent-closing-rate-for-regulated-availability) | An input-dependent closing rate for regulated availability (dose-dependent deactivation) | Normal (logged by the user, 24 November 2026; D344; lowered by D351) | **Logged:** one fixed closing rate; two groups' SK2 records contradict carrying it, in opposite directions (an indication pair, D351) | A design note, then qualification against both groups' records |
 | [FR-56](#fr-56--a-temperature-dependent-molecular-footprint) | A temperature-dependent molecular footprint with a declared, sourced expansion coefficient | Normal (logged by the user, 24 November 2026; D344) | **Logged:** a fixed footprint per species; two methods confirm POPC's expansion on warming | A design note |
 | [FR-57](#fr-57--passive-tracer-carried-by-a-prescribed-liquid-flow-between-finite-liquid-regions) | Passive tracer carried by a prescribed liquid flow between finite liquid regions | **High** (logged by the user, 24 November 2026) | **Logged:** a wash's sample goes to a record; no operator carries one region's liquid into another | A design note with FR-54's: one mechanism, rows only a flow passes |
-| [FR-58](#fr-58--a-label-on-an-exchangeable-group-carried-through-reversible-conversions) | A label on an exchangeable group, carried through reversible conversions | To be set by the user (logged 24 November 2026) | **Logged:** labels follow species rows; nothing names the group that crosses | A design note, after FR-50 and FR-44 |
-| [FR-59](#fr-59--reversible-transport-into-an-initially-empty-finite-ion-pool) | Reversible transport into an initially empty finite ion pool | To be set by the user (logged 24 November 2026) | **Logged:** positive-domain laws; species kept positive by a declared trace | A design note: a boundary-capable path, refined in step |
-| [FR-60](#fr-60--work-at-a-scheduled-change-of-a-states-energy) | Work at a scheduled change of a state's energy | To be set by the user (logged 24 November 2026) | **Logged:** no level change books its work | A design note: exact events, an ensemble spread class |
-| [FR-61](#fr-61--an-overdamped-rotational-load-angle-speed-work-and-dissipation) | An overdamped rotational load: angle, speed, work and dissipation | To be set by the user (logged 24 November 2026) | **Logged:** no torque ledger (MODULE_SYSTEM §7 rule (a)) | One design note with FR-62 |
-| [FR-62](#fr-62--ion-transfer-coupled-to-a-rotary-step) | Ion transfer coupled to a rotary step | To be set by the user (logged 24 November 2026) | **Logged:** cycles book ions, not angle or load work | One design note with FR-61 |
+| [FR-58](#fr-58--a-label-on-an-exchangeable-group-carried-through-reversible-conversions) | A label on an exchangeable group, carried through reversible conversions | Normal (logged by the user, 24 November 2026; D365) | **Logged:** labels follow species rows; nothing names the group that crosses | A design note, after FR-50 and FR-44 |
+| [FR-59](#fr-59--reversible-transport-into-an-initially-empty-finite-ion-pool) | Reversible transport into an initially empty finite ion pool | Normal (logged by the user, 24 November 2026; D365) | **Logged:** positive-domain laws; species kept positive by a declared trace | A design note: a boundary-capable path, refined in step |
+| [FR-60](#fr-60--work-at-a-scheduled-change-of-a-states-energy) | Work at a scheduled change of a state's energy | Normal (logged by the user, 24 November 2026; D365) | **Logged:** no level change books its work | A design note: exact events, an ensemble spread class |
+| [FR-61](#fr-61--an-overdamped-rotational-load-angle-speed-work-and-dissipation) | An overdamped rotational load: angle, speed, work and dissipation | Normal (logged by the user, 24 November 2026; D365) | **Logged:** no torque ledger (MODULE_SYSTEM §7 rule (a)) | One design note with FR-62 |
+| [FR-62](#fr-62--ion-transfer-coupled-to-a-rotary-step) | Ion transfer coupled to a rotary step | Normal (logged by the user, 24 November 2026; D365) | **Logged:** cycles book ions, not angle or load work | One design note with FR-61 |
 | [FR-63](#fr-63--a-ph-dependent-kv15-activation) | A pH-dependent Kv1.5 activation, re-formed as a declared pH shift on its population (FR-64, D356) | Normal (logged by the user, 24 November 2026; D353) | **Logged:** three labs confirm the acid shift's direction; `kv1p5_mh@1` has no pH input | A design note |
 | [FR-64](#fr-64--a-declared-voltage-shift-on-a-channel-population) | A declared voltage shift on a channel population: an ion's reversal or a sourced shift per pH unit, read by its gates or its block | Normal (logged by the user, 24 November 2026; D356, D361) | **Logged:** one mechanism for FR-51's reversal reference and FR-63's pH shift | A design note, before FR-51's law is registered |
+| [FR-65](#fr-65--turnover-beside-a-changing-volume) | Turnover beside a changing volume: reading the current volume and masks beside water, partition or insertion | **High** (logged by the user, 24 November 2026, as part of FR-43; D365) | **Logged:** refused at parse today (D347's gap 4); D301's composition M3 | A design note |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -1978,6 +1979,13 @@ cases below are the request's own, condensed.
 
 **Status (24 November, later, D347):** checked item by item against the request. Judged: C2.3, C2.6, C2.7 and C2.8 (D324), and C3.3, C3.4 and C3.5 (D319). The rest are covered by the builder's tests only. Gaps: part 1's 16-row and 256-row cases have no test at main; part 1's performance report lives only in the design note, and its L4 path is now refused (D336); part 1 has no registered criterion; turnover in a swelling cell is still refused at parse.
 
+**Next (24 November, D365; the user):**
+- part 1's 16-row control and 256-row case, as rows in the existing species-cap tests;
+- part 1's performance report, measured on CPU on the timed cores;
+- turnover in a swelling cell, logged as FR-65.
+
+No registered criterion for part 1 now.
+
 ## FR-44 — Labels across a wash: arrival-time labels through scheduled compartment washes
 
 **Logged 23 November 2026 by the user, priority high.**
@@ -2583,7 +2591,7 @@ on `fr54-57-design`, one router that takes over the wash.
 
 ## FR-58 — A label on an exchangeable group, carried through reversible conversions
 
-**Logged 24 November 2026 by the user.** Priority: to be set by the user.
+**Logged 24 November 2026 by the user; priority normal (the user, D365).**
 
 **Why.** A selective tracer, an exchangeable chemical group, can move between species at chemical equilibrium while
 every concentration stays constant.
@@ -2618,7 +2626,7 @@ side.
 
 ## FR-59 — Reversible transport into an initially empty finite ion pool
 
-**Logged 24 November 2026 by the user.** Priority: to be set by the user.
+**Logged 24 November 2026 by the user; priority normal (the user, D365).**
 
 **Why.**
 - `nak_atp_mass_action_positive@1` is a positive-domain law: no floor, and invalid trials are refused. Its rate stays
@@ -2647,7 +2655,7 @@ side.
 
 ## FR-60 — Work at a scheduled change of a state's energy
 
-**Logged 24 November 2026 by the user.** Priority: to be set by the user.
+**Logged 24 November 2026 by the user; priority normal (the user, D365).**
 
 **Why.** An external controller can change a molecular state's energy while every molecule stays in place.
 - The assembly family carries per-phase standard potentials in the world definition.
@@ -2679,7 +2687,7 @@ side.
 
 ## FR-61 — An overdamped rotational load: angle, speed, work and dissipation
 
-**Logged 24 November 2026 by the user.** Priority: to be set by the user.
+**Logged 24 November 2026 by the user; priority normal (the user, D365).**
 
 **Why.** No torque or momentum ledger exists. MODULE_SYSTEM §7's version-1 rule (a) folds every kind's ledger terms
 into today's ten ledgers by role. A mechanical work ledger reopens that limit, which is a decision for the design note
@@ -2717,7 +2725,7 @@ and the user.
 
 ## FR-62 — Ion transfer coupled to a rotary step
 
-**Logged 24 November 2026 by the user.** Priority: to be set by the user.
+**Logged 24 November 2026 by the user; priority normal (the user, D365).**
 
 **Why.** Cycle laws account for proton transfer and membrane voltage (`proton_coupled_atp_synthesis_cycle`), but no
 transition books angular displacement and load work.
@@ -2838,6 +2846,27 @@ rename's design note.
 **Design note (24 November, D361):** `docs/VOLTAGE_SHIFT_DESIGN.md` on `fr64-design`.
 - **Version 1** admits all four reader and kind pairings, and claims two: the block on reversal, and the gates on pH.
 - **The build** comes after FR-51's follow-up and the rename.
+
+## FR-65 — Turnover beside a changing volume
+
+**Logged 24 November 2026 by the user, high, as part of FR-43's request (D365).**
+
+**Why.** FR-43 asks for shared pools at fixed and at changing volume. Turnover in a swelling cell is still refused at
+parse ("reads volume as declared"; D347's gap 4), so a cell whose volume changes cannot carry turnover. This is D301's
+composition M3.
+
+**The request.** Turnover reads the current volume and the activity masks, rather than the declared ones, so that it
+composes with:
+- water (a swelling or shrinking cell);
+- partition;
+- membrane insertion.
+
+Concentrations then follow amounts over the current volume, with the material and energy ledgers closed.
+
+**First reading (D301):** the cheapest case with a changing volume, with declared reads only, at 2 to 2.5 agent-days
+plus references.
+
+**Status (24 November):** logged. A design note comes first.
 
 ## Backlog: external tools to look at (logged by the user, 23 November 2026)
 
