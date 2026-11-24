@@ -251,6 +251,13 @@ UNECHOED_STRUCTURE = (
 )
 
 
+# READOUTS.md §3 writes G's scale with RT |μ°_res| (W_tx + L H), the hold worlds' one route. Arm
+# B's G (the sheet's §3.4) also holds translation's residues in transit, so the judge adds
+# RT |μ°_P,res| (W_tl + W_tl_s) there, as B's reference does. This reading was settled with B's
+# file in view: under the literal form C0 refuses B, its stated scale being off by more than
+# SCALE_REL. G is reported, not judged, in B, so no verdict depends on it. False: the literal form.
+B_G_SCALE_TRANSLATION_RESIDUES = True
+
 # ------------------------------------------------------------------ inputs, per family
 
 

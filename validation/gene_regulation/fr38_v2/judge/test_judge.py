@@ -1,13 +1,15 @@
 """Host-only tests of FR-38's second comparison judge, on invented inputs only.
 
-**Seconds:** 19 s on one idle core, 39 s on a loaded one (CPU 7, 24 November 2026).
+**Seconds:** 19 to 39 s on one core (26 s for its 21 tests on CPU 7, 24 November 2026).
 **Reason (D224):** the judge decides FR-38's registered verdict, so each C0 refusal, each failure
 and inconclusive mode, the retry and each plant (caught and not caught) must be shown to move it
 the registered way before any engine run is judged.
 
 - **Inputs.** The references' invented file (`reference_invented.json`, read from the tree or
   from tag `fr38-v2-references-2026-11-24`; the test fails if neither has it), invented families
-  of profiles B, C and D derived from it here, and engine records invented here.
+  of profiles B, C and D derived from it here, and engine records invented here. The registered
+  branches (AF's two blanks, AN's restart, the plants' runs, the arms) run on invented families
+  given the registered roles.
 - **No engine** is compiled, imported or run, and no engine output is read.
 - **The honest invented engine** scales every deviation from t = 0 by 1 + C3 dt³, which keeps every
   linear identity and every structural zero and gives each readout an observed order of 3.
@@ -17,6 +19,7 @@ import copy
 import json
 import math
 import os
+import shutil
 import subprocess
 import types
 
@@ -241,7 +244,9 @@ class Synth:
             out = dict(rec)
             out["series"] = {k: [float(x) for x in v] for k, v in rec["series"].items()}
             run = rec["run"].replace(" ", "_")
-            name = f"{i:03d}_{rec['role']}_{run}_{rec['attempt']}_{rec['dt_s']}.json"
+            name = (
+                f"{rec['family']}_{i:03d}_{rec['role']}_{run}_{rec['attempt']}_{rec['dt_s']}.json"
+            )
             with open(os.path.join(folder, name), "w") as fh:
                 fh.write(json.dumps(out))  # the C encoder: json.dump streams in Python
         return folder
@@ -712,6 +717,17 @@ def test_refused_runs(invented, mapping, tmp_path):
         )
         assert verdict_of(v, "invented", "p=0 returned") == "refused", name
         assert v["c0"]["engine"]["refused_records"], name
+
+    # a record naming one of the judge's own plants (P1′ here) is refused
+    def judge_plant(rec):
+        rec["plant"] = "P1′"
+
+    v = _perturbed(
+        invented, mapping, tmp_path, [(is_(role="plant", plant="P5"), judge_plant)], "c0_p1p"
+    )
+    faults = [f for r in v["c0"]["engine"]["refused_records"] for f in r["faults"]]
+    assert any("not an engine-record plant" in f for f in faults)
+    assert plant_status(v, "P5") == "refused"
     s = Synth(invented, "A", mapping)
     recs = s.all_records()
     dup = [r for r in recs if r["run"] == "p=1 returned" and r["role"] == "honest"][0]
@@ -991,12 +1007,19 @@ def derive_d(doc, mapping):
     return d
 
 
-def derive_b(doc, mapping):
+def derive_b(doc, mapping, *, registered_names=False):
     d = copy.deepcopy(doc)
     d["family"] = "invented_B"
     keep = ("p_sched returned", "p_sched held")
     d["runs"] = {k: v for k, v in d["runs"].items() if k in keep}
     d["inputs"]["runs"] = {k: v for k, v in d["inputs"]["runs"].items() if k in keep}
+    if registered_names:  # B's run names, so that the family can play role B
+        d["family"] = "inv_B"
+        names = {"p_sched returned": "p=0.55 returned", "p_sched held": "p=0.55 held"}
+        d["runs"] = {names[k]: v for k, v in d["runs"].items()}
+        d["inputs"]["runs"] = {names[k]: v for k, v in d["inputs"]["runs"].items()}
+        for e in d["plants"]:
+            e["run"] = names.get(e["run"], e["run"])
     d["inputs"]["M_rib_copies"] = 1000
     d["inputs"]["mu_res_P_RT"] = 5.0
     d["inputs"]["mu0_RT_at_1M"].update({"A": 0.0, "ATP": 12.0, "ADP": 0.0, "P": 2000.0})
@@ -1029,7 +1052,7 @@ def derive_b(doc, mapping):
         g = r["series"]["G_minus_G0"]
         g["value"] = [float(x - y) for x, y in zip(g["value"], hx, strict=True)]
     _rescale(d, "B", mapping)
-    d["plants"] = [e for e in d["plants"] if e["plant"] == "P4" and e["run"] in keep]
+    d["plants"] = [e for e in d["plants"] if e["plant"] == "P4" and e["run"] in d["runs"]]
     return d
 
 
@@ -1222,3 +1245,187 @@ def test_cli_writes_a_verdict(invented, mapping, tmp_path):
     assert cli.main(["judge", "--engine", export, "--references", refs, "--out", out]) == 0
     v = json.load(open(out))
     assert v["comparison"]["FR-38"] == "inconclusive" and v["comparison"]["invented"] == "pass"
+
+
+# ------------------------------------------------------------------ the registered branches
+
+
+def derive_af(doc, mapping):
+    """AF's runs: each p with both machine options. The held copies of p = 0 and p = 1 carry the
+    hold among the engaged machines (E += H, F −= H)."""
+    d = copy.deepcopy(doc)
+    d["family"] = "inv_AF"
+    for src, dst in (("p=0 returned", "p=0 held"), ("p=1 returned", "p=1 held")):
+        run = copy.deepcopy(d["runs"][src])
+        H = np.asarray(run["series"]["H_tx_release"]["value"])
+        for name, sign in (("F_pol", -1.0), ("E_tx", 1.0)):
+            v = np.asarray(run["series"][name]["value"]) + sign * H
+            run["series"][name]["value"] = [float(x) for x in v]
+        d["runs"][dst] = run
+        d["inputs"]["runs"][dst] = {
+            "machine": "held",
+            "p": copy.deepcopy(d["inputs"]["runs"][src]["p"]),
+        }
+        d["plants"] += [
+            dict(e, run=dst) for e in d["plants"] if e["run"] == src and e["plant"] in ("P1", "P1″")
+        ]
+    _rescale(d, "A", mapping)
+    return d
+
+
+@pytest.fixture(scope="module")
+def registered(invented, mapping, tmp_path_factory):
+    """Invented families judged in the registered roles: AN (the invented file), AF, B, C, D."""
+    tmp = tmp_path_factory.mktemp("registered")
+    docs = {
+        "invented": invented,
+        "inv_AF": derive_af(invented, mapping),
+        "inv_B": derive_b(invented, mapping, registered_names=True),
+        "invented_C": derive_c(invented, mapping),
+        "invented_D": derive_d(invented, mapping),
+    }
+    profiles = {"invented": "A", "inv_AF": "A", "inv_B": "B", "invented_C": "C", "invented_D": "D"}
+    roles = {"invented": "AN", "inv_AF": "AF", "inv_B": "B", "invented_C": "C", "invented_D": "D"}
+    refs = str(tmp / "refs")
+    for d in docs.values():
+        write_refs(refs, d)
+    export = str(tmp / "export")
+    for f, d in docs.items():
+        s = Synth(d, profiles[f], mapping)
+        s.two_blanks = roles[f] == "AF"
+        s.write(export)
+    return types.SimpleNamespace(
+        refs=refs, export=export, profiles=profiles, roles=roles, docs=docs, tmp=tmp
+    )
+
+
+def judge_registered(reg, export=None):
+    return J.judge(reg.refs, export or reg.export, families=reg.profiles, roles=reg.roles)
+
+
+def edited(reg, name, pred, fn=None):
+    """A copy of the registered export with matching records edited, or removed (fn None)."""
+    dst = str(reg.tmp / name)
+    shutil.copytree(reg.export, dst)
+    for fname in sorted(os.listdir(dst)):
+        if fname == "manifest.json":
+            continue
+        path = os.path.join(dst, fname)
+        with open(path) as fh:
+            rec = json.loads(fh.read())
+        if not pred(rec):
+            continue
+        if fn is None:
+            os.remove(path)
+            continue
+        fn(rec)
+        with open(path, "w") as fh:
+            fh.write(json.dumps(rec))
+    return dst
+
+
+def where(family, **kw):
+    inner = is_(**kw)
+    return lambda rec: rec["family"] == family and inner(rec)
+
+
+def test_registered_roles_pass(registered):
+    v = judge_registered(registered)
+    cmp_ = v["comparison"]
+    bad = {
+        f: {
+            r: x["primary"].get("why") or x["primary"].get("refused")
+            for r, x in fam["runs"].items()
+            if x["verdict"] != "pass"
+        }
+        for f, fam in v["families"].items()
+        if fam["verdict"] != "pass"
+    }
+    assert not bad, bad
+    assert cmp_["arms"] == {"A": "pass", "B": "pass"}, cmp_
+    assert cmp_["FR-38"] == "pass" and cmp_["C"] == "pass" and cmp_["D"] == "pass"
+    for p in spec.CORE_PLANTS:
+        assert plant_status(v, p) == "caught", (p, v["plants"][p]["must_catch"])
+    # AF's P1 is reported only; P1″ must be caught at each idle fate of AF and AN
+    assert {u["family"] for u in v["plants"]["P1"]["reported_only"]} == {"inv_AF"}
+    idle = [g["unit"] for g in v["plants"]["P1″"]["must_catch"] if " idle " in g["unit"]]
+    assert len(idle) == 6 and sum(u.startswith("inv_AF") for u in idle) == 4
+    # AN's restart and AF's two blanks were judged
+    an = v["families"]["invented"]["runs"]["p_sched returned"]["primary"]
+    assert "restart" in an["equalities"]
+    assert (
+        "two_blanks@0.5" in v["families"]["inv_AF"]["runs"]["blank held"]["primary"]["equalities"]
+    )
+    assert v["provenance"]["mapping_sha256"] and "revision" in v["provenance"]
+
+
+def test_registered_fail_and_inconclusive(registered):
+    def negzero(rec):
+        rec["series"]["label_R_win"][0] = -0.0
+
+    v = judge_registered(
+        registered,
+        edited(
+            registered, "armb", where("inv_B", run="p=0.55 held", role="honest", dt=1.0), negzero
+        ),
+    )
+    assert v["comparison"]["arms"]["B"] == "fail" and v["comparison"]["FR-38"] == "fail"
+    # an uncaught core plant fails FR-38 with both arms passing
+    honest = None
+    for fname in os.listdir(registered.export):
+        if fname.startswith("inv_AF") and "_honest_p_sched_returned_primary_0.5" in fname:
+            with open(os.path.join(registered.export, fname)) as fh:
+                honest = json.loads(fh.read())
+
+    def same(rec):
+        rec["series"] = honest["series"]
+
+    v = judge_registered(
+        registered, edited(registered, "p5", where("inv_AF", role="plant", plant="P5"), same)
+    )
+    assert v["comparison"]["arms"] == {"A": "pass", "B": "pass"}
+    assert plant_status(v, "P5") == "not caught" and v["comparison"]["FR-38"] == "fail"
+    # AN's restart is required, and AF's held blank
+    v = judge_registered(
+        registered, edited(registered, "norestart", where("invented", role="restart"))
+    )
+    assert verdict_of(v, "invented", "p_sched returned") == "refused"
+    assert v["comparison"]["FR-38"] == "inconclusive"
+    v = judge_registered(
+        registered,
+        edited(registered, "noheld", where("inv_AF", role="blank", dt=1.0, machine="held")),
+    )
+    assert verdict_of(v, "inv_AF", "p_sched held") == "refused"
+    assert verdict_of(v, "inv_AF", "blank held") == "refused"
+    assert v["comparison"]["FR-38"] == "inconclusive"
+
+
+def test_registered_af_p1_does_not_decide(registered):
+    """AF's P1 is scored and reported: an honest win class whose tolerance exceeds P1's distance
+    in AF leaves P1 uncaught there, and FR-38 still passes on AN's catch."""
+    docs = registered.docs["inv_AF"]
+
+    def big(rec):
+        if rec["run"] == "blank":
+            return
+        for row in ("R", "R_s"):
+            ref = np.asarray(docs["runs"][rec["run"]]["series"][f"label_{row}_win"]["value"])
+            scale = docs["runs"][rec["run"]]["series"][f"label_{row}_win"]["scale"]
+            dev = ref - ref[0]
+            if not np.any(dev):
+                continue
+            extra = scale * rec["dt_s"] ** 3 * dev / np.max(np.abs(dev))
+            w = np.asarray(rec["series"][f"label_{row}_win"]) + extra
+            b = np.asarray(rec["series"][f"label_{row}_resyn"]) - extra
+            rec["series"][f"label_{row}_win"] = [float(x) for x in w]
+            rec["series"][f"label_{row}_resyn"] = [float(x) for x in b]
+
+    v = judge_registered(
+        registered,
+        edited(
+            registered, "afp1", lambda r: r["family"] == "inv_AF" and r["role"] == "honest", big
+        ),
+    )
+    assert v["families"]["inv_AF"]["verdict"] == "pass"
+    assert all(u["caught"] is False for u in v["plants"]["P1"]["reported_only"])
+    assert plant_status(v, "P1") == "caught" and v["comparison"]["FR-38"] == "pass"

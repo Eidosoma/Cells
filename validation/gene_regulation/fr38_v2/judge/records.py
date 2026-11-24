@@ -44,9 +44,14 @@ SPEC.md.
 - **Required content.** Labelled runs, the restart and plants: every series the profile's mapping
   names, with `route2` and `survival`. Blanks: every series the blank carries. Twins: every
   physical series (no labels, no `released_present_gross`) and `route2`.
+- **The judge's own plants.** P1 and P1″ act on the judge's mapping file, P1′ and P6 on copies of
+  the honest records at h; a record naming any of them is refused.
 - **Numbers** are finite, except a survival ratio, whose undefined, NaN or infinite values are
-  judged by C1 (amendment 1, item 3). The engine writes floats with `repr`; NaN and Infinity
-  tokens parse here so that C0 can name them.
+  judged by C1 at an idle fate (amendment 1, item 3); elsewhere a non-finite ratio is refused.
+  The engine writes floats with `repr`; NaN and Infinity tokens parse here so that C0 can name
+  them.
+- **The manifest** carries the export's provenance (revision, dirty paths, snapshot), copied into
+  the verdict; a missing or unreadable manifest is recorded there, not refused.
 - Extra series and keys are ignored. A refused record is never read as a gap.
 """
 
@@ -989,6 +994,8 @@ def check_record(
     if record.run != "blank" and record.run not in family_inputs["runs"]:
         faults.append(f"run {record.run!r} is not a run of family {record.family}")
         return
+    if record.role not in ROLES or (record.role == "plant" and record.plant not in RECORD_PLANTS):
+        return  # already refused: no registered definition to check it against
     expected = expected_definition(
         family_inputs, record, restart=restart, gene_unit_volume=profile == "D"
     )

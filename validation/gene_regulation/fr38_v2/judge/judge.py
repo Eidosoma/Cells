@@ -14,9 +14,12 @@
 """
 
 import copy
+import hashlib
 import json
 import math
 import os
+import subprocess
+import sys
 
 import numpy as np
 
@@ -83,21 +86,33 @@ def ref_side(rrun, entry):
 
 
 class Family:
-    def __init__(self, name, profile, reference):
+    """One family's context.
+
+    - `role` is the registered family whose structure it follows (AF, AN, B, C or D): its blanks,
+      twins, restart, plants and arm. A registered family is its own role.
+    - `inputs` are SPEC.md's for a registered family (`spec.spec_inputs`), so that engine
+      definitions, rates, potentials and pool totals are read from the spec, never from the
+      reference's echo; an invented family's are its own file's.
+    - An invented family with no role keeps its own plants (those its file sizes) and verdict; one
+      with a role is judged as that registered family would be (the tests' route to the
+      registered branches)."""
+
+    def __init__(self, name, profile, reference, role=None):
         self.name, self.profile, self.ref = name, profile, reference
-        self.inputs = reference.inputs
+        self.invented = name not in spec.REAL_FAMILIES
+        self.role = role if self.invented else name
+        self.inputs = reference.inputs if self.invented else spec.spec_inputs(name)
         self.times = [float(t) for t in reference.times]
         self.window = reference.window
         self.samples = reference.samples
-        self.invented = name not in spec.REAL_FAMILIES
 
     def steps(self, dt):
         return int(round(float(self.inputs["horizon_s"]) / dt))
 
     def blank_machines(self):
-        if self.invented:
+        if self.role is None:
             return ("returned", "held")
-        return spec.blank_machines(self.name)
+        return spec.blank_machines(self.role)
 
     def twin_runs(self):
         if self.profile == "B":
@@ -105,9 +120,18 @@ class Family:
         return [r for r in spec.honest_runs(self.inputs) if r == "p_sched returned"]
 
     def restart(self):
-        if self.invented:
-            return ("p_sched returned", float(self.inputs["horizon_s"]) / 2.0)
-        return spec.RESTART.get(self.name)
+        """(run, checkpoint): AN's at 7200 s; a role-playing invented family's at half its
+        horizon; an invented family with no role may carry one (optional)."""
+        half = float(self.inputs["horizon_s"]) / 2.0
+        if self.role is None:
+            return ("p_sched returned", half)
+        if self.role in spec.RESTART:
+            run, t = spec.RESTART[self.role]
+            return (run, half if self.invented else t)
+        return None
+
+    def restart_optional(self):
+        return self.role is None
 
 
 # ------------------------------------------------------------------ C0 on the references
@@ -119,7 +143,7 @@ def read_references(ref_dir, families, mapping):
     out_dir = (
         os.path.join(ref_dir, "out") if os.path.isdir(os.path.join(ref_dir, "out")) else ref_dir
     )
-    order = sorted(families, key=lambda f: (f in spec.REAL_FAMILIES, f))
+    order = sorted(families, key=lambda f: (f != "invented", f in spec.REAL_FAMILIES, f))
     refs = {}
     for fam in order:
         path = os.path.join(out_dir, f"reference_{fam}.json")
@@ -559,8 +583,8 @@ def judge_run(fam, unit, index, mapping, attempt):
     if attempt == "primary" and restart and restart[0] == run:
         rs = _get(index, fam.name, "restart", run, "primary", spec.H_STEP_S)
         why = _usable(rs, "the restart")
-        if why and fam.invented and rs is None:
-            pass  # optional for an invented family
+        if why and fam.restart_optional() and rs is None:
+            pass  # optional for an invented family with no role
         elif why:
             out["refused"].append(why)
         else:
@@ -663,12 +687,11 @@ def run_verdict(out):
 
 
 def two_blanks(fam, index):
-    """AF runs a blank per machine option; an invented family may (its held blank is optional)."""
-    if fam.name == "AF":
-        return True
+    """AF runs a blank per machine option; an invented family with no role may (optional)."""
+    if fam.role is not None:
+        return fam.role == "AF"
     return (
-        fam.invented
-        and _get(index, fam.name, "blank", "blank", "primary", spec.H_STEP_S, machine="held")
+        _get(index, fam.name, "blank", "blank", "primary", spec.H_STEP_S, machine="held")
         is not None
     )
 
@@ -802,14 +825,14 @@ def _sized(item, fam, plant, quantity):
 
 def plant_units(fam, plant):
     """The units each plant must be caught in, for this family (CRITERIA.md §6)."""
-    if fam.invented:  # an invented family: the plants its reference sizes, where it sizes them
+    if fam.role is None:  # an invented family: the plants its reference sizes, where it sizes them
         runs = sorted({e["run"] for e in fam.ref.plants if e["plant"] == plant})
         if plant in ("P1", "P1′", "P1″") and runs:
             runs = spec.honest_runs(fam.inputs)
         return [(fam.name, r) for r in runs]
     if plant in spec.PLANT_RUNS:
-        return [(f, r) for f, r in spec.PLANT_RUNS[plant] if f == fam.name and r != "blank"]
-    if plant in spec.JUDGE_PLANT_FAMILIES and fam.name in spec.JUDGE_PLANT_FAMILIES[plant]:
+        return [(fam.name, r) for f, r in spec.PLANT_RUNS[plant] if f == fam.role and r != "blank"]
+    if plant in spec.JUDGE_PLANT_FAMILIES and fam.role in spec.JUDGE_PLANT_FAMILIES[plant]:
         if plant == "P6":
             return [(fam.name, spec.P6_RUN)]
         return [(fam.name, r) for r in spec.honest_runs(fam.inputs)]
@@ -962,7 +985,7 @@ def judge_plants(fams, index, mapping, family_runs):
                 continue
             for fname, run in plant_units(fam, plant):
                 res = judge_plant_unit(fam, plant, run, index, mapping, family_runs[fname])
-                res.update({"family": fname, "run": run})
+                res.update({"family": fname, "run": run, "role": fam.role})
                 if res.get("engine_refused"):
                     res["caught"] = True
                 elif "refused" in res:
@@ -993,7 +1016,7 @@ def judge_plants(fams, index, mapping, family_runs):
 
 
 def _reported_only(fam, plant):
-    return plant == "P1" and fam.name == "AF"
+    return plant == "P1" and fam.role == "AF"
 
 
 def _must_catch(plant, units):
@@ -1003,7 +1026,7 @@ def _must_catch(plant, units):
     if plant in ("P1", "P1′", "P1″"):
         by_family = {}
         for u in units:
-            if plant == "P1″" and u["family"] == "AF":
+            if plant == "P1″" and u.get("role") == "AF":
                 continue
             by_family.setdefault(u["family"], []).append(u)
         for f, us in by_family.items():
@@ -1053,12 +1076,14 @@ def comparison(families, plants, fams):
     """CRITERIA.md §4: FR-38's verdict from arms A and B and the core plants; C and D beside it."""
     fam_v = {f: aggregate(r["verdict"] for r in runs.values()) for f, runs in families.items()}
     out = {"families": fam_v}
+    role = {f: fams[f].role for f in families}
     arms = {}
     for arm in ("A", "B"):
-        members = [f for f, a in spec.ARM_OF.items() if a == arm]
-        present = [f for f in members if f in families]
+        members = [r for r, a in spec.ARM_OF.items() if a == arm]
+        present = [f for f in families if role[f] in members]
+        covered = {role[f] for f in present}
         arms[arm] = (
-            "inconclusive" if len(present) < len(members) else aggregate(fam_v[f] for f in present)
+            "inconclusive" if covered != set(members) else aggregate(fam_v[f] for f in present)
         )
     out["arms"] = arms
     core = [plants[p]["status"] for p in spec.CORE_PLANTS]
@@ -1069,20 +1094,22 @@ def comparison(families, plants, fams):
     else:
         fr38 = "inconclusive"
     out["FR-38"] = fr38
-    for f, plant in (("C", "P8"), ("D", "P9")):
-        if f not in families:
-            out[f] = "inconclusive"
+    for r, plant in (("C", "P8"), ("D", "P9")):
+        present = [f for f in families if role[f] == r]
+        if not present:
+            out[r] = "inconclusive"
             continue
+        v = aggregate(fam_v[f] for f in present)
         p = plants[plant]["status"]
-        nc_ok = plants[plant].get("negative_control_passes") if f == "C" else True
-        if fam_v[f] == "fail" or p == "not caught":
-            out[f] = "fail"
-        elif fam_v[f] == "pass" and p == "caught" and nc_ok:
-            out[f] = "pass"
+        nc_ok = plants[plant].get("negative_control_passes") if r == "C" else True
+        if v == "fail" or p == "not caught":
+            out[r] = "fail"
+        elif v == "pass" and p == "caught" and nc_ok:
+            out[r] = "pass"
         else:
-            out[f] = "inconclusive"
+            out[r] = "inconclusive"
     for f, fam in fams.items():
-        if fam.invented:  # an invented family's own verdict: its runs and every plant it sizes
+        if fam.role is None:  # an invented family's own verdict: its runs and the plants it sizes
             ps = [
                 plants[p]["status"]
                 for p in plants
@@ -1100,13 +1127,37 @@ def comparison(families, plants, fams):
 # ------------------------------------------------------------------ the whole judgement
 
 
-def judge(ref_dir, export_dir, families=None, mapping=None):
+def provenance():
+    """The judge's own revision and dirty paths, and its mapping file's sha256, at run time."""
+    here = os.path.dirname(os.path.abspath(__file__))
+
+    def git(*args):
+        try:
+            out = subprocess.run(["git", "-C", here, *args], capture_output=True, text=True)
+            return out.stdout if out.returncode == 0 else None
+        except OSError:
+            return None
+
+    rev = git("rev-parse", "HEAD")
+    status = git("status", "--porcelain", "--", ".", "../../../assembly_lineages_v2/agreement.py")
+    with open(MAPPING_PATH, "rb") as fh:
+        mapping_sha = hashlib.sha256(fh.read()).hexdigest()
+    return {"revision": rev.strip() if rev else None,
+            "dirty_paths": None if status is None else [x[3:] for x in status.splitlines()],
+            "mapping_sha256": mapping_sha, "python": sys.version.split()[0],
+            "numpy": np.__version__}  # fmt: skip
+
+
+def judge(ref_dir, export_dir, families=None, mapping=None, roles=None):
     """C0 on the references (invented first), then every engine record, run, plant and verdict.
-    `families` maps family -> profile; by default the invented family and the five registered."""
+    `families` maps family -> profile, by default the invented family and the five registered;
+    `roles` gives an invented family the registered family whose structure it follows."""
     mapping = mapping or load_mapping()
     families = families or {"invented": "A", **spec.FAMILY_PROFILE}
+    roles = roles or {}
     refs, order = read_references(ref_dir, families, mapping)
     verdict = {
+        "provenance": provenance(),
         "kind": VERDICT_KIND,
         "mapping": MAPPING_PATH,
         "c0": {"read_order": order, "references": {}},
@@ -1135,7 +1186,7 @@ def judge(ref_dir, export_dir, families=None, mapping=None):
     # an invented family is judged only where the export carries its records; a registered
     # family always is, so that its missing runs are refusals, never gaps
     fams = {
-        f: Family(f, families[f], refs[f])
+        f: Family(f, families[f], refs[f], role=roles.get(f))
         for f in order
         if refs[f].accepted and (f in spec.REAL_FAMILIES or f in present)
     }

@@ -103,7 +103,7 @@ class ScaleContext:
             * abs(spec.residue_potential(self.inputs))
             * (self._v("W_tx") + L * self._v("H_tx_release"))
         )
-        if self.profile == "B":
+        if self.profile == "B" and spec.B_G_SCALE_TRANSLATION_RESIDUES:
             r = r + spec.RT_KJ * abs(float(self.inputs["mu_res_P_RT"])) * (
                 self._v("W_tl") + self._v("W_tl_s")
             )
