@@ -12071,3 +12071,45 @@ and S913 score 5 of 6, and S59 3 of 6.
 
 **Cost:** 3 h 33 min of wall time and 10.8 CPU-hours, on CPUs 6, 7, 22 and 23. The record is
 `/mnt/workspaces/Cells/fr30-revilla-diagnostic-20261124/d2/`, with its SHA256SUMS.
+
+## D367: FR-38 v2's judge is built from the spec alone; amendment 4 rules its questions and registers the export contract
+
+2026-11-24, about 21:27 UTC.
+
+**The judge.** A separate agent built it from the spec folder alone, at amendment 3's tag. It is on branch
+`fr38-v2-judge` (4c98bd7a), untagged, and has read no engine output.
+- **C0:** its reader accepted all six reference files, the invented one first.
+- **Sizing:** every C2 must-catch unit clears the 10× rule. The smallest margins are P6 in AF at 72×, P1′ in AN at 159×
+  and P3a at 786×.
+- **Tests:** 23 host-only tests on invented inputs, taking 19 to 39 s.
+- **Disclosed:**
+  - It opened the six real reference files with ad hoc scripts, the invented file first, before its reader existed. It
+    took their key names and entry shapes from them, and set its 1-ulp echo tolerances with them in view. No accept or
+    refuse rule changed after the reader's first run on them.
+  - It read no engine code and no engine output, and none of the references' code or README.
+
+**Amendment 4,** tagged `fr38-v2-amendment-4-2026-11-24` (b4af13df). It is written by the protocol author, without
+the judge's code, and value-silent:
+- **Arm B's G scale** is the sheet's §3.4 reading, covering every chain's residues in transit. It is reported only, so
+  no verdict depends on it. C0 checks a stated scale only where a judged entry's accuracy rests on it.
+- **C4 runs at every rung,** each with its own step count, retry rungs included. Family D's energy identity is the
+  exception, being stepped since amendment 3.
+- **Blanks are judged runs,** and AF's two engine blanks must be bitwise equal.
+- **P8's negative control** follows the literal text: a failure leaves family C inconclusive, never FR-38.
+- **The judge forms P1, P1′, P1″ and P6 itself.** Builder entries for them are excluded from scoring and recorded.
+- **A missing index** is recorded and flagged to the checker. A missing run, or a run without provenance, is still
+  refused.
+- **The judge's readings are confirmed,** with two corrections:
+  - route 2's "every second output" counts even indices from the grid's start, which is the same in every registered
+    world;
+  - the restart comparison includes the labels and `released_present_gross`.
+
+  An unscorable core plant leaves FR-38 at best inconclusive.
+- **The export contract is registered (§8):** the builder's hashed per-family engine tables, hashed before any
+  reference value is read. The judge's reader conforms to §8 before its tag, and the builder adds P9's V₀ patch to
+  P9's record.
+
+**Next:**
+1. The judge adapts on its branch, then the lead tags it.
+2. The builder's table follows §8.
+3. The judged run waits for both, and for the lead's go.
