@@ -9,21 +9,24 @@ beside `ideal_osmosis_linear_compliance_water@1`, `isopotential_partition@1`, `s
 `@2`, and `neutral_arrival_labels@1`. A1 (Q1) adds `templated_polymerisation@1` and
 `species_regulated_availability@2`.
 
-**S** marks our own reading or derivation. The probe ran on the host only: nothing was compiled or run (§9).
+**S** marks our own reading or derivation. The probes ran on the host only: nothing was compiled or run (§9).
 
 ## In short
 
-- **Who refuses.** Turnover's fixed reads alone stand between it and water, the partition, and insertion@1 and @2
-  (§1.1). They are the shared `species_common.CONFLICTS_VIEW`: both volumes and three masks. Lifted in process, each
-  pair passes every definition check. Two more things are behind them:
+- **Who refuses.** Turnover's fixed reads alone stand between it and water, the partition, and insertion@2 (§1.1).
+  The same holds for insertion@1 where turnover acts in cells only. The fixed reads are the shared
+  `species_common.CONFLICTS_VIEW`: both volumes and three masks. Lifted in process, each pair passes every definition
+  check. Two more things are behind them:
   - the occupant rule knows only replacement@1's carriers, so a daughter's routes cannot be keyed by the partition's
     carriers;
-  - **A1 in a swelling cell, the gap D334 and D347 name, is also refused by the coupling operator**
-    (`species_regulated_availability@2`), which reads c = n/V at the declared volume (Q1).
+  - **A1 in a swelling cell is refused by two operators:** turnover, and the coupling operator
+    (`species_regulated_availability@2`), which reads c = n/V at the declared volume. We read D334's and D347's "A1"
+    as this world (Q1).
 - **The recommendation is option A, as in FR-43 part 2B:** the same law ID, turnover's own read declarations, and
   C1's fallback.
   - The volumes are read current at the split. The masks are read current at the split and from the declared
-    layout for existence. The outside anchors are a reference read, kept true by a guard.
+    layout for existence. The outside anchors are a reference read, kept true by a guard that refuses insertion@1
+    where turnover clears at a node.
   - Water is the one volume changer admitted, through part 2B's shared rule moved into `species_common`.
   - The occupant rule works through a contract hook, so the partition's daughters are carriers with their own rates
     (D150 §5.2).
@@ -34,14 +37,15 @@ beside `ideal_osmosis_linear_compliance_water@1`, `isopotential_partition@1`, `s
     carries water's second order, and adds nothing of turnover's.
 - **The cost:** about 2.25–3 agent-days, and no references are needed. A1 in a swelling cell adds 2–2.5 (Q1); a
   judged status adds about 1 (Q2).
-- **Three questions** (§8): A1's second refusal; judged or tested; pairwise only, or with M2 and M4.
+- **Three questions** (§8): A1's second refusal; judged or tested; and how much of the dividing, inserting cell to
+  cover (the lumen, M4, M2).
 
 ## 1. What reads the declared volume or masks today, and why
 
 ### 1.1 The refusals, in the engine's words
 
-The probe ran at f8c6c326 (§9). "Lifted" means turnover's fixed reads were replaced in process by current reads at
-the split, with reference reads at the end for the masks, under the same law ID.
+This is the probe's run 2, at f8c6c326 (§9). "Lifted" means turnover's fixed reads were replaced in process by
+current reads at the split, with reference reads at the end for the masks, under the same law ID.
 
 | World | Today | Lifted |
 | --- | --- | --- |
@@ -53,7 +57,12 @@ the split, with reference reads at the end for the masks, under the same law ID.
 | The same beside insertion@2 | "… scheduled_membrane_insertion@2 closes it", and the same for `membrane_active` | Parses |
 
 - **Parsing runs every definition check** (`pump_composite_spec`, line 225). So nothing else in the engine refuses
-  the four pairs.
+  these pairs.
+- **What the lift was.** Four fields were made current reads, unscoped, and no anchor read was declared. They were set
+  as class attributes after registration, so the contract's `check_declarations` never saw them. Run 3 (§9) puts
+  §3.1's exact set through `check_declarations` and the parse.
+- **The probed insertion@1 world clears at the cleft.** §3.1's anchor guard would refuse that world. Run 3 also
+  parses insertion@1 with a cell route only, the case the guard admits.
 - **The slot-keyed admission hides a hazard.** A positive rate keyed to slot d1 from t = 0 applies before d1 is born.
   With today's declared mask it writes into the pending slot. The partition's overwrite then breaks S's ledger at d1,
   by −2.0e-12 fmol (OPERATOR_COMPOSITION_DESIGN §2.3, L4).
@@ -92,21 +101,16 @@ integer population's volumes. None of them meets FR-65's worlds.
 
 ## 2. The prior art
 
-- **FR-43 part 2B** (D315, D324; FR43_SHARED_INVENTORIES_DESIGN §2.3).
-  - The reactions and the gene unit moved both volumes from `CONFLICTS_VIEW` to `VIEW_READS`. They read them current
-    at the split, the outside volume scoped to the nodes they read.
-  - Their half-steps take `view=`, and their observations take the row's volumes. `check_volume_changers` admits
-    water alone.
-  - Where nothing changes a volume, C1's fallback passes no view, so the program is today's. Their masks stay fixed
-    reads.
-  - C2.7's endpoint identity converged at a ratio of 4.006.
-- **FR-38 v2's family D.** The gene unit's first-order degradations run in the same swelling cell, with labels. Like
-  turnover, they read V only through their bookings. Amendment 3 moved the energy identity from a rounding bound to a
-  stepped entry at p = 2, because water's bookings are Heun quadratures.
-- **`integer_unit_population@1`** (FR-43 part 3) reads the patch mask and the outside anchors current at the split.
-  A closed site is selected idle, so close()'s zero anchors are never read.
+- **FR-43 part 2B** (FR43_SHARED_INVENTORIES_DESIGN §2.3; D324). The reactions and the gene unit read both volumes
+  current at the split, with a view passed only where water changes them (C1's fallback), and their masks still
+  fixed. `check_volume_changers` admits water alone. C2.7's endpoint identity converged at a ratio of 4.006.
+- **FR-38 v2's family D.** The gene unit's first-order degradations run in the same swelling cell, with labels, and
+  read V only through their bookings, as turnover does. Amendment 3 judges their energy identity as a stepped entry
+  at p = 2.
+- **`integer_unit_population@1`** reads the patch mask and the outside anchors current at the split, and selects a
+  closed site idle.
 - **Lifetimes through the contract.** Insertion@2 (`lifetimes`) and the integer population (`lives`) read every
-  operator's `living_intervals`. Neither imports the operator that decides them.
+  operator's `living_intervals`, never importing the operator that decides them.
 
 ## 3. Options and the recommendation
 
@@ -125,7 +129,7 @@ integer population's volumes. None of them meets FR-65's worlds.
 | `active` | Current at the split; reference at the end (C3) | `touched`; the domain's existence and positivity |
 | `outside_active` | Current at the split; reference at the end | `finite`; the domain |
 | `membrane_active` | Dropped | Never read |
-| `extracellular_amount_reference` | Reference at the split, scoped to its outside route nodes, with the guard below | n = anchor + increment at open finite nodes |
+| `extracellular_amount_reference` | Reference at the split, unscoped (scope does not apply to a reference read), with the guard below | n = anchor + increment at open finite nodes |
 
 - **The half-step** takes `view=None`.
   - With a view, its volumes and masks come from the view and are held over the half-step. Without one, today's code
@@ -134,10 +138,14 @@ integer population's volumes. None of them meets FR-65's worlds.
     them only on closed slots, where turnover now writes nothing.
 - **It has no event part, and its observed columns are its own accumulators.** So it reads nothing at the event or
   at observation.
-- **The order is the engine's (C2).**
+- **The order follows C2.**
   - Turnover is declared after water, as the reactions are.
-  - It is declared after insertion@1 or @2, whose undeclared mask changes also count at their split (M1).
+  - It is declared after insertion@1 or @2, whose undeclared mask changes also count at their split. This is our
+    reading of M1's text (OPERATOR_COMPOSITION_DESIGN §17), not a refusal the probes saw (S).
   - The partition closes at its event, so turnover sees it in the same step in any order.
+- **Run 3 of the probe checks this set** (§9). The contract's `check_declarations` passes it. With it, water, the partition and
+  insertion@2 at the cleft parse, and so does insertion@1 with a cell route. The guard is not yet written, so it is
+  not exercised.
 - **Option B,** `scheduled_species_turnover@2`, is rejected. It would be a new law, unqualified on every world, with
   its own crossrev and matrix rows, for no change in accounting (composition design §4.2–4.3).
 - **A lagged read**, at the step's start, would make the coupling first order. Today's fixed read is an O(1) error
@@ -188,7 +196,6 @@ integer population's volumes. None of them meets FR-65's worlds.
   - Water is the one volume changer admitted.
   - `check_volume_changers` and `row_volumes` move from `species_reactions` into `species_common`, as one rule for all
     three readers. Turnover cannot import `species_reactions`, which imports from it.
-  - The lumens and replacement@2 stay refused by name.
 - **The partition, at fixed volume.**
   - Closed cells are idle by the current mask, and carriers come from the occupant hook (§3.4).
   - Turnover's per-slot accumulators need no division rule. The parent's stay on its retired slot as its history, and
@@ -198,19 +205,13 @@ integer population's volumes. None of them meets FR-65's worlds.
   - Outside routes are environment (D150 §5.2). So a rate in force before the onset is admitted, and acts from the
     onset.
 - **Insertion@1** is admitted where turnover acts in cells only (§3.1's guard).
-- **Water with the partition, or with insertion,** stays refused by water's and the partition's own reads (M2, M4).
-  Turnover needs no further change for them.
-- **Labels (FR-42).**
-  - Turnover reports its one-way moves from its amounts: production into the arrival label, and clearance out of
-    every label at its share.
-  - So labels beside water carry over unchanged, as FR-38's family D's do.
-  - Labels beside a closer stay refused by the label owner.
+- **Labels (FR-42).** Turnover reports its one-way moves from its amounts: production into the arrival label, and
+  clearance out of every label at its share. So labels beside water carry over unchanged, as FR-38's family D's do.
 - **Cohorts.** A window's labelled material decays as e^(−k(t − s)), whatever V does. Its concentration dilutes with
   V.
 - **FR-50.** Turnover's produced and cleared are already its one-way records. They are amounts, so the current volume
   leaves them exact. FR-50's route records are @3's, read at @3's view. FR-65 adds no record.
-- **The other writers of a row** keep today's rules: D152's one local writer (`check_turnover_rows`), the gene unit's
-  writer rule, and the unit producer beside turnover (2A).
+- **The other writers of a row** keep today's rules (§3.6).
 
 ### 3.4 The occupant rule for the partition's carriers
 
@@ -253,7 +254,7 @@ So a resume is bitwise by construction. Rows check it in the swelling cell, acro
 | Turnover beside the partition | Admitted, with daughters keyed by their carriers |
 | Turnover beside insertion@2 | Admitted |
 | Turnover beside insertion@1 | Admitted with cell routes. Refused by the anchor guard where turnover clears at a node |
-| A lumen or replacement@2 beside turnover | Refused by name (`check_volume_changers`) |
+| A lumen or replacement@2 beside turnover | Refused by name (`check_volume_changers`), even where turnover acts in cells only. So the division consumers' furrow world, insertion@2 with lumen@2 (composition design §2.5), stays refused: FR-65's onset worlds are lumen-free (Q3) |
 | Water with the partition, or with insertion | Refused by the partition's and water's own reads (M4, M2) |
 | A1 in a swelling cell, and any routed turnover rate beside water | Refused by the coupling's reads (Q1) |
 | Charged routes, held baths, and D152 or the gene unit on the same row | Refused, as today |
@@ -292,7 +293,8 @@ by law ID goes when the hook lands; `replacement_of` stays for its other callers
   - the verdict judged at f7f0592 stands within its static-tissue scope.
 
 **Fast.**
-- The cost is two scoped reader views per step, elementwise: under 1–2% (C4; composition design §11).
+- The cost is two scoped reader views per step, elementwise (C4). The composition design's estimate is under 1–2%
+  (§11); it is not measured.
 - One development timing of the swelling world against its V₀ twin runs on the timed cores, under their lock. It is
   reported with the landing and is not a gate.
 
@@ -325,8 +327,12 @@ water's dynamics carries water's second order.
 
 **The V₀ plant shows in energy only.** Turnover's amounts never read V, so an amount ratio or a "miss in amounts"
 plant (C2.6, C2.8) cannot discriminate it.
-- **The plant world is sized first.** Its production must make RT ∫ P ln(V/V₀) dt at least 100 times the correct
-  run's identity residual at h (C2.7's rule). That is set in development, before the rows land.
+- **The miss is on the net move.** The work is booked on the moved amount, produced less cleared. So a V₀ booking
+  misses RT ∫ (P − k n) ln(V/V₀) dt.
+- **The plant world is sized first.** That miss must be at least 100 times the correct run's identity residual at h
+  (C2.7's rule). It is set in development, before the rows land.
+- **The world stays far from steady state while V moves.** Near n = P/k the net move, and with it the plant's miss,
+  vanishes. Production alone, or a pool far below P/k, keeps it large.
 - **The run-time ledger is not relied on.** The operator's own guard statement says the shared energy bound is blind
   to these bookings at µM to nM. Whether the ledger refuses the plant is reported.
 
@@ -335,19 +341,12 @@ plant (C2.6, C2.8) cannot discriminate it.
 - **No new ID or major** (option A). Turnover keeps `scheduled_species_turnover@1`. The rename's candidate mapping
   (read-only, at ce4780d2, in `/mnt/workspaces/Cells/rename-design-20261124/`) maps it to
   `cells.operator.scheduled_species_turnover@1`.
-- **Its partners in that mapping:**
-  - `cells.operator.ideal_osmosis_linear_compliance_water@1`;
-  - `cells.operator.isopotential_partition@1`;
-  - `cells.operator.scheduled_membrane_insertion@1` and `@2`;
-  - `cells.operator.neutral_arrival_labels@1`;
-  - `cells.operator.species_regulated_availability@2`;
-  - `cells.operator.templated_polymerisation@1`.
-
-  The rename's note settles the final keys.
+- **Its partners there** take the same form, `cells.operator.<name>@major`: water, the partition, insertion@1 and @2,
+  the labels, the coupling and the gene unit. The rename's note settles the final keys.
 - **Step IDs are not in the candidate mapping:** turnover's `exact_production_clearance_half_steps@1` and water's
   `heun_frozen_amount_water@1`. They are the rename note's to place; this note picks no family.
-- **The build starts from main after the rename lands.** Its code, refusal messages and test rows then use the new
-  keys, and nothing waits for a re-merge.
+- **We recommend to the lead that the build start from main after the rename lands.** Its code, refusal messages and
+  test rows would then use the new keys, and nothing would wait for a re-merge.
 
 ## 6. The qualification plan
 
@@ -357,9 +356,9 @@ plant (C2.6, C2.8) cannot discriminate it.
 | --- | --- | --- |
 | The booking at the view's volume is the exact ΔF, and the exact change of the composite's stored energy | The NumPy half-step, given a reader view with V ≠ V₀: its work against Decimal ΔF at V, and against @3's term at V₀ plus water's node term. Its amounts are bitwise the viewless call's | A row of `test_booked_work_is_the_exact_free_energy_change` (1) |
 | Nothing writes a closed slot | The NumPy half-step, given a view that closes a cell and a node, with positive rates there: the rows and fields there stay bitwise unchanged, and the declared-mask plant writes there | A row of `test_zero_rates_select_the_start_state_and_untouched_entries_stay_bitwise` (1) |
-| Admissions and refusals | Parse rows. The four pairs are admitted. The lumen, replacement@2, insertion@1 at a node and the slot-keyed daughter are refused, with their reasons | Rows beside `test_definition_refusals` (1) |
+| Admissions and refusals | Parse rows. Water, the partition, insertion@2 at a node and insertion@1 with cell routes only are admitted. The lumen, replacement@2, insertion@1 at a node and the slot-keyed daughter are refused, with their reasons | Rows beside `test_definition_refusals` (1) |
 | The occupant tables | Host rows. A daughter's controls are zero before its birth and its own after. The parent's are zero after retirement. Without a partition the tables are bitwise today's. A planted table that keeps the parent's rate is caught | `test_species_turnover.py` (1) |
-| The swelling cell | Three rungs (4h, 2h, h) of FR-43's swelling cell, with S produced and cleared strongly enough to move V: the amounts against the closed form, the concentrations, V against the in-test reference, the identity's stepped entry, the V₀ plant, and a resume mid-run, in process and through a written snapshot | Rows of `test_shared_inventory_volume.py` (3) |
+| The swelling cell | Three rungs (4h, 2h, h) of FR-43's swelling cell. S is produced strongly enough to move V, and stays far below P/k while V moves (§4). The checks: the amounts against the closed form, the concentrations, V against the in-test reference, the identity's stepped entry, the V₀ plant, and a resume mid-run, in process and through a written snapshot | Rows of `test_shared_inventory_volume.py` (3) |
 | The division | S5's division world with turnover, keyed by carriers: closed slots bitwise, the closed forms from birth, every ledger, and a resume before, at and after the division | A turnover fixture beside `division_run`, used by `test_partition_runs.py`'s closure and restart tests (3) |
 | The onset | The cleft cell with insertion@2 and clearance at the cleft: idle before the onset, the closed form after it, and a resume across the onset. S's face diffusivity is set so low that its transport stays below rounding over the run, since a positive value is required | A turnover fixture beside `cleft_run`, used by `test_membrane_insertion_runs.py`'s closure and restart tests (3) |
 | Labels beside water | The swelling cell's h rung, labelled: its physical rows bitwise, and a production window's cohort against its closed form | One row beside the swelling rows (3) |
@@ -374,7 +373,9 @@ work, at a tolerance far below the engine's error. It is development evidence an
 - **Tier 3:** the compiled items are rows and fixtures in three existing files:
   - about 6 runs of the swelling cell (3 rungs, the plant, the resume and the labelled rung);
   - one fixture each beside `division_run` and `cleft_run`.
-- Their seconds are stated at landing, and tiers 1–3 are re-measured. No test file is added.
+- **Their evidence is one deliberate run, recorded at landing.** The three tier-3 files have no recorded outcome at
+  the 90 s cap. Their seconds are stated at landing, and tiers 1–3 are re-measured.
+- No test file is added.
 
 ### 6.2 Composed worlds and planted errors
 
@@ -384,7 +385,8 @@ work, at a tolerance far below the engine's error. It is development evidence an
   - **P1:** turnover books at V₀, because its half-step drops the view. The identity's stepped entry fails.
   - **P2:** the declared masks, with a positive control on a closed slot. The closed-slot row fails.
   - **P3:** an occupant table that keeps a retired parent's rate. The table row fails.
-  - **P4:** a daughter's schedule keyed by its slot. The parse refuses it.
+  - **P4:** a daughter's schedule keyed by its slot. The definition check refuses it, since §3.4 moves the founder
+    rule there.
 
 ### 6.3 Is a registration needed?
 
@@ -401,7 +403,8 @@ family.
 - **Other laws.** No production that scales with volume, no clearance law other than first order, and no charged
   routes (FR-15 S1).
 - **A volume changer other than water.** The lumens and replacement@2 stay out until a probe covers their
-  free-energy terms for an outside booking. The reactions and the gene unit wait for the same probe.
+  free-energy terms for an outside booking. The reactions and the gene unit wait for the same probe. So the furrow
+  world with its lumen is not delivered.
 - **Other cells.** No dividing or inserting cell that also swells (M4, M2), no triggered lifecycles, and no RK4
   beside water.
 - **The other readers of §1.3.** The coupling, exchange, the unit producer and the gene unit's masks are unchanged.
@@ -413,9 +416,9 @@ family.
 
 ## 8. Questions for the user
 
-**Q1. A1 in a swelling cell needs a second reader.** This is the gap D334 and D347 name. The coupling operator reads
-c_X = n_X/V at the declared volume. Its factor on a target's half-step receives the state only, with no view
-(`pump_composite._routed_control`).
+**Q1. A1 in a swelling cell is refused by two operators.** We read D334's and D347's "A1" as this world. The coupling
+operator reads c_X = n_X/V at the declared volume. Its factor on a target's half-step receives the state only, with no
+view (`pump_composite._routed_control`).
 - **(a) FR-65 as logged, turnover only.** A1 in a swelling cell, and any routed rate beside water, stay refused by the
   coupling, by name.
 - **(b) Recommended: FR-65 in two steps.**
@@ -439,19 +442,30 @@ c_X = n_X/V at the declared volume. Its factor on a target's half-step receives 
   - It adds about 1 agent-day.
 - **(c) A registration for FR-65 alone,** with its own judge.
 
-**Q3. Pairwise only, or a dividing or inserting cell that also swells.**
-- **(a) Recommended: pairwise now.** M4 (the partition over water, 3–4 agent-days) and M2 (water's current area and
-  masks, 2–2.5) wait for a consumer. Turnover needs no further change for them.
-- **(b)** Add M4 to FR-65.
-- **(c)** Add both M4 and M2.
+**Q3. How much of the dividing, inserting cell FR-65 covers.**
+- **(a) Recommended: pairwise and lumen-free now.** M4 (the partition over water, 3–4 agent-days) and M2 (water's
+  current area and masks, 2–2.5) wait for a consumer, and turnover needs no further change for them. The lumen waits
+  too.
+- **(b) Also a lumen at a node turnover does not read.**
+  - The lumen declares its volume change scoped to its own nodes, and the shared volume rule becomes per slot.
+  - The division consumers' furrow world then carries turnover in its cells.
+  - It needs the lumen owner's file and a D148 proof for the lumen's judged worlds. About 1–1.5 agent-days (S).
+- **(c)** Add M4, with or without (b).
+- **(d)** Add both M4 and M2.
 
 ## 9. Evidence
 
-- **The probe:** `/mnt/workspaces/Cells/fr65-design-20261124/probe/`.
-  - The files are `fr65_parse_probe.py`, and `parse-probe-2-f8c6c326.json` with its log.
-  - It ran from the clean main at f8c6c326, on the host only, on CPU 4 under the timed cores' lock.
-  - The first run, `parse-probe-f8c6c326.json`, is kept. Its four division and insertion worlds failed in the probe's
-    own fixture, not in the engine: a zero diffusivity is refused.
+- **The probes:** `/mnt/workspaces/Cells/fr65-design-20261124/probe/`. Each ran on the host only, parsing and
+  checking definitions, with nothing compiled or run. Each ran on CPU 4 under the timed cores' lock; the first waited
+  for another holder. Each patched turnover's class attributes in process only, and saved nothing.
+  - **Run 1,** `parse-probe-f8c6c326.json`, is kept. Its four division and insertion worlds failed in the probe's own
+    fixture, not in the engine: a zero diffusivity is refused. One line of `fr65_parse_probe.py` was then changed, to a
+    positive diffusivity.
+  - **Run 2,** `parse-probe-2-f8c6c326.json`, is §1.1's table. It ran from this branch's worktree at the clean main
+    f8c6c326.
+  - **Run 3,** `fr65_declaration_probe.py` and `declaration-probe-4f523206.json`, is §3.1's set. It ran from the shared
+    checkout at 4f523206, two commits after f8c6c326 that change no source. Its only dirty paths are two untracked
+    `lean/` files.
 - **Read:**
   - D150's design §5;
   - OPERATOR_COMPOSITION_DESIGN §2–§6, §14 and §16;
