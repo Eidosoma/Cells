@@ -69,7 +69,7 @@ and a general feature, never one built for one study (D144).
 | [FR-61](#fr-61--an-overdamped-rotational-load-angle-speed-work-and-dissipation) | An overdamped rotational load: angle, speed, work and dissipation | To be set by the user (logged 24 November 2026) | **Logged:** no torque ledger (MODULE_SYSTEM §7 rule (a)) | One design note with FR-62 |
 | [FR-62](#fr-62--ion-transfer-coupled-to-a-rotary-step) | Ion transfer coupled to a rotary step | To be set by the user (logged 24 November 2026) | **Logged:** cycles book ions, not angle or load work | One design note with FR-61 |
 | [FR-63](#fr-63--a-ph-dependent-kv15-activation) | A pH-dependent Kv1.5 activation, re-formed as a declared pH shift on its population (FR-64, D356) | Normal (logged by the user, 24 November 2026; D353) | **Logged:** three labs confirm the acid shift's direction; `kv1p5_mh@1` has no pH input | A design note |
-| [FR-64](#fr-64--a-declared-voltage-shift-on-a-channel-population) | A declared voltage shift on a channel population: an ion's reversal or a sourced shift per pH unit, read by its gates or its block | To be set by the user (logged 24 November 2026; D356) | **Logged:** one mechanism for FR-51's reversal reference and FR-63's pH shift | A design note, before FR-51's law is registered |
+| [FR-64](#fr-64--a-declared-voltage-shift-on-a-channel-population) | A declared voltage shift on a channel population: an ion's reversal or a sourced shift per pH unit, read by its gates or its block | Normal (logged by the user, 24 November 2026; D356, D361) | **Logged:** one mechanism for FR-51's reversal reference and FR-63's pH shift | A design note, before FR-51's law is registered |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -2795,7 +2795,7 @@ pH unit is still declared and sourced per preparation.
 
 ## FR-64 — A declared voltage shift on a channel population
 
-**Logged 24 November 2026 by the user (D356); priority to be set by the user.**
+**Logged 24 November 2026 by the user (D356); priority normal (the user, D361).**
 
 **Why.** Two confirmed findings have one shape:
 - Kir2.1's block shifts with external K (D355);
@@ -2827,6 +2827,10 @@ So the change is in the model's plumbing, one reference voltage per factor compu
 
 **Status (24 November):** logged. A design note comes first, before FR-51's block law is registered and before the
 rename's design note.
+
+**Design note (24 November, D361):** `docs/VOLTAGE_SHIFT_DESIGN.md` on `fr64-design`.
+- **Version 1** admits all four reader and kind pairings, and claims two: the block on reversal, and the gates on pH.
+- **The build** comes after FR-51's follow-up and the rename.
 
 ## Backlog: external tools to look at (logged by the user, 23 November 2026)
 

@@ -11795,3 +11795,48 @@ the lead read only the refusal row at 9.0 ("exceeds 8").
 - The slot refusal has no entry yet in `composition_matrix.RULES`.
 - `kir2p1_mh2@1` has no library page, so D355's and D356's page line waits for the docstring batch. A docstring edit
   would change a parity law's source.
+
+## D361: FR-64's design note: the user's decisions (all four pairings admitted, two claimed; priority normal) and the lead's rulings
+
+2026-11-24, about 20:22 UTC. The note is `docs/VOLTAGE_SHIFT_DESIGN.md` on branch `fr64-design` (6fb3b7bb). It contains
+no engine code.
+
+**The mechanism.**
+- **The schema:** one optional key on the channel population, `voltage_shift: {"gates": {"m": shift}, "block":
+  shift}`.
+- **The rule:** each reader reads V_ref = V − ΔV. ΔV is an ion's reversal E, or σ(pH − pH_ref) at a declared side.
+- **ΔV never depends on V.** So dV_ref/dV = 1, and the block's charge term keeps its form. Permeation, its heat and its
+  charge still read V.
+- **Where it is computed:** one function in @3, for every reader, at every stage and on every path. No law changes,
+  and the declaration adds no new ID.
+
+**The user's decisions:**
+- **All four reader and kind pairings are admitted in version 1, and two are claimed:**
+  - the claimed two are the block on an ion's reversal (D355) and the gates on pH (D351);
+  - the qualification proves all four as engine arithmetic, including the block on pH's new material term through h
+    and its bound;
+  - the gates on reversal, and the block on pH, carry no wet-lab claim.
+- **FR-64's priority is normal.**
+
+**The lead's rulings, as the note recommends:**
+- **Readers:** each gate and the block separately. A gate shift moves its target and τ together. τ's shift is
+  unmeasured, since D351's records give the activation midpoint only.
+- **The pH sign:** σ = dΔV/dpH in V per pH unit, negative for Kv1.5.
+- **Sources:** carried by the world's registration.
+- **The build** comes after FR-51's follow-up and the rename land.
+
+**Moved to the rename's design note (25 November):** the block law's family (its ID is live but in no registry),
+together with how tagged files that are never rewritten keep being read after a spelling changes. That covers FR-51's
+engine translator and FR-50's exclusions. The pre-alpha rule argues against a shim.
+
+**Before the pH window is ruled:** the note's example puts the reference pH on the window's edge, so a world resting at
+its reference would be refused through drift or rounding. The note must state the rule at the edges.
+
+**Coverage the note adds:**
+- the slot writers' stale-slot hazard for any declared shift, not only a block;
+- plants for the two gaps it found: an IMEX stage gate reading unshifted V, and a stored total read in place of free h
+  at a buffered node;
+- §9: the linear pH form interpolates each lab's two points, and only the direction is confirmed.
+
+**Order:** D353's two-arm registration must not straddle the key move. It is written after the migration, or pinned
+to FR-51's landed revision (955765ef). The note lands with the rename note as one stack with no src change.
