@@ -17,6 +17,9 @@ ill-conditioned case).
 - **Evaluated on m only,** so both directions of a pair carry the same factor and the equilibrium
   is unchanged (transition-state theory), as the transition-state factor's is.
 - **It is also the right open fraction for a pore on a bilayer:** no feature here is a shell's.
+- **Its large-count limit** (cells.rate_equations@1; FR-47, D323) is log_factor itself on the
+  continuous view, where nothing is consumed, so m = n and the factor is g(n), as the
+  transition-state factor's limit is.
 
 Data, per world (`rate_factor`): `{"law": "cells.gate_factor@1", "forms": ["G", "H"],
 "entries": [{"form": "G", "step": "entry", "ddG_kT": 2.0}, ...]}`. The forms are distinct
@@ -166,6 +169,11 @@ LAW = law_registry.BUILTIN.register(
         update=update,
         log_factor=log_factor,
         formulas=FORMULAS,
+        limit=log_factor,  # FR-47: on a continuous view (consumed 0), the factor is g(n)
+        limit_formulas={
+            "g_r(n)": "sum_{j in gate} n_j exp(ddG_rj) / sum_{j in gate} n_j at real counts: the "
+            "common state m = n, since nothing is consumed on the continuous view",
+        },
     )
 )
 assert LAW.law_id == GATE_FACTOR

@@ -4,13 +4,14 @@ seconds reached its tier's cap with these tests (88.78 s of 90 s, measured on th
 refusal rows stay there, in SHELL_REFUSALS, beside FR-21's.
 
 - FR-48: the stationary law and the pair identity under a lumen potential, its offset plant, the
-  undeclared default, the records' offset and (d)'s refusal;
+  undeclared default, the records' offset and (d)'s exit with e^D (FR-47 admits it there);
 - FR-46: the face rule's rows (the reviewer's counterexample first), the inner face's closed-form
   rates and identity, and the run-level row.
 """
 
 import math
 
+import jax.numpy as jnp
 import numpy as np
 import pytest
 
@@ -95,7 +96,8 @@ def test_a_lumen_potential_sets_the_equilibrium_ratio_and_keeps_detailed_balance
     relaxation time follows the law's convention (all of D on the exit) and is not claimed.
     Planted: the lumen value read as an offset from the solution one moves the law. The undeclared
     default is today's world: the solution potential in the lumen, no key in the world's dict, no
-    offset in the records, and the same arrays as an explicit D = 0. Refused in (d) by name."""
+    offset in the records, and the same arrays as an explicit D = 0. In (d), which FR-47 admits
+    it in (D323), the exit carries e^D: κ_out/κ_in = e^D at equal volumes."""
     total, delta = 12, math.log(2.0)
     declared = spec_of(lumen_shell(lumen=0.7 + delta))
     assert np.max(np.abs(_stationary_law(declared, total) - _binomial(total, 1.0 / 3.0))) < 1e-12
@@ -136,17 +138,23 @@ def test_a_lumen_potential_sets_the_equilibrium_ratio_and_keeps_detailed_balance
     assert np.max(np.abs(planted - _binomial(total, 1.0 / 3.0))) > 0.05
     assert np.max(np.abs(planted - _binomial(total, 1.0 / (1.0 + math.exp(0.7 + delta))))) < 1e-12
     monkeypatch.undo()
-    # refused in the deterministic representation by name, until FR-47's qualification
-    d = definition(lumen_shell(lumen=0.7 + delta), molecules=64)
+    # (d), FR-47 (D323): admitted, and its exit carries e^D (P1's mechanism, at the host)
+    from cells.models.assembly_lineages_v2 import rate_equations
+
+    d = definition(lumen_shell(lumen=0.7 + delta, n_out=40, n_in=40), molecules=64, trace=False)
     d["execution"] = {"backend": "cpu", "precision": "float64", "mode": "single_lineage",
                       "stream": {"seed": 1, "environment": 0, "lineage": 0, "branch": 0},
                       "representation": {"id": "cells.rate_equations@1",
-                                         "envelope": {"min_count": 10.0, "provenance": "test"},
+                                         "envelope": {"min_count": 1.0, "provenance": "test"},
                                          "integrator": {"id": "rosenbrock_rodas4_dense@1",
                                                         "rtol": 1e-10, "atol_count": 1e-6,
                                                         "step_limit": 100000}}}  # fmt: skip
-    with pytest.raises(ConfigError, match="a lumen standard potential"):
-        parse_spec(d)
+    problem = rate_equations.Problem(parse_spec(d))
+    n = np.zeros(problem.P)
+    n[:3] = (40.0, 3.0, 40.0)  # S@pool, B@membrane, S@lumen: equal counts at equal volumes
+    forward = float(problem.log_direction(jnp.asarray(n), True)[0])
+    reverse = float(problem.log_reverse(jnp.asarray(n))[0])
+    assert reverse - forward == pytest.approx(delta, abs=1e-13)
 
 
 def face_world(kind="separate", *, x_pool=5, x_lumen=0, P=2e-7, k_bind=3.0, k_wall=1.0):

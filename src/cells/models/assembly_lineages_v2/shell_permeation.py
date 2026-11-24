@@ -19,6 +19,11 @@ A(m) = q·W(m)/2, the bilayer's area from its counts. A new law leaves that law'
 
 Its kernel is the geometric direction (exchange.geometric_log_direction), with the shell's
 constant extent (kernel.py, dispatched by the geometry kind).
+
+**Its large-count limit** (cells.rate_equations@1; FR-47, D323) is the same kernel on real counts:
+the step moves one molecule, so every falling factorial has one factor, ff(n, 1) = n, and the
+extent is a constant, so the limit is the exact form (the representation dispatches the shell's
+extent by the geometry kind, as the exact kernel does).
 """
 
 from cells.models.assembly_lineages_v2 import MODEL_ID, SHELL_PERMEATION
@@ -62,6 +67,11 @@ LAW = law_registry.BUILTIN.register(
         formulas=FORMULAS,
         rate_key=RATE_KEY,
         extent="geometric",
+        limit=geometric_log_direction,  # FR-47: one molecule a step, a constant extent: exact
+        limit_formulas={
+            "rule": "the same kernel on real counts: one molecule a step, so ff(n, 1) = n, and "
+            "the shell's constant extent A_sh rho0, so the limit is the exact form",
+        },
     )
 )
 assert LAW.law_id == SHELL_PERMEATION
