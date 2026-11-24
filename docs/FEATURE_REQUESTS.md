@@ -2413,6 +2413,8 @@ loosens no bound beyond what that rounding requires. Every planted fault the che
 
 **Status (24 November):** logged. A design note comes first.
 
+**Correction and design note (24 November, D370):** in the `ledger_limits` family the row-1 bound is not the bare atol, since the running allowance is already about 98% to 99.9% of it. What grows with the cell count is the check's own summation. Design note: `docs/LEDGER_ROUNDING_DESIGN.md` on `fr53-design`, recommending one compensated sum and one bound form with declared classes.
+
 ## FR-54 — Passive neutral diffusion between two finite liquid regions, qualified against the exact two-well solution; then a wash at a diffusion-connected node
 
 **Logged 24 November 2026 by the user, priority high (D341).**

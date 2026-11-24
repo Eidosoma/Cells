@@ -12194,3 +12194,34 @@ D348 never defined "port". The morning's review prices both routes.
 - **The rename's Q3,** the 18 live pieces also spelled inside legacy, waits until the sequence is chosen.
 - **In the morning,** before the rename's move lands, main is tagged and the pre-rename snapshot frozen. Every capture
   can run from it later.
+
+## D370: a correction to FR-53's premise (the global ledgers' row-1 bound), from its design note
+
+2026-11-24, about 22:19 UTC. The note is `docs/LEDGER_ROUNDING_DESIGN.md` on branch `fr53-design` (774fdcd5). Its
+probe ran four worlds on CPU 4 under the timed lock: GJ-N1's line and 9×9 sheet, and synthetic sheets of 15×15 and
+27×27 cells. The evidence is in `/mnt/workspaces/Cells/fr53-design-20261124/`.
+
+**The correction.** In the `ledger_limits` family (`resolved_pump_tissue@1` to `@3`, the water models, the replacement
+model and the composite), the bound at row 1 is not the bare material atol.
+- **Row 0** has every residual exactly zero.
+- **From row 1** the running allowance (2.5 ε k M) is already 97.6% to 99.9% of the total ledger's bound.
+
+So FR-53's "zero at steps 0 and 1", and the "bare material atol" in D335 and the GPU criteria, do not hold for these
+models. They do hold for `resolved_tissue@1` to `@10`, reached through legacy.
+
+**What grows is the check's own summation, not the stored state:**
+- **The row's exact residual** stays at or below 0.12 of the bound, and does not grow with the cell count.
+- **The check's sum** reaches 0.12 of the bound on the host at 225 and 729 cells, and up to 0.19 on the CPU device. It
+  is also the part that differs between host and device: D336 recorded the L4's two sums 0.51 apart.
+- **No clean √N law fits.** The host's first-window shares are 0.044, 0.122, 0.169 and 0.115 at 25, 81, 225 and 729
+  cells.
+
+**The note recommends:**
+- **One compensated sum** (fixed-order TwoSum), with the same code on host and device.
+- **One bound form for every ledger,** with three declared classes: exact, rounding, and truncation. The truncation
+  class carries its own term, as FR-38's amendment 3 taught, and FR-47's `atol_count` term belongs there.
+
+Its five questions go to the user in the morning batch with the advisor.
+
+**A note on the probe:** it held the timed lock for about four minutes while an FR-43 profile, the user's top priority,
+was waiting. Briefs now say to release the lock between probes.
