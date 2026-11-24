@@ -4,9 +4,9 @@ population's negative-slope region, under the IMEX solver.
 The world is validation/fr51/engine.run_world: B1's block on a gate-free K population and a weak Na
 leak on one patch, starting at +55 mV.
 
-About 67 s (measured cold on the timed lane): two compiled runs, the run and its restart from mid-run, with host checks on every
-observed row; and criterion S, the fraction's strong end, on two compiled clamped programs and one
-compiled checked step. Reason: the per-stage bound's new term is qualified on a compiled step,
+About 67 s, measured cold on the timed lane. It holds two compiled runs, the run and its restart
+from mid-run, with host checks on every observed row; and criterion S, the fraction's strong end,
+on two compiled clamped programs and one compiled checked step (RK4's). Reason: the per-stage bound's new term is qualified on a compiled step,
 where the explicit stage meets a negative slope, and the strong end where XLA flushes subnormals.
 """
 

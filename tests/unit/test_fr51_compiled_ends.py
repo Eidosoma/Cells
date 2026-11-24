@@ -1,8 +1,8 @@
 """FR-51's fraction at c_B = 0 on compiled programs (fr51-channel-block-v1 criterion Z; S, the
 strong end, is in test_fr51_blocked_run.py).
 
-About 65 s (measured cold on the timed lane): three clamped programs and two one-step programs (jax.jit of checked_step). Reason:
-the unblocked fraction must be exact at c_B = 0 and relatively accurate at strong block where XLA
+About 65 s, measured cold on the timed lane: three clamped programs and two one-step programs
+(jax.jit of checked_step, RK4's). Reason: the unblocked fraction must be exact at c_B = 0 and relatively accurate at strong block where XLA
 flushes subnormals and may fuse operations, so D327 asks for both ends on the compiled program.
 The host rows, with the plants, are in test_surface_pump_v3_populations.py.
 """
