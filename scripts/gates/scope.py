@@ -308,7 +308,7 @@ def entry(logs, tree, trace=None):
     """One test file's entry: its dependencies by kind, its reads and its children, checked against
     strace's view of the same run when there is one."""
     content, exists, lists, finds, why = set(), set(), set(), set(), []
-    roots, tops, subs, known, searched = set(), set(), set(), set(), []
+    roots, tops, subs, searched, dropped = set(), set(), set(), [], {"import": set(), "pytest": set()}
     modules, reads, scans, processes = set(), [], False, []
     for name, rows in logs.items():
         head = next((r for r in rows if "process" in r), None)
@@ -358,14 +358,14 @@ def entry(logs, tree, trace=None):
             if "list" in r and useful(r["list"]):
                 if via == "metadata" or (via == "pkgutil" and by == "library"):
                     searched.append((r["list"], "list" if via == "pkgutil" else "metadata"))
-                elif by in ("import", "pytest"):
-                    known.add(r["list"])
+                elif by in dropped:
+                    dropped[by].add(r["list"])
                 else:
                     lists.add(r["list"])
                     scans |= by != "library"
                     p["touched"] = True
                     if r.get("entries"):  # Its code holds the entries, which tell their sizes and modes.
-                        exists.update(path for path in tree.inside(r["list"]).values())
+                        exists.update(tree.inside(r["list"]).values())
     # Discovery: only names it can use count. pkgutil looks through sys.path's folders and, for packages,
     # the folders in them; a library that sends it elsewhere lists, and asks about, that place whole.
     for path, how in searched:
@@ -379,8 +379,7 @@ def entry(logs, tree, trace=None):
     subs.update(module_place(m) for m in modules if MODULE.match(m.rsplit("/", 1)[-1]))
     # The import system's own listings are replaced by the names it looked up; one of any other
     # folder (a finder that code built itself) counts whole.
-    lists |= known & {r["list"] for rows in logs.values() for r in rows
-                      if r.get("by") == "import" and "list" in r} - roots - {f for f, _ in subs}
+    lists |= dropped["import"] - roots - {folder for folder, _ in subs}
     pids = {p["pid"] for p in processes}
     tests = [p for p in processes if p["parent"] not in pids and not p["forked"]
              and "pytest" in p["argv"]]  # Others are children of a child not recorded.
@@ -397,8 +396,8 @@ def entry(logs, tree, trace=None):
             if any(q["pid"] == pid and q is not p and not q["forked"] and q["argv"] == argv
                    for q in processes):
                 continue
-            asks = None if pid is None else answered(argv, r.get("program"), r["cwd"], r.get("git"),
-                                                     p["root"])
+            asks = None if pid is None or not p["root"] else answered(
+                argv, r.get("program"), r["cwd"], r.get("git"), p["root"])
             if asks is None:
                 unmapped.append(" ".join(argv[:4]))
             else:
@@ -406,7 +405,8 @@ def entry(logs, tree, trace=None):
             seen.add(pid)
     found = {}
     if trace is not None:
-        found = trace_finds(trace, tree, processes, seen, content, lists, lists | finds | known | roots)
+        found = trace_finds(trace, tree, processes, seen, content, lists,
+                            lists | finds | roots | dropped["import"] | dropped["pytest"])
         if found.get("files") or found.get("listings"):
             why.append("the trace shows what the entry lacks: "
                        f"{sorted([*found.get('files', ()), *found.get('listings', ())])[:5]}")
