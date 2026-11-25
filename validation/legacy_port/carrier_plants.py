@@ -130,6 +130,9 @@ def main():
         with out.open("a") as handle:
             handle.write("\t".join(" ".join(str(v).split()) for v in values) + "\n")
 
+    if not out.exists() or not out.stat().st_size:
+        record("plant", "lines", "what", "files", "rows", "outcome", "pytest's last line", "where")
+
     kinds, passed, last = run(tree, sorted({row for p in plants for row in p["rows"]}))
     if kinds:
         sys.exit(f"a row fails with nothing planted: {told(kinds, tree)} | {last}")

@@ -144,7 +144,7 @@ say(
     len(rows),
     "| to remove",
     len(take),
-    "" if BATCH else "(without the optional batch)",
+    "(the second commit)" if SECOND else "" if BATCH else "(without the optional batch)",
 )
 
 
@@ -188,14 +188,15 @@ gone, want = (
         if line.startswith("D")
     },
 )
-say(
-    "9b0debe6 deletes",
-    len(want),
-    "files;",
-    len(want - gone - set(done)),
-    "of them not removed here",
-    sorted(want - gone - set(done))[:5],
-)
+if not SECOND:
+    say(
+        "9b0debe6 deletes",
+        len(want),
+        "files;",
+        len(want - gone - set(done)),
+        "of them not removed here",
+        sorted(want - gone - set(done))[:5],
+    )
 left = [p for p in git("ls-files", cwd=W).split("\n") if p.startswith("src/cells/legacy")]
 say("files left under src/cells/legacy", len(left), left[:5])
 # 2. Files that go but changed since the list's head: a builder may have started to use one.
