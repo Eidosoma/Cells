@@ -12687,3 +12687,86 @@ D337, D338, D340, D344, D351 and D355, the block law's Lean commit, D364's two f
 replacement row's composite form), and two species-cap texts. For items that touch `src`, only docstrings differ, by two AST
 tools; the two species-cap test files also differ in docstrings only. The wording is the lead's to review before it lands.
 Two lines have no page to go on yet (`kir2p1_mh2@1`, and the block law's page, which the rename's hand refactors add).
+
+## D380: a correction to D379 on the composite on a GPU; FR-38's amendment 6; the rename's table gains 52 missing IDs; FR-51's erratum drafted; notes on FR-56 and FR-43's co-writers
+
+2026-11-25, about 03:07 UTC. The lead, with the advisor.
+
+**A correction to D379 (the advisor's finding).** D379 answered D372's GPU question with "no refusal is missing", and
+PROGRESS called it settled. That was the lead's ruling, written as if it were read from the code. What the records show:
+- **The plain path on a GPU has judged evidence, for some worlds.** The composite's L4 agreement run of 14 November passed
+  W1, W2 and G2-Q1's Q1 to Q6 unflagged. It failed Q7, which asks for bitwise equality with @3 on the 825-node tissue; Q7
+  passed on 16 November, judged alone under XLA's deterministic flag (D168, D181).
+- **An unflagged run varies from one repeat to the next,** by up to 1.9e-11 relative on that tissue. D335's block 2 found
+  the host and device modes differing in amount increments, passive-route transfers and heats, and reaction ledgers.
+  Those are the rollout's own arrays, and the builder's cause, the order of its scatter-adds, is inferred. So the
+  variation would reach any composite run on a GPU, host-checked or not (D182 left it open). Under the flag, 15 of 15
+  pairs repeat bitwise.
+- **What D336 closed is the device's own row checks.** D347 and FR-43's `PERFORMANCE.md` call the whole of "the composite
+  on a GPU" a path D336 found unqualified, which is wider than D336's words. Their labels are corrected with the next
+  docs landing, as is PROGRESS.
+- **What to do about a plain, unflagged run is the user's,** since D336 was: admit it with the caveat stated, require the
+  flag, or refuse it. The lead leans to the first, since D181's judged runs use the plain path. `row_checks.py`'s raised
+  message still says "until a GPU measurement exists"; it changes with the next `src` landing, with its test.
+
+**FR-51's two-potassium erratum 1 is drafted, not tagged** (branch `fr51-two-k-erratum-1`, bdfc9e3e). It fixes what the
+registration left open, before any curve is read: how the two files are scored (a script, `score_readers.py`, that calls
+the frozen scorer unedited and applies sections 3 and 5; its self-test plants nine kinds of faulty file), the reading
+of the control (the half crossing lies in [−75, −70] mV, ends included), the form of a file, and the fallback if the
+circled 10 stays ambiguous (the 10 mM level is not read and is unresolved). Readers get a bare folder with the image,
+the sheet and a form check that prints no value. The figure's legend, read in part by the sheet's writer, does not say
+what the two lines are.
+
+**FR-56's design note is filed** (`fr56-design`, 172fce4c): a preparation's own (temperature, area) rows beside the species'
+sourced area, read at parse to the integer quanta the engine already uses. One agent-day, host rows only, no compiled
+world, no registered comparison. A change of temperature inside a run stays refused, because worlds declare no
+enthalpies. The direction of POPC's expansion is confirmed, the size is not (2.33e-3 against 8.36e-3 per K, about 1.3
+combined errors apart). Five questions go to the user.
+
+**The rename's table was incomplete: 52 live IDs were missing** (`rename-design`, 2dd54f72). FR-58's note found one of them
+(D379), and the author then checked every quoted ID, 2,062 in all. Each of the 1,869 that are not in the table has a
+recorded reason.
+- **Now:** 193 rows and 386 old spellings, with no collisions. 127 rows are settled, 17 wait for the user's words, and 49
+  for the lead.
+- **Why they were missed:** an ID held by any legacy module had been classed as legacy's; every `kind` key as a schema key;
+  mixed-case IDs, and IDs built at run time, were not seen.
+- **45 sites need a hand change, and five of them fail silently,** so the script alone is not complete. Among them, a
+  test fixture's `startswith("nav1p2")` would set no channel change. The hand refactors take the list.
+- **The lead's rulings, to be confirmed with the user's words:** the three `resolved_tissue` models and 45 catalogue laws
+  stay bare until C-1, as a stated exception; `ionic_worlds@1` is minted; of the 36 hash-pinned files, the Python ones
+  are re-spelled and the 18 data files left; the 8 example artifacts' outcomes are declared and their tests leave with
+  legacy, unless regenerating them proves easy.
+- **The tool is being built** by another agent (`id-rename-tool`). Its generated table must equal the author's, row by row.
+
+**FR-38's second comparison: amendment 6 is tagged** `fr38-v2-amendment-6-2026-11-25` (f555dcec), before any engine run of a
+registered world. The judge had conformed to amendment 5 and reported five readings that could change a verdict. The
+lead ruled on them from the registered text, and the protocol's author wrote them down, with three corrections:
+- **A refusal never hides a fail.** The judge scored a run "refused" when its twin, blank or restart was refused, even
+  where an entry of its own failed, which could read a fail as inconclusive. An entry that can be formed and fails now
+  fails its run. One exception is kept and stated: an entry that C0 refuses for a malformed leaf.
+- **A refused P9 is caught;** a refused blank leaves P1″ unscorable; AN's missing restart refuses the restart alone; the
+  equalities run over named things, a narrowing disclosed before any run.
+- **A dry C0 by the lead:** the judge's own definition check on the builder's registered definitions, with made-up
+  readouts: 76 entries with no fault and no flag, ten plants that differ only by their registered change, and 15 of 15
+  planted wrong inputs named (`/mnt/workspaces/Cells/fr38-v2-dry-c0-20261125/`).
+- **The registered engine is main's at the merge** of main with the three branches, so the checks the amendment names are
+  re-run there before the registration tag: the builder's own, the judge's, the dry C0, the author's arm-A probe and the
+  regenerated format sample, on made-up values only.
+
+**Legacy: the science captures are queued on lane B** (`legacy-captures`, 1dc62bdf; about 70 MB under a 1 GiB cap). They
+are the calcium ensemble's present results, from a frozen snapshot of 76a498ae, at h, h/2 and h/4, and every legacy route
+needs them. The pilot corrects the plan's section 8: about 1.8 CPU-hours, not 6 to 8; JUPITER's configuration is at
+100 µs, not 50; the whole run in one window is refused at h/2 and h/4, so it is saved in 256-step windows. A short
+bitwise check, run again at the pre-rename tag, will show that the stack's earlier commits do not reach the captured
+worlds.
+
+**FR-43 part 3's open item has a design note** (`fr43-part3-cowriters`, c82d8d42; docs only): local reactions and the gene unit
+may share a row that the integer-unit population moves, as turnover and exchange do, by one general rule on shared
+rows. It is refused today only by definition checks; with those lifted in process, both pairs ran compiled with every
+host check passing and restarted bit for bit. Event times and amounts are second order in the step, and exact where rates
+are constant. 3.75 to 5.25 agent-days with one judged comparison. Four questions go to the user. It also found that
+`site_occupancy@1` writes moved rows with no check, and that the hazard bound ignores what co-writers make.
+
+**FR-54 and FR-57:** the registered protocol's author and the recorded dt study have started, as the note's order has it
+(the protocol is tagged before the build). The study measures the default face heat's domain on today's engine; the
+protocol's spec is value-silent, and its references come from a code-blind agent.
