@@ -8,10 +8,9 @@ import numpy as np
 import pytest
 
 from cells.definitions.specs import (
+    ChannelChange,
     ConfigError,
-    ContactChange,
     GraphContactChange,
-    InputChange,
     MultispeciesExecutionSpec,
     load_spec,
     parse_spec,
@@ -131,8 +130,7 @@ def test_invalid_graph_definitions(graph_data, path, value):
 def test_python_api_cannot_drop_or_substitute_controls(graph_data):
     spec = parse_spec(graph_data)
     for changed in (
-        replace(spec.experiment, source=(InputChange(0, 1),)),
-        replace(spec.experiment, contact=(ContactChange(0, 1),)),
+        replace(spec.experiment, contact=(ChannelChange(0, 1),)),
         replace(spec.experiment, contact=()),
     ):
         with pytest.raises(ConfigError):

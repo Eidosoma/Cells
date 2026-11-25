@@ -214,11 +214,13 @@ def test_the_table_s_models_are_parse_spec_s_own_dispatch():
     assert planted != source
     extra = dispatched(planted, vars(specs))
     assert extra != table and extra["planted@1"] == "cells.planted_spec"
-    # An ID that the table does not list is refused by its name, before its fields are read.
-    unknown = dict(schema_version=1, model=dict(id="planted@1"), experiment={}, execution={})
-    with pytest.raises(ConfigError, match="^Unknown model: 'planted@1'; available: ") as refused:
-        parse_spec(unknown)
-    assert str(refused.value).endswith(", ".join(MODELS))
+    # An ID that the table does not list, a family's other major among them, is refused by its
+    # name, before its fields are read.
+    for unknown in ("planted@1", "resolved_tissue@3"):
+        definition = dict(schema_version=1, model=dict(id=unknown), experiment={}, execution={})
+        with pytest.raises(ConfigError, match=f"^Unknown model: '{unknown}'; available: ") as no:
+            parse_spec(definition)
+        assert str(no.value).endswith(", ".join(MODELS))
 
 
 # ------------------------------------------------------------------ loading
