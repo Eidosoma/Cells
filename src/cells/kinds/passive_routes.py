@@ -65,8 +65,10 @@ refuses any other route law it hosts.
   records it and its fields gain the control `passive_multiplier` [route], held at 1; each
   factored route's slot is routed (`routed_controls`), so at every stage it is the left fold of
   its sources' factors. Each route's opening is multiplied by it in rates and stage_term.
-  Booking, its scope, bound_rate (m <= 1) and moved_rows are unchanged. A definition whose routes
-  declare no factors keeps today's entry, fields and programs.
+  Booking, its scope, bound_rate (m <= 1) and moved_rows are unchanged. A factored route that moves
+  a row its own source reads closes a loop: the sink's feedback hooks (routed_rows and routed_flux;
+  kind_registry.Kind) give the core its row and its routed flux, and the core bounds the loop. A
+  definition whose routes declare no factors keeps today's entry, fields and programs.
 
 - **The flux,** inward from the host's outside end (a patch's outside node, a junction's receiver)
   to its inside end (a patch's cell, a junction's sender), at every explicit stage, on the read
@@ -485,11 +487,11 @@ def structure_entry(declaration):
 
 
 def declared_fields(entry):
-    """The kind's fields for its entry (§7.4 (n) 5): the multiplier exists only where factored,
-    the rectifier's fields only where a route runs it, the charged law's field and its
-    material_term only where a route runs that law, the readouts' field, columns and hook only
-    where a route asks (FR-34), and the one-way records' fields, mask and hooks only where a route
-    keeps them (FR-50), so no other entry's program or observation changes."""
+    """The kind's fields for its entry (§7.4 (n) 5): the multiplier and the sink's feedback hooks
+    exist only where factored, the rectifier's fields only where a route runs it, the charged law's
+    field and its material_term only where a route runs that law, the readouts' field, columns and
+    hook only where a route asks (FR-34), and the one-way records' fields, mask and hooks only where
+    a route keeps them (FR-50), so no other entry's program or observation changes."""
     one_way = isinstance(entry, OneWay)
     readout = isinstance(entry, ReadOut) or (one_way and entry.readout)
     laws = entry.laws if isinstance(entry, (Factored, ReadOut, OneWay)) else entry
@@ -506,7 +508,9 @@ def declared_fields(entry):
         layout,
         (MULTIPLIER,) if factored else (),
         READOUT_COLUMNS if readout else (),
-        (() if charged else ("material_term",)) + (() if readout else ("readouts",)),
+        (() if charged else ("material_term",))
+        + (() if readout else ("readouts",))
+        + (() if factored else ("routed_rows", "routed_flux")),
         (ONE_WAY_RECORD,) if one_way else (),
     )
 
@@ -531,6 +535,20 @@ def routed_controls(declaration):
     return tuple(
         (MULTIPLIER, k, route.factors) for k, route in enumerate(declaration) if route.factors
     )
+
+
+def routed_rows(declaration):
+    """The row each factored route moves, between its two ends, in routed_controls' order (a
+    factor's feedback, kind_registry.Kind; names only)."""
+    return tuple(
+        ((route.species, route.inside, route.outside),) for route in declaration if route.factors
+    )
+
+
+def routed_flux(read, potentials, control, p, *, xp):
+    """{the multiplier: [species, route] the inward flux (fmol/s)} at the routed control, the
+    rates' own (_flux): a factor's feedback (kind_registry.Kind)."""
+    return {MULTIPLIER: _flux(read, potentials, control, p, xp=xp).flux}
 
 
 def _node_ids(spec):
@@ -1396,6 +1414,8 @@ PASSIVE_ROUTES = BUILTIN.register(
         declared_fields=declared_fields,
         control_values=control_values,
         routed_controls=routed_controls,
+        routed_rows=routed_rows,
+        routed_flux=routed_flux,
         view=VIEW,
         view_sets=view_sets,
         label_refusals=label_refusals,  # FR-42's hook (D303 item 6): traced only with labels.

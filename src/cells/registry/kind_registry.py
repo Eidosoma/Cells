@@ -76,6 +76,7 @@ __all__ = (
     "kind_factor_rows",
     "kind_ledgers",
     "kind_role_species",
+    "kind_routed_rows",
     "kind_standard_free_energies",
     "label_refusal_errors",
     "law_count_names",
@@ -257,20 +258,37 @@ class Kind:
       any kind's rates, stage_term or readouts, each routed slot becomes its held value x its
       sources' values, a left fold in declared order. A factor outside [0, 1] or not finite
       refuses the row or the step; `book` receives the held control.
-    - a factor's feedback (docs/IP3_RELEASE_AND_ASSEMBLY_AVAILABILITY_DESIGN.md §5.5): a gated
-      route that moves a row its own gate reads closes a loop, whose rate needs the factor's slope.
-      A source gives it by two hooks, both or neither (registration refuses one alone, and both
-      without factor_sources and factors). `factor_rows(declaration)` -> one tuple per source, in
+    - a factor's feedback (docs/IP3_RELEASE_AND_ASSEMBLY_AVAILABILITY_DESIGN.md §5.5 and
+      docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md §6.5): a gated route that moves a row its own gate
+      reads closes a loop, whose rate needs the factor's slope and the route's flux. Each side gives
+      its part by two hooks, both or neither (registration refuses one alone, and both without the
+      door's own hooks of that side).
+      A source: `factor_rows(declaration)` -> one tuple per source, in
       factor_sources' order, of ((species ID, node ID), ...): the rows whose amounts that source's
       factor reads, each pair once, in order of first appearance, () where it reads none; on the
       host, names only (kind_factor_rows reads and checks it). `factor_log_slopes(read, p, *, xp)`
       -> [P] d ln f / d ln n, dimensionless and signed, its arguments `factors`' own: P is the
       number of pairs, flattened (sources in order, then each source's pairs), and n (fmol) the
       pair's amount on the stage's read, the free one where a closure owns the row. It is finite at
-      a zero amount. The bound that reads the two is the core's (surface_pump_v3.material_rate) and
-      is not built yet, so nothing calls them. A source without them is admitted: where it reads an
-      amount (ph_condition) a loop through it is not bounded; where it reads none (patch_damage) no
-      loop closes through it.
+      a zero amount.
+      A sink: `routed_rows(declaration)` -> one tuple per routed slot, in routed_controls' order, of
+      ((species ID, node ID a, node ID b), ...): each row that the slot moves and the two nodes it
+      moves it between, each once, () where it moves none; on the host, names only
+      (kind_routed_rows). `routed_flux(read, potentials, control, p, *, xp)` -> {control field:
+      [species, slot]} the flux (fmol/s, of either sign) of each row through each slot of each field
+      that routed_controls names, its arguments `rates`' own, at the ROUTED control (the door's
+      result). @3 is the sink of its own channel slots and has the two in the core.
+      The core pairs them by name at binding (InnerStructure.loops): a loop is closed where a source
+      of a slot reads a row that the slot moves, at an end that is not a held bath (a held amount
+      does not move). At every explicit stage the rate |J| |slope| / n of each moved row and each
+      pair of its slot joins the material rule at both ends of that row
+      (surface_pump_v3.loop_material_rates). Not bounded: a loop through two routes (one moves X and
+      gates on Y, the other moves Y and gates on X), and a loop through a source without the hooks,
+      which is admitted: where it reads an amount (ph_condition) its loop has no bound; where it
+      reads none (patch_damage) no loop closes through it. Refused by name, since the loop would
+      have no bound: a sink that routes a slot and has neither hook, where a source of that slot
+      that has its hooks reads a row the kind moves (its moved_rows; without routed_rows the core
+      cannot tell which of them the slot moves). Elsewhere such a sink is admitted.
     - stage: `stage_read(state, p, *, xp)` -> (the state whose amount fields hold the amounts
       every rate of the stage reads, valid), composed in hook order; a failed read refuses the
       step, and domain_valid evaluates the reads at every checked state (the step's end
@@ -306,10 +324,11 @@ class Kind:
       -> [cells, then outside nodes] the kind's material slope (1/s) at the stage's read amounts
       and node potentials: per node, the largest |dJ/dn| of a row it moves there (a neutral
       transporter's k S n e^a / n near its static head grows as the node empties, which no
-      definition-time bound can follow). surface_pump_v3.material_rate sums the kinds' terms per
-      node, and the step refuses at every explicit stage where dt x its largest over cells and
-      non-held outside nodes exceeds the same bound (the material counterpart of stage_term; the
-      FR-4/FR-5 note's §17, D4). Without a kind that declares it, no program changes.
+      definition-time bound can follow). surface_pump_v3.material_rate sums the kinds' terms and
+      the core's own per node, and the step refuses at every explicit stage where dt x its largest
+      over cells and non-held outside nodes exceeds the same bound (the material counterpart of
+      stage_term; the FR-4/FR-5 note's §17, D4). Without a kind that declares it, no program
+      changes.
     - one writer: `held_rows(declaration)` -> ((species, node ID), ...), rows the kind reads and
       never moves (held fuel); binding refuses any inner route or other kind that moves one.
     - per-stage diagnostics (gap 7): `stage_values(read, cell, outside, p, *, xp)` -> {own state
@@ -480,6 +499,8 @@ class Kind:
     factor_rows: Callable | None = None  # A factor's feedback: the rows it reads, by name.
     factor_log_slopes: Callable | None = None  # (read, p, *, xp) -> [P] d ln f / d ln n.
     routed_controls: Callable | None = None
+    routed_rows: Callable | None = None  # A factor's feedback: the rows each slot moves, by name.
+    routed_flux: Callable | None = None  # (read, potentials, control, p, *, xp) -> {field: J}.
     # The run view (D154): its fields' declarations, and its own axes' sets.
     view: object = None  # A KindView.
     view_sets: Callable | None = None
@@ -999,6 +1020,30 @@ def kind_factor_rows(kind, declaration):
     return rows
 
 
+def kind_routed_rows(kind, declaration):
+    """A sink kind's moved rows (Kind.routed_rows), checked, as the core reads them at binding: a
+    tuple of one entry per routed slot, in routed_controls' order, each a tuple of distinct (species
+    ID, node ID a, node ID b) rows of names. None for a kind that declares none. The names are the
+    model's; the core resolves them."""
+    if kind.routed_rows is None:
+        return None
+    rows, slots = kind.routed_rows(declaration), kind.routed_controls(declaration)
+    if not (isinstance(rows, tuple) and len(rows) == len(slots)):
+        raise ValueError(
+            f"Kind {kind.kind_id}'s routed_rows returns a tuple of one entry per routed slot "
+            f"({len(slots)})"
+        )
+    for (name, slot, _), moved in zip(slots, rows, strict=True):
+        where = f"Kind {kind.kind_id}'s routed_rows, {name}[{slot}]"
+        if not isinstance(moved, tuple) or not all(
+            isinstance(row, tuple) and len(row) == 3 and all(map(_named, row)) for row in moved
+        ):
+            raise ValueError(f"{where}: a tuple of (species ID, node ID a, node ID b) rows")
+        if len(set(moved)) != len(moved):
+            raise ValueError(f"{where}: it names a row twice")
+    return rows
+
+
 def _finite_fill(value):
     if isinstance(value, bool):
         return True
@@ -1095,6 +1140,16 @@ def declaration_errors(kind):
         out.append(
             "it declares factor_rows and factor_log_slopes only beside factor_sources and factors, "
             "whose rows and slopes they are"
+        )
+    sunk = (kind.routed_rows, kind.routed_flux)  # The sink's side of it.
+    if any(h is not None and not callable(h) for h in sunk) or (sunk[0] is None) != (
+        sunk[1] is None
+    ):
+        out.append("it declares routed_rows and routed_flux together, each a callable")
+    elif sunk[0] is not None and kind.routed_controls is None:
+        out.append(
+            "it declares routed_rows and routed_flux only beside routed_controls, whose slots' "
+            "rows and fluxes they are"
         )
     return out + _axis_errors(kind, static) + _dispatch_mask_errors(kind, static)
 

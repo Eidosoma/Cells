@@ -863,7 +863,7 @@ One evaluation of the rates within a step. A step method combines several stages
 
 <!-- generated: used-by stage -->
 
-- **Used by:** [`cells.species_condition@1`](cells/kinds/species_condition@1.md) and [`cells.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md).
+- **Used by:** [`cells.species_condition@1`](cells/kinds/species_condition@1.md), [`cells.cav1p2_m2h@1`](cells/laws/cav1p2_m2h@1.md) and [`cells.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md).
 
 <!-- /generated -->
 

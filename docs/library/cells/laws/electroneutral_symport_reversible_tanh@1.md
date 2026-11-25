@@ -60,6 +60,7 @@ Energy role: not yet extracted; the law template has no energy role yet.
 
 | Declared | Value | Unit |
 | --- | --- | --- |
+| Material term | `material_term` |  |
 | Fuel kinds | none |  |
 
 <!-- /generated -->

@@ -17,12 +17,20 @@ them. One passive route on the contact patch carries S at k = 1e15 P A (1/V_a + 
 - FR-15 F2's junction hosting (D310): the charged law refuses a junction that crosses a floating
   capacitor component, in the row that refused every junction host before; its junction rows are
   test_passive_routes_junctions.py's, so this file keeps its tier-2 cost (D224).
+- A route gated by a row it moves closes a loop (docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md §6.5):
+  its rate in the material rule is the stage's own slope through the factor, at both ends, finite at
+  a zero amount, and the step is refused above it (planted, each caught: the slope dropped, a source
+  on another node, the held control in place of the routed one). No loop, no layout field and no
+  program for a row the route does not move, a held bath or a source without the hooks; a sink
+  without them is refused by name where a loop would close; a hook of the wrong form too. On the
+  host, about 4 s on a busy CPU: parses, NumPy stages and eleven small traces (D224).
 """
 
 import copy
 import dataclasses
 import re
 
+import jax
 import numpy as np
 import pytest
 
@@ -30,8 +38,9 @@ from cells.definitions.specs import ConfigError, parse_spec
 from cells.definitions.surface_pump_v3_spec import control_values
 from cells.execution.errors import NumericalError
 from cells.execution.runner import run
-from cells.kinds import passive_routes, proton_buffer
+from cells.kinds import passive_routes, proton_buffer, species_condition
 from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R, bernoulli
+from cells.laws.reactions import hill_product_factor
 from cells.models import surface_pump_v3
 from cells.registry import kind_registry
 from cells.registry.inventory_species import add_inventory_species
@@ -702,3 +711,238 @@ def test_an_unresolved_step_marks_the_record_and_refuses_nothing(monkeypatch):
     reference = closed_forms.k1("K1_neutral_zero_net", case, times=("0", "0.5", "1.0"))
     assert not judge.check_gap(rows)["passed"]
     assert not judge.check_absolute(reference, rows, "0.1")["passed"]
+
+
+# -------------------------------------------------------- a factor's feedback (calcium note, §6.5)
+
+SOURCE = species_condition.SPECIES_CONDITION
+SINK = passive_routes.PASSIVE_ROUTES
+
+
+def gated_pair(reads=("X", "cell_0"), form="hill_activation", host="contact_0"):
+    """The charged pair at its held -50 mV, its route (on `host`) gated by a condition that reads
+    one species at one node. X is a trace, so its amounts bind and not its charge, and 20 times less
+    in the cell than at the node: the contact route moves it into the cell."""
+    raw = charged_pair(voltage_fmol=-5.18e-5, pool_mM=1e-8, node_mM=2e-7, dt=1e-4)
+    species, node = reads
+    read = dict(species=species, form=form, half_saturation_mM=1e-8, hill_coefficient=5.0)
+    law = hill_product_factor.LAW_ID
+    raw["model"]["species_conditions"] = [dict(id="gate", node=node, law=law, reads=[read])]
+    raw["model"][passive_routes.MODEL_KEY][0].update(factors=["gate"], patch=host)
+    return raw
+
+
+def both(source=SOURCE, sink=SINK):
+    """The two kinds on one registry: a planted error replaces one's hooks."""
+    kinds = kind_registry.KindRegistry()
+    kinds.register(sink)
+    kinds.register(source)
+    return kind_registry.scope(kinds)
+
+
+def without(kind):
+    """A kind without its side's feedback hooks."""
+    hooks = ("factor_rows", "factor_log_slopes") if kind is SOURCE else ("routed_rows",
+                                                                         "routed_flux")  # fmt: skip
+    return dataclasses.replace(kind, **dict.fromkeys(hooks))
+
+
+def gated_start(raw):
+    """(spec, implementation, state, control, layout, potentials, X's row) at the start."""
+    spec = parse_spec(raw)
+    impl = get_model(spec.model)
+    state, p = impl.initial_values(spec)
+    control = impl.Control(*(v[0] for v in control_values(spec, [0.0])))
+    potentials = impl.readouts(state, control, p, xp=np).field.potential_V
+    return spec, impl, state, control, p, potentials, list(spec.model.species_ids).index("X")
+
+
+def stage_parts(impl, state, control, p, potentials):
+    """([node] the passive kind's material term, [node] the loops') at a stage, and the loops' with
+    the held control in place of the routed one."""
+    kinds = surface_pump_v3._kinds(impl.structure)
+    routed, _ = surface_pump_v3._route(impl.structure, kinds, state, control, p, xp=np)
+    (passive,) = [k for k in kinds if k.kind_id == passive_routes.KIND_ID]
+
+    def loops(gates):
+        return surface_pump_v3.loop_material_rates(
+            state, state, potentials, gates, p, xp=np, structure=impl.structure, kinds=kinds
+        )
+
+    term = passive.material_term(state, potentials, routed, p, xp=np)
+    return np.asarray(term), loops(routed), loops(control)
+
+
+@pytest.mark.parametrize("form", ("hill_activation", "hill_inhibition"))
+def test_a_loop_s_rate_is_the_stage_s_own_slope_through_the_factor(form):
+    """d(dn/dt)/dn of X at the cell, by a central difference of the stage's own derivative, is the
+    direct slope (the closed form's) and the part through the factor; that part is the engine's
+    rate, at both ends. Under an inhibition the two add, so the whole rule is the block's own
+    eigenvalue; under an activation the rule is no less. Then the step itself."""
+    spec, impl, state, control, p, potentials, x = gated_start(gated_pair(form=form))
+    n, node = p.active.size, 1
+    assert impl.structure.loops == (((0, 0), (species_condition.KIND_ID, 0)),)
+    h = 1e-5
+
+    def derivative(cell, outside):
+        inner, outer = np.array(p.amount_reference), np.array(p.extracellular_amount_reference)
+        inner[x, 0] *= 1 + cell
+        outer[x, node] *= 1 + outside
+        moved = p._replace(amount_reference=inner, extracellular_amount_reference=outer)
+        rates, _ = impl.explicit_rates(state, potentials, control, moved, xp=np)
+        return np.array(
+            [rates.amount_increment[x, 0], rates.extracellular_amount_increment[x, node]]
+        )
+
+    amounts = p.amount_reference[x, 0], p.extracellular_amount_reference[x, node]
+    by_cell = (derivative(h, 0) - derivative(-h, 0)) / (2 * h * amounts[0])
+    by_node = (derivative(0, h) - derivative(0, -h)) / (2 * h * amounts[1])
+    factor = species_condition.factors(state, p, xp=np)[0]
+    v = potentials[0] - potentials[n + node]
+    assert -0.06 < v < -0.04
+    drive = -1 * F * v / (R * spec.model.temperature_K)
+    direct = AREA * P * 1e15 * factor * float(bernoulli(-drive, xp=np))  # V = 1 pL.
+    through = np.abs(by_cell + np.array([direct, -direct]))
+    term, loops, held = stage_parts(impl, state, control, p, potentials)
+    assert loops[[0, n + node]] == pytest.approx(through, rel=1e-6, abs=0)
+    assert not np.any(np.delete(loops, [0, n + node])) and loops[0] > 2 * direct
+    rate = float(impl.material_rate(state, control, p, xp=np, potentials=potentials))
+    assert rate == pytest.approx((term + loops).max(), rel=1e-14, abs=0)
+    fastest = abs(by_cell[0] + by_node[1])  # The other eigenvalue is 0: X is conserved.
+    assert rate >= fastest * (1 - 1e-8)
+    if form == "hill_inhibition":
+        assert rate == pytest.approx(fastest, rel=1e-6, abs=0)
+    assert held[0] > 1.5 * loops[0]  # Planted: the held control, whose flux holds no factor.
+    charge = float(impl.membrane_rate(state, control, p, xp=np, potentials=potentials))
+    assert charge < 0.5 * rate
+    for scale, admitted in ((0.9, True), (1.1, False)):
+        assert bool(impl.imex_step(state, scale / rate, control, p, xp=np)[1]) is admitted
+    blind = loops_without_potentials(impl, state, control, p)
+    assert np.isinf(blind[[0, n + node]]).all() and not np.any(np.delete(blind, [0, n + node]))
+    with both(source=without(SOURCE)):  # Planted: the slope dropped, the same step admitted.
+        _, planted, start, gates, layout, *_ = gated_start(gated_pair(form=form))
+        assert planted.structure.loops == ()
+        assert bool(planted.imex_step(start, 1.1 / rate, gates, layout, xp=np)[1])
+    far = dataclasses.replace(SOURCE, factor_rows=lambda declaration: ((("X", "ecs_0"),),))
+    with both(source=far):  # Planted: a source on another node.
+        _, planted, start, gates, layout, at, _ = gated_start(gated_pair(form=form))
+        _, wrong, _ = stage_parts(planted, start, gates, layout, at)
+        assert wrong[0] < 0.2 * loops[0]
+
+
+def loops_without_potentials(impl, state, control, p):
+    return surface_pump_v3.loop_material_rates(
+        state, state, None, control, p, xp=np, structure=impl.structure,
+        kinds=surface_pump_v3._kinds(impl.structure),
+    )  # fmt: skip
+
+
+def test_a_loop_s_rate_is_finite_at_a_zero_amount_and_small_at_a_trace():
+    """J and n are both 0 at a zero amount: the product first, 0 over the smallest normal float, is
+    0 (the division first is 0 times infinity, a NaN, at this coefficient). At a millionth of K the
+    held control's rate would refuse any step (planted), the routed one's is small."""
+    _, impl, state, control, p, potentials, x = gated_start(gated_pair())
+
+    def at(amount):
+        reference = np.array(p.amount_reference)
+        reference[x, 0] = amount
+        with np.errstate(all="ignore"):  # ln 0, the source's, and the planted rate's overflow.
+            return stage_parts(
+                impl, state, control, p._replace(amount_reference=reference), potentials
+            )
+
+    _, loops, _ = at(0.0)
+    assert np.isfinite(loops).all() and not np.any(loops)
+    _, loops, held = at(1e-14)
+    assert 0 < loops[0] < 1e-6 and held[0] > 1e6
+
+
+EMPTY = {  # What the gate reads, the route's host, and the source: no loop in any.
+    "a row the route does not move": ((fx.SPECIES, "cell_0"), "contact_0", SOURCE),
+    "a node that is no end of it": (("X", "bath"), "contact_0", SOURCE),
+    "a held bath": (("X", "bath"), "wall_cell_0", SOURCE),
+    "a source without the hooks": (("X", "cell_0"), "contact_0", without(SOURCE)),
+}
+
+
+@pytest.mark.parametrize("name", sorted(EMPTY))
+def test_no_loop_no_layout_field_and_no_program(name):
+    """Each world has the structure, the layout's fields and the rule's program that the same world
+    has where neither side has the hooks (D148); a sink without them is admitted there."""
+    reads, host, source = EMPTY[name]
+
+    def traced(**kinds):
+        with both(**kinds):
+            _, impl, state, control, p, potentials, _ = gated_start(gated_pair(reads, host=host))
+            assert impl.structure.loops == ()
+            rule = jax.make_jaxpr(lambda s, c, q, v: impl.material_rate(s, c, q, potentials=v))
+            return impl.structure, type(p)._fields, str(rule(state, control, p, potentials))
+
+    given = traced(source=source)
+    assert given == traced(source=without(SOURCE), sink=without(SINK))
+    assert not any(field.startswith("loop_") for field in given[1])
+    if source is SOURCE:
+        assert given == traced(sink=without(SINK))
+
+
+def flux_of(change):
+    """The sink with its routed_flux's result changed."""
+
+    def routed_flux(read, potentials, control, p, *, xp):
+        return change(SINK.routed_flux(read, potentials, control, p, xp=xp))
+
+    return dataclasses.replace(SINK, routed_flux=routed_flux)
+
+
+def slopes_of(change):
+    """The source with its factor_log_slopes' result changed."""
+    return dataclasses.replace(
+        SOURCE, factor_log_slopes=lambda read, p, *, xp: change(
+            SOURCE.factor_log_slopes(read, p, xp=xp)
+        ),
+    )  # fmt: skip
+
+
+NAME = passive_routes.MULTIPLIER
+REFUSED = {
+    "a sink without the hooks": (
+        dict(sink=without(SINK)),
+        f"{passive_routes.KIND_ID} routes {NAME}[0], which 'gate' drives from X at cell_0, but "
+        "declares no routed_flux: the loop has no bound",
+    ),
+    "slopes of another shape": (
+        dict(source=slopes_of(lambda v: v[:, None])), "factor_log_slopes must be float64 (1,), not",
+    ),
+    "slopes in float32": (
+        dict(source=slopes_of(lambda v: v.astype(np.float32))),
+        "factor_log_slopes must be float64 (1,), not float32 (1,)",
+    ),
+    "fluxes that are no mapping": (
+        dict(sink=flux_of(lambda v: v[NAME])), f"routed_flux of {NAME} must be float64 (",
+    ),
+    "fluxes of another field": (
+        dict(sink=flux_of(lambda v: {"other": v[NAME]})), f"routed_flux of {NAME} must be float64",
+    ),
+    "fluxes of another shape": (
+        dict(sink=flux_of(lambda v: {NAME: v[NAME][0]})), f"routed_flux of {NAME} must be float64",
+    ),
+    "a moved row of no declared node": (
+        dict(sink=dataclasses.replace(SINK, routed_rows=lambda d: ((("X", "cell_0", "q"),),))),
+        "routed_rows names 'q', which the model does not declare",
+    ),
+    "a read row of no declared species": (
+        dict(source=dataclasses.replace(SOURCE, factor_rows=lambda d: ((("Q", "cell_0"),),))),
+        "factor_rows names 'Q', which the model does not declare",
+    ),
+    "a malformed moved row": (
+        dict(sink=dataclasses.replace(SINK, routed_rows=lambda d: ((("X", "cell_0"),),))),
+        f"feedback hooks are refused: Kind {passive_routes.KIND_ID}'s routed_rows, {NAME}[0]",
+    ),
+}  # fmt: skip
+
+
+@pytest.mark.parametrize("name", sorted(REFUSED))
+def test_a_hook_of_the_wrong_form_and_a_sink_without_its_hooks_are_refused_by_name(name):
+    kinds, message = REFUSED[name]
+    with both(**kinds), pytest.raises(ConfigError, match=re.escape(message)):
+        parse_spec(gated_pair())

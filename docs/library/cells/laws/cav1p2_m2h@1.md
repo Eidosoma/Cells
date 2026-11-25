@@ -9,10 +9,9 @@ pores that let ions cross it. This law says when one type of calcium channel is 
 [gates](../../GLOSSARY.md#gate). The first opens within milliseconds when the inside of the cell
 becomes less negative; the second shuts within tens of milliseconds after the same change. Calcium
 passes only while both are open, so a rise of the voltage gives a short pulse. Calcium is scarce
-inside a cell, so a small pulse changes its amount much while it moves little charge. The host has no
-rule yet that keeps a scarce ion's amounts safe in a channel, so a definition that names this law is
-refused today. It leaves out inactivation by calcium itself, temperature, the charge that moves with
-a gate, and the energy of the channel protein.
+inside a cell, so a small pulse changes its amount much while it moves little charge, and the host
+limits its time step by that change too. It leaves out inactivation by calcium itself, temperature,
+the charge that moves with a gate, and the energy of the channel protein.
 
 ## Seen from each field
 
@@ -60,6 +59,7 @@ Energy role: not yet extracted; the law template has no energy role yet.
 | --- | --- | --- |
 | Voltage domain | -0.12 to 0.06 | V |
 | Stage term | `constant_field_slope` |  |
+| Material term | `material_slope_per_s` |  |
 
 <!-- /generated -->
 
@@ -84,11 +84,14 @@ $$\frac{dm}{dt} = \frac{m_\infty - m}{\tau_m}, \qquad \frac{dh}{dt} = \frac{h_\i
   [valence](../../GLOSSARY.md#valence) 2, the form of the route law `cells.constant_field@1`. The law
   is the one authority for that valence: a model whose calcium has another is refused. Which way a
   positive flux points is not declared.
-- **Step rules:** the law declares no material term. For an ion other than sodium, potassium and
-  chloride, the host's parser asks for one, since its charge rule alone does not hold a scarce ion's
-  amounts, so every definition that names this law is refused by name. The law declares no RK4 step
-  bound either, so no RK4 grid runs it.
-- **Integration:** the host would advance each gate by its exponential stage update.
+- **Step rules:** the law names the kernel of its material term: how fast the flux changes with
+  calcium's amount at each end, $P a\,v\,m^2 h\,A\,B(\mp x)/\text{volume}$ with $x = 2FV/RT$ and
+  $B(x) = x/(e^x - 1)$. At every explicit [stage](../../GLOSSARY.md#stage) the host takes the sum of
+  the two ends' slopes as calcium's rate at both, leaves out an end that is a held bath, and refuses
+  the step where the largest rate times the step exceeds 1. For an ion other than sodium, potassium
+  and chloride its parser asks for such a term, since the charge rule alone does not hold a scarce
+  ion's amounts. The law declares no RK4 step bound, so no RK4 grid runs it.
+- **Integration:** the host advances each gate by its exponential stage update.
 - **Assumptions:** each gate lies between 0 and 1 and relaxes monotonically at fixed $V$. There is no
   temperature term: the source notes 21 °C for its model and applies none.
 - **Left out:** calcium-dependent inactivation, gating charge, conformational energy and protein
@@ -136,11 +139,16 @@ milliseconds, in 80-digit decimals, at 1,801 voltages across the domain, in NumP
 5e-14 of each value. Leaving out the 10 mV shift must miss the targets and the time constants, and $m^3 h$ for
 $m^2 h$ must miss the open fraction.
 
-The rows that need an admitted population use a planted law with this one's kernels that declares a
-material term. At a state with calcium entering, and at one with it leaving, its flux, the charge it
-carries, the amounts it moves and its heat are the constant-field closed form's at valence 2, in
-50-digit decimals; a law and a model at valence 1 must miss all four. A law that says calcium is +1, or
-a model that does, is refused by name; so are a law without the material term, and an RK4 grid.
+The rows that plant another record of the law (a valence, no term, an RK4 bound) use a planted law
+with this one's kernels. At a state with calcium entering, and at one with it leaving, its flux, the
+charge it carries, the amounts it moves and its heat are the constant-field closed form's at valence 2,
+in 50-digit decimals; a law and a model at valence 1 must miss all four. A law that says calcium is +1,
+or a model that does, is refused by name; so are a law without the material term, and an RK4 grid.
+
+The material term is compared with central differences of the stage's own flux, over voltages and
+openings, in a world of two cells that share one small node. Exchanging the two ends' factors, keeping
+the term at one end only, and leaving it out at the node must each miss, and the rate is never less
+than the fastest rate of calcium's own block there. A step above the bound is refused.
 
 Older rows run the source's unchanged class out of process and compare it with these kernels, which the
 older families still call. No run was compared with a measurement.

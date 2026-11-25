@@ -2,7 +2,8 @@
 
 docs/SHARED_INVENTORY_REACTIONS_DESIGN.md §1.1, §1.3, §1.4, §2.1, §2.2, §2.5, §3.1, §4.6, §5 and
 §7.2. Host side, no compile. Each refusal names its reason:
-* the species (charged, permeant, undeclared, moieties, standard potentials, identity), the laws
+* the species (charged, permeant, through a channel whose law declares its material term or not,
+  undeclared, moieties, standard potentials, identity), the laws
   (molecularity, coefficients, closure, sources and sinks, Michaelis-Menten's one substrate and its
   read-only catalyst, factors on driven laws only, every parameter's domain), the sites (a held
   bath, undeclared nodes) and the schedule (the dt grid, the horizon, time 0, coverage);
@@ -15,17 +16,21 @@ docs/SHARED_INVENTORY_REACTIONS_DESIGN.md §1.1, §1.3, §1.4, §2.1, §2.2, §2
 """
 
 import copy
+import dataclasses
 import re
 
 import pytest
 
 from cells.definitions import pump_composite_spec as cs
 from cells.definitions.specs import ConfigError, parse_spec
+from cells.laws.channels import cav1p2_m2h, kleak_always_open
+from cells.laws.routes import constant_field_permeation
 from cells.models import pump_composite
 from cells.models import pump_composite_adapter as adapter
 from cells.operators import OPERATORS
 from cells.operators import species_common as common
 from cells.operators import species_reactions as sr
+from cells.registry import laws as law_registry
 from cells.registry.inventory_species import add_inventory_species
 from cells.registry.models import get_model
 from validation.tissue import secreted_species_fixtures as fx
@@ -357,6 +362,98 @@ def test_charged_rows_need_charge_conserving_reactions_and_covered_counter_ions(
         return
     with pytest.raises(ConfigError, match=re.escape(message)):
         parse_spec(raw)
+
+
+# The reactions door (docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md §5.4).
+TERM = constant_field_permeation.material_slope_per_s.__name__
+
+
+def potassium_law(term):
+    """A planted always-open law of K, the ion that needs no material term (code 99)."""
+    return dataclasses.replace(
+        kleak_always_open.LAW, law_id="tests.door_channel@1", code=99, material_term=term
+    )
+
+
+def through(raw, law, gates=()):
+    """raw with one population of `law` on cell_0's first patch."""
+    m = raw["model"]
+    ions = [dict(species_id=ion, relative_permeability=ratio) for ion, _, ratio in law.permeant]
+    m["channels"] = [
+        dict(
+            id="channel_0", membrane_id=m["membranes"][0]["id"], kinetic_law=law.law_id,
+            max_permeability_m_per_s=1e-9, abundance=1.0, initial_gate=list(gates),
+            permeant_ions=ions,
+        )
+    ]  # fmt: skip
+    raw["experiment"]["channel_controls"] = [
+        dict(channel_id="channel_0", schedule=[dict(time=0.0, availability=1.0)])
+    ]
+    raw["execution"]["channel_capacity"] = 1
+    return raw
+
+
+def calcium_buffer():
+    """Calcium (1e-4 mM in cell_0) binds a buffer there, beside a calcium channel on its patch."""
+    raw = rfx.species_world(("B",), faces=False, end=0.01, dt=1e-3)
+    raw = rfx.with_charged_trace(raw, "Ca", 2, concentrations_mM=dict(cell_0=1e-4))
+    raw = rfx.with_charged_trace(raw, "CaB", 2)
+    listed = [
+        rfx.species("Ca", moieties={"Ca": 1}),
+        rfx.species("B", moieties={"site": 1}),
+        rfx.species("CaB", moieties={"Ca": 1, "site": 1}, mu=-2.0),
+    ]
+    cell = {"cells": ["cell_0"]}
+    reactions = [rfx.passive("binding", cell, {"Ca": 1, "B": 1}, {"CaB": 1}, 10.0)]
+    raw = rfx.with_reactions(raw, listed, reactions, [("binding", None, [(0.0, 1.0)])])
+    return through(raw, cav1p2_m2h.LAW, (0.2, 0.7))
+
+
+def potassium_source(term):
+    """The charge-neutral source, whose K crosses by a planted K law's channel alone."""
+    raw = rfx.charge_neutral_source()
+    raw["model"]["membranes"][0]["permeability_m_per_s"]["K"] = 0.0
+    del species_entry(raw, "K")["counter_ion"]
+    return through(raw, potassium_law(term))
+
+
+def leaking(raw):
+    raw["model"]["membranes"][0]["permeability_m_per_s"]["Ca"] = 1e-12
+    return raw
+
+
+def on_rk4(raw):
+    raw["execution"]["solver"] = "rk4"
+    return raw
+
+
+DOOR = {
+    "calcium's law declares its term": (calcium_buffer, None),
+    "a law with its term": (lambda: potassium_source(TERM), None),
+    "a law that declares none": (lambda: potassium_source(None), "'K' has a route through channel"),
+    "a membrane permeability": (
+        lambda: leaking(calcium_buffer()),
+        "'Ca' has a route through membrane",
+    ),
+    "RK4": (lambda: on_rk4(calcium_buffer()), "refuses RK4 in version 1"),
+}
+
+
+@pytest.mark.parametrize("name", sorted(DOOR))
+def test_a_reaction_writes_a_channel_s_ion_where_its_law_declares_a_material_term(name):
+    """The door is the reactions' alone: the same species stays refused to any other operator."""
+    world, message = DOOR[name]
+    law = potassium_law(TERM if name == "a law with its term" else None)
+    with law_registry.scope(law_registry.BUILTIN.extended(law)):
+        if message is not None:
+            with pytest.raises(ConfigError, match=re.escape(message)):
+                parse_spec(world())
+            return
+        spec = parse_spec(world())
+        ion = spec.model.channels[0].permeant_ions[0].species_id
+        assert ion in [s.identity.id for s in spec.model.operators[0].species]
+        with pytest.raises(ConfigError, match=f"'{ion}' has a route through channel channel_0"):
+            common.check_impermeant(spec.model, ion, fx.TURNOVER)
 
 
 def test_all_sites_resolve_to_the_cells_and_finite_outside_nodes():
