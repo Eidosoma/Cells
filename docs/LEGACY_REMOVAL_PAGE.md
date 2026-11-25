@@ -1,6 +1,6 @@
 # The legacy cleanup: what goes, and what you approved
 
-25 November 2026. Six minutes to read. Basis of each number: **(m)** measured, **(r)** read in the code, **(e)** estimated.
+25 November 2026. Seven minutes to read. Basis of each number: **(m)** measured, **(r)** read in the code, **(e)** estimated.
 The list behind this page is `validation/legacy_port/removal_list.tsv` on branch `legacy-removal-list`: one row per file, with its
 owner, reason, basis and state.
 
@@ -26,35 +26,36 @@ you say yes or no to the optional batch.**
 | Configurations | 116 of 157 | JSON | (m) |
 | Examples | all 15 (ten inputs, five guides) | JSON | (m) |
 | Test data | 7 files | 1,200 | (m) |
-| Test IDs | **9,283 of 21,927**: 9,023 in files that go, 260 rows in files that stay | | (m), collection of the final tree |
-| Test IDs that come back | 314, in 10 files their builders are rewriting | | (m); those 10 files do not import until then |
-| Written or rewritten by an owner | 190 files edited (63 of them documents), 16 tests retargeted | | (r); 178 of the 190 edits are done |
+| Test IDs | **9,284 of 21,927**: 9,023 in files that go, 261 rows in files that stay | | (m), collection of the staged deletion |
+| Test IDs of the files being rewritten | 314, in 10 files: 138 in the two that moved onto the new laws (60 rewritten, 70 dropped, 8 left to the calcium worlds), 176 in 8 files still to be rewritten | | (m); those 8 files do not import until then |
+| Written or rewritten by an owner | 193 files edited (67 of them documents), 16 tests retargeted | | (r); 178 of the 193 edits are done, and one of the 16 tests |
 | **Optional, your yes or no:** the old families' own references and the last REF-era folders | 166 files: 40 helpers, 37 tests, 69 scripts, 20 REF-era files | 49,279 | (m); 1,933 more test IDs, 192 more test-seconds in tiers 1 and 2 |
 
-On the tree without all of this, **12,488 tests collect and only the 10 files above fail to** (m). Apart from the 16 retargeted tests, no
+On the tree without all of this, **12,753 tests collect and only the 8 files above fail to** (m). Apart from the retargeted tests, no
 remaining file imports or loads anything that goes, by any way of importing (m); the rename's tool and one guard still name some of it. The
 deletion saves 2,574 of 13,784 test-seconds in tiers 1 and 2 (m), about 8 minutes of wall per full
 gate (e: 0.186 s of wall per test-second, measured 24 November). 142 of 222 tier-3 files go (m). The gate's fingerprints lose 127
 definitions in 123 files, of 274 (m); G1's 113 worlds are unaffected (r).
-**Measured where:** files and lines at 49529e71, the tag's commit; seconds in the tier record; IDs, imports and the dry run at `legacy-cleanup` c368c9f2;
+**Measured where:** files and lines at 49529e71, the tag's commit; seconds in the tier record; IDs, imports and the dry runs at `legacy-cleanup` 34d173d7;
 the parity runs at 63c181fc, on a tree without 1,472 of the files (the other 63 are outside their import chain).
 
 **The optional batch** is what the oldest families were checked with: their independent references, trajectories, audits and tests, and the last REF-era
 contacts. The deletion does not need it, because it imports nothing that goes. Nothing that stays uses it: no test, no re-expression reference, no kept
-law, no capture (m, import graph; the re-expression's criteria, notes and branches do not name it). Its frozen panels stay as records either way. **The
-lead recommends that it goes.**
+law, no capture (m, import graph; the re-expression's criteria, notes and branches do not name it). Its frozen panels stay as records either way. One
+of its files is the reference of Kv1.5's 19 cases (the open condition in section 3). **The lead recommends that it goes.**
 
 ## 2. What comes back
 
 | You use | It becomes | Needs |
 |---|---|---|
-| The JUPITER world, the cluster base, the assembly cell, the integrated ensemble's world | closed `resolved_pump_tissue@3` worlds, same equations | the assembly coupling only, being built |
-| The four calcium clusters | a composite over @3, one store per cell | four features |
-| The assembly command lines and ensemble kinds | CPU batch runs; the GPU path is **parked** | the assembly coupling |
-| NKCC and the generic symport | law modules on the transporter kind | a check of their tanh form against the cycle forms |
+| The JUPITER world, the cluster base, the assembly cell, the integrated ensemble's world | closed `resolved_pump_tissue@3` worlds, same equations | the assembly coupling, now in; the worlds themselves |
+| The four calcium clusters | a composite over @3, one store per cell | the rest of the calcium work, below |
+| The assembly command lines and ensemble kinds | CPU batch runs; the GPU path is **parked** | the same as their worlds |
+| NKCC and the generic symport | `na_k_2anion_symport_reversible_tanh@1` and `electroneutral_symport_reversible_tanh@1`, on the transporter kind | nothing: in |
 
-The plasma calcium pump and the Na/Ca exchanger need no engine feature: the pump is @3's own at another standard state, and the exchanger is one
-law module, now built. Calcium through a channel is not smaller than priced: the engine refuses a buffered trace ion that a channel carries.
+**In the engine now (r, at 34d173d7):** the Na/Ca exchanger; one pump law for an ion of any valence, `atp_driven_transporter_mass_action_positive@2`, for
+the plasma's calcium pump and the store's; the two symports; the release's factor and its source; the assembly coupling; and the CaV1.2 law. **Not yet:** a
+channel's step bound, so a CaV1.2 population is refused by name; the step terms that admit the pump at a store's node; and the loop's bound.
 
 ## 3. What is lost, what stays, and what waits
 
@@ -64,12 +65,19 @@ law module, now built. Calcium through a channel is not smaller than priced: the
 |---|---|---|
 | Kv1.1 to Kv1.4, Kv1.6 | 5 | nothing: registered on @3 |
 | Voltage-only Na and K: Kv2, Kv3, K_fast, Nav1.3, the rat Navs, Nav1.6, three dynamic Morris-Lecar | 15 | one module each on @3; no engine feature |
-| Calcium and HCN: ten CaV laws, six HCN laws | 16 | calcium through channels, being built |
+| CaV1.2 | 1 | registered on @3; a population waits for the channel's step bound |
+| Calcium and HCN: nine more CaV laws, six HCN laws | 15 | the same step |
 | Instantaneous Morris-Lecar | 7 | G-2, a law without a gate |
 | Calcium-activated K | 1 | G-3, which the cardiac plan's H1 already holds |
 
 D211's programme is recorded as open, after the cleanup, in `docs/CORE_LAWS_ROADMAP.md`. `test_channel_law_kernels.py` tests three HCN laws that would have
 had no test, and keeps the kernel rows of three tissue tests that go.
+
+**A condition of D196 is open:** before a batch drops a test that is a live law's only reference check, the check moves beside the law and becomes its
+declared test. D196 names Kv1.5's 19 cases. They have not moved, and `kv1p5_mh@1` declares no test (m). What stays checks the kernel against BETSE, run out
+of process, and whole tissues against an independent reference (r). One row beside the law is proposed, and the deletion's script refuses to make the branch
+until the list says it is there. (An earlier commit of this cleanup had dropped the roadmap's line about it; the line is back.) No other live law module
+loses every test that reaches it, but the mass-action kernel's, which is still checked through its operator; one row of it moves as well (m, import graph; r).
 
 | Lost, or not carried over | In one sentence |
 |---|---|
@@ -103,16 +111,20 @@ bit (m).
 ## 5. Tests
 
 265 files with 9,023 IDs test families that are canonical elsewhere, dropped or retired. **16 tests of used capabilities are rewritten, not
-deleted:** the store, the four calcium worlds, the assembly cell and cluster, the integrated ensemble, the JUPITER planning, and the cotransport laws. Of
-the 260 IDs that leave files that stay, 187 were rows on worlds that went (107 replace them), 70 are the parity rows, and 3 followed the old registry.
+deleted:** the store, the four calcium worlds, the assembly cell and cluster, the integrated ensemble, the JUPITER planning, and the cotransport laws, which
+are done. Of the 261 IDs that leave files that stay, 187 were rows on worlds that went (107 replace them), 70 are the parity rows, 3 followed the old
+registry, and one is a refusal that the calcium work replaced. `removed_rows.tsv` names each, with the 314.
 
 ## 6. Records, and what is open
 
 - **Records stay:** 53 protocol and data files, the other results, the design notes and the decisions.
-- **Open:** the builders' 16 tests, three law files and three validation scripts; the rename's tool, table and note; the tier records. The documents are
-  done (`legacy-cleanup-docs`): 48 say what left, and the run guides name live worlds, each command run once.
-- **The deletion is one commit,** made from the list by a script, in place of 9b0debe6. Its dry runs on `legacy-cleanup` f38f6789 and c368c9f2 removed 1,529
-  files (six are gone already), found every path, and broke no import but the 10 tests' (m). One guard's list changes in the same commit.
+- **Open:** the builders' 15 tests, one law file and three validation scripts; the two rows that move first (section 3); the words of four library pages;
+  the rename's tool, table and note; the tier records. The other documents are done: 48 say what left, and the run guides name live worlds, each command
+  run once.
+- **The deletion is one commit,** made from the list by a script, in place of 9b0debe6. Its dry runs on `legacy-cleanup` f38f6789, c368c9f2 and 34d173d7
+  removed 1,529 files (six are gone already), found every path, and broke no import but the retargeted tests', 8 of them now (m); with the optional batch
+  1,695, and the same 8. Two edits are in the same commit: one guard's list, and the old exchanger's kernel, which only legacy calls (`plasma_calcium.py`;
+  the pump's kernel stays, since `ca_atp_mass_action_positive@1` runs it). On that tree the 15 library pages pass their check (m).
 - **On commit 63c181fc:** its message's numbers are wrong. Measured: the drivers load six Python files (and two JSON protocols) where they loaded 24.
-- **Four names** in live laws and numerics that nothing calls any more are listed for their files' owners, after the core edits.
+- **Thirteen names** in live laws and numerics that only legacy calls, or nothing, are listed for their files' owners, after the core edits.
 - **Not run:** no gate and no suite. The full test of the cleanup branch is the test of it.
