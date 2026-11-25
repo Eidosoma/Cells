@@ -1194,9 +1194,8 @@ RULES = (
         tag=REAL,
         why="The view's refresh of the derived field arrays (refresh_field) rebuilds the dense "
         "ones, which the sparse field does not bind (FR-17 stage 1). The test calls the check "
-        "directly, not through a parse. With a live closer (a declared division, insertion@2) the "
-        "binding refreshes the view before this check, so the parse stops there with an "
-        "AttributeError instead of this refusal (D349's probe)",
+        "directly, not through a parse; a world with a live provider is refused at the parse "
+        "before any binding, by the same message",
         solver=(SolverRefusal(_FIELD_INPUT_LAWS, SPARSE_PAIRS),),
     ),
     dict(
