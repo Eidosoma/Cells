@@ -403,3 +403,25 @@ capacitor components now converge at second order under ARS(2,2,2) and N2. The s
 independent study measured 2.00 to 2.02 for the junction gate, transfer and heat, against 1.07 to 1.26
 at the base. The interim limit stated above no longer applies. replacement_padded's junction gate moved
 by 2.6e-11 relative, with G1's baseline renewed in the same landing.
+
+## Guard 1 with constants (25 November 2026)
+
+D148 (13 November) asked for guard 1 with constants before version 3 serves a run of record. No rerun
+was recorded, and the guard compared counts, which see no constant. `field_floor_guard.py jaxprs` now
+pairs the two programs: version 3's, with each acceptance test taken out and the `or` that joins it
+read as the solve's own convergence, must be version 2's, equation by equation and in order at every
+depth, each literal and closed-over array bit for bit. Beyond that, version 3 has the floor leaf and
+the tests, nothing else. Twelve planted changes, each of which the old checks pass, are refused and
+named. The retro-check found no difference. It covers the base and qualification sets at XC0's snapshot
+(b477f433) and at tag `pre-cleanup-2026-11-25`, and the definitions of the judged runs since 13 November
+found to declare version 3, each at its own snapshot: D172's L4 parity pass (3c10b833, 16 November), XC0
+(260d7c7f, 23 November) and XC0's erratum 2 (b477f433, 24 November), XC0's with the step-doubled step
+its runs take. (The search read the JSON files of the run folders that `PROGRESS.md` and `DECISIONS.md`
+name.) Version 2 refuses XC0's P1LB definitions at parse, so its program was traced from them unparsed;
+no version-2 run of them exists, and their start is accepted by version 3's test alone. Not compared:
+host code (the start check at parse, observations, `check_values`), the rollouts around the step, and
+batched programs. Inside a test, the equations that read the floor and their eps are checked; the rest
+(the incident sum) is written out in the record. A campaign that declares version 3 runs the guard
+again, on its own frozen snapshot with its own definitions: the commands, and what their records must
+show, are in the tool's docstring. Evidence: `/mnt/workspaces/Cells/floor-guard-constants-20261125/`
+(`inputs.json`, `summary.json`, `records/`, `plants/`, `unparsed/`, `order/`).
