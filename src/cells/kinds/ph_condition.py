@@ -28,6 +28,14 @@ with an optional `proton` row (default "H"), which must be B4's proton row where
   xp)`, f of each on the stage's read. h > 0 at the node is the read's and @3's domain (a failed
   read and a non-positive amount refuse the step before any factor); the door's [0, 1] check
   refuses anything else.
+- **Its limit:** it has no feedback hooks (factor_rows and factor_log_slopes; kind_registry.Kind),
+  so the core's bound on a gated route's feedback does not cover a loop through it, such as a route
+  that moves protons at its own condition's node. FR-5's worlds use it, so it is admitted.
+- **Its successor:** `cells.species_condition@1` with one hill_activation read of the proton row,
+  K = 10^(3 - pH50) mM and n the slope, which has the hooks. The two factors differ by at most
+  2.3e-15 on 20,000 random points (hill_product_factor@1 against ph_conditioned_factor@1). A new
+  definition declares that kind; this one retires in a landing of its own, with the worlds that
+  declare it.
 """
 
 from types import MappingProxyType

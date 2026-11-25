@@ -112,12 +112,21 @@ MODELS = MappingProxyType(
                 "cells.laws.cycles.potassium_proton_exchange",
                 "cells.laws.cycles.held_reductant_supply",
                 "cells.laws.cycles.adenylate_kinase",
+                "cells.laws.cycles.sodium_calcium_exchange_symmetric_barrier",  # A synthetic form.
                 # The general binding closure (rapid_binding@1), seam C's: the binding owner's
                 # line, a recorded exception (the lead, 18 November 2026).
                 "cells.laws.reactions.rapid_binding",
+                "cells.laws.reactions.hill_product_factor",  # G-5's factor.
                 "cells.kinds",
+                # G-7: what is read from a pool's assembly, whose levels set this model's channel
+                # controls. Its host, the pool's model, is dispatched elsewhere and has no row.
+                "cells.assembly_pool.observables",
             ),
-            interfaces=("cells.channel_block_law@1",),  # FR-51's block (D371).
+            interfaces=(
+                "cells.channel_block_law@1",  # FR-51's block (D371).
+                "cells.assembly_observable@1",  # G-7.
+                "cells.transfer_factor_law@1",  # G-5's factor.
+            ),
         ),
         "resolved_pump_composite@1": Model(
             type="composite",

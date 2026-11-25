@@ -3,7 +3,7 @@ import json
 import numpy as np
 
 from tests.batch_fixtures import synthetic_pair
-from tests.integration.test_cli import cli
+from tests.integration.test_cli import cli, given_inputs, recorded_inputs
 
 
 def test_windowed_cli_run_resume_branch_validate_and_refusals(tmp_path):
@@ -14,6 +14,7 @@ def test_windowed_cli_run_resume_branch_validate_and_refusals(tmp_path):
     assert validated.returncode == 0, validated.stderr
     assert json.loads(validated.stdout)["windows"] > 1
     root = tmp_path / "fresh"
+    inputs, value = given_inputs(tmp_path, validated.stdout)
     fresh = cli(
         "windowed",
         "run",
@@ -26,14 +27,18 @@ def test_windowed_cli_run_resume_branch_validate_and_refusals(tmp_path):
         "checkpoints",
         "--checkpoint-at",
         0.5,
+        "--inputs",
+        inputs,
     )
     assert fresh.returncode == 0, fresh.stderr
+    assert recorded_inputs(root) == value
     cp = root / "snapshots/step-0000000011"
     resumed = tmp_path / "resumed"
     result = cli(
         "windowed", "resume", cp, "--output", resumed, "--window-steps", 3, "--recording", "full"
     )
     assert result.returncode == 0, result.stderr
+    assert recorded_inputs(resumed) is None
     for field in ("amount", "transferred", "converted"):
         with (
             np.load(root / "checkpoint_final/state.npz") as a,

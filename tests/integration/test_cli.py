@@ -16,21 +16,47 @@ def cli(*args):
     )
 
 
-def test_cli_fresh_resume_branch(config_data, tmp_path):
+def given_inputs(tmp_path, validated):
+    """(a file for --inputs, its object) about the definition that a validate command has read."""
+    value = {"made_from": {"seed": 7}, "definitions_sha256": [json.loads(validated)["sha256"]]}
+    path = tmp_path / "inputs.json"
+    path.write_text(json.dumps(value))
+    return path, value
+
+
+def recorded_inputs(run):
+    return json.loads((run / "manifest.json").read_text())["provenance"]["inputs"]
+
+
+def test_cli_fresh_resume_branch(config_data, tmp_path, capsys):
     config = tmp_path / "config.json"
     config.write_text(json.dumps(config_data))
     valid = cli("validate", config)
     assert valid.returncode == 0, valid.stderr
     assert json.loads(valid.stdout)["status"] == "valid"
     original = tmp_path / "original"
-    fresh = cli("run", config, "--output", original, "--checkpoint-at", 6.0)
+    inputs, value = given_inputs(tmp_path, valid.stdout)
+    fresh = cli("run", config, "--output", original, "--checkpoint-at", 6.0, "--inputs", inputs)
     assert fresh.returncode == 0, fresh.stderr
     assert "NVIDIA" not in fresh.stderr
     manifest = json.loads((original / "manifest.json").read_text())
+    assert manifest["provenance"] == {"operation": "run", "inputs": value}
+    assert value["definitions_sha256"] == [manifest["definition_sha256"]]
+    for refused, reason in (
+        ({"definitions_sha256": ["0" * 64]}, "are another definition's"),
+        ({"definitions_sha256": manifest["definition_sha256"]}, "are another definition's"),
+        ([value], "--inputs takes a JSON object"),
+    ):
+        inputs.write_text(json.dumps(refused))
+        out = tmp_path / "refused"
+        argv = ["run", str(config), "--output", str(out), "--inputs", str(inputs)]
+        assert command_line.main(argv) == 2 and not out.exists()
+        assert reason in capsys.readouterr().err
     snapshot = original / manifest["snapshots"][0]
     resumed = tmp_path / "resumed"
     restored = cli("resume", snapshot, "--output", resumed)
     assert restored.returncode == 0, restored.stderr
+    assert recorded_inputs(resumed) is None  # None given: the run says so.
     with (
         np.load(original / "trajectory.npz", allow_pickle=False) as a,
         np.load(resumed / "trajectory.npz", allow_pickle=False) as b,
@@ -42,8 +68,10 @@ def test_cli_fresh_resume_branch(config_data, tmp_path):
     branch_config = tmp_path / "branch.json"
     branch_config.write_text(json.dumps(config_data))
     branched = tmp_path / "branched"
-    branch = cli("branch", snapshot, branch_config, "--output", branched)
+    inputs.write_text(json.dumps({"made_from": "a branch"}))  # It lists no definition.
+    branch = cli("branch", snapshot, branch_config, "--output", branched, "--inputs", inputs)
     assert branch.returncode == 0, branch.stderr
+    assert recorded_inputs(branched) == {"made_from": "a branch"}
     # The closed contact moves nothing after 6; the open one, on the resumed run, does.
     final = json.loads(branch.stdout)["final_signed_transferred_fmol"]
     np.testing.assert_array_equal(final, at_the_branch)

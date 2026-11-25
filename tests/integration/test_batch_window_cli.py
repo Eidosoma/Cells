@@ -3,7 +3,7 @@ import json
 import numpy as np
 
 from tests.batch_fixtures import synthetic_pair
-from tests.integration.test_cli import cli
+from tests.integration.test_cli import cli, given_inputs, recorded_inputs
 
 
 def test_bounded_cohort_cli_validate_run_resume_branch_and_refusals(tmp_path):
@@ -14,6 +14,7 @@ def test_bounded_cohort_cli_validate_run_resume_branch_and_refusals(tmp_path):
     assert validated.returncode == 0, validated.stderr
     assert json.loads(validated.stdout)["rounds"] > 1
     root = tmp_path / "fresh"
+    inputs, value = given_inputs(tmp_path, validated.stdout)
     fresh = cli(
         "batch",
         "windowed",
@@ -27,8 +28,11 @@ def test_bounded_cohort_cli_validate_run_resume_branch_and_refusals(tmp_path):
         "checkpoints",
         "--checkpoint-every-windows",
         1,
+        "--inputs",
+        inputs,
     )
     assert fresh.returncode == 0, fresh.stderr
+    assert recorded_inputs(root) == value
     cp = root / "snapshots/round-0000000003"
     resumed = tmp_path / "resumed"
     result = cli(
@@ -44,6 +48,7 @@ def test_bounded_cohort_cli_validate_run_resume_branch_and_refusals(tmp_path):
         "full",
     )
     assert result.returncode == 0, result.stderr
+    assert recorded_inputs(resumed) is None
     for identity in (10, 11):
         with (
             np.load(root / f"checkpoint_final/world-{identity}/state.npz") as a,

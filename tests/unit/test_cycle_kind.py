@@ -34,6 +34,12 @@ Each claim with its plant (D187); every world is this file's own (no seam-A refe
   with it, and a breakpoint to 0 stops the cycles there, every ledger closing; in every kinetic
   form (neutral and charged factored, diagram, net flow) a held availability is the capacity
   times it, and 0 runs no cycle;
+- the sodium-calcium exchange (its section): the registered law meets its rate equation, its
+  reversal, its stoichiometry and charge at both ends, detailed balance with a heat that is never
+  negative, its slopes and its one-sided domain against 60-digit decimals; each of 14 plants misses
+  exactly its criteria; a closed world's steps close every ledger both ways; its charge slope holds
+  the step; its refusals; a closure's free calcium; a restart from the checkpoint file (its worlds
+  are stepped in NumPy, and one evaluation is jitted: no world compiles);
 - M2 (amendment 2): log, exp, expm1 and log1p within 1, 2, 4 and 2 ulp under jit on this device and
   in NumPy, against 60-digit decimals.
 """
@@ -41,6 +47,7 @@ Each claim with its plant (D187); every world is this file's own (no seam-A refe
 import contextlib
 import copy
 import dataclasses
+import functools
 import math
 from decimal import Decimal, localcontext
 
@@ -55,6 +62,7 @@ from cells.execution.errors import NumericalError
 from cells.kinds import transporter
 from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
 from cells.laws.cycles import forms
+from cells.laws.cycles import sodium_calcium_exchange_symmetric_barrier as na_ca
 from cells.laws.cycles.forms import CycleForm, Diagram, FluxTerm, Saturation
 from cells.models import surface_pump_v3
 from cells.registry import kind_registry
@@ -62,6 +70,7 @@ from cells.registry import laws as law_registry
 from cells.registry.models import get_model
 from tests.unit import test_cycle_forms as tf
 from tests.unit import test_transporter_kind as tk
+from validation.tissue import pump_water_fixtures as water_fixtures
 
 EPS = np.finfo(float).eps
 U = EPS / 2
@@ -827,6 +836,7 @@ FORMS = {  # Each kinetic form's world, its population and the kinds it needs.
     "charged factored": (_charged_general, "transporter_0", tk.CHARGED_KINDS),
     "diagram": (lambda **over: exchange_world(exchanger(**over)), "exchanger_0", ()),
     "net flow": (_net_flow, "exchanger_0", ()),
+    "monomial": (lambda **over: na_ca_world(na_ca_entry(**over)), "exchanger_0", ()),
 }
 
 
@@ -1809,6 +1819,565 @@ def test_p_at_a_finite_outside_node_books_and_bounds_with_and_without_a_closure(
         assert slope == pytest.approx(through, rel=1e-12) and 0 < slope < 1e-2 * by_amount
     else:
         assert slope == pytest.approx(by_amount, rel=1e-12) and slope > 0
+
+
+# ------------------------------------------- the sodium-calcium exchange (a synthetic rate form)
+# sodium_calcium_exchange_symmetric_barrier@1 on one small world of this file's own: heredity cell
+# D's rows with calcium, closed, its bath finite and the gauge, with no pump, channel or
+# permeability, so nothing moves but the exchanger. Its reference is the rate equation and the two
+# ions' electrochemical potentials, as the module writes them, in 60-digit decimals from the SI
+# constants: independent of the forms, not code-blind.
+
+SI_F = Decimal("6.02214076e23") * Decimal("1.602176634e-19")  # C/mol
+SI_R = Decimal("6.02214076e23") * Decimal("1.380649e-23")  # J/(mol K)
+NA_CA_T_K = 310.0  # Heredity cell D's.
+NA_CA_MM = dict(cell_0=dict(Ca=2e-4), bath_0=dict(Ca=1.8))  # The reversal is then -30.0 mV.
+NA_CA_NU = (3, -3, -1, 1)  # (Na, N), (Na, P), (Ca, N), (Ca, P) per forward cycle.
+NA_CA_RT_F = float(SI_R * Decimal(NA_CA_T_K) / SI_F)
+
+
+def na_ca_entry(law=na_ca.DECLARED_ID, *, name="exchanger_0", k=0.5, km=(20.0, 1e-3), **over):
+    """One population of the exchanger (or of `law`), its N the cell."""
+    given = dict(
+        id=name,
+        capacity_fmol_s=k,
+        roles={"Na": "Na", "Ca": "Ca"},
+        parameters=dict(km_na_mM=km[0], km_ca_mM=km[1]),
+    )
+    given.update(over)
+    return exchanger(law=law, **given)
+
+
+def na_ca_world(*entries, volts=None, mM=NA_CA_MM, dt=1e-4):
+    """Heredity cell D closed and bare: its bath finite and the gauge, no pump, channel or
+    permeability; mM's species, calcium among them; the cell at `volts` (its own where None); and
+    the exchangers."""
+    raw = water_fixtures.heredity_cell("D", dt=dt, end_time=8 * dt)
+    m, experiment = raw["model"], raw["experiment"]
+    m["species"].append(dict(id="Ca", valence=2))
+    z = {e["id"]: e["valence"] for e in m["species"]}
+    (cell,), (bath,), (patch,) = m["cells"], m["extracellular"], m["membranes"]
+    q = cell["initial_charge_C"] if volts is None else patch["capacitance_F"] * volts
+    for node, charge in ((cell, q), (bath, -q)):
+        amounts = node["initial_amount_fmol"]
+        amounts.update({s: node["volume_pL"] * c for s, c in mM[node["id"]].items()})
+        node["initial_charge_C"] = charge
+        total = math.fsum(z[s] * n for s, n in amounts.items())
+        node["fixed_charge_equivalent_fmol"] = charge / CHARGE_PER_FMOL - total
+    bath["reservoir"], m["closure"]["gauge_reference"] = False, bath["id"]
+    patch.update(pump=None, permeability_m_per_s=dict.fromkeys(z, 0.0))
+    m["channels"], experiment["channel_controls"], experiment["pump_controls"] = [], [], []
+    raw["execution"]["channel_capacity"] = 0
+    raw["execution"]["material_balance_atol_fmol"]["Ca"] = 1e-10
+    m[transporter.MODEL_KEY] = list(entries or [na_ca_entry()])
+    return raw
+
+
+def na_ca_conc(raw):
+    """(Na_N, Na_P, Ca_N, Ca_P) of a definition, in mM."""
+    nodes = (*raw["model"]["cells"], *raw["model"]["extracellular"])
+    return tuple(n["initial_amount_fmol"][s] / n["volume_pL"] for s in ("Na", "Ca") for n in nodes)
+
+
+def na_ca_start(raw):
+    """(spec, implementation, state, layout, control) at the start, inside the caller's scope."""
+    spec = parse_spec(copy.deepcopy(raw))
+    impl = get_model(spec.model)
+    state, p = impl.initial_values(spec)
+    return spec, impl, state, p, impl.Control(*(v[0] for v in control_values(spec, [0.0])))
+
+
+def na_ca_at(spec, state, p, conc):
+    """The state whose nodes hold conc = (Na_N, Na_P, Ca_N, Ca_P) in mM, and the concentrations it
+    gives back (each amount is a reference plus an increment, so it rounds)."""
+    ids = list(spec.model.species_ids)
+    inc, out = state.amount_increment.copy(), state.extracellular_amount_increment.copy()
+    given = []
+    for s, n, o in (("Na", *conc[:2]), ("Ca", *conc[2:])):
+        k = ids.index(s)
+        inc[k, 0] = n * p.volume[0] - p.amount_reference[k, 0]
+        out[k, 0] = o * p.extracellular_volume[0] - p.extracellular_amount_reference[k, 0]
+        given.append(float((p.amount_reference[k, 0] + inc[k, 0]) / p.volume[0]))
+        stored = p.extracellular_amount_reference[k, 0] + out[k, 0]
+        given.append(float(stored / p.extracellular_volume[0]))
+    moved = state._replace(amount_increment=inc, extracellular_amount_increment=out)
+    return moved, tuple(given)
+
+
+@functools.cache
+def na_ca_exact(conc, volts, k, k_na, k_ca):
+    """(J+, J-, x) of the rate equation: J+ = k b^3 c e^(-u/2) / D and J- = k a^3 d e^(u/2) / D, and
+    x from the electrochemical potentials of what a forward cycle moves, three Na+ from P to N and
+    one Ca2+ from N to P (u = F (phi_N - phi_P)/RT)."""
+    with localcontext() as ctx:
+        ctx.prec = 60
+        u = SI_F * Decimal(volts) / (SI_R * Decimal(NA_CA_T_K))
+        na_n, na_p, ca_n, ca_p = map(Decimal, conc)
+        a, b = na_n / Decimal(k_na), na_p / Decimal(k_na)
+        c, d = ca_n / Decimal(k_ca), ca_p / Decimal(k_ca)
+        per = Decimal(k) / ((1 + a**3 + b**3) * (1 + c + d))
+        plus, minus = per * b**3 * c * (-u / 2).exp(), per * a**3 * d * (u / 2).exp()
+        x = 3 * ((na_n / na_p).ln() + u) - ((ca_n / ca_p).ln() + 2 * u)
+        assert abs(minus / plus / x.exp() - 1) < Decimal("1e-50")  # Its own detailed balance.
+        return plus, minus, x
+
+
+def na_ca_slopes(conc, volts, k, k_na, k_ca):
+    """(dJ/dpsi, dJ/d ln c at each row), by central differences of the reference in decimals (their
+    steps of 1e-20 leave an error far below a double's)."""
+    with localcontext() as ctx:
+        ctx.prec = 60
+        h, per_u, out = Decimal("1e-20"), SI_R * Decimal(NA_CA_T_K) / SI_F, []
+        for row in (None, 0, 1, 2, 3):
+            ends = []
+            for step in (h, -h):
+                at = [Decimal(c) * (1 + step if i == row else 1) for i, c in enumerate(conc)]
+                v = Decimal(volts) + (step * per_u if row is None else 0)
+                plus, minus, _ = na_ca_exact(tuple(at), v, k, k_na, k_ca)
+                ends.append(plus - minus)
+            out.append((ends[0] - ends[1]) / (2 * h))
+        return tuple(out)
+
+
+def na_ca_reversal(conc):
+    """3 E_Na - 2 E_Ca (V), from the two ions' Nernst potentials."""
+    na_n, na_p, ca_n, ca_p = conc
+    e_na, e_ca = (
+        NA_CA_RT_F / z * math.log(o / n) for z, o, n in ((1, na_p, na_n), (2, ca_p, ca_n))
+    )
+    return 3 * e_na - 2 * e_ca
+
+
+def na_ca_planted(law_id, *, counts=NA_CA_NU, standard_mM=1.0, power=-3, off=1.0, ends=2, **rate):
+    """The exchanger with its form changed: its counts, its activities' standard state, the power of
+    K_Na, its constant K_Ca^-1 times `off`, the ends its calcium factor reads, or a field of its
+    rate."""
+    (base,) = na_ca.CYCLE.monomial.rates
+    k_na, k_ca = forms.Scaled("km_na_mM", 1.0, power), base.constants[1]
+    sodium, calcium = base.factors
+    sodium = sodium._replace(terms=tuple(t._replace(k=k_na) for t in sodium.terms))
+    factors = (sodium, calcium._replace(terms=calcium.terms[:ends]))
+    constants = (k_na, k_ca._replace(factor=off))
+    changed = base._replace(factors=factors, constants=constants, **rate)
+    cycle = na_ca.CYCLE._replace(
+        modes=(("exchange", counts),),
+        monomial=forms.MonomialForm((changed,), standard_state_mM=standard_mM),
+    )
+    return dataclasses.replace(na_ca.LAW, law_id=law_id, cycle=cycle)
+
+
+# Each planted law with the criteria (na_ca_misses) it must miss, and no other. The free energy is
+# the counts' and the kind's, whatever the synthetic form is: a plant of the form alone keeps the
+# reversal, the detailed balance and the heat's sign, and only a plant of the counts misses them.
+NA_CA_CRITERIA = {"rate", "slopes", "reversal", "cycle", "balance", "domain"}
+OF_THE_FORM, OF_THE_COUNTS = {"rate", "slopes"}, NA_CA_CRITERIA
+NA_CA_PLANTS = {
+    "split reversed": (na_ca_planted("seamtest.na_ca_split_reversed@1", zeta=0.5), OF_THE_FORM),
+    "no split": (na_ca_planted("seamtest.na_ca_no_split@1", zeta=0.0), OF_THE_FORM),
+    "K_Na once": (na_ca_planted("seamtest.na_ca_linear_k_na@1", power=-1), OF_THE_FORM),
+    "against 1 M": (na_ca_planted("seamtest.na_ca_molar@1", standard_mM=1e3), OF_THE_FORM),
+    "off by 1e-9": (na_ca_planted("seamtest.na_ca_off@1", off=1 + 1e-9), OF_THE_FORM),
+    "orders exchanged": (
+        na_ca_planted("seamtest.na_ca_orders@1", orders=((na_ca.NA_P, 1.0), (na_ca.CA_N, 3.0))),
+        OF_THE_FORM,
+    ),
+    "reverse term": (
+        na_ca_planted(
+            "seamtest.na_ca_reverse@1", orders=((na_ca.NA_N, 3.0), (na_ca.CA_P, 1.0)), zeta=0.5
+        ),
+        OF_THE_FORM,
+    ),
+    "one end in D": (na_ca_planted("seamtest.na_ca_one_end@1", ends=1), OF_THE_FORM),
+    "four Na": (na_ca_planted("seamtest.na_ca_four@1", counts=(4, -4, -1, 1)), OF_THE_COUNTS),
+    "backward": (na_ca_planted("seamtest.na_ca_backward@1", counts=(-3, 3, 1, -1)), OF_THE_COUNTS),
+}
+NA_CA_TOL = 2e-13  # Relative to the one-way scale J+ + J-, or to a one-way flux itself.
+
+
+def na_ca_states():
+    """((Na_N, Na_P, Ca_N, Ca_P) in mM, V, whether the domain admits it): random states, and the
+    domain's edges, x just inside 80 and just outside, and far below -80 (it is one-sided), with
+    calcium from 50 mM down to a trace."""
+    rng, out = np.random.default_rng(20261125), []
+    for _ in range(24):
+        conc = (*10 ** rng.uniform(-1, 2.6, 2), *10 ** rng.uniform(-6, 1, 2))
+        out.append((tuple(map(float, conc)), float(rng.uniform(-0.15, 0.15)), True))
+    for conc in ((12.0, 140.0, 2e-4, 1.8), (140.0, 12.0, 1e-9, 50.0), (1e-3, 400.0, 10.0, 1e-9)):
+        for x in (79.999999, 80.000001, -80.000001, -250.0):  # x = (V - reversal) F/RT.
+            out.append((conc, na_ca_reversal(conc) + x * NA_CA_RT_F, x <= 80))
+    return out
+
+
+def na_ca_misses(world, sets):
+    """{criterion: [P], whether each population misses it at some state}, for a started world
+    (na_ca_start) and its populations' (capacity, K_Na, K_Ca):
+    - rate: J, J+ and J- are the rate equation's (NA_CA_TOL);
+    - balance: x is the moved ions' electrochemical free energy, so J+/J- = e^(-x); the heat is
+      -RT J x and never negative, the guard holds, and nothing works;
+    - cycle: the rows change by NA_CA_NU per cycle and the patch carries one charge inward;
+    - reversal: J's sign is +, then -, 5 mV below and above 3 E_Na - 2 E_Ca, and J is 0 there;
+    - slopes: dJ/dpsi and each dJ/d ln c are the reference's differences;
+    - domain: valid exactly where x <= 80."""
+    spec, _, state, p, control = world
+    misses = {name: np.zeros(len(sets), dtype=bool) for name in sorted(NA_CA_CRITERIA)}
+    rt, nu = SI_R * Decimal(NA_CA_T_K), np.array(NA_CA_NU)[:, None]
+
+    def near(name, j, value, exact, scale, tol=NA_CA_TOL):
+        misses[name][j] |= not abs(Decimal(float(value)) - exact) <= Decimal(tol) * scale
+
+    def at(conc, volts):
+        s, given = na_ca_at(spec, state, p, conc)
+        potentials = np.array([volts, 0.0])
+        pr = transporter.probe(s, potentials, control, p, xp=np)
+        return pr, transporter._evaluate(s, potentials, control, p, xp=np), given
+
+    for i, (conc, volts, admitted) in enumerate(na_ca_states()):
+        pr, e, conc = at(conc, volts)
+        m, pop, j = pr.modes, pr.populations, np.asarray(pr.modes.j[0])
+        misses["domain"] |= np.asarray(pop.valid) != admitted
+        misses["balance"] |= ~((pop.heat_pJ_s >= 0) & (pop.work_pJ_s == 0) & (pop.guard <= 0))
+        misses["cycle"] |= np.any(np.abs(pr.rows.rate - nu * j) > 8 * U * np.abs(j), axis=0)
+        misses["cycle"] |= np.abs(pop.charge_a_to_b_fmol_s + j) > 8 * U * np.abs(j)
+        for n, values in enumerate(sets):
+            plus, minus, x = na_ca_exact(conc, volts, *values)
+            scale = plus + minus
+            near("rate", n, j[n], plus - minus, scale)
+            near("rate", n, m.j_plus[0, n], plus, plus)
+            near("rate", n, m.j_minus[0, n], minus, minus)
+            near("balance", n, m.x[0, n], x, Decimal(float(m.x_terms[0, n])), 8 * U)
+            if not misses["rate"][n]:  # The heat's value needs the rate's; its sign does not.
+                heat = -rt * x * (plus - minus) / 1000
+                near("balance", n, pop.heat_pJ_s[n], heat, rt * scale * (abs(x) + 1) / 1000)
+            if i < 6:
+                d_psi, *d_ln_c = na_ca_slopes(conc, volts, *values)
+                near("slopes", n, e.d_j_d_psi[0, n], d_psi, scale, 1e-12)
+                for row, d in enumerate(d_ln_c):
+                    near("slopes", n, e.d_j_d_ln_c[0, row, n], d, 4 * scale, 1e-12)
+        if i < 6:
+            head = na_ca_reversal(conc)
+            below, zero, above = (at(conc, head + d)[0].modes for d in (-5e-3, 0.0, 5e-3))
+            misses["reversal"] |= ~((below.j[0] > 0) & (above.j[0] < 0))
+            misses["reversal"] |= ~(np.abs(zero.j[0]) <= NA_CA_TOL * zero.scale[0])
+    return misses
+
+
+NA_CA_RUN_MISSES = {  # The registered law besides: under jit, and under plants of the evaluation.
+    "compiled": set(),
+    "domain at 79": {"domain"},
+    "no slope of its own": {"slopes"},
+    "a standard part": NA_CA_CRITERIA - {"cycle"},
+    "the flux reversed": NA_CA_CRITERIA - {"cycle"},  # Its heat is negative: the guard refuses it.
+}
+
+
+@pytest.fixture(scope="module")
+def na_ca_judged():
+    """{plant: the criteria it misses}: None, the registered law, and each planted law, in one world
+    that holds six populations of each, every one with its own capacity, K_Na and K_Ca; and the
+    registered law's six alone, under jit and under four plants of the kind's evaluation."""
+    rng = np.random.default_rng(7)
+    spans = ((-4, 1), (0, 2.3), (-5, 0.5))
+    sets = [tuple(float(10 ** rng.uniform(*span)) for span in spans) for _ in range(6)]
+
+    def started(laws):
+        entries = [
+            na_ca_entry(law, name=f"exchanger_{i}_{n}", k=k, km=km)
+            for i, law in enumerate(laws)
+            for n, (k, *km) in enumerate(sets)
+        ]
+        return na_ca_start(na_ca_world(*entries))
+
+    def missed(found, i):
+        return {name for name, by in found.items() if by[6 * i : 6 * (i + 1)].any()}
+
+    def flat(values):
+        return values._replace(d_psi=0.0 * values.d_psi)
+
+    laws = {None: na_ca.LAW} | {name: law for name, (law, _) in NA_CA_PLANTS.items()}
+    planted = law_registry.BUILTIN.extended(*(law for law, _ in NA_CA_PLANTS.values()))
+    with tk.scoped(), law_registry.scope(planted):
+        found = na_ca_misses(started([law.law_id for law in laws.values()]), sets * len(laws))
+        world = started([na_ca.LAW.law_id])
+    out = {name: missed(found, i) for i, name in enumerate(laws)}
+    spec, impl, state, p, control = world
+    shifted = p._replace(cycle_standard_RT=p.cycle_standard_RT + 1.0)
+    out["a standard part"] = missed(na_ca_misses((spec, impl, state, shifted, control), sets), 0)
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(transporter, "MAX_ABS_AFFINITY_OVER_RT", 79.0)
+        out["domain at 79"] = missed(na_ca_misses(world, sets), 0)
+    with pytest.MonkeyPatch.context() as patch:
+        flux = forms.sign_exact_flux
+        patch.setattr(forms, "sign_exact_flux", lambda *a, **kw: -flux(*a, **kw))
+        out["the flux reversed"] = missed(na_ca_misses(world, sets), 0)
+    with pytest.MonkeyPatch.context() as patch:
+        logs = forms.monomial_logs
+        patch.setattr(forms, "monomial_logs", lambda *a, **kw: flat(logs(*a, **kw)))
+        out["no slope of its own"] = missed(na_ca_misses(world, sets), 0)
+    evaluate = jax.jit(lambda s, v, c, q: transporter._evaluate(s, v, c, q, xp=jnp).j)
+    q, c = (jax.tree.map(jnp.asarray, tree) for tree in (p, control))
+    out["compiled"] = set()
+    for conc, volts, _ in na_ca_states():
+        s, conc = na_ca_at(spec, state, p, conc)
+        j = evaluate(jax.tree.map(jnp.asarray, s), jnp.array([volts, 0.0]), c, q)
+        for n, values in enumerate(sets):
+            plus, minus, _ = na_ca_exact(conc, volts, *values)
+            if abs(Decimal(float(j[0, n])) - plus + minus) > Decimal(NA_CA_TOL) * (plus + minus):
+                out["compiled"].add("rate")
+    return out
+
+
+def test_the_exchange_is_registered_as_a_moved_form_with_a_synthetic_rate():
+    """Its declaration: hosted by the kind, moved from an older family and never calibrated, its
+    Citation saying that only the coupling is supported and that the denominator, the split and
+    every number are synthetic, with the works for and against it; a population's parameters its
+    only numbers; and no step term of its own."""
+    law = law_registry.active().lookup(na_ca.LAW_ID)
+    assert law is na_ca.LAW and law.host == transporter.KIND_ID and law.cycle.errors() == []
+    assert law.provenance == "parity" and law.source.source.startswith("only the 3:1 coupling")
+    assert (
+        "every number are synthetic" in law.source.source
+        and "no number taken" in law.source.licence
+    )
+    assert [w.doi for w in law.source.works] == [
+        "10.1085/jgp.100.6.963",
+        "10.1113/jphysiol.2002.025866",
+        "10.1111/j.1469-7793.2000.t01-2-00339.x",
+        "10.1038/nature02271",
+    ]
+    assert law.cycle.parameter_names == ("km_na_mM", "km_ca_mM")
+    assert law.reads == ("rapid_binding@1",) and law.forms == "base"
+    assert all(getattr(law, name) is None for name in law_registry.STEP_TERMS)
+
+
+@pytest.mark.parametrize("plant", [None, *NA_CA_RUN_MISSES, *NA_CA_PLANTS], ids=str)
+def test_the_exchange_meets_its_rate_equation_and_each_plant_misses_its_criteria(
+    na_ca_judged, plant
+):
+    """The registered law, in NumPy and under jit, meets every criterion of na_ca_misses against the
+    60-digit reference, at 24 random states and at 12 of its domain's edges, for six parameter sets;
+    each plant misses exactly the criteria it is planted against. The reference is independent of
+    the forms, not code-blind."""
+    expected = {None: set()} | NA_CA_RUN_MISSES | {name: c for name, (_, c) in NA_CA_PLANTS.items()}
+    assert na_ca_judged[plant] == expected[plant]
+
+
+@pytest.mark.parametrize(
+    "volts,booking", [(-0.06, None), (0.02, transporter.TRAPEZOID_BOOKING)], ids=("out", "in")
+)
+def test_the_exchange_moves_its_counts_and_one_charge_and_closes_every_ledger(volts, booking):
+    """Eight host steps of the closed world, calcium going out (below the reversal, the tableau's
+    heat) and in (above it, the trapezoid's): per cycle the cell gains three Na+ and loses one Ca2+,
+    the finite bath the opposite, and one charge crosses inward, which moves the voltage by the
+    capacitor's closed form; the heat grows at every step, nothing works, and every ledger closes.
+    Planted, each refused by its ledger: calcium moved twice, and the free energy off by one RT."""
+    raw = na_ca_world(na_ca_entry(k=20.0), volts=volts)
+    if booking is not None:
+        raw = trapezoid_booked(raw)
+
+    def run(impl, spec, p, control, state, steps):
+        states = [state]
+        for _ in range(steps):
+            state, valid = impl.imex_step(state, spec.execution.dt, control, p, xp=np)
+            assert bool(valid)
+            states.append(state)
+        history = impl.STATE_TYPE(*(np.stack(v) for v in zip(*states, strict=True)))
+        impl.check_values(history, spec, steps=np.arange(len(states)))  # Every ledger closes.
+        return states
+
+    with tk.scoped():
+        spec, impl, state, p, control = na_ca_start(raw)
+        (check,) = transporter.cycle_checks(spec)
+        assert (check.charge_sum, check.charge_moved, check.admitted) == (0, -1, True)
+        states = run(impl, spec, p, control, state, 8)
+        ends = [impl.readouts(s, control, p, xp=np).field.potential_V for s in (state, states[-1])]
+        shifted = p._replace(cycle_standard_RT=p.cycle_standard_RT + 1.0)
+        with pytest.raises(NumericalError, match="energy"):
+            run(impl, spec, shifted, control, state, 1)
+    ids, last = list(spec.model.species_ids), states[-1]
+    cycles = float(last.cycle_count[0, 0])
+    assert (cycles > 0) == (volts < na_ca_reversal(na_ca_conc(raw))) and cycles != 0
+    for s, n in (("Na", 3), ("Ca", -1), ("K", 0)):
+        k = ids.index(s)
+        assert float(last.amount_increment[k, 0]) == pytest.approx(n * cycles, rel=8 * EPS, abs=0)
+        out = float(last.extracellular_amount_increment[k, 0])
+        assert out == pytest.approx(-n * cycles, rel=8 * EPS, abs=0), s
+    volts_moved = float((ends[1][0] - ends[1][1]) - (ends[0][0] - ends[0][1]))
+    charge = CHARGE_PER_FMOL * cycles / spec.model.membranes[0].capacitance_F
+    assert volts_moved == pytest.approx(charge, rel=1e-9, abs=0)
+    heat = np.stack([s.cycle_dissipated_energy_pJ[0] for s in states])
+    assert np.all(np.diff(heat) > 0) and not np.any(last.cycle_metabolic_work_pJ)
+    assert not np.any(last.cycle_supplied_fmol)
+
+    def twice(state, potentials, control, p, *, xp):  # Planted: the cell loses two Ca2+ per cycle.
+        r = transporter.rates(state, potentials, control, p, xp=xp)
+        doubled = xp.where(xp.arange(len(ids))[:, None] == ids.index("Ca"), 2.0, 1.0)
+        return r._replace(cell=doubled * r.cell)
+
+    with tk.scoped(dataclasses.replace(transporter.TRANSPORTER, rates=twice)):
+        spec, impl, state, p, control = na_ca_start(raw)
+        with pytest.raises(NumericalError, match="accounting failed: local"):
+            run(impl, spec, p, control, state, 1)
+
+
+def test_the_exchanges_charge_slope_holds_the_step_at_both_its_ends():
+    """The stage term is the reference's |dI/dV| at the cell and at the bath, at every voltage; over
+    the cell's capacitance it is the step's charge rate, so a step 1% inside the bound is taken and
+    one 1% outside is refused (at the reversal, where nothing moves). Without potentials it fails
+    closed. Planted: the kind without its stage term takes the larger step. Its limit, as the module
+    states it: the kind's material term counts no charged row that crosses."""
+    k, km, mM = 0.5, (20.0, 1e-3), dict(cell_0=dict(Ca=0.1), bath_0=dict(Ca=1.8))
+    conc = na_ca_conc(na_ca_world(mM=mM))
+    head = na_ca_reversal(conc)
+    raw = na_ca_world(na_ca_entry(k=k, km=km), mM=mM, volts=head)
+    per_V = float(SI_F / (SI_R * Decimal(NA_CA_T_K)))
+
+    def slope(volts):  # The reference's |dI/dV| (S): one charge per cycle.
+        return CHARGE_PER_FMOL * per_V * abs(float(na_ca_slopes(conc, volts, k, *km)[0]))
+
+    rate = slope(head) / raw["model"]["membranes"][0]["capacitance_F"]
+    with tk.scoped():
+        _, impl, state, p, control = na_ca_start(raw)
+        for volts in (-0.15, -0.06, 0.0, 0.06, head):
+            term = transporter.stage_term(state, np.array([volts, 0.0]), control, p, xp=np)
+            assert list(term) == pytest.approx([slope(volts)] * 2, rel=1e-11, abs=0), volts
+        assert np.all(np.isinf(transporter.stage_term(state, None, control, p, xp=np)))
+        assert not np.any(transporter.material_term(state, np.array([0.0, 0.0]), control, p, xp=np))
+        assert bool(impl.imex_step(state, 0.99 / rate, control, p, xp=np)[1])
+        assert not bool(impl.imex_step(state, 1.01 / rate, control, p, xp=np)[1])
+    with tk.scoped(dataclasses.replace(transporter.TRANSPORTER, stage_term=None)):
+        _, impl, state, p, control = na_ca_start(raw)
+        assert bool(impl.imex_step(state, 1.01 / rate, control, p, xp=np)[1])
+
+
+UNEVEN = na_ca_planted("seamtest.na_ca_uneven@1", counts=(3, -2, -1, 1))  # It creates a charge.
+NA_CA_REFUSALS = {  # name: (the entry's changes, the world's, the reason, None where admitted)
+    "the twin of the rows below": ({}, {}, None),
+    "a stoichiometry": (
+        dict(parameters=dict(km_na_mM=20.0, km_ca_mM=1e-3, n_Na=4)), {}, "parameters gives km_na_mM"
+    ),
+    "a mode that creates charge": (dict(law=UNEVEN.law_id), {}, r"moves charge \+1: every mode"),
+    "a missing role": (dict(roles={"Na": "Na"}), {}, "roles binds each of Na, Ca"),
+    "a missing species": (dict(roles={"Na": "Na", "Ca": "Sr"}), {}, "a distinct species row"),
+    "potassium for calcium": (dict(roles={"Na": "Na", "Ca": "K"}), {}, r"role Ca has valence \+2"),
+    "the roles exchanged": (dict(roles={"Na": "Ca", "Ca": "Na"}), {}, r"role Na has valence \+1"),
+    "a half-saturation of zero": (dict(km=(0.0, 1e-3)), {}, "parameter km_na_mM is positive"),
+    "a held ion": (dict(held_rows=[["Na", "P"]]), {}, "a held row is neutral in this pass"),
+    "x inside 80": ({}, dict(x=79.5), None),
+    "x outside 80": ({}, dict(x=80.5), "domain invalid"),
+    "x far below -80": ({}, dict(x=-95.0), None),
+    "RK4": ({}, dict(solver="rk4"), "require an IMEX solver"),
+}  # fmt: skip
+
+
+@pytest.mark.parametrize("name", NA_CA_REFUSALS)
+def test_an_exchange_population_is_refused_with_its_reason(name):
+    """A stoichiometry (the law's, never a population's), a mode that creates charge, a missing or a
+    wrong species, a half-saturation of zero, a held ion, a start outside the domain (one-sided, by
+    its concentrations) and RK4 are each refused by name; the twin without the fault is admitted."""
+    over, world, reason = NA_CA_REFUSALS[name]
+    mM = NA_CA_MM
+    if "x" in world:  # The bath's Na from x = 3 ln(Na_N/Na_P) + ln(Ca_P/Ca_N), the cell at 0 V.
+        ca_n, ca_p = (1e-9, 50.0) if world["x"] > 0 else (50.0, 1e-9)
+        na_p = na_ca_conc(na_ca_world())[0] * math.exp((math.log(ca_p / ca_n) - world["x"]) / 3)
+        mM = dict(cell_0=dict(Ca=ca_n), bath_0=dict(Ca=ca_p, Na=na_p))
+    raw = na_ca_world(na_ca_entry(**over), mM=mM, volts=0.0)
+    raw["execution"]["solver"] = world.get("solver", raw["execution"]["solver"])
+    with tk.scoped(), law_registry.scope(law_registry.BUILTIN.extended(UNEVEN)):
+        if reason is None:
+            parse_spec(raw)
+        else:
+            with pytest.raises(ConfigError, match=reason):
+                parse_spec(raw)
+
+
+def test_the_exchange_reads_a_closures_free_calcium():
+    """Beside a calcium binder that the general closure holds at the cell (0.1 mM, K_d 1 uM: the
+    free calcium is 1/84 of the total), the population reads the free calcium and moves the total's
+    base row: x is the free concentration's, and one step takes its cycles from the total and closes
+    every ledger. Planted: x at the stored total (off by ln 84); and, refused at the closure's row,
+    the law without the read and the law without base forms."""
+    from cells.kinds import proton_buffer
+
+    free, k_d, binder = 2e-4, 1e-3, 0.1  # mM
+    total = free + binder * free / (free + k_d)
+
+    def world(law=na_ca.DECLARED_ID):
+        raw = na_ca_world(na_ca_entry(law), mM=dict(cell_0=dict(Ca=total), bath_0=dict(Ca=1.8)))
+        m = raw["model"]
+        m["standard_concentration_mM"] = 1.0
+        m["species"][-1]["standard_mu_RT"] = 0.0
+        add_species(raw, "B", -2, 0.0, {"cell_0": binder, "bath_0": 1e-9})
+        bound = dict(id="CaB", counts={"Ca": 1}, standard_mu_RT=math.log(k_d))
+        m["species"][-1]["forms"] = [bound]
+        m[proton_buffer.MODEL_KEY] = [
+            dict(
+                read_id="rapid_binding@1",
+                ligand_rows=["Ca"],
+                binders={"cell_0": ["B"]},
+                k_on_per_mM_s={"B": {"Ca": 1e6}},
+            )
+        ]
+        return raw
+
+    unread = dataclasses.replace(na_ca.LAW, law_id="seamtest.na_ca_unread@1", reads=())
+    formless = dataclasses.replace(na_ca.LAW, law_id="seamtest.na_ca_formless@1", forms=None)
+    laws = law_registry.BUILTIN.extended(unread, formless)
+    with tk.scoped(*tk.CHARGED_KINDS), law_registry.scope(laws):
+        spec, impl, state, p, control = na_ca_start(world())
+        volts = np.asarray(impl.readouts(state, control, p, xp=np).field.potential_V)
+        read, ok = proton_buffer.stage_read(state, p, xp=np)
+        after, valid = impl.imex_step(state, spec.execution.dt, control, p, xp=np)
+        history = impl.STATE_TYPE(*(np.stack(v) for v in zip(state, after, strict=True)))
+        impl.check_values(history, spec, steps=np.arange(2))  # Every ledger closes.
+        for law, reason in ((unread, "lack rapid_binding@1"), (formless, "declares no base forms")):
+            with pytest.raises(ConfigError, match=reason):
+                parse_spec(world(law.law_id))
+    assert bool(ok) and bool(valid)
+    m = transporter.probe(read, volts, control, p, xp=np).modes
+    na_n, na_p, _, ca_p = na_ca_conc(world())
+    x = 3 * math.log(na_n / na_p) + math.log(ca_p / free) + float(volts[0] - volts[1]) / NA_CA_RT_F
+    assert float(m.x[0, 0]) == pytest.approx(x, rel=0, abs=1e-11)  # The free calcium's, as solved.
+    assert abs(float(m.x[0, 0]) - (x - math.log(total / free))) > 4  # Planted: the total's.
+    ca, cycles = list(spec.model.species_ids).index("Ca"), float(after.cycle_count[0, 0])
+    assert cycles != 0
+    assert float(after.amount_increment[ca, 0]) == pytest.approx(-cycles, rel=8 * EPS, abs=0)
+
+
+def test_an_exchange_world_restarts_bitwise_from_its_checkpoint_file(tmp_path):
+    """Eight host steps, and four from a checkpoint file written after the first four, end in the
+    same state bit for bit, the cycles and the heat with them. Planted: a checkpoint that lost its
+    cycles is refused by its ledgers, and one unit in the last place of the restored calcium shows
+    at the end. Host steps through the runner's own checkpoint file: nothing compiles."""
+    from cells.execution.runner import timeline
+    from cells.execution.state import initialise
+    from cells.records.io import load_snapshot, write_snapshot
+
+    def stepped(state, n):
+        for _ in range(n):
+            state, valid = impl.imex_step(state, spec.execution.dt, control, p, xp=np)
+            assert bool(valid)
+        return state
+
+    with tk.scoped():
+        spec, impl, state, p, control = na_ca_start(na_ca_world())
+        half = stepped(state, 4)
+        whole = stepped(half, 4)
+        at = dict(time=float(timeline(spec)[4]), step_index=4)
+        checkpoint = dataclasses.replace(initialise(spec), state=half, **at)
+        snapshot = load_snapshot(write_snapshot(tmp_path / "half", spec, checkpoint))
+        restored = impl.STATE_TYPE(*(np.asarray(v) for v in snapshot.checkpoint.state))
+        resumed = stepped(restored, 4)
+        lost = half._replace(cycle_count=np.zeros_like(half.cycle_count))
+        with pytest.raises(NumericalError, match="accounting failed"):
+            write_snapshot(tmp_path / "lost", spec, dataclasses.replace(checkpoint, state=lost))
+        ca = (list(spec.model.species_ids).index("Ca"), 0)
+        nudged = restored.amount_increment.copy()
+        nudged[ca] = np.nextafter(nudged[ca], np.inf)
+        other = stepped(restored._replace(amount_increment=nudged), 4)
+    assert float(whole.cycle_count[0, 0]) != 0
+    for name, a, b in zip(impl.STATE_TYPE._fields, whole, resumed, strict=True):
+        assert np.array_equal(np.asarray(a), np.asarray(b)), name
+    assert not np.array_equal(other.amount_increment, whole.amount_increment)
 
 
 # ------------------------------------------------------------------ M2 on this device (amendment 2)

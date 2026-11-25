@@ -7,12 +7,22 @@ hooks on the host: the damage's exact step at the step's held control (compositi
 equilibrium, [0, 1] at any step), the derivative the tableau carries, and both kinds' factors for
 the routing door. The engine's runs are test_fr5_source_kinds_engine.py and
 test_fr5_world_engine.py.
+
+The third source kind, cells.species_condition@1 (G-5), is declared in the same world: its
+declaration's refusals by name, its stateless layout, structure entry and view, its read of the free
+form at a buffered node, and its feedback hooks, whose planted errors are an inhibition's sign
+dropped, the derivative in n for the one in ln n, and a pair named twice. Its engine rows are
+test_species_condition_kind.py; its law's are test_hill_factors.py.
 """
 
 import copy
+import dataclasses
 import math
+from functools import partial
 from types import SimpleNamespace
 
+import jax
+import jax.numpy as jnp
 import numpy as np
 import pytest
 
@@ -20,9 +30,13 @@ from cells.definitions.specs import ConfigError, parse_spec
 from cells.definitions.surface_pump_v3_spec import control_values
 from cells.kinds import patch_damage as damage
 from cells.kinds import ph_condition as condition
+from cells.kinds import species_condition as species
+from cells.laws.reactions import hill_product_factor as product
 from cells.laws.reactions import ph_condition as phc
 from cells.laws.reactions import rapid_proton_buffer as closure
 from cells.laws.transport import patch_damage as law
+from cells.registry import kind_registry
+from cells.registry import laws as law_registry
 from cells.registry.kind_registry import declared_schedule
 from validation.compartment_ph_engine import definitions as defs
 
@@ -308,3 +322,288 @@ def test_the_condition_reads_free_h_at_its_node_as_every_rate_does():
     assert abs(float(ph_read) - float(ph[lumen])) <= 1e-11
     (column,) = condition.readouts(state, read, None, None, p, xp=np)
     assert list(column) == list(f)
+
+
+# ------------------------------------------------------------------ cells.species_condition@1 (G-5)
+
+
+def reading(row, form, half_saturation_mM, hill_coefficient):
+    return dict(species=row, form=form, half_saturation_mM=half_saturation_mM,
+                hill_coefficient=hill_coefficient)
+
+
+# Two conditions: K twice and ATP at the cell; the free proton at the lumen, as CONDITION reads it.
+GATE = dict(id="gate_0", node=defs.CELL, law=product.LAW_ID, reads=[
+    reading("K", "hill_activation", 100.0, 2.0), reading("ATP", "hill_inhibition", 2.0, 1.5),
+    reading("K", "hill_inhibition", 300.0, 1.0)])
+ACID = dict(id="gate_1", node=defs.LUMEN, law=product.LAW_ID, reads=[
+    reading("H", "hill_activation", 10.0 ** (3.0 - 5.5), 4.0)])
+
+
+def gated(*conditions):
+    """FR-4's development world with species conditions alone declared (no route reads them)."""
+    d = world(damages=None, conditions=None)
+    d["model"]["species_conditions"] = copy.deepcopy(list(conditions or (GATE, ACID)))
+    return d
+
+
+@pytest.fixture(scope="module")
+def gate_world():
+    """(spec, implementation, state, layout) of the gated world."""
+    from cells.registry.models import get_model
+
+    spec = parse_spec(gated())
+    impl = get_model(spec.model)
+    return (spec, impl, *impl.initial_values(spec))
+
+
+def test_the_species_condition_parses_round_trips_and_has_no_state(gate_world):
+    from cells.registry.models import get_model
+
+    spec, impl, _, p = gate_world
+    declared = dict(spec.model.kinds)[species.KIND_ID]
+    assert declared == (
+        species.Condition("gate_0", defs.CELL, (
+            species.Reading("K", "hill_activation", 100.0, 2.0),
+            species.Reading("ATP", "hill_inhibition", 2.0, 1.5),
+            species.Reading("K", "hill_inhibition", 300.0, 1.0))),
+        species.Condition("gate_1", defs.LUMEN, (
+            species.Reading("H", "hill_activation", 10.0 ** (3.0 - 5.5), 4.0),)))
+    assert species.parse(species.to_dict(declared), spec) == declared
+    assert parse_spec(spec.to_dict()).fingerprint == spec.fingerprint
+    kind = species.SPECIES_CONDITION
+    assert kind.factor_sources(declared) == ("gate_0", "gate_1")
+    assert kind.factors is not None and kind.routed_controls is None
+    # No state, control or route entry; its layout fields and its one readout column.
+    plain = get_model(parse_spec(world(damages=None, conditions=None)).model)
+    assert impl.STATE_TYPE._fields == plain.STATE_TYPE._fields
+    assert impl.Control._fields == plain.Control._fields and impl.structure.routes == ()
+    assert set(impl.LAYOUT_TYPE._fields) - set(plain.LAYOUT_TYPE._fields) == set(
+        species.LAYOUT_FIELDS)
+    assert set(impl.OBSERVATION_FIELDS) - set(plain.OBSERVATION_FIELDS) == {
+        "species_condition_factor"}
+    ids = list(spec.model.species_ids)
+    k, atp, h = (ids.index(s) for s in ("K", "ATP", "H"))
+    nodes = [c.id for c in spec.model.cells] + [o.id for o in spec.model.extracellular]
+    for name, expected in {
+        "node": [nodes.index(defs.CELL), nodes.index(defs.LUMEN)],
+        "row": [[k, atp, k], [h, 0, 0]],
+        "form": [[1, 2, 2], [1, 0, 0]],
+        "half_saturation_mM": [[100.0, 2.0, 300.0], [10.0 ** (3.0 - 5.5), 1.0, 1.0]],
+        "coefficient": [[2.0, 1.5, 1.0], [4.0, 1.0, 1.0]],
+        "pair": [[0, 1, 0], [2, 0, 0]],
+        "pair_condition": [0, 0, 1],
+    }.items():
+        assert np.array_equal(getattr(p, f"species_condition_{name}"), expected), name
+    # The structure entry is value-free: the numbers of reads and pairs. Two worlds of one shape
+    # share their programs (planted: one read fewer, and a read of a third species, do not).
+    def entry(*conditions):
+        return species.structure_entry(species.parse(list(conditions), spec))
+
+    other = copy.deepcopy(GATE)
+    other["reads"][1].update(form="hill_activation", half_saturation_mM=3.0, hill_coefficient=0.5)
+    todays = entry(GATE, ACID)
+    assert dict(impl.structure.kinds)[species.KIND_ID] == todays == (
+        species.LAW_ID, ((3, 2), (1, 1)))
+    assert entry(dict(other, node=defs.LUMEN), ACID) == todays
+    assert entry(dict(GATE, reads=GATE["reads"][:2]), ACID) != todays
+    other["reads"][2]["species"] = "Cl"
+    assert entry(other, ACID) != todays
+
+
+def test_the_species_condition_s_view_and_its_planted_set(gate_world):
+    from cells.records import run_view
+    from cells.registry.models import get_model
+
+    def prepared(spec):
+        layout = get_model(spec.model).initial_values(spec)[1]
+        return run_view.prepare(spec, run_view.Request(), layout=layout)
+
+    spec, impl, *_ = gate_world
+    column = "species_condition_factor"
+    assert impl.UNITS[column] == "1" and impl.OBSERVATION_AXES[column] == ("species_condition",)
+    assert impl.RECORD_KINDS[column] == "level" and impl.RECORD_LAYERS[column] == "membrane"
+    entry = impl.view_sets(spec)["species_condition"]
+    assert entry["ids"] == ["gate_0", "gate_1"] and entry["kinds"] == ["factor", "factor"]
+    assert entry["at"] == [{"node": defs.CELL}, {"node": defs.LUMEN}]
+    assert entry["laws"] == [{"law_id": species.LAW_ID}] * 2
+    assert entry["reads"] == [GATE["reads"], ACID["reads"]] and set(entry["roles"]) == {"node"}
+    assert prepared(spec).sets["species_condition"]["reads"] == entry["reads"]  # Admitted.
+    # Planted: without its set, the axis is refused by the run view's writer.
+    planted = kind_registry.KindRegistry()
+    for kind_id in dict(spec.model.kinds):
+        kind = kind_registry.BUILTIN.lookup(kind_id)
+        if kind_id == species.KIND_ID:
+            kind = dataclasses.replace(kind, view_sets=None)
+        planted.register(kind)
+    with kind_registry.scope(planted):
+        with pytest.raises(run_view.ViewRefused, match="no set for its axis species_condition"):
+            prepared(parse_spec(gated()))
+
+
+def changed_read(**changes):
+    return dict(reads=[dict(GATE["reads"][0], **changes), *GATE["reads"][1:]])
+
+
+@pytest.mark.parametrize("change, match", [
+    (dict(node="nowhere"), "unknown node 'nowhere'"),
+    (dict(node=[defs.CELL]), "unknown node"),
+    (dict(law=phc.LAW_ID), f"law is one of {species.LAW_ID}"),
+    (dict(law=None), f"law is one of {species.LAW_ID}"),
+    (dict(reads=[]), "reads is a non-empty list"),
+    (dict(reads=GATE["reads"][0]), "reads is a non-empty list"),
+    (changed_read(species="Q"), "read 0: unknown species 'Q'"),
+    (changed_read(species=["K"]), "read 0: unknown species"),
+    (changed_read(form="hill"), "read 0: form is one of hill_activation, hill_inhibition"),
+    (changed_read(half_saturation_mM=0.0), "half_saturation_mM must be finite and positive"),
+    (changed_read(half_saturation_mM=-1.0), "half_saturation_mM must be finite and positive"),
+    (changed_read(half_saturation_mM=float("inf")), "half_saturation_mM must be finite"),
+    (changed_read(half_saturation_mM=True), "half_saturation_mM must be a finite number"),
+    (changed_read(half_saturation_mM=1e-310), "half_saturation_mM is a normal float"),
+    (changed_read(hill_coefficient=0.0), "hill_coefficient must be finite and positive"),
+    (changed_read(hill_coefficient=-2.0), "hill_coefficient must be finite and positive"),
+    (changed_read(hill_coefficient=float("nan")), "hill_coefficient must be finite"),
+    (changed_read(hill_coefficient=1e-310), "hill_coefficient is a normal float"),
+    (changed_read(valence=2), r"read 0: missing=\[\], unknown=\['valence'\]"),
+    (dict(basal=0.1), r"unknown=\['basal'\]"),
+    (dict(id=""), "its ID must be a name, unique among the model's IDs"),
+    (dict(id=defs.LUMEN), "its ID must be a name, unique among the model's IDs"),
+    (dict(id=defs.BOUNDING), "its ID must be a name, unique among the model's IDs"),
+])
+def test_a_species_condition_outside_its_contract_is_refused_by_name(gate_world, change, match):
+    with pytest.raises(ConfigError, match=match) as refusal:
+        species.parse([dict(GATE, **change)], gate_world[0])
+    named = f"{species.KIND_ID}: condition {change.get('id', GATE['id'])!r}"
+    assert str(refusal.value).startswith(named)  # The kind, the condition, then the thing.
+
+
+def test_a_species_condition_s_list_ids_and_law_are_refused_by_name(gate_world):
+    spec = gate_world[0]
+    for entries in ([], {}, None):
+        with pytest.raises(ConfigError, match="species_conditions is a non-empty list"):
+            species.parse(entries, spec)
+    with pytest.raises(ConfigError, match="'gate_0': its ID must be a name, unique"):
+        species.parse([GATE, dict(ACID, id="gate_0")], spec)
+    with pytest.raises(ConfigError, match="condition None must be an object"):
+        species.parse(["gate_0"], spec)
+    refused_world = gated(dict(GATE, node="nowhere"))  # The real parse refuses it the same way.
+    with pytest.raises(ConfigError, match="condition 'gate_0': unknown node 'nowhere'"):
+        parse_spec(refused_world)
+    # A law of its interface and host that version 1 has no kernel path for, and none at all.
+    other = dataclasses.replace(product.LAW, law_id="tests.planted_factor@1")
+    with law_registry.scope(law_registry.BUILTIN.extended(other)):
+        with pytest.raises(ConfigError, match=f"version 1 runs {species.LAW_ID}, not tests"):
+            species.parse([dict(GATE, law="tests.planted_factor@1")], spec)
+    with law_registry.scope(law_registry.LawRegistry()):
+        with pytest.raises(ConfigError, match="'gate_0': law is one of $"):
+            species.parse([GATE], spec)
+
+
+def test_the_species_condition_reads_the_free_form_at_a_buffered_node(gate_world):
+    """H at the lumen: the condition's factor on the stage's read is the pH condition's law at the
+    free proton (planted: the stored row, B4's proton equivalents, gives another number)."""
+    from cells.kinds import proton_buffer
+
+    spec, _, state, p = gate_world
+    read, ok = proton_buffer.PROTON_BUFFER.stage_read(state, p, xp=np)
+    assert ok
+    nodes = [c.id for c in spec.model.cells] + [o.id for o in spec.model.extracellular]
+    lumen, row = nodes.index(defs.LUMEN) - 1, list(spec.model.species_ids).index("H")
+    h = (p.extracellular_amount_reference + read.extracellular_amount_increment)[row, lumen]
+    ph = -np.log10(h / p.extracellular_volume[lumen] / closure.PH_REFERENCE_mM)
+    expected = float(phc.factor(ph, 5.5, 4.0, xp=np))
+    # The pH law's tanh form keeps 1e-9 of this small factor (3e-15 of 1, test_hill_factors).
+    assert float(species.factors(read, p, xp=np)[1]) == pytest.approx(expected, rel=1e-8, abs=0)
+    assert float(species.factors(state, p, xp=np)[1]) != pytest.approx(expected, rel=1e-2, abs=0)
+    (column,) = species.readouts(state, read, None, None, p, xp=np)
+    assert np.array_equal(column, species.factors(read, p, xp=np))
+
+
+# ------------------------------------------------------------------ its feedback hooks
+
+
+def scaled(state, p, rng):
+    """The state with every amount scaled by a random factor, as a stage's read."""
+    cell = p.amount_reference * 10.0 ** rng.uniform(-3, 3, p.amount_reference.shape)
+    node = p.extracellular_amount_reference
+    node = node * 10.0 ** rng.uniform(-3, 3, node.shape)
+    return state._replace(
+        amount_increment=cell - p.amount_reference,
+        extracellular_amount_increment=node - p.extracellular_amount_reference,
+    )
+
+
+def bumped(read, p, row, node, factor):
+    """The read with one row's amount at one node (cells, then outside nodes) times `factor`."""
+    n = p.amount_reference.shape[1]
+    inside = node < n
+    name = "amount" if inside else "extracellular_amount"
+    column = node if inside else node - n
+    increment = np.array(getattr(read, f"{name}_increment"))
+    amount = getattr(p, f"{name}_reference")[row, column] + increment[row, column]
+    increment[row, column] += amount * (factor - 1.0)
+    return read._replace(**{f"{name}_increment": increment})
+
+
+def pair_indices(spec, rows):
+    """The (row, node) indices of the flattened pairs, as the core resolves the names."""
+    nodes = [c.id for c in spec.model.cells] + [o.id for o in spec.model.extracellular]
+    ids = list(spec.model.species_ids)
+    return [(ids.index(s), nodes.index(n)) for pairs in rows for s, n in pairs]
+
+
+def test_the_feedback_hooks_name_each_row_once_and_give_the_slopes_of_ln_f(gate_world):
+    spec, _, state, p = gate_world
+    declared = dict(spec.model.kinds)[species.KIND_ID]
+    rows = kind_registry.kind_factor_rows(species.SPECIES_CONDITION, declared)
+    assert rows == ((("K", defs.CELL), ("ATP", defs.CELL)), (("H", defs.LUMEN),))
+    traced = jax.eval_shape(partial(species.factor_log_slopes, xp=jnp), state, p)
+    assert traced.shape == (3,) and traced.dtype == jnp.float64  # [P], what the core binds.
+    owners = [0, 0, 1]  # Each flattened pair's condition.
+    rng, h = np.random.default_rng(3), 1e-5
+    worst = dict.fromkeys(("slope", "sign dropped", "in n"), 0.0)
+    for _ in range(20):
+        read = scaled(state, p, rng)
+        slopes = species.factor_log_slopes(read, p, xp=np)
+        amounts = np.concatenate((p.amount_reference + read.amount_increment,
+                                  p.extracellular_amount_reference
+                                  + read.extracellular_amount_increment), axis=1)
+        for j, (row, node) in enumerate(pair_indices(spec, rows)):
+            up, down = (np.log(species.factors(bumped(read, p, row, node, math.exp(s * h)), p,
+                                               xp=np))[owners[j]] for s in (1, -1))
+            difference = (up - down) / (2 * h)
+            worst["slope"] = max(worst["slope"], abs(slopes[j] - difference))
+            worst["sign dropped"] = max(worst["sign dropped"], abs(abs(slopes[j]) - difference))
+            worst["in n"] = max(worst["in n"], abs(slopes[j] / amounts[row, node] - difference))
+    assert worst["slope"] < 1e-5, worst
+    assert worst["sign dropped"] > 0.1 and worst["in n"] > 0.1  # Plants.
+    assert np.array_equal(
+        np.asarray(jax.jit(partial(species.factor_log_slopes, xp=jnp))(state, p)).round(12),
+        species.factor_log_slopes(state, p, xp=np).round(12))
+    # At zero, a trace and a very large amount the slopes are their limits, finite: K's is +2 from
+    # its activation, then -1 from its inhibition; ATP's inhibition 0, then -1.5.
+    for amount, limits in ((0.0, [2.0, 0.0]), (1e-160, [2.0, 0.0]), (1e30, [-1.0, -1.5])):
+        extreme = p._replace(amount_reference=np.full_like(p.amount_reference, amount))
+        read = state._replace(amount_increment=np.zeros_like(state.amount_increment))
+        with np.errstate(divide="ignore"):  # ln 0 = -infinity, in the kernel's terms.
+            slopes = species.factor_log_slopes(read, extreme, xp=np)
+        assert slopes[:2] == pytest.approx(limits, abs=1e-9)
+
+
+def test_a_source_s_rows_are_checked_when_read_and_a_pair_named_twice_is_refused(gate_world):
+    declared = dict(gate_world[0].model.kinds)[species.KIND_ID]
+    kind = species.SPECIES_CONDITION
+    honest = kind.factor_rows(declared)
+    assert kind_registry.kind_factor_rows(condition.PH_CONDITION, ()) is None  # No hooks.
+    plants = {
+        "names a pair twice": (honest[0] + honest[0][:1], honest[1]),
+        "one entry per source": honest[:1],
+        "pairs": (honest[0], (("H",),)),
+        r"pairs$": (honest[0], (("H", 2),)),
+        "a tuple of": [*honest],
+    }
+    for match, rows in plants.items():
+        planted = dataclasses.replace(kind, factor_rows=lambda d, rows=rows: rows)
+        with pytest.raises(ValueError, match=match) as refusal:
+            kind_registry.kind_factor_rows(planted, declared)
+        assert species.KIND_ID in str(refusal.value)

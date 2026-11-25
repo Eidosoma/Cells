@@ -73,6 +73,7 @@ __all__ = (
     "finite_number",
     "free_energy_entries",
     "axis_sizes",
+    "kind_factor_rows",
     "kind_ledgers",
     "kind_role_species",
     "kind_standard_free_energies",
@@ -256,6 +257,20 @@ class Kind:
       any kind's rates, stage_term or readouts, each routed slot becomes its held value x its
       sources' values, a left fold in declared order. A factor outside [0, 1] or not finite
       refuses the row or the step; `book` receives the held control.
+    - a factor's feedback (docs/IP3_RELEASE_AND_ASSEMBLY_AVAILABILITY_DESIGN.md §5.5): a gated
+      route that moves a row its own gate reads closes a loop, whose rate needs the factor's slope.
+      A source gives it by two hooks, both or neither (registration refuses one alone, and both
+      without factor_sources and factors). `factor_rows(declaration)` -> one tuple per source, in
+      factor_sources' order, of ((species ID, node ID), ...): the rows whose amounts that source's
+      factor reads, each pair once, in order of first appearance, () where it reads none; on the
+      host, names only (kind_factor_rows reads and checks it). `factor_log_slopes(read, p, *, xp)`
+      -> [P] d ln f / d ln n, dimensionless and signed, its arguments `factors`' own: P is the
+      number of pairs, flattened (sources in order, then each source's pairs), and n (fmol) the
+      pair's amount on the stage's read, the free one where a closure owns the row. It is finite at
+      a zero amount. The bound that reads the two is the core's (surface_pump_v3.material_rate) and
+      is not built yet, so nothing calls them. A source without them is admitted: where it reads an
+      amount (ph_condition) a loop through it is not bounded; where it reads none (patch_damage) no
+      loop closes through it.
     - stage: `stage_read(state, p, *, xp)` -> (the state whose amount fields hold the amounts
       every rate of the stage reads, valid), composed in hook order; a failed read refuses the
       step, and domain_valid evaluates the reads at every checked state (the step's end
@@ -456,6 +471,8 @@ class Kind:
     declared_fields: Callable | None = None
     factor_sources: Callable | None = None
     factors: Callable | None = None
+    factor_rows: Callable | None = None  # A factor's feedback: the rows it reads, by name.
+    factor_log_slopes: Callable | None = None  # (read, p, *, xp) -> [P] d ln f / d ln n.
     routed_controls: Callable | None = None
     # The run view (D154): its fields' declarations, and its own axes' sets.
     view: object = None  # A KindView.
@@ -948,6 +965,34 @@ def kind_ledgers(kind, declaration):
     return pairs
 
 
+def kind_factor_rows(kind, declaration):
+    """A source kind's rows read (Kind.factor_rows), checked, as the core reads them at binding: a
+    tuple of one entry per source, in factor_sources' order, each a tuple of distinct (species ID,
+    node ID) pairs of names. None for a kind that declares none: a loop through one of its factors
+    is not bounded. The names are the model's; the core resolves them."""
+    if kind.factor_rows is None:
+        return None
+    rows, sources = kind.factor_rows(declaration), kind.factor_sources(declaration)
+    if not (isinstance(rows, tuple) and len(rows) == len(sources)):
+        raise ValueError(
+            f"Kind {kind.kind_id}'s factor_rows returns a tuple of one entry per source "
+            f"({len(sources)})"
+        )
+    for source, pairs in zip(sources, rows, strict=True):
+        if not isinstance(pairs, tuple) or not all(
+            isinstance(pair, tuple) and len(pair) == 2 and all(map(_named, pair)) for pair in pairs
+        ):
+            raise ValueError(
+                f"Kind {kind.kind_id}'s factor_rows, source {source!r}: a tuple of (species ID, "
+                "node ID) pairs"
+            )
+        if len(set(pairs)) != len(pairs):
+            raise ValueError(
+                f"Kind {kind.kind_id}'s factor_rows, source {source!r}: it names a pair twice"
+            )
+    return rows
+
+
 def _finite_fill(value):
     if isinstance(value, bool):
         return True
@@ -956,9 +1001,10 @@ def _finite_fill(value):
 
 def declaration_errors(kind):
     """Why a kind's seam declarations (energy_roles, heat_bookings, partition_roles, ledgers and
-    ledger_bounds, and FR-42's label hooks) break the contract (empty: they keep it). The fields
-    they name are checked against the kind's own where its fields are static; a kind that declares
-    its fields per entry (declared_fields) may name the fields of every entry."""
+    ledger_bounds, FR-42's label hooks and a factor's feedback hooks) break the contract (empty:
+    they keep it). The fields they name are checked against the kind's own where its fields are
+    static; a kind that declares its fields per entry (declared_fields) may name the fields of every
+    entry."""
     out, static = [], kind.declared_fields is None
     roles = kind.energy_roles
     if not isinstance(roles, Mapping) or not all(isinstance(k, str) and k for k in roles):
@@ -1034,6 +1080,16 @@ def declaration_errors(kind):
         one_way[1] is None
     ):
         out.append("it declares one_way_fluxes and one_way_nets together, each a callable")
+    feedback = (kind.factor_rows, kind.factor_log_slopes)  # A factor's feedback.
+    if any(h is not None and not callable(h) for h in feedback) or (feedback[0] is None) != (
+        feedback[1] is None
+    ):
+        out.append("it declares factor_rows and factor_log_slopes together, each a callable")
+    elif feedback[0] is not None and None in (kind.factor_sources, kind.factors):
+        out.append(
+            "it declares factor_rows and factor_log_slopes only beside factor_sources and factors, "
+            "whose rows and slopes they are"
+        )
     return out + _axis_errors(kind, static) + _dispatch_mask_errors(kind, static)
 
 
