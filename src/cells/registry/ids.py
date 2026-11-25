@@ -1,8 +1,9 @@
 """The ID grammar (D345, D371; docs/ID_HIERARCHY_DESIGN.md §2 and §3).
 
 - **A piece's ID** is `namespace.family.name@major`: a law's, a kind's, an operator's, a model's, a
-  solver's, a heat choice's or an execution choice's. **An interface's or a schema's ID** is
-  `namespace.name@major`. The two never share a slot.
+  solver's, a heat choice's or an execution choice's. **An interface's ID** is
+  `namespace.name@major`. A schema's keeps its name, of two or more parts, the second never a
+  family word. Pieces, interfaces and schemas never share a slot, so a slot says which it holds.
 - **The families of the reserved `cells` namespace are a closed list:** the fixed words, and one
   word for each law interface (LAW_FAMILIES, those words' only home). The interface decides a law's
   family, never its folder, and every operator's family is `operator`.
@@ -54,8 +55,9 @@ LAW_FAMILIES = MappingProxyType(  # {a law interface: its laws' family}
 FAMILIES = frozenset({*FIXED_FAMILIES, *LAW_FAMILIES.values()})
 
 _PART = r"[a-z][a-z0-9_]*"
+_NAME = r"[a-z][A-Za-z0-9_]*"  # Names are kept, and one has upper case.
 _MAJOR = r"[1-9][0-9]*"
-_PIECE = re.compile(rf"({_PART})\.({_PART})\.({_PART})@({_MAJOR})")
+_PIECE = re.compile(rf"({_PART})\.({_PART})\.({_NAME})@({_MAJOR})")
 _INTERFACE = re.compile(rf"{_PART}\.{_PART}@{_MAJOR}")
 
 
@@ -92,5 +94,5 @@ def parts(value):
 
 
 def interface(value):
-    """Whether `value` is an interface's or a schema's ID."""
+    """Whether `value` is an interface's ID."""
     return isinstance(value, str) and _INTERFACE.fullmatch(value) is not None

@@ -591,7 +591,7 @@ PARTITION_ROLES = ("extensive", "intensive", "history", "structural")
 # ledger_terms' keys that fold into today's ten ledgers by role (rule (a)); a kind's own ledgers
 # take other names.
 LEDGER_TERM_ROLES = ("cell", "outside", "produced", "heat_pJ", "work_pJ", "stored_pJ")
-_BOOKING_ID = re.compile(r"(?:[a-z][a-z0-9_]*\.)?[a-z][a-z0-9_]*@[1-9][0-9]*")  # name@major
+_BOOKING_ID = re.compile(r"(?:[a-z][a-z0-9_]*\.){0,2}[a-z][a-z0-9_]*@[1-9][0-9]*")  # name@major
 
 
 class EnergyRole(NamedTuple):

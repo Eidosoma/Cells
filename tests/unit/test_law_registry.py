@@ -181,6 +181,17 @@ def test_the_template_refuses_a_malformed_declaration():
         "its reads are a tuple of stage-read IDs": dataclasses.replace(route_law, reads=("",)),
     }
     assert route_law.reads == () and not route_law.errors()
+    # A third part, the family's, is admitted in a law's and a host's ID, a fourth is not, and an
+    # interface keeps its two (D345).
+    three = dict(law_id="tests.binding.planted@1", host="tests.kind.planted@1")
+    assert dataclasses.replace(binding, **three).errors() == []
+    for name, value in three.items():
+        four = {**three, name: value.replace("tests.", "tests.a.")}
+        assert len(dataclasses.replace(binding, **four).errors()) == 1, name
+    interface = type("ThreePart", (laws.Law,), {"interface": "tests.binding.planted_law@1"})
+    assert interface(**three).errors() == [
+        "its type declares a namespaced interface ID with its major"
+    ]
     for reason, law in cases.items():
         with pytest.raises(ValueError, match=reason):
             registry.register(law)
@@ -261,6 +272,8 @@ def test_cycle_and_route_laws_name_their_step_terms():
         ("cells.channel.a_law@1", ("cells", "channel", "a_law", 1)),
         ("cells.operator.an_operator@12", ("cells", "operator", "an_operator", 12)),
         ("acme.any_word.a_law@1", ("acme", "any_word", "a_law", 1)),  # Its families are its own.
+        ("cells.channel.a_mM_law@1", ("cells", "channel", "a_mM_law", 1)),  # A name's, as written.
+        ("cells.Channel.a_law@1", None),
         ("cells.any_word.a_law@1", None),  # The cells families are a closed list.
         ("cells.channel_law.a_law@1", None),  # An interface's noun is not its word.
         ("cells.a_law@1", "interface"),
