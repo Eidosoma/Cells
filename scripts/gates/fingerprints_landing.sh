@@ -14,9 +14,11 @@
 #   digests (computed here at run time), the G1 save and the interpreter's identity. A base whose
 #   identity or record failed is never published.
 # Across the ID rename (D345): each tree reads the definitions through its own table of renamed IDs,
-# where it has one, and both sides' results are read through the head's (fingerprints.py record,
-# --inputs and --outputs). The head's table is in the cache's key. DECLARED names a file of the
-# worlds whose difference is declared before the run, an exact list.
+# where it has one; and where the head's table holds IDs that the base's does not, both sides'
+# results are read through the head's (fingerprints.py record, --inputs and --outputs), and that
+# table is in the cache's key. Two trees with one table compare the engine's own fingerprints, as
+# before. DECLARED names a file of the worlds whose difference is declared before the run, an exact
+# list.
 # Usage: fingerprints_landing.sh OUT HEAD_SNAPSHOT BASE_SNAPSHOT [PREMOVE_BASE_RECORD_DIR]
 set -uo pipefail
 O=${1:?out}; H=${2:?head snapshot}; B=${3:?base snapshot}; P=${4:-}
@@ -31,20 +33,22 @@ GATE_CACHE=${GATE_CACHE-/mnt/workspaces/Cells/gate-cache}
 TABLE=src/cells/registry/renamed_ids.py
 export JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONDONTWRITEBYTECODE=1 JAX_ENABLE_X64=1
 mkdir -p "$O"
+OUTPUTS=
+if grep -qs '@' "$H/$TABLE" && ! cmp -s "$B/$TABLE" "$H/$TABLE"; then OUTPUTS=$H/$TABLE; fi
 through() {  # TREE: its record's options for the renamed IDs.
   [ ! -f "$1/$TABLE" ] || printf '%s\n' --inputs "$1/$TABLE"
-  [ ! -f "$H/$TABLE" ] || printf '%s\n' --outputs "$H/$TABLE"
+  [ -z "$OUTPUTS" ] || printf '%s\n' --outputs "$OUTPUTS"
 }
 log() { echo "$(date -u +%FT%TZ) $*" >> "$O/run.log"; }
 rev() { python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['git_revision'][:8])" "$1/SNAPSHOT.json"; }
 log "affinity $(taskset -pc $$ | sed 's/.*: //'); base $B ($(rev "$B")), head $H ($(rev "$H")); map $MAP; \
-renamed IDs $([ -f "$H/$TABLE" ] && echo "read through the head's table" || echo none)"
+results read through ${OUTPUTS:-no table of renamed IDs}"
 status=0
 items=()
 cached=
 if [ -n "$GATE_CACHE" ] && [ -f "$MAP" ]; then
   items=("map=$(sha256sum "$MAP" | cut -c1-64)" "tool=$(sha256sum "$T" | cut -c1-64)" "g1=$G1" "layout=moved")
-  [ ! -f "$H/$TABLE" ] || items+=("renamed=$(sha256sum "$H/$TABLE" | cut -c1-64)")
+  [ -z "$OUTPUTS" ] || items+=("renamed=$(sha256sum "$OUTPUTS" | cut -c1-64)")
   cached=$(python3 -I "$G/gate_steps.py" cache-find "$GATE_CACHE" r1 "$B" "${items[@]}" --python "$PY" 2> /dev/null)
 fi
 for side in base head; do
