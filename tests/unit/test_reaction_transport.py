@@ -535,6 +535,12 @@ def test_multispecies_graph_primitive_and_batched_world_independence(graph_data)
     active = np.array([True, True, False])
     flux = edge_flux(amount, np.ones(3), params, active)
     assert np.all(np.asarray(flux)[:, 1:] == 0)
+    # By hand, over the one edge that is not closed: 0.4 (8/1 - 0/2), 0.1 (0/1 - 2/2) and
+    # 0.7 (1/1 - 2/2) at an opening of 1, and half of each at a half.
+    for opening, hand in ((1.0, (3.2, -0.1, 0.0)), (0.5, (1.6, -0.05, 0.0))):
+        for xp in (np, jax.numpy):
+            value = edge_flux(amount, np.array([opening, 1.0, 1.0]), params, active, xp=xp)
+            np.testing.assert_allclose(value, [(x, 0.0, 0.0) for x in hand], rtol=0, atol=1e-15)
     expected = np.zeros_like(amount)
     for edge, (a, b) in enumerate(zip(params.senders, params.receivers, strict=True)):
         expected[:, a] -= flux[:, edge]

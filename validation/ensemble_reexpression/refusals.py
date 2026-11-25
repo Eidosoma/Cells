@@ -24,6 +24,7 @@ from cells.models.surface_pump import DISSIPATION_MESSAGE, LEDGER_MESSAGE
 from cells.registry.models import get_model
 
 DEFINITION, DOMAIN, CHECK, HARNESS = "definition", "domain", "check", "harness"
+SECOND_PASS = "second_pass_completed"  # A check's refusal that its second pass does not meet.
 CHECKS = (LEDGER_MESSAGE, DISSIPATION_MESSAGE, ENERGY_MESSAGE)
 POOL_CHECKS = ("Finite material conservation failed", "Material transfer counters disagree")
 # A declared value that left a range the message states. The engine's words: "domain" (the laws' and

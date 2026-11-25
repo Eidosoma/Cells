@@ -502,7 +502,7 @@ class Worker:
 
     def kept(self, spec, checkpoint, refusal):
         """The rows of a refused run, and for a check that failed the time of the row it failed at:
-        where the pass that finds it completes, the end of the run."""
+        where the pass that finds it completes, the end of the run, and the refusal says so."""
         import numpy as np
 
         from validation.ensemble_reexpression import refusals
@@ -512,6 +512,8 @@ class Worker:
             np.savez(self.attempt / "partial.npz", **arrays)
         if refusal["kind"] == refusals.CHECK:
             refusal["time_s"] = spec.experiment.end_time if failed is None else failed
+            if failed is None:
+                refusal[refusals.SECOND_PASS] = True
         self.facts["refused_row_found"] = failed is not None
 
     def resume(self, spec, made_from=None):
