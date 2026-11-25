@@ -24,6 +24,7 @@ import numpy as np
 from cells.definitions.specs import parse_spec
 from cells.execution.windows import WindowPolicy, iter_windows
 from cells.records.io import load_snapshot, write_snapshot
+from cells.registry.models import get_model
 from validation.calcium_store import worlds
 
 F = 6.02214076e23 * 1.602176634e-19
@@ -86,15 +87,15 @@ def exchanger(na_n, na_p, ca_n, ca_p, v_np, data, rt):
 # ------------------------------------------------------------------ a run, read back
 
 
-class Run:
-    """A windowed run of a world, in two windows of WINDOW steps, read back by the definition's
-    names. The criteria read the honest world: its cells' numbers (`blocks`) and its definition
-    (`raw`, where `planted` is the one the engine runs)."""
+class Start:
+    """A world at its start, read back by the definition's names: one observed row, with no step
+    and no compile. The criteria read the honest world: its cells' numbers (`blocks`) and its
+    definition (`raw`, where `planted` is the one the engine takes)."""
 
     def __init__(self, raw, blocks, *, planted=None):
         self.raw, self.blocks = raw, blocks
         self.spec = parse_spec(copy.deepcopy(raw if planted is None else planted))
-        self.windows = list(iter_windows(self.spec, POLICY))
+        self.observed = self.observations()
         m = raw["model"]
         self.species = [s["id"] for s in m["species"]]
         self.cells = [c["id"] for c in m["cells"]]
@@ -108,9 +109,15 @@ class Run:
         self.rt = R * m["temperature_K"]
         self.volumes = {n["id"]: n["volume_pL"] for n in (*m["cells"], *m["extracellular"])}
 
+    def observations(self):
+        model, at = get_model(self.spec.model), np.zeros(1)
+        state, p = model.initial_values(self.spec)
+        history = type(state)(*(np.asarray(x)[None] for x in state))
+        return [model.observe_history(at, history, p, at, self.spec)]
+
     def column(self, name):
-        """An observed column over the whole run: [row, ...]."""
-        return np.concatenate([np.asarray(getattr(w.observations, name)) for w in self.windows])
+        """An observed column over every observed row: [row, ...]."""
+        return np.concatenate([np.asarray(getattr(o, name)) for o in self.observed])
 
     def amounts(self):
         """{node: [row, species]} fmol."""
@@ -131,6 +138,14 @@ class Run:
         }
 
 
+class Run(Start):
+    """A windowed run of a world, in two windows of WINDOW steps."""
+
+    def observations(self):
+        self.windows = list(iter_windows(self.spec, POLICY))
+        return [window.observations for window in self.windows]
+
+
 def run_one():
     """The one-cell store world, its store at -5 mV."""
     volts = worlds.STORE_VOLTAGE_V
@@ -138,15 +153,30 @@ def run_one():
     return Run(raw, [worlds.store_data(v_store_V=volts)])
 
 
-def run_two(edit=None):
-    """The two-cell world; edit(data_0, data_1), where given, plants numbers in the world that the
-    engine runs and leaves the honest one to the criteria."""
-    size = dict(dt=DT, steps=STEPS, observe=range(STEPS + 1))
+TWO = dict(dt=DT, steps=STEPS, observe=range(STEPS + 1))
+
+
+def two_blocks():
     blocks = [worlds.store_data(v_store_V=worlds.STORE_VOLTAGE_V), worlds.second_data()]
     for data in blocks:
         data["outside"] = "local"
-    planted = None if edit is None else worlds.two_cells(**size, edit=edit)
-    return Run(worlds.two_cells(**size), blocks, planted=planted)
+    return blocks
+
+
+def run_two(edit=None):
+    """The two-cell world; edit(data_0, data_1), where given, plants numbers in the world that the
+    engine runs and leaves the honest one to the criteria."""
+    planted = None if edit is None else worlds.two_cells(**TWO, edit=edit)
+    return Run(worlds.two_cells(**TWO), two_blocks(), planted=planted)
+
+
+def start_two(plant=None):
+    """The two-cell world's start; plant(model block), where given, changes the definition that the
+    engine takes."""
+    planted = worlds.two_cells(**TWO)
+    if plant is not None:
+        plant(planted["model"])
+    return Start(worlds.two_cells(**TWO), two_blocks(), planted=planted)
 
 
 # ------------------------------------------------------------------ the criteria

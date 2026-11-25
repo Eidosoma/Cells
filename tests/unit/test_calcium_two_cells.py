@@ -7,11 +7,13 @@ its cell's two conditions. Ten recorded steps in two windows meet every criterio
 tests/calcium_store_fixtures.py, and a restart from the written checkpoint repeats the second
 window bit for bit.
 
-Planted, each missed: the two stores exchanged, the junction route's sign turned, the pumps
-without their voltage, near left out of the whole-world sums, a condition on the other cell, K
-and n exchanged in a condition (in the criteria); one release 1% more permeable and one pump 1%
-larger (in the world that the engine runs, each missed at that mover alone). Refused by name: the
-stores' owners exchanged.
+Planted, each missed: in the criteria, the two stores exchanged, the junction route's sign
+turned, the pumps without their voltage, near left out of the whole-world sums; in the definition
+that the engine takes, a condition on the other cell, K and n exchanged in a condition, the
+stores exchanged (at the start, with no step), and one release 1% more permeable and one pump 1%
+larger (over the run, each missed at that mover alone). Refused by name: the stores' owners
+exchanged. Version 2 of the field solver refuses the note's probe world at its initial field and
+parses this one, so no row rests on that refusal: version 3 is declared for the two free offsets.
 
 Seconds: about 40 on a quiet CPU, of which 27 are its one compile (a window's program, which the
 restart and the planted worlds reuse), so tier 2. The reason (D224): two free offsets, two
@@ -56,16 +58,45 @@ def test_planted_criteria_of_the_two_cell_world_miss(two):
     assert set(rows.misses_moved(two, junction_turned=True)) == {"junction_calcium"}
     assert {"plasma_pump_0", "store_pump_1"} <= set(rows.misses_moved(two, voltage_dropped=True))
     assert {"K", "Na"} <= set(rows.misses_sums(two, left_out=("near",)))
-    assert rows.misses_factors(two, node_of={"release_calcium_0": "cell_1"})
-    declared = {c["id"]: c for c in two.raw["model"]["species_conditions"]}
-    (read,) = declared["release_ip3_0"]["reads"]
-    exchanged = dict(
-        species=read["species"],
-        form="activation",
-        half_saturation_mM=read["hill_coefficient"],
-        hill_coefficient=read["half_saturation_mM"],
-    )
-    assert rows.misses_factors(two, reads_of={"release_ip3_0": [exchanged]})
+
+
+def condition(m, name):
+    return next(c for c in m["species_conditions"] if c["id"] == name)
+
+
+def on_the_other_cell(m):
+    condition(m, "release_calcium_0")["node"] = "cell_1"
+
+
+def constants_exchanged(m):
+    (read,) = condition(m, "release_ip3_0")["reads"]
+    k, n = read["half_saturation_mM"], read["hill_coefficient"]
+    read.update(half_saturation_mM=n, hill_coefficient=k)
+
+
+def stores_exchanged(m):
+    """Each bounding patch, and its compartment's declaration, takes the other's store."""
+    patches = {p["id"]: p for p in m["membranes"]}
+    (owned,) = [o for o in m["operators"] if o["law"] == worlds.COMPARTMENTS]
+    for k, compartment in enumerate(owned["compartments"]):
+        compartment["node"] = patches[f"bounding_{k}"]["outside"] = f"store_{1 - k}"
+
+
+@pytest.mark.parametrize(
+    "plant,missed",
+    [
+        (None, set()),
+        (on_the_other_cell, {"release_calcium_0"}),
+        (constants_exchanged, {"release_ip3_0"}),
+        (stores_exchanged, {"cell_0", "cell_1", "store_0", "store_1"}),
+    ],
+    ids=lambda x: getattr(x, "__name__", ""),
+)
+def test_a_planted_definition_misses_at_its_start(plant, missed):
+    """The engine takes the planted definition; the criteria read the honest one."""
+    start = rows.start_two(plant)
+    found = rows.misses_factors(start) + rows.misses_potentials(start)
+    assert {name for name, _ in found} == missed
 
 
 def more_release(first, second):

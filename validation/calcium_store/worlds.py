@@ -349,20 +349,25 @@ JUNCTION = dict(
     initial_gate=0.72,
 )
 STORE_VOLTAGE_V = -0.005
-# The second cell, against the specification's first: each key scales the first cell's number.
+# The second cell, against the specification's first: each number scales the first cell's (`v_m` is
+# its own), and the concentrations in `cell_mM` and `store_mM` differ too, so that a read of the
+# other cell's or the other store's row is told apart.
 SECOND = dict(
     volume=1.35, store_volume=1.28, plasma=1.24, bounding=1.17, capacity=1.31, v_m=-0.046,
     permeability=0.91, release=1.12,
+    cell_mM=dict(Na=1.12, Ca=1.45, IP3=0.82), store_mM=dict(K=0.97, Ca=0.88),
 )  # fmt: skip
 
 
 def second_data():
-    """The second cell's numbers: the first cell's, each scaled (SECOND), its voltages its own."""
+    """The second cell's numbers: the first cell's, each scaled (SECOND), its voltage its own."""
     data, s = store_data(v_store_V=STORE_VOLTAGE_V), SECOND
     for name, factor in (("cell", s["volume"]), ("store", s["store_volume"])):
-        node = data["nodes"][name]
+        node, mM = data["nodes"][name], s[f"{name}_mM"]
         node["volume_pL"] *= factor
-        node["amounts_fmol"] = {k: v * factor for k, v in node["amounts_fmol"].items()}
+        node["amounts_fmol"] = {
+            k: v * factor * mM.get(k, 1.0) for k, v in node["amounts_fmol"].items()
+        }
     for name in ("plasma", "bounding"):
         patch = data["patches"][name]
         patch["area_m2"] *= s[name]
