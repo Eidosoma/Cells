@@ -13,7 +13,7 @@ from tests.unit.test_surface_catalog import evidence
 
 
 def inputs(*, width=3, worlds=8):
-    raw = experiment("ionic", worlds=worlds, width=width)
+    raw = experiment(worlds=worlds, width=width)
     second = deepcopy(raw["arms"][0])
     second["id"] = "second"
     rows = second["definition"]["simulation"]["experiment"]["membrane_controls"]
