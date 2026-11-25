@@ -65,10 +65,13 @@ from cells.laws.cycles import (
     proton_coupled_atp_synthesis_cycle,
     ubiquinol_cytochrome_c_proton_cycle,
 )
+from cells.laws.cycles import electroneutral_symport_reversible_tanh as salt
 from cells.laws.cycles import na2_anion_symport_diagram as symport2
 from cells.laws.cycles import na_anion_symport_factored as symport
+from cells.laws.cycles import na_k_2anion_symport_reversible_tanh as nkcc
 from cells.laws.cycles import sodium_calcium_exchange_symmetric_barrier as exchange
 from cells.laws.junctions import junction_series_gates
+from cells.laws.pumps import atp_transporter_v2
 from cells.laws.routes import passive_permeation
 from cells.laws.transport import proton_leak, proton_leak_v2
 from cells.models import inner_laws, surface_pump_v3
@@ -179,6 +182,8 @@ def test_the_template_refuses_a_malformed_declaration():
         "its law_id is": dataclasses.replace(binding, law_id="Planted Binding"),
         "a gated law gives its kinetics and opening": dataclasses.replace(channel, opening=None),
         "its moves are": dataclasses.replace(cycle, moves=(("role", 1.5),)),
+        "its electroneutral is true or false": dataclasses.replace(cycle, electroneutral="yes"),
+        "and true only with a general form": dataclasses.replace(cycle, electroneutral=True),
         # A route law's reads (MT-1b's leak @2, face plan item 3): stage-read IDs, () by default.
         "its reads are a tuple of stage-read IDs": dataclasses.replace(route_law, reads=("",)),
     }
@@ -225,6 +230,7 @@ def test_cycle_and_route_laws_name_their_step_terms():
         *laws.STEP_TERMS[1:],
         "forms",
         "cycle",
+        "electroneutral",  # A cycle of the law moves no charge between the ends (the symports).
     ]
     assert [f.name for f in dataclasses.fields(laws.RouteLaw) if not f.kw_only] == [
         "law_id",
@@ -334,6 +340,9 @@ def test_kinds_and_the_inner_model_find_their_laws_by_interface_and_host():
         symport.DECLARED_ID: symport.LAW,
         symport2.DECLARED_ID: symport2.LAW,
         exchange.DECLARED_ID: exchange.LAW,
+        atp_transporter_v2.DECLARED_ID: atp_transporter_v2.LAW,
+        nkcc.DECLARED_ID: nkcc.LAW,
+        salt.DECLARED_ID: salt.LAW,
         **{  # The mitochondrion's inner-membrane laws (the kinds owner's, from its appendix).
             m.DECLARED_ID: m.LAW
             for m in (

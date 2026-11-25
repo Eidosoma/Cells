@@ -11,7 +11,7 @@ population sits on one membrane patch. In every cycle it splits one ATP into ADP
 the cell's side, and moves a fixed number of its cargo to the other side. A pump runs forward only
 while the energy freed by ATP exceeds the energy its cargo needs to move; otherwise it stalls or
 runs backward. The kind keeps the books, counting cycles, heat and the work drawn from the fuel, so
-that matter and energy add up at every step. It hosts fourteen laws today: four pumps and
+that matter and energy add up at every step. It hosts seventeen laws today: seven pumps and
 cotransporters, one exchanger, and nine of the mitochondrion's, from respiration to ATP synthase.
 
 ## Seen from each field
@@ -34,7 +34,7 @@ cotransporters, one exchanger, and nine of the mitochondrion's, from respiration
 | Piece | Kind, interface `cells.kind@1` ([its fields](../../DECLARATIONS_FORMAT.md#kinds)) |
 | ID | `cells.transporter@1`; definitions write `cells.transporter@1` |
 | Runs in | `cells.resolved_pump_tissue@3`, its host, which definitions write `resolved_pump_tissue@3`. Definitions of `cells.resolved_pump_composite@1` and `cells.resolved_pump_tissue@3` can declare it, under the key `transporters` |
-| Laws it hosts | `cells.adenylate_kinase@1`, `cells.atp_driven_transporter_mass_action_positive@1`, `cells.cytochrome_c_oxygen_proton_cycle@1`, `cells.electrogenic_nucleotide_exchange@1`, `cells.held_reductant_supply@1`, `cells.na2_anion_symport_diagram@1`, `cells.na_anion_symport_factored@1`, `cells.nadh_ubiquinone_proton_cycle@1`, `cells.phosphate_proton_symport@1`, `cells.potassium_proton_exchange@1`, `cells.proton_atp_mass_action_positive@1`, `cells.proton_coupled_atp_synthesis_cycle@1`, `cells.sodium_calcium_exchange_symmetric_barrier@1` and `cells.ubiquinol_cytochrome_c_proton_cycle@1` |
+| Laws it hosts | `cells.adenylate_kinase@1`, `cells.atp_driven_transporter_mass_action_positive@1`, `cells.atp_driven_transporter_mass_action_positive@2`, `cells.cytochrome_c_oxygen_proton_cycle@1`, `cells.electrogenic_nucleotide_exchange@1`, `cells.electroneutral_symport_reversible_tanh@1`, `cells.held_reductant_supply@1`, `cells.na2_anion_symport_diagram@1`, `cells.na_anion_symport_factored@1`, `cells.na_k_2anion_symport_reversible_tanh@1`, `cells.nadh_ubiquinone_proton_cycle@1`, `cells.phosphate_proton_symport@1`, `cells.potassium_proton_exchange@1`, `cells.proton_atp_mass_action_positive@1`, `cells.proton_coupled_atp_synthesis_cycle@1`, `cells.sodium_calcium_exchange_symmetric_barrier@1` and `cells.ubiquinol_cytochrome_c_proton_cycle@1` |
 | Provenance | Not yet extracted: the kind contract has no provenance field yet |
 
 <!-- /generated -->
@@ -141,7 +141,7 @@ Not stated: no record states a level for this piece.
 <!-- generated: links -->
 
 - Declared in [`src/cells/kinds/transporter.py`](../../../../src/cells/kinds/transporter.py) (`cells.kinds.transporter`).
-- Hosts `cells.adenylate_kinase@1`, `cells.atp_driven_transporter_mass_action_positive@1`, `cells.cytochrome_c_oxygen_proton_cycle@1`, `cells.electrogenic_nucleotide_exchange@1`, `cells.held_reductant_supply@1`, `cells.na2_anion_symport_diagram@1`, `cells.na_anion_symport_factored@1`, `cells.nadh_ubiquinone_proton_cycle@1`, `cells.phosphate_proton_symport@1`, `cells.potassium_proton_exchange@1`, `cells.proton_atp_mass_action_positive@1`, `cells.proton_coupled_atp_synthesis_cycle@1`, `cells.sodium_calcium_exchange_symmetric_barrier@1` and `cells.ubiquinol_cytochrome_c_proton_cycle@1`.
+- Hosts `cells.adenylate_kinase@1`, `cells.atp_driven_transporter_mass_action_positive@1`, `cells.atp_driven_transporter_mass_action_positive@2`, `cells.cytochrome_c_oxygen_proton_cycle@1`, `cells.electrogenic_nucleotide_exchange@1`, `cells.electroneutral_symport_reversible_tanh@1`, `cells.held_reductant_supply@1`, `cells.na2_anion_symport_diagram@1`, `cells.na_anion_symport_factored@1`, `cells.na_k_2anion_symport_reversible_tanh@1`, `cells.nadh_ubiquinone_proton_cycle@1`, `cells.phosphate_proton_symport@1`, `cells.potassium_proton_exchange@1`, `cells.proton_atp_mass_action_positive@1`, `cells.proton_coupled_atp_synthesis_cycle@1`, `cells.sodium_calcium_exchange_symmetric_barrier@1` and `cells.ubiquinol_cytochrome_c_proton_cycle@1`.
 - Runs in `cells.resolved_pump_tissue@3`.
 - Manifest entry: (kind, `cells.transporter@1`), from `python -m cells declarations --out FILE` ([the format](../../DECLARATIONS_FORMAT.md)).
 - In the Laws library: `select=laws:cells.transporter@1`.

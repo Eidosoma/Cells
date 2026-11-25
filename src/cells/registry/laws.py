@@ -440,7 +440,9 @@ class CycleLaw(Law):
     Seam A's general form (`cycle`, a CycleForm) carries the law where it is set: its own errors()
     must hold and its changes() gives its change rows (cycle_changes), so `moves` may be empty and
     kinetics and domain_valid None (the kinds owner's first gap). A law without a form keeps
-    version 1's checks: moves given, both kernels callable."""
+    version 1's checks: moves given, both kernels callable. `electroneutral`: a cycle of it moves no
+    charge from one end to the other whatever species a population binds, so its rate may have no
+    voltage term; its host refuses by name a population that moves charge."""
 
     moves: tuple[tuple[str, object], ...] = ()
     fuel_kinds: tuple[str, ...] = ()
@@ -455,6 +457,7 @@ class CycleLaw(Law):
     material_bound: str | None = None  # Its definition-time bound on a neutral row.
     forms: str | None = None  # "base": its moves are in base forms (CORE_SEAMS §5.2), or None.
     cycle: object = None  # Its general form: seam A's CycleForm, or None (module docstring).
+    electroneutral: bool = False  # Its host refuses a population that moves charge (docstring).
 
     interface: ClassVar[str] = CYCLE_LAW
     SIGNS: ClassVar = MappingProxyType({"moves": "inward-positive, per forward cycle"})
@@ -484,6 +487,8 @@ class CycleLaw(Law):
             out.append("its fuel kinds are a tuple of IDs")
         if not isinstance(self.reads, tuple):
             out.append("its reads are a tuple")
+        if not isinstance(self.electroneutral, bool) or (self.electroneutral and not formed):
+            out.append("its electroneutral is true or false, and true only with a general form")
         out += _named_or_none(self, *STEP_TERMS, "loop_term") + _forms_errors(self)
         return out + _cycle_errors(self.cycle)
 

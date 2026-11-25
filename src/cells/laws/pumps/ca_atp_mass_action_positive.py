@@ -19,6 +19,11 @@ domain_valid; there is no concentration floor, clipping or state repair.
 A pump law of resolved_pump_tissue@3 (cells.cycle_law@1), registered by the law registry's
 loader (docs/CORE_SEAMS_DESIGN.md §8.2). Moved from laws/pumps/calcium_atpase.py, which
 re-imports these names.
+
+It is superseded by atp_driven_transporter_mass_action_positive@2
+(laws/pumps/atp_transporter_v2.py), the same equation for a species of any valence on the
+transporter kind: a new definition takes that one. This one stays until the model's own pumps move
+onto the kind (docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md §6.3).
 """
 
 from typing import Any, NamedTuple

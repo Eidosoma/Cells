@@ -1285,7 +1285,7 @@ def _parse_general(raw, base, patches, valence, taken):
         raise ConfigError(f"{where}: held_rows lists distinct rows of the law, each [role, N or P]")
     held = tuple(tuple(r) for r in held)
     proton = raw.get(PROTON_READOUT_KEY)
-    readout = optional - {ONE_WAY_KEY}  # Today's two keys, read as before (FR-50's aside).
+    readout = PROTON_READOUT_KEY in optional  # The current's readout needs no proton row.
     if readout and not (isinstance(proton, str) and valence.get(proton) == 1):
         raise ConfigError(
             f"{where}: {PROTON_READOUT_KEY} names the model's free-proton species row (valence "
@@ -1319,8 +1319,8 @@ def _parse_general(raw, base, patches, valence, taken):
 
 
 def _check_population(t, form, law, valence, where):
-    """A population's rows and modes against the pass's rules (statement 1, §2; Q3, Q4), and FR-50's
-    refusal of one-way records on a net-flow form."""
+    """A population's rows and modes against the pass's rules (statement 1, §2; Q3, Q4), FR-50's
+    refusal of one-way records on a net-flow form, and an electroneutral law's own statement."""
     if t.one_way and form.kinetics == "net_flow":
         raise ConfigError(
             f"{where}: {ONE_WAY_KEY} records are refused on {t.law}, whose modes run the net-flow "
@@ -1350,6 +1350,15 @@ def _check_population(t, form, law, valence, where):
         charge = sum(int(valence[roles[r]]) * int(n) for (r, _), n in zip(form.rows, row_counts))
         if charge != 0:
             raise ConfigError(f"{where}: mode {mode} moves charge {charge:+d}: every mode conserves charge")
+        rows = zip(form.rows, row_counts, strict=True)
+        at_p = [(roles[r], int(n)) for (r, end), n in rows if end == "P" and n]
+        moved = sum(int(valence[species]) * n for species, n in at_p)
+        if law.electroneutral and moved != 0:  # Its rate has no voltage term to follow.
+            bound = " and ".join(f"{abs(n)} {species}" for species, n in at_p)
+            raise ConfigError(
+                f"{where}: {t.law} is electroneutral; {bound} move charge {moved:+d} from N to P "
+                f"per cycle (mode {mode})"
+            )
 
 
 def _parse_population_axis(entries, base):
@@ -2475,6 +2484,23 @@ def _check_population_axis(spec, declaration):
                     "(§5.2's boundary), unless a general binding closure holds that proton row "
                     "there and the law declares its moves in base forms"
                 )
+    # One law moves a species by ATP on a patch (D175). Version 2 of the ATP-driven law is the
+    # equation of @3's own calcium pump and of version 1's two laws (docs/
+    # CALCIUM_STORE_AND_CHANNELS_DESIGN.md §6.3): one of those beside it, for the same species, is
+    # refused. Another population of version 2 is not, since it is the same law.
+    from cells.laws.pumps.atp_transporter_v2 import DECLARED_ID as version_2
+
+    pumps = [p for p in m.membranes if getattr(p, "calcium_pump", None) is not None]
+    beside = {(p.id, p.calcium_pump.role): p.calcium_pump for p in pumps}
+    version_1 = [t for t in declaration if t.law in VERSION_1_ROLE]
+    beside |= {(t.host, dict(t.roles)[VERSION_1_ROLE[t.law]]): t for t in version_1}
+    for t in declaration:
+        other = beside.get((t.host, dict(t.roles)["role"])) if t.law == version_2 else None
+        if other is not None:
+            raise ConfigError(
+                f"transporter {t.id!r}: {t.law} moves {dict(t.roles)['role']} on {t.host} beside "
+                f"{other.id!r} ({qualified(other.law)}): one law moves a species by ATP on a patch"
+            )
     laws = {t.id: t.law for t in declaration}
     for check in cycle_checks(spec):
         if not check.admitted:

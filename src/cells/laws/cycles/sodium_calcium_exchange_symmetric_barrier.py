@@ -15,7 +15,7 @@ mM), k the capacity and v the availability, is
 
     J = k v [b^3 c e^(-psi/2) - a^3 d e^(psi/2)] / [(1 + a^3 + b^3) (1 + c + d)],
 
-the kind's J = J+ (1 - e^x) with J+ = k v S and S = b^3 c e^(-psi/2) / [(1 + a^3 + b^3) (1 + c + d)],
+the kind's J = J+ (1 - e^x) with J+ = k v S, S = b^3 c e^(-psi/2) / [(1 + a^3 + b^3) (1 + c + d)],
 which the form holds exactly: orders Na@P 3 and Ca@N 1, zeta -1/2, two factors of power 1 and the
 constants K_Na^-3 and K_Ca^-1, with activities against 1 mM, so that each K is its number in mM.
 
@@ -108,10 +108,10 @@ LAW = CycleLaw(
     host="cells.transporter@1",
     provenance="parity",
     source=Citation(
-        "only the 3:1 coupling, so the reversal, is supported: measured reversals of the "
+        "only the 3:1 coupling, so the reversal, is supported, by measured reversals of the "
         "sodium-calcium exchange current of guinea-pig ventricular cells, in giant patches (1992) "
-        "and in whole cells (2002). The denominator, the equal voltage split and every number are "
-        "synthetic: no source gives them",
+        "and in whole cells (2002); the reversal itself is contested (the third departure). The "
+        "denominator, the equal voltage split and every number are synthetic: no source gives them",
         "the abstracts of the works below (1992, item e; 2002, the conclusion); none was read in "
         "full",
         "no number taken: the capacity and the two half-saturations are a definition's values, "
@@ -123,8 +123,9 @@ LAW = CycleLaw(
             "mV (298 K), where the 1992 abstract reports currents that change by a factor 2 in "
             "about 100 mV, and voltage dependences that move with the concentrations",
             "one mode at 3:1: a 2000 abstract concludes 4:1 or a variable coupling in patches of "
-            "the same cells, and a 2004 abstract reports flux ratios near 3.2, two minor modes and "
-            "a net current and a calcium flux that can reverse at different potentials",
+            "the same cells, and a 2004 abstract says that the reversals of the exchange current "
+            "had indicated a ratio closer to 4:1, and reports flux ratios near 3.2, two minor "
+            "modes and a net current and a calcium flux that can reverse at different potentials",
             "no inactivation, no regulation by either ion, no leak mode and no temperature "
             "dependence beyond RT",
         ),
