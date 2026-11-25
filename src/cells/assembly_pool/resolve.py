@@ -152,13 +152,13 @@ def _drive(entry, k, channels):
     unknown = sorted(set(given) - set(channels))
     if unknown:
         raise ConfigError(f"Pool {k}: {unknown[0]!r} is no channel of the ionic definition")
-    law = observables.resolve(entry["observable"])
+    try:
+        law = observables.resolve(entry["observable"])
+        pool = parse_pool(entry["pool"])
+    except (AssemblyError, ConfigError) as exc:
+        raise ConfigError(f"Pool {k}: {exc}") from exc
     levels = require_fields(entry["levels"], set(law.values), f"pool {k}: levels")
     levels = tuple(fraction(levels[v], f"pool {k}: the level of {v!r}") for v in law.values)
-    try:
-        pool = parse_pool(entry["pool"])
-    except AssemblyError as exc:
-        raise ConfigError(f"Pool {k}: {exc}") from exc
     return PoolDrive(tuple(given), law, levels, pool)
 
 
@@ -173,8 +173,8 @@ def parse_composed(data):
         raise ConfigError(
             f"The ionic definition's model is one of {', '.join(IONIC_MODELS)}, not {model_id!r}"
         )
+    spec = parse_spec(data["ionic"])  # Its own refusals first; it keeps no part of what it reads.
     raw = _copy(data["ionic"])
-    spec = parse_spec(_copy(raw))
     entries = data["pools"]
     if not isinstance(entries, list) or not entries:
         raise ConfigError("pools is a non-empty list")

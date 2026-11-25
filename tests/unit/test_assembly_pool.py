@@ -443,6 +443,12 @@ def test_the_driver_s_path_is_a_direct_walk_of_the_pool_s_kernel(driven):
                 states = np.r_[initial, late[name][rows, world], late[name][rows[-1], world]]
                 late[name][rows, world] = states[:-2] if shift > 0 else states[2:]
         assert planted(trace=trace._replace(**late)) != expected
+    # A longer horizon keeps the path up to the old one.
+    longer = replace(pool, end_time_s=2 * pool.end_time_s)
+    _, further = record(longer)
+    for world, (path, _) in enumerate(both[0]):
+        kept = path_points(driver_path(longer, further, world))[: len(path.times)]
+        assert kept == path_points(path)
     # A level of one value for both is no switch, and levels are data: they change no time.
     flat = driver_path(pool, trace, 0, levels={"false": 0.5, "true": 0.5})
     assert path_points(flat) == [(0.0, 0.5, 0)]
