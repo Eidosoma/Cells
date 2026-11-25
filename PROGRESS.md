@@ -1,6 +1,6 @@
 # Progress
 
-Last updated: 2026-11-24 UTC.
+Last updated: 2026-11-25 UTC.
 
 This is the source of current implementation status. Milestone definitions live
 in [Roadmap](docs/ROADMAP.md), scientific updates in
@@ -9,10 +9,10 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 2026, with every earlier run summary and its evidence links, is preserved in
 [the archived progress file](docs/history/PROGRESS_BEFORE_2026-11-08.md).
 
-## Open FR and core work (24 November 2026, late)
+## Open FR and core work (25 November 2026, night)
 
-Sources: [Decisions](docs/DECISIONS.md) D318 to D377, the [feature index](docs/FEATURE_REQUESTS.md) and the tags of 22 to
-24 November.
+Sources: [Decisions](docs/DECISIONS.md) D318 to D379, the [feature index](docs/FEATURE_REQUESTS.md) and the tags of 22 to
+25 November.
 
 - **Scheduled, from the morning of 25 November:**
   - **The law-ID rename** (D345, D346, D371). Everything live becomes `cells.<family>.<name>@major`; one scripted
@@ -24,8 +24,9 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D377, the [feature index](docs/F
     is ruled out as an end state. The calcium ensemble is kept and re-expressed (five engine features, about 16 to
     28 agent-days as a rough guess, candidate requests only). The physiology stack (17 drivers on five legacy BETSE
     IDs, 18 REF-era drivers) is retired in the approved deletion batch, which needs a dry run, a tag and a removal
-    list the user approves. The plan is on `legacy-port-plan` (ef344334); the route (relocate first, re-express directly, or prune in
-    place) and whether a CPU re-expression of the ensemble counts are the user's choice, with a dry run's evidence.
+    list the user approves. The plan is on `legacy-port-plan` (4781e141), with the dry run's evidence (D378, D379); the route
+    (relocate first, re-express directly, or prune in place) and whether a CPU re-expression of the ensemble counts are
+    the user's choice.
     BETSE parity stays on the live `resolved_pump_tissue@1` to `@3` ladder.
   - **Gate speed** (D358, decided by the user): refresh the scope map after each engine landing, record the 37 files
     with unmapped children, and narrow D229's always-run readers rule after a file-open check. The nightly full run
@@ -43,19 +44,19 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D377, the [feature index](docs/F
     re-formed as a pH shift on it. Note `docs/VOLTAGE_SHIFT_DESIGN.md` (377a1b34, branch `fr64-design`); the build
     follows FR-51's follow-up and the rename.
   - **FR-53** (normal; D371, D370): a rounding allowance for global ledgers. Note `docs/LEDGER_ROUNDING_DESIGN.md`
-    (774fdcd5); D370 corrects its premise for the pump-tissue family. FR-47's small `atol_count` ledger fix lands on
-    its own.
-  - **FR-55, FR-56** (normal; D344, D351): design notes first. **FR-58 to FR-62** (normal; D365): design notes after
-    the high items. **FR-66** (medium; D372): a short design note.
+    (774fdcd5); D370 corrects its premise for the pump-tissue family. FR-47's ledger limit: the
+    evidence recommends keeping it, with the user to decide (D379).
+  - **FR-55** (normal; D344, D351): its note recommends no build. **FR-58 to FR-62** (normal; D365) and **FR-66**
+    (medium; D372) have design notes on branches, with questions for the user (D379). **FR-56**'s note is being written.
   - **FR-39, FR-40, FR-41** (high, D286) and the architecture items (D299) are unchanged; no decision of 23 to 24
     November moves them.
 - **Registrations and judged runs still to come:**
-  - **FR-51's two-potassium registration** (D353, D355, D356, D361): waits on Lean's re-read of the 5.4 mM anchor
-    (the request is with Lean through the user, D376). It is non-blind, and Panama's 10 and 20 mM levels are holdouts. It is written after FR-64's migration or pinned to
-    FR-51's landed revision (955765ef).
-  - **FR-38's second comparison** (D334, D339, D354, D367): the protocol, references and four amendments are tagged;
-    the judge is built on branch `fr38-v2-judge` (4c98bd7a) and not yet tagged; the judged run waits for its tag,
-    the builder's export table (§8) and the lead's go. The three uncovered readout controls go to a later
+  - **FR-51's two-potassium registration** (D353, D355, D356, D361, D378, D379) is tagged
+    (`fr51-two-potassium-registered-2026-11-25`), pinned to FR-51's landing (955765ef). It is non-blind, and Panama's 10
+    and 20 mM levels are holdouts. Its engine check passes. Two readers wait on one question about the panel's label.
+  - **FR-38's second comparison** (D334, D339, D354, D367): the protocol, references and five amendments are tagged
+    (amendment 5, D378); the judge on branch `fr38-v2-judge` is conforming to amendment 5 and is not yet tagged; the judged
+    run waits for its tag and the lead's go. The three uncovered readout controls go to a later
     registration, FR-38 v3 (D354).
   - **FR-45's judge** (D375, D376): written after the rename; W2 and W7 stay on the wash or are pinned.
   - **FR-49's World B and combination checks C1 and C2** (D331): after the site pairing and the wash narrowing;
@@ -64,14 +65,13 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D377, the [feature index](docs/F
     45 to 73 h more if its half step is needed); the rest runs on a gate lane from 20:00 UTC. No field result is
     recorded in D318 to D376.
   - **FR-30** (D343, D344, D350, D366): parked as development-only, narrowly reopened for two phases at a declared
-    voltage. Ek-Vitorín 2016 is undetermined by structure (D341, D342); its fit waits for an amendment adding a
-    power check and multistart. The Revilla diagnostic lands by merge in the next no-src stack.
+    voltage. Ek-Vitorín 2016 is undetermined by structure (D341, D342), so nothing is fitted (D379); D366's
+    power check and multistart bind any later registered fit. The Revilla diagnostic lands by merge in the next no-src stack.
   - **Follow-ups:** the docstring-only batch (scope lines of D337, D340, D344, D351, D355, D356); FR-43 part 3's
     open items and the factor-width term (D328); FR-43's gaps 3 and 4 (D347: no registered criterion for part 1;
     turnover in a swelling cell is FR-65); the restart row at a source's switch-off and a per-solver support view
-    (D349); a GPU-admission check of the plain `runner.run` against D187 (D372).
-  - **Lean tips held** until Lean rewords and rebuilds its unpublished commits (D376); `lean-ready.sh` now runs
-    before every Lean merge.
+    (D349). The plain `runner.run`'s GPU admission is settled (D379).
+  - **Lean's rebuilt tip is merged** at 18198688 (D378); `lean-ready.sh` runs before every Lean merge.
 - **Open, unscheduled:** FR-1, FR-2, FR-3, FR-6, FR-11, FR-13, FR-14, FR-15, FR-16, FR-8's rung 2, F1 (after an
   MG0c rerun), crossrev renewal, and the Phase 0 runner's review. FR-17's stage 1 has landed (below); its GPU
   placement is closed (D336).

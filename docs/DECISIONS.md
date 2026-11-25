@@ -12602,3 +12602,88 @@ wording is corrected on its branch. A tiny world is refused, never wrong.
 
 **FR-55's design note** (`fr55-design`, 6109cfad) recommends no build: the two published records do not support a
 dose-dependent closing rate, and a same-patch low-dose rise and washout would reopen it. The user's decision is pending.
+
+## D379: FR-51's two-potassium engine check passes, and its readers wait; FR-47's ledger limit, measured; six design notes filed; corrections to D366, D372, D377 and D378
+
+2026-11-25, about 02:05 UTC. The lead.
+
+**FR-51's two-potassium registration** (`fr51-two-potassium-registered-2026-11-25`):
+- **The engine check of section 2 passes.** It ran once, from a clean snapshot of 955765ef, with the script committed
+  first (`fr51-two-k-engine-check`, 09b718d3). The reversal arm's half crossings are −74.159891523, −58.230247578 and
+  −40.311006814 mV at 5.4, 10 and 20 mM. Its shifts, +15.929643945 and +33.848884709 mV, equal the predictions to
+  5.3e-15 mV, against the registered 1e-6. The absolute-voltage arm moves by 0, and all four plants are caught by the
+  criteria the registration names for them. The record is
+  `/mnt/workspaces/Cells/fr51-two-k-engine-check-20261125/run-01/result.json` (sha256 7a40b3dc…).
+- **A wording fault it found.** Section 1 reads as if the composition's own 5.4 mM crossing were the reading's, −74.05 mV.
+  It is −74.160, inside the bracket, and no shift depends on it. It becomes erratum 1, with the blocker's side and
+  valence, tagged before any curve is read.
+- **The readers' sheet is not filed, and no reader has started.** Its writer found that the panel labels its traces by
+  circled 5, 10, 20 and 60, and that two lines leave the circled 10. Section 3 stops the registration if the sheet cannot
+  say which trace is which, so the question is with Lean through the user. If Lean cannot say from the caption, a
+  dated erratum comes before any reading: both lines are read, and 10 mM is unresolved if they differ. The 20 mM level
+  decides in any case, and 10 mM supports.
+
+**FR-47's ledger limit, measured** (branch `fr47-ledger-atol`, 2c5b84ef; records
+`/mnt/workspaces/Cells/fr47-ledger-atol-20261124/`). D378 left the form that follows the cause, (c), to the user. Built
+as a candidate and not landed, it costs more than it gives:
+- **It loosens closings that registered worlds meet:** W1 24 times on its first row and 2.2 times at its end, W2 42
+  times, D1 up to 594, D3 108 and D5 65. A heat leak of half the bound now passes, and P-D1, a registered plant,
+  would be admitted on a rerun. No code reads its old refusal.
+- **The remedy exists today:** a tighter `atol_count`. In the case measured, 1e-7 closes it, at 149 steps against 83
+  (about 0.5 s).
+- **The lead's recommendation is changed:** keep the documented limit and do not build (c); FR-53 takes the class. The two
+  commits that correct `FORMAT_RATE_EQUATIONS.md` (9efe77b0, 2c5b84ef) land in the next no-src stack. A small gated
+  change that makes the refusal name the remedy is optional. D371's line, that the fix lands on its own, waits for the
+  user's decision.
+
+**Legacy, corrections to D377** (plan `legacy-port-plan`, 4781e141, frozen until the user chooses a route). "At least
+58%" stands.
+- **"15 direct edits, with another 50 fixture files open" is replaced.** With the dry run and the reading after it, about
+  49 surviving files change by hand at route C's first deletion. Most of them change on every route, because they drop a
+  world that goes. None of the 50 fixture files needs a hand edit. The pruned tree's own run fixes the number.
+- **The saving in tiers 1 and 2 at that deletion** is 99 files and 2,398 test-seconds, about 7.5 minutes of a full gate.
+- **Every route costs 2 to 3 agent-days more** than the prices the lead gave: A 20 to 30, B 15 to 22, C 16 to 25, beyond
+  the engine features.
+- **The kept core's own tests are weak.** Five of its ten test files in tiers 1 and 2 already fail in the record, and
+  `spatial_extracellular@2` has none, so the bitwise windows taken before the prune carry its proof.
+- **D211's cotransport kernel leaves with the first deletion,** and no route ports it. It goes to the user with the route.
+
+**Six design notes are filed, each on its own branch; none is built,** and each lands in the next no-src stack with the
+user's answers:
+- **FR-55** (`fr55-design`, 6109cfad): recommends no build (D378).
+- **FR-58** (`fr58-design`, 0d54e2e9): a label on an exchangeable group. The reactions already compute both one-way
+  extents; the pairing of donor and product is lost before the label owner sees them. An optional `groups` key,
+  4 to 4.75 agent-days. It found a latent fault: the gene unit's label report doubles what its hold carries when a species
+  row is given twice.
+- **FR-59** (`fr59-design`, 8e12ce53): the flux is finite at an empty pool; every logarithm of the row is not. It needs an
+  exact charged heat booking, which D217 left unapproved, so it is the user's. 4.8 to 6.1 agent-days.
+- **FR-60** (`fr60-design`, 179ec8fa): an external potential on a declared place, with the work formed from integers and
+  declared values. 2.5 to 3 agent-days. FR-60's own acceptance example cannot see the change act on the wrong state.
+- **FR-61 and FR-62** (`fr61-62-design`, 6fd4dd85): one rotor, with its own angle, on the cycle kind. A kind may already
+  own a ledger, so rule (a) of MODULE_SYSTEM §7 no longer bars it. 5 to 7 agent-days.
+- **FR-66** (`fr66-design`, 1ba73040): a host-only reader in `src/cells/assays`. 1.05 to 1.2 agent-days.
+
+**Corrections:**
+- **D366 calls Ek-Vitorín 2016 "FR-30's next fit".** It is not. D341 and D342 found that benchmark undetermined by its
+  data's structure, so no data file exists and nothing can be fitted, and D343 parked FR-30. D366's two rules, a power
+  check and multistart with declared starts, bind any later registered fit. No amendment is owed now.
+- **D372's question, whether a plain run admits the composite on a GPU, is answered by reading main.** It does. A plain run
+  checks every row on the host. What D330 measured and D336 closed is the device's own checks:
+  `row_checks="device"` is refused on a GPU (`execution/row_checks.py:71`), and the vector windows refuse the composite.
+  D338's "main's scalar row checks already refused a GPU" means the device row checks. No refusal is missing. Two texts
+  still say the GPU is unmeasured (`row_checks.py:65`, ARCHITECTURE.md:112), and are corrected in the docs steps of the
+  next stack.
+- **FR-58's note found a live law missing from the rename's table** (`ideal_detailed_balance_mass_action@1`). The
+  author is checking every live ID.
+
+**Started overnight, on branches, none landing yet:** the rename's hand refactors, staged so that each passes today's
+tests before any ID moves (`id-rename-hand`, with the strict grammar last on `id-rename-strict`); the capture tools for
+the calcium ensemble's science set, which every legacy route needs (`legacy-captures`), with a pilot before any lane is
+taken; D358's gate-speed changes; FR-38's judge; FR-56's note. The advisor was asked about the first two and did not
+answer (it timed out twice), so starting them is the lead's own choice.
+
+**The docstring batch is done on its branch** (`docstring-batch`, a182e5da, 14 commits; not landed): the scope lines of
+D337, D338, D340, D344, D351 and D355, the block law's Lean commit, D364's two follow-ups (the `RULES` entry and the
+replacement row's composite form), and two species-cap texts. For items that touch `src`, only docstrings differ, by two AST
+tools; the two species-cap test files also differ in docstrings only. The wording is the lead's to review before it lands.
+Two lines have no page to go on yet (`kir2p1_mh2@1`, and the block law's page, which the rename's hand refactors add).
