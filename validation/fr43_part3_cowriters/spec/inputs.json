@@ -3085,6 +3085,10 @@
     "n_S_c",
     "moved"
    ],
+   "rungs_differ": [
+    "n_S_c",
+    "moved"
+   ],
    "D": true,
    "running": {
     "readouts": [

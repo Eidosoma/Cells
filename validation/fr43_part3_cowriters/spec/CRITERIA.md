@@ -130,15 +130,15 @@ the entries of READOUTS.md §5:
   named entry is judged by its size alone.
 - **The size:** E_n ≤ τ. A wrong law converges at its order to the wrong value, so it misses its size; a split of
   the wrong order leaves its window.
-- **Score.** An entry that is not formed (§3.0) is inconclusive, unless §3.0 compares it and it misses: it fails. Of
-  the formed ones:
+- **Score.** An entry that is not formed (§3.0) is inconclusive, unless §3.0 compares it and it misses (§9's miss:
+  its size off with its order inside its window; a named entry, its size): it fails. Of the formed ones:
   - **an entry named in `at_rounding`** passes where its size is inside τ and fails where it is not, whatever its
     order;
   - **any other entry** passes where its size is inside τ and its order is inside the window, and fails where its
     size misses and its order is inside the window. Where its order is formed and outside the window it is
     inconclusive, whatever the size (the window is what lets τ be trusted: FR-25 and FR-38's precedent), and it owes
     the retry (§7). Where its order cannot be formed, or where a d_j is exactly zero (two rungs that are one
-    series), it is inconclusive and owes none.
+    series), it is inconclusive whatever its size, and owes none.
 - **The pooled root mean square is the one statistic:** order, estimate and size use it. The errors against the
   reference at the coarser rungs, the pairwise orders and the finest triple are reported and judge nothing.
 
@@ -180,7 +180,7 @@ family fails, its arm fails, whatever else of that run or family is refused, sto
 | The echo departs from the registered run (§4.1) | The run is not the registered one. It is refused, and **nothing of it is judged** (§11) |
 | A table's hash departs from its line in `SHA256SUMS`, has no line in that file, departs from the lead's record, or is one of the format sample's | Its runs are refused, and **nothing of them is judged** (§11). An absent `SHA256SUMS` is recorded and flagged, and refuses nothing by itself |
 | A top-level key of a table is missing, of another type, or (for `kind`, `arm`, `units`) of another value | Every run in it is refused |
-| A key of an entry (a row of TABLE.md §3; `source`, `record` and `record_sha256` are the provenance row's, and a name missing from `series` is the missing leaf's) is missing or of another type (a `null` only where that row allows it) | The run is refused |
+| A key of an entry (a row of TABLE.md §3; `source`, `record` and `record_sha256` are the provenance row's, and a name missing from `series` or a list missing from `events` is the missing leaf's) is missing or of another type (a `null` only where that row allows it) | The run is refused |
 | A completed run with a non-null `refusal`, or a refused run without one | The run did not complete: it is refused with the refusal's kind, or `harness` if there is none |
 | `events_total` above `trace_capacity` (a truncated trace) | The run did not complete: refused with kind `harness` |
 | A completed run whose `t` is not the registered `samples_s`: a sample missing, one extra, or one that departs (10⁻¹² relative; 0 exactly). A resumed run: §3.1 | The run is refused |
@@ -191,7 +191,7 @@ family fails, its arm fails, whatever else of that run or family is refused, sto
 | Two runs with the same `record_sha256` (a record plant's edited copy, which the judge makes and no table holds, is no run of its own) | Both are refused: their entries are unformed, compared all the same, and a miss fails. No two runs share one |
 | Provenance: `source`, `record` or `record_sha256` missing or incomplete, `checkout_dirty` true, a missing snapshot, or an `engine_revision` that is not the registration tag's (not checked at the rehearsal, §10) | The run is refused: its entries are unformed, compared all the same, and a miss fails |
 | A judged run refused with kind `check` | **Fails** (§3.4) |
-| A run refused with kind `domain`, `definition` or `harness`, or any refused support or plant run | It did not complete, and is refused. No registered run is expected to be refused or to stop |
+| A run refused with kind `domain`, `definition` or `harness`, or a support or plant run whose `status` is refused | It did not complete, and is refused. No registered run is expected to be refused or to stop |
 | A run in `missing` (and not in `runs`), or in neither list | It is missing: refused |
 | A run in `missing` and in `runs`, or a run name listed twice (in two tables, or twice in one `runs`) | The run is refused. Each entry under its name is judged (E, R, D) and a fail in any stands |
 | A run name that neither `inputs.json` nor the retry's rule (§7) lists | Ignored and recorded. A retry's name (§7) is listed where a retry is owed |

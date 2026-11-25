@@ -305,4 +305,10 @@ fabricated tables, its own reading, no judge). What ran on it:
 
 The skeleton has no plant scoring, no C0, no retry flow across plants and no row for a recorded-only leaf.
 
+**A third reading, of the diff from 36d7f686 to 4f62c487** (25 November 2026), said yes with five phrases to add (M1
+to M5: which miss an unformed S entry fails by; a support or plant run whose `status` is refused; a zero d_j,
+inconclusive whatever its size; W5-exact's two rungs in READOUTS.md and in `inputs.json`'s `judged` as
+`rungs_differ`; a list missing from `events`). They are in this revision. The lead accepted the readings of N1
+against V6, N2, "record it in §11", the sizing slot, N9's half and N3's window.
+
 **Questions to the lead before the criteria tag** are in the author's report to the lead, not here.
