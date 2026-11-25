@@ -375,7 +375,7 @@ def empty(run, record):
 
 
 def unknown_source(record):
-    """`source` of a run whose worker left none: what its driver knew of it."""
+    """`source` of a run whose record has none: what its driver knew of it."""
     return {name: kind() for name, kind in SOURCE.items()} | (record["driver_source"] or {})
 
 
