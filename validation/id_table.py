@@ -8,8 +8,9 @@ it first, so the engine stays strict and the file stays as it was:
     spec = parse_spec(id_table.translate(frozen_builder()))
     found = id_table.function(frozen_judge.reading)(spec, result)
 
-**The table** is the committed one, cells.registry.renamed_ids.RENAMED: {old spelling: new ID}. With
-an empty table every call returns its argument itself.
+**The table** is the committed one, RENAMED of src/cells/registry/renamed_ids.py: {old spelling: new
+ID}. It is read as data, so this module imports nothing of the engine and an independent reference
+may read its inputs through it. With an empty table every call returns its argument itself.
 
 **The rule** is the move's own, so a translated file reads as if the move had rewritten it. In every
 string of JSON-like data (dicts, lists, tuples and strings), keys included, each whole token that is
@@ -25,6 +26,7 @@ table that gives one spelling two new IDs, or whose new ID is an old spelling of
 import ast
 import json
 import re
+from functools import cache
 from pathlib import Path
 from types import CodeType, FunctionType
 
@@ -39,11 +41,10 @@ class Ambiguous(ValueError):
     """A spelling or a key that the table cannot place in one way."""
 
 
+@cache
 def renamed():
     """The committed table."""
-    from cells.registry.renamed_ids import RENAMED
-
-    return RENAMED
+    return read_table(Path(__file__).resolve().parents[1] / "src/cells/registry/renamed_ids.py")
 
 
 def check(table):

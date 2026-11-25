@@ -1,10 +1,10 @@
 """Explicit profile declarations over already-qualified initial geometry artifacts."""
 
-import json
 import os
 from copy import deepcopy
 from pathlib import Path
 
+from validation import id_table
 from validation.geometry.geometry_profile_preparation_reference import derive_geometry
 
 HANDOFF = Path("/mnt/workspaces/Cells/geometry-tissue-preparation-handoff-20261029-01")
@@ -23,10 +23,7 @@ def artifact(name="irregular-native-radial"):
     root = (
         Path(os.environ.get("CELLS_GEOMETRY_PROFILE_REFERENCE", str(HANDOFF / "examples"))) / name
     )
-    stored = {
-        key: json.loads((root / (key + ".json")).read_text())
-        for key in ("definition", "provenance")
-    }
+    stored = {key: id_table.load(root / (key + ".json")) for key in ("definition", "provenance")}
     # The frozen handoff predates the neutral geometry law ID. Re-prepare its recipe under
     # the current law; the prepared definition must be unchanged.
     from cells.legacy.core import geometry_tissue_preparation as bridge

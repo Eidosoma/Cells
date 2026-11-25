@@ -17,6 +17,7 @@ from cells.definitions.specs import ConfigError, digest, parse_spec
 from cells.legacy import tissue_geometry as cli
 from cells.legacy.core import geometry_tissue_preparation as bridge
 from cells.models import surface_tissue as model
+from validation import id_table
 
 ROOT = Path(__file__).resolve().parents[2]
 WORK = ROOT / "tests/fixtures/tissue_geometry_cli"
@@ -64,7 +65,7 @@ def qualified():
     for name, expected in CONTRACT["frozen_example"]["files_sha256"].items():
         assert sha(path / name) == expected
     frozen = {
-        name: cli.read_json(path / name)
+        name: id_table.translate(cli.read_json(path / name))
         for name in ("request.json", "definition.json", "provenance.json")
     }
     # The frozen provenance predates the neutral geometry law ID, which is part of its
@@ -125,8 +126,7 @@ def assert_qualified_files(path):
 
 
 def test_fresh_process_prepare_relocate_validate_and_portable_replay(tmp_path):
-    request = tmp_path / "request.json"
-    shutil.copyfile(EXAMPLE, request)
+    request = write(tmp_path / "request.json", id_table.translate(cli.read_json(EXAMPLE)))
     original = tmp_path / "original"
     before, first = child(["prepare", request, "--output", original], tmp_path)
     initial = assert_qualified_files(original)

@@ -470,12 +470,15 @@ def test_a_blocked_population_s_current_fraction_and_terms_follow_the_laws(case_
 
 def test_a_frozen_input_reads_through_the_id_table():
     """D345's translator on the tagged cases.json: its populations' laws are the engine's own. With
-    an empty table it is the file's data itself; through a table and its inverse it comes back."""
+    an empty table it is the file's data itself; through a table and its inverse it comes back. The
+    table it reads, as data, is the engine's."""
     import json
 
     from cells.registry import laws as law_registry
+    from cells.registry.renamed_ids import RENAMED
     from validation import id_table
 
+    assert id_table.renamed() == RENAMED
     for population in fr51.spec_of()["populations"].values():
         law_registry.active().lookup(population["law"])
     cases = json.loads(fr51_judge.SPEC.read_text())
