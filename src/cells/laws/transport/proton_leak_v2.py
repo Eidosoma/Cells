@@ -17,6 +17,7 @@ ends there, as @1 reads B4's:
 - **Its parse check** is the host's (kinds/passive_routes.check_definition): @1's, a valence +1
   row that is the closure's proton row where a closure is declared, and, its own, no end at a node
   of B4's version-1 closure (rapid_proton_buffer@1), whose free h @1 reads.
+- **Its comparison rule** is @1's (D344).
 """
 
 from cells.laws.transport import proton_leak

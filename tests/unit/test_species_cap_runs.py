@@ -16,8 +16,9 @@ books its own free-energy drop as heat, and holds no more than the trace estimat
   run's reason: the old cap's largest world, whose species sums keep the unrolled fold, so a
   failure here is the chain's or its reference's, not the raise's).
 Seconds cold on one timed CPU core (24 November 2026): the nine-species run 18.5 s, and this file
-66 s with the control (41 s before it). The request's 256-row case is test_species_cap_large.py's
-(tier 3): 36 s, which would take this file to about 100 s, past the 90 s measuring cap.
+70.48 s with the control, as the record has it (41 s before it). The request's 256-row case is
+test_species_cap_large.py's (tier 3): 36 s, which would take this file to about 106 s, past the 90 s
+measuring cap.
 """
 
 import math

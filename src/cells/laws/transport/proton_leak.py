@@ -17,6 +17,10 @@ then the instantaneous rate heat_pJ_s = J (mu_out - mu_in) applies, which is >= 
 arithmetic, and within rounding in float64: the small-|x| series can reverse sign in an interval of
 relative width about 1e-33 around reversal. The booking checks use RAW_SUM_FACTOR*eps floors, not
 an exact sign.
+
+**A comparison rule (D344).** The reversal's Nernst direction is confirmed, and the law reproduces
+it. At large gradients the nominal pipette and bath pH overstate the magnitude, so quantitative
+comparisons use the intracellular pH at the time of the current measurement.
 """
 
 import jax.numpy as jnp

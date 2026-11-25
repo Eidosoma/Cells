@@ -39,7 +39,7 @@ domain_valid refuses one that is not, since compiled CPU code flushes subnormals
 **Scope (D355, D356).**
 - The reversal reference ({"reversal_of": ion}) is supported for changes of that ion outside the
   cell only.
-  - When external K changes, a non-blind two-lab replay (Lean commit fccbb5e5, run on engine
+  - When external K changes, a non-blind two-lab replay (Lean commit 48fb7e0f, D378; run on engine
     revision 7ca7c9c1) finds the half-conductance shift tracking the measured reversal at about
     0.97 to 0.98 mV per mV.
   - One lab finds that raising internal K moves the half-block voltage about +5 mV, where V - E_K

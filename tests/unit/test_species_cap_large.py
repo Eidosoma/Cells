@@ -9,14 +9,14 @@ middle link 0.1% fast seen, and the booked heat the engine's own free-energy dro
 - 1,024 species (3 ions and a 1,021-species chain). Its reason and cost: the size the cap admits,
   where the species sums take the fold's scan above 16 terms, over the horizon of the design note's
   record (docs/FR43_SHARED_INVENTORIES_DESIGN.md §1.2: error 1.63e-5, the planted link at 2.7e-4).
-  On one CPU core: about 25 s to build the 1,024-species definition, 42 s of compile and 0.43 s per
-  step, so about 4 min, tier 3, run deliberately (20 steps took 70 s, which would have been every
-  gate's tier-2 cost).
+  On one CPU core: 3 s to build and 3 s to parse the 1,024-species definition, 47 s of compile and
+  0.43-0.46 s per step, so about 4 min, tier 3, run deliberately (20 steps took 70 s, which would
+  have been every gate's tier-2 cost).
 - 256 species (3 ions and a 253-species chain), the request's middle size (D347's gap 1, D365).
   Its reason and cost: the size where the dense network layout first sets the step's cost (the
   note's §1.6), run at the fixtures' default 2 GiB trace budget, which the estimate before FR-43
   refused for this run; 36 s cold on one timed CPU core (24 November 2026), nearly two thirds of
-  it compilation, which in test_species_cap_runs.py would take that file (66 s) past the 90 s
+  it compilation, which in test_species_cap_runs.py would take that file (70.48 s) past the 90 s
   measuring cap and out of tier 2.
 """
 
