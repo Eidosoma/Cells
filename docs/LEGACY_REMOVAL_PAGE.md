@@ -14,7 +14,7 @@
 So "keep them until the campaign's verdicts" would keep text and not tests. They run at the tag, and only there.
 
 You decided that what is used leaves legacy in canonical forms, and that holds: the worlds are rebuilt, and the registered campaign judges them. This question is about the **test rows** on the old forms of those worlds. The list had said "rewritten" for 17 test files, with 372 IDs.
-Each test function was read against what stays. A reader who had not seen that work read them again, planted 124 faults of its own, and found no claim about live code that only a retiring row holds. It found claims that **no** row holds, and four rows that need not go. All of that is in the numbers below.
+Each test function was read against what stays. A reader who had not seen that work read them again, planted more than a hundred faults of its own, and found no claim about live code that only a retiring row holds. It found claims that **no** row holds, and four rows that need not go. All of that is in the numbers below.
 
 | What became of the 372 | IDs |
 |---|---|
@@ -27,7 +27,7 @@ Each test function was read against what stays. A reader who had not seen that w
 |---|---|---|
 | The older definitions' own refusals | 68 | Each refuses a field or a rule of a form that goes. The new forms refuse the same things by rows that stay (thirteen were missing and are written). **About 22 of the 68 have no counterpart, because the live form takes the input** (reader): a store at 0.2 V parses and steps, and a Hill power of 9 is accepted |
 | General rows | 38 | Saving, loading, the command line, schedules, changed files: held by rows that belong to no family |
-| Carried | 42 | A row that stays holds the claim, **and a planted fault of that claim makes it fail**. Most fail at their own assertion. Eleven of the named plants are caught by a ledger or a refusal of the engine's first, which is a real detection and is labelled so (`carrier_plants.tsv`); the reader's finer plants, which no ledger sees, all fail by an assertion |
+| Carried | 42 | A row that stays holds the claim, **and a planted fault of that claim makes it fail**. Most fail at their own assertion. Eleven of the named plants are caught by a ledger or a refusal of the engine's first, which is a real detection and is labelled so (`carrier_plants.tsv`); the reader's finer plants of the same claims (1e-9 in a flux, a heat or a work; one part in 2^52 at each kind of restart), which no ledger sees, fail by an assertion. What no row holds is named in section 2 |
 | The campaign's own worlds | 9 | Judged by the registered campaign, once |
 | Parked with the assembly ensembles | 27 | Commands, planning of a parked kind, sums over an ensemble, GPU agreement: parked by your earlier decision. Ten of them hold planning that other rows carry, or sums that nothing replaces |
 | GPU only | 2 | No gate runs a GPU, and their tolerances are the older model's |
