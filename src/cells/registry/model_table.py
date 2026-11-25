@@ -9,7 +9,7 @@ tests/unit/test_model_table.py holds the table to the code: every module under `
 registers a piece is one of its homes, and its keys are the models that core/specs.parse_spec
 dispatches itself.
 
-**Its rows**, keyed by the model's ID as definitions write it (a bare ID is in `cells`, D185):
+**Its rows**, keyed by the model's ID as definitions write it (`cells.model.name@major`, D345):
 - `type`: "inner" (the inner model, which hosts its own laws and its kinds), "composite" (an inner
   model and any ordered list of operators), "composition" (the composite with a fixed operator
   list, as core/pump_composite_spec.frozen_definition rewrites it) or "family" (a model family of

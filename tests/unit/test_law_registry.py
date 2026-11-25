@@ -52,6 +52,7 @@ from cells.laws.channels import (
     kv1p3_mh,
     kv1p4_mh,
     kv1p6_mh,
+    open_channel_block,
 )
 from cells.laws.cycles import (
     adenylate_kinase,
@@ -70,7 +71,7 @@ from cells.laws.junctions import junction_series_gates
 from cells.laws.routes import passive_permeation
 from cells.laws.transport import proton_leak, proton_leak_v2
 from cells.models import inner_laws, surface_pump_v3
-from cells.registry import declarations, ids, laws
+from cells.registry import declarations, ids, kind_registry, laws, operators
 from tests.unit.test_passive_routes_kind import closed_pair, route
 from tests.unit.test_transporter_kind import held_world, population
 from validation.tissue import composite_crossrev as crossrev
@@ -173,25 +174,42 @@ def test_the_template_refuses_a_malformed_declaration():
         ),
         "its provenance is one of": dataclasses.replace(cycle, provenance="moved"),
         "B8's fields are reserved": dataclasses.replace(route_law, represents="a reference"),
-        "its host is the ID": dataclasses.replace(binding, host="the buffer"),
-        "its law_id is": dataclasses.replace(binding, law_id="Planted Binding"),
+        "its host, the kind or model that runs it: the buffer is not": dataclasses.replace(
+            binding, host="the buffer"
+        ),
+        "Planted Binding is not namespace.family.name@major": dataclasses.replace(
+            binding, law_id="Planted Binding"
+        ),
+        # The interface decides a law's family (D345), the block law's included.
+        "a cells.channel_law@1 law's ID is tests.channel.<name>@major": dataclasses.replace(
+            channel, law_id="tests.cycle.planted@1"
+        ),
+        "a cells.channel_block_law@1 law's ID is cells.channel_block.<name>@major": (
+            dataclasses.replace(open_channel_block.LAW, law_id="cells.channel.planted@1")
+        ),
         "a gated law gives its kinetics and opening": dataclasses.replace(channel, opening=None),
         "its moves are": dataclasses.replace(cycle, moves=(("role", 1.5),)),
         # A route law's reads (MT-1b's leak @2, face plan item 3): stage-read IDs, () by default.
         "its reads are a tuple of stage-read IDs": dataclasses.replace(route_law, reads=("",)),
     }
     assert route_law.reads == () and not route_law.errors()
-    # A third part, the family's, is admitted in a law's and a host's ID, a fourth is not, and an
-    # interface keeps its two (D345).
+    # A law's and a host's ID has three parts and an interface's two (D345); an outside interface's
+    # type declares its laws' family, a word of its own.
     three = dict(law_id="tests.binding.planted@1", host="tests.kind.planted@1")
     assert dataclasses.replace(binding, **three).errors() == []
     for name, value in three.items():
-        four = {**three, name: value.replace("tests.", "tests.a.")}
-        assert len(dataclasses.replace(binding, **four).errors()) == 1, name
-    interface = type("ThreePart", (laws.Law,), {"interface": "tests.binding.planted_law@1"})
-    assert interface(**three).errors() == [
-        "its type declares a namespaced interface ID with its major"
-    ]
+        for planted in (value.replace("tests.", "tests.a."), value.split(".", 2)[2]):  # 4, 1 parts.
+            assert len(dataclasses.replace(binding, **{**three, name: planted}).errors()) == 1, name
+    outside = dict(law_id="tests.any_word.planted@1", host="tests.kind.planted@1")
+    words = dict(interface="tests.planted_law@1", FAMILY="any_word")
+    assert type("Outside", (laws.Law,), words)(**outside).errors() == []
+    for planted, reason in (
+        ({"interface": "tests.any_word.planted_law@1"}, "a namespaced interface ID with its major"),
+        ({"FAMILY": None}, "its laws' family, its own word"),
+        ({"FAMILY": "channel"}, "its laws' family, its own word"),  # A cells interface's word.
+    ):
+        errors = type("Planted", (laws.Law,), words | planted)(**outside).errors()
+        assert any(reason in error for error in errors), (planted, errors)
     for reason, law in cases.items():
         with pytest.raises(ValueError, match=reason):
             registry.register(law)
@@ -298,6 +316,29 @@ def test_the_id_grammar(value, expected):
     else:
         with pytest.raises(ValueError, match="is not namespace.family.name@major"):
             ids.parts(value)
+
+
+def test_an_old_spelling_is_refused_by_naming_its_new_id(monkeypatch):
+    """D345: by the table of renamed IDs, at registration, at lookup and in a slot; a registry holds
+    no old spelling. The committed table's new IDs are pieces'. Planted: an unlisted bare ID, which
+    is refused for its shape."""
+    channel, *_ = planted_laws()
+    monkeypatch.setitem(ids.RENAMED, "planted_x@1", "tests.channel.planted_x@1")
+    renamed = r"planted_x@1 was renamed tests.channel.planted_x@1 \(D345\)"
+    with pytest.raises(ValueError, match=renamed):
+        laws.LawRegistry().register(dataclasses.replace(channel, law_id="planted_x@1"))
+    for call in (laws.qualified, laws.active().lookup, operators.active().lookup):
+        with pytest.raises(ConfigError, match=f"^{renamed}$"):
+            call("planted_x@1")
+    with pytest.raises(ConfigError, match=f"^populations\\[0\\].law: {renamed}$"):
+        ids.refuse_old({"populations": [{"law": "planted_x@1"}]}, ConfigError)
+    with pytest.raises(ConfigError, match=r"^slot: planted_y@1 is not namespace.family.name@major"):
+        laws.qualified("planted_y@1", "slot")
+    for unknown in ("planted_x@1", "planted_y@1", "", None):
+        assert unknown not in laws.active() and unknown not in operators.active()
+        assert unknown not in operators.OPERATORS and unknown not in kind_registry.active()
+    for old, new in ids.RENAMED.items():
+        assert ids.reason(old) == f"{old} was renamed {new} (D345)" and ids.piece(new), old
 
 
 # ------------------------------------------------------------------ the registry (§8.3)

@@ -96,7 +96,7 @@ def parse(entries, base):
             raise ConfigError(f"pH condition ID {name!r} must be unique among the model's IDs")
         ids.add(name)
         where = f"pH condition {name!r}"
-        if not isinstance(raw["law"], str) or not raw["law"] or qualified(raw["law"]) != LAW_ID:
+        if qualified(raw["law"], f"{where}: law") != LAW_ID:
             raise ConfigError(f"{where}: law is {LAW_ID}")
         if raw["node"] not in nodes:
             raise ConfigError(f"{where}: unknown node {raw['node']!r} (a cell or an outside node)")

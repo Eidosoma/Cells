@@ -94,12 +94,11 @@ The declaration (model key `transporters`, absent unless declared), one entry pe
      "role": "H", "fuel": {"kind": "maintained_held_rows@1", "node": "cell_0",
                            "rows": ["ATP", "ADP", "Pi"], "ph_ref": 7.2, "ph_band": 0.05}}
 
-- **law:** a namespaced law ID (a bare ID resolves to `cells.`); stored namespaced. The kind finds
-  its laws in the active law registry: the cycle laws it hosts (registry/laws.py; §8.3 of
-  docs/CORE_SEAMS_DESIGN.md), never a module tuple. Its two laws are declared here, on the law
-  template, until each moves to its own module (§8.2). Version 1's layout runs each of the two by
-  name (VERSION_1_LAWS), so it refuses any other cycle law it hosts, until the cycle kind's
-  general layout (§3.5).
+- **law:** a law ID (registry/ids.py). The kind finds its laws in the active law registry: the cycle
+  laws it hosts (registry/laws.py; §8.3 of docs/CORE_SEAMS_DESIGN.md), never a module tuple. Its two
+  laws are declared here, on the law template, until each moves to its own module (§8.2). Version
+  1's layout runs each of the two by name (VERSION_1_LAWS), so it refuses any other cycle law it
+  hosts, until the cycle kind's general layout (§3.5).
 - **capacity_fmol_s** k (fmol cycles/s: N x the per-member value for a lumped node), the
   **stoichiometry** n (an integer 1..4), the role's and ATP's half-saturations K and K_ATP (mM).
 - **role:** the moved species row: valence 0 under the neutral law, +1 under the proton law.
@@ -372,7 +371,7 @@ def _parse_version_1(entries, base):
             raise ConfigError(f"transporter ID {name!r} must be unique among the model's IDs")
         ids.add(name)
         where = f"transporter {name!r}"
-        law = qualified(raw["law"]) if isinstance(raw["law"], str) and raw["law"] else None
+        law = qualified(raw["law"], f"{where}: law")
         hosted = hosted_laws()
         if law not in hosted:
             raise ConfigError(f"{where}: law is one of {', '.join(hosted)}")
@@ -1228,7 +1227,7 @@ def _parse_general(raw, base, patches, valence, taken):
     if not isinstance(name, str) or not name or name in taken:
         raise ConfigError(f"transporter ID {name!r} must be unique among the model's IDs")
     where = f"transporter {name!r}"
-    law = qualified(raw["law"]) if isinstance(raw["law"], str) and raw["law"] else None
+    law = qualified(raw["law"], f"{where}: law")
     hosted = hosted_laws()
     if law not in hosted:
         raise ConfigError(f"{where}: law is one of {', '.join(hosted)}")

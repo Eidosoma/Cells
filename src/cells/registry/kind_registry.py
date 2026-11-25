@@ -6,10 +6,10 @@ kinds only through the registry active for the model build: BUILTIN, unless a ca
 inside `scope(registry)`. It imports no kind module. Built-in kinds (models/inner_kinds/)
 register on BUILTIN exactly as an external package would, with `registry.register(kind)`.
 
-IDs are namespaced ("cells.transporter@1"); a bare ID resolves in the `cells` namespace, so an
-outside package cannot collide with a built-in. The canonical kind order, the order in which a
-structure's kinds append their fields, is the sorted namespaced ID: total, and independent of
-registration, import and declaration order.
+IDs are `namespace.family.name@major` (registry/ids.py), one spelling, so an outside package cannot
+collide with a built-in. The canonical kind order, the order in which a structure's kinds append
+their fields, is the sorted ID: total, and independent of registration, import and declaration
+order.
 
 A kind's controls may follow a schedule (§7.4 (l)): the kind declares experiment keys, parses them
 into a `Schedule` (named piecewise-constant series), and the schedule's breakpoints join the
@@ -18,7 +18,6 @@ experiment's change times, so each is a step boundary and the change records car
 
 import importlib
 import math
-import re
 from collections.abc import Callable, Mapping
 from contextlib import contextmanager
 from contextvars import ContextVar
@@ -33,6 +32,7 @@ import numpy as np
 # check_definition refuse with ConfigError and may use these public helpers, never the
 # underscored names of cells.definitions.specs.
 from cells.definitions.specs import ConfigError, bounded_integer, finite_number, require_fields
+from cells.registry import ids
 
 __all__ = (
     "BUILTIN",
@@ -95,12 +95,16 @@ __all__ = (
 NAMESPACE = "cells"
 
 
-def qualified(identifier):
-    """The namespaced form of a kind or law ID: a bare ID belongs to the cells namespace."""
+def qualified(identifier, slot=None):
+    """A piece's ID, checked: `identifier` itself, or a refusal (ConfigError) with `slot`, where it
+    is given, before the reason (registry/ids.py)."""
     if not isinstance(identifier, str) or not identifier:
-        raise ValueError(f"A kind or law ID must be a non-empty string, not {identifier!r}")
-    head = identifier.split("@", 1)[0]
-    return identifier if "." in head else f"{NAMESPACE}.{identifier}"
+        why = f"A kind or law ID must be a non-empty string, not {identifier!r}"
+    else:
+        why = ids.reason(identifier)
+    if why is not None:
+        raise ConfigError(why if slot is None else f"{slot}: {why}")
+    return identifier
 
 
 # ---------------------------------------------------------------------- schedules (§7.4 (l))
@@ -591,7 +595,6 @@ PARTITION_ROLES = ("extensive", "intensive", "history", "structural")
 # ledger_terms' keys that fold into today's ten ledgers by role (rule (a)); a kind's own ledgers
 # take other names.
 LEDGER_TERM_ROLES = ("cell", "outside", "produced", "heat_pJ", "work_pJ", "stored_pJ")
-_BOOKING_ID = re.compile(r"(?:[a-z][a-z0-9_]*\.){0,2}[a-z][a-z0-9_]*@[1-9][0-9]*")  # name@major
 
 
 class EnergyRole(NamedTuple):
@@ -986,11 +989,11 @@ def declaration_errors(kind):
     bookings = kind.heat_bookings
     if not (
         isinstance(bookings, tuple)
-        and all(isinstance(b, str) and _BOOKING_ID.fullmatch(b) for b in bookings)
+        and all(ids.piece(b, family="heat") for b in bookings)
         and len(set(bookings)) == len(bookings)
     ):
         out.append(
-            "its heat_bookings are distinct versioned booking IDs (name@major), the tableau "
+            "its heat_bookings are distinct booking IDs (namespace.heat.name@major), the tableau "
             "never among them"
         )
     parts = kind.partition_roles
@@ -1368,7 +1371,9 @@ class KindRegistry:
         self._kinds = {}
 
     def register(self, kind):
-        key = qualified(kind.kind_id)
+        key = kind.kind_id
+        if (why := ids.reason(key, family="kind", what="a kind")) is not None:
+            raise ValueError(f"Kind {key!r}: {why}")
         known = self._kinds.get(key)
         if known is not None and known is not kind:
             raise ValueError(f"Kind {key} is already registered")
@@ -1407,7 +1412,7 @@ class KindRegistry:
         return self._kinds[key]
 
     def __contains__(self, kind_id):
-        return qualified(kind_id) in self._kinds
+        return isinstance(kind_id, str) and kind_id in self._kinds
 
     def model_keys(self):
         """{model key: kind} of every registered kind."""
@@ -1419,7 +1424,7 @@ class KindRegistry:
 
     @staticmethod
     def canonical(kind_ids):
-        """kind_ids, namespaced, distinct and in canonical (sorted) order."""
+        """kind_ids, distinct and in canonical (sorted) order."""
         return tuple(sorted({qualified(k) for k in kind_ids}))
 
 

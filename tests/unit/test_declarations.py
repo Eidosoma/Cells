@@ -35,7 +35,7 @@ import cells
 from cells.__main__ import main
 from cells.definitions import pump_composite_spec as composite_spec
 from cells.operators import OPERATORS, contract
-from cells.registry import declarations, kind_registry
+from cells.registry import declarations, ids, kind_registry
 from cells.registry import laws as law_registry
 from cells.registry import operators as operator_registry
 from validation import id_table
@@ -199,7 +199,7 @@ def _ids(value, path=""):
         return [found for key, item in value.items() for found in _ids(item, f"{path}/{key}")]
     if isinstance(value, list):
         return [found for item in value for found in _ids(item, f"{path}[*]")]
-    if isinstance(value, str) and law_registry._is_id(value):
+    if ids.piece(value):
         return [(path, value)]
     return []
 
@@ -217,6 +217,23 @@ def joins(doc, definition):
         for row in m["rows"]:
             spellings.setdefault(row["declared_id"], f"{row['role']} {row['id']} of {m['id']}")
     return {(path, i): spellings.get(i) for path, i in sorted(set(_ids(definition)))}
+
+
+def test_an_id_s_three_parts_are_its_identity_and_its_page():
+    """D345: a piece's namespace, name and version are its ID's parts, the name its last one, with
+    one spelling; its page is named by what follows the namespace. Planted: a bare ID and an ID of
+    two parts, which are refused."""
+    for entry in declarations.manifest()["pieces"]:
+        parts = ids.parts(entry["id"])
+        stated = (entry["namespace"], entry["name"], entry["version"])
+        assert stated == (parts.namespace, parts.name, parts.major), entry["id"]
+        assert entry["declared_id"] == entry["id"] and entry["declared_host"] == entry["host"]
+        page = f"docs/library/{parts.namespace}/{declarations.SECTIONS[entry['piece']]}/"
+        page += f"{parts.family}.{parts.name}@{parts.major}.md"
+        assert declarations.page_path(entry["piece"], entry["id"]) == page
+    for planted in ("planted_law@1", "cells.planted_law@1"):
+        with pytest.raises(ValueError, match="is not namespace.family.name@major"):
+            declarations.page_path("law", planted)
 
 
 def test_version_2_joins_a_real_definition_and_states_lines_reads_and_units(tmp_path, monkeypatch):
@@ -256,11 +273,11 @@ def test_version_2_joins_a_real_definition_and_states_lines_reads_and_units(tmp_
         ("cells.operator@1", "test"),
     }
     assert all(e["doc"] is None for e in doc["pieces"])  # Until the pages are complete.
-    # Planted: a definition naming its laws in their namespaced spelling (D185's, no declared one)
-    # joins nothing byte for byte.
+    # Planted: a definition naming its channels' laws in another family joins nothing byte for byte.
     renamed = copy.deepcopy(definition)
     for channel in renamed["model"]["channels"]:
-        channel["kinetic_law"] = "cells." + channel["kinetic_law"].rsplit(".", 1)[-1]
+        parts = ids.parts(channel["kinetic_law"])
+        channel["kinetic_law"] = f"{parts.namespace}.cycle.{parts.name}@{parts.major}"
     joined = [j for (p, _), j in joins(doc, renamed).items() if p.endswith("/kinetic_law")]
     assert joined and not any(joined)
     # Planted: a module with two declarations of one ID, whose line the read refuses to guess.

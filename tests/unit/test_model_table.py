@@ -24,13 +24,17 @@ Each claim with a planted error it must catch (D187):
 - the table's runners and compositions are the code's (planted: a table row with another runner
   and one with its operators reordered);
 - every law interface, the five and the families', has its one family word, and no word stands
-  without its interface (registry/ids.py; planted: an interface without a word).
+  without its interface (registry/ids.py; planted: an interface without a word);
+- the table's keys and its compositions are full IDs, and no file in the rename's scope holds an old
+  spelling outside its exclusions, by the rename tool's own rule (D345; planted: a bare key, and a
+  file with an old spelling).
 """
 
 import ast
 import copy
 import dataclasses
 import importlib
+import importlib.util
 import inspect
 import json
 import os
@@ -359,6 +363,52 @@ def test_every_law_interface_has_its_family_word():
     assert len(words) == len(set(words))
     # Planted: an interface without a word.
     assert wordless({*declared, "cells.undeclared_law@1"}) == ["cells.undeclared_law@1"]
+
+
+# ------------------------------------------------------------------ one spelling (D345)
+
+
+def partial_ids(models):
+    """The table's IDs that are not a piece's of their family: its keys, and its compositions'."""
+    stated = [(key, "model") for key in models]
+    for model in models.values():
+        inner, operators = model.composition or (None, ())
+        stated += [(inner, "model")] * (inner is not None) + [(o, "operator") for o in operators]
+    return [value for value, family in stated if not ids.piece(value, family=family)]
+
+
+def test_the_table_s_keys_and_compositions_are_full_ids():
+    assert partial_ids(MODELS) == []
+    assert partial_ids({"planted_tissue@1": next(iter(MODELS.values()))}) == ["planted_tissue@1"]
+
+
+def left_over(tool, renames, root):
+    """Every old spelling in the rename's scope under `root` outside its exclusions, by the rename
+    tool's rule."""
+    out = []
+    for folder in renames.scope["dirs"]:
+        for file in sorted((root / folder).rglob("*")):
+            path = file.relative_to(root).as_posix()
+            if file.is_file() and renames.excluded(path) is None:
+                out += tool.leftovers({path: (None, file.read_bytes())}, renames)
+    return out
+
+
+def test_no_old_spelling_is_left_in_scope(tmp_path):
+    """Seconds and reason (D224): about 2 s, every file in scope read once; a branch that merges
+    after the rename brings old spellings back, and no parse reads most of them."""
+    location = ROOT / "scripts" / "id_moves.py"
+    spec = importlib.util.spec_from_file_location("id_moves", location)
+    tool = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(tool)
+    choices = tool.load_choices(ROOT / tool.CHOICES)
+    frozen = tool.frozen_list(ROOT, ROOT / tool.FROZEN, choices)
+    renames = tool.load_map(ROOT / tool.MAP, frozen)
+    assert left_over(tool, renames, ROOT) == []
+    planted = tmp_path / "src" / "planted.py"
+    planted.parent.mkdir()
+    planted.write_text(f'LAW_ID = "{next(iter(ids.RENAMED))}"\n')
+    assert [found[:2] for found in left_over(tool, renames, tmp_path)] == [("src/planted.py", 1)]
 
 
 # ------------------------------------------------------------------ a family's operators

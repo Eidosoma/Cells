@@ -4,6 +4,7 @@ import pytest
 
 from cells.definitions.specs import ConfigError, load_spec, parse_spec
 from cells.execution.runner import timeline
+from cells.registry.renamed_ids import RENAMED
 
 
 @pytest.mark.parametrize(
@@ -12,6 +13,7 @@ from cells.execution.runner import timeline
         (("schema_version",), True),
         (("schema_version",), 2),
         (("model", "id"), "unknown"),
+        (("model", "id"), "resolved_pump_tissue@3"),  # id-moves: keep (its old ID, D345)
         (("model", "units", "time"), "ms"),
         (("model", "population", "count"), 2),
         (("model", "population", "count"), True),
@@ -57,8 +59,10 @@ def test_invalid_definitions(config_data, path, value):
     for key in path[:-1]:
         node = node[key]
     node[path[-1]] = value
-    with pytest.raises(ConfigError):
+    with pytest.raises(ConfigError) as refusal:
         parse_spec(config_data)
+    if isinstance(value, str) and value in RENAMED:
+        assert str(refusal.value) == f"model.id: {value} was renamed {RENAMED[value]} (D345)"
 
 
 def test_round_trip_and_no_alias(spec):
