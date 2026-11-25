@@ -33,7 +33,7 @@ Each test function was read against what stays. A reader who had not seen that w
 | GPU only | 2 | No gate runs a GPU, and their tolerances are the older model's |
 | Others | 7 | A tool's own row (the tool goes), one on the older kernel's two code paths, a reduction between two families that both go, three cubic proofs of the older observers, and a reference's own sampling |
 
-**How they would go.** In a second commit, right after the deletion's own, after your word. Part 1 of the campaign passes. Part 2 is run and sealed, by your decision, and is not judged. **So a yes now retires Part 2's seven rows, and the reference's sampling row (the only one of a reference that a later judge of Part 2 may use beside a miss), before any verdict of Part 2.** The second commit is prepared that way. It could instead wait for a later scoring of Part 2: that is yours to say.
+**How they would go.** In a second commit, right after the deletion's own, after your word. Part 1 of the campaign passes. Part 2 is run and sealed, by your decision, and is not judged. **Part 2's seven rows and the reference's sampling row (L67) retire without a verdict of Part 2, by your run-and-seal decision** (Part 2's Amendment 1, item 3); the independent reference code stays, so a later scoring could still use it.
 With them go 11 files: `test_assembly_cell.py`, `test_assembly_cluster.py`, `test_assembly_controls.py`, the four calcium tests (`er`, `gated`, `ip3`, `spatial`), one GPU test file, and three drivers (`integrated_matrix.py`, `spatial_matrix.py`, `cluster_reference.py`).
 No data file loses its last reader, and no module of the engine is reached by them alone (m).
 
