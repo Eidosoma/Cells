@@ -13,7 +13,51 @@ from pathlib import Path
 
 from cells.assembly.cli import utc
 from cells.assembly.io import write_json
-from validation.ensemble.profile_cluster import memory_available, process_tree
+
+
+def process_sample(pid, proc=Path("/proc")):
+    """Read identity, CPU seconds and resident memory without counting threads twice."""
+    directory = proc / str(pid)
+    fields = (directory / "stat").read_text().rsplit(")", 1)[1].split()
+    status = dict(line.split(":", 1) for line in (directory / "status").read_text().splitlines())
+    children = set()
+    for task in (directory / "task").iterdir():
+        try:
+            children.update(int(p) for p in (task / "children").read_text().split())
+        except FileNotFoundError:
+            pass  # A thread can exit between discovery and reading its children.
+    return {
+        "pid": pid,
+        "start_ticks": int(fields[19]),
+        "cpu_seconds": (int(fields[11]) + int(fields[12])) / os.sysconf("SC_CLK_TCK"),
+        "rss_bytes": int(status.get("VmRSS", "0").split()[0]) * 1024,
+        "hwm_bytes": int(status.get("VmHWM", "0").split()[0]) * 1024,
+        "children": sorted(children),
+    }
+
+
+def memory_available():
+    return next(
+        int(line.split()[1]) * 1024
+        for line in Path("/proc/meminfo").read_text().splitlines()
+        if line.startswith("MemAvailable:")
+    )
+
+
+def process_tree(pid):
+    pending, seen, rows = [pid], set(), []
+    while pending:
+        current = pending.pop()
+        if current in seen:
+            continue
+        seen.add(current)
+        try:
+            row = process_sample(current)
+        except (FileNotFoundError, ProcessLookupError):
+            continue  # Short-lived compiler and telemetry subprocesses can exit.
+        rows.append(row)
+        pending.extend(row["children"])
+    return rows
 
 
 class ProcessBudgetExceeded(RuntimeError):

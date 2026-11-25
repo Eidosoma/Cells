@@ -66,6 +66,7 @@ from cells.laws.cycles import (
 )
 from cells.laws.cycles import na2_anion_symport_diagram as symport2
 from cells.laws.cycles import na_anion_symport_factored as symport
+from cells.laws.cycles import sodium_calcium_exchange_symmetric_barrier as exchange
 from cells.laws.junctions import junction_series_gates
 from cells.laws.routes import passive_permeation
 from cells.laws.transport import proton_leak, proton_leak_v2
@@ -331,6 +332,7 @@ def test_kinds_and_the_inner_model_find_their_laws_by_interface_and_host():
         transporter.PROTON_LAW: transporter.PROTON,
         symport.DECLARED_ID: symport.LAW,
         symport2.DECLARED_ID: symport2.LAW,
+        exchange.DECLARED_ID: exchange.LAW,
         **{  # The mitochondrion's inner-membrane laws (the kinds owner's, from its appendix).
             m.DECLARED_ID: m.LAW
             for m in (

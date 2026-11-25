@@ -13042,3 +13042,55 @@ read by what it opens is built (L3); a compartment is admitted where its node is
 buffered calcium rows is for `local_species_reactions@1` alone (L5); conservation is judged by the engine's own ledger rule (L6); no schedules for passive
 routes and no non-negative booking for them now (L7, L9); the independent calcium reference is kept (L8). One question goes to the user, the
 exchanger's two kinetic forms. The note has had no second reader yet; one is given before its build.
+
+## D386: the user's answers on the cleanup's open questions; the legacy list is corrected against D211; a live stage-bound gap found by the second reader; a correction to D383
+
+2026-11-25, about 12:12 UTC. The user's answers, then the lead's, with the advisor.
+
+**The user's decisions,** "agreed" on each and on the rest as below.
+- **The exchanger (A2):** the ensemble's form is registered now, labelled synthetic (only its reversal is supported). Whether it stays beside the cardiac
+  plan's law or retires is decided when that law lands.
+- **The assembly coupling (A3):** a driver that writes a live pool's switch path into a channel schedule, in `src/cells/assembly_pool`. It is one-way, and no
+  claim is made above a few hundred cells. An operator waits for a need.
+- **The release factor (A4):** a general source any route or channel can name, after one check that it does not duplicate the live pH source.
+- **The assembly observable (A5):** a registered law with an ID and a page, family word `assembly_observable`.
+- **The builds (A6)** start in stages: the driver and the exchanger first, then the source, then the calcium core edits. The notes' prices are their authors' own: 7 to 9 days for
+  the calcium pieces after the second reader (6 to 7.5 before), 1 to 1.75 for the source, 1 to 1.5 for the driver.
+- **What the deletion loses (A1):** the list below, with the cell-zone transporter left at the tag ("leave it") and "yes" to the rest. Final counts are shown before
+  the deletion is merged.
+
+**A1 was wrong against D211, and is corrected.** The user asked why the modules on the "lost" list are not ported. Crossed with the cleanup tree, D211's 54
+laws stand as: 5 registered; 36 of the 47 "port as is" with their kernels kept in live `laws/`, without a host on the pump tissue; 3 built by name; and 3 that lose their source, the
+NKCC and generic symport laws and the cell-zone transporter. The last is BETSE's transporter network, which AGENTS.md bars from `src`. The page had listed
+the first two as lost, and had not named D211.
+- **NKCC and the generic symport are ported in the cleanup,** as law modules on the transporter kind, after a check of their tanh form against the cycle forms.
+- **The other D211 ports follow the cleanup:** the voltage-only sodium and potassium laws need one module each and no engine feature; calcium and HCN
+  laws need calcium through channels, which is being built; the instantaneous ones need G-2; the calcium-activated one needs channels that read a
+  species, which the cardiac plan holds.
+- **Kept for that:** the kernels, their references and a kernel-level test for each, so that no one sweeps them.
+- **The rest of the list is lost or not carried over:** the refinement clock (`execution.fine_windows` gives declared finer steps on live models); ceilings on an ion's total (a check, not
+  physics); lateral redistribution and mobile proteins; cutting cells out (the composite's operator is new work, named by the pattern-recovery plan); the finite-fuel pools (row fuel for the
+  Na/K pump is a request the user may make); the four commands that prepare meshes in BETSE's order; the assembly GPU path, parked.
+
+**A correction to D383 (the advisor's finding).** D383 says the criteria for the re-expression are tagged before any re-expressed run exists. One consumer breaks it: a design author ran
+two of the sixteen worlds of the cluster base in composed form against legacy at three steps before the criteria's tag. The protocol names the two worlds, the verdict
+reports them apart, and no band rests on them. The lead is not blind either: the lead has read both notes' numbers.
+
+**The calcium and release notes had a second reader** (`/mnt/workspaces/Cells/d172-restructure-20261115-01/second-reader/`): no equation, unit or sign is wrong and no ledger is booked
+twice or missed. Sixteen findings are ruled; the notes are being revised.
+- **A live-engine gap (row 1).** A stage bound divides a cell's slopes by the capacitance of all its patches, a cell-owned store's included, though a plasma current charges
+  the plasma patches alone while the store floats along (`surface_pump_v3.py:3674`, `surface_pump.py:487`, `transporter.py:2330`). A probe at 3.3 times the store's share admits a step
+  the membrane cannot take, and the run stops at the domain or the energy ledger. It is not silent, and no JSON world of today exceeds 0.67. The fix is one D148 round,
+  first, with a scan of the Python-built compartment worlds behind FR-1, FR-4 and FR-5; a hit is a recorded erratum.
+- **The driver is legacy's model:** pool end states bit for bit over four worlds, with step boundaries at the switch times (legacy also splits where nothing switches).
+- **The rule for which worlds declare the other field solver is D147's** and not "every world": the lead's first ruling was too broad.
+
+**Two parsers scaled a shared junction schedule in place** (`surface_pump_spec` and `surface_kinetic_spec`): a Python-built definition that used one schedule object for several controls had the others scaled too. Fixed on
+the cleanup branch with a row that fails on the old code. A static scan of 92 files found no built definition that shares one, so no judged run is known to be affected.
+
+**The removal list** (stream A) was read past its first hop: 246 files reach a going file by import, bare-name import or path, and ten live parity tests use part of the REF-era chain, one of them
+(`test_betse_tissue_contact.py`) in every gate. Those files stay. The rule is to keep whatever something in use runs; the final list and counts follow.
+
+**Streams merged into `legacy-cleanup`:** the live engine without legacy (the deletion itself is held), the live tests on live worlds (window and batch-window tests at 75 and 171 CPU seconds, from 162 and 411), the two
+fixes. The rename's tool is fitted to the cleanup tree, and minting the catalogue leaves no ID bare. FR-43 part 3's registration is written and an independent auditor reads it before its tag.
+Eight agents ran for some minutes, one over the cap.

@@ -112,6 +112,7 @@ MODELS = MappingProxyType(
                 "cells.laws.cycles.potassium_proton_exchange",
                 "cells.laws.cycles.held_reductant_supply",
                 "cells.laws.cycles.adenylate_kinase",
+                "cells.laws.cycles.sodium_calcium_exchange_symmetric_barrier",  # A synthetic form.
                 # The general binding closure (rapid_binding@1), seam C's: the binding owner's
                 # line, a recorded exception (the lead, 18 November 2026).
                 "cells.laws.reactions.rapid_binding",

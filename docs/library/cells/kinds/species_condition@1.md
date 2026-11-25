@@ -101,8 +101,8 @@ Provenance: not yet extracted; the kind contract has no provenance field yet.
 
 <!-- /generated -->
 
-- **The kind is Cells' own design:** the note on ligand-gated store release
-  (`docs/IP3_RELEASE_AND_ASSEMBLY_AVAILABILITY_DESIGN.md`, Part I), on the routing door of
+- **The kind is Cells' own design:** [the note on ligand-gated store
+  release](../../../IP3_RELEASE_AND_ASSEMBLY_AVAILABILITY_DESIGN.md), Part I, on the routing door of
   [the inner-model design](../../../INNER_MODEL_V4_DESIGN.md) (§7.4 (n)). FT.
 - **Its law declares its own citation** (`hill_product_factor@1`). No number is taken by either.
 
