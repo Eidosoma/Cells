@@ -44,6 +44,14 @@ tests/, validation/, scripts/, examples/ and configs/. Left alone: the frozen fi
 files and the artifacts whose choice is to leave them, the files listed under keep, scripts/moves/,
 this file, renamed_ids.py and everything outside those folders.
 
+**The scan** names every place that reads or makes an ID other than as a whole token: computed, cut,
+split over literals, tested or matched in part (by a literal, or through a name, a loop, another
+file's constant or an argument), inside a path or a file name, in an expected message, sorted by,
+pinned by a hash. A hazard stands until the tree no longer holds it or a review in the choices gives
+the reason why it is none, and `apply` refuses while one stands. Beside them it lists the live
+readers of the files the move leaves (and whether they read through the table), what frozen code
+does with part of an ID, and the paths outside the tree that code names.
+
 **The verifier** replays the map on the base commit's tracked files in memory and requires the head
 to equal the result, byte for byte and mode for mode. It also requires that a second application
 changes nothing, that no hash literal changed, that each string's decoded value changed by the
