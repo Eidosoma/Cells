@@ -99,7 +99,9 @@ def engine_records(raw, dt):
 
 
 def part_dtstudy(args):
-    predictions = json.loads(PREDICTIONS.read_text())
+    from validation import id_table
+
+    predictions = id_table.load(PREDICTIONS)
     out = dict(kind="cells.cell_replacement_q1_dtstudy@1", dts=STUDY_DTS, cases={})
     for name, entry in predictions["cases"].items():
         if args.cases and name not in args.cases:
@@ -113,10 +115,11 @@ def part_dtstudy(args):
 
 
 def part_refterm(args):
+    from validation import id_table
     from validation.tissue import cell_replacement_predictions as pr
     from validation.tissue import cell_replacement_reference as ref
 
-    predictions = json.loads(PREDICTIONS.read_text())
+    predictions = id_table.load(PREDICTIONS)
     out = dict(
         kind="cells.cell_replacement_q1_reference_term@1",
         tolerances=dict(r_full=[1e-12, 1e-16], r_fast=[1e-11, 1e-14]),

@@ -12,6 +12,7 @@
 """
 
 import copy
+import re
 
 import numpy as np
 import pytest
@@ -27,7 +28,7 @@ from validation.tissue import pump_water_fixtures as water_fixtures
 def planted(name, key, **hooks):
     """A planted kind with one state field, one layout field and one control, plus hooks."""
     return kind_registry.Kind(
-        kind_id=f"tests.{name}@1",
+        kind_id="tests.planted_kind@1".replace("planted_kind", name),
         model_key=key,
         state_axes=((f"{name}_value", ("cell_slot",)),),
         layout_fields=(f"{name}_rate",),
@@ -243,7 +244,8 @@ def test_declared_kinds_are_refused_under_rk4():
         return planted("alpha", "alpha_block", bound_rate=lambda spec, declaration: rate)
 
     with kind_registry.scope(registry(bounded(2e5))):
-        with pytest.raises(ConfigError, match=r"\(tests\.alpha@1\) require an IMEX solver"):
+        refusal = re.escape("(tests.alpha@1) require an IMEX solver")
+        with pytest.raises(ConfigError, match=refusal):
             parse_spec(rk4(declaring("alpha_block")))
         imex = parse_spec(declaring("alpha_block"))  # Admitted under IMEX ...
         with pytest.raises(ConfigError, match="a declared kind's explicit-rate bound"):

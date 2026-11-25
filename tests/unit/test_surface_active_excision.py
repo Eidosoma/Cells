@@ -27,6 +27,7 @@ from cells.records.io import load_snapshot, write_run, write_snapshot
 from cells.registry.models import get_model
 from tests.unit.test_surface_catalog import evidence
 from tests.unit.test_surface_kinetic import assert_states, exact
+from validation import id_table
 from validation.tissue import active_excision_fixtures as fixtures
 from validation.tissue import active_excision_reference as reference
 
@@ -309,9 +310,7 @@ def test_surviving_channels_evolve_while_blocked_and_removed_clocks_remain():
 def test_active_cut_field_uses_intrinsic_junction_gate_in_floating_components(gate):
     from cells.models import surface_tissue as passive
 
-    raw = json.loads(
-        (Path(__file__).parents[2] / "configs/resolved_hcn_extra_ionic.json").read_text()
-    )
+    raw = id_table.load(Path(__file__).parents[2] / "configs/resolved_hcn_extra_ionic.json")
     spec = parse_spec(raw)
     original = initialise(spec)
     state = original.state._replace(junction_gate=np.array(original.state.junction_gate))

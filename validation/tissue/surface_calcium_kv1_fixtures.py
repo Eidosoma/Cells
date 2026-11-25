@@ -9,6 +9,13 @@ from copy import deepcopy
 from validation.tissue import surface_calcium_hcn_fixtures as base
 
 ARMS = base.ARMS
+KV1 = {
+    1: "kv1p1_mh2@1",
+    2: "kv1p2_mh@1",
+    3: "kv1p3_mh@1",
+    4: "kv1p4_mh@1",
+    6: "kv1p6_mh@1",
+}
 
 
 def definition(arm="baseline", *, backend="cpu", padded=True):
@@ -16,11 +23,11 @@ def definition(arm="baseline", *, backend="cpu", padded=True):
     raw["model"]["id"] = "resolved_calcium@5"
     ion = raw["model"]["ionic"]
     ion["id"] = "resolved_tissue@6"
-    for index, family in enumerate((1, 2, 3, 4, 6)):
+    for index, (family, law) in enumerate(KV1.items()):
         population = deepcopy(ion["channels"][index % 4])
         population.update(
             id=f"kv1_{family}",
-            kinetic_law=f"kv1p{family}_mh{'2' if family == 1 else ''}@1",
+            kinetic_law=law,
             initial_gate=[0.25 + 0.1 * index, 0.65 - 0.05 * index],
             abundance=0.10 + 0.04 * index,
         )

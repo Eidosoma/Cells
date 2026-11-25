@@ -60,6 +60,8 @@ from pathlib import Path
 
 import numpy as np
 
+from validation import id_table
+
 HERE = Path(__file__).resolve().parent
 REGISTRATION = HERE / "rung1_20261119.json"
 EPS = float(np.finfo(float).eps)
@@ -77,7 +79,7 @@ class ImportRefused(ValueError):
 
 
 def registration():
-    return json.loads(REGISTRATION.read_text())
+    return id_table.load(REGISTRATION)
 
 
 def x2_block():

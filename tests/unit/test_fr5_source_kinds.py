@@ -89,7 +89,7 @@ def test_both_kinds_parse_round_trip_and_append_their_fields():
 
 @pytest.mark.parametrize("change, match", [
     (dict(patch="nowhere"), "unknown membrane patch"),
-    (dict(law="prescribed_patch_injury_resealing@1"), "law is cells.bounding_patch_damage@1"),
+    (dict(law="tests.damage.other@1"), "law is cells.bounding_patch_damage@1"),
     (dict(initial_damage=1.5), r"lies in \[0, 1\]"),
     (dict(initial_damage=-0.1), "initial_damage must be finite and nonnegative"),
     (dict(resealing_rate_per_s=-1.0), "resealing_rate_per_s must be finite and nonnegative"),

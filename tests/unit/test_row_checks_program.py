@@ -202,7 +202,7 @@ def test_vector_windows_refuse_the_composite_on_a_gpu():
             if backend == "cpu":
                 plan_vector_windows(batch, WindowPolicy(3, "checkpoints"))
                 continue
-            with pytest.raises(ConfigError, match=r"not qualified on a GPU for resolved_pump_c"):
+            with pytest.raises(ConfigError, match=r"not qualified on a GPU for \S*resolved_pump_c"):
                 plan_vector_windows(batch, WindowPolicy(3, "checkpoints"))
 
 

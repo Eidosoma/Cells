@@ -62,6 +62,14 @@ def vector(value, length, name, **domain):
     return tuple(number(v, name, **domain) for v in value)
 
 
+def todays_ids(text):
+    """A frozen, hash-pinned reference panel's text with its IDs in today's spelling: it predates
+    the neutral channel IDs, and keeps the route law's first spelling."""
+    first = '"constant_field@1"'  # id-moves: keep
+    text = text.replace("betse_kv1p5_mh@1", "kv1p5_mh@1")
+    return text.replace(first, '"constant_field@1"')
+
+
 def load_json(path):
     def unique(pairs):
         result = {}
@@ -74,10 +82,8 @@ def load_json(path):
     def invalid_constant(value):
         raise ValueError(f"Nonfinite JSON constant: {value}")
 
-    # Frozen, hash-pinned reference panels predate the neutral channel IDs; translate at load.
-    text = Path(path).read_text().replace("betse_kv1p5_mh@1", "kv1p5_mh@1")
     return json.loads(
-        text,
+        todays_ids(Path(path).read_text()),
         object_pairs_hook=unique,
         parse_constant=invalid_constant,
         parse_float=lambda value: number(float(value), "JSON number"),

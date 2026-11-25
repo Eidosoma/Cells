@@ -419,7 +419,7 @@ def test_a_held_fuel_row_has_one_writer():
         )
     ]
     with scoped(transporter.TRANSPORTER, passive_routes.PASSIVE_ROUTES):
-        with pytest.raises(ConfigError, match="holds ATP at cell_0, which cells.passive_routes"):
+        with pytest.raises(ConfigError, match=r"holds ATP at cell_0, which \S*passive_routes@1"):
             parse_spec(raw)
         raw["model"]["passive_routes"][0]["species"] = "Y"  # The role: moved by both, admitted.
         parse_spec(raw)

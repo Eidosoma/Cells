@@ -33,8 +33,19 @@ from cells.numerics.surface_field import FACTORED_SOLVER_ID, FLOOR_SOLVER_ID, SP
 
 CHOICES = ("auto", "2", "3")
 SOLVERS = {"2": FACTORED_SOLVER_ID, "3": FLOOR_SOLVER_ID}
-FAMILY = ("resolved_pump_tissue@", "resolved_pump_water@", "resolved_pump_replacement@")
-COMPOSITE = "resolved_pump_composite@"  # D156: decided by its inner model.
+
+
+def every_version(model_id):
+    """The start of the IDs of a model's every version: an ID to its "@"."""
+    return model_id[: model_id.index("@") + 1]
+
+
+FAMILY = (
+    every_version("resolved_pump_tissue@1"),
+    every_version("resolved_pump_water@1"),
+    every_version("resolved_pump_replacement@1"),
+)
+COMPOSITE = every_version("resolved_pump_composite@1")  # D156: decided by its inner model.
 
 
 def in_family(raw):

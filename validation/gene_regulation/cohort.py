@@ -62,6 +62,7 @@ import numpy as np
 # D283: the window edges' predicate is the clock's one same-instant predicate (it was a seam here,
 # equal times, until D283 landed), as templated_polymerisation.grid_time reads on_grid.
 from cells.numerics.clock_instants import same_instant
+from validation import id_table
 
 
 def _integral(t, n, i, j):
@@ -408,7 +409,7 @@ def read(path, product="P", chain=None):
     completions of the chain that makes it (producing_chain)."""
     path = Path(path)
     if path.suffix == ".json":
-        r = json.loads(path.read_text())
+        r = id_table.load(path)
         (block,) = [o for o in r["definition"]["model"]["operators"] if o["law"] == POLYMERISATION]
         cell = exported_cell(r, block)
         inside = {m["id"]: m["inside"] for m in r["definition"]["model"].get("membranes", ())}

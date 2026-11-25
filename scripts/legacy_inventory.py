@@ -80,7 +80,15 @@ ENTRIES = {
         "cells.execution.continuity",
     ],
 }
-ID = re.compile(r"^[a-z][a-z0-9_]*@\d+$")
+# A model's ID, bare or in the models' family (D345). The inventory keys both spellings by the ID's
+# name@major, so a saved definition and a protocol that is never rewritten still match.
+ID = re.compile(r"^(?:cells\.model\.)?([a-z][a-z0-9_]*@\d+)$")
+
+
+def model_key(value):
+    """A model ID's name@major; any other string as it is."""
+    match = ID.match(value)
+    return match[1] if match else value
 
 
 # ------------------------------------------------------------------ the module graph
@@ -212,7 +220,7 @@ def _const_ids(tree):
             if isinstance(value, str) and ID.match(value):
                 for t in node.targets:
                     if isinstance(t, ast.Name):
-                        out[t.id] = value
+                        out[t.id] = model_key(value)
     return out
 
 
@@ -426,7 +434,7 @@ def table_rows_of(text):
         for key, row in zip(table.keys, table.values, strict=True):
             fields = {k.arg: ast.literal_eval(k.value) for k in row.keywords}
             runner = fields.get("runner")
-            rows[ast.literal_eval(key)] = dict(
+            rows[model_key(ast.literal_eval(key))] = dict(
                 module=fields["module"],
                 homes=[
                     *fields.get("law_homes", ()),
@@ -482,7 +490,7 @@ def g1_worlds(merged):
                 for v in value:
                     walk(v)
             elif isinstance(value, str) and ID.match(value):
-                out[value].add(name)
+                out[model_key(value)].add(name)
 
         walk(doc.get("definition"))
     return {k: sorted(v) for k, v in out.items()}

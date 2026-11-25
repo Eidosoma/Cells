@@ -10,14 +10,17 @@ FR-49's own promise for labels beside a compartment, and it is split from test_f
 to keep each file under the tier cap.
 """
 
+from cells.definitions.specs import parse_spec
+from validation import id_table
 from validation.fr49 import judge_l
 
 END = 1260.0
 
 
-def test_l7_a_checkpoint_inside_the_pulse_resumes_bit_for_bit():
+def test_l7_a_checkpoint_inside_the_pulse_resumes_bit_for_bit(monkeypatch):
     """L7: a checkpoint at 900 s, written and loaded, resumes bit for bit, every history field from
     the checkpoint's row on."""
+    monkeypatch.setattr(judge_l, "parse_spec", lambda raw: parse_spec(id_table.translate(raw)))
     spec, labelled = judge_l.run_world(2.0, labelled=True, end=END)
     found = judge_l.restart(spec, labelled)
     assert found["passed"], found

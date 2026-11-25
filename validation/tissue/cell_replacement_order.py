@@ -23,6 +23,7 @@ from pathlib import Path
 
 import numpy as np
 
+from validation import id_table
 from validation.tissue import cell_replacement_judge as judge
 from validation.tissue import cell_replacement_qualification as qual
 
@@ -37,7 +38,7 @@ def main(argv=None):
     parser.add_argument("--no-events", action="store_true")
     args = parser.parse_args(argv)
     args.output.mkdir(parents=True, exist_ok=False)
-    predictions = json.loads((args.inputs / "predictions.json").read_text())
+    predictions = id_table.load(args.inputs / "predictions.json")
     raw = copy.deepcopy(predictions["cases"][args.case]["definition"])
     slots = qual.slots_of(raw)
     first = min(e["time"] for e in raw["experiment"]["replacement_events"])

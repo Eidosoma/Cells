@@ -36,7 +36,6 @@ without a block has no terms: u is 1 and the terms are NaN, which no criterion r
 """
 
 import copy
-import json
 import math
 from decimal import Decimal
 from functools import cache, partial
@@ -51,6 +50,7 @@ from cells.definitions.surface_pump_v3_spec import control_values
 from cells.laws.channels import open_channel_block as block_law
 from cells.laws.electrochemistry import CHARGE_PER_FMOL
 from cells.registry.models import get_model
+from validation import id_table
 from validation.fr51 import judge
 from validation.tissue import surface_pump_v3_fixtures as fx
 
@@ -65,7 +65,7 @@ BLOCKER_ID = "blocker"
 
 
 def spec_of():
-    return json.loads(judge.SPEC.read_text())
+    return id_table.load(judge.SPEC)
 
 
 def _decimal(value):

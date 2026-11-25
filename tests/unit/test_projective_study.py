@@ -6,17 +6,17 @@ unchanged. Q2 is the seven-cell world. Cases the driver cannot build are
 refused. (The protocol parts run end to end in test_projective_protocol_runs.py.)
 """
 
-import json
 from pathlib import Path
 
 import numpy as np
 import pytest
 
 from cells.definitions.specs import parse_spec
+from validation import id_table
 from validation.tissue import projective_study as study
 
-PROTOCOL = json.loads(
-    (Path(study.__file__).parent / "protocols" / "projective_c_qualification_v1.json").read_text()
+PROTOCOL = id_table.load(
+    Path(study.__file__).parent / "protocols" / "projective_c_qualification_v1.json"
 )
 PARAMETERS = PROTOCOL["projective_parameters"]
 

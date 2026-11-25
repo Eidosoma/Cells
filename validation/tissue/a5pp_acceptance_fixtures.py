@@ -30,6 +30,7 @@ import json
 import math
 from pathlib import Path
 
+from validation import id_table
 from validation.coupling import cells_reference as rc
 from validation.coupling import state_reference as rs
 from validation.tissue import regulated_availability_references as rr
@@ -48,7 +49,7 @@ REGULATOR = "X"
 
 
 def inputs():
-    return json.loads(INPUTS.read_text())
+    return id_table.load(INPUTS)
 
 
 def registered():

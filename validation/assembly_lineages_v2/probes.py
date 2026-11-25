@@ -85,7 +85,8 @@ def pair_name(pair):
 def snapshot_files():
     listed = subprocess.run(
         ["git", "-C", str(ROOT), "ls-files", "--cached", "--others", "--exclude-standard", "-z"]
-        + ["--", "src/cells", "validation/assembly_lineages_v2", "validation/source_snapshot.py"],
+        + ["--", "src/cells", "validation/assembly_lineages_v2", "validation/id_table.py"]
+        + ["validation/source_snapshot.py"],
         check=True,
         capture_output=True,
         timeout=60,

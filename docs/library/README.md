@@ -11,6 +11,12 @@ how to write one, the [glossary](GLOSSARY.md) defines the words, and
 
 ## Laws
 
+### `cells.channel_block_law@1`
+
+| Page | In one sentence | Status |
+| --- | --- | --- |
+| [`cells.open_channel_block_weighted_modes@1`](cells/laws/open_channel_block_weighted_modes@1.md) | A charged blocker held on one side of the membrane plugs open channels to an extent set by the voltage, lowering the current they carry. | Not stated |
+
 ### `cells.channel_law@1`
 
 | Page | In one sentence | Status |

@@ -17,6 +17,8 @@ from functools import cache
 from pathlib import Path
 from types import SimpleNamespace
 
+from validation import id_table
+
 HERE = Path(__file__).resolve().parent
 REGISTRATION = HERE / "registration_20261118.json"
 DEFAULT_BOOKING = "explicit_tableau"
@@ -28,8 +30,8 @@ def _registration_text():
 
 
 def registration():
-    """The registered numbers (a fresh copy each call)."""
-    return json.loads(_registration_text())
+    """The registered numbers, and the IDs translated (a fresh copy each call)."""
+    return id_table.translate(json.loads(_registration_text()))
 
 
 def s7a():

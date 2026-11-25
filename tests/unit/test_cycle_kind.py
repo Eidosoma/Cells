@@ -1008,11 +1008,12 @@ def test_a_monomial_reference_resolves_only_under_the_binding_owners_conditions(
     """A total, or a named form, is read only where a declared closure holds the row; a row with
     no declared forms has none to read (the binding owner's conditions 1 and 2)."""
     rate = MONO.cycle.monomial.rates[0]
-    for form_name, reason in (("total", "read only where a closure holds the row"),
-                              ("Mg", "read only where a closure holds the row")):
+    reason = "read only where a closure holds the row"
+    for form_name, law_id in (("total", "seamtest.monomial_total@1"),
+                              ("Mg", "seamtest.monomial_mg@1")):
         total = rate._replace(orders=((forms.Reference("X", "N", form_name), 1.0),))
         law = dataclasses.replace(
-            MONO, law_id=f"seamtest.monomial_{form_name.lower()}@1",
+            MONO, law_id=law_id,
             cycle=MONO.cycle._replace(monomial=MONO.cycle.monomial._replace(rates=(total,))),
         )  # fmt: skip
         with mono_scoped(law), pytest.raises(ConfigError, match=reason):

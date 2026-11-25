@@ -135,12 +135,13 @@ def scope(world, *operators):
 
 
 def test_overlaps_on_every_slot_are_refused_at_the_structure_check_unless_they_commute():
-    replace = [changer(f"test_r{k}@1", [0], 1.0, scoped=False) for k in range(2)]
+    replace = [changer(law, [0], 1.0, scoped=False) for law in ("test_r0@1", "test_r1@1")]
     assert structure(*replace) == [f"two providers of the view field {FIELD}"]
-    for kind in ("add", "multiply"):
-        pair = [
-            changer(f"test_{kind}{k}@1", [0], 1.0, contribution=kind, scoped=False) for k in (0, 1)
-        ]
+    for kind, pair_ids in (
+        ("add", ("test_add0@1", "test_add1@1")),
+        ("multiply", ("test_multiply0@1", "test_multiply1@1")),
+    ):
+        pair = [changer(law, [0], 1.0, contribution=kind, scoped=False) for law in pair_ids]
         assert structure(*pair) == []
     mixed = (
         changer("test_add@1", [0], 1.0, contribution="add", scoped=False),

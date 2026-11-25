@@ -135,8 +135,7 @@ def qualification_worlds(all_steps=False):
     also W1's trajectories at every step size of W1's dt study and Q5's cases at every
     step size of Q5.
     """
-    import json
-
+    from validation import id_table
     from validation.tissue import cell_replacement_fixtures as rfx
     from validation.tissue import cell_replacement_judge as judge
     from validation.tissue import cell_replacement_qualification as g2q
@@ -147,7 +146,7 @@ def qualification_worlds(all_steps=False):
 
     root = Path(w1q.__file__).parent  # The predictions of the revision under test.
     w1, w2, g2 = (
-        json.loads((root / name).read_text())
+        id_table.load(root / name)
         for name in (
             "pump_water_predictions.json",
             "pump_water_kcc_predictions.json",

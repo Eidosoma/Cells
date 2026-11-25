@@ -17,6 +17,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+from validation import id_table
 from validation.assembly_lineages_v2 import agreement, fr47_judge, fr47_worlds
 
 SELF_CHECK = (Path(__file__).resolve().parents[2] / "validation" / "assembly_lineages_v2"
@@ -36,7 +37,8 @@ def test_the_pair_rule_and_the_judge_pass_their_synthetic_checks():
         assert not failed, (name, failed)
 
 
-def test_every_protocol_definition_parses_and_d_admits_each_world():
+def test_every_protocol_definition_parses_and_d_admits_each_world(monkeypatch):
+    monkeypatch.setattr(fr47_worlds, "D", id_table.translate(fr47_worlds.D))
     verdicts = fr47_worlds.check()
     assert sorted(verdicts) == ["W1", "W1D", "W2_1024", "W2_256", "W2_4096", "W2_64"]
     for key, verdict in verdicts.items():

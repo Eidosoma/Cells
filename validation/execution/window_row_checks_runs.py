@@ -60,11 +60,13 @@ def source():
 
 
 def worlds(args):
+    from validation import id_table
+
     out = []
     for key in args.worlds:
         set_name, name = key.split("/", 1)
         path = args.baseline / set_name / (name.replace("/", "__") + ".json")
-        out.append((key, json.loads(path.read_text())["definition"]))
+        out.append((key, id_table.load(path)["definition"]))
     for item in args.definition:
         name, path = item.split("=", 1)
         out.append((name, json.loads(Path(path).read_text())))

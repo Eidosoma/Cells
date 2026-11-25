@@ -40,7 +40,7 @@ depends on the voltage through the declared zeta, which version 1's factored for
 """
 
 from cells.laws.cycles.forms import CycleForm, Diagram, Edge, Parameter, Rate
-from cells.modules import Citation, CitedWork, CycleLaw
+from cells.modules import Citation, CitedWork, CycleLaw, qualified
 
 LAW_ID = "na2_anion_symport_diagram@1"
 STATES = ("E_P", "Na_P", "Na2_P", "Na2B_P", "Na2B_N", "Na2_N", "Na_N", "E_N")
@@ -91,7 +91,7 @@ CYCLE = CycleForm(
 # Its declaration on the law template (registry/laws.py): form-carried, registered by the law
 # registry's loader as one of the model table's law homes, hosted by the transporter kind's general
 # layout. Its scheme was named from memory and not read (CORE_SEAMS §15).
-DECLARED_ID = f"cells.{LAW_ID}"  # As definitions write it; a module-level name, for the manifest.
+DECLARED_ID = qualified(LAW_ID)  # As definitions write it; a module-level name, for the manifest.
 LAW = CycleLaw(
     DECLARED_ID,
     cycle=CYCLE,

@@ -55,6 +55,7 @@ if __name__ == "__main__":
         if str(entry) not in sys.path:
             sys.path.insert(0, str(entry))
 
+from validation import id_table  # noqa: E402
 from validation.betse import betse_reference_run as reference_run  # noqa: E402
 from validation.betse import cells_betse_compare as compare  # noqa: E402
 
@@ -88,6 +89,7 @@ EXECUTED = (
     *package_files(ENGINE_MODULES),
     *ENGINE_MODULES,
     "validation/source_snapshot.py",
+    "validation/id_table.py",
     "validation/betse/default_world_adapter.py",
     "validation/betse/cells_betse_compare.py",
     "validation/betse/betse_reference_run.py",
@@ -1330,7 +1332,7 @@ def judged_protocol(
     that names no field solver was registered for the default (@2).
     """
     protocol, sha = compare.load_protocol(protocol_path)
-    run = protocol.get("cells_run") or {}
+    run = id_table.translate(protocol.get("cells_run") or {})
     expected = {
         "betse_case": (protocol.get("betse_case"), world["case"]),
         "model": (run.get("model"), model_id(world)),

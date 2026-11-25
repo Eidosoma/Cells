@@ -34,7 +34,7 @@ def planted(name, key):
         return tuple(sorted((str(k), float(v)) for k, v in entries.items()))
 
     return kind_registry.Kind(
-        kind_id=f"tests.{name}@1",
+        kind_id="tests.planted_kind@1".replace("planted_kind", name),
         model_key=key,
         state_axes=((f"{name}_moved_fmol", ("cell_slot",)),),
         layout_fields=(f"{name}_rate_fmol_s",),
