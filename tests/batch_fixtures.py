@@ -23,13 +23,10 @@ from cells.execution.batch import BatchSpec, WorldSpec
 from cells.models import reaction_transport
 
 ROOT = Path(__file__).resolve().parents[1]
-MODELS = (  # One cell without a contact, two cells with one, three cells with two.
-    "reaction_transport_single",
-    "reaction_transport_pair",
-    "reaction_transport_chain",
-)
-# Rows of (world, step route) for conftest's short_world: every world on its model's plain RK4, one
-# world on each planted route.
+# One cell without a contact, and three with two (two with one: conftest's, and synthetic_pair's).
+MODELS = ("reaction_transport_single", "reaction_transport_chain")
+# Rows of (world, step route) for conftest's short_world: both worlds on their model's plain RK4,
+# one of them on each planted route.
 ROUTES = tuple(
     pytest.param(row, id="-".join(row))
     for row in (

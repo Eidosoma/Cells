@@ -133,7 +133,7 @@ def test_every_run_path_takes_the_route_and_refuses_a_step_outside_its_domain(ro
         return in_domain(state, parameters, active) & (state.converted[0] < 0.05)
 
     step_route(monkeypatch, route, narrow)
-    spec = short_spec("reaction_transport_chain", 0.073)
+    spec = short_spec("reaction_transport_single", 0.073)
     cohort = definition([spec, spec])
     second = rf"\[{timeline(spec)[1]}, {timeline(spec)[2]}\]"
     for path in (
