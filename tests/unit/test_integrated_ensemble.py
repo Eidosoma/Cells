@@ -1,14 +1,38 @@
-"""Integrated scheduling preserves worlds and model semantics, on a live pump tissue."""
+"""Integrated scheduling preserves worlds, model semantics and complete checkpoints, on a live pump
+tissue."""
 
 import copy
+import json
+import os
+from pathlib import Path
 
+import numpy as np
 import pytest
 
 from cells.ensemble.cli import aggregate
-from cells.ensemble.families import parse_definition, population
+from cells.ensemble.families import bind_definition, parse_definition, population
 from cells.ensemble.plan import balance, plan
 from cells.numerics import surface_imex as imex
 from validation.tissue import surface_pump_fixtures
+
+BACKEND = os.environ.get("CELLS_COUPLED_TEST_BACKEND", "cpu")
+
+
+def parity_evidence(name, values):
+    directory = os.environ.get("CELLS_INTEGRATED_EVIDENCE")
+    if directory is None:
+        return
+    path = Path(directory)
+    path.mkdir(parents=True, exist_ok=True)
+    np.savez_compressed(path / f"{name}-{BACKEND}.npz", **values)
+    if BACKEND == "gpu":
+        with np.load(path / f"{name}-cpu.npz", allow_pickle=False) as expected:
+            assert set(expected.files) == set(values)
+            for key, actual in values.items():
+                if actual.dtype.kind in "iub":
+                    np.testing.assert_array_equal(actual, expected[key])
+                else:
+                    np.testing.assert_allclose(actual, expected[key], atol=5e-11, rtol=5e-12)
 
 
 def experiment(*, backend="cpu", worlds=2, width=1, end=0.0004):
@@ -90,3 +114,45 @@ def test_ionic_aggregation_does_not_invent_assembly_statistics():
     assert value["final_voltage_mean_V"] == pytest.approx([-0.07, -0.06])
     assert "completed_shells" not in value and "completion_probability" not in value
     assert "committed_events" not in value
+
+
+def test_ionic_checkpoint_window_replay_and_scalar_parity(tmp_path):
+    from cells.assembly.engine import device_for
+    from cells.ensemble import ionic
+    from cells.execution.batch_windows import iter_batch_windows
+    from cells.execution.runner import run as scalar
+    from cells.execution.windows import WindowPolicy
+
+    raw = experiment(backend=BACKEND)["arms"][0]["definition"]
+    spec = parse_definition(bind_definition(raw, worlds=2, world_id_start=0, seed=123))
+    whole, _ = ionic.run(spec, backend=BACKEND)
+    first = next(iter_batch_windows(spec.batch(), WindowPolicy(2, "checkpoints")))
+    path = tmp_path / "checkpoint"
+    ionic.write_checkpoint(
+        path,
+        spec,
+        first.checkpoints,
+        execution={"backend": BACKEND, "device_kind": device_for(BACKEND, 0).device_kind},
+    )
+    saved, checkpoints, _ = ionic.load_checkpoint(path, backend=BACKEND)
+    resumed, _ = ionic.run(saved, backend=BACKEND, state=checkpoints)
+    reference = scalar(spec.simulation)
+    for identity in whole:
+        for a, b, c in zip(
+            whole[identity].state, resumed[identity].state, reference.final.state, strict=True
+        ):
+            np.testing.assert_array_equal(a, b)
+            np.testing.assert_allclose(a, c, atol=5e-13, rtol=5e-12)
+    parity_evidence(
+        "ionic",
+        {
+            f"{i}_{k}": np.asarray(v)
+            for i, cp in whole.items()
+            for k, v in cp.state._asdict().items()
+        },
+    )
+    altered = json.loads((path / "manifest.json").read_text())
+    altered["execution"]["device_kind"] = "different"
+    (path / "manifest.json").write_text(json.dumps(altered))
+    with pytest.raises(ValueError, match="device kind"):
+        ionic.load_checkpoint(path, backend=BACKEND)
