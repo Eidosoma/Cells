@@ -9,6 +9,7 @@ import numpy as np
 
 from cells.records.io import _write_json
 from tests.batch_fixtures import ROOT, synthetic_pair
+from tests.integration.test_cli import recorded_inputs
 
 
 def test_batch_cli_validate_run_resume_branch_and_refusal(tmp_path):
@@ -28,12 +29,16 @@ def test_batch_cli_validate_run_resume_branch_and_refusal(tmp_path):
         assert completed.returncode == (0 if ok else 2), completed.stdout + completed.stderr
         return json.loads(completed.stdout) if ok else completed.stderr
 
-    assert cli("validate", config)["worlds"] == 2
-    assert cli("run", config, "--output", tmp_path / "fresh", "--checkpoint-at", 0.5)[
-        "world_ids"
-    ] == [10, 11]
+    validated = cli("validate", config)
+    assert validated["worlds"] == 2
+    value = {"made_from": {"seed": 7}, "definitions_sha256": [validated["sha256"]]}
+    _write_json(tmp_path / "inputs.json", value)
+    fresh = ("--output", tmp_path / "fresh", "--inputs", tmp_path / "inputs.json")
+    assert cli("run", config, "--checkpoint-at", 0.5, *fresh)["world_ids"] == [10, 11]
+    assert recorded_inputs(tmp_path / "fresh") == value
     saved = tmp_path / "fresh/snapshots/checkpoint-000000"
     cli("resume", saved, "--output", tmp_path / "resumed")
+    assert recorded_inputs(tmp_path / "resumed") is None
     branch = spec.to_dict()
     branch["worlds"][0]["simulation"]["experiment"]["contact"]["schedule"].append(
         {"time": 0.5, "open_fractions": [0]}
