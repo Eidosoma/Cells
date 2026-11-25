@@ -47,8 +47,8 @@ It was written from the spec folder, the protocol, the captures and the planted 
 | 11 | `J plants` with stage 1's options, `--out O/plants.json` (any time after 5) | The tables, the captures and the planted runs | `plants.json`: JP1 to JP24 on altered copies of the registered tables |
 
 **Before the campaign:** `J selftest --out O/selftest.json` (C0, the fabricated tables, JP1 to JP24; about a minute), `J structure --tables <sample>/table --retry-tables <sample>/table-retry` (the format sample, TABLE section 7), and the tests:
-`PYTHONPATH=src:. JAX_ENABLE_X64=1 /mnt/workspaces/Cells/venv-cpu/bin/python -m pytest -q -p no:cacheprovider validation/ensemble_reexpression/judge/test_judge.py` (159 rows, about 40 s of one core on a busy machine; they read the captures, compile nothing, and skip where no capture is).
-**They were tried on faults of the code:** some ninety one-line changes of the judge's own code, each in a scratch copy, were run against them. Those that survived were either equivalent (a check that another one repeats) or led to a stronger test (§6).
+`PYTHONPATH=src:. JAX_ENABLE_X64=1 /mnt/workspaces/Cells/venv-cpu/bin/python -m pytest -q -p no:cacheprovider validation/ensemble_reexpression/judge/test_judge.py` (164 rows, about 30 s of one idle core and twice that on a busy machine; they read the captures, compile nothing, and skip where no capture is).
+**They were tried on faults of the code:** some hundred one-line changes of the judge's own code, each in a scratch copy, were run against them. Eight survived at first: one was equivalent (a check that another one repeats), and the others led to stronger tests. **And on faults of a table:** two thousand random faults of a leaf raised nothing in the stages, and no judged leaf changed unseen.
 
 `J fabricate --out O/fab` writes the honest tables of the judge's own with their `SHA256SUMS` and a strings note. They are marked as fabricated and no engine ran.
 
