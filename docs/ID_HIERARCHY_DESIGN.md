@@ -16,7 +16,7 @@ only: it writes no engine code and changes no live file.
 - no compatibility beyond this repository. The user renames their private IDs.
 
 **The candidate table** comes from a read-only probe at main `0767867f`, not from the generator. It ran on CPU 4 under
-the timed lock (70 s, then 20 s for the digests), with git, jq and shell for the rest:
+the timed lock (two runs of about 75 s and one of 20 s for the digests); git, jq and shell did the rest, unpinned:
 - `/mnt/workspaces/Cells/rename-design-20261124/candidate-0767867f/`: `table.tsv` and `mapping.json` (the rows),
   `SUMMARY.txt` (every class and every ID), `FROZEN2.tsv` and `PINS2.tsv` (the frozen set), `move_files.tsv`,
   `digest_pins.json` and `three/`. Its `README.txt` says what supersedes what;
