@@ -554,9 +554,10 @@ its slope (§1, row 14).
 | `routed_rows(declaration)` | sink (this note) | host, once: per routed slot in `routed_controls` order, the (species, node a, node b) of each row it moves |
 | `routed_flux(read, potentials, control, p, *, xp)` | sink (this note) | at a stage, at the ROUTED control: fmol/s of each row through each slot |
 
-A kind that has one hook of its side must have both, and binding refuses one alone by name. @3 is the sink of its
-own channel slots and has the same two in the core: its rows are the population's permeant ions, its flux
-`channel_rates`'.
+A kind that has one hook of its side must have both; registration refuses one alone by name, as the source side is
+being built on `species-condition-build` (`kind_factor_rows` there reads and checks the names; the sink takes the
+same shape, `kind_routed_rows`). @3 is the sink of its own channel slots and has the same two in the core: its rows
+are the population's permeant ions, its flux `channel_rates`'.
 
 **The static pairing.** `InnerStructure.loops = ((m, p), ...)`, positions only. m is a (slot, row) of a routed slot,
 in the order of the structure's `routes` (canonical kind order, then @3's channels) and then `routed_rows`' order. p
