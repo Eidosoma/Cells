@@ -22,7 +22,9 @@ Each claim with a planted error it must catch (D187):
   definition naming one is refused and the composition cache is untouched (planted: a family
   operator under a composite operator's ID, and a cells one held outside BUILTIN);
 - the table's runners and compositions are the code's (planted: a table row with another runner
-  and one with its operators reordered).
+  and one with its operators reordered);
+- every law interface, the five and the families', has its one family word, and no word stands
+  without its interface (registry/ids.py; planted: an interface without a word).
 """
 
 import ast
@@ -46,7 +48,7 @@ from cells.models import pump_composite
 from cells.models.assembly_lineages import model as lineage_model
 from cells.models.assembly_lineages_v2 import model as assembly_model
 from cells.operators import OPERATORS
-from cells.registry import declarations, model_table
+from cells.registry import declarations, ids, model_table
 from cells.registry import laws as law_registry
 from cells.registry import operators as operator_registry
 from cells.registry.model_table import MODELS
@@ -340,6 +342,22 @@ def test_the_cells_interface_set_is_the_five_and_the_families_declared_ones():
     with pytest.raises(ValueError, match="a cited operator gives its source as a Citation"):
         section.register(LineageOperator("tests.uncited@1", host=LINEAGES, provenance="cited"))
     assert [d.operator_id for d in section.family_operators()] == ["tests.planted_fission@1"]
+
+
+def wordless(interfaces):
+    """The law interfaces among `interfaces` with no family word: a family operator's takes the
+    operators' own."""
+    operators = {type(d).interface for d in operator_registry.active().family_operators()}
+    return sorted(set(interfaces) - operators - set(ids.LAW_FAMILIES))
+
+
+def test_every_law_interface_has_its_family_word():
+    declared = {*law_registry.INTERFACES, *law_registry.FAMILY_INTERFACES}
+    assert wordless(declared) == [] and set(ids.LAW_FAMILIES) <= declared
+    assert {type(law).interface for law in law_registry.active()._laws.values()} <= declared
+    assert not set(ids.LAW_FAMILIES.values()) & set(ids.FIXED_FAMILIES)
+    # Planted: an interface without a word.
+    assert wordless({*declared, "cells.undeclared_law@1"}) == ["cells.undeclared_law@1"]
 
 
 # ------------------------------------------------------------------ a family's operators

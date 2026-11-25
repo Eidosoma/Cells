@@ -79,6 +79,7 @@ MODELS = MappingProxyType(
                 "cells.laws.channels.kv1p6_mh",
                 # The always-open Cl⁻ leak, code 10 (D228 item 3, the H1 seam's Cl⁻ part).
                 "cells.laws.channels.clleak_always_open",
+                "cells.laws.channels.open_channel_block",  # FR-51's block (D371).
                 "cells.laws.junctions.junction_voltage_relaxation",
                 # FR-30, development only (D262; the @3 owner's recorded exception, F's file).
                 "cells.laws.junctions.junction_series_gates",
@@ -116,6 +117,7 @@ MODELS = MappingProxyType(
                 "cells.laws.reactions.rapid_binding",
                 "cells.kinds",
             ),
+            interfaces=("cells.channel_block_law@1",),  # FR-51's block (D371).
         ),
         "resolved_pump_composite@1": Model(
             type="composite",

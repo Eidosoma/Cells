@@ -112,7 +112,7 @@ electrochemical gradient. Its gates decide when it is open.
 
 <!-- generated: used-by channel -->
 
-- **Used by:** [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md).
+- **Used by:** [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md) and [`cells.open_channel_block_weighted_modes@1`](cells/laws/open_channel_block_weighted_modes@1.md).
 
 <!-- /generated -->
 
@@ -543,7 +543,7 @@ millivolts.
 
 <!-- generated: used-by membrane-voltage -->
 
-- **Used by:** [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md).
+- **Used by:** [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md) and [`cells.open_channel_block_weighted_modes@1`](cells/laws/open_channel_block_weighted_modes@1.md).
 
 <!-- /generated -->
 
@@ -706,7 +706,7 @@ channel's main ion.
 
 <!-- generated: used-by permeant -->
 
-- **Used by:** no page yet.
+- **Used by:** [`cells.open_channel_block_weighted_modes@1`](cells/laws/open_channel_block_weighted_modes@1.md).
 
 <!-- /generated -->
 
@@ -782,7 +782,7 @@ A group of identical channels or pumps on one patch, sharing a law, its gates an
 
 <!-- generated: used-by population -->
 
-- **Used by:** no page yet.
+- **Used by:** [`cells.open_channel_block_weighted_modes@1`](cells/laws/open_channel_block_weighted_modes@1.md).
 
 <!-- /generated -->
 
@@ -835,7 +835,7 @@ One species at one node: an entry of the inventory.
 
 <!-- generated: used-by species-row -->
 
-- **Used by:** [`cells.neutral_arrival_labels@1`](cells/operators/neutral_arrival_labels@1.md).
+- **Used by:** [`cells.open_channel_block_weighted_modes@1`](cells/laws/open_channel_block_weighted_modes@1.md) and [`cells.neutral_arrival_labels@1`](cells/operators/neutral_arrival_labels@1.md).
 
 <!-- /generated -->
 

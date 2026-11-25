@@ -31,7 +31,9 @@ Each claim is checked once, with a planted error it must catch (D187):
   of rows, a row that is not a mapping, one without its mode, one with an extra key, an unnamed
   role, a fractional and a bool count, an unnamed mode, and a form without changes(); a form whose
   own errors() report is never asked for rows, a route law is not read, and version 1's moves
-  refuse a fractional count).
+  refuse a fractional count);
+- the ID grammar (registry/ids.py): a piece's ID, an interface's, and what is neither (planted: a
+  family outside the cells list, an interface's noun for its word, and each malformed shape).
 """
 
 import dataclasses
@@ -68,7 +70,7 @@ from cells.laws.junctions import junction_series_gates
 from cells.laws.routes import passive_permeation
 from cells.laws.transport import proton_leak, proton_leak_v2
 from cells.models import inner_laws, surface_pump_v3
-from cells.registry import declarations, laws
+from cells.registry import declarations, ids, laws
 from tests.unit.test_passive_routes_kind import closed_pair, route
 from tests.unit.test_transporter_kind import held_world, population
 from validation.tissue import composite_crossrev as crossrev
@@ -248,6 +250,41 @@ def test_cycle_and_route_laws_name_their_step_terms():
         (passive_routes.CHARGED_LAW_ID, "material_term"): "material_slope_per_s",
         (transporter.PROTON.law_id, "stage_term"): "electrogenic_conductance_S",  # The kind's.
     }
+
+
+# ------------------------------------------------------------------ the ID grammar
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),  # A piece's parts, "interface", or None: neither.
+    [
+        ("cells.channel.a_law@1", ("cells", "channel", "a_law", 1)),
+        ("cells.operator.an_operator@12", ("cells", "operator", "an_operator", 12)),
+        ("acme.any_word.a_law@1", ("acme", "any_word", "a_law", 1)),  # Its families are its own.
+        ("cells.any_word.a_law@1", None),  # The cells families are a closed list.
+        ("cells.channel_law.a_law@1", None),  # An interface's noun is not its word.
+        ("cells.a_law@1", "interface"),
+        ("acme.a_law@1", "interface"),
+        ("a_law@1", None),
+        ("cells.channel.a_law@0", None),
+        ("cells.channel.a_law@01", None),
+        ("cells.channel.a_law", None),
+        ("cells.channel.A_law@1", None),
+        ("cells.channel.1_law@1", None),
+        ("cells.channel.a.law@1", None),
+        ("cells.channel.a_law@1\n", None),
+        (None, None),
+    ],
+)
+def test_the_id_grammar(value, expected):
+    assert ids.interface(value) is (expected == "interface")
+    assert ids.piece(value) is isinstance(expected, tuple)
+    if isinstance(expected, tuple):
+        assert ids.parts(value) == expected and ids.piece(value, family=expected[1])
+        assert not ids.piece(value, family="kind")
+    else:
+        with pytest.raises(ValueError, match="is not namespace.family.name@major"):
+            ids.parts(value)
 
 
 # ------------------------------------------------------------------ the registry (§8.3)
