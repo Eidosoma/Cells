@@ -68,6 +68,7 @@ Usage (PYTHONPATH=src:. with the venv's Python, from a checkout):
   python scripts/id_moves.py apply [--stage] [--paths PATH ... [--suffix .md]]
   python scripts/id_moves.py verify --base REV --head REV [--out JSON]
   python scripts/id_moves.py ids BASE_IDS HEAD_IDS [--base-log LOG --head-log LOG] [--out JSON]
+      [--declare FOLDER, the lists for the gate's own ID step]
   python scripts/id_moves.py rewrap --base REV [--out JSON]
   python scripts/id_moves.py rewrapped --base REV --head REV
   python scripts/id_moves.py selftest
@@ -3156,6 +3157,15 @@ def compare_ids(mp, base, head, kept=()):
     )
 
 
+def declared_ids(result, head):
+    """What the landing gate is told before it compares the collected IDs: the base's IDs that the
+    map renames, which the head lacks (its removals), and the files of their new IDs (its
+    additions)."""
+    renamed = [(old, new) for old, new in result["renamed_by_the_map"] if new in head]
+    removed = sorted(old for old, _ in renamed if old not in head)
+    return removed, sorted({new.split("::", 1)[0] for old, new in renamed if old not in head})
+
+
 def recorded_ids(path):
     """{"file::test"} of a tier-3 record's tests."""
     doc = json.loads(Path(path).read_text())
@@ -3199,6 +3209,15 @@ def cmd_ids(args):
         if lost:
             blocking.append(f"a recorded ID of {record} is gone")
     result["verdict"] = "same tests" if not blocking else "differs: " + ", ".join(blocking)
+    if args.declare:
+        folder = Path(args.declare)
+        folder.mkdir(parents=True, exist_ok=True)
+        for name, rows in zip(
+            ("removed-ok.txt", "additions-from.txt"),
+            declared_ids(result["ids"], set(lines["head"])),
+            strict=True,
+        ):
+            (folder / name).write_text("".join(f"{x}\n" for x in rows))
     if args.out:
         Path(args.out).write_text(json.dumps(result, indent=1) + "\n")
     summary = {
@@ -3819,6 +3838,11 @@ def _selftest_ids(checks, mp):
         not (same["collisions"] or same["missing_in_head"] or same["new_in_head"])
         and len(same["renamed_by_the_map"]) == 3
     )
+    checks["ids: the gate is told the renamed IDs and the files of the new ones"] = declared_ids(
+        compare_ids(mp, ["tests/a.py::t[wave_mh@1]", "tests/b.py::u"],
+                    ["tests/a.py::t[cells.wave.wave_mh@1]", "tests/b.py::u"]),
+        {"tests/a.py::t[cells.wave.wave_mh@1]", "tests/b.py::u"},
+    ) == (["tests/a.py::t[wave_mh@1]"], ["tests/a.py"])  # fmt: skip
     checks["ids: a dropped test, a new one and an old spelling in the head are caught"] = (
         compare_ids(mp, base, head[1:])["missing_in_head"] == [head[0]]
         and compare_ids(mp, base, [*head, "tests/x.py::test_new"])["new_in_head"]
@@ -4413,6 +4437,7 @@ def main(argv=None):
     p.add_argument("--base-log", help="the base's collection log (its ERROR lines)")
     p.add_argument("--head-log")
     p.add_argument("--record", action="append", help="a record of test IDs (the base's)")
+    p.add_argument("--declare", help="write the gate's removals and additions into this folder")
     p.add_argument("--out")
     p = command("rewrap", "wrap the lines that the move made too long, in the worktree")
     p.add_argument("--base", required=True, help="the revision before the move")
