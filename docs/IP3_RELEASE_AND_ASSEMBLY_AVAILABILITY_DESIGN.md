@@ -768,7 +768,8 @@ Two worlds of the 16 (M): world 0 with one switch in each cell (2 extra steps), 
 - **The floor guard rerun.** D148's record says that the floor guard of D147 compares primitive counts, not
   constants, and asks to rerun it with constants before version 3 serves a run of record
   (`docs/DECISIONS.md:4910` to 4912). No record of that rerun was found (M2, R). It is a step before the
-  registered campaign (ruling 10), and not this build's.
+  registered campaign (ruling 10), and not this build's. (25 November 2026: the guard compares constants now
+  and was run, clean, at XC0's and the pre-cleanup snapshots; it is repeated on the campaign's own.)
 - **Batched paths.** `ionic_worlds@1` admits the floor solver on both backends and mappings (M2,
   `floor_admission`, planners only). Two free-offset @3 worlds with different off-grid channel schedules,
   IMEX, run by `lax_map` equal their own runs bit for bit and by `vmap` to 5.1e-14 (M2, `floor_vmap`).
