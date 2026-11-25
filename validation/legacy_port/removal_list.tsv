@@ -531,7 +531,7 @@ tests/unit/test_physical_ionic_graph.py	test	goes	1	2.8	A11	the deletion	oldest 
 tests/unit/test_recovery_diagnostic_grid.py	test	goes	1	0.7	C3	the deletion	passes with legacy gone and tests a legacy family or its driver: the removal list choice		the plan
 tests/unit/test_recovery_response_grid.py	test	goes	1	7.6	V3	B	the refinement clock (V3); already gone on cleanup-live-side, for the user to approve		the plan
 tests/unit/test_source_pair.py	test	goes	3	90.1	A11	the deletion	oldest families (bioelectric, multispecies, voltage-gated, ionic graph, source pair), superseded by @3		the dry run
-tests/unit/test_source_profile_boundary.py	test	goes	1	14.4	D8	the deletion	scheduled membrane profiles and interventions: canonical on @3		the dry run
+tests/unit/test_source_profile_boundary.py	test	goes	1	14.4	A11	the deletion	oldest families (bioelectric, multispecies, voltage-gated, ionic graph, source pair), superseded by @3		the dry run
 tests/unit/test_spatial_extracellular_acceptance_resources.py	test	goes	1	6.5	A10	the deletion	acceptance bookkeeping of spatial_extracellular@1 (CORE-010); the record stays		the plan
 tests/unit/test_spatial_extracellular_context.py	test	goes	1	1.3	A10	the deletion	acceptance bookkeeping of spatial_extracellular@1 (CORE-010); the record stays		the plan
 tests/unit/test_spatial_extracellular_example.py	test	goes	1	10.0	A10	the deletion	clusters in finite and spatial baths: the same physics as closed @3 worlds (the JUPITER and ensemble worlds are retargeted, the rest goes)		the dry run
@@ -659,6 +659,7 @@ tests/unit/test_continuity_tools.py	test	edited	1	6.0	V1	C	runs the new shared w
 tests/unit/test_declarations.py	test	edited	1	3.1		B	the legacy list leaves the manifest (done on cleanup-live-side)		read or in progress on the owner branch
 tests/unit/test_ensemble_adapters.py	test	edited	1	4.7		B	three kinds of today, two parked by name (done)		read or in progress on the owner branch
 tests/unit/test_fine_windows.py	test	edited	2	77.6	V1	C	runs the new shared world		read or in progress on the owner branch
+tests/unit/test_kv1_channel_laws.py	test	edited	1	9.3	A3	C	its docstring points at a test that goes		read or in progress on the owner branch
 tests/unit/test_library_pages.py	test	edited	1	2.0		B	the manifest version (done)		read or in progress on the owner branch
 tests/unit/test_model_table.py	test	edited	2	22.9		B	the dispatch plant anchors on the live code (done)		read or in progress on the owner branch
 tests/unit/test_numerics.py	test	edited	1	5.8	V1	C	runs the new shared world		read or in progress on the owner branch
@@ -1228,6 +1229,8 @@ scripts/verify_spatial_extracellular_build.py	script	goes			A10	the deletion	acc
 scripts/verify_voltage_gated_build.py	script	goes			A11	the deletion	acceptance or audit script of an old build (September and October) of a family that goes		imports cells.legacy
 scripts/verify_windows_build.py	script	goes			A11	the deletion	acceptance or audit script of an old build (September and October) of a family that goes		imports only files that go
 scripts/verify_world_build.py	script	goes			A11	the deletion	acceptance or audit script of an old build (September and October) of a family that goes		imports only files that go
+scripts/check_voltage_gated_channel.py	script	edited			A11	C	lists tests/unit/test_voltage_gated_channel_reference.py, which goes		names legacy
+scripts/gates/cache_qualify.sh	script	edited			D374	B	its TIER3_FILES name two physiology tests that go		names legacy
 scripts/gates/fingerprints.py	script	edited				B	the hub leaves DISPATCH_FILES (done)		names legacy
 scripts/gates/gate_steps.py	script	edited				B	the hub guard leaves GUARDS (done)		names legacy
 scripts/id_moves.py	script	edited				B	the rename tool names cells.legacy in five places; the ID move must run on a tree without it		names legacy
@@ -1469,3 +1472,5 @@ reports/REF005C_MATCHED_PUMP_HANDOFF.md	doc	kept				A (docs commit)	a record: un
 reports/REF005C_PUMP_PILOT_CLOSEOUT.md	doc	kept				A (docs commit)	a record: unchanged		names 1 dead ID mentions, 0 commands, 0 legacy paths
 reports/SPEC010_FAMILY_CLOSEOUT.md	doc	kept				A (docs commit)	a record: unchanged		names 1 dead ID mentions, 0 commands, 0 legacy paths
 reports/SPEC010_FAMILY_HANDOFF.md	doc	kept				A (docs commit)	a record: unchanged		names 1 dead ID mentions, 0 commands, 0 legacy paths
+tests/test_tiers.json	data	edited				the lead	the going rows leave at the re-measure		the gate record
+tests/tier3_record.json	data	edited				the lead	the going rows leave at the refreeze		the gate record
