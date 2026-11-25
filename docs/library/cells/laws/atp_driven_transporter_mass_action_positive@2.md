@@ -164,14 +164,15 @@ part added to, and the domain at 79. At valence zero the law is compared with ve
 code-blind.
 
 At valence 2 and one per ATP it meets a pinned external simulator's own calcium-pump function, run
-unmodified and out of process at six states, and an independent scalar form, to 3e-12. A small
-closed world with the sodium-calcium exchange converges at second order to an independent ODE of its
-cycles, heat, work, amounts and voltage. Other rows run closed worlds forward and backward, under
-both heat bookings: each end's amounts follow the cycles, the voltage follows the charge, the heat
-grows, the work is the cycles times the fuel's drive and every [ledger](../../GLOSSARY.md#ledger)
-closes. Populations outside the law's counts, half-saturations, fuel or domain, on RK4, or beside a
-second law of the pathway are refused by name. Beside a calcium binder under a closure it reads the
-free calcium. Each has a planted error. No run was compared with a measurement.
+unmodified and out of process at six states, an independent scalar form and the inner model's own
+calcium pump's kernel, to 3e-12. A small closed world with the sodium-calcium exchange converges at
+second order to an independent ODE of its cycles, heat, work, amounts and voltage. Other rows run
+closed worlds forward and backward, under both heat bookings: each end's amounts follow the cycles,
+the voltage follows the charge, the heat grows, the work is the cycles times the fuel's drive and
+every [ledger](../../GLOSSARY.md#ledger) closes. Populations outside the law's counts,
+half-saturations, fuel or domain, on RK4, or beside a second law of the pathway are refused by name.
+Beside a calcium binder under a closure it reads the free calcium. Each has a planted error. No run
+was compared with a measurement.
 
 ## Status
 

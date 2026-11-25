@@ -2,8 +2,9 @@
 one calcium per ATP, and the sodium-calcium exchange, against outside references.
 
 - **Laws:** the pump against the pinned source's own function, run unmodified out of process
-  (AGENTS.md), and against an independent scalar form; its stall. The exchange against the direct
-  forward and reverse products; its reversal and its slope there. The sign of each heat.
+  (AGENTS.md), an independent scalar form and @3's own calcium pump's kernel; its stall. The
+  exchange against the direct forward and reverse products; its reversal and its slope there. The
+  sign of each heat.
 - **One small closed @3 world** with both, stepped on the host in NumPy: at a stage the
   stoichiometry, the owned scatter, the charge and the energy, and the run against an independent
   ODE (SciPy, scalar rates, two methods) at h, h/2 and h/4.
@@ -22,6 +23,7 @@ import pytest
 from scipy.integrate import solve_ivp
 
 from cells.kinds import transporter
+from cells.laws.pumps import ca_atp_mass_action_positive as ca_atp
 from tests.reference_er_calcium import F, R, native_capture
 from tests.reference_plasma_calcium import scalar_rates
 from tests.unit import test_cycle_kind as core
@@ -78,10 +80,10 @@ def evaluated(mM, volts, availability=1.0):
 
 
 def test_the_pump_is_the_pinned_sources_positive_law_and_an_independent_scalar_form():
-    """Six states of both signs: the pump's cycles are the pinned function's flux over the area, and
-    the scalar form's, to 3e-12; each heat is -J times the free energy and not negative; blocked it
-    runs none, which the pinned function ignores. Planted: one calcium's charge for two is told
-    apart at every state with a voltage."""
+    """Six states of both signs: the pump's cycles are the pinned function's flux over the area, the
+    scalar form's and @3's own calcium pump's kernel's (its drive against 1 M), to 3e-12; each heat
+    is -J times the free energy and not negative; blocked it runs none, which the pinned function
+    ignores. Planted: one calcium's charge for two is told apart at every state with a voltage."""
     ci = np.array([1e-6, 0.0001, 0.002, 0.002, 0.02, 0.002])
     co = np.array([0.2, 0.1, 0.2, 0.2, 0.01, 0.2])
     v = np.array([-0.12, -0.04, 0.0, 0.12, 0.04, 0.05])
@@ -102,6 +104,9 @@ def test_the_pump_is_the_pinned_sources_positive_law_and_an_independent_scalar_f
     native = native_capture({"plasma_pump": [case | {"blocks": [1, 0]}]})["plasma_pump"][0]
     expected = -np.asarray(native["flux"][0]) * area / 1e-15
     np.testing.assert_array_equal(-np.asarray(native["flux"][1]) * area / 1e-15, expected)
+    molar = PUMP["delta_g0_J_per_mol"] + R * T_K * math.log(1000.0)
+    pools = (PUMP[k] for k in ("atp_mM", "adp_mM", "pi_mM", "km_ca_mM", "km_atp_mM"))
+    kernel = ca_atp.Parameters(PUMP["capacity_fmol_per_s"], *pools, molar)
     actual, blocked, planted = (np.empty(6) for _ in range(3))
     for i, (a, b, volts) in enumerate(zip(ci, co, v, strict=True)):
         modes, populations, _ = evaluated(dict(Ca=(a, b)), volts)
@@ -109,7 +114,9 @@ def test_the_pump_is_the_pinned_sources_positive_law_and_an_independent_scalar_f
         blocked[i] = evaluated(dict(Ca=(a, b)), volts, 0.0)[0].j[0, 0]
         planted[i] = evaluated(dict(Ca=(a, b)), volts / 2)[0].j[0, 0]
         rate, _, g, *_ = scalar_rates(1.0, 1.0, a, b, volts, T_K, PUMP, None, (1.0, 1.0))
-        np.testing.assert_allclose(actual[i], rate, rtol=3e-12, atol=3e-14)
+        own = ca_atp.kinetics(a, b, volts, T_K, kernel, 1.0, xp=np)
+        for other in (rate, own.cycles_fmol_s):
+            np.testing.assert_allclose(actual[i], other, rtol=3e-12, atol=3e-14)
         np.testing.assert_allclose(populations.heat_pJ_s[0], -rate * g / 1e3, rtol=1e-11)
         assert populations.heat_pJ_s[0] >= 0 and populations.valid[0]
     np.testing.assert_allclose(actual, expected, rtol=3e-12, atol=3e-14)
