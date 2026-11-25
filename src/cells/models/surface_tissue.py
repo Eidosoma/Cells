@@ -378,9 +378,9 @@ def capacitor_change(state, p, *, xp):
     it into the accumulate. The spec admits integers in [-8, 8]; the valences 0, ±1, ±2, ±4 and
     ±8 are exact, so a row with ±3, ±5, ±6 or ±7 is outside the exactness claim (z n rounds,
     and the kernels may contract it differently). Also needed: the solve's zero boundary (one
-    kernel contracts F q - C b), and no held node coupled to three or more charged free nodes, whose node sum XLA could
-    also associate differently. Held baths in tissue worlds couple to many free nodes, so
-    their electrode ledgers still rest on the bound. Not claimed for GPUs.
+    kernel contracts F q - C b), and no held node coupled to three or more charged free nodes,
+    whose node sum XLA could also associate differently. Held baths in tissue worlds couple to
+    many free nodes, so their electrode ledgers still rest on the bound. Not claimed for GPUs.
     """
     amount, outside = state.amount_increment, state.extracellular_amount_increment
     q = CHARGE_PER_FMOL * xp.concatenate(
