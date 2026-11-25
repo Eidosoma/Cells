@@ -540,6 +540,24 @@ MAPS = {
     "pool_seeds": ("<cell ID>",),
     "switch_list": ("<channel ID>",),
     "channel_laws": ("<channel ID>",),
+    # Part 2's.
+    "stores": ("<cell ID>",),
+    ("<cell ID>", "reactions"): ("<reaction ID>",),
+    ("calcium_controls", "reactions"): ("<cell ID>", "<reaction ID>"),
+    "reactants": ("<species>",),
+    "products": ("<species>",),
+    "moieties": ("<species>",),
+    "plasma_transport": ("<membrane ID>",),
+    "calcium_channels": ("<channel ID>",),
+    "ip3_release": ("<cell ID>",),
+    "store_passive": ("<cell ID>", "<species>"),
+    "store_pump": ("<cell ID>",),
+    "store_release": ("<cell ID>",),
+    ("calcium_controls", "calcium_pump"): ("<membrane ID>",),
+    ("calcium_controls", "exchanger"): ("<membrane ID>",),
+    ("calcium_controls", "calcium_channel"): ("<channel ID>",),
+    "trace_mM": ("<node ID>", "<species>"),
+    "release_conditions": ("<cell ID>",),
 }
 
 

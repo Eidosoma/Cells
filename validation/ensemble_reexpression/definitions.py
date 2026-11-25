@@ -1,17 +1,18 @@
-"""The definitions of every registered run, made from inputs.json and spec/SPEC.md §2 alone, and
-their checks.
+"""The definitions of every registered run, made from inputs.json and spec/SPEC.md §2 (in Part 2
+from inputs_part2.json and PART2 §2) alone, and their checks.
 
     python -m validation.ensemble_reexpression.definitions check [--inputs FILE] [--owed FILE]
     python -m validation.ensemble_reexpression.definitions write NAME DIRECTORY [--inputs FILE]
-    python -m validation.ensemble_reexpression.definitions strings [--inputs FILE]
+    python -m validation.ensemble_reexpression.definitions strings [--inputs FILE] [--json FILE]
 
 `check` parses and validates the definitions of every run, as `cells validate` does, and runs none
-of them. It holds each to its block leaf by leaf (SPEC §2.4; by the doubles too, but for the derived
-initial voltage), each registered block to the literal one of SPEC §2.5, every declared time to the
-grid rule (SPEC §4), and the field solver to D147. `strings` prints each run's labels in the strings
-note's form, for the lead.
+of them. It holds each to its block leaf by leaf (SPEC §2.4, PART2 §2.4; by the doubles too, but for
+what is derived), each registered block to the literal one of SPEC §2.5 or PART2_BLOCKS, every
+declared time to the grid rule (SPEC §4), and the field solver to D147. `strings` prints each run's
+labels in the strings note's form, for the lead; `--json` writes them as one file.
 
-- **An ionic world** is a closed definition of the inner tissue model, version 3 (worlds.py).
+- **An ionic world** is a closed definition of the inner tissue model, version 3 (worlds.py), or in
+  Part 2 of the composite over it (stores.py).
 - **A driven world** (`cell`, `base`) is a composed file, which `cells assembly-pool resolve` turns
   into one ordinary definition for each of the pools' worlds (cells.assembly_pool.resolve).
 - **A pool run** is the pool's own definition, with its events recorded.
@@ -35,27 +36,34 @@ from cells.assembly_pool.resolve import parse_composed
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.execution.runner import timeline
 from validation.ensemble_reexpression import worlds
+from validation.ensemble_reexpression.blocks import NoSection
 from validation.ensemble_reexpression.inputs import (
     DRIVEN,
     FOLDER,
+    INNER,
     IONIC,
     POOL,
     REGISTERED,
+    REGISTERED_PART2,
     Inputs,
     InputsError,
+    flat,
     require_on_grid,
     steps_of,
 )
 from validation.ensemble_reexpression.labels import (
     LABELS,
+    UnknownOrder,
     declared_strings,
     integrator,
     note_entry,
     string,
+    strings,
 )
 from validation.tissue import field_solver_choice
 
 SPEC_TEXT = FOLDER / "spec/SPEC.md"
+PART2_TEXT = FOLDER / "spec/PART2_BLOCKS.md"
 EXCHANGE = "exchange_channels"
 
 
@@ -70,12 +78,24 @@ def _times(world, factor):
     ]
 
 
+def _releases(world, factor):
+    """Every store's release permeability times a factor, as a declared change."""
+    path = ("membrane", "release", "permeability_m_per_s")
+    return [
+        {"path": ["stores", cell, *path], "value": store[path[0]][path[1]][path[2]] * factor}
+        for cell, store in worlds.entities(world.block["stores"])
+    ]
+
+
 # The registered plants' declared changes (the lead's answer of 25 November, from PLANTS.md, which
 # the builder does not read): EP1 takes both channels' maximal permeability times 1.01. EP2 has the
 # two pools' channels exchanged in the composed file, so each channel follows the other cell's path.
+# Part 2's (PART2 §11): EP3 takes both stores' release permeability times 1.01, EP4 is EP2's change.
 REGISTERED_CHANGES = {
     "EP1": lambda world: _times(world, 1.01),
     "EP2": lambda world: [{EXCHANGE: list(world.pools)}],
+    "EP3": lambda world: _releases(world, 1.01),
+    "EP4": lambda world: [{EXCHANGE: list(world.pools)}],
 }
 
 
@@ -83,9 +103,10 @@ REGISTERED_CHANGES = {
 
 
 def declared_change(inputs, run):
-    """A run's declared change, a list of items that each give a path of the world's block and the
-    value there, or the two cells whose pools exchange their channels in the composed file: its own
-    entry's, or a registered plant's; empty for every other run."""
+    """A run's declared change, a list of items that each give a path of the world's root (its
+    ionic block in Part 1, its blocks in Part 2) and the value there, or the two cells whose pools
+    exchange their channels in the composed file: its own entry's, or a registered plant's; empty
+    for every other run."""
     if run.declared_change is not None:
         change = run.declared_change
     elif run.role != "plant":
@@ -103,7 +124,7 @@ def declared_change(inputs, run):
 
 
 def changed_block(block, change):
-    """The block with a declared change's values at their paths, each of which the block has."""
+    """The root with a declared change's values at their paths, each of which the root has."""
     out = copy.deepcopy(block)
     for item in change:
         if "path" not in item:
@@ -119,6 +140,11 @@ def changed_block(block, change):
             raise InputsError(f"A declared change's path is not in the block: {path!r}") from error
         target[last] = item["value"]
     return out
+
+
+def block_of(world, change=()):
+    """The one block of a world with a declared change."""
+    return flat(changed_block(world.root, change))
 
 
 # ------------------------------------------------------------------ ionic definitions
@@ -141,11 +167,12 @@ def floating(block):
 
 def _written(world, step, change, field_solver):
     return worlds.write(
-        changed_block(world.block, change),
+        block_of(world, change),
         step=step,
         observation_times=world.potential_times,
         solver=integrator(world.order),
         field_solver=string(field_solver),
+        told=world.told,
     )
 
 
@@ -165,7 +192,7 @@ def submitted(world, step, change=()):
     try:
         return ionic(world, step, change)
     except (ConfigError, ArithmeticError, KeyError, TypeError, AttributeError):
-        floor = floating(changed_block(world.block, change))
+        floor = floating(block_of(world, change))
         return _written(world, step, change, "field_solver_floor" if floor else "field_solver")
 
 
@@ -239,17 +266,30 @@ def definition(inputs, run):
 # ------------------------------------------------------------------ the grid
 
 
+def schedules(block):
+    """(where, its changes) of every schedule that a block declares."""
+
+    def walk(where, value):
+        if isinstance(value, dict):
+            for name, held in value.items():
+                yield from walk(f"{where}.{name}" if "." not in where else f"{where} {name}", held)
+        elif isinstance(value, list) and value:
+            yield where, value
+
+    for key in ("controls", "calcium_controls"):
+        yield from walk(key, block.get(key, {}))
+
+
 def grid_faults(inputs, run):
     """The named refusal of a run whose declared times are not on its grid, or None: every change,
     every compared time and the end, against the run's step (SPEC §4)."""
     world = inputs.worlds[run.world]
     if run.kind == POOL:
         return None
-    block = changed_block(world.block, declared_change(inputs, run))
+    block = block_of(world, declared_change(inputs, run))
     try:
-        for key, schedules in block.get("controls", {}).items():
-            for name, changes in worlds.entities(schedules):
-                require_on_grid([t for t, _ in changes], run.step_s, f"controls.{key} {name}")
+        for where, changes in schedules(block):
+            require_on_grid([t for t, _ in changes], run.step_s, where)
         require_on_grid(world.potential_times, run.step_s, "the potentials' times")
         require_on_grid(world.row_times, run.step_s, "the compared times")
         if run.restart_time is not None:
@@ -288,10 +328,44 @@ def literals():
     }, one_pool
 
 
+def part2_literals(path=PART2_TEXT):
+    """({world: its literal blocks} of the four children, the literal block of a pool run) of
+    PART2_BLOCKS, whose §7 prints the last child's calcium_controls and what the others lack."""
+    parts = re.split(r"^## (\d+)\. ", Path(path).read_text(), flags=re.MULTILINE)
+    printed = {}  # The first block of each numbered section.
+    for number, text in zip(parts[1::2], parts[2::2], strict=True):
+        block = re.search(r"```json\n(.*?)```", text, re.DOTALL)
+        if block is not None:
+            printed[int(number)] = json.loads(block[1])
+    ionic, plain, ip3, transport, channels, further, controls, pool_run = (
+        printed[k] for k in range(1, 9)
+    )
+    worlds_ = {}
+    for name in ("spatial_calcium", "plasma_calcium", "gated_calcium", "ip3_calcium"):
+        last = name == "ip3_calcium"
+        blocks = {INNER: ionic, "stores": ip3 if last else plain}
+        if name != "spatial_calcium":
+            blocks["plasma_transport"] = transport
+        if name in ("gated_calcium", "ip3_calcium"):
+            blocks["calcium_channels"] = channels
+        if last:
+            blocks["ip3_release"] = further
+        own = copy.deepcopy(controls)
+        if "calcium_channels" not in blocks:
+            del own["calcium_channel"]
+        if "plasma_transport" not in blocks:
+            del own["calcium_pump"], own["exchanger"]
+        if not last:
+            for held in own["reactions"].values():
+                del held["ip3_binding"]
+        worlds_[name] = blocks | {"calcium_controls": own}
+    return worlds_, pool_run
+
+
 def derived_faults(world):
     """SPEC §2.2's derived declarations of a block, formed again: a cell's charge from its voltage
     and its membrane's capacitance, and a region's as minus the rounded sum of the charges of the
-    cells that face it."""
+    cells that face it. A store is uncharged (PART2 §2.2)."""
     block, out = world.block, []
     charges = {name: c["initial_charge_C"] for name, c in block["cells"].items()}
     for _, m in worlds.entities(block["membranes"]):
@@ -305,6 +379,10 @@ def derived_faults(world):
         expected = -math.fsum(charges[c] for c in facing) if facing else 0.0
         if region["initial_charge_C"] != expected:
             out.append(f"{world.name} {name}: its charge is not minus the sum that faces it")
+    for name, store in worlds.entities(block.get("stores")):
+        held = store["membrane"]
+        if held["initial_charge_C"] != 0.0 or held["initial_voltage_V"] != 0.0:
+            out.append(f"{world.name} {name}: its store is charged")
     return out
 
 
@@ -354,7 +432,7 @@ def run_faults(inputs, run, parsed):
         return pool_faults(world, run.seed_index, parsed[key])
     spec = parsed[key] if run.kind == IONIC else parsed[key].ionic
     out = [] if run.kind == IONIC else pool_faults(world, run.seed_index, parsed[key])
-    expected = changed_block(world.block, change)
+    expected = block_of(world, change)
     raw = spec.to_dict()
     out += block_faults(worlds.read(raw), expected, what, driven=run.kind == DRIVEN)
     refusal = grid_faults(inputs, run)
@@ -388,7 +466,33 @@ def _labels(inputs, run):
     found |= {c["kinetic_law"] for _, c in worlds.entities(block.get("channels"))}
     found |= {j["gate"]["law"] for _, j in worlds.entities(block.get("junctions"))}
     found |= {f["law"] for _, f in worlds.entities(block.get("faces"))}
-    return found
+    return found | _store_labels(block)
+
+
+def _store_labels(block):
+    """The labels that PART2 §4.3 names for a block with stores."""
+    stores = worlds.entities(block.get("stores"))
+    if not stores:
+        return set()
+    found = {"composite_model", "compartment_law", "local_reactions", "passive_constant_field"}
+    found |= {"passive_routes_kind", "transporter_kind", "species_condition_kind"}
+    for _, store in stores:
+        found |= {
+            store["law"],
+            store["membrane"]["pump"]["law"],
+            store["membrane"]["release"]["law"],
+        }
+    for _, transport in worlds.entities(block.get("plasma_transport")):
+        found |= {piece["law"] for piece in transport.values()}
+    found |= {c["kinetic_law"] for _, c in worlds.entities(block.get("calcium_channels"))}
+    return found | {r["law"] for _, r in worlds.entities(block.get("ip3_release"))}
+
+
+def _pool_run_of(world, cell):
+    """The block that a pool run of a world's first seed prints for a cell (SPEC §2.5)."""
+    found = world.pools[cell]
+    shown = {"channel": found["channel"], "stream_id": found["stream_id"]}
+    return shown | {"seed": found["seeds"][0], "pool": found["pool"]}
 
 
 def check(inputs, *, runs=None):
@@ -398,13 +502,19 @@ def check(inputs, *, runs=None):
     if inputs.path.resolve() == REGISTERED.resolve():
         blocks, one_pool = literals()
         for name, literal in blocks.items():
-            if inputs.worlds[name].block != literal:
+            if inputs.worlds[name].root != literal:
                 faults.append(f"{name}: inputs.json's block is not SPEC 2.5's")
-        found = inputs.worlds["cell"].pools["cell_0"]
-        shown = {"channel": found["channel"], "stream_id": found["stream_id"]}
-        shown |= {"seed": found["seeds"][0], "pool": found["pool"]}
-        if shown != one_pool:
+        if _pool_run_of(inputs.worlds["cell"], "cell_0") != one_pool:
             faults.append("cell: inputs.json's pool is not SPEC 2.5's")
+    if inputs.path.resolve() == REGISTERED_PART2.resolve():
+        blocks, pool_run = part2_literals()
+        for name, literal in blocks.items():
+            if inputs.worlds[name].root != literal:
+                faults.append(f"{name}: its blocks are not PART2_BLOCKS'")
+        for world in inputs.worlds.values():
+            found = {cell: _pool_run_of(world, cell) for cell in world.pools}
+            if world.pools and found != pool_run:
+                faults.append(f"{world.name}: its pools are not PART2_BLOCKS'")
     for world in inputs.worlds.values():
         faults += derived_faults(world)
         laws = observables.registered()
@@ -432,16 +542,64 @@ def check(inputs, *, runs=None):
 def run_strings(inputs, run):
     """Every registered string that a run's definition declares, as its table entry lists them: an
     ionic definition's, with its pools' observable where pools drive it; a pool run's pools' and
-    their observable (Amendment 1, item 8)."""
-    parsed = definition(inputs, run)
+    their observable (Amendment 1, item 8). A declaration that the engine refuses to parse declares
+    what it submits (spec/TABLE.md §4)."""
+    raw = definition(inputs, run)
     if run.kind == IONIC:
-        return declared_strings(parse_spec(parsed).to_dict())
-    parsed = parse_composed(parsed)
+        try:
+            raw = parse_spec(raw).to_dict()
+        except ConfigError:
+            pass
+        return declared_strings(raw)
+    parsed = parse_composed(raw)
     if run.kind == POOL:
         found = declared_strings(*(d.pool.to_dict() for d in parsed.drives))
     else:
         found = declared_strings(parsed.ionic.to_dict())
     return sorted({*found, *(d.observable.law_id for d in parsed.drives)})
+
+
+def strings_note(inputs):
+    """The strings of every run's definition, for the lead's note (spec/TABLE.md §5): each kind of
+    run's entry, labels and strings, every run's kind, and the labels' map. A step, a seed and a
+    world ID change no string, so the runs of one world and change are parsed once; a retry's run
+    declares its family's. A run that the generator refuses has no declaration, and so no string."""
+    kinds, of_run, named, parsed = {}, {}, {}, {}
+    for run in inputs.runs.values():
+        key = (run.world, run.kind, repr(declared_change(inputs, run)))
+        if key not in parsed:
+            try:
+                parsed[key] = run_strings(inputs, run)
+            except (NoSection, UnknownOrder) as refusal:
+                parsed[key] = str(refusal)
+        declared = parsed[key]
+        if isinstance(declared, str):
+            of_run[run.name] = {"no_declaration": declared}
+            continue
+        name = named.get(tuple(declared))
+        if name is None:
+            name = "pool" if run.kind == POOL else f"{run.consumer} ionic"
+            if name in kinds:
+                name = f"{name}, from {run.name!r}"
+            named[tuple(declared)] = name
+            kinds[name] = {"runs": 0, "consumers": [], "entry": note_entry(declared)}
+            kinds[name] |= {"strings": strings(declared), "declared_strings": declared}
+        kinds[name]["runs"] += 1
+        if run.consumer not in kinds[name]["consumers"]:
+            kinds[name]["consumers"].append(run.consumer)
+        of_run[run.name] = name
+    used = {label for kind in kinds.values() for label in kind["strings"]}
+    return {
+        "kind": "ensemble-reexpression declared strings, from the builder's definitions",
+        "part": inputs.part,
+        "inputs_sha256": inputs.sha256,
+        "labels": {label: value for label, value in LABELS.items() if label in used},
+        "strings_without_a_label": sorted(
+            {s for k in kinds.values() for s in k["declared_strings"]} - set(LABELS.values())
+        ),
+        "run_kinds": kinds,
+        "runs": of_run,
+    }
 
 
 def main(argv=None):
@@ -452,6 +610,8 @@ def main(argv=None):
         command.add_argument("--inputs", type=Path, default=REGISTERED)
         if name == "check":
             command.add_argument("--owed", type=Path, help="retry_owed.json: the retry's runs")
+        if name == "strings":
+            command.add_argument("--json", type=Path, help="write them as one new JSON file")
         if name == "write":
             command.add_argument("name", help="a run's name")
             command.add_argument("directory", type=Path, help="a new folder")
@@ -463,13 +623,14 @@ def main(argv=None):
         print(json.dumps({"inputs_sha256": inputs.sha256, **counts, "faults": faults}, indent=2))
         return 1 if faults else 0
     if args.command == "strings":
-        shown = {}
-        for run in inputs.runs.values():
-            entry = note_entry(run_strings(inputs, run))
-            shown.setdefault(json.dumps(entry, sort_keys=True), []).append(run.name)
-        for entry, names in shown.items():
-            print(f"{len(names)} runs, the first {names[0]!r}:")
-            print("  " + entry)
+        note = strings_note(inputs)
+        for name, kind in note["run_kinds"].items():
+            print(f"{kind['runs']} runs, {name} ({', '.join(kind['consumers'])}):")
+            print("  " + json.dumps(kind["entry"], sort_keys=True))
+        if args.json is not None:
+            with args.json.open("x") as stream:
+                json.dump(note, stream, indent=1)
+                stream.write("\n")
         return 0
     run = inputs.run(args.name)
     if not run.invented:
