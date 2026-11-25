@@ -19,7 +19,8 @@ here. None comes from a reference or a run.
 | Quantity | m | s |
 | --- | --- | --- |
 | Arm 1 and 2 amounts, and their sums | m_f | N_x |
-| Arm 1's heat against its own levels (T3, T4) and arm 2's against its own rows | m_f + 24 | s_F |
+| Arm 1's T3 and arm 2's exact heat against its own rows | m_f + 24 | s_F |
+| T4, and arm 2's `H_face` by class S | m_4 | s_F |
 | Arm 3, 4 and 5 amounts, volumes, supplied, and their sums | m_n | N_x, or V_K's end |
 | Labels and their sums | m_q | N_x |
 | Heats of flow, totals and portions | m_n + m_h | s_F |
@@ -31,9 +32,9 @@ here. None comes from a reference or a run.
 
 ## 2. Rungs and the retry
 
-Each S-class world runs at three steps, each half the last. Arm 1's exact runs take four, its default
-runs six. The retry, once, for an inconclusive entry only: the next halving, so the triple becomes the
-finer one (arm 1: ladder j = 1 … 6, or the exact runs' next step). A refused or stopped run takes none.
+Each S-class world runs at three steps, each half the last. Arm 1 takes four (exact and default alike).
+The retry, once, for an inconclusive entry only: the next halving, so the triple becomes the finer one
+(arm 1: j = 1 … 4). A refused or stopped run takes none.
 
 ## 3. The criteria, by class
 
@@ -72,19 +73,17 @@ every step that runs.
 Let m = n_T_1(0) − n_T_1(h). Then |m − m*(h)| ≤ M∞ z³/6 + e_round, z = kh, and the same with n_T_2(h) −
 n_T_2(0). The bound is LAWS.md §2's Taylor remainder for the published scheme, and needs no run.
 
-### 3.4 L, ladder: orders, and the default heat (T4)
+### 3.4 L, the local orders, and the default heat (T4)
 
 - **T2's order:** with e_j = |m_j − m*(h_j)| on the exact runs' steps j = 0 … 3, q_j = log₂(e_j/e_{j+1})
   ∈ [2.5, 3.5] where e_j and e_{j+1} both exceed 10 e_round. Otherwise inconclusive.
-- **T4, once L1 is filled:** the run's H_face against H_def(h) by class R, and |H_face − D(own levels)|
-  ≤ B_def(h) + e_round by class B.
-- **T4 until then (the ladder rule).** With e_j = |H_face(h_j) − D(own levels)| on j = 0 … 5, it
-  **fails** if e_5 > 3 e_0 / 2¹⁵ + e_round (a third-order local error falls by 2³ per halving; 3 is
-  Roache's factor). It is inconclusive if any pair's resolved order q_j is outside [2.5, 3.5]. Otherwise
-  it passes. This tolerance is the declared order times the coarsest step's own error, so it decides
-  even where the order is the fault.
+- **T4, the default heat (the subject),** at every judged default run:
+  - by class R, |H_face(h) − H_def(h)| ≤ e_round, H_def the declared law's closed form (LAWS.md §2);
+  - by class B, |H_face(h) − D(own levels)| ≤ B_def(h) + e_round, the law's Taylor remainder;
+  - by order, with e_j = |H_face(h_j) − D(own levels)|, j = 0 … 3, as T2's. A lower-order booking fails class
+    B first; the order shows why.
 - **Why B and L and not S here:** a one-step quantity at different steps ends at different times, so no
-  step-halving difference exists. T4's ladder has no fixed end.
+  step-halving difference exists.
 
 ### 3.5 S, stepped
 
@@ -115,16 +114,21 @@ For readout y in world w with steps h₁ > h₂ > h₃ (each half the last), ove
 
 - **A stop** is an entry whose status is `refused` with kind `check` (TABLE.md): the engine's own energy,
   material or charge check failed a completed row.
-- **M1, on every stop** (a recorded run's too): the message holds the word `residual` and then a number, and the word
-  `tolerance` and then a number, both in pJ, finite, with |residual| > tolerance > 0.
+- **M1, on every stop** (a recorded run's too): the message holds the word `residual` and then a number, and
+  the word `tolerance` and then a number, both in pJ, finite, with |residual| > tolerance > 0.
 - **M2, on P8's stops:** | |residual| − H_missing | ≤ tolerance + (half a unit in the residual's last
   printed digit) + e_round. H_missing is H_ev of the run's own before-row for `P8 event`, and the
   reference's H_tot at the stop row for `P8 flow`.
 - **D, on every run of role `judged`:** it completes. One that the engine's own check stops **fails**: the
-  check's residual above its tolerance is the evidence the comparison would have formed. This departs from FR-38's amendment 6, where a refused run is at
-  best inconclusive, and is stated here before any run.
-- **The expected stop** (`eq-tr default stop`) must stop. If it completes, M1 is not formed on it and
-  arm 2 is at best inconclusive. It never counts against the heat. A stopped support run is a refused one.
+  check's residual above its tolerance is the evidence the comparison would have formed. This departs from
+  FR-38's amendment 6, where a refused run is at best inconclusive, and is stated here before any run.
+- **The expected stops** (`eq-tr default stop` and `eq-mid default stop`) must stop. If one completes, M1
+  is not formed on it and arm 2 is at best inconclusive. They never count against the heat. A stopped
+  support run is a refused one.
+- **The expected refusal** (`F6 h=4.0 refused`, a throughput of 1.25 at B) must be a `refused` entry of kind
+  `domain` (its message is recorded). If it completes, the operator admitted a flow outside its declared
+  domain and arm 3 fails. If it is refused another way, arm 3 is at
+  best inconclusive.
 
 ### 3.8 Arm 7: the takeover
 
@@ -139,7 +143,7 @@ each side, the digest of every array the run saves, and the operators it declare
   and that their `inputs` are equal otherwise. An array that only one side saves, and that the map does
   not name, refuses the pair.
 
-`takeover_map.json` is the builder's, filed before the judge's tag. The pairs are W7.
+`takeover_map.json` is the builder's, filed before the judge's tag. The pairs are SPEC.md §6's.
 
 ## 4. Faults and refusals
 
@@ -161,6 +165,8 @@ fails, whatever else of that run or of its support is refused, stopped or missin
 - **A refused or missing support run** leaves its arm at best inconclusive. It does not refuse the run it
   supports.
 - **A non-finite value anywhere is a fault, not a gap.**
+- **The one place a fail can go unseen** is a departing echo, which leaves nothing of that run judged. It is
+  kept: such a run is not the registered world. The checker sees the departure and its cause.
 - **C0, before any engine run is read:** the judge reads `reference_invented.json`, then each reference
   file: every key of SPEC.md §7, the inputs' sha256, the classes of SPEC.md §4, every `checks` entry
   passing, and every plant margin at least 10 (§6.2). A fault is named and refused.
@@ -192,7 +198,7 @@ is a run with a declared change. P6, P11's first two variants, P12 and P13 live 
 | P11 | A collector's portion at the outlet node's share | record, `F1L` at h = 8 | R on `label_T_tag_K` | FR-57 |
 | P14 | k from V₁ alone | record, `r4-mid`, every exact step | B | FR-54 |
 | P15 | A transfer that depends on the background | record, `eq-lo`, `eq-mid`, `eq-hi` at h = 1/4 | B, in each | FR-54 |
-| P16 | The heat's weight at the step's start | record, formed by the judge: `eq-mid` default, and `eq-mid` exact | T4 (default) and T3 (exact) | FR-54 |
+| P16 | The heat's weight at the step's start, m A(0) | record, formed by the judge from the run's own rows: every `eq-mid` default step, and `eq-mid` exact j = 0 | T4's class B (default), T3 (exact) | FR-54 |
 | P17 | The exchange applied after the step | record, `N-buffered` exact j = 2 | R: sample = f × before | FR-54 |
 | P18 | A stop's message without its numbers | record, the message of any stop in the tables, with its digits removed | M1 | FR-54 |
 | P19 | Lie splitting for Strang's | record, `J1` at its three steps | S on `n_T_A`, error and order | FR-57, arm 6 |
@@ -203,9 +209,8 @@ Where a plant names several series, each is sized and scored on its own.
 
 - **The rule:** a plant's margin is its distance from the honest reference, at its best entry of the
   named check, over the expected honest tolerance there. It must be at least **10**.
-- **The expected tolerance:** R and B, the formula of §1 and §3.3. S, three times the step-error model
-  of LAWS.md §10. T4 (ladder), the planted ladder's own bound 3 e_0/2¹⁵ (an order-lowering plant's
-  margin is then 2⁵/3 for a one-order loss). E: the distance itself, which must be non-zero.
+- **The expected tolerance:** R and B, the formulas of §1, §3.3 and §3.4. S, three times the step-error
+  model of LAWS.md §10. E: the distance itself, which must be non-zero.
 - **For P19** also: the planted order, computed at the registered steps, is at most p − ¾, below the window's low
   edge by at least a quarter.
 - **The references compute every margin** and report it. A plant below 10 is enlarged or replaced by a
@@ -250,13 +255,18 @@ inconclusive after it stays so. No tolerance, window or class changes.
 - **A plant must be caught** for the request it names. One not caught fails that request. One unscorable
   leaves it at best inconclusive.
 
+- **The record** lists, for every entry: run, readout, class, statistic, tolerance, their ratio, q and the
+  factor for S, and the verdict; every refusal, stop and flag, with its cause; and every plant's margin.
+
 ## 9. What a miss means, stated before any run
 
 - **T1** (the scheme) is a premise of T2 and T4. A miss says the run's transfer is not the published
   scheme's. It fails arm 1, and T2's bound is not read as evidence for or against the physics.
 - **T2 with T1 passing** cannot fail except by rounding, since the scheme's remainder is bounded.
 - **T3** is the control. A miss there points at the harness, not at the heat law.
-- **T4** is the subject. A miss says the default heat is off by more than its declared local error.
+- **T4** is the subject. Its class R checks the declared law's arithmetic through the composite, as T1 does the
+  transfer's. Its class B is the claim: a miss says the default heat is off by more than the law's own local
+  error.
 - **An `R` miss in arms 3 to 5** says the flow's trajectory, its books, or a heat's total is wrong at
   rounding. **An `S` miss** says how a step's heat is split among holders, or flow beside diffusion,
   does not follow its scheme's order.

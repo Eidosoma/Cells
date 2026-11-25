@@ -12,7 +12,7 @@ Both sides use these names. The references publish the true values. `<x>` is a s
 | `supplied_<x>` | fmol | x delivered by the inlets, from t = 0 | R |
 | `H_<i>` | pJ | The router's cumulative mixing heat at holder i (nodes and K) | arm 5: S. Elsewhere recorded, and their sum compared |
 | `H_tot` | pJ | Σ_i `H_<i>`, formed by the judge | R; arm 6 with `H_face`: S and R (§3) |
-| `H_face` | pJ | The face's cumulative heat | arm 1: R, B or L; arm 2 and 6: S, and an identity (R) |
+| `H_face` | pJ | The face's cumulative heat | arm 1: R (T3, T4) and B (T4); arm 2 and 6: S, and an identity (R) |
 | `label_T_tag_<i>`, `label_T_plain_<i>` | fmol | T by label | R |
 | `n_L_S`, `free_sites_S`, `bound_L_S` | fmol | `F7`'s site node | E |
 | `events[]` (arm 2) | fmol, pJ | `before`, `sample`, `supplied`, `heat` of each exchange | R, S |
@@ -38,10 +38,10 @@ registered grid, never from the table) and u = 2⁻⁵³. The reference's own er
 
 | Arm | R | S | Other |
 | --- | --- | --- | --- |
-| 1 | `n_T_1`, `n_T_2` against the scheme (T1); `H_face` exact (T3); the sum n_1 + n_2 | – | B: the transfer (T2). L: the order of T2, and T4 |
+| 1 | `n_T_1`, `n_T_2` against the scheme (T1); `H_face` exact (T3); `H_face` default against its law (T4); the sum n_1 + n_2 | – | B: the transfer (T2), the default heat (T4). L: the orders of T2 and T4 |
 | 2 | the sums; the exchange's numbers and the first step after it, from the run's own rows; `H_face` exact, from the run's own rows; `supplied` | `n_T_1`, `n_T_2`, `H_face` (both heats), `before`, `sample`, `heat` (p = 2) | E: to the exchange, the `N-none` twin, and `before` |
 | 3 | every `n`, `V_K`, `supplied`, label and their sums, `H_tot` | – | E: twins; N: every `H_<i>` never falls |
-| 4 | every `n`, `V_K`, `H_K`, each portion's `loss` | – | E: the first portion's loss, +0.0; the restart |
+| 4 | every `n`, `V_K`, `supplied`, `H_K`, each portion's `amount`, `volume` and `loss` | – | E: the first portion's loss, +0.0; the restart |
 | 5 | every `n`, `V_K`, `H_tot` at every step | `H_A`, `H_B`, `H_K` (p = 1) | U: `H5`; N |
 | 6 | `n_U_*`, `V_K`, sums, the energy identity on the run's own rows | `n_T_*`, and `H_tot` with `H_face` against the reference (p = 2) | E: `J0` against its twin |
 | 7 | – | – | E: digests |
@@ -51,6 +51,6 @@ The classes are:
 - **R, rounded:** within e_round plus the reference's accuracy. Never an order window.
 - **B, remainder:** within a Taylor remainder bound plus e_round.
 - **S, stepped:** compared by step-halving, with an order window. Never held to rounding.
-- **L, ladder:** the one-step orders of arm 1, and T4.
+- **L, local orders:** the one-step orders of T2 and T4 at halved steps (§3.4 of CRITERIA.md).
 - **U, uniform:** at most the bound of CRITERIA.md §3.6. **N:** never falls. **M:** a stopped run's
   message. **D:** completes.

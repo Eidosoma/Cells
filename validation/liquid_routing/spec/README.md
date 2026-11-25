@@ -35,7 +35,7 @@ the checker read this folder too (the protocol's roles).
 | File | What it holds |
 | --- | --- |
 | `inputs.json` | Every world's inputs and the list of registered runs, as numbers. It governs. If SPEC.md and it differ, stop and ask |
-| `SPEC.md` | The worlds and why each value was chosen, what to compute, the file layout, the invented file, the checks to pass before the tag, the placeholders |
+| `SPEC.md` | The worlds and why each value was chosen, what to compute, the placements from the dt study, the file layout, the invented file, the checks to pass before the tag |
 | `LAWS.md` | The closed forms, the published scheme, the rounding counts, the planted series |
 | `READOUTS.md` | Every compared series: its name, unit, definition, scale and class |
 | `CRITERIA.md` | Bands, classes, tolerances, plants, verdicts, refusals and the retry |

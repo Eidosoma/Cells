@@ -54,6 +54,7 @@ has (`t` and `series` may be short or empty).
 | `record`, `record_sha256` | the run's own record file, and 64 hex digits |
 
 - A number is a JSON number. `null` stands only where this table says so. NaN and infinity do not occur.
+- **An expected refusal is an entry like any other,** `refused` with kind `domain`.
 - **Every series a run carries** has READOUTS.md's name, and each listed readout of its arm and world is
   present. A series with a short `t` belongs to a refused run.
 - **Arm 1 and arm 2:** `n_T_1`, `n_T_2`, `H_face`, `transfer_T`. **Arms 3 to 6:** `n_<x>_<i>`, `V_K`,

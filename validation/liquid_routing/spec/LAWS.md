@@ -47,9 +47,25 @@ The scheme declared for arms 1, 2 and 6 is the second-order ARS(2,2,2) of Ascher
   halving.
 - **For a linear system** y′ = B y the same stages give y⁺ = (I + hB + (hB)²/2) y.
 
-**Placeholder L1: the default heat's declared law.** A one-step value H_def(h) at a declared start, in
-closed form on the stages above, and a bound B_def(h) ≥ |H_def(h) − D(m_R(h))| from its Taylor
-remainder. Until it is filled, CRITERIA.md §3.4's ladder judges T4.
+**The default heat's declared law.** It was relayed by the lead from the dt study of 25 November 2026 and is a
+declared law here, as R(z) is (provenance: the protocol's §11). For one neutral species, with κ = PA:
+
+    J₁ = κ (c₁ − c₂) at the start;   J₂ = κ (c₁′ − c₂′), c′ the start advanced by γh of J₁
+    J̄ = δ J₁ + (1 − δ) J₂;   c* the start advanced by h/2 of J₁;   W = κ LM(c₁*, c₂*), LM the logarithmic mean
+    H_def(h) = RT h J̄² / W
+
+- **For two wells,** J̄ = κ (c₁* − c₂*) (since 1 − (1 − δ)γz = 1 − z/2), so H_def(h) = RT m_R(h) ln(c₁*/c₂*),
+  with c₁* = c₁ − (h/2) J₁/V₁ and c₂* = c₂ + (h/2) J₁/V₂.
+- **Its error against D.** Let A(s) = RT ln[((n₁ − s)/V₁)/((n₂ + s)/V₂)], m = m_R(h), s* = M∞ z/2 (the amount moved
+  at c*), d = s* − m/2 = M∞ z²/4. Then H_def = m A(s*) and D(m) = ∫₀^m A(s) ds, so by Taylor, with η between
+  m/2 and s* and ξ in (0, m), H_def − D = m d A′(η) − (m³/24) A″(ξ), and
+
+      B_def(h) = m d max(|A′(m/2)|, |A′(s*)|) + (m³/24) max(|A″(0)|, |A″(m)|)  ≥  |H_def − D(m)|
+      |A′(s)| = RT (1/(n₁ − s) + 1/(n₂ + s)),   A″(s) = RT (1/(n₂ + s)² − 1/(n₁ − s)²)
+
+  |A′| is convex in s and A″ is decreasing, so each maximum is at an endpoint. For z ≤ 1, s* ≤ m.
+- **Its leading order** is H_def − D(m) ≈ −C₂ z² D(m), with Δc = c₁ − c₂, a₁ = V₂/(V₁ + V₂), a₂ = V₁/(V₁ + V₂),
+  S₁ = Δc (a₁/c₁ + a₂/c₂), S₂ = Δc² (a₁²/c₁² − a₂²/c₂²) and C₂ = (S₁/4 − S₂/24)/ln(c₁/c₂).
 
 ## 3. An exchange at a well
 
@@ -78,6 +94,9 @@ with constant G between switches. Then y(t) = e^(Gt) y(0).
   series until a term is below 10⁻⁵⁸ of the sum, and square back, carrying at least 20 digits more
   than are published.
 - **Equal rates need no special case here.** The closed forms below are the independent check.
+- **The operator's domain.** A flow is admitted for a step of h only where every node's throughput, its
+  outflow times h/2 over its volume, is at most 1. Above it the operator refuses by name. Inside it the
+  propagator's entries are declared within 8 ε and its columns within 4 ε of exact (the dt study).
 
 **A chain I → A → B → K,** with a = Q/V_A, b = Q/V_B, u_A = n_A(0) − V_A x and u_B = n_B(0) − V_B x:
 
@@ -142,9 +161,10 @@ the world's network (inlets and collector included), and N its number of species
 
 | Count | Formula | Why |
 | --- | --- | --- |
-| m_n, flow | 2 (H + 18) | Two half-steps. In each: an H-term sum of products (H roundings), the propagator's entries (8 ε = 16 u each, absolute, with ‖P‖ ≤ 1; declared, re-measured, pending), and the store (increment and level, 2) |
+| m_n, flow | 2 (H + 18) | Two half-steps. In each: an H-term sum of products (H roundings), the propagator's entries (8 ε = 16 u each, absolute, with ‖P‖ ≤ 1; declared, and bounded where the domain of §4 holds), and the store (increment and level, 2) |
 | m_f, a face step | 40 | Two stages at 15 each (level read 1, division 1, the flux's evaluation 8, permeance conversion 4, product 1), the stage update (4), and the final combination and store (6) |
 | m_q, a label | 6H + 106 | Two half-steps. In each: a share's numerator (H + 17), its denominator (H + 16), their quotient (1), the amount it multiplies (H + 18), and the product (1) |
+| m_4, the default heat | m_f + 50 | Two stage fluxes (30), J̄ (3), the advanced levels and the logarithmic mean (12), and the products and division (5) |
 | m_h, a mixing heat | 24 + 2H (N + 1) | Two half-steps. In each: one portion's term (12: two divisions, ratio, logarithm 2, φ 3, products 3, accumulation 1) and the sum over portions, species and holders (H (N + 1)) |
 | m_V, a volume | m_n | Moved as an amount |
 

@@ -2,8 +2,8 @@
 
 **Status: written 25 November 2026 for the lead's tags, before the build** (D341, D352, D362, D364).
 Docs and validation only, with no `src/` change. Its author does not write references, build, judge or
-check. Branch `fr54-57-protocol`, from main 0e563668. Six placeholders are open (`spec/SPEC.md` §6), to be
-filled in one dated commit before the criteria tag, and one number is pending (§10, item 7).
+check. Branch `fr54-57-protocol`, from main 0e563668. The dt study of 25 November filled its placements (`spec/SPEC.md`
+§6), through the lead's report only (§11); no placeholder remains open.
 
 **What it registers.** This document and `validation/liquid_routing/spec/`: `README.md`, `SPEC.md`,
 `LAWS.md`, `READOUTS.md`, `CRITERIA.md`, `TABLE.md` and `inputs.json`. With the code-blind references and
@@ -19,9 +19,9 @@ bound, **B** within a Taylor-remainder bound, **L** local orders, **S** step-hal
 
 | Arm | Request | What runs | What is judged, and its class |
 | --- | --- | --- | --- |
-| 1 | FR-54, item 1 | Two wells, one step: three backgrounds and an empty well, two volume ratios, at steps declared in advance; the exact heat and the default heat | T1, the transfer against the published scheme (R). T2, against the closed form (B, and the local order L). T3, the exact heat against the free energy its own transfer lost (R). T4, the default heat, the same (R and B once the law arrives, the ladder L until then) |
-| 2 | FR-54, items 2 and 3 | Diffusion, a half exchange of one well, diffusion, at three steps under both heats; a run meant to stop | The amounts and the face's heat against the two-well solution (S). The exchange's removed, supplied and refill heat, each against its own row (R) and the reference (S). The rows before it equal the no-exchange twin's (E). Every stop's message (M) |
-| 3 | FR-57 | A → B → collector and the reverse, at equal and unequal volumes; a split and merge; a ring; two tracers carried by one flow; labels; a site beside the flow | Every amount, volume, sum, label and the total heat at 1, 8 and 64 steps per residence time (R). The labelled run's physics against its unlabelled twin, and the sites against the world without the router (E) |
+| 1 | FR-54, item 1 | Two wells, one step: three backgrounds and an empty well, two volume ratios, at steps declared in advance; the exact heat and the default heat | T1, the transfer against the published scheme (R). T2, against the closed form (B, and the local order L). T3, the exact heat against the free energy its own transfer lost (R). T4, the default heat against its declared law (R) and against that free energy (B, and the local order L) |
+| 2 | FR-54, items 2 and 3 | Diffusion, a half exchange of one well, diffusion, at three steps under both heats; two runs meant to stop | The amounts and the face's heat against the two-well solution (S). The exchange's removed, supplied and refill heat, each against its own row (R) and the reference (S). The rows before it equal the no-exchange twin's (E). Every stop's message (M) |
+| 3 | FR-57 | A → B → collector and the reverse, at equal and unequal volumes; a split and merge; a ring; two tracers carried by one flow; labels; a site beside the flow | Every amount, volume, sum, label and the total heat, at steps from 1/64 to 1 of a residence time (R). The labelled run's physics against its unlabelled twin, and the sites against the world without the router (E). A flow above the operator's throughput bound is refused by name (one expected refusal) |
 | 4 | FR-57 | A collector from zero volume: portions in four orders, and a flow that switches | Each portion's loss, the totals (R). The first portion's loss is +0.0, the restart at the switch (E) |
 | 5 | FR-57 | A chain at three steps, with the chamber empty at three traces, and a uniform stream | Each holder's heat against its exact integral, first order (S). The total, exact at every step (R). A uniform stream loses nothing (U) |
 | 6 | FR-57, after FR-54 | Flow beside a face, and flow off | The amounts and heats against the exact linear system, second order (S). The flow alone in a species the face does not pass (R). Flow off against the diffusion-only twin (E) |
@@ -30,6 +30,11 @@ bound, **B** within a Taylor-remainder bound, **L** local orders, **S** step-hal
 **The targets each request named** are all covered: FR-54's three items and its 8 and 2 fmol setup (arms 1
 and 2); FR-57's two targets, its "only a flow passes" rows, its free-energy check and its growing collector
 (arms 3, 4 and 5). The request's refusals and restarts mid-flow live in tier rows (§8).
+
+**Arm 7's worlds** are, by the design note, FR-27's review well, FR-44's twins and FR-37's three draws, with
+the pairs of `SPEC.md` §6. Both sides run on the router's landing head, where the wash still
+exists. FR-45's W2 and W7 and FR-49's B and C1 are not among them: their judged runs stay on the wash, or
+are pinned to a snapshot from before its retirement (D364).
 
 **The claim.** A pass says the engine's passive diffusion between two finite regions, its partial exchange
 at a diffusion-connected region, and its prescribed flow of a passive tracer between finite regions into a
@@ -83,9 +88,9 @@ dated change, before the registration tag and never after a run.
 
 ## 5. The order of work and the tags
 
-1. **This document and the spec folder** are committed, with placeholders.
-2. **The dt study,** on today's engine, fills E1, E2, S1 and L1, re-measures the propagator's bounds, and
-   names W7. **The author fills the placeholders** in one dated commit. The criteria tag:
+1. **The dt study** ran on today's engine (25 November) and reported its placements, the default heat's law,
+   the propagator's bounds and arm 7's worlds. Its record stays with the lead.
+2. **This document and the spec folder,** with the placements (§6 of SPEC.md). The criteria tag:
    **`liquid-routing-criteria-2026-11-2x`**. The bands are fixed from here.
 3. **The references agent** writes the references, its checks (`SPEC.md` §9) and its plant sizes. If a
    margin is below 10, the author changes the plant first. Tag: **`liquid-routing-references-2026-11-2x`**.
@@ -163,7 +168,7 @@ formed is judged, and a refused or missing support run only makes its arm inconc
 The design note's line for the registered protocol is 1.5 to 2 (its §10). The difference is the references'
 two quadratures and the six registered networks, the pre-tag format sample, and the checker.
 
-**CPU:** 128 registered runs (arm 1: 55; arm 2: 20; arm 3: 27; arm 4: 8; arm 5: 13; arm 6: 5), about 12 for
+**CPU:** 122 registered runs (arm 1: 47; arm 2: 21; arm 3: 28; arm 4: 8; arm 5: 13; arm 6: 5), about 12 for
 arm 7, and at most about 25 for a retry. Each is seconds after a compile of 30 to 45 s: about 2 CPU-hours,
 one thread each. The references and their regenerations are minutes.
 
@@ -174,13 +179,17 @@ one thread each. The references and their regenerations are minutes.
 2. **A stop of an honest run fails it** (§7). Recommendation: adopt, stated before any run.
 3. **The order window** is [p − ½, 2.5] for each class, the scheme's order 2 plus D271's half, narrower than
    D271's. An out-of-window order is inconclusive, as D271 has it. Recommendation: adopt.
-4. **T4 without its law** is judged by the ladder. Recommendation: fill L1 before the criteria tag.
+4. **The default heat's law** (LAWS.md §2) is declared from the study agent's reading of the engine at main
+   0e563668, checked here for its algebra and its Taylor bound only. T4 tests it through the composite, which
+   the study did not run. Recommendation: keep that a criterion, not an assumption.
 5. **The default-heat starts are the study's starts** (§11). Recommendation: accept, since the study reports
    only edges, the law and its constant.
 6. **Arm 7's failing** fails FR-57, as the note's §8.2 reads. Recommendation: accept, and say that it bears on
    the takeover line only.
-7. **The propagator's bound** (8 ε an entry) is declared, re-measured, pending. If it moves, `LAWS.md` §9's
-   m_n moves by the same number before the tag.
+7. **The propagator's domain** (throughput at most 1 per half-step) is the lead's ruling. The study measured
+   4.0 of the 8 ε on entries and 0.84 of the 4 ε on columns inside it, and failures at 5. The registered worlds
+   stay inside it, `F6 h=4.0` must be refused, and `LAWS.md` §9 uses the 8 ε. Recommendation: adopt, and if a
+   64-node network is to be claimed, a separate qualification.
 
 ## 11. Disclosures (25 November 2026)
 
@@ -203,14 +212,25 @@ and CRITERIA on `fr45-protocol`.
 - `validation/assembly_lineages_v2/agreement.py` (its head) and the rename design's §2 and the rows that
   hold an ID.
 - **The lead's answers** to this author's six questions (the solver and its polynomial R(z); the propagator's
-  thresholds; the IDs; the edges' list; arm 7's pin).
+  thresholds; the IDs; the edges' list; arm 7's pin), and **the dt study's report** as the lead relayed it: the
+  default heat's booked form with its provenance (main 0e563668, the composite's IMEX step:
+  `surface_pump_v3.py` 2768–2788, 2948–2962 and 2985; `surface_imex.py` 47–48, 60–68 and 123–132;
+  `extracellular_field.py` 48–62; `surface_transport.py` 351–353), its leading error, the edge table, the
+  propagator's measurements, the throughput ruling and arm 7's worlds. The study's folder was not opened.
+- **What the report said and how it was used:** the law is declared, and its algebra and Taylor bound were
+  derived here and checked on neighbouring inputs (`dry-run/default_law.py`). The study's own agreement figures
+  (the law within 2.1 ε, 25 ε at (19, 16)) are not used: the R bound comes from the operation count. Edges
+  place cases and set no band. z_def = 1/64 (4.5 times below the smallest completing edge) is a placement, and
+  so is this author's estimate for arm 2's start.
 
 **Seen and not used:** D362's and D364's desk figures for the default heat's domain (kh at most 0.2 and 0.05)
 and the note author's propagator probe (at most 1.0 ε an entry). z_def is a formula of the measured edges.
 
-**The dt study sees the default heat at the registered default-heat starts,** since the edges were asked for
-there. It reports edges, the law, its constant and the propagator's bounds, never a heat or a transfer. Its
-record is not read by the references, the judge or the checker.
+**The dt study saw the default heat at the registered default-heat starts,** since the edges were asked for
+there. It reports edges, the law, its constant and the propagator's bounds. Its record is not read by the
+references agent, the judge, the checker or this author. It was made on the engine's host-level one-step
+routine: the compiled program, the composite, RK4, held baths and kh above 0.4 were not measured, so the
+registered run's arm 1 asks for the composite's result and assumes none of it.
 
 **A desk dry run,** on neighbouring inputs only (other volumes, flows and levels), with this author's own
 NumPy and decimal code, no engine, on CPU 6, in
@@ -237,5 +257,5 @@ NumPy and decimal code, no engine, on CPU 6, in
 
 **Not read:** engine source, tests, any run output, any reference file, the judge's code, the builder's code.
 
-**The advisor** was called twice: on the plan, and on this draft (§ the commit message says whether the
-second call answered).
+**The advisor** answered on the plan. It was called twice on this draft and timed out both times, so the
+draft was not reviewed by it.
