@@ -2,7 +2,6 @@
 
 import copy
 import json
-import os
 import subprocess
 import sys
 import zipfile
@@ -366,42 +365,16 @@ def trajectories(prior):
 
 
 @pytest.fixture(scope="module")
-def captured(prior, tmp_path_factory):
+def captured(prior):
     assert prior["status"] == "passed"
     rule = runtime.native_protocol()
-    if BACKEND == "gpu":
-        assert EVIDENCE
-        root = Path(EVIDENCE) / "cpu"
-    else:
-        root = Path(EVIDENCE) / "cpu" if EVIDENCE else tmp_path_factory.mktemp("junction-native")
-        root.mkdir(parents=True, exist_ok=True)
-        settings = root / "junction-runtime-native-protocol.json"
-        settings.write_text(json.dumps(rule, indent=2) + "\n")
-        with (
-            (root / "junction-runtime-native.stdout.log").open("x") as out,
-            (root / "junction-runtime-native.stderr.log").open("x") as err,
-        ):
-            subprocess.run(
-                [
-                    "/mnt/workspaces/Cells/venv-betse/bin/python",
-                    "-B",
-                    str(runtime.PROTOCOL_PATH.with_name("junction_native.py")),
-                    "--output",
-                    str(root / "junction-runtime-native"),
-                    "--protocol",
-                    str(settings),
-                ],
-                check=True,
-                timeout=PROTOCOL["resources"]["native_timeout_seconds"],
-                stdout=out,
-                stderr=err,
-                env=dict(
-                    os.environ,
-                    MPLBACKEND="Agg",
-                    MPLCONFIGDIR=str(root / "matplotlib-junction-runtime"),
-                ),
-            )
-    path = root / "junction-runtime-native"
+    if BACKEND != "gpu":
+        pytest.fail(
+            "No native capture: its driver, validation/betse/spatial_active/junction_native.py, is "
+            "kept at the tag pre-cleanup-2026-11-25"
+        )
+    assert EVIDENCE
+    path = Path(EVIDENCE) / "cpu" / "junction-runtime-native"
     rows = runtime.authenticate_capture(path, rule)
     common.evidence(
         "junction-runtime-native-capture",
