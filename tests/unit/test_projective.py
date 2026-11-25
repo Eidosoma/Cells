@@ -16,6 +16,7 @@ import pytest
 
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.numerics import projective as method
+from tests.apical_vertex_fixtures import honeycomb
 from validation.tissue import projective_fixtures as fixtures
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -132,16 +133,22 @@ def test_block_errors_reject(edit):
         parse_spec(raw)
 
 
-def test_unsupported_model_rejects():
-    raw = json.loads((ROOT / "configs/multispecies_baseline.json").read_text())
+@pytest.mark.parametrize("model", ["reaction_transport@1", "apical_vertex_mechanics@1"])
+def test_unsupported_model_rejects(model):
+    """A live model the mode does not support, without a module-level ID and with one."""
+    if model == "reaction_transport@1":
+        raw = json.loads((ROOT / "configs/reaction_transport_chain.json").read_text())
+    else:
+        raw = honeycomb(2, 2)
+    assert raw["model"]["id"] == model and parse_spec(raw).projective is None
     end = raw["experiment"]["end_time"]
     raw["execution"]["projective"] = fixtures.projective_block([(0.0, end)])
-    with pytest.raises(ConfigError, match="supports"):
+    with pytest.raises(ConfigError, match="^execution.projective supports "):
         parse_spec(raw)
 
 
 def test_definitions_without_the_block_are_unchanged():
-    for name in ("resolved_pump_tissue.json", "multispecies_baseline.json"):
+    for name in ("resolved_pump_tissue.json", "reaction_transport_chain.json"):
         raw = json.loads((ROOT / "configs" / name).read_text())
         spec = parse_spec(copy.deepcopy(raw))
         assert spec.projective is None
