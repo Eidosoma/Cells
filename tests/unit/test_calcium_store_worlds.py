@@ -27,7 +27,8 @@ largest over the recorded times. Every ledger closes at each of them.
   and at most twice that.
 
 Seconds: 20 on the shared CPUs, 18 of them 340 NumPy steps on one CPU (9 s where the CPU is
-quiet), so tier 1.
+quiet), so tier 1. The reason (D224): no other row holds a store world, its order and its heats
+to numbers that the engine's authors did not write.
 """
 
 import math

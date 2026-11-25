@@ -7,14 +7,15 @@ validation/calcium_store/reference_spec/inputs.json. The references
 (validation/calcium_store/references) were written from that folder alone, by someone who had
 read nothing of the engine.
 
-Each state is a population of one world's, evaluated in NumPy by the kind's own evaluation, at
-the state's concentrations, volumes, voltage, temperature and availability. Every output the
-specification asks for is compared: x and the fuel's part of it, S, J and its forward part, the
-heat, the work and the current, the slopes of J against the voltage and against each amount, the
-moves at both ends, the domain, J at the doubles nearest the reversal and 1 microvolt to each
-side, and a symport's J at other voltages. Each is within TOLERANCE of the size of what it is a
-difference of (the one-way rates). Planted inputs: the voltage's sign turned, the two ends
-exchanged, the availability left out, K larger by 1e-9. Every output is missed by one of them.
+Each state is a population of one world's, evaluated in NumPy by the kind's own hooks, the only
+one switched on, at the state's concentrations, volumes, voltage, temperature and availability.
+Every output the specification asks for is compared: x and the fuel's part of it, S, J and its
+forward part, the heat, the work and the current, the slopes of J against the voltage and against
+each amount, the moves at both ends, the domain, J at the doubles nearest the reversal and 1
+microvolt to each side, and a symport's J at other voltages. Each is within TOLERANCE of the size
+of what it is a difference of (the one-way rates). Planted inputs: the voltage's sign turned, the
+two ends exchanged, the availability left out, K larger by 1e-9. Every output is missed by one of
+them.
 
 Seconds: 8 on the shared CPUs, in NumPy on one CPU, so tier 1.
 """
@@ -171,11 +172,11 @@ class Kernels:
         self.state, self.p = impl.initial_values(spec)
         controls = control_values(spec, [0.0])
         self.control = impl.Control(*(np.asarray(v[0]) for v in controls))
-        self.species = list(spec.model.species_ids)
+        self.species, self.valence = list(spec.model.species_ids), list(spec.model.valence)
 
     def at(self, i, *, volts=None, plant=None):
-        """What the kind's evaluation and its probe take at a state (its voltage `volts` where
-        given), under a planted input. The state's population is the world's i-th."""
+        """What the kind's hooks take at a state (its voltage `volts` where given), under a planted
+        input. The state's population is the world's i-th, and the only one switched on."""
         s = states(self.family)[i]
         conc = concentrations(self.family, s)
         if plant == "ends":
@@ -196,10 +197,9 @@ class Kernels:
         state = self.state._replace(
             amount_increment=amounts[0], extracellular_amount_increment=amounts[1]
         )
-        availability = 1.0 if plant == "availability" else s["availability"]
-        control = self.control._replace(
-            cycle_availability=np.full_like(self.control.cycle_availability, availability)
-        )
+        availability = np.zeros_like(self.control.cycle_availability)
+        availability[i] = 1.0 if plant == "availability" else s["availability"]
+        control = self.control._replace(cycle_availability=availability)
         return state, np.array([-volts if plant == "sign" else volts, 0.0]), control, p
 
 
@@ -222,56 +222,55 @@ def concentrations(family, s):
 
 def found(kernels, i, *, plant=None):
     """{output: (the engine's value, the size its error is judged by)} at a state, under the
-    references' names."""
-    family, k = kernels.family, i
+    references' names: the rates that a step takes (the kind's rates hook), and x, S and the slopes
+    of the evaluation behind them."""
+    family, k, p = kernels.family, i, kernels.p
     s, at = states(family)[i], kernels.at(i, plant=plant)
-    e, probe = transporter._evaluate(*at, xp=np), transporter.probe(*at, xp=np)
-    rows, n_rows = probe.rows, kernels.p.cycle_row_present.shape[0]
+    e, rates = transporter._evaluate(*at, xp=np), transporter._population_rates(*at, xp=np)
     rt_f = R * s["temperature_K"] / F
     rt = 1e-3 * R * s["temperature_K"]
     phi, terms = float(e.scale[0, k]), float(e.x_terms[0, k])
-    moved = [r for r in range(n_rows) if rows.present[r, k] and not rows.held[r, k]]
-    charge = abs(float(kernels.p.cycle_charge_moved[0, k]))
+    charge = abs(float(p.cycle_charge_moved[0, k]))
     out = dict(
         x=(e.x[0, k], terms / 100),  # The sum of x's terms, each rounded once or twice.
-        J_fmol_per_s=(e.j[0, k], phi),
-        heat_rate_pJ_per_s=(probe.populations.heat_pJ_s[k], rt * phi * terms),
+        J_fmol_per_s=(rates.derivatives["cycle_count"][0, k], phi),
+        heat_rate_pJ_per_s=(rates.derivatives["cycle_dissipated_energy_pJ"][k], rt * phi * terms),
         in_domain=(bool(e.valid[k]), None),
     )
     if family != "symport":
-        amperes = 1e-12 * probe.populations.current_a_to_b_pA[k]
-        s_size = math.exp(float(e.log_s[0, k]))
+        valence = dict(zip(kernels.species, kernels.valence, strict=True))
+        crossing = zip(kernels.species, rates.membrane_flux[:, 0], strict=True)
+        current = FMOL_CHARGE * sum(valence[species] * flux for species, flux in crossing)
+        size = math.exp(float(e.log_s[0, k]))
         out |= dict(
-            S=(s_size, s_size),
-            current_N_to_P_A=(amperes, FMOL_CHARGE * charge * phi),
-            dJ_dV_NP_fmol_per_s_per_V=(probe.modes.d_j_d_v[0, k], charge * phi / rt_f),
+            S=(size, size),
+            current_N_to_P_A=(current, FMOL_CHARGE * charge * phi),
+            dJ_dV_NP_fmol_per_s_per_V=(e.d_j_d_psi[0, k] / rt_f, charge * phi / rt_f),
         )
     else:
         out["one_way_rates_sum_fmol_per_s"] = (phi, phi)
     if family == "pump":
+        work = rates.derivatives["cycle_metabolic_work_pJ"][k]
         out |= dict(
             x_fuel=(e.held_x[0, k], terms / 100),
             J_plus_fmol_per_s=(e.j_plus[0, k], float(e.j_plus[0, k])),
-            work_rate_pJ_per_s=(probe.populations.work_pJ_s[k], rt * phi * terms),
+            work_rate_pJ_per_s=(work, rt * phi * terms),
         )
-    ids, per_end = kernels.species, {}
-    for r in moved:
-        species, end = ids[rows.species[r, k]], "N" if rows.at_n[r, k] else "P"
-        nu = float(kernels.p.cycle_nu[0, r, k])
-        volume = s[f"volume_{end}_pL"]
-        amount = float(e.c[r, k]) * volume
-        slope = float(e.d_j_d_ln_c[0, r, k]) / amount
-        per_end[species, end] = (
-            (slope, (abs(nu) + 1) * phi / amount),
-            (rows.rate[r, k], abs(nu) * phi),
-        )
-    for (species, end), (slope, move) in per_end.items():
+    nodes = dict(N=rates.cell[:, 0], P=rates.outside[:, 0])  # What a step adds to each node's rows.
+    for r in range(p.cycle_row_present.shape[0]):
+        if not p.cycle_row_present[r, k] or p.cycle_row_held[r, k]:
+            continue
+        row, end = int(p.cycle_row_species[r, k]), "N" if p.cycle_row_at_n[r, k] else "P"
+        amount = float(e.c[r, k]) * s[f"volume_{end}_pL"]
+        nu = abs(float(p.cycle_nu[0, r, k]))
+        slope = (float(e.d_j_d_ln_c[0, r, k]) / amount, (nu + 1) * phi / amount)
+        move, species = (nodes[end][row], nu * phi), kernels.species[row]
         if family == "pump":
             out |= {f"dJ_dn_{end}_per_s": slope, f"move_{end}_fmol_per_s": move}
         elif family == "exchanger":
-            out[f"dJ_dn_{species}_{end}_per_s"] = slope
+            out |= {f"dJ_dn_{species}_{end}_per_s": slope, f"move_{species}_{end}": move}
         else:
-            role = next(r for r, sp in roles(s).items() if sp == species)
+            role = next(name for name, sp in roles(s).items() if sp == species)
             out[f"dJ_dn_{end}_per_s {role}"] = slope
             out[f"moves_{end}_fmol_per_s {role}"] = move
     return out
@@ -284,6 +283,7 @@ def roles(s):
     return dict(zip(("cation", "anion"), SALTS[s["law"]], strict=True))
 
 
+EXCHANGED = dict(Na_N=3, Na_P=-3, Ca_N=-1, Ca_P=1)  # A forward exchange's counts (SPEC 2.5).
 REVERSALS = dict(pump="near_V_stall", exchanger="near_V_rev", symport="with_V_NP_changed")
 # Outputs that restate another one at the exact real, where J is 0 (the doubles' J are compared).
 AT_THE_REAL = ("V_stall_V", "J_at_V_stall", "V_rev_V", "J_at_V_rev")
@@ -304,6 +304,9 @@ def misses(kernels, *, plant=None):
                 exact |= {f"{name} {role}": x for role, x in value.items()}
             else:
                 exact[name] = value
+        if family == "exchanger":
+            j = exact["J_fmol_per_s"]
+            exact |= {f"move_{row}": count * j for row, count in EXCHANGED.items()}
         values = found(kernels, i, plant=plant)
         assert set(values) == set(exact), set(values) ^ set(exact)  # Every output, and no other.
         for name, (value, size) in values.items():
