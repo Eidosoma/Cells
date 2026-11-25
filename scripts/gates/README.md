@@ -45,7 +45,7 @@ only while nothing it recorded has changed, so a missed recording must keep the 
   asks of a path without opening it, and files outside the tree (frozen evidence included). D229's
   rule ran a reader whatever changed; the narrowed rule does not see a change in these alone.
 
-`scripts/test_tiers.py` holds the tier record's tools. `run --scope-map DIR` (D229) loads the scope map's recorder into each file's processes, and `--trace DIR` (D358) adds strace's view of them; without these, a run is unchanged. Two of the tools changed with D222:
+`scripts/test_tiers.py` holds the tier record's tools. `run --scope-map DIR` (D229) loads the scope map's recorder into each file's processes, and `--trace DIR` (D358) adds strace's view of them (about 0.4 s a file on average, and 12 to 16 s for the two that open the most files); without these, a run is unchanged. Two of the tools changed with D222:
 - `measure --only`: a tier the only-list does not hold now selects nothing (it raised `KeyError`),
   and a listed file that is not a test file is refused.
 - `fold` (new): at landing time, a landing's measured rows go onto main's current record, never as a
