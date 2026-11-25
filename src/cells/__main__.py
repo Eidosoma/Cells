@@ -19,13 +19,7 @@ from cells.registry.legacy_entry import legacy
 from cells.registry.models import get_model
 
 # The older families' subcommands, each with its own arguments (D188 R1: legacy().cli).
-LEGACY_COMMANDS = (
-    "tissue-phase",
-    "tissue-geometry",
-    "tissue-profiles",
-    "assembly-cluster",
-    "assembly-cell",
-)
+LEGACY_COMMANDS = ("assembly-cluster", "assembly-cell")
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -39,16 +33,11 @@ def _parser() -> argparse.ArgumentParser:
         "assembly-cluster", help="cell-owned assembly controlling interacting cells"
     )
     commands.add_parser("ensemble", help="balanced independent assembly worlds across GPUs")
-    commands.add_parser("tissue-profiles", help="prepare and replay static tissue profiles")
-    commands.add_parser("tissue-phase", help="carry INIT history into a new SIM phase")
     commands.add_parser(
         "stationary", help="opt-in stationary states, stability and continuation (read-only)"
     )
     commands.add_parser(
         "declarations", help="write the declarations manifest (cells.declarations@1)"
-    )
-    commands.add_parser(
-        "tissue-geometry", help="prepare and replay initial passive tissue geometry"
     )
     validate = commands.add_parser("validate", help="validate a definition and its resource bounds")
     validate.add_argument("config", type=Path)
@@ -59,17 +48,6 @@ def _parser() -> argparse.ArgumentParser:
     branch = commands.add_parser("branch", help="continue with explicitly changed future inputs")
     branch.add_argument("snapshot", type=Path)
     branch.add_argument("config", type=Path)
-    excision = commands.add_parser(
-        "excise",
-        help="remove named cells and rebuild supported passive, active or calcium/fuel tissue",
-    )
-    excision.add_argument("snapshot", type=Path)
-    excision.add_argument(
-        "--remove", action="append", required=True, help="cell ID; repeat for several cells"
-    )
-    excision.add_argument(
-        "--output", type=Path, required=True, help="new excision archive directory"
-    )
     for command in (fresh, resume, branch):
         command.add_argument(
             "--output", type=Path, required=True, help="new directory; never overwritten"
@@ -233,8 +211,6 @@ def main(argv=None) -> int:
         return assembly_main(argv[1:])
     args = _parser().parse_args(argv)
     try:
-        if args.command == "excise":  # An older family's (D188 R1).
-            return legacy().cli("excise")(args)
         if args.command == "windowed":
             print(json.dumps(_window_main(args), indent=2))
             return 0
