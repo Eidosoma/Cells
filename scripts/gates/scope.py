@@ -47,7 +47,8 @@ cells or JAX.
       Refused (exit 3; the gate then runs the full tiers) when FILE exists (a nightly failure not
       yet explained), the map is unreadable, of another kind, failed or older than H hours (default
       36), either snapshot is incomplete or dirty, src/ differs between HEAD and BASE (a src/ change
-      keeps the full gate), or the interpreter is not the map's. Otherwise a file is selected when:
+      keeps the full gate), a tool that every file runs through differs between them or from the map's
+      snapshot (RUNNER), or the interpreter is not the map's. Otherwise a file is selected when:
       - it is in the guard set, or its children are unmapped;
       - it is new or changed against BASE, not in the map, or incomplete there;
       - its row's outcome differs from the map's;
@@ -77,6 +78,20 @@ import gate_steps  # noqa: E402
 
 KIND = "cells.scope_map@3"
 REFUSED = 3
+# What every file's run, the frozen copy it runs in, or the map and the selection pass through, and no
+# test's own record shows (D358): a change to one reaches every file, so it refuses the selection.
+RUNNER = (
+    "scripts/test_tiers.py",  # It runs and judges each file: its environment, its command, its cap.
+    "scripts/gates/gate.sh",  # A gate's environment, which each file inherits, and its run of the tiers,
+    "scripts/gates/stack.sh",  # a stack's,
+    "scripts/gates/nightly_tiers.sh",  # and the nightly's, from which the map comes.
+    "scripts/run_detached.sh",  # It starts a gate's unit: its PATH, memory cap and environment.
+    "scripts/gates/freeze_snapshot.py",  # They make the frozen copy that every file runs in, and the
+    "validation/source_snapshot.py",  # SNAPSHOT.json whose states the map and the selection compare.
+    "scripts/gates/scope_inject/sitecustomize.py",  # What the map records,
+    "scripts/gates/scope.py",  # how it is built, checked and read,
+    "scripts/gates/gate_steps.py",  # and the guard set, the src/ rule and the interpreter it goes by.
+)
 SKIP = ("__pycache__",)
 RECORDER = "scripts/gates/scope_inject"  # In every recorded process; none of its code asked for it.
 # The names a library's own discovery can use (pkgutil plugin searches, importlib.metadata).
@@ -498,6 +513,7 @@ def build(run_dir, snapshot, python, prune=False):
     doc = {"kind": KIND, "built": gate_steps.utc(), "revision": tree.revision,
            "snapshot": str(Path(snapshot).resolve()), "run": str(run_dir.resolve()),
            "verdict": verdict, "interpreter": gate_steps.interpreter(python),
+           "runner": {p: tree.state(p) for p in RUNNER},
            "trace": {"traced": traced, "not_traced": not_traced, "found": found}, "paths": paths,
            "content": [tree.state(p) for p in paths], "asked": [tree.asked(p) for p in paths],
            "names": [tree.listing(p) for p in paths],
@@ -539,6 +555,14 @@ def refusal(head, base, doc, stopped, python, max_age_hours):
     changed = gate_steps.src_changed(head, base)
     if changed:
         return f"src/ changed ({changed[:3]}): a src/ change keeps the full gate"
+    now, was, at_map = Tree(head), Tree(base), doc.get("runner", {})
+    changed = [p for p in RUNNER if now.state(p) != was.state(p)]
+    if changed:
+        return f"the gate's own tools changed ({changed[:3]}): every file runs through them"
+    changed = [p for p in RUNNER if now.state(p) != at_map.get(p)]
+    if changed:
+        return (f"the gate's own tools changed since the map ({changed[:3]}): every file runs through them, "
+                "and a passing nightly records the map again")
     if python and gate_steps.interpreter(python) != doc.get("interpreter"):
         return "the interpreter is not the map's"
     return None

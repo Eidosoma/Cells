@@ -67,7 +67,7 @@ Host only: no world runs here.
   - a library's own discovery counts only the names it can use, a folder opened by descriptor is a
     listing, and the recorder leaves os.supports_* (so shutil's rmtree) as it found them;
   - the selection is refused for each planted fault (stopped, failed, old, missing or earlier map,
-    src/);
+    src/, each tool that every file runs through);
   - the nightly run takes the free lane, and publishes its map or stops selection;
   - gate.sh runs only the selection's files, CHECKS drops crossrev and G1, and SELECT_ALWAYS names
     D229's rule.
@@ -1341,15 +1341,25 @@ def test_the_recorder_keeps_what_os_supports_says_of_its_wrappers(tmp_path):
     assert seen[0] == seen[1] == "True True True True\n" and list((tmp_path / "log").glob("*.jsonl"))
 
 
+# The tools that every file runs through, and no test's record shows (scope.RUNNER), named here so that
+# one dropped from it fails its row.
+RUNNER = ("scripts/test_tiers.py", "scripts/gates/gate.sh", "scripts/gates/stack.sh",
+          "scripts/gates/nightly_tiers.sh", "scripts/run_detached.sh", "scripts/gates/freeze_snapshot.py",
+          "validation/source_snapshot.py", "scripts/gates/scope_inject/sitecustomize.py",
+          "scripts/gates/scope.py", "scripts/gates/gate_steps.py")
+
+
 @pytest.mark.parametrize("plant, words", [
     ("stopped", "selection stopped"), ("failed", "nightly run failed"), ("old", "hours old"),
     ("src", "a src/ change keeps the full gate"), ("missing", "no readable scope map"),
     ("earlier", "the map is cells.scope_map@2, and this tool reads " + scope.KIND),
+    *((path, f"the gate's own tools changed (['{path}'])") for path in RUNNER),
+    ("since the map", "the gate's own tools changed since the map (['scripts/test_tiers.py'])"),
 ])
 def test_the_selection_is_refused_for_each_planted_fault(scope_map, tmp_path, plant, words):
     base = scope_snapshot(tmp_path / "base")
     head = scope_snapshot(tmp_path / "head", {"src/cells/__init__.py": "X = 1\n"} if plant == "src"
-                          else {}, rev="h" * 40)
+                          else {plant: "planted\n"} if plant in RUNNER else {}, rev="h" * 40)
     doc = json.loads(json.dumps(scope_map["doc"]))
     stopped = tmp_path / "selection-stopped"
     if plant == "stopped":
@@ -1360,6 +1370,8 @@ def test_the_selection_is_refused_for_each_planted_fault(scope_map, tmp_path, pl
         doc["built"] = "2026-01-01T00:00:00Z"
     if plant == "earlier":
         doc["kind"] = "cells.scope_map@2"
+    if plant == "since the map":
+        doc["runner"]["scripts/test_tiers.py"] = "f:" + "0" * 64
     why = scope.refusal(head, base, None if plant == "missing" else doc, stopped, None, 36.0)
     assert why and words in why, why
 
@@ -1637,7 +1649,8 @@ def test_a_gate_with_a_selection_runs_only_its_files_and_may_drop_crossrev_and_g
         "kind": scope.KIND, "built": steps.utc(), "revision": "b" * 40, "verdict": "passed",
         "interpreter": steps.interpreter(gate["envs"]["PY"]), "paths": ["tests/unit/test_other.py"],
         "content": ["-"], "asked": ["-"], "names": ["-"], "discovery": ["-"], "tops": [], "subs": [],
-        "importable": {}, "files": {"tests/unit/test_other.py": {
+        "importable": {}, "runner": dict.fromkeys(scope.RUNNER, "-"),
+        "files": {"tests/unit/test_other.py": {
             "complete": True, "why": [], "traced": True, "content": [0], "exists": [], "lists": [],
             "finds": [], "roots": [], "tops": [], "subs": [], "reads_repository": True, "scans": False,
             "reads": [], "children_unmapped": [], "row": {"exit_code": 0, "counts": {"passed": 1}}}}}))

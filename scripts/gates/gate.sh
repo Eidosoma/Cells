@@ -19,7 +19,8 @@
 #   2a. with SELECT (a landing with no src/ change; D229 rule 3): the tier-1/2 files the change can
 #      reach, from the nightly's scope map (scripts/gates/scope.py select; SELECT=auto reads
 #      GATE_CACHE/scope-map.json, else SELECT names a map). A refused selection (a src/ change, a
-#      stale or missing map, or GATE_CACHE/selection-stopped present) runs the full tiers instead.
+#      change to a tool that every file runs through, a stale or missing map, or
+#      GATE_CACHE/selection-stopped present) runs the full tiers instead.
 #      SELECT_ALWAYS names another always-run rule than scope.py's default (D358): readers is D229's,
 #      the fallback.
 # Under the lane's lock (flock's command form: a flock killed while it waits runs nothing), the
