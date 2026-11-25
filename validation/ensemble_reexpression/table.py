@@ -38,7 +38,7 @@ from validation.ensemble_reexpression.inputs import (
 )
 from validation.ensemble_reexpression.labels import LABELS, declared_strings, label, strings
 from validation.ensemble_reexpression.pieces import Pieces
-from validation.ensemble_reexpression.refusals import SECOND_PASS
+from validation.ensemble_reexpression.refusals import PARTIAL, SECOND_PASS
 from validation.ensemble_reexpression.run import RECORD, Folders, digest
 
 KIND = "ensemble-reexpression engine table, version 1"
@@ -125,12 +125,18 @@ def readable(read_back, *args):
         return {"unreadable": f"{type(error).__name__}: {error}"}
 
 
+def unswitched(definition):
+    """A switch list without a switch: every channel of the world is a key (Amendment 2, 9.1), the
+    ones that carry calcium apart, which no pool's availability touches (PART2 §1)."""
+    return {channel: [] for channel in Pieces(definition).channels}
+
+
 def assembly(definition, made_from, world_id):
     """`inputs.assembly` of a driven run (spec/TABLE.md §3), from what its definition was made from
     (the resolution's inputs.json, as the run recorded it)."""
     of_position = driven_cells(definition)
     entry = next(w for w in made_from["worlds"] if w["world"] == world_id)
-    switches = {channel: [] for pool in made_from["pools"] for channel in pool["channels"]}
+    switches = unswitched(definition)
     for row in entry["switches"]:
         for channel in made_from["pools"][row["pool"]]["channels"]:
             switches[channel].append([row.get("declared", row["time"]), row["level"]])
@@ -153,7 +159,7 @@ def submitted_assembly(submitted, definition, composed_sha256):
         "assembly_observable": observed.pop() if len(observed) == 1 else sorted(observed),
         "composed_file_fingerprint": composed_sha256,
         "pool_seeds": {of_position[k]: p["pool"].get("seed") for k, p in enumerate(pools)},
-        "switch_list": {channel: [] for pool in pools for channel in pool["channels"]},
+        "switch_list": unswitched(definition),
     }
 
 
@@ -162,7 +168,7 @@ def submitted_assembly(submitted, definition, composed_sha256):
 
 def arrays_of(attempt):
     """A run's recorded arrays: its trajectory, or the rows a refused run keeps; None without."""
-    for name in ("output/trajectory.npz", "partial.npz"):
+    for name in ("output/trajectory.npz", PARTIAL):
         path = attempt / name
         if path.is_file():
             with np.load(path, allow_pickle=False) as archive:

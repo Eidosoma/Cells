@@ -25,6 +25,7 @@ from cells.registry.models import get_model
 
 DEFINITION, DOMAIN, CHECK, HARNESS = "definition", "domain", "check", "harness"
 SECOND_PASS = "second_pass_completed"  # A check's refusal that its second pass does not meet.
+PARTIAL, WINDOW_STEPS = "partial.npz", 1  # The second pass's rows, and its windows' length.
 CHECKS = (LEDGER_MESSAGE, DISSIPATION_MESSAGE, ENERGY_MESSAGE)
 POOL_CHECKS = ("Finite material conservation failed", "Material transfer counters disagree")
 # A declared value that left a range the message states. The engine's words: "domain" (the laws' and
@@ -82,7 +83,7 @@ def rows_before(spec, checkpoint=None):
     start = 0 if checkpoint is None else checkpoint.step_index
     windows, failed = [], None
     try:
-        for window in iter_windows(spec, WindowPolicy(1, "full"), checkpoint):
+        for window in iter_windows(spec, WindowPolicy(WINDOW_STEPS, "full"), checkpoint):
             windows.append(window)
     except NumericalError:
         failed = float(grid[min(start + len(windows) + 1, len(grid) - 1)])

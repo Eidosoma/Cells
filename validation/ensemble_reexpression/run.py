@@ -528,14 +528,20 @@ class Worker:
 
     def kept(self, spec, checkpoint, refusal):
         """The rows of a refused run, and for a check that failed the time of the row it failed at:
-        where the pass that finds it completes, the end of the run, and the refusal says so."""
+        where the pass that finds it completes, the end of the run, and the refusal says so. The
+        record says whose rows they are, and holds the sha256 of their file with the others'."""
         import numpy as np
 
         from validation.ensemble_reexpression import refusals
 
         arrays, failed = refusals.rows_before(spec, checkpoint)
         if arrays is not None:
-            np.savez(self.attempt / "partial.npz", **arrays)
+            np.savez(self.attempt / refusals.PARTIAL, **arrays)
+        self.facts["second_pass"] = {
+            "window_steps": refusals.WINDOW_STEPS,
+            "rows": None if arrays is None else refusals.PARTIAL,
+            "completed": failed is None,
+        }
         if refusal["kind"] == refusals.CHECK:
             refusal["time_s"] = spec.experiment.end_time if failed is None else failed
             if failed is None:
