@@ -10,16 +10,20 @@
 #      seconds it queues for lane A's lock. Until it holds one, the freeze included, it stays on the
 #      pre-lock CPU (PRE_CPU).
 #   3. Under the lock: tiers 1+2 of the snapshot in full on the lane's eight CPUs, cap 300 s, with the
-#      scope map's recorder on (scripts/test_tiers.py run --scope-map).
-#   4. Builds the scope map (scope.py build) and writes NIGHTLY/DATE/verdict.json.
+#      scope map's recorder on (scripts/test_tiers.py run --scope-map) and strace as the check on it
+#      (--trace; D358). Where strace cannot trace, or with TRACE=0, the run goes on without it: the
+#      map's entries are then not traced, so selection keeps D229's readers rule for them.
+#   4. Builds the scope map (scope.py build) and writes NIGHTLY/DATE/verdict.json, with what the
+#      trace found. An entry the trace shows to lack a file is incomplete, so its test always runs;
+#      that fails nothing here. The traces that found nothing are removed.
 #   5. A passing run's map replaces GATE_CACHE/scope-map.json, renamed into place whole. A failure (a
 #      file that changed against its row, a run or map that did not complete, or the lock never held)
 #      writes GATE_CACHE/selection-stopped, which turns selection off until the lead removes it with
 #      the explanation; the last passing map is kept.
 # Environment: REPO (default $HOME/Cells), NIGHTLY (default /mnt/workspaces/Cells/nightly),
 #   GATE_CACHE (default /mnt/workspaces/Cells/gate-cache), PY, HOSTPY, PRE_CPU (default 23), POLL
-#   (default 60), WAIT_FREE (default 10800), and LOCK_A, CPUS_A, LOCK_B, CPUS_B and TIERS (a reduced
-#   tier record, whose map then fails as incomplete; tests and rehearsals only).
+#   (default 60), WAIT_FREE (default 10800), TRACE (default 1), and LOCK_A, CPUS_A, LOCK_B, CPUS_B and
+#   TIERS (a reduced tier record, whose map then fails as incomplete; tests and rehearsals only).
 # Usage: nightly_tiers.sh              the unit's command: freeze main, then run the frozen copy
 #        nightly_tiers.sh --run OUT    the frozen copy, from OUT/snapshot
 #   OUT/done holds 0 (passed), 1 (failed) or 2 (not run).
@@ -97,9 +101,11 @@ case "${1:-}" in
     log "JAX's persistent compilation cache disabled in every process (JAX_ENABLE_COMPILATION_CACHE=false, \
 no cache folder; D321 R2)"
     start=$(date +%s)
+    TRACED=()
+    [ "${TRACE:-1}" = 0 ] || TRACED=(--trace "$OUT/tiers-1+2/trace")
     (cd "$S" && PYTHONPATH="$S/src:$S" "$PY" -B scripts/test_tiers.py run --tiers "${TIERS:-tests/test_tiers.json}" \
       --tier 1 2 --out "$OUT/tiers-1+2" --cpus "$CPUS" --cap 300 --scope-map "$OUT/tiers-1+2/scope" \
-      > "$OUT/tiers-1+2.log" 2>&1)
+      "${TRACED[@]}" > "$OUT/tiers-1+2.log" 2>&1)
     tiers=$?
     log "tiers 1+2 exit $tiers seconds $(( $(date +%s) - start )): $(tail -n 1 "$OUT/tiers-1+2.log")"
     if why=$("$HOSTPY" -I "$S/scripts/gates/gate_steps.py" jax-entries "$OUT/tiers-1+2" 2>&1); then
@@ -110,7 +116,7 @@ no cache folder; D321 R2)"
       done_locked 1
     fi
     taskset -c "${CPUS%%,*}" "$HOSTPY" -I "$S/scripts/gates/scope.py" build "$OUT/tiers-1+2" "$S" \
-      "$OUT/scope-map.json" --python "$PY" > "$OUT/scope-build.log" 2>&1
+      "$OUT/scope-map.json" --python "$PY" --prune-traces > "$OUT/scope-build.log" 2>&1
     built=$?
     log "scope map exit $built: $(tail -n 1 "$OUT/scope-build.log")"
     "$HOSTPY" -I - "$OUT" "$tiers" "$built" <<'EOF'
@@ -123,7 +129,9 @@ verdict = {"revision": json.loads((out / "snapshot" / "SNAPSHOT.json").read_text
            "tiers_exit": tiers, "map_exit": built,
            "changed": [e["file"] for e in summary["changed_vs_record"]] if summary else None,
            "map_verdict": doc and doc["verdict"],
-           "incomplete": doc and sorted(f for f, e in doc["files"].items() if not e["complete"])}
+           "incomplete": doc and sorted(f for f, e in doc["files"].items() if not e["complete"]),
+           "unmapped": doc and sorted(f for f, e in doc["files"].items() if e["children_unmapped"]),
+           "trace": doc and doc["trace"]}
 verdict["passed"] = tiers == 0 and built == 0 and verdict["map_verdict"] == "passed"
 (out / "verdict.json").write_text(json.dumps(verdict, indent=1) + "\n")
 print(json.dumps({k: verdict[k] for k in ("passed", "tiers_exit", "map_exit", "map_verdict")}))

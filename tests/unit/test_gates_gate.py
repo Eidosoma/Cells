@@ -60,14 +60,28 @@ Host only: no world runs here.
   a tiny snapshot of four test files:
   - it records imports, reads, listings and a child the map cannot see;
   - the selection holds every file whose recorded paths changed (a read file, an imported module, a
-    new name in a listed folder, the file itself, a file that would replace a namespace package),
-    and nothing else under `--always none`; the readers and scanners are D229's always-run set;
+    new name in a listed folder, the file itself, a file that would replace a namespace package, one
+    that would shadow a module, one of pytest's configuration files), and nothing else under
+    `--always none`; the readers and scanners are D229's always-run set;
   - a planted read of a repository file pulls its test in, once the map is rebuilt;
   - a library's own discovery counts only the names it can use, a folder opened by descriptor is a
     listing, and the recorder leaves os.supports_* (so shutil's rmtree) as it found them;
-  - the selection is refused for each planted fault (stopped, failed, old or missing map, src/);
+  - the selection is refused for each planted fault (stopped, failed, old, missing or earlier map,
+    src/);
   - the nightly run takes the free lane, and publishes its map or stops selection;
-  - gate.sh runs only the selection's files, and CHECKS drops crossrev and G1.
+  - gate.sh runs only the selection's files, CHECKS drops crossrev and G1, and SELECT_ALWAYS names
+    D229's rule.
+- **D358's kinds and children**, on a second tiny snapshot (four test files, run under strace too):
+  - each kind of question is recorded, and only it: a folder a library listed first, a size, an
+    executable bit, a descriptor-relative open, an entry's size, a name that becomes a folder, a
+    module an import or find_spec did not find, a name that would shadow another;
+  - a child whose environment was rebuilt or replaced records itself; git on the tree and outside
+    it, uname -p, an absent interpreter and a killed child that touched nothing leave the file
+    mapped; a child masked by a recorded one, a shell that became Python, and a forked process that
+    became a program do not, and only they are named;
+  - a file that C code opened is missing from its entry: the trace marks the entry incomplete, and a
+    reader whose entry no trace checked is always run; the fallback rule counts beside it;
+  - a trace that is not whole checks nothing, and a listing or a program that it alone saw counts.
 - **Hermetic:** every tool runs here with the tools' own variables and git's dropped from the
   environment, then only what each test sets. A landing gate runs this file with its own
   ADDITIONS_FROM, LANE and the rest (T66, 20 November): planted in this process's environment, they
@@ -89,6 +103,7 @@ import importlib.util
 import json
 import os
 import re
+import shutil
 import signal
 import subprocess
 import sys
@@ -121,7 +136,7 @@ TOOL_ENV = frozenset((
     "CPUS_A", "CPUS_B", "CROSSREV_EXPECTED", "CROSSREV_SETS", "FREEZE", "GATE_CACHE", "GATE_CPUS",
     "GATE_LOCK", "HOSTPY", "LANE", "LOCK_A", "LOCK_B", "NIGHTLY", "POLL", "PRELOCK", "PRELOCK_CPU",
     "PRELOCK_NICE", "PRELOCK_ONLY", "PRELOCK_TEST_SECONDS", "PRE_CPU", "PY", "REC", "REMOVED_OK_FILE",
-    "REPO", "RESTACK", "SELECT", "SELECTION_STOPPED", "TIERS", "WAIT_FREE"))
+    "REPO", "RESTACK", "SELECT", "SELECTION_STOPPED", "SELECT_ALWAYS", "TIERS", "TRACE", "WAIT_FREE"))
 LOCALS = frozenset(("TR", "GD"))  # gate.sh's and stack.sh's own, assigned before they are expanded
 
 
@@ -1102,9 +1117,10 @@ SCOPE_TESTS = {
 }
 
 
-def scope_snapshot(root, changes=None, rev="r" * 40):
+def scope_snapshot(root, changes=None, rev="r" * 40, executable=()):
     """A tiny execution snapshot with the real tier runner, recorder, map tool and nightly script,
-    four test files and their rows; CHANGES (path: text or None) applied over the defaults."""
+    four test files and their rows; CHANGES (path: text or None) applied over the defaults, and its
+    manifest's sizes and modes as a frozen copy's (EXECUTABLE names the executable files)."""
     files = {"validation/helper.py": "VALUE = 1\n", "docs/a.md": "a\n", "docs/b.md": "b\n",
              "src/cells/__init__.py": "", **SCOPE_TESTS}
     for name in ("scripts/test_tiers.py", "scripts/gates/scope.py", "scripts/gates/gate_steps.py",
@@ -1124,7 +1140,9 @@ def scope_snapshot(root, changes=None, rev="r" * 40):
         (root / name).write_text(text)
     (root / "SNAPSHOT.json").write_text(json.dumps({
         "status": "complete", "git_revision": rev, "patch_sha256": EMPTY, "dirty": False,
-        "files": {n: {"sha256": hashlib.sha256((root / n).read_bytes()).hexdigest()} for n in files}}))
+        "files": {n: {"sha256": hashlib.sha256(text.encode()).hexdigest(),
+                      "observation": {"size": len(text.encode())},
+                      "snapshot_mode": 0o555 if n in executable else 0o444} for n, text in files.items()}}))
     return root
 
 
@@ -1164,8 +1182,9 @@ def test_the_map_records_imports_reads_listings_and_unmapped_children(scope_map)
     assert "docs/a.md" not in paths("tests/unit/test_plain.py")
     assert files["tests/unit/test_reader.py"]["reads"] == ["docs/a.md"]
     assert paths("tests/unit/test_lister.py", "lists") == {"docs"}
-    assert "validation.py" in paths("tests/unit/test_reader.py", "exists")  # It would shadow.
+    assert {".", "src", "tests/unit"} <= paths("tests/unit/test_reader.py", "roots")
     assert files["tests/unit/test_spawner.py"]["children_unmapped"] == ["true"]
+    assert not any(e["traced"] for e in files.values())  # This run had no --trace.
     assert not any(files[f]["reads_repository"] or files[f]["children_unmapped"]
                    for f in ("tests/unit/test_plain.py",))
 
@@ -1176,7 +1195,8 @@ L, P, R, S = (f"tests/unit/test_{n}.py" for n in ("lister", "plain", "reader", "
 @pytest.mark.parametrize("changes, always, chosen", [
     ({}, "none", [S]),  # A child the map cannot see is always run.
     ({}, "scanners", [L, S]),
-    ({}, "readers", [L, R, S]),  # D229's always-run set, as the default.
+    ({}, "readers", [L, R, S]),  # D229's always-run set, the fallback.
+    ({}, "untraced", [L, R, S]),  # The default (D358): no trace checked these entries.
     ({"docs/a.md": "a, changed\n"}, "none", [R, S]),
     ({"validation/helper.py": "VALUE = 1  # changed\n"}, "none", [R, S]),
     ({"docs/c.md": "new\n"}, "none", [L, S]),  # A new name in a listed folder.
@@ -1184,6 +1204,11 @@ L, P, R, S = (f"tests/unit/test_{n}.py" for n in ("lister", "plain", "reader", "
     ({"tests/unit/helper.py": "X = 1\n"}, "none", [S]),  # Nothing touched it.
     ({"validation.py": "VALUE = 2\n"}, "none", [R, S]),  # It would replace a namespace package.
     ({"validation/__init__.py": ""}, "none", [L, P, R, S]),  # pytest asks each top folder for one.
+    ({"pytest.toml": "[pytest]\n"}, "none", [L, P, R, S]),  # pytest 9's configuration names (D358).
+    ({"tests/.pytest.toml": "[pytest]\n"}, "none", [L, P, R, S]),
+    ({"json.py": "X = 1\n"}, "none", [L, P, R, S]),  # It would shadow a module each one imports (D358).
+    ({"tests/unit/helper/__init__.py": ""}, "none", [S]),  # No import looks this name up.
+    ({"validation/helper/__init__.py": "VALUE = 1\n"}, "none", [R, S]),  # A package beside helper.py.
 ])
 def test_the_selection_holds_every_file_whose_recorded_paths_changed(scope_map, tmp_path, changes,
                                                                      always, chosen):
@@ -1216,22 +1241,26 @@ def test_a_planted_read_of_a_repository_file_pulls_its_test_in(scope_map, tmp_pa
     assert after[P] == ["touched paths changed since the map: ['docs/b.md']"]
 
 
-@pytest.mark.parametrize("changes, chosen", [
-    ({"tests/unit/test_new.py": "def test_new():\n    pass\n"}, False),  # Not a plugin's name.
-    ({"tests/unit/test_reader.py": None}, False),  # A library's stat of a file it cannot use.
-    ({"tests/unit/jax_rocm7_plugin/__init__.py": ""}, True),  # A plugin its discovery would find.
+@pytest.mark.parametrize("changes, via, chosen", [
+    ({"tests/unit/test_new.py": "def test_new():\n    pass\n"}, "pkgutil", False),  # Not a plugin's name.
+    ({"tests/unit/test_reader.py": None}, "pkgutil", False),  # A library's stat of a file it cannot use.
+    ({"tests/unit/jax_rocm7_plugin/__init__.py": ""}, "pkgutil", True),  # A plugin it would find.
+    ({"tests/unit/test_new.py": "def test_new():\n    pass\n"}, None, True),  # Its own listing (D358).
+    ({"tests/unit/test_reader.py": "X = 1\n"}, None, True),  # And its own question.
 ])
-def test_a_librarys_own_discovery_is_compared_on_the_names_it_can_use(tmp_path, changes, chosen):
+def test_a_librarys_own_discovery_is_compared_on_the_names_it_can_use(tmp_path, changes, via, chosen):
     """jaxlib's plugin search (pkgutil over sys.path) lists tests/unit and asks about each entry:
-    only names discovery can use (DISCOVERY) count, so a new test file selects nothing."""
+    only names discovery can use (DISCOVERY) count, so a new test file selects nothing. What a
+    library lists or asks in another way counts whole."""
     snap = scope_snapshot(tmp_path / "nightly")
     run, record = tmp_path / "run", json.loads((snap / "tests/test_tiers.json").read_text())
     logs = run / "scope" / "tests__unit__test_plain.py"
     logs.mkdir(parents=True)
     (logs / "10-a.jsonl").write_text("".join(json.dumps(r) + "\n" for r in [
         {"process": 10, "parent": 1, "forked": False, "argv": ["python", "-m", "pytest"]},
-        {"list": "tests/unit", "by": "library"}, {"stat": "tests/unit/test_reader.py", "by": "library"},
-        {"exit": True, "modules": ["tests/unit/test_plain.py"], "absent": []}]))
+        {"list": "tests/unit", "by": "library", "via": via},
+        {"stat": "tests/unit/test_reader.py", "by": "library", "via": via},
+        {"exit": True, "modules": ["tests/unit/test_plain.py"]}]))
     (run / "run.json").write_text(json.dumps({"scope_map": str(run / "scope"), "files": [
         dict(r, timed_out=False) for r in record["tiers"]["1"]]}))
     (run / "summary.json").write_text(json.dumps({"changed_vs_record": []}))
@@ -1251,7 +1280,7 @@ def test_a_folder_opened_by_descriptor_is_a_listing(tmp_path):
     (logs / "10-a.jsonl").write_text("".join(json.dumps(r) + "\n" for r in [
         {"process": 10, "parent": 1, "forked": False, "argv": ["python", "-m", "pytest"]},
         {"open": "docs", "by": "repo:tests/unit/test_plain.py"},
-        {"exit": True, "modules": ["tests/unit/test_plain.py"], "absent": []}]))
+        {"exit": True, "modules": ["tests/unit/test_plain.py"]}]))
     (run / "run.json").write_text(json.dumps({"scope_map": str(run / "scope"), "files": [
         dict(r, timed_out=False) for r in record["tiers"]["1"]]}))
     (run / "summary.json").write_text(json.dumps({"changed_vs_record": []}))
@@ -1264,7 +1293,7 @@ def test_a_folder_opened_by_descriptor_is_a_listing(tmp_path):
 def test_the_recorder_keeps_what_os_supports_says_of_its_wrappers(tmp_path):
     """shutil picks its descriptor-based rmtree by os.stat's place in os.supports_*, at import."""
     code = ("import os, shutil; print(os.stat in os.supports_follow_symlinks, os.stat in os.supports_fd,"
-            " os.lstat in os.supports_dir_fd, shutil.rmtree.avoids_symlink_attacks)")
+            " os.open in os.supports_dir_fd, shutil.rmtree.avoids_symlink_attacks)")
     seen = []
     for on in (False, True):
         env = clean_env(PYTHONPATH=str(GATES / "scope_inject"))
@@ -1278,6 +1307,7 @@ def test_the_recorder_keeps_what_os_supports_says_of_its_wrappers(tmp_path):
 @pytest.mark.parametrize("plant, words", [
     ("stopped", "selection stopped"), ("failed", "nightly run failed"), ("old", "hours old"),
     ("src", "a src/ change keeps the full gate"), ("missing", "no readable scope map"),
+    ("earlier", "the map is cells.scope_map@2, and this tool reads " + scope.KIND),
 ])
 def test_the_selection_is_refused_for_each_planted_fault(scope_map, tmp_path, plant, words):
     base = scope_snapshot(tmp_path / "base")
@@ -1291,8 +1321,240 @@ def test_the_selection_is_refused_for_each_planted_fault(scope_map, tmp_path, pl
         doc["verdict"] = "failed"
     if plant == "old":
         doc["built"] = "2026-01-01T00:00:00Z"
+    if plant == "earlier":
+        doc["kind"] = "cells.scope_map@2"
     why = scope.refusal(head, base, None if plant == "missing" else doc, stopped, None, 36.0)
     assert why and words in why, why
+
+
+# ------------------------------------------------------- D358's kinds, children and trace check
+
+K, C, M, H = (f"tests/unit/test_{n}.py" for n in ("kinds", "children", "masks", "hole"))
+EXECUTABLE = object()
+LIBRARY = ("import os\n\n\ndef scan(path):\n    return os.listdir(path)\n\n\n"
+           "def ask(path):\n    return os.path.exists(path)\n")
+KIND_FILES = {
+    **{f: None for f in SCOPE_TESTS}, "docs/seen/a.md": "a\n", "docs/pkg/a.md": "a\n",
+    "docs/size.md": "four\n", "docs/run.sh": "true\n", "docs/deep/b.md": "b\n",
+    "docs/entries/a.md": "a\n", "docs/walked/a.md": "a\n", "docs/rebuilt.md": "r\n",
+    "docs/replaced.md": "r\n",
+    K: """import importlib
+import importlib.util
+import os
+import sys
+
+sys.path.insert(0, LIB)
+import a_library  # noqa: E402
+from validation import helper  # noqa: E402
+
+
+def test_kinds():
+    a_library.scan("docs/seen")  # A library lists it first, then the test's own code does.
+    assert os.listdir("docs/seen") == ["a.md"]
+    a_library.scan("docs/pkg")
+    assert not a_library.ask("docs/absent.md")
+    assert os.path.getsize("docs/size.md") and not os.access("docs/run.sh", os.X_OK)
+    folder = os.open("docs/deep", os.O_RDONLY)
+    os.close(os.open("b.md", os.O_RDONLY, dir_fd=folder))
+    os.close(folder)
+    assert [entry.stat().st_size for entry in os.scandir("docs/entries")]
+    assert len(list(os.walk("docs/walked"))) == 1
+    assert helper.VALUE == 1 and importlib.util.find_spec("validation.later") is None
+    try:
+        importlib.import_module("later_top")
+    except ImportError:
+        pass
+""",
+    C: """import os
+import subprocess
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+
+
+def python(code, env):
+    return subprocess.run([sys.executable, "-B", "-c", code], cwd=ROOT, env=env).returncode
+
+
+def test_children(tmp_path):
+    rebuilt = dict(os.environ, PYTHONPATH=str(ROOT / "src"))
+    assert python("open('docs/rebuilt.md')", rebuilt) == 0
+    assert python("open('docs/replaced.md')", {}) == 0
+    assert python("import os; os.kill(os.getpid(), 9)", rebuilt) == -9
+    repo = str(tmp_path / "repo")
+    for args in (["uname", "-p"], ["git", "-C", str(ROOT), "rev-parse", "HEAD"],
+                 ["git", "init", "-q", repo], ["git", "-C", repo, "status", "--", "src/cells"]):
+        subprocess.run(args, capture_output=True)
+    try:
+        subprocess.run([str(ROOT / ".venv/bin/python"), "-c", "pass"])
+    except FileNotFoundError:
+        pass
+""",
+    M: """import multiprocessing
+import os
+import subprocess
+import sys
+
+
+def test_masks():
+    child = multiprocessing.get_context("spawn").Process(target=os.getpid)  # It records itself,
+    child.start()
+    child.join()
+    subprocess.run(["cat", "docs/a.md"], stdout=subprocess.DEVNULL)  # and stands for no other.
+    subprocess.run(["bash", "-c", f"cat docs/b.md > /dev/null; exec {sys.executable} -c pass"])
+    pid = os.fork()
+    if pid == 0:
+        os.execv("/usr/bin/cat", ["cat", "/dev/null"])
+    os.waitpid(pid, 0)
+""",
+    H: """import ctypes
+
+
+def test_hole():
+    libc = ctypes.CDLL(None)
+    assert libc.close(libc.open(b"docs/a.md", 0)) == 0 and libc.system(b"true") == 0
+"""}
+
+
+def kinds_snapshot(root, lib, changes=None, rev="r" * 40):
+    """The tiny snapshot of D358's kinds and children (LIB holds the library that test_kinds.py uses)."""
+    files = dict(KIND_FILES, **{K: KIND_FILES[K].replace("LIB", repr(str(lib)))}, **(changes or {}))
+    return scope_snapshot(root, {n: "true\n" if t is EXECUTABLE else t for n, t in files.items()}, rev,
+                          [n for n, t in files.items() if t is EXECUTABLE])
+
+
+def traceable():
+    """Whether strace can trace here. It cannot where the process is traced already: the nightly
+    runs this file under strace, so these tests hold both ways."""
+    return shutil.which("strace") is not None and "TracerPid:\t0\n" in Path("/proc/self/status").read_text()
+
+
+@pytest.fixture(scope="module")
+def kinds_map(tmp_path_factory):
+    """Its map, from the real tier runner with the recorder on, and strace where it can trace (about 5 s)."""
+    tmp = tmp_path_factory.mktemp("kinds")
+    lib = tmp / "site-packages"
+    lib.mkdir()
+    (lib / "a_library.py").write_text(LIBRARY)
+    snap = kinds_snapshot(tmp / "nightly", lib)
+    cpu = str(sorted(os.sched_getaffinity(0))[0])
+    run = subprocess.run([sys.executable, "-B", "scripts/test_tiers.py", "run", "--tiers",
+                          "tests/test_tiers.json", "--tier", "1", "2", "--out", str(tmp / "run"), "--cpus",
+                          cpu, "--cap", "120", "--scope-map", str(tmp / "run" / "scope"), "--trace",
+                          str(tmp / "run" / "trace")], cwd=snap, capture_output=True, text=True, timeout=300,
+                         env=clean_env(PYTHONPATH=str(snap / "src")))
+    assert run.returncode == 0, run.stdout + run.stderr
+    doc = scope.build(tmp / "run", snap, sys.executable)
+    assert doc["trace"]["traced"] == (4 if traceable() else 0), doc["trace"]
+    assert bool(json.loads((tmp / "run/run.json").read_text()).get("trace_refused")) != traceable()
+    return {"tmp": tmp, "lib": lib, "snap": snap, "doc": doc}
+
+
+@pytest.mark.parametrize("changes, chosen", [
+    ({}, []),
+    ({"docs/other.md": "n\n"}, []),
+    ({"docs/seen/new.md": "n\n"}, [K]),  # Its own listing, after a library's.
+    ({"docs/pkg/new.md": "n\n"}, [K]),  # A library's listing of a folder it was given.
+    ({"docs/absent.md": "n\n"}, [K]),  # A library's question.
+    ({"docs/size.md": "fours\n"}, [K]),
+    ({"docs/size.md": "five\n"}, []),  # The same size, all that was asked of it.
+    ({"docs/run.sh": EXECUTABLE}, [K]),
+    ({"docs/deep/b.md": "c\n"}, [K]),  # Opened relative to a descriptor.
+    ({"docs/entries/a.md": "longer\n"}, [K]),  # An entry's own stat.
+    ({"docs/entries/a.md": "b\n"}, []),
+    ({"docs/walked/a.md": "longer\n"}, []),  # Only its name and kind were read.
+    ({"docs/walked/a.md": None, "docs/walked/a.md/b": "b\n"}, [K]),  # The name becomes a folder.
+    ({"validation/later.py": "X = 1\n"}, [K]),  # find_spec found none.
+    ({"later_top.py": "X = 1\n"}, [K]),  # import_module found none.
+    ({"colorsys.py": "X = 1\n"}, []),  # No import looked this name up.
+    ({"docs/rebuilt.md": "s\n"}, [C]),  # A child whose PYTHONPATH was rebuilt,
+    ({"docs/replaced.md": "s\n"}, [C]),  # and one whose whole environment was replaced.
+    ({"HEAD": "ref\n"}, [C]),  # git on the tree asks for a repository in it.
+    ({".venv/bin/python": "true\n"}, [C]),  # An absent interpreter is a question.
+])
+def test_each_kind_of_question_is_recorded_and_only_it(kinds_map, tmp_path, changes, chosen):
+    """test_masks.py is always selected (unmapped), and test_hole.py where it was traced."""
+    base = kinds_snapshot(tmp_path / "base", kinds_map["lib"])
+    head = kinds_snapshot(tmp_path / "head", kinds_map["lib"], changes, rev="h" * 40)
+    _, report = scope.select(head, base, kinds_map["doc"], "tests/test_tiers.json", "none")
+    assert sorted(set(report["files"]) - {M, H}) == chosen and M in report["files"], report["files"]
+
+
+def test_only_the_children_without_a_record_leave_a_file_unmapped(kinds_map):
+    files = kinds_map["doc"]["files"]
+    assert files[C]["complete"] and not files[C]["children_unmapped"], files[C]
+    named = [" ".join(c.split()[:2]) for c in files[M]["children_unmapped"]]
+    assert files[M]["complete"] == (not traceable()), files[M]["why"]  # bash read docs/b.md.
+    assert sorted(named) == ["bash -c", "cat /dev/null", "cat docs/a.md"]
+
+
+def test_the_trace_marks_what_the_recorder_missed_and_only_a_traced_reader_is_released(kinds_map, tmp_path):
+    doc = kinds_map["doc"]
+    hole, found = doc["files"][H], doc["trace"]["found"].get(H, {})
+    if traceable():
+        assert hole["why"] == ["the trace shows what the entry lacks: ['docs/a.md']"]
+        assert "docs/a.md" in found["files"]["docs/a.md"] and "execve" in found["programs"][0]
+        assert hole["children_unmapped"][0].startswith("(the trace) execve(")
+    assert doc["files"][K]["reads_repository"] and doc["files"][K]["complete"], doc["files"][K]
+    base = kinds_snapshot(tmp_path / "base", kinds_map["lib"])
+    head = kinds_snapshot(tmp_path / "head", kinds_map["lib"], rev="h" * 40)
+    for traced in (True, False):
+        doc = json.loads(json.dumps(doc))
+        doc["files"][K]["traced"] = traced
+        _, report = scope.select(head, base, doc, "tests/test_tiers.json")
+        assert (K in report["files"]) is not traced and report["always"] == "untraced", report["files"]
+        assert report["readers_rule"]["selected"] == len({*report["files"], K, C})  # D229's, for comparison.
+
+
+TREE_LINE = 'openat(AT_FDCWD</t>, "/t/docs/a.md", O_RDONLY) = 3</t/docs/a.md>\n'
+
+
+@pytest.mark.parametrize("plant, words", [
+    ("whole", None), ("no trace", "no trace"), ("no end", "t.11 has no end"),
+    ("missing child", "no trace of the process or thread 11"), ("io_uring", "t.10 holds io_uring_setup"),
+])
+def test_a_trace_that_is_not_whole_checks_nothing(tmp_path, plant, words):
+    """strace's lines for a process (10), a thread of it (12) and a child (11); /t is the tree."""
+    logs = {10: 'execve("/usr/bin/python", ["python"], 0x1 /* 2 vars */) = 0\n'
+                "clone3({flags=CLONE_VM|CLONE_THREAD, child_tid=0x1}, 88) = 12\nvfork() = 11\n",
+            11: 'execve("/usr/bin/cat", ["cat"], 0x1 /* 2 vars */) = 0\n' + TREE_LINE,
+            12: "getdents64(3</t>, 0x1 /* 4 entries */, 32768) = 96\n"
+                'openat(AT_FDCWD</t>, "/tt/x", O_RDONLY) = 3</tt/x>\n'}
+    if plant == "no trace":
+        logs = {}
+    if plant == "missing child":
+        del logs[11]
+    if plant == "io_uring":
+        logs[10] += "io_uring_setup(8, 0x1) = 5</t>\n"
+    for thread, text in logs.items():
+        end = "" if plant == "no end" and thread == 11 else "+++ exited with 0 +++\n"
+        (tmp_path / f"t.{thread}").write_text(text + end)
+    trace, why = scope.read_trace(tmp_path, "/t")
+    assert (why or "").startswith(words or "") and (trace is None) == bool(words), (trace, why)
+    if plant == "whole":
+        assert trace["opened"] == {"docs/a.md": TREE_LINE.strip()} and trace["listed"] == {10: {"."}}
+        assert trace["parent"] == {11: 10} and sorted(trace["ran"]) == [10, 11]
+
+
+@pytest.mark.parametrize("argv, cwd, asks", [
+    (["git", "-C", "/t", "rev-parse", "HEAD"], "/", {".git", ".git/HEAD", "HEAD"}),
+    (["git", "status"], "/t/docs", {".git", ".git/HEAD", "HEAD", "docs/.git", "docs/.git/HEAD", "docs/HEAD"}),
+    (["git", "-C", "/t", "diff", "--", "a", "b"], "/", None),  # Outside a repository it compares the two.
+    (["git", "-C", "/t", "--git-dir=/r", "status"], "/", None),
+    (["git", "-C", "/r", "-c", "user.name=t", "add", "src/cells"], "/t", set()),
+    (["git", "init", "-q", "/r"], "/t", set()),
+    (["git", "-C", "/r", "add", "../t/docs/a.md"], "/", None),  # A path in the tree.
+    (["git", "-C", "/r", "-c", "core.hooksPath=/t/hooks", "commit"], "/", None),
+    (["uname", "-p"], "/t", set()), (["uname", "-a"], "/t", None),
+    (["fc-list", "--help"], "/t", set()), (["cat", "docs/a.md"], "/t", None),
+])
+def test_the_argument_rules_hold_exactly_what_was_traced(argv, cwd, asks):
+    assert scope.answered(argv, f"/usr/bin/{argv[0]}", cwd, False, "/t") == asks
+    assert scope.answered(argv, None, cwd, False, "/t") == set()  # No such program: no child ran.
+    assert scope.answered(argv, f"/t/bin/{argv[0]}", cwd, False, "/t") is None  # The tree's own program.
+    if argv[0] == "git":
+        assert scope.answered(argv, "/usr/bin/git", cwd, True, "/t") is None  # GIT_DIR names the tree.
 
 
 @pytest.mark.parametrize("fail", [False, True])
@@ -1314,6 +1576,9 @@ def test_the_nightly_takes_a_free_lane_and_publishes_or_stops_selection(tmp_path
                                str(out)], env=env, capture_output=True, text=True, timeout=300)
     log = (out / "nightly.log").read_text()
     assert "lane B, lock held" in log and done.returncode == int(fail), log
+    trace = json.loads((out / "verdict.json").read_text())["trace"]  # What the trace found is recorded,
+    assert trace["traced"] == (4 if traceable() else 0) and trace["found"] == {}, trace
+    assert not list((out / "tiers-1+2").glob("trace/*/t.*"))  # and a trace that found nothing goes.
     assert "compilation cache disabled in every process" in log and "cold check after the tiers: " in log
     published = json.loads((cache / "scope-map.json").read_text())
     if fail:
@@ -1323,24 +1588,28 @@ def test_the_nightly_takes_a_free_lane_and_publishes_or_stops_selection(tmp_path
 
 
 def test_a_gate_with_a_selection_runs_only_its_files_and_may_drop_crossrev_and_g1(gate):
-    """gate.sh's SELECT: the map leaves test_other.py out (none of its paths changed), so the tiers
-    run the guard set alone; CHECKS drops crossrev and G1 (no src/ change). A missing map runs the
-    full tiers."""
+    """gate.sh's SELECT: the map leaves test_other.py out (none of its paths changed, and a trace
+    checked its entry), so the tiers run the guard set alone; CHECKS drops crossrev and G1 (no src/
+    change). SELECT_ALWAYS=readers is D229's rule, under which it runs (about 2 s, pre-lock only). A
+    missing map runs the full tiers."""
     m = gate["tmp"] / "map.json"
     m.write_text(json.dumps({
         "kind": scope.KIND, "built": steps.utc(), "revision": "b" * 40, "verdict": "passed",
         "interpreter": steps.interpreter(gate["envs"]["PY"]), "paths": ["tests/unit/test_other.py"],
-        "content": ["-"], "kind_of": ["-"], "names": ["-"], "discovery": ["-"],
-        "files": {"tests/unit/test_other.py": {
-            "complete": True, "why": [], "content": [0], "exists": [], "lists": [], "finds": [],
-            "reads_repository": False, "scans": False, "reads": [], "children_unmapped": [],
-            "row": {"exit_code": 0, "counts": {"passed": 1}}}}}))
+        "content": ["-"], "asked": ["-"], "names": ["-"], "discovery": ["-"], "tops": [], "subs": [],
+        "importable": {}, "files": {"tests/unit/test_other.py": {
+            "complete": True, "why": [], "traced": True, "content": [0], "exists": [], "lists": [],
+            "finds": [], "roots": [], "tops": [], "subs": [], "reads_repository": True, "scans": False,
+            "reads": [], "children_unmapped": [], "row": {"exit_code": 0, "counts": {"passed": 1}}}}}))
     code, calls, log = run_gate(gate, gate["tmp"] / "out", SELECT=str(m), CHECKS="tiers")
     assert code == 0 and "selection: " in log and "tiers: the selection" in log, log
     assert "crossrev not run" in log and "G1 not run" in log
     assert not any(c.startswith(("crossrev", "save")) for c in calls)
     subset = json.loads((gate["tmp"] / "out" / "prelock" / "selection" / "subset.json").read_text())
     assert sorted(r["file"] for r in subset["tiers"]["1"]) == sorted(steps.GUARDS)
+    code, _, _ = run_gate(gate, gate["tmp"] / "old", SELECT=str(m), SELECT_ALWAYS="readers", PRELOCK_ONLY="1")
+    subset = json.loads((gate["tmp"] / "old" / "prelock" / "selection" / "subset.json").read_text())
+    assert code == 0 and "tests/unit/test_other.py" in [r["file"] for r in subset["tiers"]["1"]]
     code, calls, log = run_gate(gate, gate["tmp"] / "out2", SELECT=str(gate["tmp"] / "absent.json"))
     assert code == 0 and "selection not used (exit 3)" in log and "tiers: the selection" not in log
 
