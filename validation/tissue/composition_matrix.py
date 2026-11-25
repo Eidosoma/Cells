@@ -1037,13 +1037,14 @@ def under(*solvers):
 class SolverRefusal(NamedTuple):
     """One refusal: a composition that holds one of `laws` under one of the solver pairs `pairs`.
     Whatever the definition, unless `beside` gives the laws it is refused beside, or `when` the
-    definitions refused. `test`: the test that asserts it, where that is not the rule's own."""
+    definitions refused. `test`: the test that asserts it, where that is not the rule's own (None:
+    no test does)."""
 
     laws: tuple
     pairs: tuple
     beside: tuple = ()
     when: str = ""
-    test: str = ""
+    test: str | None = ""
 
 
 class _PastTheSolver(Exception):
@@ -1104,7 +1105,7 @@ def _bath_rule():
     measured = bath_operator.MEASURED_DT
     unmeasured = under(*(solver for solver, _ in SOLVER_PAIRS if solver not in measured))
     return (
-        SolverRefusal((BATH,), unmeasured, when=step),
+        SolverRefusal((BATH,), unmeasured, when=step, test=None),
         *(
             SolverRefusal((BATH,), under(s), when=f"{step}, at a step size above {1e3 * dt:g} ms")
             for s, dt in measured.items()
@@ -1192,9 +1193,10 @@ RULES = (
         "test_a_field_input_provider_is_refused_above_the_node_cap",
         tag=REAL,
         why="The view's refresh of the derived field arrays (refresh_field) rebuilds the dense "
-        "ones, which the sparse field does not bind (FR-17 stage 1). With a live closer (the "
-        "partition, insertion@2) the binding refreshes the view before this check, so the parse "
-        "stops there with an AttributeError instead of this refusal (D349's probe)",
+        "ones, which the sparse field does not bind (FR-17 stage 1). The test calls the check "
+        "directly, not through a parse. With a live closer (a declared division, insertion@2) the "
+        "binding refreshes the view before this check, so the parse stops there with an "
+        "AttributeError instead of this refusal (D349's probe)",
         solver=(SolverRefusal(_FIELD_INPUT_LAWS, SPARSE_PAIRS),),
     ),
     dict(
@@ -1889,7 +1891,7 @@ def render_solvers():
         "field-solver pair a composite admits, from the rules above that read the solver. ✓ none "
         "of them refuses it; R refused whatever the definition; c conditional, refused under the "
         "condition given. The number names the refusal, listed below the table with its check and "
-        "its test. A ✓ is no qualification (D143).",
+        "the test that asserts it (none: no test does). A ✓ is no qualification (D143).",
         "",
         "Not in the table: the rules above that hold under every solver (the species cap among "
         "them); what @3 itself refuses per solver whatever the operators (declared kinds and the "
@@ -1925,7 +1927,8 @@ def render_solvers():
         if refusal.beside:
             where = "beside " + " or ".join(named(law) for law in refusal.beside)
         laws = ", ".join(str(number(law)) for law in refusal.laws)
-        cites = f"`{rule['check']}` | `{refusal.test or rule['test']}`"
+        test = "none" if refusal.test is None else f"`{refusal.test or rule['test']}`"
+        cites = f"`{rule['check']}` | {test}"
         lines.append(f"| {mark}{k} | {laws} | {where} | {rule['rule']} | {cites} |")
     return lines
 
