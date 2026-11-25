@@ -166,7 +166,7 @@ None of the answers holds a step, an order, a margin or a residual.
 | 13b | Part 2: two homes were replaced after the planted runs were read | Accepted as a replacement of plants. The first homes and their figures stay in the table, as not tested there |
 | | Confirmation asked: which worlds of `base` a prototype had run | World IDs 0 and 1 at the configuration's own seeds, which are the captured seed index 0's. They are reported apart. ("Sixteen" was another study's count) |
 
-### 10.1 The audit's rulings (25 November, 13:30 UTC), item by item
+### 10.1 The audit's rulings (25 November, 13:23 UTC), item by item
 
 The independent audit of dbf977d6 read the spec folder alone. Its report stays with the lead. This author read none of it, nor the auditor's folder or worktree. The lead's 21 rulings (a file of the lead's, with no number of the auditor's and no step, order, margin or residual of any candidate; none was found and none refused) were applied as follows. Every change and its reason is below, and no class, window or band formula moved but as item 1 and item 19 rule.
 
@@ -194,8 +194,7 @@ The independent audit of dbf977d6 read the spec folder alone. Its report stays w
 | 20 | The restart's E entry | As ruled | `CRITERIA.md` §4.1 |
 | 21 | Small corrections | As ruled | Below |
 
-**Item 21, number by number, against the file that produces it** (a program of this author's, `numbers_check.py`, formed every count again): the row sum of K⁻¹ was 2.0 and is 2.0035 (now 2.01, `SPEC.md` §6, with the figures that follow it: 2.13, 9.0 and 1.8 to 1.9); PLANTS now names `channel_K_summary` (a home that `margins.json` holds) and gives the plant of `voltage` per consumer; the literal constants of `READOUTS.md` are read from `inputs.json` (`end_s`, `summary_times_s`, `history_times`); `CRITERIA.md` §5 now holds the counts that READOUTS cites; `SPEC.md` no longer rests on `PART2.md` (it says what it needs itself); the manifest's counts (50 and 127 runs, with two refused in each) and the entry counts (25, 15, 25, 9) were re-formed and stand. Two figures were in two places and differed:
-the closure's per-code share (1.7 to 1.9, now 1.8 to 1.9) and the smallest margin of Part 1 (1.1 × 10⁵ before e_store, now 1.3 × 10³). Two figures that were named in the audit's list could not be told apart from the report this author did not read, and are asked for if the auditor finds them still.
+**Item 21, number by number, against the file that produces it** (a program of this author's, `numbers_check.py`, formed every count again): the row sum of K⁻¹ was 2.0 and is 2.0035 (now 2.01, `SPEC.md` §6, with the figures that follow it: 2.13, 9.0 and 1.8 to 1.9); PLANTS now names `channel_K_summary` (a home that `margins.json` holds) and gives the plant of `voltage` per consumer; the literal constants of `READOUTS.md` are read from `inputs.json` (`end_s`, `summary_times_s`, `history_times`); `CRITERIA.md` §5 now holds the counts that READOUTS cites; `SPEC.md` no longer rests on `PART2.md` (it says what it needs itself); the manifest's counts (50 and 127 runs, with two refused in each) and the entry counts (25, 15, 25, 9) were re-formed and stand. The figures that differ now from the first commit's are the closure's per-code share (1.7 to 1.9, now 1.8 to 1.9), the closure term of `phi_out` (4 × 10⁻¹² s = 1.0 × 10⁻¹³ V, now 5.16 × 10⁻¹³ V) and the smallest margin of Part 1 (1.1 × 10⁵, now 1.3 × 10³). The lead's list names "two figures in two places" without saying which. This author re-formed every figure of the text against its file, and found none in two places that disagree. If one is left, the auditor's second pass is asked to name it.
 
 ## 11. Disclosures: what this author has seen and done
 
@@ -263,7 +262,7 @@ The draft's definitions, scale and bounds were recovered from the author's own s
 | `PART2.md` §0, §3, §4, §9, §12 | The decided forms, the field solver, the clusters' decided coupling, the identities' flags, the reference's run | (a) to (c) |
 | `CRITERIA.md` §4.5, §7, §8 | A wider wording (a home with several plants, the retry owed to an untested mechanism) was committed at 5f550674 and at 879d60ef, **because of a number**, and is reverted here to the first commit's words. Part 2's rule is in `PART2.md` §7.1 alone, so a ruling on it moves no file under Part 1's tag | (c) |
 | Protocol §5, §6, §8, §10 | The spec auditor before the Part 1 tag, the user's decision before any landing, and the answers | (c), the lead's rulings |
-| Every file of Part 1, protocol §4 to §6, §9 to §11 | The audit's 21 rulings of 25 November (13:30 UTC), in the revision after dbf977d6. §10.1 says item by item what was done. Bands moved by items 1 and 19 | (c). The auditor's report and numbers were not read. Planted margins were re-formed after the changes (`PLANTS.md` §8, `margins.json`) |
+| Every file of Part 1, protocol §4 to §6, §9 to §11 | The audit's 21 rulings of 25 November (13:23 UTC), in the revision after dbf977d6. §10.1 says item by item what was done. Bands moved by items 1 and 19 | (c). The auditor's report and numbers were not read. Planted margins were re-formed after the changes (`PLANTS.md` §8, `margins.json`) |
 | Whole folder | A second form of the assembly coupling, registered as reported only at 5f550674 and removed after the user's decision (commit 879d60ef) | (c) |
 
 The first commit's message says that no re-expressed run existed. That was this author's belief, and this section corrects it.

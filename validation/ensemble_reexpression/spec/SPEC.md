@@ -48,7 +48,7 @@ and ran**, not from this folder (`TABLE.md` §3).
 | `material_tolerance_fmol` | The execution's material tolerance per species |
 | `end_s` | The horizon, 0.02 s |
 
-**Which pieces a world names** (laws, the model, the solver, the field solver) is in the strings note, by label.
+**Which pieces a world names** (laws, the model, the solver, the field solver, the closure, the observable) is in the strings note, by label. **The full set of strings that a run declares is recorded and compared exactly** (`TABLE.md` §3 `strings` and `declared_strings`, §5): a missing label, an extra label and an extra string each make the run a departing echo, so an extra operator, kind or law is visible.
 
 ### 2.2 Derived declarations, by rule
 
@@ -221,7 +221,7 @@ These are `inputs.json`'s blocks, in its own form. They are the captured definit
 }
 ```
 
-**A pool run** (`cell s<k> pool`; `base s<k> pool` has one block for each of `cell_0` and `cell_1`). Its echo is, per cell, the pool block with its `channel`, its `stream_id` and its `seed`, which is `seeds[k]`:
+**A pool run** (`cell s<k> pool`; `base s<k> pool` has one block for each of `cell_0` and `cell_1`). Its echo is, per cell, the pool block with its `channel` and its `stream_id`. Its `seed`, which is `seeds[k]`, is written with them and is class E (§2.4):
 
 ```json
 {

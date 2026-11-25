@@ -58,8 +58,8 @@ read. Entities are matched by their ID. The captured index of a cell, membrane, 
 
 - **The counts are per family.** Entries against captures: `jupiter` 25 (2 families, 50), `cell` 15 (32 families, 480), `base` 25 (32 families, 800), `integrated` 9 (1 family, 9). Each family has one `energy_identity`.
 - **`energy_identity` has no captured counterpart.** It is the run's own identity (§5).
-- **R entries per ionic judged run** (§5): one balance of cells per species (3), one of regions per species (3), one of the closed world per species (3), and one capacitor: ten, over all entities and times. A pool run has one exposure per cell.
-- **E entries:** per pool run, the 19 arrays, the run's own path (one entry per cell) and the seed (one per cell). Per ionic run of `cell` or `base`: the switch list, the channel schedule and the pool seeds (one each). Per restart: one per class S readout and potential, and for a pool restart the 19 arrays and the path after the restart. `n_out_x` of `integrated` (3).
+- **R entries per ionic judged run** (§5): one balance of cells per species (3), one of regions per species (3), one of the closed world per species (3), and one capacitor: ten, over all entities and times. A pool run has one exposure per cell. In all: `jupiter` 60, `cell` 960, `base` 960, `integrated` 30 from the ionic judged runs, and 4 and 8 exposures for `cell` and `base`.
+- **E entries:** per pool run and cell, the 19 arrays (19), the run's own path (1) and the seed (1). Per judged ionic run of `cell` or `base`: the switch list, the channel schedule and the pool seeds (one each). Per restart: one per class S readout and potential (25 in `jupiter`), and for a pool restart, per cell, the 19 arrays and the path after the restart (20). `n_out_x` of `integrated` (3 per judged run). In all: `jupiter` 25, `cell` 392, `base` 496, `integrated` 9.
 - A consumer whose entries formed are fewer than these, in any class, is at best inconclusive (`CRITERIA.md` §5).
 
 ## 4. The assembly pool's arrays (class E)

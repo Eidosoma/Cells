@@ -43,7 +43,7 @@ Every entry holds all of these keys. A key that a kind of run does not use holds
 | `potentials` | object: `voltage` and `phi_out` to entity ID to a list as long as `potential_t`. A world without one omits it |
 | `pool` | null, or for a pool run an object: cell ID to `{"arrays": {<19 names>: nested lists [world, ...]}, "seed": integer, "stream_id": integer}` |
 | `path` | null, or for a pool run an object: cell ID to an object, world ID (as a string) to a list of `[time, availability]`, one per committed event, in order |
-| `inputs` | the world's block, read back from **the definition the engine parsed and ran**, never a copy of this folder. For an ionic run it is `inputs.json` `worlds.<w>.ionic`, with `controls.channel` the schedule the run declared. For an ionic run of `cell` or `base` it also holds `assembly` (below). For a pool run it is, per cell, `channel`, `stream_id`, `seed` and `pool` (the block of `SPEC.md` §2.5), with `harness` recorded apart |
+| `inputs` | the world's block, read back from **the definition the engine parsed and ran**, never a copy of this folder. For an ionic run it is `inputs.json` `worlds.<w>.ionic`, with `controls.channel` the schedule the run declared. For an ionic run of `cell` or `base` it also holds `assembly` (below). For a pool run it is, per cell, `channel`, `stream_id`, `seed` and `pool` (the block of `SPEC.md` §2.5). The harness fields are in `definition` |
 | `strings` | object: label to the exact string the run declared, for every label the strings note lists for that run, **and no other label** (§5) |
 | `declared_strings` | list of strings, sorted: **every** registered string that the definition the engine parsed and ran declares (its model, laws, operators, kinds, solver, field solver and observable), one each. It equals the set of `strings`' values exactly, so an extra operator, kind or law is visible (§5) |
 | `definition` | the engine's own declaration, as run (recorded) |
@@ -58,7 +58,7 @@ Every entry holds all of these keys. A key that a kind of run does not use holds
   - `assembly_observable`: the label of the registered law, as the definition records it, which the strings note maps to the exact string (a departure is an echo's, `CRITERIA.md` §5);
   - `composed_file_fingerprint`: the string that the definition records for the composed file. It is recorded, and nothing is compared with it. The checker recomputes it from the composed file;
   - `pool_seeds`: cell ID to integer, the seeds of the pool run the file was composed from (class E, `CRITERIA.md` §4.1);
-  - `switch_list`: channel ID to a list of `[time, availability]`, the changes that the driver wrote, in order (class E).
+  - `switch_list`: channel ID to a list of `[time, availability]`, the changes that the driver wrote, in order (class E). The initial entry [0, 1] may be written or left out (`SPEC.md` §3.2).
 - **The record holds the run's own name** in its content. So no two records are alike, and worlds whose pools have no event, which are honestly the same ionic solution, do not share a hash.
 - **`rows` of an ionic assembly run:** `t` is 0, `summary_times_s` and `end_s`, once each, at least. Extra rows are allowed. A row at a split (an event time) is an accepted row and is not needed.
 - **A completed run's `refusal` is null and a refused run's is not.** A refused run keeps the rows it has.
