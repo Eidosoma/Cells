@@ -95,11 +95,7 @@ def _plan_windows_metadata(spec, policy=DEFAULT_POLICY, checkpoint=None, *, ener
     grid = EventGrid(spec)
     if checkpoint is not None and type(checkpoint) is not Checkpoint:
         raise ConfigError("Expected a complete Checkpoint")
-    start_time = (
-        float(getattr(get_model(spec.model), "initial_time", lambda spec: 0.0)(spec))
-        if checkpoint is None
-        else _number(checkpoint.time, "checkpoint time")
-    )
+    start_time = 0.0 if checkpoint is None else _number(checkpoint.time, "checkpoint time")
     start = grid.exact_index(start_time)
     remaining = len(grid) - 1 - start
     width = min(policy.window_steps, remaining)
