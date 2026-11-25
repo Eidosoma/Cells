@@ -20,9 +20,11 @@ motoneurons. Eur. J. Neurosci., 2000 May, 12 (1624-34); that work is not read he
 Moved from laws/channels/calcium_gates.py, an older family's kernel, which re-imports these names:
 moving is not calibrating, so its provenance is parity, its Citation kept as its source.
 
-It declares no RK4 step bound, so no RK4 grid runs it. A known limit: it declares no material term,
-so @3's parser refuses a population of it by name (surface_pump_v3_spec.parse_channel), since the
-charge rule alone does not hold a scarce ion's amounts.
+It declares no RK4 step bound, so no RK4 grid runs it. Its material term names the kernel of its
+flux's material slope (laws/routes/constant_field_permeation.py). The host holds the step to that
+slope at every explicit stage, at calcium's rows at both ends
+(surface_pump_v3.channel_material_rates), since the charge rule alone does not hold a scarce ion's
+amounts.
 
 Channel code 11 of resolved_pump_tissue@3 (cells.channel_law@1), registered by the law registry's
 loader from @3's row of the model table (docs/CORE_SEAMS_DESIGN.md §8.2).
@@ -73,6 +75,7 @@ LAW = ChannelLaw(
     None,  # No RK4 grid runs it.
     kinetics,
     opening,
+    material_term="material_slope_per_s",
     host="cells.resolved_pump_tissue@3",
     provenance="parity",
     source=Citation(
