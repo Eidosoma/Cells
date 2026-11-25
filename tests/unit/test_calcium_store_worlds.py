@@ -26,7 +26,8 @@ largest over the recorded times. Every ledger closes at each of them.
   at least the largest eigenvalue's modulus, and at least that with the release's opening held,
   and at most twice that.
 
-Seconds: 15, in NumPy on one CPU, so tier 1.
+Seconds: 20 on the shared CPUs, 18 of them 340 NumPy steps on one CPU (9 s where the CPU is
+quiet), so tier 1.
 """
 
 import math

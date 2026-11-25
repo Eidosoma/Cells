@@ -6,9 +6,10 @@ end, imported as a new definition, continues the run (planted: the store's charg
 so its voltage starts at 0). Planted in the criteria, each missed: a pump without its voltage,
 the exchanger's two ions exchanged, one patch's capacitance 0.01% off.
 
-Seconds: about 25 on a quiet CPU, of which 20 are its one compile (a window's program, which the
-restart and the import reuse), so tier 2. The reason (D224): a closed world with a store, the
-store's charge anchor, a gated release and a restart are in no other row's one program.
+Seconds: 40 to 55 on the shared CPUs, of which 30 to 45 are its one compile (a window's program,
+which the restart and the import reuse), so tier 2. The reason (D224): a closed world with a
+store, the store's charge anchor, a gated release and a restart are in no other row's one
+program.
 """
 
 import copy

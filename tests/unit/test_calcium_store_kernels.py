@@ -16,7 +16,7 @@ side, and a symport's J at other voltages. Each is within TOLERANCE of the size 
 difference of (the one-way rates). Planted inputs: the voltage's sign turned, the two ends
 exchanged, the availability left out, K larger by 1e-9. Every output is missed by one of them.
 
-Seconds: 3, in NumPy on one CPU, so tier 1.
+Seconds: 8 on the shared CPUs, in NumPy on one CPU, so tier 1.
 """
 
 import math

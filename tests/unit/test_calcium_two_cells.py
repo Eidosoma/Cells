@@ -15,9 +15,9 @@ larger (over the run, each missed at that mover alone). Refused by name: the sto
 exchanged. Version 2 of the field solver refuses the note's probe world at its initial field and
 parses this one, so no row rests on that refusal: version 3 is declared for the two free offsets.
 
-Seconds: about 40 on a quiet CPU, of which 27 are its one compile (a window's program, which the
-restart and the planted worlds reuse), so tier 2. The reason (D224): two free offsets, two
-stores, a junction and the feedback of two gated releases are in no other row's one program.
+Seconds: 65 to 90 on the shared CPUs, of which 45 to 75 are its one compile (a window's program,
+which the restart and the planted runs reuse), so tier 2. The reason (D224): two free offsets,
+two stores, a junction and the feedback of two gated releases are in no other row's one program.
 """
 
 import pytest
