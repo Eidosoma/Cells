@@ -41,8 +41,9 @@ only while nothing it recorded has changed, so a missed recording must keep the 
   -I`, `os.system`, or a program that only strace saw.
 - **A reader whose entry no trace checked** always runs, as under D229. So where strace cannot trace,
   the old rule holds by itself.
-- **Not recorded, by design:** modification times, extended attributes, and files outside the tree
-  (frozen evidence included), as under D229.
+- **Not recorded:** modification times (a frozen copy's are its own), extended attributes, what C code
+  asks of a path without opening it, and files outside the tree (frozen evidence included). D229's
+  rule ran a reader whatever changed; the narrowed rule does not see a change in these alone.
 
 `scripts/test_tiers.py` holds the tier record's tools. `run --scope-map DIR` (D229) loads the scope map's recorder into each file's processes, and `--trace DIR` (D358) adds strace's view of them; without these, a run is unchanged. Two of the tools changed with D222:
 - `measure --only`: a tier the only-list does not hold now selects nothing (it raised `KeyError`),
