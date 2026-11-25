@@ -1067,6 +1067,20 @@ RULES = (
         "the symport's in-step process); replacement@2's events and integer state cannot join it",
     ),
     dict(
+        rule="no blocked channel population (open_channel_block_weighted_modes@1) beside an "
+        "operator that rewrites channel slots",
+        laws=pump_composite.SLOT_WRITERS,
+        level="data",
+        check="src/cells/models/pump_composite.py::block_slot_errors",
+        test=TESTS + "test_surface_pump_v3_populations.py::"
+        "test_a_block_beside_an_operator_that_rewrites_channel_slots_is_refused",
+        tag=REAL,
+        why="They rewrite a slot's law, permeability, patch or activity, never the block's "
+        "per-slot fields, so a slot they rewrite would keep its old block: refused until a world "
+        "qualifies the pair (FR-51's follow-up, D360). Without a declared block each composes as "
+        "before",
+    ),
+    dict(
         rule="an onset node's volume is its declared anchor: its provider must declare "
         "ONSET_ANCHORED_VIEWS",
         laws=(INSERTION_1,),
