@@ -1,14 +1,19 @@
 # Ligand-gated store release (G-5) and assembly topology as a channel's availability (G-7): design
 
 **Status: proposed, 25 November 2026. Design only: no engine code.** Branch `release-and-assembly-design` from
-43b22d40. Main was at 34c56234 when this was written, and no ID had changed. Two parts that can be built
-apart. Part I (G-5) is sections 1 to 9. Part II (G-7) is sections 10 to 18. The re-expression map this note
-answers is section 14 of `docs/LEGACY_PORT_PLAN.md` at a1db6ab9 ("the map").
+43b22d40. Main was at 34c56234 when the first version was written; it is at 1887337a (D385) now, and no ID has
+changed. **Second reader:** 25 November 2026, with the lead's rulings on its table (`second-reader/REVIEW.md`
+and `LEAD-RULINGS.md` of the lead's working folder); the rulings that concern this note (3, 7, 9 to 16) are
+executed below. Two parts that can be built apart. Part I (G-5) is sections 1 to 9. Part II (G-7) is sections
+10 to 18. The re-expression map this note answers is section 14 of `docs/LEGACY_PORT_PLAN.md` at a1db6ab9
+("the map").
 
 **Marks.** (M) I ran it. (R) I read it in code or a document at 43b22d40. (S) my own derivation or arithmetic.
-(G) a guess. File references are to `src/cells/` at 43b22d40 unless another place is named. All measured runs
-used CPUs 6, 7, 22 and 23, under `nice`, on the CPU build of JAX, with a fresh compile each time. Section 22
-lists them.
+(G) a guess. File references are to `src/cells/` at 43b22d40 unless another place is named; on
+`legacy-cleanup` at 149f9df9 the lines of `models/surface_pump_v3.py` are one lower (`_route` 1184,
+`material_rate` 3700, `structure` 5040), and the rest of this note's lines hold. (M2) the second reader
+measured it. All measured runs used CPUs 6, 7, 22 and 23, under `nice`, on the CPU build of JAX, with a fresh
+compile each time. Section 22 lists them.
 
 **Engine models this note runs** (the milestone rule): `resolved_pump_tissue@3` (@3),
 `resolved_pump_composite@1` over it, and `finite_bond_assembly@1`. Two parts of legacy were run read-only, as
@@ -25,8 +30,10 @@ references.
 - **G-7.** Today an assembly cannot set an availability. I recommend **no operator now**. A small driver runs
   the live pool and writes its switch times into the ionic world's `channel_controls`, as ordinary data. The
   ionic world is then an ordinary definition: `run`, `windowed`, `batch`, `resume` and `branch` work
-  unchanged. This is the general choice now, because the pool never reads the ionic side. The operator is
-  recorded in section 15, with the three cases that would make it worth building.
+  unchanged. The second reader ran legacy's own RK4 split only at the switches against legacy's split at every
+  pool event: the pool's end state is bit for bit the live pool's, and the ionic difference is below 1e-5 of
+  the criterion (M2). This is the general choice now, because the pool never reads the ionic side. The
+  operator is recorded in section 15, with the three cases that would make it worth building.
 - **Order and price.** G-7's driver first (1 to 1.5 agent-days): it needs no store and gives two of the six
   assembly worlds, the K-only ones. G-5's source next (1 to 1.75): it can be built and tested before stream
   D's route exists. The plan priced the two at 2 to 3 and 4 to 6 days.
@@ -40,29 +47,27 @@ references.
 2. **G-5: a separate kind, or part of the store?** (a) A source kind that any route or @3 channel can name.
    *Recommended.* 1 to 1.75 days. (b) A release law inside stream D's store: about the same work, but in D's
    file, with the IDs and refusals of a store law, and it serves only a store.
-3. **The driver's names.** The driver has an observable's name, an input file and a record
-   (`resolution.json`). Legacy's law for the observable was a versioned ID (`root_component_has_cycle@1`). The
-   ID rule (docs/ID_HIERARCHY_DESIGN.md, section 1: an ID that live code parses is live) lists only names that
-   end with a version; plain selector words (`hill_activation`, `state_fraction`) are not in its table. So by
-   the letter these names are not caught. But the observable was an ID, and a version may be wanted later. (a)
-   Plain selector words, no ID, no family word. *Recommended.* (b) An ID for the observable,
-   `root_component_has_cycle@1`, with a new family word, for example `assembly_observable`, and one more row
-   in the choices file: 0.1 day, and the word is yours to give.
+3. **The driver's observable** (the lead's question A5). Legacy's rule for it was a versioned law,
+   `root_component_has_cycle@1`: physics with no citation, stated as a hypothesis (section 11). (a) A plain
+   selector word in the driver's input, no ID and no page. *Recommended.* 0 days more. (b) A registered law
+   with an ID and a library page, under a new family word, for example `assembly_observable`, with one row in
+   the choices file: 0.25 day, and the word is yours to give. In either case the composed file's fingerprint,
+   the pools' seeds and the switch list are recorded in the run's inputs (section 13.2).
 
 Otherwise nothing in this note needs a new family word (section 19). The two IDs of G-5 need rows in
 `scripts/moves/id-rename-choices.json`, which is not my file.
 
 ### 0.2 Questions for the lead
 
-1. **The field solver.** The base cluster written as @3 is refused at its first RK4 step with the default
-   field solver (`capacitive_reduction_gauged_damped_newton@2`) at 25, 12.5, 6.25 and 3.125 us (M, section
-   13.5). With the declared floor solver (`@3`) every step passes. The map's 14.2 says "RK4 at <= 25 us" and
-   does not name a field solver. Does the re-expression stream declare the floor solver for all its @3 worlds?
-2. **Stream D's note** (c5006ff6) and your rulings are taken in: the two source hooks, their signatures, units
-   and call sites are in section 5.5, so D's builder can write against them. One thing to settle: D's text
-   gives the slope as |d ln f / dn| in 1/fmol, your message as d ln f / d ln n. I specify the second.
-3. **The parser** scales a junction control in place (section 21, item 8). It is not mine to fix.
-4. **Names:** `species_condition@1` and `hill_product_factor@1` (section 19). Tell the rename's owner.
+1. **What retires** (section 5.10): `ph_condition@1` when FR-5's worlds are judged again on the new kind (0.75
+   day, G); the coupling's instantaneous Hill on channels at that operator's next version; the two reserved
+   `loop_term` fields, one removed and one used by stream D's step 5. I give a recommendation for each; the
+   dates are yours.
+2. **The proton pump's declared loop kernel is bounded by nothing today** (R, section 5.10). It is in the live
+   engine, like the second reader's row 1.
+3. **IDs:** `species_condition@1` and `hill_product_factor@1` need rows in
+   `scripts/moves/id-rename-choices.json`; tell the rename's owner.
+4. **If a ruling cannot be executed** I say what I would do instead in section 20.2.
 
 ### 0.3 Words used here
 
@@ -143,7 +148,8 @@ Legacy's release, held here because legacy leaves the tree (R): `laws/reactions/
 - **A correction of the refusal's reason.** `species_regulated_availability`'s text says "@3's step moves it".
   For an impermeant charged row nothing in the step moves it: `species_registry.moved_in_step` lists no mover
   for the -3 row (M), and `check_unmoved_sources` (`:1583`) already asks the exact question. The refusal is
-  right to fail closed, but its sentence is wrong for this case.
+  right to fail closed, but its sentence is wrong for this case (corrected on `legacy-cleanup`, b677738c: it
+  now says that an instantaneous source must be a neutral row).
 
 ## 4. Options for G-5, and what each loses
 
@@ -236,82 +242,102 @@ The route it multiplies books everything, by its own kind, as today:
 - **The closing is the route's:** nothing in this note adds to or takes from any global sum, so every closing
   that stands today stands.
 
-### 5.5 The two hooks for the feedback bound
+### 5.5 The feedback hooks (the adopted form)
 
-The bound itself is stream D's, and the lead ruled that it is built (D's note at c5006ff6, section 6.5; about
-0.75 day, D's). This note specifies the two *source* hooks it needs. The two *sink* hooks (`routed_rows`,
-`routed_flux`) and the rule are D's. A route whose factor reads a row that the same route moves closes a loop;
-`docs/INNER_MODEL_V4_DESIGN.md` section 7.4 (g) 1 asks that a law with such a read declares a loop term, and
-no source has one today (R: neither `ph_condition` nor `patch_damage`).
+The bound on the feedback a factor brings is stream D's and is built (L3). The lead adopted this note's form
+of the source hooks (ruling 9 on the second reader's table), with four additions, and ruled where the term is
+added (3) and what it does not bound (7). The three sides are stated here so that both builders write against
+one text. The stage rule is `material_rate` (`models/surface_pump_v3.py:3701`).
 
-Both hooks are optional fields of `registry/kind_registry.py`'s `Kind` (default None). A kind that has neither
-behaves as today; nothing that runs today gains a term. If a kind has one it must have both, and binding
-refuses one alone by name.
-
-**Hook 1, `factor_rows(declaration)`.** Host only, called once at binding, beside `factor_sources`, by the
-route table (`models/surface_pump_v3.py:1215`).
+**The source's hooks,** optional fields of `registry/kind_registry.py`'s `Kind` (default None). A kind that
+has one must have both, and binding refuses one alone by name.
 
     factor_rows(declaration) -> ( ( (species ID, node ID), ... ), ... )
 
-- One tuple of pairs per source, in the order of `factor_sources(declaration)`. A pair is one (species ID,
-  node ID) whose amount that source's factor reads. Each pair once per source, in order of first appearance.
-  Node IDs are cells' or outside nodes' (a held bath's included; D's pairing only uses moved rows).
-- A pure function of the parsed declaration. No array, no model, no unit. The result is value-free, so the
-  core resolves it to (row, node) indices at binding and it enters the structure as the routes do.
+- Host only, once, at binding. One tuple of pairs per source, in the order of `factor_sources(declaration)`. A
+  pair is a (species ID, node ID) whose amount that source's factor reads. Each pair once per source, in order
+  of first appearance.
+- Names only: no index, array, model or unit.
 - For the recommended kind: per condition, the distinct species of its reads, each with the condition's node.
   The ensemble's two conditions give ((("IP3", "cell_0"),), (("Ca", "cell_0"),)).
 
-**Hook 2, `factor_log_slopes(read, p, *, xp)`.** Called at a stage, on the device.
+      factor_log_slopes(read, p, *, xp) -> array [P]        d ln f / d ln n, dimensionless, signed
 
-    factor_log_slopes(read, p, *, xp) -> array [P]        d ln f / d ln n,  dimensionless, signed
+- P is the number of pairs, flattened: sources in `factor_sources` order, then that source's pairs. n (fmol)
+  is the amount of that row at that node on the stage's read, and the arguments are `factors`'.
+- For the recommended kind, for the pair (condition c, species s): sum over the reads j of c with species s of
+  sign_j n_j (1 - h_j), with sign +1 for activation and -1 for inhibition and h_j as in section 5.2; (1 - h_j)
+  is 1 / (1 + e^(z_j)) for an activation and 1 / (1 + e^(-z_j)) for an inhibition. Finite, 0 for a padded
+  read, in [-sum n_j, sum n_j]. The sum is signed within one condition and one species. The core takes the
+  magnitude.
 
-- P is the number of pairs of `factor_rows`, flattened: sources in `factor_sources` order, then that source's
-  pairs in their order. The entry for the pair (source, row) is the derivative of that source's ln f with
-  respect to ln n, n (fmol) the amount of that row at that node on the stage's read (@3's domain keeps n > 0).
-- The arguments are the same as `factors`' (`read`, `p`, `xp`): the stage's read state, the kind's own layout.
-  The value must be finite. It is signed; the core takes its magnitude.
-- For the recommended kind, for the pair (condition c, species s at the condition's node):
+**The sink's hooks** are stream D's, stated so that the two texts agree:
 
-      d ln f / d ln n  =  sum over the reads j of c with species s of  sign_j  n_j  (1 - h_j)
+    routed_rows(declaration) -> ( ( (species ID, node ID a, node ID b), ... ), ... )
+    routed_flux(read, potentials, control, p, *, xp) -> array [M]      fmol/s
 
-  with sign +1 for activation, -1 for inhibition, and h_j as in section 5.2. (1 - h_j) is 1 / (1 + e^(z_j))
-  for an activation and 1 / (1 + e^(-z_j)) for an inhibition, evaluated by the same `logaddexp` terms as h_j,
-  so a zero or a huge argument gives its limit and not 0 x infinity. The value lies in [-sum n_j, sum n_j].
+- `routed_rows`: one tuple of moved rows per routed slot, in `routed_controls` order. A passive route moves
+  one row; a channel population one per permeant ion.
+- `routed_flux` is evaluated **at the routed control** (the door's result), never the held one. M is the
+  number of (slot, row) pairs, flattened: **one J per slot and row**. Only |J| is used. @3 is the sink of its
+  own channel slots and has the same two in the core.
 
-**Where the core calls it.** In `material_rate` (`models/surface_pump_v3.py:3701`), after its stage read and
-the door's `_route`, with the same `read` and `p`, at every place that rule runs today: the step's first
-explicit stage and each later one (`:2830`, `:2941`). Where no routed slot pairs with a source,
-`material_rate` is as today (D148, static). For a slot r that moves a row that its sources read at the same
-node, D's rule adds at that node
+**The static pairing.** At binding the core makes `InnerStructure.loops = ((m, p), ...)` from the names: m is
+a (slot, row) of a routed slot and p a pair of one of that slot's sources, where the pair's (species, node) is
+an end of a row the same slot moves, and the node is not a held bath (a held amount does not move, so it
+closes no loop). Every row of the slot pairs with every such p. These are positions: they enter the structure
+and are value-free. The indices of the padded arrays **cannot** enter it, because `structure(model)` is built
+from the model alone and knows no capacities (`models/surface_pump_v3.py:5041`). They are **layout fields**,
+present only where `loops` is not empty, as FR-51's are (`BLOCK_LAYOUT_FIELDS`, `:189`): `loop_pair_row`,
+`loop_pair_node` [P], `loop_flux_row`, `loop_flux_end_a`, `loop_flux_end_b` [M].
 
-    |J_r|  x  sum over its sources of |d ln f / d ln n| / n        1/s, with J_r in fmol/s and n in fmol
+**The rule,** in `material_rate`, after its stage read and the door's `_route`, at every place that rule runs
+today (the step's first explicit stage, `:2830`, and each later one, `:2941`):
 
-which is the part of dJ_r/dn that goes through the factor, since J_r = J_open f (the rest is the route's own
-material slope, which its `material_term` holds). D's text writes the hook as |d ln f / d n| in 1/fmol; the
-lead's message writes d ln f / d ln n. I specify the second: it is dimensionless and the core divides by the
-read amount. If D's builder prefers the first, the same numbers divided by n serve.
+    rate(m, p)  =  (|J_m| x |slope_p|) / max(n_p, tiny)          1/s, J in fmol/s, n in fmol, tiny the smallest normal float64
+    rows[species_m, a_m] and rows[species_m, b_m]  +=  sum over the pairs p of m of rate(m, p)
+    nodes  +=  max over species of rows
+
+- **The factor is inside the product.** J is routed, so it contains f; the product is formed before the
+  division, so f is inside df/dn, and the part of dJ/dn that goes through this factor is |J| |slope| / n. At a
+  zero amount f and J are 0 and the quotient is 0 / tiny = 0, finite; without the floor on n, or with the
+  division first, it is NaN (0 / 0 or 0 x infinity; M2, `feedback_zero`). On @3 no row reaches zero
+  (`models/surface_tissue.py:414`), so it is unreachable today. It is covered anyway, and a row holds it.
+- **The held control is not used.** At an amount of 1e-9 fmol the held flux times slope over n is 4e7 per
+  second and would refuse every step; the routed one is 7e-3 (M2, the same probe).
+- **Both ends, per moved row** (ruling 3). The route's flux changes both of its rows, and every other row of
+  the slot (a channel with several ions) depends on the factor too, so each (slot, row) adds its term at both
+  of its nodes. A held bath's row is dropped by `material_rate` already.
+- **D148.** Where `loops` is empty nothing changes.
 
 **What the source costs at a stage (S, no timing).** With C conditions and R reads in all, `factors` takes R
 logarithms, R `logaddexp`, R - C additions and C exponentials. `factor_log_slopes` adds R evaluations of (1 -
-h), R multiplications, a sum per pair, and P divisions are the core's. No linear solve, no node-sized array,
-no scatter: the reads are gathered by index. The ensemble has 2 conditions and 3 reads per cell. A padded
-layout ([conditions, largest number of reads]) has ln h = 0 and slope 0 in its padding. In one compiled stage
-the two hooks share their logarithms (XLA's common-subexpression step, S). It is small against the field solve
-and the passive routes' kernels, and it is evaluated in the two explicit stages of ARS(2,2,2).
+h), R multiplications and a sum per pair; P divisions are the core's. No linear solve, no node-sized array.
+The ensemble has 2 conditions and 3 reads per cell. In one compiled stage the two hooks share their logarithms
+(XLA's common-subexpression step, S). It is small against the field solve and the passive routes' kernels, and
+it is evaluated at the two explicit stages of ARS(2,2,2).
 
-**Size in the ensemble (S).** The bound is D's (6 per second there, D's figure; my own from the Hill slopes,
-with the cytosolic Ca of 0.001 fmol, is 20 per second at most, as the sum of n_j / 4 over the reads is 1). It
-binds nothing at 12.5 us (dt x L 7.5e-5 to 2.5e-4).
+**Size in the ensemble (S).** The bound is stream D's, 6 per second there (its figure, and d ln f / d ln c =
+0.38 is 0.4 - 0.02 from my formula). My own cap is 20 per second, since the sum of n_j / 4 over the reads is
+1. It binds nothing at 12.5 us (dt x L 7.5e-5 to 2.5e-4).
 
-**A limit to state in both notes.** Where a closure owns the read row, the stage read's n is the free amount,
-while the route moves the total. The chain through the closure's own slope (dn_free / dn_total) is not in this
-hook, so the bound would not be the true one there. No captured world has a closure on a row that a gated
-route moves, and D's charged route refuses one. If a later world needs it, the closure's owner must supply
-that slope, as the proton pump's loop term does (`laws/pumps/proton_pump.py:137`).
+**Limits, to be stated in both notes:**
+- Loops through two routes (one moves X and gates on Y, another moves Y and gates on X) are not bounded.
+- **Loops through a source that has no hooks are not bounded, today `ph_condition` and `patch_damage`**
+  (ruling 7). They are used (FR-4, FR-5), so they are not refused, and their docstrings say so
+  (`kinds/ph_condition.py:1` to 31, `kinds/patch_damage.py:1` to 56). The hooks for them are a follow-up for
+  the lead to log, not built here.
+- A Hill coefficient below 1 has no finite d f / d n as n goes to 0: the stage rule then refuses at a trace
+  amount (at coefficient 0.5 and 1e-160 fmol the direct slope is 1e80 per second, M2). It is admitted, and the
+  refusal is right.
+- Where a closure owns the read row, the stage read's n is the free amount while the route moves the total,
+  and the closure's own slope is not in the hook. No captured world has one on a row a gated route moves. If a
+  later world needs it, the closure's owner supplies that slope, as the proton pump's loop kernel does
+  (`laws/pumps/proton_pump.py:153`).
 
 ### 5.6 Refusals by name
 
-Each refusal names the kind, the condition and the thing: an unknown node; an unknown species; a law other
+Each refusal names the kind, the condition and the thing: an unknown node;  an unknown species; a law other
 than `hill_product_factor@1`; a form other than `hill_activation` or `hill_inhibition`; an empty `reads`; a
 half-saturation or coefficient that is not finite and positive; a condition ID that is not unique among the
 model's IDs; a factor source exposed by two kinds (the door, today); an unknown source in a sink's list (the
@@ -336,13 +362,15 @@ door, today).
 | Beside | Result | Basis |
 | --- | --- | --- |
 | A compartment (`cell_owned_compartments@1`), a charged route, `local_species_reactions@1` | admitted | M, section 4.1 |
-| `cells.passive_routes@1` as sink, @3 channels as sink | admitted | R, M |
-| A closure (`rapid_binding@1`, `rapid_proton_buffer@1`) on a read row | reads the free form | R |
-| An operator that builds today's fixed inner fields (`scheduled_cell_replacement@1` and `@2`, `scheduled_membrane_trafficking@1`) | refused, beside any declared kind | R, `models/pump_composite.py:864` to 869 |
-| A closer (`partition`, `membrane_insertion_v2`) | refused until the kind declares partition roles for its layout fields, as `ph_condition` is today (M) | M, `probe/lifecycle.py` |
-| Other operators (exchange, turnover, electrodes, wash, labels, membrane state) | not checked one by one; the kind only reads a node's amount over its volume. Where water moves a volume, the read uses the layout's volume, as `ph_condition`'s does (R): not run | S |
-| RK4 | refused | M |
-| A @3 world with no kinds | not declared, nothing changes | S |
+| `cells.passive_routes@1` and @3's channels as sinks; a plain @3 world | admitted | R; M, `at3_kind` |
+| **Water** (`ideal_osmosis_linear_compliance_water@1`, with or without `k_anion_symport_mass_action@1`) | admitted; the factor reads the current volume: in a world whose cell volume fell 1.6% the observed factor rose from 0.4861 to 0.4941, as N / V at the current volume gives | M, `compose_probe`, `water_volume` |
+| **Labels** (`neutral_arrival_labels@1`) | admitted: K labelled, and Ca labelled and moved by the gated route, in the prototype's world; a gated route's one-way flows use the routed control at both ends of the step (R) | M (parse), `labels_probe`; not run |
+| **Wash** (`scheduled_compartment_wash@1`) | admitted: the wash refuses a kind's *route* that moves a neutral species across the washed node's surface (`operators/wash_schedule.py:77`), and the source is no route | M (parse), `compose_probe` |
+| A closure (`rapid_binding@1`, `rapid_proton_buffer@1`) on a read row | admitted; reads the free form | R |
+| A held bath's row (or `scheduled_bath_composition@1`) | admitted; a constant, or piecewise constant, read | M (a held bath) |
+| `scheduled_cell_replacement@1`, `@2`, `scheduled_membrane_trafficking@1` | refused by name, beside any declared kind (they build today's fixed inner fields) | R, `models/pump_composite.py:864` to 869 |
+| A closer or a retiring operator (`isopotential_partition@1`, `scheduled_membrane_insertion@2`) | refused by name until the kind declares partition roles, as `ph_condition` is today | R; M, `lifecycle` |
+| RK4 | refused by name | M |
 
 ### 5.8 Provenance
 
@@ -353,6 +381,49 @@ through a page tool; its equations were images) reports that IP3 tunes the calci
 half-saturation: one laboratory, Xenopus oocyte nuclei, so an indication only. A joint law is later work and
 would be its own version: `hill_product_factor@1` is separable by its form and does not represent that. The
 numbers are legacy's, not measurements (section 2).
+
+### 5.9 Layout, readout, axis and view
+
+- **Layout fields** (padded to the largest number of reads, R; C conditions). The structure entry is (the law
+  ID, and per condition its number of reads and of pairs): no value, so two worlds of one shape share
+  programs.
+
+| Field | Shape | What |
+| --- | --- | --- |
+| `species_condition_node` | [C] int64 | the node: cells, then outside nodes, as the passive routes index them |
+| `species_condition_row` | [C, R] int64 | the species row a read takes (0 in padding) |
+| `species_condition_form` | [C, R] int64 | 1 activation, 2 inhibition, 0 padding (the codes of `hill_factors`) |
+| `species_condition_half_saturation_mM` | [C, R] | K (1 in padding) |
+| `species_condition_coefficient` | [C, R] | n (1 in padding) |
+| `species_condition_pair` | [C, R] int64 | the flattened pair of the read, for the slopes' sum |
+
+- **State and control fields:** none. **Readout column:** `species_condition_factor`, [condition], f on the
+  observed row's read; unit 1.
+- **Axis:** `species_condition`, the kind's own, one entry per condition, no slot. **Partition roles:** none
+  in version 1, so a closer refuses the kind (section 5.7).
+- **View** (`KindView`, D154): units {"species_condition_factor": "1"}, observation axis
+  ("species_condition",), record kind "level", record layer "membrane" (as `ph_condition`). Its set: the IDs;
+  role "node: the node whose concentrations set the condition"; kind "factor"; the law; `at` the node; and
+  `reads`, each with its species, form, K and n. The legacy readout `ip3_release_fraction` is the IP3
+  condition's column, and `ip3_cytosol_mM` is a formula of the amounts (the map, 14.6).
+- **Definition round trip:** `to_dict` writes the declared entries with the law's full ID, as `ph_condition`
+  does.
+
+### 5.10 What retires, and when
+
+One source of factors where the shapes agree, else two with the reason (ruling 13; D210; pre-alpha, no
+backwards compatibility).
+
+| Old | New | Do the shapes agree? | When |
+| --- | --- | --- | --- |
+| `ph_condition@1` and its law `ph_conditioned_factor@1` (a source) | `species_condition@1` with one `hill_activation` read of the proton row, K = 10^(3 - pH50) mM, n = the slope | Yes as a function: on 20,000 random points the two differ by at most 2.3e-15 absolute, 5,222 are bit for bit equal. The pH law's tanh form loses relative accuracy at a small factor (up to 3e-11 relative where f > 1e-6) (M, `ph_same`) | Not in G-5's landing, since its results move by rounding and FR-5's judged records cover the build they judged. From that landing no new definition uses it. It retires when FR-5's worlds are judged again on the new kind (0.75 day, G). Until then its docstring names its successor |
+| The instantaneous Hill of `species_regulated_availability@1` and `@2` on a **channel** population (a neutral species in the channel's own cell) | a condition named in that channel's `factors` | Yes, where the row is one the inner step does not move, the coupling is always on, basal is 0, the world is IMEX and the target is a channel: the factor is the same number at every stage, so the product is bit for bit the coupling's (S; a test row) | Frozen at G-5's landing: no new instantaneous species-to-channel use there. It retires at the coupling's next version, when its judged worlds (A5, the later A5 acceptance) are judged on the door |
+| The rest of that operator | none | **No, so two.** The coupling also targets junctions and other operators' rates; its factor is held and works under RK4; it has basal, switches and an identity rule; its sources include two-state, population and site quantities. The door has channel and route sinks only, is IMEX only, and has no basal or switch | stays |
+| `patch_damage@1` | none | No: it has a state and schedules | stays |
+| `ChannelLaw.loop_term` (`registry/laws.py:377`) | none | No law declares it and nothing reads it. A channel population's loop is bounded through `routed_flux` (section 5.5) | removed with that reason, in stream D's step 2 (which already edits `ChannelLaw`) |
+| `CycleLaw.loop_term` (`:446`) | the transporter's material bound | Nothing evaluates it today: `loop_rates_per_s` is called by one unit test only (`tests/unit/test_fr45_proton_laws.py:407`), and only the proton pump declares it. It is a law's own loop, which the factor hooks do not serve | **used:** stream D's step 5 (the transporter's material bound) evaluates it there, with a D148 scan of the FR-4 and FR-5 worlds first (0.25 day, G). If the scan finds a step it would refuse, it is removed with that reason and the proton pump's loop is logged as a gap |
+
+The last row is also a finding for the lead: the proton pump's declared loop is bounded by nothing today (R).
 
 ## 6. Same equations or a changed model
 
@@ -384,8 +455,11 @@ its sections 5.1, 6.5 to 6.7):
 5. The route books heat only, by the tableau, and D says these routes stay far from a reversal; a release that
    crosses its own reversal could be refused (its L9, and section 3.8 of the cardiac note, read and not run).
 6. The bound on the feedback a factor brings is D's, with the hooks of section 5.5. D's `routed_rows` and
-   `routed_flux` are D's. Open between us: nothing but the hook's form (section 5.5, the two texts differ), to
-   be settled before D's builder starts step 6.
+   `routed_flux` are D's. The hook's form is settled: the lead adopted this note's (d ln f / d ln n, signed,
+   dimensionless) with four additions (ruling 9), and D's text is to follow it. Nothing is open between us.
+7. **Before any store world,** the corrected charge rule (the second reader's row 1: a cell's slopes divided
+   by the plasma patches' capacitance alone) is its own commit. It is not this note's, and a store world
+   should not be built before it.
 
 The lead's ruling on channels also concerns G-7: a calcium channel is a population on @3 whose law declares
 its ions' valences, so G-7's factor acts on channel populations through `channel_controls` and needs no change
@@ -393,8 +467,9 @@ for it (section 13.1).
 
 ### 7.2 From the core and the rename
 
-Two optional hooks of the kind registry (`factor_rows`, `factor_log_slopes`) and their call in
-`material_rate`: that edit is D's step 6, in the core's files. Otherwise nothing in the core changes.
+Two optional hooks of the kind registry (`factor_rows`, `factor_log_slopes`), the loop fields of the structure
+and the layout, and their call in `material_rate`: that edit is D's step 6, in the core's files. Otherwise
+nothing in the core changes.
 
 ## 8. Tests for G-5 (rows, with plants)
 
@@ -408,18 +483,21 @@ below are guesses (G) until measured.
    bit for bit at random points; exact 0 and 1 at zero; NaN below zero. *Plant:* inhibition read as activation
    must fail. About 1 s.
 2. `test_fr5_source_kinds.py`: the declaration's refusals (section 5.6), one row each, and the stateless
-   layout. Host only, under 1 s.
-3. `test_hill_factors.py` or the same file: `factor_log_slopes` against a central finite difference of ln f in
-   ln n, host only, over random states and at the extremes (a very small and a very large amount).
-   `factor_rows` returns the declared pairs once each. *Plants:* the sign of an inhibition dropped; the
-   derivative taken in n instead of ln n; a pair listed twice. About 1 s.
+   layout, the readout column, the axis and the view's entries (section 5.9). Host only, under 1 s.
+3. Same file: the hooks. `factor_rows` returns the declared pairs once each, in order, names only;
+   `factor_log_slopes` equals a central finite difference of ln f in ln n over random states, and at a very
+   small and a very large amount, and is 0 in padding. A zero amount gives a finite rate when the product is
+   formed first. *Plants:* the sign of an inhibition dropped; the derivative taken in n; a pair listed twice;
+   the division before the product (NaN); the held control in place of the routed one. About 1 s.
 4. A new `tests/unit/test_species_condition_kind.py` (about 45 s, mostly one compile): one @3 world under IMEX
    (one cell, one outside node, one charged Ca route of `passive_constant_field_permeation@1` on a plain
    patch, gated by the condition; 1 ms; 50, 25 and 12.5 us), so the kind is tested with no compartment and no
    composite (M, `at3_kind`: the prototype kind parses and runs in such a world). Rows: the moved amount
-   halves with a ratio of 4 within 5% (*plant:* the factor held at the step's start must fail the ratio); a
-   second, impermeant ligand at 0 gives the run at -3 bit for bit (*plant:* reading the bound row must fail);
-   the condition on the wrong node differs (*plant*); K in M for mM differs (*plant*).
+   halves with a ratio of 4 within 5% (*plant:* the factor held at the step's start must fail the ratio); an
+   impermeant ligand at valence 0 gives the run at -3 bit for bit (*plant that tests valence:* a reading
+   scaled by |z|, so a factor that uses the row's charge, must fail it); the condition on the wrong node
+   differs (*plant*); K in M for mM differs (*plant*); reading the bound row for the free one differs
+   (*plant*).
 5. In the same file, one composite row: the prototype's world (section 4.1), 10 steps, admitted beside a
    compartment, with the heat never falling. About 25 s.
 6. D148: a definition without the key keeps its structure entry and its program (an equality check on the
@@ -429,8 +507,10 @@ below are guesses (G) until measured.
    row each).
 
 D's rows 11 and 12 (the feedback bound against a finite difference of the stage's derivative) use the two
-hooks. The consumer's own row (the ensemble's release against captures) belongs to the re-expression, not
-here.
+hooks. The two-cell closed row (two cells, near and far, two free offsets, the floor solver by
+`field_solver_choice.declare()`, a junction Ca route and two stores, compiled, tier 2) is stream D's (ruling
+14); this kind is in it, with the plants 'cell_0's condition reads cell_1's node' and 'K and n exchanged'.
+The consumer's own row (the ensemble's release against captures) belongs to the re-expression, not here.
 
 ## 9. What G-5 does not claim
 
@@ -508,8 +588,8 @@ consumer's criterion (3e-9 |e| + 3e-12, `validation/assembly/cluster_protocol.js
   and from -4.4 to 6.9 for the middle, and a world's fit over the six steps is 1.6 to 2.4 for the mean (median
   2.1) and 0.55 to 1.6 for the middle. FR-43 part 3 reached the same conclusion
   (`docs/FR43_PART3_BUILD_PLAN.md` section 11: event error C dt2 phi (1 - phi), order by a fit).
-- **Event times are the pool's own** and are few: 2 to 14 switches per world in 20 ms (both cells together, 94
-  in 16 worlds), against 1,600 steps of 12.5 us.
+- **Switch times are the pool's own** and are few: 2 to 14 switches per world in 20 ms (both cells together,
+  94 in 16 worlds), against 1,600 steps of 12.5 us.
 
 | Option | What it is | Verdict |
 | --- | --- | --- |
@@ -525,7 +605,7 @@ consumer's criterion (3e-9 |e| + 3e-12, `validation/assembly/cluster_protocol.js
 ### 13.1 Why it is the general choice now
 
 - **The pool never reads the ionic side.** A one-way drive has no loop to hold inside a step, so nothing in it
-  needs an operator. It needs the event times to be exact, and the clock already takes them as data.
+  needs an operator. It needs the switch times to be exact, and the clock already takes them as data.
 - **It is exact, and simpler than the operator.** The level is piecewise constant, so its exact value on every
   piece is data. The step's boundaries fall on the switches, so the stepper keeps its own order: 4 on RK4, 2
   on IMEX (S, and section 13.5). No held factor, no new error.
@@ -566,17 +646,35 @@ batch, one world per pool world). The ionic definition is untouched except its `
   fingerprint and its seed, the number of events, each switch as (time, level, event count), the exposure (the
   fsum of level x duration), the final pool state and the ionic fingerprint. No run reads it, and a check row
   holds it equal to the definitions' schedules.
+- **The run's inputs.** The ionic definition's fingerprint holds the schedule's numbers and nothing else: not
+  the pool, its seed or the rule. So the driver also writes `inputs.json`: the composed file's SHA-256, each
+  pool's definition fingerprint and seed, the observable (its law's ID if A5 is (b)), and the switch list of
+  each world. The run commands (`run`, `windowed run`, `batch run`, `batch windowed run`, and their resume and
+  branch) take a new general option `--inputs FILE.json`, and its object is recorded in the run's manifest as
+  `provenance["inputs"]` (`records/io.py:363`, `records/batch_io.py:239`, `records/window_io.py:227`,
+  `records/batch_window_io.py:189`, which take `provenance` today). Any driver can use the option. A run
+  started without it records no composed inputs, and says so.
 - The definitions are written as JSON text, with no shared objects (section 21, item 8).
 
-### 13.3 Times
+### 13.3 Switch times
 
-- Event times are the pool's own float64 times, never rounded to steps. The clock splits the step that holds
+Legacy splits its step at every pool *event*; the driver splits at the *switches* of the level, a subset. The
+second reader compared them on legacy's own RK4 for the base cluster (M2, `split_equivalence`, 4 worlds, the
+same seeds): against legacy's split at every event, the split at the switches alone differs by 2.9e-6 to
+9.3e-6 of the criterion at 50 us and by 1e-7 to 1.8e-7 at 12.5 us, and the split at every event by 4e-8 to
+7e-8. Both are far below the criterion. The pools' end states, uncut, are bit for bit legacy's in all four
+worlds and both cells (M2).
+
+- Switch times are the pool's own float64 times, never rounded to steps. The clock splits the step that holds
   one (`execution/grid.py:3` to 6). A time within rounding of a grid point snaps onto it and is recorded
   (`applied_definition`).
-- The clock refuses a near miss: an event more than rounding and at most 1e-6 of a step from a grid point
-  (`grid.py:55`, `_near_point`). The driver finds it before any run and names the world, pool and event. It
+- The clock refuses a near miss: a time more than rounding and at most 1e-6 of a step from a grid point
+  (`grid.py:55`, `_near_point`). The driver finds it before any run and names the world, pool and switch. It
   refuses by default. An explicit option declares it at the grid point and records the shift. The chance is
-  about 2e-6 per event (S): 2e-4 for the 94 events of 16 worlds.
+  about 2e-6 per switch (S). The second reader found none (M2, `pool_paths`, 4 captured seeds, the base
+  cluster, the cell and the four calcium clusters, at every captured step and its half and quarter): no near
+  miss, no snap, no tie between pools, and the smallest gap between two switches of one world is 2.3e-6 s
+  (base) and 4.4e-5 s (calcium clusters).
 - Steps added: one per distinct switch time. Measured (section 13.5): 802 accepted steps against 800 nominal,
   for 2 switches. `execution.max_steps` must cover it, and the driver checks the number.
 - **Seeds:** each pool's definition carries its effective seed, as legacy's does (section 11), and the driver
@@ -624,11 +722,27 @@ Two worlds of the 16 (M): world 0 with one switch in each cell (2 extra steps), 
   against 800 and 1,600, and the Na, K and Cl amounts agree with @3's own IMEX run of the same schedule to
   3e-15 (relative). So the composite takes off-grid changes of an inner channel control beside a split
   operator.
-- **The field solver (M, `rk4_domain`, `rk4_domain_floor`, `field_floor`).** With the default solver (`@2`)
-  the first RK4 step of this world is refused: at 25 us at stage 3, at 12.5, 6.25 and 3.125 us at stage 2. The
-  Newton stops at its rounding floor: the current residual is 0.9 to 2.6e-25 A, which is 0.006 to 0.017 of its
-  tolerance, against a target of 0.01. The floor solver accepts the same solve (its extra rule). Every step at
-  every stage passes with it. The default solver's refusal is not an instability of RK4.
+- **The field solver is already ruled** (D147, D156): a definition of the resolved pump family with a free
+  field offset declares `capacitive_reduction_gauged_damped_newton@3`, and one with none keeps `@2`. A
+  composite follows its inner model (D156). The near and far nodes give the JUPITER, base and calcium worlds
+  two free offsets; the assembly cell and the integrated ensemble's world have none and keep version 2 (M2,
+  `free_offsets`). Run drivers and builders under `validation/` declare it with
+  `validation/tissue/field_solver_choice.declare(raw)` (the `auto` rule); the composed worlds' builders and
+  tests use it. The driver in `src/cells` cannot import it (section 20.2), and refuses by name a free-offset
+  definition that declares version 2 or the sparse solver. The sparse ID
+  `sparse_capacitive_reduction_gauged_damped_newton@1` has no floor, so `auto` refuses it for a free-offset
+  world. The first version of this note missed the rule. What I measured agrees with it: with `@2` the base
+  cluster's first RK4 step is refused, at 25 us at stage 3 and at 12.5, 6.25 and 3.125 us at stage 2, because
+  the Newton stops at its rounding floor (the current residual is 0.9 to 2.6e-25 A, which is 0.006 to 0.017 of
+  its tolerance, against a target of 0.01), and `@3` accepts the same solves at every stage (M, `rk4_domain`,
+  `rk4_domain_floor`, `field_floor`). It is not an instability of RK4.
+- **The floor guard rerun.** D148's record says that the floor guard of D147 compares primitive counts, not
+  constants, and asks to rerun it with constants before version 3 serves a run of record
+  (`docs/DECISIONS.md:4910` to 4912). No record of that rerun was found (M2, R). It is a step before the
+  registered campaign (ruling 10), and not this build's.
+- **Batched paths.** `ionic_worlds@1` admits the floor solver on both backends and mappings (M2,
+  `floor_admission`, planners only). Two free-offset @3 worlds with different off-grid channel schedules,
+  IMEX, run by `lax_map` equal their own runs bit for bit and by `vmap` to 5.1e-14 (M2, `floor_vmap`).
 
 ### 13.6 What must be refused, by name
 
@@ -636,9 +750,10 @@ In the driver, before any run: an unknown key; an ionic model other than @3 or t
 in the definition, or set by two pools; an observable not in the table; levels that are not in [0, 1] or not
 finite; a pool without `recording: "events"`; a pool horizon different from the ionic `end_time` (or a longer
 one that was not asked for); a world count that differs between pools; a near miss (13.3); a `max_steps` too
-small; a replacement, partition or trafficking operator on an owner's cell (the path belongs to the channel
-slot and would outlive the cell); a pool that faults, naming its world and event cap. In the ionic world,
-today's refusals.
+small; a definition with a free field offset that declares version 2 or the sparse field solver (D147); a
+replacement, partition or trafficking operator on an owner's cell (the path belongs to the channel slot and
+would outlive the cell); a pool that faults, naming its world and event cap. In the ionic world, today's
+refusals.
 
 ### 13.7 Restart, D148, CPU and GPU
 
@@ -652,24 +767,26 @@ today's refusals.
   (`models/pump_composite.py:2102` to 2105 covers only operators' times, R). Beside a coupling that also sets
   a channel's availability, the two multiply (its factor is applied to the held control, R, not run).
   `scheduled_cell_replacement` and the like on an owner's cell: the driver refuses (13.6).
-- **GPU:** the pool runs on either backend (`engine.run`). The ionic world keeps @3's GPU path as it is today;
-  a composite is refused on a GPU (`vector_windows.py:213` to 230). The driver makes no new claim. The batch
-  form of different schedules per world is the existing one (`docs/INDEPENDENT_WORLDS.md`: each world keeps
-  its own clock and schedules). Two base-cluster worlds with different schedules in one `independent_worlds`
-  batch (1 ms, RK4 at 25 us, the first with two off-grid switches, the second with one on the grid) gave
-  histories bit for bit equal to the scalar runs, 42 and 40 steps (M, `batch_worlds`).
+- **GPU:** the pool runs on either backend (`engine.run`). The ionic world keeps @3's GPU path as it is today
+  (the floor solver is admitted there by the planners, not run); a composite is refused on a GPU
+  (`vector_windows.py:213` to 230). The driver makes no new claim. The batch form of different schedules per
+  world is the existing one (`docs/INDEPENDENT_WORLDS.md`: each world keeps its own clock and schedules). Two
+  base-cluster worlds with different schedules in one `independent_worlds` batch (1 ms, RK4 at 25 us, the
+  first with two off-grid switches, the second with one on the grid) gave histories bit for bit equal to the
+  scalar runs, 42 and 40 steps (M, `batch_worlds`).
 
 ## 14. What the composed run cannot do, with numbers
 
 1. **Feedback.** The pool cannot read the ionic state. Nothing here needs it today; the one thing that would
    is a propensity that depends on voltage, calcium or an amount, which is a new pool law with its own event
    clock (section 15).
-2. **Scale.** One extra step per switch of any pool, and one whole control record per switch. At the base
-   cluster's rates (about 3 switches per cell in 20 ms, M) a tissue of N cells has about 3 N extra steps
-   against 1,600: for 500 cells about 1,500 steps (a factor of 1.9), for 10^4 about 30,000 (a factor of 20).
-   Each change record holds every control slot (`execution/schedule.py:150` to 210), so 30,000 records over
-   10^4 channels are about 2.4 GB (S). Fine to a few hundred cells. Beyond that the operator, or a step-mean
-   schedule (item 3).
+2. **Scale.** One extra step per switch of any pool, and one whole control record per switch. Switches per 20
+   ms (M2, `pool_paths`, 4 seeds): 32 to 48 in 8 base-cluster worlds, 65 to 90 in 64 cell worlds, 4 to 16 in 2
+   calcium worlds; that is about 3 per base-cluster cell (M). A tissue of N cells then has about 3 N extra
+   steps against 1,600: for 500 cells about 1,500 steps (a factor of 1.9), for 10^4 about 30,000 (a factor of
+   20). Each change record holds every control slot (`execution/schedule.py:150` to 210), so 30,000 records
+   over 10^4 channels are about 2.4 GB (S). Fine to a few hundred cells. Beyond that the operator, or a
+   step-mean schedule (item 3).
 3. **A step-mean schedule without an operator** is possible for large tissues and is not built here: the
    driver writes, at grid points only, the exact mean of the level over each step. It adds no step, needs at
    most two change records per switch, and at 12.5 us meets the ensemble's criterion (0.56 units, section 12).
@@ -727,13 +844,14 @@ FR-43 part 3's unit population should drive a channel. Not before.
 ## 17. Same equations or a changed model; FR-43 part 3
 
 - **Same equations (the composed run).** The pool's walk is the live code unchanged, and the ionic side's is
-  @3 or the composite. A level is applied at the same event times and in the same way as legacy's segments.
-  The plan's section 8 template applies with its own rounding fallback. The RK4 candidate (K-only) agrees with
-  legacy at rounding at 25 and 12.5 us (section 13.5), so its observed order is noise, and the template's
-  fallback, the consumer's registered criterion, is what judges it. The IMEX candidate shows order 2 at its
-  own h, h/2 and h/4 (M, section 13.5). The pool arrays are compared bitwise at every h. Trajectories cannot
-  be compared (14.4 of the map: the assembly jobs hold no trajectory), so endpoints, JSON summaries and pool
-  arrays are the judged arrays.
+  @3 or the composite. A level changes at the switch times, where legacy's segments end; legacy also ends a
+  segment at every other pool event, and the difference is far below the criterion on RK4 (section 13.3, M2).
+  The pool's end state is bit for bit legacy's. The plan's section 8 template applies with its own rounding
+  fallback. The RK4 candidate (K-only) agrees with legacy at rounding at 25 and 12.5 us (section 13.5), so its
+  observed order is noise, and the template's fallback, the consumer's registered criterion, is what judges
+  it. The IMEX candidate shows order 2 at its own h, h/2 and h/4 (M, section 13.5). The pool arrays are
+  compared bitwise at every h. Trajectories cannot be compared (14.4 of the map: the assembly jobs hold no
+  trajectory), so endpoints, JSON summaries and pool arrays are the judged arrays.
 - **What the composed run does not reproduce** and a criterion should not ask for: bitwise identity with
   legacy's ionic state (its field solver differs), `segments` (a count of its own splits), and the exposure's
   summation (legacy accumulates it in segments; the path gives it exactly. The step-mean rule's exposure
@@ -753,18 +871,22 @@ Rows go into `tests/unit/test_assembly_pool.py` (27.9 s, 90 s cap), which alread
 once; the ionic rows are host-only except one.
 
 1. The driver's path equals a direct walk of `kernel.step`, bit for bit, for 4 worlds and both cells
-   (*plants:* base seed without the stream must fail; `<` in place of `>=` must fail; the level read after the
-   event instead of before must fail).
+   (*plants:* a pool given the other pool's seed must fail; `<` in place of `>=` must fail; the level read
+   before the event instead of after must fail).
 2. The schedule's value at a set of times (before, at, after each switch, at base changes) equals base(t) x
    level(t), and a channel named by two pools is refused (*plants:* the product ignoring the base schedule;
    rounding a switch to the grid).
-3. Near miss: a planted event at 1e-9 of a step off a grid point refuses by name; with the option it is
+3. Near miss: a planted switch at 1e-9 of a step off a grid point refuses by name; with the option it is
    declared at the point and the shift is recorded.
 4. The final pool state and the exposure: equal the pool's own checkpoint, bit for bit.
-5. The definitions written are byte-identical for the same input, and parse (*plant:* a shared schedule object
-   must be rejected or never occur).
-6. One composed world, small (end time 2 ms, one cell): the run ends with nominal + distinct switches steps,
-   and its amounts equal the same world run with the schedule written by hand. Under 20 s.
+5. The definitions written are byte-identical for the same input, and parse; `inputs.json` holds the composed
+   file's SHA-256, the seeds and the switch list, and changes when any of them changes (*plants:* a schedule
+   object shared between controls must not occur; the seed left out of the inputs).
+6. One composed world, in a new file `tests/unit/test_composed_worlds.py`, compiled, tier 2, about 60 s (G):
+   the two-cell base cluster with the near and far nodes (two free offsets, so version 3, declared by
+   `field_solver_choice.declare()`), RK4 at 25 us, 1 ms. It ends with nominal + distinct switches steps, and
+   its amounts equal the same world run with the schedule written by hand, bit for bit (*plant:* the default
+   field solver is refused by name at the first step). The run's manifest holds the inputs.
 
 Consumer rows (captures, judged) belong to the re-expression.
 
@@ -783,7 +905,7 @@ No new family word, as recommended (question 3 of section 0.1 could add one). Ev
 
 - The two live IDs above (the operator's only when it is built) need rows in
   `scripts/moves/id-rename-choices.json`, which is not my file: the lead tells its owner.
-- The driver introduces no versioned ID as recommended (question 3 of section 0.1). Its JSON keys
+- The driver introduces no versioned ID as recommended (question A5, question 3 of section 0.1). Its JSON keys
   (`observable`, `levels`, `channels`) are words of an input file. `root_component_has_cycle` was legacy's law
   ID `root_component_has_cycle@1` and is reused as a plain observable's name; whether it should carry a
   version is the user's.
@@ -796,14 +918,21 @@ No new family word, as recommended (question 3 of section 0.1 could add one). Ev
 | --- | --- | --- |
 | G-7 driver (F4) | 1 to 1.5 | `schedule.py` and the subcommand 0.4; rows 0.4; the composed example and a check on the two K-only worlds 0.3; library page, run view, review 0.3 |
 | G-5 source kind | 1 to 1.75 | law and kind 0.4; rows 0.35; matrix tag, library page, run view 0.25; composite demonstration 0.25; review and landing 0.3 |
-| The two hooks of section 5.5 | 0.15, inside G-5's range | the bound itself is stream D's (0.75, its note) |
+| The two hooks of section 5.5 | 0.15, inside G-5's range | the bound itself is stream D's (0.75, its note; the second reader reads 1 to 1.5) |
+| Law record and page, if A5 is (b) | + 0.25 | |
+| `ph_condition`'s retirement (section 5.10) | 0.75, later | FR-5's worlds re-expressed and judged again |
 | G-7 operator, later | 4 to 5.5 | the rows, matrix, statistics rows, the quantity source of `@2` and a judged comparison |
 | Plan's own figures | 2 to 3 and 4 to 6 | `docs/LEGACY_PORT_PLAN.md`; the composed run replaces the second |
 
-- **Not in it:** the two legacy command lines (`assembly-cell`, `assembly-cluster`) and the two ensemble kinds
-  (`assembly_cell_ensemble@1`, `assembly_cluster_ensemble@1`), which leave with legacy (the map, 14.2); the
-  judged re-expression; the EnsembleAdapter row for the batch form. The driver gives the run, not the
-  ensemble.
+- **Not in it:** the two legacy command lines (`assembly-cell`, `assembly-cluster`), which leave with legacy
+  (the map, 14.2); the judged re-expression; the retirement of `ph_condition`. **The two ensemble kinds
+  (`assembly_cell_ensemble@1`, `assembly_cluster_ensemble@1`) lack a home** (ruling 15): the driver creates no
+  family row, so no `EnsembleAdapter`, for them, and D384 refuses them by name. A batch of composed worlds is
+  an `independent_worlds` batch (section 13.7), not an ensemble kind. Should they come back, the map's 14.2
+  gives the row.
+- **The second reader's order,** which the lead accepts: its rows 1, 8 and 9 settled first; G-7's driver,
+  independent; stream D's steps 1, 3 and 4; this note's source with the final hooks; D's steps 2 and 6 as one
+  edit of `material_rate`; D's steps 5 and 7.
 - **Order.** (1) G-7's driver: it depends on nothing but live code, and the two K-only worlds are re-expressed
   with it. (2) G-5's source: it depends on no stream, and is tested with the prototype's world (one store
   node, today's kinds). (3) Stream D's store and its route. (4) The calcium worlds and the assembly-regulated
@@ -814,9 +943,58 @@ No new family word, as recommended (question 3 of section 0.1 could add one). Ev
 - **A risk I see:** the IMEX composite's cost is the consumer's, not the driver's. At 20 ms and 12.5 us a
   composite run of two cells took minutes on these crowded CPUs (M, no timing claim).
 
+### 20.1 Edits to the live engine
+
+Lines at 43b22d40; on `legacy-cleanup` at 149f9df9 the same except where a second number is given. The bound
+of section 5.5 is stream D's; its edits are named so that the two notes meet.
+
+| Build | File and line | Edit |
+| --- | --- | --- |
+| G-5 | new `kinds/species_condition.py` | the kind (about 260 lines) |
+| G-5 | new `laws/reactions/hill_product_factor.py` | the law: ln f, f and the slopes (about 70 lines) |
+| G-5 | `kinds/__init__.py:1` to 29 | one docstring line, one import |
+| G-5 | `registry/kind_registry.py:251` to 258, 457 to 460, and `declaration_errors` (about 959) | two optional fields; a kind with one of the two is refused; docstring |
+| G-5 | `kinds/ph_condition.py:1` to 31, `kinds/patch_damage.py:1` to 56 | docstrings: the limit of section 5.5; for `ph_condition`, its successor |
+| G-5 | `docs/library/` and its generator's output, `validation/tissue/composition_matrix.py`, `scripts/moves/id-rename-choices.json` (the last two not mine) | pages, matrix tags, the two ID rows |
+| G-5's hooks, in D's step 6 | `models/inner_laws.py:284` | `loops: tuple = ()` |
+| | `models/surface_pump_v3.py:189`, 331, 1215 (1214), 3701 (3700), 5041 (5040), 5442 (`kind_types`) | the loop layout fields (FR-51's pattern), their fill, the pairing, the rule, the structure field, the layout type |
+| | `kinds/passive_routes.py:529` | `routed_rows`, `routed_flux` (and @3's own in `surface_pump_v3`) |
+| D's steps 2 and 5 | `registry/laws.py:377`, 482; `registry/laws.py:446`; `kinds/transporter.py` (material term); `docs/INNER_MODEL_V4_DESIGN.md:558`, 841; `docs/library/DECLARATIONS_FORMAT.md:210`, 224; `tests/unit/test_inner_laws.py:152`, `test_law_registry.py:222` | the `loop_term` reservations (section 5.10) |
+| G-7 | new `assembly_pool/schedule.py` | the driver (about 150 lines) |
+| G-7 | `assembly_pool/cli.py:132` | the `resolve` subcommand |
+| G-7 | `__main__.py`: its parser, and 145 (116), 177 (148), 256 (226), 300 (270) | the general `--inputs FILE.json` option, recorded as `provenance["inputs"]` |
+| G-7, only if A5 is (b) | a law module, a library page, one row of the choices file | the observable's law |
+
+My own builds edit nothing in `models/pump_composite.py`, `models/pump_composite_adapter.py`, `operators/`,
+`execution/`, `numerics/` or `definitions/`. D's step 6 may need the composite's adapter to carry the loop
+layout fields, as FR-51's are (D's to check).
+
+### 20.2 If a ruling cannot be executed
+
+- **Ruling 10 as worded for the driver cannot be.** `field_solver_choice.declare()` is in `validation/`, which
+  `src/cells` never imports. I would keep the field solver as the ionic definition declares it, call
+  `declare()` where the composed worlds are *built* (the re-expression's builders, the examples and the tests;
+  D147's guard `tests/unit/test_d147_drivers.py` covers run drivers under `validation/`), and have the driver
+  refuse, by name, a definition with a free field offset that declares version 2 or the sparse solver. The
+  count needs only the layout leaf `field_offset_free` of `initialise(spec).layout`, as `declare` reads it, so
+  the rule is four lines in the driver and no import. If the lead wants one home for the rule,
+  `free_field_offsets` moves to `src/cells` and `validation` re-exports it.
+- **Ruling 9, layout indices:** if stream D cannot add core layout fields in its step, each side keeps its
+  own: the source kind its pair rows and nodes in its own layout (two more fields) and a hook
+  `factor_amounts(read, p) -> [P]`, the sink its ends in its own layout (it has them) and a hook for them.
+  Nothing enters the structure but positions. 0.1 day more here, 0.25 less in the core.
+- **Ruling 3, per moved row:** if a sink cannot enumerate its rows' fluxes, it gives one J per slot and the
+  core adds it to every row of the slot (larger by at most the number of rows, so conservative). A multi-ion
+  slot without `routed_rows` is refused by name rather than bounded wrongly.
+- **Ruling 13, `CycleLaw.loop_term`:** if the D148 scan finds a judged step that the rule would refuse, the
+  field is removed with its reason and the gap is logged, not fixed silently.
+- **Ruling 11, run inputs:** if the `--inputs` option cannot be added while the command line is another
+  agent's, the driver gets its own `run` subcommand that calls the runner and writes `provenance["inputs"]`
+  itself; that covers the scalar run and not the batch and windowed ones.
+
 ## 21. Corrections to the plan, the map and the docstrings
 
-Lines are at 43b22d40.
+Lines are at 43b22d40. Items 3, 4, 8 and 9 are corrected on `legacy-cleanup` (b677738c, merged as D386).
 
 1. **The plan's section 4** cites `species_regulated_availability.py:154`, 548 to 551 and 743 to 745. They
    hold at ce4780d2 and are stale. Now 159, 553 to 557 and 748 to 754.
@@ -828,21 +1006,23 @@ Lines are at 43b22d40.
    world (section 3).
 5. **The map** (`docs/LEGACY_PORT_PLAN.md` at a1db6ab9): line 1379 says the JUPITER world runs at "RK4 at <=
    25 us", 1487 says an off-grid schedule "qualifies on RK4 for the cell and the base", and 1521 says RK4 on
-   @3 needs dt <= 25 us with Kv1.5. All three name no field solver. With the default one the base cluster's
-   first RK4 step is refused at every dt tried (25 to 3.125 us, M). With the declared floor solver all hold
-   (section 13.5).
+   @3 needs dt <= 25 us with Kv1.5. None names the field solver, which D147 and D156 rule (section 13.5). With
+   version 2 the base cluster's first RK4 step is refused at every dt tried (25 to 3.125 us, M). The first
+   version of this note asked instead of citing the rule.
 6. **The plan's section 8 three-step order template** (`docs/LEGACY_PORT_PLAN.md` at a1db6ab9, lines 962 to
    979) fits the composed run where the differences are above rounding, and not a held operator factor
    (sections 12 and 17).
 7. **D211 and the plan's row I6** would fold `ip3_er_release@1` into the cardiac release. It is another
    mechanism: that release relaxes to a target proportional to the L-type current and has flux states
    (`docs/HUMAN_CARDIAC_LAWS_DESIGN.md` section 3.5). Do not fold.
-8. **A latent parser hazard (not this note's).** `definitions/surface_pump_spec.py:207` to 215 multiplies each
-   junction control's `availability` by the junction's initial gate *in place*, on a deep copy that keeps
-   internal aliases. A definition built in Python that shares one schedule object between a junction and other
-   controls is parsed with the other controls scaled too (M: membranes and pumps became 0.6 of what was
-   declared; a JSON file cannot do this). It silently gave a 10 mV error in one of my probes before I found
-   it.
+8. **A latent parser hazard, fixed on `legacy-cleanup` (D386)** with one row
+   (`tests/unit/test_surface_pump.py`). `definitions/surface_pump_spec.py:207` to 215 multiplies each junction
+   control's `availability` by the junction's initial gate *in place*, on a deep copy that keeps internal
+   aliases. A definition built in Python that shares one schedule object between a junction and other controls
+   is parsed with the other controls scaled too (M: membranes and pumps became 0.6 of what was declared; a
+   JSON file cannot do this). The kinetic parser had the same scaling
+   (`definitions/surface_kinetic_spec.py:286`). It silently gave a 10 mV error in one of my probes before I
+   found it.
 9. **`registry/kind_registry.py`'s docstring** says built-in kinds are in `models/inner_kinds/`; they are in
    `kinds/`.
 10. **`legacy/processes/ip3_release.py:1`** names BETSE, but its arithmetic is the live Hill activation bit
@@ -867,6 +1047,11 @@ The machine was busy, so no time below is a performance claim.
 | `composed_run4`, `composed_composite` | The composed run, RK4 and IMEX, as @3 and inside a composite |
 | `rk4_domain`, `rk4_domain_floor`, `field_floor` | Why the default field solver refuses the first RK4 step |
 | `batch_worlds`, `at3_kind`, `lifecycle` | Two composed worlds in one batch; the prototype kind in a plain @3 world; what a closer meets in a kind without partition roles |
+| `compose_probe`, `labels_probe`, `water_volume` | The kind beside water, wash and labels (parse); the factor under moving water volumes (a run) |
+| `ph_same` | `ph_condition`'s law against the Hill law |
+
+**The second reader's records** (`/mnt/workspaces/Cells/second-read-calcium-notes-20261125/probe/`), cited as
+(M2): `pool_paths`, `split_equivalence`, `feedback_zero`, `free_offsets`, `floor_admission`, `floor_vmap`.
 
 Two of my probes were wrong first. `composed_run3` shared one schedule object (item 8 above) and gave a 10 mV
 error; it is kept as `composed_run3_ALIASED_invalid.log` and is not cited. The first `composed_run` used the
@@ -878,4 +1063,5 @@ default field solver and was stopped once its first step was refused.
 - No claim about the receptor, IP3's charge in water, IP3 metabolism, assembly energetics, or the real cage.
 - No claim that a composite's calcium run meets any band: only a prototype ran (section 4.1).
 - No GPU claim. No claim above a few hundred cells for the composed run. No timing.
+- The hooks and the run-inputs option are specified, not built. The second reader's M2 results are its own.
 - Nothing here is judged. Both parts come back to the user with their price before any build (D383).
