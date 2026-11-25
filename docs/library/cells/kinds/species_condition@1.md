@@ -4,16 +4,16 @@
 
 ## In plain words
 
-Cells open and close transport with what is dissolved around it: a store releases calcium when a
-signal molecule and a little calcium are present. This [kind](../../GLOSSARY.md#kind) is a general
-gate of that sort. A condition sits at one [node](../../GLOSSARY.md#node), a cell or a space outside
-it, and reads declared substances there. Its [law](../../GLOSSARY.md#law) turns the readings into
-one factor between zero and one. Any passive route or [channel](../../GLOSSARY.md#channel)
-population may name any number of conditions, and is multiplied by each. The factor follows the concentrations at
-every [stage](../../GLOSSARY.md#stage) of a step, so a release that raises what opens it is followed
-as it happens. A condition keeps no state, moves nothing and books nothing: the route books what it
-moves. It leaves out binding, so what it reads is never used up, and any delay or inactivation of
-the gate.
+Cells open and close transport with what is dissolved around it: a [store](../../GLOSSARY.md#store)
+releases calcium when a signal molecule and a little calcium are present. This
+[kind](../../GLOSSARY.md#kind) is a general gate of that sort. A condition sits at one
+[node](../../GLOSSARY.md#node), a cell or a space outside it, and reads declared substances there.
+Its [law](../../GLOSSARY.md#law) turns the readings into one factor between zero and one. Any
+passive route or [channel](../../GLOSSARY.md#channel) population may name any number of conditions,
+and is multiplied by each. The factor follows the concentrations at every
+[stage](../../GLOSSARY.md#stage) of a step, so a release that raises what opens it is followed as it
+happens. A condition keeps no state, moves nothing and books nothing: the route books what it moves.
+It leaves out binding, so what it reads is never used up, and any delay or inactivation of the gate.
 
 ## Seen from each field
 
