@@ -18,7 +18,7 @@ live file.
 
 **The candidate table** comes from a read-only probe at main `76a498ae`, not from the generator. No file of `src`,
 `configs` or `examples` differs from the last one's revision (`0767867f`), and main's next commit is docs only. The
-Python ran on CPU 7 at nice 10, one thread; git, jq and shell did the rest, unpinned:
+Python ran on CPU 7 at nice 10, one thread, apart from a few one-line checks; git, jq and shell did the rest, unpinned:
 - `/mnt/workspaces/Cells/rename-design-20261124/candidate-76a498ae/`: `table.tsv` and `mapping.json` (the rows),
   `reasons.tsv` (every other quoted ID: where it is spelled, which registry holds it, and why it has no row),
   `by_hand.tsv` (§1.5), `open_points.json` (§11, as data for the tool), `FROZEN2.tsv`, `PINS2.tsv` and
@@ -36,7 +36,9 @@ Python ran on CPU 7 at nice 10, one thread; git, jq and shell did the rest, unpi
 - its list of IDs built at run time missed legacy's files and a computed major, and named two sites that build no ID
   (§1.5);
 - it said that no ID pattern exists outside `src`, and that the viewer's reader needs no change. Neither holds (§3, §7);
-- its docs commit left out the composition matrix's generated block (§8).
+- its docs commit left out the composition matrix's generated block (§8);
+- it counted 12 files outside `src` that call the registry's `qualified()`, and five do (§3). It named a test that reads
+  another file as a reader of the 8 artifacts, four of which have no reader in code (§11).
 
 ## 0. Summary
 
