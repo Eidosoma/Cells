@@ -1,0 +1,888 @@
+{
+ "schema": "ensemble-reexpression legacy side, version 1",
+ "part": 1,
+ "captures": {
+  "root": "/mnt/workspaces/Cells/legacy-captures-20261125",
+  "science": "science-76a498ae",
+  "science_manifest_sha256": "e0e5520f5dfa28f5e0895e74b13788343ad659b55ca72b6082dc11a0ccddf639",
+  "origin": "origin-76a498ae",
+  "origin_manifest_sha256": "823f229c38882c99bfdd20148545f4f8b54f5beaf20ca6b420da295f15a5f149",
+  "snapshot": "snapshot-76a498ae",
+  "snapshot_manifest_sha256": "b0b569075ca5084efabbca410a782ecf47a193b2209a66e7ceb7e0da9c86aa90",
+  "snapshot_revision": "76a498ae118c6d706cee0b5a6d278b1f5dae7a90",
+  "cpu_model": "Intel(R) Xeon(R) CPU @ 2.20GHz",
+  "python": "3.13.5",
+  "jax": "0.11.1",
+  "jaxlib": "0.11.1",
+  "numpy": "2.5.3"
+ },
+ "threshold_rule": "10 x 8 x 2^-52 x (S + 1) x s, S the steps of the finest captured run, s inputs.json's scale",
+ "worlds": {
+  "jupiter_baseline": {
+   "captured_steps_s": [
+    0.0001,
+    5e-05,
+    2.5e-05
+   ],
+   "captured_step_counts": [
+    200,
+    400,
+    800
+   ],
+   "entries": {
+    "n_cell_Na": {
+     "class": "unresolved",
+     "observed_order": 0.0,
+     "d2": 2.6e-18,
+     "d1": 2.6e-18,
+     "threshold": 8.69e-14,
+     "largest": 0.00295
+    },
+    "n_out_Na": {
+     "class": "unresolved",
+     "observed_order": 0.19,
+     "d2": 8.88e-16,
+     "d1": 7.77e-16,
+     "threshold": 2.9e-10,
+     "largest": 0.53
+    },
+    "leak_Na": {
+     "class": "unresolved",
+     "observed_order": 3.71,
+     "d2": 1.46e-18,
+     "d1": 1.12e-19,
+     "threshold": 8.13e-16,
+     "largest": 2.4e-05
+    },
+    "junction_Na": {
+     "class": "unresolved",
+     "observed_order": 3.9,
+     "d2": 1.05e-18,
+     "d1": 7.07e-20,
+     "threshold": 7.26e-16,
+     "largest": 3.19e-06
+    },
+    "face_Na": {
+     "class": "unresolved",
+     "observed_order": -0.42,
+     "d2": 1.67e-16,
+     "d1": 2.22e-16,
+     "threshold": 1.45e-10,
+     "largest": 0.324
+    },
+    "n_cell_K": {
+     "class": "unresolved",
+     "observed_order": 3.59,
+     "d2": 1.05e-17,
+     "d1": 8.67e-19,
+     "threshold": 9.69e-14,
+     "largest": 0.00191
+    },
+    "n_out_K": {
+     "class": "unresolved",
+     "observed_order": -0.22,
+     "d2": 1.67e-16,
+     "d1": 1.94e-16,
+     "threshold": 2.19e-11,
+     "largest": 0.153
+    },
+    "leak_K": {
+     "class": "unresolved",
+     "observed_order": 2.82,
+     "d2": 7.66e-19,
+     "d1": 1.08e-19,
+     "threshold": 1.51e-14,
+     "largest": 4.14e-05
+    },
+    "junction_K": {
+     "class": "unresolved",
+     "observed_order": 3.8,
+     "d2": 1.22e-17,
+     "d1": 8.78e-19,
+     "threshold": 1.13e-14,
+     "largest": 2.88e-05
+    },
+    "face_K": {
+     "class": "unresolved",
+     "observed_order": 0.0,
+     "d2": 8.33e-17,
+     "d1": 8.33e-17,
+     "threshold": 1.1e-11,
+     "largest": 0.0851
+    },
+    "n_cell_Cl": {
+     "class": "unresolved",
+     "observed_order": 3.46,
+     "d2": 1.1e-18,
+     "d1": 9.99e-20,
+     "threshold": 5.76e-15,
+     "largest": 6.21e-06
+    },
+    "n_out_Cl": {
+     "class": "unresolved",
+     "observed_order": -1.68,
+     "d2": 2.78e-16,
+     "d1": 8.88e-16,
+     "threshold": 3.71e-10,
+     "largest": 0.377
+    },
+    "leak_Cl": {
+     "class": "unresolved",
+     "observed_order": 3.46,
+     "d2": 5.87e-19,
+     "d1": 5.34e-20,
+     "threshold": 5.11e-15,
+     "largest": 5.28e-06
+    },
+    "junction_Cl": {
+     "class": "unresolved",
+     "observed_order": 3.71,
+     "d2": 5.21e-19,
+     "d1": 3.98e-20,
+     "threshold": 6.45e-16,
+     "largest": 9.25e-07
+    },
+    "face_Cl": {
+     "class": "unresolved",
+     "observed_order": -0.78,
+     "d2": 1.94e-16,
+     "d1": 3.33e-16,
+     "threshold": 1.86e-10,
+     "largest": 0.239
+    },
+    "channel_K": {
+     "class": "unresolved",
+     "observed_order": 4.0,
+     "d2": 2.06e-17,
+     "d1": 1.29e-18,
+     "threshold": 1.36e-14,
+     "largest": 3.13e-06
+    },
+    "gate_m": {
+     "class": "unresolved",
+     "observed_order": 4.0,
+     "d2": 1.48e-12,
+     "d1": 9.26e-14,
+     "threshold": 1.42e-11,
+     "largest": 0.2
+    },
+    "gate_h": {
+     "class": "unresolved",
+     "observed_order": 3.67,
+     "d2": 1.7e-14,
+     "d1": 1.33e-15,
+     "threshold": 1.42e-11,
+     "largest": 0.702
+    },
+    "pump": {
+     "class": "unresolved",
+     "observed_order": -1.22,
+     "d2": 3.25e-19,
+     "d1": 7.59e-19,
+     "threshold": 2.85e-14,
+     "largest": 0.000989
+    },
+    "junction_gate": {
+     "class": "unresolved",
+     "observed_order": 4.31,
+     "d2": 5.52e-14,
+     "d1": 2.78e-15,
+     "threshold": 1.42e-11,
+     "largest": 0.606
+    },
+    "heat_junction": {
+     "class": "unresolved",
+     "observed_order": 4.04,
+     "d2": 1.33e-16,
+     "d1": 8.09e-18,
+     "threshold": 1.81e-13,
+     "largest": 3.92e-05
+    },
+    "heat_face": {
+     "class": "unresolved",
+     "observed_order": -0.49,
+     "d2": 2.78e-16,
+     "d1": 3.89e-16,
+     "threshold": 4.95e-09,
+     "largest": 0.433
+    },
+    "heat_membrane": {
+     "class": "unresolved",
+     "observed_order": 2.89,
+     "d2": 1.28e-16,
+     "d1": 1.73e-17,
+     "threshold": 5.63e-12,
+     "largest": 0.0276
+    },
+    "voltage": {
+     "class": "unresolved",
+     "observed_order": 2.26,
+     "d2": 3.33e-16,
+     "d1": 6.94e-17,
+     "threshold": 5.93e-12,
+     "largest": 0.0711
+    },
+    "phi_out": {
+     "class": "unresolved",
+     "observed_order": null,
+     "d2": 0.0,
+     "d1": 0.0,
+     "threshold": 3.66e-13,
+     "largest": 0.000509
+    }
+   }
+  },
+  "jupiter_pump_release": {
+   "captured_steps_s": [
+    0.0001,
+    5e-05,
+    2.5e-05
+   ],
+   "captured_step_counts": [
+    200,
+    400,
+    800
+   ],
+   "entries": {
+    "n_cell_Na": {
+     "class": "unresolved",
+     "observed_order": 1.81,
+     "d2": 3.04e-18,
+     "d1": 8.67e-19,
+     "threshold": 8.69e-14,
+     "largest": 0.00221
+    },
+    "n_out_Na": {
+     "class": "unresolved",
+     "observed_order": -1.42,
+     "d2": 1.67e-16,
+     "d1": 4.44e-16,
+     "threshold": 2.9e-10,
+     "largest": 0.53
+    },
+    "leak_Na": {
+     "class": "unresolved",
+     "observed_order": 3.72,
+     "d2": 1.25e-18,
+     "d1": 9.49e-20,
+     "threshold": 8.13e-16,
+     "largest": 2.27e-05
+    },
+    "junction_Na": {
+     "class": "unresolved",
+     "observed_order": 3.95,
+     "d2": 1.01e-18,
+     "d1": 6.52e-20,
+     "threshold": 7.26e-16,
+     "largest": 3.58e-06
+    },
+    "face_Na": {
+     "class": "unresolved",
+     "observed_order": -1.58,
+     "d2": 1.67e-16,
+     "d1": 5e-16,
+     "threshold": 1.45e-10,
+     "largest": 0.324
+    },
+    "n_cell_K": {
+     "class": "unresolved",
+     "observed_order": 3.14,
+     "d2": 1.91e-17,
+     "d1": 2.17e-18,
+     "threshold": 9.69e-14,
+     "largest": 0.0014
+    },
+    "n_out_K": {
+     "class": "unresolved",
+     "observed_order": 0.0,
+     "d2": 1.39e-16,
+     "d1": 1.39e-16,
+     "threshold": 2.19e-11,
+     "largest": 0.153
+    },
+    "leak_K": {
+     "class": "unresolved",
+     "observed_order": 3.55,
+     "d2": 1.35e-18,
+     "d1": 1.15e-19,
+     "threshold": 1.51e-14,
+     "largest": 4.75e-05
+    },
+    "junction_K": {
+     "class": "unresolved",
+     "observed_order": 3.77,
+     "d2": 1.19e-17,
+     "d1": 8.74e-19,
+     "threshold": 1.13e-14,
+     "largest": 3.52e-05
+    },
+    "face_K": {
+     "class": "unresolved",
+     "observed_order": -1.17,
+     "d2": 5.55e-17,
+     "d1": 1.25e-16,
+     "threshold": 1.1e-11,
+     "largest": 0.0851
+    },
+    "n_cell_Cl": {
+     "class": "unresolved",
+     "observed_order": 3.86,
+     "d2": 1.21e-18,
+     "d1": 8.39e-20,
+     "threshold": 5.76e-15,
+     "largest": 8.61e-06
+    },
+    "n_out_Cl": {
+     "class": "unresolved",
+     "observed_order": -0.26,
+     "d2": 5.55e-16,
+     "d1": 6.66e-16,
+     "threshold": 3.71e-10,
+     "largest": 0.377
+    },
+    "leak_Cl": {
+     "class": "unresolved",
+     "observed_order": 3.89,
+     "d2": 7.41e-19,
+     "d1": 5e-20,
+     "threshold": 5.11e-15,
+     "largest": 7.38e-06
+    },
+    "junction_Cl": {
+     "class": "unresolved",
+     "observed_order": 3.86,
+     "d2": 5.13e-19,
+     "d1": 3.54e-20,
+     "threshold": 6.45e-16,
+     "largest": 1.23e-06
+    },
+    "face_Cl": {
+     "class": "unresolved",
+     "observed_order": 0.42,
+     "d2": 2.22e-16,
+     "d1": 1.67e-16,
+     "threshold": 1.86e-10,
+     "largest": 0.239
+    },
+    "channel_K": {
+     "class": "unresolved",
+     "observed_order": 4.0,
+     "d2": 9.1e-18,
+     "d1": 5.7e-19,
+     "threshold": 1.36e-14,
+     "largest": 3.43e-06
+    },
+    "gate_m": {
+     "class": "unresolved",
+     "observed_order": 4.0,
+     "d2": 1.59e-12,
+     "d1": 9.89e-14,
+     "threshold": 1.42e-11,
+     "largest": 0.2
+    },
+    "gate_h": {
+     "class": "unresolved",
+     "observed_order": 3.32,
+     "d2": 1.67e-14,
+     "d1": 1.67e-15,
+     "threshold": 1.42e-11,
+     "largest": 0.702
+    },
+    "pump": {
+     "class": "unresolved",
+     "observed_order": -1.22,
+     "d2": 3.25e-19,
+     "d1": 7.59e-19,
+     "threshold": 2.85e-14,
+     "largest": 0.000742
+    },
+    "junction_gate": {
+     "class": "unresolved",
+     "observed_order": 3.79,
+     "d2": 4.93e-14,
+     "d1": 3.55e-15,
+     "threshold": 1.42e-11,
+     "largest": 0.602
+    },
+    "heat_junction": {
+     "class": "unresolved",
+     "observed_order": 4.05,
+     "d2": 1.05e-16,
+     "d1": 6.34e-18,
+     "threshold": 1.81e-13,
+     "largest": 5.02e-05
+    },
+    "heat_face": {
+     "class": "unresolved",
+     "observed_order": -1.1,
+     "d2": 3.89e-16,
+     "d1": 8.33e-16,
+     "threshold": 4.95e-09,
+     "largest": 0.433
+    },
+    "heat_membrane": {
+     "class": "unresolved",
+     "observed_order": 1.09,
+     "d2": 5.9e-17,
+     "d1": 2.78e-17,
+     "threshold": 5.63e-12,
+     "largest": 0.021
+    },
+    "voltage": {
+     "class": "unresolved",
+     "observed_order": 3.82,
+     "d2": 5.9e-16,
+     "d1": 4.16e-17,
+     "threshold": 5.93e-12,
+     "largest": 0.0679
+    },
+    "phi_out": {
+     "class": "unresolved",
+     "observed_order": 0.0,
+     "d2": 1.08e-19,
+     "d1": 1.08e-19,
+     "threshold": 3.66e-13,
+     "largest": 0.000509
+    }
+   }
+  },
+  "cell": {
+   "captured_steps_s": [
+    0.0001,
+    5e-05,
+    2.5e-05
+   ],
+   "captured_step_counts": [
+    200,
+    400,
+    800
+   ],
+   "families": "4 seeds x world IDs 0 to 7",
+   "entries": {
+    "n_cell_Na": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 2.04e-15,
+     "largest_d1": 1.27e-16,
+     "threshold": 1.98e-13,
+     "largest": 0.0017,
+     "smallest_of_the_families_largest": 0.00166
+    },
+    "n_out_Na": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 2.04e-15,
+     "largest_d1": 1.27e-16,
+     "threshold": 1.98e-13,
+     "largest": 0.0017,
+     "smallest_of_the_families_largest": 0.00166
+    },
+    "leak_Na": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 2.04e-15,
+     "largest_d1": 1.28e-16,
+     "threshold": 1.13e-13,
+     "largest": 0.00395,
+     "smallest_of_the_families_largest": 0.0039
+    },
+    "n_cell_K": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 2.68e-15,
+     "largest_d1": 1.66e-16,
+     "threshold": 2.72e-12,
+     "largest": 0.000809,
+     "smallest_of_the_families_largest": 0.000569
+    },
+    "n_out_K": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 2.68e-15,
+     "largest_d1": 1.66e-16,
+     "threshold": 2.72e-12,
+     "largest": 0.000809,
+     "smallest_of_the_families_largest": 0.000569
+    },
+    "leak_K": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 3.49e-15,
+     "largest_d1": 2.2e-16,
+     "threshold": 4.07e-13,
+     "largest": 0.00067,
+     "smallest_of_the_families_largest": 0.000635
+    },
+    "n_cell_Cl": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 2.59e-16,
+     "largest_d1": 1.62e-17,
+     "threshold": 2.71e-14,
+     "largest": 9.88e-06,
+     "smallest_of_the_families_largest": 6.9e-06
+    },
+    "n_out_Cl": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 2.59e-16,
+     "largest_d1": 1.62e-17,
+     "threshold": 2.71e-14,
+     "largest": 9.88e-06,
+     "smallest_of_the_families_largest": 6.9e-06
+    },
+    "leak_Cl": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 2.59e-16,
+     "largest_d1": 1.62e-17,
+     "threshold": 2.71e-14,
+     "largest": 9.88e-06,
+     "smallest_of_the_families_largest": 6.9e-06
+    },
+    "channel_K": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 5.48e-15,
+     "largest_d1": 3.41e-16,
+     "threshold": 2.26e-12,
+     "largest": 0.000292,
+     "smallest_of_the_families_largest": 1.67e-05
+    },
+    "gate_m": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 8.19e-13,
+     "largest_d1": 5.11e-14,
+     "threshold": 1.42e-11,
+     "largest": 0.0581,
+     "smallest_of_the_families_largest": 0.0576
+    },
+    "gate_h": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 1.67e-15,
+     "largest_d1": 2.44e-15,
+     "threshold": 1.42e-11,
+     "largest": 0.802,
+     "smallest_of_the_families_largest": 0.801
+    },
+    "pump": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 9.76e-19,
+     "largest_d1": 1.73e-18,
+     "threshold": 2.85e-14,
+     "largest": 0.000748,
+     "smallest_of_the_families_largest": 0.000748
+    },
+    "heat_membrane": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 3.3e-14,
+     "largest_d1": 2.08e-15,
+     "threshold": 6.87e-11,
+     "largest": 0.0703,
+     "smallest_of_the_families_largest": 0.0689
+    },
+    "voltage": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 4e-14,
+     "largest_d1": 2.53e-15,
+     "threshold": 2.96e-11,
+     "largest": 0.058,
+     "smallest_of_the_families_largest": 0.0562
+    }
+   }
+  },
+  "base": {
+   "captured_steps_s": [
+    5e-05,
+    2.5e-05,
+    1.25e-05
+   ],
+   "captured_step_counts": [
+    400,
+    800,
+    1600
+   ],
+   "families": "4 seeds x world IDs 0 to 7",
+   "entries": {
+    "n_cell_Na": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 6.94e-18,
+     "largest_d1": 9.54e-18,
+     "threshold": 1.74e-13,
+     "largest": 0.00295,
+     "smallest_of_the_families_largest": 0.00295
+    },
+    "n_out_Na": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 1.22e-15,
+     "largest_d1": 1.55e-15,
+     "threshold": 5.81e-10,
+     "largest": 0.53,
+     "smallest_of_the_families_largest": 0.53
+    },
+    "leak_Na": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 8.47e-20,
+     "largest_d1": 9.83e-20,
+     "threshold": 1.63e-15,
+     "largest": 2.4e-05,
+     "smallest_of_the_families_largest": 2.4e-05
+    },
+    "junction_Na": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 6.06e-20,
+     "largest_d1": 2.03e-20,
+     "threshold": 1.45e-15,
+     "largest": 3.2e-06,
+     "smallest_of_the_families_largest": 3.19e-06
+    },
+    "face_Na": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 8.33e-16,
+     "largest_d1": 9.99e-16,
+     "threshold": 2.9e-10,
+     "largest": 0.324,
+     "smallest_of_the_families_largest": 0.324
+    },
+    "n_cell_K": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 3.69e-18,
+     "largest_d1": 4.77e-18,
+     "threshold": 1.94e-13,
+     "largest": 0.00191,
+     "smallest_of_the_families_largest": 0.00191
+    },
+    "n_out_K": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 3.61e-16,
+     "largest_d1": 4.72e-16,
+     "threshold": 4.39e-11,
+     "largest": 0.153,
+     "smallest_of_the_families_largest": 0.153
+    },
+    "leak_K": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 3.05e-19,
+     "largest_d1": 2.24e-19,
+     "threshold": 3.02e-14,
+     "largest": 4.15e-05,
+     "smallest_of_the_families_largest": 4.14e-05
+    },
+    "junction_K": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 6.54e-19,
+     "largest_d1": 2.95e-19,
+     "threshold": 2.26e-14,
+     "largest": 2.89e-05,
+     "smallest_of_the_families_largest": 2.88e-05
+    },
+    "face_K": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 1.67e-16,
+     "largest_d1": 2.64e-16,
+     "threshold": 2.19e-11,
+     "largest": 0.0851,
+     "smallest_of_the_families_largest": 0.0851
+    },
+    "n_cell_Cl": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 8.47e-20,
+     "largest_d1": 6.01e-20,
+     "threshold": 1.15e-14,
+     "largest": 5.75e-06,
+     "smallest_of_the_families_largest": 5.73e-06
+    },
+    "n_out_Cl": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 7.22e-16,
+     "largest_d1": 1.17e-15,
+     "threshold": 7.42e-10,
+     "largest": 0.377,
+     "smallest_of_the_families_largest": 0.377
+    },
+    "leak_Cl": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 9.49e-20,
+     "largest_d1": 4.83e-20,
+     "threshold": 1.02e-14,
+     "largest": 4.87e-06,
+     "smallest_of_the_families_largest": 4.85e-06
+    },
+    "junction_Cl": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 2.39e-20,
+     "largest_d1": 1.28e-20,
+     "threshold": 1.29e-15,
+     "largest": 8.88e-07,
+     "smallest_of_the_families_largest": 8.83e-07
+    },
+    "face_Cl": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 5.83e-16,
+     "largest_d1": 5.27e-16,
+     "threshold": 3.71e-10,
+     "largest": 0.239,
+     "smallest_of_the_families_largest": 0.239
+    },
+    "channel_K": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 2.52e-19,
+     "largest_d1": 1.66e-20,
+     "threshold": 2.72e-14,
+     "largest": 1.24e-06,
+     "smallest_of_the_families_largest": 6.13e-08
+    },
+    "gate_m": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 7.58e-14,
+     "largest_d1": 4.96e-15,
+     "threshold": 2.84e-11,
+     "largest": 0.057,
+     "smallest_of_the_families_largest": 0.057
+    },
+    "gate_h": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 2.44e-15,
+     "largest_d1": 4e-15,
+     "threshold": 2.84e-11,
+     "largest": 0.702,
+     "smallest_of_the_families_largest": 0.702
+    },
+    "pump": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 1.73e-18,
+     "largest_d1": 2.82e-18,
+     "threshold": 5.69e-14,
+     "largest": 0.000989,
+     "smallest_of_the_families_largest": 0.000989
+    },
+    "junction_gate": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 5.66e-15,
+     "largest_d1": 3.33e-15,
+     "threshold": 2.84e-11,
+     "largest": 0.606,
+     "smallest_of_the_families_largest": 0.606
+    },
+    "heat_junction": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 8.57e-18,
+     "largest_d1": 9.35e-19,
+     "threshold": 3.62e-13,
+     "largest": 3.94e-05,
+     "smallest_of_the_families_largest": 3.92e-05
+    },
+    "heat_face": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 8.33e-16,
+     "largest_d1": 1.39e-15,
+     "threshold": 9.9e-09,
+     "largest": 0.433,
+     "smallest_of_the_families_largest": 0.433
+    },
+    "heat_membrane": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 5.9e-17,
+     "largest_d1": 9.71e-17,
+     "threshold": 1.12e-11,
+     "largest": 0.0276,
+     "smallest_of_the_families_largest": 0.0276
+    },
+    "voltage": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 2.08e-16,
+     "largest_d1": 2.64e-16,
+     "threshold": 1.19e-11,
+     "largest": 0.071,
+     "smallest_of_the_families_largest": 0.071
+    },
+    "channel_K_summary": {
+     "classes": {
+      "unresolved": 32
+     },
+     "largest_d2": 2.52e-19,
+     "largest_d1": 1.66e-20,
+     "threshold": 2.72e-14,
+     "largest": 1.24e-06,
+     "smallest_of_the_families_largest": 6.13e-08
+    }
+   }
+  },
+  "integrated": {
+   "captured_steps_s": [
+    0.0001,
+    5e-05,
+    2.5e-05
+   ],
+   "status": "pending: the capture is being taken (the lead, 25 November 2026); its classes follow by the same rule in a dated file"
+  }
+ }
+}

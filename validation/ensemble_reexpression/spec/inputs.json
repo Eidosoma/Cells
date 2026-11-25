@@ -1,0 +1,4233 @@
+{
+ "schema": "ensemble-reexpression inputs, version 1",
+ "part": 1,
+ "constants": {
+  "F_C_per_mol": 96485.33212331001,
+  "R_J_per_mol_K": 8.31446261815324,
+  "fmol_to_mol": 1e-15
+ },
+ "worlds": {
+  "jupiter_baseline": {
+   "consumer": "jupiter",
+   "ionic": {
+    "temperature_K": 298.15,
+    "species": {
+     "Na": 1,
+     "K": 1,
+     "Cl": -1
+    },
+    "cells": {
+     "cell_0": {
+      "volume_pL": 0.5,
+      "initial_amount_fmol": {
+       "Cl": 4.0,
+       "K": 70.0,
+       "Na": 6.0
+      },
+      "fixed_charge_fmol": -72.00186556853812,
+      "initial_voltage_V": -0.06,
+      "initial_charge_C": -1.8e-13
+     },
+     "cell_1": {
+      "volume_pL": 0.7,
+      "initial_amount_fmol": {
+       "Cl": 7.0,
+       "K": 91.0,
+       "Na": 10.5
+      },
+      "fixed_charge_fmol": -94.5014924548305,
+      "initial_voltage_V": -0.04,
+      "initial_charge_C": -1.44e-13
+     }
+    },
+    "outside": {
+     "local": {
+      "volume_pL": 2.0,
+      "initial_amount_fmol": {
+       "Cl": 220.0,
+       "K": 8.0,
+       "Na": 280.0
+      },
+      "fixed_charge_fmol": -67.99664197663137,
+      "initial_charge_C": 3.24e-13,
+      "held": false
+     },
+     "near": {
+      "volume_pL": 1.0,
+      "initial_amount_fmol": {
+       "Cl": 105.0,
+       "K": 8.0,
+       "Na": 120.0
+      },
+      "fixed_charge_fmol": -23.0,
+      "initial_charge_C": 0.0,
+      "held": false
+     },
+     "far": {
+      "volume_pL": 3.0,
+      "initial_amount_fmol": {
+       "Cl": 345.0,
+       "K": 9.0,
+       "Na": 450.0
+      },
+      "fixed_charge_fmol": -114.0,
+      "initial_charge_C": 0.0,
+      "held": false
+     }
+    },
+    "gauge": "local",
+    "gauge_potential_V": 0.0,
+    "membranes": {
+     "membrane_0": {
+      "inside": "cell_0",
+      "outside": "local",
+      "area_m2": 3e-10,
+      "capacitance_F": 3e-12,
+      "law": "constant_field",
+      "permeability_m_per_s": {
+       "Cl": 8e-11,
+       "K": 2e-10,
+       "Na": 1e-11
+      },
+      "pump": {
+       "law": "nak_pump_positive",
+       "sodium_out": 3,
+       "potassium_in": 2,
+       "capacity_fmol_per_s": 0.05,
+       "km_na_mM": 12.0,
+       "km_k_mM": 0.2,
+       "km_atp_mM": 0.5,
+       "fuel": {
+        "law": "maintained_fuel",
+        "atp_mM": 1.5,
+        "adp_mM": 0.1,
+        "pi_mM": 0.1,
+        "delta_g0_J_per_mol": -37000.0
+       }
+      }
+     },
+     "membrane_1": {
+      "inside": "cell_1",
+      "outside": "local",
+      "area_m2": 3.6e-10,
+      "capacitance_F": 3.6e-12,
+      "law": "constant_field",
+      "permeability_m_per_s": {
+       "Cl": 8e-11,
+       "K": 2e-10,
+       "Na": 1e-11
+      },
+      "pump": {
+       "law": "nak_pump_positive",
+       "sodium_out": 3,
+       "potassium_in": 2,
+       "capacity_fmol_per_s": 0.1,
+       "km_na_mM": 12.0,
+       "km_k_mM": 0.2,
+       "km_atp_mM": 0.5,
+       "fuel": {
+        "law": "maintained_fuel",
+        "atp_mM": 1.5,
+        "adp_mM": 0.1,
+        "pi_mM": 0.1,
+        "delta_g0_J_per_mol": -37000.0
+       }
+      }
+     }
+    },
+    "channels": {
+     "channel_0": {
+      "membrane": "membrane_0",
+      "law": "kv15_mh",
+      "species": "K",
+      "max_permeability_m_per_s": 3e-10,
+      "abundance": 0.5,
+      "initial_gates": {
+       "m": 0.2,
+       "h": 0.7
+      }
+     },
+     "channel_1": {
+      "membrane": "membrane_1",
+      "law": "kv15_mh",
+      "species": "K",
+      "max_permeability_m_per_s": 3e-10,
+      "abundance": 0.6,
+      "initial_gates": {
+       "m": 0.2,
+       "h": 0.7
+      }
+     }
+    },
+    "junctions": {
+     "junction": {
+      "sender": "cell_0",
+      "receiver": "cell_1",
+      "area_m2": 1e-10,
+      "law": "constant_field",
+      "permeability_m_per_s": {
+       "Cl": 4e-10,
+       "K": 5e-10,
+       "Na": 3e-10
+      },
+      "gate": {
+       "law": "junction_relaxation",
+       "threshold_voltage_V": 0.015,
+       "minimum_open_fraction": 0.1,
+       "initial_gate": 0.6
+      }
+     }
+    },
+    "faces": {
+     "face_0": {
+      "law": "logmean_face",
+      "sender": "local",
+      "receiver": "near",
+      "area_m2": 1e-11,
+      "length_m": 2e-05,
+      "diffusivity_m2_per_s": {
+       "Cl": 2e-09,
+       "K": 1.7e-09,
+       "Na": 1.2e-09
+      }
+     },
+     "face_1": {
+      "law": "logmean_face",
+      "sender": "near",
+      "receiver": "far",
+      "area_m2": 1e-11,
+      "length_m": 2e-05,
+      "diffusivity_m2_per_s": {
+       "Cl": 2e-09,
+       "K": 1.7e-09,
+       "Na": 1.2e-09
+      }
+     },
+     "face_2": {
+      "law": "logmean_face",
+      "sender": "far",
+      "receiver": "local",
+      "area_m2": 1e-11,
+      "length_m": 2e-05,
+      "diffusivity_m2_per_s": {
+       "Cl": 2e-09,
+       "K": 1.7e-09,
+       "Na": 1.2e-09
+      }
+     }
+    },
+    "controls": {
+     "leak": {
+      "membrane_0": [
+       [
+        0.0,
+        1.0
+       ]
+      ],
+      "membrane_1": [
+       [
+        0.0,
+        1.0
+       ]
+      ]
+     },
+     "pump": {
+      "membrane_0": [
+       [
+        0.0,
+        1.0
+       ]
+      ],
+      "membrane_1": [
+       [
+        0.0,
+        1.0
+       ]
+      ]
+     },
+     "channel": {
+      "channel_0": [
+       [
+        0.0,
+        1.0
+       ]
+      ],
+      "channel_1": [
+       [
+        0.0,
+        1.0
+       ]
+      ]
+     },
+     "junction": {
+      "junction": [
+       [
+        0.0,
+        1.0
+       ]
+      ]
+     }
+    },
+    "material_tolerance_fmol": {
+     "Cl": 2e-11,
+     "K": 2e-11,
+     "Na": 2e-11
+    },
+    "end_s": 0.02
+   },
+   "history_times": {
+    "first_s": 0.0,
+    "last_s": 0.02,
+    "spacing_s": 0.0001
+   },
+   "potential_times_s": [
+    0.0,
+    0.0025,
+    0.005,
+    0.0075,
+    0.01,
+    0.015,
+    0.02
+   ],
+   "scales": {
+    "n_cell_Na": 0.006108195226198562,
+    "n_out_Na": 20.414193622370068,
+    "leak_Na": 5.7159742142636183e-05,
+    "junction_Na": 5.103548405592518e-05,
+    "face_Na": 10.207096811185034,
+    "n_cell_K": 0.006810807637426777,
+    "n_out_K": 1.5424057403568494,
+    "leak_K": 0.0010615380683632436,
+    "junction_K": 0.0007938853075366138,
+    "face_K": 0.7712028701784247,
+    "n_cell_Cl": 0.0004046546824700911,
+    "n_out_Cl": 26.084802961917305,
+    "leak_Cl": 0.00035928980775371314,
+    "junction_Cl": 4.536487471637794e-05,
+    "face_Cl": 13.042401480958652,
+    "channel_K": 0.0009553842615269192,
+    "gate_m": 1.0,
+    "gate_h": 1.0,
+    "pump": 0.002,
+    "junction_gate": 1.0,
+    "heat_junction": 0.01271409108258414,
+    "heat_face": 348.1263040443753,
+    "heat_membrane": 0.39546790337543763,
+    "voltage": 0.417093756508962,
+    "phi_out": 0.025692579121085843
+   }
+  },
+  "jupiter_pump_release": {
+   "consumer": "jupiter",
+   "ionic": {
+    "temperature_K": 298.15,
+    "species": {
+     "Na": 1,
+     "K": 1,
+     "Cl": -1
+    },
+    "cells": {
+     "cell_0": {
+      "volume_pL": 0.5,
+      "initial_amount_fmol": {
+       "Cl": 4.0,
+       "K": 70.0,
+       "Na": 6.0
+      },
+      "fixed_charge_fmol": -72.00186556853812,
+      "initial_voltage_V": -0.06,
+      "initial_charge_C": -1.8e-13
+     },
+     "cell_1": {
+      "volume_pL": 0.7,
+      "initial_amount_fmol": {
+       "Cl": 7.0,
+       "K": 91.0,
+       "Na": 10.5
+      },
+      "fixed_charge_fmol": -94.5014924548305,
+      "initial_voltage_V": -0.04,
+      "initial_charge_C": -1.44e-13
+     }
+    },
+    "outside": {
+     "local": {
+      "volume_pL": 2.0,
+      "initial_amount_fmol": {
+       "Cl": 220.0,
+       "K": 8.0,
+       "Na": 280.0
+      },
+      "fixed_charge_fmol": -67.99664197663137,
+      "initial_charge_C": 3.24e-13,
+      "held": false
+     },
+     "near": {
+      "volume_pL": 1.0,
+      "initial_amount_fmol": {
+       "Cl": 105.0,
+       "K": 8.0,
+       "Na": 120.0
+      },
+      "fixed_charge_fmol": -23.0,
+      "initial_charge_C": 0.0,
+      "held": false
+     },
+     "far": {
+      "volume_pL": 3.0,
+      "initial_amount_fmol": {
+       "Cl": 345.0,
+       "K": 9.0,
+       "Na": 450.0
+      },
+      "fixed_charge_fmol": -114.0,
+      "initial_charge_C": 0.0,
+      "held": false
+     }
+    },
+    "gauge": "local",
+    "gauge_potential_V": 0.0,
+    "membranes": {
+     "membrane_0": {
+      "inside": "cell_0",
+      "outside": "local",
+      "area_m2": 3e-10,
+      "capacitance_F": 3e-12,
+      "law": "constant_field",
+      "permeability_m_per_s": {
+       "Cl": 8e-11,
+       "K": 2e-10,
+       "Na": 1e-11
+      },
+      "pump": {
+       "law": "nak_pump_positive",
+       "sodium_out": 3,
+       "potassium_in": 2,
+       "capacity_fmol_per_s": 0.05,
+       "km_na_mM": 12.0,
+       "km_k_mM": 0.2,
+       "km_atp_mM": 0.5,
+       "fuel": {
+        "law": "maintained_fuel",
+        "atp_mM": 1.5,
+        "adp_mM": 0.1,
+        "pi_mM": 0.1,
+        "delta_g0_J_per_mol": -37000.0
+       }
+      }
+     },
+     "membrane_1": {
+      "inside": "cell_1",
+      "outside": "local",
+      "area_m2": 3.6e-10,
+      "capacitance_F": 3.6e-12,
+      "law": "constant_field",
+      "permeability_m_per_s": {
+       "Cl": 8e-11,
+       "K": 2e-10,
+       "Na": 1e-11
+      },
+      "pump": {
+       "law": "nak_pump_positive",
+       "sodium_out": 3,
+       "potassium_in": 2,
+       "capacity_fmol_per_s": 0.1,
+       "km_na_mM": 12.0,
+       "km_k_mM": 0.2,
+       "km_atp_mM": 0.5,
+       "fuel": {
+        "law": "maintained_fuel",
+        "atp_mM": 1.5,
+        "adp_mM": 0.1,
+        "pi_mM": 0.1,
+        "delta_g0_J_per_mol": -37000.0
+       }
+      }
+     }
+    },
+    "channels": {
+     "channel_0": {
+      "membrane": "membrane_0",
+      "law": "kv15_mh",
+      "species": "K",
+      "max_permeability_m_per_s": 3e-10,
+      "abundance": 0.5,
+      "initial_gates": {
+       "m": 0.2,
+       "h": 0.7
+      }
+     },
+     "channel_1": {
+      "membrane": "membrane_1",
+      "law": "kv15_mh",
+      "species": "K",
+      "max_permeability_m_per_s": 3e-10,
+      "abundance": 0.6,
+      "initial_gates": {
+       "m": 0.2,
+       "h": 0.7
+      }
+     }
+    },
+    "junctions": {
+     "junction": {
+      "sender": "cell_0",
+      "receiver": "cell_1",
+      "area_m2": 1e-10,
+      "law": "constant_field",
+      "permeability_m_per_s": {
+       "Cl": 4e-10,
+       "K": 5e-10,
+       "Na": 3e-10
+      },
+      "gate": {
+       "law": "junction_relaxation",
+       "threshold_voltage_V": 0.015,
+       "minimum_open_fraction": 0.1,
+       "initial_gate": 0.6
+      }
+     }
+    },
+    "faces": {
+     "face_0": {
+      "law": "logmean_face",
+      "sender": "local",
+      "receiver": "near",
+      "area_m2": 1e-11,
+      "length_m": 2e-05,
+      "diffusivity_m2_per_s": {
+       "Cl": 2e-09,
+       "K": 1.7e-09,
+       "Na": 1.2e-09
+      }
+     },
+     "face_1": {
+      "law": "logmean_face",
+      "sender": "near",
+      "receiver": "far",
+      "area_m2": 1e-11,
+      "length_m": 2e-05,
+      "diffusivity_m2_per_s": {
+       "Cl": 2e-09,
+       "K": 1.7e-09,
+       "Na": 1.2e-09
+      }
+     },
+     "face_2": {
+      "law": "logmean_face",
+      "sender": "far",
+      "receiver": "local",
+      "area_m2": 1e-11,
+      "length_m": 2e-05,
+      "diffusivity_m2_per_s": {
+       "Cl": 2e-09,
+       "K": 1.7e-09,
+       "Na": 1.2e-09
+      }
+     }
+    },
+    "controls": {
+     "leak": {
+      "membrane_0": [
+       [
+        0.0,
+        1.0
+       ]
+      ],
+      "membrane_1": [
+       [
+        0.0,
+        1.0
+       ]
+      ]
+     },
+     "pump": {
+      "membrane_0": [
+       [
+        0.0,
+        1.0
+       ],
+       [
+        0.005,
+        0.0
+       ],
+       [
+        0.01,
+        1.0
+       ]
+      ],
+      "membrane_1": [
+       [
+        0.0,
+        1.0
+       ],
+       [
+        0.005,
+        0.0
+       ],
+       [
+        0.01,
+        1.0
+       ]
+      ]
+     },
+     "channel": {
+      "channel_0": [
+       [
+        0.0,
+        1.0
+       ]
+      ],
+      "channel_1": [
+       [
+        0.0,
+        1.0
+       ]
+      ]
+     },
+     "junction": {
+      "junction": [
+       [
+        0.0,
+        1.0
+       ]
+      ]
+     }
+    },
+    "material_tolerance_fmol": {
+     "Cl": 2e-11,
+     "K": 2e-11,
+     "Na": 2e-11
+    },
+    "end_s": 0.02
+   },
+   "history_times": {
+    "first_s": 0.0,
+    "last_s": 0.02,
+    "spacing_s": 0.0001
+   },
+   "potential_times_s": [
+    0.0,
+    0.0025,
+    0.005,
+    0.0075,
+    0.01,
+    0.015,
+    0.02
+   ],
+   "scales": {
+    "n_cell_Na": 0.006108195226198562,
+    "n_out_Na": 20.414193622370068,
+    "leak_Na": 5.7159742142636183e-05,
+    "junction_Na": 5.103548405592518e-05,
+    "face_Na": 10.207096811185034,
+    "n_cell_K": 0.006810807637426777,
+    "n_out_K": 1.5424057403568494,
+    "leak_K": 0.0010615380683632436,
+    "junction_K": 0.0007938853075366138,
+    "face_K": 0.7712028701784247,
+    "n_cell_Cl": 0.0004046546824700911,
+    "n_out_Cl": 26.084802961917305,
+    "leak_Cl": 0.00035928980775371314,
+    "junction_Cl": 4.536487471637794e-05,
+    "face_Cl": 13.042401480958652,
+    "channel_K": 0.0009553842615269192,
+    "gate_m": 1.0,
+    "gate_h": 1.0,
+    "pump": 0.002,
+    "junction_gate": 1.0,
+    "heat_junction": 0.01271409108258414,
+    "heat_face": 348.1263040443753,
+    "heat_membrane": 0.39546790337543763,
+    "voltage": 0.417093756508962,
+    "phi_out": 0.025692579121085843
+   }
+  },
+  "integrated": {
+   "consumer": "integrated",
+   "ionic": {
+    "temperature_K": 298.15,
+    "species": {
+     "Na": 1,
+     "K": 1,
+     "Cl": -1
+    },
+    "cells": {
+     "cell_0": {
+      "volume_pL": 0.460614559625212,
+      "initial_amount_fmol": {
+       "Cl": 3.6584827313820227,
+       "K": 68.27668980701006,
+       "Na": 3.6320489857623492
+      },
+      "fixed_charge_fmol": -68.25087407181402,
+      "initial_voltage_V": -0.020573879941257294,
+      "initial_charge_C": -5.962894098195377e-14
+     },
+     "cell_1": {
+      "volume_pL": 0.4558462907444638,
+      "initial_amount_fmol": {
+       "Cl": 3.9245077488853,
+       "K": 66.35430133846228,
+       "Na": 4.20224517181489
+      },
+      "fixed_charge_fmol": -66.63245156070748,
+      "initial_voltage_V": -0.013907213274749855,
+      "initial_charge_C": -3.982907906817775e-14
+     },
+     "cell_2": {
+      "volume_pL": 0.4491832606546999,
+      "initial_amount_fmol": {
+       "Cl": 4.166599373141808,
+       "K": 64.18658942527874,
+       "Na": 4.739732661046016
+      },
+      "fixed_charge_fmol": -64.75993579700193,
+      "initial_voltage_V": -0.007240546607505364,
+      "initial_charge_C": -2.055946304374643e-14
+     },
+     "cell_3": {
+      "volume_pL": 0.4567553253082257,
+      "initial_amount_fmol": {
+       "Cl": 4.54134098117871,
+       "K": 64.05059463076579,
+       "Na": 5.428639359891615
+      },
+      "fixed_charge_fmol": -64.93791024126357,
+      "initial_voltage_V": -0.0005738799409941017,
+      "initial_charge_C": -1.6626144847526947e-15
+     },
+     "cell_4": {
+      "volume_pL": 0.45623012693402465,
+      "initial_amount_fmol": {
+       "Cl": 4.840272555473904,
+       "K": 62.760332626228816,
+       "Na": 6.03070409547561
+      },
+      "fixed_charge_fmol": -63.950582143005555,
+      "initial_voltage_V": 0.006092786725719652,
+      "initial_charge_C": 1.7562571314980532e-14
+     },
+     "cell_5": {
+      "volume_pL": 0.46207333837976106,
+      "initial_amount_fmol": {
+       "Cl": 5.210313706297759,
+       "K": 62.33194608316596,
+       "Na": 6.724040705557431
+      },
+      "fixed_charge_fmol": -63.84528977260093,
+      "initial_voltage_V": 0.012759453392520041,
+      "initial_charge_C": 3.6983775742207336e-14
+     },
+     "cell_6": {
+      "volume_pL": 0.8617615649509048,
+      "initial_amount_fmol": {
+       "Cl": 10.291684011825442,
+       "K": 113.9503456438611,
+       "Na": 13.689275504043644
+      },
+      "fixed_charge_fmol": -117.3472413437859,
+      "initial_voltage_V": 0.019426120059112404,
+      "initial_charge_C": 6.713375051634713e-14
+     }
+    },
+    "outside": {
+     "outside": {
+      "volume_pL": 6.75,
+      "initial_amount_fmol": {
+       "Cl": 810.0,
+       "K": 27.0,
+       "Na": 978.75
+      },
+      "fixed_charge_fmol": -195.75,
+      "initial_charge_C": 5.095645242338089e-24,
+      "held": false
+     }
+    },
+    "gauge": "outside",
+    "gauge_potential_V": 0.0,
+    "membranes": {
+     "membrane_0": {
+      "inside": "cell_0",
+      "outside": "outside",
+      "area_m2": 2.8982837049796536e-10,
+      "capacitance_F": 2.8982837049796537e-12,
+      "law": "constant_field",
+      "permeability_m_per_s": {
+       "Cl": 0.0,
+       "K": 0.0,
+       "Na": 0.0
+      },
+      "pump": null
+     },
+     "membrane_1": {
+      "inside": "cell_1",
+      "outside": "outside",
+      "area_m2": 2.863915169870302e-10,
+      "capacitance_F": 2.8639151698703023e-12,
+      "law": "constant_field",
+      "permeability_m_per_s": {
+       "Cl": 0.0,
+       "K": 0.0,
+       "Na": 0.0
+      },
+      "pump": null
+     },
+     "membrane_2": {
+      "inside": "cell_2",
+      "outside": "outside",
+      "area_m2": 2.839490463666793e-10,
+      "capacitance_F": 2.839490463666793e-12,
+      "law": "constant_field",
+      "permeability_m_per_s": {
+       "Cl": 0.0,
+       "K": 0.0,
+       "Na": 0.0
+      },
+      "pump": null
+     },
+     "membrane_3": {
+      "inside": "cell_3",
+      "outside": "outside",
+      "area_m2": 2.897146887330887e-10,
+      "capacitance_F": 2.897146887330887e-12,
+      "law": "constant_field",
+      "permeability_m_per_s": {
+       "Cl": 0.0,
+       "K": 0.0,
+       "Na": 0.0
+      },
+      "pump": null
+     },
+     "membrane_4": {
+      "inside": "cell_4",
+      "outside": "outside",
+      "area_m2": 2.8825186414031455e-10,
+      "capacitance_F": 2.8825186414031456e-12,
+      "law": "constant_field",
+      "permeability_m_per_s": {
+       "Cl": 0.0,
+       "K": 0.0,
+       "Na": 0.0
+      },
+      "pump": null
+     },
+     "membrane_5": {
+      "inside": "cell_5",
+      "outside": "outside",
+      "area_m2": 2.8985391932140514e-10,
+      "capacitance_F": 2.8985391932140516e-12,
+      "law": "constant_field",
+      "permeability_m_per_s": {
+       "Cl": 0.0,
+       "K": 0.0,
+       "Na": 0.0
+      },
+      "pump": null
+     },
+     "membrane_6": {
+      "inside": "cell_6",
+      "outside": "outside",
+      "area_m2": 3.4558496659169997e-10,
+      "capacitance_F": 3.4558496659169998e-12,
+      "law": "constant_field",
+      "permeability_m_per_s": {
+       "Cl": 0.0,
+       "K": 0.0,
+       "Na": 0.0
+      },
+      "pump": null
+     }
+    },
+    "channels": {},
+    "junctions": {
+     "junction_0": {
+      "sender": "cell_0",
+      "receiver": "cell_6",
+      "area_m2": 5.825317809332204e-11,
+      "law": "constant_field",
+      "permeability_m_per_s": {
+       "Cl": 7.807692307692307e-10,
+       "K": 7.538461538461537e-10,
+       "Na": 5.115384615384615e-10
+      },
+      "gate": {
+       "law": "junction_relaxation",
+       "threshold_voltage_V": 0.01,
+       "minimum_open_fraction": 0.05,
+       "initial_gate": 0.24
+      }
+     },
+     "junction_1": {
+      "sender": "cell_0",
+      "receiver": "cell_5",
+      "area_m2": 5.7554939330037774e-11,
+      "law": "constant_field",
+      "permeability_m_per_s": {
+       "Cl": 7.807692307692307e-10,
+       "K": 7.538461538461537e-10,
+       "Na": 5.115384615384615e-10
+      },
+      "gate": {
+       "law": "junction_relaxation",
+       "threshold_voltage_V": 0.015,
+       "minimum_open_fraction": 0.1,
+       "initial_gate": 0.64
+      }
+     },
+     "junction_2": {
+      "sender": "cell_0",
+      "receiver": "cell_1",
+      "area_m2": 5.7513896887967e-11,
+      "law": "constant_field",
+      "permeability_m_per_s": {
+       "Cl": 7.807692307692307e-10,
+       "K": 7.538461538461537e-10,
+       "Na": 5.115384615384615e-10
+      },
+      "gate": {
+       "law": "junction_relaxation",
+       "threshold_voltage_V": 0.02,
+       "minimum_open_fraction": 0.2,
+       "initial_gate": 0.96
+      }
+     },
+     "junction_3": {
+      "sender": "cell_1",
+      "receiver": "cell_2",
+      "area_m2": 5.884055808628286e-11,
+      "law": "constant_field",
+      "permeability_m_per_s": {
+       "Cl": 7.807692307692307e-10,
+       "K": 7.538461538461537e-10,
+       "Na": 5.115384615384615e-10
+      },
+      "gate": {
+       "law": "junction_relaxation",
+       "threshold_voltage_V": 0.01,
+       "minimum_open_fraction": 0.05,
+       "initial_gate": 0.24
+      }
+     },
+     "junction_4": {
+      "sender": "cell_1",
+      "receiver": "cell_6",
+      "area_m2": 5.667902067092806e-11,
+      "law": "constant_field",
+      "permeability_m_per_s": {
+       "Cl": 7.807692307692307e-10,
+       "K": 7.538461538461537e-10,
+       "Na": 5.115384615384615e-10
+      },
+      "gate": {
+       "law": "junction_relaxation",
+       "threshold_voltage_V": 0.015,
+       "minimum_open_fraction": 0.1,
+       "initial_gate": 0.64
+      }
+     },
+     "junction_5": {
+      "sender": "cell_2",
+      "receiver": "cell_3",
+      "area_m2": 5.7016806692219477e-11,
+      "law": "constant_field",
+      "permeability_m_per_s": {
+       "Cl": 7.807692307692307e-10,
+       "K": 7.538461538461537e-10,
+       "Na": 5.115384615384615e-10
+      },
+      "gate": {
+       "law": "junction_relaxation",
+       "threshold_voltage_V": 0.02,
+       "minimum_open_fraction": 0.2,
+       "initial_gate": 0.96
+      }
+     },
+     "junction_6": {
+      "sender": "cell_2",
+      "receiver": "cell_6",
+      "area_m2": 5.6030560529393776e-11,
+      "law": "constant_field",
+      "permeability_m_per_s": {
+       "Cl": 7.807692307692307e-10,
+       "K": 7.538461538461537e-10,
+       "Na": 5.115384615384615e-10
+      },
+      "gate": {
+       "law": "junction_relaxation",
+       "threshold_voltage_V": 0.01,
+       "minimum_open_fraction": 0.05,
+       "initial_gate": 0.24
+      }
+     },
+     "junction_7": {
+      "sender": "cell_3",
+      "receiver": "cell_4",
+      "area_m2": 5.6594315116849386e-11,
+      "law": "constant_field",
+      "permeability_m_per_s": {
+       "Cl": 7.807692307692307e-10,
+       "K": 7.538461538461537e-10,
+       "Na": 5.115384615384615e-10
+      },
+      "gate": {
+       "law": "junction_relaxation",
+       "threshold_voltage_V": 0.015,
+       "minimum_open_fraction": 0.1,
+       "initial_gate": 0.64
+      }
+     },
+     "junction_8": {
+      "sender": "cell_3",
+      "receiver": "cell_6",
+      "area_m2": 5.870118897467249e-11,
+      "law": "constant_field",
+      "permeability_m_per_s": {
+       "Cl": 7.807692307692307e-10,
+       "K": 7.538461538461537e-10,
+       "Na": 5.115384615384615e-10
+      },
+      "gate": {
+       "law": "junction_relaxation",
+       "threshold_voltage_V": 0.02,
+       "minimum_open_fraction": 0.2,
+       "initial_gate": 0.96
+      }
+     },
+     "junction_9": {
+      "sender": "cell_4",
+      "receiver": "cell_5",
+      "area_m2": 5.80967370223378e-11,
+      "law": "constant_field",
+      "permeability_m_per_s": {
+       "Cl": 7.807692307692307e-10,
+       "K": 7.538461538461537e-10,
+       "Na": 5.115384615384615e-10
+      },
+      "gate": {
+       "law": "junction_relaxation",
+       "threshold_voltage_V": 0.01,
+       "minimum_open_fraction": 0.05,
+       "initial_gate": 0.24
+      }
+     },
+     "junction_10": {
+      "sender": "cell_4",
+      "receiver": "cell_6",
+      "area_m2": 5.785360400037625e-11,
+      "law": "constant_field",
+      "permeability_m_per_s": {
+       "Cl": 7.807692307692307e-10,
+       "K": 7.538461538461537e-10,
+       "Na": 5.115384615384615e-10
+      },
+      "gate": {
+       "law": "junction_relaxation",
+       "threshold_voltage_V": 0.015,
+       "minimum_open_fraction": 0.1,
+       "initial_gate": 0.64
+      }
+     },
+     "junction_11": {
+      "sender": "cell_5",
+      "receiver": "cell_6",
+      "area_m2": 5.806741432300732e-11,
+      "law": "constant_field",
+      "permeability_m_per_s": {
+       "Cl": 7.807692307692307e-10,
+       "K": 7.538461538461537e-10,
+       "Na": 5.115384615384615e-10
+      },
+      "gate": {
+       "law": "junction_relaxation",
+       "threshold_voltage_V": 0.02,
+       "minimum_open_fraction": 0.2,
+       "initial_gate": 0.96
+      }
+     }
+    },
+    "faces": {},
+    "controls": {
+     "leak": {
+      "membrane_0": [
+       [
+        0.0,
+        1.0
+       ]
+      ],
+      "membrane_1": [
+       [
+        0.0,
+        1.0
+       ]
+      ],
+      "membrane_2": [
+       [
+        0.0,
+        1.0
+       ]
+      ],
+      "membrane_3": [
+       [
+        0.0,
+        1.0
+       ]
+      ],
+      "membrane_4": [
+       [
+        0.0,
+        1.0
+       ]
+      ],
+      "membrane_5": [
+       [
+        0.0,
+        1.0
+       ]
+      ],
+      "membrane_6": [
+       [
+        0.0,
+        1.0
+       ]
+      ]
+     },
+     "pump": {},
+     "channel": {},
+     "junction": {
+      "junction_0": [
+       [
+        0.0,
+        1.0
+       ],
+       [
+        0.005,
+        0.5
+       ],
+       [
+        0.01,
+        0.0
+       ],
+       [
+        0.015,
+        1.0
+       ]
+      ],
+      "junction_1": [
+       [
+        0.0,
+        1.0
+       ],
+       [
+        0.005,
+        0.5
+       ],
+       [
+        0.01,
+        0.0
+       ],
+       [
+        0.015,
+        1.0
+       ]
+      ],
+      "junction_2": [
+       [
+        0.0,
+        1.0
+       ],
+       [
+        0.005,
+        0.5
+       ],
+       [
+        0.01,
+        0.0
+       ],
+       [
+        0.015,
+        1.0
+       ]
+      ],
+      "junction_3": [
+       [
+        0.0,
+        1.0
+       ],
+       [
+        0.005,
+        0.5
+       ],
+       [
+        0.01,
+        0.0
+       ],
+       [
+        0.015,
+        1.0
+       ]
+      ],
+      "junction_4": [
+       [
+        0.0,
+        1.0
+       ],
+       [
+        0.005,
+        0.5
+       ],
+       [
+        0.01,
+        0.0
+       ],
+       [
+        0.015,
+        1.0
+       ]
+      ],
+      "junction_5": [
+       [
+        0.0,
+        1.0
+       ],
+       [
+        0.005,
+        0.5
+       ],
+       [
+        0.01,
+        0.0
+       ],
+       [
+        0.015,
+        1.0
+       ]
+      ],
+      "junction_6": [
+       [
+        0.0,
+        1.0
+       ],
+       [
+        0.005,
+        0.5
+       ],
+       [
+        0.01,
+        0.0
+       ],
+       [
+        0.015,
+        1.0
+       ]
+      ],
+      "junction_7": [
+       [
+        0.0,
+        1.0
+       ],
+       [
+        0.005,
+        0.5
+       ],
+       [
+        0.01,
+        0.0
+       ],
+       [
+        0.015,
+        1.0
+       ]
+      ],
+      "junction_8": [
+       [
+        0.0,
+        1.0
+       ],
+       [
+        0.005,
+        0.5
+       ],
+       [
+        0.01,
+        0.0
+       ],
+       [
+        0.015,
+        1.0
+       ]
+      ],
+      "junction_9": [
+       [
+        0.0,
+        1.0
+       ],
+       [
+        0.005,
+        0.5
+       ],
+       [
+        0.01,
+        0.0
+       ],
+       [
+        0.015,
+        1.0
+       ]
+      ],
+      "junction_10": [
+       [
+        0.0,
+        1.0
+       ],
+       [
+        0.005,
+        0.5
+       ],
+       [
+        0.01,
+        0.0
+       ],
+       [
+        0.015,
+        1.0
+       ]
+      ],
+      "junction_11": [
+       [
+        0.0,
+        1.0
+       ],
+       [
+        0.005,
+        0.5
+       ],
+       [
+        0.01,
+        0.0
+       ],
+       [
+        0.015,
+        1.0
+       ]
+      ]
+     }
+    },
+    "material_tolerance_fmol": {
+     "Cl": 2e-11,
+     "K": 2e-11,
+     "Na": 2e-11
+    },
+    "end_s": 0.02
+   },
+   "history_times": {
+    "first_s": 0.0,
+    "last_s": 0.02,
+    "spacing_s": 0.0001
+   },
+   "potential_times_s": [
+    0.0,
+    0.005,
+    0.01,
+    0.015,
+    0.02
+   ],
+   "scales": {
+    "n_cell_Na": 0.0003184829614329956,
+    "n_out_Na": 0.0,
+    "junction_Na": 5.409763245395934e-05,
+    "n_cell_K": 0.004182003248757756,
+    "n_out_K": 0.0,
+    "junction_K": 0.0007382388015347123,
+    "n_cell_Cl": 0.0003654572478490333,
+    "n_out_Cl": 0.0,
+    "junction_Cl": 6.207670194605354e-05,
+    "junction_gate": 1.0,
+    "heat_junction": 0.012362721392304167,
+    "voltage": 0.15642821853490035
+   }
+  },
+  "cell": {
+   "consumer": "cell",
+   "ionic": {
+    "temperature_K": 298.15,
+    "species": {
+     "Na": 1,
+     "K": 1,
+     "Cl": -1
+    },
+    "cells": {
+     "cell_0": {
+      "volume_pL": 1.0,
+      "initial_amount_fmol": {
+       "Na": 12.0,
+       "K": 140.0,
+       "Cl": 10.0
+      },
+      "fixed_charge_fmol": -142.008291415725,
+      "initial_voltage_V": -0.08,
+      "initial_charge_C": -8.000000000000001e-13
+     }
+    },
+    "outside": {
+     "outside": {
+      "volume_pL": 1.0,
+      "initial_amount_fmol": {
+       "Na": 140.0,
+       "K": 4.0,
+       "Cl": 120.0
+      },
+      "fixed_charge_fmol": -23.991708584274992,
+      "initial_charge_C": 8.000000000000001e-13,
+      "held": false
+     }
+    },
+    "gauge": "outside",
+    "gauge_potential_V": 0.0,
+    "membranes": {
+     "membrane_0": {
+      "inside": "cell_0",
+      "outside": "outside",
+      "area_m2": 1e-09,
+      "capacitance_F": 1.0000000000000001e-11,
+      "law": "constant_field",
+      "permeability_m_per_s": {
+       "Na": 5e-10,
+       "K": 1.8e-09,
+       "Cl": 1.4e-10
+      },
+      "pump": {
+       "law": "nak_pump_positive",
+       "sodium_out": 3,
+       "potassium_in": 2,
+       "capacity_fmol_per_s": 0.09999999999999999,
+       "km_na_mM": 12.0,
+       "km_k_mM": 0.2,
+       "km_atp_mM": 0.5,
+       "fuel": {
+        "law": "maintained_fuel",
+        "atp_mM": 1.5,
+        "adp_mM": 0.1,
+        "pi_mM": 0.1,
+        "delta_g0_J_per_mol": -37000.0
+       }
+      }
+     }
+    },
+    "channels": {
+     "channel_0": {
+      "membrane": "membrane_0",
+      "law": "kv15_mh",
+      "species": "K",
+      "max_permeability_m_per_s": 1e-08,
+      "abundance": 1.0,
+      "initial_gates": {
+       "m": 0.2,
+       "h": 0.8
+      }
+     }
+    },
+    "junctions": {},
+    "faces": {},
+    "controls": {
+     "leak": {
+      "membrane_0": [
+       [
+        0.0,
+        1.0
+       ]
+      ]
+     },
+     "pump": {
+      "membrane_0": [
+       [
+        0.0,
+        1.0
+       ]
+      ]
+     },
+     "channel": "the pool's path (SPEC.md section 3.2)",
+     "junction": {}
+    },
+    "material_tolerance_fmol": {
+     "Na": 2e-11,
+     "K": 2e-11,
+     "Cl": 2e-11
+    },
+    "end_s": 0.02
+   },
+   "final_s": 0.02,
+   "summary_times_s": [
+    0.02
+   ],
+   "pools": {
+    "cell_0": {
+     "channel": "channel_0",
+     "stream_id": 0,
+     "pool": {
+      "model": "finite_bond_pool",
+      "initial_nodes": [
+       10,
+       12,
+       14,
+       16,
+       18
+      ],
+      "root_node": 10,
+      "initial_free_trimers": 50,
+      "pool_volume_L": 5e-15,
+      "k_on_M_inv_s": 10000000.0,
+      "k_close_s_inv": 100.0,
+      "k_off_s_inv": 10.0,
+      "k_fragment_dissolve_s_inv": 1.0,
+      "worlds": 64,
+      "world_id_start": 0,
+      "end_time_s": 0.02,
+      "max_events_per_world": 100000
+     },
+     "seeds": [
+      20260920,
+      20261920,
+      20262920,
+      20263920
+     ]
+    }
+   },
+   "coupling": {
+    "law": "ring_cycle_availability",
+    "active": 1.0,
+    "inactive": 0.0
+   },
+   "scales": {
+    "n_cell_Na": 0.01393885307536614,
+    "n_out_Na": 0.01393885307536614,
+    "leak_Na": 0.00793885307536614,
+    "n_cell_K": 0.1913569325786409,
+    "n_out_K": 0.1913569325786409,
+    "leak_K": 0.028579871071318097,
+    "n_cell_Cl": 0.0019053247380878735,
+    "n_out_Cl": 0.0019053247380878735,
+    "leak_Cl": 0.0019053247380878735,
+    "channel_K": 0.1587770615073228,
+    "gate_m": 1.0,
+    "gate_h": 1.0,
+    "pump": 0.002,
+    "heat_membrane": 4.82891837939909,
+    "voltage": 2.07918679524999
+   }
+  },
+  "base": {
+   "consumer": "base",
+   "ionic": {
+    "temperature_K": 298.15,
+    "species": {
+     "Na": 1,
+     "K": 1,
+     "Cl": -1
+    },
+    "cells": {
+     "cell_0": {
+      "volume_pL": 0.5,
+      "initial_amount_fmol": {
+       "Cl": 4.0,
+       "K": 70.0,
+       "Na": 6.0
+      },
+      "fixed_charge_fmol": -72.00186556853812,
+      "initial_voltage_V": -0.06,
+      "initial_charge_C": -1.8e-13
+     },
+     "cell_1": {
+      "volume_pL": 0.7,
+      "initial_amount_fmol": {
+       "Cl": 7.0,
+       "K": 91.0,
+       "Na": 10.5
+      },
+      "fixed_charge_fmol": -94.5014924548305,
+      "initial_voltage_V": -0.04,
+      "initial_charge_C": -1.44e-13
+     }
+    },
+    "outside": {
+     "local": {
+      "volume_pL": 2.0,
+      "initial_amount_fmol": {
+       "Cl": 220.0,
+       "K": 8.0,
+       "Na": 280.0
+      },
+      "fixed_charge_fmol": -67.99664197663137,
+      "initial_charge_C": 3.24e-13,
+      "held": false
+     },
+     "near": {
+      "volume_pL": 1.0,
+      "initial_amount_fmol": {
+       "Cl": 105.0,
+       "K": 8.0,
+       "Na": 120.0
+      },
+      "fixed_charge_fmol": -23.0,
+      "initial_charge_C": 0.0,
+      "held": false
+     },
+     "far": {
+      "volume_pL": 3.0,
+      "initial_amount_fmol": {
+       "Cl": 345.0,
+       "K": 9.0,
+       "Na": 450.0
+      },
+      "fixed_charge_fmol": -114.0,
+      "initial_charge_C": 0.0,
+      "held": false
+     }
+    },
+    "gauge": "local",
+    "gauge_potential_V": 0.0,
+    "membranes": {
+     "membrane_0": {
+      "inside": "cell_0",
+      "outside": "local",
+      "area_m2": 3e-10,
+      "capacitance_F": 3e-12,
+      "law": "constant_field",
+      "permeability_m_per_s": {
+       "Cl": 8e-11,
+       "K": 2e-10,
+       "Na": 1e-11
+      },
+      "pump": {
+       "law": "nak_pump_positive",
+       "sodium_out": 3,
+       "potassium_in": 2,
+       "capacity_fmol_per_s": 0.05,
+       "km_na_mM": 12.0,
+       "km_k_mM": 0.2,
+       "km_atp_mM": 0.5,
+       "fuel": {
+        "law": "maintained_fuel",
+        "atp_mM": 1.5,
+        "adp_mM": 0.1,
+        "pi_mM": 0.1,
+        "delta_g0_J_per_mol": -37000.0
+       }
+      }
+     },
+     "membrane_1": {
+      "inside": "cell_1",
+      "outside": "local",
+      "area_m2": 3.6e-10,
+      "capacitance_F": 3.6e-12,
+      "law": "constant_field",
+      "permeability_m_per_s": {
+       "Cl": 8e-11,
+       "K": 2e-10,
+       "Na": 1e-11
+      },
+      "pump": {
+       "law": "nak_pump_positive",
+       "sodium_out": 3,
+       "potassium_in": 2,
+       "capacity_fmol_per_s": 0.1,
+       "km_na_mM": 12.0,
+       "km_k_mM": 0.2,
+       "km_atp_mM": 0.5,
+       "fuel": {
+        "law": "maintained_fuel",
+        "atp_mM": 1.5,
+        "adp_mM": 0.1,
+        "pi_mM": 0.1,
+        "delta_g0_J_per_mol": -37000.0
+       }
+      }
+     }
+    },
+    "channels": {
+     "channel_0": {
+      "membrane": "membrane_0",
+      "law": "kv15_mh",
+      "species": "K",
+      "max_permeability_m_per_s": 3e-10,
+      "abundance": 0.5,
+      "initial_gates": {
+       "m": 0.2,
+       "h": 0.7
+      }
+     },
+     "channel_1": {
+      "membrane": "membrane_1",
+      "law": "kv15_mh",
+      "species": "K",
+      "max_permeability_m_per_s": 3e-10,
+      "abundance": 0.6,
+      "initial_gates": {
+       "m": 0.2,
+       "h": 0.7
+      }
+     }
+    },
+    "junctions": {
+     "junction": {
+      "sender": "cell_0",
+      "receiver": "cell_1",
+      "area_m2": 1e-10,
+      "law": "constant_field",
+      "permeability_m_per_s": {
+       "Cl": 4e-10,
+       "K": 5e-10,
+       "Na": 3e-10
+      },
+      "gate": {
+       "law": "junction_relaxation",
+       "threshold_voltage_V": 0.015,
+       "minimum_open_fraction": 0.1,
+       "initial_gate": 0.6
+      }
+     }
+    },
+    "faces": {
+     "face_0": {
+      "law": "logmean_face",
+      "sender": "local",
+      "receiver": "near",
+      "area_m2": 1e-11,
+      "length_m": 2e-05,
+      "diffusivity_m2_per_s": {
+       "Cl": 2e-09,
+       "K": 1.7e-09,
+       "Na": 1.2e-09
+      }
+     },
+     "face_1": {
+      "law": "logmean_face",
+      "sender": "near",
+      "receiver": "far",
+      "area_m2": 1e-11,
+      "length_m": 2e-05,
+      "diffusivity_m2_per_s": {
+       "Cl": 2e-09,
+       "K": 1.7e-09,
+       "Na": 1.2e-09
+      }
+     },
+     "face_2": {
+      "law": "logmean_face",
+      "sender": "far",
+      "receiver": "local",
+      "area_m2": 1e-11,
+      "length_m": 2e-05,
+      "diffusivity_m2_per_s": {
+       "Cl": 2e-09,
+       "K": 1.7e-09,
+       "Na": 1.2e-09
+      }
+     }
+    },
+    "controls": {
+     "leak": {
+      "membrane_0": [
+       [
+        0.0,
+        1.0
+       ]
+      ],
+      "membrane_1": [
+       [
+        0.0,
+        1.0
+       ]
+      ]
+     },
+     "pump": {
+      "membrane_0": [
+       [
+        0.0,
+        1.0
+       ]
+      ],
+      "membrane_1": [
+       [
+        0.0,
+        1.0
+       ]
+      ]
+     },
+     "channel": "the pool's path (SPEC.md section 3.2)",
+     "junction": {
+      "junction": [
+       [
+        0.0,
+        1.0
+       ]
+      ]
+     }
+    },
+    "material_tolerance_fmol": {
+     "Cl": 2e-11,
+     "K": 2e-11,
+     "Na": 2e-11
+    },
+    "end_s": 0.02
+   },
+   "final_s": 0.02,
+   "summary_times_s": [
+    0.005,
+    0.01,
+    0.02
+   ],
+   "pools": {
+    "cell_0": {
+     "channel": "channel_0",
+     "stream_id": 0,
+     "pool": {
+      "model": "finite_bond_pool",
+      "initial_nodes": [
+       10,
+       12,
+       14,
+       16,
+       18
+      ],
+      "root_node": 10,
+      "initial_free_trimers": 50,
+      "pool_volume_L": 5e-15,
+      "k_on_M_inv_s": 10000000.0,
+      "k_close_s_inv": 1000.0,
+      "k_off_s_inv": 300.0,
+      "k_fragment_dissolve_s_inv": 1.0,
+      "worlds": 8,
+      "world_id_start": 0,
+      "end_time_s": 0.02,
+      "max_events_per_world": 100000
+     },
+     "seeds": [
+      20260925,
+      20261925,
+      20262925,
+      20263925
+     ]
+    },
+    "cell_1": {
+     "channel": "channel_1",
+     "stream_id": 1,
+     "pool": {
+      "model": "finite_bond_pool",
+      "initial_nodes": [
+       10,
+       12,
+       14,
+       16,
+       18
+      ],
+      "root_node": 10,
+      "initial_free_trimers": 50,
+      "pool_volume_L": 5e-15,
+      "k_on_M_inv_s": 10000000.0,
+      "k_close_s_inv": 1000.0,
+      "k_off_s_inv": 300.0,
+      "k_fragment_dissolve_s_inv": 1.0,
+      "worlds": 8,
+      "world_id_start": 0,
+      "end_time_s": 0.02,
+      "max_events_per_world": 100000
+     },
+     "seeds": [
+      20260926,
+      20261926,
+      20262926,
+      20263926
+     ]
+    }
+   },
+   "coupling": {
+    "law": "ring_cycle_availability",
+    "active": 1.0,
+    "inactive": 0.0
+   },
+   "scales": {
+    "n_cell_Na": 0.006108195226198562,
+    "n_out_Na": 20.414193622370068,
+    "leak_Na": 5.7159742142636183e-05,
+    "junction_Na": 5.103548405592518e-05,
+    "face_Na": 10.207096811185034,
+    "n_cell_K": 0.006810807637426777,
+    "n_out_K": 1.5424057403568494,
+    "leak_K": 0.0010615380683632436,
+    "junction_K": 0.0007938853075366138,
+    "face_K": 0.7712028701784247,
+    "n_cell_Cl": 0.0004046546824700911,
+    "n_out_Cl": 26.084802961917305,
+    "leak_Cl": 0.00035928980775371314,
+    "junction_Cl": 4.536487471637794e-05,
+    "face_Cl": 13.042401480958652,
+    "channel_K": 0.0009553842615269192,
+    "gate_m": 1.0,
+    "gate_h": 1.0,
+    "pump": 0.002,
+    "junction_gate": 1.0,
+    "heat_junction": 0.01271409108258414,
+    "heat_face": 348.1263040443753,
+    "heat_membrane": 0.39546790337543763,
+    "voltage": 0.417093756508962
+   }
+  }
+ },
+ "runs": [
+  {
+   "name": "jupiter_baseline h=2.5e-05",
+   "consumer": "jupiter",
+   "family": "jupiter_baseline",
+   "world": "jupiter_baseline",
+   "seed_index": null,
+   "world_id": null,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "jupiter_baseline h=1.25e-05",
+   "consumer": "jupiter",
+   "family": "jupiter_baseline",
+   "world": "jupiter_baseline",
+   "seed_index": null,
+   "world_id": null,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "jupiter_baseline h=6.25e-06",
+   "consumer": "jupiter",
+   "family": "jupiter_baseline",
+   "world": "jupiter_baseline",
+   "seed_index": null,
+   "world_id": null,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "jupiter_pump_release h=2.5e-05",
+   "consumer": "jupiter",
+   "family": "jupiter_pump_release",
+   "world": "jupiter_pump_release",
+   "seed_index": null,
+   "world_id": null,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "jupiter_pump_release h=1.25e-05",
+   "consumer": "jupiter",
+   "family": "jupiter_pump_release",
+   "world": "jupiter_pump_release",
+   "seed_index": null,
+   "world_id": null,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "jupiter_pump_release h=6.25e-06",
+   "consumer": "jupiter",
+   "family": "jupiter_pump_release",
+   "world": "jupiter_pump_release",
+   "seed_index": null,
+   "world_id": null,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "jupiter_baseline h=2.5e-05 restart",
+   "consumer": "jupiter",
+   "family": null,
+   "world": "jupiter_baseline",
+   "seed_index": null,
+   "world_id": null,
+   "step_s": 2.5e-05,
+   "role": "support",
+   "variant": "restart at 0.01"
+  },
+  {
+   "name": "jupiter_baseline plant channel",
+   "consumer": "jupiter",
+   "family": "jupiter_baseline",
+   "world": "jupiter_baseline",
+   "seed_index": null,
+   "world_id": null,
+   "step_s": 6.25e-06,
+   "role": "plant",
+   "variant": "EP1"
+  },
+  {
+   "name": "integrated h=0.0001",
+   "consumer": "integrated",
+   "family": "integrated",
+   "world": "integrated",
+   "seed_index": null,
+   "world_id": null,
+   "step_s": 0.0001,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "integrated h=5e-05",
+   "consumer": "integrated",
+   "family": "integrated",
+   "world": "integrated",
+   "seed_index": null,
+   "world_id": null,
+   "step_s": 5e-05,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "integrated h=2.5e-05",
+   "consumer": "integrated",
+   "family": "integrated",
+   "world": "integrated",
+   "seed_index": null,
+   "world_id": null,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "cell s0 pool",
+   "consumer": "cell",
+   "family": null,
+   "world": "cell",
+   "seed_index": 0,
+   "world_id": null,
+   "step_s": null,
+   "role": "judged",
+   "variant": "pool"
+  },
+  {
+   "name": "cell s1 pool",
+   "consumer": "cell",
+   "family": null,
+   "world": "cell",
+   "seed_index": 1,
+   "world_id": null,
+   "step_s": null,
+   "role": "judged",
+   "variant": "pool"
+  },
+  {
+   "name": "cell s2 pool",
+   "consumer": "cell",
+   "family": null,
+   "world": "cell",
+   "seed_index": 2,
+   "world_id": null,
+   "step_s": null,
+   "role": "judged",
+   "variant": "pool"
+  },
+  {
+   "name": "cell s3 pool",
+   "consumer": "cell",
+   "family": null,
+   "world": "cell",
+   "seed_index": 3,
+   "world_id": null,
+   "step_s": null,
+   "role": "judged",
+   "variant": "pool"
+  },
+  {
+   "name": "cell s0 pool restart",
+   "consumer": "cell",
+   "family": null,
+   "world": "cell",
+   "seed_index": 0,
+   "world_id": null,
+   "step_s": null,
+   "role": "support",
+   "variant": "pool restart at 0.01"
+  },
+  {
+   "name": "cell s0 w0 h=2.5e-05",
+   "consumer": "cell",
+   "family": "cell s0 w0",
+   "world": "cell",
+   "seed_index": 0,
+   "world_id": 0,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s0 w0 h=1.25e-05",
+   "consumer": "cell",
+   "family": "cell s0 w0",
+   "world": "cell",
+   "seed_index": 0,
+   "world_id": 0,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s0 w0 h=6.25e-06",
+   "consumer": "cell",
+   "family": "cell s0 w0",
+   "world": "cell",
+   "seed_index": 0,
+   "world_id": 0,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s0 w1 h=2.5e-05",
+   "consumer": "cell",
+   "family": "cell s0 w1",
+   "world": "cell",
+   "seed_index": 0,
+   "world_id": 1,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s0 w1 h=1.25e-05",
+   "consumer": "cell",
+   "family": "cell s0 w1",
+   "world": "cell",
+   "seed_index": 0,
+   "world_id": 1,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s0 w1 h=6.25e-06",
+   "consumer": "cell",
+   "family": "cell s0 w1",
+   "world": "cell",
+   "seed_index": 0,
+   "world_id": 1,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s0 w2 h=2.5e-05",
+   "consumer": "cell",
+   "family": "cell s0 w2",
+   "world": "cell",
+   "seed_index": 0,
+   "world_id": 2,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s0 w2 h=1.25e-05",
+   "consumer": "cell",
+   "family": "cell s0 w2",
+   "world": "cell",
+   "seed_index": 0,
+   "world_id": 2,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s0 w2 h=6.25e-06",
+   "consumer": "cell",
+   "family": "cell s0 w2",
+   "world": "cell",
+   "seed_index": 0,
+   "world_id": 2,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s0 w3 h=2.5e-05",
+   "consumer": "cell",
+   "family": "cell s0 w3",
+   "world": "cell",
+   "seed_index": 0,
+   "world_id": 3,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s0 w3 h=1.25e-05",
+   "consumer": "cell",
+   "family": "cell s0 w3",
+   "world": "cell",
+   "seed_index": 0,
+   "world_id": 3,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s0 w3 h=6.25e-06",
+   "consumer": "cell",
+   "family": "cell s0 w3",
+   "world": "cell",
+   "seed_index": 0,
+   "world_id": 3,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s0 w4 h=2.5e-05",
+   "consumer": "cell",
+   "family": "cell s0 w4",
+   "world": "cell",
+   "seed_index": 0,
+   "world_id": 4,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s0 w4 h=1.25e-05",
+   "consumer": "cell",
+   "family": "cell s0 w4",
+   "world": "cell",
+   "seed_index": 0,
+   "world_id": 4,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s0 w4 h=6.25e-06",
+   "consumer": "cell",
+   "family": "cell s0 w4",
+   "world": "cell",
+   "seed_index": 0,
+   "world_id": 4,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s0 w5 h=2.5e-05",
+   "consumer": "cell",
+   "family": "cell s0 w5",
+   "world": "cell",
+   "seed_index": 0,
+   "world_id": 5,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s0 w5 h=1.25e-05",
+   "consumer": "cell",
+   "family": "cell s0 w5",
+   "world": "cell",
+   "seed_index": 0,
+   "world_id": 5,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s0 w5 h=6.25e-06",
+   "consumer": "cell",
+   "family": "cell s0 w5",
+   "world": "cell",
+   "seed_index": 0,
+   "world_id": 5,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s0 w6 h=2.5e-05",
+   "consumer": "cell",
+   "family": "cell s0 w6",
+   "world": "cell",
+   "seed_index": 0,
+   "world_id": 6,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s0 w6 h=1.25e-05",
+   "consumer": "cell",
+   "family": "cell s0 w6",
+   "world": "cell",
+   "seed_index": 0,
+   "world_id": 6,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s0 w6 h=6.25e-06",
+   "consumer": "cell",
+   "family": "cell s0 w6",
+   "world": "cell",
+   "seed_index": 0,
+   "world_id": 6,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s0 w7 h=2.5e-05",
+   "consumer": "cell",
+   "family": "cell s0 w7",
+   "world": "cell",
+   "seed_index": 0,
+   "world_id": 7,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s0 w7 h=1.25e-05",
+   "consumer": "cell",
+   "family": "cell s0 w7",
+   "world": "cell",
+   "seed_index": 0,
+   "world_id": 7,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s0 w7 h=6.25e-06",
+   "consumer": "cell",
+   "family": "cell s0 w7",
+   "world": "cell",
+   "seed_index": 0,
+   "world_id": 7,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s1 w0 h=2.5e-05",
+   "consumer": "cell",
+   "family": "cell s1 w0",
+   "world": "cell",
+   "seed_index": 1,
+   "world_id": 0,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s1 w0 h=1.25e-05",
+   "consumer": "cell",
+   "family": "cell s1 w0",
+   "world": "cell",
+   "seed_index": 1,
+   "world_id": 0,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s1 w0 h=6.25e-06",
+   "consumer": "cell",
+   "family": "cell s1 w0",
+   "world": "cell",
+   "seed_index": 1,
+   "world_id": 0,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s1 w1 h=2.5e-05",
+   "consumer": "cell",
+   "family": "cell s1 w1",
+   "world": "cell",
+   "seed_index": 1,
+   "world_id": 1,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s1 w1 h=1.25e-05",
+   "consumer": "cell",
+   "family": "cell s1 w1",
+   "world": "cell",
+   "seed_index": 1,
+   "world_id": 1,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s1 w1 h=6.25e-06",
+   "consumer": "cell",
+   "family": "cell s1 w1",
+   "world": "cell",
+   "seed_index": 1,
+   "world_id": 1,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s1 w2 h=2.5e-05",
+   "consumer": "cell",
+   "family": "cell s1 w2",
+   "world": "cell",
+   "seed_index": 1,
+   "world_id": 2,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s1 w2 h=1.25e-05",
+   "consumer": "cell",
+   "family": "cell s1 w2",
+   "world": "cell",
+   "seed_index": 1,
+   "world_id": 2,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s1 w2 h=6.25e-06",
+   "consumer": "cell",
+   "family": "cell s1 w2",
+   "world": "cell",
+   "seed_index": 1,
+   "world_id": 2,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s1 w3 h=2.5e-05",
+   "consumer": "cell",
+   "family": "cell s1 w3",
+   "world": "cell",
+   "seed_index": 1,
+   "world_id": 3,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s1 w3 h=1.25e-05",
+   "consumer": "cell",
+   "family": "cell s1 w3",
+   "world": "cell",
+   "seed_index": 1,
+   "world_id": 3,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s1 w3 h=6.25e-06",
+   "consumer": "cell",
+   "family": "cell s1 w3",
+   "world": "cell",
+   "seed_index": 1,
+   "world_id": 3,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s1 w4 h=2.5e-05",
+   "consumer": "cell",
+   "family": "cell s1 w4",
+   "world": "cell",
+   "seed_index": 1,
+   "world_id": 4,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s1 w4 h=1.25e-05",
+   "consumer": "cell",
+   "family": "cell s1 w4",
+   "world": "cell",
+   "seed_index": 1,
+   "world_id": 4,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s1 w4 h=6.25e-06",
+   "consumer": "cell",
+   "family": "cell s1 w4",
+   "world": "cell",
+   "seed_index": 1,
+   "world_id": 4,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s1 w5 h=2.5e-05",
+   "consumer": "cell",
+   "family": "cell s1 w5",
+   "world": "cell",
+   "seed_index": 1,
+   "world_id": 5,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s1 w5 h=1.25e-05",
+   "consumer": "cell",
+   "family": "cell s1 w5",
+   "world": "cell",
+   "seed_index": 1,
+   "world_id": 5,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s1 w5 h=6.25e-06",
+   "consumer": "cell",
+   "family": "cell s1 w5",
+   "world": "cell",
+   "seed_index": 1,
+   "world_id": 5,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s1 w6 h=2.5e-05",
+   "consumer": "cell",
+   "family": "cell s1 w6",
+   "world": "cell",
+   "seed_index": 1,
+   "world_id": 6,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s1 w6 h=1.25e-05",
+   "consumer": "cell",
+   "family": "cell s1 w6",
+   "world": "cell",
+   "seed_index": 1,
+   "world_id": 6,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s1 w6 h=6.25e-06",
+   "consumer": "cell",
+   "family": "cell s1 w6",
+   "world": "cell",
+   "seed_index": 1,
+   "world_id": 6,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s1 w7 h=2.5e-05",
+   "consumer": "cell",
+   "family": "cell s1 w7",
+   "world": "cell",
+   "seed_index": 1,
+   "world_id": 7,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s1 w7 h=1.25e-05",
+   "consumer": "cell",
+   "family": "cell s1 w7",
+   "world": "cell",
+   "seed_index": 1,
+   "world_id": 7,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s1 w7 h=6.25e-06",
+   "consumer": "cell",
+   "family": "cell s1 w7",
+   "world": "cell",
+   "seed_index": 1,
+   "world_id": 7,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s2 w0 h=2.5e-05",
+   "consumer": "cell",
+   "family": "cell s2 w0",
+   "world": "cell",
+   "seed_index": 2,
+   "world_id": 0,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s2 w0 h=1.25e-05",
+   "consumer": "cell",
+   "family": "cell s2 w0",
+   "world": "cell",
+   "seed_index": 2,
+   "world_id": 0,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s2 w0 h=6.25e-06",
+   "consumer": "cell",
+   "family": "cell s2 w0",
+   "world": "cell",
+   "seed_index": 2,
+   "world_id": 0,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s2 w1 h=2.5e-05",
+   "consumer": "cell",
+   "family": "cell s2 w1",
+   "world": "cell",
+   "seed_index": 2,
+   "world_id": 1,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s2 w1 h=1.25e-05",
+   "consumer": "cell",
+   "family": "cell s2 w1",
+   "world": "cell",
+   "seed_index": 2,
+   "world_id": 1,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s2 w1 h=6.25e-06",
+   "consumer": "cell",
+   "family": "cell s2 w1",
+   "world": "cell",
+   "seed_index": 2,
+   "world_id": 1,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s2 w2 h=2.5e-05",
+   "consumer": "cell",
+   "family": "cell s2 w2",
+   "world": "cell",
+   "seed_index": 2,
+   "world_id": 2,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s2 w2 h=1.25e-05",
+   "consumer": "cell",
+   "family": "cell s2 w2",
+   "world": "cell",
+   "seed_index": 2,
+   "world_id": 2,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s2 w2 h=6.25e-06",
+   "consumer": "cell",
+   "family": "cell s2 w2",
+   "world": "cell",
+   "seed_index": 2,
+   "world_id": 2,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s2 w3 h=2.5e-05",
+   "consumer": "cell",
+   "family": "cell s2 w3",
+   "world": "cell",
+   "seed_index": 2,
+   "world_id": 3,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s2 w3 h=1.25e-05",
+   "consumer": "cell",
+   "family": "cell s2 w3",
+   "world": "cell",
+   "seed_index": 2,
+   "world_id": 3,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s2 w3 h=6.25e-06",
+   "consumer": "cell",
+   "family": "cell s2 w3",
+   "world": "cell",
+   "seed_index": 2,
+   "world_id": 3,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s2 w4 h=2.5e-05",
+   "consumer": "cell",
+   "family": "cell s2 w4",
+   "world": "cell",
+   "seed_index": 2,
+   "world_id": 4,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s2 w4 h=1.25e-05",
+   "consumer": "cell",
+   "family": "cell s2 w4",
+   "world": "cell",
+   "seed_index": 2,
+   "world_id": 4,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s2 w4 h=6.25e-06",
+   "consumer": "cell",
+   "family": "cell s2 w4",
+   "world": "cell",
+   "seed_index": 2,
+   "world_id": 4,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s2 w5 h=2.5e-05",
+   "consumer": "cell",
+   "family": "cell s2 w5",
+   "world": "cell",
+   "seed_index": 2,
+   "world_id": 5,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s2 w5 h=1.25e-05",
+   "consumer": "cell",
+   "family": "cell s2 w5",
+   "world": "cell",
+   "seed_index": 2,
+   "world_id": 5,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s2 w5 h=6.25e-06",
+   "consumer": "cell",
+   "family": "cell s2 w5",
+   "world": "cell",
+   "seed_index": 2,
+   "world_id": 5,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s2 w6 h=2.5e-05",
+   "consumer": "cell",
+   "family": "cell s2 w6",
+   "world": "cell",
+   "seed_index": 2,
+   "world_id": 6,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s2 w6 h=1.25e-05",
+   "consumer": "cell",
+   "family": "cell s2 w6",
+   "world": "cell",
+   "seed_index": 2,
+   "world_id": 6,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s2 w6 h=6.25e-06",
+   "consumer": "cell",
+   "family": "cell s2 w6",
+   "world": "cell",
+   "seed_index": 2,
+   "world_id": 6,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s2 w7 h=2.5e-05",
+   "consumer": "cell",
+   "family": "cell s2 w7",
+   "world": "cell",
+   "seed_index": 2,
+   "world_id": 7,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s2 w7 h=1.25e-05",
+   "consumer": "cell",
+   "family": "cell s2 w7",
+   "world": "cell",
+   "seed_index": 2,
+   "world_id": 7,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s2 w7 h=6.25e-06",
+   "consumer": "cell",
+   "family": "cell s2 w7",
+   "world": "cell",
+   "seed_index": 2,
+   "world_id": 7,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s3 w0 h=2.5e-05",
+   "consumer": "cell",
+   "family": "cell s3 w0",
+   "world": "cell",
+   "seed_index": 3,
+   "world_id": 0,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s3 w0 h=1.25e-05",
+   "consumer": "cell",
+   "family": "cell s3 w0",
+   "world": "cell",
+   "seed_index": 3,
+   "world_id": 0,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s3 w0 h=6.25e-06",
+   "consumer": "cell",
+   "family": "cell s3 w0",
+   "world": "cell",
+   "seed_index": 3,
+   "world_id": 0,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s3 w1 h=2.5e-05",
+   "consumer": "cell",
+   "family": "cell s3 w1",
+   "world": "cell",
+   "seed_index": 3,
+   "world_id": 1,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s3 w1 h=1.25e-05",
+   "consumer": "cell",
+   "family": "cell s3 w1",
+   "world": "cell",
+   "seed_index": 3,
+   "world_id": 1,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s3 w1 h=6.25e-06",
+   "consumer": "cell",
+   "family": "cell s3 w1",
+   "world": "cell",
+   "seed_index": 3,
+   "world_id": 1,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s3 w2 h=2.5e-05",
+   "consumer": "cell",
+   "family": "cell s3 w2",
+   "world": "cell",
+   "seed_index": 3,
+   "world_id": 2,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s3 w2 h=1.25e-05",
+   "consumer": "cell",
+   "family": "cell s3 w2",
+   "world": "cell",
+   "seed_index": 3,
+   "world_id": 2,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s3 w2 h=6.25e-06",
+   "consumer": "cell",
+   "family": "cell s3 w2",
+   "world": "cell",
+   "seed_index": 3,
+   "world_id": 2,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s3 w3 h=2.5e-05",
+   "consumer": "cell",
+   "family": "cell s3 w3",
+   "world": "cell",
+   "seed_index": 3,
+   "world_id": 3,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s3 w3 h=1.25e-05",
+   "consumer": "cell",
+   "family": "cell s3 w3",
+   "world": "cell",
+   "seed_index": 3,
+   "world_id": 3,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s3 w3 h=6.25e-06",
+   "consumer": "cell",
+   "family": "cell s3 w3",
+   "world": "cell",
+   "seed_index": 3,
+   "world_id": 3,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s3 w4 h=2.5e-05",
+   "consumer": "cell",
+   "family": "cell s3 w4",
+   "world": "cell",
+   "seed_index": 3,
+   "world_id": 4,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s3 w4 h=1.25e-05",
+   "consumer": "cell",
+   "family": "cell s3 w4",
+   "world": "cell",
+   "seed_index": 3,
+   "world_id": 4,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s3 w4 h=6.25e-06",
+   "consumer": "cell",
+   "family": "cell s3 w4",
+   "world": "cell",
+   "seed_index": 3,
+   "world_id": 4,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s3 w5 h=2.5e-05",
+   "consumer": "cell",
+   "family": "cell s3 w5",
+   "world": "cell",
+   "seed_index": 3,
+   "world_id": 5,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s3 w5 h=1.25e-05",
+   "consumer": "cell",
+   "family": "cell s3 w5",
+   "world": "cell",
+   "seed_index": 3,
+   "world_id": 5,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s3 w5 h=6.25e-06",
+   "consumer": "cell",
+   "family": "cell s3 w5",
+   "world": "cell",
+   "seed_index": 3,
+   "world_id": 5,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s3 w6 h=2.5e-05",
+   "consumer": "cell",
+   "family": "cell s3 w6",
+   "world": "cell",
+   "seed_index": 3,
+   "world_id": 6,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s3 w6 h=1.25e-05",
+   "consumer": "cell",
+   "family": "cell s3 w6",
+   "world": "cell",
+   "seed_index": 3,
+   "world_id": 6,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s3 w6 h=6.25e-06",
+   "consumer": "cell",
+   "family": "cell s3 w6",
+   "world": "cell",
+   "seed_index": 3,
+   "world_id": 6,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s3 w7 h=2.5e-05",
+   "consumer": "cell",
+   "family": "cell s3 w7",
+   "world": "cell",
+   "seed_index": 3,
+   "world_id": 7,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s3 w7 h=1.25e-05",
+   "consumer": "cell",
+   "family": "cell s3 w7",
+   "world": "cell",
+   "seed_index": 3,
+   "world_id": 7,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cell s3 w7 h=6.25e-06",
+   "consumer": "cell",
+   "family": "cell s3 w7",
+   "world": "cell",
+   "seed_index": 3,
+   "world_id": 7,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s0 pool",
+   "consumer": "base",
+   "family": null,
+   "world": "base",
+   "seed_index": 0,
+   "world_id": null,
+   "step_s": null,
+   "role": "judged",
+   "variant": "pool"
+  },
+  {
+   "name": "base s1 pool",
+   "consumer": "base",
+   "family": null,
+   "world": "base",
+   "seed_index": 1,
+   "world_id": null,
+   "step_s": null,
+   "role": "judged",
+   "variant": "pool"
+  },
+  {
+   "name": "base s2 pool",
+   "consumer": "base",
+   "family": null,
+   "world": "base",
+   "seed_index": 2,
+   "world_id": null,
+   "step_s": null,
+   "role": "judged",
+   "variant": "pool"
+  },
+  {
+   "name": "base s3 pool",
+   "consumer": "base",
+   "family": null,
+   "world": "base",
+   "seed_index": 3,
+   "world_id": null,
+   "step_s": null,
+   "role": "judged",
+   "variant": "pool"
+  },
+  {
+   "name": "base s0 pool restart",
+   "consumer": "base",
+   "family": null,
+   "world": "base",
+   "seed_index": 0,
+   "world_id": null,
+   "step_s": null,
+   "role": "support",
+   "variant": "pool restart at 0.01"
+  },
+  {
+   "name": "base s0 w0 h=2.5e-05",
+   "consumer": "base",
+   "family": "base s0 w0",
+   "world": "base",
+   "seed_index": 0,
+   "world_id": 0,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s0 w0 h=1.25e-05",
+   "consumer": "base",
+   "family": "base s0 w0",
+   "world": "base",
+   "seed_index": 0,
+   "world_id": 0,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s0 w0 h=6.25e-06",
+   "consumer": "base",
+   "family": "base s0 w0",
+   "world": "base",
+   "seed_index": 0,
+   "world_id": 0,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s0 w1 h=2.5e-05",
+   "consumer": "base",
+   "family": "base s0 w1",
+   "world": "base",
+   "seed_index": 0,
+   "world_id": 1,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s0 w1 h=1.25e-05",
+   "consumer": "base",
+   "family": "base s0 w1",
+   "world": "base",
+   "seed_index": 0,
+   "world_id": 1,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s0 w1 h=6.25e-06",
+   "consumer": "base",
+   "family": "base s0 w1",
+   "world": "base",
+   "seed_index": 0,
+   "world_id": 1,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s0 w2 h=2.5e-05",
+   "consumer": "base",
+   "family": "base s0 w2",
+   "world": "base",
+   "seed_index": 0,
+   "world_id": 2,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s0 w2 h=1.25e-05",
+   "consumer": "base",
+   "family": "base s0 w2",
+   "world": "base",
+   "seed_index": 0,
+   "world_id": 2,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s0 w2 h=6.25e-06",
+   "consumer": "base",
+   "family": "base s0 w2",
+   "world": "base",
+   "seed_index": 0,
+   "world_id": 2,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s0 w3 h=2.5e-05",
+   "consumer": "base",
+   "family": "base s0 w3",
+   "world": "base",
+   "seed_index": 0,
+   "world_id": 3,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s0 w3 h=1.25e-05",
+   "consumer": "base",
+   "family": "base s0 w3",
+   "world": "base",
+   "seed_index": 0,
+   "world_id": 3,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s0 w3 h=6.25e-06",
+   "consumer": "base",
+   "family": "base s0 w3",
+   "world": "base",
+   "seed_index": 0,
+   "world_id": 3,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s0 w4 h=2.5e-05",
+   "consumer": "base",
+   "family": "base s0 w4",
+   "world": "base",
+   "seed_index": 0,
+   "world_id": 4,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s0 w4 h=1.25e-05",
+   "consumer": "base",
+   "family": "base s0 w4",
+   "world": "base",
+   "seed_index": 0,
+   "world_id": 4,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s0 w4 h=6.25e-06",
+   "consumer": "base",
+   "family": "base s0 w4",
+   "world": "base",
+   "seed_index": 0,
+   "world_id": 4,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s0 w5 h=2.5e-05",
+   "consumer": "base",
+   "family": "base s0 w5",
+   "world": "base",
+   "seed_index": 0,
+   "world_id": 5,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s0 w5 h=1.25e-05",
+   "consumer": "base",
+   "family": "base s0 w5",
+   "world": "base",
+   "seed_index": 0,
+   "world_id": 5,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s0 w5 h=6.25e-06",
+   "consumer": "base",
+   "family": "base s0 w5",
+   "world": "base",
+   "seed_index": 0,
+   "world_id": 5,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s0 w6 h=2.5e-05",
+   "consumer": "base",
+   "family": "base s0 w6",
+   "world": "base",
+   "seed_index": 0,
+   "world_id": 6,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s0 w6 h=1.25e-05",
+   "consumer": "base",
+   "family": "base s0 w6",
+   "world": "base",
+   "seed_index": 0,
+   "world_id": 6,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s0 w6 h=6.25e-06",
+   "consumer": "base",
+   "family": "base s0 w6",
+   "world": "base",
+   "seed_index": 0,
+   "world_id": 6,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s0 w7 h=2.5e-05",
+   "consumer": "base",
+   "family": "base s0 w7",
+   "world": "base",
+   "seed_index": 0,
+   "world_id": 7,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s0 w7 h=1.25e-05",
+   "consumer": "base",
+   "family": "base s0 w7",
+   "world": "base",
+   "seed_index": 0,
+   "world_id": 7,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s0 w7 h=6.25e-06",
+   "consumer": "base",
+   "family": "base s0 w7",
+   "world": "base",
+   "seed_index": 0,
+   "world_id": 7,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s1 w0 h=2.5e-05",
+   "consumer": "base",
+   "family": "base s1 w0",
+   "world": "base",
+   "seed_index": 1,
+   "world_id": 0,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s1 w0 h=1.25e-05",
+   "consumer": "base",
+   "family": "base s1 w0",
+   "world": "base",
+   "seed_index": 1,
+   "world_id": 0,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s1 w0 h=6.25e-06",
+   "consumer": "base",
+   "family": "base s1 w0",
+   "world": "base",
+   "seed_index": 1,
+   "world_id": 0,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s1 w1 h=2.5e-05",
+   "consumer": "base",
+   "family": "base s1 w1",
+   "world": "base",
+   "seed_index": 1,
+   "world_id": 1,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s1 w1 h=1.25e-05",
+   "consumer": "base",
+   "family": "base s1 w1",
+   "world": "base",
+   "seed_index": 1,
+   "world_id": 1,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s1 w1 h=6.25e-06",
+   "consumer": "base",
+   "family": "base s1 w1",
+   "world": "base",
+   "seed_index": 1,
+   "world_id": 1,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s1 w2 h=2.5e-05",
+   "consumer": "base",
+   "family": "base s1 w2",
+   "world": "base",
+   "seed_index": 1,
+   "world_id": 2,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s1 w2 h=1.25e-05",
+   "consumer": "base",
+   "family": "base s1 w2",
+   "world": "base",
+   "seed_index": 1,
+   "world_id": 2,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s1 w2 h=6.25e-06",
+   "consumer": "base",
+   "family": "base s1 w2",
+   "world": "base",
+   "seed_index": 1,
+   "world_id": 2,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s1 w3 h=2.5e-05",
+   "consumer": "base",
+   "family": "base s1 w3",
+   "world": "base",
+   "seed_index": 1,
+   "world_id": 3,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s1 w3 h=1.25e-05",
+   "consumer": "base",
+   "family": "base s1 w3",
+   "world": "base",
+   "seed_index": 1,
+   "world_id": 3,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s1 w3 h=6.25e-06",
+   "consumer": "base",
+   "family": "base s1 w3",
+   "world": "base",
+   "seed_index": 1,
+   "world_id": 3,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s1 w4 h=2.5e-05",
+   "consumer": "base",
+   "family": "base s1 w4",
+   "world": "base",
+   "seed_index": 1,
+   "world_id": 4,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s1 w4 h=1.25e-05",
+   "consumer": "base",
+   "family": "base s1 w4",
+   "world": "base",
+   "seed_index": 1,
+   "world_id": 4,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s1 w4 h=6.25e-06",
+   "consumer": "base",
+   "family": "base s1 w4",
+   "world": "base",
+   "seed_index": 1,
+   "world_id": 4,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s1 w5 h=2.5e-05",
+   "consumer": "base",
+   "family": "base s1 w5",
+   "world": "base",
+   "seed_index": 1,
+   "world_id": 5,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s1 w5 h=1.25e-05",
+   "consumer": "base",
+   "family": "base s1 w5",
+   "world": "base",
+   "seed_index": 1,
+   "world_id": 5,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s1 w5 h=6.25e-06",
+   "consumer": "base",
+   "family": "base s1 w5",
+   "world": "base",
+   "seed_index": 1,
+   "world_id": 5,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s1 w6 h=2.5e-05",
+   "consumer": "base",
+   "family": "base s1 w6",
+   "world": "base",
+   "seed_index": 1,
+   "world_id": 6,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s1 w6 h=1.25e-05",
+   "consumer": "base",
+   "family": "base s1 w6",
+   "world": "base",
+   "seed_index": 1,
+   "world_id": 6,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s1 w6 h=6.25e-06",
+   "consumer": "base",
+   "family": "base s1 w6",
+   "world": "base",
+   "seed_index": 1,
+   "world_id": 6,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s1 w7 h=2.5e-05",
+   "consumer": "base",
+   "family": "base s1 w7",
+   "world": "base",
+   "seed_index": 1,
+   "world_id": 7,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s1 w7 h=1.25e-05",
+   "consumer": "base",
+   "family": "base s1 w7",
+   "world": "base",
+   "seed_index": 1,
+   "world_id": 7,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s1 w7 h=6.25e-06",
+   "consumer": "base",
+   "family": "base s1 w7",
+   "world": "base",
+   "seed_index": 1,
+   "world_id": 7,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s2 w0 h=2.5e-05",
+   "consumer": "base",
+   "family": "base s2 w0",
+   "world": "base",
+   "seed_index": 2,
+   "world_id": 0,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s2 w0 h=1.25e-05",
+   "consumer": "base",
+   "family": "base s2 w0",
+   "world": "base",
+   "seed_index": 2,
+   "world_id": 0,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s2 w0 h=6.25e-06",
+   "consumer": "base",
+   "family": "base s2 w0",
+   "world": "base",
+   "seed_index": 2,
+   "world_id": 0,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s2 w1 h=2.5e-05",
+   "consumer": "base",
+   "family": "base s2 w1",
+   "world": "base",
+   "seed_index": 2,
+   "world_id": 1,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s2 w1 h=1.25e-05",
+   "consumer": "base",
+   "family": "base s2 w1",
+   "world": "base",
+   "seed_index": 2,
+   "world_id": 1,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s2 w1 h=6.25e-06",
+   "consumer": "base",
+   "family": "base s2 w1",
+   "world": "base",
+   "seed_index": 2,
+   "world_id": 1,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s2 w2 h=2.5e-05",
+   "consumer": "base",
+   "family": "base s2 w2",
+   "world": "base",
+   "seed_index": 2,
+   "world_id": 2,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s2 w2 h=1.25e-05",
+   "consumer": "base",
+   "family": "base s2 w2",
+   "world": "base",
+   "seed_index": 2,
+   "world_id": 2,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s2 w2 h=6.25e-06",
+   "consumer": "base",
+   "family": "base s2 w2",
+   "world": "base",
+   "seed_index": 2,
+   "world_id": 2,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s2 w3 h=2.5e-05",
+   "consumer": "base",
+   "family": "base s2 w3",
+   "world": "base",
+   "seed_index": 2,
+   "world_id": 3,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s2 w3 h=1.25e-05",
+   "consumer": "base",
+   "family": "base s2 w3",
+   "world": "base",
+   "seed_index": 2,
+   "world_id": 3,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s2 w3 h=6.25e-06",
+   "consumer": "base",
+   "family": "base s2 w3",
+   "world": "base",
+   "seed_index": 2,
+   "world_id": 3,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s2 w4 h=2.5e-05",
+   "consumer": "base",
+   "family": "base s2 w4",
+   "world": "base",
+   "seed_index": 2,
+   "world_id": 4,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s2 w4 h=1.25e-05",
+   "consumer": "base",
+   "family": "base s2 w4",
+   "world": "base",
+   "seed_index": 2,
+   "world_id": 4,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s2 w4 h=6.25e-06",
+   "consumer": "base",
+   "family": "base s2 w4",
+   "world": "base",
+   "seed_index": 2,
+   "world_id": 4,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s2 w5 h=2.5e-05",
+   "consumer": "base",
+   "family": "base s2 w5",
+   "world": "base",
+   "seed_index": 2,
+   "world_id": 5,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s2 w5 h=1.25e-05",
+   "consumer": "base",
+   "family": "base s2 w5",
+   "world": "base",
+   "seed_index": 2,
+   "world_id": 5,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s2 w5 h=6.25e-06",
+   "consumer": "base",
+   "family": "base s2 w5",
+   "world": "base",
+   "seed_index": 2,
+   "world_id": 5,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s2 w6 h=2.5e-05",
+   "consumer": "base",
+   "family": "base s2 w6",
+   "world": "base",
+   "seed_index": 2,
+   "world_id": 6,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s2 w6 h=1.25e-05",
+   "consumer": "base",
+   "family": "base s2 w6",
+   "world": "base",
+   "seed_index": 2,
+   "world_id": 6,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s2 w6 h=6.25e-06",
+   "consumer": "base",
+   "family": "base s2 w6",
+   "world": "base",
+   "seed_index": 2,
+   "world_id": 6,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s2 w7 h=2.5e-05",
+   "consumer": "base",
+   "family": "base s2 w7",
+   "world": "base",
+   "seed_index": 2,
+   "world_id": 7,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s2 w7 h=1.25e-05",
+   "consumer": "base",
+   "family": "base s2 w7",
+   "world": "base",
+   "seed_index": 2,
+   "world_id": 7,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s2 w7 h=6.25e-06",
+   "consumer": "base",
+   "family": "base s2 w7",
+   "world": "base",
+   "seed_index": 2,
+   "world_id": 7,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s3 w0 h=2.5e-05",
+   "consumer": "base",
+   "family": "base s3 w0",
+   "world": "base",
+   "seed_index": 3,
+   "world_id": 0,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s3 w0 h=1.25e-05",
+   "consumer": "base",
+   "family": "base s3 w0",
+   "world": "base",
+   "seed_index": 3,
+   "world_id": 0,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s3 w0 h=6.25e-06",
+   "consumer": "base",
+   "family": "base s3 w0",
+   "world": "base",
+   "seed_index": 3,
+   "world_id": 0,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s3 w1 h=2.5e-05",
+   "consumer": "base",
+   "family": "base s3 w1",
+   "world": "base",
+   "seed_index": 3,
+   "world_id": 1,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s3 w1 h=1.25e-05",
+   "consumer": "base",
+   "family": "base s3 w1",
+   "world": "base",
+   "seed_index": 3,
+   "world_id": 1,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s3 w1 h=6.25e-06",
+   "consumer": "base",
+   "family": "base s3 w1",
+   "world": "base",
+   "seed_index": 3,
+   "world_id": 1,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s3 w2 h=2.5e-05",
+   "consumer": "base",
+   "family": "base s3 w2",
+   "world": "base",
+   "seed_index": 3,
+   "world_id": 2,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s3 w2 h=1.25e-05",
+   "consumer": "base",
+   "family": "base s3 w2",
+   "world": "base",
+   "seed_index": 3,
+   "world_id": 2,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s3 w2 h=6.25e-06",
+   "consumer": "base",
+   "family": "base s3 w2",
+   "world": "base",
+   "seed_index": 3,
+   "world_id": 2,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s3 w3 h=2.5e-05",
+   "consumer": "base",
+   "family": "base s3 w3",
+   "world": "base",
+   "seed_index": 3,
+   "world_id": 3,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s3 w3 h=1.25e-05",
+   "consumer": "base",
+   "family": "base s3 w3",
+   "world": "base",
+   "seed_index": 3,
+   "world_id": 3,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s3 w3 h=6.25e-06",
+   "consumer": "base",
+   "family": "base s3 w3",
+   "world": "base",
+   "seed_index": 3,
+   "world_id": 3,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s3 w4 h=2.5e-05",
+   "consumer": "base",
+   "family": "base s3 w4",
+   "world": "base",
+   "seed_index": 3,
+   "world_id": 4,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s3 w4 h=1.25e-05",
+   "consumer": "base",
+   "family": "base s3 w4",
+   "world": "base",
+   "seed_index": 3,
+   "world_id": 4,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s3 w4 h=6.25e-06",
+   "consumer": "base",
+   "family": "base s3 w4",
+   "world": "base",
+   "seed_index": 3,
+   "world_id": 4,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s3 w5 h=2.5e-05",
+   "consumer": "base",
+   "family": "base s3 w5",
+   "world": "base",
+   "seed_index": 3,
+   "world_id": 5,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s3 w5 h=1.25e-05",
+   "consumer": "base",
+   "family": "base s3 w5",
+   "world": "base",
+   "seed_index": 3,
+   "world_id": 5,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s3 w5 h=6.25e-06",
+   "consumer": "base",
+   "family": "base s3 w5",
+   "world": "base",
+   "seed_index": 3,
+   "world_id": 5,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s3 w6 h=2.5e-05",
+   "consumer": "base",
+   "family": "base s3 w6",
+   "world": "base",
+   "seed_index": 3,
+   "world_id": 6,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s3 w6 h=1.25e-05",
+   "consumer": "base",
+   "family": "base s3 w6",
+   "world": "base",
+   "seed_index": 3,
+   "world_id": 6,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s3 w6 h=6.25e-06",
+   "consumer": "base",
+   "family": "base s3 w6",
+   "world": "base",
+   "seed_index": 3,
+   "world_id": 6,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s3 w7 h=2.5e-05",
+   "consumer": "base",
+   "family": "base s3 w7",
+   "world": "base",
+   "seed_index": 3,
+   "world_id": 7,
+   "step_s": 2.5e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s3 w7 h=1.25e-05",
+   "consumer": "base",
+   "family": "base s3 w7",
+   "world": "base",
+   "seed_index": 3,
+   "world_id": 7,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base s3 w7 h=6.25e-06",
+   "consumer": "base",
+   "family": "base s3 w7",
+   "world": "base",
+   "seed_index": 3,
+   "world_id": 7,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "base plant swapped",
+   "consumer": "base",
+   "family": "base s0 w1",
+   "world": "base",
+   "seed_index": 0,
+   "world_id": 1,
+   "step_s": 6.25e-06,
+   "role": "plant",
+   "variant": "EP2"
+  }
+ ]
+}
