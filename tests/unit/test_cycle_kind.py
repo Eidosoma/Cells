@@ -2722,15 +2722,16 @@ def test_the_pump_and_the_symports_meet_their_equations_and_each_plant_misses_it
 
 @pytest.mark.parametrize("law", CORE_LAWS)
 def test_the_pump_and_the_symports_are_registered_with_their_provenance(law):
-    """Each is the kind's, in base forms with a closure's read and no step term. The pump runs on
-    held fuel alone, its form the engine's own; the symports are labelled manufactured, with no
-    outside source, and declare themselves electroneutral."""
+    """Each is the kind's, in base forms with a closure's read and no step term, and moved from an
+    older family's form: parity, with a Citation of no work. The pump runs on held fuel alone; the
+    symports are labelled manufactured, with no outside source, and declare themselves
+    electroneutral."""
     module = dict(pump=atp_pump, NKCC=nkcc, salt=salt)[law]
     held = law == "pump"
     declared = law_registry.active().lookup(module.LAW_ID)
     assert declared is module.LAW and declared.host == transporter.KIND_ID
     assert declared.errors() == [] and declared.source.works == ()
-    assert declared.provenance == ("cited" if held else "parity")
+    assert declared.provenance == "parity"
     assert declared.fuel_kinds == ((transporter.HELD,) if held else ())
     manufactured = "manufactured: the rate form has no outside source"
     assert declared.source.source.startswith(manufactured) == declared.electroneutral == (not held)

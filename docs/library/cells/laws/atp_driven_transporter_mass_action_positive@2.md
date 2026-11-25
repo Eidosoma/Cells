@@ -34,7 +34,7 @@ protein, and it leaves out counter-transport, regulation and fuel that runs out.
 | Piece | Law, interface `cells.cycle_law@1` ([its fields](../../DECLARATIONS_FORMAT.md#cycle-laws)) |
 | ID | `cells.atp_driven_transporter_mass_action_positive@2`; definitions write `cells.atp_driven_transporter_mass_action_positive@2` |
 | Runs in | `cells.transporter@1`, its host, in `cells.resolved_pump_tissue@3`. Definitions of `cells.resolved_pump_composite@1` and `cells.resolved_pump_tissue@3` can declare it |
-| Provenance | `cited`: taken from a cited source |
+| Provenance | `parity`: moved from an older family; moving is not calibrating |
 
 <!-- /generated -->
 
@@ -113,7 +113,7 @@ $$J = k v S\,(1 - e^x), \qquad S = \frac{1}{1 + (K/c_N)^n}\cdot\frac{1}{1 + K_\t
 
 <!-- generated: provenance -->
 
-Provenance: `cited` (taken from a cited source).
+Provenance: `parity` (moved from an older family; moving is not calibrating).
 
 - **Source, as declared:** an ATP-driven transporter of one species, in the Na/K law's mass-action form (laws/pumps/nak_atp_mass_action_positive.py; docs/KINETIC_PUMP_PROCESS.md): the engine's own completion of that form
 - **Place:** docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md §6.3

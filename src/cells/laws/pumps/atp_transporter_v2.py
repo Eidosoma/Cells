@@ -85,7 +85,7 @@ LAW = CycleLaw(
     forms="base",  # One species moved: each move is a base row.
     cycle=CYCLE,
     host="cells.transporter@1",
-    provenance="cited",
+    provenance="parity",
     source=Citation(
         "an ATP-driven transporter of one species, in the Na/K law's mass-action form "
         "(laws/pumps/nak_atp_mass_action_positive.py; docs/KINETIC_PUMP_PROCESS.md): the engine's "
