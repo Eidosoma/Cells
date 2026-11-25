@@ -44,13 +44,18 @@ def build():
                                   faces=[["1", "2", {"T": 0.328125}]])
     worlds["inv-eq-tr"] = _world({"1": 3.5, "2": 3.5}, {"T": {"1": 14.875, "2": 1.75e-11}}, "one step", "one step",
                                  faces=[["1", "2", {"T": 0.328125}]])
+    # 17.25 and 14.75 mM: a background 5.9 times the difference, so the levels' ratio is 1.17 and T4's remainder bound B_def
+    # has almost no slack above the law's own error (the analogue of `eq-hi`)
+    worlds["inv-eq-hi"] = _world({"1": 4.5, "2": 4.5}, {"T": {"1": 77.625, "2": 66.375}}, "one step", "one step",
+                                 faces=[["1", "2", {"T": 0.421875}]])
     worlds["inv-r4-mid"] = _world({"1": 1.75, "2": 8.75}, {"T": {"1": 9.1875, "2": 15.3125}}, "one step", "one step",
                                   faces=[["1", "2", {"T": 0.2734375}]])
-    for world in ("inv-eq-mid", "inv-r4-mid"):
+    for world in ("inv-eq-mid", "inv-eq-hi", "inv-r4-mid"):
         for j, step in enumerate((1.25, 0.625, 0.3125, 0.15625)):
             runs.append(_run(1, f"{world} exact j={j}", world, step))
-    for j, step in enumerate((0.078125, 0.0390625, 0.01953125, 0.009765625)):
-        runs.append(_run(1, f"inv-eq-mid default j={j}", "inv-eq-mid", step, heat="default"))
+    for world in ("inv-eq-mid", "inv-eq-hi"):
+        for j, step in enumerate((0.078125, 0.0390625, 0.01953125, 0.009765625)):
+            runs.append(_run(1, f"{world} default j={j}", world, step, heat="default"))
     runs.append(_run(1, "inv-eq-tr default recorded", "inv-eq-tr", 0.0390625, heat="default", role="recorded"))
 
     # ---- arm 2: diffusion, an exchange, diffusion ------------------------------------------------------------------

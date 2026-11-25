@@ -39,7 +39,7 @@ INVENTED = {
     "P10": {"world": "inv-F1", "step": 1.03125, "time": 8.25},
     "P11": {"world": "inv-F1L", "step": 8.25},
     "P14": {"world": "inv-r4-mid"},
-    "P15": {"worlds": ("inv-eq-mid",), "step": 0.15625},
+    "P15": {"worlds": ("inv-eq-mid", "inv-eq-hi"), "step": 0.15625},
     "P16": {"world": "inv-eq-mid"},
     "P17": {"world": "inv-N-buffered"},
     "P19": {"world": "inv-J1"},

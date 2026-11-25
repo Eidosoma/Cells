@@ -1004,7 +1004,7 @@ PLANS = {
     "registered": {"P14": "r4-mid", "P15": ("eq-lo", "eq-mid", "eq-hi"), "P15 step": 0.25, "P16": "eq-mid", "P17": "N-buffered",
                    "P1": ("F1", "F2"), "P1 time": 8.0, "P1 step": 1.0, "P2": ("F1", "F3"), "P3 equal": "F1", "P3 unequal": "F3",
                    "P4": "F1", "P11": "F1L", "P11 step": 8.0, "P9": "G1", "P5": "H1", "P7": ("H2", "H3", "H4"), "P19": "J1"},
-    "invented": {"P14": "inv-r4-mid", "P15": ("inv-eq-mid",), "P15 step": 0.15625, "P16": "inv-eq-mid", "P17": "inv-N-buffered",
+    "invented": {"P14": "inv-r4-mid", "P15": ("inv-eq-mid", "inv-eq-hi"), "P15 step": 0.15625, "P16": "inv-eq-mid", "P17": "inv-N-buffered",
                  "P1": ("inv-F1", "inv-F2"), "P1 time": 8.25, "P1 step": 1.03125, "P2": ("inv-F1", "inv-F3"),
                  "P3 equal": "inv-F1", "P3 unequal": "inv-F3", "P4": "inv-F1", "P11": "inv-F1L", "P11 step": 8.25, "P9": "inv-G1",
                  "P5": "inv-H1", "P7": ("inv-H2",), "P19": "inv-J1"},

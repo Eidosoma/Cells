@@ -1,6 +1,6 @@
 {
  "all_changes_flagged": true,
- "changes": 42,
+ "changes": 45,
  "rows": [
   {
    "change": "none",
@@ -148,6 +148,27 @@
    "flagged": true
   },
   {
+   "change": "the near-equal wells' default heat given as the free energy lost",
+   "first": [
+    "invented: inv-eq-hi, cases: 102 values, the largest gap over accuracy plus the method's allowance"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "the near-equal wells' B_def a hair smaller",
+   "first": [
+    "invented: inv-eq-hi, cases: 102 values, the largest gap over accuracy plus the method's allowance"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "the near-equal wells' world missing",
+   "first": [
+    "exception KeyError"
+   ],
+   "flagged": true
+  },
+  {
    "change": "the retry's case missing",
    "first": [
     "exception KeyError"
@@ -206,7 +227,7 @@
   {
    "change": "a check that fails",
    "first": [
-    "reference_invented.json: check fails: 6 two wells: inv-eq-mid, D'(0) = A(0) (relative)"
+    "reference_invented.json: check fails: 6 two wells: inv-eq-hi, D'(0) = A(0) (relative)"
    ],
    "flagged": true
   },

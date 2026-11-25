@@ -30,7 +30,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--out", required=True)
     parser.add_argument("--scratch", required=True)
-    parser.add_argument("--revision", required=True)
+    parser.add_argument("--revision", required=True, help="the spec revision that the reference files carry")
+    parser.add_argument("--read-revision", help="a later spec revision that was read since (default: the same)")
     parser.add_argument("--seeds", default="1,271828")
     parser.add_argument("--own-seed", default="0")
     parser.add_argument("--skip-run", action="store_true", help="compare folders that are already written")
@@ -63,6 +64,7 @@ def main():
         "hash_seeds": {"own": arguments.own_seed, "others": seeds},
         "byte_identical_under_other_seeds": identical,
         "spec_revision": arguments.revision,
+        "spec_revision_read_last": arguments.read_revision or arguments.revision,
         "spec_files_sha256": {name: sha(os.path.join(spec, name)) for name in sorted(os.listdir(spec))},
         "source_files_sha256": {name: sha(os.path.join(HERE, name)) for name in sources},
         "working_digits": {"propagators and closed forms": 110, "quadratures": 120, "a centred difference": 260},

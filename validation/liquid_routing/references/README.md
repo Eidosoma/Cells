@@ -124,6 +124,13 @@ router, the restart, the no-event twin, the still face, the structural zeros, th
 (arm 5) and p = 2 (arms 2 and 6), U (`inv-H5`), N, M and D, one expected stop, one expected refusal, one recorded run, and one
 plant of each kind: mapping (P1, P10), record (P2 to P5, P7, P9, P11, P14 to P17, P19) and engine (P8).
 
+**A near-equal start** (`inv-eq-hi`, added on 25 November 2026 at the lead's instruction, after the references' first head): 17.25 and
+14.75 mM in two 4.5 pL wells, a background 5.9 times the difference, the analogue of `eq-hi`, with its exact and default runs (kh at most
+1/64), its `cases` and P15, which CRITERIA §6.1 names for `eq-hi`. The law's own error against D reaches 0.999985 (the coarsest default
+step) to 0.999998 (the finest) of B_def, so an honest run passes T4's class B there only by its e_round (the slack B_def − error is 0.96
+of e_round at the coarsest step and 2.4e-4 of it at the finest), as `eq-hi` does at registered size. Every other invented value is
+unchanged but for what this world adds (`checks`, `plants`, `planted_series`, `cases`, `worlds`, `inputs_sha256`).
+
 Arm 6's invented worlds need the second snapshot (the lift of the faced-node refusal), as the registered ones do.
 
 I confirmed with my own decimal portion map and scheme that an honest run of the invented set lies inside every order window
@@ -171,7 +178,7 @@ heats by Clenshaw-Curtis with hyperbolic-function levels, and every plant with t
   now holds its own cache, and each arm reads its inputs afresh.
 - Sets are never iterated in their own order.
 
-**What I could not check:** whether the engine admits the invented worlds (a trace beside 14.9 fmol, a 1.25 pL portion, 62 runs), whether
+**What I could not check:** whether the engine admits the invented worlds (a trace beside 14.9 fmol, a 1.25 pL portion, 70 runs), whether
 LAWS §9's counts cover the engine's operation path (only the rehearsal can), the engine's own sign of zero, the retry's rows, and the
 judge's reading of these files. Nothing here bears on `n_L_S`, `free_sites_S` and `bound_L_S`.
 
@@ -183,7 +190,7 @@ platform, the Python and libmpdec versions, and the spec files' hashes are in `o
 
 ## 10. Numbers
 
-**Checks.** 847 rows over the seven files, all passing (the invented file 321; arms 1 to 6: 116, 75, 156, 50, 90, 39). Largest residual against its bound, by SPEC §9's item, over every file:
+**Checks.** 867 rows over the seven files, all passing (the invented file 341; arms 1 to 6: 116, 75, 156, 50, 90, 39). Largest residual against its bound, by SPEC §9's item, over every file:
 
 | Item | What | Largest residual | Bound |
 | --- | --- | --- | --- |
@@ -204,7 +211,7 @@ platform, the Python and libmpdec versions, and the spec files' hashes are in `o
 | 8 | a uniform stream (pJ); the second portion's loss RT (3 ln 3 − 4 ln 2), both forms; the first portion; the order | 1.6e-105; 8.0e-110; 0; 0 | 1e-60; 1e-50; 0; 1e-50 |
 | 8 | arm 4: the portions' losses sum to the state function; the stream by the portion law; each loss by both forms (over s_F) | 1.4e-110; 9.6e-111; 6.3e-111 | 1e-50 |
 | 9 | labels sum to their species; arm 6 at Q = 0 is the two wells; its face's heat is D(m*); arm 6 by its eigenvalues | 8.9e-110; 1.7e-107; 7.9e-65; 4.3e-107 | 1e-50; 1e-50; 1e-40; 1e-50 |
-| 10 | the J̄²/W form against the two-well form; \|H_def − D\| over B_def, the largest; the third clause over 8z (arm 1's judged starts and the invented) | 1.2e-108; 0.9999975 (`eq-hi`, 1/64 s; the rows' six digits show both as equal); 0.0669 | 1e-50; 1; 1 |
+| 10 | the J̄²/W form against the two-well form; \|H_def − D\| over B_def, the largest; the third clause over 8z (arm 1's judged starts and the invented) | 1.6e-108; 0.9999981 (`inv-eq-hi`, 0.009765625 s; `eq-hi`, 1/64 s: 0.9999975; the rows' six digits show both as equal); 0.0669 | 1e-50; 1; 1 |
 | 11 | the largest fraction of LAWS §9's bound, over every network, run, quantity and output | 0.04128 (F1, sums) | 1 |
 
 **Plant margins** (distance over the expected honest tolerance; each must be at least 10). No margin falls below 10; the smallest is P15 on `eq-hi` at 0.25 s (13.18).
@@ -254,6 +261,6 @@ platform, the Python and libmpdec versions, and the spec files' hashes are in `o
 
 P8 has no margin (its missing heat is in `plants_reported`) and P18 no size. P19's planted order is 0.9973, against a limit of 1.25.
 
-In the invented file the same plants have margins of at least 15.2.
+In the invented file the same plants have margins of at least 12.4.
 
-**Programs.** `component_tests.py`: 83 of 83 tests pass. `self_check.py`: 585 of 585 rows over the seven files. `mutation_tests.py`: each of 42 deliberate changes is flagged and the unchanged file is clean. The residuals are in `out/`.
+**Programs.** `component_tests.py`: 83 of 83 tests pass. `self_check.py`: 605 of 605 rows over the seven files. `mutation_tests.py`: each of 45 deliberate changes is flagged and the unchanged file is clean. The residuals are in `out/`.

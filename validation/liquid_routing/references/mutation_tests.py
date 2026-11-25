@@ -159,6 +159,23 @@ def _(d):
     case["B_def"] = bump(case["B_def"], 37)
 
 
+@mutation("the near-equal wells' default heat given as the free energy lost")
+def _(d):
+    case = d["cases"]["inv-eq-hi|0.009765625"]
+    case["H_def"] = case["D_R"]
+
+
+@mutation("the near-equal wells' B_def a hair smaller")
+def _(d):
+    case = d["cases"]["inv-eq-hi|0.078125"]
+    case["B_def"] = bump(case["B_def"], 34)
+
+
+@mutation("the near-equal wells' world missing")
+def _(d):
+    del d["worlds"]["inv-eq-hi"]
+
+
 @mutation("the retry's case missing")
 def _(d):
     del d["cases"]["inv-eq-mid|0.0048828125"]

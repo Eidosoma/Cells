@@ -1,5 +1,5 @@
 {
- "passed": 585,
+ "passed": 605,
  "rows": [
   {
    "bound": "0",
@@ -27,7 +27,7 @@
   },
   {
    "bound": "0",
-   "name": "reference_invented.json: every check passes (321)",
+   "name": "reference_invented.json: every check passes (341)",
    "passes": true,
    "residual": "0"
   },
@@ -208,6 +208,42 @@
   {
    "bound": "0",
    "name": "reference_invented.json: P15 n_T_2 inv-eq-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P15 n_T_1 inv-eq-hi",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P15 n_T_1 inv-eq-hi margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P15 n_T_1 inv-eq-hi distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P15 n_T_2 inv-eq-hi",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P15 n_T_2 inv-eq-hi margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P15 n_T_2 inv-eq-hi distance is |planted - honest|",
    "passes": true,
    "residual": "0"
   },
@@ -639,7 +675,7 @@
   },
   {
    "bound": "0",
-   "name": "reference_invented.json: every plant margin is at least 10 (34 plants): all",
+   "name": "reference_invented.json: every plant margin is at least 10 (36 plants): all",
    "passes": true,
    "residual": "0"
   },
@@ -867,6 +903,72 @@
   },
   {
    "bound": "0",
+   "name": "invented: the cases of inv-eq-hi are its runs' steps and the retry's",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: case inv-eq-hi|0.0048828125 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: case inv-eq-hi|0.009765625 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: case inv-eq-hi|0.01953125 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: case inv-eq-hi|0.0390625 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: case inv-eq-hi|0.078125 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: case inv-eq-hi|0.15625 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: case inv-eq-hi|0.3125 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: case inv-eq-hi|0.625 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: case inv-eq-hi|1.25 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "invented: inv-eq-hi, cases: 102 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "4.024971E-1"
+  },
+  {
+   "bound": "0",
    "name": "invented: the cases of inv-eq-mid are its runs' steps and the retry's",
    "passes": true,
    "residual": "0"
@@ -1054,6 +1156,24 @@
   {
    "bound": "0",
    "name": "invented: P15 planted series inv-eq-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P15 inv-eq-hi recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P15 inv-eq-hi (well 2) recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P15 planted series inv-eq-hi",
    "passes": true,
    "residual": "0"
   },
@@ -3512,5 +3632,5 @@
    "residual": "0"
   }
  ],
- "total": 585
+ "total": 605
 }
