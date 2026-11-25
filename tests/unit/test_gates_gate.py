@@ -1196,7 +1196,6 @@ L, P, R, S = (f"tests/unit/test_{n}.py" for n in ("lister", "plain", "reader", "
     ({}, "none", [S]),  # A child the map cannot see is always run.
     ({}, "scanners", [L, S]),
     ({}, "readers", [L, R, S]),  # D229's always-run set, the fallback.
-    ({}, "untraced", [L, R, S]),  # The default (D358): no trace checked these entries.
     ({"docs/a.md": "a, changed\n"}, "none", [R, S]),
     ({"validation/helper.py": "VALUE = 1  # changed\n"}, "none", [R, S]),
     ({"docs/c.md": "new\n"}, "none", [L, S]),  # A new name in a listed folder.
@@ -1209,6 +1208,7 @@ L, P, R, S = (f"tests/unit/test_{n}.py" for n in ("lister", "plain", "reader", "
     ({"json.py": "X = 1\n"}, "none", [L, P, R, S]),  # It would shadow a module each one imports (D358).
     ({"tests/unit/helper/__init__.py": ""}, "none", [S]),  # No import looks this name up.
     ({"validation/helper/__init__.py": "VALUE = 1\n"}, "none", [R, S]),  # A package beside helper.py.
+    ({}, "untraced", [L, R, S]),  # The default (D358): no trace checked these entries.
 ])
 def test_the_selection_holds_every_file_whose_recorded_paths_changed(scope_map, tmp_path, changes,
                                                                      always, chosen):
@@ -1241,55 +1241,63 @@ def test_a_planted_read_of_a_repository_file_pulls_its_test_in(scope_map, tmp_pa
     assert after[P] == ["touched paths changed since the map: ['docs/b.md']"]
 
 
-@pytest.mark.parametrize("changes, via, root, chosen", [
-    ({"tests/unit/test_new.py": "def test_new():\n    pass\n"}, "pkgutil", "tests/unit", False),  # No plugin.
-    ({"tests/unit/test_reader.py": None}, "pkgutil", "tests/unit", False),  # A file it cannot use.
-    ({"tests/unit/jax_rocm7_plugin/__init__.py": ""}, "pkgutil", "tests/unit", True),  # A plugin.
-    ({"tests/unit/test_new.py": "X = 1\n"}, "metadata", "src", False),  # No distribution, wherever it looks.
-    ({"tests/unit/test_new.py": "X = 1\n"}, "pkgutil", "src", True),  # Sent past sys.path (D358),
-    ({"tests/unit/test_reader.py": "X = 1\n"}, "pkgutil", "src", True),
-    ({"tests/unit/test_new.py": "X = 1\n"}, None, "tests/unit", True),  # or listing by itself.
-    ({"tests/unit/test_reader.py": "X = 1\n"}, None, "tests/unit", True),
-])
-def test_a_librarys_own_discovery_is_compared_on_the_names_it_can_use(tmp_path, changes, via, root, chosen):
-    """jaxlib's plugin search (pkgutil over sys.path) lists tests/unit and asks about each entry:
-    only names discovery can use (DISCOVERY) count, so a new test file selects nothing. What a
-    library lists or asks elsewhere, or in another way, counts whole."""
+def planted_map(tmp_path, rows):
+    """The map of the tiny snapshot with test_plain.py's record planted: ROWS of its one process."""
     snap = scope_snapshot(tmp_path / "nightly")
     run, record = tmp_path / "run", json.loads((snap / "tests/test_tiers.json").read_text())
     logs = run / "scope" / "tests__unit__test_plain.py"
     logs.mkdir(parents=True)
     (logs / "10-a.jsonl").write_text("".join(json.dumps(r) + "\n" for r in [
-        {"process": 10, "parent": 1, "forked": False, "argv": ["python", "-m", "pytest"]},
-        {"list": "tests/unit", "by": "library", "via": via},
-        {"stat": "tests/unit/test_reader.py", "by": "library", "via": via}, {"root": root},
+        {"process": 10, "parent": 1, "forked": False, "argv": ["python", "-m", "pytest"]}, *rows,
         {"exit": True, "modules": ["tests/unit/test_plain.py"]}]))
     (run / "run.json").write_text(json.dumps({"scope_map": str(run / "scope"), "files": [
         dict(r, timed_out=False) for r in record["tiers"]["1"]]}))
     (run / "summary.json").write_text(json.dumps({"changed_vs_record": []}))
-    doc = scope.build(run, snap, sys.executable)
-    assert doc["files"][P]["complete"] and not doc["files"][P]["reads_repository"]
+    return snap, scope.build(run, snap, sys.executable)
+
+
+def chosen_for(tmp_path, snap, doc, changes):
     head = scope_snapshot(tmp_path / "head", changes, rev="h" * 40)
-    files = scope.select(head, snap, doc, "tests/test_tiers.json", "none")[1]["files"]
-    assert (P in files) is chosen, files.get(P)
+    return scope.select(head, snap, doc, "tests/test_tiers.json", "none")[1]["files"].get(P)
+
+
+@pytest.mark.parametrize("changes, chosen", [
+    ({"tests/unit/test_new.py": "def test_new():\n    pass\n"}, False),  # Not a plugin's name.
+    ({"tests/unit/test_reader.py": None}, False),  # A library's stat of a file it cannot use.
+    ({"tests/unit/jax_rocm7_plugin/__init__.py": ""}, True),  # A plugin its discovery would find.
+])
+def test_a_librarys_own_discovery_is_compared_on_the_names_it_can_use(tmp_path, changes, chosen):
+    """jaxlib's plugin search (pkgutil over sys.path) lists tests/unit and asks about each entry:
+    only names discovery can use (DISCOVERY) count, so a new test file selects nothing."""
+    snap, doc = planted_map(tmp_path, [
+        {"list": "tests/unit", "by": "library", "via": "pkgutil"}, {"root": "tests/unit"},
+        {"stat": "tests/unit/test_reader.py", "by": "library", "via": "pkgutil"}])
+    assert doc["files"][P]["complete"] and not doc["files"][P]["reads_repository"]
+    assert bool(chosen_for(tmp_path, snap, doc, changes)) is chosen
+
+
+@pytest.mark.parametrize("rows, chosen", [
+    ([{"list": "docs", "by": "library"}], True),
+    ([{"stat": "docs/c.md", "by": "library"}], True),
+    ([{"list": "docs", "by": "library", "via": "pkgutil"}], True),  # Sent elsewhere than sys.path.
+    ([{"stat": "docs/c.md", "by": "library", "via": "pkgutil"}], True),
+    ([{"list": "docs", "by": "repo:tests/unit/test_plain.py", "via": "metadata"}], False),  # Not a distribution.
+    ([{"list": "docs", "by": "library", "via": "pkgutil"}, {"root": "docs"},  # Both classes of a
+      {"list": "docs", "by": "repo:tests/unit/test_plain.py"}], True),        # listing are kept (D358).
+    ([{"list": "docs", "by": "pytest"}], False),
+    ([{"list": "docs", "by": "import"}, {"root": "docs"}], False),  # Replaced by the names looked up.
+    ([{"list": "docs", "by": "import"}], True),  # A finder that code sent there itself.
+])
+def test_each_class_of_a_listing_counts_by_what_it_can_use(tmp_path, rows, chosen):
+    """A new docs/c.md, after a listing of docs (or a question about the file) of each class (D358)."""
+    snap, doc = planted_map(tmp_path, rows)
+    assert bool(chosen_for(tmp_path, snap, doc, {"docs/c.md": "new\n"})) is chosen
 
 
 def test_a_folder_opened_by_descriptor_is_a_listing(tmp_path):
     """os.fwalk and scandir on a descriptor list nothing by path: the folder's open stands for it."""
-    snap = scope_snapshot(tmp_path / "nightly")
-    run, record = tmp_path / "run", json.loads((snap / "tests/test_tiers.json").read_text())
-    logs = run / "scope" / "tests__unit__test_plain.py"
-    logs.mkdir(parents=True)
-    (logs / "10-a.jsonl").write_text("".join(json.dumps(r) + "\n" for r in [
-        {"process": 10, "parent": 1, "forked": False, "argv": ["python", "-m", "pytest"]},
-        {"open": "docs", "by": "repo:tests/unit/test_plain.py"},
-        {"exit": True, "modules": ["tests/unit/test_plain.py"]}]))
-    (run / "run.json").write_text(json.dumps({"scope_map": str(run / "scope"), "files": [
-        dict(r, timed_out=False) for r in record["tiers"]["1"]]}))
-    (run / "summary.json").write_text(json.dumps({"changed_vs_record": []}))
-    doc = scope.build(run, snap, sys.executable)
-    head = scope_snapshot(tmp_path / "head", {"docs/c.md": "new\n"}, rev="h" * 40)
-    assert scope.select(head, snap, doc, "tests/test_tiers.json", "none")[1]["files"][P] == [
+    snap, doc = planted_map(tmp_path, [{"open": "docs", "by": "repo:tests/unit/test_plain.py"}])
+    assert chosen_for(tmp_path, snap, doc, {"docs/c.md": "new\n"}) == [
         "listed folders changed since the map: ['docs']"]
 
 
