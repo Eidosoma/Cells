@@ -195,7 +195,7 @@ def trace_refused():
     return None if done.returncode == 0 else f"strace: {done.stderr.strip()[-200:] or done.returncode}"
 
 
-def _await_trace(folder, seconds=2.0):
+def _await_trace(folder, seconds=10.0):
     """strace ends just after the last process it follows, so this waits until every trace has its
     closing line. A process that outlives its test file is not waited for: its trace is not whole."""
     end, open_logs = time.monotonic() + seconds, None
