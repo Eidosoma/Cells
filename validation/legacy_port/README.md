@@ -44,7 +44,8 @@ of a reference that Part 2's judge may use). After the deletion's commit:
    entries in the bypass guard's list and their rows of the tier record. It takes no other edits.
 
 Until then the deletion's tree has eight files that fail to import (they fail on the cleanup branch before it too), and
-five rows of three files that fail when they run: they read what left.
+five rows of three files that fail when they run: they read what left. No gate runs between the two commits: the second
+follows the first right away, and the ID move and the one full gate come after both (the lead, 25 November).
 
 `--branch` refuses before it makes anything while a row is open before that commit (`open, before the deletion` for both,
 `open, before the second commit` for the second), while a row on which the user was asked is not approved, and while the
@@ -60,12 +61,12 @@ list is not a committed file. The batch without its edits is refused too, and so
 - A prepared text that no longer stood in its page stopped `make_edits.py` (a page rewritten at
   8d82e435).
 - At 62d5da58 this script and the scratch copy it came from stage one tree from one list (ad34ed59).
-- At 936274d6 (legacy-cleanup f429ea4b with `legacy-retiring-rows`), the list at be44ec63: 1,693 files removed and 42 edited (staged tree abafa43b). The library pages pass their check, all 17
-  rows of `tests/unit/test_continuity_bypass.py` pass, the definitions that leave are the 129 of `removed_definitions.txt`, 11,011 tests collect, and 8 files fail to, all of
+- At abd78068 (legacy-cleanup f429ea4b with `legacy-retiring-rows`), the list at c07d1d91: 1,693 files removed and 42 edited (staged tree eaa1bb65). The library pages pass their check, all 17 rows
+  of `tests/unit/test_continuity_bypass.py` pass, the definitions that leave are the 129 of `removed_definitions.txt`, 11,012 tests collect, and 8 files fail to, all of
   which would retire.
 - Test IDs, of 21,927 at the base: after the deletion 11,531 no longer collect (10,956 in files that go, 261 rows of files that stay, 138 of the two
-  files that the pump and symports work rewrote, 176 in the eight files that fail to import) and 615 are new, so 11,011 collect. After the second
-  commit 11,545 and 620, so 11,002 (`second_commit_test_ids.tsv`: 14 leave, and 5 are new, the same rows without the parked family's parameter).
-- On that commit with `legacy-open-retirements` 830ae93b merged (a detached commit, for the measurement), `--retirements`: 11 more files removed and 2 edited (staged tree 78167cf2), 11,002 tests collect with 0 errors, the same 17 rows
+  files that the pump and symports work rewrote, 176 in the eight files that fail to import) and 616 are new, so 11,012 collect. After the second
+  commit 11,545 and 621, so 11,003 (`second_commit_test_ids.tsv`: 14 leave, and 5 are new, the same rows without the parked family's parameter).
+- On that commit with `legacy-open-retirements` 830ae93b merged (a detached commit, for the measurement), `--retirements`: 11 more files removed and 2 edited (staged tree c5f61ed0), 11,003 tests collect with 0 errors, the same 17 rows
   pass, and the one import that resolves to nothing is the rehearsal driver's, which is of the frozen snapshot.
-- `carrier_plants.py` at 936274d6: all 33 plants fail their rows (32 pass with nothing planted): 22 by an assertion, 7 by a raise of the engine's while the row ran, and 4 by such a raise in a fixture. None is unseen, and none counts an import or collection error. The fresh reader's 168 plants (its file as it stood at 21:09:48 UTC), run on its own copies of the tree after the deletion: 116 fail a row by an assertion (one of them also by a raise), 5 by a raise of the engine's, 5 in a fixture, and 42 fail no row that it ran (`carrier_plants_reader.tsv`; what they mean is in `open_rows.tsv`). Its plants of the lead's item 1 (a closed patch, a closed junction, abundance 0) are provisional while that item is open.
+- `carrier_plants.py` at abd78068: all 39 plants fail their rows (33 passed with nothing planted): 28 by an assertion, 7 by a raise of the engine's while the row ran, and 4 by such a raise in a fixture. None is unseen, and none counts an import or collection error. The fresh reader's 168 plants (its file as it stood at 21:09:48 UTC), run on its own copies of the tree after the deletion (the staged tree bc40533b with seven newer files of d8920e5b): 116 fail a row by an assertion (one of them also by a raise), 12 only by a raise of the engine's (7 while the row ran, 5 in a fixture), and 40 fail no row that it ran (`carrier_plants_reader.tsv`; what they mean is in `open_rows.tsv`).
