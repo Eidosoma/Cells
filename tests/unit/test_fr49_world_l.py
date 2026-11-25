@@ -13,6 +13,8 @@ size against the code-blind references, are the registered judgement
 import numpy as np
 import pytest
 
+from cells.definitions.specs import parse_spec
+from validation import id_table
 from validation.fr49 import judge_l
 
 END = 1260.0
@@ -20,8 +22,10 @@ END = 1260.0
 
 @pytest.fixture(scope="module")
 def runs():
-    spec, labelled = judge_l.run_world(2.0, labelled=True, end=END)
-    _, plain = judge_l.run_world(2.0, labelled=False, end=END)
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(judge_l, "parse_spec", lambda raw: parse_spec(id_table.translate(raw)))
+        spec, labelled = judge_l.run_world(2.0, labelled=True, end=END)
+        _, plain = judge_l.run_world(2.0, labelled=False, end=END)
     return spec, labelled, plain
 
 
@@ -48,5 +52,5 @@ def test_l6_expression_is_silent_at_the_compartment(runs):
     """L6: expression's rows at the compartment stay bitwise their declared amounts on every row,
     and S1–S3 hold there (no ion row moves, and V_b and the capacitor energy stay at rounding)."""
     spec, labelled, _ = runs
-    found = judge_l.silence(spec, labelled)
+    found = id_table.function(judge_l.silence)(spec, labelled)
     assert found["passed"], found

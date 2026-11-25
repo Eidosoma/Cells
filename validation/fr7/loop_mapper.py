@@ -47,7 +47,6 @@ The synthetic labels are the references' (D217). Development, not judged.
 """
 
 import copy
-import json
 import math
 from pathlib import Path
 
@@ -55,6 +54,7 @@ from cells.definitions import pump_composite_spec as cs
 from cells.laws.electrochemistry import F
 from cells.laws.pumps import nak_atp_mass_action_positive as pump_law
 from cells.registry.inventory_species import add_inventory_species
+from validation import id_table
 from validation.fr7 import unit_turnover_fixtures as fx
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -76,7 +76,7 @@ LAWS = {
 
 def inputs(path=None):
     """The registered loop inputs (interface/loop_inputs.json, or the given copy of it)."""
-    return json.loads(Path(path or INTERFACE / "loop_inputs.json").read_text())
+    return id_table.load(path or INTERFACE / "loop_inputs.json")
 
 
 def _identity(name):

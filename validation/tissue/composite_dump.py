@@ -94,10 +94,11 @@ def _water_worlds():
 
 
 def _w1_worlds():
+    from validation import id_table
     from validation.tissue import pump_water_qualification as w1q
 
     root = Path(w1q.__file__).parent  # The predictions of the revision under test.
-    predictions = json.loads((root / "pump_water_predictions.json").read_text())
+    predictions = id_table.load(root / "pump_water_predictions.json")
     return {
         "W1_" + name: (
             lambda path=path: w1q.with_step(w1q.item(predictions, path)["definition"], 1e-3)
@@ -107,10 +108,11 @@ def _w1_worlds():
 
 
 def _w2_worlds():
+    from validation import id_table
     from validation.tissue import pump_water_kcc_qualification as w2q
 
     root = Path(w2q.__file__).parent
-    predictions = json.loads((root / "pump_water_kcc_predictions.json").read_text())
+    predictions = id_table.load(root / "pump_water_kcc_predictions.json")
 
     def trajectory(arm):
         raw = copy.deepcopy(w2q.definition(predictions, arm))

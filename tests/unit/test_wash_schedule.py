@@ -150,9 +150,10 @@ def _c1_world():
     a well joined to cell_0 by a copy of the bounding patch, which carries no S route. The well's S
     is labelled x 0.6 and base 0.4, and the well is washed by half at 900 s for a buffer with S at
     1e-9 mM."""
+    from validation import id_table
     from validation.fr49 import worlds as fr49
 
-    raw = fr49.world_l()
+    raw = id_table.translate(fr49.world_l())
     m, e, x = raw["model"], raw["experiment"], raw["execution"]
     node = copy.deepcopy(next(n for n in m["extracellular"] if n["id"] == fr49.NODE))
     node["id"] = "well"
@@ -164,7 +165,7 @@ def _c1_world():
     x["membrane_capacity"] = len(m["membranes"])
     control = next(c for c in e["membrane_controls"] if c["membrane_id"] == fr49.PATCH)
     e["membrane_controls"].append(dict(copy.deepcopy(control), membrane_id=patch["id"]))
-    owner = next(o for o in m["operators"] if o["law"] == fr49.LABELS)
+    owner = next(o for o in m["operators"] if o["law"] == id_table.translate(fr49.LABELS))
     owner["species"][0]["initial"].append(dict(node="well", shares={"x": 0.6, "base": 0.4}))
     neutral = [s["id"] for s in m["species"] if s["valence"] == 0]
     buffer = {s: node["initial_amount_fmol"][s] / node["volume_pL"] for s in neutral}

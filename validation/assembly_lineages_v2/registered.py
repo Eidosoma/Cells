@@ -85,6 +85,7 @@ from cells.models.assembly_lineages_v2 import (
     SHEAR_FISSION,
     TRANSITION_STATE,
 )
+from validation import id_table
 
 FORMAT = "ool_references.world@1"
 MAPPED_STEP_KEYS = {"id", "law", "locus", "reactants", "products", "forward_rate_per_s",
@@ -188,11 +189,12 @@ def world(registered, conventions):
 
 
 def definition(registered, conventions, experiment, execution):
-    """A complete definition: the registered world under the declared conventions."""
+    """A complete definition: the registered world under the declared conventions, its old IDs
+    translated (validation/id_table.py)."""
     the_world, _ = world(registered, conventions)
     return {
         "schema_version": 1,
-        "model": {"id": MODEL_ID, "world": the_world},
+        "model": {"id": MODEL_ID, "world": id_table.translate(the_world)},
         "experiment": copy.deepcopy(experiment),
         "execution": copy.deepcopy(execution),
     }
@@ -513,8 +515,9 @@ def run_entries(run):
 def definition2(registered, *, experiment, execution, run=None, division=None, vesicle=None):
     """A complete definition of a registered world2 document: under its run2 document (mode,
     slots, horizon, event limit and schedules) when given, else as a single lineage, and with
-    amendment 7's division entry when given. The driver's `experiment` and `execution` complete
-    it; the run's entries take precedence over the driver's."""
+    amendment 7's division entry when given, the document's old IDs translated. The driver's
+    `experiment` and `execution` complete it; the run's entries take precedence over the
+    driver's."""
     mode, slots, entries = (SINGLE_LINEAGE, 1, {}) if run is None else run_entries(run)
     the_world = world2(registered, mode=mode, slots=slots, division=division, vesicle=vesicle)
     the_execution = copy.deepcopy(execution)
@@ -523,7 +526,7 @@ def definition2(registered, *, experiment, execution, run=None, division=None, v
         the_execution["mode"] = copy.deepcopy(mode)
     return {
         "schema_version": 1,
-        "model": {"id": MODEL_ID, "world": the_world},
+        "model": {"id": MODEL_ID, "world": id_table.translate(the_world)},
         "experiment": copy.deepcopy(experiment) | entries,
         "execution": the_execution,
     }

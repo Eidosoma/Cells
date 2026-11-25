@@ -664,6 +664,7 @@ SNAPSHOT_SCOPE = (
     "validation/stationary",
     "validation/morphogenesis",
     "validation/tissue",
+    "validation/id_table.py",
     "validation/source_snapshot.py",
 )
 

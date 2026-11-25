@@ -43,6 +43,7 @@ from cells.execution.vector_windows import run_vector_windowed  # noqa: E402
 from cells.execution.windows import WindowPolicy, run_windowed  # noqa: E402
 from cells.models import cell_replacement as model  # noqa: E402
 from cells.models import surface_pump_v3  # noqa: E402
+from validation import id_table  # noqa: E402
 from validation.tissue import cell_replacement_fixtures as fx  # noqa: E402
 from validation.tissue import cell_replacement_qualification as qual  # noqa: E402
 
@@ -58,7 +59,7 @@ def load(protocol_path=None, predictions_path=None):
     protocol = json.loads(Path(protocol_path or qual.PROTOCOL).read_text())
     if "pinned_tolerances" not in protocol:
         raise SystemExit("The protocol has no pinned tolerances")
-    return protocol, json.loads(Path(predictions_path or qual.PREDICTIONS).read_text())
+    return protocol, id_table.load(predictions_path or qual.PREDICTIONS)
 
 
 def engine(raw, dt=1e-3):

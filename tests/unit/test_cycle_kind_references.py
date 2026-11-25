@@ -50,13 +50,14 @@ from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
 from cells.models import surface_pump_v3
 from cells.registry import kind_registry
 from cells.registry import laws as law_registry
+from validation import id_table
 from validation.core_seams.references import api
 from validation.tissue import pump_water_fixtures as water_fixtures
 
 EPS = np.finfo(float).eps
 FLOORS = 16  # Above the references' ten floors; their plants' margins lie far above it.
 HERE = Path(api.__file__).parent
-INPUTS = json.loads((HERE / "reference_inputs.json").read_text())
+INPUTS = id_table.load(HERE / "reference_inputs.json")
 VALUES = json.loads((HERE / "designs" / "core_seams_reference_values.json").read_text())
 A = INPUTS["seam_a"]
 REGISTRY = A["registry"]

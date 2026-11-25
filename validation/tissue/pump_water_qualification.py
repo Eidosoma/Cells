@@ -40,6 +40,7 @@ import numpy as np  # noqa: E402
 
 from cells.definitions.specs import parse_spec  # noqa: E402
 from cells.execution.windows import WindowPolicy, run_windowed  # noqa: E402
+from validation import id_table  # noqa: E402
 
 STEPS_S = (4e-3, 2e-3, 1e-3, 5e-4, 2.5e-4)
 QUANTITIES = ("cell_volume_pL", "membrane_voltage_V", "cell_concentration_mM")
@@ -408,7 +409,7 @@ def main():
     args = parser.parse_args()
     out = Path(args.output)
     out.mkdir(parents=True, exist_ok=True)
-    predictions = json.loads(Path(args.predictions).read_text())
+    predictions = id_table.load(args.predictions)
     backend = None
     if args.backend:  # The registered definitions declare the CPU; their backend picks the device.
         from validation.tissue import composite_l4_agreement as agreement

@@ -50,6 +50,8 @@ from pathlib import Path
 
 import numpy as np
 
+from validation import id_table
+
 ROOT = Path(__file__).resolve().parents[2]
 REFERENCES = ROOT / "validation" / "fr43_part2" / "references"
 FLOOR = 1e-8  # Below it, e_q(dt) is too close to the reference's own accuracy for a ratio.
@@ -109,7 +111,7 @@ def engine(world):
     from cells.execution.runner import run
     from cells.registry.models import get_model
 
-    raw = json.loads((REFERENCES / "worlds" / world).read_text())
+    raw = id_table.load(REFERENCES / "worlds" / world)
     spec = parse_spec(raw)
     started = time.perf_counter()
     result = run(spec)
@@ -170,7 +172,7 @@ def engine_c26(world):
     from cells.execution.runner import run
     from cells.registry.models import get_model
 
-    raw = json.loads((REFERENCES / "worlds" / world).read_text())
+    raw = id_table.load(REFERENCES / "worlds" / world)
     spec = parse_spec(raw)
     started = time.perf_counter()
     result = run(spec)
@@ -354,7 +356,7 @@ def engine_c28(world, edit=None):
     from cells.execution.runner import run
     from cells.registry.models import get_model
 
-    raw = json.loads((REFERENCES / "worlds" / world).read_text())
+    raw = id_table.load(REFERENCES / "worlds" / world)
     if edit is not None:
         edit(raw)
     spec = parse_spec(raw)

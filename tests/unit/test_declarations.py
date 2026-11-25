@@ -38,6 +38,7 @@ from cells.operators import OPERATORS, contract
 from cells.registry import declarations, kind_registry
 from cells.registry import laws as law_registry
 from cells.registry import operators as operator_registry
+from validation import id_table
 
 PLANTED_LAW = law_registry.RouteLaw(
     "tests.planted_route@1", ("membrane",), "a planted route", host="cells.passive_routes@1"
@@ -220,7 +221,7 @@ def joins(doc, definition):
 
 def test_version_2_joins_a_real_definition_and_states_lines_reads_and_units(tmp_path, monkeypatch):
     doc = declarations.manifest()
-    definition = json.loads(DEFINITION.read_text())["definition"]
+    definition = id_table.load(DEFINITION)["definition"]
     found = joins(doc, definition)
     assert {path for (path, _), joined in found.items() if joined is None} == UNDECLARED
     assert found[("/model/id", "resolved_pump_water@1")] == "model cells.resolved_pump_water@1"

@@ -105,8 +105,10 @@ def up1(x):
 
 
 def registered(part):
-    """(predictions, protocol) of the part at this revision."""
-    return tuple(json.loads((TISSUE / name).read_text()) for name in FILES[part])
+    """(predictions, protocol) of the part at this revision, their old IDs translated."""
+    from validation import id_table
+
+    return tuple(id_table.load(TISSUE / name) for name in FILES[part])
 
 
 BASES = {part: f"validation/tissue/{names[1]}" for part, names in FILES.items()}
@@ -179,8 +181,10 @@ def judged_protocol(part, path):
     A judged run takes the registered protocol itself or a registered backend variant of it;
     any other file is for dry runs only.
     """
+    from validation import id_table
+
     base = registered(part)[1]
-    candidate = json.loads(Path(path).read_text())
+    candidate = id_table.load(path)
     if candidate == base:
         return candidate, True, "the registered protocol"
     errors = variant_errors(part, candidate, base)

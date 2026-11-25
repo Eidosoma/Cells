@@ -45,6 +45,7 @@ import numpy as np
 import pytest
 
 from cells.laws.junctions import junction_series_gates as series
+from validation import id_table
 from validation.junction_gate_benchmark import revilla1999 as harness
 from validation.junction_gate_benchmark import revilla1999_score as scorer
 
@@ -58,6 +59,12 @@ TIMES = {-80: (0.9, 9.0), 80: (1.1, 11.0)}  # Invented (tau_fast, tau_slow), s.
 STEADY = {-80: 0.55, 80: 0.45}  # Invented G_ss/G_0.
 STEADY_UNITS = "G/G(10-mV prepulse)"
 PLANTED = 7.654321  # A value no refusal may print.
+
+
+@pytest.fixture(autouse=True)
+def _the_scorer_reads_the_law_by_the_engines_id(monkeypatch):
+    """The frozen scorer keeps the ID it was tagged with; the harness writes the engine's."""
+    monkeypatch.setattr(scorer, "LAW_ID", id_table.translate(scorer.LAW_ID))
 
 
 def trace_of(y, g0=0.8):

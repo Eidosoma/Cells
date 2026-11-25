@@ -468,6 +468,25 @@ def test_a_blocked_population_s_current_fraction_and_terms_follow_the_laws(case_
     assert all(found.values()), found
 
 
+def test_a_frozen_input_reads_through_the_id_table():
+    """D345's translator on the tagged cases.json: its populations' laws are the engine's own. With
+    an empty table it is the file's data itself; through a table and its inverse it comes back."""
+    import json
+
+    from cells.registry import laws as law_registry
+    from validation import id_table
+
+    for population in fr51.spec_of()["populations"].values():
+        law_registry.active().lookup(population["law"])
+    cases = json.loads(fr51_judge.SPEC.read_text())
+    laws = {p["law"] for p in cases["populations"].values()}
+    assert id_table.translate(cases, {}) is cases
+    table = {law: f"tests.planted.{law}" for law in laws}
+    there = id_table.translate(cases, table)
+    assert {p["law"] for p in there["populations"].values()} == set(table.values())
+    assert id_table.translate(there, {new: old for old, new in table.items()}) == cases
+
+
 def capped_valence():
     """D352's plant, engine-only like zero_plant (JUDGED keeps its eleven): each effective valence
     capped at the blocker's |z_B|, its sign kept."""

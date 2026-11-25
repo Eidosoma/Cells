@@ -23,6 +23,7 @@ import math
 import numpy as np
 import pytest
 
+from validation import id_table
 from validation.gap_junction_tissue import linear_judge as lj
 from validation.gap_junction_tissue import paper, worlds
 
@@ -155,7 +156,9 @@ def test_the_references_spec_is_what_spec_writes_and_holds_no_seen_value():
 
 
 def test_the_committed_rule_is_what_rule_writes(rule):
-    assert json.loads(lj.RULE_FILE.read_text()) == json.loads(json.dumps(rule))
+    # rule() takes its solvers from the live worlds module, and its other IDs as it was frozen.
+    written = id_table.translate(json.loads(json.dumps(rule)))
+    assert id_table.load(lj.RULE_FILE) == written
 
 
 def test_a_matching_run_passes_and_both_engine_plants_are_caught(tmp_path, rule, table):

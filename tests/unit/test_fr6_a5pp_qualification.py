@@ -15,11 +15,12 @@ import math
 
 import pytest
 
+from validation import id_table
 from validation.tissue import a5pp_acceptance_judge as judge
 from validation.tissue import a5pp_acceptance_protocol as drafter
 from validation.tissue import a5pp_acceptance_qualification as generator
 
-PROTOCOL = json.loads(generator.PROTOCOL.read_text())
+PROTOCOL = id_table.load(generator.PROTOCOL)
 D = drafter.derivation()
 RECORD_MS = list(range(0, 2001, 50))
 CELLS = ("a", "b")
