@@ -15,7 +15,7 @@ from cells.execution.windows import WindowPolicy, iter_windows, plan_windows, ru
 from cells.records.io import _sha256, load_snapshot
 from cells.records.window_io import write_windowed_run
 from cells.registry.models import get_model
-from tests.batch_fixtures import MODELS, ROUTES, short_spec, synthetic_pair
+from tests.batch_fixtures import MODELS, ROUTES, WIDTHS, short_spec, synthetic_pair
 
 
 def assert_windows(parts, full):
@@ -38,10 +38,9 @@ def assert_windows(parts, full):
         np.testing.assert_array_equal(a, b)
 
 
-@pytest.mark.parametrize("short_world", ROUTES, indirect=True)
-@pytest.mark.parametrize("width", [1, 7, 1000])
+@pytest.mark.parametrize("short_world,width", WIDTHS, indirect=["short_world"])
 def test_exact_full_parity_and_read_only(short_world, width):
-    spec = short_world(0.123)
+    spec = short_world(0.5)  # Ten steps: ten windows, two (the last padded), and one.
     full = run(spec)
     parts = list(iter_windows(spec, WindowPolicy(width)))
     assert_windows(parts, full)
@@ -63,7 +62,7 @@ def test_eager_windows_exact_parity(short_world):
 
 @pytest.mark.parametrize("short_world", ROUTES, indirect=True)
 def test_complete_resume_can_change_window_and_recording_policy(short_world, tmp_path):
-    spec = short_world(0.073)
+    spec = short_world(0.5)
     full = run(spec)
     boundary = float(full.times[len(full.times) // 2])
     root = tmp_path / "original"
@@ -88,7 +87,7 @@ def test_late_restart_preflight_checks_the_complete_clock_in_bounded_chunks(
 
     from cells.execution.schedule import control_values
 
-    spec = short_spec(name, 0.073)
+    spec = short_spec(name, 0.5)
     full = run(spec)
     point = full.checkpoint_at(float(full.times[-1 - remaining]))
     model = get_model(spec.model)

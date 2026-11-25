@@ -27,13 +27,18 @@ ROOT = Path(__file__).resolve().parents[1]
 MODELS = ("reaction_transport_single", "reaction_transport_chain")
 # Rows of (world, step route) for conftest's short_world: both worlds on their model's plain RK4,
 # one of them on each planted route.
-ROUTES = tuple(
-    pytest.param(row, id="-".join(row))
-    for row in (
-        *((name, "rk4") for name in MODELS),
-        ("reaction_transport_chain", "checked_rk4"),
-        ("reaction_transport_chain", "own_step"),
-    )
+_ROUTES = (
+    *((name, "rk4") for name in MODELS),
+    ("reaction_transport_chain", "checked_rk4"),
+    ("reaction_transport_chain", "own_step"),
+)
+ROUTES = tuple(pytest.param(row, id="-".join(row)) for row in _ROUTES)
+# The same rows with a window width: every width on the model's own route, and on a planted one
+# the width whose last window is padded (seven of ten steps).
+WIDTHS = tuple(
+    pytest.param(row, width, id=f"{'-'.join(row)}-{width}")
+    for row in _ROUTES
+    for width in ((1, 7, 1000) if row[1] == "rk4" else (7,))
 )
 
 

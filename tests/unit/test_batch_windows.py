@@ -21,6 +21,7 @@ from cells.records.io import _sha256
 from cells.registry.models import get_model
 from tests.batch_fixtures import (
     ROUTES,
+    WIDTHS,
     definition,
     failing_second_world,
     in_domain,
@@ -35,10 +36,9 @@ def local_parts(rounds, identity):
     return [r.worlds[identity] for r in rounds if identity in r.worlds]
 
 
-@pytest.mark.parametrize("short_world", ROUTES, indirect=True)
-@pytest.mark.parametrize("width", [1, 7, 1000])
+@pytest.mark.parametrize("short_world,width", WIDTHS, indirect=["short_world"])
 def test_exact_scalar_batch_window_parity(short_world, width):
-    spec = definition([short_world(0.073), short_world(0.041)])
+    spec = definition([short_world(0.5), short_world(0.3)])  # Ten steps and six.
     full = run_batch(spec)
     rounds = list(iter_batch_windows(spec, WindowPolicy(width)))
     assert len(rounds) == max(
@@ -88,9 +88,9 @@ def test_eager_complete_cohorts(short_world):
 
 @pytest.mark.parametrize("short_world", ROUTES, indirect=True)
 def test_independent_restart_clocks_finished_worlds_and_new_policy(short_world, tmp_path):
-    spec = definition([short_world(0.073), short_world(0.041)])
+    spec = definition([short_world(0.5), short_world(0.3)])
     full = run_batch(spec)
-    starts = full.checkpoint_at({10: float(full.worlds[10].times[2]), 11: 0.041})
+    starts = full.checkpoint_at({10: float(full.worlds[10].times[2]), 11: 0.3})
     write_batch_snapshot(tmp_path / "start", spec, starts)
     saved = load_batch_snapshot(tmp_path / "start")
     root = tmp_path / "resumed"
@@ -100,7 +100,7 @@ def test_independent_restart_clocks_finished_worlds_and_new_policy(short_world, 
     parts = list(iter_batch_windows(spec, WindowPolicy(3), saved.checkpoints))
     assert len(local_parts(parts, 11)) == 1
     for round_ in parts:
-        assert round_.checkpoints[11].time == 0.041
+        assert round_.checkpoints[11].time == 0.3
         assert round_.checkpoints[11].step_index == full.worlds[11].final.step_index
     for world in spec.worlds:
         assert_windows(
