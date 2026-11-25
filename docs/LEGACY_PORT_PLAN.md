@@ -1571,49 +1571,41 @@ declared ones are capacity padding.
 
 ### 14.7 The final removal list, and what D211 keeps (D386)
 
-**The list** (`validation/legacy_port/removal_list.tsv`, branch `legacy-removal-list`): 1,534 files go, 212 are edited (and 18 documents more with the optional batch),
-17 tests are retargeted, 193 files are kept by name, and 165 are an optional batch, for the user's yes or no; 35 more rows are names: 12 leave files that stay in the
-deletion's own commit, three left already, five are dead after the core edits, eleven stay, three are rows that moved first, and one (`edge_flux`'s) waits for the lead. Every `goes_or_cut` row has a verdict: a reader read 462 files,
-and the 35 it asked about are resolved here. A second reader has read the list, the script and the optional batch (verdict: safe with named corrections, all in).
-- **The deletion is one commit,** made from the list by a script on one branch that takes the place of 9b0debe6. Its dry runs at
-  f38f6789, c368c9f2, 34d173d7, 9c30104e, 36165b70, 1fec66a6, 5429a49b and e24daab6 (`legacy-cleanup` 8d82e435 with the documents) found every path, and stopped no import but the retargeted tests', with `lean/` and `visualizer/` read in the last five;
-  the last removed 1,528 files (six of the 1,534 are gone already). In the same commit: one guard's exemption list; 265 rows of `tests/test_tiers.json` (79, 44 and
-  142), which the gate refuses without their files; the exchange kernel and nine names that only legacy uses in
-  `laws/reactions/plasma_calcium.py`, `laws/reactions/er_calcium.py` and `laws/channels/calcium_gates.py`, with five docstrings; and the words of three library pages.
-  `pump_rates` and `MAX_VOLTAGE` stay: `ca_atp_mass_action_positive@1` runs them. `release_open` stays unless the lead says: only `test_er_calcium.py`, which waits for its retarget,
-  names it, and the roadmap calls it the older kernel of D211's store release while the calcium note's step 8 says that the rest of the two modules goes (the script takes the other answer as a second file of edits; both were run at e24daab6). That note lists two
-  functions and a constant as staying: by use, `er_calcium`'s `PumpParameters`, `chemical_drive` and `MAX_AFFINITY_RT` stay too. The user approved the two things that earlier decisions held (the two network laws; the EMT-miRNA
-  pair, D149) on 25 November; the script refuses the branch while such a row lacks its "approved by the user", or a row that had to move is missing.
-- **The fingerprints' definitions** (the tool's own enumeration): 129 in 125 files leave, of 194 in `configs/`, `examples/` and `validation/`; `removed_definitions.txt`
-  lists them, since the comparison takes exact lists of what one side lacks (306edd69). An earlier count said 127 in 123. The tag has 173 (the second reader's number), 36165b70 had 177 and 1fec66a6 has
-  194: `configs/batch_reaction_transport.json` and its branch brought four, and `validation/ensemble_reexpression/format_sample` 17, whose numbers and strings are placeholders (the tool
-  records a refusal at parse for each). `added_definitions.txt` on `legacy-cleanup` holds the four and is made again for the final head: 21 at 4075af79. 65 are left after the deletion, 44 of them the tag's.
+**The list** (`validation/legacy_port/removal_list.tsv`, branch `legacy-removal-list`): 1,534 files go, and 165 more with the optional batch, which the user approved on 25 November;
+246 files are edited, 17 tests are retargeted or proposed to retire, and 184 files are kept by name; 35 more rows are names: 16 leave files that stay in the
+deletion's own commit, four moved first, five are dead after the core edits and ten stay. Every `goes_or_cut` row has a verdict: a reader read 462 files,
+and the 35 it asked about are resolved here. A second reader has read the list, the script and the batch (verdict: safe with named corrections, all in).
+- **The deletion is one commit,** made from the list by `make_deletion.py` (both in `validation/legacy_port/`) on one branch that takes the place of 9b0debe6. The commit's message names the head and the
+  list's revision. `--branch` refuses while a row is open before the deletion (17 are: the rows that wait for the user, and the JUPITER check), while a row on which the user was asked lacks the approval, and while the list is not committed.
+  Its last dry run, at a6432f98, removed 1,693 files (six of the 1,699 are gone already) and stopped no import but 8 of the retargeted tests', with `lean/` and `visualizer/` read, and the rehearsal's plant driver's, which runs the frozen snapshot.
+  In the same commit: one guard's exemption list; 302 rows of `tests/test_tiers.json` (114, 46 and 142), which the gate refuses without their files; the exchange kernel and the names that only legacy uses in
+  `laws/reactions/plasma_calcium.py`, `laws/reactions/er_calcium.py` (`release_open` among them, by use) and `laws/channels/calcium_gates.py`, with five docstrings; the words of three library pages; and notes on 31 pages.
+  `pump_rates`, `PumpParameters`, `chemical_drive` and the two voltage and affinity bounds stay: live laws run them.
+- **The fingerprints' definitions** (the tool's own enumeration): 129 in 125 files leave, of 194 in `configs/`, `examples/` and `validation/`; the batch holds none. `removed_definitions.txt`
+  lists them, since the comparison takes exact lists of what one side lacks (306edd69). An earlier count said 127 in 123. The tag has 173, 36165b70 had 177 and the last heads 194: `configs/batch_reaction_transport.json` and its branch brought four, and `validation/ensemble_reexpression/format_sample` 17, whose numbers and strings are placeholders (the tool
+  records a refusal at parse for each). The list of additions is the lead's, made again for the final head. 65 are left after the deletion, 44 of them the tag's.
 - **D196's safeguard.** `law_reference_checks.tsv` has one row for each of 134 laws and kernels (71 registered laws, 44 of the catalogues, 19 kernels that live models import): its declared
-  test (44 of the 71 have one; all 44 are collected after the deletion), the reference rows that check its kernel afterwards, with and without the optional batch, and those that
-  go. An import graph had seen only `mass_action.py`; Kv1.5 and `junction_voltage_relaxation@1` had kept importers and lost their only direct check. All three have a row
-  beside the law now (`legacy-kernel-rows`). The first table held two standards and missed a fourth: `edge_flux` (`laws/junctions/passive.py`, the flux of `reaction_transport@1`)
-  loses its two direct rows of hand values, and the worlds' matrix exponentials are what is left. Its row in the list is a gate, for the lead's word. The helper `bernoulli` loses its
-  one row of hand values; two rows that stay hold its slope, and every law that calls it is checked in decimals. `release_open`'s only row is in a file being rewritten: if it stays, the
-  rewrite keeps the row. A mechanical check of the names that tests import lists seven functions of live laws that a going test names and no finished staying one does: three that nothing
-  calls (`reversible_pump`, `gate_target` and `open_fraction`, which are name rows), HCN's `opening`, which a staying row calls through a module argument, and three that a law's own rows
-  run (the Na/K pump's `chemical_drive`; `er_calcium`'s `chemical_drive` and `pump_rates`, which `test_er_calcium.py` names too). It cannot see a row that names a kernel and checks little of
-  it, as `edge_flux`'s: that was read.
-- **14 reference files stay** whose last test goes (the second reader's 13, and `validation/organelles/betse_mitochondria_reference.py`): old native probes and references that stay,
-  and that no test runs at the tag either, import them.
+  test (44 of the 71 have one; all 44 are collected after the deletion), the reference rows that check its kernel afterwards, with and without the batch, and those that
+  go. An import graph had seen only `mass_action.py`; Kv1.5 and `junction_voltage_relaxation@1` had kept importers and lost their only direct check, and the first table held two standards and missed a fourth, `edge_flux`. All four have a row
+  beside the law now (`legacy-kernel-rows`), with planted errors that fail it. `bernoulli` loses its one row of hand values; `test_sodium_catalog.py::test_analytic_singular_limits_and_adjacent_binary_inputs` evaluates it at and near zero (16 arguments exactly zero, 64 below 1e-4) and
+  sees a planted value and a planted slope. The table was read again for every file that would retire: two of their kernels are live (`er_calcium`'s `pump_rates` and `chemical_drive`), and both are held through `ca_atp_mass_action_positive@1` and `pump_rates` of the plasma module.
+- **14 reference files stay** whose last test goes (the second reader's 13, and `validation/organelles/betse_mitochondria_reference.py`): old native probes and references that stay, and that no test runs at the tag either, import them, or they are BETSE-side references for
+  kinetics with no live version, the four of the network among them (the lead: they were on no row when the user said yes to B1).
 - **The three live parity files keep their BETSE runs.** They now import `validation/betse/native_hooks.py`, and 19 REF-era modules go
   (the lead's choice (C)). Measured on the tree without what goes, on the light CPUs: 16, 38 and 25 rows pass, each with one skip, and all 64 native
   captures equal the saved ones bit for bit (395 million array scalars).
 - **Four parity files could not start their run,** at the tag or before it: three stop in the check of the source they are bound to, which changed on
   11 October 2026, and one is skipped (D131). 70 rows that could only error leave; the 55 that pass stay.
-- **The fixed point** (measured at 903f821e, c368c9f2, 34d173d7, 9c30104e, 36165b70, 1fec66a6, 5429a49b and e24daab6): on the head tree without what goes, the only remaining files with
-  an import that does not resolve are 8 of the 17 retargeted tests, and the only other mentions of a going path in code are the rename's tool and tables, one guard's exemption list, two
-  validation scripts that are being rewritten, the words of three parity files and four of the viewer's files. Records name them too: 155 reports, 56 validation protocols and source maps,
-  and 53 documents beside `PROGRESS.md`. Run-time imports and path loads were read one by one (75 sites). `test_surface_catalog_planning.py` reads two going configurations through
-  `test_integrated_ensemble.py`'s helper, which neither imports nor collection show: it is the 17th retarget.
-- **Test IDs,** by collecting that tree at 5429a49b: 12,922 collect, and 8 files fail to (58 of the IDs that collect are in seven more retargeted files: read, 24 use what goes and are
-  expected to fail until they are rewritten, 6 run on a GPU only and use it too, 28 do not use it). Of 21,927, 9,023 go with their files, 261 leave files that
-  stay, and 314 are in the retargeted files: 130 settled by the pump and symports builder, 8 left to the re-expression, 176 waiting in 8 files. 593 are new.
-  `removed_rows.tsv` names the group of each. The deletion's own collection gives the final ones.
+- **The fixed point** (measured at ten heads, the last a6432f98): on the head tree without what goes, the only remaining files with
+  an import that does not resolve are 8 of the 17 retargeted tests and the rehearsal's driver, and the only other mentions of a going path in code are the rename's tool and tables (four pins and four reviewed lines of its choices name seven files of the batch), one guard's exemption list, two
+  validation scripts that would go, the words of three parity files and four of the viewer's files. Records name them too: 155 reports, 56 validation protocols and source maps,
+  and 53 documents beside `PROGRESS.md`. Run-time imports and path loads were read one by one (75 sites).
+- **Test IDs,** by collecting that tree (a6432f98, a merge for the measurement, not pushed: `legacy-cleanup` 94805c08 with `legacy-cleanup-docs` ebf1bba1 and `legacy-open-rows` eff7d103 (that branch's later commits change no test ID). Section 7's numbers are at 407bc106, the same with `legacy-open-retirements` b0e568d9): 11,008 collect, and 8 files fail to. Of 21,927, 10,956 go with their files and 261 leave files that stay; 612 are new.
+  The 17 files that tested used capabilities on worlds that go held 372: 77 are rewritten, 28 use nothing that goes, 70 had left with the pump and symports work, and 197 would retire (`open_rows.tsv`, one line per function: its claim, what carries it, the plant that shows it and what is not carried; the classes are on the page, section 7). For every
+  carried line a planted fault is recorded by the row's builder, or made here (`carrier_plants.tsv`: the engine is planted in a scratch worktree, and the row must fail); what no live row holds is named. Two plants found a live row that missed them, and both rows are strengthened.
+  With the 13 files and the rows of three staying files gone (`legacy-open-retirements`, prepared and not merged), 10,995 collect with no error, and no import is left that stops resolving but the rehearsal driver's. Nothing in `src/cells` is reached by retiring tests alone, no data file loses its last reader, and
+  two of the five calcium references do (`reference_gated_calcium.py`, `reference_ip3_calcium.py`; they stay for the campaign).
+- **What waits for the user:** those 197, in seven classes. **For the registration tag:** `validation/ensemble/jupiter_check.py`'s model part, rebuilt on the re-expressed JUPITER world (D374 lists that check as used; a refusal by name is not a re-expression): about half a day (e).
 
 **D211.** 44 of its 47 "port as is" laws keep their kernel, its reference and a kernel-level test:
 
