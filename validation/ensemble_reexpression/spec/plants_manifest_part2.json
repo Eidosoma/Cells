@@ -5881,6 +5881,59 @@
    "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part2/SC11 availability on the calcium channel too"
   },
   {
+   "name": "SC11 availability on the calcium channel too, seed 1",
+   "kind": "assembly",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/assembly/cluster_gated_calcium/h-s1.json",
+   "base_sha256": "a908a99e6a43a44dede58b9d1b5d13e552f6d4dbaa76ed28ac01d08cd3cbf375",
+   "modify": [],
+   "modified_leaves": [],
+   "patch": "from cells.legacy.assembly_cluster import kernel\norig = kernel.modulate\ndef modulate(control, opening, owners):\n    out = orig(control, opening, owners)\n    n = out.calcium_channel.shape[-1]\n    cell = jnp.minimum(jnp.arange(n), opening.shape[0] - 1)\n    return out._replace(calcium_channel=out.calcium_channel * opening[cell])\nkernel.modulate = modulate\n",
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan2e.json",
+    "0",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part2"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    23
+   ],
+   "started": "2026-11-25T16:23:40+00:00",
+   "finished": "2026-11-25T16:24:24+00:00",
+   "seconds": 43.44014013197739,
+   "outcome": "completed",
+   "definition_sha256": "a908a99e6a43a44dede58b9d1b5d13e552f6d4dbaa76ed28ac01d08cd3cbf375",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "a908a99e6a43a44dede58b9d1b5d13e552f6d4dbaa76ed28ac01d08cd3cbf375",
+    "run/checkpoint/state.npz": "bef53c1b9c03f38bbc52ede9a5174a45f5968fdc90c75daf3d8122ae23ece7d7",
+    "run/completion.json": "17945f25fcb06960ce6a05a4ce0a1415d49b05956d08b175bc91a1fd967ff9d4",
+    "run/observations/tick-0000000.json": "1ba008d8d0405718f8d1369356db5d748556e98608625385e7861d1df4d55d63",
+    "run/observations/tick-0000200.json": "40f1c9c89072413e1974377484597d9f4a9f047a548bd250b0b7dea07a93c5b0",
+    "run/observations/tick-0000400.json": "5bac3c7c53ccb9385b14f744d28c46bab0c6c3128853be946fc22b4f536ed411",
+    "run/observations/tick-0000800.json": "288f85c5b34ecdf7a59881f0280db2951aa2353f1143b9ad4977a777d05a0a5e",
+    "run/observations/tick-0001200.json": "a10947b1b5bf207e4f72a0394564ce635f22a3d941e00a182fcea080bb1a275b",
+    "run/observations/tick-0001600.json": "73d1db5520bc302640e05465bcd97f2098846d056296440557af6c919f373432",
+    "run/registration.json": "b7d24335a40138a40c78faf10d57e4f88576b40504b939b1b678d667975633ac",
+    "run/result.json": "d2df6f4b436ef93bb912123185997d7639b2f16ec7dfc3a58fae63cb5b37d464",
+    "run/started.json": "1fd3523f1ca8eaeead44596434db583e63d94e4526f47103ac82fb7cc64e2027",
+    "run/status.json": "bd6a6308f6faadfd52d8843498d76235b7fe0440cf7b7067c4a5a2969ca7e798"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part2/SC11 availability on the calcium channel too, seed 1"
+  },
+  {
    "name": "SC12 the plasma pump's standard free energy left at the mM one",
    "kind": "ionic",
    "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/ionic/plasma_calcium/h.json",
@@ -5991,6 +6044,59 @@
     "run/window-0006.npz": "d1d411543b6284fb41b13cb5de55cd4a2a309642b03fb0e7a4f9c44c7eb1eacb"
    },
    "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part2/SC13 the store pump's standard free energy left at the mM one"
+  },
+  {
+   "name": "SC14 availability on the other cell's channel",
+   "kind": "assembly",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/assembly/cluster_gated_calcium/h-s1.json",
+   "base_sha256": "a908a99e6a43a44dede58b9d1b5d13e552f6d4dbaa76ed28ac01d08cd3cbf375",
+   "modify": [],
+   "modified_leaves": [],
+   "patch": "from cells.legacy.assembly_cluster import engine\norig = engine.channel_owners\ndef channel_owners(spec):\n    r = orig(spec).copy()\n    r[0], r[1] = r[1], r[0]\n    return r\nengine.channel_owners = channel_owners\n",
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan2d.json",
+    "1",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part2"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    23
+   ],
+   "started": "2026-11-25T16:15:38+00:00",
+   "finished": "2026-11-25T16:17:24+00:00",
+   "seconds": 105.4823712160578,
+   "outcome": "completed",
+   "definition_sha256": "a908a99e6a43a44dede58b9d1b5d13e552f6d4dbaa76ed28ac01d08cd3cbf375",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "a908a99e6a43a44dede58b9d1b5d13e552f6d4dbaa76ed28ac01d08cd3cbf375",
+    "run/checkpoint/state.npz": "54752363535aeed0afcc0188724c867e273c281fffecb7a02ae97d4619ef3bfb",
+    "run/completion.json": "39978aab87ca9c0eb67ab22b72f6a5966274f9892b154982e3cc47c4d0d1510d",
+    "run/observations/tick-0000000.json": "1ba008d8d0405718f8d1369356db5d748556e98608625385e7861d1df4d55d63",
+    "run/observations/tick-0000200.json": "516594414e124ab3cd3c7de01e1d4414127e079ccdebe69d2a8ee6a543958093",
+    "run/observations/tick-0000400.json": "a5ad831299ae26149845828a50a7fc8d62bdaff0fca91140eac4259a1bcae4be",
+    "run/observations/tick-0000800.json": "31ac81f36bd40caf5f2e75d739c57e0a8b8b0d46232ed5ff299a830b3a46ea6c",
+    "run/observations/tick-0001200.json": "6b81d1f030921c8a1bac48dd2dacf71175b398fd41df9a5b52ab5a8045019ce7",
+    "run/observations/tick-0001600.json": "c6e1eb9f2cb8d9682944295f021d31f70c3a2918f17f192dac586302588bb306",
+    "run/registration.json": "0e59ca3ce4962a2d016f9339652c1f7284b0bea03a4c65e8602eee4a4b19027f",
+    "run/result.json": "1dec11d5ee6b324e40528eeda6125efba0d39d8d7935ff211eea17acfebd9b52",
+    "run/started.json": "3c5b8d96f315e4bdf9094dbdd6b495a5fe8395bb118b1ad441d98c5b6e629d2f",
+    "run/status.json": "44e8cc07569c8cf9f44520c2df643867f2bd66ba3c9f4622da8b0128e3957c91"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part2/SC14 availability on the other cell's channel"
   },
   {
    "name": "SC2 IP3 factor left out",
@@ -6527,6 +6633,59 @@
     "run/status.json": "5458d1e502a7297986108f259772ab9482aed505ecfbe625406b9a578812a924"
    },
    "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part2/control cluster_gated_calcium s0 h"
+  },
+  {
+   "name": "control cluster_gated_calcium s1 h",
+   "kind": "assembly",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/assembly/cluster_gated_calcium/h-s1.json",
+   "base_sha256": "a908a99e6a43a44dede58b9d1b5d13e552f6d4dbaa76ed28ac01d08cd3cbf375",
+   "modify": [],
+   "modified_leaves": [],
+   "patch": null,
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan2d.json",
+    "0",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part2"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    23
+   ],
+   "started": "2026-11-25T16:14:40+00:00",
+   "finished": "2026-11-25T16:15:37+00:00",
+   "seconds": 57.65568913100287,
+   "outcome": "completed",
+   "definition_sha256": "a908a99e6a43a44dede58b9d1b5d13e552f6d4dbaa76ed28ac01d08cd3cbf375",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "a908a99e6a43a44dede58b9d1b5d13e552f6d4dbaa76ed28ac01d08cd3cbf375",
+    "run/checkpoint/state.npz": "038132243ba53c9c9e1ad6abc6757e7295bc3e77827ba6eb14455de737549405",
+    "run/completion.json": "e81aca46d46ad757cfabcae38f274676c6e12a57610448e71b42089827c25602",
+    "run/observations/tick-0000000.json": "1ba008d8d0405718f8d1369356db5d748556e98608625385e7861d1df4d55d63",
+    "run/observations/tick-0000200.json": "80061d753a2f10b57ac1bba1e41ffe2626647db78e50994bed9a6aed0ed852a5",
+    "run/observations/tick-0000400.json": "95f5a4bb5ce6b7fcaa20677a82f57826ae2cc23ebbd0705f78336567b4ef30cb",
+    "run/observations/tick-0000800.json": "eb454cf8285c5b1958a7185a86bdb83c3c24093c74d0f04b03db8e6cd41ec6ce",
+    "run/observations/tick-0001200.json": "b5e8ed0c8d60b99e409031bdc8abd7910ed0daa750d88cb5d5b2656fc8c598e8",
+    "run/observations/tick-0001600.json": "4deb1f02993b60346ab4fc8139763bcd4a6522a4be8073357c7ee2abc0e52dea",
+    "run/registration.json": "548613680851f78ebfb9775d380126a39ea914e0aacf10f889977eeb34e217eb",
+    "run/result.json": "efe0e76d837f42067466ea0f21d0818a77aca44546306830ac62cb00b646e057",
+    "run/started.json": "74f2712f81f1f3f66900687fa63ec7dc402c22d6329e6383ba46113b3c416d0f",
+    "run/status.json": "b4d691826ffdbb4690a5a37863992d6d1e2c59464f378c7024778a2995df9d2d"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part2/control cluster_gated_calcium s1 h"
   },
   {
    "name": "control gated_calcium h",
