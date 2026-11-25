@@ -26,6 +26,9 @@ of them.
 - The stage's material rate holds the references' material block: at both ends of the run it is
   at least the largest eigenvalue's modulus, and at least that with the release's opening held,
   and at most twice that.
+- At equilibrium, with the pumps off, the world does not move: its patches, leaks, release, channel
+  and exchanger each carry exactly zero (planted, each moves it: the pumps on, one rounding of the
+  store's calcium, 1e-15 V on the store's patch). This one reads no reference.
 
 Seconds: 20 on the shared CPUs, 18 of them 340 NumPy steps on one CPU (9 s where the CPU is
 quiet), so tier 1. The reason (D224): no other row holds a store world, its order and its heats
@@ -330,6 +333,44 @@ def test_the_rates_at_the_start_are_the_references(runs):
         if not abs(found[name] - value) <= START_BAND * abs(value):
             out[name] = (found[name], value)
     assert out == {}
+
+
+def at_equilibrium(*, pumps=0.0, calcium=None, volts=0.0):
+    """Which fields two steps move, of the world without buffers whose store and outside node take
+    the cell's volume and its ions, with no voltage and the pumps' availability at `pumps`.
+    `calcium` and `volts` plant the store's amount (fmol) and its patch's voltage."""
+    data = worlds.store_data()
+    nodes, cell = data["nodes"], data["nodes"]["cell"]
+    for name in ("store", "outside"):  # One volume, so that equal amounts are equal to the bit.
+        nodes[name]["volume_pL"] = cell["volume_pL"]
+        nodes[name]["amounts_fmol"].update({s: cell["amounts_fmol"][s] for s in worlds.IONS})
+    if calcium is not None:
+        nodes["store"]["amounts_fmol"]["Ca"] = calcium
+    for name, patch in data["patches"].items():
+        patch["initial_voltage_V"] = volts if name == "bounding" else 0.0
+    raw = worlds.store_world(dt=STEPS["store_world"][0], steps=2, buffers=False, data=data)
+    raw["experiment"]["transporter_controls"] = [
+        dict(transporter_id=t["id"], schedule=[dict(time=0.0, availability=pumps)])
+        for t in raw["model"]["transporters"]
+        if t["law"] == worlds.PUMP
+    ]
+    model, start, control, p = bound(parse_spec(raw))
+    state = start
+    for _ in range(2):
+        state, valid = host_step(model, state, STEPS["store_world"][0], control, p)
+        assert valid
+    pairs = zip(start._fields, start, state, strict=True)
+    return {name for name, a, b in pairs if not np.array_equal(a, b)}
+
+
+def test_a_world_at_equilibrium_does_not_move_at_all():
+    assert at_equilibrium() == {"channel_gate"}  # The gates relax, and nothing else moves.
+    calcium = WORLD["nodes"]["cell"]["amounts_fmol"]["Ca"]
+    assert {"passive_transferred", "cycle_count"} <= at_equilibrium(pumps=1.0)
+    assert {"passive_transferred", "cycle_count"} <= at_equilibrium(
+        calcium=math.nextafter(calcium, math.inf)
+    )
+    assert {"passive_transferred", "membrane_transferred"} <= at_equilibrium(volts=1e-15)
 
 
 def test_the_stages_material_rate_holds_the_references_block(runs):

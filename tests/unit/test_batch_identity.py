@@ -3,7 +3,6 @@
 import copy
 import json
 import os
-from pathlib import Path
 
 import numpy as np
 import pytest
@@ -11,26 +10,28 @@ import pytest
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.execution.batch import parse_batch
 from cells.execution.state import initialise
+from cells.numerics import surface_imex as imex
 from cells.records import batch_io
 from cells.records.io import load_snapshot, write_snapshot
 from tests.batch_fixtures import definition
+from validation.tissue import surface_pump_fixtures
 
 
 def cohort():
     # Exercise the same supported ionic model on CPU and GPU. Parse the complete
     # definitions before allocating states, including each requested backend.
-    path = Path(__file__).resolve().parents[2] / "configs/assembly_regulated_cell.json"
-    first = json.loads(path.read_text())["ionic"]
-    first["execution"]["backend"] = os.environ.get("CELLS_COUPLED_TEST_BACKEND", "cpu")
+    backend = os.environ.get("CELLS_COUPLED_TEST_BACKEND", "cpu")
+    first = surface_pump_fixtures.definition("clamped", backend=backend, solver=imex.ARS222_ID)
     second = copy.deepcopy(first)
-    second["model"]["cells"][0]["channel"]["initial_gate"]["m"] = 0.35
+    second["model"]["junctions"][0]["gate"]["initial_gate"] = 0.35
     spec = parse_batch(definition([parse_spec(first), parse_spec(second)]).to_dict())
     return spec, {w.world_id: initialise(w.simulation) for w in spec.worlds}
 
 
 def test_shared_identity_preserves_complete_standalone_children(tmp_path, monkeypatch):
     spec, checkpoints = cohort()
-    assert not np.array_equal(checkpoints[10].state.gate, checkpoints[11].state.gate)
+    gates = [checkpoints[i].state.junction_gate for i in (10, 11)]
+    assert not np.array_equal(*gates)
     calls = {"source": 0, "runtime": 0}
     for name, field in (("source_hashes", "source"), ("runtime_identity", "runtime")):
         original = getattr(batch_io, name)
