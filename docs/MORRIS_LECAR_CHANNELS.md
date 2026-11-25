@@ -1,5 +1,11 @@
 # Pinned Morris–Lecar channel family
 
+> **Legacy cleanup (25 November 2026, D386).** The tissues that hosted this family
+> (`resolved_tissue@11`, `resolved_calcium@10` and `resolved_calcium_energy@4`) left the engine. The
+> laws stay in `laws/channels/morris_lecar_channels.py` with their test and reference, and their
+> port is open (D211, [Core laws roadmap](CORE_LAWS_ROADMAP.md)). The tag `pre-cleanup-2026-11-25`
+> keeps the code.
+
 This component covers thirteen actual classes in BETSE v1.5.0
 `vg_morrislecar.py`, commit `5269a714aa2593ed2a6708c4516289977d8ae1a2`.
 The chemistry network imports the module, selects it for class `ML`, constructs

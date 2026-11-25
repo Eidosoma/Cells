@@ -363,18 +363,23 @@ class ChannelLaw(Law):
     """A channel law (docs/INNER_MODEL_V4_DESIGN.md §7.1): gates relax by the exponential stage
     update; leaks have none. A host's codes are distinct. Code 99 is reserved for test plants (the
     lead, 19 November 2026): no registered law takes it, so a planted law never meets one that
-    registers later."""
+    registers later. A law is the one authority for its ions' valences, and @3's parser holds a
+    model's species to it (definitions/surface_pump_v3_spec.parse_channel). `material_term` names
+    the kernel of its material slope per stage, as a cycle's and a route's does (module docstring),
+    or is None. @3 runs one for its populations (surface_pump_v3.CHANNEL_MATERIAL_TERM) and refuses
+    another name; a law that carries an ion other than Na, K and Cl and declares none is refused
+    there too, since the charge rule alone does not hold a scarce ion's amounts."""
 
     code: int
     gates: tuple[str, ...]
     permeant: tuple[tuple[str, int, float], ...]  # (species, valence, relative permeability)
     voltage_domain_V: tuple[float, float]
-    rk4_step_s: float | None  # The reference RK4 step bound; None for gate-free laws.
+    rk4_step_s: float | None  # Its RK4 step bound. None: gate-free, or gated and on no RK4 grid.
     kinetics: Callable | None = None  # (voltage, *, xp) -> (target, tau), [..., gates, n].
     opening: Callable | None = None  # (gates, *, xp) -> [..., n]; None: always open.
     stage_term: str = "constant_field_slope"  # Today's membrane_rate term at the actual opening.
     reads: tuple = ()  # Stage reads (B4): none for today's laws.
-    loop_term: object = None
+    material_term: str | None = None  # Its material slope per stage.
 
     interface: ClassVar[str] = CHANNEL_LAW
     UNITS: ClassVar = MappingProxyType({"voltage_domain_V": "V", "rk4_step_s": "s"})
@@ -424,7 +429,7 @@ class ChannelLaw(Law):
             out.append("a gate-free law gives no kinetics or opening")
         if not _named(self.stage_term) or not isinstance(self.reads, tuple):
             out.append("its stage term is named and its reads are a tuple")
-        return out
+        return out + _named_or_none(self, "material_term")
 
 
 @dataclass(frozen=True)
@@ -435,7 +440,9 @@ class CycleLaw(Law):
     Seam A's general form (`cycle`, a CycleForm) carries the law where it is set: its own errors()
     must hold and its changes() gives its change rows (cycle_changes), so `moves` may be empty and
     kinetics and domain_valid None (the kinds owner's first gap). A law without a form keeps
-    version 1's checks: moves given, both kernels callable."""
+    version 1's checks: moves given, both kernels callable. `electroneutral`: a cycle of it moves no
+    charge from one end to the other whatever species a population binds, so its rate may have no
+    voltage term; its host refuses by name a population that moves charge."""
 
     moves: tuple[tuple[str, object], ...] = ()
     fuel_kinds: tuple[str, ...] = ()
@@ -443,13 +450,13 @@ class CycleLaw(Law):
     domain_valid: Callable | None = None
     reads: tuple = ()  # Stage reads, such as rapid_proton_buffer@1's free h.
     stage_term: str | None = None  # Its charge slope in the stage rule, where its host takes one.
-    loop_term: str | None = None
     # Its other step terms (module docstring), each its kernel's name or None.
     material_term: str | None = None  # Its material slope per stage.
     charge_bound: str | None = None  # Its definition-time bound on a charged row.
     material_bound: str | None = None  # Its definition-time bound on a neutral row.
     forms: str | None = None  # "base": its moves are in base forms (CORE_SEAMS §5.2), or None.
     cycle: object = None  # Its general form: seam A's CycleForm, or None (module docstring).
+    electroneutral: bool = False  # Its host refuses a population that moves charge (docstring).
 
     interface: ClassVar[str] = CYCLE_LAW
     SIGNS: ClassVar = MappingProxyType({"moves": "inward-positive, per forward cycle"})
@@ -479,7 +486,9 @@ class CycleLaw(Law):
             out.append("its fuel kinds are a tuple of IDs")
         if not isinstance(self.reads, tuple):
             out.append("its reads are a tuple")
-        out += _named_or_none(self, *STEP_TERMS, "loop_term") + _forms_errors(self)
+        if not isinstance(self.electroneutral, bool) or (self.electroneutral and not formed):
+            out.append("its electroneutral is true or false, and true only with a general form")
+        out += _named_or_none(self, *STEP_TERMS) + _forms_errors(self)
         return out + _cycle_errors(self.cycle)
 
 

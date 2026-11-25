@@ -10,7 +10,8 @@ accumulator, no membrane-process hook.
 Declaration (§2.1): `standard_concentration_mM` (c0 > 0); `species`, each a species of the inner
 model with `moieties` (integer counts; null: the species is its own moiety), `standard_mu_RT`
 (mu°/RT at c0), D150's identity (`catalogue`, `evidence`; species_common.parse_species, which
-refuses a species with a membrane, junction or channel route of @3's) and, optionally,
+refuses a species with a membrane, junction or channel route of @3's, a channel whose law declares
+its material term excepted) and, optionally,
 `counter_ion` (FR-15 S1: a charged row that keeps @3's routes where @3's explicit-rate bound
 covers it, species_common.check_counter_ion); `reactions`, each with `sites` ({"cells": [...] or
 "all", "outside": [...] or "all"}: cells and finite outside nodes), integer `reactants` and

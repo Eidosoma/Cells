@@ -1,636 +1,335 @@
-"""PMCA source correspondence and synthetic NCX accounting on CPU and L4."""
+"""Calcium transport at the plasma membrane on the cycle kind: the ATP-driven pump at valence 2 and
+one calcium per ATP, and the sodium-calcium exchange, against outside references.
 
-import copy
-import json
-import os
-import subprocess
-import sys
-from dataclasses import replace
-from pathlib import Path
+- **Laws:** the pump against the pinned source's own function, run unmodified out of process
+  (AGENTS.md), an independent scalar form and @3's own calcium pump's kernel; its stall. The
+  exchange against the direct forward and reverse products; its reversal and its slope there. The
+  sign of each heat.
+- **One small closed @3 world** with both, stepped on the host in NumPy: at a stage the
+  stoichiometry, the owned scatter, the charge and the energy, and the run against an independent
+  ODE (SciPy, scalar rates, two methods) at h, h/2 and h/4.
 
-import jax
+The references are tests/reference_plasma_calcium.py's scalar rates and this file's own ODE, neither
+with a Cells import. The worlds and their numbers are this file's own: heredity cell D's rows,
+closed and bare, with calcium and held fuel (test_cycle_kind.py's). The laws' planted copies and
+their refusals are in that file.
+"""
+
+import functools
+import math
+
 import numpy as np
 import pytest
+from scipy.integrate import solve_ivp
 
-from cells.definitions.specs import ConfigError, parse_spec
-from cells.ensemble.plan import jupiter_plan, plan
-from cells.execution.batch import parse_batch, run_batch
-from cells.execution.batch_windows import run_batch_windowed
-from cells.execution.devices import execution_device
-from cells.execution.errors import NumericalError
-from cells.execution.runner import branch_checkpoint, run, timeline, validate_checkpoint
-from cells.execution.schedule import control_values
-from cells.execution.windows import WindowPolicy, run_windowed
-from cells.laws.reactions import plasma_calcium as process
-from cells.legacy.assembly_cell.io import flatten, load_checkpoint, write_checkpoint
-from cells.legacy.assembly_cluster import engine as assembly
-from cells.legacy.assembly_cluster.spec import parse_spec as parse_assembly
-from cells.legacy.core.plasma_calcium_spec import base_spec
-from cells.legacy.models import plasma_calcium as model
-from cells.records.batch_io import load_batch_snapshot, write_batch_snapshot
-from cells.records.io import load_snapshot, write_run
-from tests.batch_fixtures import definition
-from tests.reference_er_calcium import native_capture
-from tests.reference_plasma_calcium import (
-    F,
-    R,
-    System,
-    physical_energy_derivative,
-    reference,
-    scalar_rates,
+from cells.kinds import transporter
+from cells.laws.pumps import ca_atp_mass_action_positive as ca_atp
+from tests.reference_er_calcium import F, R, native_capture
+from tests.reference_plasma_calcium import scalar_rates
+from tests.unit import test_cycle_kind as core
+from tests.unit import test_transporter_kind as tk
+
+EPS = np.finfo(float).eps
+
+
+# ------------------------------------------------------------------ the laws, at set states
+
+T_K = 298.15
+FUEL_MM = dict(ATP=1.5, ADP=0.1, Pi=0.1)
+PUMP = dict(  # The scalar form's parameters; the pump's, with the fuel's potentials below.
+    capacity_fmol_per_s=0.003,
+    km_ca_mM=0.001,
+    km_atp_mM=0.5,
+    atp_mM=FUEL_MM["ATP"],
+    adp_mM=FUEL_MM["ADP"],
+    pi_mM=FUEL_MM["Pi"],
+    delta_g0_J_per_mol=-10000.0,
 )
-from tests.unit.test_assembly_cluster import ensemble_definition, event_histories
-from tests.unit.test_spatial_calcium import compare, same
-
-ROOT = Path(__file__).resolve().parents[2]
-BACKEND = os.environ.get("CELLS_PLASMA_TEST_BACKEND", "cpu")
+EXCHANGE = dict(capacity_fmol_per_s=0.003, km_na_mM=20.0, km_ca_mM=0.001)
 
 
-def data():
-    raw = json.loads((ROOT / "configs/plasma_calcium_cluster.json").read_text())
-    raw["execution"]["backend"] = BACKEND
-    return raw
+@functools.cache
+def at_rest():
+    """The closed world at T_K with one pump and one exchange, and its fuel's registry potentials,
+    -10 kJ/mol for hydrolysis against 1 mM."""
+    pump = core.pump_case(
+        "Ca", 1, tuple(PUMP[k] for k in ("capacity_fmol_per_s", "km_ca_mM", "km_atp_mM"))
+    )
+    exchange = core.na_ca_case(tuple(EXCHANGE.values()))
+    mu = dict(ATP=0.0, ADP=PUMP["delta_g0_J_per_mol"] / (R * T_K), Pi=0.0)
+    rows = {s: (0, mu[s], FUEL_MM[s], 1e-3) for s in FUEL_MM}
+    raw = core.core_world(pump.entry, exchange.entry, rows=rows)
+    raw["model"]["temperature_K"] = T_K
+    with tk.scoped():
+        return core.na_ca_start(raw)
 
 
-def assembly_data():
-    return json.loads((ROOT / "configs/assembly_regulated_plasma_calcium_cluster.json").read_text())
+def evaluated(mM, volts, availability=1.0):
+    """(the probe's modes, its populations, the evaluation) at the nodes' mM and the cell's voltage,
+    population 0 the pump and 1 the exchange."""
+    spec, _, state, p, control = at_rest()
+    state, _ = core.put(spec, state, p, mM)
+    control = control._replace(cycle_availability=np.full(2, availability))
+    potentials = np.array([volts, 0.0])
+    probe = transporter.probe(state, potentials, control, p, xp=np)
+    return (
+        probe.modes,
+        probe.populations,
+        transporter._evaluate(state, potentials, control, p, xp=np),
+    )
 
 
-def evidence(name, record=None, arrays=None):
-    target = os.environ.get("CELLS_PLASMA_EVIDENCE")
-    if target:
-        path = Path(target) / BACKEND
-        path.mkdir(parents=True, exist_ok=True)
-        if record is not None:
-            (path / (name + ".json")).write_text(
-                json.dumps(record, indent=2, allow_nan=False) + "\n"
-            )
-        if arrays is not None:
-            np.savez_compressed(path / (name + ".npz"), **arrays)
-
-
-def test_native_pmca_positive_domain_and_explicit_blocker():
-    p = process.PumpParameters(0.003, 0.001, 0.5, 1.5, 0.1, 0.1, -10000.0)
+def test_the_pump_is_the_pinned_sources_positive_law_and_an_independent_scalar_form():
+    """Six states of both signs: the pump's cycles are the pinned function's flux over the area, the
+    scalar form's and @3's own calcium pump's kernel's (its drive against 1 M), to 3e-12; each heat
+    is -J times the free energy and not negative; blocked it runs none, which the pinned function
+    ignores. Planted: one calcium's charge for two is told apart at every state with a voltage."""
     ci = np.array([1e-6, 0.0001, 0.002, 0.002, 0.02, 0.002])
     co = np.array([0.2, 0.1, 0.2, 0.2, 0.01, 0.2])
     v = np.array([-0.12, -0.04, 0.0, 0.12, 0.04, 0.05])
     area = 1e-9
     params = dict(
-        deltaGATP=p.delta_g0_J_per_mol,
-        cATP=p.atp_mM,
-        cADP=p.adp_mM,
-        cPi=p.pi_mM,
+        deltaGATP=PUMP["delta_g0_J_per_mol"],
+        cATP=PUMP["atp_mM"],
+        cADP=PUMP["adp_mM"],
+        cPi=PUMP["pi_mM"],
         R=R,
         F=F,
-        KmCa_Ca=p.km_ca_mM,
-        KmCa_ATP=p.km_atp_mM,
-        alpha_Ca=p.capacity_fmol_per_s * 1e-15 / area,
+        KmCa_Ca=PUMP["km_ca_mM"],
+        KmCa_ATP=PUMP["km_atp_mM"],
+        alpha_Ca=PUMP["capacity_fmol_per_s"] * 1e-15 / area,
     )
-    # The pinned PMCA, run unmodified out of process (AGENTS.md), at block 1 and block 0.
-    case = dict(cCai=ci.tolist(), cCao=co.tolist(), Vm=v.tolist(), T=298.15, parameters=params)
+    # The pinned function, run unmodified out of process (AGENTS.md), at block 1 and block 0.
+    case = dict(cCai=ci.tolist(), cCao=co.tolist(), Vm=v.tolist(), T=T_K, parameters=params)
     native = native_capture({"plasma_pump": [case | {"blocks": [1, 0]}]})["plasma_pump"][0]
     expected = -np.asarray(native["flux"][0]) * area / 1e-15
-    # Pinned BETSE ignores its block argument. Our control is an explicit extension.
     np.testing.assert_array_equal(-np.asarray(native["flux"][1]) * area / 1e-15, expected)
-    # The same law's independent scalar form (scalar_rates' PMCA term).
-    independent = np.array(
-        [
-            scalar_rates(1.0, 1.0, a, b, x, 298.15, p._asdict(), None, (1.0, 1.0))[0]
-            for a, b, x in zip(ci, co, v, strict=True)
-        ]
-    )
-    actual, g, _ = process.pump_rates(ci, co, v, 298.15, p, 1.0, xp=np)
-    np.testing.assert_allclose(actual, independent, rtol=3e-12, atol=3e-14)
+    molar = PUMP["delta_g0_J_per_mol"] + R * T_K * math.log(1000.0)
+    pools = (PUMP[k] for k in ("atp_mM", "adp_mM", "pi_mM", "km_ca_mM", "km_atp_mM"))
+    kernel = ca_atp.Parameters(PUMP["capacity_fmol_per_s"], *pools, molar)
+    actual, blocked, planted = (np.empty(6) for _ in range(3))
+    for i, (a, b, volts) in enumerate(zip(ci, co, v, strict=True)):
+        modes, populations, _ = evaluated(dict(Ca=(a, b)), volts)
+        actual[i] = modes.j[0, 0]
+        blocked[i] = evaluated(dict(Ca=(a, b)), volts, 0.0)[0].j[0, 0]
+        planted[i] = evaluated(dict(Ca=(a, b)), volts / 2)[0].j[0, 0]
+        rate, _, g, *_ = scalar_rates(1.0, 1.0, a, b, volts, T_K, PUMP, None, (1.0, 1.0))
+        own = ca_atp.kinetics(a, b, volts, T_K, kernel, 1.0, xp=np)
+        for other in (rate, own.cycles_fmol_s):
+            np.testing.assert_allclose(actual[i], other, rtol=3e-12, atol=3e-14)
+        np.testing.assert_allclose(populations.heat_pJ_s[0], -rate * g / 1e3, rtol=1e-11)
+        assert populations.heat_pJ_s[0] >= 0 and populations.valid[0]
     np.testing.assert_allclose(actual, expected, rtol=3e-12, atol=3e-14)
-    assert np.any(actual > 0) and np.any(actual < 0) and np.all(-actual * g >= 0)
-    assert np.all(process.pump_rates(ci, co, v, 298.15, p, 0.0, xp=np)[0] == 0)
-    with jax.default_device(execution_device(BACKEND)):
-        compiled = jax.jit(process.pump_rates)(ci, co, v, 298.15, p, 1.0)
-        assert compiled[0].device.platform == BACKEND
-        np.testing.assert_allclose(compiled[0], expected, rtol=3e-12, atol=3e-14)
-    evidence(
-        "native-laws",
-        {
-            "status": "passed",
-            "pump_points": len(ci),
-            "native_block_argument_unused": True,
-            "native_capture": "out of process: validation/betse/calcium_functions_native.py",
-            "independent_pump": "tests/reference_plasma_calcium.scalar_rates",
-            "scope": (
-                "Pinned positive PMCA equation with harmonized constants; no native trajectories"
-            ),
-        },
-        {"pmca_native": expected, "pmca_independent": independent, "pmca_cells": actual},
-    )
+    assert np.any(actual > 0) and np.any(actual < 0) and np.all(blocked == 0)
+    assert np.all((np.abs(planted - actual) > 1e-6 * np.abs(actual)) == (v != 0))
 
 
-def test_ncx_reference_reversal_stoichiometry_and_stall_gradient():
-    p = process.ExchangerParameters(0.003, 20.0, 0.001)
-    ni, no, ci, co, t = 12.0, 140.0, 0.001, 0.2, 298.15
-    reversal = -R * t / F * np.log((ni / no) ** 3 * co / ci)
-    v = reversal + np.array([-0.03, 0, 0.03])
-    actual, g = process.exchange_rates(ni, no, ci, co, v, t, p, 1.0, xp=np)
-    expected = np.array(
-        [scalar_rates(ni, no, ci, co, x, t, None, p._asdict(), (1, 1))[1] for x in v]
+def test_the_pump_stalls_where_the_fuels_drive_meets_two_charges_and_the_gradient():
+    """At V = (RT/2F) [drive/RT + ln(co/ci)] it stalls: forward below it and backward above."""
+    ci, co = 0.002, 0.2
+    *_, drive = scalar_rates(1.0, 1.0, ci, co, 0.0, T_K, PUMP, None, (1.0, 1.0))
+    head = (drive + R * T_K * math.log(co / ci)) / (2 * F)
+    forward, stall, backward = (
+        evaluated(dict(Ca=(ci, co)), head + dv)[0] for dv in (0.005, 0.0, -0.005)
     )
-    np.testing.assert_allclose(actual, expected, rtol=3e-12, atol=3e-17)
-    assert actual[0] > 0 > actual[2] and abs(actual[1]) < 1e-17
-    assert np.all(-actual * g >= 0)
-    assert np.all(process.exchange_rates(ni, no, ci, co, v, t, p, 0.0, xp=np)[0] == 0)
-    assert np.all(
-        process.exchange_rates(ni, no, ci, co, v, t, p._replace(capacity_fmol_per_s=0), 1.0, xp=np)[
-            0
+    assert forward.j[0, 0] > 0 > backward.j[0, 0]
+    assert abs(stall.j[0, 0]) <= 1e-13 * stall.scale[0, 0]
+
+
+def test_the_exchange_meets_the_direct_products_at_its_reversal_and_on_both_sides():
+    """J is forward minus reverse of the scalar products to 3e-12; it vanishes at 3 E_Na - 2 E_Ca,
+    positive below and negative above; its slope there is the scalar form's difference; its heat is
+    not negative and it does no work; blocked it runs none. Planted: the reversal of two sodium."""
+    ni, no, ci, co = 12.0, 140.0, 0.001, 0.2
+    mM = dict(Na=(ni, no), Ca=(ci, co))
+    reversal = -R * T_K / F * math.log((ni / no) ** 3 * co / ci)
+
+    def scalar(volts):
+        return scalar_rates(ni, no, ci, co, volts, T_K, None, EXCHANGE, (1, 1))[1]
+
+    for dv in (-0.03, 0.0, 0.03):
+        modes, populations, _ = evaluated(mM, reversal + dv)
+        j = modes.j[0, 1]
+        np.testing.assert_allclose(j, scalar(reversal + dv), rtol=3e-12, atol=3e-17)
+        assert np.sign(j) == -np.sign(dv) if dv else abs(j) < 1e-17
+        assert populations.heat_pJ_s[1] >= 0 and populations.work_pJ_s[1] == 0
+        assert evaluated(mM, reversal + dv, 0.0)[0].j[0, 1] == 0
+    *_, e = evaluated(mM, reversal)
+    step = 1e-6
+    difference = (scalar(reversal + step) - scalar(reversal - step)) / (2 * step)
+    slope = float(e.d_j_d_psi[0, 1]) * F / (R * T_K)
+    assert slope == pytest.approx(difference, rel=2e-9, abs=1e-14)
+    two = -R * T_K / F * math.log((ni / no) ** 2 * co / ci)
+    assert abs(evaluated(mM, two)[0].j[0, 1]) > 1e-3 * evaluated(mM, two)[0].scale[0, 1]
+
+
+# ------------------------------------------------------------------ the closed world
+
+WORLD_T_K = core.CORE_T_K
+VOLTS, CA = -0.05, (0.04, 1.2)  # The cell's start: its voltage, and calcium at the two ends (mM).
+FUEL = dict(ATP=(2.5, 3.0), ADP=(0.3, -4.0), Pi=(4.0, -2.5))  # mM, and RT against 1 mM.
+WORLD_PUMP = (0.04, 8e-3, 0.3)  # Capacity (fmol/s), K and K_ATP (mM).
+WORLD_EXCHANGE = (0.3, 25.0, 6e-3)  # Capacity (fmol/s), K_Na and K_Ca (mM).
+H, STEPS = 0.02, 8  # The longest step (s) and the steps to the end.
+
+
+def closed():
+    """The definition of the closed world with one pump and one exchange."""
+    pump, exchange = core.pump_case("Ca", 1, WORLD_PUMP), core.na_ca_case(WORLD_EXCHANGE)
+    rows = {s: (0, mu, mM, 1e-3) for s, (mM, mu) in FUEL.items()}
+    ends = dict(cell_0=dict(Ca=CA[0]), bath_0=dict(Ca=CA[1]))
+    entries = (pump.entry, exchange.entry)
+    return core.core_world(*entries, rows=rows, mM=ends, volts=VOLTS, dt=H)
+
+
+def scalar_parameters():
+    """The scalar form's parameters of the closed world's two populations."""
+    k, km, km_atp = WORLD_PUMP
+    g0 = FUEL["ADP"][1] + FUEL["Pi"][1] - FUEL["ATP"][1]
+    pump = dict(
+        capacity_fmol_per_s=k,
+        km_ca_mM=km,
+        km_atp_mM=km_atp,
+        atp_mM=FUEL["ATP"][0],
+        adp_mM=FUEL["ADP"][0],
+        pi_mM=FUEL["Pi"][0],
+        delta_g0_J_per_mol=R * WORLD_T_K * g0,  # Against 1 mM, the scalar form's numeric mM.
+    )
+    return pump, dict(zip(EXCHANGE, WORLD_EXCHANGE, strict=True))
+
+
+class Reference:
+    """The closed world as an ODE of its two cycle counts, its heat and its work, in scalar rates:
+    no Cells import. Per cycle the pump takes one calcium out, and the exchange one, against three
+    sodium in; so the cell's charge changes by -2 and by +1, over its patch's capacitance."""
+
+    def __init__(self, raw, sodium=3.0, pump_faster=1.0):
+        (cell,), (bath,), (patch,) = (
+            raw["model"][k] for k in ("cells", "extracellular", "membranes")
+        )
+        self.volumes = cell["volume_pL"], bath["volume_pL"]
+        self.start = [
+            tuple(node["initial_amount_fmol"][s] for node in (cell, bath)) for s in ("Na", "Ca")
         ]
-        == 0
-    )
-    with jax.default_device(execution_device(BACKEND)):
-        compiled = jax.jit(process.exchange_rates)(ni, no, ci, co, v, t, p, 1.0)
-        assert compiled[0].device.platform == BACKEND
-        np.testing.assert_allclose(compiled[0], expected, rtol=3e-12, atol=3e-17)
-        slope = jax.grad(
-            lambda voltage: process.exchange_rates(ni, no, ci, co, voltage, t, p, 1.0)[0]
-        )(reversal)
-        eps = 1e-6
-        finite = (
-            scalar_rates(ni, no, ci, co, reversal + eps, t, None, p._asdict(), (1, 1))[1]
-            - scalar_rates(ni, no, ci, co, reversal - eps, t, None, p._asdict(), (1, 1))[1]
-        ) / (2 * eps)
-        np.testing.assert_allclose(slope, finite, rtol=2e-9, atol=1e-14)
-    evidence(
-        "ncx-law",
-        {
-            "status": "passed",
-            "reversal_voltage_V": float(reversal),
-            "scope": "Synthetic 3-Na/1-Ca reversible kinetic law; rates uncalibrated",
-        },
-    )
+        self.per_fmol = F * 1e-15 / patch["capacitance_F"]
+        self.sodium, (self.pump, self.exchange) = sodium, scalar_parameters()
+        self.pump["capacity_fmol_per_s"] *= pump_faster
 
+    def amounts(self, p, x):
+        """((Na, Ca) in the cell, in the bath) (fmol) after p pump and x exchange cycles."""
+        (na_i, na_o), (ca_i, ca_o) = self.start
+        na, ca = self.sodium * x, p + x
+        return (na_i + na, ca_i - ca), (na_o - na, ca_o + ca)
 
-@pytest.mark.parametrize(
-    "case",
-    [
-        "calcium",
-        "sodium",
-        "missing_route",
-        "duplicate_route",
-        "unknown_owner",
-        "pump_law",
-        "exchanger_law",
-        "metabolism",
-        "negative_capacity",
-        "zero_km",
-        "missing_control",
-        "duplicate_control",
-        "unknown_control",
-        "late_start",
-        "repeat_time",
-        "excess_availability",
-        "bool_control",
-        "nonfinite",
-        "affinity",
-        "loss_bound",
-    ],
-)
-def test_invalid_transport_definitions(case):
-    raw = data()
-    transport = raw["model"]["plasma_transport"]
-    routes = transport["membranes"]
-    controls = raw["experiment"]["plasma_controls"]
-    if case in ("calcium", "sodium"):
-        transport[case + "_species"] = "Cl"
-    elif case == "missing_route":
-        routes.pop()
-    elif case == "duplicate_route":
-        routes[1] = copy.deepcopy(routes[0])
-    elif case == "unknown_owner":
-        routes[0]["membrane_id"] = "absent"
-    elif case == "pump_law":
-        routes[0]["pump"]["law"] = "two_ca_pump"
-    elif case == "exchanger_law":
-        routes[0]["exchanger"]["law"] = "betse_ncx"
-    elif case == "metabolism":
-        routes[0]["pump"]["metabolism"] = "finite_atp"
-    elif case == "negative_capacity":
-        routes[0]["exchanger"]["capacity_fmol_per_s"] = -1
-    elif case == "zero_km":
-        routes[0]["pump"]["km_ca_mM"] = 0
-    elif case == "missing_control":
-        controls.pop()
-    elif case == "duplicate_control":
-        controls[1] = copy.deepcopy(controls[0])
-    elif case == "unknown_control":
-        controls[0]["membrane_id"] = "absent"
-    elif case == "late_start":
-        controls[0]["schedule"][0]["time"] = 0.001
-    elif case == "repeat_time":
-        controls[0]["schedule"] *= 2
-    elif case == "excess_availability":
-        controls[0]["schedule"][0]["exchanger"] = 1.01
-    elif case == "bool_control":
-        controls[0]["schedule"][0]["pump"] = True
-    elif case == "nonfinite":
-        routes[0]["pump"]["atp_mM"] = float("nan")
-    elif case == "affinity":
-        routes[0]["pump"].update(delta_g0_J_per_mol=100000, atp_mM=1e-9, adp_mM=1000, pi_mM=1000)
-    elif case == "loss_bound":
-        routes[0]["exchanger"]["capacity_fmol_per_s"] = 1000
-    with pytest.raises(ConfigError):
-        timeline(parse_spec(raw))
+    def volts(self, p, x):
+        return VOLTS + self.per_fmol * (-2 * p + (self.sodium - 2) * x)
 
-
-def test_stage_stoichiometry_owned_scatter_and_energy():
-    spec = parse_spec(data())
-    state, p = model.initial_values(spec)
-    controls = control_values(spec, [0])
-    c = type(controls)(*(v[0] for v in controls))
-    actual = model.rhs(state, c, p, p.active, xp=np)
-    disabled = model.rhs(
-        state, c._replace(plasma_pump=0.0, plasma_exchange=0.0), p, p.active, xp=np
-    )
-    system = System(spec.to_dict())
-    y = system.initial()
-    dy = system.rhs(y, 0)
-    compare(actual._asdict(), system.unpack(dy), system)
-    pmca, ncx = actual.plasma_pump_cycles, actual.plasma_exchange_cycles
-    delta = actual.amount_increment - disabled.amount_increment
-    np.testing.assert_allclose(delta[p.plasma_ca, :2], -(pmca + ncx)[:2], rtol=0, atol=1e-17)
-    np.testing.assert_allclose(delta[p.plasma_na, :2], 3 * ncx[:2], rtol=0, atol=1e-17)
-    charge = p.valence[:, 0] @ delta
-    np.testing.assert_allclose(charge[:2], (-2 * pmca + ncx)[:2], rtol=0, atol=3e-17)
-    np.testing.assert_allclose(
-        delta.sum(axis=1)
-        + (actual.extracellular_amount_increment - disabled.extracellular_amount_increment).sum(
-            axis=1
-        ),
-        0,
-        rtol=0,
-        atol=2e-14,
-    )
-    for i in range(2):
-        local = model.store_layout(p, i)
-        assert np.all(
-            (actual.chemical_amount_increment - disabled.chemical_amount_increment)[i, :, local.er]
-            == 0
+    def rhs(self, _, y):
+        p, x = y[:2]
+        (ni, ci), (no, co) = (
+            [n / v for n in end] for end, v in zip(self.amounts(p, x), self.volumes, strict=True)
         )
-    diss = sum(np.sum(getattr(actual, k)) for k in actual._fields if "dissipated_energy" in k)
-    work = -1e-3 * np.sum(p.pump_drive * actual.pump_cycles)
-    for i in range(2):
-        local = model.store_layout(p, i)
-        work -= (
-            1e-3
-            * model.er.processes.chemical_drive(
-                model.er.pump_parameters(local), local.temperature, xp=np
-            )
-            * actual.er_pump_transferred[i, 0]
+        jp, jx, gp, gx, drive = scalar_rates(
+            ni, no, ci, co, self.volts(p, x), WORLD_T_K, self.pump, self.exchange, (1.0, 1.0)
         )
-    work -= 1e-3 * np.sum(model.readouts(state, p, xp=np)[-1] * pmca)
-    residual = physical_energy_derivative(system, y, dy) + diss - work
-    assert abs(residual) < 2e-12
-    evidence(
-        "ownership", {"status": "passed", "energy_derivative_residual_pJ_per_s": float(residual)}
-    )
+        return [jp, jx, -1e-3 * (jp * gp + jx * gx), -1e-3 * jp * drive]
 
-
-@pytest.fixture(scope="module")
-def baseline():
-    result = run(parse_spec(data()))
-    assert all(v.device.platform == BACKEND for v in result.final.state)
-    evidence(
-        "baseline",
-        {"status": "passed", "diagnostics": result.diagnostics},
-        result.history._asdict(),
-    )
-    return result
-
-
-def test_canonical_schema_and_complete_artifacts(baseline, tmp_path):
-    raw = data()
-    raw["model"]["plasma_transport"]["membranes"].reverse()
-    raw["experiment"]["plasma_controls"].reverse()
-    assert parse_spec(raw) == baseline.spec == parse_spec(baseline.spec.to_dict())
-    for key in model.EXTRA_FIELDS:
-        assert np.all(getattr(baseline.history, key)[..., 2:] == 0)
-    assert np.any(baseline.history.plasma_pump_cycles[-1] > 0)
-    assert np.any(baseline.history.plasma_exchange_cycles[-1] > 0)
-    summary = write_run(tmp_path / "public", baseline)
-    assert summary["model"] == "spatial_calcium@2"
-    saved = load_snapshot(tmp_path / "public/checkpoint_final")
-    same(saved.checkpoint.state, baseline.final.state)
-    same(saved.checkpoint.layout, baseline.final.layout)
-
-
-def test_independent_references_and_timestep_refinement(baseline):
-    raw = baseline.spec.to_dict()
-    system = System(raw)
-    refs = [reference(raw, baseline.observations.times, method=m) for m in ("DOP853", "Radau")]
-    errors = {}
-    for method, expected in zip(("DOP853", "Radau"), refs, strict=True):
-        errors[method] = compare(vars(baseline.observations), expected, system)
-        evidence(
-            "reference-" + method,
-            {"rhs_calls": expected["rhs_calls"]},
-            {k: v for k, v in expected.items() if k != "rhs_calls"},
+    def solved(self, end, method="DOP853"):
+        found = solve_ivp(
+            self.rhs, (0.0, end), np.zeros(4), method=method, rtol=1e-12, atol=1e-15, t_eval=[end]
         )
-    for key in system.shapes:
-        np.testing.assert_allclose(refs[0][key], refs[1][key], rtol=2e-10, atol=5e-14, err_msg=key)
-    convergence = []
-    for dt in (0.000025, 0.0000125, 0.00000625):
-        raw["execution"]["dt"] = dt
-        result = baseline if dt == 0.0000125 else run(parse_spec(raw))
-        actual = system.flatten_actual(vars(result.observations))["chemical_amount_increment"]
-        convergence.append(float(np.max(np.abs(actual - refs[0]["chemical_amount_increment"]))))
-    assert convergence[0] / convergence[1] > 6 and convergence[1] / convergence[2] > 6
-    evidence(
-        "independent-reference",
-        {
-            "status": "passed",
-            "max_errors": errors,
-            "steps_s": [0.000025, 0.0000125, 0.00000625],
-            "refinement_errors_fmol": convergence,
-        },
-    )
+        assert found.success
+        return found.y[:, -1]
 
 
-@pytest.mark.parametrize(
-    "variant", ["pump_off", "exchanger_off", "both_off", "absent", "zero_capacity", "switch"]
-)
-def test_interventions_and_previous_model_reduction(variant):
-    raw = data()
-    raw["experiment"].update(end_time=0.001, observation_times=[0, 0.00037, 0.001])
-    controls = raw["experiment"]["plasma_controls"]
-    if variant in ("pump_off", "exchanger_off", "both_off"):
-        for c in controls:
-            for key in ("pump", "exchanger"):
-                if variant in (key + "_off", "both_off"):
-                    c["schedule"][0][key] = 0
-    elif variant in ("absent", "zero_capacity"):
-        for route in raw["model"]["plasma_transport"]["membranes"]:
-            for key in ("pump", "exchanger"):
-                if variant == "absent":
-                    route[key] = None
-                else:
-                    route[key]["capacity_fmol_per_s"] = 0
-    else:
-        controls[0]["schedule"].append({"time": 0.000413, "pump": 0, "exchanger": 0.4})
-        controls[1]["schedule"].append({"time": 0.000713, "pump": 0.5, "exchanger": 0})
-        er = raw["experiment"]["store_controls"][0]["controls"]
-        er.append(copy.deepcopy(er[0]) | {"time": 0.000613, "release": 0})
-    result = run(parse_spec(raw))
-    if variant in ("both_off", "absent", "zero_capacity"):
-        old = run(base_spec(result.spec))
-        for field in old.history._fields:
-            np.testing.assert_array_equal(
-                getattr(result.history, field), getattr(old.history, field)
-            )
-        assert all(np.all(getattr(result.history, k) == 0) for k in model.EXTRA_FIELDS)
-    else:
-        canonical = result.spec.to_dict()
-        compare(
-            vars(result.observations),
-            reference(canonical, result.observations.times),
-            System(canonical),
-        )
-        if variant in ("pump_off", "exchanger_off"):
-            key = "plasma_pump_cycles" if variant == "pump_off" else "plasma_exchange_cycles"
-            assert np.all(getattr(result.history, key) == 0)
-    evidence("control-" + variant, {"status": "passed", "diagnostics": result.diagnostics})
+def stepped(start, h, steps):
+    """(the state, the cell's voltage) after `steps` host steps of h from a started world, in its
+    scope: every step valid and every ledger closed."""
+    spec, impl, state, p, control = start
+    states = [state]
+    for _ in range(steps):
+        state, valid = impl.imex_step(state, h, control, p, xp=np)
+        assert bool(valid)
+        states.append(state)
+    history = impl.STATE_TYPE(*(np.stack(v) for v in zip(*states, strict=True)))
+    impl.check_values(history, spec, steps=np.arange(len(states)))
+    potential = impl.readouts(state, control, p, xp=np).field.potential_V
+    return state, float(potential[0] - potential[1])
 
 
-def test_complete_restart_windows_partitions_and_future_controls(tmp_path):
-    raw = data()
-    raw["experiment"].update(end_time=0.001, observation_times=[0, 0.00037, 0.001])
-    specs = []
-    for scale in (0.8, 1, 1.2):
-        variant = copy.deepcopy(raw)
-        variant["model"]["plasma_transport"]["membranes"][0]["exchanger"][
-            "capacity_fmol_per_s"
-        ] *= scale
-        specs.append(parse_spec(variant))
-    cohort = parse_batch(definition(specs, ids=[17, 31, 90]).to_dict())
-    full = run_batch(cohort)
-    starts = full.checkpoint_at({17: 0.00025, 31: 0.0005, 90: 0.001})
-    write_batch_snapshot(tmp_path / "restart", cohort, starts)
-    saved = load_batch_snapshot(tmp_path / "restart")
-    for world in cohort.worlds:
-        same(run(world.simulation).final.state, full.worlds[world.world_id].final.state)
-        same(
-            run_windowed(world.simulation, WindowPolicy(7)).final.state,
-            full.worlds[world.world_id].final.state,
-        )
-    for width in (1, 2, 3):
-        for start in range(0, 3, width):
-            part = replace(saved.spec, worlds=saved.spec.worlds[start : start + width])
-            result = run_batch_windowed(
-                part,
-                WindowPolicy(9),
-                {w.world_id: saved.checkpoints[w.world_id] for w in part.worlds},
-            )
-            for world_id, checkpoint in result.checkpoints.items():
-                same(checkpoint.state, full.worlds[world_id].final.state)
-    changed = specs[1].to_dict()
-    changed["experiment"]["plasma_controls"][0]["schedule"].append(
-        {"time": 0.0005, "pump": 0, "exchanger": 0.2}
-    )
-    changed = parse_spec(changed)
-    branch = branch_checkpoint(specs[1], starts[31], changed)
-    same(run(changed, branch).final.state, run(changed).final.state)
-    evidence("replay", {"status": "passed", "widths": [1, 2, 3], "world_ids": [17, 31, 90]})
+def test_a_stage_moves_each_laws_counts_where_they_belong_and_its_energy_balances():
+    """At the start the rates are the scalar form's: calcium leaves the cell at the pump's and the
+    exchange's cycles, three sodium enter per exchange, the bath takes the opposite and nothing else
+    moves; the charge that crosses is -2 and +1 per cycle; and the ideal and electrical energy of
+    the moved ions changes by the fuel's work less the heat. Planted: the charge with the sodium
+    missing, and the energy with the fuel's work missing."""
+    raw = closed()
+    with tk.scoped():
+        spec, impl, state, p, control = core.na_ca_start(raw)
+        potential = np.asarray(impl.readouts(state, control, p, xp=np).field.potential_V)
+        rates = transporter.rates(state, potential, control, p, xp=np)
+    reference = Reference(raw)
+    jp, jx, *_ = reference.rhs(0.0, np.zeros(4))
+    assert jp > 0 and jx != 0
+    cycles = np.asarray(rates.derivatives["cycle_count"][0])
+    np.testing.assert_allclose(cycles, (jp, jx), rtol=1e-11)
+    ids = list(spec.model.species_ids)
+    counts = dict(Ca=(-1.0, -1.0), Na=(0.0, 3.0))
+    for k, s in enumerate(ids):
+        moved = float(np.dot(counts.get(s, (0.0, 0.0)), cycles))
+        assert float(rates.cell[k, 0]) == pytest.approx(moved, rel=8 * EPS, abs=0), s
+        assert float(rates.outside[k, 0]) == pytest.approx(-moved, rel=8 * EPS, abs=0), s
+    valence = np.array(spec.model.valence)
+    charge = float(valence @ rates.cell[:, 0])
+    assert charge == pytest.approx(-2 * cycles[0] + cycles[1], rel=1e-12, abs=0)
+    assert charge != pytest.approx(-2 * (cycles[0] + cycles[1]), rel=1e-3, abs=0)
+    nodes = (*spec.model.cells, *spec.model.extracellular)
+    energy = 0.0  # pJ/s: each ion's electrochemical potential times its rate, at both nodes.
+    for node, phi, out in zip(nodes, potential, (rates.cell, rates.outside), strict=True):
+        for k in (ids.index("Na"), ids.index("Ca")):
+            c = node.initial_amount_fmol[k] / node.volume_pL
+            energy += 1e-3 * (R * WORLD_T_K * math.log(c) + valence[k] * F * phi) * out[k, 0]
+    heat, work = float(np.sum(rates.heat_pJ_s)), float(np.sum(rates.work_pJ_s))
+    size = abs(energy) + heat + abs(work)
+    assert abs(energy + heat - work) < 1e-12 * size
+    assert abs(energy + heat) > 1e-3 * size  # Planted: the fuel's work missing.
+    assert heat > 0 and work > 0 and rates.work_pJ_s[1] == 0
 
 
-@pytest.mark.parametrize(
-    "case", ["pump_cycles", "exchanger_cycles", "dissipation", "negative_dissipation", "padding"]
-)
-def test_corrupt_complete_checkpoint_is_rejected(baseline, case):
-    state = model.State(*(np.array(v) for v in baseline.final.state))
-    if case == "pump_cycles":
-        state.plasma_pump_cycles[0] += 1e-5
-    elif case == "exchanger_cycles":
-        state.plasma_exchange_cycles[0] += 1e-5
-    elif case == "dissipation":
-        state.plasma_dissipated_energy_pJ[0, 0] += 1e-5
-    elif case == "negative_dissipation":
-        state.plasma_dissipated_energy_pJ[1, 0] = -1e-5
-    elif case == "padding":
-        state.plasma_exchange_cycles[-1] = 1e-5
-    with pytest.raises(NumericalError):
-        validate_checkpoint(baseline.spec, replace(baseline.final, state=state))
+def test_the_closed_run_converges_to_the_independent_ode_at_second_order():
+    """The cycles, the heat, the work, the amounts at both ends and the voltage at the end of the
+    run approach the ODE's (DOP853 and Radau agree to 1e-9 of each), by a factor of 3.8 to 4.3 at
+    each halving of the step, and every ledger closes. Planted: an ODE with two sodium per cycle,
+    and one with a pump 1% faster, each lies over ten times further off than the finest step."""
+    raw, end = closed(), H * STEPS
+    reference = Reference(raw)
+    exact = reference.solved(end)
+    np.testing.assert_allclose(reference.solved(end, "Radau"), exact, rtol=1e-9)
 
+    def of(y):
+        cell, bath = reference.amounts(*y[:2])
+        return np.array([*y, *cell, *bath, reference.volts(*y[:2])])
 
-def test_cubic_dissipation_enclosure_rejects_interior_excursion():
-    spec = parse_spec(data())
-    state, p = model.initial_values(spec)
-    history = model.State(*(np.stack((v, v)) for v in state))
-    left = model.State(*(np.zeros_like(v) for v in history))
-    right = model.State(*(np.zeros_like(v) for v in history))
-    # Valid endpoint inventories/ledgers; endpoint derivatives force an interior peak.
-    left.plasma_dissipated_energy_pJ[0, 0, 0] = 1
-    right.plasma_dissipated_energy_pJ[1, 0, 0] = -1
-    with pytest.raises(NumericalError, match="dissipation"):
-        model.check_interpolants(
-            np.array([0, 0.001]),
-            history,
-            model.State(*(v[:-1] for v in left)),
-            model.State(*(v[1:] for v in right)),
-            p,
-        )
-
-
-def test_public_cli(tmp_path):
-    raw = data()
-    raw["experiment"].update(end_time=0.0001, observation_times=[0, 0.000037, 0.0001])
-    path = tmp_path / "input.json"
-    path.write_text(json.dumps(raw))
-    child = subprocess.run(
-        [sys.executable, "-B", "-m", "cells", "run", str(path), "--output", str(tmp_path / "run")],
-        capture_output=True,
-        text=True,
-        check=True,
-        timeout=180,
-    )
-    assert not child.stderr
-    saved = load_snapshot(tmp_path / "run/checkpoint_final")
-    assert saved.spec.execution.backend == BACKEND and saved.checkpoint.time == 0.0001
-    evidence("public-cli", {"status": "passed", "backend": BACKEND})
-
-
-@pytest.fixture(scope="module")
-def coupled():
-    spec = parse_assembly(assembly_data())
-    state, report = assembly.run(spec, backend=BACKEND)
-    evidence("assembly-baseline", report | {"status": "passed"}, flatten(state))
-    return spec, state, report
-
-
-def test_assembly_independent_event_reference(coupled):
-    spec, state, _ = coupled
-    events = event_histories(spec, state, 0)
-    times = sorted({0.0, *(e[0] for rows in events.values() for e in rows)})
-    segments = []
-    for time in times:
-        levels = []
-        for b in spec.pools:
-            past = [e for e in events[b.cell_id] if e[0] <= time]
-            mask, bonds = past[-1][1:3] if past else (b.pool.initial_mask, b.pool.initial_bonds)
-            levels.append(
-                b.active_availability
-                if bonds.bit_count() >= mask.bit_count()
-                else b.inactive_availability
-            )
-        segments.append((time, levels))
-    raw = spec.ionic.to_dict()
-    expected = reference(raw, [spec.pool.end_time_s], channel_segments=segments)
-    errors = compare(
-        {k: np.asarray(v)[0:1] for k, v in state.ionic._asdict().items()}, expected, System(raw)
-    )
-    evidence(
-        "assembly-reference",
-        {
-            "status": "passed",
-            "max_errors": errors,
-            "event_boundaries": len(times),
-            "rhs_calls": expected["rhs_calls"],
-        },
-    )
-
-
-def test_assembly_restart_partition_and_transport_effect(coupled, tmp_path):
-    spec, state, _ = coupled
-    half, _ = assembly.run(spec, backend=BACKEND, until=0.01)
-    write_checkpoint(tmp_path / "assembly", spec, half, backend=BACKEND)
-    saved, checkpoint, _ = load_checkpoint(tmp_path / "assembly", backend=BACKEND)
-    continued, _ = assembly.run(replace(saved, window_ticks=7), backend=BACKEND, state=checkpoint)
-    same(continued, state)
-    for i in range(spec.pool.worlds):
-        raw = spec.to_dict()
-        for binding in raw["pools"]:
-            binding["pool"].update(worlds=1, world_id_start=spec.pool.world_id_start + i)
-        partition, _ = assembly.run(parse_assembly(raw), backend=BACKEND)
-        same(partition, jax.tree.map(lambda v, i=i: np.asarray(v)[i : i + 1], state))
-    raw = spec.to_dict()
-    for control in raw["ionic"]["experiment"]["plasma_controls"]:
-        control["schedule"][0].update(pump=0, exchanger=0)
-    blocked, _ = assembly.run(parse_assembly(raw), backend=BACKEND)
-    same(blocked.pool, state.pool)
-    ca = [s.id for s in spec.ionic.model.stores[0].species].index("Ca")
-    difference = float(
-        np.max(
-            np.abs(
-                blocked.ionic.chemical_amount_increment[:, :, ca, :]
-                - state.ionic.chemical_amount_increment[:, :, ca, :]
-            )
-        )
-    )
-    assert difference > 1e-10
-    evidence(
-        "assembly-replay",
-        {"status": "passed", "partition_widths": [1, 2], "calcium_response_fmol": difference},
-    )
-
-
-def test_ensemble_planning_preserves_model_and_world_identity():
-    raw = ensemble_definition()
-    raw["arms"][0]["definition"] = assembly_data()
-    for binding in raw["arms"][0]["definition"]["pools"]:
-        for key in ("worlds", "world_id_start", "seed"):
-            binding["pool"].pop(key, None)
-    local, future = plan(raw, 1), jupiter_plan(raw, 4)
-    assert local["tasks"] == future["tasks"] and future["deployment"]["maximum_target_gpus"] == 16
-    assert not future["deployment"]["remote_execution_qualified"]
-    assert all(
-        task["definition"]["ionic"]["model"]["id"] == "spatial_calcium@2"
-        for task in future["tasks"]
-    )
-
-
-def test_ensemble_aggregation(coupled):
-    from cells.legacy.ensemble.cluster import aggregate
-
-    _, _, report = coupled
-    row = report | {"arm": "plasma", "wall_start": 0.0, "wall_end": 1.0}
-    summary = aggregate([row, row])["plasma"]
-    assert summary["physical_model"] == "spatial_calcium@2"
-    np.testing.assert_array_equal(
-        summary["calcium"]["cytosol_amounts_fmol_sum_over_worlds"],
-        2 * np.sum(report["calcium"]["cytosol_amounts_fmol"], axis=0),
-    )
-    evidence(
-        "ensemble",
-        {
-            "status": "passed",
-            "maximum_planned_gpus": 16,
-            "remote_execution_qualified": False,
-            "summary": summary,
-        },
-    )
-
-
-def test_cpu_gpu_agreement(baseline, coupled):
-    if BACKEND != "gpu":
-        pytest.skip("CPU baselines retained for subsequent actual L4 comparison")
-    target = os.environ.get("CELLS_PLASMA_EVIDENCE")
-    if not target:
-        pytest.fail("Use the registered CPU/GPU panel for the complete saved comparison")
-    comparisons = {}
-    for name, values in [
-        ("baseline", baseline.history._asdict()),
-        ("assembly-baseline", flatten(coupled[1])),
-    ]:
-        with np.load(Path(target) / "cpu" / (name + ".npz"), allow_pickle=False) as expected:
-            count = 0
-            maximum = 0.0
-            assert set(expected.files) == set(values)
-            for key, a in values.items():
-                a = np.asarray(a)
-                if a.dtype.kind in "bui":
-                    np.testing.assert_array_equal(a, expected[key])
-                else:
-                    np.testing.assert_allclose(
-                        a, expected[key], rtol=3e-10, atol=3e-13, err_msg=key
-                    )
-                count += a.size
-                if a.dtype.kind == "f":
-                    maximum = max(maximum, float(np.max(np.abs(a - expected[key]), initial=0)))
-        comparisons[name] = {"scalar_values_compared": count, "max_absolute_error": maximum}
-    evidence(
-        "cpu-gpu", {"status": "passed", "rtol": 3e-10, "atol": 3e-13, "comparisons": comparisons}
-    )
+    target, errors = of(exact), []
+    with tk.scoped():
+        start = core.na_ca_start(raw)
+        runs = [stepped(start, H / halving, STEPS * halving) for halving in (1, 2, 4)]
+    spec, ids = start[0], list(start[0].model.species_ids)
+    nodes = (spec.model.cells[0], spec.model.extracellular[0])
+    for state, volts in runs:
+        moved = (state.amount_increment[:, 0], state.extracellular_amount_increment[:, 0])
+        amounts = [
+            node.initial_amount_fmol[ids.index(s)] + float(gained[ids.index(s)])
+            for node, gained in zip(nodes, moved, strict=True)
+            for s in ("Na", "Ca")
+        ]
+        heat = float(np.sum(state.cycle_dissipated_energy_pJ))
+        work = float(np.sum(state.cycle_metabolic_work_pJ))
+        found = [*state.cycle_count[0], heat, work, *amounts, volts]
+        errors.append(np.abs(np.array(found) - target))
+    errors, ratios = np.array(errors), np.array(errors[:-1]) / np.array(errors[1:])
+    assert np.all(ratios > 3.8) and np.all(ratios < 4.3)
+    assert np.all(errors[-1] < 1e-4 * np.abs(target - of(np.zeros(4))))
+    for planted in (Reference(raw, sodium=2.0), Reference(raw, pump_faster=1.01)):
+        off = np.abs(planted.solved(end)[:2] - exact[:2])
+        assert np.all(off > 10 * errors[-1][:2])

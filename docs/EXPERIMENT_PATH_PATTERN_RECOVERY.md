@@ -1,5 +1,8 @@
 # E15: pattern recovery after damage (experiment path, backlog)
 
+> **Legacy cleanup (25 November 2026, D386).** Paths under `src/cells/legacy/` and the older model
+> IDs named below left the engine. The tag `pre-cleanup-2026-11-25` keeps them.
+
 **Status: backlog, logged 13 November 2026 at the user's request.** It is
 [E15](EXPERIMENTS.md#later-experiments) and is not active. This note records which engine
 features the experiment would need, its question and a design sketch. No code, run,

@@ -79,6 +79,7 @@ MODELS = MappingProxyType(
                 "cells.laws.channels.kv1p6_mh",
                 # The always-open Cl⁻ leak, code 10 (D228 item 3, the H1 seam's Cl⁻ part).
                 "cells.laws.channels.clleak_always_open",
+                "cells.laws.channels.cav1p2_m2h",  # The CaV1.2-type calcium channel, code 11.
                 "cells.laws.channels.open_channel_block",  # FR-51's block (D371).
                 "cells.laws.junctions.junction_voltage_relaxation",
                 # FR-30, development only (D262; the @3 owner's recorded exception, F's file).
@@ -98,6 +99,7 @@ MODELS = MappingProxyType(
                 # The transporter's two laws' modules: their declarations move in as inert LAWs
                 # (the kinds owner's, CORE_SEAMS §18); until then they register nothing here.
                 "cells.laws.pumps.atp_transporter",
+                "cells.laws.pumps.atp_transporter_v2",  # One species of any valence, held fuel.
                 "cells.laws.pumps.proton_pump",
                 "cells.laws.cycles.na_anion_symport_factored",  # The kinds owner's (D228 item 1).
                 "cells.laws.cycles.na2_anion_symport_diagram",  # Its version 2, the same item.
@@ -113,6 +115,9 @@ MODELS = MappingProxyType(
                 "cells.laws.cycles.held_reductant_supply",
                 "cells.laws.cycles.adenylate_kinase",
                 "cells.laws.cycles.sodium_calcium_exchange_symmetric_barrier",  # A synthetic form.
+                # Two manufactured forms of electroneutral symport (no outside source).
+                "cells.laws.cycles.na_k_2anion_symport_reversible_tanh",
+                "cells.laws.cycles.electroneutral_symport_reversible_tanh",
                 # The general binding closure (rapid_binding@1), seam C's: the binding owner's
                 # line, a recorded exception (the lead, 18 November 2026).
                 "cells.laws.reactions.rapid_binding",

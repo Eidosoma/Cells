@@ -1,5 +1,9 @@
 # Passive contact: two cells, one exchange route
 
+> **Legacy cleanup (25 November 2026, D386).** `passive_pair@1` left the engine, with its
+> configurations. `reaction_transport@1` moves species over declared contacts. The tag
+> `pre-cleanup-2026-11-25` keeps the code.
+
 Implemented and verified as `passive_pair@1` in Cells 0.3.0 on 2026-09-08.
 This completes M1c-a, the conservative transport prerequisite, not the full
 M1c selective bioelectric model. See [acceptance](../reports/M1C_A_ACCEPTANCE.md)

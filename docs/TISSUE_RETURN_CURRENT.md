@@ -1,5 +1,10 @@
 # Electrical return currents between cell regions
 
+> **Legacy cleanup (25 November 2026, D386).** Of the families below, `resolved_tissue@1`, `@2` and
+> `@8` stay, and the pump line. The others left the engine, with the configurations and commands
+> that name them; the coverage table of [the legacy port plan](LEGACY_PORT_PLAN.md) says what does
+> the same physics, or that nothing does. The tag `pre-cleanup-2026-11-25` keeps the code.
+
 The existing spatial cluster assigns junction-connected cells to one local
 extracellular compartment. Extending that geometry requires a different field
 closure: a charged junction transfer changes the capacitor charge at both ends,

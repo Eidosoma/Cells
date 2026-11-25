@@ -27,12 +27,16 @@ how to write one, the [glossary](GLOSSARY.md) defines the words, and
 
 | Page | In one sentence | Status |
 | --- | --- | --- |
+| [`cells.cav1p2_m2h@1`](cells/laws/cav1p2_m2h@1.md) | A calcium channel that opens within milliseconds when the membrane voltage rises and shuts within tens of milliseconds, so that a rise lets in a short pulse of calcium. | Not stated |
 | [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md) | A potassium channel that opens within milliseconds when the membrane voltage rises, then slowly shuts over seconds, letting potassium out so that the voltage falls back. | Not stated |
 
 ### `cells.cycle_law@1`
 
 | Page | In one sentence | Status |
 | --- | --- | --- |
+| [`cells.atp_driven_transporter_mass_action_positive@2`](cells/laws/atp_driven_transporter_mass_action_positive@2.md) | A membrane pump that spends one ATP per cycle, from a supply held constant, to move a fixed number of ions or molecules of one kind, charged or not. | Not stated |
+| [`cells.electroneutral_symport_reversible_tanh@1`](cells/laws/electroneutral_symport_reversible_tanh@1.md) | One kind of cation and one kind of anion cross a membrane together, in a declared ratio that carries no net charge, at a rate whose form is manufactured. | Not stated |
+| [`cells.na_k_2anion_symport_reversible_tanh@1`](cells/laws/na_k_2anion_symport_reversible_tanh@1.md) | One sodium ion, one potassium ion and two single-charged anions cross a membrane together, carrying no net charge, at a rate whose form is manufactured. | Not stated |
 | [`cells.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md) | Three sodium ions cross a membrane one way for each calcium ion that crosses the other way, each exchange carrying one charge, at a rate whose form is synthetic. | Not stated |
 
 ### `cells.transfer_factor_law@1`
@@ -48,7 +52,7 @@ how to write one, the [glossary](GLOSSARY.md) defines the words, and
 | Page | In one sentence | Status |
 | --- | --- | --- |
 | [`cells.species_condition@1`](cells/kinds/species_condition@1.md) | A condition at a node reads the concentrations of chosen substances there and gives a number between zero and one that opens or closes routes and channels. | Not stated |
-| [`cells.transporter@1`](cells/kinds/transporter@1.md) | Membrane pumps that each spend one ATP molecule per cycle to move a fixed number of one kind of molecule or ion across a membrane, even against its gradient. | Not stated |
+| [`cells.transporter@1`](cells/kinds/transporter@1.md) | Membrane machines that move a fixed number of ions or molecules across a membrane in each cycle, some of them paid for by ATP, even against a gradient. | Not stated |
 
 ## Operators
 

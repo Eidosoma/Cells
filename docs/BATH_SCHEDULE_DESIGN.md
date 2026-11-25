@@ -1,5 +1,8 @@
 # A scheduled bath composition in the composite (design)
 
+> **Legacy cleanup (25 November 2026, D386).** Paths under `src/cells/legacy/` and the older model
+> IDs named below left the engine. The tag `pre-cleanup-2026-11-25` keeps them.
+
 **Qualified, 17 November 2026.** The registered protocol `fr10-dose-schedule-v1`
 (`validation/tissue/bath_schedule_protocol.json`, registered at 407ba164) was judged once from a
 clean snapshot of that commit: passed, 31 of 31 judged criteria, against the code-blind references

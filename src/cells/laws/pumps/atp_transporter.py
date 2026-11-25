@@ -18,6 +18,11 @@ identical rational form,
 which equals the exponential form for every positive state and stays finite at trial states.
 Fuel is finite by default (ATP, ADP and Pi are rows the cycle moves) or held (read, never moved).
 Pure functions in the xp style of processes/.
+
+On held fuel it is superseded by atp_driven_transporter_mass_action_positive@2
+(laws/pumps/atp_transporter_v2.py), whose role has any valence and which is this law at valence 0: a
+new definition on held fuel takes that one. This one stays until the worlds that run it move
+(docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md §6.3).
 """
 
 from typing import Any, NamedTuple

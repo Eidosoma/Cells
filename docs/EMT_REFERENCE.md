@@ -1,5 +1,10 @@
 # Isolated regulatory reference: M1b
 
+> **Legacy cleanup (25 November 2026, D386).** `emt_mirna@1` left the engine, with its
+> configurations, and no model replaces it. Its switch can be written as `local_species_reactions@1`
+> reactions ([replication note](GAP_JUNCTION_CANCER_REPLICATION.md)). The tag
+> `pre-cleanup-2026-11-25` keeps the code.
+
 Implemented as Cells 0.2.0 on 2026-09-08. This is an independently expressed JAX
 implementation of the isolated miR200/Zeb/ZEB equations identified in BITSEY,
 not the whole bioelectric simulator or a reproduction of the cancer paper tables.

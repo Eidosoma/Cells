@@ -242,6 +242,27 @@ def kind_ledger_errors(ledgers, kinds):
     return out
 
 
+def loop_errors(loops, routes):
+    """Why a structure's loops break their form (empty: they keep it): distinct and sorted ((route,
+    row), (kind ID, pair)) positions, each route one of `routes` and each kind a source of it."""
+
+    def position(value):
+        return type(value) is int and value >= 0
+
+    def formed(loop):
+        pairs = isinstance(loop, tuple) and len(loop) == 2
+        if not (pairs and all(isinstance(end, tuple) and len(end) == 2 for end in loop)):
+            return False
+        (route, row), (kind_id, pair) = loop
+        if not (position(route) and route < len(routes) and position(row) and position(pair)):
+            return False
+        return kind_id in {source for source, _ in routes[route][3]}
+
+    if not (isinstance(loops, tuple) and all(map(formed, loops))):
+        return ["they are ((route, row), (source kind ID, pair)) positions of the declared routes"]
+    return [] if list(loops) == sorted(set(loops)) else ["they are distinct and sorted"]
+
+
 @dataclass(frozen=True)
 class InnerStructure:
     """What one definition declares (§7.4 (a)): Python values only, never a parameter value.
@@ -311,6 +332,19 @@ class InnerStructure:
     # recorded exception in this file).
     blocked_channels: tuple = ()
     block_modes: int = 0
+    # The charge rule beside a floating node (docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md §8.3):
+    # whether an outside node floats (surface_pump.floating_nodes, from the parsed topology).
+    # Where one does, membrane_rate takes charge_rows. False for every other definition, so no
+    # structure or program of those moves; no layout, state or control field depends on it.
+    floating_nodes: bool = False
+    # A factor's feedback (docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md §6.5): the loops that the
+    # door's slots close on their own gates, ((m, p), ...), sorted, where a source of a slot reads a
+    # row that the slot moves (surface_pump_v3._loops): m = (the slot's position in `routes`, the
+    # row's position among its moved rows), p = (the source's kind ID, the pair's position among
+    # that kind's pairs). Positions, value-free: the arrays' indices are layout fields
+    # (LOOP_LAYOUT_FIELDS), present only where this is not empty. () for every definition without
+    # such a loop, so no structure, layout or program of those moves.
+    loops: tuple = ()
 
     def __post_init__(self):
         ids = [kind_id for kind_id, _ in self.kinds]
@@ -355,6 +389,11 @@ class InnerStructure:
                 "Blocked channels are a sorted tuple of distinct channel IDs, with a mode count "
                 "from 1 to 4 where any is declared and 0 where none is"
             )
+        if type(self.floating_nodes) is not bool:
+            raise ValueError("A structure's floating_nodes is a bool (whether a node floats)")
+        problems = loop_errors(self.loops, self.routes)
+        if problems:
+            raise ValueError("Loops of an inner structure: " + "; ".join(problems))
         series = self.junction_series_kinds
         if (
             (junction_series_gates.LAW_ID in self.junction_laws) != bool(series)

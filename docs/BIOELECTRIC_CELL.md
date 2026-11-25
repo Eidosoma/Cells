@@ -1,5 +1,10 @@
 # First physical cell: Cells 0.5.0
 
+> **Legacy cleanup (25 November 2026, D386).** `bioelectric_cell@1` left the engine, with its
+> configurations and the commands below. `resolved_pump_tissue@3` does the same physics; [Running
+> the model families](RUN_EXAMPLES.md) has a one-cell example. The tag `pre-cleanup-2026-11-25`
+> keeps the code.
+
 MODEL-003 implements `bioelectric_cell@1`: one well-mixed Na/K/Cl cell, one
 explicit lumped membrane, and a maintained bath. This is synthetic dimensional
 engineering, not calibrated biology, a BETSE reproduction, or the source's

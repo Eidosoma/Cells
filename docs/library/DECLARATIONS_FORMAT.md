@@ -203,10 +203,12 @@ repeat them.
 - `code`: its registry code in the inner model, which no other law takes;
 - `gates`: the names of its gates, whose open fractions the host keeps as state;
 - `permeant`: each permeant ion as (species, valence, relative permeability), also given as
-  `changes`;
+  `changes`. A model's species must have the valence that its law gives;
 - `voltage_domain_V`: the voltages (V) where it is valid; a step outside is refused;
-- `rk4_step_s`: the reference RK4 step bound (s), or null for a law with no gate;
-- `stage_term`: its term in the step's stage rule; `loop_term`, reserved;
+- `rk4_step_s`: the reference RK4 step bound (s), or null for a law with no gate and for a gated law
+  that runs on no RK4 grid;
+- `stage_term`: its term in the step's stage rule; `material_term`, its material slope per stage, the
+  name of the kernel that supplies it, or null;
 - its kernels: `kinetics` (voltage to each gate's target and time constant) and `opening` (the
   gates to the open fraction).
 
@@ -220,12 +222,14 @@ repeat them.
 - `stage_term`, its charge slope in the step's stage rule; `material_term`, its material slope
   per stage; `charge_bound` and `material_bound`, its definition-time bounds on a charged and on
   a neutral row. Each names the kernel that supplies it, or is null where the law has none;
-- `loop_term`: its loop term, where its host takes one;
 - `forms`: `"base"` where its moves are written in base forms with every ligand out, so a rapid
   binding closure's totals stay exact (CORE_SEAMS §5.2), or null;
 - `cycle`: its general form (seam A's cycle form), or null. Where it is set, the form carries the
   law: the form's own checks apply, `moves` may be empty and the kernels null, and `changes` holds
   the form's rows, one for each row a mode changes, with that `mode`;
+- `electroneutral`: true where a cycle moves no charge from one end to the other whatever species a
+  population binds, as for a law whose rate has no voltage term. Its host refuses by name a
+  population that moves charge. Only a law with a general form can declare it;
 - its kernels: `kinetics` and `domain_valid`. Its stage reads are its `reads`.
 
 ### Route laws

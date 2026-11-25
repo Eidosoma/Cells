@@ -1,5 +1,8 @@
 **A transient Myc + cyclin T1 modRNA in the infarcted heart: relevance to Cells — reviewed 14 November 2026**
 
+> **Legacy cleanup (25 November 2026, D386).** Paths under `src/cells/legacy/` and the older model
+> IDs named below left the engine. The tag `pre-cleanup-2026-11-25` keeps them.
+
 **The paper.** Boikova, A., Quaife-Ryan, G. A., Batho, C. A. P., Dahir, R.,
 Cserne Szappanos, H., … Sinha, S., Hudson, J. E. & Wilson, C. H.
 *A transient modified mRNA encoding Myc and cyclin T1 improves cardiac function

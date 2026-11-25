@@ -32,6 +32,23 @@ stored totals at the node), summed over the population's rows and a monomial for
 slots there, sum_m |nu_mk| sum_i |dJ_m/d ln c_i| |D_ik|: not through the free amount, which is too
 tight by about total over free (10^5 for a buffered proton row).
 
+**A population's own material rate** (docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md §6.3 and §8.2, step
+5): where a population's law declares `material_term`, every row it moves is bounded, charged or
+neutral, crossing or not, protons included. A mode's material block is nu g^T, with g_k = dJ/dn_k
+over the rows it moves at both ends, so its one rate is the sum over all of them, and no one
+species' share of it. The population gives
+
+    lambda = sum over its modes m and moved rows k of |nu_mk dJ_m/dn_k|   (1/s)
+
+to every row it moves; the populations add at a row, and a node's rate is its largest row sum. Near
+a steady state a population's block is, scaled by its rows' amounts, u u^T with |u|^2 = lambda, so
+the largest row sum bounds the block of all of them. Held rows and rows at held baths are left out:
+they do not relax. A row that a general closure holds takes its slope through the closure's
+derivative, as above. A row that version 1's proton buffer holds has no derivative, so a law with
+the term that moves one is refused by name. A population whose law declares none keeps the rule of
+its neutral rows and of K3b. The field cycle_material and the structure entry's flag exist only
+where a declared law has the term, so every other definition keeps its fields and programs.
+
 **Availability schedules on the population axis** (D228 item 5; the core's gap-6 schedules, §7.4
 (l)): the experiment key `transporter_controls`, optional, each population at most once, an
 omitted one at 1 throughout:
@@ -141,7 +158,17 @@ What the hooks do:
   (a > 0) counts its e^a, at a face-free compartment's node as at the cell. Called without
   potentials it takes the static head, the forward regime's maximum (a <= 0 while the pump runs
   forward or stalls). **bound_rate:** B7's definition-time term, the slope bounded with the role's
-  saturation and e^a at 1, over each free node's capacitance.
+  saturation and e^a at 1, over the capacitance of the cell's held patches or of the loose patch
+  it sits on (surface_pump.explicit_rate_bound's rows).
+- **No material slope in version 1's layout** (its limit): the rows that its two laws move at both
+  ends have none, since a term there would change the programs of FR-4's, FR-5's and FR-50's judged
+  worlds. A proton row's relaxation is held by its charge slope where its node has a charge row and
+  n_eff >= n_C / z^2, with n_C = R T C 1e15 / F^2 in fmol (C the capacitance in the node's charge
+  row: the lumen's one patch, and for the cell its held patches') and n_eff = dn_total / d ln
+  c_free, the buffer's. In FR-4's declared world the charge rule is 67 times tighter than the
+  proton's material rate at the lumen and 15,000 times at the cytosol; without the buffer it would
+  be 527 and 13 times looser (n_eff / n_C at its start, with the plasma patch's C at the cytosol).
+  A neutral role's row has no bound there.
 - **held_rows** (gap 8): held fuel's rows at its node, which binding refuses any other writer of.
 - **ledger_terms:** the role's cumulative transfers (n x cycles at its two nodes), the heat and
   the held fuel's work, folded into @3's ledgers by role (rule (a)).
@@ -469,7 +496,8 @@ def structure_entry(declaration):
         asks = any(t.proton_readout is not None for t in declaration)
         ends = any(_end_chemistry_rows(t).any() for t in declaration)
         current = any(t.current_readout for t in declaration)
-        entry = CycleAxis(tuple(sorted({t.law for t in declaration})), asks, ends, current)
+        laws = tuple(sorted({t.law for t in declaration}))
+        entry = CycleAxis(laws, asks, ends, current, any(map(_bounds_material, declaration)))
     else:
         entry = (
             tuple(sorted({t.law for t in declaration})),
@@ -689,11 +717,11 @@ def held_rows(declaration):
 
 
 def bound_rate(spec, declaration):
-    """B7's definition-time term (1/s, gap 5): at each free node a charged population charges, the
-    populations' slopes over the node's capacitance, the largest. A pump's slope is bounded by
-    k S_ATP n² e F/(RT): the role's saturation and e^a at most 1 (forward or stalled), S_ATP at
-    the held fuel's declared amount. A node's capacitance sums its patches'. Held baths and nodes
-    that faces join are not free nodes (as in B7's own term)."""
+    """B7's definition-time term (1/s, gap 5) by the charge rule's rows (_charge_bound): the
+    charged populations' slopes on a cell's held patches over those patches' capacitance, and on a
+    loose patch over its own; the largest. A pump's slope is bounded by k S_ATP n² e F/(RT): the
+    role's saturation and e^a at most 1 (forward or stalled), S_ATP at the held fuel's declared
+    amount."""
     if isinstance(declaration, PopulationAxis):
         return _population_bound_rate(spec, declaration)
     m = spec.model
@@ -702,21 +730,33 @@ def bound_rate(spec, declaration):
         return 0.0
     ids = list(m.species_ids)
     nodes = {node.id: node for node in (*m.cells, *m.extracellular)}
-    held_bath = {o.id for o in m.extracellular if o.reservoir}
-    faced = {f.sender for f in m.faces} | {f.receiver for f in m.faces}
-    capacitance, conductance = {}, {}
-    for patch in m.membranes:
-        for node in (patch.inside, patch.outside):
-            capacitance[node] = capacitance.get(node, 0.0) + patch.capacitance_F
+    slopes = []
     for t in charged:
         fuel = nodes[t.fuel_node]
         atp = fuel.initial_amount_fmol[ids.index(t.fuel_rows[0])] / fuel.volume_pL
         cycles = t.capacity_fmol_s * atp / (atp + t.km_atp_mM)
         slope = t.stoichiometry**2 * F / (R * m.temperature_K) * CHARGE_PER_FMOL * cycles
-        for node in (t.inside, t.outside):
-            if node not in held_bath and node not in faced:
-                conductance[node] = conductance.get(node, 0.0) + slope
-    return max((g / capacitance[node] for node, g in conductance.items()), default=0.0)
+        slopes.append((t.patch, slope))
+    return _charge_bound(m, slopes)
+
+
+def _charge_bound(m, slopes):
+    """The charge rule's largest row (1/s; surface_pump.explicit_rate_bound) from `slopes`,
+    ((patch ID, S), ...) per population: a cell's held patches' slopes over the capacitance of all
+    its held patches, and a loose patch's, one that faces a floating node, over its own. No other
+    outside node has a row: a held bath, the gauge and a node that a face names are held."""
+    from cells.modules import floating_nodes
+
+    floating = floating_nodes(m)
+    row_of, capacitance, conductance = {}, {}, {}
+    for patch in m.membranes:
+        row = ("patch", patch.id) if patch.outside in floating else ("cell", patch.inside)
+        row_of[patch.id] = row
+        capacitance[row] = capacitance.get(row, 0.0) + patch.capacitance_F
+    for patch_id, slope in slopes:
+        row = row_of[patch_id]
+        conductance[row] = conductance.get(row, 0.0) + slope
+    return max((g / capacitance[row] for row, g in conductance.items()), default=0.0)
 
 
 # ---------------------------------------------------------------------------- the stage
@@ -1083,6 +1123,9 @@ PROTON_READOUT_FIELDS = (
 # other (chemistry at that end), only where a population declares such a mode (declared_fields):
 # the material term bounds them though charged.
 END_CHEMISTRY_FIELDS = ("cycle_row_end_chemistry",)  # [K, P]
+# A law's own material bound (module docstring): the populations whose law declares a material term,
+# only where one does (declared_fields), so every other world keeps its fields and programs.
+MATERIAL_FIELDS = ("cycle_material",)  # [P]
 # FR-34's current readout (D251, D252): a population asks with its optional key current_readout
 # (true), and the field and column exist only where one does, as K4's (declared_fields).
 CURRENT_READOUT_KEY = "current_readout"
@@ -1113,13 +1156,14 @@ LN_PH_STANDARD = math.log(1000.0)  # pH = -log10(c / 1000 mM)
 class CycleAxis(NamedTuple):
     """The population axis's structure entry: its declared laws, sorted (value-free), whether a
     population asks for the proton readouts (K4), whether a mode changes a charged species at one
-    end without changing it at the other (K3b), and whether a population asks for its current
-    (FR-34)."""
+    end without changing it at the other (K3b), whether a population asks for its current (FR-34),
+    and whether a declared law has a material term."""
 
     laws: tuple
     proton_readout: bool = False
     end_chemistry: bool = False
     current_readout: bool = False
+    material: bool = False
 
 
 class OneWayEntry(NamedTuple):
@@ -1272,7 +1316,7 @@ def _parse_general(raw, base, patches, valence, taken):
         raise ConfigError(f"{where}: held_rows lists distinct rows of the law, each [role, N or P]")
     held = tuple(tuple(r) for r in held)
     proton = raw.get(PROTON_READOUT_KEY)
-    readout = optional - {ONE_WAY_KEY}  # Today's two keys, read as before (FR-50's aside).
+    readout = PROTON_READOUT_KEY in optional  # The current's readout needs no proton row.
     if readout and not (isinstance(proton, str) and valence.get(proton) == 1):
         raise ConfigError(
             f"{where}: {PROTON_READOUT_KEY} names the model's free-proton species row (valence "
@@ -1306,8 +1350,8 @@ def _parse_general(raw, base, patches, valence, taken):
 
 
 def _check_population(t, form, law, valence, where):
-    """A population's rows and modes against the pass's rules (statement 1, §2; Q3, Q4), and FR-50's
-    refusal of one-way records on a net-flow form."""
+    """A population's rows and modes against the pass's rules (statement 1, §2; Q3, Q4), FR-50's
+    refusal of one-way records on a net-flow form, and an electroneutral law's own statement."""
     if t.one_way and form.kinetics == "net_flow":
         raise ConfigError(
             f"{where}: {ONE_WAY_KEY} records are refused on {t.law}, whose modes run the net-flow "
@@ -1337,6 +1381,15 @@ def _check_population(t, form, law, valence, where):
         charge = sum(int(valence[roles[r]]) * int(n) for (r, _), n in zip(form.rows, row_counts))
         if charge != 0:
             raise ConfigError(f"{where}: mode {mode} moves charge {charge:+d}: every mode conserves charge")
+        rows = zip(form.rows, row_counts, strict=True)
+        at_p = [(roles[r], int(n)) for (r, end), n in rows if end == "P" and n]
+        moved = sum(int(valence[species]) * n for species, n in at_p)
+        if law.electroneutral and moved != 0:  # Its rate has no voltage term to follow.
+            bound = " and ".join(f"{abs(n)} {species}" for species, n in at_p)
+            raise ConfigError(
+                f"{where}: {t.law} is electroneutral; {bound} move charge {moved:+d} from N to P "
+                f"per cycle (mode {mode})"
+            )
 
 
 def _parse_population_axis(entries, base):
@@ -1439,6 +1492,8 @@ def declared_fields(entry):
             layout = layout + END_CHEMISTRY_FIELDS
         if entry.current_readout:  # FR-34: only where a population asks.
             layout, columns = layout + CURRENT_READOUT_FIELDS, columns + CURRENT_READOUT_COLUMNS
+        if entry.material:  # Only where a declared law has a material term.
+            layout = layout + MATERIAL_FIELDS
         return KindFields(GENERAL_STATE_AXES, layout, GENERAL_CONTROL_FIELDS, columns)
     return KindFields(STATE_AXES, LAYOUT_FIELDS, CONTROL_FIELDS, READOUT_COLUMNS, POPULATION_HOOKS)
 
@@ -1459,6 +1514,11 @@ def _end_chemistry_rows(t):
             if n and ends[role] == {end} and role in charged and (role, end) not in t.held_rows:
                 out[k] = True
     return out
+
+
+def _bounds_material(t):
+    """Whether population t's law declares a material term (module docstring)."""
+    return getattr(hosted_laws().get(t.law), "material_term", None) is not None
 
 
 def _declares_monomial(entry):
@@ -1599,6 +1659,8 @@ def _population_initial(spec, declaration):
         v["cycle_pmf_present"] = np.array([t.proton_readout is not None for t in declaration])
     if any(t.current_readout for t in declaration):  # Its test (FR-34).
         v["cycle_current_present"] = np.array([t.current_readout for t in declaration])
+    if any(map(_bounds_material, declaration)):  # structure_entry's test.
+        v["cycle_material"] = np.array([_bounds_material(t) for t in declaration])
     state = dict(
         cycle_count=np.zeros((M, P)),
         cycle_dissipated_energy_pJ=np.zeros(P),
@@ -2224,12 +2286,14 @@ def _population_stage_term(read, potentials, control, p, *, xp):
 
 def material_term(read, potentials, control, p, *, xp):
     """[cells, then outside nodes] the kind's material slope (1/s; D4): per node, the largest over
-    the neutral moved rows there of sum over populations and modes of |nu dJ/dn| (statement 1, §2:
-    an upper bound of the row's own slope even where modes add). Where a mode changes a charged
-    species at one end only (K3b), its rows count too: a redox pool or a fuel row turns over
-    without a crossing charge, so the charge rule does not bound it; where a general closure holds
-    such a row, its slope runs through the closure's derivative (module docstring). Version 1's
-    entry has none."""
+    the bounded rows there of their sum over the populations. A population whose law declares a
+    material term gives its own rate, sum over its modes and its moved rows at both ends of |nu
+    dJ/dn|, to every row it moves (module docstring). Any other gives each neutral row it moves the
+    row's own slope, sum over modes of |nu dJ/dn| (statement 1, §2: an upper bound of it even where
+    modes add), and where a mode changes a charged species at one end only (K3b) those rows too: a
+    redox pool or a fuel row turns over without a crossing charge, so the charge rule does not bound
+    it. Where a general closure holds such a row, its slope runs through the closure's derivative.
+    Version 1's entry has none."""
     slope, row_node = _material_slopes(read, potentials, control, p, xp=xp)
     n, o = p.active.size, p.outside_active.size
     species = read.amount_increment.shape[0]
@@ -2246,18 +2310,29 @@ def _material_slopes(read, potentials, control, p, *, xp):
     ends = END_CHEMISTRY_FIELDS[0] in type(p)._fields  # Static (K3b): only where declared.
     if ends:
         neutral = neutral | p.cycle_row_end_chemistry
+    own = MATERIAL_FIELDS[0] in type(p)._fields  # Static: only where a law declares the term.
+    bounded = through = neutral
+    if own:  # Every row such a population moves, but at a held bath, whose rows do not relax.
+        moved = p.cycle_row_present & ~p.cycle_row_held & xp.any(p.cycle_nu != 0, axis=0)
+        bath = xp.concatenate((xp.zeros(p.active.size, dtype=bool), p.reservoir))[e.row_node]
+        moved = moved & ~bath & p.cycle_material[None, :]
+        bounded = neutral | moved
+        through = bounded if ends else moved  # Any other population's rows stay as they were.
     per_row = entity_sum(xp.abs(p.cycle_nu * e.d_j_d_ln_c), axis=0, xp=xp)  # [K, P] fmol/s per ln c
-    slope = xp.where(neutral & (amount > 0), per_row / xp.where(amount > 0, amount, 1.0), 0.0)
-    if ends:
+    slope = xp.where(bounded & (amount > 0), per_row / xp.where(amount > 0, amount, 1.0), 0.0)
+    if ends or own:
         from cells.modules import free_log_sensitivity
 
         sensitivity = free_log_sensitivity(read, p, xp=xp)
         if sensitivity is not None:  # Static: a general closure is declared (K3b).
             held_slope, on_closure = _closure_slopes(e, sensitivity, p, xp=xp)
-            slope = xp.where(neutral & on_closure, held_slope, slope)
+            slope = xp.where(through & on_closure, held_slope, slope)
     if potentials is None and _mono(p):  # Static (K6): S reads psi, so no bound without it.
-        bare = (p.cycle_form == FORM_CODES["monomial"])[None, :] & neutral & e.active[None, :]
+        bare = (p.cycle_form == FORM_CODES["monomial"])[None, :] & bounded & e.active[None, :]
         slope = xp.where(bare, xp.inf, slope)
+    if own:  # The population's own rate (1/s), on every row it moves.
+        rate = entity_sum(xp.where(moved, slope, 0.0), axis=0, xp=xp)
+        slope = xp.where(p.cycle_material[None, :], xp.where(moved, rate[None, :], 0.0), slope)
     return slope, e.row_node
 
 
@@ -2329,21 +2404,16 @@ def _population_domain(state, p, *, xp):
 
 def _population_bound_rate(spec, declaration):
     """B7's definition-time term on the population axis: as version 1's, for each factored
-    population with a charged mode, (F/RT) CHARGE sum_m q_m^2 k S_max_m at the free nodes among its
-    host's ends, over each node's capacitance; S_max takes a held row's saturation at its declared
-    amount and every other factor at 1, availability and e^x at most 1. Each saturation is taken
-    in log space, -log(1 + e^(h ln(K/c))), so a steep factor's (K/c)^h never overflows: where it
-    would, the population's term is e^(-huge) = 0."""
+    population with a charged mode, (F/RT) CHARGE sum_m q_m^2 k S_max_m on its host, by the charge
+    rule's rows (_charge_bound); S_max takes a held row's saturation at its declared amount and
+    every other factor at 1, availability and e^x at most 1. Each saturation is taken in log space,
+    -log(1 + e^(h ln(K/c))), so a steep factor's (K/c)^h never overflows: where it would, the
+    population's term is e^(-huge) = 0."""
     m = spec.model
     ids = list(m.species_ids)
     valence = dict(zip(m.species_ids, m.valence, strict=True))
     nodes = {node.id: node for node in (*m.cells, *m.extracellular)}
-    held_bath = {o.id for o in m.extracellular if o.reservoir}
-    faced = {f.sender for f in m.faces} | {f.receiver for f in m.faces}
-    capacitance, conductance = {}, {}
-    for patch in m.membranes:
-        for node in (patch.inside, patch.outside):
-            capacitance[node] = capacitance.get(node, 0.0) + patch.capacitance_F
+    slopes = []
     for t in declaration:
         form = cycle_form(t.law)
         if form.kinetics != "factored":
@@ -2364,10 +2434,9 @@ def _population_bound_rate(spec, declaration):
                     # In log space, as the rate path (probe) is: (K/c)^h can overflow a float.
                     log_s -= float(np.logaddexp(0.0, hill * (math.log(k_mM) - math.log(c))))
             slope += q * q * F / (R * m.temperature_K) * CHARGE_PER_FMOL * t.capacity_fmol_s * math.exp(log_s)
-        for node in (t.inside, t.outside):
-            if slope and node not in held_bath and node not in faced:
-                conductance[node] = conductance.get(node, 0.0) + slope
-    return max((g / capacitance[node] for node, g in conductance.items()), default=0.0)
+        if slope:
+            slopes.append((t.host, slope))
+    return _charge_bound(m, slopes)
 
 
 # ---------------------------------------------------------------------------- its checks
@@ -2411,9 +2480,10 @@ def _check_population_axis(spec, declaration):
     """The population axis's refusals at the definition: a registry potential for every species a
     mode converts, the form's temperature domain, §5.2's boundary for moved fuel (with its one
     exception, a law in base forms at a node where a general binding closure holds the proton
-    row: K1, _general_closure_nodes), Wegscheider's condition on every diagram cycle (statement 1,
-    §5.1), and every monomial reference resolving under the binding owner's three conditions (K6),
-    each naming the population."""
+    row: K1, _general_closure_nodes), a law's material term on a row that version 1's proton buffer
+    holds, whose derivative is not defined, Wegscheider's condition on every diagram cycle
+    (statement 1, §5.1), and every monomial reference resolving under the binding owner's three
+    conditions (K6), each naming the population."""
     m = spec.model
     from cells.modules import moved_nodes
 
@@ -2424,6 +2494,8 @@ def _check_population_axis(spec, declaration):
     if proton is None:  # the row named H, as in a world with no closure (never skipped).
         proton = "H" if "H" in m.species_ids else None
     held_protons = _general_closure_nodes(m, proton)  # §5.2's one exception, by row (K1).
+    buffers = getattr(closure, "buffers", ())  # Version 1's proton buffer's, by node.
+    buffered = {(row, node) for node, rows in buffers for row in (proton, *rows)}
     picked = dict(getattr(m, "heat_bookings", ())).get(KIND_ID)
     if picked == TRAPEZOID_BOOKING:  # K2: the booking's contract, a non-negative power per state.
         for t in declaration:
@@ -2468,6 +2540,31 @@ def _check_population_axis(spec, declaration):
                     "(§5.2's boundary), unless a general binding closure holds that proton row "
                     "there and the law declares its moves in base forms"
                 )
+        if _bounds_material(t):
+            for species, node in _rows(t, held=False):
+                if (species, node) in buffered:
+                    raise ConfigError(
+                        f"{where}: {t.law} declares a material term and moves {species} at {node}, "
+                        "a row that version 1's proton buffer holds: its read has no derivative "
+                        "for the term, so nothing would bound the row (a general closure's has)"
+                    )
+    # One law moves a species by ATP on a patch (D175). Version 2 of the ATP-driven law is the
+    # equation of @3's own calcium pump and of version 1's two laws (docs/
+    # CALCIUM_STORE_AND_CHANNELS_DESIGN.md §6.3): one of those beside it, for the same species, is
+    # refused. Another population of version 2 is not, since it is the same law.
+    from cells.laws.pumps.atp_transporter_v2 import DECLARED_ID as version_2
+
+    pumps = [p for p in m.membranes if getattr(p, "calcium_pump", None) is not None]
+    beside = {(p.id, p.calcium_pump.role): p.calcium_pump for p in pumps}
+    version_1 = [t for t in declaration if t.law in VERSION_1_ROLE]
+    beside |= {(t.host, dict(t.roles)[VERSION_1_ROLE[t.law]]): t for t in version_1}
+    for t in declaration:
+        other = beside.get((t.host, dict(t.roles)["role"])) if t.law == version_2 else None
+        if other is not None:
+            raise ConfigError(
+                f"transporter {t.id!r}: {t.law} moves {dict(t.roles)['role']} on {t.host} beside "
+                f"{other.id!r} ({qualified(other.law)}): one law moves a species by ATP on a patch"
+            )
     laws = {t.id: t.law for t in declaration}
     for check in cycle_checks(spec):
         if not check.admitted:
@@ -3088,6 +3185,7 @@ _STRUCTURAL = {
     "cycle_pmf_present": False,
     "cycle_row_end_chemistry": False,
     "cycle_current_present": False,
+    "cycle_material": False,
     "transporter_one_way": False,  # FR-50's masks.
     "cycle_one_way": False,
 }
@@ -3095,7 +3193,7 @@ _EXTENSIVE = ("transporter_capacity_fmol_s", "cycle_capacity_fmol_s")
 _PER_ENTITY = (
     *LAYOUT_FIELDS, *CONTROL_FIELDS, *GENERAL_LAYOUT_FIELDS, *MONOMIAL_FIELDS,
     *PROTON_READOUT_FIELDS, *END_CHEMISTRY_FIELDS, *CURRENT_READOUT_FIELDS, *GENERAL_CONTROL_FIELDS,
-    *V1_ONE_WAY_FIELDS, *GENERAL_ONE_WAY_FIELDS,
+    *V1_ONE_WAY_FIELDS, *GENERAL_ONE_WAY_FIELDS, *MATERIAL_FIELDS,
 )  # fmt: skip
 # Each one-way record takes its net record's role (history), as the design note's §2.3 says; version
 # 1 refuses records beside a slot changer all the same (pump_composite's structure errors).
@@ -3159,7 +3257,7 @@ _SHAPES = {
     "cycle_mono_term_q": "MQGRP", "cycle_mono_term_eta": "MQGP", "cycle_mono_term_present": "MQGP",
     "cycle_mono_share": "MP", "cycle_mono_ln_standard": "P",
     "cycle_pmf_species": "P", "cycle_pmf_present": "P", "cycle_row_end_chemistry": "KP",
-    "cycle_current_present": "P", "cycle_one_way": "P",
+    "cycle_current_present": "P", "cycle_one_way": "P", "cycle_material": "P",
 }  # fmt: skip
 FIELD_AXES = MappingProxyType(
     {

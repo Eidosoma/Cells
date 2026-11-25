@@ -51,7 +51,7 @@ availability schedule.
 
 <!-- generated: used-by availability -->
 
-- **Used by:** [`cells.root_component_has_cycle@1`](cells/laws/root_component_has_cycle@1.md), [`cells.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md) and [`cells.ideal_osmosis_linear_compliance_water@1`](cells/operators/ideal_osmosis_linear_compliance_water@1.md).
+- **Used by:** [`cells.atp_driven_transporter_mass_action_positive@2`](cells/laws/atp_driven_transporter_mass_action_positive@2.md), [`cells.electroneutral_symport_reversible_tanh@1`](cells/laws/electroneutral_symport_reversible_tanh@1.md), [`cells.na_k_2anion_symport_reversible_tanh@1`](cells/laws/na_k_2anion_symport_reversible_tanh@1.md), [`cells.root_component_has_cycle@1`](cells/laws/root_component_has_cycle@1.md), [`cells.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md) and [`cells.ideal_osmosis_linear_compliance_water@1`](cells/operators/ideal_osmosis_linear_compliance_water@1.md).
 
 <!-- /generated -->
 
@@ -112,7 +112,7 @@ electrochemical gradient. Its gates decide when it is open.
 
 <!-- generated: used-by channel -->
 
-- **Used by:** [`cells.species_condition@1`](cells/kinds/species_condition@1.md), [`cells.hill_product_factor@1`](cells/laws/hill_product_factor@1.md), [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md), [`cells.open_channel_block_weighted_modes@1`](cells/laws/open_channel_block_weighted_modes@1.md) and [`cells.root_component_has_cycle@1`](cells/laws/root_component_has_cycle@1.md).
+- **Used by:** [`cells.species_condition@1`](cells/kinds/species_condition@1.md), [`cells.cav1p2_m2h@1`](cells/laws/cav1p2_m2h@1.md), [`cells.hill_product_factor@1`](cells/laws/hill_product_factor@1.md), [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md), [`cells.open_channel_block_weighted_modes@1`](cells/laws/open_channel_block_weighted_modes@1.md) and [`cells.root_component_has_cycle@1`](cells/laws/root_component_has_cycle@1.md).
 
 <!-- /generated -->
 
@@ -188,7 +188,7 @@ concentrations on both sides.
 
 <!-- generated: used-by constant-field-flux -->
 
-- **Used by:** [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md).
+- **Used by:** [`cells.cav1p2_m2h@1`](cells/laws/cav1p2_m2h@1.md) and [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md).
 
 <!-- /generated -->
 
@@ -205,7 +205,7 @@ is negative.
 
 <!-- generated: used-by cycle-free-energy -->
 
-- **Used by:** [`cells.transporter@1`](cells/kinds/transporter@1.md) and [`cells.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md).
+- **Used by:** [`cells.transporter@1`](cells/kinds/transporter@1.md), [`cells.atp_driven_transporter_mass_action_positive@2`](cells/laws/atp_driven_transporter_mass_action_positive@2.md), [`cells.electroneutral_symport_reversible_tanh@1`](cells/laws/electroneutral_symport_reversible_tanh@1.md), [`cells.na_k_2anion_symport_reversible_tanh@1`](cells/laws/na_k_2anion_symport_reversible_tanh@1.md) and [`cells.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md).
 
 <!-- /generated -->
 
@@ -220,7 +220,7 @@ schedules) and its execution (solver and step). Definitions hold values; models 
 
 <!-- generated: used-by definition -->
 
-- **Used by:** no page yet.
+- **Used by:** [`cells.atp_driven_transporter_mass_action_positive@2`](cells/laws/atp_driven_transporter_mass_action_positive@2.md), [`cells.electroneutral_symport_reversible_tanh@1`](cells/laws/electroneutral_symport_reversible_tanh@1.md) and [`cells.na_k_2anion_symport_reversible_tanh@1`](cells/laws/na_k_2anion_symport_reversible_tanh@1.md).
 
 <!-- /generated -->
 
@@ -284,6 +284,22 @@ or out. A held bath is not one.
 
 <!-- /generated -->
 
+### Floating node
+
+A finite space that is not a cell, such as a closed space inside one, whose potential nothing
+holds: it is no held bath, it is not the world's zero of potential, and no face names it. Its
+voltage follows the charge on its own patches, so a long step is refused at those patches.
+
+- **In other fields:** an organelle's inside, or any closed space (biology); a compartment with no
+  clamp (chemistry, physics); a free node of the capacitor network (computing).
+- **Cells' word;** see [the calcium note](../CALCIUM_STORE_AND_CHANNELS_DESIGN.md).
+
+<!-- generated: used-by floating-node -->
+
+- **Used by:** no page yet.
+
+<!-- /generated -->
+
 ### fmol
 
 The femtomole, $10^{-15}$ mol, about 600 million molecules: Cells' unit of amount. One fmol in one
@@ -307,7 +323,7 @@ population's channels in which that gate is open: a number from 0 to 1.
 
 <!-- generated: used-by gate -->
 
-- **Used by:** [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md).
+- **Used by:** [`cells.cav1p2_m2h@1`](cells/laws/cav1p2_m2h@1.md) and [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md).
 
 <!-- /generated -->
 
@@ -323,7 +339,7 @@ piece's heat, so that the energy ledger closes.
 
 <!-- generated: used-by heat -->
 
-- **Used by:** [`cells.transporter@1`](cells/kinds/transporter@1.md) and [`cells.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md).
+- **Used by:** [`cells.transporter@1`](cells/kinds/transporter@1.md), [`cells.atp_driven_transporter_mass_action_positive@2`](cells/laws/atp_driven_transporter_mass_action_positive@2.md), [`cells.electroneutral_symport_reversible_tanh@1`](cells/laws/electroneutral_symport_reversible_tanh@1.md), [`cells.na_k_2anion_symport_reversible_tanh@1`](cells/laws/na_k_2anion_symport_reversible_tanh@1.md) and [`cells.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md).
 
 <!-- /generated -->
 
@@ -430,7 +446,7 @@ moves it in the inventory.
 
 <!-- generated: used-by inventory -->
 
-- **Used by:** [`cells.transporter@1`](cells/kinds/transporter@1.md) and [`cells.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md).
+- **Used by:** [`cells.transporter@1`](cells/kinds/transporter@1.md), [`cells.atp_driven_transporter_mass_action_positive@2`](cells/laws/atp_driven_transporter_mass_action_positive@2.md), [`cells.electroneutral_symport_reversible_tanh@1`](cells/laws/electroneutral_symport_reversible_tanh@1.md), [`cells.na_k_2anion_symport_reversible_tanh@1`](cells/laws/na_k_2anion_symport_reversible_tanh@1.md) and [`cells.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md).
 
 <!-- /generated -->
 
@@ -527,7 +543,7 @@ from the bookings at every step and held to a rounding bound.
 
 <!-- generated: used-by ledger -->
 
-- **Used by:** [`cells.transporter@1`](cells/kinds/transporter@1.md) and [`cells.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md).
+- **Used by:** [`cells.transporter@1`](cells/kinds/transporter@1.md), [`cells.atp_driven_transporter_mass_action_positive@2`](cells/laws/atp_driven_transporter_mass_action_positive@2.md), [`cells.electroneutral_symport_reversible_tanh@1`](cells/laws/electroneutral_symport_reversible_tanh@1.md), [`cells.na_k_2anion_symport_reversible_tanh@1`](cells/laws/na_k_2anion_symport_reversible_tanh@1.md) and [`cells.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md).
 
 <!-- /generated -->
 
@@ -543,7 +559,7 @@ millivolts.
 
 <!-- generated: used-by membrane-voltage -->
 
-- **Used by:** [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md), [`cells.open_channel_block_weighted_modes@1`](cells/laws/open_channel_block_weighted_modes@1.md) and [`cells.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md).
+- **Used by:** [`cells.atp_driven_transporter_mass_action_positive@2`](cells/laws/atp_driven_transporter_mass_action_positive@2.md), [`cells.cav1p2_m2h@1`](cells/laws/cav1p2_m2h@1.md), [`cells.electroneutral_symport_reversible_tanh@1`](cells/laws/electroneutral_symport_reversible_tanh@1.md), [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md), [`cells.na_k_2anion_symport_reversible_tanh@1`](cells/laws/na_k_2anion_symport_reversible_tanh@1.md), [`cells.open_channel_block_weighted_modes@1`](cells/laws/open_channel_block_weighted_modes@1.md) and [`cells.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md).
 
 <!-- /generated -->
 
@@ -608,7 +624,7 @@ taken in the law's order.
 
 <!-- generated: used-by open-fraction -->
 
-- **Used by:** [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md).
+- **Used by:** [`cells.cav1p2_m2h@1`](cells/laws/cav1p2_m2h@1.md) and [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md).
 
 <!-- /generated -->
 
@@ -677,7 +693,7 @@ sit.
 
 <!-- generated: used-by patch -->
 
-- **Used by:** [`cells.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md).
+- **Used by:** [`cells.atp_driven_transporter_mass_action_positive@2`](cells/laws/atp_driven_transporter_mass_action_positive@2.md), [`cells.electroneutral_symport_reversible_tanh@1`](cells/laws/electroneutral_symport_reversible_tanh@1.md), [`cells.na_k_2anion_symport_reversible_tanh@1`](cells/laws/na_k_2anion_symport_reversible_tanh@1.md) and [`cells.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md).
 
 <!-- /generated -->
 
@@ -782,7 +798,7 @@ A group of identical channels or pumps on one patch, sharing a law, its gates an
 
 <!-- generated: used-by population -->
 
-- **Used by:** [`cells.open_channel_block_weighted_modes@1`](cells/laws/open_channel_block_weighted_modes@1.md), [`cells.root_component_has_cycle@1`](cells/laws/root_component_has_cycle@1.md) and [`cells.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md).
+- **Used by:** [`cells.atp_driven_transporter_mass_action_positive@2`](cells/laws/atp_driven_transporter_mass_action_positive@2.md), [`cells.electroneutral_symport_reversible_tanh@1`](cells/laws/electroneutral_symport_reversible_tanh@1.md), [`cells.na_k_2anion_symport_reversible_tanh@1`](cells/laws/na_k_2anion_symport_reversible_tanh@1.md), [`cells.open_channel_block_weighted_modes@1`](cells/laws/open_channel_block_weighted_modes@1.md), [`cells.root_component_has_cycle@1`](cells/laws/root_component_has_cycle@1.md) and [`cells.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md).
 
 <!-- /generated -->
 
@@ -835,7 +851,7 @@ One species at one node: an entry of the inventory.
 
 <!-- generated: used-by species-row -->
 
-- **Used by:** [`cells.species_condition@1`](cells/kinds/species_condition@1.md), [`cells.open_channel_block_weighted_modes@1`](cells/laws/open_channel_block_weighted_modes@1.md), [`cells.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md) and [`cells.neutral_arrival_labels@1`](cells/operators/neutral_arrival_labels@1.md).
+- **Used by:** [`cells.species_condition@1`](cells/kinds/species_condition@1.md), [`cells.atp_driven_transporter_mass_action_positive@2`](cells/laws/atp_driven_transporter_mass_action_positive@2.md), [`cells.electroneutral_symport_reversible_tanh@1`](cells/laws/electroneutral_symport_reversible_tanh@1.md), [`cells.na_k_2anion_symport_reversible_tanh@1`](cells/laws/na_k_2anion_symport_reversible_tanh@1.md), [`cells.open_channel_block_weighted_modes@1`](cells/laws/open_channel_block_weighted_modes@1.md), [`cells.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md) and [`cells.neutral_arrival_labels@1`](cells/operators/neutral_arrival_labels@1.md).
 
 <!-- /generated -->
 
@@ -863,7 +879,7 @@ One evaluation of the rates within a step. A step method combines several stages
 
 <!-- generated: used-by stage -->
 
-- **Used by:** [`cells.species_condition@1`](cells/kinds/species_condition@1.md) and [`cells.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md).
+- **Used by:** [`cells.species_condition@1`](cells/kinds/species_condition@1.md), [`cells.cav1p2_m2h@1`](cells/laws/cav1p2_m2h@1.md) and [`cells.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md).
 
 <!-- /generated -->
 
@@ -908,6 +924,23 @@ two potassium ions in for each cycle of the sodium–potassium pump.
 
 <!-- /generated -->
 
+### Store
+
+A closed space inside a cell where calcium is kept far more concentrated than in the cell's fluid
+and from which it can be released, such as the endoplasmic reticulum. In Cells it is a finite space
+that one cell owns, behind one patch.
+
+- **In other fields:** the endoplasmic or sarcoplasmic reticulum (biology); a compartment with its
+  own volume and concentrations (chemistry); a capacitor node (physics); a node with one patch
+  (computing).
+- **Cells' word;** see [the closed-compartment design](../CLOSED_COMPARTMENT_DESIGN.md).
+
+<!-- generated: used-by store -->
+
+- **Used by:** [`cells.species_condition@1`](cells/kinds/species_condition@1.md), [`cells.atp_driven_transporter_mass_action_positive@2`](cells/laws/atp_driven_transporter_mass_action_positive@2.md), [`cells.electroneutral_symport_reversible_tanh@1`](cells/laws/electroneutral_symport_reversible_tanh@1.md), [`cells.hill_product_factor@1`](cells/laws/hill_product_factor@1.md) and [`cells.na_k_2anion_symport_reversible_tanh@1`](cells/laws/na_k_2anion_symport_reversible_tanh@1.md).
+
+<!-- /generated -->
+
 ### Valence
 
 An ion's charge in units of the proton's charge: 1 for potassium, 2 for calcium, minus 1 for
@@ -917,7 +950,7 @@ chloride.
 
 <!-- generated: used-by valence -->
 
-- **Used by:** [`cells.species_condition@1`](cells/kinds/species_condition@1.md).
+- **Used by:** [`cells.species_condition@1`](cells/kinds/species_condition@1.md), [`cells.atp_driven_transporter_mass_action_positive@2`](cells/laws/atp_driven_transporter_mass_action_positive@2.md) and [`cells.cav1p2_m2h@1`](cells/laws/cav1p2_m2h@1.md).
 
 <!-- /generated -->
 
@@ -947,7 +980,7 @@ provides. Cells books it apart from heat.
 
 <!-- generated: used-by work -->
 
-- **Used by:** [`cells.transporter@1`](cells/kinds/transporter@1.md).
+- **Used by:** [`cells.transporter@1`](cells/kinds/transporter@1.md) and [`cells.atp_driven_transporter_mass_action_positive@2`](cells/laws/atp_driven_transporter_mass_action_positive@2.md).
 
 <!-- /generated -->
 

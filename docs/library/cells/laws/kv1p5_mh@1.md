@@ -113,14 +113,19 @@ current is the constant-field flux; the domain and the fixed temperature are Cel
 
 <!-- generated: tests -->
 
-Declared test: not stated.
+Declared test: [`tests/unit/test_channel_law_kernels.py`](../../../../tests/unit/test_channel_law_kernels.py), `test_kv1p5_meets_the_independent_decimals_and_each_plant_misses_them`.
 
 <!-- /generated -->
 
-An older model family's test file compares the kernel with an independent scalar implementation of
-the equations above, at 19 voltages across the domain, from −0.12 to 0.06 V. All 19 cases passed in
-D172's tier-3 record. None of them is a planted error, and the check is not yet this law's declared
-test: under D196 it moves beside the law first, gains a planted error, and is declared.
+The kernels are compared with an independent copy of the equations above, in SI decimals, at 19
+voltages across the domain, from −0.12 to 0.06 V, in NumPy and compiled. Each value must lie within
+1e-14 of the reference's, relatively; the largest distance measured is 3.8e-15. Moving any one of the
+eight coefficients by a part in 10⁹ must miss the targets or the time constants, and $m h^2$ for
+$m h$ must miss the open fraction. The 19 voltages are those of an older model family's cases, whose
+check moved beside the law (D196).
+
+Other rows run the source's unchanged class out of process and compare its targets, time constants,
+gate powers and update clock with these kernels. No run was compared with a measurement.
 
 ## Status
 

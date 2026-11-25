@@ -31,6 +31,8 @@ whose path does not move, re-exporting what a law, kind or module needs from Cel
   Host, host_table, host_ends, host_voltage, host_scatter, host_node_conductance,
   node_concentrations, declared_hosts and host_index, with moved_nodes (each row's in-step movers)
   and crossing_junctions (the junctions that cross a floating capacitor component, fix (A)'s);
+- floating_nodes (models/surface_pump.py), the outside nodes that no held bath, gauge or face
+  holds, for a kind's definition-time charge bound (the charge rule's rows);
 - the parsing helpers: ConfigError, require_fields, finite_number and bounded_integer
   (definitions/specs.py), and parse_series, series_to_dict, qualified and declared_schedule
   (registry/kind_registry.py);
@@ -107,7 +109,7 @@ HOMES = MappingProxyType(
             "bounded_integer",
         ),
         "cells.laws.electrochemistry": ("R", "F", "CHARGE_PER_FMOL"),
-        "cells.models.surface_pump": ("EXPLICIT_STEP_BOUND",),
+        "cells.models.surface_pump": ("EXPLICIT_STEP_BOUND", "floating_nodes"),
         "cells.numerics.extracellular_field": ("scatter",),
         "cells.numerics.species_sums": ("species_sum", "entity_sum"),
         "cells.numerics.one_way_split": ("step_one_way_amounts", "close_one_way"),
@@ -200,6 +202,7 @@ __all__ = (
     "host_index",
     "moved_nodes",
     "crossing_junctions",
+    "floating_nodes",  # The outside nodes that nothing holds, for a kind's charge bound.
     "free_log_sensitivity",  # The general closure's derivative, for a kind's material term.
 )
 

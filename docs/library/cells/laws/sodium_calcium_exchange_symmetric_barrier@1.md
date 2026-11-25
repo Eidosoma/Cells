@@ -9,11 +9,11 @@ law swaps three sodium ions for one calcium ion. It spends no fuel: sodium runni
 calcium climbing. Each swap carries one charge, so the
 [membrane voltage](../../GLOSSARY.md#membrane-voltage) helps to set its direction: the swap stops at
 the voltage where the two gradients balance and runs backward beyond it. That balance is the only
-part that measurements support. The rest is synthetic: how fast the swap runs, how it saturates and
-how the voltage splits between its two directions are a made-up form, with no measured number in it.
-A definition gives the capacity and both half-saturations. The law leaves out inactivation,
-regulation, other swap ratios, leaks and any competition between the two ions. It is not a model of
-any exchanger protein.
+part that measurements support, and they do not all agree on it. The rest is synthetic: how fast the
+swap runs, how it saturates and how the voltage splits between its two directions are made up, with
+no measured number. A definition gives the capacity and both half-saturations. The law leaves out
+inactivation, regulation, other swap ratios, leaks and any competition between the two ions. It is
+not a model of any exchanger protein.
 
 ## Seen from each field
 
@@ -62,6 +62,8 @@ Energy role: not yet extracted; the law template has no energy role yet.
 
 | Declared | Value | Unit |
 | --- | --- | --- |
+| Stage term | `stage_term` |  |
+| Material term | `material_term` |  |
 | Fuel kinds | none |  |
 
 <!-- /generated -->
@@ -97,13 +99,15 @@ with $S = b^3 c\, e^{-\psi/2} / [(1 + a^3 + b^3)(1 + c + d)]$.
   half-saturations. A state outside it is refused, never clipped. The older law of the same rate
   (`ncx_3na_1ca_symmetric_barrier@1`) kept $|x| \le 80$ and $|V| \le 0.15$ V.
 - **Step rules:** at each [stage](../../GLOSSARY.md#stage) the kind bounds its charge slope, at both
-  ends. Its material slope is not bounded: the kind's material term counts no charged
-  [species row](../../GLOSSARY.md#species-row) that crosses, so a world with scarce calcium must choose
-  a step small enough for it. The law declares no step term, so its moves at a closed compartment's
-  node are refused ([refusal 4](../../../CLOSED_COMPARTMENT_DESIGN.md)). RK4 runs are refused, as for
+  ends, and its own material rate: over the four [species rows](../../GLOSSARY.md#species-row) it
+  moves, the sum of $|\nu_k\, \partial J/\partial n_k|$ (1/s; $\nu_k$ the row's count and $n_k$ its
+  amount in fmol), given to each of them, so a scarce calcium row's relaxation is bounded. A held
+  bath's rows are left out. The law declares both terms, so its moves at a closed compartment's node
+  are admitted ([refusal 4](../../../CLOSED_COMPARTMENT_DESIGN.md)). RK4 runs are refused, as for
   every kind.
-- **At a binding closure:** it declares the read `rapid_binding@1` and base forms, so where a closure
-  holds calcium or sodium it reads the free amount and moves the total.
+- **At a binding closure:** it declares the read `rapid_binding@1` and base forms, so where a
+  closure holds calcium or sodium it reads the free amount and moves the total, and the material
+  rate runs through the closure's derivative.
 - **Left out:** inactivation, regulation by either ion, other coupling ratios and transport modes,
   leaks, competition between the ions, and any temperature dependence beyond $RT$.
 
@@ -113,10 +117,10 @@ with $S = b^3 c\, e^{-\psi/2} / [(1 + a^3 + b^3)(1 + c + d)]$.
 
 Provenance: `parity` (moved from an older family; moving is not calibrating).
 
-- **Source, as declared:** only the 3:1 coupling, so the reversal, is supported: measured reversals of the sodium-calcium exchange current of guinea-pig ventricular cells, in giant patches (1992) and in whole cells (2002). The denominator, the equal voltage split and every number are synthetic: no source gives them
+- **Source, as declared:** only the 3:1 coupling, so the reversal, is supported, by measured reversals of the sodium-calcium exchange current of guinea-pig ventricular cells, in giant patches (1992) and in whole cells (2002); the reversal itself is contested (the third departure). The denominator, the equal voltage split and every number are synthetic: no source gives them
 - **Place:** the abstracts of the works below (1992, item e; 2002, the conclusion); none was read in full
 - **Licence of the numbers:** no number taken: the capacity and the two half-saturations are a definition's values, none of them measured for this form
-- **Departures:** the denominator, a sodium factor times a calcium factor, is synthetic: it has no competition between the two ions, which the 1992 abstract reports at the inner face; the equal voltage split is synthetic: each one-way flux changes by a factor 2 in 36 mV (298 K), where the 1992 abstract reports currents that change by a factor 2 in about 100 mV, and voltage dependences that move with the concentrations; one mode at 3:1: a 2000 abstract concludes 4:1 or a variable coupling in patches of the same cells, and a 2004 abstract reports flux ratios near 3.2, two minor modes and a net current and a calcium flux that can reverse at different potentials; no inactivation, no regulation by either ion, no leak mode and no temperature dependence beyond RT
+- **Departures:** the denominator, a sodium factor times a calcium factor, is synthetic: it has no competition between the two ions, which the 1992 abstract reports at the inner face; the equal voltage split is synthetic: each one-way flux changes by a factor 2 in 36 mV (298 K), where the 1992 abstract reports currents that change by a factor 2 in about 100 mV, and voltage dependences that move with the concentrations; one mode at 3:1: a 2000 abstract concludes 4:1 or a variable coupling in patches of the same cells, and a 2004 abstract says that the reversals of the exchange current had indicated a ratio closer to 4:1, and reports flux ratios near 3.2, two minor modes and a net current and a calcium flux that can reverse at different potentials; no inactivation, no regulation by either ion, no leak mode and no temperature dependence beyond RT
 - **Work:** Matsuoka S and Hilgemann DW (1992). Steady-state and dynamic properties of cardiac sodium-calcium exchange. Ion and voltage dependencies of the transport cycle. doi:10.1085/jgp.100.6.963
 - **Work:** Hinata M, Yamamura H, Li L, Watanabe Y, Watano T, Imaizumi Y and Kimura J (2002). Stoichiometry of Na+-Ca2+ exchange is 3:1 in guinea-pig ventricular myocytes. doi:10.1113/jphysiol.2002.025866
 - **Work:** Fujioka Y, Komeda M and Matsuoka S (2000). Stoichiometry of Na+-Ca2+ exchange in inside-out patches excised from guinea-pig ventricular myocytes. doi:10.1111/j.1469-7793.2000.t01-2-00339.x
@@ -133,13 +137,14 @@ Provenance: `parity` (moved from an older family; moving is not calibrating).
 
 The abstracts and records were read at Europe PMC on 25 November 2026. Two works support the coupling
 (1992, 2002) and two speak against a single 3:1 mode (2000, 2004); each is one study, an indication.
-Nothing else in the law rests on a source. **The departures** are the rest of the law: the
-denominator, the equal split of the charge, the single mode, and the absence of regulation.
+So the reversal, the one thing the law claims, is contested. Nothing else in the law rests on a
+source. **The departures** are the rest of the law: the denominator, the equal split of the charge,
+the single mode, and the absence of regulation.
 
 **The same rate elsewhere:** an older model family runs it as `ncx_3na_1ca_symmetric_barrier@1`,
-through a kernel that no live model runs. Deleting that family does not remove the kernel, because a
-test still checks it. It retires when that test is retargeted onto this law, and its file then keeps
-the calcium pump alone. A four-state exchange cycle is planned for cardiac cells
+through a kernel that no live model runs and no test checks any more: the rows that checked it now
+check this law. It retires in that family's deletion, and its file then keeps the calcium pump alone.
+A four-state exchange cycle is planned for cardiac cells
 ([the cardiac note](../../../HUMAN_CARDIAC_LAWS_DESIGN.md)), a second form of this mechanism. Which of
 the two stays is decided when it lands.
 
@@ -165,11 +170,14 @@ and the detailed balance, which are the counts', and that is what the law claims
 
 Other rows run a small closed world. Each end's amounts follow the cycles, the voltage follows the
 charge, the heat grows and every [ledger](../../GLOSSARY.md#ledger) closes, in both directions and
-under both heat bookings. The stage's charge slope is the reference's at both ends and refuses a step
-1% beyond it. A population with a stoichiometry of its own, a mode that creates charge, a wrong or
-missing species, a zero half-saturation, a held ion, a start outside the domain or RK4 is refused by
-name. Beside a calcium binder under a closure it reads the free calcium. A run from a checkpoint
-file continues bit for bit. Each has a planted error. No run was compared with a measurement.
+under both heat bookings. The stage's charge slope and its own material rate are the reference's at
+both ends, and each refuses a step 1% beyond it. At two species' equal shares that rate is the one
+eigenvalue of its block of rows. A population with a stoichiometry of its own, a mode that creates
+charge, a wrong or missing species, a zero half-saturation, a held ion, a start outside the domain
+or RK4 is refused by name. Beside a calcium binder under a closure it reads the free calcium. A run
+from a checkpoint file continues bit for bit. An independent scalar form of the direct products
+agrees to 3e-12, and a small closed world with a calcium pump converges at second order to an
+independent ODE. Each has a planted error. No run was compared with a measurement.
 
 ## Status
 

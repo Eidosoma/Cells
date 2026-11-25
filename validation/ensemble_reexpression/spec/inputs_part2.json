@@ -1,0 +1,4762 @@
+{
+ "schema": "ensemble-reexpression inputs, version 1",
+ "part": 2,
+ "constants": {
+  "F_C_per_mol": 96485.33212331001,
+  "R_J_per_mol_K": 8.31446261815324,
+  "fmol_to_mol": 1e-15
+ },
+ "worlds": {
+  "spatial_calcium": {
+   "consumer": "spatial_calcium",
+   "ionic": {
+    "temperature_K": 298.15,
+    "species": {
+     "Na": 1,
+     "K": 1,
+     "Cl": -1,
+     "Ca": 2
+    },
+    "cells": {
+     "cell_0": {
+      "volume_pL": 0.5,
+      "initial_amount_fmol": {
+       "Cl": 4.0,
+       "K": 70.0,
+       "Na": 6.0,
+       "Ca": 0.001
+      },
+      "fixed_charge_equivalent_fmol": -72.00386556853812,
+      "initial_voltage_V": -0.06,
+      "initial_charge_C": -1.8e-13
+     },
+     "cell_1": {
+      "volume_pL": 0.7,
+      "initial_amount_fmol": {
+       "Cl": 7.0,
+       "K": 91.0,
+       "Na": 10.5,
+       "Ca": 0.0014
+      },
+      "fixed_charge_equivalent_fmol": -94.50429245483049,
+      "initial_voltage_V": -0.04,
+      "initial_charge_C": -1.44e-13
+     }
+    },
+    "outside": {
+     "local": {
+      "volume_pL": 2.0,
+      "initial_amount_fmol": {
+       "Cl": 220.0,
+       "K": 8.0,
+       "Na": 280.0,
+       "Ca": 0.016
+      },
+      "fixed_charge_equivalent_fmol": -68.02864197663136,
+      "initial_charge_C": 3.24e-13
+     },
+     "near": {
+      "volume_pL": 1.0,
+      "initial_amount_fmol": {
+       "Cl": 105.0,
+       "K": 8.0,
+       "Na": 120.0,
+       "Ca": 0.01
+      },
+      "fixed_charge_equivalent_fmol": -23.02,
+      "initial_charge_C": 0.0
+     },
+     "far": {
+      "volume_pL": 3.0,
+      "initial_amount_fmol": {
+       "Cl": 345.0,
+       "K": 9.0,
+       "Na": 450.0,
+       "Ca": 0.018000000000000002
+      },
+      "fixed_charge_equivalent_fmol": -114.036,
+      "initial_charge_C": 0.0
+     }
+    },
+    "closure": {
+     "gauge_reference": "local"
+    },
+    "membranes": {
+     "membrane_0": {
+      "inside": "cell_0",
+      "outside": "local",
+      "area_m2": 3e-10,
+      "capacitance_F": 3e-12,
+      "passive": {
+       "law": "constant_field",
+       "permeability_m_per_s": {
+        "Cl": 8e-11,
+        "K": 2e-10,
+        "Na": 1e-11,
+        "Ca": 5e-08
+       }
+      },
+      "pump": {
+       "law": "nak_pump_positive",
+       "roles": {
+        "sodium": "Na",
+        "potassium": "K"
+       },
+       "stoichiometry": {
+        "Na": -3,
+        "K": 2
+       },
+       "capacity_fmol_per_s": 0.05,
+       "km_na_mM": 12.0,
+       "km_k_mM": 0.2,
+       "km_atp_mM": 0.5,
+       "metabolism": {
+        "kind": "maintained_fuel",
+        "atp_mM": 1.5,
+        "adp_mM": 0.1,
+        "pi_mM": 0.1,
+        "delta_g0_J_per_mol": -37000.0
+       }
+      }
+     },
+     "membrane_1": {
+      "inside": "cell_1",
+      "outside": "local",
+      "area_m2": 3.6e-10,
+      "capacitance_F": 3.6e-12,
+      "passive": {
+       "law": "constant_field",
+       "permeability_m_per_s": {
+        "Cl": 8e-11,
+        "K": 2e-10,
+        "Na": 1e-11,
+        "Ca": 5e-08
+       }
+      },
+      "pump": {
+       "law": "nak_pump_positive",
+       "roles": {
+        "sodium": "Na",
+        "potassium": "K"
+       },
+       "stoichiometry": {
+        "Na": -3,
+        "K": 2
+       },
+       "capacity_fmol_per_s": 0.1,
+       "km_na_mM": 12.0,
+       "km_k_mM": 0.2,
+       "km_atp_mM": 0.5,
+       "metabolism": {
+        "kind": "maintained_fuel",
+        "atp_mM": 1.5,
+        "adp_mM": 0.1,
+        "pi_mM": 0.1,
+        "delta_g0_J_per_mol": -37000.0
+       }
+      }
+     }
+    },
+    "channels": {
+     "channel_0": {
+      "membrane_id": "membrane_0",
+      "species_id": "K",
+      "kinetic_law": "kv15_mh",
+      "max_permeability_m_per_s": 3e-10,
+      "abundance": 0.5,
+      "initial_gate": {
+       "m": 0.2,
+       "h": 0.7
+      }
+     },
+     "channel_1": {
+      "membrane_id": "membrane_1",
+      "species_id": "K",
+      "kinetic_law": "kv15_mh",
+      "max_permeability_m_per_s": 3e-10,
+      "abundance": 0.6,
+      "initial_gate": {
+       "m": 0.2,
+       "h": 0.7
+      }
+     }
+    },
+    "junctions": {
+     "junction": {
+      "from_cell": "cell_0",
+      "to_cell": "cell_1",
+      "area_m2": 1e-10,
+      "permeability_m_per_s": {
+       "Cl": 4e-10,
+       "K": 5e-10,
+       "Na": 3e-10,
+       "Ca": 2e-08
+      },
+      "gate": {
+       "initial_gate": 0.6,
+       "law": "junction_relaxation",
+       "minimum_open_fraction": 0.1,
+       "threshold_voltage_V": 0.015
+      }
+     }
+    },
+    "faces": {
+     "face_0": {
+      "sender": "local",
+      "receiver": "near",
+      "area_m2": 1e-11,
+      "length_m": 2e-05,
+      "diffusivity_m2_per_s": {
+       "Cl": 2e-09,
+       "K": 1.7e-09,
+       "Na": 1.2e-09,
+       "Ca": 7e-10
+      },
+      "law": "logmean_face"
+     },
+     "face_1": {
+      "sender": "near",
+      "receiver": "far",
+      "area_m2": 1e-11,
+      "length_m": 2e-05,
+      "diffusivity_m2_per_s": {
+       "Cl": 2e-09,
+       "K": 1.7e-09,
+       "Na": 1.2e-09,
+       "Ca": 7e-10
+      },
+      "law": "logmean_face"
+     },
+     "face_2": {
+      "sender": "far",
+      "receiver": "local",
+      "area_m2": 1e-11,
+      "length_m": 2e-05,
+      "diffusivity_m2_per_s": {
+       "Cl": 2e-09,
+       "K": 1.7e-09,
+       "Na": 1.2e-09,
+       "Ca": 7e-10
+      },
+      "law": "logmean_face"
+     }
+    },
+    "controls": {
+     "leak": {
+      "membrane_0": [
+       [
+        0.0,
+        1.0
+       ]
+      ],
+      "membrane_1": [
+       [
+        0.0,
+        1.0
+       ]
+      ]
+     },
+     "pump": {
+      "membrane_0": [
+       [
+        0.0,
+        1.0
+       ]
+      ],
+      "membrane_1": [
+       [
+        0.0,
+        1.0
+       ]
+      ]
+     },
+     "channel": {
+      "channel_0": [
+       [
+        0.0,
+        1.0
+       ]
+      ],
+      "channel_1": [
+       [
+        0.0,
+        1.0
+       ]
+      ]
+     },
+     "junction": {
+      "junction": [
+       [
+        0.0,
+        1.0
+       ]
+      ]
+     }
+    },
+    "material_tolerance_fmol": {
+     "Cl": 2e-11,
+     "K": 2e-11,
+     "Na": 2e-11,
+     "Ca": 1e-10
+    },
+    "end_s": 0.02
+   },
+   "stores": {
+    "cell_0": {
+     "cell": "cell_0",
+     "species": {
+      "Ca": {
+       "valence": 2,
+       "standard_mu_RT": 0.0
+      },
+      "B": {
+       "valence": -2,
+       "standard_mu_RT": 0.0
+      },
+      "CaB": {
+       "valence": 0,
+       "standard_mu_RT": -6.907755278982137
+      },
+      "Ca2B": {
+       "valence": 2,
+       "standard_mu_RT": -11.512925464970229
+      },
+      "K": {
+       "valence": 1,
+       "standard_mu_RT": 0.0
+      },
+      "Na": {
+       "valence": 1,
+       "standard_mu_RT": 0.0
+      },
+      "Cl": {
+       "valence": -1,
+       "standard_mu_RT": 0.0
+      }
+     },
+     "standard_concentration_mM": 1.0,
+     "compartments": {
+      "cytosol": {
+       "volume_pL": 0.5,
+       "initial_amount_fmol": {
+        "Ca": 0.001,
+        "B": 0.025,
+        "CaB": 0.005,
+        "Ca2B": 0.0005,
+        "K": 70.0,
+        "Na": 6.0,
+        "Cl": 4.0
+       }
+      },
+      "er": {
+       "volume_pL": 0.05,
+       "initial_amount_fmol": {
+        "Ca": 0.01,
+        "B": 0.0025,
+        "CaB": 0.0005,
+        "Ca2B": 5e-05,
+        "K": 7.0,
+        "Na": 0.6000000000000001,
+        "Cl": 0.4
+       }
+      }
+     },
+     "reactions": {
+      "bind_0_first": {
+       "compartment": "cytosol",
+       "reactants": {
+        "Ca": 1,
+        "B": 1
+       },
+       "products": {
+        "CaB": 1
+       },
+       "forward_rate_per_s": 1000.0,
+       "law": "mass_action_passive"
+      },
+      "bind_0_second": {
+       "compartment": "cytosol",
+       "reactants": {
+        "Ca": 1,
+        "CaB": 1
+       },
+       "products": {
+        "Ca2B": 1
+       },
+       "forward_rate_per_s": 100.0,
+       "law": "mass_action_passive"
+      },
+      "bind_1_first": {
+       "compartment": "er",
+       "reactants": {
+        "Ca": 1,
+        "B": 1
+       },
+       "products": {
+        "CaB": 1
+       },
+       "forward_rate_per_s": 1000.0,
+       "law": "mass_action_passive"
+      },
+      "bind_1_second": {
+       "compartment": "er",
+       "reactants": {
+        "Ca": 1,
+        "CaB": 1
+       },
+       "products": {
+        "Ca2B": 1
+       },
+       "forward_rate_per_s": 100.0,
+       "law": "mass_action_passive"
+      }
+     },
+     "membrane": {
+      "area_m2": 1e-09,
+      "capacitance_F": 1.0000000000000001e-11,
+      "initial_voltage_V": 0.0,
+      "permeability_m_per_s": {
+       "Ca": 1e-08,
+       "B": 0.0,
+       "CaB": 0.0,
+       "Ca2B": 0.0,
+       "K": 1e-07,
+       "Na": 0.0,
+       "Cl": 0.0
+      },
+      "pump": {
+       "law": "store_calcium_pump_mM_quotient",
+       "capacity_fmol_per_s": 0.003,
+       "km_ca_mM": 0.001,
+       "km_atp_mM": 0.5,
+       "atp_mM": 1.5,
+       "adp_mM": 0.1,
+       "pi_mM": 0.1,
+       "delta_g0_mM_quotient_J_per_mol": -37000.0,
+       "delta_g0_at_1M_J_per_mol": -19875.971492394227
+      },
+      "release": {
+       "law": "store_calcium_release",
+       "permeability_m_per_s": 1e-07,
+       "activation_mM": 0.001,
+       "activation_n": 2,
+       "inhibition_mM": 0.02,
+       "inhibition_n": 2
+      }
+     }
+    },
+    "cell_1": {
+     "cell": "cell_1",
+     "species": {
+      "Ca": {
+       "valence": 2,
+       "standard_mu_RT": 0.0
+      },
+      "B": {
+       "valence": -2,
+       "standard_mu_RT": 0.0
+      },
+      "CaB": {
+       "valence": 0,
+       "standard_mu_RT": -6.907755278982137
+      },
+      "Ca2B": {
+       "valence": 2,
+       "standard_mu_RT": -11.512925464970229
+      },
+      "K": {
+       "valence": 1,
+       "standard_mu_RT": 0.0
+      },
+      "Na": {
+       "valence": 1,
+       "standard_mu_RT": 0.0
+      },
+      "Cl": {
+       "valence": -1,
+       "standard_mu_RT": 0.0
+      }
+     },
+     "standard_concentration_mM": 1.0,
+     "compartments": {
+      "cytosol": {
+       "volume_pL": 0.7,
+       "initial_amount_fmol": {
+        "Ca": 0.0014,
+        "B": 0.034999999999999996,
+        "CaB": 0.006999999999999999,
+        "Ca2B": 0.0007,
+        "K": 91.0,
+        "Na": 10.5,
+        "Cl": 7.0
+       }
+      },
+      "er": {
+       "volume_pL": 0.06999999999999999,
+       "initial_amount_fmol": {
+        "Ca": 0.013999999999999999,
+        "B": 0.0034999999999999996,
+        "CaB": 0.0007,
+        "Ca2B": 7e-05,
+        "K": 9.1,
+        "Na": 1.05,
+        "Cl": 0.7
+       }
+      }
+     },
+     "reactions": {
+      "bind_0_first": {
+       "compartment": "cytosol",
+       "reactants": {
+        "Ca": 1,
+        "B": 1
+       },
+       "products": {
+        "CaB": 1
+       },
+       "forward_rate_per_s": 1000.0,
+       "law": "mass_action_passive"
+      },
+      "bind_0_second": {
+       "compartment": "cytosol",
+       "reactants": {
+        "Ca": 1,
+        "CaB": 1
+       },
+       "products": {
+        "Ca2B": 1
+       },
+       "forward_rate_per_s": 100.0,
+       "law": "mass_action_passive"
+      },
+      "bind_1_first": {
+       "compartment": "er",
+       "reactants": {
+        "Ca": 1,
+        "B": 1
+       },
+       "products": {
+        "CaB": 1
+       },
+       "forward_rate_per_s": 1000.0,
+       "law": "mass_action_passive"
+      },
+      "bind_1_second": {
+       "compartment": "er",
+       "reactants": {
+        "Ca": 1,
+        "CaB": 1
+       },
+       "products": {
+        "Ca2B": 1
+       },
+       "forward_rate_per_s": 100.0,
+       "law": "mass_action_passive"
+      }
+     },
+     "membrane": {
+      "area_m2": 1.4e-09,
+      "capacitance_F": 1.4e-11,
+      "initial_voltage_V": 0.0,
+      "permeability_m_per_s": {
+       "Ca": 1e-08,
+       "B": 0.0,
+       "CaB": 0.0,
+       "Ca2B": 0.0,
+       "K": 1e-07,
+       "Na": 0.0,
+       "Cl": 0.0
+      },
+      "pump": {
+       "law": "store_calcium_pump_mM_quotient",
+       "capacity_fmol_per_s": 0.0042,
+       "km_ca_mM": 0.001,
+       "km_atp_mM": 0.5,
+       "atp_mM": 1.5,
+       "adp_mM": 0.1,
+       "pi_mM": 0.1,
+       "delta_g0_mM_quotient_J_per_mol": -37000.0,
+       "delta_g0_at_1M_J_per_mol": -19875.971492394227
+      },
+      "release": {
+       "law": "store_calcium_release",
+       "permeability_m_per_s": 1e-07,
+       "activation_mM": 0.001,
+       "activation_n": 2,
+       "inhibition_mM": 0.02,
+       "inhibition_n": 2
+      }
+     }
+    }
+   },
+   "history_times": {
+    "fine": {
+     "first_s": 0.0,
+     "last_s": 0.001,
+     "spacing_s": 1.25e-05
+    },
+    "coarse": {
+     "first_s": 0.0011,
+     "last_s": 0.02,
+     "spacing_s": 0.0001
+    }
+   },
+   "potential_times_s": [
+    0.0,
+    0.0025,
+    0.005,
+    0.0075,
+    0.01,
+    0.015,
+    0.02
+   ],
+   "scales": {
+    "exchange_Na": 0.006108195226198562,
+    "n_out_Na": 20.414193622370068,
+    "leak_Na": 5.7159742142636183e-05,
+    "junction_Na": 5.103548405592518e-05,
+    "face_Na": 10.207096811185034,
+    "exchange_K": 0.006810807637426777,
+    "n_out_K": 1.5424057403568494,
+    "leak_K": 0.0010615380683632436,
+    "junction_K": 0.0007938853075366138,
+    "face_K": 0.7712028701784247,
+    "exchange_Cl": 0.0004046546824700911,
+    "n_out_Cl": 26.084802961917305,
+    "leak_Cl": 0.00035928980775371314,
+    "junction_Cl": 4.536487471637794e-05,
+    "face_Cl": 13.042401480958652,
+    "exchange_Ca": 3.061000729011967e-05,
+    "n_out_Ca": 0.0014477706150732273,
+    "leak_Ca": 2.9782709795792116e-05,
+    "junction_Ca": 8.272974943275586e-07,
+    "face_Ca": 0.0007238853075366136,
+    "channel_K": 0.0009553842615269192,
+    "gate_m": 1.0,
+    "gate_h": 1.0,
+    "pump": 0.002,
+    "junction_gate": 1.0,
+    "heat_junction": 0.01273529921516447,
+    "heat_face": 348.14577782704043,
+    "heat_membrane": 0.3963337463411511,
+    "voltage": 0.4187345435754532,
+    "phi_out": 0.025692579121085843,
+    "store_leak_Ca": 0.0005791082460292911,
+    "store_leak_K": 2.0641017995951954,
+    "store_pump": 8.4e-05,
+    "store_release": 0.005791082460292909,
+    "heat_store_leak": 29.03694218990206,
+    "heat_store_pump": 0.007263698847664648,
+    "heat_store_release": 0.21456803548894537,
+    "extent_bind_0_first": 0.011956,
+    "heat_bind_0_first": 0.64384306475673,
+    "extent_bind_0_second": 0.00027440000000000006,
+    "heat_bind_0_second": 0.015871507282280636,
+    "extent_bind_1_first": 0.018104799999999994,
+    "heat_bind_1_first": 0.7682776143200473,
+    "extent_bind_1_second": 0.0018104799999999997,
+    "heat_bind_1_second": 0.08405108314356376,
+    "cyt_Ca": 0.01871520071361232,
+    "store_Ca": 0.026369470706322194,
+    "cyt_B": 0.011956,
+    "store_B": 0.018104799999999994,
+    "cyt_CaB": 0.012230399999999999,
+    "store_CaB": 0.019915279999999994,
+    "cyt_Ca2B": 0.00027440000000000006,
+    "store_Ca2B": 0.0018104799999999997,
+    "cyt_K": 2.0709126072326223,
+    "store_K": 2.0641017995951954,
+    "cyt_Na": 0.006108195226198562,
+    "cyt_Cl": 0.0004046546824700911,
+    "store_voltage": 16.017628876546414
+   },
+   "p": 2
+  },
+  "plasma_calcium": {
+   "consumer": "plasma_calcium",
+   "ionic": {
+    "temperature_K": 298.15,
+    "species": {
+     "Na": 1,
+     "K": 1,
+     "Cl": -1,
+     "Ca": 2
+    },
+    "cells": {
+     "cell_0": {
+      "volume_pL": 0.5,
+      "initial_amount_fmol": {
+       "Cl": 4.0,
+       "K": 70.0,
+       "Na": 6.0,
+       "Ca": 0.001
+      },
+      "fixed_charge_equivalent_fmol": -72.00386556853812,
+      "initial_voltage_V": -0.06,
+      "initial_charge_C": -1.8e-13
+     },
+     "cell_1": {
+      "volume_pL": 0.7,
+      "initial_amount_fmol": {
+       "Cl": 7.0,
+       "K": 91.0,
+       "Na": 10.5,
+       "Ca": 0.0014
+      },
+      "fixed_charge_equivalent_fmol": -94.50429245483049,
+      "initial_voltage_V": -0.04,
+      "initial_charge_C": -1.44e-13
+     }
+    },
+    "outside": {
+     "local": {
+      "volume_pL": 2.0,
+      "initial_amount_fmol": {
+       "Cl": 220.0,
+       "K": 8.0,
+       "Na": 280.0,
+       "Ca": 0.016
+      },
+      "fixed_charge_equivalent_fmol": -68.02864197663136,
+      "initial_charge_C": 3.24e-13
+     },
+     "near": {
+      "volume_pL": 1.0,
+      "initial_amount_fmol": {
+       "Cl": 105.0,
+       "K": 8.0,
+       "Na": 120.0,
+       "Ca": 0.01
+      },
+      "fixed_charge_equivalent_fmol": -23.02,
+      "initial_charge_C": 0.0
+     },
+     "far": {
+      "volume_pL": 3.0,
+      "initial_amount_fmol": {
+       "Cl": 345.0,
+       "K": 9.0,
+       "Na": 450.0,
+       "Ca": 0.018000000000000002
+      },
+      "fixed_charge_equivalent_fmol": -114.036,
+      "initial_charge_C": 0.0
+     }
+    },
+    "closure": {
+     "gauge_reference": "local"
+    },
+    "membranes": {
+     "membrane_0": {
+      "inside": "cell_0",
+      "outside": "local",
+      "area_m2": 3e-10,
+      "capacitance_F": 3e-12,
+      "passive": {
+       "law": "constant_field",
+       "permeability_m_per_s": {
+        "Cl": 8e-11,
+        "K": 2e-10,
+        "Na": 1e-11,
+        "Ca": 5e-08
+       }
+      },
+      "pump": {
+       "law": "nak_pump_positive",
+       "roles": {
+        "sodium": "Na",
+        "potassium": "K"
+       },
+       "stoichiometry": {
+        "Na": -3,
+        "K": 2
+       },
+       "capacity_fmol_per_s": 0.05,
+       "km_na_mM": 12.0,
+       "km_k_mM": 0.2,
+       "km_atp_mM": 0.5,
+       "metabolism": {
+        "kind": "maintained_fuel",
+        "atp_mM": 1.5,
+        "adp_mM": 0.1,
+        "pi_mM": 0.1,
+        "delta_g0_J_per_mol": -37000.0
+       }
+      }
+     },
+     "membrane_1": {
+      "inside": "cell_1",
+      "outside": "local",
+      "area_m2": 3.6e-10,
+      "capacitance_F": 3.6e-12,
+      "passive": {
+       "law": "constant_field",
+       "permeability_m_per_s": {
+        "Cl": 8e-11,
+        "K": 2e-10,
+        "Na": 1e-11,
+        "Ca": 5e-08
+       }
+      },
+      "pump": {
+       "law": "nak_pump_positive",
+       "roles": {
+        "sodium": "Na",
+        "potassium": "K"
+       },
+       "stoichiometry": {
+        "Na": -3,
+        "K": 2
+       },
+       "capacity_fmol_per_s": 0.1,
+       "km_na_mM": 12.0,
+       "km_k_mM": 0.2,
+       "km_atp_mM": 0.5,
+       "metabolism": {
+        "kind": "maintained_fuel",
+        "atp_mM": 1.5,
+        "adp_mM": 0.1,
+        "pi_mM": 0.1,
+        "delta_g0_J_per_mol": -37000.0
+       }
+      }
+     }
+    },
+    "channels": {
+     "channel_0": {
+      "membrane_id": "membrane_0",
+      "species_id": "K",
+      "kinetic_law": "kv15_mh",
+      "max_permeability_m_per_s": 3e-10,
+      "abundance": 0.5,
+      "initial_gate": {
+       "m": 0.2,
+       "h": 0.7
+      }
+     },
+     "channel_1": {
+      "membrane_id": "membrane_1",
+      "species_id": "K",
+      "kinetic_law": "kv15_mh",
+      "max_permeability_m_per_s": 3e-10,
+      "abundance": 0.6,
+      "initial_gate": {
+       "m": 0.2,
+       "h": 0.7
+      }
+     }
+    },
+    "junctions": {
+     "junction": {
+      "from_cell": "cell_0",
+      "to_cell": "cell_1",
+      "area_m2": 1e-10,
+      "permeability_m_per_s": {
+       "Cl": 4e-10,
+       "K": 5e-10,
+       "Na": 3e-10,
+       "Ca": 2e-08
+      },
+      "gate": {
+       "initial_gate": 0.6,
+       "law": "junction_relaxation",
+       "minimum_open_fraction": 0.1,
+       "threshold_voltage_V": 0.015
+      }
+     }
+    },
+    "faces": {
+     "face_0": {
+      "sender": "local",
+      "receiver": "near",
+      "area_m2": 1e-11,
+      "length_m": 2e-05,
+      "diffusivity_m2_per_s": {
+       "Cl": 2e-09,
+       "K": 1.7e-09,
+       "Na": 1.2e-09,
+       "Ca": 7e-10
+      },
+      "law": "logmean_face"
+     },
+     "face_1": {
+      "sender": "near",
+      "receiver": "far",
+      "area_m2": 1e-11,
+      "length_m": 2e-05,
+      "diffusivity_m2_per_s": {
+       "Cl": 2e-09,
+       "K": 1.7e-09,
+       "Na": 1.2e-09,
+       "Ca": 7e-10
+      },
+      "law": "logmean_face"
+     },
+     "face_2": {
+      "sender": "far",
+      "receiver": "local",
+      "area_m2": 1e-11,
+      "length_m": 2e-05,
+      "diffusivity_m2_per_s": {
+       "Cl": 2e-09,
+       "K": 1.7e-09,
+       "Na": 1.2e-09,
+       "Ca": 7e-10
+      },
+      "law": "logmean_face"
+     }
+    },
+    "controls": {
+     "leak": {
+      "membrane_0": [
+       [
+        0.0,
+        1.0
+       ]
+      ],
+      "membrane_1": [
+       [
+        0.0,
+        1.0
+       ]
+      ]
+     },
+     "pump": {
+      "membrane_0": [
+       [
+        0.0,
+        1.0
+       ]
+      ],
+      "membrane_1": [
+       [
+        0.0,
+        1.0
+       ]
+      ]
+     },
+     "channel": {
+      "channel_0": [
+       [
+        0.0,
+        1.0
+       ]
+      ],
+      "channel_1": [
+       [
+        0.0,
+        1.0
+       ]
+      ]
+     },
+     "junction": {
+      "junction": [
+       [
+        0.0,
+        1.0
+       ]
+      ]
+     }
+    },
+    "material_tolerance_fmol": {
+     "Cl": 2e-11,
+     "K": 2e-11,
+     "Na": 2e-11,
+     "Ca": 1e-10
+    },
+    "end_s": 0.02
+   },
+   "stores": {
+    "cell_0": {
+     "cell": "cell_0",
+     "species": {
+      "Ca": {
+       "valence": 2,
+       "standard_mu_RT": 0.0
+      },
+      "B": {
+       "valence": -2,
+       "standard_mu_RT": 0.0
+      },
+      "CaB": {
+       "valence": 0,
+       "standard_mu_RT": -6.907755278982137
+      },
+      "Ca2B": {
+       "valence": 2,
+       "standard_mu_RT": -11.512925464970229
+      },
+      "K": {
+       "valence": 1,
+       "standard_mu_RT": 0.0
+      },
+      "Na": {
+       "valence": 1,
+       "standard_mu_RT": 0.0
+      },
+      "Cl": {
+       "valence": -1,
+       "standard_mu_RT": 0.0
+      }
+     },
+     "standard_concentration_mM": 1.0,
+     "compartments": {
+      "cytosol": {
+       "volume_pL": 0.5,
+       "initial_amount_fmol": {
+        "Ca": 0.001,
+        "B": 0.025,
+        "CaB": 0.005,
+        "Ca2B": 0.0005,
+        "K": 70.0,
+        "Na": 6.0,
+        "Cl": 4.0
+       }
+      },
+      "er": {
+       "volume_pL": 0.05,
+       "initial_amount_fmol": {
+        "Ca": 0.01,
+        "B": 0.0025,
+        "CaB": 0.0005,
+        "Ca2B": 5e-05,
+        "K": 7.0,
+        "Na": 0.6000000000000001,
+        "Cl": 0.4
+       }
+      }
+     },
+     "reactions": {
+      "bind_0_first": {
+       "compartment": "cytosol",
+       "reactants": {
+        "Ca": 1,
+        "B": 1
+       },
+       "products": {
+        "CaB": 1
+       },
+       "forward_rate_per_s": 1000.0,
+       "law": "mass_action_passive"
+      },
+      "bind_0_second": {
+       "compartment": "cytosol",
+       "reactants": {
+        "Ca": 1,
+        "CaB": 1
+       },
+       "products": {
+        "Ca2B": 1
+       },
+       "forward_rate_per_s": 100.0,
+       "law": "mass_action_passive"
+      },
+      "bind_1_first": {
+       "compartment": "er",
+       "reactants": {
+        "Ca": 1,
+        "B": 1
+       },
+       "products": {
+        "CaB": 1
+       },
+       "forward_rate_per_s": 1000.0,
+       "law": "mass_action_passive"
+      },
+      "bind_1_second": {
+       "compartment": "er",
+       "reactants": {
+        "Ca": 1,
+        "CaB": 1
+       },
+       "products": {
+        "Ca2B": 1
+       },
+       "forward_rate_per_s": 100.0,
+       "law": "mass_action_passive"
+      }
+     },
+     "membrane": {
+      "area_m2": 1e-09,
+      "capacitance_F": 1.0000000000000001e-11,
+      "initial_voltage_V": 0.0,
+      "permeability_m_per_s": {
+       "Ca": 1e-08,
+       "B": 0.0,
+       "CaB": 0.0,
+       "Ca2B": 0.0,
+       "K": 1e-07,
+       "Na": 0.0,
+       "Cl": 0.0
+      },
+      "pump": {
+       "law": "store_calcium_pump_mM_quotient",
+       "capacity_fmol_per_s": 0.003,
+       "km_ca_mM": 0.001,
+       "km_atp_mM": 0.5,
+       "atp_mM": 1.5,
+       "adp_mM": 0.1,
+       "pi_mM": 0.1,
+       "delta_g0_mM_quotient_J_per_mol": -37000.0,
+       "delta_g0_at_1M_J_per_mol": -19875.971492394227
+      },
+      "release": {
+       "law": "store_calcium_release",
+       "permeability_m_per_s": 1e-07,
+       "activation_mM": 0.001,
+       "activation_n": 2,
+       "inhibition_mM": 0.02,
+       "inhibition_n": 2
+      }
+     }
+    },
+    "cell_1": {
+     "cell": "cell_1",
+     "species": {
+      "Ca": {
+       "valence": 2,
+       "standard_mu_RT": 0.0
+      },
+      "B": {
+       "valence": -2,
+       "standard_mu_RT": 0.0
+      },
+      "CaB": {
+       "valence": 0,
+       "standard_mu_RT": -6.907755278982137
+      },
+      "Ca2B": {
+       "valence": 2,
+       "standard_mu_RT": -11.512925464970229
+      },
+      "K": {
+       "valence": 1,
+       "standard_mu_RT": 0.0
+      },
+      "Na": {
+       "valence": 1,
+       "standard_mu_RT": 0.0
+      },
+      "Cl": {
+       "valence": -1,
+       "standard_mu_RT": 0.0
+      }
+     },
+     "standard_concentration_mM": 1.0,
+     "compartments": {
+      "cytosol": {
+       "volume_pL": 0.7,
+       "initial_amount_fmol": {
+        "Ca": 0.0014,
+        "B": 0.034999999999999996,
+        "CaB": 0.006999999999999999,
+        "Ca2B": 0.0007,
+        "K": 91.0,
+        "Na": 10.5,
+        "Cl": 7.0
+       }
+      },
+      "er": {
+       "volume_pL": 0.06999999999999999,
+       "initial_amount_fmol": {
+        "Ca": 0.013999999999999999,
+        "B": 0.0034999999999999996,
+        "CaB": 0.0007,
+        "Ca2B": 7e-05,
+        "K": 9.1,
+        "Na": 1.05,
+        "Cl": 0.7
+       }
+      }
+     },
+     "reactions": {
+      "bind_0_first": {
+       "compartment": "cytosol",
+       "reactants": {
+        "Ca": 1,
+        "B": 1
+       },
+       "products": {
+        "CaB": 1
+       },
+       "forward_rate_per_s": 1000.0,
+       "law": "mass_action_passive"
+      },
+      "bind_0_second": {
+       "compartment": "cytosol",
+       "reactants": {
+        "Ca": 1,
+        "CaB": 1
+       },
+       "products": {
+        "Ca2B": 1
+       },
+       "forward_rate_per_s": 100.0,
+       "law": "mass_action_passive"
+      },
+      "bind_1_first": {
+       "compartment": "er",
+       "reactants": {
+        "Ca": 1,
+        "B": 1
+       },
+       "products": {
+        "CaB": 1
+       },
+       "forward_rate_per_s": 1000.0,
+       "law": "mass_action_passive"
+      },
+      "bind_1_second": {
+       "compartment": "er",
+       "reactants": {
+        "Ca": 1,
+        "CaB": 1
+       },
+       "products": {
+        "Ca2B": 1
+       },
+       "forward_rate_per_s": 100.0,
+       "law": "mass_action_passive"
+      }
+     },
+     "membrane": {
+      "area_m2": 1.4e-09,
+      "capacitance_F": 1.4e-11,
+      "initial_voltage_V": 0.0,
+      "permeability_m_per_s": {
+       "Ca": 1e-08,
+       "B": 0.0,
+       "CaB": 0.0,
+       "Ca2B": 0.0,
+       "K": 1e-07,
+       "Na": 0.0,
+       "Cl": 0.0
+      },
+      "pump": {
+       "law": "store_calcium_pump_mM_quotient",
+       "capacity_fmol_per_s": 0.0042,
+       "km_ca_mM": 0.001,
+       "km_atp_mM": 0.5,
+       "atp_mM": 1.5,
+       "adp_mM": 0.1,
+       "pi_mM": 0.1,
+       "delta_g0_mM_quotient_J_per_mol": -37000.0,
+       "delta_g0_at_1M_J_per_mol": -19875.971492394227
+      },
+      "release": {
+       "law": "store_calcium_release",
+       "permeability_m_per_s": 1e-07,
+       "activation_mM": 0.001,
+       "activation_n": 2,
+       "inhibition_mM": 0.02,
+       "inhibition_n": 2
+      }
+     }
+    }
+   },
+   "plasma": {
+    "membrane_0": {
+     "calcium_pump": {
+      "law": "plasma_calcium_pump_mM_quotient",
+      "capacity_fmol_per_s": 0.002,
+      "km_ca_mM": 0.001,
+      "km_atp_mM": 0.5,
+      "atp_mM": 1.5,
+      "adp_mM": 0.1,
+      "pi_mM": 0.1,
+      "delta_g0_mM_quotient_J_per_mol": -37000.0,
+      "delta_g0_at_1M_J_per_mol": -19875.971492394227
+     },
+     "exchanger": {
+      "law": "exchanger_3na_1ca",
+      "capacity_fmol_per_s": 0.002,
+      "km_na_mM": 20.0,
+      "km_ca_mM": 0.001,
+      "sodium_in": 3,
+      "calcium_out": 1
+     }
+    },
+    "membrane_1": {
+     "calcium_pump": {
+      "law": "plasma_calcium_pump_mM_quotient",
+      "capacity_fmol_per_s": 0.0028,
+      "km_ca_mM": 0.001,
+      "km_atp_mM": 0.5,
+      "atp_mM": 1.5,
+      "adp_mM": 0.1,
+      "pi_mM": 0.1,
+      "delta_g0_mM_quotient_J_per_mol": -37000.0,
+      "delta_g0_at_1M_J_per_mol": -19875.971492394227
+     },
+     "exchanger": {
+      "law": "exchanger_3na_1ca",
+      "capacity_fmol_per_s": 0.0028,
+      "km_na_mM": 20.0,
+      "km_ca_mM": 0.001,
+      "sodium_in": 3,
+      "calcium_out": 1
+     }
+    }
+   },
+   "history_times": {
+    "fine": {
+     "first_s": 0.0,
+     "last_s": 0.001,
+     "spacing_s": 1.25e-05
+    },
+    "coarse": {
+     "first_s": 0.0011,
+     "last_s": 0.02,
+     "spacing_s": 0.0001
+    }
+   },
+   "potential_times_s": [
+    0.0,
+    0.0025,
+    0.005,
+    0.0075,
+    0.01,
+    0.015,
+    0.02
+   ],
+   "scales": {
+    "ca_pump": 5.6e-05,
+    "exchanger": 0.0005786260190505607,
+    "heat_ca_pump": 0.004395616426648543,
+    "heat_exchanger": 0.024037033008686662,
+    "exchange_Na": 0.007844073283350244,
+    "n_out_Na": 20.414193622370068,
+    "leak_Na": 5.7159742142636183e-05,
+    "junction_Na": 5.103548405592518e-05,
+    "face_Na": 10.207096811185034,
+    "exchange_K": 0.006810807637426777,
+    "n_out_K": 1.5424057403568494,
+    "leak_K": 0.0010615380683632436,
+    "junction_K": 0.0007938853075366138,
+    "face_K": 0.7712028701784247,
+    "exchange_Cl": 0.0004046546824700911,
+    "n_out_Cl": 26.084802961917305,
+    "leak_Cl": 0.00035928980775371314,
+    "junction_Cl": 4.536487471637794e-05,
+    "face_Cl": 13.042401480958652,
+    "exchange_Ca": 0.0006652360263406803,
+    "n_out_Ca": 0.0024455255065639133,
+    "leak_Ca": 2.9782709795792116e-05,
+    "junction_Ca": 8.272974943275586e-07,
+    "face_Ca": 0.0007238853075366136,
+    "channel_K": 0.0009553842615269192,
+    "gate_m": 1.0,
+    "gate_h": 1.0,
+    "pump": 0.002,
+    "junction_gate": 1.0,
+    "heat_junction": 0.01273529921516447,
+    "heat_face": 348.14577782704043,
+    "heat_membrane": 0.3963337463411511,
+    "voltage": 0.4992764811627368,
+    "phi_out": 0.025692579121085843,
+    "store_leak_Ca": 0.0005791082460292911,
+    "store_leak_K": 2.0641017995951954,
+    "store_pump": 8.4e-05,
+    "store_release": 0.005791082460292909,
+    "heat_store_leak": 29.03694218990206,
+    "heat_store_pump": 0.007263698847664648,
+    "heat_store_release": 0.21456803548894537,
+    "extent_bind_0_first": 0.011956,
+    "heat_bind_0_first": 0.64384306475673,
+    "extent_bind_0_second": 0.00027440000000000006,
+    "heat_bind_0_second": 0.015871507282280636,
+    "extent_bind_1_first": 0.018104799999999994,
+    "heat_bind_1_first": 0.7682776143200473,
+    "extent_bind_1_second": 0.0018104799999999997,
+    "heat_bind_1_second": 0.08405108314356376,
+    "cyt_Ca": 0.01934982673266288,
+    "store_Ca": 0.026369470706322194,
+    "cyt_B": 0.011956,
+    "store_B": 0.018104799999999994,
+    "cyt_CaB": 0.012230399999999999,
+    "store_CaB": 0.019915279999999994,
+    "cyt_Ca2B": 0.00027440000000000006,
+    "store_Ca2B": 0.0018104799999999997,
+    "cyt_K": 2.0709126072326223,
+    "store_K": 2.0641017995951954,
+    "cyt_Na": 0.007844073283350244,
+    "cyt_Cl": 0.0004046546824700911,
+    "store_voltage": 16.017628876546414
+   },
+   "p": 2
+  },
+  "gated_calcium": {
+   "consumer": "gated_calcium",
+   "ionic": {
+    "temperature_K": 298.15,
+    "species": {
+     "Na": 1,
+     "K": 1,
+     "Cl": -1,
+     "Ca": 2
+    },
+    "cells": {
+     "cell_0": {
+      "volume_pL": 0.5,
+      "initial_amount_fmol": {
+       "Cl": 4.0,
+       "K": 70.0,
+       "Na": 6.0,
+       "Ca": 0.001
+      },
+      "fixed_charge_equivalent_fmol": -72.00386556853812,
+      "initial_voltage_V": -0.06,
+      "initial_charge_C": -1.8e-13
+     },
+     "cell_1": {
+      "volume_pL": 0.7,
+      "initial_amount_fmol": {
+       "Cl": 7.0,
+       "K": 91.0,
+       "Na": 10.5,
+       "Ca": 0.0014
+      },
+      "fixed_charge_equivalent_fmol": -94.50429245483049,
+      "initial_voltage_V": -0.04,
+      "initial_charge_C": -1.44e-13
+     }
+    },
+    "outside": {
+     "local": {
+      "volume_pL": 2.0,
+      "initial_amount_fmol": {
+       "Cl": 220.0,
+       "K": 8.0,
+       "Na": 280.0,
+       "Ca": 0.016
+      },
+      "fixed_charge_equivalent_fmol": -68.02864197663136,
+      "initial_charge_C": 3.24e-13
+     },
+     "near": {
+      "volume_pL": 1.0,
+      "initial_amount_fmol": {
+       "Cl": 105.0,
+       "K": 8.0,
+       "Na": 120.0,
+       "Ca": 0.01
+      },
+      "fixed_charge_equivalent_fmol": -23.02,
+      "initial_charge_C": 0.0
+     },
+     "far": {
+      "volume_pL": 3.0,
+      "initial_amount_fmol": {
+       "Cl": 345.0,
+       "K": 9.0,
+       "Na": 450.0,
+       "Ca": 0.018000000000000002
+      },
+      "fixed_charge_equivalent_fmol": -114.036,
+      "initial_charge_C": 0.0
+     }
+    },
+    "closure": {
+     "gauge_reference": "local"
+    },
+    "membranes": {
+     "membrane_0": {
+      "inside": "cell_0",
+      "outside": "local",
+      "area_m2": 3e-10,
+      "capacitance_F": 3e-12,
+      "passive": {
+       "law": "constant_field",
+       "permeability_m_per_s": {
+        "Cl": 8e-11,
+        "K": 2e-10,
+        "Na": 1e-11,
+        "Ca": 5e-08
+       }
+      },
+      "pump": {
+       "law": "nak_pump_positive",
+       "roles": {
+        "sodium": "Na",
+        "potassium": "K"
+       },
+       "stoichiometry": {
+        "Na": -3,
+        "K": 2
+       },
+       "capacity_fmol_per_s": 0.05,
+       "km_na_mM": 12.0,
+       "km_k_mM": 0.2,
+       "km_atp_mM": 0.5,
+       "metabolism": {
+        "kind": "maintained_fuel",
+        "atp_mM": 1.5,
+        "adp_mM": 0.1,
+        "pi_mM": 0.1,
+        "delta_g0_J_per_mol": -37000.0
+       }
+      }
+     },
+     "membrane_1": {
+      "inside": "cell_1",
+      "outside": "local",
+      "area_m2": 3.6e-10,
+      "capacitance_F": 3.6e-12,
+      "passive": {
+       "law": "constant_field",
+       "permeability_m_per_s": {
+        "Cl": 8e-11,
+        "K": 2e-10,
+        "Na": 1e-11,
+        "Ca": 5e-08
+       }
+      },
+      "pump": {
+       "law": "nak_pump_positive",
+       "roles": {
+        "sodium": "Na",
+        "potassium": "K"
+       },
+       "stoichiometry": {
+        "Na": -3,
+        "K": 2
+       },
+       "capacity_fmol_per_s": 0.1,
+       "km_na_mM": 12.0,
+       "km_k_mM": 0.2,
+       "km_atp_mM": 0.5,
+       "metabolism": {
+        "kind": "maintained_fuel",
+        "atp_mM": 1.5,
+        "adp_mM": 0.1,
+        "pi_mM": 0.1,
+        "delta_g0_J_per_mol": -37000.0
+       }
+      }
+     }
+    },
+    "channels": {
+     "channel_0": {
+      "membrane_id": "membrane_0",
+      "species_id": "K",
+      "kinetic_law": "kv15_mh",
+      "max_permeability_m_per_s": 3e-10,
+      "abundance": 0.5,
+      "initial_gate": {
+       "m": 0.2,
+       "h": 0.7
+      }
+     },
+     "channel_1": {
+      "membrane_id": "membrane_1",
+      "species_id": "K",
+      "kinetic_law": "kv15_mh",
+      "max_permeability_m_per_s": 3e-10,
+      "abundance": 0.6,
+      "initial_gate": {
+       "m": 0.2,
+       "h": 0.7
+      }
+     }
+    },
+    "junctions": {
+     "junction": {
+      "from_cell": "cell_0",
+      "to_cell": "cell_1",
+      "area_m2": 1e-10,
+      "permeability_m_per_s": {
+       "Cl": 4e-10,
+       "K": 5e-10,
+       "Na": 3e-10,
+       "Ca": 2e-08
+      },
+      "gate": {
+       "initial_gate": 0.6,
+       "law": "junction_relaxation",
+       "minimum_open_fraction": 0.1,
+       "threshold_voltage_V": 0.015
+      }
+     }
+    },
+    "faces": {
+     "face_0": {
+      "sender": "local",
+      "receiver": "near",
+      "area_m2": 1e-11,
+      "length_m": 2e-05,
+      "diffusivity_m2_per_s": {
+       "Cl": 2e-09,
+       "K": 1.7e-09,
+       "Na": 1.2e-09,
+       "Ca": 7e-10
+      },
+      "law": "logmean_face"
+     },
+     "face_1": {
+      "sender": "near",
+      "receiver": "far",
+      "area_m2": 1e-11,
+      "length_m": 2e-05,
+      "diffusivity_m2_per_s": {
+       "Cl": 2e-09,
+       "K": 1.7e-09,
+       "Na": 1.2e-09,
+       "Ca": 7e-10
+      },
+      "law": "logmean_face"
+     },
+     "face_2": {
+      "sender": "far",
+      "receiver": "local",
+      "area_m2": 1e-11,
+      "length_m": 2e-05,
+      "diffusivity_m2_per_s": {
+       "Cl": 2e-09,
+       "K": 1.7e-09,
+       "Na": 1.2e-09,
+       "Ca": 7e-10
+      },
+      "law": "logmean_face"
+     }
+    },
+    "controls": {
+     "leak": {
+      "membrane_0": [
+       [
+        0.0,
+        1.0
+       ]
+      ],
+      "membrane_1": [
+       [
+        0.0,
+        1.0
+       ]
+      ]
+     },
+     "pump": {
+      "membrane_0": [
+       [
+        0.0,
+        1.0
+       ]
+      ],
+      "membrane_1": [
+       [
+        0.0,
+        1.0
+       ]
+      ]
+     },
+     "channel": {
+      "channel_0": [
+       [
+        0.0,
+        1.0
+       ]
+      ],
+      "channel_1": [
+       [
+        0.0,
+        1.0
+       ]
+      ]
+     },
+     "junction": {
+      "junction": [
+       [
+        0.0,
+        1.0
+       ]
+      ]
+     }
+    },
+    "material_tolerance_fmol": {
+     "Cl": 2e-11,
+     "K": 2e-11,
+     "Na": 2e-11,
+     "Ca": 1e-10
+    },
+    "end_s": 0.02
+   },
+   "stores": {
+    "cell_0": {
+     "cell": "cell_0",
+     "species": {
+      "Ca": {
+       "valence": 2,
+       "standard_mu_RT": 0.0
+      },
+      "B": {
+       "valence": -2,
+       "standard_mu_RT": 0.0
+      },
+      "CaB": {
+       "valence": 0,
+       "standard_mu_RT": -6.907755278982137
+      },
+      "Ca2B": {
+       "valence": 2,
+       "standard_mu_RT": -11.512925464970229
+      },
+      "K": {
+       "valence": 1,
+       "standard_mu_RT": 0.0
+      },
+      "Na": {
+       "valence": 1,
+       "standard_mu_RT": 0.0
+      },
+      "Cl": {
+       "valence": -1,
+       "standard_mu_RT": 0.0
+      }
+     },
+     "standard_concentration_mM": 1.0,
+     "compartments": {
+      "cytosol": {
+       "volume_pL": 0.5,
+       "initial_amount_fmol": {
+        "Ca": 0.001,
+        "B": 0.025,
+        "CaB": 0.005,
+        "Ca2B": 0.0005,
+        "K": 70.0,
+        "Na": 6.0,
+        "Cl": 4.0
+       }
+      },
+      "er": {
+       "volume_pL": 0.05,
+       "initial_amount_fmol": {
+        "Ca": 0.01,
+        "B": 0.0025,
+        "CaB": 0.0005,
+        "Ca2B": 5e-05,
+        "K": 7.0,
+        "Na": 0.6000000000000001,
+        "Cl": 0.4
+       }
+      }
+     },
+     "reactions": {
+      "bind_0_first": {
+       "compartment": "cytosol",
+       "reactants": {
+        "Ca": 1,
+        "B": 1
+       },
+       "products": {
+        "CaB": 1
+       },
+       "forward_rate_per_s": 1000.0,
+       "law": "mass_action_passive"
+      },
+      "bind_0_second": {
+       "compartment": "cytosol",
+       "reactants": {
+        "Ca": 1,
+        "CaB": 1
+       },
+       "products": {
+        "Ca2B": 1
+       },
+       "forward_rate_per_s": 100.0,
+       "law": "mass_action_passive"
+      },
+      "bind_1_first": {
+       "compartment": "er",
+       "reactants": {
+        "Ca": 1,
+        "B": 1
+       },
+       "products": {
+        "CaB": 1
+       },
+       "forward_rate_per_s": 1000.0,
+       "law": "mass_action_passive"
+      },
+      "bind_1_second": {
+       "compartment": "er",
+       "reactants": {
+        "Ca": 1,
+        "CaB": 1
+       },
+       "products": {
+        "Ca2B": 1
+       },
+       "forward_rate_per_s": 100.0,
+       "law": "mass_action_passive"
+      }
+     },
+     "membrane": {
+      "area_m2": 1e-09,
+      "capacitance_F": 1.0000000000000001e-11,
+      "initial_voltage_V": 0.0,
+      "permeability_m_per_s": {
+       "Ca": 1e-08,
+       "B": 0.0,
+       "CaB": 0.0,
+       "Ca2B": 0.0,
+       "K": 1e-07,
+       "Na": 0.0,
+       "Cl": 0.0
+      },
+      "pump": {
+       "law": "store_calcium_pump_mM_quotient",
+       "capacity_fmol_per_s": 0.003,
+       "km_ca_mM": 0.001,
+       "km_atp_mM": 0.5,
+       "atp_mM": 1.5,
+       "adp_mM": 0.1,
+       "pi_mM": 0.1,
+       "delta_g0_mM_quotient_J_per_mol": -37000.0,
+       "delta_g0_at_1M_J_per_mol": -19875.971492394227
+      },
+      "release": {
+       "law": "store_calcium_release",
+       "permeability_m_per_s": 1e-07,
+       "activation_mM": 0.001,
+       "activation_n": 2,
+       "inhibition_mM": 0.02,
+       "inhibition_n": 2
+      }
+     }
+    },
+    "cell_1": {
+     "cell": "cell_1",
+     "species": {
+      "Ca": {
+       "valence": 2,
+       "standard_mu_RT": 0.0
+      },
+      "B": {
+       "valence": -2,
+       "standard_mu_RT": 0.0
+      },
+      "CaB": {
+       "valence": 0,
+       "standard_mu_RT": -6.907755278982137
+      },
+      "Ca2B": {
+       "valence": 2,
+       "standard_mu_RT": -11.512925464970229
+      },
+      "K": {
+       "valence": 1,
+       "standard_mu_RT": 0.0
+      },
+      "Na": {
+       "valence": 1,
+       "standard_mu_RT": 0.0
+      },
+      "Cl": {
+       "valence": -1,
+       "standard_mu_RT": 0.0
+      }
+     },
+     "standard_concentration_mM": 1.0,
+     "compartments": {
+      "cytosol": {
+       "volume_pL": 0.7,
+       "initial_amount_fmol": {
+        "Ca": 0.0014,
+        "B": 0.034999999999999996,
+        "CaB": 0.006999999999999999,
+        "Ca2B": 0.0007,
+        "K": 91.0,
+        "Na": 10.5,
+        "Cl": 7.0
+       }
+      },
+      "er": {
+       "volume_pL": 0.06999999999999999,
+       "initial_amount_fmol": {
+        "Ca": 0.013999999999999999,
+        "B": 0.0034999999999999996,
+        "CaB": 0.0007,
+        "Ca2B": 7e-05,
+        "K": 9.1,
+        "Na": 1.05,
+        "Cl": 0.7
+       }
+      }
+     },
+     "reactions": {
+      "bind_0_first": {
+       "compartment": "cytosol",
+       "reactants": {
+        "Ca": 1,
+        "B": 1
+       },
+       "products": {
+        "CaB": 1
+       },
+       "forward_rate_per_s": 1000.0,
+       "law": "mass_action_passive"
+      },
+      "bind_0_second": {
+       "compartment": "cytosol",
+       "reactants": {
+        "Ca": 1,
+        "CaB": 1
+       },
+       "products": {
+        "Ca2B": 1
+       },
+       "forward_rate_per_s": 100.0,
+       "law": "mass_action_passive"
+      },
+      "bind_1_first": {
+       "compartment": "er",
+       "reactants": {
+        "Ca": 1,
+        "B": 1
+       },
+       "products": {
+        "CaB": 1
+       },
+       "forward_rate_per_s": 1000.0,
+       "law": "mass_action_passive"
+      },
+      "bind_1_second": {
+       "compartment": "er",
+       "reactants": {
+        "Ca": 1,
+        "CaB": 1
+       },
+       "products": {
+        "Ca2B": 1
+       },
+       "forward_rate_per_s": 100.0,
+       "law": "mass_action_passive"
+      }
+     },
+     "membrane": {
+      "area_m2": 1.4e-09,
+      "capacitance_F": 1.4e-11,
+      "initial_voltage_V": 0.0,
+      "permeability_m_per_s": {
+       "Ca": 1e-08,
+       "B": 0.0,
+       "CaB": 0.0,
+       "Ca2B": 0.0,
+       "K": 1e-07,
+       "Na": 0.0,
+       "Cl": 0.0
+      },
+      "pump": {
+       "law": "store_calcium_pump_mM_quotient",
+       "capacity_fmol_per_s": 0.0042,
+       "km_ca_mM": 0.001,
+       "km_atp_mM": 0.5,
+       "atp_mM": 1.5,
+       "adp_mM": 0.1,
+       "pi_mM": 0.1,
+       "delta_g0_mM_quotient_J_per_mol": -37000.0,
+       "delta_g0_at_1M_J_per_mol": -19875.971492394227
+      },
+      "release": {
+       "law": "store_calcium_release",
+       "permeability_m_per_s": 1e-07,
+       "activation_mM": 0.001,
+       "activation_n": 2,
+       "inhibition_mM": 0.02,
+       "inhibition_n": 2
+      }
+     }
+    }
+   },
+   "plasma": {
+    "membrane_0": {
+     "calcium_pump": {
+      "law": "plasma_calcium_pump_mM_quotient",
+      "capacity_fmol_per_s": 0.002,
+      "km_ca_mM": 0.001,
+      "km_atp_mM": 0.5,
+      "atp_mM": 1.5,
+      "adp_mM": 0.1,
+      "pi_mM": 0.1,
+      "delta_g0_mM_quotient_J_per_mol": -37000.0,
+      "delta_g0_at_1M_J_per_mol": -19875.971492394227
+     },
+     "exchanger": {
+      "law": "exchanger_3na_1ca",
+      "capacity_fmol_per_s": 0.002,
+      "km_na_mM": 20.0,
+      "km_ca_mM": 0.001,
+      "sodium_in": 3,
+      "calcium_out": 1
+     }
+    },
+    "membrane_1": {
+     "calcium_pump": {
+      "law": "plasma_calcium_pump_mM_quotient",
+      "capacity_fmol_per_s": 0.0028,
+      "km_ca_mM": 0.001,
+      "km_atp_mM": 0.5,
+      "atp_mM": 1.5,
+      "adp_mM": 0.1,
+      "pi_mM": 0.1,
+      "delta_g0_mM_quotient_J_per_mol": -37000.0,
+      "delta_g0_at_1M_J_per_mol": -19875.971492394227
+     },
+     "exchanger": {
+      "law": "exchanger_3na_1ca",
+      "capacity_fmol_per_s": 0.0028,
+      "km_na_mM": 20.0,
+      "km_ca_mM": 0.001,
+      "sodium_in": 3,
+      "calcium_out": 1
+     }
+    }
+   },
+   "calcium_channels": {
+    "calcium_channel_0": {
+     "membrane": "membrane_0",
+     "species": "Ca",
+     "law": "cav12_m2h",
+     "max_permeability_m_per_s": 2e-06,
+     "abundance": 0.5,
+     "initial_gates": {
+      "m": 0.2,
+      "h": 0.7
+     }
+    },
+    "calcium_channel_1": {
+     "membrane": "membrane_1",
+     "species": "Ca",
+     "law": "cav12_m2h",
+     "max_permeability_m_per_s": 2e-06,
+     "abundance": 0.6,
+     "initial_gates": {
+      "m": 0.2,
+      "h": 0.7
+     }
+    }
+   },
+   "history_times": {
+    "fine": {
+     "first_s": 0.0,
+     "last_s": 0.001,
+     "spacing_s": 1.25e-05
+    },
+    "coarse": {
+     "first_s": 0.0011,
+     "last_s": 0.02,
+     "spacing_s": 0.0001
+    }
+   },
+   "potential_times_s": [
+    0.0,
+    0.0025,
+    0.005,
+    0.0075,
+    0.01,
+    0.015,
+    0.02
+   ],
+   "scales": {
+    "ca_pump": 5.6e-05,
+    "exchanger": 0.0005786260190505607,
+    "heat_ca_pump": 0.004395616426648543,
+    "heat_exchanger": 0.024037033008686662,
+    "ca_channel": 0.0007147850350990105,
+    "heat_ca_channel": 0.020780231177124006,
+    "ca_gate_m": 1.0,
+    "ca_gate_h": 1.0,
+    "exchange_Na": 0.007844073283350244,
+    "n_out_Na": 20.414193622370068,
+    "leak_Na": 5.7159742142636183e-05,
+    "junction_Na": 5.103548405592518e-05,
+    "face_Na": 10.207096811185034,
+    "exchange_K": 0.006810807637426777,
+    "n_out_K": 1.5424057403568494,
+    "leak_K": 0.0010615380683632436,
+    "junction_K": 0.0007938853075366138,
+    "face_K": 0.7712028701784247,
+    "exchange_Cl": 0.0004046546824700911,
+    "n_out_Cl": 26.084802961917305,
+    "leak_Cl": 0.00035928980775371314,
+    "junction_Cl": 4.536487471637794e-05,
+    "face_Cl": 13.042401480958652,
+    "exchange_Ca": 0.0013800210614396907,
+    "n_out_Ca": 0.0036566890382594584,
+    "leak_Ca": 2.9782709795792116e-05,
+    "junction_Ca": 8.272974943275586e-07,
+    "face_Ca": 0.0007238853075366136,
+    "channel_K": 0.0009553842615269192,
+    "gate_m": 1.0,
+    "gate_h": 1.0,
+    "pump": 0.002,
+    "junction_gate": 1.0,
+    "heat_junction": 0.01273529921516447,
+    "heat_face": 348.14577782704043,
+    "heat_membrane": 0.3963337463411511,
+    "voltage": 0.5375910764451256,
+    "phi_out": 0.025692579121085843,
+    "store_leak_Ca": 0.0005791082460292911,
+    "store_leak_K": 2.0641017995951954,
+    "store_pump": 8.4e-05,
+    "store_release": 0.005791082460292909,
+    "heat_store_leak": 29.03694218990206,
+    "heat_store_pump": 0.007263698847664648,
+    "heat_store_release": 0.21456803548894537,
+    "extent_bind_0_first": 0.011956,
+    "heat_bind_0_first": 0.64384306475673,
+    "extent_bind_0_second": 0.00027440000000000006,
+    "heat_bind_0_second": 0.015871507282280636,
+    "extent_bind_1_first": 0.018104799999999994,
+    "heat_bind_1_first": 0.7682776143200473,
+    "extent_bind_1_second": 0.0018104799999999997,
+    "heat_bind_1_second": 0.08405108314356376,
+    "cyt_Ca": 0.02006461176776189,
+    "store_Ca": 0.026369470706322194,
+    "cyt_B": 0.011956,
+    "store_B": 0.018104799999999994,
+    "cyt_CaB": 0.012230399999999999,
+    "store_CaB": 0.019915279999999994,
+    "cyt_Ca2B": 0.00027440000000000006,
+    "store_Ca2B": 0.0018104799999999997,
+    "cyt_K": 2.0709126072326223,
+    "store_K": 2.0641017995951954,
+    "cyt_Na": 0.007844073283350244,
+    "cyt_Cl": 0.0004046546824700911,
+    "store_voltage": 16.017628876546414
+   },
+   "p": 2
+  },
+  "ip3_calcium": {
+   "consumer": "ip3_calcium",
+   "ionic": {
+    "temperature_K": 298.15,
+    "species": {
+     "Na": 1,
+     "K": 1,
+     "Cl": -1,
+     "Ca": 2
+    },
+    "cells": {
+     "cell_0": {
+      "volume_pL": 0.5,
+      "initial_amount_fmol": {
+       "Cl": 4.0,
+       "K": 70.0,
+       "Na": 6.0,
+       "Ca": 0.001
+      },
+      "fixed_charge_equivalent_fmol": -72.00386556853812,
+      "initial_voltage_V": -0.06,
+      "initial_charge_C": -1.8e-13
+     },
+     "cell_1": {
+      "volume_pL": 0.7,
+      "initial_amount_fmol": {
+       "Cl": 7.0,
+       "K": 91.0,
+       "Na": 10.5,
+       "Ca": 0.0014
+      },
+      "fixed_charge_equivalent_fmol": -94.50429245483049,
+      "initial_voltage_V": -0.04,
+      "initial_charge_C": -1.44e-13
+     }
+    },
+    "outside": {
+     "local": {
+      "volume_pL": 2.0,
+      "initial_amount_fmol": {
+       "Cl": 220.0,
+       "K": 8.0,
+       "Na": 280.0,
+       "Ca": 0.016
+      },
+      "fixed_charge_equivalent_fmol": -68.02864197663136,
+      "initial_charge_C": 3.24e-13
+     },
+     "near": {
+      "volume_pL": 1.0,
+      "initial_amount_fmol": {
+       "Cl": 105.0,
+       "K": 8.0,
+       "Na": 120.0,
+       "Ca": 0.01
+      },
+      "fixed_charge_equivalent_fmol": -23.02,
+      "initial_charge_C": 0.0
+     },
+     "far": {
+      "volume_pL": 3.0,
+      "initial_amount_fmol": {
+       "Cl": 345.0,
+       "K": 9.0,
+       "Na": 450.0,
+       "Ca": 0.018000000000000002
+      },
+      "fixed_charge_equivalent_fmol": -114.036,
+      "initial_charge_C": 0.0
+     }
+    },
+    "closure": {
+     "gauge_reference": "local"
+    },
+    "membranes": {
+     "membrane_0": {
+      "inside": "cell_0",
+      "outside": "local",
+      "area_m2": 3e-10,
+      "capacitance_F": 3e-12,
+      "passive": {
+       "law": "constant_field",
+       "permeability_m_per_s": {
+        "Cl": 8e-11,
+        "K": 2e-10,
+        "Na": 1e-11,
+        "Ca": 5e-08
+       }
+      },
+      "pump": {
+       "law": "nak_pump_positive",
+       "roles": {
+        "sodium": "Na",
+        "potassium": "K"
+       },
+       "stoichiometry": {
+        "Na": -3,
+        "K": 2
+       },
+       "capacity_fmol_per_s": 0.05,
+       "km_na_mM": 12.0,
+       "km_k_mM": 0.2,
+       "km_atp_mM": 0.5,
+       "metabolism": {
+        "kind": "maintained_fuel",
+        "atp_mM": 1.5,
+        "adp_mM": 0.1,
+        "pi_mM": 0.1,
+        "delta_g0_J_per_mol": -37000.0
+       }
+      }
+     },
+     "membrane_1": {
+      "inside": "cell_1",
+      "outside": "local",
+      "area_m2": 3.6e-10,
+      "capacitance_F": 3.6e-12,
+      "passive": {
+       "law": "constant_field",
+       "permeability_m_per_s": {
+        "Cl": 8e-11,
+        "K": 2e-10,
+        "Na": 1e-11,
+        "Ca": 5e-08
+       }
+      },
+      "pump": {
+       "law": "nak_pump_positive",
+       "roles": {
+        "sodium": "Na",
+        "potassium": "K"
+       },
+       "stoichiometry": {
+        "Na": -3,
+        "K": 2
+       },
+       "capacity_fmol_per_s": 0.1,
+       "km_na_mM": 12.0,
+       "km_k_mM": 0.2,
+       "km_atp_mM": 0.5,
+       "metabolism": {
+        "kind": "maintained_fuel",
+        "atp_mM": 1.5,
+        "adp_mM": 0.1,
+        "pi_mM": 0.1,
+        "delta_g0_J_per_mol": -37000.0
+       }
+      }
+     }
+    },
+    "channels": {
+     "channel_0": {
+      "membrane_id": "membrane_0",
+      "species_id": "K",
+      "kinetic_law": "kv15_mh",
+      "max_permeability_m_per_s": 3e-10,
+      "abundance": 0.5,
+      "initial_gate": {
+       "m": 0.2,
+       "h": 0.7
+      }
+     },
+     "channel_1": {
+      "membrane_id": "membrane_1",
+      "species_id": "K",
+      "kinetic_law": "kv15_mh",
+      "max_permeability_m_per_s": 3e-10,
+      "abundance": 0.6,
+      "initial_gate": {
+       "m": 0.2,
+       "h": 0.7
+      }
+     }
+    },
+    "junctions": {
+     "junction": {
+      "from_cell": "cell_0",
+      "to_cell": "cell_1",
+      "area_m2": 1e-10,
+      "permeability_m_per_s": {
+       "Cl": 4e-10,
+       "K": 5e-10,
+       "Na": 3e-10,
+       "Ca": 2e-08
+      },
+      "gate": {
+       "initial_gate": 0.6,
+       "law": "junction_relaxation",
+       "minimum_open_fraction": 0.1,
+       "threshold_voltage_V": 0.015
+      }
+     }
+    },
+    "faces": {
+     "face_0": {
+      "sender": "local",
+      "receiver": "near",
+      "area_m2": 1e-11,
+      "length_m": 2e-05,
+      "diffusivity_m2_per_s": {
+       "Cl": 2e-09,
+       "K": 1.7e-09,
+       "Na": 1.2e-09,
+       "Ca": 7e-10
+      },
+      "law": "logmean_face"
+     },
+     "face_1": {
+      "sender": "near",
+      "receiver": "far",
+      "area_m2": 1e-11,
+      "length_m": 2e-05,
+      "diffusivity_m2_per_s": {
+       "Cl": 2e-09,
+       "K": 1.7e-09,
+       "Na": 1.2e-09,
+       "Ca": 7e-10
+      },
+      "law": "logmean_face"
+     },
+     "face_2": {
+      "sender": "far",
+      "receiver": "local",
+      "area_m2": 1e-11,
+      "length_m": 2e-05,
+      "diffusivity_m2_per_s": {
+       "Cl": 2e-09,
+       "K": 1.7e-09,
+       "Na": 1.2e-09,
+       "Ca": 7e-10
+      },
+      "law": "logmean_face"
+     }
+    },
+    "controls": {
+     "leak": {
+      "membrane_0": [
+       [
+        0.0,
+        1.0
+       ]
+      ],
+      "membrane_1": [
+       [
+        0.0,
+        1.0
+       ]
+      ]
+     },
+     "pump": {
+      "membrane_0": [
+       [
+        0.0,
+        1.0
+       ]
+      ],
+      "membrane_1": [
+       [
+        0.0,
+        1.0
+       ]
+      ]
+     },
+     "channel": {
+      "channel_0": [
+       [
+        0.0,
+        1.0
+       ]
+      ],
+      "channel_1": [
+       [
+        0.0,
+        1.0
+       ]
+      ]
+     },
+     "junction": {
+      "junction": [
+       [
+        0.0,
+        1.0
+       ]
+      ]
+     }
+    },
+    "material_tolerance_fmol": {
+     "Cl": 2e-11,
+     "K": 2e-11,
+     "Na": 2e-11,
+     "Ca": 1e-10
+    },
+    "end_s": 0.02
+   },
+   "stores": {
+    "cell_0": {
+     "cell": "cell_0",
+     "species": {
+      "Ca": {
+       "valence": 2,
+       "standard_mu_RT": 0.0
+      },
+      "B": {
+       "valence": -2,
+       "standard_mu_RT": 0.0
+      },
+      "CaB": {
+       "valence": 0,
+       "standard_mu_RT": -6.907755278982137
+      },
+      "Ca2B": {
+       "valence": 2,
+       "standard_mu_RT": -11.512925464970229
+      },
+      "K": {
+       "valence": 1,
+       "standard_mu_RT": 0.0
+      },
+      "Na": {
+       "valence": 1,
+       "standard_mu_RT": 0.0
+      },
+      "Cl": {
+       "valence": -1,
+       "standard_mu_RT": 0.0
+      },
+      "IP3": {
+       "valence": -3,
+       "standard_mu_RT": 0.0
+      },
+      "IP3_buffer": {
+       "valence": 0,
+       "standard_mu_RT": 0.0
+      },
+      "IP3_bound": {
+       "valence": -3,
+       "standard_mu_RT": -9.210340371976184
+      }
+     },
+     "standard_concentration_mM": 1.0,
+     "compartments": {
+      "cytosol": {
+       "volume_pL": 0.5,
+       "initial_amount_fmol": {
+        "Ca": 0.001,
+        "B": 0.025,
+        "CaB": 0.005,
+        "Ca2B": 0.0005,
+        "K": 70.0,
+        "Na": 6.0,
+        "Cl": 4.0,
+        "IP3": 5e-05,
+        "IP3_buffer": 0.0005,
+        "IP3_bound": 0.0001
+       }
+      },
+      "er": {
+       "volume_pL": 0.05,
+       "initial_amount_fmol": {
+        "Ca": 0.01,
+        "B": 0.0025,
+        "CaB": 0.0005,
+        "Ca2B": 5e-05,
+        "K": 7.0,
+        "Na": 0.6000000000000001,
+        "Cl": 0.4,
+        "IP3": 2.0000000000000003e-06,
+        "IP3_buffer": 5e-05,
+        "IP3_bound": 1e-05
+       }
+      }
+     },
+     "reactions": {
+      "bind_0_first": {
+       "compartment": "cytosol",
+       "reactants": {
+        "Ca": 1,
+        "B": 1
+       },
+       "products": {
+        "CaB": 1
+       },
+       "forward_rate_per_s": 1000.0,
+       "law": "mass_action_passive"
+      },
+      "bind_0_second": {
+       "compartment": "cytosol",
+       "reactants": {
+        "Ca": 1,
+        "CaB": 1
+       },
+       "products": {
+        "Ca2B": 1
+       },
+       "forward_rate_per_s": 100.0,
+       "law": "mass_action_passive"
+      },
+      "bind_1_first": {
+       "compartment": "er",
+       "reactants": {
+        "Ca": 1,
+        "B": 1
+       },
+       "products": {
+        "CaB": 1
+       },
+       "forward_rate_per_s": 1000.0,
+       "law": "mass_action_passive"
+      },
+      "bind_1_second": {
+       "compartment": "er",
+       "reactants": {
+        "Ca": 1,
+        "CaB": 1
+       },
+       "products": {
+        "Ca2B": 1
+       },
+       "forward_rate_per_s": 100.0,
+       "law": "mass_action_passive"
+      },
+      "ip3_binding": {
+       "compartment": "cytosol",
+       "reactants": {
+        "IP3": 1,
+        "IP3_buffer": 1
+       },
+       "products": {
+        "IP3_bound": 1
+       },
+       "forward_rate_per_s": 20000.0,
+       "law": "mass_action_passive"
+      }
+     },
+     "membrane": {
+      "area_m2": 1e-09,
+      "capacitance_F": 1.0000000000000001e-11,
+      "initial_voltage_V": 0.0,
+      "permeability_m_per_s": {
+       "Ca": 1e-08,
+       "B": 0.0,
+       "CaB": 0.0,
+       "Ca2B": 0.0,
+       "K": 1e-07,
+       "Na": 0.0,
+       "Cl": 0.0,
+       "IP3": 0.0,
+       "IP3_buffer": 0.0,
+       "IP3_bound": 0.0
+      },
+      "pump": {
+       "law": "store_calcium_pump_mM_quotient",
+       "capacity_fmol_per_s": 0.003,
+       "km_ca_mM": 0.001,
+       "km_atp_mM": 0.5,
+       "atp_mM": 1.5,
+       "adp_mM": 0.1,
+       "pi_mM": 0.1,
+       "delta_g0_mM_quotient_J_per_mol": -37000.0,
+       "delta_g0_at_1M_J_per_mol": -19875.971492394227
+      },
+      "release": {
+       "law": "store_calcium_release",
+       "permeability_m_per_s": 1e-07,
+       "activation_mM": 0.001,
+       "activation_n": 2,
+       "inhibition_mM": 0.02,
+       "inhibition_n": 2
+      }
+     }
+    },
+    "cell_1": {
+     "cell": "cell_1",
+     "species": {
+      "Ca": {
+       "valence": 2,
+       "standard_mu_RT": 0.0
+      },
+      "B": {
+       "valence": -2,
+       "standard_mu_RT": 0.0
+      },
+      "CaB": {
+       "valence": 0,
+       "standard_mu_RT": -6.907755278982137
+      },
+      "Ca2B": {
+       "valence": 2,
+       "standard_mu_RT": -11.512925464970229
+      },
+      "K": {
+       "valence": 1,
+       "standard_mu_RT": 0.0
+      },
+      "Na": {
+       "valence": 1,
+       "standard_mu_RT": 0.0
+      },
+      "Cl": {
+       "valence": -1,
+       "standard_mu_RT": 0.0
+      },
+      "IP3": {
+       "valence": -3,
+       "standard_mu_RT": 0.0
+      },
+      "IP3_buffer": {
+       "valence": 0,
+       "standard_mu_RT": 0.0
+      },
+      "IP3_bound": {
+       "valence": -3,
+       "standard_mu_RT": -9.210340371976184
+      }
+     },
+     "standard_concentration_mM": 1.0,
+     "compartments": {
+      "cytosol": {
+       "volume_pL": 0.7,
+       "initial_amount_fmol": {
+        "Ca": 0.0014,
+        "B": 0.034999999999999996,
+        "CaB": 0.006999999999999999,
+        "Ca2B": 0.0007,
+        "K": 91.0,
+        "Na": 10.5,
+        "Cl": 7.0,
+        "IP3": 9.1e-05,
+        "IP3_buffer": 0.0007,
+        "IP3_bound": 0.00014
+       }
+      },
+      "er": {
+       "volume_pL": 0.06999999999999999,
+       "initial_amount_fmol": {
+        "Ca": 0.013999999999999999,
+        "B": 0.0034999999999999996,
+        "CaB": 0.0007,
+        "Ca2B": 7e-05,
+        "K": 9.1,
+        "Na": 1.05,
+        "Cl": 0.7,
+        "IP3": 2.8e-06,
+        "IP3_buffer": 7e-05,
+        "IP3_bound": 1.4e-05
+       }
+      }
+     },
+     "reactions": {
+      "bind_0_first": {
+       "compartment": "cytosol",
+       "reactants": {
+        "Ca": 1,
+        "B": 1
+       },
+       "products": {
+        "CaB": 1
+       },
+       "forward_rate_per_s": 1000.0,
+       "law": "mass_action_passive"
+      },
+      "bind_0_second": {
+       "compartment": "cytosol",
+       "reactants": {
+        "Ca": 1,
+        "CaB": 1
+       },
+       "products": {
+        "Ca2B": 1
+       },
+       "forward_rate_per_s": 100.0,
+       "law": "mass_action_passive"
+      },
+      "bind_1_first": {
+       "compartment": "er",
+       "reactants": {
+        "Ca": 1,
+        "B": 1
+       },
+       "products": {
+        "CaB": 1
+       },
+       "forward_rate_per_s": 1000.0,
+       "law": "mass_action_passive"
+      },
+      "bind_1_second": {
+       "compartment": "er",
+       "reactants": {
+        "Ca": 1,
+        "CaB": 1
+       },
+       "products": {
+        "Ca2B": 1
+       },
+       "forward_rate_per_s": 100.0,
+       "law": "mass_action_passive"
+      },
+      "ip3_binding": {
+       "compartment": "cytosol",
+       "reactants": {
+        "IP3": 1,
+        "IP3_buffer": 1
+       },
+       "products": {
+        "IP3_bound": 1
+       },
+       "forward_rate_per_s": 20000.0,
+       "law": "mass_action_passive"
+      }
+     },
+     "membrane": {
+      "area_m2": 1.4e-09,
+      "capacitance_F": 1.4e-11,
+      "initial_voltage_V": 0.0,
+      "permeability_m_per_s": {
+       "Ca": 1e-08,
+       "B": 0.0,
+       "CaB": 0.0,
+       "Ca2B": 0.0,
+       "K": 1e-07,
+       "Na": 0.0,
+       "Cl": 0.0,
+       "IP3": 0.0,
+       "IP3_buffer": 0.0,
+       "IP3_bound": 0.0
+      },
+      "pump": {
+       "law": "store_calcium_pump_mM_quotient",
+       "capacity_fmol_per_s": 0.0042,
+       "km_ca_mM": 0.001,
+       "km_atp_mM": 0.5,
+       "atp_mM": 1.5,
+       "adp_mM": 0.1,
+       "pi_mM": 0.1,
+       "delta_g0_mM_quotient_J_per_mol": -37000.0,
+       "delta_g0_at_1M_J_per_mol": -19875.971492394227
+      },
+      "release": {
+       "law": "store_calcium_release",
+       "permeability_m_per_s": 1e-07,
+       "activation_mM": 0.001,
+       "activation_n": 2,
+       "inhibition_mM": 0.02,
+       "inhibition_n": 2
+      }
+     }
+    }
+   },
+   "plasma": {
+    "membrane_0": {
+     "calcium_pump": {
+      "law": "plasma_calcium_pump_mM_quotient",
+      "capacity_fmol_per_s": 0.002,
+      "km_ca_mM": 0.001,
+      "km_atp_mM": 0.5,
+      "atp_mM": 1.5,
+      "adp_mM": 0.1,
+      "pi_mM": 0.1,
+      "delta_g0_mM_quotient_J_per_mol": -37000.0,
+      "delta_g0_at_1M_J_per_mol": -19875.971492394227
+     },
+     "exchanger": {
+      "law": "exchanger_3na_1ca",
+      "capacity_fmol_per_s": 0.002,
+      "km_na_mM": 20.0,
+      "km_ca_mM": 0.001,
+      "sodium_in": 3,
+      "calcium_out": 1
+     }
+    },
+    "membrane_1": {
+     "calcium_pump": {
+      "law": "plasma_calcium_pump_mM_quotient",
+      "capacity_fmol_per_s": 0.0028,
+      "km_ca_mM": 0.001,
+      "km_atp_mM": 0.5,
+      "atp_mM": 1.5,
+      "adp_mM": 0.1,
+      "pi_mM": 0.1,
+      "delta_g0_mM_quotient_J_per_mol": -37000.0,
+      "delta_g0_at_1M_J_per_mol": -19875.971492394227
+     },
+     "exchanger": {
+      "law": "exchanger_3na_1ca",
+      "capacity_fmol_per_s": 0.0028,
+      "km_na_mM": 20.0,
+      "km_ca_mM": 0.001,
+      "sodium_in": 3,
+      "calcium_out": 1
+     }
+    }
+   },
+   "calcium_channels": {
+    "calcium_channel_0": {
+     "membrane": "membrane_0",
+     "species": "Ca",
+     "law": "cav12_m2h",
+     "max_permeability_m_per_s": 2e-06,
+     "abundance": 0.5,
+     "initial_gates": {
+      "m": 0.2,
+      "h": 0.7
+     }
+    },
+    "calcium_channel_1": {
+     "membrane": "membrane_1",
+     "species": "Ca",
+     "law": "cav12_m2h",
+     "max_permeability_m_per_s": 2e-06,
+     "abundance": 0.6,
+     "initial_gates": {
+      "m": 0.2,
+      "h": 0.7
+     }
+    }
+   },
+   "ip3_release": {
+    "cell_0": {
+     "species": "IP3",
+     "law": "ip3_release_factor",
+     "activation_mM": 0.00015,
+     "activation_n": 2
+    },
+    "cell_1": {
+     "species": "IP3",
+     "law": "ip3_release_factor",
+     "activation_mM": 0.00015,
+     "activation_n": 2
+    }
+   },
+   "history_times": {
+    "fine": {
+     "first_s": 0.0,
+     "last_s": 0.001,
+     "spacing_s": 1.25e-05
+    },
+    "coarse": {
+     "first_s": 0.0011,
+     "last_s": 0.02,
+     "spacing_s": 0.0001
+    }
+   },
+   "potential_times_s": [
+    0.0,
+    0.0025,
+    0.005,
+    0.0075,
+    0.01,
+    0.015,
+    0.02
+   ],
+   "scales": {
+    "ca_pump": 5.6e-05,
+    "exchanger": 0.0005786260190505607,
+    "heat_ca_pump": 0.004395616426648543,
+    "heat_exchanger": 0.024037033008686662,
+    "ca_channel": 0.0007147850350990105,
+    "heat_ca_channel": 0.020780231177124006,
+    "ca_gate_m": 1.0,
+    "ca_gate_h": 1.0,
+    "exchange_Na": 0.007844073283350244,
+    "n_out_Na": 20.414193622370068,
+    "leak_Na": 5.7159742142636183e-05,
+    "junction_Na": 5.103548405592518e-05,
+    "face_Na": 10.207096811185034,
+    "exchange_K": 0.006810807637426777,
+    "n_out_K": 1.5424057403568494,
+    "leak_K": 0.0010615380683632436,
+    "junction_K": 0.0007938853075366138,
+    "face_K": 0.7712028701784247,
+    "exchange_Cl": 0.0004046546824700911,
+    "n_out_Cl": 26.084802961917305,
+    "leak_Cl": 0.00035928980775371314,
+    "junction_Cl": 4.536487471637794e-05,
+    "face_Cl": 13.042401480958652,
+    "exchange_Ca": 0.0013800210614396907,
+    "n_out_Ca": 0.0036566890382594584,
+    "leak_Ca": 2.9782709795792116e-05,
+    "junction_Ca": 8.272974943275586e-07,
+    "face_Ca": 0.0007238853075366136,
+    "channel_K": 0.0009553842615269192,
+    "gate_m": 1.0,
+    "gate_h": 1.0,
+    "pump": 0.002,
+    "junction_gate": 1.0,
+    "heat_junction": 0.01273529921516447,
+    "heat_face": 348.14577782704043,
+    "heat_membrane": 0.3963337463411511,
+    "voltage": 0.5375910764451256,
+    "phi_out": 0.025692579121085843,
+    "store_leak_Ca": 0.0005791082460292911,
+    "store_leak_K": 2.0641017995951954,
+    "store_pump": 8.4e-05,
+    "store_release": 0.005791082460292909,
+    "heat_store_leak": 29.03694218990206,
+    "heat_store_pump": 0.007263698847664648,
+    "heat_store_release": 0.21456803548894537,
+    "extent_bind_0_first": 0.011956,
+    "heat_bind_0_first": 0.64384306475673,
+    "extent_bind_0_second": 0.00027440000000000006,
+    "heat_bind_0_second": 0.015871507282280636,
+    "extent_bind_1_first": 0.018104799999999994,
+    "heat_bind_1_first": 0.7682776143200473,
+    "extent_bind_1_second": 0.0018104799999999997,
+    "heat_bind_1_second": 0.08405108314356376,
+    "extent_ip3_binding": 0.00011088000000000001,
+    "heat_ip3_binding": 0.00950578982937627,
+    "cyt_Ca": 0.02006461176776189,
+    "store_Ca": 0.026369470706322194,
+    "cyt_B": 0.011956,
+    "store_B": 0.018104799999999994,
+    "cyt_CaB": 0.012230399999999999,
+    "store_CaB": 0.019915279999999994,
+    "cyt_Ca2B": 0.00027440000000000006,
+    "store_Ca2B": 0.0018104799999999997,
+    "cyt_K": 2.0709126072326223,
+    "store_K": 2.0641017995951954,
+    "cyt_Na": 0.007844073283350244,
+    "cyt_Cl": 0.0004046546824700911,
+    "cyt_IP3": 0.00011088000000000001,
+    "cyt_IP3_buffer": 0.00011088000000000001,
+    "cyt_IP3_bound": 0.00011088000000000001,
+    "store_voltage": 16.017628876546414
+   },
+   "p": 2
+  },
+  "cluster_spatial_calcium": {
+   "consumer": "cluster_spatial_calcium",
+   "same_as": "spatial_calcium",
+   "controls_channel": "the pool's path (SPEC.md section 3.2)",
+   "final_s": 0.02,
+   "summary_times_s": [
+    0.0025,
+    0.005,
+    0.01,
+    0.015,
+    0.02
+   ],
+   "pools": {
+    "cell_0": {
+     "channel": "channel_0",
+     "stream_id": 0,
+     "pool": {
+      "model": "pool_model",
+      "topology": "pool_topology",
+      "initial_nodes": [
+       10,
+       12,
+       14,
+       16,
+       18
+      ],
+      "initial_bond_indices": [
+       20,
+       21,
+       24,
+       26,
+       28
+      ],
+      "root_node": 10,
+      "initial_free_trimers": 50,
+      "pool_volume_L": 5e-15,
+      "k_on_M_inv_s": 10000000.0,
+      "k_close_s_inv": 1000.0,
+      "k_off_s_inv": 300.0,
+      "k_fragment_dissolve_s_inv": 1.0,
+      "world_id_start": 0,
+      "worlds": 2,
+      "end_time_s": 0.02,
+      "max_events_per_world": 100000
+     },
+     "harness": {
+      "event_chunk_size": 128,
+      "recording": "summary",
+      "max_output_bytes": 536870912,
+      "max_wall_seconds": 600.0
+     },
+     "seeds": [
+      20260925,
+      20261925,
+      20262925,
+      20263925
+     ]
+    },
+    "cell_1": {
+     "channel": "channel_1",
+     "stream_id": 1,
+     "pool": {
+      "model": "pool_model",
+      "topology": "pool_topology",
+      "initial_nodes": [
+       10,
+       12,
+       14,
+       16,
+       18
+      ],
+      "initial_bond_indices": [
+       20,
+       21,
+       24,
+       26,
+       28
+      ],
+      "root_node": 10,
+      "initial_free_trimers": 50,
+      "pool_volume_L": 5e-15,
+      "k_on_M_inv_s": 10000000.0,
+      "k_close_s_inv": 1000.0,
+      "k_off_s_inv": 300.0,
+      "k_fragment_dissolve_s_inv": 1.0,
+      "world_id_start": 0,
+      "worlds": 2,
+      "end_time_s": 0.02,
+      "max_events_per_world": 100000
+     },
+     "harness": {
+      "event_chunk_size": 128,
+      "recording": "summary",
+      "max_output_bytes": 536870912,
+      "max_wall_seconds": 600.0
+     },
+     "seeds": [
+      20260926,
+      20261926,
+      20262926,
+      20263926
+     ]
+    }
+   },
+   "coupling": {
+    "law": "assembly_observable",
+    "active": 1.0,
+    "inactive": 0.0
+   }
+  },
+  "cluster_plasma_calcium": {
+   "consumer": "cluster_plasma_calcium",
+   "same_as": "plasma_calcium",
+   "controls_channel": "the pool's path (SPEC.md section 3.2)",
+   "final_s": 0.02,
+   "summary_times_s": [
+    0.0025,
+    0.005,
+    0.01,
+    0.015,
+    0.02
+   ],
+   "pools": {
+    "cell_0": {
+     "channel": "channel_0",
+     "stream_id": 0,
+     "pool": {
+      "model": "pool_model",
+      "topology": "pool_topology",
+      "initial_nodes": [
+       10,
+       12,
+       14,
+       16,
+       18
+      ],
+      "initial_bond_indices": [
+       20,
+       21,
+       24,
+       26,
+       28
+      ],
+      "root_node": 10,
+      "initial_free_trimers": 50,
+      "pool_volume_L": 5e-15,
+      "k_on_M_inv_s": 10000000.0,
+      "k_close_s_inv": 1000.0,
+      "k_off_s_inv": 300.0,
+      "k_fragment_dissolve_s_inv": 1.0,
+      "world_id_start": 0,
+      "worlds": 2,
+      "end_time_s": 0.02,
+      "max_events_per_world": 100000
+     },
+     "harness": {
+      "event_chunk_size": 128,
+      "recording": "summary",
+      "max_output_bytes": 536870912,
+      "max_wall_seconds": 600.0
+     },
+     "seeds": [
+      20260925,
+      20261925,
+      20262925,
+      20263925
+     ]
+    },
+    "cell_1": {
+     "channel": "channel_1",
+     "stream_id": 1,
+     "pool": {
+      "model": "pool_model",
+      "topology": "pool_topology",
+      "initial_nodes": [
+       10,
+       12,
+       14,
+       16,
+       18
+      ],
+      "initial_bond_indices": [
+       20,
+       21,
+       24,
+       26,
+       28
+      ],
+      "root_node": 10,
+      "initial_free_trimers": 50,
+      "pool_volume_L": 5e-15,
+      "k_on_M_inv_s": 10000000.0,
+      "k_close_s_inv": 1000.0,
+      "k_off_s_inv": 300.0,
+      "k_fragment_dissolve_s_inv": 1.0,
+      "world_id_start": 0,
+      "worlds": 2,
+      "end_time_s": 0.02,
+      "max_events_per_world": 100000
+     },
+     "harness": {
+      "event_chunk_size": 128,
+      "recording": "summary",
+      "max_output_bytes": 536870912,
+      "max_wall_seconds": 600.0
+     },
+     "seeds": [
+      20260926,
+      20261926,
+      20262926,
+      20263926
+     ]
+    }
+   },
+   "coupling": {
+    "law": "assembly_observable",
+    "active": 1.0,
+    "inactive": 0.0
+   }
+  },
+  "cluster_gated_calcium": {
+   "consumer": "cluster_gated_calcium",
+   "same_as": "gated_calcium",
+   "controls_channel": "the pool's path (SPEC.md section 3.2)",
+   "final_s": 0.02,
+   "summary_times_s": [
+    0.0025,
+    0.005,
+    0.01,
+    0.015,
+    0.02
+   ],
+   "pools": {
+    "cell_0": {
+     "channel": "channel_0",
+     "stream_id": 0,
+     "pool": {
+      "model": "pool_model",
+      "topology": "pool_topology",
+      "initial_nodes": [
+       10,
+       12,
+       14,
+       16,
+       18
+      ],
+      "initial_bond_indices": [
+       20,
+       21,
+       24,
+       26,
+       28
+      ],
+      "root_node": 10,
+      "initial_free_trimers": 50,
+      "pool_volume_L": 5e-15,
+      "k_on_M_inv_s": 10000000.0,
+      "k_close_s_inv": 1000.0,
+      "k_off_s_inv": 300.0,
+      "k_fragment_dissolve_s_inv": 1.0,
+      "world_id_start": 0,
+      "worlds": 2,
+      "end_time_s": 0.02,
+      "max_events_per_world": 100000
+     },
+     "harness": {
+      "event_chunk_size": 128,
+      "recording": "summary",
+      "max_output_bytes": 536870912,
+      "max_wall_seconds": 600.0
+     },
+     "seeds": [
+      20260925,
+      20261925,
+      20262925,
+      20263925
+     ]
+    },
+    "cell_1": {
+     "channel": "channel_1",
+     "stream_id": 1,
+     "pool": {
+      "model": "pool_model",
+      "topology": "pool_topology",
+      "initial_nodes": [
+       10,
+       12,
+       14,
+       16,
+       18
+      ],
+      "initial_bond_indices": [
+       20,
+       21,
+       24,
+       26,
+       28
+      ],
+      "root_node": 10,
+      "initial_free_trimers": 50,
+      "pool_volume_L": 5e-15,
+      "k_on_M_inv_s": 10000000.0,
+      "k_close_s_inv": 1000.0,
+      "k_off_s_inv": 300.0,
+      "k_fragment_dissolve_s_inv": 1.0,
+      "world_id_start": 0,
+      "worlds": 2,
+      "end_time_s": 0.02,
+      "max_events_per_world": 100000
+     },
+     "harness": {
+      "event_chunk_size": 128,
+      "recording": "summary",
+      "max_output_bytes": 536870912,
+      "max_wall_seconds": 600.0
+     },
+     "seeds": [
+      20260926,
+      20261926,
+      20262926,
+      20263926
+     ]
+    }
+   },
+   "coupling": {
+    "law": "assembly_observable",
+    "active": 1.0,
+    "inactive": 0.0
+   }
+  },
+  "cluster_ip3_calcium": {
+   "consumer": "cluster_ip3_calcium",
+   "same_as": "ip3_calcium",
+   "controls_channel": "the pool's path (SPEC.md section 3.2)",
+   "final_s": 0.02,
+   "summary_times_s": [
+    0.0025,
+    0.005,
+    0.01,
+    0.015,
+    0.02
+   ],
+   "pools": {
+    "cell_0": {
+     "channel": "channel_0",
+     "stream_id": 0,
+     "pool": {
+      "model": "pool_model",
+      "topology": "pool_topology",
+      "initial_nodes": [
+       10,
+       12,
+       14,
+       16,
+       18
+      ],
+      "initial_bond_indices": [
+       20,
+       21,
+       24,
+       26,
+       28
+      ],
+      "root_node": 10,
+      "initial_free_trimers": 50,
+      "pool_volume_L": 5e-15,
+      "k_on_M_inv_s": 10000000.0,
+      "k_close_s_inv": 1000.0,
+      "k_off_s_inv": 300.0,
+      "k_fragment_dissolve_s_inv": 1.0,
+      "world_id_start": 0,
+      "worlds": 2,
+      "end_time_s": 0.02,
+      "max_events_per_world": 100000
+     },
+     "harness": {
+      "event_chunk_size": 128,
+      "recording": "summary",
+      "max_output_bytes": 536870912,
+      "max_wall_seconds": 600.0
+     },
+     "seeds": [
+      20260925,
+      20261925,
+      20262925,
+      20263925
+     ]
+    },
+    "cell_1": {
+     "channel": "channel_1",
+     "stream_id": 1,
+     "pool": {
+      "model": "pool_model",
+      "topology": "pool_topology",
+      "initial_nodes": [
+       10,
+       12,
+       14,
+       16,
+       18
+      ],
+      "initial_bond_indices": [
+       20,
+       21,
+       24,
+       26,
+       28
+      ],
+      "root_node": 10,
+      "initial_free_trimers": 50,
+      "pool_volume_L": 5e-15,
+      "k_on_M_inv_s": 10000000.0,
+      "k_close_s_inv": 1000.0,
+      "k_off_s_inv": 300.0,
+      "k_fragment_dissolve_s_inv": 1.0,
+      "world_id_start": 0,
+      "worlds": 2,
+      "end_time_s": 0.02,
+      "max_events_per_world": 100000
+     },
+     "harness": {
+      "event_chunk_size": 128,
+      "recording": "summary",
+      "max_output_bytes": 536870912,
+      "max_wall_seconds": 600.0
+     },
+     "seeds": [
+      20260926,
+      20261926,
+      20262926,
+      20263926
+     ]
+    }
+   },
+   "coupling": {
+    "law": "assembly_observable",
+    "active": 1.0,
+    "inactive": 0.0
+   }
+  }
+ },
+ "runs": [
+  {
+   "name": "spatial_calcium h=1.25e-05",
+   "consumer": "spatial_calcium",
+   "family": "spatial_calcium",
+   "world": "spatial_calcium",
+   "seed_index": null,
+   "world_id": null,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "spatial_calcium h=6.25e-06",
+   "consumer": "spatial_calcium",
+   "family": "spatial_calcium",
+   "world": "spatial_calcium",
+   "seed_index": null,
+   "world_id": null,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "spatial_calcium h=3.125e-06",
+   "consumer": "spatial_calcium",
+   "family": "spatial_calcium",
+   "world": "spatial_calcium",
+   "seed_index": null,
+   "world_id": null,
+   "step_s": 3.125e-06,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "plasma_calcium h=1.25e-05",
+   "consumer": "plasma_calcium",
+   "family": "plasma_calcium",
+   "world": "plasma_calcium",
+   "seed_index": null,
+   "world_id": null,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "plasma_calcium h=6.25e-06",
+   "consumer": "plasma_calcium",
+   "family": "plasma_calcium",
+   "world": "plasma_calcium",
+   "seed_index": null,
+   "world_id": null,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "plasma_calcium h=3.125e-06",
+   "consumer": "plasma_calcium",
+   "family": "plasma_calcium",
+   "world": "plasma_calcium",
+   "seed_index": null,
+   "world_id": null,
+   "step_s": 3.125e-06,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "gated_calcium h=1.25e-05",
+   "consumer": "gated_calcium",
+   "family": "gated_calcium",
+   "world": "gated_calcium",
+   "seed_index": null,
+   "world_id": null,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "gated_calcium h=6.25e-06",
+   "consumer": "gated_calcium",
+   "family": "gated_calcium",
+   "world": "gated_calcium",
+   "seed_index": null,
+   "world_id": null,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "gated_calcium h=3.125e-06",
+   "consumer": "gated_calcium",
+   "family": "gated_calcium",
+   "world": "gated_calcium",
+   "seed_index": null,
+   "world_id": null,
+   "step_s": 3.125e-06,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "ip3_calcium h=1.25e-05",
+   "consumer": "ip3_calcium",
+   "family": "ip3_calcium",
+   "world": "ip3_calcium",
+   "seed_index": null,
+   "world_id": null,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "ip3_calcium h=6.25e-06",
+   "consumer": "ip3_calcium",
+   "family": "ip3_calcium",
+   "world": "ip3_calcium",
+   "seed_index": null,
+   "world_id": null,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "ip3_calcium h=3.125e-06",
+   "consumer": "ip3_calcium",
+   "family": "ip3_calcium",
+   "world": "ip3_calcium",
+   "seed_index": null,
+   "world_id": null,
+   "step_s": 3.125e-06,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "cluster_spatial_calcium s0 pool",
+   "consumer": "cluster_spatial_calcium",
+   "family": null,
+   "world": "cluster_spatial_calcium",
+   "seed_index": 0,
+   "world_id": null,
+   "step_s": null,
+   "role": "judged",
+   "variant": "pool"
+  },
+  {
+   "name": "cluster_spatial_calcium s0 w0 h=1.25e-05",
+   "consumer": "cluster_spatial_calcium",
+   "family": "cluster_spatial_calcium s0 w0",
+   "world": "cluster_spatial_calcium",
+   "seed_index": 0,
+   "world_id": 0,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_spatial_calcium s0 w0 h=6.25e-06",
+   "consumer": "cluster_spatial_calcium",
+   "family": "cluster_spatial_calcium s0 w0",
+   "world": "cluster_spatial_calcium",
+   "seed_index": 0,
+   "world_id": 0,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_spatial_calcium s0 w0 h=3.125e-06",
+   "consumer": "cluster_spatial_calcium",
+   "family": "cluster_spatial_calcium s0 w0",
+   "world": "cluster_spatial_calcium",
+   "seed_index": 0,
+   "world_id": 0,
+   "step_s": 3.125e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_spatial_calcium s0 w1 h=1.25e-05",
+   "consumer": "cluster_spatial_calcium",
+   "family": "cluster_spatial_calcium s0 w1",
+   "world": "cluster_spatial_calcium",
+   "seed_index": 0,
+   "world_id": 1,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_spatial_calcium s0 w1 h=6.25e-06",
+   "consumer": "cluster_spatial_calcium",
+   "family": "cluster_spatial_calcium s0 w1",
+   "world": "cluster_spatial_calcium",
+   "seed_index": 0,
+   "world_id": 1,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_spatial_calcium s0 w1 h=3.125e-06",
+   "consumer": "cluster_spatial_calcium",
+   "family": "cluster_spatial_calcium s0 w1",
+   "world": "cluster_spatial_calcium",
+   "seed_index": 0,
+   "world_id": 1,
+   "step_s": 3.125e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_spatial_calcium s1 pool",
+   "consumer": "cluster_spatial_calcium",
+   "family": null,
+   "world": "cluster_spatial_calcium",
+   "seed_index": 1,
+   "world_id": null,
+   "step_s": null,
+   "role": "judged",
+   "variant": "pool"
+  },
+  {
+   "name": "cluster_spatial_calcium s1 w0 h=1.25e-05",
+   "consumer": "cluster_spatial_calcium",
+   "family": "cluster_spatial_calcium s1 w0",
+   "world": "cluster_spatial_calcium",
+   "seed_index": 1,
+   "world_id": 0,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_spatial_calcium s1 w0 h=6.25e-06",
+   "consumer": "cluster_spatial_calcium",
+   "family": "cluster_spatial_calcium s1 w0",
+   "world": "cluster_spatial_calcium",
+   "seed_index": 1,
+   "world_id": 0,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_spatial_calcium s1 w0 h=3.125e-06",
+   "consumer": "cluster_spatial_calcium",
+   "family": "cluster_spatial_calcium s1 w0",
+   "world": "cluster_spatial_calcium",
+   "seed_index": 1,
+   "world_id": 0,
+   "step_s": 3.125e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_spatial_calcium s1 w1 h=1.25e-05",
+   "consumer": "cluster_spatial_calcium",
+   "family": "cluster_spatial_calcium s1 w1",
+   "world": "cluster_spatial_calcium",
+   "seed_index": 1,
+   "world_id": 1,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_spatial_calcium s1 w1 h=6.25e-06",
+   "consumer": "cluster_spatial_calcium",
+   "family": "cluster_spatial_calcium s1 w1",
+   "world": "cluster_spatial_calcium",
+   "seed_index": 1,
+   "world_id": 1,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_spatial_calcium s1 w1 h=3.125e-06",
+   "consumer": "cluster_spatial_calcium",
+   "family": "cluster_spatial_calcium s1 w1",
+   "world": "cluster_spatial_calcium",
+   "seed_index": 1,
+   "world_id": 1,
+   "step_s": 3.125e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_spatial_calcium s2 pool",
+   "consumer": "cluster_spatial_calcium",
+   "family": null,
+   "world": "cluster_spatial_calcium",
+   "seed_index": 2,
+   "world_id": null,
+   "step_s": null,
+   "role": "judged",
+   "variant": "pool"
+  },
+  {
+   "name": "cluster_spatial_calcium s2 w0 h=1.25e-05",
+   "consumer": "cluster_spatial_calcium",
+   "family": "cluster_spatial_calcium s2 w0",
+   "world": "cluster_spatial_calcium",
+   "seed_index": 2,
+   "world_id": 0,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_spatial_calcium s2 w0 h=6.25e-06",
+   "consumer": "cluster_spatial_calcium",
+   "family": "cluster_spatial_calcium s2 w0",
+   "world": "cluster_spatial_calcium",
+   "seed_index": 2,
+   "world_id": 0,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_spatial_calcium s2 w0 h=3.125e-06",
+   "consumer": "cluster_spatial_calcium",
+   "family": "cluster_spatial_calcium s2 w0",
+   "world": "cluster_spatial_calcium",
+   "seed_index": 2,
+   "world_id": 0,
+   "step_s": 3.125e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_spatial_calcium s2 w1 h=1.25e-05",
+   "consumer": "cluster_spatial_calcium",
+   "family": "cluster_spatial_calcium s2 w1",
+   "world": "cluster_spatial_calcium",
+   "seed_index": 2,
+   "world_id": 1,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_spatial_calcium s2 w1 h=6.25e-06",
+   "consumer": "cluster_spatial_calcium",
+   "family": "cluster_spatial_calcium s2 w1",
+   "world": "cluster_spatial_calcium",
+   "seed_index": 2,
+   "world_id": 1,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_spatial_calcium s2 w1 h=3.125e-06",
+   "consumer": "cluster_spatial_calcium",
+   "family": "cluster_spatial_calcium s2 w1",
+   "world": "cluster_spatial_calcium",
+   "seed_index": 2,
+   "world_id": 1,
+   "step_s": 3.125e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_spatial_calcium s3 pool",
+   "consumer": "cluster_spatial_calcium",
+   "family": null,
+   "world": "cluster_spatial_calcium",
+   "seed_index": 3,
+   "world_id": null,
+   "step_s": null,
+   "role": "judged",
+   "variant": "pool"
+  },
+  {
+   "name": "cluster_spatial_calcium s3 w0 h=1.25e-05",
+   "consumer": "cluster_spatial_calcium",
+   "family": "cluster_spatial_calcium s3 w0",
+   "world": "cluster_spatial_calcium",
+   "seed_index": 3,
+   "world_id": 0,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_spatial_calcium s3 w0 h=6.25e-06",
+   "consumer": "cluster_spatial_calcium",
+   "family": "cluster_spatial_calcium s3 w0",
+   "world": "cluster_spatial_calcium",
+   "seed_index": 3,
+   "world_id": 0,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_spatial_calcium s3 w0 h=3.125e-06",
+   "consumer": "cluster_spatial_calcium",
+   "family": "cluster_spatial_calcium s3 w0",
+   "world": "cluster_spatial_calcium",
+   "seed_index": 3,
+   "world_id": 0,
+   "step_s": 3.125e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_spatial_calcium s3 w1 h=1.25e-05",
+   "consumer": "cluster_spatial_calcium",
+   "family": "cluster_spatial_calcium s3 w1",
+   "world": "cluster_spatial_calcium",
+   "seed_index": 3,
+   "world_id": 1,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_spatial_calcium s3 w1 h=6.25e-06",
+   "consumer": "cluster_spatial_calcium",
+   "family": "cluster_spatial_calcium s3 w1",
+   "world": "cluster_spatial_calcium",
+   "seed_index": 3,
+   "world_id": 1,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_spatial_calcium s3 w1 h=3.125e-06",
+   "consumer": "cluster_spatial_calcium",
+   "family": "cluster_spatial_calcium s3 w1",
+   "world": "cluster_spatial_calcium",
+   "seed_index": 3,
+   "world_id": 1,
+   "step_s": 3.125e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_plasma_calcium s0 pool",
+   "consumer": "cluster_plasma_calcium",
+   "family": null,
+   "world": "cluster_plasma_calcium",
+   "seed_index": 0,
+   "world_id": null,
+   "step_s": null,
+   "role": "judged",
+   "variant": "pool"
+  },
+  {
+   "name": "cluster_plasma_calcium s0 w0 h=1.25e-05",
+   "consumer": "cluster_plasma_calcium",
+   "family": "cluster_plasma_calcium s0 w0",
+   "world": "cluster_plasma_calcium",
+   "seed_index": 0,
+   "world_id": 0,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_plasma_calcium s0 w0 h=6.25e-06",
+   "consumer": "cluster_plasma_calcium",
+   "family": "cluster_plasma_calcium s0 w0",
+   "world": "cluster_plasma_calcium",
+   "seed_index": 0,
+   "world_id": 0,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_plasma_calcium s0 w0 h=3.125e-06",
+   "consumer": "cluster_plasma_calcium",
+   "family": "cluster_plasma_calcium s0 w0",
+   "world": "cluster_plasma_calcium",
+   "seed_index": 0,
+   "world_id": 0,
+   "step_s": 3.125e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_plasma_calcium s0 w1 h=1.25e-05",
+   "consumer": "cluster_plasma_calcium",
+   "family": "cluster_plasma_calcium s0 w1",
+   "world": "cluster_plasma_calcium",
+   "seed_index": 0,
+   "world_id": 1,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_plasma_calcium s0 w1 h=6.25e-06",
+   "consumer": "cluster_plasma_calcium",
+   "family": "cluster_plasma_calcium s0 w1",
+   "world": "cluster_plasma_calcium",
+   "seed_index": 0,
+   "world_id": 1,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_plasma_calcium s0 w1 h=3.125e-06",
+   "consumer": "cluster_plasma_calcium",
+   "family": "cluster_plasma_calcium s0 w1",
+   "world": "cluster_plasma_calcium",
+   "seed_index": 0,
+   "world_id": 1,
+   "step_s": 3.125e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_plasma_calcium s1 pool",
+   "consumer": "cluster_plasma_calcium",
+   "family": null,
+   "world": "cluster_plasma_calcium",
+   "seed_index": 1,
+   "world_id": null,
+   "step_s": null,
+   "role": "judged",
+   "variant": "pool"
+  },
+  {
+   "name": "cluster_plasma_calcium s1 w0 h=1.25e-05",
+   "consumer": "cluster_plasma_calcium",
+   "family": "cluster_plasma_calcium s1 w0",
+   "world": "cluster_plasma_calcium",
+   "seed_index": 1,
+   "world_id": 0,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_plasma_calcium s1 w0 h=6.25e-06",
+   "consumer": "cluster_plasma_calcium",
+   "family": "cluster_plasma_calcium s1 w0",
+   "world": "cluster_plasma_calcium",
+   "seed_index": 1,
+   "world_id": 0,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_plasma_calcium s1 w0 h=3.125e-06",
+   "consumer": "cluster_plasma_calcium",
+   "family": "cluster_plasma_calcium s1 w0",
+   "world": "cluster_plasma_calcium",
+   "seed_index": 1,
+   "world_id": 0,
+   "step_s": 3.125e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_plasma_calcium s1 w1 h=1.25e-05",
+   "consumer": "cluster_plasma_calcium",
+   "family": "cluster_plasma_calcium s1 w1",
+   "world": "cluster_plasma_calcium",
+   "seed_index": 1,
+   "world_id": 1,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_plasma_calcium s1 w1 h=6.25e-06",
+   "consumer": "cluster_plasma_calcium",
+   "family": "cluster_plasma_calcium s1 w1",
+   "world": "cluster_plasma_calcium",
+   "seed_index": 1,
+   "world_id": 1,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_plasma_calcium s1 w1 h=3.125e-06",
+   "consumer": "cluster_plasma_calcium",
+   "family": "cluster_plasma_calcium s1 w1",
+   "world": "cluster_plasma_calcium",
+   "seed_index": 1,
+   "world_id": 1,
+   "step_s": 3.125e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_plasma_calcium s2 pool",
+   "consumer": "cluster_plasma_calcium",
+   "family": null,
+   "world": "cluster_plasma_calcium",
+   "seed_index": 2,
+   "world_id": null,
+   "step_s": null,
+   "role": "judged",
+   "variant": "pool"
+  },
+  {
+   "name": "cluster_plasma_calcium s2 w0 h=1.25e-05",
+   "consumer": "cluster_plasma_calcium",
+   "family": "cluster_plasma_calcium s2 w0",
+   "world": "cluster_plasma_calcium",
+   "seed_index": 2,
+   "world_id": 0,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_plasma_calcium s2 w0 h=6.25e-06",
+   "consumer": "cluster_plasma_calcium",
+   "family": "cluster_plasma_calcium s2 w0",
+   "world": "cluster_plasma_calcium",
+   "seed_index": 2,
+   "world_id": 0,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_plasma_calcium s2 w0 h=3.125e-06",
+   "consumer": "cluster_plasma_calcium",
+   "family": "cluster_plasma_calcium s2 w0",
+   "world": "cluster_plasma_calcium",
+   "seed_index": 2,
+   "world_id": 0,
+   "step_s": 3.125e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_plasma_calcium s2 w1 h=1.25e-05",
+   "consumer": "cluster_plasma_calcium",
+   "family": "cluster_plasma_calcium s2 w1",
+   "world": "cluster_plasma_calcium",
+   "seed_index": 2,
+   "world_id": 1,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_plasma_calcium s2 w1 h=6.25e-06",
+   "consumer": "cluster_plasma_calcium",
+   "family": "cluster_plasma_calcium s2 w1",
+   "world": "cluster_plasma_calcium",
+   "seed_index": 2,
+   "world_id": 1,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_plasma_calcium s2 w1 h=3.125e-06",
+   "consumer": "cluster_plasma_calcium",
+   "family": "cluster_plasma_calcium s2 w1",
+   "world": "cluster_plasma_calcium",
+   "seed_index": 2,
+   "world_id": 1,
+   "step_s": 3.125e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_plasma_calcium s3 pool",
+   "consumer": "cluster_plasma_calcium",
+   "family": null,
+   "world": "cluster_plasma_calcium",
+   "seed_index": 3,
+   "world_id": null,
+   "step_s": null,
+   "role": "judged",
+   "variant": "pool"
+  },
+  {
+   "name": "cluster_plasma_calcium s3 w0 h=1.25e-05",
+   "consumer": "cluster_plasma_calcium",
+   "family": "cluster_plasma_calcium s3 w0",
+   "world": "cluster_plasma_calcium",
+   "seed_index": 3,
+   "world_id": 0,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_plasma_calcium s3 w0 h=6.25e-06",
+   "consumer": "cluster_plasma_calcium",
+   "family": "cluster_plasma_calcium s3 w0",
+   "world": "cluster_plasma_calcium",
+   "seed_index": 3,
+   "world_id": 0,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_plasma_calcium s3 w0 h=3.125e-06",
+   "consumer": "cluster_plasma_calcium",
+   "family": "cluster_plasma_calcium s3 w0",
+   "world": "cluster_plasma_calcium",
+   "seed_index": 3,
+   "world_id": 0,
+   "step_s": 3.125e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_plasma_calcium s3 w1 h=1.25e-05",
+   "consumer": "cluster_plasma_calcium",
+   "family": "cluster_plasma_calcium s3 w1",
+   "world": "cluster_plasma_calcium",
+   "seed_index": 3,
+   "world_id": 1,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_plasma_calcium s3 w1 h=6.25e-06",
+   "consumer": "cluster_plasma_calcium",
+   "family": "cluster_plasma_calcium s3 w1",
+   "world": "cluster_plasma_calcium",
+   "seed_index": 3,
+   "world_id": 1,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_plasma_calcium s3 w1 h=3.125e-06",
+   "consumer": "cluster_plasma_calcium",
+   "family": "cluster_plasma_calcium s3 w1",
+   "world": "cluster_plasma_calcium",
+   "seed_index": 3,
+   "world_id": 1,
+   "step_s": 3.125e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_gated_calcium s0 pool",
+   "consumer": "cluster_gated_calcium",
+   "family": null,
+   "world": "cluster_gated_calcium",
+   "seed_index": 0,
+   "world_id": null,
+   "step_s": null,
+   "role": "judged",
+   "variant": "pool"
+  },
+  {
+   "name": "cluster_gated_calcium s0 w0 h=1.25e-05",
+   "consumer": "cluster_gated_calcium",
+   "family": "cluster_gated_calcium s0 w0",
+   "world": "cluster_gated_calcium",
+   "seed_index": 0,
+   "world_id": 0,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_gated_calcium s0 w0 h=6.25e-06",
+   "consumer": "cluster_gated_calcium",
+   "family": "cluster_gated_calcium s0 w0",
+   "world": "cluster_gated_calcium",
+   "seed_index": 0,
+   "world_id": 0,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_gated_calcium s0 w0 h=3.125e-06",
+   "consumer": "cluster_gated_calcium",
+   "family": "cluster_gated_calcium s0 w0",
+   "world": "cluster_gated_calcium",
+   "seed_index": 0,
+   "world_id": 0,
+   "step_s": 3.125e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_gated_calcium s0 w1 h=1.25e-05",
+   "consumer": "cluster_gated_calcium",
+   "family": "cluster_gated_calcium s0 w1",
+   "world": "cluster_gated_calcium",
+   "seed_index": 0,
+   "world_id": 1,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_gated_calcium s0 w1 h=6.25e-06",
+   "consumer": "cluster_gated_calcium",
+   "family": "cluster_gated_calcium s0 w1",
+   "world": "cluster_gated_calcium",
+   "seed_index": 0,
+   "world_id": 1,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_gated_calcium s0 w1 h=3.125e-06",
+   "consumer": "cluster_gated_calcium",
+   "family": "cluster_gated_calcium s0 w1",
+   "world": "cluster_gated_calcium",
+   "seed_index": 0,
+   "world_id": 1,
+   "step_s": 3.125e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_gated_calcium s1 pool",
+   "consumer": "cluster_gated_calcium",
+   "family": null,
+   "world": "cluster_gated_calcium",
+   "seed_index": 1,
+   "world_id": null,
+   "step_s": null,
+   "role": "judged",
+   "variant": "pool"
+  },
+  {
+   "name": "cluster_gated_calcium s1 w0 h=1.25e-05",
+   "consumer": "cluster_gated_calcium",
+   "family": "cluster_gated_calcium s1 w0",
+   "world": "cluster_gated_calcium",
+   "seed_index": 1,
+   "world_id": 0,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_gated_calcium s1 w0 h=6.25e-06",
+   "consumer": "cluster_gated_calcium",
+   "family": "cluster_gated_calcium s1 w0",
+   "world": "cluster_gated_calcium",
+   "seed_index": 1,
+   "world_id": 0,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_gated_calcium s1 w0 h=3.125e-06",
+   "consumer": "cluster_gated_calcium",
+   "family": "cluster_gated_calcium s1 w0",
+   "world": "cluster_gated_calcium",
+   "seed_index": 1,
+   "world_id": 0,
+   "step_s": 3.125e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_gated_calcium s1 w1 h=1.25e-05",
+   "consumer": "cluster_gated_calcium",
+   "family": "cluster_gated_calcium s1 w1",
+   "world": "cluster_gated_calcium",
+   "seed_index": 1,
+   "world_id": 1,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_gated_calcium s1 w1 h=6.25e-06",
+   "consumer": "cluster_gated_calcium",
+   "family": "cluster_gated_calcium s1 w1",
+   "world": "cluster_gated_calcium",
+   "seed_index": 1,
+   "world_id": 1,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_gated_calcium s1 w1 h=3.125e-06",
+   "consumer": "cluster_gated_calcium",
+   "family": "cluster_gated_calcium s1 w1",
+   "world": "cluster_gated_calcium",
+   "seed_index": 1,
+   "world_id": 1,
+   "step_s": 3.125e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_gated_calcium s2 pool",
+   "consumer": "cluster_gated_calcium",
+   "family": null,
+   "world": "cluster_gated_calcium",
+   "seed_index": 2,
+   "world_id": null,
+   "step_s": null,
+   "role": "judged",
+   "variant": "pool"
+  },
+  {
+   "name": "cluster_gated_calcium s2 w0 h=1.25e-05",
+   "consumer": "cluster_gated_calcium",
+   "family": "cluster_gated_calcium s2 w0",
+   "world": "cluster_gated_calcium",
+   "seed_index": 2,
+   "world_id": 0,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_gated_calcium s2 w0 h=6.25e-06",
+   "consumer": "cluster_gated_calcium",
+   "family": "cluster_gated_calcium s2 w0",
+   "world": "cluster_gated_calcium",
+   "seed_index": 2,
+   "world_id": 0,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_gated_calcium s2 w0 h=3.125e-06",
+   "consumer": "cluster_gated_calcium",
+   "family": "cluster_gated_calcium s2 w0",
+   "world": "cluster_gated_calcium",
+   "seed_index": 2,
+   "world_id": 0,
+   "step_s": 3.125e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_gated_calcium s2 w1 h=1.25e-05",
+   "consumer": "cluster_gated_calcium",
+   "family": "cluster_gated_calcium s2 w1",
+   "world": "cluster_gated_calcium",
+   "seed_index": 2,
+   "world_id": 1,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_gated_calcium s2 w1 h=6.25e-06",
+   "consumer": "cluster_gated_calcium",
+   "family": "cluster_gated_calcium s2 w1",
+   "world": "cluster_gated_calcium",
+   "seed_index": 2,
+   "world_id": 1,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_gated_calcium s2 w1 h=3.125e-06",
+   "consumer": "cluster_gated_calcium",
+   "family": "cluster_gated_calcium s2 w1",
+   "world": "cluster_gated_calcium",
+   "seed_index": 2,
+   "world_id": 1,
+   "step_s": 3.125e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_gated_calcium s3 pool",
+   "consumer": "cluster_gated_calcium",
+   "family": null,
+   "world": "cluster_gated_calcium",
+   "seed_index": 3,
+   "world_id": null,
+   "step_s": null,
+   "role": "judged",
+   "variant": "pool"
+  },
+  {
+   "name": "cluster_gated_calcium s3 w0 h=1.25e-05",
+   "consumer": "cluster_gated_calcium",
+   "family": "cluster_gated_calcium s3 w0",
+   "world": "cluster_gated_calcium",
+   "seed_index": 3,
+   "world_id": 0,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_gated_calcium s3 w0 h=6.25e-06",
+   "consumer": "cluster_gated_calcium",
+   "family": "cluster_gated_calcium s3 w0",
+   "world": "cluster_gated_calcium",
+   "seed_index": 3,
+   "world_id": 0,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_gated_calcium s3 w0 h=3.125e-06",
+   "consumer": "cluster_gated_calcium",
+   "family": "cluster_gated_calcium s3 w0",
+   "world": "cluster_gated_calcium",
+   "seed_index": 3,
+   "world_id": 0,
+   "step_s": 3.125e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_gated_calcium s3 w1 h=1.25e-05",
+   "consumer": "cluster_gated_calcium",
+   "family": "cluster_gated_calcium s3 w1",
+   "world": "cluster_gated_calcium",
+   "seed_index": 3,
+   "world_id": 1,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_gated_calcium s3 w1 h=6.25e-06",
+   "consumer": "cluster_gated_calcium",
+   "family": "cluster_gated_calcium s3 w1",
+   "world": "cluster_gated_calcium",
+   "seed_index": 3,
+   "world_id": 1,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_gated_calcium s3 w1 h=3.125e-06",
+   "consumer": "cluster_gated_calcium",
+   "family": "cluster_gated_calcium s3 w1",
+   "world": "cluster_gated_calcium",
+   "seed_index": 3,
+   "world_id": 1,
+   "step_s": 3.125e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_ip3_calcium s0 pool",
+   "consumer": "cluster_ip3_calcium",
+   "family": null,
+   "world": "cluster_ip3_calcium",
+   "seed_index": 0,
+   "world_id": null,
+   "step_s": null,
+   "role": "judged",
+   "variant": "pool"
+  },
+  {
+   "name": "cluster_ip3_calcium s0 w0 h=1.25e-05",
+   "consumer": "cluster_ip3_calcium",
+   "family": "cluster_ip3_calcium s0 w0",
+   "world": "cluster_ip3_calcium",
+   "seed_index": 0,
+   "world_id": 0,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_ip3_calcium s0 w0 h=6.25e-06",
+   "consumer": "cluster_ip3_calcium",
+   "family": "cluster_ip3_calcium s0 w0",
+   "world": "cluster_ip3_calcium",
+   "seed_index": 0,
+   "world_id": 0,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_ip3_calcium s0 w0 h=3.125e-06",
+   "consumer": "cluster_ip3_calcium",
+   "family": "cluster_ip3_calcium s0 w0",
+   "world": "cluster_ip3_calcium",
+   "seed_index": 0,
+   "world_id": 0,
+   "step_s": 3.125e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_ip3_calcium s0 w1 h=1.25e-05",
+   "consumer": "cluster_ip3_calcium",
+   "family": "cluster_ip3_calcium s0 w1",
+   "world": "cluster_ip3_calcium",
+   "seed_index": 0,
+   "world_id": 1,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_ip3_calcium s0 w1 h=6.25e-06",
+   "consumer": "cluster_ip3_calcium",
+   "family": "cluster_ip3_calcium s0 w1",
+   "world": "cluster_ip3_calcium",
+   "seed_index": 0,
+   "world_id": 1,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_ip3_calcium s0 w1 h=3.125e-06",
+   "consumer": "cluster_ip3_calcium",
+   "family": "cluster_ip3_calcium s0 w1",
+   "world": "cluster_ip3_calcium",
+   "seed_index": 0,
+   "world_id": 1,
+   "step_s": 3.125e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_ip3_calcium s1 pool",
+   "consumer": "cluster_ip3_calcium",
+   "family": null,
+   "world": "cluster_ip3_calcium",
+   "seed_index": 1,
+   "world_id": null,
+   "step_s": null,
+   "role": "judged",
+   "variant": "pool"
+  },
+  {
+   "name": "cluster_ip3_calcium s1 w0 h=1.25e-05",
+   "consumer": "cluster_ip3_calcium",
+   "family": "cluster_ip3_calcium s1 w0",
+   "world": "cluster_ip3_calcium",
+   "seed_index": 1,
+   "world_id": 0,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_ip3_calcium s1 w0 h=6.25e-06",
+   "consumer": "cluster_ip3_calcium",
+   "family": "cluster_ip3_calcium s1 w0",
+   "world": "cluster_ip3_calcium",
+   "seed_index": 1,
+   "world_id": 0,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_ip3_calcium s1 w0 h=3.125e-06",
+   "consumer": "cluster_ip3_calcium",
+   "family": "cluster_ip3_calcium s1 w0",
+   "world": "cluster_ip3_calcium",
+   "seed_index": 1,
+   "world_id": 0,
+   "step_s": 3.125e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_ip3_calcium s1 w1 h=1.25e-05",
+   "consumer": "cluster_ip3_calcium",
+   "family": "cluster_ip3_calcium s1 w1",
+   "world": "cluster_ip3_calcium",
+   "seed_index": 1,
+   "world_id": 1,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_ip3_calcium s1 w1 h=6.25e-06",
+   "consumer": "cluster_ip3_calcium",
+   "family": "cluster_ip3_calcium s1 w1",
+   "world": "cluster_ip3_calcium",
+   "seed_index": 1,
+   "world_id": 1,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_ip3_calcium s1 w1 h=3.125e-06",
+   "consumer": "cluster_ip3_calcium",
+   "family": "cluster_ip3_calcium s1 w1",
+   "world": "cluster_ip3_calcium",
+   "seed_index": 1,
+   "world_id": 1,
+   "step_s": 3.125e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_ip3_calcium s2 pool",
+   "consumer": "cluster_ip3_calcium",
+   "family": null,
+   "world": "cluster_ip3_calcium",
+   "seed_index": 2,
+   "world_id": null,
+   "step_s": null,
+   "role": "judged",
+   "variant": "pool"
+  },
+  {
+   "name": "cluster_ip3_calcium s2 w0 h=1.25e-05",
+   "consumer": "cluster_ip3_calcium",
+   "family": "cluster_ip3_calcium s2 w0",
+   "world": "cluster_ip3_calcium",
+   "seed_index": 2,
+   "world_id": 0,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_ip3_calcium s2 w0 h=6.25e-06",
+   "consumer": "cluster_ip3_calcium",
+   "family": "cluster_ip3_calcium s2 w0",
+   "world": "cluster_ip3_calcium",
+   "seed_index": 2,
+   "world_id": 0,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_ip3_calcium s2 w0 h=3.125e-06",
+   "consumer": "cluster_ip3_calcium",
+   "family": "cluster_ip3_calcium s2 w0",
+   "world": "cluster_ip3_calcium",
+   "seed_index": 2,
+   "world_id": 0,
+   "step_s": 3.125e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_ip3_calcium s2 w1 h=1.25e-05",
+   "consumer": "cluster_ip3_calcium",
+   "family": "cluster_ip3_calcium s2 w1",
+   "world": "cluster_ip3_calcium",
+   "seed_index": 2,
+   "world_id": 1,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_ip3_calcium s2 w1 h=6.25e-06",
+   "consumer": "cluster_ip3_calcium",
+   "family": "cluster_ip3_calcium s2 w1",
+   "world": "cluster_ip3_calcium",
+   "seed_index": 2,
+   "world_id": 1,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_ip3_calcium s2 w1 h=3.125e-06",
+   "consumer": "cluster_ip3_calcium",
+   "family": "cluster_ip3_calcium s2 w1",
+   "world": "cluster_ip3_calcium",
+   "seed_index": 2,
+   "world_id": 1,
+   "step_s": 3.125e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_ip3_calcium s3 pool",
+   "consumer": "cluster_ip3_calcium",
+   "family": null,
+   "world": "cluster_ip3_calcium",
+   "seed_index": 3,
+   "world_id": null,
+   "step_s": null,
+   "role": "judged",
+   "variant": "pool"
+  },
+  {
+   "name": "cluster_ip3_calcium s3 w0 h=1.25e-05",
+   "consumer": "cluster_ip3_calcium",
+   "family": "cluster_ip3_calcium s3 w0",
+   "world": "cluster_ip3_calcium",
+   "seed_index": 3,
+   "world_id": 0,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_ip3_calcium s3 w0 h=6.25e-06",
+   "consumer": "cluster_ip3_calcium",
+   "family": "cluster_ip3_calcium s3 w0",
+   "world": "cluster_ip3_calcium",
+   "seed_index": 3,
+   "world_id": 0,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_ip3_calcium s3 w0 h=3.125e-06",
+   "consumer": "cluster_ip3_calcium",
+   "family": "cluster_ip3_calcium s3 w0",
+   "world": "cluster_ip3_calcium",
+   "seed_index": 3,
+   "world_id": 0,
+   "step_s": 3.125e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_ip3_calcium s3 w1 h=1.25e-05",
+   "consumer": "cluster_ip3_calcium",
+   "family": "cluster_ip3_calcium s3 w1",
+   "world": "cluster_ip3_calcium",
+   "seed_index": 3,
+   "world_id": 1,
+   "step_s": 1.25e-05,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_ip3_calcium s3 w1 h=6.25e-06",
+   "consumer": "cluster_ip3_calcium",
+   "family": "cluster_ip3_calcium s3 w1",
+   "world": "cluster_ip3_calcium",
+   "seed_index": 3,
+   "world_id": 1,
+   "step_s": 6.25e-06,
+   "role": "judged",
+   "variant": "ionic"
+  },
+  {
+   "name": "cluster_ip3_calcium s3 w1 h=3.125e-06",
+   "consumer": "cluster_ip3_calcium",
+   "family": "cluster_ip3_calcium s3 w1",
+   "world": "cluster_ip3_calcium",
+   "seed_index": 3,
+   "world_id": 1,
+   "step_s": 3.125e-06,
+   "role": "judged",
+   "variant": "ionic"
+  }
+ ]
+}

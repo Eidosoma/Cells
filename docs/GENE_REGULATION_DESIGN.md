@@ -1,5 +1,8 @@
 # Gene regulation as physics: design, and options for the first milestone
 
+> **Legacy cleanup (25 November 2026, D386).** Paths under `src/cells/legacy/` and the older model
+> IDs named below left the engine. The tag `pre-cleanup-2026-11-25` keeps them.
+
 *Status: proposed, 20 November 2026, for the lead and the advisor, then the user (D234 item 2).
 **The user chose option A the same day (D235); §7 holds its plan, refreshed against main at
 e0b1d3b8, and the note's other questions stay open.** Desk work only: no engine code and no runs.

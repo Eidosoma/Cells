@@ -1,5 +1,9 @@
 # First build: one cell, end to end
 
+> **Legacy cleanup (25 November 2026, D386).** `source_decay@1` left the engine, with its
+> configurations. This page stays as the history of the first build. The tag
+> `pre-cleanup-2026-11-25` keeps the code.
+
 Initial implementation plan: 2026-09-07. M1a is implemented as version 0.1.0 and
 verified on 2026-09-08. This document preserves its scope and numerical contract.
 See the [acceptance report](../reports/M1A_ACCEPTANCE.md),

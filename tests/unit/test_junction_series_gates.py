@@ -31,14 +31,23 @@ Host arithmetic only (NumPy), with no world compiled. Each claim with a planted 
 - S10, the step checks: the tableau's junction-gate bound from each gate's largest rate; RK4
   refused in v1.
 
+And the one-gate law beside them (junction_voltage_relaxation.py), its declared test (D196): its
+kinetics, rhs and advance_clamped meet the independent decimals of
+validation/betse/junction_gate/reference.py over the law's domain (planted: each of the five
+constants of its kinetics moved by a part in 10^9, the least conductance left out of its rhs, and
+an Euler step for its exact one).
+
 Cost: 1.83 s for the law's rows S1-S6 on the timed lane (CPU 4 under the timed lock, at
 4b23f252), most of it importing the engine; S7-S10, @3's integration, add host parses and host
 steps of the closed two-cell fixture, measured with the file at landing. Reason: the law's claims
 are host arithmetic, and the integration's are cheapest on the host.
 """
 
+import functools
 import math
+import types
 
+import jax
 import numpy as np
 import pytest
 
@@ -46,6 +55,7 @@ from cells.laws.junctions import junction_gate
 from cells.laws.junctions import junction_series_gates as series
 from cells.laws.junctions import junction_voltage_relaxation as relaxation
 from cells.registry.laws import JunctionLaw
+from validation.betse.junction_gate import reference as one_gate_reference
 
 BE = series.BoltzmannEyring
 KINDS = ("boltzmann_eyring", "boltzmann_eyring")
@@ -167,6 +177,69 @@ def test_a_threshold_relaxation_gate_is_today_s_law_bitwise():
                                kinds=kinds, xp=np)[0]  # fmt: skip
             assert (moved != got) or c == 1.0 or relaxation.kinetics(v, p, xp=np).beta_per_s == 0
     assert junction_gate.series is series and junction_gate.SERIES_LAW_ID == series.LAW_ID
+
+
+@functools.cache
+def one_gate_decimals():
+    """Four thresholds and four least conductances over the one-gate law's domain, at 25 voltages
+    from -120 to 120 mV: (voltage, parameters, gate, rates, rhs, {dt: the exact step})."""
+    voltage = np.linspace(-0.12, 0.12, 25)
+    threshold = np.array([0.0, 0.015, 0.06, 0.12])[:, None, None]
+    minimum = np.array([0.0, 0.1, 0.4, 1.0])[:, None]
+    gate = minimum + 0.3 * (1 - minimum)
+    alpha, beta = one_gate_reference.rates(voltage, threshold)
+    both = alpha + beta
+    rates = (alpha, beta, (alpha + beta * minimum) / both, both)
+    slope = alpha * (1 - gate) - beta * (gate - minimum)
+    steps = {
+        dt: one_gate_reference.solution(gate, voltage, threshold, minimum, dt)
+        for dt in (0.0, 1e-6, 0.01, 0.25, 1.0)
+    }
+    return voltage, relaxation.Parameters(threshold, minimum), gate, rates, slope, steps
+
+
+def one_gate_errors(kinetics, rhs, advance):
+    """Where the one-gate law's kernels leave the independent decimals (empty: they keep them).
+
+    The bounds: 1e-14 of each rate and of the target, 1e-14 (alpha + beta) for rhs, and 2e-15 for an
+    exact step of up to 1 s. The largest distances measured are 3.3e-15, 5.9e-16 and 3.4e-16.
+    """
+    voltage, p, gate, rates, slope, steps = one_gate_decimals()
+    out = []
+    if not all(
+        np.allclose(a, b, rtol=1e-14, atol=0)
+        for a, b in zip(kinetics(voltage, p), rates, strict=True)
+    ):
+        out.append("kinetics")
+    if np.any(np.abs(rhs(gate, voltage, p) - slope) > 1e-14 * rates[3]):
+        out.append("rhs")
+    if any(np.any(np.abs(advance(gate, voltage, p, t) - x) > 2e-15) for t, x in steps.items()):
+        out.append("advance")
+    return out
+
+
+def test_the_one_gate_law_meets_the_independent_decimals_and_each_plant_misses_them():
+    kinetics, rhs, advance = (
+        functools.partial(f, xp=np)
+        for f in (relaxation.kinetics, relaxation.rhs, relaxation.advance_clamped)
+    )
+    assert one_gate_errors(kinetics, rhs, advance) == []
+    assert one_gate_errors(jax.jit(relaxation.kinetics), rhs, advance) == []
+    # Planted: one constant of the kinetics moved, the module untouched.
+    code = relaxation.kinetics.__code__
+    for moved in (1.3, -77.0, 0.065, 140.0, 20.0):
+        assert code.co_consts.count(moved) == 1
+        constants = tuple(c * (1 + 1e-9) if c == moved else c for c in code.co_consts)
+        planted = types.FunctionType(
+            code.replace(co_consts=constants), relaxation.kinetics.__globals__
+        )
+        planted = functools.partial(planted, xp=np)
+        assert one_gate_errors(planted, rhs, advance) == ["kinetics"], moved
+    # Planted: the least conductance left out of rhs, and an Euler step for the exact one.
+    shut = lambda g, v, p: rhs(g, v, p._replace(minimum_open_fraction=0.0))  # noqa: E731
+    assert one_gate_errors(kinetics, shut, advance) == ["rhs"]
+    euler = lambda g, v, p, dt: g + dt * rhs(g, v, p)  # noqa: E731
+    assert one_gate_errors(kinetics, rhs, euler) == ["advance"]
 
 
 def test_routes_read_open_fractions_and_a_tracer_never_takes_the_conductance():

@@ -158,6 +158,10 @@ def _drive(entry, k, channels):
         pool = parse_pool(entry["pool"])
     except (AssemblyError, ConfigError) as exc:
         raise ConfigError(f"Pool {k}: {exc}") from exc
+    if "seed" not in entry["pool"]:
+        raise ConfigError(
+            f"Pool {k} declares no seed: a driven world's path is drawn from a seed it declares"
+        )
     levels = require_fields(entry["levels"], set(law.values), f"pool {k}: levels")
     levels = tuple(fraction(levels[v], f"pool {k}: the level of {v!r}") for v in law.values)
     return PoolDrive(tuple(given), law, levels, pool)

@@ -1,0 +1,2614 @@
+{
+ "schema": "ensemble-reexpression plant manifest, version 1",
+ "part": 1,
+ "snapshot": "legacy-captures-20261125/snapshot-76a498ae",
+ "runs": [
+  {
+   "name": "control jupiter_baseline h4",
+   "kind": "ionic",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/ionic/jupiter_baseline/h4.json",
+   "base_sha256": "ee452cc8f784470c6365d614927b4f229317a2b540b5e5d7c3a12f60daca5ddf",
+   "modify": [],
+   "modified_leaves": [],
+   "patch": null,
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "control_plan.json",
+    "0",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/control"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    7
+   ],
+   "started": "2026-11-25T11:24:59+00:00",
+   "finished": "2026-11-25T11:25:34+00:00",
+   "seconds": 34.75298627698794,
+   "outcome": "completed",
+   "definition_sha256": "5d0f4fde71233d2c5e2c6bf86c4b152d6cd276e3ceebf3a0ec66ffa2c90d3d37",
+   "driver_sha256": "d6e37424fbea1ad02201583591200f527c79d42815cb0085337d098c11046c89",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "5d0f4fde71233d2c5e2c6bf86c4b152d6cd276e3ceebf3a0ec66ffa2c90d3d37",
+    "run/run.json": "d463d113f9c3611bb939c87d703f4a27ce06372881ebf91b01e14916753dd737",
+    "run/window-0000.npz": "977787e5886c5a8792232471bead4d593c8ecd2b9d7326459cd291b56617fcbb",
+    "run/window-0001.npz": "f9df1762db020307e61342ec8bb75ff785c5128ec3623c8bd9261972a6613867",
+    "run/window-0002.npz": "e6180f100f41e1f14de953fbf475ea5727a3472e7695f0e123fdebcdd7d48b9e",
+    "run/window-0003.npz": "97d0f570af005023e44e4c68851d7aaea21c66628e1ff6fd2c5e0321889852ec"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/control/control jupiter_baseline h4"
+  },
+  {
+   "name": "PW-channel base",
+   "kind": "assembly",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/assembly/cluster_base/h4-s0.json",
+   "base_sha256": "b179f55f5a77f6dad12d7db5d36166a52104b06c2c4d96ce3a119037cf7673db",
+   "modify": [
+    {
+     "path": "/ionic/model/cells/*/channel/max_permeability_m_per_s",
+     "mul": 1.01
+    }
+   ],
+   "modified_leaves": [
+    2
+   ],
+   "patch": null,
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "23,24,25,26",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    7
+   ],
+   "started": "2026-11-25T11:30:59+00:00",
+   "finished": "2026-11-25T11:31:05+00:00",
+   "seconds": 6.384894910035655,
+   "outcome": "completed",
+   "definition_sha256": "8aff35e9764a65db24c8fd98ae66a3750ab915d66f7dc8f71b8cd4aad794481a",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "8aff35e9764a65db24c8fd98ae66a3750ab915d66f7dc8f71b8cd4aad794481a",
+    "run/checkpoint/state.npz": "18e4183319febf3ebd00c0546899e4688f9d5b53c156b522eaaee19061ce00d0",
+    "run/completion.json": "78effca0cca5869a989359959ec1c36fa6650a9a2a2cadd76c3ea142ff9ddafc",
+    "run/observations/tick-0000000.json": "6e602e32f6d516c53f23c9f0a98578336346912de2bc03a8323986750c47a931",
+    "run/observations/tick-0000400.json": "0c9e1fbc3f075734a13270f70fca8394120bd065fd8cc74626fc383928d5ea51",
+    "run/observations/tick-0000800.json": "0b33147ef618f3474bd83338f99f867ad714176c3a52ba938465301a86252c13",
+    "run/observations/tick-0001600.json": "d772ee5cf58bf382e06dfe91106e34477e4af23c07e30b2107c2330b9febe223",
+    "run/registration.json": "05dff5ed308fc7e7e96bdc7195dad8d01a3d965891d7e1f69962fd292556e455",
+    "run/result.json": "000e6b22f4e74e4536778a8dbe25ba2f79a2e0f7caee3acf70816e393897fa0d",
+    "run/started.json": "fae2a081b7d8cbbf4f9b058b270d38a458dc0574d84eaadfcb1df906d3951a0b",
+    "run/status.json": "8f74169b1ede3d731911c485edc9a476c4011ecb59134403a7965a7d6c2d4a03"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/PW-channel base"
+  },
+  {
+   "name": "PW-channel cell",
+   "kind": "assembly",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/assembly/cell/h4-s0.json",
+   "base_sha256": "e4fc9460d51e636b96a8c26417bb8842d80c6adf6fb22023907b25108ffc0ad3",
+   "modify": [
+    {
+     "path": "/ionic/model/cells/*/channel/max_permeability_m_per_s",
+     "mul": 1.01
+    }
+   ],
+   "modified_leaves": [
+    1
+   ],
+   "patch": null,
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "33,34",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    23
+   ],
+   "started": "2026-11-25T11:31:29+00:00",
+   "finished": "2026-11-25T11:33:19+00:00",
+   "seconds": 109.91458760108799,
+   "outcome": "completed",
+   "definition_sha256": "7f20440b5b6fc0aa41c8d077869bca01484ba170b79ae89b9631d7fe1ec0f137",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "7f20440b5b6fc0aa41c8d077869bca01484ba170b79ae89b9631d7fe1ec0f137",
+    "run/checkpoint/state.npz": "94e8fb45f6f95a6618174434f24cefc557d0bd7c902eef657d00ec677c66726b",
+    "run/completion.json": "c75f350189419201b9653448710b706cf83b6caf9fd9919fd0229e8bdae9cd3a",
+    "run/registration.json": "1a0213188db449aa2fd1b814bada89a22ad88b92678578d9ab147d0e84367b30",
+    "run/result.json": "987ca888410dd6f5e94948c4c6b22b2a35bb3ba4cd2da430265978dfac8d7e2a",
+    "run/started.json": "37451073a4efc6876f793bed80dc465fefe629d7b8452b954ac63326f2945637",
+    "run/status.json": "6d5906470192fecfba2d1198b5f78e5882090ff71e84d5eed016acba22a2e2ff"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/PW-channel cell"
+  },
+  {
+   "name": "PW-channel jupiter_baseline",
+   "kind": "ionic",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/ionic/jupiter_baseline/h4.json",
+   "base_sha256": "ee452cc8f784470c6365d614927b4f229317a2b540b5e5d7c3a12f60daca5ddf",
+   "modify": [
+    {
+     "path": "/model/cells/*/channel/max_permeability_m_per_s",
+     "mul": 1.01
+    }
+   ],
+   "modified_leaves": [
+    2
+   ],
+   "patch": null,
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "0,1,2,3,4,5,6,21,42",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    7
+   ],
+   "started": "2026-11-25T11:28:22+00:00",
+   "finished": "2026-11-25T11:28:23+00:00",
+   "seconds": 1.1388327809982002,
+   "outcome": "completed",
+   "definition_sha256": "86ef48a5c7644e5b0fd51f4726162365df451191963b08e69fc5e53d6a4d5166",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "86ef48a5c7644e5b0fd51f4726162365df451191963b08e69fc5e53d6a4d5166",
+    "run/run.json": "908ca3587a2283c769fc21e22e2bbe9c327a26ccd20c2803c1c619a200104765",
+    "run/window-0000.npz": "977bf8897bd21f771a6f9f77a0231d26cfc9b2ae8e365ecce7886bfa3fb9612b",
+    "run/window-0001.npz": "a9f167292d7afe4d266fcaa662803d9479f64c510adc09575edf47039bd1eecd",
+    "run/window-0002.npz": "7ff84a42a8a3a47d8de77e3c44e3fceb0cadfb06bc508db4eba082fdd6c35131",
+    "run/window-0003.npz": "6923ac16c86fd9e8d705a72923a2cf5245852f54eef1b80bf763c3e65ccb650c"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/PW-channel jupiter_baseline"
+  },
+  {
+   "name": "PW-channel jupiter_pump_release",
+   "kind": "ionic",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/ionic/jupiter_pump_release/h4.json",
+   "base_sha256": "1f571d97f4a1f36e1bedb062cfcc172c96d16075a57dda3d688f9994935d82a1",
+   "modify": [
+    {
+     "path": "/model/cells/*/channel/max_permeability_m_per_s",
+     "mul": 1.01
+    }
+   ],
+   "modified_leaves": [
+    2
+   ],
+   "patch": null,
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "8,9,10,11,12,13,14,15,22,43",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    23
+   ],
+   "started": "2026-11-25T11:28:23+00:00",
+   "finished": "2026-11-25T11:28:24+00:00",
+   "seconds": 0.945602974970825,
+   "outcome": "completed",
+   "definition_sha256": "50966389da1bc1686b768e11d5dce0f243496c6858ac32f728c6abd3e31f176c",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "50966389da1bc1686b768e11d5dce0f243496c6858ac32f728c6abd3e31f176c",
+    "run/run.json": "4e981e868f61571bfbec3551c7b6c077695fd082159e630aaaa0c19bca0d6fa8",
+    "run/window-0000.npz": "fa59f213a9cb899911647a968f72cf5c0a2970001484453b773da108dc8b4e6f",
+    "run/window-0001.npz": "ff5a435e5c181018ccf1d53635f0cf2ab8668fd994a1872425d752a676e45a55",
+    "run/window-0002.npz": "6b77ada6b4668897ba5aa9ae6eb77e8aa60eb46dff68010997bde7424b4e64d0",
+    "run/window-0003.npz": "add8f3488bf8152550d2342676775b530ed35bde4dead3556ea57407a7e4c034"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/PW-channel jupiter_pump_release"
+  },
+  {
+   "name": "PW-face base",
+   "kind": "assembly",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/assembly/cluster_base/h4-s0.json",
+   "base_sha256": "b179f55f5a77f6dad12d7db5d36166a52104b06c2c4d96ce3a119037cf7673db",
+   "modify": [
+    {
+     "path": "/ionic/model/faces/*/diffusivity_m2_per_s/*",
+     "mul": 1.01
+    }
+   ],
+   "modified_leaves": [
+    9
+   ],
+   "patch": null,
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "27,28,29",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    23
+   ],
+   "started": "2026-11-25T11:30:39+00:00",
+   "finished": "2026-11-25T11:30:46+00:00",
+   "seconds": 6.589389235014096,
+   "outcome": "completed",
+   "definition_sha256": "370dfd2def67717ad8569448813d1e69a69b3f1ffb99b5a24a734fc58243c4d6",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "370dfd2def67717ad8569448813d1e69a69b3f1ffb99b5a24a734fc58243c4d6",
+    "run/checkpoint/state.npz": "4b6d1174c119d2c50633e1c5426804a5f6298d8648429f8fb5a604abe6f9fe46",
+    "run/completion.json": "48e191efca8ec7594a33c35b8c2af35a91cbfdffd87ecaf16c110de577e8a062",
+    "run/observations/tick-0000000.json": "145d000aaa692ae4de49514a3b55b415ed0bef762baa554660600ef44b0665b6",
+    "run/observations/tick-0000400.json": "f66fc83074a47bb362128e9770a52bd1197ca28db047f8611607764ff5048c32",
+    "run/observations/tick-0000800.json": "0a88485eaca0da840c83643f1f201468eeee1672fba0e7ef0198d304f6743082",
+    "run/observations/tick-0001600.json": "316136b32e67b48e31000b8aee1bfff91b5fc55fb40049eb76ea6531ffbb4b84",
+    "run/registration.json": "a9389b7feeae5b402cb04bcffa0db9b74314063d0663e516461453a2e40e93df",
+    "run/result.json": "d77594554ca2b40ccbe21db6aab72df4a68e52080a726534346532cc6acd6ad4",
+    "run/started.json": "688b6f73503a5cf9515ad0111495ed62fa97690821e80c80995f294e3cb25f0e",
+    "run/status.json": "cceb61450b68f60553be908bc5ad7e632fd73ceb791e232089b54697e6094cd0"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/PW-face base"
+  },
+  {
+   "name": "PW-face jupiter_baseline",
+   "kind": "ionic",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/ionic/jupiter_baseline/h4.json",
+   "base_sha256": "ee452cc8f784470c6365d614927b4f229317a2b540b5e5d7c3a12f60daca5ddf",
+   "modify": [
+    {
+     "path": "/model/faces/*/diffusivity_m2_per_s/*",
+     "mul": 1.01
+    }
+   ],
+   "modified_leaves": [
+    9
+   ],
+   "patch": null,
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "0,1,2,3,4,5,6,21,42",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    7
+   ],
+   "started": "2026-11-25T11:28:26+00:00",
+   "finished": "2026-11-25T11:28:28+00:00",
+   "seconds": 1.4671401780797169,
+   "outcome": "completed",
+   "definition_sha256": "50d693a9d97f3f2e4718b2130fb3954656bb1c0fc1133a19eafd7e3a4a844c2a",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "50d693a9d97f3f2e4718b2130fb3954656bb1c0fc1133a19eafd7e3a4a844c2a",
+    "run/run.json": "73332e62ea1063e518f5bf6db63868db6f7f0d9211e71885239eb99e924027a8",
+    "run/window-0000.npz": "98e3835cec963518cf4aee33f9cd07940afc6d49a807d941e40e29c04245633a",
+    "run/window-0001.npz": "d3076770ccb8ac083f4d0ffd8f29223a9dc622bf14b8624e53ef55204554e6ea",
+    "run/window-0002.npz": "1b47e2240419b7591fe2da9dfed7058b0c42eb54113330c3a67c2de4bf2748cb",
+    "run/window-0003.npz": "4fd0dd9c65f70c32f0c99e001f5ddaadac37c7ca80e8992af3712982d735d6b7"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/PW-face jupiter_baseline"
+  },
+  {
+   "name": "PW-face jupiter_pump_release",
+   "kind": "ionic",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/ionic/jupiter_pump_release/h4.json",
+   "base_sha256": "1f571d97f4a1f36e1bedb062cfcc172c96d16075a57dda3d688f9994935d82a1",
+   "modify": [
+    {
+     "path": "/model/faces/*/diffusivity_m2_per_s/*",
+     "mul": 1.01
+    }
+   ],
+   "modified_leaves": [
+    9
+   ],
+   "patch": null,
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "8,9,10,11,12,13,14,15,22,43",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    23
+   ],
+   "started": "2026-11-25T11:28:28+00:00",
+   "finished": "2026-11-25T11:28:28+00:00",
+   "seconds": 0.8816651370143518,
+   "outcome": "completed",
+   "definition_sha256": "4b62cd0ecc94b3f78e9a919784c1d56bc9e31669c77d780f5d5e8e8e8855d4ed",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "4b62cd0ecc94b3f78e9a919784c1d56bc9e31669c77d780f5d5e8e8e8855d4ed",
+    "run/run.json": "0a8e2e37e3d6f143c9e4fc9ac0752ff5b7056e084a7caeda2c8ed6997cf391e0",
+    "run/window-0000.npz": "dee11e6e5df9d37c990ea976821cda9c964cca838f92b8dd805fcd655b48ff41",
+    "run/window-0001.npz": "6bb0eb6e99f6e77cfc17e4656fc492957bace1d78a2eafb3e91169049b91189e",
+    "run/window-0002.npz": "6e2a772db388c51f344870878a462fca323f89f8606371966ae4b6b72faaba22",
+    "run/window-0003.npz": "31e5c478d3c9c32b4f91e413bc7bd1108f0129203e3fa8a3d86f614181050bc8"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/PW-face jupiter_pump_release"
+  },
+  {
+   "name": "PW-faceK jupiter_baseline",
+   "kind": "ionic",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/ionic/jupiter_baseline/h4.json",
+   "base_sha256": "ee452cc8f784470c6365d614927b4f229317a2b540b5e5d7c3a12f60daca5ddf",
+   "modify": [
+    {
+     "path": "/model/faces/*/diffusivity_m2_per_s/K",
+     "mul": 1.01
+    }
+   ],
+   "modified_leaves": [
+    3
+   ],
+   "patch": null,
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "0,1,2,3,4,5,6,21,42",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    7
+   ],
+   "started": "2026-11-25T11:28:28+00:00",
+   "finished": "2026-11-25T11:28:30+00:00",
+   "seconds": 2.1903409650549293,
+   "outcome": "completed",
+   "definition_sha256": "5ffa32340b701d99cf9ba25ce00717a3c62fe6f2193aa4887a1ddcf0373702bb",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "5ffa32340b701d99cf9ba25ce00717a3c62fe6f2193aa4887a1ddcf0373702bb",
+    "run/run.json": "118ec0fbf00d5f47471c90148de30824a7150cc86db8192452a7679d776b4139",
+    "run/window-0000.npz": "93dde5d73852d2e2177cfb77c6bea8727b7b9fbc09c196e856e0813c9590873b",
+    "run/window-0001.npz": "05acc40020c009b64d5804f5ba8afdabf886c42193e4ee5407b8505e3c5af649",
+    "run/window-0002.npz": "d90de7c460adb2e2282ca8d8f77ed5b6cfcc59b58c007a225e914ec4c51db350",
+    "run/window-0003.npz": "277efbb9b919579e82ac10b1e05b4d6eba94e27d680ed9e4a0510a23cb022bfb"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/PW-faceK jupiter_baseline"
+  },
+  {
+   "name": "PW-faceK jupiter_pump_release",
+   "kind": "ionic",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/ionic/jupiter_pump_release/h4.json",
+   "base_sha256": "1f571d97f4a1f36e1bedb062cfcc172c96d16075a57dda3d688f9994935d82a1",
+   "modify": [
+    {
+     "path": "/model/faces/*/diffusivity_m2_per_s/K",
+     "mul": 1.01
+    }
+   ],
+   "modified_leaves": [
+    3
+   ],
+   "patch": null,
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "8,9,10,11,12,13,14,15,22,43",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    23
+   ],
+   "started": "2026-11-25T11:28:28+00:00",
+   "finished": "2026-11-25T11:28:29+00:00",
+   "seconds": 0.7231093039736152,
+   "outcome": "completed",
+   "definition_sha256": "b7f336186e3410784a34238715aa314e680d535a4c51ed5a0d12288b86b29d4f",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "b7f336186e3410784a34238715aa314e680d535a4c51ed5a0d12288b86b29d4f",
+    "run/run.json": "3c0b494f7841bd055e4f9f5a2581c44e4bacb7c74bf6c2789ff7a0bf8fc6a422",
+    "run/window-0000.npz": "d57452a0cab5c80ba9a1a692d17dfd464b0590b20b59444b7189f80e5e9e5810",
+    "run/window-0001.npz": "d9a4fbc16f5f735ecbf46239196be050be364a7d4606ef7a8a025eb49194adda",
+    "run/window-0002.npz": "eee5579c01ab94e13297e0ab2144f87840286ba0ef115995d4a59eb2e26e749d",
+    "run/window-0003.npz": "13fc6dd5ad86d84e56864a3e06340f6fae89c57d5c78c86e7b316ccf49c03e33"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/PW-faceK jupiter_pump_release"
+  },
+  {
+   "name": "PW-jgate base",
+   "kind": "assembly",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/assembly/cluster_base/h4-s0.json",
+   "base_sha256": "b179f55f5a77f6dad12d7db5d36166a52104b06c2c4d96ce3a119037cf7673db",
+   "modify": [
+    {
+     "path": "/ionic/model/junctions/*/gate/threshold_voltage_V",
+     "mul": 1.01
+    }
+   ],
+   "modified_leaves": [
+    1
+   ],
+   "patch": null,
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "27,28,29",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    23
+   ],
+   "started": "2026-11-25T11:30:32+00:00",
+   "finished": "2026-11-25T11:30:39+00:00",
+   "seconds": 7.181033257977106,
+   "outcome": "completed",
+   "definition_sha256": "4b5995092d3dd876f19b1592b074455f186cf018829ef8b44a92ae4186e04872",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "4b5995092d3dd876f19b1592b074455f186cf018829ef8b44a92ae4186e04872",
+    "run/checkpoint/state.npz": "0d72116939e53af946acc32095918bcb1748dba0a65d55de12f8d824b04e2d5e",
+    "run/completion.json": "19052c36709599c9029cf5b5526baeb59c5c7d76b06634e68859d93f3e35a123",
+    "run/observations/tick-0000000.json": "6e602e32f6d516c53f23c9f0a98578336346912de2bc03a8323986750c47a931",
+    "run/observations/tick-0000400.json": "ef6f430a2cdc8d62895ca5c76d3dd009c5858c74342e5f16b6261b24446f1b4d",
+    "run/observations/tick-0000800.json": "625e112db34fca5f66bd89a7c6aad4e4dddaf116eafc323a414357c8507fcd55",
+    "run/observations/tick-0001600.json": "30fa3ce9679d24459889df098cdcf4d6279c92377790cc837cb502b2c1895118",
+    "run/registration.json": "b63f8fadbba578127290fd9621061eb4eb07b49279e3a3f02a91be678070a211",
+    "run/result.json": "e48dff9c020f12c445230187f04d0b9cce60505ac69c06baec322fa5ee807b22",
+    "run/started.json": "92f89f0d880bbab0319bf02e333dc9b3416daf2668588234564d9ef339b41aec",
+    "run/status.json": "5e4ad28cbcaca1cc7909403ce53fc5d708ba18a7cee06809ecef0c9fd11a0b06"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/PW-jgate base"
+  },
+  {
+   "name": "PW-jgate integrated",
+   "kind": "ionic",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-extra-49529e71/extra/ionic/finite_junction_cluster/h4.json",
+   "base_sha256": "e0a93bb10fe7d1eef4fe64ce42e05681d7fe4a5a420fc9ee4c90c617ecfbc47e",
+   "modify": [
+    {
+     "path": "/model/junctions/*/gate/threshold_voltage_V",
+     "mul": 1.01
+    }
+   ],
+   "modified_leaves": [
+    12
+   ],
+   "patch": null,
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "38,39,40,41,44",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    7
+   ],
+   "started": "2026-11-25T11:28:54+00:00",
+   "finished": "2026-11-25T11:28:55+00:00",
+   "seconds": 0.4357698049861938,
+   "outcome": "completed",
+   "definition_sha256": "3a8320aed93646d92b3770bb79531d18c4e5ffd9fd9387c04361d130ce2f8faa",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "3a8320aed93646d92b3770bb79531d18c4e5ffd9fd9387c04361d130ce2f8faa",
+    "run/run.json": "544abfea98597a5fc4775c860f218d6e1262db4b2a61684c95a719c9c468d476",
+    "run/window-0000.npz": "1b1b537e25e2ff54b339dbe6fa6f0e23e59845c787c47b694cda975fdcae4484",
+    "run/window-0001.npz": "8a43bb99ee5c9803037a1dd0373c9683ed41f5ab2562b92746f226a755025263",
+    "run/window-0002.npz": "f39a9a7cfe1168203c11b996a3567596afe3833d2ddc64425da9a76a1c046d69",
+    "run/window-0003.npz": "efd9bb7f2d2f178b55e66672174df4e7ce4318dee0afb28f32314b0636773061"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/PW-jgate integrated"
+  },
+  {
+   "name": "PW-jgate jupiter_baseline",
+   "kind": "ionic",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/ionic/jupiter_baseline/h4.json",
+   "base_sha256": "ee452cc8f784470c6365d614927b4f229317a2b540b5e5d7c3a12f60daca5ddf",
+   "modify": [
+    {
+     "path": "/model/junctions/*/gate/threshold_voltage_V",
+     "mul": 1.01
+    }
+   ],
+   "modified_leaves": [
+    1
+   ],
+   "patch": null,
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "0,1,2,3,4,5,6,21,42",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    7
+   ],
+   "started": "2026-11-25T11:28:25+00:00",
+   "finished": "2026-11-25T11:28:26+00:00",
+   "seconds": 0.7631749389693141,
+   "outcome": "completed",
+   "definition_sha256": "13a044b9ef7f803705e70d5f713b9c4edf0a926b95bb64c0fa4aa52c91f79d87",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "13a044b9ef7f803705e70d5f713b9c4edf0a926b95bb64c0fa4aa52c91f79d87",
+    "run/run.json": "8ab3c5adb54d159a85fc1db4a4a964d7cee484bf48c4edca0a17cab5474f33e4",
+    "run/window-0000.npz": "703aeea552b0c4bb08bbb431352d44b1f35ae266c28ffae32d36b13e60c10607",
+    "run/window-0001.npz": "2745d3a88e1e60d685aa11aeb05d142b1bc6af73ebdbbc2036325c9a6c414184",
+    "run/window-0002.npz": "da436b1c9922b69425ae0fc1c2335a4617649785b3f8694dd118e8c63b0796d6",
+    "run/window-0003.npz": "cf59ea006792bd805a6b9faed34d5d43bac52efb5edf8176a96418a0fcd2a25c"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/PW-jgate jupiter_baseline"
+  },
+  {
+   "name": "PW-jgate jupiter_pump_release",
+   "kind": "ionic",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/ionic/jupiter_pump_release/h4.json",
+   "base_sha256": "1f571d97f4a1f36e1bedb062cfcc172c96d16075a57dda3d688f9994935d82a1",
+   "modify": [
+    {
+     "path": "/model/junctions/*/gate/threshold_voltage_V",
+     "mul": 1.01
+    }
+   ],
+   "modified_leaves": [
+    1
+   ],
+   "patch": null,
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "8,9,10,11,12,13,14,15,22,43",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    23
+   ],
+   "started": "2026-11-25T11:28:26+00:00",
+   "finished": "2026-11-25T11:28:28+00:00",
+   "seconds": 1.2583895809948444,
+   "outcome": "completed",
+   "definition_sha256": "bd49c04fcb5bcb60d1d65663eb8e2dc20ac21e06e0a29a7f2784f455c2067fa6",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "bd49c04fcb5bcb60d1d65663eb8e2dc20ac21e06e0a29a7f2784f455c2067fa6",
+    "run/run.json": "954e48abf41a734c8a83d5ada664dbc9826fc93ff60c097f99b80e78d521206e",
+    "run/window-0000.npz": "59619b3e38bf561b8390d6bb78f8c2bc5544cb3a14d4b0537b52341797f99f1d",
+    "run/window-0001.npz": "7b023b0ee32e3c685029d17b60ba71c41f75b94479aa769db374b16d18ae1789",
+    "run/window-0002.npz": "4911b6cd020741f0c90afd27949cebbd56b9bf214f0067824d58242a1c66c229",
+    "run/window-0003.npz": "6084ea68f7b3f36d751b2e0d5d9877b334c2ce7bfddae3599b3868e0a01ac4d4"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/PW-jgate jupiter_pump_release"
+  },
+  {
+   "name": "PW-junction base",
+   "kind": "assembly",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/assembly/cluster_base/h4-s0.json",
+   "base_sha256": "b179f55f5a77f6dad12d7db5d36166a52104b06c2c4d96ce3a119037cf7673db",
+   "modify": [
+    {
+     "path": "/ionic/model/junctions/*/permeability_m_per_s/*",
+     "mul": 1.01
+    }
+   ],
+   "modified_leaves": [
+    3
+   ],
+   "patch": null,
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "27,28,29",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    23
+   ],
+   "started": "2026-11-25T11:29:54+00:00",
+   "finished": "2026-11-25T11:30:32+00:00",
+   "seconds": 37.914460150990635,
+   "outcome": "completed",
+   "definition_sha256": "855bbe8d8646b884eb41379fd0c5e8b53b5efad434820ac98f22c64d3c152128",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "855bbe8d8646b884eb41379fd0c5e8b53b5efad434820ac98f22c64d3c152128",
+    "run/checkpoint/state.npz": "fe00adb8538c0f58fa9906afefa158b3b56eb9c1c51938233f1b5cf2788fe641",
+    "run/completion.json": "84d2058b970115eb84438dc7f58860b6f18743de1d5d32f1883315f3e21a41b4",
+    "run/observations/tick-0000000.json": "6e602e32f6d516c53f23c9f0a98578336346912de2bc03a8323986750c47a931",
+    "run/observations/tick-0000400.json": "8b6fd81074c91a7b44fa57c0c82868486c57ec8bf6ba100806906417d7e8f5b7",
+    "run/observations/tick-0000800.json": "ea1a243fbc9a4a770ce5c68c2b977c82c1553d081d903192c1f50bbba26e3c88",
+    "run/observations/tick-0001600.json": "c6f715dd4ab806f8a7c218ff6204db223baa86a27eff3037447281391624bff5",
+    "run/registration.json": "1d7c236598983ddd9172441825dd771f19e3df26efa024b06fd76fea5564c0a9",
+    "run/result.json": "2fec86d4d358ad5473099c39fe632ff207921ad3476d296856f1aba3714f904e",
+    "run/started.json": "2b80550064b35eb259ff2117626fff8a26e6aefc3c1564f9bc7c10942671293c",
+    "run/status.json": "4d8e6a3713467a92d77a3a0b8bfb48d544975675bf0620485f10628048e88225"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/PW-junction base"
+  },
+  {
+   "name": "PW-junction integrated",
+   "kind": "ionic",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-extra-49529e71/extra/ionic/finite_junction_cluster/h4.json",
+   "base_sha256": "e0a93bb10fe7d1eef4fe64ce42e05681d7fe4a5a420fc9ee4c90c617ecfbc47e",
+   "modify": [
+    {
+     "path": "/model/junctions/*/permeability_m_per_s/*",
+     "mul": 1.01
+    }
+   ],
+   "modified_leaves": [
+    36
+   ],
+   "patch": null,
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "38,39,40,41,44",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    7
+   ],
+   "started": "2026-11-25T11:28:54+00:00",
+   "finished": "2026-11-25T11:28:54+00:00",
+   "seconds": 0.6159376930445433,
+   "outcome": "completed",
+   "definition_sha256": "aa38c13e8d4abb5d7a997712ee618302f5b1f7c9b453ea8e22f01237609d1ce3",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "aa38c13e8d4abb5d7a997712ee618302f5b1f7c9b453ea8e22f01237609d1ce3",
+    "run/run.json": "8fc4792ad150467eba7dbee674b26bb05638deb7a7fa1a8f07033e7a2e4d75d9",
+    "run/window-0000.npz": "6f0c230f220721ead68f397b57c96261751506352efbd90dc792c01f5654ff1a",
+    "run/window-0001.npz": "4022f1944b1b0c94190a82b0636cb01086bf3e16282af49768138675520fa7c3",
+    "run/window-0002.npz": "ec302528b07db987d2f876046e19b3f8e1b086a3b35f022e193e71aeb021993a",
+    "run/window-0003.npz": "2032619dd4863c1719549baefa2ec302e3c0614c44652c38b502cb7ddc49a4f5"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/PW-junction integrated"
+  },
+  {
+   "name": "PW-junction jupiter_baseline",
+   "kind": "ionic",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/ionic/jupiter_baseline/h4.json",
+   "base_sha256": "ee452cc8f784470c6365d614927b4f229317a2b540b5e5d7c3a12f60daca5ddf",
+   "modify": [
+    {
+     "path": "/model/junctions/*/permeability_m_per_s/*",
+     "mul": 1.01
+    }
+   ],
+   "modified_leaves": [
+    3
+   ],
+   "patch": null,
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "0,1,2,3,4,5,6,21,42",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    7
+   ],
+   "started": "2026-11-25T11:28:24+00:00",
+   "finished": "2026-11-25T11:28:25+00:00",
+   "seconds": 0.7781953020021319,
+   "outcome": "completed",
+   "definition_sha256": "68a5fdeaba4157c2b7d7a2e0e211e3367265dbebff02f7fdcd068e73844b8005",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "68a5fdeaba4157c2b7d7a2e0e211e3367265dbebff02f7fdcd068e73844b8005",
+    "run/run.json": "71476d867c41fb8162cfbc3a7b20fc782ff1b0f7494395da8d52c6be0e849904",
+    "run/window-0000.npz": "15a13233ff4f59305cc53165a017972f8ebb43fc5c3d67ba82004b5f4964ab59",
+    "run/window-0001.npz": "86026184989ef7c5120ba7c99312549b9f77efc10586d2bc39e7c8330649b840",
+    "run/window-0002.npz": "7a4de3b3f3b72c773bbcb5c57ac00db34fdc020b854a0a143dbdb5f859fc4ff1",
+    "run/window-0003.npz": "98f199335ccb1a5bff26519d691509c457f5f3dc7873564522c13554af0dd765"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/PW-junction jupiter_baseline"
+  },
+  {
+   "name": "PW-junction jupiter_pump_release",
+   "kind": "ionic",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/ionic/jupiter_pump_release/h4.json",
+   "base_sha256": "1f571d97f4a1f36e1bedb062cfcc172c96d16075a57dda3d688f9994935d82a1",
+   "modify": [
+    {
+     "path": "/model/junctions/*/permeability_m_per_s/*",
+     "mul": 1.01
+    }
+   ],
+   "modified_leaves": [
+    3
+   ],
+   "patch": null,
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "8,9,10,11,12,13,14,15,22,43",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    23
+   ],
+   "started": "2026-11-25T11:28:25+00:00",
+   "finished": "2026-11-25T11:28:26+00:00",
+   "seconds": 0.9368999729631469,
+   "outcome": "completed",
+   "definition_sha256": "7c451cf761e3754bcda6910e43961128de94c3f045870e3b04beed1a25fef19a",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "7c451cf761e3754bcda6910e43961128de94c3f045870e3b04beed1a25fef19a",
+    "run/run.json": "2cf8d037e64447260b6920d0d2d0a42bba05fbdb43c08a3548734ec8c87b801e",
+    "run/window-0000.npz": "dd0afb5d089d63551dc64b8bb44fe9b68c86dfc626829b628419248ddc01c477",
+    "run/window-0001.npz": "eba781eb1970d969ec031412a1524b6727d36c63a0ff3b4f588782da5d9aba2a",
+    "run/window-0002.npz": "cbb633001f11d78164b61785ab734ea5da8c2adc9d05ab1af0a550d1b9a71aeb",
+    "run/window-0003.npz": "8248a006af3b0491331c2149ec90bf9756e3038f228ca68aa2e016a12c9eb981"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/PW-junction jupiter_pump_release"
+  },
+  {
+   "name": "PW-kinetics base",
+   "kind": "assembly",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/assembly/cluster_base/h4-s0.json",
+   "base_sha256": "b179f55f5a77f6dad12d7db5d36166a52104b06c2c4d96ce3a119037cf7673db",
+   "modify": [],
+   "modified_leaves": [],
+   "patch": "from cells.legacy.models import finite_extracellular as fin\norig = fin.kinetics\ndef kinetics(v, *, xp):\n    targets, tau = orig(v, xp=xp)\n    return targets, 1.01 * tau\nfin.kinetics = kinetics\n",
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "30",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    7
+   ],
+   "started": "2026-11-25T11:31:12+00:00",
+   "finished": "2026-11-25T11:31:51+00:00",
+   "seconds": 38.38935713202227,
+   "outcome": "completed",
+   "definition_sha256": "b179f55f5a77f6dad12d7db5d36166a52104b06c2c4d96ce3a119037cf7673db",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "b179f55f5a77f6dad12d7db5d36166a52104b06c2c4d96ce3a119037cf7673db",
+    "run/checkpoint/state.npz": "5857faec5c285fada13af6ef987d74d9e4f9685b6e6e69367968902f63bc9211",
+    "run/completion.json": "5b79a5553646fc8bbde60eedc2182866893cd830d34012f4de66291cb577dd3a",
+    "run/observations/tick-0000000.json": "6e602e32f6d516c53f23c9f0a98578336346912de2bc03a8323986750c47a931",
+    "run/observations/tick-0000400.json": "d80beadcd474872f7239472d86be9d953555e13ae3b52e6221f6224527765327",
+    "run/observations/tick-0000800.json": "6e126721e2de50c1083d5583f60b1da7d3b310ae02681b03cdfef4ef797f16c1",
+    "run/observations/tick-0001600.json": "2961b71281f1371f319e32c034c9e63bf6bef410c126556c03abcb69f25ee88f",
+    "run/registration.json": "c3e96f72a05cfb0f40090545489cb2e6b510e6f504b26042010b8e225daed4a3",
+    "run/result.json": "15793ebe62227229829cac29146404b86048974a1e188adf99fcb8c5704eed74",
+    "run/started.json": "3fa569385e62e8286edad211de40c20bf5dd3c1800e96987ef25c28fd6cdfdd8",
+    "run/status.json": "9f07b84b027b8eb22b12bfa8f93cba95d37c8134977773f24d75454c196d2138"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/PW-kinetics base"
+  },
+  {
+   "name": "PW-kinetics cell",
+   "kind": "assembly",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/assembly/cell/h4-s0.json",
+   "base_sha256": "e4fc9460d51e636b96a8c26417bb8842d80c6adf6fb22023907b25108ffc0ad3",
+   "modify": [],
+   "modified_leaves": [],
+   "patch": "from cells.legacy.models import finite_extracellular as fin\norig = fin.kinetics\ndef kinetics(v, *, xp):\n    targets, tau = orig(v, xp=xp)\n    return targets, 1.01 * tau\nfin.kinetics = kinetics\n",
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "35",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    7
+   ],
+   "started": "2026-11-25T11:33:54+00:00",
+   "finished": "2026-11-25T11:35:39+00:00",
+   "seconds": 104.90387192904018,
+   "outcome": "completed",
+   "definition_sha256": "e4fc9460d51e636b96a8c26417bb8842d80c6adf6fb22023907b25108ffc0ad3",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "e4fc9460d51e636b96a8c26417bb8842d80c6adf6fb22023907b25108ffc0ad3",
+    "run/checkpoint/state.npz": "a694f7e23110fb1dd014f950393f668aa2c6903da6b470be3940f7f9694d93de",
+    "run/completion.json": "a6c93420a0e98cbe6267cbcd7588eaaac551dac04c458a3de9dfdcc0d36bc8f4",
+    "run/registration.json": "634773df88a501ecc6ac08035fe4e35b3bdc3f06d4c168d4e6c1e060b5424201",
+    "run/result.json": "b6bb8a891eb052662b108f56448c25d75bc4e0e1460175f9ae7a584fb403c2cd",
+    "run/started.json": "dfbcee26bace688fe6ecf0d8e9b4c56acb60b0f09a30a15ef8f2b0f43d5edb19",
+    "run/status.json": "92fbe0ce59a8781a94f6c51bbc07c8d19a8d589bbb4b7f4f189310ddc150d0b0"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/PW-kinetics cell"
+  },
+  {
+   "name": "PW-kinetics jupiter_baseline",
+   "kind": "ionic",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/ionic/jupiter_baseline/h4.json",
+   "base_sha256": "ee452cc8f784470c6365d614927b4f229317a2b540b5e5d7c3a12f60daca5ddf",
+   "modify": [],
+   "modified_leaves": [],
+   "patch": "from cells.legacy.models import finite_extracellular as fin\norig = fin.kinetics\ndef kinetics(v, *, xp):\n    targets, tau = orig(v, xp=xp)\n    return targets, 1.01 * tau\nfin.kinetics = kinetics\n",
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "7",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    7
+   ],
+   "started": "2026-11-25T11:28:56+00:00",
+   "finished": "2026-11-25T11:29:24+00:00",
+   "seconds": 27.26134285191074,
+   "outcome": "completed",
+   "definition_sha256": "f048796b85ac5d3cc0753287c583cacbb41a9a15f24a9b7e6e46255a5aa277e1",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "f048796b85ac5d3cc0753287c583cacbb41a9a15f24a9b7e6e46255a5aa277e1",
+    "run/run.json": "e323c91b03efcb316643f300875129c297a3a41ca746fa495cf2d56a048d58e6",
+    "run/window-0000.npz": "bf078df71a067f791a94550fd5610ad871731dd7780e0f071ac2be37f90141bf",
+    "run/window-0001.npz": "93bbd51e5d3c20c0affb645739fceb9b92a40a35388d1458f4580f61374b72ef",
+    "run/window-0002.npz": "2f737957cd0e339e664b528c7aed9905a66d5a515a25145b7932be781bea269a",
+    "run/window-0003.npz": "09ab707f155565aab049b9157a42852ac55801c4561513b6f5d04790eb6e5e88"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/PW-kinetics jupiter_baseline"
+  },
+  {
+   "name": "PW-kinetics jupiter_pump_release",
+   "kind": "ionic",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/ionic/jupiter_pump_release/h4.json",
+   "base_sha256": "1f571d97f4a1f36e1bedb062cfcc172c96d16075a57dda3d688f9994935d82a1",
+   "modify": [],
+   "modified_leaves": [],
+   "patch": "from cells.legacy.models import finite_extracellular as fin\norig = fin.kinetics\ndef kinetics(v, *, xp):\n    targets, tau = orig(v, xp=xp)\n    return targets, 1.01 * tau\nfin.kinetics = kinetics\n",
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "16",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    23
+   ],
+   "started": "2026-11-25T11:28:35+00:00",
+   "finished": "2026-11-25T11:29:03+00:00",
+   "seconds": 27.190397043013945,
+   "outcome": "completed",
+   "definition_sha256": "04f4e6436fe01787e46baf9f59cb1867c659af58534e650bf306ed50af587679",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "04f4e6436fe01787e46baf9f59cb1867c659af58534e650bf306ed50af587679",
+    "run/run.json": "30a697559fb594dafaa0947d486f20ad6c5aa1a939292655716f25768c192fb6",
+    "run/window-0000.npz": "0f18e16b446f72689952296dcab052363deb0d4a0552a30a3419ead192a7ce91",
+    "run/window-0001.npz": "437ac149e95ed7ad124ed80671b01fa6c374a11a5df72dfb0771dec1d7e8f2a8",
+    "run/window-0002.npz": "e2c0a9549be38ca93e7010a38bb622b150a64ba6794d999637e4e03538ac59d2",
+    "run/window-0003.npz": "17b612c3f4fb1c8ef208a13698f9040f67ca0189eb2bd7fddd124364da283831"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/PW-kinetics jupiter_pump_release"
+  },
+  {
+   "name": "PW-leak base",
+   "kind": "assembly",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/assembly/cluster_base/h4-s0.json",
+   "base_sha256": "b179f55f5a77f6dad12d7db5d36166a52104b06c2c4d96ce3a119037cf7673db",
+   "modify": [
+    {
+     "path": "/ionic/model/cells/*/membrane/passive/permeability_m_per_s/*",
+     "mul": 1.01
+    }
+   ],
+   "modified_leaves": [
+    6
+   ],
+   "patch": null,
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "23,24,25,26",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    7
+   ],
+   "started": "2026-11-25T11:30:52+00:00",
+   "finished": "2026-11-25T11:30:59+00:00",
+   "seconds": 6.689206689945422,
+   "outcome": "completed",
+   "definition_sha256": "4b7b7cb4cb58eda7e0390d031fb1ad1672450908f181ebafae3bb274b85b5255",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "4b7b7cb4cb58eda7e0390d031fb1ad1672450908f181ebafae3bb274b85b5255",
+    "run/checkpoint/state.npz": "6bcf2b8f2e0baab6e8cb26d203d25f71f7842c1ea4b47e8cb37a2bdd8e97c02c",
+    "run/completion.json": "9cfe6c60b6accab6a3b5df3a2722ef10ee4ff4e004350471d0502a2e1565a8e3",
+    "run/observations/tick-0000000.json": "6e602e32f6d516c53f23c9f0a98578336346912de2bc03a8323986750c47a931",
+    "run/observations/tick-0000400.json": "a2f25b89364e43aabc412737bb69dcf844d663c1ef1fdca785aa562b030dc9b4",
+    "run/observations/tick-0000800.json": "2ede994dcec9481ad58a9c4cdf7ea86dd6badcc5ee0bef807b0eb674b079fb10",
+    "run/observations/tick-0001600.json": "0ef4bf1b97382185fbcde853bca8520d906214639ea4c8a1ec1894a5d1c858a4",
+    "run/registration.json": "e39994721b02e6850aec4949663cb606bc08f1699c3462f054812ef222097f88",
+    "run/result.json": "e4d4121ce5443d174e5b281ff9d4bf79d0b5bfee8aa1a187baabf4f3b30f1eb1",
+    "run/started.json": "dc7499c295cc15819806a44fff1074c11f0ed21aea07190cda8ab984be8e0303",
+    "run/status.json": "b4aa8208abd7b2b84ed29c872af04b5c899fab9deb59e04ae881ae57c04522bc"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/PW-leak base"
+  },
+  {
+   "name": "PW-leak cell",
+   "kind": "assembly",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/assembly/cell/h4-s0.json",
+   "base_sha256": "e4fc9460d51e636b96a8c26417bb8842d80c6adf6fb22023907b25108ffc0ad3",
+   "modify": [
+    {
+     "path": "/ionic/model/cells/*/membrane/passive/permeability_m_per_s/*",
+     "mul": 1.01
+    }
+   ],
+   "modified_leaves": [
+    3
+   ],
+   "patch": null,
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "31,32",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    7
+   ],
+   "started": "2026-11-25T11:33:46+00:00",
+   "finished": "2026-11-25T11:33:52+00:00",
+   "seconds": 5.965359697001986,
+   "outcome": "completed",
+   "definition_sha256": "32faf7968e17631fc1547cdcc7c21e151dd90add710f5f6da9471e435514000b",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "32faf7968e17631fc1547cdcc7c21e151dd90add710f5f6da9471e435514000b",
+    "run/checkpoint/state.npz": "bf758e10685ca20855f1185585f5f143fc7f6c4ce50ece519053bc6372f051f7",
+    "run/completion.json": "0fe5651959cdd3d4f55ab765e933aa36c0df93711a2a9217a1530f48bc17fb86",
+    "run/registration.json": "82776c93e3dabba48d0e6afb14b0d3889c3d6d55f7e629c3f7795ca64760460b",
+    "run/result.json": "665d29e398034c8300b4d99b6f4ff06f1ae71efbd2b2f1feeb9ca90e0f989c1d",
+    "run/started.json": "7352d8f52afe89c4de7d79a1ee12c8ebbdabdafe8f1ea81f90f4c9206a34cc24",
+    "run/status.json": "148ea30139d3eb459d4642fea5e5cbbe403c58ad18b60a8502b46c101bcc3cde"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/PW-leak cell"
+  },
+  {
+   "name": "PW-leak jupiter_baseline",
+   "kind": "ionic",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/ionic/jupiter_baseline/h4.json",
+   "base_sha256": "ee452cc8f784470c6365d614927b4f229317a2b540b5e5d7c3a12f60daca5ddf",
+   "modify": [
+    {
+     "path": "/model/cells/*/membrane/passive/permeability_m_per_s/*",
+     "mul": 1.01
+    }
+   ],
+   "modified_leaves": [
+    6
+   ],
+   "patch": null,
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "0,1,2,3,4,5,6,21,42",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    7
+   ],
+   "started": "2026-11-25T11:27:51+00:00",
+   "finished": "2026-11-25T11:28:22+00:00",
+   "seconds": 31.638093819958158,
+   "outcome": "completed",
+   "definition_sha256": "903077d4487c49db3f848d0daadd574bad48ae62847334266c0e8180afb9fa4b",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "903077d4487c49db3f848d0daadd574bad48ae62847334266c0e8180afb9fa4b",
+    "run/run.json": "9d29a90629874b835021713dd5df8a4d665b15acb8558c2e25dd26fa2b1e4180",
+    "run/window-0000.npz": "16552e92a757c957c5eedbda401e3c535c3972926a0a580b35c6d7dbb87d24f6",
+    "run/window-0001.npz": "fc60f31dc9dd0a4f9a8e525fc120425fcde02e44342078dea56e1baf579204d2",
+    "run/window-0002.npz": "3d7790a86a923671b74ae6973bcace7eaa8d3f054e7af4999bb261f5cdd91826",
+    "run/window-0003.npz": "5b198bf1f4fc1d798ddf2a62d60fb5334a13fa0abbe990125aadf612102032bc"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/PW-leak jupiter_baseline"
+  },
+  {
+   "name": "PW-leak jupiter_pump_release",
+   "kind": "ionic",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/ionic/jupiter_pump_release/h4.json",
+   "base_sha256": "1f571d97f4a1f36e1bedb062cfcc172c96d16075a57dda3d688f9994935d82a1",
+   "modify": [
+    {
+     "path": "/model/cells/*/membrane/passive/permeability_m_per_s/*",
+     "mul": 1.01
+    }
+   ],
+   "modified_leaves": [
+    6
+   ],
+   "patch": null,
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "8,9,10,11,12,13,14,15,22,43",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    23
+   ],
+   "started": "2026-11-25T11:28:23+00:00",
+   "finished": "2026-11-25T11:28:23+00:00",
+   "seconds": 0.8886497659841552,
+   "outcome": "completed",
+   "definition_sha256": "8bcc8ec622155ad62f0876f3b82001a9eb4ad4da9dc9c524b49e6d997b307ba8",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "8bcc8ec622155ad62f0876f3b82001a9eb4ad4da9dc9c524b49e6d997b307ba8",
+    "run/run.json": "babc754d7e23d98d05473930d63b7bd592daedebd2161e7129b0edadbe49aa6d",
+    "run/window-0000.npz": "689e79df78321a0e999c51348cb35d99f5e45b25cd59b250c47706842c577f31",
+    "run/window-0001.npz": "48230f59e967e6087cdb254a9710fee701c66b7d449bfee6df5411926504e3af",
+    "run/window-0002.npz": "67056165b4a05a954fee2f7157dd5ee59049e88b9ea0f7a06072d1d11b6eab98",
+    "run/window-0003.npz": "dfd6468e5814ca3600994afcb91dfe3d0841ddba74ddf699530a0349cec119ba"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/PW-leak jupiter_pump_release"
+  },
+  {
+   "name": "PW-pump base",
+   "kind": "assembly",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/assembly/cluster_base/h4-s0.json",
+   "base_sha256": "b179f55f5a77f6dad12d7db5d36166a52104b06c2c4d96ce3a119037cf7673db",
+   "modify": [
+    {
+     "path": "/ionic/model/cells/*/membrane/pump/capacity_fmol_per_s",
+     "mul": 1.01
+    }
+   ],
+   "modified_leaves": [
+    2
+   ],
+   "patch": null,
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "23,24,25,26",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    7
+   ],
+   "started": "2026-11-25T11:31:05+00:00",
+   "finished": "2026-11-25T11:31:12+00:00",
+   "seconds": 6.4534674970200285,
+   "outcome": "completed",
+   "definition_sha256": "ee66c8a8bb88fdc5e3513a9020266a98dbad701e72ac5ade8fc5f3f4f0e67418",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "ee66c8a8bb88fdc5e3513a9020266a98dbad701e72ac5ade8fc5f3f4f0e67418",
+    "run/checkpoint/state.npz": "bd91bf4d71bb626b2eddb59fb1366d31a21dbb7ec8976158fb9ccd18e936b180",
+    "run/completion.json": "6ec525f25a50ffac9f022646a87a8b31f4ee50753dc13bc9dbce9fac06074fc8",
+    "run/observations/tick-0000000.json": "6e602e32f6d516c53f23c9f0a98578336346912de2bc03a8323986750c47a931",
+    "run/observations/tick-0000400.json": "3e010b28f5e99ba9415e6ec4297d305c5aa02a112ccab554d26a99875d8780ed",
+    "run/observations/tick-0000800.json": "2df42cad8c25e9e5b4240f4768647e9c7e8cb628c5a20ca281edce872e28f16a",
+    "run/observations/tick-0001600.json": "ab65e61da80d1c4efd69d9f0fc4b1d4b3e4c01d0f1c698463b243e5cd9a6bae5",
+    "run/registration.json": "5a8eeb9fd0c1a76f05db7f3d25888557276d1a40722aa7cff69b7082bdc0a202",
+    "run/result.json": "72da0117a9a65fd1a31a265f964a6833ed6941e7df757b208a6c4389da635ebf",
+    "run/started.json": "583dea69bd6ea1c5067a9b416980e9681dc168dcbc85bdf05a326ab47d7190a9",
+    "run/status.json": "7c855b4a8ef2a43640b47311eb10881d0ee70d168d9553a514f631419e3ad09b"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/PW-pump base"
+  },
+  {
+   "name": "PW-pump cell",
+   "kind": "assembly",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/assembly/cell/h4-s0.json",
+   "base_sha256": "e4fc9460d51e636b96a8c26417bb8842d80c6adf6fb22023907b25108ffc0ad3",
+   "modify": [
+    {
+     "path": "/ionic/model/cells/*/membrane/pump/capacity_fmol_per_s",
+     "mul": 1.01
+    }
+   ],
+   "modified_leaves": [
+    1
+   ],
+   "patch": null,
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "33,34",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    23
+   ],
+   "started": "2026-11-25T11:33:19+00:00",
+   "finished": "2026-11-25T11:33:25+00:00",
+   "seconds": 5.4373483340023085,
+   "outcome": "completed",
+   "definition_sha256": "19b993c7cc9d5379928ee4fecbb7dcf654af428e1606d980b9a5eb7af497256c",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "19b993c7cc9d5379928ee4fecbb7dcf654af428e1606d980b9a5eb7af497256c",
+    "run/checkpoint/state.npz": "1e4b611801deeabae188b4ec11f7e86e47866bdd3e55eb83cfe43a76d8a3b1b0",
+    "run/completion.json": "52575353882bdc5ec5e6ef456f44a2101c30ba04cb0cf0044b0fe87d7479c4da",
+    "run/registration.json": "11ad7a345deac24a85d50370660d5adc42a2fe71ce6a7ec2c8c32c630dbc7412",
+    "run/result.json": "aef9a72fc07f717047fbfda5c403974be6e29c8118e2307cddfc019a75d15b19",
+    "run/started.json": "edd9208a5808e5c9c45879c54051584d86c4eb3a04dec6d38e4b4d8186b8c818",
+    "run/status.json": "1e750ebb85cc7e4addb1b5be0280f728d6ad805427a1023b16b06223f4cc01e9"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/PW-pump cell"
+  },
+  {
+   "name": "PW-pump jupiter_baseline",
+   "kind": "ionic",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/ionic/jupiter_baseline/h4.json",
+   "base_sha256": "ee452cc8f784470c6365d614927b4f229317a2b540b5e5d7c3a12f60daca5ddf",
+   "modify": [
+    {
+     "path": "/model/cells/*/membrane/pump/capacity_fmol_per_s",
+     "mul": 1.01
+    }
+   ],
+   "modified_leaves": [
+    2
+   ],
+   "patch": null,
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "0,1,2,3,4,5,6,21,42",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    7
+   ],
+   "started": "2026-11-25T11:28:23+00:00",
+   "finished": "2026-11-25T11:28:24+00:00",
+   "seconds": 0.9984017889946699,
+   "outcome": "completed",
+   "definition_sha256": "4f657c2057154a77386b60d5fe2dfe3cf46b1ea02b1d42199c8eb2c40b2e04fb",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "4f657c2057154a77386b60d5fe2dfe3cf46b1ea02b1d42199c8eb2c40b2e04fb",
+    "run/run.json": "a98f97de36faf04b3f3605a6958119c24d19206cbffe8035d72193e39a3d66db",
+    "run/window-0000.npz": "9eab6c9c19f9bb4b7ff80d3d93aa3be51d6bc607236fad649d394ebb0ec79f1a",
+    "run/window-0001.npz": "4f0779c3556037c657d9a6c72854c7de3d73efd003043beb17e7c8f91ad41988",
+    "run/window-0002.npz": "61e4f6b3740a42e9cb935a76e1dd1f284e1d60d655f1d6996ce8f53594a03dae",
+    "run/window-0003.npz": "e08995f4c4e62bf33aae6a548feb1bace5ebeb5ae92ebdfbf9d438fa703dcf0f"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/PW-pump jupiter_baseline"
+  },
+  {
+   "name": "PW-pump jupiter_pump_release",
+   "kind": "ionic",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/ionic/jupiter_pump_release/h4.json",
+   "base_sha256": "1f571d97f4a1f36e1bedb062cfcc172c96d16075a57dda3d688f9994935d82a1",
+   "modify": [
+    {
+     "path": "/model/cells/*/membrane/pump/capacity_fmol_per_s",
+     "mul": 1.01
+    }
+   ],
+   "modified_leaves": [
+    2
+   ],
+   "patch": null,
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "8,9,10,11,12,13,14,15,22,43",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    23
+   ],
+   "started": "2026-11-25T11:28:24+00:00",
+   "finished": "2026-11-25T11:28:25+00:00",
+   "seconds": 0.9037595329573378,
+   "outcome": "completed",
+   "definition_sha256": "ef6260e57d07b1770788536c30e4ac9779c5e8dc1f4733d8b06d5c76a1d0d0cc",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "ef6260e57d07b1770788536c30e4ac9779c5e8dc1f4733d8b06d5c76a1d0d0cc",
+    "run/run.json": "9d7aee88d94284020cff068925e6ab0309d7fbe5537c1c9b7c8e6b67060aabba",
+    "run/window-0000.npz": "586ce7352382ab71cf1ae8e0c7fdc1ff7c7713e905989510f47814acaba0c8a1",
+    "run/window-0001.npz": "8398ec31dd13dd8d636cfeaa24bb5b7dac771525f582a90cc36a68a225accd71",
+    "run/window-0002.npz": "6fd0a7e2afe4a7fea950b5fd6e9d44359b1d850e1ae8513e05d9804ab73faf9d",
+    "run/window-0003.npz": "4606e6afdceeba0b1ff82475dcdda01436c5194e56ca59a52b8a9762a8951b40"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/PW-pump jupiter_pump_release"
+  },
+  {
+   "name": "ST1 pump direction",
+   "kind": "ionic",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/ionic/jupiter_baseline/h4.json",
+   "base_sha256": "ee452cc8f784470c6365d614927b4f229317a2b540b5e5d7c3a12f60daca5ddf",
+   "modify": [],
+   "modified_leaves": [],
+   "patch": "from cells.legacy.models import junction_finite_extracellular as clu\norig = clu.initial_values\ndef initial_values(spec):\n    state, layout = orig(spec)\n    return state, layout._replace(stoichiometry=-layout.stoichiometry)\nclu.initial_values = initial_values\n",
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "17",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    7
+   ],
+   "started": "2026-11-25T11:29:24+00:00",
+   "finished": "2026-11-25T11:29:47+00:00",
+   "seconds": 22.196992279030383,
+   "outcome": "refused: NumericalError: Finite local/outside/global material, charge or resolved-energy accounting failed",
+   "definition_sha256": "60f411d5ce6a860309beb2a1891922b560c233fdbf6b534f1e94dcbb3b144bc1",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "60f411d5ce6a860309beb2a1891922b560c233fdbf6b534f1e94dcbb3b144bc1",
+    "run/run.json": "2271f1520aa8b907f8467339d3b0183845bc1af22b7ff36782a0e31b2a53c686"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/ST1 pump direction"
+  },
+  {
+   "name": "ST1 pump direction, own ledgers off",
+   "kind": "ionic",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/ionic/jupiter_baseline/h4.json",
+   "base_sha256": "ee452cc8f784470c6365d614927b4f229317a2b540b5e5d7c3a12f60daca5ddf",
+   "modify": [],
+   "modified_leaves": [],
+   "patch": "from cells.legacy.models import junction_finite_extracellular as clu\norig = clu.initial_values\ndef initial_values(spec):\n    state, layout = orig(spec)\n    return state, layout._replace(stoichiometry=-layout.stoichiometry)\nclu.initial_values = initial_values\n\nfrom cells.legacy.models import spatial_junction as spa, junction_finite_extracellular as clu2, finite_extracellular as fin2, kinetic_finite_extracellular as kin2\nno_ledgers(spa, clu2, fin2, kin2)\n",
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1b.json",
+    "0",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    7
+   ],
+   "started": "2026-11-25T11:36:48+00:00",
+   "finished": "2026-11-25T11:37:16+00:00",
+   "seconds": 27.586389013915323,
+   "outcome": "completed",
+   "definition_sha256": "3016746cd4acc711777bb770dee11b6eff24ce4d56805e4bc694f00e48218dbf",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "3016746cd4acc711777bb770dee11b6eff24ce4d56805e4bc694f00e48218dbf",
+    "run/run.json": "63c8b37f9380248e2f096876f0ac50fc427badf15ccead03bed1631d7b004f75",
+    "run/window-0000.npz": "db1503172f81b1afee36bed725a45c5e1bea69545f75402bed9100805048bcea",
+    "run/window-0001.npz": "0275bd96001ac47ec49a2810c4ececffe9df16e2f0a281e974eb6cf1b437610b",
+    "run/window-0002.npz": "ebe96e2923d18e2753b2da57fd91df9249eceb054a3bbc07d7f75afc55f5d896",
+    "run/window-0003.npz": "14e91188d50a76d4c80ffb1d037f0afb2fb9c898f3257645e00003f5bbb26ce0"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/ST1 pump direction, own ledgers off"
+  },
+  {
+   "name": "ST10 availability held over the step, base",
+   "kind": "assembly",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/assembly/cluster_base/h4-s0.json",
+   "base_sha256": "b179f55f5a77f6dad12d7db5d36166a52104b06c2c4d96ce3a119037cf7673db",
+   "modify": [],
+   "modified_leaves": [],
+   "patch": "from cells.legacy.assembly_cluster import kernel\npatch_source(kernel, \"one_tick\", [(\"    target = (state.tick + jnp.uint32(1)).astype(jnp.float64) * dt\\n\", \"    target = (state.tick + jnp.uint32(1)).astype(jnp.float64) * dt\\n    held_opening = availability(state.pool, levels)\\n\"), (\"opening = availability(current.pool, levels)\", \"opening = held_opening\")])\n",
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1c.json",
+    "0",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    7
+   ],
+   "started": "2026-11-25T11:59:40+00:00",
+   "finished": "2026-11-25T12:01:06+00:00",
+   "seconds": 85.42864666995592,
+   "outcome": "completed",
+   "definition_sha256": "b179f55f5a77f6dad12d7db5d36166a52104b06c2c4d96ce3a119037cf7673db",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "b179f55f5a77f6dad12d7db5d36166a52104b06c2c4d96ce3a119037cf7673db",
+    "run/checkpoint/state.npz": "ecfa68967d62b0483ad84e476b21ed1d851a660154b46873bb57a11581da1416",
+    "run/completion.json": "ea554be41ed21e7fbaea9d9476d2024340018c3e5f3def4421f5224ccfb6ec63",
+    "run/observations/tick-0000000.json": "6e602e32f6d516c53f23c9f0a98578336346912de2bc03a8323986750c47a931",
+    "run/observations/tick-0000400.json": "48b4e2059618ff10a19b4860d24d929079c4a8c80d7d7abfcef5088d63516c70",
+    "run/observations/tick-0000800.json": "81d4f013038c0631b93fdc488e95c9ab15a2c9229e2e7f783bdcc8b7e3a80584",
+    "run/observations/tick-0001600.json": "b872488dc4782e91f4aeb5953be0ab0ed2aacee8fb7e81e148863656bfa01d10",
+    "run/registration.json": "a33a18bb9985ff3f8aef65b117547b56c81d443f8dd36d7866dcc1f2a328b7f1",
+    "run/result.json": "69fa63a6d884cc121d925f29dc52aafd0f2adceeb188eedd855449086b354a28",
+    "run/started.json": "40252168cc03c6bcf845462bcdb19574c71683e3f222cb37ff5d917bdb0b0f8c",
+    "run/status.json": "726e63016702cce66de13d102b943e060a36d8a2b0616d7ce30fe5b9abb6cc0d"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/ST10 availability held over the step, base"
+  },
+  {
+   "name": "ST10 availability held over the step, cell",
+   "kind": "assembly",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/assembly/cell/h4-s0.json",
+   "base_sha256": "e4fc9460d51e636b96a8c26417bb8842d80c6adf6fb22023907b25108ffc0ad3",
+   "modify": [],
+   "modified_leaves": [],
+   "patch": "from cells.legacy.assembly_cell import kernel\npatch_source(kernel, \"one_tick\", [(\"    target = (state.tick + jnp.uint32(1)).astype(jnp.float64) * dt\\n\", \"    target = (state.tick + jnp.uint32(1)).astype(jnp.float64) * dt\\n    held_opening = availability(state.pool, levels)\\n\"), (\"opening = availability(current.pool, levels)\", \"opening = held_opening\")])\n",
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1c.json",
+    "1",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    7
+   ],
+   "started": "2026-11-25T12:01:07+00:00",
+   "finished": "2026-11-25T12:03:17+00:00",
+   "seconds": 130.2836701499764,
+   "outcome": "completed",
+   "definition_sha256": "e4fc9460d51e636b96a8c26417bb8842d80c6adf6fb22023907b25108ffc0ad3",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "e4fc9460d51e636b96a8c26417bb8842d80c6adf6fb22023907b25108ffc0ad3",
+    "run/checkpoint/state.npz": "9e0ef7c58cf0b7473afc30fe60a05d3aee826368284e156bbda681d14b94122c",
+    "run/completion.json": "0ce77dbf2216039cbcbc5484f96efbceae19c90267486c7efc505c87575758ac",
+    "run/registration.json": "76adccfe64d7a867b1239425b76ac8fcc1149d4037eb13941a8adc327733b264",
+    "run/result.json": "57688725f2a4f59b90eca7e2478f662b8f9cfb72f45350d21d29dc6b3f4aa7bf",
+    "run/started.json": "e5f30ff04234b64993ba262e937f55a8bd50f8a889250ca7d07bd0f5431b3485",
+    "run/status.json": "39e089cea3f038729cc3d53b42bc98e31aa345438a8ce630bb799358070d01ae"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/ST10 availability held over the step, cell"
+  },
+  {
+   "name": "ST2 leak valence of Cl",
+   "kind": "ionic",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/ionic/jupiter_baseline/h4.json",
+   "base_sha256": "ee452cc8f784470c6365d614927b4f229317a2b540b5e5d7c3a12f60daca5ddf",
+   "modify": [],
+   "modified_leaves": [],
+   "patch": "from cells.legacy.models import finite_extracellular as fin\norig = fin.ghk_leak\ndef ghk_leak(ci, co, voltage, valence, *a, **k):\n    if getattr(valence, \"ndim\", 0) == 2:\n        if isinstance(valence, np.ndarray):\n            valence = valence.copy(); valence[2] = 1\n        else:\n            valence = valence.at[2].set(1)\n    return orig(ci, co, voltage, valence, *a, **k)\nfin.ghk_leak = ghk_leak\n",
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "18",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    7
+   ],
+   "started": "2026-11-25T11:29:47+00:00",
+   "finished": "2026-11-25T11:30:10+00:00",
+   "seconds": 23.111700337030925,
+   "outcome": "completed",
+   "definition_sha256": "33c647c2b4bddf5b14040492c09f6b188fe21c136b1e4d671436e7bb8159aab4",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "33c647c2b4bddf5b14040492c09f6b188fe21c136b1e4d671436e7bb8159aab4",
+    "run/run.json": "7faaeb2596e2e9be7eca196cbeb11eb6890a334a81c27efc5878d6848b130692",
+    "run/window-0000.npz": "87f2e9d05b23fa2b9a9f2bce5900744b5fe70735121dde5dff1d9a4eec96ec0c",
+    "run/window-0001.npz": "a320561f5ff32bc319b960054ed8ac2816c38d5fe68102bfdf2b16e532f40c68",
+    "run/window-0002.npz": "5e046dbb6e9c21834b615d2d067275970a876107d0eb91d136b8c6ebc368952a",
+    "run/window-0003.npz": "01535b5577b7cb6c83d4e2d71e1967a0db96c5212921efe53af65e046767d215"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/ST2 leak valence of Cl"
+  },
+  {
+   "name": "ST3 inactivation gate left out",
+   "kind": "ionic",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/ionic/jupiter_baseline/h4.json",
+   "base_sha256": "ee452cc8f784470c6365d614927b4f229317a2b540b5e5d7c3a12f60daca5ddf",
+   "modify": [],
+   "modified_leaves": [],
+   "patch": "from cells.legacy.models import finite_extracellular as fin, kinetic_finite_extracellular as kin, junction_finite_extracellular as clu, spatial_junction as spa\npatch_source(fin, \"channel_readouts\", [(\"gate[..., 0, :] * gate[..., 1, :]\", \"gate[..., 0, :]\")], aliases=(kin, clu, spa))\n",
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "19",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    23
+   ],
+   "started": "2026-11-25T11:29:04+00:00",
+   "finished": "2026-11-25T11:29:30+00:00",
+   "seconds": 26.35864647605922,
+   "outcome": "completed",
+   "definition_sha256": "ff897d55c2f4bc24670abe33b94fa45eebf3048aa0962944e15d0ab9920518d5",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "ff897d55c2f4bc24670abe33b94fa45eebf3048aa0962944e15d0ab9920518d5",
+    "run/run.json": "a5c4b1ab546fde9543d2808c855abdc71fbdf253ba59c6ce96d937779e239ba7",
+    "run/window-0000.npz": "ff98f1a3f82e32148f17e3a899b2ed4f61a49a60b784879930113b74eb0aeb00",
+    "run/window-0001.npz": "e2bb0058dc608e1239614ff13a6f40863f9fd6eef5384034a8dc99288d2fe0ee",
+    "run/window-0002.npz": "4157351a3a5cf8ed81a4b79364b6576dd9e3b785c3b02818d99dae8d33077686",
+    "run/window-0003.npz": "51146c50e78778e10d9ffb03bd69b95650ea5904d94c3268d0c77b8e92a01766"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/ST3 inactivation gate left out"
+  },
+  {
+   "name": "ST4 junction voltage sign",
+   "kind": "ionic",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/ionic/jupiter_baseline/h4.json",
+   "base_sha256": "ee452cc8f784470c6365d614927b4f229317a2b540b5e5d7c3a12f60daca5ddf",
+   "modify": [],
+   "modified_leaves": [],
+   "patch": "from cells.legacy.models import finite_extracellular as fin\npatch_source(fin, \"junction_readouts\", [(\"        dv[..., None, :],\\n        layout.valence,\", \"        -dv[..., None, :],\\n        layout.valence,\")])\n",
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "20",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    23
+   ],
+   "started": "2026-11-25T11:29:31+00:00",
+   "finished": "2026-11-25T11:29:53+00:00",
+   "seconds": 22.047421333030798,
+   "outcome": "refused: NumericalError: Membrane/junction diagnostic dissipation must not decrease",
+   "definition_sha256": "dcf85c3262baa3101c4a726bf3a5f0cb735612dba951162ac2a65e13f4f8f81b",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "dcf85c3262baa3101c4a726bf3a5f0cb735612dba951162ac2a65e13f4f8f81b",
+    "run/run.json": "ae322a959a0b8ecaff1b82ba3426b79e27f87dbb5d983b2785734902d158b9ba"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/ST4 junction voltage sign"
+  },
+  {
+   "name": "ST4 junction voltage sign, own ledgers off",
+   "kind": "ionic",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/ionic/jupiter_baseline/h4.json",
+   "base_sha256": "ee452cc8f784470c6365d614927b4f229317a2b540b5e5d7c3a12f60daca5ddf",
+   "modify": [],
+   "modified_leaves": [],
+   "patch": "from cells.legacy.models import finite_extracellular as fin\npatch_source(fin, \"junction_readouts\", [(\"        dv[..., None, :],\\n        layout.valence,\", \"        -dv[..., None, :],\\n        layout.valence,\")])\n\nfrom cells.legacy.models import spatial_junction as spa, junction_finite_extracellular as clu2, finite_extracellular as fin2, kinetic_finite_extracellular as kin2\nno_ledgers(spa, clu2, fin2, kin2)\n",
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1b.json",
+    "1",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    7
+   ],
+   "started": "2026-11-25T11:37:17+00:00",
+   "finished": "2026-11-25T11:37:51+00:00",
+   "seconds": 34.186259771930054,
+   "outcome": "completed",
+   "definition_sha256": "2ad1fdcf0320cea497beb50481c42fe756f2561c4463c2fb04e4fcf4c9b15533",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "2ad1fdcf0320cea497beb50481c42fe756f2561c4463c2fb04e4fcf4c9b15533",
+    "run/run.json": "a49ad871ff23b2957c5e7e5ed746eb0c866db9840633e7e1115cba1a47699bfe",
+    "run/window-0000.npz": "b8fca92aae2e5605cc3d45015beb56b337783f51d77423b03d4247790965a1b7",
+    "run/window-0001.npz": "98dfa47a8f6d467f313f85ab3bb71898063a64e4240e949025d9fcd3b4b7e240",
+    "run/window-0002.npz": "9221cc66f7d77ea0381f1d0937f3b39d39f7a07bf20cd87423f3e864da9111c4",
+    "run/window-0003.npz": "8e9bf48c8e82a87d9d1f60e775ddd7c0aca7925f49e048706fafc2c2b6e3f4bc"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/ST4 junction voltage sign, own ledgers off"
+  },
+  {
+   "name": "ST5 Na and K face diffusivities exchanged",
+   "kind": "ionic",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/ionic/jupiter_baseline/h4.json",
+   "base_sha256": "ee452cc8f784470c6365d614927b4f229317a2b540b5e5d7c3a12f60daca5ddf",
+   "modify": [
+    {
+     "path": "/model/faces/*/diffusivity_m2_per_s/Na",
+     "set": 1.7e-09
+    },
+    {
+     "path": "/model/faces/*/diffusivity_m2_per_s/K",
+     "set": 1.2e-09
+    }
+   ],
+   "modified_leaves": [
+    3,
+    3
+   ],
+   "patch": null,
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "0,1,2,3,4,5,6,21,42",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    7
+   ],
+   "started": "2026-11-25T11:28:30+00:00",
+   "finished": "2026-11-25T11:28:31+00:00",
+   "seconds": 0.9307537720305845,
+   "outcome": "completed",
+   "definition_sha256": "5a2d3b3b20b6c3711e60ab0ad9ff2f271186fff8508cdf88de5b285715edf66f",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "5a2d3b3b20b6c3711e60ab0ad9ff2f271186fff8508cdf88de5b285715edf66f",
+    "run/run.json": "6c3a9f587c46a79f452c19c2e0958068a67636282351e34b5546acc0b849e2e6",
+    "run/window-0000.npz": "55c0ba091980f2b910ed485a6229e866c43e79ded09ff463a3c5217c8aa017f0",
+    "run/window-0001.npz": "3f2270a8fb3e302d7afc273eeaf8c05077f5ebcf45aff8445b3964f3dd97322d",
+    "run/window-0002.npz": "f2318344c790f66e29b8db6a24d1f009edd69c6ee28f892d1f9903dd215c2354",
+    "run/window-0003.npz": "3695acac85899fccaf5fe4ea14a7f312959bb0a450954e8b6047a8a062f9b44d"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/ST5 Na and K face diffusivities exchanged"
+  },
+  {
+   "name": "ST6 availability on the other cell's channel",
+   "kind": "assembly",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/assembly/cluster_base/h4-s0.json",
+   "base_sha256": "b179f55f5a77f6dad12d7db5d36166a52104b06c2c4d96ce3a119037cf7673db",
+   "modify": [],
+   "modified_leaves": [],
+   "patch": "from cells.legacy.assembly_cluster import engine\norig = engine.channel_owners\ndef channel_owners(spec):\n    r = orig(spec).copy()\n    r[0], r[1] = r[1], r[0]\n    return r\nengine.channel_owners = channel_owners\n",
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "36",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    23
+   ],
+   "started": "2026-11-25T11:30:47+00:00",
+   "finished": "2026-11-25T11:31:29+00:00",
+   "seconds": 41.71555617800914,
+   "outcome": "completed",
+   "definition_sha256": "b179f55f5a77f6dad12d7db5d36166a52104b06c2c4d96ce3a119037cf7673db",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "b179f55f5a77f6dad12d7db5d36166a52104b06c2c4d96ce3a119037cf7673db",
+    "run/checkpoint/state.npz": "d437d87aed368465d8cd7897dff2b28e6270301aa994eff29d2207664f365eca",
+    "run/completion.json": "1f048fba5ac4a6b3dfaa4c13b05e3ab47ec61e15f42846f776dfbeba58a7d4d6",
+    "run/observations/tick-0000000.json": "6e602e32f6d516c53f23c9f0a98578336346912de2bc03a8323986750c47a931",
+    "run/observations/tick-0000400.json": "aa22ea84c0a28f6ee13f77fb70e06d7a8294f75151728e4e0fef821f9e46d6c9",
+    "run/observations/tick-0000800.json": "6dfc7853f2878acd5bc02fb46ff154b5eb03b71c6723ff0e12439796161cb01e",
+    "run/observations/tick-0001600.json": "450ff597992864ffea4ca0fc13a0ba398958bce5f04648d5c1128a0281816e1e",
+    "run/registration.json": "e3aedd94e5965635afc49f02d6a465bea0f1fbc06e30cccdebb89a93ffb299d4",
+    "run/result.json": "2f357c025e3e357c17129d344949dfde7b2b20b1004b61f2bf0815eb0f15f28f",
+    "run/started.json": "730cf9e6387f7001b24bf923d025e66fb98d27887aee7dc7923944f4c234d17b",
+    "run/status.json": "0bb9cc69b70e653e00cfe8ece519da2e39e83e3e41a36504a5729cb1d413df43"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/ST6 availability on the other cell's channel"
+  },
+  {
+   "name": "ST7 availability inverted",
+   "kind": "assembly",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/assembly/cell/h4-s0.json",
+   "base_sha256": "e4fc9460d51e636b96a8c26417bb8842d80c6adf6fb22023907b25108ffc0ad3",
+   "modify": [],
+   "modified_leaves": [],
+   "patch": "from cells.legacy.assembly_cell import kernel\ndef availability(pool, levels):\n    cyclic = jax.lax.population_count(pool.bonds) >= jax.lax.population_count(pool.occupied)\n    return jnp.where(cyclic, levels[0], levels[1])\nkernel.availability = availability\n",
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "37",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    23
+   ],
+   "started": "2026-11-25T11:33:26+00:00",
+   "finished": "2026-11-25T11:35:19+00:00",
+   "seconds": 112.59838678699452,
+   "outcome": "completed",
+   "definition_sha256": "e4fc9460d51e636b96a8c26417bb8842d80c6adf6fb22023907b25108ffc0ad3",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "e4fc9460d51e636b96a8c26417bb8842d80c6adf6fb22023907b25108ffc0ad3",
+    "run/checkpoint/state.npz": "b28f492093b8583246e6032b0eda3ff4b073e07f51f8325a819ac74e44333b24",
+    "run/completion.json": "6d9148cd0f9a0a96a87d1307730cd5d7d757c4aaa599989a94bd2770f971ebd8",
+    "run/registration.json": "eeeca7cacd35cd3c38ee1c7745e90da1f4713101ddef0999f4062174454a5827",
+    "run/result.json": "a9764ae4c3137b8acac225e92299a93b75db363dc83e437fcba98e42edba2ed2",
+    "run/started.json": "8fc967b3e5a07e1239e6fa861624dbb1698f13803093cf9bda1a2781d9017531",
+    "run/status.json": "49be3c466093b094c879c8f1c567cdc04b200b6958ee9b496b9d258610c41f15"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/ST7 availability inverted"
+  },
+  {
+   "name": "ST8 pump released on one membrane",
+   "kind": "ionic",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/ionic/jupiter_pump_release/h4.json",
+   "base_sha256": "1f571d97f4a1f36e1bedb062cfcc172c96d16075a57dda3d688f9994935d82a1",
+   "modify": [
+    {
+     "path": "/experiment/membrane_controls/1/pump",
+     "set": [
+      {
+       "multiplier": 1.0,
+       "time": 0.0
+      }
+     ]
+    }
+   ],
+   "modified_leaves": [
+    1
+   ],
+   "patch": null,
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "8,9,10,11,12,13,14,15,22,43",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    23
+   ],
+   "started": "2026-11-25T11:28:29+00:00",
+   "finished": "2026-11-25T11:28:31+00:00",
+   "seconds": 1.6369197400053963,
+   "outcome": "completed",
+   "definition_sha256": "b53b282dcfefc7e3346e53e3f4571d73a5d7b5bcbffc45331a7027f1f6ad5c12",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "b53b282dcfefc7e3346e53e3f4571d73a5d7b5bcbffc45331a7027f1f6ad5c12",
+    "run/run.json": "42447c30643277a1066ca5d2ba1995ca26196150270bab06e1c596ce383b21f0",
+    "run/window-0000.npz": "4da7edd5013448246406cf58c952b6628cdcc175ea9c2a8b766f6ab6a774bb92",
+    "run/window-0001.npz": "1112be5d7bc8385c7c9dce555dce94f1259b4b8bc816d3375ffdef0b8d5ec024",
+    "run/window-0002.npz": "703b1fbdba456abf00ec53dcb677242d6bfa267e33e7f828e1f97d728c5c5278",
+    "run/window-0003.npz": "bdbd9455977b06e09dc835ae05723e857a0d98c1362215956c91a5b35fed597f"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/ST8 pump released on one membrane"
+  },
+  {
+   "name": "ST9 the schedule is not applied",
+   "kind": "ionic",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-extra-49529e71/extra/ionic/finite_junction_cluster/h4.json",
+   "base_sha256": "e0a93bb10fe7d1eef4fe64ce42e05681d7fe4a5a420fc9ee4c90c617ecfbc47e",
+   "modify": [
+    {
+     "path": "/experiment/junction_controls/*/schedule/*/open_fraction",
+     "set": 1.0
+    }
+   ],
+   "modified_leaves": [
+    48
+   ],
+   "patch": null,
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "38,39,40,41,44",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    7
+   ],
+   "started": "2026-11-25T11:28:55+00:00",
+   "finished": "2026-11-25T11:28:55+00:00",
+   "seconds": 0.4306877739727497,
+   "outcome": "completed",
+   "definition_sha256": "efdd18a9006b5fd4bab7eaf77004ea2bc99cffa5f4f55f314e3c149c73d23b09",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "efdd18a9006b5fd4bab7eaf77004ea2bc99cffa5f4f55f314e3c149c73d23b09",
+    "run/run.json": "572d46c4e9619612d5a3308caa76524a265f8729e5167bc57d493caab98cddf7",
+    "run/window-0000.npz": "d4f0c7f09186d39bd2d3e3b257b22fbcfea8fb526f6019a6d7665d7883490284",
+    "run/window-0001.npz": "babda350e4a35d444e8c54fdb46818fe98dc3516a27e9c36292f190a836b4b01",
+    "run/window-0002.npz": "90ac33709cccc8f4b45184d879b7a2f82c995ccfaa84a5df25e9dfde01189f12",
+    "run/window-0003.npz": "ea3fd77076560c58fe1a5753bd440fcef6bd7af2c4262b96c7bb7e4ef42363b8"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/ST9 the schedule is not applied"
+  },
+  {
+   "name": "control base s0 h4",
+   "kind": "assembly",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/assembly/cluster_base/h4-s0.json",
+   "base_sha256": "b179f55f5a77f6dad12d7db5d36166a52104b06c2c4d96ce3a119037cf7673db",
+   "modify": [],
+   "modified_leaves": [],
+   "patch": null,
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "23,24,25,26",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    7
+   ],
+   "started": "2026-11-25T11:30:11+00:00",
+   "finished": "2026-11-25T11:30:52+00:00",
+   "seconds": 40.710085641010664,
+   "outcome": "completed",
+   "definition_sha256": "b179f55f5a77f6dad12d7db5d36166a52104b06c2c4d96ce3a119037cf7673db",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "b179f55f5a77f6dad12d7db5d36166a52104b06c2c4d96ce3a119037cf7673db",
+    "run/checkpoint/state.npz": "df0aa378ed11fa51af4e8c73d33a2c496609b2a11d920a7e65a37eeb88e47e9b",
+    "run/completion.json": "43902e1e9ea4b648423a6e62fc84e881e6ebae06838487e245158430ac1bd8cf",
+    "run/observations/tick-0000000.json": "6e602e32f6d516c53f23c9f0a98578336346912de2bc03a8323986750c47a931",
+    "run/observations/tick-0000400.json": "dd0a832295e8656070452014441ac48c8e4e894ae8819f9ce8ce1b2b4457a54e",
+    "run/observations/tick-0000800.json": "a4abcf6d2b2dd567af4dddaaf0d84f8e560e846c4fa184cee0a900b29292988f",
+    "run/observations/tick-0001600.json": "61cfcb42931c9ffea6d7e3deb74d8c56c0e6f7bd40cf82b1b68a22133e943fbc",
+    "run/registration.json": "7f7c3a6cafcfd08f19c010e5bf6ea03d9aa0dde88eb385142cad025c27697399",
+    "run/result.json": "757ad73c3c2afbfad2cf0ae93ab1788a951b50880ccb7c783a046c12dc8f4ed3",
+    "run/started.json": "43e90651d14fe414bf55e26da624d74bfd4cdb837f5926f91b49f2a1bdb38eb3",
+    "run/status.json": "f3ae52c7427477a0544f706eeefa1bd30cc69e06bbee36e8d582be6d65d41ce1"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/control base s0 h4"
+  },
+  {
+   "name": "control cell s0 h4",
+   "kind": "assembly",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/assembly/cell/h4-s0.json",
+   "base_sha256": "e4fc9460d51e636b96a8c26417bb8842d80c6adf6fb22023907b25108ffc0ad3",
+   "modify": [],
+   "modified_leaves": [],
+   "patch": null,
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "31,32",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    7
+   ],
+   "started": "2026-11-25T11:31:52+00:00",
+   "finished": "2026-11-25T11:33:46+00:00",
+   "seconds": 114.67133796599228,
+   "outcome": "completed",
+   "definition_sha256": "e4fc9460d51e636b96a8c26417bb8842d80c6adf6fb22023907b25108ffc0ad3",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "e4fc9460d51e636b96a8c26417bb8842d80c6adf6fb22023907b25108ffc0ad3",
+    "run/checkpoint/state.npz": "959cf2d03c4dea1c4a1ebc7d017ca7f630053e3a7d1d3290fc19cca19ea60204",
+    "run/completion.json": "fd2cb4b0a0a5e544e9bf25ec1d7e386d78e0780dfb4e1fff46dec1c057269197",
+    "run/registration.json": "3a07da0d47541119847c67405498965da102832cf341119dce5a46ac2d7e2059",
+    "run/result.json": "ef10fd0c448a06441162806b4477e58919ccac154671cb7fc538368b51ab25a6",
+    "run/started.json": "a3e0fde6a43068cf3200999c6ade7773cedd25d8afc359ebf180eb4d1e0f6afc",
+    "run/status.json": "34ae0464bd6d76edbe43a8813a0759f5ebfe7d6aedd95e949a8b2f5cabf926de"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/control cell s0 h4"
+  },
+  {
+   "name": "control integrated h4",
+   "kind": "ionic",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-extra-49529e71/extra/ionic/finite_junction_cluster/h4.json",
+   "base_sha256": "e0a93bb10fe7d1eef4fe64ce42e05681d7fe4a5a420fc9ee4c90c617ecfbc47e",
+   "modify": [],
+   "modified_leaves": [],
+   "patch": null,
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "38,39,40,41,44",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    7
+   ],
+   "started": "2026-11-25T11:28:33+00:00",
+   "finished": "2026-11-25T11:28:54+00:00",
+   "seconds": 20.82284607400652,
+   "outcome": "completed",
+   "definition_sha256": "bd2a92c97b431e4e23b809a2cba2e2affd52aabdf6f299a011893db70061ca70",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "bd2a92c97b431e4e23b809a2cba2e2affd52aabdf6f299a011893db70061ca70",
+    "run/run.json": "9a6ca6786679422b28f4fe25821bf2300e6953c215a806617183cd3599006d05",
+    "run/window-0000.npz": "af4c85bc692c76151abbb224d998971d4379e1ae95de974c4041b4517cd25eee",
+    "run/window-0001.npz": "3a6c147e8e5609c385b37bc72d0309c2d998678cded470a9087ad00751a352d3",
+    "run/window-0002.npz": "089f9d5eeef47b606a93b4e4b19d5fbe8484ded14ff57920727e5157d907f32f",
+    "run/window-0003.npz": "bd352b8553e07d4eee8ece68e2236b3f4e70563630ae452cc38f23a90962bc0c"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/control integrated h4"
+  },
+  {
+   "name": "control integrated h4 again",
+   "kind": "ionic",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-extra-49529e71/extra/ionic/finite_junction_cluster/h4.json",
+   "base_sha256": "e0a93bb10fe7d1eef4fe64ce42e05681d7fe4a5a420fc9ee4c90c617ecfbc47e",
+   "modify": [],
+   "modified_leaves": [],
+   "patch": null,
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "38,39,40,41,44",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    7
+   ],
+   "started": "2026-11-25T11:28:55+00:00",
+   "finished": "2026-11-25T11:28:56+00:00",
+   "seconds": 0.4313620080938563,
+   "outcome": "completed",
+   "definition_sha256": "a3a9a264211e481a30cd0b32c21d4b709c685f09aef7105accd79ba0cd601f37",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "a3a9a264211e481a30cd0b32c21d4b709c685f09aef7105accd79ba0cd601f37",
+    "run/run.json": "632246bb6b9984430980889abf6e5bb17c81b71766a59c2d5fa9f08572d220a9",
+    "run/window-0000.npz": "af4c85bc692c76151abbb224d998971d4379e1ae95de974c4041b4517cd25eee",
+    "run/window-0001.npz": "3a6c147e8e5609c385b37bc72d0309c2d998678cded470a9087ad00751a352d3",
+    "run/window-0002.npz": "089f9d5eeef47b606a93b4e4b19d5fbe8484ded14ff57920727e5157d907f32f",
+    "run/window-0003.npz": "bd352b8553e07d4eee8ece68e2236b3f4e70563630ae452cc38f23a90962bc0c"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/control integrated h4 again"
+  },
+  {
+   "name": "control jupiter_baseline h4 again",
+   "kind": "ionic",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/ionic/jupiter_baseline/h4.json",
+   "base_sha256": "ee452cc8f784470c6365d614927b4f229317a2b540b5e5d7c3a12f60daca5ddf",
+   "modify": [],
+   "modified_leaves": [],
+   "patch": null,
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "0,1,2,3,4,5,6,21,42",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    7
+   ],
+   "started": "2026-11-25T11:28:31+00:00",
+   "finished": "2026-11-25T11:28:32+00:00",
+   "seconds": 1.2696029141079634,
+   "outcome": "completed",
+   "definition_sha256": "a9f025f7b4513e7eafdce447ee71c6341b6bd952c33cc2f692d7126508d74220",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "a9f025f7b4513e7eafdce447ee71c6341b6bd952c33cc2f692d7126508d74220",
+    "run/run.json": "a7afbaf92a8004362b062e095d6b1a6e2de9600fd6ca38633606fff0b04ad93f",
+    "run/window-0000.npz": "977787e5886c5a8792232471bead4d593c8ecd2b9d7326459cd291b56617fcbb",
+    "run/window-0001.npz": "f9df1762db020307e61342ec8bb75ff785c5128ec3623c8bd9261972a6613867",
+    "run/window-0002.npz": "e6180f100f41e1f14de953fbf475ea5727a3472e7695f0e123fdebcdd7d48b9e",
+    "run/window-0003.npz": "97d0f570af005023e44e4c68851d7aaea21c66628e1ff6fd2c5e0321889852ec"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/control jupiter_baseline h4 again"
+  },
+  {
+   "name": "control jupiter_pump_release h4",
+   "kind": "ionic",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/ionic/jupiter_pump_release/h4.json",
+   "base_sha256": "1f571d97f4a1f36e1bedb062cfcc172c96d16075a57dda3d688f9994935d82a1",
+   "modify": [],
+   "modified_leaves": [],
+   "patch": null,
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "8,9,10,11,12,13,14,15,22,43",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    23
+   ],
+   "started": "2026-11-25T11:27:51+00:00",
+   "finished": "2026-11-25T11:28:23+00:00",
+   "seconds": 31.749977822997607,
+   "outcome": "completed",
+   "definition_sha256": "5c26e4fb6f40460e9d84915cff583b12c1732e88c708cf5da698d628ebbb2913",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "5c26e4fb6f40460e9d84915cff583b12c1732e88c708cf5da698d628ebbb2913",
+    "run/run.json": "902c060896b50f6e6f6bd7e529974478646ce5e1fb2986cb718ae62581e5d676",
+    "run/window-0000.npz": "63f91049b44505165331a72567db1bd412258d875775dfe5d01258d7e6c5aaf4",
+    "run/window-0001.npz": "8e7b736f7a13e62c38d2eedc2146cb5e637b37cf8ac2e2e2c37f414dcf631f85",
+    "run/window-0002.npz": "aa9e0062a899ceb7c3bd287e74b3aad79cf1ef7418f08a931bcecf14a20d342e",
+    "run/window-0003.npz": "8ae40f5006e85071ccb8d3739b68062326ec1e5a83a7b90ed54ed6d98336c753"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/control jupiter_pump_release h4"
+  },
+  {
+   "name": "control jupiter_pump_release h4 again",
+   "kind": "ionic",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/ionic/jupiter_pump_release/h4.json",
+   "base_sha256": "1f571d97f4a1f36e1bedb062cfcc172c96d16075a57dda3d688f9994935d82a1",
+   "modify": [],
+   "modified_leaves": [],
+   "patch": null,
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plan1.json",
+    "8,9,10,11,12,13,14,15,22,43",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "affinity": [
+    23
+   ],
+   "started": "2026-11-25T11:28:31+00:00",
+   "finished": "2026-11-25T11:28:33+00:00",
+   "seconds": 2.22498370509129,
+   "outcome": "completed",
+   "definition_sha256": "b42246a770bee8910b53d455a02f6a33b21f7b18e9749ed611200b23d9e25a94",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "b42246a770bee8910b53d455a02f6a33b21f7b18e9749ed611200b23d9e25a94",
+    "run/run.json": "cdd6768d37cef0439367684ed9d02af142474a10a5c2746443a412f720a11f0c",
+    "run/window-0000.npz": "63f91049b44505165331a72567db1bd412258d875775dfe5d01258d7e6c5aaf4",
+    "run/window-0001.npz": "8e7b736f7a13e62c38d2eedc2146cb5e637b37cf8ac2e2e2c37f414dcf631f85",
+    "run/window-0002.npz": "aa9e0062a899ceb7c3bd287e74b3aad79cf1ef7418f08a931bcecf14a20d342e",
+    "run/window-0003.npz": "8ae40f5006e85071ccb8d3739b68062326ec1e5a83a7b90ed54ed6d98336c753"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/control jupiter_pump_release h4 again"
+  }
+ ],
+ "pool_plants": [
+  {
+   "name": "pool_plant",
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/pool_plant.py"
+   ],
+   "cpu": "23, niced, through run_detached.sh",
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "script_sha256": "f4c5b3ef3d147c4b56c0adebf5717a9b568967f5973efcde653948ebaf5debd1",
+   "outputs_sha256": {
+    "pool_plants.json": "fe59ed4db16a0ba7117b1dfddb43b5cb570d3ce21d4f74a3fe2a481b9269b222"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125",
+   "runs": "12 (three pools of the captured definitions, four rates x 1.01)"
+  },
+  {
+   "name": "pool_plant2",
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/pool_plant2.py"
+   ],
+   "cpu": "23, niced, through run_detached.sh",
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "script_sha256": "e8df99d64ab0baf071a965eedae1f489b2dbcd7b43d3eb712c5218565238ae2c",
+   "outputs_sha256": {
+    "pool_plants2.json": "93351cba5ac67d09e8181ef7570be9bc51cfccb93976df4e4feca318d25eaaba"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125",
+   "runs": "12 (three pools of the captured definitions, four rates x 1.01)"
+  }
+ ]
+}

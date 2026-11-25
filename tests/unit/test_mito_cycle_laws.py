@@ -6,8 +6,12 @@ space's adenylate kinase, with the world on beard2005@2 (AMP2-).
 
 Each claim with its plant (D187):
 - registration: the seven laws register in the built-in registry, each a monomial form hosted by
-  the kind, reading rapid_binding@1 in base forms; the supply too, on held fuel only, and its pair
-  is held together. Planted: a world that moves the pair, or holds one of it, is refused;
+  the kind, reading rapid_binding@1 in base forms, with the kind's material term; the supply too, on
+  held fuel only and with no step term, and its pair is held together. Planted: a world that moves
+  the pair, or holds one of it, is refused;
+- the seven laws' own material rates are the host-P world's material rule: the fastest, complex I,
+  returns along its own change at the rule's reading, by differences through the closures' read.
+  Planted: without them the rule reads over a hundredfold too low;
 - a host-P world (FR-4's lumen under the general closure as the IMS, its cell as the matrix, with
   beard2005@2's rows at 298.15 K) admits every population, at the closures' rows too, the kinase
   at P, and two steps close every ledger. The cited constants' seam-E entries are §9's, the
@@ -27,7 +31,8 @@ The full comparison, every registered row with both plants, is the harness's run
 evidence, outside the suite (the lead's ruling 4).
 
 Its cost (D224): 10.4 s for the five tests, measured at f671fc2d on the timed lane. The world
-test parses one numpy world and steps it twice, uncompiled; the others parse it or read rows."""
+test parses one numpy world and steps it twice, uncompiled; the others parse it or read rows. Its
+material part, added since, is four evaluations more."""
 
 import contextlib
 import copy
@@ -170,6 +175,7 @@ def test_the_seven_laws_register_as_monomial_forms_of_the_kind_in_base_forms():
         found = law_registry.active().lookup(qualified(law))
         assert found.host == transporter.KIND_ID and found.cycle.kinetics == "monomial", law
         assert found.reads == ("rapid_binding@1",) and found.forms == "base", law
+        assert ck.step_terms(found) == ["material_term"], law
 
 
 def test_the_supply_runs_on_its_held_pair_only():
@@ -189,13 +195,38 @@ def test_the_supply_runs_on_its_held_pair_only():
             start(raw)
 
 
+def own_response(state, p, control, volts, row_node, j):
+    """[rows] the rate (1/s) at which each row that population j moves returns along j's own change:
+    the kind's rates differenced over stored totals moved by its counts, the closures' read inside,
+    at fixed potentials. Where j is the fastest, each is its block's one rate."""
+    n, moved = p.active.size, p.cycle_row_present[:, j] & ~p.cycle_row_held[:, j]
+    rows = [(*row, nu) for row, nu in zip(
+        zip(p.cycle_row_species[moved, j], row_node[moved, j], strict=True),
+        np.sum(p.cycle_nu[:, moved, j], axis=0), strict=True) if nu]  # fmt: skip
+    ends = []
+    for h in (1e-9, -1e-9):
+        inc = [state.amount_increment.copy(), state.extracellular_amount_increment.copy()]
+        for s, node, nu in rows:
+            inc[int(node >= n)][s, node - n * int(node >= n)] += h * nu
+        totals = dict(amount_increment=inc[0], extracellular_amount_increment=inc[1])
+        read, ok = proton_buffer.stage_read(state._replace(**totals), p, xp=np)
+        assert bool(ok)
+        k = transporter.rates(read, volts, control, p, xp=np)
+        ends.append(np.concatenate((k.cell, k.outside), axis=1))
+    slope = (ends[0] - ends[1]) / 2e-9
+    return np.array([-slope[s, node] / nu for s, node, nu in rows])
+
+
 def test_a_host_p_world_admits_every_law_and_books_its_entries_and_steps():
     """Every population parses at the closures' rows, two steps close every ledger, and the cited
     constants' entries are §9's x° at 298.15 K. The synthase emits none, and its x does not move
     with its RateConstant (40 for 36.03 kJ/mol: S moves by exactly that). The supply cites none,
-    and its held-row work is its pair's upkeep, its heat plus the work it delivers. Planted: the
-    synthase's constant as a CitedConstant, refused by the registry's check; a RateConstant as a
-    factor's K, refused."""
+    and its held-row work is its pair's upkeep, its heat plus the work it delivers. The material
+    rule's reading, the largest row sum of the seven laws' own rates through the closures'
+    derivative, is the rate at which the fastest of them, complex I, returns along its own change,
+    to 1%. Planted: the rule without those rates (the neutral rows' and K3b's slopes) reads over a
+    hundredfold too low; the synthase's constant as a CitedConstant, refused by the registry's
+    check; a RateConstant as a factor's K, refused."""
     with mito_scoped():
         spec, impl, state, p, control = start(host_p_world())
         states = [state]
@@ -207,6 +238,13 @@ def test_a_host_p_world_admits_every_law_and_books_its_entries_and_steps():
         impl.check_values(history, spec, steps=np.arange(len(states)))  # Every ledger closes.
         read, volts, e1 = evaluation(impl, states[0], p, control)
         rates = transporter._population_rates(read, volts, control, p, xp=np)
+        assert list(p.cycle_material) == [pid in LAWS for pid in ALL]
+        off = p._replace(cycle_material=np.zeros_like(p.cycle_material))
+        rule, without = (
+            max(transporter.material_term(read, volts, control, q, xp=np)) for q in (p, off)
+        )
+        back = own_response(states[0], p, control, volts, e1.row_node, list(ALL).index("c1"))
+    assert back == pytest.approx(rule, rel=1e-2, abs=0) and without < 1e-2 * rule
     # The supply's books (§6), each side from the registry's potentials and the read: its held-row
     # work is the pair's upkeep, -J (mu_S_ox - mu_S_red), and equals its heat plus the work
     # delivered to the NAD pool, J (mu_NADH + mu_H - mu_NAD) (one node, so no charge term).

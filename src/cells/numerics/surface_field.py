@@ -237,6 +237,19 @@ def return_paths(pairs):
         _RETURN_PATHS.reset(token)
 
 
+def representative(members, first_outside, reservoirs, gauge):
+    """The node that bind fixes in one capacitor component (host): the gauge where the component
+    holds it, else its lowest outside node, the first in the definition's order; None where it
+    holds a held bath, whose imposed potential fixes the component. members: the component's node
+    indices, its cells' and its outside nodes' (from first_outside on); reservoirs and gauge: the
+    held baths' and the gauge's, as sets. cell_owned_compartments@1 applies it to the declared
+    topology (its refusal 6); representatives reads the fixed nodes from a bound layout."""
+    if reservoirs.intersection(members):
+        return None
+    zero = gauge.intersection(members)
+    return next(iter(zero)) if zero else min(i for i in members if i >= first_outside)
+
+
 def bind(layout, gauge_mask, *, solver=SOLVER_ID):
     """Host-only capacitance topology, fixed gauge and fail-closed connectivity.
 
@@ -297,13 +310,12 @@ def bind(layout, gauge_mask, *, solver=SOLVER_ID):
     fixed[list(reservoirs)] = True
     floating, free = [], []
     for members in groups.values():
-        if reservoirs.intersection(members):
+        chosen = representative(members, n, reservoirs, gauge_nodes)
+        if chosen is None:
             continue
-        choices = gauge_nodes.intersection(members)
-        representative = next(iter(choices)) if choices else min(i for i in members if i >= n)
-        fixed[representative] = True
+        fixed[chosen] = True
         floating.append(np.isin(np.arange(size), members).astype(float))
-        free.append(not bool(choices))
+        free.append(chosen not in gauge_nodes)
     basis = np.asarray(floating).reshape((-1, size)).T
     offset_free = np.asarray(free, dtype=bool)
     # Connectivity of the reduced offsets through guaranteed outside conductance.

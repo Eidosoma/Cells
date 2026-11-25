@@ -1,5 +1,8 @@
 # Abundance to function in the composite, and the closed loop's unit (FR-7, design)
 
+> **Legacy cleanup (25 November 2026, D386).** Paths under `src/cells/legacy/` and the older model
+> IDs named below left the engine. The tag `pre-cleanup-2026-11-25` keeps them.
+
 *Status: proposed, 18 November 2026, for the lead and the user (D216). Docs only. Nothing is built,
 and nothing is scaffolded before the user has discussed the options (the user's rule of
 14 November). The lead ruled on the note's three questions for the lead on 18 November (§6.1,

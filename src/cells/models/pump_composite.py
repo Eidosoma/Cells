@@ -855,7 +855,11 @@ def structure_errors(inner, operators):
     # presence. The core's presence gate, which makes an entity on a closed host absent, acts only
     # where the composition declares a closer (CLOSES: @3's padding_fill), so beside a slot changer
     # with no closer declared (an activity-mask provider alone) a kind with entities stays refused.
+    # A slot changer is refused beside a routed slot that closes a loop on its own gate, whatever
+    # its kinds declare: the loops' layout (surface_pump_v3.LOOP_LAYOUT_FIELDS) is the core's, on no
+    # kind, so the lifecycle acts on none of it and it would go stale.
     kinds = tuple(getattr(inner, "KINDS", ()))
+    loops = getattr(getattr(inner, "structure", None), "loops", ())
     declared, owners = set(kinds), getattr(inner, "KIND_FIELDS", {})
     masks = set(getattr(inner, "MASK_FIELDS", ()))
     blocked = _kinds_lifecycle(inner, kinds)
@@ -876,6 +880,12 @@ def structure_errors(inner, operators):
                 for kind_id, kind in bound.items()
                 if kind.one_way_records
             )
+            if loops:
+                errors.append(
+                    f"{op.LAW_ID} opens, closes or retires slots, and a routed slot closes a loop "
+                    "on its own gate: no lifecycle acts on the loops' layout, so it is refused "
+                    "beside one (fails closed)"
+                )
         required = {kind_registry.qualified(k) for k in op.REQUIRES_KINDS}
         for kind_id in sorted(required - declared):
             errors.append(

@@ -1,5 +1,8 @@
 # Gap-junction cancer replication
 
+> **Legacy cleanup (25 November 2026, D386).** Paths under `src/cells/legacy/` and the older model
+> IDs named below left the engine. The tag `pre-cleanup-2026-11-25` keeps them.
+
 **The preprint.** J. Grodstein, J. Mathews and M. Levin, "Membrane voltage and connexin expression
 work together to enhance tumor growth and metastasis in cancer", bioRxiv,
 doi:[10.64898/2026.09.02.748840](https://doi.org/10.64898/2026.09.02.748840), version 1,

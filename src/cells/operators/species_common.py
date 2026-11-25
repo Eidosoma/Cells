@@ -15,7 +15,8 @@ are built.
   neutral species, except local_species_reactions@1, whose reactions conserve charge. Every listed
   species is impermeant on @3's own routes (check_impermeant), except a declared counter-ion that
   @3's explicit-rate bound covers on each of its routes (check_counter_ion); a charged trace row's
-  permeation is the passive-routes kind's constant-field law.
+  permeation is the passive-routes kind's constant-field law, or for local_species_reactions@1 a
+  channel whose law declares its material term (check_impermeant's bounded_channels).
 * **At most 1,024 species per world** (§2.6; FR-43 / D315 raised it from 16 on FR-43's probe,
   docs/FR43_SHARED_INVENTORIES_DESIGN.md §1; FR-9 / D165 from 7 on the W4 probe, §13), refused in
   every species operator's definition check, with the reason in the message. The cap counts every
@@ -103,7 +104,8 @@ def parse_species(raw, base, law, *, charged=False, counter_ions=frozenset(), li
     """The species list of an operator's declaration: neutral species of the inner model, or
     (charged=True: FR-15 S1, local_species_reactions@1) charged ones too.
 
-    Every listed species is impermeant on @3's own routes (check_impermeant), except a declared
+    Every listed species is impermeant on @3's own routes (check_impermeant; where charged rows are
+    admitted, a channel whose law declares its material term is no route), except a declared
     counter-ion (counter_ions), which is charged and covered by @3's explicit-rate bound on each
     of its routes (check_counter_ion). limit: the operator's stated reason a charged species is
     refused (charged=False)."""
@@ -127,7 +129,7 @@ def parse_species(raw, base, law, *, charged=False, counter_ions=frozenset(), li
                 raise ConfigError(f"{law}: a counter-ion is charged; {name!r} has valence 0")
             check_counter_ion(base, name, law)
         else:
-            check_impermeant(m, name, law)
+            check_impermeant(m, name, law, bounded_channels=charged)
         identity = registry.parse_identity(entry["catalogue"], entry["evidence"], law)
         species.append(SpeciesIdentity(name, identity.catalogue, identity.evidence))
     if len({s.id for s in species}) != len(species):
@@ -164,22 +166,32 @@ def parse_read_species(raw, base, law):
     return tuple(species)
 
 
-def check_impermeant(model, name, law):
+def check_impermeant(model, name, law, *, bounded_channels=False):
     """Refuse a species with a membrane, junction or channel route of @3's (version 1).
 
     @3's explicit-rate bound (surface_pump.explicit_rate_bound) covers every species on faces, but
     on membranes and junctions it bounds only the z^2-weighted charge relaxation, and so do the
     channels' in-step refusal (membrane_rate): a neutral species moving through a membrane, junction
     or channel would have no material-rate bound. Templates cannot add such a route either, since a
-    template replaces only routes the slot already has (core/cell_replacement_spec)."""
+    template replaces only routes the slot already has (core/cell_replacement_spec).
+
+    bounded_channels (local_species_reactions@1 alone, through parse_species: it admits charged rows
+    and refuses RK4): a channel whose law declares its material term does not count, since the IMEX
+    step's material rule bounds its ions' amounts at every explicit stage
+    (surface_pump_v3.material_rate; docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md §5.4)."""
+    from cells.definitions.surface_pump_v3_spec import channel_laws
+
     row = model.species_ids.index(name)
     routes = [f"membrane {p.id}" for p in model.membranes if p.permeability_m_per_s[row] != 0] + [
         f"junction {j.id}" for j in model.junctions if j.permeability_m_per_s[row] != 0
     ]
+    laws = channel_laws() if bounded_channels else {}
+    bounded = {law_id for law_id, own in laws.items() if own.material_term is not None}
     routes += [
         f"channel {c.id}"
         for c in model.channels
-        if any(i.species_id == name and i.relative_permeability != 0 for i in c.permeant_ions)
+        if c.kinetic_law not in bounded
+        and any(i.species_id == name and i.relative_permeability != 0 for i in c.permeant_ions)
     ]
     if routes:
         raise ConfigError(
@@ -207,10 +219,14 @@ COUNTER_ION_COVERAGE = 100.0
 def counter_ion_margin(base, name):
     """(the smallest margin over species `name`'s @3 routes of its own charge-relaxation term
     over its own material term, that route) at the declared state; (inf, None) without a route.
-    Membranes and channels on patches, junctions between cells, as the bound reads them."""
+    Membranes and channels on patches, junctions between cells, each against the capacitance the
+    bound relaxes its charge over (surface_pump.explicit_rate_bound): a held patch's and a
+    junction's, the cell's held patches'; a loose patch's, one that faces a floating node, its
+    own. (A junction at a cell with no held patch has no such capacitance: the bound refuses it.)"""
     from cells.definitions.surface_pump_v3_spec import projection
     from cells.laws.electrochemistry import F, R
     from cells.models import surface_kinetic as kinetic
+    from cells.models.surface_pump import floating_nodes
 
     m = base.model
     row = m.species_ids.index(name)
@@ -222,8 +238,11 @@ def counter_ion_margin(base, name):
         p.outside_active, p.extracellular_amount_reference[row] / p.extracellular_volume, 0.0
     )
     n = p.active.size
+    own, floating = np.asarray(p.membrane_capacitance), floating_nodes(m)
+    loose = np.zeros(own.size, dtype=bool)
+    loose[: len(m.membranes)] = [patch.outside in floating for patch in m.membranes]
     capacitance = np.zeros(n)
-    np.add.at(capacitance, np.asarray(p.membrane_cell), np.asarray(p.membrane_capacitance))
+    np.add.at(capacitance, np.asarray(p.membrane_cell), np.where(loose, 0.0, own))
     cell_volume = np.where(p.active, p.volume * 1e-15, np.inf)
     outside_volume = np.where(
         p.outside_active & ~p.reservoir, p.extracellular_volume * 1e-15, np.inf
@@ -239,14 +258,15 @@ def counter_ion_margin(base, name):
         if patch.permeability_m_per_s[row] == 0 and patch.id not in channel_patches:
             continue
         i, o = int(p.membrane_cell[k]), int(p.membrane_outside[k])
-        charge = slope * z2 * max(ci[i], co[o]) / capacitance[i]
+        charge = slope * z2 * max(ci[i], co[o]) / (own[k] if loose[k] else capacitance[i])
         material = 1.0 / cell_volume[i] + 1.0 / outside_volume[o]
         margins.append((charge / material, f"membrane {names[k]}"))
     for j, junction in enumerate(m.junctions):
         if junction.permeability_m_per_s[row] == 0:
             continue
         a, b = int(p.junction_sender[j]), int(p.junction_receiver[j])
-        charge = 2 * slope * z2 * max(ci[a], ci[b]) / min(capacitance[a], capacitance[b])
+        behind = min(capacitance[a], capacitance[b])
+        charge = 2 * slope * z2 * max(ci[a], ci[b]) / behind if behind > 0 else math.inf
         material = 1.0 / cell_volume[a] + 1.0 / cell_volume[b]
         margins.append((charge / material, f"junction {junction.id}"))
     return min(margins, default=(math.inf, None))

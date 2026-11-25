@@ -16,8 +16,8 @@ strongly another is read.
 
 ## Seen from each field
 
-- **Biology:** gating by a ligand, by calcium or by both, such as a store's release that a little
-  calcium opens and more calcium closes again.
+- **Biology:** gating by a ligand, by calcium or by both, such as a
+  [store's](../../GLOSSARY.md#store) release that a little calcium opens and more calcium closes again.
 - **Chemistry:** cooperative binding at equilibrium, without depletion of what is bound.
 - **Physics:** a product of logistic functions of the logarithms of concentrations.
 - **Computing:** a pure function of arrays: a sum of logarithms and one exponential, with no state.
@@ -31,7 +31,7 @@ strongly another is read.
 | Piece | Law, interface `cells.transfer_factor_law@1` ([its fields](../../DECLARATIONS_FORMAT.md#family-interfaces)) |
 | ID | `cells.hill_product_factor@1`; definitions write `hill_product_factor@1` |
 | Runs in | `cells.species_condition@1`, its host, in `cells.resolved_pump_tissue@3`. Definitions of `cells.resolved_pump_composite@1` and `cells.resolved_pump_tissue@3` can declare it |
-| Provenance | `cited`: taken from a cited source |
+| Provenance | `parity`: moved from an older family; moving is not calibrating |
 
 <!-- /generated -->
 
@@ -84,7 +84,7 @@ $$\frac{\partial \ln f}{\partial \ln x_j} = +\,n_j\,(1 - h_j) \ \text{(activatio
 
 <!-- generated: provenance -->
 
-Provenance: `cited` (taken from a cited source).
+Provenance: `parity` (moved from an older family; moving is not calibrating).
 
 - **Source, as declared:** Hill's equation (A. V. Hill, 1910; reviewed by J. N. Weiss, 1997): one saturating factor per read, and their product
 - **Place:** the form x^n/(K^n + x^n) and its complement K^n/(K^n + x^n), as the engine's Hill helper states them (laws/reactions/hill_factors.py), evaluated in log space

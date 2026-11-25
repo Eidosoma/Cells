@@ -1,5 +1,8 @@
 # Coupling out of the inventory: species-regulated availability (design)
 
+> **Legacy cleanup (25 November 2026, D386).** Paths under `src/cells/legacy/` and the older model
+> IDs named below left the engine. The tag `pre-cleanup-2026-11-25` keeps them.
+
 **A5″ qualified, 18 November 2026 (FR-6 items 1 and 3).** The registered protocol `fr6-a5pp-v1`
 (`validation/tissue/a5pp_acceptance_protocol.json`, registered at 555d8771) was judged once from a
 clean snapshot of that commit: passed, 18 of 18 judged criteria, against the code-blind references

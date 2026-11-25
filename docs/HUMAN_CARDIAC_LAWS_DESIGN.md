@@ -1,5 +1,8 @@
 # Human cardiac laws: design (proposed)
 
+> **Legacy cleanup (25 November 2026, D386).** Paths under `src/cells/legacy/` and the older model
+> IDs named below left the engine. The tag `pre-cleanup-2026-11-25` keeps them.
+
 **Status: PROPOSED, 16 November 2026; its choices for the user decided by D184 the same day.**
 The user delegated the choices to the lead with the advisor and gave the go (D184, on main at
 98c49993). Decided:
@@ -103,7 +106,7 @@ stands at 3c10b833 (code read for this note; **S** where it is our reading).
 | Need | As built at 3c10b833 | Where |
 | --- | --- | --- |
 | Ca²⁺ (and, for ToR-ORd, Cl⁻) as channel ions | Channel ions are Na⁺ and K⁺ only | `definitions/surface_pump_v3_spec.py`: `SPECIES_VALENCE = {"Na": 1, "K": 1}`, `LAW_PERMEABILITIES` |
-| Gating that reads concentrations: subspace Ca²⁺ (ICaL's Ca²⁺-dependent inactivation), cytosolic Ca²⁺ (IKs), extracellular K⁺ (IK1, IKr), and the CaMKII state | `ChannelLaw.kinetics(voltage, *, xp)`: voltage only. `reads` and `loop_term` are reserved and empty for every law | `models/inner_laws.py` (`ChannelLaw`); `surface_pump_v3.potential_kinetics` |
+| Gating that reads concentrations: subspace Ca²⁺ (ICaL's Ca²⁺-dependent inactivation), cytosolic Ca²⁺ (IKs), extracellular K⁺ (IK1, IKr), and the CaMKII state | `ChannelLaw.kinetics(voltage, *, xp)`: voltage only. `reads` and `loop_term` are reserved and empty for every law (`loop_term` was removed on 25 November 2026) | `models/inner_laws.py` (`ChannelLaw`); `surface_pump_v3.potential_kinetics` |
 | Laws with more than two gates, and different gate counts in one world | `gate_rows` is the larger of 2 and the largest declared count, and a gated law whose count differs from it raises `NotImplementedError` | `surface_pump_v3.channel_kinetics` |
 | Each law's own voltage domain | Declared per law (`ChannelLaw.voltage_domain_V`, −0.120 to +0.060 V for all five), but checked as one domain for every active population, leaks included | `surface_pump_v3.channel_domain_valid` (`VOLTAGE_DOMAIN_V`) |
 | A linear driving force, G(V − E) | Every population's flux is the constant-field (GHK) flux | `surface_pump_v3.channel_rates` → `coupling/selective.selective_flux` |
@@ -115,6 +118,26 @@ stands at 3c10b833 (code read for this note; **S** where it is our reading).
 | Markov-form laws; subspace calcium | Closed in version 1 | INNER_MODEL_V4_DESIGN §13.1 |
 | A source kind's factor (CaMKII's) reaching a channel population's availability | The routing door's sinks are kinds' own control fields | core-next 207393ba (INNER_MODEL_V4_DESIGN §7.4 (n) there) |
 | A whole-cell voltage clamp | None. "Prescribed voltage here is an isolated gate input, not a supported whole-cell voltage clamp" | VOLTAGE_GATED_CHANNEL_SPEC.md |
+
+**Lifted since the table was written (as of 25 November 2026;** the [calcium
+note](CALCIUM_STORE_AND_CHANNELS_DESIGN.md) §2.2 and its steps 1 to 6). The table's other rows
+stand.
+- **Channel ions:** Cl⁻ (D228) and Ca²⁺. Each law is the authority for its ions' valences.
+  `cav1p2_m2h@1` carries Ca²⁺ through the constant-field flux, with a material term that bounds the
+  step by its own relaxation. Reads, gate counts beyond two, a linear driving force and activity
+  factors stay H1's.
+- **An exchanger with no fuel, and pumps:** the transporter kind has a population axis (several
+  roles per cycle, no fuel, several populations on a patch).
+  `sodium_calcium_exchange_symmetric_barrier@1` is registered with a synthetic rate form, and
+  `atp_driven_transporter_mass_action_positive@2` pumps one species of any valence. Which exchanger
+  stays is decided when this note's cycle lands (D386).
+- **Rapid Ca²⁺ buffering:** the general closure `rapid_binding@1` holds several ligands. A channel
+  that carries a row a closure holds is refused today; buffers as reactions beside it are admitted.
+- **A factor that reaches a channel's availability:** the routing door reaches @3's channel slots,
+  and `species_condition@1` is a source whose factor follows concentrations at every stage. CaMKII's
+  own state and its source are not built, and the SR's release from a channel's current is not.
+- **The SR as a capacitor:** option (b) of §3.2 runs for a store of its own voltage (the calcium
+  note §6). Pools at the cell's potential, the subspace and Markov-form laws stay closed.
 
 **What carries over unchanged:** the per-law declarations and static dispatch (the inner-model
 note's §7.4 (b), (c)), so an undeclared law adds nothing to any program; the exponential stage
@@ -329,6 +352,8 @@ voltage [full; code: TP06's 2006 code]. Three representations were weighed (**S*
   - several roles per cycle, and no fuel;
   - two populations on one membrane facing two pools (80% bulk, 20% subspace).
   - Owner: the transporter kind's owner, or a sibling kind in this lane (the lead's call).
+- **Admitted since** (25 November 2026): several roles per cycle, no fuel and several populations on
+  one patch. Pools are still not hosts.
 - **Its admissibility** (§3.8): with its own fluxes booked, each step's dissipation is
   J_Na·Δμ̃_Na + J_Ca·Δμ̃_Ca. That is non-negative if the cycle's rate constants obey detailed
   balance at the engine's potentials (**S**). The screen checks it on a grid of states, and a
@@ -602,10 +627,11 @@ user's, and are set out so the user sees what the law set costs.
 
 **(a) Where the gated currents live.**
 - **Extend @3's channel-law declaration. Recommended.** The declaration already reserves reads, a
-  loop term, a stage term and provenance (the inner-model note's §7.1 and §7.4 (b)). The seams to
+  loop term, a stage term and provenance (the inner-model note's §7.1 and §7.4 (b); since 25 November
+  2026 the loop term is gone and a material term is there). The seams to
   add, each present only where a declared law uses it, so every existing world keeps its programs
   (its §2.3):
-  - Ca²⁺ and Cl⁻ as permeant ions;
+  - Ca²⁺ and Cl⁻ as permeant ions (built: Cl⁻ by D228, Ca²⁺ on 25 November 2026);
   - each law's own gate count, with unused gate rows held fixed and ignored by its opening;
   - each law's own voltage domain, checked on its own populations;
   - reads at the stage: concentrations at the pool the population faces, and outside;
@@ -777,7 +803,7 @@ FR-11's loop.
 | Prerequisite | Gates | Status |
 | --- | --- | --- |
 | D172's landing: one modular inner model | Everything | Landing candidate 3c10b833 |
-| The channel-law seams (§1, §4.5): Ca²⁺ and Cl⁻ as permeant ions; per-law gate counts, domains, reads, openings and driving form; kinetic coefficients as data; routes that face a pool | H1 | New; the core owner's |
+| The channel-law seams (§1, §4.5): Ca²⁺ and Cl⁻ as permeant ions; per-law gate counts, domains, reads, openings and driving form; kinetic coefficients as data; routes that face a pool | H1 | New; the core owner's. The permeant ions are built (25 November 2026), the rest is not |
 | The booking probe (§3.8): one channel population crossing its reversal within a step under ARS(2,2,2), expected to be refused | H1, before the booking seam | A short probe on @3 as it stands |
 | A channel-heat booking that cannot book a negative increment (§3.8) | H1, for any human cell: ORd's rest lies below E_K, and the exchanger reverses every beat | New; the core owner's, if the probe confirms the need |
 | Calcium handling (§3): pools at the cell's potential (opening subspace calcium, INNER_MODEL_V4_DESIGN §13.1); the rapid Ca²⁺ buffer read (B4's closure generalised, or a sibling kind); pumps between pools and a fuel-free exchanger; the release law, with its read of the L-type current; CaMKII through the routing door into channel availability | H2 | D167's move, with new laws; the lead's rulings on the openings |

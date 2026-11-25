@@ -242,7 +242,7 @@ def test_the_hill_product_slopes_are_those_of_ln_f_and_exact_in_both_limits():
 
 def test_the_hill_product_s_record_keeps_its_interface_s_contract():
     law = law_registry.active().lookup(product.LAW_ID)
-    assert law is product.LAW and law.errors() == [] and law.provenance == "cited"
+    assert law is product.LAW and law.errors() == [] and law.provenance == "parity"
     hosted = law_registry.hosted_laws(product.TRANSFER_FACTOR_LAW, species_condition.KIND_ID)
     assert hosted == (law,)
     plants = {
@@ -253,7 +253,7 @@ def test_the_hill_product_s_record_keeps_its_interface_s_contract():
         "the padding's code": dict(forms=(("hill_activation", 0),)),
         "a parameter named twice": dict(parameters=("hill_coefficient", "hill_coefficient")),
         "an empty range": dict(value_range=(1.0, 0.0)),
-        "an uncited record": dict(source=None),
+        "a cited record with no source": dict(provenance="cited", source=None),
     }
     for name, change in plants.items():
         planted = dataclasses.replace(law, law_id="tests.planted_factor@1", **change)

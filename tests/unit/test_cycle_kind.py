@@ -34,12 +34,21 @@ Each claim with its plant (D187); every world is this file's own (no seam-A refe
   with it, and a breakpoint to 0 stops the cycles there, every ledger closing; in every kinetic
   form (neutral and charged factored, diagram, net flow) a held availability is the capacity
   times it, and 0 runs no cycle;
-- the sodium-calcium exchange (its section): the registered law meets its rate equation, its
-  reversal, its stoichiometry and charge at both ends, detailed balance with a heat that is never
-  negative, its slopes and its one-sided domain against 60-digit decimals; each of 14 plants misses
-  exactly its criteria; a closed world's steps close every ledger both ways; its charge slope holds
-  the step; its refusals; a closure's free calcium; a restart from the checkpoint file (its worlds
-  are stepped in NumPy, and one evaluation is jitted: no world compiles);
+- four laws against their own rate equations (their section): the sodium-calcium exchange,
+  ATP-driven transport of one species on held fuel, and two electroneutral symports. Each registered
+  law meets its rate, its reversal, its stoichiometry and charge at both ends, detailed balance with
+  a heat that is never negative, its work, its slopes and its domain against 60-digit decimals, and
+  each planted law, layout or evaluation misses exactly its criteria; closed worlds' steps close
+  every ledger forward and backward; the exchange's charge slope holds the step; their refusals,
+  the pump at valence zero is version 1's law, a second law of a pathway on one patch, a salt that
+  moves charge; a closure's free rows; a restart from the checkpoint file (the worlds are stepped in
+  NumPy, and one evaluation is jitted: no world compiles);
+- a law's own material bound (calcium step 5): the term is the sum over a population's moved rows at
+  both ends, added over the populations at a row, and bounds the block of them all; it runs through
+  a closure's derivative, leaves out held rows and held baths, and holds the step; a population
+  whose law has none keeps its rows, and a world without one its fields; a row that version 1's
+  proton buffer holds is refused;
+- a current readout without a proton readout: a population's own current, in A;
 - M2 (amendment 2): log, exp, expm1 and log1p within 1, 2, 4 and 2 ulp under jit on this device and
   in NumPy, against 60-digit decimals.
 """
@@ -50,6 +59,7 @@ import dataclasses
 import functools
 import math
 from decimal import Decimal, localcontext
+from typing import NamedTuple
 
 import jax
 import jax.numpy as jnp
@@ -62,8 +72,11 @@ from cells.execution.errors import NumericalError
 from cells.kinds import transporter
 from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
 from cells.laws.cycles import forms
+from cells.laws.cycles import electroneutral_symport_reversible_tanh as salt
+from cells.laws.cycles import na_k_2anion_symport_reversible_tanh as nkcc
 from cells.laws.cycles import sodium_calcium_exchange_symmetric_barrier as na_ca
 from cells.laws.cycles.forms import CycleForm, Diagram, FluxTerm, Saturation
+from cells.laws.pumps import atp_transporter_v2 as atp_pump
 from cells.models import surface_pump_v3
 from cells.registry import kind_registry
 from cells.registry import laws as law_registry
@@ -71,6 +84,7 @@ from cells.registry.models import get_model
 from tests.unit import test_cycle_forms as tf
 from tests.unit import test_transporter_kind as tk
 from validation.tissue import pump_water_fixtures as water_fixtures
+from validation.tissue import surface_pump_v2_fixtures as calcium_fixtures
 
 EPS = np.finfo(float).eps
 U = EPS / 2
@@ -328,6 +342,46 @@ def test_the_general_parse_refuses_with_its_reason(over, reason):
     entry = dict(general(tk.population()), **over)
     with scoped(), pytest.raises(ConfigError, match=reason):
         parse_spec(tk.held_world(entry))
+
+
+def test_a_current_readout_needs_no_proton_row_and_reads_the_populations_own_current():
+    """FR-34's key alone is admitted: it writes back, and adds its own field and column and none of
+    the proton readouts'. Two populations of the pump on calcium, N the cell and N the bath, read
+    1e-15 F n z J, positive from the cell to the bath, at the reference's J; a third that does not
+    ask reads 0. Planted: the current left in the counts' N-to-P orientation misses the second. A
+    proton_readout that names no proton row stays refused beside it. No step, no compile."""
+    asked = [
+        pump_case("Ca", 1, (1e-3, 1e-3, 0.1), "pump_a"),
+        pump_case("Ca", 2, (2e-3, 1e-3, 0.1), "pump_b", n_end="b"),
+        pump_case("Ca", 1, (1e-3, 1e-3, 0.1), "pump_0"),
+    ]
+    entries = [case.entry | {transporter.CURRENT_READOUT_KEY: True} for case in asked[:2]]
+    entries.append(asked[2].entry)
+    with tk.scoped():
+        spec, _, state, p, control = na_ca_start(core_world(*entries))
+        with pytest.raises(ConfigError, match="proton_readout names the model's free-proton"):
+            parse_spec(core_world(entries[0] | {transporter.PROTON_READOUT_KEY: "Ca"}))
+        ((_, entry),) = surface_pump_v3.structure(spec.model).kinds
+    assert transporter.to_dict(dict(spec.model.kinds)[transporter.KIND_ID]) == entries
+    assert entry == transporter.CycleAxis((atp_pump.DECLARED_ID,), False, False, True, True)
+    bound = kind_registry.bound(transporter.TRANSPORTER, entry)
+    assert bound.readout_columns[-1:] == transporter.CURRENT_READOUT_COLUMNS
+    assert not set(transporter.PROTON_READOUT_COLUMNS) & set(bound.readout_columns)
+    volts = -0.06
+    readouts = transporter.readouts(state, state, np.array([volts, 0.0]), control, p, xp=np)
+    current = readouts[-1]
+    nodes = (*spec.model.cells, *spec.model.extracellular)
+    mM = {
+        s: tuple(n.initial_amount_fmol[k] / n.volume_pL for n in nodes)
+        for k, s in enumerate(spec.model.species_ids)
+    }
+    for j, case in enumerate(asked):
+        plus, minus, *_ = reference(case.exact, *own(case, mM, volts))
+        toward_p = 1e-15 * float(SI_F) * case.q * float(plus - minus)
+        outward = (toward_p, -toward_p, 0.0)[j]
+        assert toward_p != 0 and float(current[j]) == pytest.approx(outward, rel=1e-12, abs=0)
+        if j == 1:  # Planted: the counts' orientation, not the host's end a to end b.
+            assert float(current[j]) != pytest.approx(toward_p, rel=1e-12, abs=0)
 
 
 def test_the_general_parse_refuses_a_charged_held_row_chemistry_at_p_and_moved_proton_fuel():
@@ -1821,19 +1875,22 @@ def test_p_at_a_finite_outside_node_books_and_bounds_with_and_without_a_closure(
         assert slope == pytest.approx(by_amount, rel=1e-12) and slope > 0
 
 
-# ------------------------------------------- the sodium-calcium exchange (a synthetic rate form)
-# sodium_calcium_exchange_symmetric_barrier@1 on one small world of this file's own: heredity cell
-# D's rows with calcium, closed, its bath finite and the gauge, with no pump, channel or
-# permeability, so nothing moves but the exchanger. Its reference is the rate equation and the two
-# ions' electrochemical potentials, as the module writes them, in 60-digit decimals from the SI
-# constants: independent of the forms, not code-blind.
+# ------------------------------------------- four laws against their own rate equations
+# The sodium-calcium exchange (a synthetic rate form), ATP-driven transport of one species on held
+# fuel, and two electroneutral symports (manufactured rate forms), on one small world of this file's
+# own: heredity cell D's rows with calcium, closed, its bath finite and the gauge, with no pump,
+# channel or permeability, so nothing moves but the populations. Each law's reference is its rate
+# equation and the moved species' electrochemical potentials, as its module writes them, in 60-digit
+# decimals from the SI constants: independent of the forms, not code-blind.
 
 SI_F = Decimal("6.02214076e23") * Decimal("1.602176634e-19")  # C/mol
 SI_R = Decimal("6.02214076e23") * Decimal("1.380649e-23")  # J/(mol K)
-NA_CA_T_K = 310.0  # Heredity cell D's.
-NA_CA_MM = dict(cell_0=dict(Ca=2e-4), bath_0=dict(Ca=1.8))  # The reversal is then -30.0 mV.
+CORE_T_K = 310.0  # Heredity cell D's.
+CORE_RT_F = float(SI_R * Decimal(CORE_T_K) / SI_F)
+NA_CA_MM = dict(cell_0=dict(Ca=2e-4), bath_0=dict(Ca=1.8))  # The exchange's reversal: -30.0 mV.
 NA_CA_NU = (3, -3, -1, 1)  # (Na, N), (Na, P), (Ca, N), (Ca, P) per forward cycle.
-NA_CA_RT_F = float(SI_R * Decimal(NA_CA_T_K) / SI_F)
+FUEL = ("ATP", "ADP", "Pi")
+FUEL_MU = dict(ATP=3.0, ADP=-4.0, Pi=-2.5)  # RT, against 1 mM: hydrolysis has -9.5 RT.
 
 
 def na_ca_entry(law=na_ca.DECLARED_ID, *, name="exchanger_0", k=0.5, km=(20.0, 1e-3), **over):
@@ -1873,6 +1930,23 @@ def na_ca_world(*entries, volts=None, mM=NA_CA_MM, dt=1e-4):
     return raw
 
 
+def core_world(*entries, rows=None, **over):
+    """na_ca_world with a divalent anion S, a neutral Y and the fuel, each {species: (valence, the
+    registry's mu in RT against 1 mM, mM in the cell, mM in the bath)} of `rows`."""
+    raw = na_ca_world(*entries, **over)
+    raw["model"]["standard_concentration_mM"] = 1.0
+    given = dict(
+        S=(-2, 0.0, 2.0, 0.5),
+        Y=(0, 0.0, 0.3, 1.0),
+        ATP=(0, FUEL_MU["ATP"], 3.0, 1e-3),
+        ADP=(0, FUEL_MU["ADP"], 0.4, 1e-3),
+        Pi=(0, FUEL_MU["Pi"], 5.0, 1e-3),
+    )
+    for sid, (z, mu, cell, bath) in (given | (rows or {})).items():
+        add_species(raw, sid, z, mu, {"cell_0": cell, "bath_0": bath})
+    return raw
+
+
 def na_ca_conc(raw):
     """(Na_N, Na_P, Ca_N, Ca_P) of a definition, in mM."""
     nodes = (*raw["model"]["cells"], *raw["model"]["extracellular"])
@@ -1887,64 +1961,386 @@ def na_ca_start(raw):
     return spec, impl, state, p, impl.Control(*(v[0] for v in control_values(spec, [0.0])))
 
 
-def na_ca_at(spec, state, p, conc):
-    """The state whose nodes hold conc = (Na_N, Na_P, Ca_N, Ca_P) in mM, and the concentrations it
-    gives back (each amount is a reference plus an increment, so it rounds)."""
-    ids = list(spec.model.species_ids)
-    inc, out = state.amount_increment.copy(), state.extracellular_amount_increment.copy()
-    given = []
-    for s, n, o in (("Na", *conc[:2]), ("Ca", *conc[2:])):
-        k = ids.index(s)
-        inc[k, 0] = n * p.volume[0] - p.amount_reference[k, 0]
-        out[k, 0] = o * p.extracellular_volume[0] - p.extracellular_amount_reference[k, 0]
-        given.append(float((p.amount_reference[k, 0] + inc[k, 0]) / p.volume[0]))
-        stored = p.extracellular_amount_reference[k, 0] + out[k, 0]
-        given.append(float(stored / p.extracellular_volume[0]))
-    moved = state._replace(amount_increment=inc, extracellular_amount_increment=out)
-    return moved, tuple(given)
+class Judged(NamedTuple):
+    """A population and its reference: its entry; the reference's rows as (species, end), their
+    counts per cycle, which of them are held, and its charge per cycle from N to P; exact(conc, u),
+    the reference's (J+, J-, x, the held rows' part of x) at its rows' mM and u = F (phi_N -
+    phi_P)/RT in decimals; and the lowest x its domain admits."""
+
+    entry: dict
+    rows: tuple
+    nu: tuple
+    held: tuple
+    q: int
+    exact: object
+    low: float = -math.inf
+
+
+def both_ends(*species):
+    return tuple((s, end) for s in species for end in ("N", "P"))
 
 
 @functools.cache
-def na_ca_exact(conc, volts, k, k_na, k_ca):
-    """(J+, J-, x) of the rate equation: J+ = k b^3 c e^(-u/2) / D and J- = k a^3 d e^(u/2) / D, and
-    x from the electrochemical potentials of what a forward cycle moves, three Na+ from P to N and
-    one Ca2+ from N to P (u = F (phi_N - phi_P)/RT)."""
+def na_ca_exact(k, k_na, k_ca):
+    """The exchange: J+ = k b^3 c e^(-u/2) / D and J- = k a^3 d e^(u/2) / D, and x from the
+    electrochemical potentials of three Na+ moved from P to N and one Ca2+ from N to P."""
+    k, k_na, k_ca = map(Decimal, (k, k_na, k_ca))
+
+    def exact(conc, u):
+        na_n, na_p, ca_n, ca_p = conc
+        a, b, c, d = na_n / k_na, na_p / k_na, ca_n / k_ca, ca_p / k_ca
+        per = k / ((1 + a**3 + b**3) * (1 + c + d))
+        plus, minus = per * b**3 * c * (-u / 2).exp(), per * a**3 * d * (u / 2).exp()
+        return plus, minus, 3 * ((na_n / na_p).ln() + u) - ((ca_n / ca_p).ln() + 2 * u), Decimal(0)
+
+    return exact
+
+
+@functools.cache
+def pump_exact(z, n, k, km, km_atp):
+    """The pump, in its rational form (one denominator, no 1 - e^x): J+ = k c_N^n ATP / D and J- = k
+    ADP Pi e^g c_P^n e^(-n z u) / D with D = (K^n + c_N^n)(K_ATP + ATP) and g the fuel's standard
+    part, at c0 = 1 mM; x from the hydrolysis and from n ions' electrochemical potentials."""
+    k, km, km_atp = map(Decimal, (k, km, km_atp))
+    g = Decimal(FUEL_MU["ADP"]) + Decimal(FUEL_MU["Pi"]) - Decimal(FUEL_MU["ATP"])
+
+    def exact(conc, u):
+        c_n, c_p, atp, adp, pi = conc
+        per = k / ((km**n + c_n**n) * (km_atp + atp))
+        minus = per * adp * pi * c_p**n * (g - n * z * u).exp()
+        held = g + (adp * pi / atp).ln()
+        return per * c_n**n * atp, minus, held + n * (c_p.ln() - (c_n.ln() + z * u)), held
+
+    return exact
+
+
+@functools.cache
+def symport_exact(counts, k):
+    """A symport of `counts` ions from P to N: J = k (P - N) / (P + N), which is k tanh(-x/2), with
+    P and N the products of its rows' concentrations there, so x = ln (N / P)."""
+    k = Decimal(k)
+
+    def exact(conc, u):
+        at_n, at_p = (
+            math.prod(c**n for c, n in zip(conc[i::2], counts, strict=True)) for i in (0, 1)
+        )
+        return k * at_p / (at_p + at_n), k * at_n / (at_p + at_n), (at_n / at_p).ln(), Decimal(0)
+
+    return exact
+
+
+def na_ca_case(values, name="exchanger_0", law=na_ca.DECLARED_ID):
+    k, *km = values
+    entry = na_ca_entry(law, name=name, k=k, km=km)
+    return Judged(entry, both_ends("Na", "Ca"), NA_CA_NU, (False,) * 4, -1, na_ca_exact(*values))
+
+
+VALENCE = dict(Na=1, K=1, M=-1, Ca=2, S=-2, Y=0)
+
+
+def pump_case(role, n, values, name="pump_0", law=atp_pump.DECLARED_ID, n_end="a"):
+    """The pump (or `law`) moving n of `role` per ATP, values its (capacity, K, K_ATP)."""
+    k, km, km_atp = values
+    entry = exchanger(
+        law,
+        id=name,
+        orientation={"N": n_end},
+        capacity_fmol_s=k,
+        roles=dict(role=role, **{s: s for s in FUEL}),
+        parameters=dict(stoichiometry=n, km_role_mM=km, km_atp_mM=km_atp),
+        held_rows=[[s, "N"] for s in FUEL],
+    )
+    rows = (*both_ends(role), *((s, "N") for s in FUEL))
+    held, z = (False, False, True, True, True), VALENCE[role]
+    exact = pump_exact(z, n, k, km, km_atp)
+    return Judged(entry, rows, (-n, n, -1, 1, 1), held, n * z, exact, -80.0)
+
+
+def symport_case(law, roles, counts, parameters, k, name="symport_0", n_end="a"):
+    """A symport of the species of `roles` ({role: species}) at `counts`, from P to N."""
+    entry = exchanger(
+        law,
+        id=name,
+        orientation={"N": n_end},
+        capacity_fmol_s=k,
+        roles=dict(roles),
+        parameters=dict(parameters),
+    )
+    nu = tuple(n if end == "N" else -n for n in counts for end in ("N", "P"))
+    rows, held = both_ends(*roles.values()), (False,) * len(nu)
+    return Judged(entry, rows, nu, held, 0, symport_exact(counts, k))
+
+
+def nkcc_case(k, name="symport_0", law=nkcc.DECLARED_ID, n_end="a"):
+    return symport_case(law, dict(Na="Na", K="K", anion="M"), (1, 1, 2), {}, k, name, n_end)
+
+
+def salt_case(salts, k, name="symport_0", law=salt.DECLARED_ID, n_end="a"):
+    """The configured symport of salts = (cation, anion, n_cation, n_anion)."""
+    cation, anion, *counts = salts
+    parameters = dict(zip(("n_cation", "n_anion"), counts, strict=True))
+    roles = dict(cation=cation, anion=anion)
+    return symport_case(law, roles, tuple(counts), parameters, k, name, n_end)
+
+
+def put(spec, state, p, mM):
+    """The state whose nodes hold mM = {species: (the cell's, the bath's)}, and the concentrations
+    it gives back (each amount is a reference plus an increment, so it rounds)."""
+    ids = list(spec.model.species_ids)
+    inc, out = state.amount_increment.copy(), state.extracellular_amount_increment.copy()
+    given = {}
+    for s, (cell, bath) in mM.items():
+        k = ids.index(s)
+        inc[k, 0] = cell * p.volume[0] - p.amount_reference[k, 0]
+        out[k, 0] = bath * p.extracellular_volume[0] - p.extracellular_amount_reference[k, 0]
+        stored = p.extracellular_amount_reference[k, 0] + out[k, 0]
+        given[s] = (
+            float((p.amount_reference[k, 0] + inc[k, 0]) / p.volume[0]),
+            float(stored / p.extracellular_volume[0]),
+        )
+    return state._replace(amount_increment=inc, extracellular_amount_increment=out), given
+
+
+def own(case, mM, volts):
+    """A case's rows' mM and its phi_N - phi_P (V), at the nodes' mM and the cell's voltage."""
+    at_b = case.entry["orientation"]["N"] == "b"
+    conc = tuple(mM[s][(end == "P") != at_b] for s, end in case.rows)
+    return conc, -volts if at_b else volts
+
+
+@functools.cache
+def reference(exact, conc, volts):
+    """exact's values at a state, its own detailed balance checked."""
     with localcontext() as ctx:
         ctx.prec = 60
-        u = SI_F * Decimal(volts) / (SI_R * Decimal(NA_CA_T_K))
-        na_n, na_p, ca_n, ca_p = map(Decimal, conc)
-        a, b = na_n / Decimal(k_na), na_p / Decimal(k_na)
-        c, d = ca_n / Decimal(k_ca), ca_p / Decimal(k_ca)
-        per = Decimal(k) / ((1 + a**3 + b**3) * (1 + c + d))
-        plus, minus = per * b**3 * c * (-u / 2).exp(), per * a**3 * d * (u / 2).exp()
-        x = 3 * ((na_n / na_p).ln() + u) - ((ca_n / ca_p).ln() + 2 * u)
-        assert abs(minus / plus / x.exp() - 1) < Decimal("1e-50")  # Its own detailed balance.
-        return plus, minus, x
+        u = SI_F * Decimal(volts) / (SI_R * Decimal(CORE_T_K))
+        plus, minus, x, held = exact(tuple(map(Decimal, conc)), u)
+        assert abs(minus / plus / x.exp() - 1) < Decimal("1e-50")
+        return plus, minus, x, held
 
 
-def na_ca_slopes(conc, volts, k, k_na, k_ca):
+@functools.cache
+def reference_slopes(exact, conc, volts):
     """(dJ/dpsi, dJ/d ln c at each row), by central differences of the reference in decimals (their
     steps of 1e-20 leave an error far below a double's)."""
     with localcontext() as ctx:
         ctx.prec = 60
-        h, per_u, out = Decimal("1e-20"), SI_R * Decimal(NA_CA_T_K) / SI_F, []
-        for row in (None, 0, 1, 2, 3):
+        h, out = Decimal("1e-20"), []
+        u = SI_F * Decimal(volts) / (SI_R * Decimal(CORE_T_K))
+        for row in (None, *range(len(conc))):
             ends = []
             for step in (h, -h):
-                at = [Decimal(c) * (1 + step if i == row else 1) for i, c in enumerate(conc)]
-                v = Decimal(volts) + (step * per_u if row is None else 0)
-                plus, minus, _ = na_ca_exact(tuple(at), v, k, k_na, k_ca)
+                at = tuple(Decimal(c) * (1 + step if i == row else 1) for i, c in enumerate(conc))
+                plus, minus, *_ = exact(at, u + (step if row is None else 0))
                 ends.append(plus - minus)
             out.append((ends[0] - ends[1]) / (2 * h))
         return tuple(out)
 
 
+def node_of(case, end):
+    """0 (the cell) or 1 (the bath): the node of a case's end."""
+    return int((end == "P") != (case.entry["orientation"]["N"] == "b"))
+
+
+def own_rate(case, mM, volts, volumes, *, only=None, held=False, closed=None):
+    """The reference's rate of a case's own material block (1/s): |nu dJ/dn| summed over the rows it
+    moves, at the nodes' mM, the cell's voltage and the nodes' volumes (pL); at a row that a closure
+    holds, through d ln c_free / dn_total, its value in `closed` by (species, node). Planted: over
+    `only` some of its rows, or over the rows it holds too."""
+    conc, own_volts = own(case, mM, volts)
+    _, *slopes = reference_slopes(case.exact, conc, own_volts)
+    total = []
+    for (s, end), n, holds, c, d in zip(case.rows, case.nu, case.held, conc, slopes, strict=True):
+        if (held or not holds) and (only is None or (s, end) in only):
+            node = node_of(case, end)
+            total.append(abs(n * float(d)) * (closed or {}).get((s, node), 1 / (c * volumes[node])))
+    return math.fsum(total)
+
+
+def moved_to(case, mM, volts, target):
+    """The state (mM, V) moved to where the case's x is the target: by the voltage for a cycle that
+    moves charge, else by raising the first moved row's concentration that takes x that way."""
+    at_b = case.entry["orientation"]["N"] == "b"
+    x = float(reference(case.exact, *own(case, mM, volts))[2])
+    if case.q:
+        shift = (x - target) / case.q * CORE_RT_F
+        return mM, volts - shift if at_b else volts + shift
+    (species, end), nu = next(
+        (row, nu)
+        for row, nu, held in zip(case.rows, case.nu, case.held, strict=True)
+        if not held and (target - x) / nu >= 0
+    )
+    values = list(mM[species])
+    values[(end == "P") != at_b] *= math.exp((target - x) / nu)
+    return {**mM, species: tuple(values)}, volts
+
+
+CRITERIA = {"rate", "slopes", "reversal", "cycle", "balance", "domain"}
+OF_THE_FORM, OF_THE_COUNTS = {"rate", "slopes"}, CRITERIA
+JUDGED_TOL = 2e-13  # Relative to the one-way scale J+ + J-, or to a one-way flux itself.
+EDGES = (79.999999, 80.000001, -79.999999, -80.000001)  # x, about the domain's ends.
+
+
+def cycle_misses(world, cases, states, bases):
+    """{criterion: [P], whether each population misses it at some state}, for a started world
+    (na_ca_start) and its populations' cases:
+    - rate: J, J+ and J- are the reference's (JUDGED_TOL);
+    - balance: x is the moved species' electrochemical free energy, so J+/J- = e^(-x); the heat is
+      -RT J x and never negative, the guard holds, and the work is -RT J times the held rows' x;
+    - cycle: each moved row changes by its count per cycle, a held row only in its supply, and the
+      host carries the case's charge;
+    - slopes: dJ/dpsi and each dJ/d ln c are the reference's differences, at the first six states;
+    - reversal: each base state moved to x = -0.2, 0 and 0.2 gives J positive, 0 and negative;
+    - domain: valid exactly where low <= x <= 80, at every state and at each base moved to EDGES."""
+    spec, _, state, p, control = world
+    misses = {name: np.zeros(len(cases), dtype=bool) for name in sorted(CRITERIA)}
+    rt, rows = SI_R * Decimal(CORE_T_K), p.cycle_nu.shape[1]
+    nu, held = (
+        np.array([(*row, *(0,) * (rows - len(row))) for row in values]).T
+        for values in ([c.nu for c in cases], [c.held for c in cases])
+    )
+    turned = np.array([c.entry["orientation"]["N"] == "b" for c in cases])
+    q = np.array([c.q for c in cases]) * np.where(turned, -1, 1)  # From the cell to the bath.
+
+    def near(name, j, value, exact, scale, tol=JUDGED_TOL):
+        misses[name][j] |= not abs(Decimal(float(value)) - exact) <= Decimal(tol) * scale
+
+    def at(mM, volts):
+        s, given = put(spec, state, p, mM)
+        potentials = np.array([volts, 0.0])
+        with np.errstate(all="ignore"):  # A population moved far out overflows beside another.
+            return s, potentials, transporter.probe(s, potentials, control, p, xp=np), given
+
+    for i, (mM, volts) in enumerate(states):
+        s, potentials, pr, given = at(mM, volts)
+        m, pop, j = pr.modes, pr.populations, np.asarray(pr.modes.j[0])
+        misses["balance"] |= ~((pop.heat_pJ_s >= 0) & (pop.guard <= 0))
+        moved = np.abs(pr.rows.rate - np.where(held, 0, nu) * j)
+        supplied = np.abs(pr.rows.held_supply + np.where(held, nu, 0) * j)
+        misses["cycle"] |= np.any(np.maximum(moved, supplied) > 8 * U * np.abs(j), axis=0)
+        misses["cycle"] |= np.abs(pop.charge_a_to_b_fmol_s - q * j) > 8 * U * np.abs(j)
+        e = transporter._evaluate(s, potentials, control, p, xp=np) if i < 6 else None
+        for n, case in enumerate(cases):
+            conc, own_volts = own(case, given, volts)
+            plus, minus, x, part = reference(case.exact, conc, own_volts)
+            scale = plus + minus
+            near("rate", n, j[n], plus - minus, scale)
+            near("rate", n, m.j_plus[0, n], plus, plus)
+            near("rate", n, m.j_minus[0, n], minus, minus)
+            near("balance", n, m.x[0, n], x, Decimal(float(m.x_terms[0, n])), 8 * U)
+            misses["domain"][n] |= bool(pop.valid[n]) != (case.low <= x <= 80)
+            if not misses["rate"][n]:  # The heat's value needs the rate's; its sign does not.
+                for value, energy in ((pop.heat_pJ_s[n], x), (pop.work_pJ_s[n], part)):
+                    given_pJ = -rt * energy * (plus - minus) / 1000
+                    near("balance", n, value, given_pJ, rt * scale * (abs(energy) + 1) / 1000)
+            if e is not None:
+                d_psi, *d_ln_c = reference_slopes(case.exact, conc, own_volts)
+                near("slopes", n, e.d_j_d_psi[0, n], d_psi, scale, 1e-12)
+                for row, d in enumerate(d_ln_c):
+                    near("slopes", n, e.d_j_d_ln_c[0, row, n], d, 4 * scale, 1e-12)
+    alike = [(c.rows, c.nu, c.entry["orientation"]["N"]) for c in cases]  # They share one x.
+    for key in dict.fromkeys(alike):
+        same = np.array([other == key for other in alike])
+        case = cases[int(np.argmax(same))]
+        for mM, volts in bases:
+            _, stored = put(spec, state, p, mM)
+            for target in EDGES:
+                *_, pr, _ = at(*moved_to(case, stored, volts, target))
+                misses["domain"] |= same & (pr.populations.valid != (case.low <= target <= 80))
+            below, zero, above = (
+                at(*moved_to(case, stored, volts, target))[2].modes for target in (-0.2, 0.0, 0.2)
+            )
+            wrong = ~((below.j[0] > 0) & (above.j[0] < 0))
+            wrong |= np.abs(zero.j[0]) > JUDGED_TOL * zero.scale[0]
+            misses["reversal"] |= same & wrong
+    return misses
+
+
+def drawn(n, seed, **spans):
+    """n states (mM, V): each species' two concentrations log-uniform over 10**(low, high), its
+    span, and the cell between -0.15 and 0.15 V."""
+    rng, out = np.random.default_rng(seed), []
+    for _ in range(n):
+        mM = {s: tuple(map(float, 10 ** rng.uniform(*span, 2))) for s, span in spans.items()}
+        out.append((mM, float(rng.uniform(-0.15, 0.15))))
+    return out
+
+
+def core_start(cases):
+    return na_ca_start(core_world(*(c.entry for c in cases)))
+
+
+def judged(laws, cases_of, states, bases):
+    """{name: the criteria it misses} of each of laws ({name: its declaration}), judged by the cases
+    cases_of(name, its law ID, a prefix of their IDs) in one world that holds them all."""
+    groups = [cases_of(name, law.law_id, f"p{i}") for i, (name, law) in enumerate(laws.items())]
+    cases = [case for group in groups for case in group]
+    found, out, first = cycle_misses(core_start(cases), cases, states, bases), {}, 0
+    for name, group in zip(laws, groups, strict=True):
+        own_cases, first = slice(first, first + len(group)), first + len(group)
+        out[name] = {criterion for criterion, by in found.items() if by[own_cases].any()}
+    return out
+
+
+def compiled_misses(world, cases, states):
+    """[P]: whether a population's J, evaluated under jit, misses the reference's at some state."""
+    spec, _, state, p, control = world
+    evaluate = jax.jit(lambda s, v, c, q: transporter._evaluate(s, v, c, q, xp=jnp).j)
+    q, c = (jax.tree.map(jnp.asarray, tree) for tree in (p, control))
+    misses = np.zeros(len(cases), dtype=bool)
+    for mM, volts in states:
+        s, given = put(spec, state, p, mM)
+        j = evaluate(jax.tree.map(jnp.asarray, s), jnp.array([volts, 0.0]), c, q)
+        for n, case in enumerate(cases):
+            plus, minus, *_ = reference(case.exact, *own(case, given, volts))
+            error = abs(Decimal(float(j[0, n])) - plus + minus)
+            misses[n] |= not error <= Decimal(JUDGED_TOL) * (plus + minus)
+    return misses
+
+
+def _flat(values):
+    return values._replace(d_psi=0.0 * values.d_psi)
+
+
+FLUX, LOGS = forms.sign_exact_flux, forms.monomial_logs
+LAYOUT_PLANTS = {  # Plants of the bound layout.
+    "a standard part": lambda p: dict(cycle_standard_RT=p.cycle_standard_RT + 1.0),
+    "the electrical sign": lambda p: dict(cycle_charge_moved=-p.cycle_charge_moved),
+    "n applied to K twice": lambda p: dict(cycle_sat_log_k=p.cycle_sat_log_k * p.cycle_sat_hill),
+    "the held part off": lambda p: dict(cycle_held_standard_RT=p.cycle_held_standard_RT + 1.0),
+}
+KERNEL_PLANTS = {  # Plants of the kind's evaluation: (module, name, value).
+    "domain at 79": (transporter, "MAX_ABS_AFFINITY_OVER_RT", 79.0),
+    "the flux reversed": (forms, "sign_exact_flux", lambda *a, **kw: -FLUX(*a, **kw)),
+    "no slope of its own": (forms, "monomial_logs", lambda *a, **kw: _flat(LOGS(*a, **kw))),
+}
+
+
+def planted_runs(plants, world, cases, states, bases):
+    """{plant: {criterion: [P]}} of cycle_misses with each plant of the layout or of the kernel,
+    and of compiled_misses where it is "compiled"."""
+    spec, impl, state, p, control = world
+    out = {}
+    for plant in plants:
+        if plant == "compiled":
+            out[plant] = {"rate": compiled_misses(world, cases, states)}
+            continue
+        change = LAYOUT_PLANTS.get(plant, lambda p: {})(p)
+        with pytest.MonkeyPatch.context() as patch:
+            if plant in KERNEL_PLANTS:
+                patch.setattr(*KERNEL_PLANTS[plant])
+            moved = (spec, impl, state, p._replace(**change), control)
+            out[plant] = cycle_misses(moved, cases, states[:12], bases[:1])
+    return out
+
+
+# ------------------------------------------- the sodium-calcium exchange
+
+
 def na_ca_reversal(conc):
     """3 E_Na - 2 E_Ca (V), from the two ions' Nernst potentials."""
     na_n, na_p, ca_n, ca_p = conc
-    e_na, e_ca = (
-        NA_CA_RT_F / z * math.log(o / n) for z, o, n in ((1, na_p, na_n), (2, ca_p, ca_n))
-    )
+    e_na, e_ca = (CORE_RT_F / z * math.log(o / n) for z, o, n in ((1, na_p, na_n), (2, ca_p, ca_n)))
     return 3 * e_na - 2 * e_ca
 
 
@@ -1966,11 +2362,9 @@ def na_ca_planted(law_id, *, counts=NA_CA_NU, standard_mM=1.0, power=-3, off=1.0
     return dataclasses.replace(na_ca.LAW, law_id=law_id, cycle=cycle)
 
 
-# Each planted law with the criteria (na_ca_misses) it must miss, and no other. The free energy is
+# Each planted law with the criteria (cycle_misses) it must miss, and no other. The free energy is
 # the counts' and the kind's, whatever the synthetic form is: a plant of the form alone keeps the
 # reversal, the detailed balance and the heat's sign, and only a plant of the counts misses them.
-NA_CA_CRITERIA = {"rate", "slopes", "reversal", "cycle", "balance", "domain"}
-OF_THE_FORM, OF_THE_COUNTS = {"rate", "slopes"}, NA_CA_CRITERIA
 NA_CA_PLANTS = {
     "split reversed": (na_ca_planted("seamtest.na_ca_split_reversed@1", zeta=0.5), OF_THE_FORM),
     "no split": (na_ca_planted("seamtest.na_ca_no_split@1", zeta=0.0), OF_THE_FORM),
@@ -1991,83 +2385,20 @@ NA_CA_PLANTS = {
     "four Na": (na_ca_planted("seamtest.na_ca_four@1", counts=(4, -4, -1, 1)), OF_THE_COUNTS),
     "backward": (na_ca_planted("seamtest.na_ca_backward@1", counts=(-3, 3, 1, -1)), OF_THE_COUNTS),
 }
-NA_CA_TOL = 2e-13  # Relative to the one-way scale J+ + J-, or to a one-way flux itself.
-
-
-def na_ca_states():
-    """((Na_N, Na_P, Ca_N, Ca_P) in mM, V, whether the domain admits it): random states, and the
-    domain's edges, x just inside 80 and just outside, and far below -80 (it is one-sided), with
-    calcium from 50 mM down to a trace."""
-    rng, out = np.random.default_rng(20261125), []
-    for _ in range(24):
-        conc = (*10 ** rng.uniform(-1, 2.6, 2), *10 ** rng.uniform(-6, 1, 2))
-        out.append((tuple(map(float, conc)), float(rng.uniform(-0.15, 0.15)), True))
-    for conc in ((12.0, 140.0, 2e-4, 1.8), (140.0, 12.0, 1e-9, 50.0), (1e-3, 400.0, 10.0, 1e-9)):
-        for x in (79.999999, 80.000001, -80.000001, -250.0):  # x = (V - reversal) F/RT.
-            out.append((conc, na_ca_reversal(conc) + x * NA_CA_RT_F, x <= 80))
-    return out
-
-
-def na_ca_misses(world, sets):
-    """{criterion: [P], whether each population misses it at some state}, for a started world
-    (na_ca_start) and its populations' (capacity, K_Na, K_Ca):
-    - rate: J, J+ and J- are the rate equation's (NA_CA_TOL);
-    - balance: x is the moved ions' electrochemical free energy, so J+/J- = e^(-x); the heat is
-      -RT J x and never negative, the guard holds, and nothing works;
-    - cycle: the rows change by NA_CA_NU per cycle and the patch carries one charge inward;
-    - reversal: J's sign is +, then -, 5 mV below and above 3 E_Na - 2 E_Ca, and J is 0 there;
-    - slopes: dJ/dpsi and each dJ/d ln c are the reference's differences;
-    - domain: valid exactly where x <= 80."""
-    spec, _, state, p, control = world
-    misses = {name: np.zeros(len(sets), dtype=bool) for name in sorted(NA_CA_CRITERIA)}
-    rt, nu = SI_R * Decimal(NA_CA_T_K), np.array(NA_CA_NU)[:, None]
-
-    def near(name, j, value, exact, scale, tol=NA_CA_TOL):
-        misses[name][j] |= not abs(Decimal(float(value)) - exact) <= Decimal(tol) * scale
-
-    def at(conc, volts):
-        s, given = na_ca_at(spec, state, p, conc)
-        potentials = np.array([volts, 0.0])
-        pr = transporter.probe(s, potentials, control, p, xp=np)
-        return pr, transporter._evaluate(s, potentials, control, p, xp=np), given
-
-    for i, (conc, volts, admitted) in enumerate(na_ca_states()):
-        pr, e, conc = at(conc, volts)
-        m, pop, j = pr.modes, pr.populations, np.asarray(pr.modes.j[0])
-        misses["domain"] |= np.asarray(pop.valid) != admitted
-        misses["balance"] |= ~((pop.heat_pJ_s >= 0) & (pop.work_pJ_s == 0) & (pop.guard <= 0))
-        misses["cycle"] |= np.any(np.abs(pr.rows.rate - nu * j) > 8 * U * np.abs(j), axis=0)
-        misses["cycle"] |= np.abs(pop.charge_a_to_b_fmol_s + j) > 8 * U * np.abs(j)
-        for n, values in enumerate(sets):
-            plus, minus, x = na_ca_exact(conc, volts, *values)
-            scale = plus + minus
-            near("rate", n, j[n], plus - minus, scale)
-            near("rate", n, m.j_plus[0, n], plus, plus)
-            near("rate", n, m.j_minus[0, n], minus, minus)
-            near("balance", n, m.x[0, n], x, Decimal(float(m.x_terms[0, n])), 8 * U)
-            if not misses["rate"][n]:  # The heat's value needs the rate's; its sign does not.
-                heat = -rt * x * (plus - minus) / 1000
-                near("balance", n, pop.heat_pJ_s[n], heat, rt * scale * (abs(x) + 1) / 1000)
-            if i < 6:
-                d_psi, *d_ln_c = na_ca_slopes(conc, volts, *values)
-                near("slopes", n, e.d_j_d_psi[0, n], d_psi, scale, 1e-12)
-                for row, d in enumerate(d_ln_c):
-                    near("slopes", n, e.d_j_d_ln_c[0, row, n], d, 4 * scale, 1e-12)
-        if i < 6:
-            head = na_ca_reversal(conc)
-            below, zero, above = (at(conc, head + d)[0].modes for d in (-5e-3, 0.0, 5e-3))
-            misses["reversal"] |= ~((below.j[0] > 0) & (above.j[0] < 0))
-            misses["reversal"] |= ~(np.abs(zero.j[0]) <= NA_CA_TOL * zero.scale[0])
-    return misses
-
-
 NA_CA_RUN_MISSES = {  # The registered law besides: under jit, and under plants of the evaluation.
     "compiled": set(),
     "domain at 79": {"domain"},
     "no slope of its own": {"slopes"},
-    "a standard part": NA_CA_CRITERIA - {"cycle"},
-    "the flux reversed": NA_CA_CRITERIA - {"cycle"},  # Its heat is negative: the guard refuses it.
+    "a standard part": CRITERIA - {"cycle"},
+    "the flux reversed": CRITERIA - {"cycle"},  # Its heat is negative: the guard refuses it.
 }
+NA_CA_STATES = drawn(24, 20261125, Na=(-1, 2.6), Ca=(-6, 1))
+NA_CA_BASES = [  # Calcium from 50 mM down to a trace.
+    (dict(Na=(na_n, na_p), Ca=(ca_n, ca_p)), 0.0)
+    for na_n, na_p, ca_n, ca_p in (
+        (12.0, 140.0, 2e-4, 1.8), (140.0, 12.0, 1e-9, 50.0), (1e-3, 400.0, 10.0, 1e-9)
+    )
+]  # fmt: skip
 
 
 @pytest.fixture(scope="module")
@@ -2079,61 +2410,34 @@ def na_ca_judged():
     spans = ((-4, 1), (0, 2.3), (-5, 0.5))
     sets = [tuple(float(10 ** rng.uniform(*span)) for span in spans) for _ in range(6)]
 
-    def started(laws):
-        entries = [
-            na_ca_entry(law, name=f"exchanger_{i}_{n}", k=k, km=km)
-            for i, law in enumerate(laws)
-            for n, (k, *km) in enumerate(sets)
-        ]
-        return na_ca_start(na_ca_world(*entries))
+    def cases_of(_, law_id, prefix):
+        return [na_ca_case(values, f"{prefix}_{n}", law_id) for n, values in enumerate(sets)]
 
-    def missed(found, i):
-        return {name for name, by in found.items() if by[6 * i : 6 * (i + 1)].any()}
+    plants = {name: law for name, (law, _) in NA_CA_PLANTS.items()}
+    with tk.scoped(), law_registry.scope(law_registry.BUILTIN.extended(*plants.values())):
+        laws = {None: na_ca.LAW} | plants
+        out = judged(laws, cases_of, NA_CA_STATES, NA_CA_BASES)
+        alone = cases_of(None, na_ca.DECLARED_ID, "p")
+        runs = planted_runs(NA_CA_RUN_MISSES, core_start(alone), alone, NA_CA_STATES, NA_CA_BASES)
+    return out | {name: {c for c, by in found.items() if by.any()} for name, found in runs.items()}
 
-    def flat(values):
-        return values._replace(d_psi=0.0 * values.d_psi)
 
-    laws = {None: na_ca.LAW} | {name: law for name, (law, _) in NA_CA_PLANTS.items()}
-    planted = law_registry.BUILTIN.extended(*(law for law, _ in NA_CA_PLANTS.values()))
-    with tk.scoped(), law_registry.scope(planted):
-        found = na_ca_misses(started([law.law_id for law in laws.values()]), sets * len(laws))
-        world = started([na_ca.LAW.law_id])
-    out = {name: missed(found, i) for i, name in enumerate(laws)}
-    spec, impl, state, p, control = world
-    shifted = p._replace(cycle_standard_RT=p.cycle_standard_RT + 1.0)
-    out["a standard part"] = missed(na_ca_misses((spec, impl, state, shifted, control), sets), 0)
-    with pytest.MonkeyPatch.context() as patch:
-        patch.setattr(transporter, "MAX_ABS_AFFINITY_OVER_RT", 79.0)
-        out["domain at 79"] = missed(na_ca_misses(world, sets), 0)
-    with pytest.MonkeyPatch.context() as patch:
-        flux = forms.sign_exact_flux
-        patch.setattr(forms, "sign_exact_flux", lambda *a, **kw: -flux(*a, **kw))
-        out["the flux reversed"] = missed(na_ca_misses(world, sets), 0)
-    with pytest.MonkeyPatch.context() as patch:
-        logs = forms.monomial_logs
-        patch.setattr(forms, "monomial_logs", lambda *a, **kw: flat(logs(*a, **kw)))
-        out["no slope of its own"] = missed(na_ca_misses(world, sets), 0)
-    evaluate = jax.jit(lambda s, v, c, q: transporter._evaluate(s, v, c, q, xp=jnp).j)
-    q, c = (jax.tree.map(jnp.asarray, tree) for tree in (p, control))
-    out["compiled"] = set()
-    for conc, volts, _ in na_ca_states():
-        s, conc = na_ca_at(spec, state, p, conc)
-        j = evaluate(jax.tree.map(jnp.asarray, s), jnp.array([volts, 0.0]), c, q)
-        for n, values in enumerate(sets):
-            plus, minus, _ = na_ca_exact(conc, volts, *values)
-            if abs(Decimal(float(j[0, n])) - plus + minus) > Decimal(NA_CA_TOL) * (plus + minus):
-                out["compiled"].add("rate")
-    return out
+def step_terms(law):
+    """The step terms a law declares, each the name of the kind's hook that supplies it."""
+    declared = [name for name in law_registry.STEP_TERMS if getattr(law, name) is not None]
+    assert all(getattr(law, name) == name and hasattr(transporter, name) for name in declared)
+    return declared
 
 
 def test_the_exchange_is_registered_as_a_moved_form_with_a_synthetic_rate():
     """Its declaration: hosted by the kind, moved from an older family and never calibrated, its
-    Citation saying that only the coupling is supported and that the denominator, the split and
-    every number are synthetic, with the works for and against it; a population's parameters its
-    only numbers; and no step term of its own."""
+    Citation saying that only the coupling is supported, and that the reversal is contested, and
+    that the denominator, the split and every number are synthetic, with the works for and against
+    it; a population's parameters its only numbers; and its step terms the kind's two."""
     law = law_registry.active().lookup(na_ca.LAW_ID)
     assert law is na_ca.LAW and law.host == transporter.KIND_ID and law.cycle.errors() == []
     assert law.provenance == "parity" and law.source.source.startswith("only the 3:1 coupling")
+    assert "the reversal itself is contested" in law.source.source
     assert (
         "every number are synthetic" in law.source.source
         and "no number taken" in law.source.licence
@@ -2146,93 +2450,34 @@ def test_the_exchange_is_registered_as_a_moved_form_with_a_synthetic_rate():
     ]
     assert law.cycle.parameter_names == ("km_na_mM", "km_ca_mM")
     assert law.reads == ("rapid_binding@1",) and law.forms == "base"
-    assert all(getattr(law, name) is None for name in law_registry.STEP_TERMS)
+    assert step_terms(law) == ["stage_term", "material_term"]
 
 
 @pytest.mark.parametrize("plant", [None, *NA_CA_RUN_MISSES, *NA_CA_PLANTS], ids=str)
 def test_the_exchange_meets_its_rate_equation_and_each_plant_misses_its_criteria(
     na_ca_judged, plant
 ):
-    """The registered law, in NumPy and under jit, meets every criterion of na_ca_misses against the
-    60-digit reference, at 24 random states and at 12 of its domain's edges, for six parameter sets;
-    each plant misses exactly the criteria it is planted against. The reference is independent of
-    the forms, not code-blind."""
+    """The registered law, in NumPy and under jit, meets every criterion of cycle_misses against the
+    60-digit reference, at 24 random states and at its domain's edges and its reversal from three
+    more, for six parameter sets; each plant misses exactly the criteria it is planted against. The
+    reference is independent of the forms, not code-blind."""
     expected = {None: set()} | NA_CA_RUN_MISSES | {name: c for name, (_, c) in NA_CA_PLANTS.items()}
     assert na_ca_judged[plant] == expected[plant]
-
-
-@pytest.mark.parametrize(
-    "volts,booking", [(-0.06, None), (0.02, transporter.TRAPEZOID_BOOKING)], ids=("out", "in")
-)
-def test_the_exchange_moves_its_counts_and_one_charge_and_closes_every_ledger(volts, booking):
-    """Eight host steps of the closed world, calcium going out (below the reversal, the tableau's
-    heat) and in (above it, the trapezoid's): per cycle the cell gains three Na+ and loses one Ca2+,
-    the finite bath the opposite, and one charge crosses inward, which moves the voltage by the
-    capacitor's closed form; the heat grows at every step, nothing works, and every ledger closes.
-    Planted, each refused by its ledger: calcium moved twice, and the free energy off by one RT."""
-    raw = na_ca_world(na_ca_entry(k=20.0), volts=volts)
-    if booking is not None:
-        raw = trapezoid_booked(raw)
-
-    def run(impl, spec, p, control, state, steps):
-        states = [state]
-        for _ in range(steps):
-            state, valid = impl.imex_step(state, spec.execution.dt, control, p, xp=np)
-            assert bool(valid)
-            states.append(state)
-        history = impl.STATE_TYPE(*(np.stack(v) for v in zip(*states, strict=True)))
-        impl.check_values(history, spec, steps=np.arange(len(states)))  # Every ledger closes.
-        return states
-
-    with tk.scoped():
-        spec, impl, state, p, control = na_ca_start(raw)
-        (check,) = transporter.cycle_checks(spec)
-        assert (check.charge_sum, check.charge_moved, check.admitted) == (0, -1, True)
-        states = run(impl, spec, p, control, state, 8)
-        ends = [impl.readouts(s, control, p, xp=np).field.potential_V for s in (state, states[-1])]
-        shifted = p._replace(cycle_standard_RT=p.cycle_standard_RT + 1.0)
-        with pytest.raises(NumericalError, match="energy"):
-            run(impl, spec, shifted, control, state, 1)
-    ids, last = list(spec.model.species_ids), states[-1]
-    cycles = float(last.cycle_count[0, 0])
-    assert (cycles > 0) == (volts < na_ca_reversal(na_ca_conc(raw))) and cycles != 0
-    for s, n in (("Na", 3), ("Ca", -1), ("K", 0)):
-        k = ids.index(s)
-        assert float(last.amount_increment[k, 0]) == pytest.approx(n * cycles, rel=8 * EPS, abs=0)
-        out = float(last.extracellular_amount_increment[k, 0])
-        assert out == pytest.approx(-n * cycles, rel=8 * EPS, abs=0), s
-    volts_moved = float((ends[1][0] - ends[1][1]) - (ends[0][0] - ends[0][1]))
-    charge = CHARGE_PER_FMOL * cycles / spec.model.membranes[0].capacitance_F
-    assert volts_moved == pytest.approx(charge, rel=1e-9, abs=0)
-    heat = np.stack([s.cycle_dissipated_energy_pJ[0] for s in states])
-    assert np.all(np.diff(heat) > 0) and not np.any(last.cycle_metabolic_work_pJ)
-    assert not np.any(last.cycle_supplied_fmol)
-
-    def twice(state, potentials, control, p, *, xp):  # Planted: the cell loses two Ca2+ per cycle.
-        r = transporter.rates(state, potentials, control, p, xp=xp)
-        doubled = xp.where(xp.arange(len(ids))[:, None] == ids.index("Ca"), 2.0, 1.0)
-        return r._replace(cell=doubled * r.cell)
-
-    with tk.scoped(dataclasses.replace(transporter.TRANSPORTER, rates=twice)):
-        spec, impl, state, p, control = na_ca_start(raw)
-        with pytest.raises(NumericalError, match="accounting failed: local"):
-            run(impl, spec, p, control, state, 1)
 
 
 def test_the_exchanges_charge_slope_holds_the_step_at_both_its_ends():
     """The stage term is the reference's |dI/dV| at the cell and at the bath, at every voltage; over
     the cell's capacitance it is the step's charge rate, so a step 1% inside the bound is taken and
     one 1% outside is refused (at the reversal, where nothing moves). Without potentials it fails
-    closed. Planted: the kind without its stage term takes the larger step. Its limit, as the module
-    states it: the kind's material term counts no charged row that crosses."""
-    k, km, mM = 0.5, (20.0, 1e-3), dict(cell_0=dict(Ca=0.1), bath_0=dict(Ca=1.8))
+    closed. Planted: the kind without its stage term takes the larger step."""
+    values, mM = (0.5, 20.0, 1e-3), dict(cell_0=dict(Ca=0.1), bath_0=dict(Ca=1.8))
     conc = na_ca_conc(na_ca_world(mM=mM))
     head = na_ca_reversal(conc)
-    raw = na_ca_world(na_ca_entry(k=k, km=km), mM=mM, volts=head)
-    per_V = float(SI_F / (SI_R * Decimal(NA_CA_T_K)))
+    raw = na_ca_world(na_ca_case(values).entry, mM=mM, volts=head)
 
     def slope(volts):  # The reference's |dI/dV| (S): one charge per cycle.
-        return CHARGE_PER_FMOL * per_V * abs(float(na_ca_slopes(conc, volts, k, *km)[0]))
+        d_psi, *_ = reference_slopes(na_ca_exact(*values), conc, volts)
+        return CHARGE_PER_FMOL / CORE_RT_F * abs(float(d_psi))
 
     rate = slope(head) / raw["model"]["membranes"][0]["capacitance_F"]
     with tk.scoped():
@@ -2241,7 +2486,6 @@ def test_the_exchanges_charge_slope_holds_the_step_at_both_its_ends():
             term = transporter.stage_term(state, np.array([volts, 0.0]), control, p, xp=np)
             assert list(term) == pytest.approx([slope(volts)] * 2, rel=1e-11, abs=0), volts
         assert np.all(np.isinf(transporter.stage_term(state, None, control, p, xp=np)))
-        assert not np.any(transporter.material_term(state, np.array([0.0, 0.0]), control, p, xp=np))
         assert bool(impl.imex_step(state, 0.99 / rate, control, p, xp=np)[1])
         assert not bool(impl.imex_step(state, 1.01 / rate, control, p, xp=np)[1])
     with tk.scoped(dataclasses.replace(transporter.TRANSPORTER, stage_term=None)):
@@ -2290,59 +2534,6 @@ def test_an_exchange_population_is_refused_with_its_reason(name):
                 parse_spec(raw)
 
 
-def test_the_exchange_reads_a_closures_free_calcium():
-    """Beside a calcium binder that the general closure holds at the cell (0.1 mM, K_d 1 uM: the
-    free calcium is 1/84 of the total), the population reads the free calcium and moves the total's
-    base row: x is the free concentration's, and one step takes its cycles from the total and closes
-    every ledger. Planted: x at the stored total (off by ln 84); and, refused at the closure's row,
-    the law without the read and the law without base forms."""
-    from cells.kinds import proton_buffer
-
-    free, k_d, binder = 2e-4, 1e-3, 0.1  # mM
-    total = free + binder * free / (free + k_d)
-
-    def world(law=na_ca.DECLARED_ID):
-        raw = na_ca_world(na_ca_entry(law), mM=dict(cell_0=dict(Ca=total), bath_0=dict(Ca=1.8)))
-        m = raw["model"]
-        m["standard_concentration_mM"] = 1.0
-        m["species"][-1]["standard_mu_RT"] = 0.0
-        add_species(raw, "B", -2, 0.0, {"cell_0": binder, "bath_0": 1e-9})
-        bound = dict(id="CaB", counts={"Ca": 1}, standard_mu_RT=math.log(k_d))
-        m["species"][-1]["forms"] = [bound]
-        m[proton_buffer.MODEL_KEY] = [
-            dict(
-                read_id="rapid_binding@1",
-                ligand_rows=["Ca"],
-                binders={"cell_0": ["B"]},
-                k_on_per_mM_s={"B": {"Ca": 1e6}},
-            )
-        ]
-        return raw
-
-    unread = dataclasses.replace(na_ca.LAW, law_id="seamtest.na_ca_unread@1", reads=())
-    formless = dataclasses.replace(na_ca.LAW, law_id="seamtest.na_ca_formless@1", forms=None)
-    laws = law_registry.BUILTIN.extended(unread, formless)
-    with tk.scoped(*tk.CHARGED_KINDS), law_registry.scope(laws):
-        spec, impl, state, p, control = na_ca_start(world())
-        volts = np.asarray(impl.readouts(state, control, p, xp=np).field.potential_V)
-        read, ok = proton_buffer.stage_read(state, p, xp=np)
-        after, valid = impl.imex_step(state, spec.execution.dt, control, p, xp=np)
-        history = impl.STATE_TYPE(*(np.stack(v) for v in zip(state, after, strict=True)))
-        impl.check_values(history, spec, steps=np.arange(2))  # Every ledger closes.
-        for law, reason in ((unread, "lack rapid_binding@1"), (formless, "declares no base forms")):
-            with pytest.raises(ConfigError, match=reason):
-                parse_spec(world(law.law_id))
-    assert bool(ok) and bool(valid)
-    m = transporter.probe(read, volts, control, p, xp=np).modes
-    na_n, na_p, _, ca_p = na_ca_conc(world())
-    x = 3 * math.log(na_n / na_p) + math.log(ca_p / free) + float(volts[0] - volts[1]) / NA_CA_RT_F
-    assert float(m.x[0, 0]) == pytest.approx(x, rel=0, abs=1e-11)  # The free calcium's, as solved.
-    assert abs(float(m.x[0, 0]) - (x - math.log(total / free))) > 4  # Planted: the total's.
-    ca, cycles = list(spec.model.species_ids).index("Ca"), float(after.cycle_count[0, 0])
-    assert cycles != 0
-    assert float(after.amount_increment[ca, 0]) == pytest.approx(-cycles, rel=8 * EPS, abs=0)
-
-
 def test_an_exchange_world_restarts_bitwise_from_its_checkpoint_file(tmp_path):
     """Eight host steps, and four from a checkpoint file written after the first four, end in the
     same state bit for bit, the cycles and the heat with them. Planted: a checkpoint that lost its
@@ -2378,6 +2569,810 @@ def test_an_exchange_world_restarts_bitwise_from_its_checkpoint_file(tmp_path):
     for name, a, b in zip(impl.STATE_TYPE._fields, whole, resumed, strict=True):
         assert np.array_equal(np.asarray(a), np.asarray(b)), name
     assert not np.array_equal(other.amount_increment, whole.amount_increment)
+
+
+# ------------------------------------------- the ATP-driven pump of any valence, and two symports
+
+(NKCC_RATE,), (SALT_RATE,) = nkcc.CYCLE.monomial.rates, salt.CYCLE.monomial.rates
+ROLE_K, ATP_K = atp_pump.CYCLE.saturation[0]
+
+
+def pump_planted(law_id, **cycle):
+    """The pump with fields of its form changed."""
+    return dataclasses.replace(atp_pump.LAW, law_id=law_id, cycle=atp_pump.CYCLE._replace(**cycle))
+
+
+def nkcc_planted(law_id, *, counts=(1, -1, 1, -1, 2, -2), rate=NKCC_RATE, **law):
+    """The Na, K and two-anion symport with its counts or its rate changed."""
+    cycle = nkcc.CYCLE._replace(modes=(("import", counts),), monomial=forms.MonomialForm((rate,)))
+    return dataclasses.replace(nkcc.LAW, law_id=law_id, cycle=cycle, **law)
+
+
+def salt_planted(law_id, *, sign="", rate=SALT_RATE, **law):
+    """The configured symport with its direction or its rate changed."""
+    other = "-" if sign == "" else ""
+    counts = tuple(f"{s}{n}" for n in ("n_cation", "n_anion") for s in (sign, other))
+    cycle = salt.CYCLE._replace(modes=(("import", counts),), monomial=forms.MonomialForm((rate,)))
+    return dataclasses.replace(salt.LAW, law_id=law_id, cycle=cycle, **law)
+
+
+def one_anion(rate):
+    """A symport's rate whose S holds its anion once at each end, whatever its count."""
+    ((term,),) = (factor.terms for factor in rate.factors)
+    orders = tuple(
+        (ref, (1.0 if ref.end == "N" else -1.0) if ref.role == "anion" else order)
+        for ref, order in term.orders
+    )
+    return rate._replace(factors=(forms.MonomialFactor(1.0, (term._replace(orders=orders),)),))
+
+
+CORE_PLANTS = {  # {law: {plant: (the planted law, the criteria it must miss, and no other)}}
+    "pump": {
+        "no ATP in S": (
+            pump_planted("seamtest.pump_no_atp@1", saturation=((ROLE_K,),)), OF_THE_FORM
+        ),
+        "S at P": (
+            pump_planted(
+                "seamtest.pump_s_at_p@1", saturation=((ROLE_K._replace(row=("role", "P")), ATP_K),)
+            ),
+            OF_THE_FORM,
+        ),
+        "n left out of S": (
+            pump_planted("seamtest.pump_hill_1@1", saturation=((ROLE_K._replace(hill=1), ATP_K),)),
+            OF_THE_FORM,
+        ),
+        "no Pi made": (
+            pump_planted(
+                "seamtest.pump_no_pi@1",
+                modes=(("cycle", ("-stoichiometry", "stoichiometry", -1, 1, 0)),),
+            ),
+            OF_THE_COUNTS,
+        ),
+        "backward": (
+            pump_planted(
+                "seamtest.pump_backward@1",
+                modes=(("cycle", ("stoichiometry", "-stoichiometry", -1, 1, 1)),),
+            ),
+            OF_THE_COUNTS,
+        ),
+    },
+    "NKCC": {
+        "1:1:1": (
+            nkcc_planted(
+                "seamtest.nkcc_1_1_1@1",
+                counts=(1, -1, 1, -1, 1, -1),
+                rate=one_anion(NKCC_RATE),
+                electroneutral=False,
+            ),
+            OF_THE_COUNTS,
+        ),
+        "no factor": (
+            nkcc_planted("seamtest.nkcc_bare@1", rate=NKCC_RATE._replace(factors=())), OF_THE_FORM
+        ),
+        "one anion in S": (
+            nkcc_planted("seamtest.nkcc_one_anion@1", rate=one_anion(NKCC_RATE)), OF_THE_FORM
+        ),
+        "backward": (
+            nkcc_planted("seamtest.nkcc_backward@1", counts=(-1, 1, -1, 1, -2, 2)), OF_THE_COUNTS
+        ),
+    },
+    "salt": {
+        "no factor": (
+            salt_planted("seamtest.salt_bare@1", rate=SALT_RATE._replace(factors=())), OF_THE_FORM
+        ),
+        "one anion in S": (
+            salt_planted("seamtest.salt_one_anion@1", rate=one_anion(SALT_RATE)), OF_THE_FORM
+        ),
+        "backward": (salt_planted("seamtest.salt_backward@1", sign="-"), OF_THE_COUNTS),
+    },
+}  # fmt: skip
+CORE_LAWS = dict(pump=atp_pump.LAW, NKCC=nkcc.LAW, salt=salt.LAW)
+CORE_RUN_MISSES = {  # The registered laws besides: {plant: {law: the criteria}}, none of the rest.
+    "domain at 79": dict.fromkeys(CORE_LAWS, {"domain"}),
+    "a standard part": dict.fromkeys(CORE_LAWS, CRITERIA - {"cycle"}),
+    "the electrical sign": dict(pump=CRITERIA),
+    "n applied to K twice": dict(pump=OF_THE_FORM),
+    "the held part off": dict.fromkeys(CORE_LAWS, {"balance"}),
+}
+CORE_EXPECTED = {(law, None): set() for law in CORE_LAWS}
+for at_law, plants in CORE_PLANTS.items():
+    CORE_EXPECTED |= {(at_law, plant): criteria for plant, (_, criteria) in plants.items()}
+for at_plant, by_law in CORE_RUN_MISSES.items():
+    CORE_EXPECTED |= {(law, at_plant): by_law.get(law, set()) for law in CORE_LAWS}
+CORE_SPANS = dict(
+    Na=(-1, 2.6), K=(-1, 2.6), M=(-1, 2.6), Ca=(-6, 1), S=(-3, 2), Y=(-3, 2),
+    ATP=(-2, 1), ADP=(-3, 0.5), Pi=(-2, 1),
+)  # fmt: skip
+CORE_STATES, CORE_BASES = drawn(24, 5, **CORE_SPANS), drawn(2, 6, **CORE_SPANS)
+PUMP_K_SPANS = dict(Ca=(-5, 0.5), Na=(0, 2.3), M=(0, 2.3), Y=(-2, 1.5))
+SALTS = (("K", "M", 1, 1), ("Ca", "M", 1, 2), ("Na", "S", 2, 1))
+
+
+def core_cases(law, law_id, prefix):
+    """A law's cases: the pump at each valence (Ca, Na, M and the neutral Y) and at n = 1 to 4, and
+    each symport, at every salt of SALTS; some with N the bath, each with its own numbers."""
+    rng = np.random.default_rng(17)
+
+    def capacity():
+        return float(10 ** rng.uniform(-4, 1))
+
+    if law == "NKCC":
+        return [nkcc_case(capacity(), f"{prefix}_{end}", law_id, end) for end in "ab"]
+    if law == "salt":
+        return [
+            salt_case(salts, capacity(), f"{prefix}_{i}", law_id, "ab"[i % 2])
+            for i, salts in enumerate(SALTS)
+        ]
+    return [
+        pump_case(
+            role,
+            n,
+            (capacity(), float(10 ** rng.uniform(*span)), float(10 ** rng.uniform(-2, 0.5))),
+            f"{prefix}_{role}_{n}",
+            law_id,
+            "b" if n == 2 else "a",
+        )
+        for role, span in PUMP_K_SPANS.items()
+        for n in (1, 2, 3, 4)
+    ]
+
+
+@pytest.fixture(scope="module")
+def core_judged():
+    """{(law, plant): the criteria it misses}: None, the registered law, and each planted one, in
+    one world that holds core_cases of each; and the registered laws alone, under plants of the
+    bound layout and of the kind's evaluation."""
+    laws = {(law, None): declared for law, declared in CORE_LAWS.items()}
+    plants = {(law, p): plant for law, by in CORE_PLANTS.items() for p, (plant, _) in by.items()}
+    with tk.scoped(), law_registry.scope(law_registry.BUILTIN.extended(*plants.values())):
+        out = judged(
+            laws | plants, lambda at, *rest: core_cases(at[0], *rest), CORE_STATES, CORE_BASES
+        )
+        groups = {law: core_cases(law, d.law_id, law) for law, d in CORE_LAWS.items()}
+        alone = [case for group in groups.values() for case in group]
+        runs = planted_runs(CORE_RUN_MISSES, core_start(alone), alone, CORE_STATES, CORE_BASES)
+    of = np.array([law for law, group in groups.items() for _ in group])
+    for plant, found in runs.items():
+        for law in CORE_LAWS:
+            out[law, plant] = {c for c, by in found.items() if by[of == law].any()}
+    return out
+
+
+@pytest.mark.parametrize("law,plant", CORE_EXPECTED, ids=str)
+def test_the_pump_and_the_symports_meet_their_equations_and_each_plant_misses_its_criteria(
+    core_judged, law, plant
+):
+    """Each registered law meets every criterion of cycle_misses against its 60-digit reference, at
+    24 random states and at its domain's edges and its reversal from two more: the pump at valences
+    2, 1, -1 and 0 and n = 1 to 4, the symports at 1:1:2, 1:1, 1:2 and 2:1, with N the cell or the
+    bath. Each plant misses exactly the criteria it is planted against. The references are
+    independent of the forms, not code-blind."""
+    assert core_judged[law, plant] == CORE_EXPECTED[law, plant]
+
+
+@pytest.mark.parametrize("law", CORE_LAWS)
+def test_the_pump_and_the_symports_are_registered_with_their_provenance(law):
+    """Each is the kind's, in base forms with a closure's read, and moved from an older family's
+    form: parity, with a Citation of no work. The pump runs on held fuel alone, with the kind's two
+    step terms; the symports are labelled manufactured, with no outside source, declare themselves
+    electroneutral, and so have the material term alone."""
+    module = dict(pump=atp_pump, NKCC=nkcc, salt=salt)[law]
+    held = law == "pump"
+    declared = law_registry.active().lookup(module.LAW_ID)
+    assert declared is module.LAW and declared.host == transporter.KIND_ID
+    assert declared.errors() == [] and declared.source.works == ()
+    assert declared.provenance == "parity"
+    assert declared.fuel_kinds == ((transporter.HELD,) if held else ())
+    manufactured = "manufactured: the rate form has no outside source"
+    assert declared.source.source.startswith(manufactured) == declared.electroneutral == (not held)
+    assert declared.reads == ("rapid_binding@1",) and declared.forms == "base"
+    assert step_terms(declared) == ["stage_term", "material_term"][not held :]
+
+
+@pytest.mark.parametrize("n", (1, 2, 3, 4))
+def test_at_valence_zero_the_pump_is_version_1s_neutral_law(n):
+    """On held fuel and a neutral role, the pump's J, J+, J-, x, heat, work and supply are those of
+    version 1's law on version 1's layout, its own kernel, at 24 random states. Planted: version 1's
+    with K larger by 1e-9 is told apart."""
+    values = k, km, km_atp = 0.3, 1.2, 0.4
+    old = dict(capacity_fmol_s=k, stoichiometry=n, km_role_mM=km, km_atp_mM=km_atp)
+    with tk.scoped():
+        worlds = [
+            na_ca_start(core_world(entry))
+            for entry in (
+                pump_case("Y", n, values).entry,
+                tk.population(**old),
+                tk.population(**old | dict(km_role_mM=km * (1 + 1e-9))),
+            )
+        ]
+        assert "transporter_stoichiometry" in type(worlds[1][3])._fields  # Version 1's layout.
+        worst = np.zeros(2)
+        for mM, volts in CORE_STATES:
+            probes = []
+            for spec, _, state, p, control in worlds:
+                s, _ = put(spec, state, p, mM)
+                probes.append(transporter.probe(s, np.array([volts, 0.0]), control, p, xp=np))
+            new = probes[0]
+            rt = R * CORE_T_K * 1e-3
+            x, scale = abs(float(new.modes.x[0, 0])), float(new.modes.scale[0, 0])
+            size = float(new.modes.x_terms[0, 0])
+            for i, other in enumerate(probes[1:]):
+                m, pop = other.modes, other.populations
+                gaps = [
+                    abs(float(a[0, 0] - b[0, 0])) / scale
+                    for a, b in zip(
+                        (new.modes.j, new.modes.j_plus, new.modes.j_minus),
+                        (m.j, m.j_plus, m.j_minus),
+                        strict=True,
+                    )
+                ]
+                gaps.append(abs(float(new.modes.x[0, 0] - m.x[0, 0])) / size)
+                for name in ("heat_pJ_s", "work_pJ_s"):
+                    gap = float(getattr(new.populations, name)[0] - getattr(pop, name)[0])
+                    gaps.append(abs(gap) / (rt * scale * (x + size)))
+                gaps.append(
+                    float(np.max(np.abs(new.rows.held_supply - other.rows.held_supply))) / scale
+                )
+                worst[i] = max(worst[i], *gaps)
+    assert worst[0] <= JUDGED_TOL < worst[1]
+
+
+RUNS = {  # name: (the case, the cell's and the bath's mM, the cell's volts, the booking picked).
+    "exchange out": (na_ca_case((20.0, 20.0, 1e-3)), {}, -0.06, None),
+    "exchange in": (na_ca_case((20.0, 20.0, 1e-3)), {}, 0.02, transporter.TRAPEZOID_BOOKING),
+    "pump out": (pump_case("Ca", 1, (2.0, 1e-2, 0.5)), dict(Ca=(0.1, 1.8)), -0.06, None),
+    "pump back": (
+        pump_case("Ca", 2, (1e-8, 1e-3, 0.5)),
+        dict(Ca=(1e-3, 1.8)),
+        -0.06,
+        transporter.TRAPEZOID_BOOKING,
+    ),
+    "pump of an anion": (pump_case("M", 3, (2.0, 30.0, 0.5)), {}, 0.02, None),
+    "pump of a neutral": (pump_case("Y", 2, (2.0, 0.5, 0.5)), {}, -0.06, None),
+    "NKCC in": (nkcc_case(20.0), {}, -0.06, None),
+    "salt out": (salt_case(("K", "M", 1, 1), 20.0), {}, -0.06, transporter.TRAPEZOID_BOOKING),
+    "salt of two anions": (salt_case(("Ca", "M", 1, 2), 2.0), dict(Ca=(0.1, 1.8)), -0.06, None),
+}  # fmt: skip
+
+
+@pytest.mark.parametrize("name", RUNS)
+def test_a_cycle_laws_steps_move_its_counts_and_charge_and_close_every_ledger(name):
+    """Eight host steps of the closed world, forward and backward, under the tableau's heat and the
+    trapezoid's: the cell and the finite bath change by the law's counts per cycle and nothing else
+    does; a held row only in its supply; the charge that crosses moves the voltage by the
+    capacitor's closed form; the heat grows at every step, the work is the cycles times the held
+    fuel's drive, and every ledger closes. At the start the stage term is the reference's |dI/dV| at
+    both ends and the material term its own rate there, the sum over its rows at both. Planted,
+    each refused by its ledger: the first moved species moved twice, the free energy off by one RT
+    and, on held fuel, its drive off by one RT."""
+    case, mM, volts, booking = RUNS[name]
+    ends = {"cell_0": dict(Ca=2e-4), "bath_0": dict(Ca=1.8)}
+    for s, values in mM.items():
+        for node, value in zip(ends, values, strict=True):
+            ends[node][s] = value
+    raw = core_world(case.entry, mM=ends, volts=volts)
+    if booking is not None:
+        raw = trapezoid_booked(raw)
+    nodes = (*raw["model"]["cells"], *raw["model"]["extracellular"])
+    start_mM = {
+        s["id"]: tuple(n["initial_amount_fmol"][s["id"]] / n["volume_pL"] for n in nodes)
+        for s in raw["model"]["species"]
+    }
+
+    def run(impl, spec, p, control, state, steps):
+        states = [state]
+        for _ in range(steps):
+            state, valid = impl.imex_step(state, spec.execution.dt, control, p, xp=np)
+            assert bool(valid)
+            states.append(state)
+        history = impl.STATE_TYPE(*(np.stack(v) for v in zip(*states, strict=True)))
+        impl.check_values(history, spec, steps=np.arange(len(states)))  # Every ledger closes.
+        return states
+
+    planted = ["cycle_standard_RT", *(["cycle_held_standard_RT"] if any(case.held) else [])]
+    with tk.scoped():
+        spec, impl, state, p, control = na_ca_start(raw)
+        (check,) = transporter.cycle_checks(spec)
+        assert (check.charge_sum, check.charge_moved, check.admitted) == (0, case.q, True)
+        states = run(impl, spec, p, control, state, 8)
+        first, last = (
+            impl.readouts(s, control, p, xp=np).field.potential_V for s in (state, states[-1])
+        )
+        charge_term = transporter.stage_term(state, first, control, p, xp=np)
+        material_term = transporter.material_term(state, first, control, p, xp=np)
+        for field in planted:
+            with pytest.raises(NumericalError, match="energy"):
+                off = p._replace(**{field: getattr(p, field) + 1.0})
+                run(impl, spec, off, control, state, 1)
+    ids, end = list(spec.model.species_ids), states[-1]
+    cycles = float(end.cycle_count[0, 0])
+    at_start = own(case, start_mM, float(first[0] - first[1]))
+    *_, x, held = reference(case.exact, *at_start)
+    assert cycles != 0 and (cycles > 0) == (x < 0)
+    d_psi, *_ = reference_slopes(case.exact, *at_start)
+    slope = CHARGE_PER_FMOL / CORE_RT_F * abs(case.q * float(d_psi))
+    assert list(charge_term) == pytest.approx([slope] * 2, rel=1e-10, abs=0)
+    volumes = [node["volume_pL"] for node in nodes]
+    rate = own_rate(case, start_mM, float(first[0] - first[1]), volumes)
+    assert list(material_term) == pytest.approx([rate] * 2, rel=1e-9, abs=0)
+    per = {(s, e): n for (s, e), n in zip(case.rows, case.nu, strict=True)}
+    moved = {row: n for (row, n), h in zip(per.items(), case.held, strict=True) if not h}
+    for k, s in enumerate(ids):
+        changes = {"N": end.amount_increment[k, 0], "P": end.extracellular_amount_increment[k, 0]}
+        for e, value in changes.items():
+            count = moved.get((s, e), 0)
+            assert float(value) == pytest.approx(count * cycles, rel=8 * EPS, abs=0), (s, e)
+        supply = 0 if (s, "N") in moved else -per.get((s, "N"), 0)
+        given = float(end.cycle_supplied_fmol[k, 0])
+        assert given == pytest.approx(supply * cycles, rel=8 * EPS, abs=0), s
+    volts_moved = float((last[0] - last[1]) - (first[0] - first[1]))
+    charge = -case.q * CHARGE_PER_FMOL * cycles / spec.model.membranes[0].capacitance_F
+    assert volts_moved == pytest.approx(charge, rel=1e-9, abs=0 if case.q else 1e-13)
+    heat = np.stack([s.cycle_dissipated_energy_pJ[0] for s in states])
+    work = -1e-3 * R * CORE_T_K * float(held) * cycles
+    assert np.all(np.diff(heat) > 0)
+    assert float(end.cycle_metabolic_work_pJ[0]) == pytest.approx(work, rel=1e-12, abs=0)
+
+    def twice(state, potentials, control, p, *, xp):  # Planted: a species moved twice in the cell.
+        r = transporter.rates(state, potentials, control, p, xp=xp)
+        k = ids.index(case.rows[0][0])
+        return r._replace(cell=xp.where(xp.arange(len(ids))[:, None] == k, 2.0, 1.0) * r.cell)
+
+    with tk.scoped(dataclasses.replace(transporter.TRANSPORTER, rates=twice)):
+        spec, impl, state, p, control = na_ca_start(raw)
+        with pytest.raises(NumericalError, match="accounting failed: local"):
+            run(impl, spec, p, control, state, 1)
+
+
+def test_the_four_laws_read_a_closures_free_rows():
+    """Beside two binders that the general closure holds at the cell, one of calcium (0.1 mM, K_d 1
+    uM: the free calcium is 1/84 of the total) and one of potassium (100 mM, K_d 60 mM: 0.6 of it),
+    the exchange, the pump, the symport of two anions and the calcium salt each read the free ion
+    and move the total's base row: x is the free concentration's, and one step takes their cycles
+    from the totals and closes every ledger. The material term's rates run through the closure's
+    derivative d ln c_free / dn_total, its closed form for one binder. Planted: x at the stored
+    totals; the derivative left out, over ten times too tight; and, each refused at the closure's
+    rows, a copy of each law without the read and one without base forms."""
+    from cells.kinds import proton_buffer
+
+    binders = dict(Ca=("B", 2e-4, 1e-3, 0.1), K=("D", 90.0, 60.0, 100.0))  # Free, K_d, binder: mM.
+    total = {s: free + at * free / (free + k_d) for s, (_, free, k_d, at) in binders.items()}
+    cases = dict(
+        exchange=na_ca_case((0.5, 20.0, 1e-3)),
+        pump=pump_case("Ca", 1, (1e-3, 1e-3, 0.1)),
+        NKCC=nkcc_case(0.5, "symport_0"),
+        salt=salt_case(("Ca", "M", 1, 2), 1e-3, "symport_1"),
+    )
+
+    def world(*entries):
+        cell = {s: total[s] for s in binders}
+        raw = core_world(*entries, mM=dict(cell_0=cell, bath_0=dict(Ca=1.8)))
+        m = raw["model"]
+        for s, (binder, _, k_d, at) in binders.items():
+            row = next(e for e in m["species"] if e["id"] == s)
+            row["standard_mu_RT"] = 0.0
+            add_species(raw, binder, -2, 0.0, {"cell_0": at, "bath_0": 1e-9})
+            bound = dict(id=f"{s}{binder}", counts={s: 1}, standard_mu_RT=math.log(k_d))
+            m["species"][-1]["forms"] = [bound]
+        m[proton_buffer.MODEL_KEY] = [
+            dict(
+                read_id="rapid_binding@1",
+                ligand_rows=list(binders),
+                binders={"cell_0": [b for b, *_ in binders.values()]},
+                k_on_per_mM_s={b: {s: 1e6} for s, (b, *_) in binders.items()},
+            )
+        ]
+        return raw
+
+    unread = [
+        dataclasses.replace(na_ca.LAW, law_id="seamtest.na_ca_unread@1", reads=()),
+        dataclasses.replace(atp_pump.LAW, law_id="seamtest.pump_unread@1", reads=()),
+        dataclasses.replace(nkcc.LAW, law_id="seamtest.nkcc_unread@1", reads=()),
+        dataclasses.replace(salt.LAW, law_id="seamtest.salt_unread@1", reads=()),
+    ]
+    formless = [
+        dataclasses.replace(na_ca.LAW, law_id="seamtest.na_ca_formless@1", forms=None),
+        dataclasses.replace(atp_pump.LAW, law_id="seamtest.pump_formless@1", forms=None),
+        dataclasses.replace(nkcc.LAW, law_id="seamtest.nkcc_formless@1", forms=None),
+        dataclasses.replace(salt.LAW, law_id="seamtest.salt_formless@1", forms=None),
+    ]
+    raw = world(*(c.entry for c in cases.values()))
+    laws = law_registry.BUILTIN.extended(*unread, *formless)
+    with tk.scoped(*tk.CHARGED_KINDS), law_registry.scope(laws):
+        spec, impl, state, p, control = na_ca_start(raw)
+        volts = np.asarray(impl.readouts(state, control, p, xp=np).field.potential_V)
+        read, ok = proton_buffer.stage_read(state, p, xp=np)
+        after, valid = impl.imex_step(state, spec.execution.dt, control, p, xp=np)
+        history = impl.STATE_TYPE(*(np.stack(v) for v in zip(state, after, strict=True)))
+        impl.check_values(history, spec, steps=np.arange(2))  # Every ledger closes.
+        for planted, reason in (
+            (unread, "lack rapid_binding@1"),
+            (formless, "declares no base forms"),
+        ):
+            for law, case in zip(planted, cases.values(), strict=True):
+                with pytest.raises(ConfigError, match=reason):
+                    parse_spec(world(dict(case.entry, law=law.law_id)))
+    assert bool(ok) and bool(valid)
+    m = transporter.probe(read, volts, control, p, xp=np).modes
+    nodes = (*raw["model"]["cells"], *raw["model"]["extracellular"])
+    stored = {
+        s["id"]: tuple(n["initial_amount_fmol"][s["id"]] / n["volume_pL"] for n in nodes)
+        for s in raw["model"]["species"]
+    }
+    free = stored | {s: (f, stored[s][1]) for s, (_, f, *_) in binders.items()}
+    v = float(volts[0] - volts[1])
+    for j, case in enumerate(cases.values()):
+        x, at_totals = (float(reference(case.exact, *own(case, at, v))[2]) for at in (free, stored))
+        assert float(m.x[0, j]) == pytest.approx(x, rel=0, abs=1e-11)  # The free ion's, as solved.
+        assert abs(float(m.x[0, j]) - at_totals) > 0.4  # Planted: the stored totals'.
+    volumes = [node["volume_pL"] for node in nodes]
+    closed = {
+        (s, 0): 1 / (f * volumes[0] * (1 + at * k_d / (f + k_d) ** 2))
+        for s, (_, f, k_d, at) in binders.items()
+    }
+    through, left_out = (
+        largest(
+            row_sums(
+                cases.values(), [own_rate(c, free, v, volumes, closed=d) for c in cases.values()]
+            )
+        )
+        for d in (closed, None)
+    )
+    term = transporter.material_term(read, volts, control, p, xp=np)
+    assert list(term) == pytest.approx(through, rel=1e-8, abs=0)
+    assert left_out[0] > 10 * through[0]  # Planted: the closure's derivative left out.
+    ids, cycles = list(spec.model.species_ids), np.asarray(after.cycle_count[0])
+    assert np.all(cycles != 0)
+    for s in binders:
+        taken = math.fsum(
+            n * float(c)
+            for case, c in zip(cases.values(), cycles, strict=True)
+            for row, n in zip(case.rows, case.nu, strict=True)
+            if row == (s, "N")
+        )
+        assert float(after.amount_increment[ids.index(s), 0]) == pytest.approx(
+            taken, rel=1e-12, abs=0
+        )
+
+
+def own_calcium_pump(raw, species):
+    """@3's own calcium pump on the world's one patch, for a divalent species."""
+    pump = calcium_fixtures.calcium_pump(0) | dict(
+        roles=dict(calcium=species), stoichiometry={species: -1}
+    )
+    raw["model"]["membranes"][0]["calcium_pump"] = pump
+    schedule = [dict(time=0.0, availability=1.0)]
+    raw["experiment"]["calcium_pump_controls"] = [dict(pump_id=pump["id"], schedule=schedule)]
+
+
+def permeable_fuel(raw):
+    raw["model"]["membranes"][0]["permeability_m_per_s"]["ATP"] = 1e-12
+
+
+def rk4(raw):
+    raw["execution"]["solver"] = "rk4"
+
+
+def changed(case, **over):
+    """A case's entry with fields changed, parameters by name."""
+    parameters = case.entry["parameters"] | over.pop("parameters", {})
+    return case.entry | dict(parameters=parameters) | over
+
+
+THE_PUMP, NEUTRAL = pump_case("Ca", 1, (0.5, 1e-3, 0.1)), pump_case("Y", 4, (0.5, 1.0, 0.1))
+UNSTATED = salt_planted("seamtest.salt_unstated@1", electroneutral=False)
+NKCC_1_1_1 = nkcc_planted("seamtest.nkcc_stated@1", counts=(1, -1, 1, -1, 1, -1))
+VERSION_1 = tk.population(stoichiometry=4, role="Y")
+FINITE_1 = tk.population(role="Y", fuel=tk.fuel(kind=transporter.FINITE))
+PROTON_1 = tk.population(  # Any monovalent cation is a role there: Na stands in for the proton.
+    law=transporter.PROTON_LAW, role="Na", fuel=tk.fuel(ph_ref=2.0, ph_band=0.5)
+)
+CORE_REFUSALS = {  # name: (the entries, the world's change, the reason, None where admitted)
+    "the pump": ([THE_PUMP.entry], None, None),
+    "two populations of the pump": ([THE_PUMP.entry, changed(THE_PUMP, id="pump_1")], None, None),
+    "five per ATP": ([changed(THE_PUMP, parameters=dict(stoichiometry=5))], None, "is at most 4"),
+    "none per ATP": ([changed(THE_PUMP, parameters=dict(stoichiometry=0))], None, "is positive"),
+    "K of zero": (
+        [changed(THE_PUMP, parameters=dict(km_role_mM=0.0))], None, "km_role_mM is positive"
+    ),
+    "K_ATP of zero": (
+        [changed(THE_PUMP, parameters=dict(km_atp_mM=0.0))], None, "km_atp_mM is positive"
+    ),
+    "moved fuel": ([changed(THE_PUMP, held_rows=[])], None, "runs on held fuel"),
+    "fuel held in part": (
+        [changed(THE_PUMP, held_rows=[["ATP", "N"]])], None, "held together or moved together"
+    ),
+    "a charged fuel row": (
+        [changed(THE_PUMP, roles=THE_PUMP.entry["roles"] | dict(ATP="Na"))],
+        None,
+        r"role ATP has valence \+0, not Na's",
+    ),
+    "fuel that a route moves": (
+        [THE_PUMP.entry], permeable_fuel, "which membrane membrane_0 moves"
+    ),
+    "fuel that a population moves": ([THE_PUMP.entry, FINITE_1], None, "which another population"),
+    "x inside 80": ([NEUTRAL.entry], 79.5, None),
+    "x outside 80": ([NEUTRAL.entry], 80.5, "domain invalid"),
+    "x inside -80": ([NEUTRAL.entry], -79.5, None),
+    "x outside -80": ([NEUTRAL.entry], -80.5, "domain invalid"),
+    "the pump on RK4": ([THE_PUMP.entry], rk4, "require an IMEX solver"),
+    "@3's own pump of the same ion": (
+        [THE_PUMP.entry],
+        functools.partial(own_calcium_pump, species="Ca"),
+        r"moves Ca on membrane_0 beside 'calcium_pump_0' \(cells.ca_atp_mass_action_positive@1\): "
+        "one law moves a species by ATP",
+    ),
+    "@3's own pump of another ion": (
+        [THE_PUMP.entry], functools.partial(own_calcium_pump, species="Mg"), None
+    ),
+    "version 1's law of the same species": (
+        [NEUTRAL.entry, VERSION_1], None, "beside 'transporter_0'.*one law moves a species by ATP"
+    ),
+    "version 1's law of another species": ([THE_PUMP.entry, VERSION_1], None, None),
+    "version 1's proton law of the same species": (
+        [pump_case("Na", 1, (0.5, 10.0, 0.1)).entry, PROTON_1],
+        None,
+        "beside 'transporter_0'.*one law moves a species by ATP",
+    ),
+    "version 1's proton law of another species": ([THE_PUMP.entry, PROTON_1], None, None),
+    "K with M": ([salt_case(("K", "M", 1, 1), 0.5).entry], None, None),
+    "Ca with two M": ([salt_case(("Ca", "M", 1, 2), 0.5).entry], None, None),
+    "two Na with S": ([salt_case(("Na", "S", 2, 1), 0.5).entry], None, None),
+    "K with two M": (
+        [salt_case(("K", "M", 1, 2), 0.5).entry],
+        None,
+        "is electroneutral; 1 K and 2 M move charge \\+1 from N to P per cycle",
+    ),
+    "Ca with one M": (
+        [salt_case(("Ca", "M", 1, 1), 0.5).entry],
+        None,
+        "is electroneutral; 1 Ca and 1 M move charge -1 from N to P per cycle",
+    ),
+    "K with two M, the statement absent": (
+        [salt_case(("K", "M", 1, 2), 0.5, law=UNSTATED.law_id).entry], None, None
+    ),
+    "three anions": ([salt_case(("Ca", "M", 1, 3), 0.5).entry], None, "n_anion is at most 2"),
+    "NKCC": ([nkcc_case(0.5).entry], None, None),
+    "NKCC at 1:1:1": (
+        [nkcc_case(0.5, law=NKCC_1_1_1.law_id).entry],
+        None,
+        "is electroneutral; 1 Na and 1 K and 1 M move charge -1 from N to P per cycle",
+    ),
+    "NKCC on RK4": ([nkcc_case(0.5).entry], rk4, "require an IMEX solver"),
+}  # fmt: skip
+
+
+@pytest.mark.parametrize("name", CORE_REFUSALS)
+def test_a_pump_or_symport_population_is_refused_with_its_reason(name):
+    """The pump's counts, half-saturations, fuel (moved, held in part, charged, or moved by a route
+    or by another population), domain at both ends, RK4, and a second law of its mechanism on its
+    patch for its species; the symports' counts and, by name, species and counts that move charge;
+    each with its admitted neighbour. Planted: the configured symport's copy that does not declare
+    itself electroneutral admits the salt that moves charge."""
+    entries, change, reason = CORE_REFUSALS[name]
+    over, rows = {}, dict(Mg=(2, 0.0, 0.5, 0.8))
+    if isinstance(change, float):  # Y's two ends from x = the drive + 4 ln(Y_P / Y_N).
+        held = float(reference(NEUTRAL.exact, (1.0, 1.0, 3.0, 0.4, 5.0), 0.0)[3])
+        rows["Y"] = (0, 0.0, 1e-4, 1e-4 * math.exp((change - held) / 4))
+        over, change = dict(volts=0.0), None
+    raw = core_world(*entries, rows=rows, **over)
+    if change is not None:
+        change(raw)
+    with tk.scoped(), law_registry.scope(law_registry.BUILTIN.extended(UNSTATED, NKCC_1_1_1)):
+        if reason is None:
+            parse_spec(raw)
+        else:
+            with pytest.raises(ConfigError, match=reason):
+                parse_spec(raw)
+
+
+# ------------------------------------------- a law's own material bound
+
+
+def row_sums(cases, rates):
+    """{(species, node): the sum of the rates of the populations that move it}."""
+    out = {}
+    for case, rate in zip(cases, rates, strict=True):
+        for (s, end), holds in zip(case.rows, case.held, strict=True):
+            if not holds:
+                key = s, node_of(case, end)
+                out[key] = out.get(key, 0.0) + rate
+    return out
+
+
+def largest(sums):
+    """[the cell's, the bath's] largest row sum."""
+    return [max(v for (_, node), v in sums.items() if node == at) for at in (0, 1)]
+
+
+def material_block(cases, mM, volts, volumes):
+    """The moved rows' block d(dn_k/dt)/dn_l of all the cases (1/s), from the reference's slopes."""
+    rows = sorted(row_sums(cases, [0.0] * len(cases)))
+    block = np.zeros((len(rows), len(rows)))
+    for case in cases:
+        conc, own_volts = own(case, mM, volts)
+        _, *slopes = reference_slopes(case.exact, conc, own_volts)
+        moved = [
+            (rows.index((s, node_of(case, end))), n, float(d) / (c * volumes[node_of(case, end)]))
+            for (s, end), n, h, c, d in zip(
+                case.rows, case.nu, case.held, conc, slopes, strict=True
+            )
+            if not h
+        ]
+        for k, n, _ in moved:
+            for other, _, g in moved:
+                block[k, other] += n * g
+    return block
+
+
+def test_the_material_term_is_each_populations_own_rate_and_bounds_the_whole_block():
+    """Six populations of the four registered laws that share rows, one with its N at the bath, at
+    24 random states. At each node the term is the largest over the rows there of the sum, over the
+    populations that move the row, of each one's own rate: |nu dJ/dn| over its moved rows at both
+    ends, in the reference's decimals. The block of all their rows has no rate above it. Planted,
+    each told apart at some state: a row's own slope in place of the population's rate, the largest
+    population in place of the sum, the far end left out, and the rows that the pump holds counted.
+    At two species' equal shares the exchange's own rate is its block's one eigenvalue, which the
+    largest over species reads twice too low."""
+    cases = [
+        na_ca_case((0.5, 20.0, 1e-3), "exchange"),
+        pump_case("Ca", 1, (0.3, 5e-3, 0.2), "pump_ca"),
+        pump_case("Y", 2, (0.3, 0.5, 0.2), "pump_y", n_end="b"),
+        nkcc_case(0.4, "nkcc"),
+        salt_case(("Ca", "M", 1, 2), 0.2, "salt_ca"),
+        salt_case(("K", "M", 1, 1), 0.3, "salt_k"),
+    ]
+    planted = {}
+
+    def rates(given, volts, **over):
+        return [own_rate(case, given, volts, volumes, **over) for case in cases]
+
+    with tk.scoped():
+        spec, _, state, p, control = core_start(cases)
+        volumes = float(p.volume[0]), float(p.extracellular_volume[0])
+        for mM, volts in drawn(24, 11, **CORE_SPANS):
+            s, given = put(spec, state, p, mM)
+            term = transporter.material_term(s, np.array([volts, 0.0]), control, p, xp=np)
+            own_rates = rates(given, volts)
+            expected = largest(row_sums(cases, own_rates))
+            assert list(term) == pytest.approx(expected, rel=1e-8, abs=0)
+            radius = np.max(np.abs(np.linalg.eigvals(material_block(cases, given, volts, volumes))))
+            assert radius <= max(term) * (1 + 1e-9)
+            own_slopes, alone = {}, {}
+            for case, rate in zip(cases, own_rates, strict=True):
+                for s, end in (row for row, h in zip(case.rows, case.held, strict=True) if not h):
+                    row = s, node_of(case, end)
+                    slope = own_rate(case, given, volts, volumes, only={(s, end)})
+                    own_slopes[row] = own_slopes.get(row, 0.0) + slope
+                    alone[row] = max(alone.get(row, 0.0), rate)
+            near = rates(given, volts, only={(s, "N") for s in CORE_SPANS})
+            for name, sums in (
+                ("a row's own slope", own_slopes),
+                ("the largest population", alone),
+                ("the far end left out", row_sums(cases, near)),
+                ("held rows", row_sums(cases, rates(given, volts, held=True))),
+            ):
+                off = max(abs(a / b - 1) for a, b in zip(largest(sums), expected, strict=True))
+                planted[name] = max(off, planted.get(name, 0.0))
+        assert min(planted.values()) > 0.1, planted
+        (case, *_), (n_na, n_ca) = cases, (12.0, 1.8)
+        sodium = 9 * (1 / (n_na * volumes[0]) + 1 / (140.0 * volumes[1]))
+        ca = 1 / ((sodium - 1 / (n_ca * volumes[1])) * volumes[0])  # Calcium's share is sodium's.
+        mM = dict(Na=(n_na, 140.0), Ca=(ca, n_ca))
+        head = na_ca_reversal((n_na, 140.0, ca, n_ca))
+        spec, _, state, p, control = core_start([case])
+        s, given = put(spec, state, p, mM)
+        term = transporter.material_term(s, np.array([head, 0.0]), control, p, xp=np)
+        eigenvalues = np.linalg.eigvals(material_block([case], given, head, volumes))
+    assert list(term) == pytest.approx([np.max(np.abs(eigenvalues))] * 2, rel=1e-9, abs=0)
+    shares = [
+        own_rate(case, given, head, volumes, only={r for r in case.rows if r[0] == s})
+        for s in ("Na", "Ca")
+    ]
+    assert max(shares) == pytest.approx(0.5 * term[0], rel=1e-9, abs=0)
+
+
+@pytest.mark.parametrize("held", (False, True), ids=("finite bath", "held bath"))
+def test_the_exchanges_own_rate_holds_the_step_and_leaves_out_a_held_bath(held):
+    """At its reversal, where nothing moves, and with calcium scarce in the cell, the exchange's own
+    rate is over twenty times its charge rate: a step 1% inside it is taken and one 1% outside is
+    refused. The rows at a held bath do not relax: with one the rate is the cell's two rows' alone
+    and the bath's term is zero. Planted: the kind without its material term takes the larger
+    step."""
+    values, mM = (5.0, 20.0, 1e-3), dict(cell_0=dict(Ca=2e-4), bath_0=dict(Ca=1.8))
+    conc = na_ca_conc(na_ca_world(mM=mM))
+    head = na_ca_reversal(conc)
+    case = na_ca_case(values)
+    raw = na_ca_world(case.entry, mM=mM, volts=head)
+    if held:
+        raw["model"]["extracellular"][0]["reservoir"] = True
+        raw["model"]["closure"]["gauge_reference"] = None
+    given = dict(Na=conc[:2], Ca=conc[2:])
+    nodes = (*raw["model"]["cells"], *raw["model"]["extracellular"])
+    volumes = [node["volume_pL"] for node in nodes]
+    cell = {("Na", "N"), ("Ca", "N")}
+    rate = own_rate(case, given, head, volumes, only=cell if held else None)
+    d_psi, *_ = reference_slopes(case.exact, conc, head)
+    charge = CHARGE_PER_FMOL / CORE_RT_F * abs(float(d_psi))
+    assert rate > 20 * charge / raw["model"]["membranes"][0]["capacitance_F"]
+    with tk.scoped():
+        _, impl, state, p, control = na_ca_start(raw)
+        term = transporter.material_term(state, np.array([head, 0.0]), control, p, xp=np)
+        assert list(term) == pytest.approx([rate, 0.0 if held else rate], rel=1e-9, abs=0)
+        assert bool(impl.imex_step(state, 0.99 / rate, control, p, xp=np)[1])
+        assert not bool(impl.imex_step(state, 1.01 / rate, control, p, xp=np)[1])
+    with tk.scoped(dataclasses.replace(transporter.TRANSPORTER, material_term=None)):
+        _, impl, state, p, control = na_ca_start(raw)
+        assert bool(impl.imex_step(state, 1.01 / rate, control, p, xp=np)[1])
+
+
+def test_a_population_without_the_term_keeps_its_rows_and_a_world_without_it_its_fields():
+    """A law's own rate is static. Beside the exchange, a population of version 1's neutral law,
+    which declares no term, keeps the slopes of its rows bit for bit, and the structure's entry and
+    layout say that a law has the term. Alone, or beside a copy of the exchange that declares none,
+    the entry and the fields are those of before, and the copy's charged rows have no slope."""
+    neutral = general(tk.population())
+    bare = dataclasses.replace(
+        na_ca.LAW, law_id="seamtest.na_ca_bare@1", stage_term=None, material_term=None
+    )
+    entries = dict(alone=(), beside=(na_ca_case((0.5, 20.0, 1e-3)).entry,))
+    entries["beside the copy"] = (na_ca_case((0.5, 20.0, 1e-3), law=bare.law_id).entry,)
+    found = {}
+    with tk.scoped(), law_registry.scope(law_registry.BUILTIN.extended(bare)):
+        for name, others in entries.items():
+            spec, _, state, p, control = na_ca_start(core_world(neutral, *others))
+            ((_, entry),) = surface_pump_v3.structure(spec.model).kinds
+            potentials = np.array([-0.05, 0.0])
+            slopes, _ = transporter._material_slopes(state, potentials, control, p, xp=np)
+            found[name] = entry, transporter.MATERIAL_FIELDS[0] in type(p)._fields, slopes
+    laws = {
+        name: sorted({transporter.NEUTRAL_LAW, *(e["law"] for e in others)})
+        for name, others in entries.items()
+    }
+    for name, (entry, field, slopes) in found.items():
+        marked = name == "beside"
+        assert entry == transporter.CycleAxis(tuple(laws[name]), False, False, False, marked)
+        assert field == marked and np.any(slopes[:, 0] > 0)
+        assert np.array_equal(slopes[:, 0], found["alone"][2][:, 0])
+    assert np.all(found["beside"][2][:4, 1] > 0)  # Its four rows, all charged and crossing.
+    assert not np.any(found["beside the copy"][2][:, 1])  # Planted: no term, so no slope.
+
+
+def test_a_row_that_version_1s_proton_buffer_holds_is_refused_to_a_law_with_the_term():
+    """Version 1's proton buffer gives its read no derivative, so a law with a material term that
+    moves the proton row at a buffered node is refused by name: a planted uniport, and the pump. The
+    same uniport without the term is admitted there, and with it where no buffer holds the row. (The
+    general closure's derivative is in the row of the closure's free rows.)"""
+    buffered = dataclasses.replace(
+        UNIPORT, law_id="seamtest.buffered_uniport@1", reads=("rapid_proton_buffer@1",)
+    )
+    termed = dataclasses.replace(
+        UNIPORT,
+        law_id="seamtest.termed_uniport@1",
+        reads=("rapid_proton_buffer@1",),
+        material_term="material_term",
+    )
+
+    pump = pump_case("Na", 1, (1e-6, 1e-4, 0.1), "atp_0").entry
+    pump = pump | dict(roles=pump["roles"] | dict(role="H"))
+    uniports = [
+        exchanger(law.law_id, capacity=1e-6, roles=dict(H="H")) for law in (buffered, termed)
+    ]
+
+    def parsed(entry, kinds=tk.CHARGED_KINDS):
+        raw = tk.charged_world()
+        raw["model"]["transporters"] = [entry]
+        if not kinds:  # The same world without the buffer.
+            del raw["model"]["stage_reads"]
+        laws = law_registry.BUILTIN.extended(buffered, termed)
+        with tk.scoped(*(kinds or (transporter.TRANSPORTER,))), law_registry.scope(laws):
+            parse_spec(raw)
+
+    parsed(uniports[0])
+    parsed(uniports[1], kinds=())
+    for entry in (uniports[1], pump):
+        with pytest.raises(ConfigError, match="moves H at cell_0, a row that version 1's proton"):
+            parsed(entry)
 
 
 # ------------------------------------------------------------------ M2 on this device (amendment 2)

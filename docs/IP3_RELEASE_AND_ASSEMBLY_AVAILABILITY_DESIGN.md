@@ -8,6 +8,31 @@ executed below. Two parts that can be built apart. Part I (G-5) is sections 1 to
 10 to 18. The re-expression map this note answers is section 14 of `docs/LEGACY_PORT_PLAN.md` at a1db6ab9
 ("the map").
 
+**As built (the lead, 25 November 2026).** Both parts are built, and differ from the text below in six places, where
+the code is right:
+
+- **The run inputs (13.2).** `cells run`, `windowed`, `batch`, `resume` and `branch` take `--inputs` and record it as
+  `provenance["inputs"]` with `definitions_sha256`. There is no `assembly-pool run` subcommand and no
+  `provenance["composed"]`.
+- **D147 in the driver.** A free-offset definition that declares field solver version 2 or the sparse solver is
+  refused by name before any pool runs.
+- **The compiled row (row 6).** It runs a small world on IMEX and states its seconds in the file; it is the only place
+  a driven world runs.
+- **The species source's layout (5.9)** has a seventh field, `species_condition_pair_condition`.
+- **Its law (19, 20.1)** is a registered `Law` record, `hill_product_factor@1`, on the interface
+  `cells.transfer_factor_law@1`, with provenance `parity` and its Citation kept.
+- **Its argument (5.2)** is ln N - ln V, the log of an amount and of a volume.
+
+Also as ruled: a driven world's pool declares its own seed, and its channels may sit on several cells.
+
+**The sink's side of 5.5, as built (added with the calcium note's step 8, 25 November 2026;**
+`docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md` §6.5). `routed_flux` returns `{control field: [species, slot]}` and
+not [M], since a kind's stage hooks see no declaration. `InnerStructure.loops` holds m as (position in `routes`,
+position in that slot's `routed_rows`) and p as (source kind ID, position among that kind's pairs). A sink with
+neither hook is refused by name where a loop would close, and an operator that opens, closes or retires slots is
+refused beside a loop. `patch_damage` reads no amount, so it closes no loop: of the two sources in 5.5's limit,
+only `ph_condition` can.
+
 **Marks.** (M) I ran it. (R) I read it in code or a document at 43b22d40. (S) my own derivation or arithmetic.
 (G) a guess. File references are to `src/cells/` at 43b22d40 unless another place is named. On
 `legacy-cleanup` (149f9df9) 54 files of `src/cells` differ, among them `execution/grid.py`,
@@ -751,7 +776,8 @@ Two worlds of the 16 (M): world 0 with one switch in each cell (2 extra steps), 
 - **The floor guard rerun.** D148's record says that the floor guard of D147 compares primitive counts, not
   constants, and asks to rerun it with constants before version 3 serves a run of record
   (`docs/DECISIONS.md:4910` to 4912). No record of that rerun was found (M2, R). It is a step before the
-  registered campaign (ruling 10), and not this build's.
+  registered campaign (ruling 10), and not this build's. (25 November 2026: the guard compares constants now
+  and was run, clean, at XC0's and the pre-cleanup snapshots; it is repeated on the campaign's own.)
 - **Batched paths.** `ionic_worlds@1` admits the floor solver on both backends and mappings (M2,
   `floor_admission`, planners only). Two free-offset @3 worlds with different off-grid channel schedules,
   IMEX, run by `lax_map` equal their own runs bit for bit and by `vmap` to 5.1e-14 (M2, `floor_vmap`).
@@ -1063,6 +1089,6 @@ default field solver and was stopped once its first step was refused.
 - No claim about the receptor, IP3's charge in water, IP3 metabolism, assembly energetics, or the real cage.
 - No claim that a composite's calcium run meets any band: only a prototype ran (section 4.1).
 - No GPU claim. No claim above a few hundred cells for the composed run. No timing.
-- The hooks and the composed run's inputs record are specified, not built. The second reader's M2 results are
-  its own.
+- The hooks and the composed run's inputs record are specified, not built. **Both are built since, 25 November
+  2026** (the block at the top). The second reader's M2 results are its own.
 - Nothing here is judged. Both parts come back to the user with their price before any build (D383).

@@ -52,4 +52,6 @@ LAW = ChannelLaw(
     kinetics,
     opening,
     host="cells.resolved_pump_tissue@3",
+    test="tests/unit/test_channel_law_kernels.py"
+    "::test_kv1p5_meets_the_independent_decimals_and_each_plant_misses_them",
 )

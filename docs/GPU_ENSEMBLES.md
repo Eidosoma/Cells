@@ -91,6 +91,13 @@ time, with no CPU fallback.
 
 ## Independent model ensembles
 
+> **Legacy cleanup (25 November 2026, D386).** `finite_extracellular@1` to `@3`, `spatial_extracellular@1` to
+> `@3`, `spatial_calcium@1` to `@4`, the two assembly-regulated families, their ensemble kinds
+> (`assembly_cell_ensemble@1`, `assembly_cluster_ensemble@1`) and the validation drivers named below left the
+> engine; the tag `pre-cleanup-2026-11-25` keeps them. `ionic_worlds@1` admits the resolved tissues and the pump
+> families. The assembly kinds are refused by name: the coupling is re-expressed on the CPU, and its
+> GPU path is parked. Measurements below are records of what ran.
+
 `python -m cells.ensemble` and `cells ensemble` provide `plan`, `run`, `status`,
 `resume` and `balance`. A node owns a shared queue of registered batches. Each
 GPU has one or two persistent processes; two can supply work while another

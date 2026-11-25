@@ -39,9 +39,11 @@ Refused at the definition, each with its reason (§1.4, §1.5):
    scheduled_membrane_trafficking@1's routes; version 1.2). Elsewhere (the silent version, and
    RK4 without such routes) the content is electroneutral, so q = 0 and V_b = 0. Version 1.2
    reads the composition, so it is checked at the definition with refusal 7, after it;
-6. an owner whose capacitor component (cells and outside nodes joined by membrane patches, as
-   numerics/surface_field.bind joins them) holds no held bath (version 1). In such a component no
-   representative is chosen, so the compartment is a free node of the capacitor solve (§3.5);
+6. a node that is the representative of its capacitor component (cells and outside nodes joined by
+   membrane patches, as numerics/surface_field.bind joins them; version 1.1, §3.5.1): the gauge
+   where the component holds it, else its first outside node, and none where it holds a held bath
+   (surface_field.representative, bind's own rule). Any other node is a free node of the capacitor
+   solve (§3.5), in a held-bath topology, a closed world and a floating component alike;
 7. a composition beyond the admitted list of §4, which fails closed: a new operator may treat
    outside nodes as environment. Replacement@1 schedules no event on an owner's slot and names no
    owner as a donor (§1.5): a newcomer would inherit the compartment's content, and a donor copy
@@ -92,6 +94,7 @@ from cells.definitions import pump_composite_spec as composite_spec
 from cells.definitions.spec_values import identifier
 from cells.definitions.specs import ConfigError, _fields
 from cells.models import pump_composite_adapter as adapter
+from cells.numerics import surface_field
 from cells.operators.contract import Operator, Read
 from cells.registry import kind_registry
 from cells.registry import laws as law_registry
@@ -265,6 +268,23 @@ def capacitor_components(model):
     for membrane in model.membranes:
         parent[root(membrane.outside)] = root(membrane.inside)
     return {name: root(name) for name in parent}
+
+
+def representatives(model):
+    """The outside nodes that the capacitor solve fixes as representatives, their IDs: one per
+    capacitor component without a held bath. surface_field.representative, the rule that bind
+    applies, on the declared topology; a bound layout's are surface_field.representatives."""
+    nodes = [c.id for c in (*model.cells, *model.extracellular)]
+    first = len(model.cells)
+    reservoirs = {first + k for k, o in enumerate(model.extracellular) if o.reservoir}
+    gauge = {first + k for k, o in enumerate(model.extracellular) if o.id == model.gauge_reference}
+    components, members = capacitor_components(model), {}
+    for k, name in enumerate(nodes):
+        members.setdefault(components[name], []).append(k)
+    chosen = [
+        surface_field.representative(found, first, reservoirs, gauge) for found in members.values()
+    ]
+    return frozenset(nodes[k] for k in chosen if k is not None)
 
 
 def held_terms(kind, law_id):
@@ -447,8 +467,7 @@ def parse_declaration(raw, base):
     m = base.model
     outside = {c.id: c for c in m.extracellular}
     cells = {c.id for c in m.cells}
-    components = capacitor_components(m)
-    held = {components[c.id] for c in m.extracellular if c.reservoir}
+    fixed = representatives(m)
     imex = base.execution.solver != RK4_SOLVER  # Refusal 4's admissions need an IMEX tableau.
     taken = world_ids(m)
     compartments = []
@@ -509,12 +528,14 @@ def parse_declaration(raw, base):
             )
         refuse_ion_routes(m, node, bounding, imex)  # 4.
         # 5. is checked at the definition (check_definition): version 1.2 reads the composition.
-        # 6. A held-bath topology.
-        if components[owner] not in held:
+        # 6. Never its component's representative.
+        if node in fixed:
             raise ConfigError(
-                f"{LAW_ID}: the owner {owner!r} of compartment {node!r} lies in a capacitor "
-                "component with no held bath; version 1 requires one, so that the compartment is a "
-                "free node of the capacitor solve, never a representative"
+                f"{LAW_ID}: compartment {node!r} is the representative of its capacitor component "
+                f"(no held bath and no gauge is in it, and {node!r} is its first outside node); "
+                "the capacitor solve fixes a representative, so its row would carry the "
+                "component's net charge. Declare another outside node of the component first "
+                "(refusal 6, version 1.1)"
             )
         label = _metadata(entry["label"], "label")
         reference = _metadata(entry["reference"], "reference")
@@ -696,8 +717,9 @@ class CellOwnedCompartments(Operator):
             "compartments_role_default": ROLE,  # Entries with role_declared False carry it.
             "compartments_role_physics": "none in version 1: a role is metadata",
             "compartments_scope": (
-                "refusal 4 version 1.3, refusal 5 version 1.2: a held-bath topology at a fixed "
-                "volume; on a bounding patch no ion route but refusal 4's admitted ones (@3's "
+                "refusal 4 version 1.3, refusal 5 version 1.2, refusal 6 version 1.1: a node that "
+                "its capacitor component does not take as its representative, at a fixed volume; "
+                "on a bounding patch no ion route but refusal 4's admitted ones (@3's "
                 "permeabilities, and the kinds' moves at the compartment's node, each held by a "
                 "step term its law declares, when the world declares kinds, with an IMEX step), "
                 "and a zero charge anchor except in those same worlds and where an admitted "

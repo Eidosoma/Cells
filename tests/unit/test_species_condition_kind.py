@@ -14,12 +14,14 @@ compile:
   0, a NaN read as 0), and the domain an infinite amount;
 - a condition is a source of @3's channel slots too, two of them a left fold in the population's
   declared order (planted: the other order, which differs in the last bit);
-- the feedback hooks feed the core's rule (section 5.5), stubbed here as the core builder's: its
-  rate is the finite difference of the routed flux through the factor (planted: the held control,
-  the division before the product, a pair the route does not move);
+- the feedback hooks feed the core's rule (section 5.5): its rate is the finite difference of the
+  routed flux through the factor, at both ends, beside the ligand's pair, which closes no loop, and
+  a channel slot's condition closes one as a route's does (planted: the held control, the ligand's
+  pair, and for the division before the product, which is a NaN at a zero amount, a finite rate);
 - beside operators, at the definition: admitted beside a compartment, the wash and labels, and water
   (read at its current volume), refused by name under RK4, beside replacement, trafficking, a closer
-  and a retiring operator (planted hooks refused: bound_rate, moved_rows, rates);
+  and a retiring operator (planted hooks refused: bound_rate, moved_rows, rates); a loop is refused
+  beside any operator that changes slots, whatever its kinds declare;
 - a world that declares none keeps its definition, its structure and its program (D148).
 Compiled, the store world (a composite of this file's own numbers: the same release from a
 compartment, its ligand binding a buffer by local_species_reactions@1): ten steps in two windows, in
@@ -53,7 +55,7 @@ from cells.models import pump_composite
 from cells.models import pump_composite_adapter as adapter
 from cells.models import surface_pump_v3 as tissue3
 from cells.numerics import surface_imex as imex
-from cells.operators import OPERATORS
+from cells.operators import OPERATORS, membrane_state
 from cells.records.io import load_snapshot, write_snapshot
 from cells.registry import kind_registry
 from cells.registry.models import get_model
@@ -391,62 +393,73 @@ def test_a_condition_at_an_outside_node_reads_it_under_padded_capacities():
 # ------------------------------------------------------------------ the feedback hooks
 
 
+def loop_rates(impl, read, potentials, control, p):
+    """[node] the core's rate of the loops at a stage's read (surface_pump_v3)."""
+    return tissue3.loop_material_rates(
+        read, read, potentials, control, p, xp=np, structure=impl.structure,
+        kinds=tissue3._kinds(impl.structure),
+    )  # fmt: skip
+
+
 def test_the_hooks_feed_the_core_s_feedback_rule():
-    """The core builder's rule (section 5.5), as its stub: at binding the pairs by name, at a stage
-    the routed flux and the slopes, |J| x |slope| first and then / max(n, tiny)."""
+    """The rule's own rows are the passive routes' (test_passive_routes_kind.py); here it reads this
+    kind's two conditions."""
     spec, impl, state, p, control = host(tissue())
-    declarations = dict(spec.model.kinds)
-    kind, declared = species.SPECIES_CONDITION, declarations[species.KIND_ID]
-    ca = row_of(spec, "Ca")
-
-    def stub(flux, slope, amount):
-        return (abs(flux) * abs(slope)) / max(amount, np.finfo(float).tiny)
-
-    # Binding: names only. The route moves Ca at its two nodes, so the calcium pair closes a loop
-    # and the ligand's does not (a pair the route does not move: planted below).
-    rows = kind_registry.kind_factor_rows(kind, declared)
-    pairs = [pair for source in rows for pair in source]
-    moved = {row[:2] for row in passive_routes.moved_rows(declarations[passive_routes.KIND_ID])}
-    assert pairs == [("L", "cell_0"), ("Ca", "cell_0")]
-    assert [pair in moved for pair in pairs] == [False, True]
-    nodes = [c.id for c in spec.model.cells] + [o.id for o in spec.model.extracellular]
-    index = [(row_of(spec, s), nodes.index(n)) for s, n in pairs]  # The core's layout indices.
-    assert index == [(row_of(spec, "L"), 0), (ca, 0)]
+    ca, pair = row_of(spec, "Ca"), (species.KIND_ID, 1)  # The pairs: the ligand's, calcium's.
+    # Names at binding: the route moves Ca, so calcium's pair closes a loop and the ligand's none.
+    assert impl.structure.loops == (((0, 0), pair),)
+    node = p.active.size + [o.id for o in spec.model.extracellular].index("node_0")
+    layout = [getattr(p, name).tolist() for name in tissue3.LOOP_LAYOUT_FIELDS]
+    assert layout == [[ca], [0], [ca], [0], [node]]
+    potentials = impl.readouts(state, control, p, xp=np).field.potential_V
 
     def at(amount):
-        """(routed J, held J, slopes, n, factors) with calcium at `amount` fmol in the cell."""
+        """(the core's rate, the held control's, the ligand pair's (planted), the routed flux, the
+        factors) with calcium at `amount` fmol in the cell."""
         reference = np.array(p.amount_reference)
         reference[ca, 0] = amount
-        layout = p._replace(amount_reference=reference)
-        gate, valid = routed(impl, state, control, layout)
+        q = p._replace(amount_reference=reference)
+        gate, valid = routed(impl, state, control, q)
         assert valid
-        flux, held = (
-            float(passive_routes.clamped_flux(state, c, layout, 0.0)[0][ca, 0])
-            for c in (gate, control)
+        loops = (((0, 0), (species.KIND_ID, 0)),)
+        ligand = SimpleNamespace(structure=dataclasses.replace(impl.structure, loops=loops))
+        flux = passive_routes.routed_flux(state, potentials, gate, q, xp=np)
+        return (
+            loop_rates(impl, state, potentials, gate, q),
+            loop_rates(impl, state, potentials, control, q),
+            loop_rates(ligand, state, potentials, gate, q),
+            float(flux[passive_routes.MULTIPLIER][ca, 0]),
+            species.factors(state, q, xp=np),
         )
-        slopes = kind.factor_log_slopes(state, layout, xp=np)
-        return flux, held, slopes, amount, species.factors(state, layout, xp=np)
 
     n, h = float(p.amount_reference[ca, 0]), 1e-5
-    flux, held, slopes, amount, factors = at(n)
-    rate = stub(flux, slopes[1], amount)
+    rate, held, planted, flux, factors = at(n)
     up, down = (at(n * np.exp(s * h))[4][1] for s in (1, -1))
-    through_factor = held * factors[0] * (up - down) / (n * (np.exp(h) - np.exp(-h)))
-    assert flux == pytest.approx(held * factors[0] * factors[1], rel=1e-14, abs=0) and rate > 1.0
-    assert rate == pytest.approx(abs(through_factor), rel=1e-7, abs=0)
+    through_factor = flux / factors[1] * (up - down) / (n * (np.exp(h) - np.exp(-h)))
+    assert rate[0] > 1.0 and rate[0] == pytest.approx(abs(through_factor), rel=1e-7, abs=0)
+    assert rate[node] == rate[0] and np.count_nonzero(rate) == 2  # Both ends of the row.
     # Planted: the held control, and the ligand's pair (which the route does not move).
-    assert stub(held, slopes[1], amount) > 2 * rate
-    assert stub(flux, slopes[0], amount) != pytest.approx(rate, rel=1e-2)
+    assert held[0] > 2 * rate[0] and planted[0] != pytest.approx(rate[0], rel=1e-2)
     # A trace: the routed rate is small, the held control's refuses any step (planted).
     trace = at(1e-9)
-    assert stub(*(trace[0], trace[2][1], trace[3])) < 1e-3
-    assert stub(*(trace[1], trace[2][1], trace[3])) > 1e6
-    # Exactly zero: the product first is finite (planted: the division first is a NaN).
-    with np.errstate(all="ignore"):
-        flux, _, slopes, amount, factors = at(0.0)
-        assert factors[1] == 0.0 and flux == 0.0 and slopes[1] == N_ACT
-        assert stub(flux, slopes[1], amount) == 0.0
-        assert np.isnan(np.abs(flux) * (np.abs(slopes[1]) / np.float64(amount)))
+    assert trace[0][0] < 1e-3 and trace[1][0] > 1e6
+    # Exactly zero: the product first is finite (the division first would be 0/0).
+    with np.errstate(all="ignore"):  # ln 0, the source's, and the planted rates' overflow.
+        rate, _, _, flux, factors = at(0.0)
+    assert factors[1] == 0.0 and flux == 0.0 and not np.any(rate)
+    # A channel slot is a sink as a route is: its population moves K at its cell and the held bath.
+    spec, impl, state, p, control = host(channel_world())
+    k = row_of(spec, "K")
+    assert impl.structure.loops == (((0, 0), (species.KIND_ID, 0)),)
+    assert p.loop_flux_end_a.tolist() == [0] and p.loop_flux_row.tolist() == [k]
+    values = impl.readouts(state, control, p, xp=np)
+    gate, _ = routed(impl, state, control, p)
+    found = loop_rates(impl, state, values.field.potential_V, gate, p)
+    slope = species.factor_log_slopes(state, p, xp=np)[0]
+    moved = abs(float(values.derivative.channel_transferred[k, 0]))
+    assert found[0] == pytest.approx(moved * slope / p.amount_reference[k, 0], rel=1e-12, abs=0)
+    assert found[0] > 0 and found[1] == found[0]  # The bath's row, which material_rate drops.
+    assert p.reservoir.tolist() == [True]
 
 
 # ------------------------------------------------------------------ composition and D148
@@ -525,6 +538,44 @@ def test_the_kind_s_place_beside_operators_is_admitted_or_refused_by_name():
     assert reason == "roles" and set(fields) == set(
         species.LAYOUT_FIELDS
     )  # Why: no partition role.
+
+
+def test_an_operator_that_changes_slots_is_refused_beside_a_loop(monkeypatch):
+    """Every registered operator that opens, closes or retires slots, beside the store world whose
+    release closes a loop and beside the same world without one. Today its kinds refuse such an
+    operator too, for their roles; with those refusals planted away, as a kind that declares its
+    roles passes them, the loop's refusal is the one that is left beside a closer."""
+
+    def inner(*factors):
+        raw = store()
+        raw["model"]["passive_routes"][0]["factors"] = list(factors)
+        return get_model(parse_spec(raw).model).inner
+
+    loop, none = inner("ligand", "calcium"), inner("ligand")
+    assert loop.structure.loops and none.structure.loops == ()
+    masks, units = set(loop.MASK_FIELDS), OPERATORS[membrane_state.LAW_ID]
+    changers = {
+        name: op
+        for name, op in OPERATORS.items()
+        if op.CLOSES or op.RETIRES or masks & set(op.VIEW_FIELDS)
+    }
+    assert set(changers) == {
+        law for law in pump_composite.SLOT_WRITERS if not OPERATORS[law].FIXED_INNER_FIELDS
+    }  # The other slot writers build the inner fields in today's layout: refused beside any kind.
+    refusal = "opens, closes or retires slots, and a routed slot closes a loop on its own gate"
+
+    def errors(world, op):
+        return pump_composite.structure_errors(world, (units, op))
+
+    for op in changers.values():
+        assert any(refusal in e for e in errors(loop, op))
+    passed = lambda inner, kinds: dict.fromkeys(kinds, ())  # noqa: E731
+    monkeypatch.setattr(pump_composite, "_kinds_lifecycle", passed)
+    for name, op in changers.items():
+        left = errors(none, op)
+        (own,) = [e for e in errors(loop, op) if e not in left]
+        assert own.startswith(f"{name} {refusal}")
+        assert not left or not op.CLOSES  # Beside a closer it is the only wall.
 
 
 def test_beside_water_a_reading_takes_the_current_volume():
@@ -649,11 +700,18 @@ def test_the_store_world_runs_in_a_composite_and_restarts_bit_for_bit(tmp_path):
         assert bits(a) == bits(b), name
     column = resumed.observations.species_condition_factor
     assert bits(column[1:]) == bits(windows[1].observations.species_condition_factor)
-    # Planted: the layout's constants are saved and compared, so a changed K is refused.
-    name = "species_condition_half_saturation_mM"
+    # The release closes a loop on its own gate, at both ends of its row, in the composite's layout.
     layout = loaded.checkpoint.layout
-    planted = dataclasses.replace(
-        loaded.checkpoint, layout=layout._replace(**{name: 2.0 * getattr(layout, name)})
-    )
-    with pytest.raises(ConfigError, match=f"Checkpoint layout {name} does not match"):
-        list(iter_windows(loaded.spec, policy, planted))
+    loops = [getattr(layout, name).tolist() for name in tissue3.LOOP_LAYOUT_FIELDS]
+    node = layout.active.size + [o.id for o in spec.model.extracellular].index("store_0")
+    assert loops == [[ca], [0], [ca], [0], [node]]
+    # Planted: the layout is saved and compared, so a changed K and a loop's other node are refused.
+    for name, change in (
+        ("species_condition_half_saturation_mM", lambda v: 2.0 * v),
+        ("loop_pair_node", lambda v: v + node),
+    ):
+        planted = dataclasses.replace(
+            loaded.checkpoint, layout=layout._replace(**{name: change(getattr(layout, name))})
+        )
+        with pytest.raises(ConfigError, match=f"Checkpoint layout {name} does not match"):
+            list(iter_windows(loaded.spec, policy, planted))

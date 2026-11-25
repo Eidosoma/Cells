@@ -1,5 +1,8 @@
 # Reactions on the shared inventory (design)
 
+> **Legacy cleanup (25 November 2026, D386).** Paths under `src/cells/legacy/` and the older model
+> IDs named below left the engine. The tag `pre-cleanup-2026-11-25` keeps them.
+
 **Status: numerically qualified within MG0c's scope, 15 November 2026.**
 - **The design** was accepted on 14 November 2026 (the lead, with the advisor; rulings in §9).
 - **Milestones 1 and 2** (§11 to §11.2) and milestone 3, MG0c's driver and protocol (§11.3 to
