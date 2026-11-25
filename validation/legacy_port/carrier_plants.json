@@ -496,5 +496,95 @@
   "rows": [
    "tests/unit/test_batch_windows.py::test_a_mapped_batch_binds_each_worlds_own_kind_numbers"
   ]
+ },
+ {
+  "name": "closed_patch",
+  "lines": "L32 L55 L72",
+  "what": "a closed patch's passive routes pass a hundredth of themselves",
+  "edits": [
+   [
+    "src/cells/kinds/passive_routes.py",
+    "        opening = control.membrane[p.passive_membrane]\n",
+    "        opening = xp.maximum(control.membrane[p.passive_membrane], 1e-2)\n"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_calcium_store_worlds.py::test_what_is_closed_carries_nothing"
+  ]
+ },
+ {
+  "name": "closed_patch_tiny",
+  "lines": "L32 L55 L72",
+  "what": "a closed patch's passive routes pass 1e-9 of themselves",
+  "edits": [
+   [
+    "src/cells/kinds/passive_routes.py",
+    "        opening = control.membrane[p.passive_membrane]\n",
+    "        opening = xp.maximum(control.membrane[p.passive_membrane], 1e-9)\n"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_calcium_store_worlds.py::test_what_is_closed_carries_nothing"
+  ]
+ },
+ {
+  "name": "closed_patch_flux",
+  "lines": "L32 L55 L72",
+  "what": "a closed patch's passive routes pass a hundredth of their flux (their slopes are right)",
+  "edits": [
+   [
+    "src/cells/kinds/passive_routes.py",
+    "    opening = _opening(state, control, p, xp)\n    neutral = passive.flux_fmol_s(",
+    "    opening = _opening(state, control._replace(membrane=xp.maximum(control.membrane, 1e-2)), p, xp)\n    neutral = passive.flux_fmol_s("
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_calcium_store_worlds.py::test_what_is_closed_carries_nothing"
+  ]
+ },
+ {
+  "name": "closed_junction",
+  "lines": "L72",
+  "what": "a closed junction's passive routes pass a hundredth of themselves",
+  "edits": [
+   [
+    "src/cells/kinds/passive_routes.py",
+    "        gated = control.junction * state.junction_gate\n",
+    "        gated = xp.maximum(control.junction, 1e-2) * state.junction_gate\n"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_calcium_store_worlds.py::test_what_is_closed_carries_nothing"
+  ]
+ },
+ {
+  "name": "closed_junction_tiny",
+  "lines": "L72",
+  "what": "a closed junction's passive routes pass 1e-9 of themselves",
+  "edits": [
+   [
+    "src/cells/kinds/passive_routes.py",
+    "        gated = control.junction * state.junction_gate\n",
+    "        gated = xp.maximum(control.junction, 1e-9) * state.junction_gate\n"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_calcium_store_worlds.py::test_what_is_closed_carries_nothing"
+  ]
+ },
+ {
+  "name": "abundance_0",
+  "lines": "L40",
+  "what": "a channel population of abundance 0 conducts as one of 1",
+  "edits": [
+   [
+    "src/cells/models/surface_pump_v3.py",
+    "        0.0,\n        p.channel_abundance,\n        channel_opening(gate",
+    "        0.0,\n        xp.where(p.channel_abundance > 0, p.channel_abundance, 1.0),\n        channel_opening(gate"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_calcium_store_worlds.py::test_what_is_closed_carries_nothing"
+  ]
  }
 ]
