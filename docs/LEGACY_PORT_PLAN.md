@@ -1567,7 +1567,7 @@ declared ones are capacity padding.
 
 ### 14.7 The final removal list, and what D211 keeps (D386)
 
-**The list** (`validation/legacy_port/removal_list.tsv`, branch `legacy-removal-list`, at ac81e68f): 1,535 files go, 193 are edited, 16 tests are
+**The list** (`validation/legacy_port/removal_list.tsv`, branch `legacy-removal-list`): 1,535 files go, 193 are edited, 16 tests are
 retargeted, 166 are kept by name, and 166 are an optional batch (the old families' own references, for the user's yes or no); 28 more rows are names, of which
 13 are dead after the core edits and two are rows that must move before the deletion. Every `goes_or_cut` row has a verdict: a reader read 462 files, and the
 35 it asked about are resolved here.
@@ -1588,7 +1588,7 @@ retargeted, 166 are kept by name, and 166 are an optional batch (the old familie
   an import that does not resolve are 8 of the 16 retargeted tests (10 at c368c9f2), and the only other mentions of a going path are the rename's tool and tables, one guard's exemption list (which must change in the
   deletion's own commit) and documents. Run-time imports and path loads were read one by one (75 sites).
 - **Test IDs,** by collecting that tree at 34d173d7: 12,753 collect, and 8 files fail to. Of 21,927, 9,023 go with their files, 261 leave files that
-  stay, and 314 are in the retargeted files: 138 settled by the pump and symports builder, 176 waiting in 8 files. 424 are new (at c368c9f2, 12,488 collected, 260
+  stay, and 314 are in the retargeted files: 130 settled by the pump and symports builder, 8 left to the re-expression, 176 waiting in 8 files. 424 are new (at c368c9f2, 12,488 collected, 260
   left files that stay and 158 were new). `removed_rows.tsv` names the group of each. The deletion's own collection gives the final ones.
 
 **D211.** 44 of its 47 "port as is" laws keep their kernel, its reference and a kernel-level test:
