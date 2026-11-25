@@ -14,12 +14,12 @@ Host side, on two held-bath cells, with planted errors that must fail each row (
   schedule object shared by two controls, and records without the seeds);
 - the refusals of a composed file, each by its name, and a pool's fault by its world and event cap.
 
-Compiled, in one row of about 18 s (D224): it is the only place a driven world runs. It is on IMEX,
-since the RK4 program of its world compiles for 40. A two-cell world with a near and a far outside
-node (two free field offsets, so the floor solver, D147), run by the command line with its inputs,
-conducts exactly where its pools' levels say, and is bit for bit the run of a definition whose
-schedules were written by hand from the kernel's walk (planted: the other pool's path, a path read
-one event early or late, switches moved to the steps, and the base schedule alone).
+Compiled, in one row of 18 to 27 s on shared CPUs (D224): it is the only place a driven world runs.
+It is on IMEX, since the RK4 program of its world compiles for 40. A two-cell world with a near and
+a far outside node (two free field offsets, so the floor solver, D147), run by the command line with
+its inputs, conducts exactly where its pools' levels say, and is bit for bit the run of a definition
+whose schedules were written by hand from the kernel's walk (planted: the other pool's path, a path
+read one event early or late, switches moved to the steps, and the base schedule alone).
 """
 
 import copy
