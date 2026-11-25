@@ -2,7 +2,9 @@
 
 Written from `../spec/` (the criteria tag `fr43-part3-cowriters-criteria-2026-11-25`) and, of
 `docs/TEMPLATED_POLYMERISATION_LAWS.md`, §§0, 1.1, 1.2, 2, 3.1, 3.4 (its lines on `tx` and `deg_R`), 4.1 to 4.4, 4.7
-and 4.8 alone. No engine code, output, test or record was read, and nothing here imports or runs the engine.
+and 4.8 alone. (The sheet's headings were listed to find them, and the search for the line on `deg_R` also showed two
+lines of §3.4 on heats and the energy identity. Nothing here uses those.) No engine code, output, test or record was
+read, and nothing here imports or runs the engine.
 
 ## Files
 
@@ -25,9 +27,10 @@ Git checkout. `run_times.json` alone holds times and the machine.
 
 ## Method
 
-Everything that enters a file is computed in Python's `decimal`, whose operations are exactly rounded, so the bytes
-depend on no mathematical library. A declared real is the exact value of its nearest double. A time of the grid is
-the declared decimal, so that a horizon is a whole number of steps.
+Everything that enters a reference file is computed in Python's `decimal`, whose operations, `ln` and `exp` among them,
+are correctly rounded. (A step's length alone is chosen with a double's logarithm, which moves digits far below the
+published ones.) A declared real is the exact value of its nearest double. A time of the grid is the declared decimal, so
+that a horizon is a whole number of steps.
 
 - **Draws.** Threefry-2x32 (20 rounds) in integers, from LAWS §6. Random123's published answers and every entry of
   `draws.json` are met. E_k = −ln u1_k to 60 digits.
@@ -134,4 +137,7 @@ laws' logarithms, (3) computes the split's first differences, the pairs and the 
 (at every rung with `--ladder`), and (4) checks the invented set's rules, the shared numbers among them. It also computes
 the draws again with a vectorised Threefry. On both sets it finds no problem in either mode: the third solution is within
 10⁻¹⁰ of T or of the scale (its own tolerance), and the split's second computation within 10⁻⁷ relative of every d_1, pair
-and coarsest Lie error, and within 2 × 10⁻⁴ of every d_j and E at every rung, the retry's among them.
+and coarsest Lie error, and within 2 × 10⁻⁴ of every d_j and E at every rung, the retry's among them. (Its first full
+ladder missed W6's finest E of `lost` by 2%: a third and two thirds in doubles sum to 1 less 4 × 10⁻¹⁷, which 1.5 × 10⁵
+half-steps add up. With that combination in extended precision the miss is 1.4 × 10⁻⁵. The model is in decimal and was
+not changed.)
