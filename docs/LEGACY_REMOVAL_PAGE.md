@@ -88,7 +88,7 @@ The optional batch is in these counts (165 files, 49,055 lines, 1,933 IDs). The 
 | Files that fail to import | 8 | 0 |
 | Staged tree | abafa43b | 78167cf2 |
 
-On the first tree, five rows of three staying files fail when they run, since they read what left; the second commit takes them out. On the second, the rows of the six files that the prepared retirements change and the three rows of section 3 pass (49), and two GPU rows skip (m). The guard whose list the script edits passes its 17 rows on both, and the 15 library pages pass their check (m). 129 definitions leave the gate's fingerprints, of 194. 302 rows of the tier record leave with the deletion, and 8 more with the second commit, since the gate refuses a row without a file.
+On the first tree, five rows of three staying files fail when they run, since they read what left. The prepared retirements take them out (`legacy-open-retirements`, merged before the second commit), so until then they fail, as the eight files fail to import. On the second, the rows of the six files that the prepared retirements change and the three rows of section 3 pass (49), and two GPU rows skip (m). The guard whose list the script edits passes its 17 rows on both, and the 15 library pages pass their check (m). 129 definitions leave the gate's fingerprints, of 194. 302 rows of the tier record leave with the deletion, and 8 more with the second commit, since the gate refuses a row without a file.
 Nothing that stays imports or loads what goes, `lean/` and `visualizer/` included, but for one script of the campaign's rehearsal, which runs the frozen legacy snapshot (m).
 
 ## 5. What comes back
