@@ -16,7 +16,7 @@ R = 6.02214076e23 * 1.380649e-23
 
 
 def case():
-    """Two compartments, 300 and 600 osmoles in 1 and 3 pL, one membrane: the checks' world."""
+    """The checks' world: 300 and 600 fmol of osmolyte in 1 and 3 pL, across one membrane."""
     return dict(
         temperature_K=298.15,
         initial_volume_pL=[1.0, 3.0],
