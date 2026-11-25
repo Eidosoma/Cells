@@ -13,9 +13,11 @@ Every output the specification asks for is compared: x and the fuel's part of it
 forward part, the heat, the work and the current, the slopes of J against the voltage and against
 each amount, the moves at both ends, the domain, J at the doubles nearest the reversal and 1
 microvolt to each side, and a symport's J at other voltages. Each is within TOLERANCE of the size
-of what it is a difference of (the one-way rates). Planted inputs: the voltage's sign turned, the
-two ends exchanged, the availability left out, K larger by 1e-9. Every output is missed by one of
-them.
+of what it is a difference of: a rate, a slope and a move of the one-way rates, so a slope that
+is a small difference of large terms (the references' README names five) is judged by those; a
+heat and a work of the one-way rates times their free energy. Planted inputs: the voltage's sign
+turned, the two ends exchanged, the availability left out, K larger by 1e-9. Every output is
+missed by one of them.
 
 Seconds: 8 on the shared CPUs, in NumPy on one CPU, so tier 1.
 """
@@ -231,10 +233,15 @@ def found(kernels, i, *, plant=None):
     rt = 1e-3 * R * s["temperature_K"]
     phi, terms = float(e.scale[0, k]), float(e.x_terms[0, k])
     charge = abs(float(p.cycle_charge_moved[0, k]))
+    j, x, held_x = (float(value[0, k]) for value in (e.j, e.x, e.held_x))
+    least = np.finfo(float).eps * terms  # What x is known to; a heat's and a work's other factor.
     out = dict(
         x=(e.x[0, k], terms / 100),  # The sum of x's terms, each rounded once or twice.
         J_fmol_per_s=(rates.derivatives["cycle_count"][0, k], phi),
-        heat_rate_pJ_per_s=(rates.derivatives["cycle_dissipated_energy_pJ"][k], rt * phi * terms),
+        heat_rate_pJ_per_s=(
+            rates.derivatives["cycle_dissipated_energy_pJ"][k],
+            rt * (phi * (abs(x) + least) + abs(j) * terms),
+        ),
         in_domain=(bool(e.valid[k]), None),
     )
     if family != "symport":
@@ -254,7 +261,7 @@ def found(kernels, i, *, plant=None):
         out |= dict(
             x_fuel=(e.held_x[0, k], terms / 100),
             J_plus_fmol_per_s=(e.j_plus[0, k], float(e.j_plus[0, k])),
-            work_rate_pJ_per_s=(work, rt * phi * terms),
+            work_rate_pJ_per_s=(work, rt * (phi * (abs(held_x) + least) + abs(j) * terms)),
         )
     nodes = dict(N=rates.cell[:, 0], P=rates.outside[:, 0])  # What a step adds to each node's rows.
     for r in range(p.cycle_row_present.shape[0]):
