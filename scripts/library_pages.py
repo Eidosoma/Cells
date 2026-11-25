@@ -493,8 +493,8 @@ class Render:
             )
         if fields.get("stage_term"):
             rows.append(("Stage term", _c(fields["stage_term"]), ""))
-        if fields.get("loop_term"):
-            rows.append(("Loop term", _c(fields["loop_term"]), ""))
+        if fields.get("material_term"):
+            rows.append(("Material term", _c(fields["material_term"]), ""))
         if "fuel_kinds" in fields:
             rows.append(("Fuel kinds", _list([_c(f) for f in fields["fuel_kinds"]]), ""))
         kernels = entry["kernels"] or {}

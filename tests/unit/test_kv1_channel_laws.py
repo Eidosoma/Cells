@@ -21,12 +21,12 @@ safeguard).
   the full catalogue's (planted: a registry without one of the five).
 
 And the calcium channel law beside them, cav1p2_m2h@1 (docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md
-§5.2; code 11, Ca²⁺ at valence 2). It declares no material term, so @3 refuses its populations: the
-rows that need an admitted one use a planted twin, its kernels under tests.calcium_twin@1 (code 99),
-which declares the term.
-- It is declared and registered on @3, its Citation kept as its source, and a definition that names
-  it is refused by name (planted, each refused: a material term that is not a name, and a second law
-  at its code).
+§5.2; code 11, Ca²⁺ at valence 2). The rows that plant another record of it (a valence, a term or an
+RK4 bound of their own) use a twin, its kernels under tests.calcium_twin@1 (code 99).
+- It is declared and registered on @3, its Citation kept as its source and its material term named
+  for the kernel that the host runs (test_calcium_store.py), and a definition that names it is
+  admitted (planted, each refused: a material term that is not a name, and a second law at its
+  code).
 - Its kernels meet the independent 80-digit equations (validation/tissue/cav_reference.py) at 1,801
   voltages, in NumPy and compiled (planted: the 10 mV shift dropped, m³ h for m² h).
 - The parser reads each ion's valence from its law, the one authority (planted, each refused by
@@ -66,6 +66,7 @@ from cells.laws.channels import (
     kv1p4_mh,
     kv1p6_mh,
 )
+from cells.laws.routes import constant_field_permeation
 from cells.registry import laws as law_registry
 from cells.registry.model_table import MODELS
 from cells.registry.models import get_model
@@ -304,11 +305,9 @@ NO_TERM = (
 
 
 def twin(**changes):
-    """A planted law with cav1p2_m2h@1's record and kernels that declares its material term, so @3
-    admits its populations (code 99, reserved for plants); `changes` plant the rest."""
-    planted = dataclasses.replace(
-        cav1p2_m2h.LAW, law_id=TWIN, code=99, material_term="material_slope_per_s"
-    )
+    """A planted law with cav1p2_m2h@1's record and kernels, its material term included (code 99,
+    reserved for plants); `changes` plant the rest."""
+    planted = dataclasses.replace(cav1p2_m2h.LAW, law_id=TWIN, code=99)
     return dataclasses.replace(planted, **changes)
 
 
@@ -361,10 +360,9 @@ def test_the_calcium_law_is_declared_and_registered_on_at3():
     assert spec3.law_codes()[law.law_id] == 11 and spec3.gate_counts()[law.law_id] == 2
     assert spec3.law_permeabilities()[law.law_id] == (("Ca", 1.0),)
     assert law.law_id not in spec3.LAW_CODES
-    # It declares no material term, so a definition that names it is refused (fails closed).
-    assert law.material_term is None
-    with pytest.raises(ConfigError, match=f"^{re.escape(NO_TERM.format(law=law.law_id))}$"):
-        parse_spec(calcium_world(law.law_id))
+    # It names the kernel of its material term, so a definition that names the law is admitted.
+    assert law.material_term == constant_field_permeation.material_slope_per_s.__name__
+    assert parse_spec(calcium_world(law.law_id)).model.channels[-1].kinetic_law == law.law_id
     for value in ("", 1):  # Planted: a material term that is no name.
         with pytest.raises(ValueError, match="its material_term is named, or None"):
             law_registry.LawRegistry().register(twin(material_term=value))
@@ -427,7 +425,10 @@ def test_a_law_with_a_scarce_ion_and_no_material_term_is_refused_by_name():
 def test_a_calcium_channel_runs_on_no_rk4_grid():
     raw = calcium_world(dt=2.5e-6, end_time=1e-4, solver="rk4")
     raw["experiment"]["observation_times"] = [0.0, 1e-4]
-    refusal = rf"^Resolved gated channels \({TWIN}\) require RK4 steps <= 0 us$"
+    refusal = (
+        rf"^Resolved gated channels \({TWIN}\) declare no RK4 step bound, so they run on no RK4 "
+        "grid: use an IMEX solver$"
+    )
     with with_laws(twin()), pytest.raises(ConfigError, match=refusal):
         timeline(parse_spec(raw))
     with with_laws(twin(rk4_step_s=25e-6)):  # Planted: the older gated laws' bound, admitted.

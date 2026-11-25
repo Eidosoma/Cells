@@ -88,6 +88,7 @@ from cells.laws.pumps import calcium_atpase
 from cells.laws.pumps import kinetic_pump as pump
 from cells.laws.pumps import kinetic_pump_binding as pumps
 from cells.laws.reactions import rapid_binding as binding_law
+from cells.laws.routes import constant_field_permeation as material_law
 from cells.laws.routes import logmean_electrodiffusion_forms as forms_law
 from cells.laws.routes import passive_permeation as exact_kernel
 from cells.laws.routes import patch_electrodiffusion as constant_field_route
@@ -194,6 +195,17 @@ BLOCK_LAYOUT_FIELDS = (
     "channel_block_reversal",  # [channel] True where V_ref = V - E of channel_block_ion
     "channel_block_ion",  # [channel] the reversal ion's species row (0 where none is named)
 )
+# A factor's feedback (docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md §6.5): the loops' layout, present
+# only where a routed slot closes a loop on its own gate (InnerStructure.loops, _kind_types), so no
+# other world's types, layouts or programs carry anything of it. [P] and [M] are the read pairs and
+# the moved rows that `loops` names, each once and in order (loop_positions).
+LOOP_LAYOUT_FIELDS = (
+    "loop_pair_row",  # [P] the species row that the pair's source reads
+    "loop_pair_node",  # [P] the node it reads it at (cells, then outside nodes)
+    "loop_flux_row",  # [M] the species row that the routed slot moves
+    "loop_flux_end_a",  # [M] the two nodes it moves it between
+    "loop_flux_end_b",
+)
 UNBLOCKED_FRACTION = "channel_unblocked_fraction"  # FR-51's readout column, only where declared.
 UNBLOCKED_FRACTION_NOTE = (
     "the unblocked fraction u of each channel population at the row's read state: (sum_k w_k "
@@ -219,6 +231,9 @@ FORMS_PROJECTIVE_REFUSAL = (
 )
 ENERGY_RTOL = first.ENERGY_RTOL
 EXPLICIT_STEP_BOUND = first.EXPLICIT_STEP_BOUND
+# The kernel a channel law's material_term names: the material slope of the constant-field flux,
+# which every population on @3 has (laws/routes/constant_field_permeation.py).
+CHANNEL_MATERIAL_TERM = material_law.material_slope_per_s.__name__
 # The ledger protocol (docs/INNER_MODEL_V4_DESIGN.md §7.4 (p)): @1's lists, which the shared
 # check paths read from the model object (ledger_lists: per structure).
 LEDGERS = first.LEDGERS
@@ -372,8 +387,10 @@ def initial_values(spec, *, structure=None):
         own_state, own_layout = forms_initial_values(spec, entries)
         fields |= own_state
         entries |= own_layout
-    if blocked:  # FR-51: the blocked populations' layout, last.
+    if blocked:  # FR-51: the blocked populations' layout.
         entries |= block_initial_values(spec, structure)
+    if loops_declared(structure):  # The loops' layout, last (its kinds are declared: above).
+        entries |= loop_initial_values(spec, structure)
     kind = (
         types.FLOOR_LAYOUT_TYPE
         if "field_current_floor" in entries
@@ -794,7 +811,8 @@ def channel_block_terms(gate, ci, co, voltage, availability, p, *, xp=jnp, struc
 def block_material_rates(state, p, potentials, *, xp=jnp, structure=None, control=None):
     """FR-51: the blocked populations' material rates (1/s) per node [cells, then outside nodes]:
     T_c,i over the cell's volume and T_c,o over the outside node's (criterion E), at the stage's
-    amounts and potentials."""
+    amounts and potentials. A population whose law declares its material term is left out (static):
+    channel_material_rates counts its T_c, the part through E included."""
     n = p.active.size
     ci, co = physical_amounts(state, p)
     ci = xp.where(p.active, ci / p.volume, 1.0)
@@ -812,6 +830,12 @@ def block_material_rates(state, p, potentials, *, xp=jnp, structure=None, contro
         xp=xp,
         structure=structure,
     )
+    if material_term_laws(structure):
+        own = material_term_slots(p, structure, xp=xp)
+        terms = terms._replace(
+            inside_term=xp.where(own, 0.0, terms.inside_term),
+            outside_term=xp.where(own, 0.0, terms.outside_term),
+        )
     patch = p.channel_membranes
     cell, outside = p.membrane_cell[patch], p.membrane_outside[patch]
     volume = xp.where(p.active, p.volume, 1.0)[cell]
@@ -821,6 +845,86 @@ def block_material_rates(state, p, potentials, *, xp=jnp, structure=None, contro
         terms.outside_term / outside_volume, xp.zeros(p.outside_active.size), (outside,), xp=xp
     )
     return xp.concatenate((cells, nodes))
+
+
+def material_term_laws(structure):
+    """The declared channel laws that declare a material term (ChannelLaw.material_term; static)."""
+    laws = () if structure is None else structure.channel_laws
+    return tuple(law for law in laws if law.material_term is not None)
+
+
+def material_term_slots(p, structure, *, xp=jnp):
+    """[channel] the active populations whose law declares a material term."""
+    own = xp.zeros(p.channel_laws.shape, dtype=bool)
+    for law in material_term_laws(structure):
+        own = own | (p.channel_laws == law.code)
+    return own & p.channel_active
+
+
+def channel_material_rates(state, read, potentials, control, p, *, xp=jnp, structure=None):
+    """The material rates (1/s) per node [cells, then outside nodes] of the channel populations
+    whose law declares a material term, at the stage's read amounts (`read`), gates, potentials and
+    routed control (docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md §5.3). A population's flux of an ion
+    has the slopes T_c = A P r a open v u B(-x)/V_c in the ion's amount at its cell and T_o = A P r
+    a open v u B(x)/V_o at its outside node (the kernel CHANNEL_MATERIAL_TERM; v is the routed
+    availability, and u is 1 without a block). Where a block reads the ion's reversal potential, u
+    moves with those amounts too, and its part of each slope joins (channel_block_terms' parts
+    through E). Both rows that the ion moves take T_c + T_o, its mode's rate; beside a held bath,
+    whose row does not relax, the cell's takes T_c alone and the bath's nothing. The populations add
+    per row, and a node's rate is the largest of its rows. Without potentials it fails closed: +inf
+    at the ends of each such population, since B has no bound over the voltages."""
+    n, o, patch = p.active.size, p.outside_active.size, p.channel_membranes
+    cell, outside = p.membrane_cell[patch], p.membrane_outside[patch]
+    own = material_term_slots(p, structure, xp=xp)
+    held = p.reservoir[outside]
+    zero = xp.zeros((p.channel_relative_permeability.shape[0], n + o))
+    if potentials is None:
+        rate = xp.where(own & (p.channel_relative_permeability > 0), xp.inf, 0.0)
+        at_cell, at_outside = rate, xp.where(held, 0.0, rate)
+    else:
+        patch_voltage = xp.where(
+            p.membrane_active, potentials[p.membrane_cell] - potentials[n + p.membrane_outside], 0.0
+        )
+        voltage = channel_voltage(patch_voltage, p, xp=xp)
+        volume = xp.where(p.active, p.volume, 1.0)[cell]
+        outside_volume = xp.where(p.outside_active, p.extracellular_volume, 1.0)[outside]
+        opening = channel_opening(state.channel_gate, p.channel_laws, xp=xp, structure=structure)
+        available = (opening * control.channel) * p.channel_abundance
+        terms = None
+        if _has_block(p):  # FR-51 (static): u, and the slopes' parts through the reversal.
+            ci, co = physical_amounts(read, p)
+            terms = channel_block_terms(
+                state.channel_gate,
+                xp.where(p.active, ci / p.volume, 1.0),
+                xp.where(p.outside_active, co / p.extracellular_volume, 1.0),
+                voltage,
+                control.channel,
+                p,
+                xp=xp,
+                structure=structure,
+            )
+            available = available * terms.block.u
+        to_cell, to_outside = material_law.material_slope_per_s(
+            voltage,
+            p.valence,
+            p.temperature,
+            p.membrane_area[patch],
+            p.channel_permeability * p.channel_relative_permeability,
+            available,
+            volume,
+            outside_volume,
+            xp=xp,
+        )  # [species, channel]
+        if terms is not None:
+            ion = xp.arange(zero.shape[0])[:, None] == p.channel_block_ion
+            to_cell = to_cell + xp.where(ion, terms.inside_through_e / volume, 0.0)
+            to_outside = to_outside + xp.where(ion, terms.outside_through_e / outside_volume, 0.0)
+        mode = to_cell + to_outside
+        at_cell = xp.where(own, xp.where(held, to_cell, mode), 0.0)
+        at_outside = xp.where(own & ~held, mode, 0.0)
+    rows = scatter(at_cell, zero, (cell,), xp=xp)
+    rows = rows + scatter(at_outside, zero, (n + outside,), xp=xp)
+    return xp.max(rows, axis=0)
 
 
 def channel_to_membrane(value, p, *, xp=jnp):
@@ -1260,6 +1364,231 @@ def _routes(model):
             )
         routes.append((OWN_SINK, "channel", slot, tuple(sources[source] for source in named)))
     return tuple(routes)
+
+
+def _feedback_rows(kind, declaration):
+    """(a kind's rows read per source, its rows moved per routed slot), each as its feedback hook
+    names them, None where it has none; a malformed result is refused by name."""
+    try:
+        return (
+            kind_registry.kind_factor_rows(kind, declaration),
+            kind_registry.kind_routed_rows(kind, declaration),
+        )
+    except ValueError as error:
+        raise ConfigError(f"Kind {kind.kind_id}'s feedback hooks are refused: {error}") from error
+
+
+class LoopNames(NamedTuple):
+    """The routing door's two sides by name, for the loops its slots close (_loop_names)."""
+
+    moved: object  # {(sink kind ID, control field, slot): ((species, node a, node b), ...)}
+    pairs: object  # {source kind ID: ((species, node), ...)}, its sources' pairs flattened
+    own: object  # {(source kind ID, position among its sources): its positions in `pairs`}
+
+
+def _loop_names(model):
+    """LoopNames of a parsed model block: the rows each routed slot moves, from the sinks'
+    routed_rows and, for @3's own channel slots, the permeant ions of the population across its
+    patch; and the rows each source reads, from the sources' factor_rows (kind_registry.Kind, a
+    factor's feedback). A kind without its hook has no entry. Refused: a malformed hook result, and
+    a species or node that the model does not declare."""
+    registry, names = kind_registry.active(), LoopNames({}, {}, {})
+    known = {*model.species_ids}, {x.id for x in (*model.cells, *model.extracellular)}
+
+    def check(kind_id, hook, rows):
+        for species, *nodes in rows:
+            unknown = [species] if species not in known[0] else []
+            unknown += [node for node in nodes if node not in known[1]]
+            if unknown:
+                raise ConfigError(
+                    f"Kind {kind_id}'s {hook} names {unknown[0]!r}, which the model does not "
+                    "declare"
+                )
+
+    for kind_id, declaration in getattr(model, "kinds", ()):
+        kind = registry.lookup(kind_id)
+        reads, moves = _feedback_rows(kind, declaration)
+        for position, rows in enumerate(reads or ()):
+            check(kind_id, "factor_rows", rows)
+            flat = names.pairs.get(kind_id, ())
+            names.own[kind_id, position] = tuple(range(len(flat), len(flat) + len(rows)))
+            names.pairs[kind_id] = (*flat, *rows)
+        if moves is not None:
+            slots = kind.routed_controls(declaration)
+            for (field_name, slot, _), rows in zip(slots, moves, strict=True):
+                check(kind_id, "routed_rows", rows)
+                names.moved[kind_id, field_name, slot] = rows
+    ends = {patch.id: (patch.inside, patch.outside) for patch in model.membranes}
+    for slot, _, _ in channel_factors(model):
+        population = model.channels[slot]
+        names.moved[OWN_SINK, "channel", slot] = tuple(
+            (ion.species_id, *ends[population.membrane_id])
+            for ion in population.permeant_ions
+            if ion.relative_permeability
+        )
+    return names
+
+
+def _refuse_unbounded_loop(model, names, route):
+    """The refusal by name of a routed slot whose sink has neither feedback hook, where a source of
+    the slot that has its hooks reads a row the sink's kind moves, at a node that is not a held
+    bath. Its moved_rows stand in for the slot's: without routed_rows the core cannot tell which of
+    them the slot moves, so the loop would have no bound."""
+    registry, declarations = kind_registry.active(), dict(model.kinds)
+    sink, field_name, slot, named = route
+    kind = registry.lookup(sink)
+    moved = kind.moved_rows(declarations[sink]) if kind.moved_rows is not None else ()
+    ends = {tuple(row[:2]) for row in moved}
+    held = {node.id for node in model.extracellular if node.reservoir}
+    for kind_id, position in named:
+        for pair in names.own.get((kind_id, position), ()):
+            species, node = names.pairs[kind_id][pair]
+            if (species, node) in ends and node not in held:
+                source = registry.lookup(kind_id).factor_sources(declarations[kind_id])[position]
+                raise ConfigError(
+                    f"{sink} routes {field_name}[{slot}], which {source!r} drives from {species} "
+                    f"at {node}, but declares no routed_flux: the loop has no bound"
+                )
+
+
+def _loops(model, routes):
+    """InnerStructure.loops of a parsed model block, from the names of the door's two sides
+    (_loop_names): the read pairs and the moved rows of each routed slot that closes a loop on its
+    own gate. A pair closes one where a source of the slot reads, at a node that is not a held bath,
+    a row that the slot moves there (a held amount does not move); every row of the slot then pairs
+    with it, since each row's flux depends on the factor. () where no slot does, and where a source
+    has no hooks; a sink without hooks is refused where one would (_refuse_unbounded_loop)."""
+    if not routes:
+        return ()
+    names, loops = _loop_names(model), []
+    held = {node.id for node in model.extracellular if node.reservoir}
+    for position, route in enumerate(routes):
+        rows = names.moved.get(route[:3])
+        if rows is None:
+            _refuse_unbounded_loop(model, names, route)
+            continue
+        ends = {(species, node) for species, *nodes in rows for node in nodes}
+        closing = {
+            (kind_id, pair)
+            for kind_id, source in route[3]
+            for pair in names.own.get((kind_id, source), ())
+            if names.pairs[kind_id][pair] in ends and names.pairs[kind_id][pair][1] not in held
+        }
+        loops += [((position, row), pair) for row in range(len(rows)) for pair in sorted(closing)]
+    return tuple(loops)
+
+
+def loops_declared(structure):
+    """Whether a routed slot closes a loop on its own gate (InnerStructure.loops; static)."""
+    return structure is not None and bool(structure.loops)
+
+
+def loop_positions(structure):
+    """(the moved rows (route, row), the read pairs (source kind ID, pair)) that the structure's
+    loops name, each once and in order: the layout's [M] and [P] (static)."""
+    moves = tuple(dict.fromkeys(m for m, _ in structure.loops))
+    return moves, tuple(sorted({pair for _, pair in structure.loops}))
+
+
+def loop_initial_values(spec, structure):
+    """The loops' layout fields (LOOP_LAYOUT_FIELDS): the species rows and the nodes of the moved
+    rows and the read pairs that structure.loops names."""
+    names, (moves, pairs) = _loop_names(spec.model), loop_positions(structure)
+    species = {name: i for i, name in enumerate(spec.model.species_ids)}
+    nodes = {name: i for i, name in enumerate(node_ids(spec)) if name is not None}
+    moved = [names.moved[structure.routes[route][:3]][row] for route, row in moves]
+    read = [names.pairs[kind_id][pair] for kind_id, pair in pairs]
+
+    def indices(index, ids):
+        return np.asarray([index[name] for name in ids], dtype=np.int64)
+
+    return dict(
+        loop_pair_row=indices(species, (name for name, _ in read)),
+        loop_pair_node=indices(nodes, (node for _, node in read)),
+        loop_flux_row=indices(species, (name for name, _, _ in moved)),
+        loop_flux_end_a=indices(nodes, (a for _, a, _ in moved)),
+        loop_flux_end_b=indices(nodes, (b for _, _, b in moved)),
+    )
+
+
+def _loop_fluxes(state, read, potentials, control, p, *, xp, structure, kinds):
+    """[M] the flux (fmol/s, of either sign) of each moved row that closes a loop, at the routed
+    control: its sink's routed_flux, or for @3's own channel slots channel_rates'."""
+    by_id = {kind_registry.qualified(kind.kind_id): kind for kind in kinds}
+    groups, parts, order = {}, [], []
+    for m, (route, _) in enumerate(loop_positions(structure)[0]):
+        sink, field_name, slot, _ = structure.routes[route]
+        groups.setdefault(sink, {}).setdefault(field_name, []).append((m, slot))
+    for sink, fields in groups.items():
+        if sink == OWN_SINK:
+            n = p.active.size
+            ci, co = physical_amounts(read, p)
+            voltage = potentials[p.membrane_cell] - potentials[n + p.membrane_outside]
+            flux = channel_rates(
+                state.channel_gate,
+                xp.where(p.active, ci / p.volume, 1.0),
+                xp.where(p.outside_active, co / p.extracellular_volume, 1.0),
+                xp.where(p.membrane_active, voltage, 0.0),
+                xp.zeros_like(p.membrane_permeability),  # No heat is asked for.
+                control.channel,
+                p,
+                xp=xp,
+                structure=structure,
+            )[0]
+            fluxes = {"channel": flux}
+        else:
+            fluxes = by_id[sink].routed_flux(read, potentials, control, p, xp=xp)
+        for field_name, entries in fields.items():
+            at, slots = (np.asarray(values) for values in zip(*entries, strict=True))
+            parts.append(fluxes[field_name][p.loop_flux_row[at], slots])
+            order += list(at)
+    return xp.concatenate(parts)[np.argsort(order)]
+
+
+def loop_material_rates(state, read, potentials, control, p, *, xp=jnp, structure=None, kinds=()):
+    """The material rates (1/s) per node [cells, then outside nodes] of the loops that routed slots
+    close on their own gates (InnerStructure.loops), at the stage's read amounts (`read`), gates,
+    potentials and routed control (docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md §6.5). A slot's flux J
+    of a row holds its factor f, and a source of the slot reads the amount n that the slot moves, so
+    |dJ/dn| has the part (|J| |d ln f/d ln n|) / n through f. Each moved row and each pair of its
+    slot that closes a loop adds it at both ends of the row; a node's rate is the largest of its
+    rows. J is the routed flux: the held one, without f, does not vanish with the amount. The
+    product comes before the division and n is at least the smallest normal float, so a zero amount,
+    where J is 0 too, gives 0 and not a NaN. Without potentials it fails closed: +inf at both ends
+    of each such row.
+
+    Not bounded: a loop through two routes, and one through a source without its feedback hooks
+    (kind_registry.Kind). Where a closure owns the row read, n is the free amount while the route
+    moves the total, and the closure's own slope is not in the rate."""
+    moves, pairs = loop_positions(structure)
+    amounts = xp.concatenate(physical_amounts(read, p), axis=1)  # [species, node], fmol.
+    if potentials is None:
+        rate = xp.full(len(moves), xp.inf)
+    else:
+        flux = _loop_fluxes(
+            state, read, potentials, control, p, xp=xp, structure=structure, kinds=kinds
+        )
+        own = {}  # {source kind ID: its pairs that close a loop}, both in order.
+        for kind_id, pair in pairs:
+            own.setdefault(kind_id, []).append(pair)
+        by_id = {kind_registry.qualified(kind.kind_id): kind for kind in kinds}
+        slopes = xp.concatenate(
+            [
+                by_id[kind_id].factor_log_slopes(read, p, xp=xp)[np.asarray(positions)]
+                for kind_id, positions in own.items()
+            ]
+        )
+        floor = np.finfo(np.float64).tiny
+        amount = xp.maximum(amounts[p.loop_pair_row, p.loop_pair_node], floor)
+        place, entry = ({x: i for i, x in enumerate(names)} for names in (moves, pairs))
+        m = np.asarray([place[move] for move, _ in structure.loops])
+        q = np.asarray([entry[pair] for _, pair in structure.loops])
+        product = xp.abs(flux)[m] * xp.abs(slopes)[q]
+        rate = scatter(product / amount[q], xp.zeros(len(moves)), (m,), xp=xp)
+    zero = xp.zeros_like(amounts)
+    rows = scatter(rate, zero, (p.loop_flux_row, p.loop_flux_end_a), xp=xp)
+    rows = rows + scatter(rate, zero, (p.loop_flux_row, p.loop_flux_end_b), xp=xp)
+    return xp.max(rows, axis=0)
 
 
 def _stage_read(state, p, kinds, *, xp):
@@ -3205,6 +3534,13 @@ def check_definition(spec, *, structure=None):
         problems = forms_law.carriage(m)[1]
         if problems:
             raise ConfigError(problems[0])
+    for law in material_term_laws(structure):  # A named kernel that nothing runs bounds nothing.
+        if law.material_term != CHANNEL_MATERIAL_TERM:
+            raise ConfigError(
+                f"Channel law {law.law_id} names the material term {law.material_term}; @3 runs "
+                f"one for its channel laws, {CHANNEL_MATERIAL_TERM}, the material slope of their "
+                "constant-field flux"
+            )
     kinds = _kinds(structure)
     for kind in kinds:  # §7.4 (k): a kind's definition checks, ahead of @3's.
         if kind.check_definition is not None:
@@ -3619,9 +3955,13 @@ def _check_device_hooks(kinds, state, p, control, *, ledgers=(), tol=None):
 
 def _check_routes(spec, structure, kinds, state, p, control):
     """§7.4 (n): every source's factors are [len(sources)] numbers on the device (traced once on the
-    initial state), and every routed slot lies inside its control field."""
+    initial state), every routed slot lies inside its control field, and the feedback hooks of both
+    sides have their forms (_check_feedback)."""
     declarations = dict(spec.model.kinds)
     for kind in kinds:
+        _check_feedback(
+            kind, declarations[kind_registry.qualified(kind.kind_id)], state, p, control
+        )
         if kind.factor_sources is None:
             continue
         kind_id = kind_registry.qualified(kind.kind_id)
@@ -3641,6 +3981,41 @@ def _check_routes(spec, structure, kinds, state, p, control):
             raise ConfigError(
                 f"Kind {kind_id}'s routed control {name}[{slot}] is outside [0, {size})"
             )
+
+
+def _check_feedback(kind, declaration, state, p, control):
+    """A kind's feedback hooks at the stage (kind_registry.Kind), traced once on the definition's
+    initial state: factor_log_slopes gives one float64 per pair of its factor_rows, and routed_flux
+    a float64 [species, slot] array for each control field that its routed_controls name. Another
+    form is refused by name."""
+    kind_id = kind_registry.qualified(kind.kind_id)
+
+    def traced(hook, *args):
+        try:
+            return jax.eval_shape(partial(getattr(kind, hook), xp=jnp), *args)
+        except jax.errors.JAXTypeError as error:
+            raise ConfigError(f"Kind {kind_id}'s {hook} hook does not trace: {error}") from error
+
+    def require(what, value, shape):
+        if getattr(value, "shape", None) != shape or value.dtype != np.float64:
+            found = getattr(value, "shape", type(value).__name__), getattr(value, "dtype", "")
+            raise ConfigError(
+                f"Kind {kind_id}'s {what} must be float64 {shape}, not {found[1]} {found[0]}"
+            )
+
+    reads, _ = _feedback_rows(kind, declaration)
+    if reads is not None:
+        slopes = traced("factor_log_slopes", state, p)
+        require("factor_log_slopes", slopes, (sum(len(rows) for rows in reads),))
+    fields = {name for name, *_ in kind.routed_controls(declaration)} if kind.routed_flux else ()
+    if fields:
+        nodes = p.active.size + p.outside_active.size
+        potentials = jax.ShapeDtypeStruct((nodes,), np.float64)
+        flux = traced("routed_flux", state, potentials, control, p)
+        for name in sorted(fields):
+            shape = (state.amount_increment.shape[0], np.shape(getattr(control, name))[-1])
+            value = flux.get(name) if isinstance(flux, dict) else None
+            require(f"routed_flux of {name}", value, shape)
 
 
 def _patch_slopes(state, control, p, *, xp, structure, potentials, explicit_only):
@@ -3843,16 +4218,25 @@ def charge_rows(state, control, p, *, xp=jnp, structure=None, potentials=None, e
 
 
 def material_rate(state, control, p, *, xp=jnp, structure=None, potentials=None):
-    """D4: the declared kinds' material relaxation rate (1/s) at a stage, or None without a kind
-    that declares material_term (so no program changes). Each such kind's term is per node (cells,
-    then outside nodes) at the stage's read amounts and node potentials, after the routing door;
-    the terms add per node, and the rate is their largest over cells and outside nodes that are not
-    held baths (a held row does not relax). The step holds dt x rate <= EXPLICIT_STEP_BOUND at
-    every explicit stage, as membrane_rate's charge rule (the FR-4/FR-5 note's §17, D4)."""
+    """The material relaxation rate (1/s) at a stage, or None where nothing declares a part of it
+    (static, so no program changes there). Its parts, each per node (cells, then outside nodes), add
+    per node, and the rate is the largest over cells and outside nodes that are not held baths (a
+    held row does not relax). The step holds dt x rate <= EXPLICIT_STEP_BOUND at every explicit
+    stage, as membrane_rate's charge rule. The rule of each part: a mode's own rate goes to every
+    row the mode moves, at both ends, held baths left out; the modes add per row; a node's rate is
+    its largest row. The parts:
+    - the blocked populations' (FR-51, block_material_rates), at their own ends and the held
+      availability;
+    - each declared kind's material_term, at the stage's read amounts and potentials, after the
+      routing door (D4, the FR-4/FR-5 note's §17);
+    - the channel populations' whose law declares its material term (channel_material_rates), and
+      the loops that routed slots close on their own gates (loop_material_rates), at the same read
+      and control (docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md §5.3, §6.5 and §8.2)."""
     kinds = _kinds(structure)
     sloped = [kind for kind in kinds if kind.material_term is not None]
     blocked = _has_block(p)  # FR-51 (static).
-    if not sloped and not blocked:
+    channels, loops = bool(material_term_laws(structure)), loops_declared(structure)  # Static.
+    if not (sloped or blocked or channels or loops):
         return None
     n = p.active.size
     nodes = xp.zeros(n + p.outside_active.size)
@@ -3860,12 +4244,20 @@ def material_rate(state, control, p, *, xp=jnp, structure=None, potentials=None)
         nodes = nodes + block_material_rates(
             state, p, potentials, xp=xp, structure=structure, control=control
         )
-    if sloped:
+    if sloped or channels or loops:
         read, _ = _stage_read(state, p, kinds, xp=xp)
         control, _ = _route(structure, kinds, read, control, p, xp=xp)  # Validity: the stage's.
         gated = presence_gated(p, structure, xp=xp)  # Q2 (static).
         for kind in sloped:
             nodes = nodes + kind.material_term(read, potentials, control, gated, xp=xp)
+    if channels:
+        nodes = nodes + channel_material_rates(
+            state, read, potentials, control, p, xp=xp, structure=structure
+        )
+    if loops:
+        nodes = nodes + loop_material_rates(
+            state, read, potentials, control, gated, xp=xp, structure=structure, kinds=kinds
+        )
     cells = xp.max(xp.where(p.active, nodes[:n], 0.0), initial=0.0)
     moving = p.outside_active & ~p.reservoir
     return xp.maximum(cells, xp.max(xp.where(moving, nodes[n:], 0.0), initial=0.0))
@@ -4219,6 +4611,11 @@ class StepChecks(first.StepChecks):
             if bound is not None and step > bound[0] + 1e-16:  # Each gated law's own bound.
                 if bound[0] == RK4_POTASSIUM_STEP:
                     raise ConfigError("Resolved gated channels require RK4 steps <= 25 us")
+                if bound[0] == 0.0:  # A gated law without a bound (rk4_bound).
+                    raise ConfigError(
+                        f"Resolved gated channels ({bound[1]}) declare no RK4 step bound, so they "
+                        "run on no RK4 grid: use an IMEX solver"
+                    )
                 raise ConfigError(
                     f"Resolved gated channels ({bound[1]}) require RK4 steps <= "
                     f"{bound[0] * 1e6:g} us"
@@ -5209,7 +5606,7 @@ def structure(model):
         junction_heat_booking=model.junction_heat_booking,
         padding_fill=_closes_slots(model),
         kinds=_kind_entries(model),
-        routes=_routes(model),
+        routes=(routes := _routes(model)),
         heat_bookings=getattr(model, "heat_bookings", ()),  # Seam D (§6.1): () by default.
         free_amount_reads=_free_amount_reads(model),  # P1 (§17): () by default.
         kind_ledgers=_kind_ledgers(model),  # E (§7.3): () by default.
@@ -5219,6 +5616,7 @@ def structure(model):
         blocked_channels=tuple(sorted(c_id for _, c_id, _ in channel_blocks(model))),  # FR-51.
         block_modes=max((len(b.modes) for _, _, b in channel_blocks(model)), default=0),
         floating_nodes=bool(first.floating_nodes(model)),  # False by default (the charge rule).
+        loops=_loops(model, routes),  # () by default (a factor's feedback).
     )
 
 
@@ -5503,7 +5901,7 @@ TODAYS_TYPES = KindTypes(
 
 
 @cache
-def _kind_types(fields, registry, series=False, forms=False, block=False):
+def _kind_types(fields, registry, series=False, forms=False, block=False, loops=False):
     """fields: ((kind ID, the bound kind's KindFields), ...) in canonical order. Classes are cached
     by field set (§7.4 (j); (n) 5): structures whose kinds carry the same fields share them, and a
     kind bound to fields other than its static ones (a declaration-dependent variant) names its
@@ -5512,8 +5910,9 @@ def _kind_types(fields, registry, series=False, forms=False, block=False):
     kinds' state fields) and whose parameters a layout field (SERIES_PARAMETERS). forms: the
     structure declares forms faces, whose state fields (FORMS_STATE_AXES) follow those and whose
     layout fields (FORMS_LAYOUT_FIELDS) follow the others. block (FR-51): a population declares a
-    block, whose layout fields (BLOCK_LAYOUT_FIELDS) come last and whose readout column
-    (UNBLOCKED_FRACTION) follows the kinds' readout columns."""
+    block, whose layout fields (BLOCK_LAYOUT_FIELDS) follow those and whose readout column
+    (UNBLOCKED_FRACTION) follows the kinds' readout columns. loops: a routed slot closes a loop on
+    its own gate, whose layout fields (LOOP_LAYOUT_FIELDS) come last (its kinds are in `fields`)."""
     if not fields and not series and not forms and not block:
         return TODAYS_TYPES
 
@@ -5534,6 +5933,7 @@ def _kind_types(fields, registry, series=False, forms=False, block=False):
     suffix += "_" + SERIES_GATES if series else ""
     suffix += "_forms_faces" if forms else ""
     suffix += "_channel_block" if block else ""
+    suffix += "_feedback_loops" if loops else ""
     axes = dict(STATE_AXES)
     for kind_id, own in fields:
         for name, name_axes in own.state_axes:  # Not `field`: the field-solver module's name.
@@ -5551,6 +5951,7 @@ def _kind_types(fields, registry, series=False, forms=False, block=False):
     layout_extra += [SERIES_PARAMETERS] if series else []
     layout_extra += list(FORMS_LAYOUT_FIELDS) if forms else []
     layout_extra += list(BLOCK_LAYOUT_FIELDS) if block else []
+    layout_extra += list(LOOP_LAYOUT_FIELDS) if loops else []
     layout = NamedTuple(
         "SurfacePumpChannelLayout" + suffix,
         [(k, object) for k in (*LAYOUT_TYPE._fields, *layout_extra)],
@@ -5606,16 +6007,16 @@ def kind_types(structure):
         fields.append((kind_id, own))
     series = series_junctions(structure)
     forms = forms_faces_declared(structure)
-    block = block_declared(structure)  # FR-51.
+    block, loops = block_declared(structure), loops_declared(structure)  # FR-51; the feedback's.
     if routes_into_channels(structure):
-        return _routed_kind_types(tuple(fields), registry, series, forms, block)
-    return _kind_types(tuple(fields), registry, series, forms, block)
+        return _routed_kind_types(tuple(fields), registry, series, forms, block, loops)
+    return _kind_types(tuple(fields), registry, series, forms, block, loops)
 
 
 @cache
-def _routed_kind_types(fields, registry, series=False, forms=False, block=False):
+def _routed_kind_types(fields, registry, series=False, forms=False, block=False, loops=False):
     """_kind_types' classes with one more observation column, EFFECTIVE_AVAILABILITY, last."""
-    types = _kind_types(fields, registry, series, forms, block)
+    types = _kind_types(fields, registry, series, forms, block, loops)
     columns = (*types.OBSERVATION_FIELDS, EFFECTIVE_AVAILABILITY)
     observations = make_dataclass(
         types.Observations.__name__ + "_" + EFFECTIVE_AVAILABILITY,

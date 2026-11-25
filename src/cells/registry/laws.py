@@ -366,8 +366,9 @@ class ChannelLaw(Law):
     registers later. A law is the one authority for its ions' valences, and @3's parser holds a
     model's species to it (definitions/surface_pump_v3_spec.parse_channel). `material_term` names
     the kernel of its material slope per stage, as a cycle's and a route's does (module docstring),
-    or is None: a law that carries an ion other than Na, K and Cl and declares none is refused on
-    @3, since the charge rule alone does not hold a scarce ion's amounts."""
+    or is None. @3 runs one for its populations (surface_pump_v3.CHANNEL_MATERIAL_TERM) and refuses
+    another name; a law that carries an ion other than Na, K and Cl and declares none is refused
+    there too, since the charge rule alone does not hold a scarce ion's amounts."""
 
     code: int
     gates: tuple[str, ...]
@@ -378,7 +379,6 @@ class ChannelLaw(Law):
     opening: Callable | None = None  # (gates, *, xp) -> [..., n]; None: always open.
     stage_term: str = "constant_field_slope"  # Today's membrane_rate term at the actual opening.
     reads: tuple = ()  # Stage reads (B4): none for today's laws.
-    loop_term: object = None
     material_term: str | None = None  # Its material slope per stage.
 
     interface: ClassVar[str] = CHANNEL_LAW
@@ -450,7 +450,6 @@ class CycleLaw(Law):
     domain_valid: Callable | None = None
     reads: tuple = ()  # Stage reads, such as rapid_proton_buffer@1's free h.
     stage_term: str | None = None  # Its charge slope in the stage rule, where its host takes one.
-    loop_term: str | None = None
     # Its other step terms (module docstring), each its kernel's name or None.
     material_term: str | None = None  # Its material slope per stage.
     charge_bound: str | None = None  # Its definition-time bound on a charged row.
@@ -489,7 +488,7 @@ class CycleLaw(Law):
             out.append("its reads are a tuple")
         if not isinstance(self.electroneutral, bool) or (self.electroneutral and not formed):
             out.append("its electroneutral is true or false, and true only with a general form")
-        out += _named_or_none(self, *STEP_TERMS, "loop_term") + _forms_errors(self)
+        out += _named_or_none(self, *STEP_TERMS) + _forms_errors(self)
         return out + _cycle_errors(self.cycle)
 
 

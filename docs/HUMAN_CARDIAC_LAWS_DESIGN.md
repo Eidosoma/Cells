@@ -106,7 +106,7 @@ stands at 3c10b833 (code read for this note; **S** where it is our reading).
 | Need | As built at 3c10b833 | Where |
 | --- | --- | --- |
 | Ca²⁺ (and, for ToR-ORd, Cl⁻) as channel ions | Channel ions are Na⁺ and K⁺ only | `definitions/surface_pump_v3_spec.py`: `SPECIES_VALENCE = {"Na": 1, "K": 1}`, `LAW_PERMEABILITIES` |
-| Gating that reads concentrations: subspace Ca²⁺ (ICaL's Ca²⁺-dependent inactivation), cytosolic Ca²⁺ (IKs), extracellular K⁺ (IK1, IKr), and the CaMKII state | `ChannelLaw.kinetics(voltage, *, xp)`: voltage only. `reads` and `loop_term` are reserved and empty for every law | `models/inner_laws.py` (`ChannelLaw`); `surface_pump_v3.potential_kinetics` |
+| Gating that reads concentrations: subspace Ca²⁺ (ICaL's Ca²⁺-dependent inactivation), cytosolic Ca²⁺ (IKs), extracellular K⁺ (IK1, IKr), and the CaMKII state | `ChannelLaw.kinetics(voltage, *, xp)`: voltage only. `reads` and `loop_term` are reserved and empty for every law (`loop_term` was removed on 25 November 2026) | `models/inner_laws.py` (`ChannelLaw`); `surface_pump_v3.potential_kinetics` |
 | Laws with more than two gates, and different gate counts in one world | `gate_rows` is the larger of 2 and the largest declared count, and a gated law whose count differs from it raises `NotImplementedError` | `surface_pump_v3.channel_kinetics` |
 | Each law's own voltage domain | Declared per law (`ChannelLaw.voltage_domain_V`, −0.120 to +0.060 V for all five), but checked as one domain for every active population, leaks included | `surface_pump_v3.channel_domain_valid` (`VOLTAGE_DOMAIN_V`) |
 | A linear driving force, G(V − E) | Every population's flux is the constant-field (GHK) flux | `surface_pump_v3.channel_rates` → `coupling/selective.selective_flux` |

@@ -241,6 +241,9 @@ The material rule runs at the IMEX stages only, and a gated law without a bound 
 (`registry/laws.py:418`). Its page and docstring use neutral words: the live module's text names its source in its
 first line and calls the shift "native" (`laws/channels/calcium_gates.py:1-5`).
 
+**As built (25 November 2026):** step 1's law declared no term and was refused by name; the term is declared with
+its bound (step 2), under the kernel's name, `material_slope_per_s`.
+
 ### 5.3 Equations, state and bounds
 
 For population j on patch m, with cell c and outside node o, gates g, abundance a_j, availability v_j (routed at the
@@ -274,6 +277,11 @@ at the outside:  T_o,s = 1e15 A P r_s a open v u B(+x_s) / V_o     1/s
 - **Where the term is:** `models/surface_pump_v3.material_rate`, with the kernel that exists
   (`laws/routes/constant_field_permeation.material_slope_per_s`). Under N2 it stays, since N2 is implicit in
   voltage, not in amounts. It is one edit with §6.5's loops (steps 2 and 6, one owner).
+- **As built (25 November 2026):** `surface_pump_v3.channel_material_rates`. @3 runs one kernel for a channel's term,
+  and a law that names another is refused by name at the definition. Without potentials the term is +inf at the
+  population's ends, as the passive routes' is. A declaring population under a block is counted there whole, at the
+  routed availability, and `block_material_rates` leaves it out. Its part through E is FR-51's, so the reversal ion's
+  own: a law with several ions would have no term for its other ions' fluxes through E. No law is one.
 
 ### 5.4 The door for the buffers
 
@@ -283,6 +291,9 @@ at the outside:  T_o,s = 1e15 A P r_s a open v u B(+x_s) / V_o     1/s
 - @3's membrane and junction permeabilities still count. Calcium's leaks and its junction route are
   `passive_constant_field_permeation@1` routes, as the map has them;
 - with that clause lifted in a probe, the buffers and a calcium channel parse together, and the composite steps (M).
+
+**As built (25 November 2026):** `species_common.check_impermeant(..., bounded_channels=)`, which `parse_species`
+passes as `charged`: the one operator that admits charged rows is L5's.
 
 ### 5.5 Heat, integrator, refusals, restart
 
@@ -605,6 +616,19 @@ One J per slot and row, at the routed control, as ruled. The source's hooks, the
 are E's. Binding traces both stage hooks once, as it traces `factors` (`models/surface_pump_v3.py:3589-3612`), and
 refuses a wrong shape by name.
 
+**As built (25 November 2026, steps 2 and 6):** `surface_pump_v3._loops`, `loop_initial_values` and
+`loop_material_rates`; the sink's reader is `kind_registry.kind_routed_rows`.
+- **The positions.** m = (position in `routes`, position in that slot's `routed_rows`) and p = (source kind ID,
+  position among that kind's pairs), the form `routes` has. A flat m does not give its slot: a channel slot's number
+  of rows is in no structure field. The layout's [M] and [P] hold the distinct m's and p's that `loops` names, so
+  their shapes follow from the structure.
+- **A sink without the hooks (the lead's ruling, 25 November 2026)** is refused by name where a source of its slot
+  that has its hooks reads a row the sink's kind moves, at a node that is no held bath: "{sink kind} routes {control},
+  which {source} drives from {species} at {node}, but declares no routed_flux: the loop has no bound". Its
+  `moved_rows` stand for the slot's, which the core cannot tell without `routed_rows`. Elsewhere it is admitted.
+- The passive routes bind the two hooks on factored declarations only. Without potentials the rate is +inf at both
+  ends.
+
 **Limits, stated (row 7), in this note and in E's:**
 - loops through two routes (one moves X and gates on Y, another moves Y and gates on X) are not bounded;
 - **loops through a source without the hooks are not bounded: today `ph_condition`,** which reads the proton row. It
@@ -619,7 +643,10 @@ declared by no law and read by nothing. `CycleLaw.loop_term` (446, 482) is decla
 (`laws/pumps/proton_pump.py:137, 265`) and evaluated by nothing. What it reserved, a law's own loop through a
 closure's read, is the transporter's material term with the closure's derivative (§6.3), which takes the slopes from
 the form, not from a declared kernel. A channel's loop is bounded through `routed_flux`. `loop_rates_per_s` stays as
-a tested function, documented as not evaluated by the engine.
+a tested function, documented as not evaluated by the engine. Two readers of the field left with it:
+`scripts/library_pages.py` (which prints a law's material term instead) and HUMAN_CARDIAC_LAWS_DESIGN's table. The
+visualizer's four files that name it (`schema/LAWS_LIBRARY.md`, `src/lenses/laws_card.js`, two saved data files) are
+its owner's.
 
 **One source of factors.** For channels and routes the door is the one place, and `species_condition@1` the one
 concentration source, where the shapes agree; E's section 5.10 says where they do not (held factors, junction and
@@ -1093,7 +1120,7 @@ is measured at the landing. A planted row must fail the criterion it names.
 | 1 | the parser reads each ion's valence from its law; a law with a scarce ion and no material term refused; a Ca channel refused on an RK4 grid; replacement beside a law outside the five refused by name | `test_chloride_leak_law.py`, `test_inner_laws.py`, `test_cell_replacement.py` | a law that says Ca is +1; a model whose Ca is +1; a Ca law that declares the 25 µs bound (admitted on RK4) | 2 s |
 | 2 | `cav1p2_m2h@1` against its independent reference at 1,801 voltages | `test_kv1_channel_laws.py`, a new row beside its laws | the 10 mV shift dropped; m² for m³ | 1 s |
 | 3 | its flux, transfer and heat at a state (valence 2, both directions) | the same | z = 1 | 1 s |
-| 4 | the channel material term against a NumPy finite difference of dJ/dn at each end, over voltages and openings; the mode's rate at both ends; largest over species | new `tests/unit/test_calcium_store.py` | B(x) and B(-x) exchanged; the term at one end only; the term absent at a store's node | 2 s |
+| 4 | the channel material term against a NumPy finite difference of dJ/dn at each end, over voltages and openings; the mode's rate at both ends; largest over species | new `tests/unit/test_calcium_store.py` | B(x) and B(-x) exchanged; the term at one end only; the term absent at a store's node (as built: a finite, face-free node in plain @3, since refusal 4 refuses a channel on a compartment's patch) | 2 s |
 | 5 | the reactions door: a Ca channel beside a written Ca row, with and without the term; RK4 | `test_species_reactions_refusals.py` (its charged-rows table) | a law that declares none; a membrane permeability | 1 s |
 | 6 | refusal 6, version 1.1: the closed store world admitted, with the gauge its representative; a compartment that is its component's first outside node refused by name; the helper equal to `bind`'s fixed nodes; the scope string's start | `test_cell_owned_compartments.py` (replacing row 510) | the last outside node taken as the representative; the held-bath rule kept | 3 s |
 | 7 | refusal 4: the pump @2 at a store's node, admitted by its step terms; both pump laws on one patch refused; a symport at a store's node refused | the same (its planted-moves table) | a law that declares no term; **a law that declares `material_term` alone** (a charge term alone is admitted, `PLANTED_MOVES`, so it is no plant) | 2 s |
@@ -1192,7 +1219,8 @@ Every ruling on rows 1 to 9, 13 and 14 can be executed as ruled. What is done di
 - **Row 16, `background`:** it is the registry's key (§4).
 - **Row 5's message.** The rule that refuses the RK4 grid says "Resolved gated channels ({law}) require RK4 steps <=
   0 us". It names the law, as ruled. A clearer sentence is one line in `StepChecks.__call__`
-  (`models/surface_pump_v3.py:4069-4074`), taken with step 1.
+  (`models/surface_pump_v3.py:4069-4074`), taken with steps 2 and 6: "Resolved gated channels ({law}) declare no RK4
+  step bound, so they run on no RK4 grid: use an IMEX solver".
 
 ## 16. Questions
 
