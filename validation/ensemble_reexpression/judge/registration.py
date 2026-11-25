@@ -455,6 +455,16 @@ class Registration:
             raise KeyError((world, seed_index, world_id))
         return None
 
+    def part(self, consumer: str) -> Registration:
+        """The same registration with one consumer's runs alone, for the judge's plants."""
+        view = copy.copy(self)
+        view.only = lambda run: run["consumer"] == consumer
+        view.runs = {name: run for name, run in self.runs.items() if run["consumer"] == consumer}
+        view.families = {k: f for k, f in self.families.items() if f.consumer == consumer}
+        view.by_consumer = {consumer: self.by_consumer[consumer]}
+        view.consumers = (consumer,)
+        return view
+
     # ----- by run -----
 
     def retry_run(self, name: str):

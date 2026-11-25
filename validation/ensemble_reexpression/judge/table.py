@@ -656,8 +656,8 @@ def recorded_flags(registration: Registration, run: dict, entry: dict) -> list:
     if entry.get("variant") != run["variant"]:
         out.append(["variant", f"{entry.get('variant')!r} and not {run['variant']!r}"])
     for key in ("definition", "checks"):
-        if entry.get(key) is None:
-            out.append(["recorded leaf", f"{key} is missing"])
+        if entry.get(key) is None or (entry.get("status") == "completed" and not entry[key]):
+            out.append(["recorded leaf", f"{key} is missing or empty"])
         elif not all_finite(entry[key]):
             out.append(["recorded leaf", f"{key} holds a number that is not finite"])
     if not isinstance(entry.get("record"), str) or not entry.get("record"):
@@ -667,6 +667,9 @@ def recorded_flags(registration: Registration, run: dict, entry: dict) -> list:
         out.append(["restart", "not null in a run that is no restart"])
     refusal = entry.get("refusal")
     if isinstance(refusal, dict):
+        more = {k: v for k, v in refusal.items() if k not in ("kind", "message", "time_s")}
+        if more:  # for example, that the second pass of a `check` completed (Amendment 2, item 7)
+            out.append(["refusal, keys beyond the contract's", more])
         if not isinstance(refusal.get("message"), str):
             out.append(["refusal", "its message is missing"])
         if (refusal.get("kind") == "check") != is_finite(refusal.get("time_s")):

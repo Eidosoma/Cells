@@ -793,41 +793,47 @@ def run_plants(
     only=None,
 ) -> dict:
     """Score every plant on altered copies of the tables. A plant whose checks do not all hold is
-    named, and nothing is bent.
+    named, and nothing is bent. A plant alters one consumer's table, and that consumer is judged.
     """
-    baseline = judge(registration, note, tables, c0, captures, planted)
+    views = {consumer: registration.part(consumer) for consumer in registration.consumers}
+
+    def score(consumer, table):
+        return judge(views[consumer], note, {consumer: table}, c0, captures, planted)
+
+    before = {consumer: score(consumer, tables[consumer]) for consumer in views}
     out = {
-        "baseline": {k: v["verdict"] for k, v in baseline["consumers"].items()},
+        "baseline": {k: v["consumers"][k]["verdict"] for k, v in before.items()},
         "baseline_plants": [
-            [p["plant"], p["consumer"], p["score"]] for p in baseline["plants"]["plants"]
+            [p["plant"], p["consumer"], p["score"]]
+            for record in before.values()
+            for p in record["plants"]["plants"]
         ],
         "plants": [],
     }
     for plant in plants(registration, captures):
         if only and plant.name.split()[0] not in only:
             continue
+        consumer = plant.consumer
         item = {
             "plant": plant.name,
-            "consumer": plant.consumer,
+            "consumer": consumer,
             "what": plant.what,
             "must_be": plant.must,
         }
-        runs = Lazy(tables[plant.consumer]["runs"])
+        runs = Lazy(tables[consumer]["runs"])
         try:
             plant.alter(runs)
         except (KeyError, IndexError, StopIteration, TypeError) as error:
             item.update(scores_as_stated=False, cannot_be_formed=f"{type(error).__name__}: {error}")
             out["plants"].append(item)
             continue
-        altered = dict(tables)
-        altered[plant.consumer] = dict(tables[plant.consumer], runs=dict(runs))
-        record = judge(registration, note, altered, c0, captures, planted)
+        record = score(consumer, dict(tables[consumer], runs=dict(runs)))
         checks = [
             [what, good if good is None else bool(good)]
-            for what, good in plant.check(Query(record, baseline))
+            for what, good in plant.check(Query(record, before[consumer]))
         ]
         item.update(scores_as_stated=all(good is not False for _, good in checks), checks=checks)
-        item["verdicts"] = {k: v["verdict"] for k, v in record["consumers"].items()}
+        item["verdict"] = record["consumers"][consumer]["verdict"]
         out["plants"].append(item)
     out["all_as_stated"] = all(p["scores_as_stated"] for p in out["plants"])
     return out

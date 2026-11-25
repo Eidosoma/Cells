@@ -8,11 +8,14 @@ invented.
 
 from __future__ import annotations
 
+import copy
 import re
 
 from . import constants as c
+from .registration import World, ids
+from .scoring import Stage2
 from .strictjson import is_integer, is_number
-from .table import TableSet
+from .table import Echo, NotFormed, RunRows, TableSet, compare_block, parse_schedule
 
 ROW_SERIES = re.compile(
     r"(n_cell_\w+|n_out_\w+|leak_\w+|channel_\w+|junction_(?!gate$)\w+|face_\w+|pump|"
@@ -176,6 +179,7 @@ def table_faults(folder, consumers=None, part: int = c.PART) -> dict:
     for (consumer, name), entry in tables.runs.items():
         kind = entry_faults(entry, f"{consumer} / {name}", out)
         kinds[kind] = kinds.get(kind, 0) + 1
+        reader_faults(entry, f"{consumer} / {name}", out)
     return {
         "folder": str(folder),
         "consumers": list(found),
@@ -324,6 +328,90 @@ def entry_faults(entry, where: str, out: Faults) -> str:
     if isinstance(refusal, dict):
         what += f", refused ({refusal.get('kind')})"
     return what
+
+
+def reader_faults(entry, where: str, out: Faults):
+    """What the readers of the registered tables cannot read of an entry: its rows, its potentials,
+    its arrays and paths, its schedules and its block.
+    """
+    if not isinstance(entry, dict):
+        return
+    if isinstance(entry.get("pool"), dict):
+        for cell, block in entry["pool"].items():
+            arrays = block.get("arrays") if isinstance(block, dict) else None
+            for name in c.POOL_ARRAYS:
+                held = arrays.get(name) if isinstance(arrays, dict) else None
+                attempt(
+                    out,
+                    where,
+                    lambda k=cell, n=name, v=held: Stage2._array(entry, k, n, shape_of(v)),
+                )
+            worlds = entry["path"].get(cell) if isinstance(entry.get("path"), dict) else None
+            attempt(out, where, lambda k=cell, w=worlds: Stage2._path(entry, k, list(w or ["0"])))
+        return
+    block, times = entry.get("inputs"), entry.get("t")
+    if not isinstance(block, dict) or not block or not times:
+        return
+    try:
+        world = sample_world(entry)
+    except (KeyError, TypeError, AttributeError) as error:
+        out.need(False, f"{where}.inputs", f"no world can be read from it: {error!r}")
+        return
+    rows = RunRows(world, entry)
+    for series in world.row_series():
+        attempt(out, where, lambda s=series: rows.get(s, times))
+    attempt(out, where, lambda: rows.potential("voltage", entry["potential_t"]))
+    if world.channels or world.pumps or not world.zero_routes:
+        attempt(out, where, lambda: rows.get("heat_membrane", times))
+    echo = Echo()
+    compare_block(block, block, world, echo)
+    for departure in echo.departures:
+        out.need(False, f"{where}.inputs", f"departs from itself: {departure}")
+    switches = (
+        block["assembly"].get("switch_list") if isinstance(block.get("assembly"), dict) else {}
+    )
+    for group in (switches, block.get("controls", {}).get("channel", {})):
+        for name, listed in group.items() if isinstance(group, dict) else ():
+            out.need(parse_schedule(listed) is not None, f"{where}, {name}", "no schedule")
+
+
+def attempt(out: Faults, where: str, read):
+    """Read something, and record why it is not formed."""
+    try:
+        read()
+    except NotFormed as error:
+        out.need(False, where, f"not formed by the reader: {error}")
+
+
+def shape_of(value) -> tuple:
+    """The shape of a nested list, as its first items have it."""
+    return (len(value), *shape_of(value[0])) if isinstance(value, list) and value else ()
+
+
+def sample_world(entry) -> World:
+    """A world that has the entry's own block, for reading its rows and nothing else. Whether it has
+    a leak is taken from its rows, since the sample's permeabilities are meaningless numbers.
+    """
+    block = {"channels": [], "junctions": [], "faces": [], **copy.deepcopy(entry["inputs"])}
+    leaks = any(name.startswith("leak_") for name in entry["rows"])
+    for membrane in block["membranes"].values():
+        membrane.setdefault("pump", None)
+        table = membrane["passive"]["permeability_m_per_s"]
+        membrane["passive"]["permeability_m_per_s"] = dict.fromkeys(table, 1.0 if leaks else 0.0)
+    data = {
+        "consumer": "sample",
+        "ionic": block,
+        "p": 4,
+        "history_times": {"first_s": 0.0, "last_s": 0.0, "spacing_s": 1.0},
+        "potential_times_s": entry["potential_t"],
+        "scales": {"energy_identity": 1.0},
+        "amount_refs": {},
+        "closure_terms_V": {},
+    }
+    for name in ("cells", "outside", "membranes"):
+        if not ids(block[name]):
+            raise KeyError(name)
+    return World("sample", data, {})
 
 
 def rows_faults(entry, where, out: Faults, pool: bool):

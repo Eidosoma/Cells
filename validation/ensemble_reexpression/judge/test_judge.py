@@ -123,28 +123,10 @@ def test_honest_tables_pass(benches, name):
         s["causes"] or s["flags"] for s in q.record["runs"].values()
     )
     assert {f["what"] for f in q.record["flags"]} <= {"restart to confirm"}
-    assert q.record["retry_owed"]["runs"] == []
+    assert q.record["retry_owed"]["runs"] == [] and block["final"]
+    assert {s["verdict"] for s in q.record["runs"].values() if s["role"] == "judged"} == {PASS}
     for part in block["sets"].values():
         assert all(n["formed"] == n["expected"] for n in part["counts"].values())
-
-
-def test_judge_plants_score_as_stated(benches):
-    """JP1 to JP24 (JP14 at h2, Amendment 2), on a subset of the registered runs."""
-    wanted = {"base s0 w0", "base s0 w1", "base s0 w2", "base s1 w0"}
-    bench = Bench(
-        lambda r: (
-            r["consumer"] in ("jupiter", "integrated")
-            or (
-                r["consumer"] == "base"
-                and (r["family"] in wanted or (r["family"] is None and r["seed_index"] in (0, 1)))
-            )
-        )
-    )
-    out = plants.run_plants(
-        bench.reg, bench.note, bench.tables, bench.c0, bench.captures, bench.planted
-    )
-    assert len(out["plants"]) == 25
-    assert [p["plant"] for p in out["plants"] if not p["scores_as_stated"]] == []
 
 
 # ----- the fault rows of CRITERIA section 5 -----
@@ -323,6 +305,7 @@ def test_provenance_refuses_the_run_and_its_readouts_are_judged(benches, case):
     )
     assert q.run(J[2])["refused"] and reason in q.run(J[2])["reasons"], q.run(J[2])
     assert not q.fails() and q.verdict("integrated") == OPEN
+    assert [q.run(name)["verdict"] for name in J] == [PASS, PASS, OPEN]
     R = {e["outcome"] for e in q.R(J[2])}
     assert R == (
         {UNFORMED} if case == "t" else {PASS}
@@ -358,6 +341,8 @@ def test_a_judged_leaf_leaves_its_entries_not_formed(benches, case):
     assert not q.run(J[1])["refused"] and not q.fails() and q.verdict("integrated") == OPEN
     unformed = {e["readout"] for e in q.entries if e["judged"] and e["outcome"] == UNFORMED}
     assert unformed == {"junction_K", "balance of cells, K"}
+    verdicts = [q.run(name)["verdict"] for name in J]
+    assert verdicts == [PASS, OPEN, OPEN]  # h2 owns its balance, and h3 the S entry
 
 
 def test_a_missing_and_a_doubled_row(benches):
@@ -445,11 +430,54 @@ def test_runs_that_are_not_registered_are_ignored(benches):
     }
 
 
+def test_nothing_passes_empty(benches, monkeypatch):
+    """Fewer entries formed than are listed leave the consumer open, in any class."""
+    honest = scoring.expected_counts
+    for name in ("S", "energy", "R", "E", "D"):
+
+        def more(*args, key=name):
+            counts = honest(*args)
+            return {**counts, key: counts[key] + 1}
+
+        monkeypatch.setattr(scoring, "expected_counts", more)
+        q = benches("integrated").score()
+        assert q.verdict("integrated") == OPEN and not q.fails()
+
+
 def test_the_off_grid_switch_refuses_a_registered_run(benches):
     q = benches("integrated").score(lambda runs: runs[J[0]].update(off_grid=True))
     assert (
         q.run(J[0])["refused"] and q.cause(J[0], "kind harness") and q.verdict("integrated") == OPEN
     )
+
+
+def test_extra_series_and_keys_refuse_nothing(benches):
+    """`phi_out` written for `base`, a series of no world, an extra entity in a series, extra keys
+    in an entry and in a refusal: recorded, and nothing is refused or failed.
+    """
+
+    def alter(runs):
+        for name in B:
+            entry = runs[name]
+            entry["potentials"]["phi_out"] = {r: [0.0, 1.0, 2.0, 3.0] for r in ("near", "far")}
+            entry["rows"]["another"] = {"x": [0.0] * 4}
+            entry["rows"]["pump"]["membrane_9"] = [1.0] * 4
+            entry["second_pass_completed"] = True
+
+    q = benches("base").score(alter)
+    assert q.verdict("base") == PASS and not q.run(B[0])["refused"]
+    flags = dict(map(tuple, [[f[0], str(f[1])] for f in q.run(B[0])["flags"]]))
+    assert "second_pass_completed" in flags["extra keys"] and "another" in flags["extra series"]
+
+    def stop(runs):
+        refuse(runs[J[0]], "check")
+        runs[J[0]]["refusal"]["second_pass_completed"] = True
+
+    q = benches("integrated").score(stop)
+    assert q.run(J[0])["stopped"] and q.verdict("integrated") == FAIL
+    assert ["refusal, keys beyond the contract's", {"second_pass_completed": True}] in q.run(J[0])[
+        "flags"
+    ]
 
 
 def test_structural_zeros(benches):
@@ -629,6 +657,13 @@ PLANT = {
         "not caught",
         FAIL,
     ),
+    "EP1 equal, on a refused family": (
+        "jupiter",
+        lambda r: [r[EP1].update(rows=r[H[2]]["rows"]), r[H[0]].update(host_patch="x")],
+        "EP1",
+        "not caught",
+        FAIL,
+    ),
     "EP1 on a refused family": (
         "jupiter",
         lambda r: r[H[0]].update(host_patch="x"),
@@ -721,28 +756,60 @@ def test_the_order_rule(d2, d1, expected):
 
 
 def test_estimates_and_bands_are_the_formulas():
+    """CRITERIA section 1 and 4.3, term by term, with no absolute tolerance."""
     world = Registration(only=KEEP["jupiter"]).worlds["jupiter_baseline"]
     e = world.by_name["n_cell_K"]
     s, ref, eps = e.scale, e.amount_ref, 2.0**-52
     Y = [np.array([[0.0]]), np.array([[32.0]]), np.array([[33.0]])]
-    d2, d1, U = bands.estimate(*Y, 4)
-    assert (d2, d1, U) == (32.0, 1.0, max(1 / 15, 32 / 240)) and bands.estimate(*Y, 2)[2] == max(
-        1 / 3, 32 / 12
-    )
-    b = bands.band(e, U, 0.5, 3200, 800)
-    beta = (
-        2 * (0.5 + U) + 8 * eps * 3201 * s + 8 * eps * 801 * s + 4e-12 * s + 2.5 * eps * 3201 * ref
-    )
-    assert b["beta"] == pytest.approx(beta, rel=1e-15) and b["theta"] == pytest.approx(
-        10 * (8 * eps * 3201 * s + 2.5 * eps * 3201 * ref), rel=1e-15
-    )
-    phi = world.by_name["phi_out"]
-    assert (
-        phi.e_close() == 4.3e-12 * 0.12
-        and phi.e_store(3200) == 0.0
-        and world.by_name["pump"].e_close() == 4e-12 * 0.002
-    )
+    assert bands.estimate(*Y, 4) == (32.0, 1.0, max(1 / 15, 32 / 240))
+    assert bands.estimate(*Y, 2) == (32.0, 1.0, max(1 / 3, 32 / 12))
+    assert bands.estimate(Y[0], Y[1], Y[1] + 16, 4)[2] == 16 / 15  # the other pair is the larger
     assert float(bands.extrapolate(Y[1], Y[2], 4)[0, 0]) == 33.0 + 1 / 15
+
+    def near(value):
+        return pytest.approx(value, rel=1e-14, abs=0.0)
+
+    b = bands.band(e, 3e-13, 2e-13, 3200, 800)
+    assert b["e_round_c"] == near(8 * eps * 3201 * s)
+    assert b["e_round_l"] == near(8 * eps * 801 * s)
+    assert b["e_close"] == near(4e-12 * s)
+    assert b["e_store"] == near(2.5 * eps * 3201 * ref)
+    without = 2 * (3e-13 + 2e-13) + 8 * eps * (3201 + 801) * s + 4e-12 * s
+    assert b["beta_without_store"] == near(without)
+    assert b["beta"] == near(without + 2.5 * eps * 3201 * ref)
+    assert b["theta"] == near(10 * (8 * eps * 3201 * s + 2.5 * eps * 3201 * ref))
+    identity = bands.band(world.energy, 1e-9, 0.0, 3200, None)
+    S, E = world.energy.scale, world.energy.amount_ref
+    wanted = 2e-9 + 8 * eps * 3201 * S + 4e-12 * S + 2.5 * eps * 3201 * E
+    assert identity["beta"] == near(wanted)
+    phi = world.by_name["phi_out"]
+    assert phi.e_close() == 4.3e-12 * 0.12 and phi.e_store(3200) == 0.0
+    assert world.by_name["pump"].e_close() == 4e-12 * 0.002
+    assert bands.legacy_threshold(e, 800) == near(10 * 8 * eps * 801 * s)
+
+
+def test_class_R_bounds_are_the_formulas():
+    """READOUTS section 5, with no absolute tolerance."""
+    world = Registration(only=KEEP["jupiter"]).worlds["jupiter_baseline"]
+    scales, refs, eps = world.data["scales"], world.data["amount_refs"], 2.0**-52
+
+    def near(value):
+        return pytest.approx(value, rel=1e-14, abs=0.0)
+
+    for kind, name in (("cells", "n_cell_K"), ("regions", "n_out_K")):
+        rounding, store = 8 * eps * 801 * scales[name], 2.5 * eps * 801 * refs[name]
+        assert identities.balance_bound(world, kind, "K", 800) == near((rounding + store, rounding))
+    cell, out = scales["n_cell_K"], scales["n_out_K"]
+    rounding = 8 * eps * 801 * (2 * cell + 3 * out)
+    store = 2.5 * eps * 801 * (2 * refs["n_cell_K"] + 3 * refs["n_out_K"])
+    found = identities.balance_bound(world, "closed world", "K", 800)
+    assert found == near((rounding + store, rounding))
+    rounding = (8 * eps * 801 + 4e-12) * scales["voltage"]
+    store = 2.5 * eps * 801 * refs["voltage"]
+    assert identities.capacitor_bound(world, 800) == near((rounding + store, rounding))
+    assert identities.exposure_bound(0.02, 805) == near(2 * eps * 0.02 * 807)
+    bare = Registration(only=KEEP["integrated"]).worlds["integrated"]
+    assert identities.balance_bound(bare, "regions", "K", 800) == (0.0, 0.0)  # a class E zero
 
 
 def test_exposure_and_changes():
@@ -959,6 +1026,21 @@ def test_a_refused_run_takes_no_retry(benches):
 
 # ----- C0 -----
 
+ST9 = "ST9 the schedule is not applied"
+
+
+def printed(name, *path, **numbers):
+    """Change printed numbers of `integrated` in a data file."""
+
+    def alter(reg):
+        block = getattr(reg, name)["worlds"]["integrated"]
+        for key in path:
+            block = block[key]
+        block.update(numbers)
+
+    return alter
+
+
 C0_FAULT = {
     "a scale": (
         "scales",
@@ -1022,6 +1104,14 @@ C0_FAULT = {
         ]["channel_K"].update(distance=2.9e-07),
     ),
     "a published count": ("counts", lambda reg: reg.worlds["integrated"].entries.pop()),
+    "a printed difference": ("legacy_classes", printed("legacy", "entries", "voltage", d1=1e-16)),
+    "a printed ratio": ("margins", printed("margins", "entries", "junction_K", ratio=0.009251)),
+    "a printed margin": ("margins", printed("margins", "entries", "voltage", margin=24410.0)),
+    "a printed largest": ("margins", printed("margins", "entries", "voltage", largest=0.02058)),
+    "a planted distance": (
+        "structural",
+        printed("margins", "structural", ST9, "junction_K", distance=2.809e-05),
+    ),
 }
 
 
@@ -1032,18 +1122,23 @@ def test_C0_names_a_fault(benches, case):
     clause, alter = C0_FAULT[case]
     made = C0(Registration(profile=copy.deepcopy(PART1)))
     alter(made.reg)
-    if clause == "engine_plants":
-        made.reg.only = lambda run: run["family"] in ("base s0 w2", "jupiter_baseline")
-        made.reg.families = {
-            k: v for k, v in made.reg.families.items() if k in ("base s0 w2", "jupiter_baseline")
-        }
+    kept = {"engine_plants": ("base s0 w2", "jupiter_baseline")}.get(clause, ("integrated",))
+    if clause in ("engine_plants", "margins", "structural"):
+        made.reg.families = {k: v for k, v in made.reg.families.items() if k in kept}
+        if clause == "engine_plants":
+            made.reg.only = lambda run: run["family"] in kept
+        else:
+            made.reg.worlds = {"integrated": made.reg.worlds["integrated"]}
+            worlds = made.reg.margins["worlds"]
+            made.reg.margins["worlds"] = {"integrated": worlds["integrated"]}
         made.legacy_classes()
     try:
         getattr(made, clause)()
     except Exception as error:  # C0.run turns what cannot go on into a fault
         assert "0" * 64 in str(error), (case, error)
     else:
-        assert made.clauses[-1].faults, case
+        faults = [f for f in made.clauses[-1].faults if "published one" not in f]
+        assert len(faults) == 1 if "printed" in case or case == "a planted distance" else faults
 
 
 # ----- files -----
@@ -1136,6 +1231,10 @@ def test_the_order_of_the_stages(benches, tmp_path, monkeypatch, capsys):
         )
 
     assert cli.main(["hash", "--tables", str(folder), "--out", str(tmp_path / "hashes.json")]) == 0
+    other = tmp_path / "other"
+    cli.write_tables(other, {"integrated": {**bench.tables["integrated"], "note": 1}})
+    changed = [str(other) if item == str(folder) else item for item in first]
+    assert cli.main(["stage1", *changed, "--out", str(power)]) == 2  # not the recorded tables
 
     def closed(*args, **kwargs):
         raise AssertionError("stage 1 opened the reference side")
@@ -1333,3 +1432,25 @@ def test_rows_are_matched_by_time_and_not_by_bits(benches):
     rows = RunRows(bench.reg.worlds["integrated"], entry)
     assert rows.get("junction_K", (0.0, 0.015)).shape == (2, 12)
     assert hash_folder.__doc__
+
+
+# ----- the judge's plants -----
+
+
+def test_judge_plants_score_as_stated(benches):
+    """JP1 to JP24 (JP14 at h2, Amendment 2), on a subset of the registered runs."""
+    wanted = {"base s0 w0", "base s0 w1", "base s0 w2", "base s1 w0"}
+    bench = Bench(
+        lambda r: (
+            r["consumer"] in ("jupiter", "integrated")
+            or (
+                r["consumer"] == "base"
+                and (r["family"] in wanted or (r["family"] is None and r["seed_index"] in (0, 1)))
+            )
+        )
+    )
+    out = plants.run_plants(
+        bench.reg, bench.note, bench.tables, bench.c0, bench.captures, bench.planted
+    )
+    assert len(out["plants"]) == 25
+    assert [p["plant"] for p in out["plants"] if not p["scores_as_stated"]] == []
