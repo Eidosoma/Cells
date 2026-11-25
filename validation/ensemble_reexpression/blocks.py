@@ -80,12 +80,14 @@ def nothing_else(entry, names, defaults, where):
 
 
 def groups(schedules, names, key, rename=lambda name: name):
-    """One control group for each name, its schedule or 1 throughout; a schedule of any other name
-    is written too, for the engine to refuse."""
+    """One control group for each name, its schedule or 1 throughout. A schedule of any other name
+    is the default written out where it is 1 throughout, and says nothing (SPEC §2.4); any other is
+    written too, for the engine to refuse."""
     given = schedules if isinstance(schedules, dict) else {}
+    others = [n for n in given if n not in names and given[n] != ONES]
     return [
         {key: rename(name), "schedule": schedule(given.get(name, ONES))}
-        for name in (*names, *(n for n in given if n not in names))
+        for name in (*names, *others)
     ]
 
 

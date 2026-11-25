@@ -782,6 +782,14 @@ CONTROLS = (
 )
 
 
+def placed(schedules, owners, where):
+    """Refuse a schedule of a piece that is not there, unless it is the default written out, which
+    says nothing (SPEC §2.4): no place of a definition would hold it."""
+    lost = [n for n, s in entities(schedules) if n not in owners and s != ONES]
+    if lost:
+        raise no_section(f"{where} has no place for {', '.join(lost)}")
+
+
 def _of_patch(p, cell, controls):
     """The one schedule of a store's bounding patch: the engine opens the patch's own routes, its
     passive routes and its release by one availability."""
@@ -809,11 +817,20 @@ def _write_calcium_controls(block, raw):
         return
     controls = known(block.get("calcium_controls", {}), CONTROLS, "calcium_controls")
     experiment = raw["experiment"]
-    for key in ("store_passive", "store_pump", "store_release", "reactions"):
-        known(dict(entities(controls.get(key))), p.store, f"calcium_controls.{key}")
-    for cell in p.store:
-        leaks = _given(controls, "store_passive", cell, {})
-        known(leaks, _store_carried(p, cell), f"calcium_controls.store_passive of {cell}")
+    for key, owners in (
+        ("store_pump", p.store_pump),
+        ("store_release", p.release),
+        ("calcium_pump", p.plasma_pump),
+        ("exchanger", p.exchanger),
+        ("calcium_channel", p.calcium_channels),
+    ):
+        placed(controls.get(key), owners, f"calcium_controls.{key}")
+    for cell, given in entities(controls.get("store_passive")):
+        carried = _store_carried(p, cell) if cell in p.store else ()
+        placed(given, carried, f"calcium_controls.store_passive of {cell}")
+    for cell, given in entities(controls.get("reactions")):
+        own = [name for name in p.reactions if cell in p.reaction_route[name]]
+        placed(given, own, f"calcium_controls.reactions of {cell}")
     experiment["membrane_controls"] += [
         {"membrane_id": patch, "schedule": schedule(_of_patch(p, cell, controls))}
         for cell, patch in p.patch.items()
@@ -826,17 +843,12 @@ def _write_calcium_controls(block, raw):
         **{q["id"]: ("calcium_pump", m) for m, q in p.plasma_pump.items()},
         **{q["id"]: ("exchanger", m) for m, q in p.exchanger.items()},
     }
-    for key, owners in (("calcium_pump", p.plasma_pump), ("exchanger", p.exchanger)):
-        known(dict(entities(controls.get(key))), owners, f"calcium_controls.{key}")
     if p.populations:
         experiment["transporter_controls"] = [
             {"transporter_id": q["id"], "schedule": schedule(_given(controls, *own[q["id"]]))}
             for q in p.populations
         ]
     reactions = dict(entities(controls.get("reactions")))
-    for cell, named in reactions.items():
-        its = [name for name in p.reactions if cell in p.reaction_route[name]]
-        known(named, its, f"calcium_controls.reactions of {cell}")
     if p.reactions:
         experiment["reaction_controls"] = [
             {

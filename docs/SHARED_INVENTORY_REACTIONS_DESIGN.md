@@ -316,7 +316,7 @@ program that calls it today changes, so crossrev stays identical and D148 does n
   qualification stands;
 - `reaction_transport@1`, MG0a's standalone model.
 
-**Not authorised, and recorded for later** (§9 question 11):
+**Not authorised, and recorded for later** (§9 question 11, answered on 25 November 2026):
 - retiring `network_reactions@1`'s kinetic branches;
 - letting the calcium-energy family's regulation read species rows of a shared inventory.
 
@@ -1673,6 +1673,12 @@ Rulings marked *ruled* are the lead's, with the advisor, 14 November 2026.
     drawing on finite energy pools come later (§7.3)? *Open for the user.*
 11. Should `network_reactions@1`'s kinetic branches eventually be retired, or re-expressed through
     this operator? Not authorised now; recorded only. *Open for the user.*
+   - *Answered by the user, 25 November 2026:* they are retired with the legacy cleanup, with
+     `network_control_factors@1`, and the tag `pre-cleanup-2026-11-25` keeps both. On the live engine
+     their work is `local_species_reactions@1`'s (qualified with MG0c) and
+     `species_regulated_availability@1` and `@2`'s, and, not judged yet, the pump of any valence's,
+     the symports' and the species condition's. The finite-fuel forms and their regulated kinetics
+     have no live replacement.
 
 ## 10. Pre-code checks (14 November)
 

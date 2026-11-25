@@ -394,9 +394,17 @@ def _with_defaults(block):
         given = controls.get(key)
         if isinstance(given, str):
             continue
-        held = dict(entities(given))
+        held = {n: s for n, s in entities(given) if n in names or s != ONES}
         controls[key] = {n: held.get(n, ONES) for n in names} | held
     return out
+
+
+def _said(given, own):
+    """The schedules that a map gives: 1 for each of these names that it leaves out, and not the 1
+    throughout that it writes out for any other, which says nothing."""
+    given = dict(entities(given))
+    others = {n: s for n, s in given.items() if n not in own and s != ONES}
+    return {n: given.get(n, ONES) for n in own} | others
 
 
 def _store_defaults(out):
@@ -407,35 +415,32 @@ def _store_defaults(out):
     for _, junction in entities(out.get("junctions")):
         carried = junction["permeability_m_per_s"]
         carried.update({s: carried.get(s, 0.0) for s in out["species"]})
-    leaks, releases, reactions = {}, {}, {}
+    leaks, reactions, pumped, released = {}, {}, [], []
     for cell, store in entities(out["stores"]):
         carried = store["membrane"]["permeability_m_per_s"]
         carried.update({s: carried.get(s, 0.0) for s in store["species"]})
         leaks[cell] = [s for s, value in carried.items() if value != 0.0]
-        if store["membrane"].get("release") is not None:
-            releases[cell] = ONES
         reactions[cell] = list(dict(entities(store.get("reactions"))))
-    transport = dict(entities(out.get("plasma_transport")))
-    pumped = [c for c, s in entities(out["stores"]) if s["membrane"].get("pump") is not None]
-    owners = {
-        "store_passive": {c: {s: ONES for s in carried} for c, carried in leaks.items()},
-        "store_pump": {c: ONES for c in pumped},
-        "store_release": releases,
-        "reactions": {c: {r: ONES for r in names} for c, names in reactions.items()},
-        "calcium_pump": {m: ONES for m, t in transport.items() if t.get("pump") is not None},
-        "exchanger": {m: ONES for m, t in transport.items() if t.get("exchanger") is not None},
-        "calcium_channel": {c: ONES for c, _ in entities(out.get("calcium_channels"))},
+        pumped += [cell] if store["membrane"].get("pump") is not None else []
+        released += [cell] if store["membrane"].get("release") is not None else []
+    transport = entities(out.get("plasma_transport"))
+    given = out.get("calcium_controls", {})
+    controls = {
+        key: _said(given.get(key), own)
+        for key, own in (
+            ("store_pump", pumped),
+            ("store_release", released),
+            ("calcium_pump", [m for m, t in transport if t.get("pump") is not None]),
+            ("exchanger", [m for m, t in transport if t.get("exchanger") is not None]),
+            ("calcium_channel", list(dict(entities(out.get("calcium_channels"))))),
+        )
     }
-    given = out.setdefault("calcium_controls", {})
-    for key, own in owners.items():
+    for key, own in (("store_passive", leaks), ("reactions", reactions)):
         held = dict(entities(given.get(key)))
-        for name, value in own.items():
-            if isinstance(value, dict):
-                held[name] = value | dict(entities(held.get(name)))
-            else:
-                held.setdefault(name, value)
-        if held:
-            given[key] = held
+        said = {c: _said(held.get(c), own.get(c, ())) for c in dict.fromkeys((*own, *held))}
+        controls[key] = {cell: schedules for cell, schedules in said.items() if schedules}
+    others = {key: value for key, value in given.items() if key not in controls}
+    out["calcium_controls"] = others | {key: value for key, value in controls.items() if value}
 
 
 def charge_scale(block, region):

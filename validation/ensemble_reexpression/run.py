@@ -330,12 +330,16 @@ class Worker:
         return spec
 
     def gates(self):
-        block = self.inputs.worlds[self.run.world].block
+        """The laws that the run's own declaration names for its junctions' gates, a declared
+        change's with them."""
+        from validation.ensemble_reexpression import definitions
+        from validation.ensemble_reexpression.labels import string
+
+        change = definitions.declared_change(self.inputs, self.run)
+        block = definitions.block_of(self.inputs.worlds[self.run.world], change)
         junctions = block.get("junctions")
         if not isinstance(junctions, dict):
             return ()
-        from validation.ensemble_reexpression.labels import string
-
         return tuple({string(j.get("gate", {}).get("law")) for j in junctions.values()})
 
     @contextmanager

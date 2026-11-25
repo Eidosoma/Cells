@@ -487,7 +487,15 @@ BROKEN = {
     "a charged store": lambda b: b["stores"]["c_a"]["membrane"].update(initial_charge_C=1e-15),
     "a field with no place": lambda b: b["stores"]["c_a"]["membrane"].update(colour=1),
     "a control with no place": lambda b: b["calcium_controls"].update(nothing={}),
-    "a control of no piece": lambda b: b["calcium_controls"]["exchanger"].update(m_c=ONES),
+    "a control of no piece": lambda b: b["calcium_controls"]["exchanger"].update(
+        m_c=[[0.0, 1.0], [8e-05, 0.5]]
+    ),
+    "a control of no reaction": lambda b: b["calcium_controls"]["reactions"]["c_a"].update(
+        bind_9=[[0.0, 1.0], [8e-05, 0.5]]
+    ),
+    "a control of no store": lambda b: b["calcium_controls"]["store_passive"].update(
+        c_c={"Ca": [[0.0, 1.0], [8e-05, 0.5]]}
+    ),
     "a reaction that differs by cell": lambda b: b["stores"]["c_b"]["reactions"][
         "bind_0_first"
     ].update(forward_rate_per_s=1.0),
@@ -538,6 +546,18 @@ def test_the_echo_of_a_pumps_energy_and_of_part_2s_defaults(whole):
         carried = store["membrane"]["permeability_m_per_s"]
         store["membrane"]["permeability_m_per_s"] = {s: v for s, v in carried.items() if v}
     assert worlds.departures(short, block) == []
+    # A default written out for a piece that is not there says nothing, as in Part 1.
+    told = copy.deepcopy(block)
+    own = told["calcium_controls"]
+    own["store_pump"]["c_c"] = own["exchanger"]["m_c"] = own["calcium_channel"]["ca_c"] = ONES
+    own["reactions"]["c_a"]["bind_9"] = own["store_passive"]["c_a"]["Na"] = ONES
+    own["reactions"]["c_c"] = own["store_passive"]["c_c"] = {"x": ONES}
+    assert written(told) == written(block)
+    assert worlds.departures(told, block) == [] == worlds.departures(block, told)
+    own["calcium_pump"]["m_a"] = [[0.0, 1.0], [8e-05, 0.5]]
+    assert [p for p, _, _ in worlds.departures(told, block)] == [
+        ("calcium_controls", "calcium_pump", "m_a")
+    ]
     for path in (("species", "B", "standard_mu_RT"), ("species", "K", "standard_mu_RT")):
         moved = copy.deepcopy(found)
         moved["stores"]["c_b"][path[0]][path[1]][path[2]] = 1e-300

@@ -1,5 +1,9 @@
 # Small channel–voltage feedback pilot: implementation-ready design
 
+> **Legacy cleanup (25 November 2026, D386).** The drivers that this record names under
+> `validation/betse/` are retired (D374), and their code left the tree; the tag
+> `pre-cleanup-2026-11-25` keeps it. The record, its protocols and its reports stay.
+
 D093, 2026-09-14. Builds on the D092 outline and the separately registered
 [full-loop preparation](BETSE_CHANNEL_LOOP_PREPARATION.md). **Not a registered
 coupled trajectory experiment or authorization for automatic follow-up.**

@@ -1,5 +1,8 @@
 # D127: preserve native work and complete the Cells window matrix
 
+> **Legacy cleanup (25 November 2026, D386).** This folder's drivers are retired (D374), and their
+> code left the tree; the tag `pre-cleanup-2026-11-25` keeps it. This page stays as a record.
+
 This is a separately registered continuation of the D126 controller failure,
 not an edit or retry of the frozen `live_recording/` implementation. The original
 attempt remains failed. Its 36 native comparisons and eighteen observer pairs
