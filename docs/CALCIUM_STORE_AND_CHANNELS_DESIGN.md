@@ -7,6 +7,13 @@ and 16 are this note's. D385 ruled L1 to L9 as recommended. D386 gave the user's
 symport laws (§7.2). The advisor timed out every time it was asked. The lead's rulings on this revision (L10 to L13:
 all as recommended) and on the two laws' step terms (none until step 5) are in D387.
 
+**Built on 25 November 2026, steps 0 to 7 (§15), on branch `legacy-cleanup` (96ec6faf, before its landing).** The text
+below is the design as revised and is not rewritten: its "today" is the code at 43b22d40. A line marked "As built"
+says what the code does where the two differ, and there the code is right. **Not judged:** no registered criterion has
+run on any of it, Part 2 of the ensemble's criteria is not tagged, and none of the four calcium worlds is
+re-expressed. The D148 round is the cleanup's one gate and is owed; what each builder compared before it is quoted as
+(B). §15 names the commits.
+
 **What it answers.** Candidates G-1 (calcium-permeant channels) and G-4 (a calcium store) and row B2 (the 3 Na : 1
 Ca exchanger) of the legacy port plan, with the corrections of its re-expression map (`legacy-port-plan` at
 a1db6ab9, §14), and D211's two symport laws (plan rows I8 and I9). This is the map's stream D. Stream E owns the
@@ -23,6 +30,8 @@ factor source that opens the store's release (G-5) and G-7; its note is
 - **(R)** read in the code at 43b22d40. Paths start at `src/cells/` unless they say otherwise. §15.1 gives the lines
   on `legacy-cleanup` too;
 - **(S)** this note's own derivation, arithmetic or estimate. Nothing marked (S) was run;
+- **(B)** (added at the build) a builder's or the lead's own record, with its commit. I did not rerun it. In an "As
+  built" line (R) is read, and (M) measured, on `legacy-cleanup` at 96ec6faf (Appendix A.3);
 - sources: [abs] the abstract, or the page as a reader tool showed it; [rec] the bibliographic record only; [sec: X]
   through X.
 
@@ -64,6 +73,9 @@ with its line (§15).
 | The plasma pump (B1) | @3's live law equals the legacy kernel bit for bit with a converted constant (M) | nothing needed; one law for both pumps (§6.3) | unchanged |
 | NKCC and the configured symport (D211, D386) | planted laws are admitted and match to 8e-15 of the one-way rate (M) | two modules, data only; one refusal (§7.2) | unchanged |
 
+**As built (25 November 2026):** every row of the table is built, and so is the source of the release's factor (E's
+`species_condition@1`). A one-cell store world and a two-cell closed world run (§14, rows 12 to 14).
+
 **The choices, each with one recommendation** (C2, C4 and C5 are ruled as recommended, D385; C8 is the user's,
 D386).
 
@@ -94,6 +106,12 @@ D386).
 | 10 | replacement beside any channel law beyond today's five: a bare `ValueError`, not a refusal by name | `operators/cell_replacement.py:206` | (M2), with `kv1p1_mh2@1` |
 | 11 | the two-cell closed world's definition under field solver version 2: "Initial resolved charge/current field or transport domain invalid". With version 3 (D147's floor) it parses | `models/surface_tissue.py:515` | (M) |
 
+**As built (25 November 2026, R).** Rows 1 and 2: step 1 (the law gives each ion's valence, and `cav1p2_m2h@1` is
+registered). Row 3: step 2 (§5.4). Row 6: the exchanger and the pump @2 declare both step terms since step 5, so a
+compartment's node admits their moves (refusal 4); the two symports have no charge slope and are refused there still.
+Row 7: step 3 (§6.2). Row 10: step 1, a `ConfigError` by name (§5.5). Row 11 is the probe world's numbers, not the
+topology's (§14). Rows 4, 5, 8 and 9 stand.
+
 **Not refused, but not bounded, or bounded wrongly.** Each is a gap that the pieces here would otherwise widen.
 
 | # | Today | Where | Shown |
@@ -102,6 +120,14 @@ D386).
 | 13 | a charged row that crosses in a cycle has no material bound: the term counts neutral rows, and charged rows changed at one end only. A cycle that moves no net charge (the K/H exchange, the phosphate symport, any salt symport) has no charge slope either, so nothing bounds its charged rows | `kinds/transporter.py:2240-2250`; `laws/cycles/potassium_proton_exchange.py`, `phosphate_proton_symport.py` | (R); named by `docs/CHARGED_TRACE_SPECIES_DESIGN.md` §6 for the kinds owner |
 | 14 | the feedback of a factor on the row it reads has no bound. The stage rules use the routed value, never its slope | `models/surface_pump_v3.py:3682, 3721` | (R) |
 | 15 | a cell's charge row divides by its stores' capacitance too, so it reads up to 1 + C_b/C_m times too low | `models/surface_pump_v3.py:3674`; `models/surface_pump.py:487`; `kinds/transporter.py:691-718, 2330-2376` | (M, M2), §8.3 |
+
+**As built (25 November 2026, R).** Row 12 is closed by step 2 (§5.3), row 14 by step 6 for a source that has the two
+hooks (§6.5), and row 15 by step 0 (§8.3). **Row 13 is closed for the laws that declare `material_term`** (step 5):
+the exchanger, the pump @2, the two symports and the mitochondria's seven. **It stands** for the laws that declare
+none and move a charged row at both ends: `na_anion_symport_factored@1` and `na2_anion_symport_diagram@1`, and
+`proton_atp_mass_action_positive@1`, whose charge slope holds its proton row on §6.3's condition only.
+`adenylate_kinase@1` and `held_reductant_supply@1` declare none and change their charged rows at one end only, which
+K3b bounds. `atp_driven_transporter_mass_action_positive@1` moves a neutral row.
 
 Row 14 is the reason the coupling operator refuses an instantaneous read of a charged species: "could close a loop
 @3's bound does not see" (`operators/species_regulated_availability.py:748-753`).
@@ -241,8 +267,10 @@ The material rule runs at the IMEX stages only, and a gated law without a bound 
 (`registry/laws.py:418`). Its page and docstring use neutral words: the live module's text names its source in its
 first line and calls the shift "native" (`laws/channels/calcium_gates.py:1-5`).
 
-**As built (25 November 2026):** step 1's law declared no term and was refused by name; the term is declared with
-its bound (step 2), under the kernel's name, `material_slope_per_s`.
+**As built (25 November 2026):** step 1's law declared no term and was refused by name; the term is declared with its
+bound (step 2), under the kernel's name, `material_slope_per_s`. Its code is 11. The parser's message (R) is "Channel
+ion requires its law's species and valence: {law} carries {no X, or X at valence n}, and the model declares {no such
+species, or it at valence m}"; the scarce ion's is the one quoted above.
 
 ### 5.3 Equations, state and bounds
 
@@ -316,6 +344,11 @@ passes as `charged`: the one operator that admits charged rows is L5's.
 - **Provenance:** the flux is the constant-field form (Goldman 1943; Hodgkin and Katz 1949), a form with no number.
   The gates' numbers are BETSE v1.5.0's channel class, read as text by the port, as the Kv1 laws cite theirs.
 - **Same equations:** yes.
+
+**As built (25 November 2026, R).** Replacement's refusal is the `ConfigError` "Channel {id}: {law} carries no donor
+gate table in {operator}; a replacement copies gates of {the five} only", so with the population's ID before the words
+above. The RK4 grid's is §15.2's sentence. A law with a material term and several ions is refused at the parse under a
+block that reads one ion's reversal (§5.3), and a scarce ion without the term as §5.2 says.
 
 ### 5.6 Not claimed
 
@@ -413,6 +446,11 @@ was. Its date is the landing's:
   `validation/tissue/compartment_acceptance_qualification.py:112` and its world at 699 and 730. The class label in
   `compartment_acceptance_protocol.py:43` and the JSON (55, 440, 479) stay.
 
+**As built (25 November 2026, step 3, R):** `surface_field.representative` is the one helper. `bind` calls it for a
+bound layout, and refusal 6 through `compartments.representatives` for the declared topology. The message is the one
+above, with the node's ID in quotes, and the scope string starts as the bullet says. The dated section is
+`docs/CLOSED_COMPARTMENT_DESIGN.md` §3.5.1.
+
 **The entity's facts.** State: none of its own; its rows are @3's outside rows. Ledgers: §6.7's row. Integrator: the
 capacitor solve at every stage. Refused by name: the declaration's refusals 1 to 7, with 6 as above. Restart: the
 charge anchor is imported (refusal 5). Provenance: the parallel-plate organelle capacitor (Grabe and Oster 2001, as
@@ -460,6 +498,10 @@ valence free (`CycleForm` roles `("role", None)`), held fuel only in this build.
   `stage_term` and `material_term` on it in one commit, with its docstring, and refusal 4 then admits it at a
   compartment's node. Until then it is refused there. The kind supplies both. It declares `forms="base"` and `reads=("rapid_binding@1",)`, as the exchanger does, so the
   cardiac plan's closure may hold its ion (S).
+  **As built (25 November 2026, R):** step 5 declares both terms (4edf35c3), and refusal 4 admits the law's moves at a
+  compartment's node. Beside version 1's pump laws or @3's own calcium pump, for the same species on one patch, the
+  kind refuses: "{law} moves {species} on {patch} beside {other}: one law moves a species by ATP on a patch". Two
+  populations of @2 are admitted, since they are one law.
 
 **What retires, and when (row 13; D210; pre-alpha, no backwards compatibility).** After @2 there are four laws for
 ATP-driven transport of one species. From @2's landing no new definition takes another of them, and each old law's
@@ -472,6 +514,12 @@ docstring names @2. The dates are the lead's.
 | `ca_atp_mass_action_positive@1` (@3's own) | @3's worlds | when the Na/K and Ca pumps move onto the kind (`docs/CORE_LAWS_ROADMAP.md:255`, family 2, 2 to 4 days) |
 | `nak_atp_mass_action_positive@1` (@3's own) | @3's worlds | with the same item, into its own cycle law: it moves two ions, so it is another mechanism |
 | legacy's two calcium pump kernels | legacy | at the deletion (§13) |
+
+**As built (25 November 2026, R), what stays at the deletion.** The last row says legacy's two kernels leave. Their
+functions do not all leave: the live `laws/pumps/ca_atp_mass_action_positive.py` calls `plasma_calcium.pump_rates`,
+which calls `er_calcium.pump_rates`, and reads `plasma_calcium.MAX_VOLTAGE`. Those two functions and that constant
+stay, and the rest of the two modules goes (§13). The three older pump laws' docstrings name @2 (06681c8e). None has
+retired: @1's retirement, the proton law's fold and @3's own pumps wait for what the table names.
 
 **The kind's material bound, corrected (rows 2 and 13; kinds owner's file).** Where a population's law declares
 `material_term`, all its moved rows count, charged or neutral, crossing or not, protons included:
@@ -500,6 +548,24 @@ rows[k] += lambda_p at every row k the population moves;   a node's rate is the 
   programs change. Populations whose law does not declare it keep today's rows.
 - **Sizes (M).** At the store world's start: exchanger 0.95 (held bath) or 1.01 (closed), plasma pump 0.33, store
   pump 0.50; the row of free calcium in the cell sums to 1.8 per second.
+
+**As built (25 November 2026, step 5: 78c6184c the rule, 4edf35c3 the declarations, R).** The rule is the one above:
+the layout field `cycle_material` [population] and the structure flag `CycleAxis.material`; the sum over a
+population's moved rows at both ends, on every row it moves; the closure's derivative traced for the new rows; and the
+refusal by name of a row that version 1's proton buffer holds. At 450 random states of six populations the rule is
+never below the block's spectral radius (worst ratio 1.0). No definition of crossrev's 87 or G1's 113 worlds declares
+an affected law; 12 of 12 program texts and constants, 3 of 3 bindings and three compiled runs are what they were (B,
+d4b23f35).
+- **L12 is done:** the mitochondria's seven declare `material_term`. In their host-P world the block's largest rate is
+  6.8108e-4 per second by finite differences, the rule gives 6.8111e-4, and without the term it gave 2.0e-6, 336 times
+  too low (B, the step 5 builder's probe). The proton pump declares nothing new. Version 1's docstring states the
+  condition of the next paragraph with its two numbers, and that a neutral role's row has no bound there.
+- **A finding: the closure's lag envelope (M, `lag_envelope`).** `rapid_binding@1` admits a stage only where its
+  estimated lag behind the binding kinetics is at most 1e-3 pX. Beside a calcium binder (0.1 mM, K_d 1 µM, k_on 1e6
+  per mM s) the pump @2's lag at the cell is 6.8e-5, 3.4e-4 and 6.8e-4 pX at capacities 0.01, 0.05 and 0.1 fmol/s, so
+  it is proportional to the capacity. 0.1 is admitted; 0.3 and 0.5 are refused at the parse. The refusal is the
+  closure's own rule and is right. Its message, "Initial resolved channel/junction/pump domain invalid", names no
+  envelope; a clearer one is for later. The ensemble's worlds have no closure.
 
 **The proton rows (the neighbour of row 2).** A proton row that a cycle law moves at both ends has no material bound
 in either layout. Where it moves charge, its charge slope holds it, if its node has a charge row and n_eff >= n_C /
@@ -633,6 +699,9 @@ refuses a wrong shape by name.
   whatever the kinds declare: the loops' layout is the core's, and no lifecycle acts on it. Today the kinds refuse each
   of the three already, insertion@1 too, for their missing roles; replacement and trafficking are refused beside any
   kind.
+- **The calcium core's last commit (76992c2c, host only) holds two refusals by name:** the one of the bullet above and
+  §5.3's, of a law with a material term and several ions under a block that reads one ion's reversal. crossrev's 289
+  of 289 files are byte for byte what they were (B, 70586063).
 
 **Limits, stated (row 7), in this note and in E's:**
 - loops through two routes (one moves X and gates on Y, another moves Y and gates on X) are not bounded;
@@ -763,6 +832,9 @@ x = 3 ln(Na_in/Na_out) + ln(Ca_out/Ca_in) + u;  J = k v S (1 - e^x);  S = b^3 c 
   `ncx_3na_1ca_symmetric_barrier@1`; names state a mechanism and its form, not a protein family.
 - **The plasma pump (B1)** is re-parameterised, as the map says. Nothing else is designed for it (§6.3).
 - **Order.** It depends on nothing above, and D386 puts it in the first stage, with G-7's driver.
+- **As built (25 November 2026, R):** `laws/cycles/sodium_calcium_exchange_symmetric_barrier.py` (d56f04b7, merged
+  496de985), data only, with the declarations of the table; its step terms came with step 5. Its Citation states what
+  the 2000 and 2004 abstracts say against a fixed 3:1.
 
 ### 7.2 Two symport laws of D211: NKCC and the configured symport
 
@@ -828,6 +900,13 @@ exponent an `Affine` of its count. Checked (M, `symport_forms`): `errors()` is e
 - **0.4 to 0.5 agent-day (S):** the form 0.1, the refusal 0.15, rows 0.1 (the closed form; the refusal; the planted
   non-neutral binding), its page 0.1.
 
+**As built (25 November 2026, 3c3ec55e, R).** Both modules are data and both declare `electroneutral`. The refusal of
+a binding that is not neutral is "{population}: {law} is electroneutral; {counts and species} move charge {q} from N
+to P per cycle (mode {mode})". Rows: `test_cycle_kind.py`'s one harness against 60-digit references that are
+independent of the forms, and `test_calcium_store_kernels.py`'s code-blind states, 68 of them the symports'. They
+declare `material_term` since step 5, and a compartment's node refuses their charged rows, as planned. A population
+may now ask for its `current_readout` without a `proton_readout` (the same commit, one line of the parser).
+
 **Both, for the engine.** State, ledgers and heat are the kind's (`cycle_count`, heat, no work). They move charged
 rows with no net charge, so nothing bounds them today (§1, row 13): they declare `material_term` with step 5. At a
 compartment's node refusal 4 refuses them with or without it, since a charged row there needs a charge slope and
@@ -865,6 +944,17 @@ array per node, and `material_rate` adds the arrays, as today. **Checked (M, `ma
 world, at fixed potentials, the true largest rate of the calcium and sodium rows is 3.37 per second with a held bath
 and 3.38 closed (finite differences of the live `explicit_rates`), and the rule reads 4.21 and 4.30. At a thousandth
 of the calcium they are 20.90 and 20.94, and 22.55 and 22.59.
+
+**As built (25 November 2026).** All four parts are in `surface_pump_v3.material_rate`: `block_material_rates`, the
+kinds' `material_term`, `channel_material_rates` and `loop_material_rates` (R). Measured (M, A.3):
+- **the probe's two-cell world** (Appendix A.2) at its start: 2.772 per second, where A.2 has 0.91. That was the
+  passive routes' part alone; the rest is the transporter's (step 5) and the channels' (step 2). Its release is
+  ungated, so it has no loop.
+- **row 12's one-cell store world,** whose release is gated: 29.33 per second at the start and 28.51 at 8 ms. The
+  references' block has a largest eigenvalue of 4.67 and 5.47 with the opening moving, and 17.05 and 17.02 with it
+  held. So the rule holds both and is at most 1.7 times the held one; it is 6.3 times the moving one at the start. The
+  release's positive feedback cancels part of the relaxation, and the rule adds its size where the true rate has its
+  sign (S). The text's "about 11" was an estimate for the ensemble's numbers, which no world of these rows has.
 
 **RK4 is refused** for every world with a store (§1, row 8) and for every world with a calcium channel (§5.2).
 
@@ -1004,7 +1094,22 @@ most 0.011: the pump family's fixture, the padded replacement world on it, the i
 their dt x rate is at most 0.028 with those nodes floating. A compartment is named by no face. It stays a limit, in
 the docstring (the lead).
 
+**The neutral-face hole, as it stands (the lead, 25 November 2026).** It is kept as the limit above. Nothing after it
+is decided. The lead records three forms for later. (a) A conductive-face set in place of the face set, so that a face
+with no charged diffusivity no longer holds its node: a program change with a D148 round of its own, with six of the
+scanned worlds in it (B). (c) A refusal by name at the definition, host only, of a conducting patch beside such a
+face. A third form, host only and wider: refuse where the step times the face's charged conductance is below the
+node's capacitance beside a conducting patch. It would refuse three definitions that are admitted today, all with
+faces that hold weakly: `surface_pump_v3_fixtures.definition`, the padded replacement world and the insertion
+fixture's cleft cell (B).
+
 **Price: 0.75 to 1 day (S). Its own commit, first, one D148 round.**
+
+**As built (25 November 2026):** engine commit e7871b95 alone (its parent f38f6789), its rows 1066e291, merged
+6e7c8b76. The builder compared 2,807 arrays before and after (FR-1's W+ and load-and-react worlds and FR-4's declared
+world; scalar, windowed and vector runs): all are identical. Among the traced worlds only the seven with a floating
+node differ, in `checked_step` alone. Its scan of 11,419 saved rows of FR-5's and FR-7's runs found no hit; the
+largest dt x corrected rate is 0.109, at FR-7's (B, 6e7c8b76). The round itself is owed to the cleanup's gate.
 
 ## 9. Ledgers
 
@@ -1039,6 +1144,11 @@ kinds, so it inherits their rules. (R) from `operators/compartments.py:154-171` 
 | RK4 | refused | **refused by name:** the law declares no RK4 bound (§5.2) | refused |
 | `rapid_binding@1` | the closure refuses @3 routes and pumps on its rows; a Ca channel reads through the closure but is refused there today (§2.3, H2's) | refused on a held row | admitted for laws that declare the read |
 | Near and far (free offsets) | composes with field solver version 3, declared (D147); version 2 refuses the two-cell world at the parse (M) | the same | the same |
+
+**As built (25 November 2026, R).** The replacement row is refused by name since step 1 (§5.5). The last row is
+corrected: version 2 refuses the probe world's numbers, not the topology (§14). **New, host only (76992c2c):** an
+operator that opens, closes or retires slots is refused by name beside a world whose gated slot closes a loop (§6.5).
+The composition matrix of `docs/PUMP_COMPOSITE.md`, which is generated, has no rule for it.
 
 ## 11. D148, CPU, GPU, restart
 
@@ -1113,6 +1223,12 @@ The five IDs need rows in `scripts/moves/id-rename-choices.json`, which is the r
 - **At the deletion,** `laws/reactions/er_calcium.py` and `plasma_calcium.py` reduce to one function, `pump_rates`,
   which the live pump law uses: it can move into that law's module. Their first lines name BETSE, and so does
   `calcium_gates.py`'s.
+- **Corrected (25 November 2026, R):** they reduce to two functions and a constant, not one function:
+  `plasma_calcium.pump_rates`, the `er_calcium.pump_rates` that it calls, and `plasma_calcium.MAX_VOLTAGE`, all used
+  by `ca_atp_mass_action_positive.py` (§6.3). `calcium_gates.py`'s text is neutral since step 1; the two reaction
+  modules still name their source.
+- **As built (25 November 2026, R):** the five laws' homes are on @3's row and their five pages are in `docs/library`.
+  The notes named above are amended, and the glossary has "store" and "floating node" (step 8).
 
 ## 14. Tests (rows, with plants; D224)
 
@@ -1150,6 +1266,33 @@ and keeps it. So the world is built with version 3 declared, and `declare` confi
 same nodes, faces and junction, parses under version 2 too, so no row rests on it; version 3 is declared for the two free
 offsets (D147).
 
+**As built (25 November 2026, R): where each row is.** Row 0: `test_surface_pump_step_checks.py` and
+`test_kind_rules.py`, with changed expectations in `test_fr4_world_engine.py` and `test_cell_owned_compartments.py`.
+Row 1: `test_kv1_channel_laws.py`, `test_chloride_leak_law.py`, `test_inner_laws.py`, `test_cell_replacement.py`. Rows
+2 and 3: `test_kv1_channel_laws.py`; the second plant of row 2 is m³ h for m² h (the table says m² for m³).
+Row 4: `test_calcium_store.py`, the core builder's file, so the one new file of the table became five: that one and
+the four below. Row 5: `test_species_reactions_refusals.py`. Rows 6 and 7: `test_cell_owned_compartments.py`. Rows 8
+to 10: `test_cycle_kind.py` (references independent of the forms, not code-blind), and `test_mito_cycle_laws.py` for
+the host-P world. Row 11: `test_passive_routes_kind.py`, `test_kind_contract_hooks.py`, and `test_calcium_store.py`
+for a channel slot. I did not check each of their plants against the table.
+
+**Step 7's rows, and what they measure (M, A.3):**
+
+| Row | File | Measured |
+| --- | --- | --- |
+| 8, 9 | `test_calcium_store_kernels.py`, against the code-blind references at 153 states | every output within 2e-13 of the size of what it is a difference of |
+| 12 | `test_calcium_store_worlds.py` | NumPy steps of the composite at 0.2, 0.1 and 0.05 ms to 8 ms: 56 observables, orders 2.001 to 2.061 wherever they are judged (75); without the buffers 50 observables, at 0.2 and 0.1 ms to 4 ms, orders 2.002 to 2.056 (34). The largest error is 0.665 of its band. The rates at the start are within 3.5e-14. All 17 controls miss |
+| 13 | `test_calcium_store_compiled.py` | five compiled steps are the NumPy ones to rounding (8e-15 measured, the row asks 1e-12); ten steps meet the row's criteria; a restart from the written checkpoint repeats the second window bit for bit; a run imported from the first window's end continues it |
+| 14 | `test_calcium_two_cells.py` | ten tests over ten recorded steps: every ledger within its bound; the whole-world amounts; each mover's transfer as the trapezoid of its rate, within 1e-4; V_m and V_b from a dense capacitor solve of the row's charges, within 1e-11 V; the planted definitions; the restart bit for bit |
+
+The worlds are `validation/calcium_store/worlds.py`, and the criteria of rows 13 and 14 are
+`tests/calcium_store_fixtures.py`. **The references** (`validation/calcium_store/references`) were written from
+`validation/calcium_store/reference_spec` alone by an agent that had read nothing of the engine. Two routes of that
+agent agree: the kernel states to 6e-41 before rounding, and the store world to 1.2e-13 by a second derivation in
+doubles. Step 7's 42 tests pass in 81.8 s on the shared CPUs. Their docstrings propose tier 1 for rows 8, 9 (8 s) and
+12 (20 s), and tier 2 for rows 13 (40 to 55 s) and 14 (65 to 90 s); the tiers are not measured yet. **Not shown:** a
+compiled run to 8 ms, and the two-cell world against a code-blind reference.
+
 ## 15. Price, order and owners
 
 | Step | Work | Files | Days (S) |
@@ -1165,6 +1308,23 @@ offsets (D147).
 | 8 | pages, notes, the roadmap | `docs/` | 0.5 to 0.75 |
 | | **In all** | | **7.25 to 9.25, so about 7 to 9.25** |
 | S | the two symport laws (§7.2), beside step 4; their material rows with step 5 | `laws/cycles/`, `registry/laws.py`, `kinds/transporter.py` | 0.8 to 0.9 |
+
+**As built (25 November 2026, R), the commits and their merges into `legacy-cleanup`:**
+
+| Step | Commits | Merged |
+| --- | --- | --- |
+| 4, the exchanger | d56f04b7, 9e216479 | 496de985 |
+| E's source | eb3b773d | dd1dd980 |
+| 0 | e7871b95 (engine), 1066e291 (rows) | 96a515c5 |
+| 1, 3 | 157fc452, 4933ca7f | c2ade319 |
+| 4, the pump @2; S | 3c3ec55e | 34d173d7 |
+| 5 | 78c6184c (the rule), 4edf35c3 (the declarations) | 2e18ccb2 |
+| 2, 6 | c93e0de1, one edit of `material_rate` | 8bc411e7 |
+| the two late refusals | 76992c2c | 660b0326 |
+| 7 | the worlds and rows 4b9dc492, the references 85f65da6 | 96ec6faf |
+
+The table is in the order of the merges. Step 5 came before steps 2 and 6, which were one edit by one owner. The
+agent-days were not recorded, so the price is not checked.
 
 - **Order.** D386's stages, with the second reader's order inside the last:
   1. the exchanger (from step 4), beside G-7's driver: it depends on nothing;
@@ -1212,6 +1372,13 @@ Lines at 43b22d40. On `legacy-cleanup` (e67f4660) `models/surface_pump_v3.py` is
 `registry/kind_registry.py` (6 and E's source), `registry/model_table.py` (five lines, with E's none),
 `registry/laws.py` (1, 6, S). The last three are short and go through one owner at a time.
 
+**As built (25 November 2026, R), the engine files that this table lacks.** Step 1: `laws/channels/calcium_gates.py`,
+whose kernel moved to `cav1p2_m2h.py` and which re-imports its names. Step 5: the eleven law modules that declare a
+term. Steps 2 and 6: `laws/channels/cav1p2_m2h.py` (the term) and `operators/species_reactions.py` (the door's
+caller). S: `laws/cycles/__init__.py` (its list). The two late refusals: `definitions/surface_pump_v3_spec.py`
+(`parse_block`) and `models/pump_composite.py` (`structure_errors`). Outside `src/cells`: `scripts/library_pages.py`
+prints a law's material term. The lines are 43b22d40's and are not brought up to date.
+
 ### 15.2 If a ruling cannot be executed
 
 Every ruling on rows 1 to 9, 13 and 14 can be executed as ruled. What is done differently, and why:
@@ -1229,6 +1396,7 @@ Every ruling on rows 1 to 9, 13 and 14 can be executed as ruled. What is done di
   0 us". It names the law, as ruled. A clearer sentence is one line in `StepChecks.__call__`
   (`models/surface_pump_v3.py:4069-4074`), taken with steps 2 and 6: "Resolved gated channels ({law}) declare no RK4
   step bound, so they run on no RK4 grid: use an IMEX solver".
+  **As built (25 November 2026, R):** in these words, in `StepChecks.__call__`, with steps 2 and 6.
 
 ## 16. Questions
 
@@ -1256,6 +1424,10 @@ now.
   so they have no stage bound of any kind today (§1, row 13). Not looked for: a world where it binds.
 - **L13. The configured symport's refusal** (§7.2): `CycleLaw.electroneutral` in the template, recommended, or only
   fixed-stoichiometry modules and no configured law.
+
+**L10 to L13 are ruled as recommended (D387), and are built so (25 November 2026, R):** the flux's shape (§6.5),
+worlds C and D in the set (§8.3), the mitochondria's seven laws with step 5 (§6.3), and `CycleLaw.electroneutral`
+(§7.2).
 
 ## 17. What is wrong in the plan and the docstrings
 
@@ -1289,6 +1461,10 @@ population axis does not refuse electrogenic modes) and §8's "changed model" fo
     §6.3); the loop's rate is added at the read node (at both ends, §6.5); the loop slope is in 1/fmol
     (dimensionless); the channel's RK4 bound is 25 µs (None); a declared Ca channel composes with replacement (it
     raised); a plant of one step term (admitted today); an electrode at the gauge (there is none). Corrected here.
+12. **As built (25 November 2026, R), items 5, 8 and 9.** Item 5: `calcium_gates.py` reads neutrally now; the two
+    reaction modules do not yet. Item 8: step 0 corrected both docstrings. Item 9: step 5's paragraph in the kind's
+    docstring gives a population's own rate, "protons included". K3b's older sentence above it, "proton rows changed
+    at both ends stay on the charge rule", still stands there and holds only for a law that declares no term.
 
 ## 18. Sources
 
@@ -1364,6 +1540,28 @@ only.
 **Not run:** a step of the full four-world re-expression, buffers against a kinetic reference, any compiled GPU
 path, anything to 20 ms, the hooks of §6.5 (they do not exist), a compiled run of the corrected charge rule, and the
 scan over saved trajectories. No other agent has read this revision.
+
+### A.3 After the build (added with step 8)
+
+All ran on 25 November 2026 on the calcium branches as merged, on CPUs 6, 7, 22 and 23 at nice 10, under
+`/mnt/workspaces/Cells/venv-cpu`, with no file written in the tree. The scripts and outputs are in
+`/mnt/workspaces/Cells/calcium-step-7-20261125` (marked 7) and `/mnt/workspaces/Cells/calcium-step-8-20261125` (marked
+8, all at 96ec6faf).
+
+| Script | What it ran | Result |
+| --- | --- | --- |
+| `registered` (7; `registered_combined.out`), `registered_two` (8) | A.1's and A.2's store worlds in one engine (steps 2, 5 and 6 in it), the exchanger and the pump planted or registered | every number is bit for bit equal between planted and registered. The two-cell world's stage material rate is 2.772 per s; its passive routes' part, 0.912, is A.2's 0.91. Charge rate 5,268 per s. Compiled, five steps (7): capacitor error 1.7e-28 C, electrode error 0 C, worst relative energy ledger 7.3e-5, as in A.2 |
+| `version2` (8) | field solver versions 2 and 3 on A.2's two-cell world and on row 14's | version 2 refuses the first and parses the second; version 3 parses both |
+| `mutate` (7), `mutate_kernels` (8) | scratch copies of `src`, each with one planted engine defect, against rows 12, 8 and 9 | each of the ten (five of each script) is seen by a row |
+| `host_vs_compiled` (7) | row 13's compiled steps against the NumPy ones, every field of five rows | the largest relative difference is 8.1e-15 |
+| `final` (7) | step 7's four files, with the references | 42 passed in 81.8 s on the shared CPUs |
+| `row12_numbers` (8) | row 12's numbers, printed | §8.2's and §14's |
+| `lag_envelope` (8) | the closure's lag beside the pump @2, capacities 0.001 to 0.5 fmol/s | §6.3's: lags 6.80e-5, 3.40e-4 and 6.80e-4 pX at 0.01, 0.05 and 0.1; refused at 0.3 and 0.5 |
+
+**Of A.2's "not run", now run:** the hooks of §6.5 (row 11, and row 14 in a compiled run), the corrected charge rule
+compiled (step 0's runs, B), the scan over saved rows (B), and the buffers of row 12 against its references. **Still
+not run:** a step of the four-world re-expression, a compiled GPU path, and anything to 20 ms. No other agent has read
+these lines.
 
 ## Appendix B. The store world as a definition
 
@@ -1447,3 +1645,6 @@ All four declare `host="cells.transporter@1"`. The exchanger and the transport l
 transport law's fuel rows are ions moved in base forms, so each declares `forms="base"` and
 `reads=("rapid_binding@1",)`. All declare `material_term` from step 5 on. The transport law declares
 `maintained_held_rows@1` as its one fuel kind; the last law declares `electroneutral`.
+
+**As built (25 November 2026, R):** as written, with one difference: both symport laws declare `electroneutral`, not
+the last alone.
