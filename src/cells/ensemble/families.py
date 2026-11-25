@@ -7,7 +7,7 @@ then today's three; each hook below dispatches to the adapter of the spec's or d
 falling back to today's chains for today's three families. A model ID is read in either form a
 definition writes, a string or {"id": ..., ...} (model_of), once, in model_id and row_model, so the
 planner, the launcher and the controller's summary compare strings (the second external review's
-finding 5). A kind of PARKED is refused by its name until an adapter takes it (parked).
+finding 5). A name of PARKED is refused by its name (parked), a kind until an adapter takes it.
 """
 
 import copy
@@ -22,7 +22,9 @@ TODAY = {
     "finite_bond_ensemble@1": "finite_bond_assembly@1",
     "ionic_ensemble@1": "ionic_worlds@1",
 }
-PARKED = {
+PARKED = {  # The command line's two commands, and the two ensemble kinds.
+    "assembly-cell": "the assembly-regulated cell's command",
+    "assembly-cluster": "the assembly-regulated cluster's command",
     "assembly_cell_ensemble@1": "GPU ensembles of assembly-regulated cells",
     "assembly_cluster_ensemble@1": "GPU ensembles of assembly-regulated clusters",
 }

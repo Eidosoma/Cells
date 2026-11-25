@@ -204,7 +204,7 @@ def test_the_table_s_models_are_parse_spec_s_own_dispatch():
     assert dispatched(source, vars(specs)) == table  # Keyed as definitions write the IDs.
     assert all(m.type in model_table.TYPES for m in MODELS.values())
     # Planted: a dispatch with one more model, which the table does not list.
-    marker = "    older = legacy().parse(data)"
+    marker = '    if not isinstance(data["model"], dict):'
     planted = source.replace(
         marker,
         '    if isinstance(data["model"], dict) and data["model"].get("id") == "planted@1":\n'

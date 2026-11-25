@@ -17,7 +17,6 @@ from cells.definitions.specs import (
 )
 from cells.definitions.surface_kinetic_spec import Change as SurfaceKineticChange
 from cells.definitions.surface_tissue_spec import SurfaceChange
-from cells.registry.legacy_entry import legacy
 
 
 class PairControl(NamedTuple):
@@ -144,9 +143,6 @@ def control_values(spec, times):
         return pump_v3.control_values(spec, times)
     if isinstance(spec.model, pump_v2.SurfacePumpModel):
         return pump_v2.control_values(spec, times)
-    older = legacy().control_values(spec, times)  # The older families (D188 R1).
-    if older is not None:
-        return older
     changes = spec.experiment.changes
     if not changes:
         return np.zeros(len(times), dtype=np.float64)

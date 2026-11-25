@@ -10,7 +10,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from cells.registry.legacy_entry import legacy
 from cells.registry.model_table import MODELS
 
 if TYPE_CHECKING:
@@ -858,9 +857,6 @@ class SimulationSpec:
 
         if isinstance(m, AssemblyModel):
             return assembly_to_dict(self)
-        older = legacy().to_dict(self)  # The older families (D188 R1).
-        if older is not None:
-            return older
         if isinstance(x, MultispeciesExecutionSpec):
             raise ConfigError("Multispecies execution settings require their own model identity")
         if not isinstance(e, ExperimentSpec):
@@ -1066,9 +1062,6 @@ def parse_spec(data: dict) -> SimulationSpec:
         from cells.models.assembly_lineages_v2.spec import parse
 
         return parse(data)
-    older = legacy().parse(data)  # The older families (D188 R1).
-    if older is not None:
-        return older
     if not isinstance(data["model"], dict):
         raise ConfigError("model must be an object")
     model_id = data["model"].get("id")

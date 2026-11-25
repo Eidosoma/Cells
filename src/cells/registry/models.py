@@ -7,7 +7,6 @@ the runner owns scheduling, integration, replay, and resource policy.
 
 from cells.definitions.specs import ConfigError, ReactionTransportSpec
 from cells.models import reaction_transport
-from cells.registry.legacy_entry import legacy
 
 
 def get_model(spec):
@@ -83,7 +82,4 @@ def get_model(spec):
         from cells.models.assembly_lineages_v2 import model as assemblies
 
         return assemblies
-    model = legacy().model_for(spec)  # The older families (D188 R1).
-    if model is not None:
-        return model
     raise ConfigError(f"No registered implementation for {type(spec).__name__}")
