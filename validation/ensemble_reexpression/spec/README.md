@@ -10,7 +10,7 @@ runs, taken on 25 November 2026 from frozen snapshots of the engine. It holds do
 - **Part 1:** the four consumers that need no new ionic piece. `SPEC.md`, `READOUTS.md`, `CRITERIA.md`, `TABLE.md`, `PLANTS.md`, `inputs.json`,
   `legacy_part1.json`, `reference_paths.json`, `margins.json`, `plants_manifest.json`.
 - **Part 2:** the four calcium clusters and the four assembly-regulated calcium clusters. `PART2.md`, `PART2_BLOCKS.md`, `PART2_EXPORTER.md`, `inputs_part2.json`,
-  `legacy_part2.json`, `margins_part2.json`, `plants_manifest_part2.json`. Its open rows are answered (`PART2.md` §0), and it waits for its own auditor and its tag.
+  `legacy_part2.json`, `margins_part2.json`, `plants_manifest_part2.json`. Its open rows are answered (`PART2.md` §0), its own auditor has read it, and it waits for its tag.
 - Completing Part 2 changes none of Part 1's files. What Part 2 needs beyond them is in its own files.
 
 ## Files
