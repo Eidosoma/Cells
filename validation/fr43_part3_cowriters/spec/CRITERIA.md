@@ -403,7 +403,8 @@ planted. It must pass every honest entry that its sizing says will pass, catch e
 - **The gene unit beyond W6's readouts:** heats, release, recharging, translation, a hold, an export, or a second
   gene.
 - **Streams' statistics:** the draws' distribution, only their rule. **Energies:** no energy readout is judged.
-  **The trace's recorded pools:** first order beside a co-writer. **The two worlds' reach:** one volume pair, one
-  gain, one parameter set, one network, one chain, one transfer per world.
+  **The trace's recorded pools:** first order beside a co-writer. **The engine's own checks** in `checks` are
+  recorded, not judged (only a run the engine itself stopped on one is, §3.4). **The two worlds' reach:** one volume
+  pair, one gain, one parameter set, one network, one chain, one transfer per world.
 - **The same misread of the law in two places.** The references and the engine share the law text (LAWS.md and the
   sheet). A shared error is seen only through the plants and the references' own checks (SPEC.md §9).
