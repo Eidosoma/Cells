@@ -672,17 +672,6 @@
    ]
   },
   {
-   "path": "src/cells/ensemble/worker.py",
-   "kind": "src",
-   "choice": "re-spell",
-   "choices": [
-    "re-spell"
-   ],
-   "pinned_by": [
-    "validation/topology/joint_water_profile_phase_handoff_protocol.json"
-   ]
-  },
-  {
    "path": "tests/reference_finite_extracellular.py",
    "kind": "python",
    "choice": "re-spell",

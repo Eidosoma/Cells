@@ -26,8 +26,8 @@ and while a plant's family is not seen, unless --rehearsal, which marks the map 
 choices that the tool does not read; a seed whose constant or table is gone, whose IDs a registry
 row or another seed holds, or whose family is no word; a kept ID that nothing live spells, or that
 a row, an interface or another entry holds; a plant that no file spells, or that a row holds; a
-path that no tracked file has, as an entry's own, as a pattern or cited in a reason. A registry's
-row never overrides a choice in silence.
+pin that its file no longer quotes; a path that no tracked file has, as an entry's own, as a pattern
+or cited in a reason. A registry's row never overrides a choice in silence.
 
 **The plants** (D371 Q8) are the pieces a test or a driver declares for itself. Each gets the
 three-part ID of its own family, in its own files only: the family comes from the type or the
@@ -1178,6 +1178,11 @@ def choices_problems(choices, rows, engine, source, files):
         paths += [(part, r["path"]) for r in entries]
     for r in choices["pinned"]:
         paths += [(f"pinned {r['path']}, by", p) for p in r.get("pinned_by", ())]
+        own = digests_of(files[r["path"]][1]).values() if r["path"] in files else ()
+        for p in r.get("pinned_by", ()) if own else ():
+            held = HEX.findall(text_of(files[p][1]) or "") if p in files else None
+            if held is not None and not any(d.startswith(h) for h in held for d in own):
+                out.append(f"pinned {r['path']}: {p} quotes no hash of it")
     paths += [("ids_kept", r["test"].split("::")[0]) for r in choices.get("ids_kept", ())]
     out += [f"{part}: {p} is gone" for part, p in paths if p not in files]
     out += [
@@ -4304,9 +4309,10 @@ def _selftest_choices(checks):
 
 def _selftest_overtaken(checks):
     """A planted case for each choice that the tree has overtaken: gone, or held by another."""
-    files = dict(_planted_files(), **{
-        "tests/test_plant.py": ("100644", b'LAW = "tests.own@1"\n'),
-    })  # fmt: skip
+    files = _planted_files()
+    files["tests/test_plant.py"] = ("100644", b'LAW = "tests.own@1"\n')
+    pin = hashlib.sha256(files["validation/live.py"][1]).hexdigest()
+    files["configs/pins.json"] = ("100644", json.dumps({"validation/live.py": pin}).encode())
     kept_format = dict(id="cells.declarations@2", reason="a format (laws/wave.py FORMAT)")
 
     def problems(engine=None, files=files, **more):
@@ -4326,7 +4332,7 @@ def _selftest_overtaken(checks):
     whole = dict(
         **keep(kept_format),
         seeds=[seed(note="scripts/run.sh runs it")],
-        pinned=[dict(entry, path="validation/live.py", pinned_by=["tests/test_wave.py"])],
+        pinned=[dict(entry, path="validation/live.py", pinned_by=["configs/pins.json"])],
         frozen=dict(
             live=[dict(path="validation/live.py", reason="r")],
             declared=[dict(path="validation/frozen/judge.py", reason="r")],
@@ -4390,6 +4396,14 @@ def _selftest_overtaken(checks):
             dict(pinned=[dict(entry, path="validation/gone.py")]),
             "pinned: validation/gone.py is gone",
         ),
+        "a pin that its file no longer quotes": (
+            dict(
+                pinned=[
+                    dict(entry, path="validation/frozen/judge.py", pinned_by=["configs/pins.json"])
+                ]
+            ),
+            "pinned validation/frozen/judge.py: configs/pins.json quotes no hash of it",
+        ),
         "a pin's own file that is gone": (
             dict(pinned=[dict(entry, path="validation/live.py", pinned_by=["configs/no.json"])]),
             "pinned validation/live.py, by: configs/no.json is gone",
@@ -4431,9 +4445,10 @@ def _selftest_overtaken(checks):
                         module="m")]),
         dict(models=[dict(declared="cells.imex_two@1", type="family", module="m")]),
     ):  # fmt: skip
-        (found,) = problems(_plant_engine(**registry), **keep(kept_format))
+        found = problems(_plant_engine(**registry), **keep(kept_format))
         checks[f"overtaken: a seed that a registry holds ({', '.join(registry)})"] = (
-            found.startswith("the seed cells.steps.METHOD_ID: imex_two@1 is held by the ")
+            len(found) == 1
+            and found[0].startswith("the seed cells.steps.METHOD_ID: imex_two@1 is held by the ")
             and "imex_two@1" in {o for r in _planted_map(
                 files, _plant_choices(), _plant_engine(**registry))[1] for o in r["old"]}
         )  # fmt: skip
