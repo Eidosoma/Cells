@@ -461,18 +461,33 @@ def junction_gate_rate_bound(spec):
     )
 
 
-def explicit_rate_bound(spec):
+def explicit_rate_bound(spec, *, floating=None):
     """Gershgorin bound (1/s) on the explicit rates left by implicit electromigration.
 
     Face diffusion: 2 max over species and finite nodes of sum_f D A/(L V).
-    Junction and membrane charge relaxation against the cell's total patch
-    capacitance (the outside is held near equipotential by the implicit drift):
-    2 max_i sum_j G_j / C_i and max_i sum_m G_m / C_i, with constant-field slope
-    conductances bounded by F^2/RT sum z^2 P A max(c) at the declared state.
-    Two terms close the gaps docs/INNER_MODEL_V4_DESIGN.md §13.6 found (I0, B7): neutral
-    species' material relaxation (neutral_material_rate) and the charge relaxation of a
-    free face-free node against its own patches (face_free_node_rate). All terms read one
-    layout, built once.
+    Charge relaxation (docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md §8.3): explicit currents relax
+    the node potentials at the rates r of (G + J) x = r C x, with G and J the patches' and the
+    junctions' conductances and C the patches' capacitances. The implicit drift holds a node that
+    a face, a held bath or the gauge holds near equipotential, so x = 0 there. A floating node
+    (floating_nodes; `floating` gives the IDs where the caller knows more than `spec`) follows the
+    charge on its own patches. With constant-field slope conductances bounded by F^2/RT sum z^2 P A
+    max(c) at the declared state:
+    - a cell's held patches, those that face no floating node, share the cell's x: max_i
+      sum_m G_m / C_i over them, with C_i the sum of their capacitances alone;
+    - a loose patch, one that faces a floating node, has a voltage of its own, so a row of its
+      own: G_m / C_m (face_free_node_rate);
+    - a junction: 2 max_i sum_j G_j / C_i with the same C_i, since a floating node can follow its
+      cell at no cost. A cell with no held patch that a junction charges has no bound, and is
+      refused by name (unheld_cells).
+    Neutral species' material relaxation (neutral_material_rate) closes the gap that
+    docs/INNER_MODEL_V4_DESIGN.md §13.6 found (I0). All terms read one layout, built once.
+
+    Limits. A face is taken to hold both its nodes, so two or more nodes that faces join to each
+    other and to no clamp (a lumen of two nodes) are counted as held; a compartment is never one
+    (cell_owned_compartments@1's refusal 1). The bound is the larger of the junction and the patch
+    terms, not their sum, inside its margin of 2 (the explicit stages of ARS(2,2,2) are stable to
+    2, the rule holds 1). Every declared patch counts here; surface_pump_v3.membrane_rate, which
+    holds the same rows at a stage, names its own limit.
     """
     _, p = kinetic.initial_values(spec)
     z2 = p.valence**2
@@ -484,10 +499,13 @@ def explicit_rate_bound(spec):
     ci = np.where(p.active, p.amount_reference / p.volume, 0.0)
     co = np.where(p.outside_active, p.extracellular_amount_reference / p.extracellular_volume, 0.0)
     slope = F * F / (R * p.temperature)
+    held = p.membrane_active & ~loose_patches(spec, p, floating)
     capacitance = scatter(
-        p.membrane_capacitance, np.zeros(p.active.size), (p.membrane_cell,), xp=np
+        np.where(held, p.membrane_capacitance, 0.0),
+        np.zeros(p.active.size),
+        (p.membrane_cell,),
+        xp=np,
     )
-    capacitance = np.where(p.active, capacitance, np.inf)
     gj = (
         slope
         * np.sum(
@@ -500,6 +518,11 @@ def explicit_rate_bound(spec):
     )
     cells = scatter(gj, np.zeros(p.active.size), (p.junction_sender,), xp=np)
     cells += scatter(gj, np.zeros(p.active.size), (p.junction_receiver,), xp=np)
+    for i in np.flatnonzero((capacitance == 0) & (cells > 0)):
+        ends = ((p.junction_sender == i) | (p.junction_receiver == i)) & (gj > 0)
+        named = [spec.model.junctions[j].id for j in np.flatnonzero(ends)]
+        what = ("junction " if len(named) == 1 else "junctions ") + ", ".join(named)
+        raise ConfigError(UNHELD_CELL.format(cell=spec.model.cells[i].id, what=what))
     gm = (
         slope
         * np.sum(
@@ -510,13 +533,78 @@ def explicit_rate_bound(spec):
         )
         * np.where(p.membrane_active, p.membrane_area, 0.0)
     )
-    membranes = scatter(gm, np.zeros(p.active.size), (p.membrane_cell,), xp=np)
+    membranes = scatter(np.where(held, gm, 0.0), np.zeros(p.active.size), (p.membrane_cell,), xp=np)
+    given = {} if floating is None else {"floating": floating}  # As the caller gave it.
     return max(
         face,
-        2 * np.max(cells / capacitance),
-        np.max(membranes / capacitance),
+        2 * np.max(relaxation_rows(cells, capacitance, xp=np)),
+        np.max(relaxation_rows(membranes, capacitance, xp=np)),
         neutral_material_rate(p, volume),
-        face_free_node_rate(spec, p, gm),
+        face_free_node_rate(spec, p, gm, **given),
+    )
+
+
+# The refusal of a cell with no held patch (unheld_cells): what charges it other than through its
+# own patches, an @3 junction (explicit_rate_bound) or a declared kind (surface_pump_v3).
+UNHELD_CELL = (
+    "Cell {cell} has no held patch: each of its patches faces a floating node, which is no held "
+    "bath, is not the gauge and is named by no face. It is charged by {what}, with no capacitance "
+    "that the IMEX charge rule can hold it to"
+)
+
+
+def floating_nodes(model):
+    """The floating outside nodes of a parsed model: their IDs, a frozenset (host side).
+
+    A floating node is a finite outside node that nothing holds: no held bath, not the gauge, and
+    named by no face and no forms face. Its potential follows the charge on its own patches, which
+    therefore relax it explicitly, where the implicit drift holds every other node near
+    equipotential. A capacitor component's representative (numerics/surface_field.bind) floats too
+    where no face names it: it only sets the zero of the field's capacitor solve, and the stage's
+    operator solves it like any other node. A cell-owned compartment always floats.
+
+    From the declared topology, with every declared node and face active, in time linear in it
+    (surface_pump_v3.structure calls it). explicit_rate_bound's limits name what a face is taken
+    to hold."""
+    faces = (*getattr(model, "faces", ()), *getattr(model, "forms_faces", ()))
+    faced = {end for face in faces for end in (face.sender, face.receiver)}
+    gauge = getattr(model, "gauge_reference", None)
+    return frozenset(
+        node.id
+        for node in getattr(model, "extracellular", ())
+        if not node.reservoir and node.id != gauge and node.id not in faced
+    )
+
+
+def unheld_cells(model):
+    """The cells of a parsed model with no held patch: their IDs, a frozenset (host side). Each of
+    such a cell's patches faces a floating node; every capacitor component holds a held node
+    (surface_field.bind), so the cell shares a floating node with another cell. Empty in a world
+    with no floating node."""
+    floating = floating_nodes(model)
+    if not floating:
+        return frozenset()
+    held = {patch.inside for patch in model.membranes if patch.outside not in floating}
+    return frozenset(cell.id for cell in model.cells if cell.id not in held)
+
+
+def loose_patches(spec, p, floating=None):
+    """[membrane] the loose patches of a bound's layout: active, with a floating outside node
+    (`floating`: the floating nodes' IDs, by default the definition's own, floating_nodes)."""
+    ids = floating_nodes(spec.model) if floating is None else floating
+    nodes = np.zeros(p.outside_active.size, dtype=bool)
+    nodes[: len(spec.model.extracellular)] = [node.id in ids for node in spec.model.extracellular]
+    return p.membrane_active & nodes[p.membrane_outside]
+
+
+def relaxation_rows(conductance, capacitance, *, xp=jnp):
+    """Charge relaxation rates (1/s), G / C row by row: 0 where nothing conducts, and infinite
+    where a conductance has no capacitance behind it (fail closed: no step is admitted)."""
+    behind = capacitance > 0
+    return xp.where(
+        behind,
+        conductance / xp.where(behind, capacitance, 1.0),
+        xp.where(conductance == 0, 0.0, xp.inf),
     )
 
 
@@ -540,31 +628,18 @@ def neutral_material_rate(p, outside_volume):
     return 2 * float(np.max(rates, initial=0.0))
 
 
-def face_free_node_rate(spec, p, gm):
-    """The face-free-node term (1/s; §13.6, B7): max over free face-free finite nodes of
-    sum_m G_m / C_node over the patches facing the node, with gm the bound's own max-side
-    constant-field slope per patch. A finite outside node that no active face names has no
-    implicit drift holding it near equipotential, so its patches relax its charge explicitly.
-    Excluded: held baths, the gauge, the field layout's fixed nodes and inactive nodes."""
-    nodes = p.outside_active.size
-    named = np.zeros(nodes, dtype=bool)
-    named[p.face_sender[p.face_active]] = True
-    named[p.face_receiver[p.face_active]] = True
-    gauge = np.zeros(nodes, dtype=bool)
-    ids = [node.id for node in spec.model.extracellular]
-    reference = getattr(spec.model, "gauge_reference", None)
-    if reference in ids:
-        gauge[ids.index(reference)] = True
-    fixed = np.zeros(nodes, dtype=bool)
-    if hasattr(p, "field_fixed"):
-        fixed = np.asarray(p.field_fixed)[p.active.size :]
-    free = p.outside_active & ~p.reservoir & ~named & ~gauge & ~fixed
-    patches = np.where(p.membrane_active, p.membrane_capacitance, 0.0)
-    capacitance = scatter(patches, np.zeros(nodes), (p.membrane_outside,), xp=np)
-    conductance = scatter(gm, np.zeros(nodes), (p.membrane_outside,), xp=np)
-    held = free & (capacitance > 0)
-    rate = conductance / np.where(held, capacitance, 1.0)
-    return float(np.max(np.where(held, rate, 0.0), initial=0.0))
+def face_free_node_rate(spec, p, gm, *, floating=None):
+    """The floating nodes' term (1/s; docs/INNER_MODEL_V4_DESIGN.md §13.6, B7, and
+    CALCIUM_STORE_AND_CHANNELS_DESIGN.md §8.3): max over the loose patches of G_m / C_m, with gm
+    the bound's own max-side constant-field slope per patch. A floating node (floating_nodes) has
+    no implicit drift holding it near equipotential, so each patch that faces it relaxes a voltage
+    of its own explicitly. Where one patch faces the node, as at every compartment, the row is the
+    node's own; where several do, the node's summed row, sum G / sum C, is no bound, and each
+    patch's is."""
+    loose = loose_patches(spec, p, floating)
+    slope = np.where(loose, gm, 0.0)
+    rows = relaxation_rows(slope, np.where(loose, p.membrane_capacitance, 0.0), xp=np)
+    return float(np.max(rows, initial=0.0))
 
 
 def moved_charge(row, p, *, xp=np):

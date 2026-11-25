@@ -3256,6 +3256,7 @@ def check_definition(spec, *, structure=None):
     if kinds:  # The moved-rows guard, after the initial domain holds (its rates are defined).
         each = [control_type(*(v[i] for v in controls)) for i in range(len(controls.membrane))]
         _check_moved_rows(compact, structure, kinds, state, p, each)
+        _check_unheld_cells(compact, structure, kinds, state, p, each)
         _check_presence(structure, kinds, state, p, each)  # Q2's contract (no program change).
         # Beside a closer, a kind with entities and no presence is the composite's refusal
         # (pump_composite_adapter.kind_lifecycle_errors): a composite's parse checks the inner
@@ -3324,6 +3325,37 @@ def _check_moved_rows(spec, structure, kinds, state, p, controls):
                             f"{nodes[node]}, which its moved_rows does not declare (refusal 4 "
                             "admits a kind by its moved_rows)"
                         )
+
+
+def _check_unheld_cells(spec, structure, kinds, state, p, controls):
+    """The refusal by name of a declared kind that charges a cell with no held patch
+    (surface_pump.unheld_cells) other than through the cell's own patches, a route on a junction
+    say: charge_rows has no capacitance to hold it to (docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md
+    §8.3; @3's own junctions are explicit_rate_bound's). Checked on the host at binding, with no
+    program change, and only in a world that has such a cell: each kind's stage term on held_view,
+    at the stage read of the initial state and of a perturbed state (_perturbed), at every change
+    record's control after the routing door and at the initial state's node potentials; a nonzero
+    value at such a cell refuses the definition, naming the cell and the kind. Not exhaustive: a
+    route that opens later meets the stage's infinite row, which refuses the step."""
+    unheld = first.unheld_cells(spec.model)
+    if not unheld:
+        return
+    cells, loose = [c.id for c in spec.model.cells], _loose(p, xp=np)
+    with np.errstate(all="ignore"):
+        potentials = readouts(state, controls[0], p, xp=np, structure=structure).field.potential_V
+        for x in (state, _perturbed(state, p)):
+            read, _ = _stage_read(x, p, kinds, xp=np)
+            for control in controls:
+                routed, _ = _route(structure, kinds, read, control, p, xp=np)
+                shut, closed = held_view(routed, p, loose, structure, xp=np)
+                for kind in kinds:
+                    if kind.stage_term is None:
+                        continue
+                    term = np.asarray(kind.stage_term(read, potentials, shut, closed, xp=np))
+                    for i in np.flatnonzero(term[: len(cells)] != 0):
+                        if cells[i] in unheld:
+                            what = f"kind {kind.kind_id}, not through its patches"
+                            raise ConfigError(first.UNHELD_CELL.format(cell=cells[i], what=what))
 
 
 def _check_presence(structure, kinds, state, p, controls):
@@ -3611,22 +3643,10 @@ def _check_routes(spec, structure, kinds, state, p, control):
             )
 
 
-def membrane_rate(
-    state, control, p, *, xp=jnp, structure=None, potentials=None, explicit_only=False
-):
-    """Gershgorin rate (1/s) of membrane charge relaxation at a stage's actual openings.
-
-    @1's membrane term, max_i sum_m G_m / C_i, with each population's open
-    constant-field slope conductance F^2/RT sum z^2 P r a o v A max(c) added to
-    its patch (o its opening, v its availability). max(c) bounds the
-    constant-field slope, so this bounds the explicit channel stiffness.
-    Quasi-steady gating slopes are not included; the step studies measure them.
-    A channel population that the routing door factors (B1, docs/CORE_SEAMS_DESIGN.md §4.3) enters
-    at its held availability: its factors are at most 1, so the held value bounds the routed one
-    (conservative), and the door's order here stays the kinds' (after this term).
-    explicit_only (N2, D235): the patches' and channels' terms are left out, since their slopes
-    sit in the operator; the declared kinds' terms remain, and without kinds the rate is 0.
-    """
+def _patch_slopes(state, control, p, *, xp, structure, potentials, explicit_only):
+    """membrane_rate's slopes at a stage: (F^2/RT; [membrane] sum z^2 P A max(c) of each patch with
+    its populations at their actual openings, zeros under explicit_only; FR-51's T_V [channel] (S)
+    of the blocked populations, which then replace their openings' terms, or None)."""
     ci, co = physical_amounts(state, p)
     ci = xp.where(p.active, ci / p.volume, 0.0)
     co = xp.where(p.outside_active, co / p.extracellular_volume, 0.0)
@@ -3667,6 +3687,52 @@ def membrane_rate(
     membrane += scatter(channel * p.membrane_area[patch], membrane, (patch,), xp=xp)
     if explicit_only:  # N2 (static): the patches' and channels' slopes are implicit.
         membrane = xp.zeros_like(membrane)
+    return slope, membrane, blocked
+
+
+def membrane_rate(
+    state, control, p, *, xp=jnp, structure=None, potentials=None, explicit_only=False
+):
+    """Gershgorin rate (1/s) of membrane charge relaxation at a stage's actual openings.
+
+    @1's membrane term, max_i sum_m G_m / C_i, with each population's open
+    constant-field slope conductance F^2/RT sum z^2 P r a o v A max(c) added to
+    its patch (o its opening, v its availability). max(c) bounds the
+    constant-field slope, so this bounds the explicit channel stiffness.
+    Quasi-steady gating slopes are not included; the step studies measure them.
+    A channel population that the routing door factors (B1, docs/CORE_SEAMS_DESIGN.md §4.3) enters
+    at its held availability: its factors are at most 1, so the held value bounds the routed one
+    (conservative), and the door's order here stays the kinds' (after this term).
+    explicit_only (N2, D235): the patches' and channels' terms are left out, since their slopes
+    sit in the operator; the declared kinds' terms remain, and without kinds the rate is 0.
+    Beside a floating node (surface_pump.floating_nodes) the rate is the largest of charge_rows,
+    explicit_rate_bound's rows at the stage, with its limits. The choice is static: the structure's
+    floating_nodes, or with no structure a NumPy caller's layout (a compiled caller has a
+    structure: registry.get_model). Every other world keeps the sums below, with a limit of their
+    own: a cell's sum still counts a patch that a closer has closed, and one that faces a node
+    which floats only while a closer holds its faces closed.
+    """
+    if _beside_floating(structure, p, xp=xp):  # Static.
+        rows = charge_rows(
+            state,
+            control,
+            p,
+            xp=xp,
+            structure=structure,
+            potentials=potentials,
+            explicit_only=explicit_only,
+        )
+        return xp.maximum(xp.max(rows.cell), xp.max(rows.patch))
+    slope, membrane, blocked = _patch_slopes(
+        state,
+        control,
+        p,
+        xp=xp,
+        structure=structure,
+        potentials=potentials,
+        explicit_only=explicit_only,
+    )
+    n, patch = p.active.size, p.channel_membranes
     total = slope * scatter(membrane, xp.zeros(n), (p.membrane_cell,), xp=xp)
     if blocked is not None:  # FR-51: the blocked populations' T_V at their cells.
         total = total + scatter(blocked, xp.zeros(n), (p.membrane_cell[patch],), xp=xp)
@@ -3692,9 +3758,87 @@ def membrane_rate(
         node_total = node_total + scatter(blocked, xp.zeros(o), (p.membrane_outside[patch],), xp=xp)
     patches = xp.where(p.membrane_active, p.membrane_capacitance, 0.0)
     node_capacitance = scatter(patches, xp.zeros(o), (p.membrane_outside,), xp=xp)
-    free = free_outside_nodes(p, xp=xp) & (node_capacitance > 0)
+    free = free_outside_nodes(p, xp=xp, without_fixed=True) & (node_capacitance > 0)
     outside = xp.max(xp.where(free, node_total / xp.where(free, node_capacitance, 1.0), 0.0))
     return xp.maximum(cells, outside)
+
+
+class ChargeRows(NamedTuple):
+    """The charge rule's rows (1/s) beside a floating node (charge_rows)."""
+
+    cell: object  # [cell], each over the cell's held patches
+    patch: object  # [membrane], one per loose patch; 0 elsewhere
+
+
+def _beside_floating(structure, p, *, xp):
+    """Static: whether membrane_rate takes charge_rows. The structure says so; with none, a NumPy
+    caller's layout does (a compiled caller's is traced, so it is never read)."""
+    if structure is not None:
+        return structure.floating_nodes
+    return xp is np and bool(np.any(_loose(p, xp=np)))
+
+
+def _loose(p, *, xp):
+    """[membrane] the loose patches: active, with a floating outside node (free_outside_nodes)."""
+    return p.membrane_active & free_outside_nodes(p, xp=xp)[p.membrane_outside]
+
+
+def held_view(control, p, loose, structure, *, xp=jnp):
+    """(control, layout) on which the charge rule reads the kinds' part of a cell's row: the loose
+    patches ([membrane], bool) closed, in every way the kind contract closes a patch. The layout
+    holds them inactive (and, where a closer is declared, their entities absent: presence_gated),
+    and the control's membrane availability is 0 there."""
+    shut = control._replace(membrane=xp.where(loose, 0.0, control.membrane))
+    closed = p._replace(membrane_active=p.membrane_active & ~loose)
+    return shut, presence_gated(closed, structure, xp=xp)
+
+
+def charge_rows(state, control, p, *, xp=jnp, structure=None, potentials=None, explicit_only=False):
+    """The charge rule's rows at a stage (ChargeRows), beside a floating node
+    (docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md §8.3; surface_pump.explicit_rate_bound's, with
+    membrane_rate's openings, blocks and arguments):
+    - a cell's: the slopes of its held patches and its kinds' there, a junction-hosted one's
+      included, over the capacitance of its held patches;
+    - a loose patch's (one that faces a floating node): its own slopes and the kinds' at its
+      outside node, over its own capacitance. Where one patch faces the node that is the node's
+      row; where several do, each takes all the kinds' slopes there, at least its own.
+    The kinds' stage terms (S, per node) are read twice: as they are, for the loose patches' rows,
+    and on held_view for the cells', since a loose patch's slope relaxes a voltage of its own. A
+    kind that ignored the closure would count at the cell too, on the safe side. A cell charged
+    with no held patch behind it has an infinite row, so the step is refused."""
+    slope, membrane, blocked = _patch_slopes(
+        state,
+        control,
+        p,
+        xp=xp,
+        structure=structure,
+        potentials=potentials,
+        explicit_only=explicit_only,
+    )
+    n, loose = p.active.size, _loose(p, xp=xp)
+    held = p.membrane_active & ~loose
+    own = slope * membrane
+    if blocked is not None:  # FR-51: the blocked populations' T_V at their patches.
+        own = own + scatter(blocked, xp.zeros_like(own), (p.channel_membranes,), xp=xp)
+    cells = scatter(xp.where(held, own, 0.0), xp.zeros(n), (p.membrane_cell,), xp=xp)
+    at_nodes = xp.zeros(p.outside_active.size)
+    kinds = _kinds(structure)
+    if kinds:  # Gap 5: each kind's conductance at the stage's read and potentials.
+        read, _ = _stage_read(state, p, kinds, xp=xp)
+        control, _ = _route(structure, kinds, read, control, p, xp=xp)  # Validity: the stage's.
+        gated = presence_gated(p, structure, xp=xp)  # Q2 (static).
+        shut, closed = held_view(control, p, loose, structure, xp=xp)
+        for kind in kinds:
+            if kind.stage_term is not None:
+                at_nodes = at_nodes + kind.stage_term(read, potentials, control, gated, xp=xp)[n:]
+                cells = cells + kind.stage_term(read, potentials, shut, closed, xp=xp)[:n]
+    capacitance = xp.where(held, p.membrane_capacitance, 0.0)
+    behind = scatter(capacitance, xp.zeros(n), (p.membrane_cell,), xp=xp)
+    rows = xp.where(loose, own + at_nodes[p.membrane_outside], 0.0)
+    return ChargeRows(
+        cell=first.relaxation_rows(xp.where(p.active, cells, 0.0), behind, xp=xp),
+        patch=first.relaxation_rows(rows, xp.where(loose, p.membrane_capacitance, 0.0), xp=xp),
+    )
 
 
 def material_rate(state, control, p, *, xp=jnp, structure=None, potentials=None):
@@ -3726,10 +3870,14 @@ def material_rate(state, control, p, *, xp=jnp, structure=None, potentials=None)
     return xp.maximum(cells, xp.max(xp.where(moving, nodes[n:], 0.0), initial=0.0))
 
 
-def free_outside_nodes(p, *, xp=jnp):
-    """[outside] the free outside nodes: active, not a held bath, not the gauge, not a fixed node
-    and named by no active face (B7's face-free nodes, surface_pump.face_free_node_rate), whose
-    charge their patches relax explicitly."""
+def free_outside_nodes(p, *, xp=jnp, without_fixed=False):
+    """[outside] the floating outside nodes of a layout, or of a composite's view of it
+    (surface_pump.floating_nodes by activity masks): active, not a held bath, not the gauge and
+    named by no active face, so that their patches relax their charge explicitly. A capacitor
+    component's representative, which the field layout holds fixed for its capacitor solve, is one
+    where no face names it. without_fixed (static) leaves out the field layout's fixed nodes too:
+    the expression of a world that declares no floating node, kept in its order of operations, so
+    that the world's program is unchanged (membrane_rate)."""
     o, n = p.outside_active.size, p.active.size
     zero = xp.zeros(o)
     faced = xp.where(p.face_active, 1.0, 0.0)
@@ -3740,8 +3888,10 @@ def free_outside_nodes(p, *, xp=jnp):
         forms = xp.where(p.forms_face_active, 1.0, 0.0)
         named = named + scatter(forms, zero, (p.forms_face_sender,), xp=xp)
         named = named + scatter(forms, zero, (p.forms_face_receiver,), xp=xp)
-    fixed = p.field_fixed[n:] if hasattr(p, "field_fixed") else xp.zeros(o, dtype=bool)
-    return p.outside_active & ~p.reservoir & (named == 0) & ~p.field_gauge_mask & ~fixed
+    if without_fixed:
+        fixed = p.field_fixed[n:] if hasattr(p, "field_fixed") else xp.zeros(o, dtype=bool)
+        return p.outside_active & ~p.reservoir & (named == 0) & ~p.field_gauge_mask & ~fixed
+    return p.outside_active & ~p.reservoir & (named == 0) & ~p.field_gauge_mask
 
 
 def patch_node_conductance(slope, p, *, xp=jnp):
@@ -4003,8 +4153,9 @@ class StepChecks(first.StepChecks):
         if self.spec.execution.solver in imex.IMPLICIT_CONDUCTANCE_IDS:  # N2: what stays explicit.
             return implicit_conductance_rate_bound(self.base)
         if getattr(self.spec.model, "forms_faces", ()):  # The forms faces' per-mover term too.
+            floating = first.floating_nodes(self.spec.model)  # A forms face holds its nodes too.
             with forms_return_paths(self.spec.model):  # The projection's binding sees them.
-                base = first.explicit_rate_bound(self.base)
+                base = first.explicit_rate_bound(self.base, floating=floating)
             return max(base, forms_rate_bound(self.spec))
         return first.explicit_rate_bound(self.base)
 
@@ -5066,6 +5217,7 @@ def structure(model):
         forms_faces=tuple(sorted(f.id for f in getattr(model, "forms_faces", ()))),  # () default.
         blocked_channels=tuple(sorted(c_id for _, c_id, _ in channel_blocks(model))),  # FR-51.
         block_modes=max((len(b.modes) for _, _, b in channel_blocks(model)), default=0),
+        floating_nodes=bool(first.floating_nodes(model)),  # False by default (the charge rule).
     )
 
 
@@ -5566,6 +5718,7 @@ STRUCTURED_FUNCTIONS = (
     "imex_step",
     "checked_step",
     "membrane_rate",
+    "charge_rows",
     "material_rate",
     "check_definition",
     "check_values",

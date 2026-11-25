@@ -311,6 +311,11 @@ class InnerStructure:
     # recorded exception in this file).
     blocked_channels: tuple = ()
     block_modes: int = 0
+    # The charge rule beside a floating node (docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md §8.3):
+    # whether an outside node floats (surface_pump.floating_nodes, from the parsed topology).
+    # Where one does, membrane_rate takes charge_rows. False for every other definition, so no
+    # structure or program of those moves; no layout, state or control field depends on it.
+    floating_nodes: bool = False
 
     def __post_init__(self):
         ids = [kind_id for kind_id, _ in self.kinds]
@@ -355,6 +360,8 @@ class InnerStructure:
                 "Blocked channels are a sorted tuple of distinct channel IDs, with a mode count "
                 "from 1 to 4 where any is declared and 0 where none is"
             )
+        if type(self.floating_nodes) is not bool:
+            raise ValueError("A structure's floating_nodes is a bool (whether a node floats)")
         series = self.junction_series_kinds
         if (
             (junction_series_gates.LAW_ID in self.junction_laws) != bool(series)
