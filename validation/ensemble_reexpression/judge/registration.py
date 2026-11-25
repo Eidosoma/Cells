@@ -636,26 +636,23 @@ class StringsNote:
         return cls(data, digest, rehearsal)
 
     def faults(self, registration: Registration) -> list:
-        """What makes the note unusable: a wrong kind, no revision, an empty string, a run without
-        labels, an unknown label.
+        """What makes the note unusable: a wrong kind, no revision, a run without labels, and a
+        label of a run that the note does not hold or holds no string for.
         """
         out = []
         if self.data.get("kind") != c.STRINGS_KIND:
             out.append("the note's kind is not the contract's")
         if not isinstance(self.revision, str) or len(self.revision) != 40:
             out.append("the note has no revision of 40 hex digits")
-        for label, string in self.labels.items():
-            if not isinstance(string, str) or not string:
-                out.append(f"the label {label} has no string")
         for name in registration.runs:
             if name not in self.runs:
                 out.append(f"the run {name} has no labels")
                 continue
             for label in self.labels_of(name):
                 if label not in self.labels:
-                    out.append(
-                        f"the run {name} names the label {label}, which the note does not hold"
-                    )
+                    out.append(f"the run {name} names the label {label}, which the note lacks")
+                elif not isinstance(self.labels[label], str) or not self.labels[label]:
+                    out.append(f"the label {label} of the run {name} has no string")
         return out
 
     def labels_of(self, name: str) -> list:
@@ -668,7 +665,7 @@ class StringsNote:
             run.get("observable"),
         ]
         several = [
-            label for key in ("operators", "kinds", "laws", "pool") for label in run.get(key, [])
+            label for key in ("operators", "kinds", "laws", "pool") for label in run.get(key) or []
         ]
         return sorted({label for label in single + several if label is not None})
 
