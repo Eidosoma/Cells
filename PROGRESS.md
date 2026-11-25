@@ -11,7 +11,7 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
 ## Open FR and core work (25 November 2026, night)
 
-Sources: [Decisions](docs/DECISIONS.md) D318 to D379, the [feature index](docs/FEATURE_REQUESTS.md) and the tags of 22 to
+Sources: [Decisions](docs/DECISIONS.md) D318 to D380, the [feature index](docs/FEATURE_REQUESTS.md) and the tags of 22 to
 25 November.
 
 - **Scheduled, from the morning of 25 November:**
@@ -70,7 +70,8 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D379, the [feature index](docs/F
   - **Follow-ups:** the docstring-only batch (scope lines of D337, D340, D344, D351, D355, D356); FR-43 part 3's
     open items and the factor-width term (D328); FR-43's gaps 3 and 4 (D347: no registered criterion for part 1;
     turnover in a swelling cell is FR-65); the restart row at a source's switch-off and a per-solver support view
-    (D349). The plain `runner.run`'s GPU admission is settled (D379).
+    (D349). The composite on a GPU through the plain `runner.run` is admitted with host checks; whether to require XLA's
+    deterministic flag, refuse it, or state the caveat is the user's (D380).
   - **Lean's rebuilt tip is merged** at 18198688 (D378); `lean-ready.sh` runs before every Lean merge.
 - **Open, unscheduled:** FR-1, FR-2, FR-3, FR-6, FR-11, FR-13, FR-14, FR-15, FR-16, FR-8's rung 2, F1 (after an
   MG0c rerun), crossrev renewal, and the Phase 0 runner's review. FR-17's stage 1 has landed (below); its GPU
