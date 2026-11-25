@@ -856,6 +856,20 @@
    ]
   },
   {
+   "path": "validation/legacy_port/capture_worlds.py",
+   "kind": "python",
+   "choice": "leave",
+   "choices": [
+    "re-spell",
+    "leave"
+   ],
+   "pinned_by": [
+    "validation/ensemble_reexpression/spec/plants_manifest.json",
+    "validation/ensemble_reexpression/spec/plants_manifest_part2.json"
+   ],
+   "note": "the captures' tool as the registered plants' manifests name it (capture_tool_sha256); its four old spellings are comments that name the captured worlds, which it runs from a frozen snapshot that spells them so"
+  },
+  {
    "path": "validation/tissue/active_excision_reference.py",
    "kind": "python",
    "choice": "re-spell",
@@ -2331,14 +2345,6 @@
   },
   {
    "cls": [
-    "cut"
-   ],
-   "path": "tests/unit/test_law_registry.py",
-   "text": "value\\.split\\(\"\\.\", 2\\)",
-   "reason": "H1b: the last part of a planted ID of three parts"
-  },
-  {
-   "cls": [
     "message"
    ],
    "path": "tests/unit/test_fr5_source_kinds.py",
@@ -2352,6 +2358,30 @@
    "path": "tests/unit/test_species_condition_kind.py",
    "text": "f\\.startswith\\(\"species_condition",
    "reason": "the start of the kind's field names, not a part of an ID"
+  },
+  {
+   "cls": [
+    "partial"
+   ],
+   "path": "validation/calcium_store/references/second_route.py",
+   "text": "\"fuel\" in (mover|mv)\\b",
+   "reason": "a mover's own key, not a part of an ID"
+  },
+  {
+   "cls": [
+    "partial"
+   ],
+   "path": "validation/ensemble_reexpression/table.py",
+   "text": "\"assembly\" in e\\[\"inputs\"\\]",
+   "reason": "a key of an entry's inputs, not a part of an ID"
+  },
+  {
+   "cls": [
+    "partial"
+   ],
+   "path": "validation/ensemble_reexpression/worlds.py",
+   "text": "\"kind\" in fuel\\b",
+   "reason": "a fuel's own key, not a part of an ID"
   }
  ]
 }
