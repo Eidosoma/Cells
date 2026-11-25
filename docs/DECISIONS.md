@@ -13162,3 +13162,50 @@ reaction-transport model). The list's open rows and their owners are being settl
 - **What it does not show:** the 3D field was not run; a model of one preprint; the agreement of numbers at the registered tolerance, not the biology. The references land with the next landing.
 - **Disclosed.** The lead read the run's raw points, and so its values, while estimating when it would end, before the judge ran. Nothing was changed after that. The judge ran from a local merge and not from a landed main, as the references were to stay out of main until
   both tables were hashed.
+
+## D389: the ensemble's re-expression: Part 1 judged and passes; Part 2 run and sealed by the user's decision; the test review moves before the gate
+
+2026-11-25, written at 23:18 UTC (the events of 19:51 to 23:16 UTC). The registered qualification `ensemble-reexpression-v1` (`docs/ENSEMBLE_REEXPRESSION_PROTOCOL.md`, D383) on branch `legacy-cleanup`.
+It is a port check: it shows that the live engine computes legacy's written equations at the steps run. It validates no physics (the protocol's §9, item 18), and legacy was never itself validated.
+
+- **Part 1 passes** (`jupiter`, `cell`, `base` in both of its sets, `integrated`). Its 214 registered runs were made from the frozen snapshot of the registration tag
+  `ensemble-reexpression-registered-2026-11-25` (8f8099cf), 22:07 to 22:24 UTC, cold, one thread each, on lanes A and B under their locks and CPUs 6, 7, 22 and 23. None was refused or stopped.
+  - **Tags, in order:** criteria `ensemble-reexpression-criteria-part1-2026-11-25` (77680d9e), amendment 1 (8833f749), amendment 2 (c8fdf306); the registration (8f8099cf); the strings note
+    `ensemble-reexpression-strings-2026-11-25` (78331c58; note sha256 4f0dbb7a...).
+  - **Before the first run:** the judge's C0 on the captures, its self-test and the format sample passed at the registration head; the trial merge with main was clean; D147's floor guard with constants passed on the
+    registered snapshot for all ten definitions that declare the floor variant (`jaxprs` and `bindings`, every program equal, constants equal).
+  - **The tables** were hashed by the lead at 22:25:00 (`table_base` 15c86db3..., `table_cell` ab149302..., `table_integrated` 138e7c65..., `table_jupiter` c86fe0b6...; `SHA256SUMS` 986d98f2...).
+  - **The judge** (its code at 7896e5cc): `power.json` c545a38c... was recorded by the lead before stage 2. The first pass held `jupiter`, `cell` and `base` pending on one "restart to confirm" each, and owed no retry
+    (`retry_owed.json` 917f3f53..., recorded).
+  - **The independent checker** scored the same tables with its own code, saved and hashed before it opened the judge's record. It confirmed the three restarts and its record duties from the run records, and settled the
+    three flags `by the rule` (settlements 2d2b79fa...). The judge's settled record (273a2145..., verdict 2f9341df...): all four consumers pass, final; 4,559 of 4,592 entries pass and 33 are reported.
+    The checker's comparison agrees entry by entry, with every class S number bit for bit (91a48c96...). The largest ratio of an S entry to its band is 6.6 × 10⁻⁴.
+  - **The rehearsal before it:** three sets of the 94 invented runs. The third, from the registered code, was scored by the judge and the checker together through the same settlement loop: as designed, `integrated` fails
+    by its planted stop and the other three pass.
+- **Part 2 is run and sealed, not judged.** The user was offered: full as registered; "run and seal"; drop. The user's answer, verbatim: "2." Part 2's Amendment 1 (`ensemble-reexpression-criteria-part2-amendment-1-2026-11-25`,
+  c4ddfedd) writes it down and says what is weaker. The lead confirmed PART2.md §3's nine conditions, the captured forms against the live ones (the calcium channel's constants read in both codes): no consumer is a changed model.
+  - **Tags:** the registration `ensemble-reexpression-registered-part2-2026-11-25` (7bfa656a), the strings note `ensemble-reexpression-strings-part2-2026-11-25` (bbe32742; `registered_strings_part2.json` cb885f08...).
+  - **Before the runs:** the floor guard with constants passed on its snapshot for all 33 distinct definitions, the retry runs' among them.
+  - **The runs,** 22:42 to 23:01 UTC: all 127 registered runs and all 36 retry runs completed, none refused or stopped, so the engine's own checks held in every run. The tables were exported, checked against the note,
+    hashed by the lead at 23:02:35 (`SHA256SUMS` f47a411a...) and sealed: nobody has opened them. Every file of the retry runs' records is hashed (500 files, list sha256 0147cd11...).
+  - **What is weaker:** no verdict; after the deletion nothing compares a live calcium cluster with anything outside the engine. The captures, the independent scalar reference and the pre-cleanup tag stay. A later scoring is a new
+    decision of the user's.
+- **The user's words on the scope,** verbatim: "just wondering if we are overengeering this", "but we never really proofed the old legacy code gave anything useful", "we're jsut starting real validation", "and we have the Lean tracks",
+  "this would be different if we were already "live" we are but we are pre-alpha an im the only user and we haven't really calirated Cells yet".
+- **The test review moves before the gate** (the user: "then look into moving the 11k test review before running the whole suite"). With the adviser: removals only before the one full gate (a row whose planted slip another staying row
+  catches by an assertion, code gone, a cheaper row proving the same, or exact numbers of an uncalibrated model with no reference behind them), as the last commit before the gate, after the user's yes on its list. Merging, slimming and
+  moves to nightly come after the landing, so that the final gate tests the code as it lands. Sized from the tier record: after the cleanup 619 test files stay (1,003 now); 194 files over 40 s hold 248 of 309 CPU-minutes.
+- **Found and fixed on the way:**
+  - The run records now say what was raised, the definition's check options, the path taken and the engine's own counts (fix5), so that the checker can confirm that no check was off. It was narrowed from a list of every engine
+    call, which AGENTS.md bars as a per-call attestation layer.
+  - A species-sum guard failed on the branch since calcium step 5. The new sum runs over the law's rows, an entity axis, and is added to the frozen allow-list (01ab9503).
+  - The fresh reader of the retiring tests found no live claim that only a retiring row holds. Live claims that no row held got four small rows (a closed patch or junction and abundance 0 carry nothing; a pool-driven store
+    world and its restart; a mapped batch keeps each world's kind numbers; the neighbour row's bound at 10⁻⁶). Four rows need not retire, so 193 retire.
+  - The independent scalar reference agrees with the eight captured driven calcium cluster worlds within 1.2 × 10⁻⁵ of its bound (3 × 10⁻⁹ relative, 3 × 10⁻¹² absolute).
+  - The 94 invented Part 1 runs, made again from Part 2's registration snapshot, give tables equal leaf by leaf to the registered code's but for provenance: Part 2's rewrite leaves Part 1's outputs unchanged.
+- **Disclosed:**
+  - The judge's tag (the protocol's §5, step 5) was missed at the registration and put on 7896e5cc at 23:07 UTC (`ensemble-reexpression-judge-2026-11-25`). That commit is an ancestor of the registration tag, pushed before the
+    first run, and no verdict changes.
+  - The checker found the third rehearsal set's folder before the lead's message, after its tables were hashed.
+- **Next:** the user's yes on the 193 retirements and the deletion; the deletion and the retirements; the ID move with a third trial; the step-13 repeats on the final head (Part 1's by the protocol, Part 2's by its amendment, equal
+  or not by program); the review's removals; the one full gate; the landing.

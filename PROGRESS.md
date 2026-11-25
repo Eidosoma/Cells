@@ -14,6 +14,9 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/FEATURE_REQUESTS.md) and the tags of 22 to
 25 November.
 
+- **25 November, late (D389):** the ensemble's re-expression, Part 1, is judged and **passes** (`jupiter`, `cell`, `base`, `integrated`;
+  judge and independent checker agree). Part 2 is run and sealed by the user's decision (all 127 runs and 36 retry runs completed;
+  not judged). The test review's removals come before the one full gate. Next: the deletion on the user's yes, the ID move, the gate.
 - **On now: the legacy cleanup** (D383, the user's decision). One branch, `legacy-cleanup`: the live side without legacy, the
   deletion, four features (their design notes are being written), the calcium ensemble re-expressed on the CPU, and the ID
   move last. Nothing lands and no gate runs until it is coded; then one registered qualification, one full gate with tier 3
