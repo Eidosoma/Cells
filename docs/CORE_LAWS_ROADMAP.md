@@ -148,9 +148,28 @@ effort and the main risk.
 - **Judged:** the BETSE parity rungs (PROGRESS's plan table, steps 3–5, on CPU and the L4). E07-v1
   is a judged experiment that runs @3's channels (`e07-v1-judged-2026-11-14`); it scored predictions,
   and does not qualify the laws.
-- **Older catalogues:** the channel catalogues in `laws/channels/` serve the older families. They
-  stay D167's parity references. Kv1.5's 19 legacy kernel cases move beside the law before any
-  legacy batch (D196).
+- **Older catalogues:** the channel catalogues in `laws/channels/` up to the 35-law one serve
+  `resolved_tissue@8`, which stays as D167's parity reference. The four tables of
+  `resolved_tissue@9` to `@12` left with the legacy cleanup; they held no kernel.
+- **D211's port programme: open, and it continues after the legacy cleanup** (D386, 25 November
+  2026). Its 54 law IDs, by what each group waits for. Every kernel named here stays in live `laws/`
+  with its reference and a kernel-level test. A law is registered on @3 when its module lands, and
+  a registered law is not thereby qualified.
+
+  | Group | Laws | Kernel | Waits for |
+  |---|---|---|---|
+  | Kv1.1 to Kv1.4 and Kv1.6 | 5 | `kv1p1_mh2` to `kv1p6_mh` | done: registered on @3 |
+  | Voltage-only K and Na: Kv2.1, Kv2.2, Kv3.1 to Kv3.4, K_fast; Nav1.3, the three rat Nav laws, Nav1.6 | 12 | `potassium_catalog`, `sodium_catalog` | one module each; no engine feature |
+  | Voltage-only, one gate: the three dynamic Morris-Lecar K laws | 3 | `morris_lecar_channels` | one module each (not checked: whether @3's gate template takes one gate as it stands) |
+  | CaV1.2, 1.3, 2.1, 2.2, 2.3, 3.1, 3.3; Ca_L2, Ca_L3, Cav_G | 10 | `cav_channels`, `calcium_catalog_extra` | calcium through channels, being built |
+  | HCN1, HCN2, HCN4; the HCN leak and the two cAMP-shifted laws | 6 | `hcn_channels`, `hcn_extra_channels` | the same: they carry calcium |
+  | The seven instantaneous Morris-Lecar laws | 7 | `morris_lecar_channels` | G-2, a law without a gate |
+  | Calcium-activated K | 1 | `calcium_activated_potassium` | G-3, a channel that reads a species, which the cardiac plan's H1 holds |
+  | Store pump and release, IP3 release, the Na/Ca exchanger | 4 | `er_calcium`, `plasma_calcium`; IP3 release only at the tag | the calcium store, the release factor and the exchanger, being built |
+  | The finite-ATP store pump | 1 | only at the tag | row fuel, a request the user may make |
+  | NKCC and the generic symport | 2 | only in legacy today | ported in the cleanup, as modules on the transporter kind |
+  | The cell-zone transporter | 1 | only at the tag | left there (the user, D386) |
+  | Mitochondrial passive; `junction_flux()` | 2 | not a port | nothing |
 
 **Designed.**
 - Cardiac H1 (HUMAN_CARDIAC_LAWS_DESIGN §4.5, §8):
