@@ -1146,6 +1146,9 @@ note's equations, and never from the code.
 builder (M): the two-cell definition is refused at the parse under version 2, so `declare(raw, "auto")`, which
 parses with the declared solver to count the free offsets, fails too; with version 3 declared first it counts two
 and keeps it. So the world is built with version 3 declared, and `declare` confirms the choice.
+**Corrected on 25 November 2026 (step 7, M):** that refusal comes from the probe world's numbers. Row 14's world, with the
+same nodes, faces and junction, parses under version 2 too, so no row rests on it; version 3 is declared for the two free
+offsets (D147).
 
 ## 15. Price, order and owners
 
