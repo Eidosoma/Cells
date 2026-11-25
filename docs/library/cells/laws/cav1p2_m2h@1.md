@@ -75,8 +75,9 @@ $$\frac{dm}{dt} = \frac{m_\infty - m}{\tau_m}, \qquad \frac{dh}{dt} = \frac{h_\i
 - **Domain:** −0.120 V ≤ V ≤ 0.060 V, the inner model's channel domain. A step outside it is refused,
   never clipped. There $\tau_m$ runs from 5 to 25 ms and $\tau_h$ from 20 to 70 ms.
 - **Its shape:** the second gate is half shut at −70 mV and the first half open at −20 mV, so at a
-  steady voltage at most one channel in ten thousand is open (near −19 mV). After a step from −100 to
-  0 mV the [open fraction](../../GLOSSARY.md#open-fraction) peaks at 0.39 after 12 ms.
+  steady voltage at most about one channel in ten thousand is open (near −19 mV). After a step from a
+  long stay at −100 mV to 0 mV the [open fraction](../../GLOSSARY.md#open-fraction) peaks at 0.39 after
+  12 ms.
 - **The current:** the host multiplies the open fraction by the population's permeability, abundance
   and availability, and moves calcium by the
   [constant-field flux](../../GLOSSARY.md#constant-field-flux) at
@@ -132,7 +133,7 @@ Declared test: [`tests/unit/test_kv1_channel_laws.py`](../../../../tests/unit/te
 
 The kernels are compared with an independent copy of the equations in the source's millivolts and
 milliseconds, in 80-digit decimals, at 1,801 voltages across the domain, in NumPy and compiled, within
-5e-14. Leaving out the 10 mV shift must miss the targets and the time constants, and $m^3 h$ for
+5e-14 of each value. Leaving out the 10 mV shift must miss the targets and the time constants, and $m^3 h$ for
 $m^2 h$ must miss the open fraction.
 
 The rows that need an admitted population use a planted law with this one's kernels that declares a
@@ -141,8 +142,8 @@ carries, the amounts it moves and its heat are the constant-field closed form's 
 50-digit decimals; a law and a model at valence 1 must miss all four. A law that says calcium is +1, or
 a model that does, is refused by name; so are a law without the material term, and an RK4 grid.
 
-An older row runs the source's unchanged class out of process and compares it with these kernels, which
-the older families still call. No run was compared with a measurement.
+Older rows run the source's unchanged class out of process and compare it with these kernels, which the
+older families still call. No run was compared with a measurement.
 
 ## Status
 
