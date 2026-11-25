@@ -12966,3 +12966,39 @@ readings. Read literally, an honest engine could not have passed FR-57, and some
 overnight (D378 to D381): the tip is merged at 18198688, its map is in D378, the docstring cites the new commit, and FR-51's
 external-K registration is tagged. The 15 files outside `lean/` that its audit lists hold one published cell line's name in
 ordinary citations, and are left as they are unless the user says otherwise.
+
+## D384: the rename's first landing; the cleanup's baseline is tagged and checked; the routing references are tagged and that line holds; what the re-expression map found
+
+2026-11-25, about 10:42 UTC. The lead.
+
+**The rename's first landing** is at 49529e71 (tag `id-rename-landing-1-2026-11-25`). No ID changes. Its gate at 43b22d40: IDs
+additions only (26), crossrev 11 of 11 identical, tiers 1 and 2 (672 files, 0 changed), G1 113 of 113, FR's bitwise set passed; the landing's
+trial 479 passed.
+
+**The baseline of the cleanup's one test:** tag `pre-cleanup-2026-11-25` at 49529e71, its frozen snapshot under
+`/mnt/workspaces/Cells/pre-cleanup-20261125/`. The first steps of every captured legacy world were run again from that snapshot and
+compared with the captures of 76a498ae: 12 of 12 jobs identical, bit for bit. So the captures stand at the baseline, and the hand refactors
+moved none of these worlds.
+
+**FR-54 and FR-57:** amendment 6 is tagged (`liquid-routing-amendment-6-2026-11-25`, dd21509b) and the code-blind references conform to all six
+(`liquid-routing-references-2026-11-25`, fa3eccbd): 867 check rows, 626 of 626 self-check rows, 54 of 54 mutations flagged, byte-identical
+under two other hash seeds; every `accuracy` is within its bound (the largest at 0.102 of it); the smallest plant margin is 13.2 on the
+registered worlds. The line holds here (D383).
+
+**The re-expression map** (`legacy-port-plan`, a1db6ab9, section 14) corrects the plan and shrinks the work.
+- **The sodium-calcium exchanger needs no engine feature.** The plan said the transporter kind refuses a mode that moves charge. It refuses one
+  that creates charge. The exchanger is one law module, and the plasma calcium pump is a re-parameterisation of the live one.
+- **The calcium-gated opening of the store blocks all four calcium clusters,** not the IP3 one alone. It and the IP3 factor are one per-stage
+  factor source on one route, so one note owns the source and the other the route.
+- **A calcium row with a channel route on the pump tissue cannot be buffered today.** Either a per-stage bound for channels is added, or
+  the channel's gates become a factor source on a passive route. The note weighs both.
+- **Four consumers need no new piece:** the JUPITER world, the assembly cluster's base, the assembly cell and the integrated ensemble's world.
+  The last has no capture yet and is captured from the baseline.
+- **The assembly half is one-way and live already.** An assembly world can be written today as a live pool run whose event path becomes a channel
+  schedule. The note weighs that against an operator.
+- **The calcium worlds keep their equations and change their integrator** (fourth-order RK4 to a second-order split), so no bitwise
+  comparison with legacy is possible for them. The criteria are written and tagged before any candidate run (D383).
+
+**Rulings (the lead):** the live side owns the ensemble families' file, the command line and the ionic list until its merge, with a refusal by
+name for the two assembly commands and the two kinds; the manifest's `legacy` key leaves under a new major (`cells.declarations@3`), which also
+covers the ID rule the move amends (D371, Q6); and the shared test worlds move to `reaction_transport@1`.

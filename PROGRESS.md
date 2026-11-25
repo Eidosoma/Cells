@@ -11,21 +11,21 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
 ## Open FR and core work (25 November 2026, morning)
 
-Sources: [Decisions](docs/DECISIONS.md) D318 to D383, the [feature index](docs/FEATURE_REQUESTS.md) and the tags of 22 to
+Sources: [Decisions](docs/DECISIONS.md) D318 to D384, the [feature index](docs/FEATURE_REQUESTS.md) and the tags of 22 to
 25 November.
 
 - **On now: the legacy cleanup** (D383, the user's decision). One branch, `legacy-cleanup`: the live side without legacy, the
   deletion, four features (their design notes are being written), the calcium ensemble re-expressed on the CPU, and the ID
   move last. Nothing lands and no gate runs until it is coded; then one registered qualification, one full gate with tier 3
-  and FR's set. The removal list comes to the user first. **Everything else below holds,** except the rename's first
-  landing (at its gate), GJ-N1's field run, FR-43 part 3's spec and references, and closing the routing amendments.
+  and FR's set. The removal list comes to the user first. **Everything else below holds,** except GJ-N1's field run and
+  FR-43 part 3's spec and references. The baseline is the tag `pre-cleanup-2026-11-25` (49529e71), whose legacy worlds match
+  the captures bit for bit (D384).
 - **Scheduled, from the morning of 25 November:**
   - **The law-ID rename** (D345, D346, D371). Everything live becomes `cells.<family>.<name>@major`; one scripted
     move with a committed mapping table, no aliases. The design note is on `rename-design` (2dd54f72) and the tool is
-    built (`id-rename-tool`, D382). Two landings: first the hand refactors and the tool with an empty table (43b22d40, at its
-    gate), then the move, which is the last step of the legacy cleanup (D383). Between them: the pre-cleanup tag, the
-    snapshot (D369) and the legacy captures' bitwise check. The words are decided (D371, and the 12 of D383). The branches in
-    flight are re-merged after the move.
+    landed with an empty table and the hand refactors (49529e71, `id-rename-landing-1-2026-11-25`, D384). The move is the last
+    step of the legacy cleanup (D383). The words are decided (D371, and the 12 of D383). The branches in flight are
+    re-merged after the move.
   - **Legacy** (D346, D348, D369, D374). Everything actually used leaves legacy in canonical forms; relocation alone
     is ruled out as an end state. The calcium ensemble is kept and re-expressed (five engine features, about 16 to
     28 agent-days as a rough guess, candidate requests only). The physiology stack (17 drivers on five legacy BETSE
@@ -42,8 +42,8 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D383, the [feature index](docs/F
   - **FR-54 and FR-57** (high; D341, D362, D364): one `liquid_routing@1` operator that takes over the wash. Note
     `docs/LIQUID_ROUTING_DESIGN.md` (968bd182, branch `fr54-57-design`); 8.25 to 10.5 agent-days, after the
     rename. The protocol and spec are tagged (`liquid-routing-criteria-2026-11-25`), and amendment 5
-    (`liquid-routing-amendment-5-2026-11-25`) settles an independent audit's findings (D383). The references conform, are
-    tagged, and the line holds. The wash retires only after FR-49's World B and C1 and FR-45's W2 and W7 have run, or those runs are
+    (with amendment 6, dd21509b) settles an independent audit's findings (D383). The references are tagged
+    (`liquid-routing-references-2026-11-25`, D384), and the line holds. The wash retires only after FR-49's World B and C1 and FR-45's W2 and W7 have run, or those runs are
     pinned to an earlier snapshot.
   - **FR-65** (high, part of FR-43; D365, D375): turnover beside a changing volume, with a lumen. Note `fr65-design`
     (df473a02); about 3.1 to 4.45 agent-days for the first build, 2 to 2.5 more for the volume-reading step.
