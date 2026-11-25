@@ -106,6 +106,9 @@ class TableSet:
         flags = [["SHA256SUMS", fault] for fault in faults]
         if sums is None:
             flags.append(["SHA256SUMS", "absent from the folder (recorded and flagged, it refuses nothing by itself)"])
+        for path in sorted(folder.glob("table_*.json")):
+            if path.name[len("table_") : -len(".json")] not in consumers:
+                flags.append(["a file of no consumer", f"{path.name}: not read"])
         files = {}
         for consumer in consumers:
             name = f"table_{consumer}.json"
@@ -446,8 +449,8 @@ class RunState:
 
     @property
     def partial(self) -> bool:
-        """True where its rows may be partial, so that it is judged on the rows that it holds (CRITERIA section 5)."""
-        return self.judgable and self.refusal_kind is not None
+        """True for a refused or stopped run whose echo stands: it is judged on the rows that it holds (CRITERIA section 5)."""
+        return self.judgable and bool(self.refusal_kind is not None or self.provenance or self.guard)
 
     def causes(self) -> list:
         """Every cause of its refusal, stop or absence."""
@@ -580,11 +583,14 @@ def recorded_flags(registration: Registration, run: dict, entry: dict) -> list:
     if pool:
         if entry.get("steps") is not None:
             out.append(["steps", "not null in a pool run"])
+        for key, empty in (("t", []), ("rows", {}), ("potential_t", []), ("potentials", {})):
+            if entry.get(key) != empty:
+                out.append(["recorded leaf", f"{key} is not empty in a pool run"])
         pools = entry.get("pool")
         for cell in world.pools:
             mine = pools.get(cell) if isinstance(pools, dict) else None
-            if isinstance(mine, dict) and not is_integer(mine.get("stream_id")):
-                out.append(["recorded leaf", f"pool.{cell}.stream_id is missing or mistyped"])
+            if isinstance(mine, dict):
+                out += [["recorded leaf", f"pool.{cell}.{key} is missing or mistyped"] for key in ("seed", "stream_id") if not is_integer(mine.get(key))]
         return out
     t = entry.get("t")
     start = registration.restart_time(run)
@@ -598,21 +604,27 @@ def recorded_flags(registration: Registration, run: dict, entry: dict) -> list:
         fingerprint = inputs["assembly"].get("composed_file_fingerprint")
         if not isinstance(fingerprint, str) or not fingerprint:
             out.append(["recorded leaf", "inputs.assembly.composed_file_fingerprint is missing or mistyped"])
-    rows = entry.get("rows")
-    if isinstance(rows, dict):
-        known = set(world.row_series())
-        extra = sorted(set(rows) - known)
+    out += [["recorded leaf", f"{key} is not null in an ionic run"] for key in ("pool", "path") if entry.get(key) is not None]
+    held = entry.get("potential_t")
+    if start is None and isinstance(held, list) and held and is_finite(held[0]) and abs(held[0]) > c.TIME_TOL_S:
+        out.append(["potential_t", "its first time is not 0"])
+    for key, times, known in (("rows", t, set(world.row_series())), ("potentials", held, {"voltage", "phi_out"})):
+        values = entry.get(key)
+        if not isinstance(values, dict):
+            continue
+        extra = sorted(set(values) - known)
         if extra:
             out.append(["extra series", extra])
-        if isinstance(t, list):
-            bad = []
-            for series, table in rows.items():
-                if isinstance(table, dict):
-                    for entity, values in table.items():
-                        if not isinstance(values, list) or len(values) != len(t) or not np.all(np.isfinite(column(values))):
-                            bad.append(f"{series}/{entity}")
-            if bad:
-                out.append(["rows", f"a list of another length, or a value that is missing, mistyped or not finite: {bad[:5]} ({len(bad)})"])
+        if not isinstance(times, list):
+            continue
+        bad = []
+        for series, table in values.items():
+            if isinstance(table, dict):
+                for entity, listed in table.items():
+                    if not isinstance(listed, list) or len(listed) != len(times) or not np.all(np.isfinite(column(listed))):
+                        bad.append(f"{series}/{entity}")
+        if bad:
+            out.append([key, f"a list of another length, or a value that is missing, mistyped or not finite: {bad[:5]} ({len(bad)})"])
     return out
 
 

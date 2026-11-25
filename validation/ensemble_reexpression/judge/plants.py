@@ -21,9 +21,11 @@ HEATS = ("heat_leak", "heat_pump", "heat_channel")
 class Query:
     """What a plant's checks ask of a record."""
 
-    def __init__(self, record: dict):
+    def __init__(self, record: dict, baseline: dict | None = None):
         self.record = record
         self.entries = record["entries"]
+        self.before = None if baseline is None else {k: v["verdict"] for k, v in baseline["consumers"].items()}
+        self.failed_before = set() if baseline is None else set(Query(baseline).fails())
 
     def find(self, **wanted) -> list:
         """The judged entries that have these values."""
@@ -43,8 +45,9 @@ class Query:
         return found[0]["outcome"] if len(found) == 1 else f"{len(found)} entries"
 
     def fails(self) -> list:
-        """Every failing entry, as (run, readout)."""
-        return [(e["run"], e["readout"]) for e in self.entries if e["judged"] and e["outcome"] == c.FAIL]
+        """Every failing entry that did not fail in the baseline, as (run, readout)."""
+        found = [(e["run"], e["readout"]) for e in self.entries if e["judged"] and e["outcome"] == c.FAIL]
+        return [item for item in found if item not in self.failed_before]
 
     def run(self, name) -> dict:
         """A run's state."""
@@ -57,6 +60,12 @@ class Query:
     def verdict(self, consumer) -> str:
         """A consumer's verdict."""
         return self.record["consumers"][consumer]["verdict"]
+
+    def reads(self, consumer, wanted):
+        """True or False: a consumer's verdict is the wanted one. None where the baseline does not pass, so that it cannot be read."""
+        if self.before is not None and self.before[consumer] != c.PASS:
+            return None
+        return self.verdict(consumer) == wanted
 
     def plant(self, name) -> str:
         """An engine plant's score."""
@@ -166,7 +175,7 @@ def plants(registration: Registration, captures: Captures) -> list:
             ("leak_K fails (S)", q.outcome(family=A.name, readout="leak_K", **{"class": "S"}) == c.FAIL),
             ("the balances of both cells and of the region they face fail (R), in each rung", q.balances_fail(A.runs, "K", world.cells, facing)),
             ("no run is refused", not any(q.run(n)["refused"] for n in A.runs)),
-            ("the consumer fails", q.verdict(ionic) == c.FAIL),
+            ("the consumer fails", q.reads(ionic, c.FAIL)),
         ],
     )
 
@@ -208,7 +217,7 @@ def plants(registration: Registration, captures: Captures) -> list:
             ("class E of that array fails, for that run", q.outcome(run=pool_run, readout=readout) == c.FAIL),
             ("no other entry fails", q.fails() == [(pool_run, readout)]),
             ("the run is not refused", not q.run(pool_run)["refused"]),
-            ("the consumer fails", q.verdict(pools) == c.FAIL),
+            ("the consumer fails", q.reads(pools, c.FAIL)),
         ]
 
     must4 = "a fail of class E of that array, for that run"
@@ -227,7 +236,7 @@ def plants(registration: Registration, captures: Captures) -> list:
             ("the third run is not refused", not q.run(H1)["refused"]),
             ("their readouts are judged", q.readouts_judged(H2, A.name) and q.readouts_judged(H3, A.name)),
             ("no entry fails", not q.fails()),
-            ("the consumer is inconclusive", q.verdict(ionic) == c.INCONCLUSIVE),
+            ("the consumer is inconclusive", q.reads(ionic, c.INCONCLUSIVE)),
         ],
     )
 
@@ -243,7 +252,7 @@ def plants(registration: Registration, captures: Captures) -> list:
             ("h1 is refused and not stopped", q.run(H1)["refused"] and not q.run(H1)["stopped"]),
             ("h3's balance of that cell fails (R)", q.balances_fail((H3,), "K", world.cells[:1])),
             ("the family's S entries are not formed", {e["outcome"] for e in q.S(A.name)} == {c.NOT_FORMED}),
-            ("the consumer fails", q.verdict(ionic) == c.FAIL),
+            ("the consumer fails", q.reads(ionic, c.FAIL)),
         ],
     )
 
@@ -270,7 +279,7 @@ def plants(registration: Registration, captures: Captures) -> list:
             ("the exposure passes (R)", q.outcome(run=path_run, readout=f"{path_cell} exposure") == c.PASS),
             ("the schedule entries of the ionic runs pass", {e["outcome"] for e in q.entries if e["judged"] and e["readout"] in ("switch list", "channel schedule")} == {c.PASS}),
             ("no other entry fails", q.fails() == [(path_run, f"{path_cell} path")]),
-            ("the consumer fails", q.verdict(pools) == c.FAIL),
+            ("the consumer fails", q.reads(pools, c.FAIL)),
         ],
     )
 
@@ -283,7 +292,7 @@ def plants(registration: Registration, captures: Captures) -> list:
             ("refused by its echo", q.cause(H1, "departing echo", "temperature_K")),
             ("nothing of the run is judged", q.nothing_judged(H1, A.name)),
             ("no entry fails", not q.fails()),
-            ("the consumer is inconclusive", q.verdict(ionic) == c.INCONCLUSIVE),
+            ("the consumer is inconclusive", q.reads(ionic, c.INCONCLUSIVE)),
         ],
     )
 
@@ -306,7 +315,7 @@ def plants(registration: Registration, captures: Captures) -> list:
         lambda q: [
             ("not refused", not q.run(I1)["refused"]),
             ("no entry fails", not q.fails()),
-            ("the consumer passes", q.verdict(J) == c.PASS),
+            ("the consumer passes", q.reads(J, c.PASS)),
         ],
     )
 
@@ -320,7 +329,7 @@ def plants(registration: Registration, captures: Captures) -> list:
             ("D fails", q.outcome(run=H1, readout="completes") == c.FAIL),
             ("the rows it holds are judged", {e["outcome"] for e in q.R(H1)} == {c.PASS}),
             ("no other entry fails", q.fails() == [(H1, "completes")]),
-            ("the consumer fails", q.verdict(ionic) == c.FAIL),
+            ("the consumer fails", q.reads(ionic, c.FAIL)),
         ],
     )
 
@@ -333,7 +342,7 @@ def plants(registration: Registration, captures: Captures) -> list:
             ("the support run is missing", q.cause(target["restart"], "missing")),
             ("the run it supports is not refused", not q.run(registration.restarted(registration.runs[target["restart"]]))["refused"]),
             ("no entry fails", not q.fails()),
-            ("the consumer is inconclusive", q.verdict(ionic) == c.INCONCLUSIVE),
+            ("the consumer is inconclusive", q.reads(ionic, c.INCONCLUSIVE)),
         ],
     )
 
@@ -347,7 +356,7 @@ def plants(registration: Registration, captures: Captures) -> list:
             ("h3 is not refused", not q.run(I3)["refused"]),
             ("their readouts are judged", q.readouts_judged(I1, junctions.name) and q.readouts_judged(I2, junctions.name)),
             ("no entry fails", not q.fails()),
-            ("the consumer is inconclusive", q.verdict(J) == c.INCONCLUSIVE),
+            ("the consumer is inconclusive", q.reads(J, c.INCONCLUSIVE)),
         ],
     )
 
@@ -380,7 +389,7 @@ def plants(registration: Registration, captures: Captures) -> list:
         "the consumer fails, and the record shows that its blind families pass", jp15,
         lambda q: [
             ("channel_K of that family fails (S)", q.outcome(family=seen.name, readout="channel_K", **{"class": "S"}) == c.FAIL),
-            ("the consumer fails", q.verdict(pools) == c.FAIL),
+            ("the consumer fails", q.reads(pools, c.FAIL)),
             ("its blind families pass", blind_passes(q)),
         ],
     )
@@ -393,7 +402,7 @@ def plants(registration: Registration, captures: Captures) -> list:
         "the consumer inconclusive, and the record shows that its blind families pass", jp16,
         lambda q: [
             ("the run is refused, and not stopped", q.run(seen.runs[0])["refused"] and not q.run(seen.runs[0])["stopped"]),
-            ("the consumer is inconclusive", q.verdict(pools) == c.INCONCLUSIVE),
+            ("the consumer is inconclusive", q.reads(pools, c.INCONCLUSIVE)),
             ("its blind families pass", blind_passes(q)),
         ],
     )
@@ -479,7 +488,7 @@ def plants(registration: Registration, captures: Captures) -> list:
             ("the other two rungs are not refused", not q.run(H1)["refused"] and not q.run(H3)["refused"]),
             ("its readouts are judged", q.readouts_judged(H2, A.name)),
             ("no entry fails", not q.fails()),
-            ("the consumer is inconclusive", q.verdict(ionic) == c.INCONCLUSIVE),
+            ("the consumer is inconclusive", q.reads(ionic, c.INCONCLUSIVE)),
         ],
     )
 
@@ -492,7 +501,7 @@ def plants(registration: Registration, captures: Captures) -> list:
         "JP22", ionic, f"the rows of {target['engine_plant']} made equal to its honest run's ({A.name}, h3)", "the plant is not caught, and the consumer fails", jp22,
         lambda q: [
             ("the plant is not caught", q.plant(variant) == "not caught"),
-            ("the consumer fails", q.verdict(ionic) == c.FAIL),
+            ("the consumer fails", q.reads(ionic, c.FAIL)),
         ],
     )
 
@@ -505,7 +514,7 @@ def plants(registration: Registration, captures: Captures) -> list:
             ("refused by its echo", q.cause(I3, "departing echo", "declared_strings")),
             ("nothing of the run is judged", q.nothing_judged(I3, junctions.name)),
             ("no entry fails", not q.fails()),
-            ("the consumer is inconclusive", q.verdict(J) == c.INCONCLUSIVE),
+            ("the consumer is inconclusive", q.reads(J, c.INCONCLUSIVE)),
         ],
     )
 
@@ -518,7 +527,7 @@ def plants(registration: Registration, captures: Captures) -> list:
             ("refused, with the reason off_grid_change", q.run(H3)["refused"] and "off_grid_change" in q.run(H3)["reasons"]),
             ("its readouts are judged", q.readouts_judged(H3, A.name)),
             ("no entry fails", not q.fails()),
-            ("the consumer is inconclusive", q.verdict(ionic) == c.INCONCLUSIVE),
+            ("the consumer is inconclusive", q.reads(ionic, c.INCONCLUSIVE)),
         ],
     )
     return out
@@ -555,8 +564,8 @@ def run_plants(registration: Registration, note: StringsNote, tables: dict, c0: 
         altered = dict(tables)
         altered[plant.consumer] = dict(tables[plant.consumer], runs=dict(runs))
         record = judge(registration, note, altered, c0, captures, planted)
-        checks = [[what, bool(good)] for what, good in plant.check(Query(record))]
-        item.update(scores_as_stated=all(good for _, good in checks), checks=checks)
+        checks = [[what, good if good is None else bool(good)] for what, good in plant.check(Query(record, baseline))]
+        item.update(scores_as_stated=all(good is not False for _, good in checks), checks=checks)
         item["verdicts"] = {k: v["verdict"] for k, v in record["consumers"].items()}
         out["plants"].append(item)
     out["all_as_stated"] = all(p["scores_as_stated"] for p in out["plants"])

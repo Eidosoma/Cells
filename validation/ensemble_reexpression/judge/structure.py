@@ -153,6 +153,8 @@ def entry_faults(entry, where: str, out: Faults) -> str:
     inputs = get("inputs")
     assembly = isinstance(inputs, dict) and "assembly" in inputs
     refusal = get("refusal")
+    # A refused run without a row may hold a declaration that the engine could not read, or none at all (Amendment 2, item 7).
+    bare = refusal is not None and get("t") == [] and not pool
     out.need(get("status") in ("completed", "refused"), f"{where}.status", "neither completed nor refused")
     out.need((get("status") == "completed") == (refusal is None), f"{where}.refusal", "disagrees with status")
     out.need(isinstance(get("world"), str), f"{where}.world", "no string")
@@ -163,7 +165,7 @@ def entry_faults(entry, where: str, out: Faults) -> str:
         for key in ("step_s", "steps"):
             out.need(get(key) is None, f"{where}.{key}", "not null in a pool run")
     else:
-        out.need(is_number(get("step_s")), f"{where}.step_s", "no number")
+        out.need(is_number(get("step_s")) or bare, f"{where}.step_s", "no number")
         out.need(is_integer(get("steps")) or refusal is not None, f"{where}.steps", "no integer")
     rows_faults(entry, where, out, pool)
     pool_faults(entry, where, out, pool)
@@ -171,12 +173,14 @@ def entry_faults(entry, where: str, out: Faults) -> str:
         if out.need(isinstance(inputs, dict) and inputs, f"{where}.inputs", "no object by cell"):
             for cell, block in inputs.items():
                 out.shape(block, {"channel": TEXT, "stream_id": NUMBER, "seed": NUMBER, "pool": POOL}, f"{where}.inputs.{cell}")
+    elif bare:
+        out.need(isinstance(inputs, dict), f"{where}.inputs", "no object")
     else:
         block_faults(inputs, f"{where}.inputs", out)
         if assembly:
             assembly_faults(inputs["assembly"], f"{where}.inputs.assembly", out)
     strings, declared = get("strings"), get("declared_strings")
-    good = isinstance(strings, dict) and strings and all(isinstance(v, str) and v for v in strings.values())
+    good = isinstance(strings, dict) and (strings or bare) and all(isinstance(v, str) and v for v in strings.values())
     out.need(good, f"{where}.strings", "no map of strings")
     if out.need(isinstance(declared, list) and all(isinstance(s, str) for s in declared), f"{where}.declared_strings", "no list of strings"):
         out.need(declared == sorted(set(declared)), f"{where}.declared_strings", "not sorted, or a string stands twice")

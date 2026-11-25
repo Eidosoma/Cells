@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import copy
 import json
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -367,6 +368,8 @@ class Registration:
         out = {}
         for name, runs in grouped.items():
             runs = sorted(runs, key=lambda r: -r["step_s"])
+            if len(runs) != 3:
+                raise ValueError(f"the family {name!r} has {len(runs)} judged runs, and not three")
             first = runs[0]
             out[name] = Family(
                 name,
@@ -443,11 +446,8 @@ class Registration:
 
     def restart_time(self, run: dict):
         """The checkpoint's time of a support run, from its registered variant, or None where it is none."""
-        variant = run["variant"] or ""
-        marker = "restart at "
-        if run["role"] != "support" or marker not in variant:
-            return None
-        return float(variant.split(marker)[1])
+        found = re.search(r"restart at ([0-9.eE+-]+)", run["variant"] or "")
+        return float(found.group(1)) if found and run["role"] == "support" else None
 
     def restarted(self, run: dict):
         """The judged run that a restart is compared with."""

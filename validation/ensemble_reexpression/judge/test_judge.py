@@ -301,6 +301,19 @@ def test_a_refused_run_is_judged_on_the_rows_it_holds(benches, kind):
     assert (I[0], "balance of cells, K") in q.fails() and q.verdict("integrated") == FAIL
 
 
+def test_a_refused_run_that_has_no_declaration(benches):
+    """Amendment 2, item 7: where no declaration exists, `inputs`, `strings` and `declared_strings` are empty."""
+
+    def alter(runs):
+        refuse(runs[I[0]], "harness", rows=False)
+        runs[I[0]].update(inputs={}, strings={}, declared_strings=[], steps=None)
+        out = structure.Faults()
+        assert structure.entry_faults(runs[I[0]], "x", out) == "ionic run, refused (harness)" and out.items == []
+
+    q = benches("integrated").score(alter)
+    assert q.run(I[0])["refused"] and q.nothing_judged(I[0], "integrated") and q.verdict("integrated") == OPEN and not q.fails()
+
+
 def test_a_run_in_missing_or_in_neither_list(benches):
     bench = benches("integrated")
     for missing in ([I[1]], []):

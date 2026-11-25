@@ -12,7 +12,7 @@ from pathlib import Path
 from . import fabricate, plants, scoring, strictjson, structure
 from . import constants as c
 from .c0 import C0
-from .legacy import Captures, Planted
+from .legacy import Captures, Fault, Planted
 from .registration import SPEC, Registration, StringsNote, load_profile
 from .scoring import OrderFault
 from .table import TableSet, hash_folder
@@ -36,17 +36,12 @@ def recorded(folder, record_file) -> dict:
 
 
 def first_inputs(args, reg):
-    """What stage 1 and stage 2 both read: the tables, the note, C0's record, and their hashes."""
-    tables = TableSet.read(args.tables, reg.consumers)
+    """What stage 1 and stage 2 both read: the tables (which must be the recorded ones), the note, C0's record, and their hashes."""
+    held = recorded(args.tables, args.tables_record)
     note = StringsNote.read(args.strings, reg.rehearsal)
     c0, c0_digest = strictjson.read(Path(args.c0))
-    hashes = {
-        "spec": reg.files,
-        "tables": recorded(args.tables, args.tables_record),
-        "strings_sha256": note.sha256,
-        "c0_sha256": c0_digest,
-    }
-    return tables, note, c0, hashes
+    hashes = {"spec": reg.files, "tables": held, "strings_sha256": note.sha256, "c0_sha256": c0_digest}
+    return TableSet.read(args.tables, reg.consumers), note, c0, hashes
 
 
 def file_with_digest(path, wanted: str):
@@ -127,7 +122,6 @@ def retry_inputs(args, reg):
         raise OrderFault("the first pass's record, its power.json and its retry_owed.json do not belong together")
     if not owed["runs"]:
         raise OrderFault("no retry is owed")
-    retry = TableSet.read(args.retry_tables, reg.consumers, retry=True)
     hashes = {
         **hashes,
         "retry_tables": recorded(args.retry_tables, args.retry_record),
@@ -135,6 +129,7 @@ def retry_inputs(args, reg):
         "owed_sha256": args.owed_sha256,
         "first_record_sha256": first_digest,
     }
+    retry = TableSet.read(args.retry_tables, reg.consumers, retry=True)
     return first, owed, power, hashes, tables, note, c0, retry
 
 
@@ -232,7 +227,7 @@ def report_plants(args, record) -> bool:
     digest = strictjson.dump(args.out, record)
     print("baseline:", record["baseline"])
     for plant in record["plants"]:
-        wrong = [what for what, good in plant.get("checks", []) if not good]
+        wrong = [what for what, good in plant.get("checks", []) if good is False]
         print(f"{plant['plant']:14s} {'as stated' if plant['scores_as_stated'] else 'NOT as stated'} {wrong or plant.get('cannot_be_formed') or ''}")
     print("all as stated:", record["all_as_stated"], digest, args.out)
     return record["all_as_stated"]
@@ -271,7 +266,7 @@ def main(argv=None) -> int:
     args = parser().parse_args(argv)
     try:
         good = args.run(args)
-    except OrderFault as error:
+    except (OrderFault, Fault) as error:
         print(f"refused: {error}", file=sys.stderr)
         return 2
     return 0 if good is None or good else 1

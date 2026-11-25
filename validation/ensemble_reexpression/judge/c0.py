@@ -141,11 +141,17 @@ class C0:
             "part": c.PART,
             "status": "fail" if any(r["status"] == "fail" for r in records) else "pass",
             "spec_sha256": self.reg.files,
+            "texts_sha256": {n: strictjson.sha256((self.reg.folder / n).read_bytes()) for n in self.texts()},
             "clauses": records,
             "legacy": self.legacy,
-            "opened": len(self.captures.opened) + len(self.planted.opened),
+            "opened": {**self.captures.opened, **self.planted.opened},
             "not_done": NOT_DONE,
         }
+
+    def texts(self) -> list:
+        """The texts of Part 1 that the folder holds, by name."""
+        amendments = sorted(p.name for p in self.reg.folder.glob("AMENDMENT-*.md"))
+        return [n for n in (*TEXTS, *amendments) if (self.reg.folder / n).is_file()]
 
     def seeds(self, world) -> list:
         """The seed indices of the world's judged pool runs, or one None for a world without pools."""
@@ -807,7 +813,9 @@ class C0:
                 legacy = self.legacy[family.name]["entries"][entry.name]
                 beta = bands.band(entry, 0.0, legacy["U_l"], steps_c, steps_l)["beta"]
                 distance = self.reg.ratio(world.name, entry.name) * legacy["largest"]
-                if not k.check(beta <= distance / c.POWER_FACTOR, f"{family.name} {entry.name}: not tested at U_c = 0"):
+                tested = beta <= distance / c.POWER_FACTOR
+                k.check(tested or self.reg.rehearsal, f"{family.name} {entry.name}: not tested at U_c = 0")
+                if not tested:
                     untested.append([family.name, entry.name])
         k.numbers["untested"] = untested
 
@@ -888,6 +896,7 @@ class C0:
         k.numbers["counts"] = table
 
 
+TEXTS = ("README.md", "SPEC.md", "READOUTS.md", "CRITERIA.md", "TABLE.md", "PLANTS.md")
 NOT_DONE = [
     "The independent scalar reference of SPEC section 7 was not run: its file is not in the judge's reading list. The author's run of 25 November is the evidence (protocol section 11).",
     "The pool plants' two output files (plants_manifest.json pool_plants) lie outside the planted folder that the judge may open.",

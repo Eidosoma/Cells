@@ -25,29 +25,37 @@ class OrderFault(Exception):
 def expected_counts(registration: Registration, consumer: str, families=None) -> dict:
     """The entries of a consumer by class. `families` restricts the families; the pool and support runs stay (CRITERIA section 8)."""
     chosen = registration.by_consumer[consumer] if families is None else families
+    names = {family.name for family in chosen}
     out = {"S": 0, "energy": 0, "R": 0, "E": 0, "D": 0}
     for family in chosen:
-        world = family.world
-        out["S"] += len(world.entries)
-        out["D"] += 3
-        if world.identities_judged:
-            out["energy"] += 1
-            out["R"] += 3 * (3 * len(world.species) + 1)
-        out["E"] += 3 * len(world.zeros)
-        if world.assembly:
-            out["E"] += 3 * 3
+        out["S"] += len(family.world.entries)
+        out["energy"] += int(family.world.identities_judged)
     for run in registration.runs.values():
-        if run["consumer"] != consumer:
+        if run["consumer"] != consumer or (run["family"] is not None and run["family"] not in names):
             continue
         world = registration.worlds[run["world"]]
         pool = registration.is_pool(run)
-        if run["role"] == "judged" and pool:
+        if run["role"] == "judged":
             out["D"] += 1
-            out["R"] += len(world.pools)
-            out["E"] += len(world.pools) * (len(c.POOL_ARRAYS) + 2)
+            if pool:
+                out["R"] += len(world.pools)
+                out["E"] += len(world.pools) * (len(c.POOL_ARRAYS) + 2)
+            else:
+                out["R"] += ionic_R(world)
+                out["E"] += ionic_E(world)
         if run["role"] == "support" and registration.restart_time(run) is not None:
             out["E"] += len(world.pools) * (len(c.POOL_ARRAYS) + 1) if pool else len(world.entries)
     return out
+
+
+def ionic_R(world) -> int:
+    """The class R entries of an ionic judged run: three balances of each species, and the capacitor."""
+    return 3 * len(world.species) + 1 if world.identities_judged else 0
+
+
+def ionic_E(world) -> int:
+    """The class E entries of an ionic judged run: its structural zeros and, in an assembly world, the switch list, the schedule and the seeds."""
+    return len(world.zeros) + (3 if world.assembly else 0)
 
 
 # ----- what both stages read -----
@@ -303,6 +311,7 @@ class Stage2:
                 "retry_owed": owed,
                 "consumers": verdicts["consumers"],
                 "part_1": verdicts["part"],
+                "reference_files_opened": {**self.captures.opened, **self.planted.opened},
             }
         )
 
@@ -310,7 +319,7 @@ class Stage2:
         """Comparison (b): a run whose class S rows all equal the captured rows of its own world at a captured step."""
         for name, state in self.tables.states.items():
             run = state.run
-            if not state.judgable or self.reg.is_pool(run) or run["role"] == "support":
+            if not state.judgable or self.reg.is_pool(run) or run["role"] == "support" or run["family"] not in self.reg.families:
                 continue
             rows = self.tables.guard_rows(name)
             if rows is None:
@@ -419,6 +428,8 @@ class Stage2:
             }
             try:
                 rows = self.tables.rows(name)
+                if not at:
+                    raise NotFormed("no compared time")
                 value = residual(rows, at)
                 partial = None
             except NotFormed as error:
@@ -573,6 +584,9 @@ class Stage2:
             return
         world = self.reg.worlds[run["world"]]
         owner = self.reg.restarted(run)
+        if owner is None:
+            self.flag(name, "restart", "no registered run is the one that it resumes")
+            return
         at_fault = None
         if state.judgable:
             held = state.entry.get("restart")
@@ -601,11 +615,13 @@ class Stage2:
                 rows = self.tables.rows(name)
                 optional = [t for t in entry.times if abs(t - start) <= c.TIME_TOL_S]
                 times = [t for t in optional if rows.held((t,), key)] + after
+                if not times:
+                    raise NotFormed("no compared time after the restart's time")
                 mine = self._at(name, entry, times)
                 whole = self._at(owner, entry, times)
             except NotFormed as error:
-                why, missed = str(error), self._partial_restart(state, owner, entry, after, key) if at_fault is None else False
-                self.add(**record, outcome=c.FAIL if missed else c.NOT_FORMED, why=why)
+                missed = at_fault is None and self._partial_restart(state, owner, entry, after, key)
+                self.add(**record, outcome=c.FAIL if missed else c.NOT_FORMED, why=str(error))
                 continue
             good = np.array_equal(mine, whole)
             self.add(**record, outcome=c.PASS if good else c.FAIL, why=None, statistic=bands.largest(mine - whole), band=0.0)
@@ -617,8 +633,9 @@ class Stage2:
         return rows.get(entry.series, times)
 
     def _partial_restart(self, state, owner, entry, times, key) -> bool:
-        """True where a partial restart's held rows already differ from the uninterrupted run's."""
-        if not state.partial or not self.tables.states[owner].judgable:
+        """True where one of the two runs is refused or stopped, and the rows that both hold already differ."""
+        whole = self.tables.states[owner]
+        if not (state.judgable and whole.judgable and (state.partial or whole.partial)):
             return False
         mine = self.tables.rows(state.name)
         held = [t for t in mine.held(times, key) if t in self.tables.rows(owner).held(times, key)]
@@ -697,6 +714,9 @@ class Stage2:
                 path = self._path(state.entry, cell, ids)
                 reference = {wid: self.reg.reference_path(run["world"], seed, cell, wid) for wid in ids}
                 wrong = [wid for wid in ids if path[wid] != reference[wid]]
+                if wrong and state.partial and all(path[wid] == reference[wid][: len(path[wid])] for wid in ids):
+                    path = None
+                    raise NotFormed("a refused run's path, which is a beginning of the reference path")
                 self.add(**record, outcome=c.FAIL if wrong else c.PASS, why=f"worlds {wrong}" if wrong else None)
             except NotFormed as error:
                 self.add(**record, outcome=c.NOT_FORMED, why=str(error))
@@ -736,6 +756,9 @@ class Stage2:
             return
         world = self.reg.worlds[run["world"]]
         owner = self.reg.restarted(run)
+        if owner is None:
+            self.flag(name, "restart", "no registered run is the one that it resumes")
+            return
         whole = self.tables.states[owner]
         fault = None
         if state.judgable:
@@ -753,6 +776,8 @@ class Stage2:
         for cell, pool in world.pools.items():
             ids = [str(pool["pool"]["world_id_start"] + i) for i in range(pool["pool"]["worlds"])]
             base = {"consumer": run["consumer"], "family": None, "run": owner, "support": name, "judged": True, "class": "E", "cell": cell}
+            if owner in self.reg.profile.get("not_blind_pool_runs", []):
+                base["holds_worlds_that_are_not_blind"] = True
             shapes = {array: self.captures.pool_arrays(run["world"], run["seed_index"], cell)[array].shape for array in c.POOL_ARRAYS}
             for array in c.POOL_ARRAYS:
                 record = {**base, "readout": f"restart {cell} {array}"}
@@ -927,7 +952,12 @@ class Stage2:
             table = {which: self._set_verdict(consumer, families, runs, plants) for which, families in sets.items()}
             order = (c.FAIL, c.INCONCLUSIVE, c.PASS)
             verdict = min((t["verdict"] for t in table.values()), key=order.index)
-            consumers[consumer] = {"verdict": verdict, "sets": table}
+            judged = [e for e in self.entries if e["consumer"] == consumer and e["judged"]]
+            counts = self._counts(consumer, self.reg.by_consumer[consumer], judged)
+            published = self.reg.profile.get("counts", {}).get(consumer, {})
+            for key, numbers in counts.items():
+                numbers["published"] = published.get(key)
+            consumers[consumer] = {"verdict": verdict, "sets": table, "counts": counts}
             note = self.reg.profile.get("notes", {}).get(consumer)
             if note:
                 consumers[consumer]["note"] = note
@@ -1001,9 +1031,8 @@ class Stage2:
         retried = [f for f in families if f.retry_name in self.tables.states]
         for family in retried:
             expected["D"] += 1
-            expected["E"] += len(family.world.zeros) + (3 if family.world.assembly else 0)
-            if family.world.identities_judged:
-                expected["R"] += 3 * len(family.world.species) + 1
+            expected["E"] += ionic_E(family.world)
+            expected["R"] += ionic_R(family.world)
         formed = dict.fromkeys(expected, 0)
         for item in entries:
             if item["outcome"] in (c.NOT_FORMED, c.REPORTED):
