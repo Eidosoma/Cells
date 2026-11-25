@@ -304,6 +304,9 @@ def invented():
     for m in unsupported["membranes"].values():
         m["passive"]["law"] = "no_such_law"
     cold["temperature_K"] = 150.0
+    # Closed for two steps, then far too fast for its step: the engine's check stops it after rows.
+    opened = [[0.0, 0.0], [8e-05, 1.0]]
+    tight["controls"]["junction"] = {name: opened for name in tight["junctions"]}
     off = sheet()
     off["controls"]["junction"]["j_ab"] = [[0.0, 1.0], [9.1e-05, 0.5]]
     plain = grid(4e-05, [0.0, 4e-05, 0.00012, 0.0002])
