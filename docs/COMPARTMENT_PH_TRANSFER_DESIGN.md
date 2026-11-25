@@ -1,5 +1,8 @@
 # Compartment pH and state-conditioned transfer: FR-4 and FR-5 (design)
 
+> **Legacy cleanup (25 November 2026, D386).** Paths under `src/cells/legacy/` and the older model
+> IDs named below left the engine. The tag `pre-cleanup-2026-11-25` keeps them.
+
 **Status (16 November 2026).** Written 15 November 2026 by the FR-4/FR-5 physics owner (D176), as
 design before code (D142).
 - **FR-4 is built and on main,** with D172's round (ab267c39, tag `d172-landed-2026-11-16`):

@@ -418,10 +418,11 @@ Use Python 3.13 (tested with 3.13.5):
 python3 -m venv .venv
 .venv/bin/python -m pip install --no-cache-dir -r requirements-lock.txt
 .venv/bin/python -m pip install --no-build-isolation --no-deps -e .
-.venv/bin/python -m cells run configs/single_cell_pulse.json --output runs/my-first-cell --checkpoint-at 6
+.venv/bin/python -m cells run configs/resolved_pump_tissue_channels_cell.json --output runs/my-first-cell --checkpoint-at 0.5
 ```
 
-This simulates one cell for 12 seconds with an input pulse, and writes the
+This simulates one pumping cell with three channel populations for one second, with a
+sodium leak open from 0.05 to 0.35 seconds, and writes the
 resolved configuration, trajectories, a summary and complete checkpoints. Every
 output directory must be new. More examples, including restart and branching,
 are in [Running the model families](docs/RUN_EXAMPLES.md). The lock is CPU-only;

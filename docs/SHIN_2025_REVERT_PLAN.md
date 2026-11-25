@@ -1,5 +1,8 @@
 # Backlog plan: Shin et al. (2025), attractor landscape and a reversion switch in colorectal tumorigenesis
 
+> **Legacy cleanup (25 November 2026, D386).** Paths under `src/cells/legacy/` and the older model
+> IDs named below left the engine. The tag `pre-cleanup-2026-11-25` keeps them.
+
 D. Shin, J. R. Gong, S. D. Jeong, Y. Cho, H.-P. Kim, T.-Y. Kim, K.-H. Cho,
 "Attractor Landscape Analysis Reveals a Reversion Switch in the Transition of
 Colorectal Tumorigenesis", *Advanced Science* 12(8), e2412503 (2025),

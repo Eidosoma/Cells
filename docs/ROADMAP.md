@@ -189,6 +189,10 @@ histories. Explicit membrane damage is the component described below; tissue
 cutting and growth remain later work. Ordinary checkpoint branches deliberately
 reject a changed model/topology.
 
+> **Legacy cleanup (25 November 2026, D386).** `resolved_repair@1` to `@4` left the engine; the tag
+> `pre-cleanup-2026-11-25` keeps them. Injury and resealing on the live line is `cells.patch_damage@1`.
+> Cutting cells out is lost until it is asked for.
+
 The first component, `resolved_repair@1`, gives each membrane patch an explicit
 damage fraction between zero and one. A timed injury hazard opens the intact
 fraction; a declared first-order closure law lets damage decay. Damage controls
@@ -233,6 +237,10 @@ Source inspection and implementation evidence are recorded separately in
 [Progress](../PROGRESS.md); neither establishes biological regeneration.
 
 ## Membrane redistribution
+
+> **Legacy cleanup (25 November 2026, D386).** `resolved_redistribution@1` to `@3` and the mobile compositions
+> below left the engine; the tag `pre-cleanup-2026-11-25` keeps them. Nothing replaces lateral redistribution; the
+> nearest live pieces are `membrane_entity_state@1` and the trafficking operator.
 
 Use the [conservative surface-transport component](TISSUE_RETURN_CURRENT.md#lateral-membrane-redistribution)
 for explicitly owned membrane-bound populations. The first ordinary composition,

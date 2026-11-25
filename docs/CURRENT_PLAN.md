@@ -478,7 +478,7 @@ This is the heredity question: can a written state repeatedly renew?
 | One material account | All of these reconcile in one account and predict a measured physiological response |
 
 The choice of unit is the user's. FR-7 (D163) asks that the chosen loop admit a species-driven production rate and an abundance-sourced factor in the composite. Candidates where abundance is already state:
-- the redistribution pumps (`resolved_redistribution@1/@2`);
+- the redistribution pumps (`resolved_redistribution@1/@2`, which left with the legacy cleanup, D386);
 - junction formation.
 
 The [protein catalogue](PROTEIN_CATALOGUE_PLAN.md) supplies identity, stoichiometry and

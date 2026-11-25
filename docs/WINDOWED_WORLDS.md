@@ -8,8 +8,8 @@ worlds are independent experiments, not connected organs or tissue partitions.
 ## Running a cohort
 
 ```bash
-taskset -c 0-3 .venv/bin/python -m cells batch windowed validate configs/batch_source_pair.json --window-steps 16
-taskset -c 0-3 .venv/bin/python -m cells batch windowed run configs/batch_source_pair.json --window-steps 16 --recording observations --checkpoint-every-windows 2 --output runs/my-windowed-worlds
+taskset -c 0-3 .venv/bin/python -m cells batch windowed validate configs/batch_reaction_transport.json --window-steps 16
+taskset -c 0-3 .venv/bin/python -m cells batch windowed run configs/batch_reaction_transport.json --window-steps 16 --recording observations --checkpoint-every-windows 2 --output runs/my-windowed-worlds
 taskset -c 0-3 .venv/bin/python -m cells batch windowed resume runs/my-windowed-worlds/snapshots/round-0000000002 --window-steps 32 --recording checkpoints --output runs/my-windowed-worlds-replay
 ```
 

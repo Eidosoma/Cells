@@ -1,5 +1,8 @@
 # Architecture review notes (12 November 2026)
 
+> **Legacy cleanup (25 November 2026, D386).** Paths under `src/cells/legacy/` and the older model
+> IDs named below left the engine. The tag `pre-cleanup-2026-11-25` keeps them.
+
 Status: **for review by the user and a second reviewer.** This is a read-only review;
 nothing in it has been started.
 

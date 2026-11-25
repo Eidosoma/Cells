@@ -1,5 +1,8 @@
 # The inner model made modular, in place (design)
 
+> **Legacy cleanup (25 November 2026, D386).** Paths under `src/cells/legacy/` and the older model
+> IDs named below left the engine. The tag `pre-cleanup-2026-11-25` keeps them.
+
 **Status: landed on main on 16 November 2026** (merge ab267c39 of candidate 3c10b833, tag
 `d172-landed-2026-11-16`), after the integrated gate; the records are in PROGRESS. **It was built
 (D176, from 15 November) on `integration-d172` from tag `d172-base-2026-11-15` (44227075).

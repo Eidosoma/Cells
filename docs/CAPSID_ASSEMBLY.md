@@ -220,6 +220,10 @@ scientific families. Test/run evidence is linked from [Progress](../PROGRESS.md)
 
 ## One-way assembly regulation of a cell
 
+> **Parked (legacy cleanup, 25 November 2026, D386).** `cells assembly-cell`, `assembly_regulated_cell@1` and its ensemble kind left the
+> engine; the tag `pre-cleanup-2026-11-25` keeps them. The coupling is re-expressed as a CPU driver that
+> writes a pool's switch path into a channel schedule; its GPU path waits.
+
 Assembly can provide an explicit molecular state between cell chemistry and
 membrane function. Candidate mechanisms include a regulatory scaffold that
 changes channel availability, a receptor complex that retains a response after
@@ -298,6 +302,10 @@ state, ionic state, ledgers and the common clock. The current one-way family
 provides that first composition; feedback and inheritance remain separate work.
 
 ## Assembly regulation in interacting cells
+
+> **Parked (legacy cleanup, 25 November 2026, D386).** `cells assembly-cluster`, `assembly_regulated_cluster@1` and its ensemble kind left the
+> engine; the tag `pre-cleanup-2026-11-25` keeps them. The coupling is re-expressed as a CPU driver that
+> writes a pool's switch path into a channel schedule; its GPU path waits.
 
 `assembly_regulated_cluster@1` composes a finite assembly pool for each cell
 with `spatial_extracellular@2`. The example

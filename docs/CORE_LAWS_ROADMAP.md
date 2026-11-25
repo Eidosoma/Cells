@@ -35,7 +35,8 @@ gene-regulation design note. The lead's rulings for MT-1:
 - **Compared:** checked against code-blind references in every gate, but not judged.
 - **Development:** landed, neither judged nor compared.
 - **Weaker evidence** is kept wherever the record says it.
-- **Legacy:** `src/cells/legacy/`. It is a reference, not a supported surface (D196).
+- **Legacy:** `src/cells/legacy/`, which left the engine in the legacy cleanup (25 November 2026,
+  D386); the tag `pre-cleanup-2026-11-25` keeps it.
 - **(estimate):** this note's own rough figure, in agent-days. A design note's own estimate is cited
   to that note.
 
@@ -70,9 +71,9 @@ and **MT-2**.
     view;
   - B1, the populations' lifecycle by roles (3fd9c17c), and B1′, the operator rate route (ee43b082).
   - **Not landed:** B2, the own-axis maps that let a kind's populations divide.
-- **Older families** live in `src/cells/legacy/` (D188). Calcium handling, and energy with
-  mitochondria, live only there today. Each is rebuilt in the modular engine, then dropped in one
-  approved batch (D196).
+- **The older families left** in the legacy cleanup (25 November 2026, D386; the tag
+  `pre-cleanup-2026-11-25` keeps them). What was used, the calcium ensemble and its clusters, is
+  re-expressed on the modular engine; the finite-fuel pools are a candidate request.
 - **The assembly family** (`cells.assembly_lineages@1` and `@2`) is a separate stochastic engine,
   for GARD and origin of life (D192, D197, D199).
 
@@ -148,9 +149,28 @@ effort and the main risk.
 - **Judged:** the BETSE parity rungs (PROGRESS's plan table, steps 3–5, on CPU and the L4). E07-v1
   is a judged experiment that runs @3's channels (`e07-v1-judged-2026-11-14`); it scored predictions,
   and does not qualify the laws.
-- **Older catalogues:** the channel catalogues in `laws/channels/` serve the older families. They
-  stay D167's parity references. Kv1.5's 19 legacy kernel cases move beside the law before any
-  legacy batch (D196).
+- **Older catalogues:** the channel catalogues in `laws/channels/` up to the 35-law one serve
+  `resolved_tissue@8`, which stays as D167's parity reference. The four tables of
+  `resolved_tissue@9` to `@12` left with the legacy cleanup; they held no kernel.
+- **D211's port programme: open, and it continues after the legacy cleanup** (D386, 25 November
+  2026). Its 54 law IDs, by what each group waits for. Every kernel named here stays in live `laws/`
+  with its reference and a kernel-level test. A law is registered on @3 when its module lands, and
+  a registered law is not thereby qualified.
+
+  | Group | Laws | Kernel | Waits for |
+  |---|---|---|---|
+  | Kv1.1 to Kv1.4 and Kv1.6 | 5 | `kv1p1_mh2` to `kv1p6_mh` | done: registered on @3 |
+  | Voltage-only K and Na: Kv2.1, Kv2.2, Kv3.1 to Kv3.4, K_fast; Nav1.3, the three rat Nav laws, Nav1.6 | 12 | `potassium_catalog`, `sodium_catalog` | one module each; no engine feature |
+  | Voltage-only, one gate: the three dynamic Morris-Lecar K laws | 3 | `morris_lecar_channels` | one module each (not checked: whether @3's gate template takes one gate as it stands) |
+  | CaV1.2, 1.3, 2.1, 2.2, 2.3, 3.1, 3.3; Ca_L2, Ca_L3, Cav_G | 10 | `cav_channels`, `calcium_catalog_extra` | calcium through channels, being built |
+  | HCN1, HCN2, HCN4; the HCN leak and the two cAMP-shifted laws | 6 | `hcn_channels`, `hcn_extra_channels` | the same: they carry calcium |
+  | The seven instantaneous Morris-Lecar laws | 7 | `morris_lecar_channels` | G-2, a law without a gate |
+  | Calcium-activated K | 1 | `calcium_activated_potassium` | G-3, a channel that reads a species, which the cardiac plan's H1 holds |
+  | Store pump and release, IP3 release, the Na/Ca exchanger | 4 | `er_calcium`, `plasma_calcium`; IP3 release only at the tag | the calcium store, the release factor and the exchanger, being built |
+  | The finite-ATP store pump | 1 | only at the tag | row fuel, a request the user may make |
+  | NKCC and the generic symport | 2 | only in legacy today | ported in the cleanup, as modules on the transporter kind |
+  | The cell-zone transporter | 1 | only at the tag | left there (the user, D386) |
+  | Mitochondrial passive; `junction_flux()` | 2 | not a port | nothing |
 
 **Designed.**
 - Cardiac H1 (HUMAN_CARDIAC_LAWS_DESIGN §4.5, §8):
@@ -355,8 +375,9 @@ to D173's licence condition); FR-15 P2.
 - FR-5's transfer, with leak and reseal, judged (51 of 51; `fr5-v1-qualified-2026-11-17`).
 - The division cleft: `restricted_cleft_lumen@2`, judged with S5a. Its `@1` is on main too.
 - The host-side identity map (D174), which "partly holds" B2 of INNER_MODEL_V4_DESIGN.
-- **Legacy:** `er_calcium@1` and `ip3_er_release@1`. And `resolved_calcium_energy_mitochondria@1`,
-  whose mitochondrial law is passive: no respiration and no ATP.
+- **Left with the legacy cleanup:** `er_calcium@1` and `ip3_er_release@1`, whose physics is being
+  re-expressed here; and `resolved_calcium_energy_mitochondria@1`, whose mitochondrial law was
+  passive, with no respiration and no ATP.
 
 **Not built** (FR-1's doors, [CLOSED_COMPARTMENT_DESIGN.md](CLOSED_COMPARTMENT_DESIGN.md) §8).
 - Creation (C), division (D), fusion and fission (F), replacement (R), volume (V), condensation and
@@ -453,7 +474,8 @@ partition of discrete organelles, which is outside door D's first version.
 - A regulatory state with a rate bound, driving availability (`species_regulated_availability@1`)
   or rates (`@2`, B1′).
 - Mass-action reactions (`local_species_reactions@1`).
-- An isolated regulatory model, `emt_mirna@1` ([GRN_WETLAB_VALIDATION.md](GRN_WETLAB_VALIDATION.md)).
+- An isolated regulatory model, `emt_mirna@1`, left with the legacy cleanup
+  ([GRN_WETLAB_VALIDATION.md](GRN_WETLAB_VALIDATION.md)).
 
 **Held.**
 - D145 holds the gene-regulation track, with Cortés-Poza Phase 1 and catalogue stage 3. D179 kept
@@ -548,9 +570,11 @@ pump's fuel pools); origin of life, in its own family.
 - D150's secreted-species transport, judged within its held-sphere scope.
 - `resolved_pump_tissue@2` carries Ca²⁺ and a plasma-membrane Ca pump (BETSE parity rung 1: version 2
   passed, weaker evidence after version 1 failed).
-- **Legacy:** the calcium families, `er_calcium@1` and `ip3_er_release@1`.
+- **Left with the legacy cleanup:** the calcium families, `er_calcium@1` and `ip3_er_release@1`, being
+  re-expressed.
 - **Not on @3:** Ca²⁺ in channel populations, Ca²⁺ buffers and pools.
-- **Second messengers:** only the legacy IP₃ release. No modular design exists for IP₃, cAMP or
+- **Second messengers:** only the IP₃ release of the older families, being re-expressed as a source
+  kind. No modular design exists for IP₃ as a messenger, cAMP or
   others. FR-15 names second messengers among the junction-crossing species it would serve.
 
 **Designed.**
@@ -621,8 +645,8 @@ the Xenopus lane later (migration).
   references (tag `ol1-landed-2026-11-18`).
 - OL5's references for OL2 and OL3 (e8759b48).
 - `cells.relations@1` (D200, D202).
-- Older assembly models: `capsid_graph@1`, `finite_bond_assembly@1`, `assembly_regulated_cell@1` and
-  `assembly_regulated_cluster@1`.
+- Older assembly models: `capsid_graph@1` and `finite_bond_assembly@1`. `assembly_regulated_cell@1` and
+  `assembly_regulated_cluster@1` left with the legacy cleanup; their coupling is re-expressed as a driver.
 
 **On branches.** OL2 milestone 1 (ol2-engine at 9190ae78: `cells.bilayer_geometry@1`,
 `cells.phase_exchange@1`, `cells.membrane_permeation@1`; development). The `ol3-engine` branch.

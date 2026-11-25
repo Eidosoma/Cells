@@ -1,5 +1,8 @@
 # E07-v2: write, clear, challenge (proposed note, with E15's version-0 lesions)
 
+> **Legacy cleanup (25 November 2026, D386).** Paths under `src/cells/legacy/` and the older model
+> IDs named below left the engine. The tag `pre-cleanup-2026-11-25` keeps them.
+
 **Status: PROPOSED, 14 November 2026, for the lead's review with the advisor.** Nothing here
 is registered and nothing has run except the definition-time builds of §7. It follows D151:
 E07-v2 adopts the write–clear–challenge rules of the partial-reprogramming review, translated

@@ -1,5 +1,8 @@
 # Mitochondria: design (proposed)
 
+> **Legacy cleanup (25 November 2026, D386).** Paths under `src/cells/legacy/` and the older model
+> IDs named below left the engine. The tag `pre-cleanup-2026-11-25` keeps them.
+
 **Status: DECIDED, 16 November 2026: the options of §3 and the questions of §9.1 (D193).** Built
 in step 4 of D194's order. Beard 2005's legibility, since checked, is under the screen items. Proposed
 the same day; design only, no engine code. Written on branch

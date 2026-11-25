@@ -1,5 +1,8 @@
 **Mitochondria: implications for Cells — reviewed 10 October 2026**
 
+> **Legacy cleanup (25 November 2026, D386).** Paths under `src/cells/legacy/` and the older model
+> IDs named below left the engine. The tag `pre-cleanup-2026-11-25` keeps them.
+
 Liyam Chitayat, *Mitochondria Are Alive*, Asimov Press, 8 November 2024.
 [Article](https://www.asimov.press/p/mitochondria),
 [DOI](https://doi.org/10.62211/38pe-75hu).
