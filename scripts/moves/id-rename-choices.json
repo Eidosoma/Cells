@@ -864,6 +864,7 @@
     "leave"
    ],
    "pinned_by": [
+    "validation/ensemble_reexpression/rehearsal/plants_manifest_rehearsal.json",
     "validation/ensemble_reexpression/spec/plants_manifest.json",
     "validation/ensemble_reexpression/spec/plants_manifest_part2.json"
    ],
@@ -1106,6 +1107,11 @@
     "path": "validation/closed_compartment/reference_inputs.json",
     "reason": "registered reference inputs, whose git blob FR-1's design pins and a test checks",
     "owner": "fr1"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/make_inputs.py",
+    "reason": "the rehearsal's maker: it writes legacy definitions for the frozen snapshot, in the IDs that the snapshot spells, and verify.py compares the captured definitions with what it writes; the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
    },
    {
     "path": "validation/fr1/references/reference_inputs.json",
