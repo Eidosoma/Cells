@@ -281,7 +281,8 @@ at the outside:  T_o,s = 1e15 A P r_s a open v u B(+x_s) / V_o     1/s
   and a law that names another is refused by name at the definition. Without potentials the term is +inf at the
   population's ends, as the passive routes' is. A declaring population under a block is counted there whole, at the
   routed availability, and `block_material_rates` leaves it out. Its part through E is FR-51's, so the reversal ion's
-  own: a law with several ions would have no term for its other ions' fluxes through E. No law is one.
+  own. A law with several ions and a material term is therefore refused by name under such a block (`parse_block`;
+  the lead's ruling, 25 November 2026): its other ions' fluxes through E would have no term. No law is one.
 
 ### 5.4 The door for the buffers
 
@@ -628,6 +629,10 @@ refuses a wrong shape by name.
   `moved_rows` stand for the slot's, which the core cannot tell without `routed_rows`. Elsewhere it is admitted.
 - The passive routes bind the two hooks on factored declarations only. Without potentials the rate is +inf at both
   ends.
+- An operator that opens, closes or retires slots is refused by name beside a loop (`pump_composite.structure_errors`),
+  whatever the kinds declare: the loops' layout is the core's, and no lifecycle acts on it. Today the kinds refuse each
+  of the three already, insertion@1 too, for their missing roles; replacement and trafficking are refused beside any
+  kind.
 
 **Limits, stated (row 7), in this note and in E's:**
 - loops through two routes (one moves X and gates on Y, another moves Y and gates on X) are not bounded;
@@ -1141,6 +1146,9 @@ note's equations, and never from the code.
 builder (M): the two-cell definition is refused at the parse under version 2, so `declare(raw, "auto")`, which
 parses with the declared solver to count the free offsets, fails too; with version 3 declared first it counts two
 and keeps it. So the world is built with version 3 declared, and `declare` confirms the choice.
+**Corrected on 25 November 2026 (step 7, M):** that refusal comes from the probe world's numbers. Row 14's world, with the
+same nodes, faces and junction, parses under version 2 too, so no row rests on it; version 3 is declared for the two free
+offsets (D147).
 
 ## 15. Price, order and owners
 
