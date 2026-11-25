@@ -60,6 +60,7 @@ import math
 import sys
 from pathlib import Path
 
+from validation import id_table
 from validation.morphogenesis.mg0a_gradient import evaluate
 from validation.tissue.regulated_availability_judge import differences
 
@@ -702,9 +703,10 @@ def without_run_times(value):
 
 
 def compare(path_a, path_b, out_json):
-    """Two runs' records bit for bit, run times apart (RUN_TIME_KEYS; Track R's `differences`)."""
-    a = json.loads(Path(path_a).read_text())
-    b = json.loads(Path(path_b).read_text())
+    """Two runs' records bit for bit, run times apart (RUN_TIME_KEYS; Track R's `differences`),
+    the renamed IDs of a saved one translated."""
+    a = id_table.load(path_a)
+    b = id_table.load(path_b)
     parts = {}
     for name in sorted(set(a["parts"]) | set(b["parts"])):
         if name not in a["parts"] or name not in b["parts"]:
