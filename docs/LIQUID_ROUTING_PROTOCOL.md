@@ -3,7 +3,8 @@
 **Status: written 25 November 2026 for the lead's tags, before the build** (D341, D352, D362, D364).
 Docs and validation only, with no `src/` change. Its author does not write references, build, judge or
 check. Branch `fr54-57-protocol`, from main 0e563668. The dt study of 25 November filled its placements (`spec/SPEC.md`
-§6), through the lead's report only (§11); no placeholder remains open.
+§6), through the lead's report only (§11). A few of the study agent's answers are still pending and are marked
+where they go (§11).
 
 **What it registers.** This document and `validation/liquid_routing/spec/`: `README.md`, `SPEC.md`,
 `LAWS.md`, `READOUTS.md`, `CRITERIA.md`, `TABLE.md` and `inputs.json`. With the code-blind references and
@@ -262,8 +263,10 @@ NumPy and decimal code, no engine, on CPU 6, in
     and 4 × 10⁻⁴ of a looser heat bound (a multiplier of 128);
   - the T2 gap at 0.95 to 0.99 of its remainder, as Taylor's series says;
   - S-class errors at 0.32 to 0.34 of 3 est, orders within 0.05 of p;
-  - T4's ladder at 0.2 to 0.62 of its bound at resolved levels, and 0.9 to 15 times it at an unresolved
-    one (a background of 0.017 mM).
+  - the T4 ladder rule then planned, at 0.2 to 0.62 of its bound at resolved levels and 0.9 to 15 times it at an
+    unresolved one (a background of 0.017 mM). The dt study's law replaced the rule: T4 is judged against its
+    declared law and its Taylor bound, which were checked on neighbouring inputs too (err at 0.956 to 1.000 of the
+    bound, and P16's planted error 109 to 127 times it at kh = 1/64; `default_law.py`).
 - **Registered inputs it touched:** the four portion orders of arm 4, whose losses the request states; arm
   2's start, to show that its exact solution holds 8 and 2 fmol at 16 s; and the sign of `F6`'s
   discriminant, to show that the ring has complex rates. No stand-in ran on a registered world.
@@ -271,10 +274,11 @@ NumPy and decimal code, no engine, on CPU 6, in
   scheme's order; it is kept as `native_run_first_offgrid.out`. SPEC.md §0 therefore requires every
   compared time on the grid.
 - **What the dry run changed:** a planted first-order error sits at about 1.0 of a step-halving tolerance
-  made from its own rungs, so a plant is scored with the honest run's tolerance, and T4 has a decisive
-  ladder. The rounding multipliers come from the operation count in `LAWS.md` §9, not from the margins.
+  made from its own rungs, so a plant is scored with the honest run's tolerance, and T4 is judged by its law's
+  closed bound. The rounding multipliers come from the operation count in `LAWS.md` §9, not from the margins.
 
 **Not read:** engine source, tests, any run output, any reference file, the judge's code, the builder's code.
 
-**The advisor** answered on the plan. It was called three times on the draft, the last after the dt study's
-report was written in, and timed out each time, so no draft was reviewed by it.
+**The advisor** answered this author on the plan. It was called three times on the draft, the last after the dt
+study's report was written in, and timed out each time. The lead's own advisor review of the protocol and the
+criteria (the lead's message of 25 November, 11 items) is answered by the commits after it.
