@@ -239,8 +239,8 @@ in §11.
    (start, step) and the author moves any that stops (§11).
 3. **The order window** is [p − ½, 2.5] for each class, the scheme's order 2 plus D271's half, narrower than
    D271's. A resolved order outside it is inconclusive, as D271 has it; an unresolved one is reported, not judged
-   (`CRITERIA.md` §3.5). Adopted. Amendment 5's V7 governs since: where one difference alone is at rounding the entry is
-   inconclusive.
+   (`CRITERIA.md` §3.5). Adopted. Amendment 5's V7 governs since: where exactly one difference is at rounding, an
+   entry at most τ is inconclusive and one above τ fails.
 4. **The default heat's law** (LAWS.md §2) is declared from the study agent's reading of the engine at main
    0e563668, checked here for its algebra and its Taylor bound only. T4 tests it through the composite. Its class
    R is a scheme check whose pass is expected, since the law was transcribed from the engine; its class B is the
