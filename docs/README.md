@@ -28,7 +28,8 @@ the [project README](../README.md) gives the short feature overview.
 | [Secreted-species transport design](SECRETED_SPECIES_TRANSPORT_DESIGN.md) | Accepted design (D150): secreted species as rows of @3's one inventory, moved by @3's faces, with turnover and exchange operators; version 1 landed on 14 November and is numerically qualified for transport, decay and clearance |
 | [Shared-inventory reactions design](SHARED_INVENTORY_REACTIONS_DESIGN.md) | Accepted 14 November 2026 (D152): local reactions on @3's species rows, with exact energy bookings and MG0c's Turing qualification; its operator, `local_species_reactions@1`, is numerically qualified within MG0c's scope (15 November, CPU only) |
 | [Feature requests](FEATURE_REQUESTS.md) | Requested engine features with priority and status. FR-1, a closed internal compartment on the shared inventory, is high priority (D157) |
-| [Closed compartment design](CLOSED_COMPARTMENT_DESIGN.md) | FR-1's cell-owned compartment and its refusals (refusal 4 to version 1.3, on main since 19 November, and refusal 5 to version 1.1) |
+| [Closed compartment design](CLOSED_COMPARTMENT_DESIGN.md) | FR-1's cell-owned compartment and its refusals (refusal 4 to version 1.3, refusal 5 to version 1.2, and refusal 6 to version 1.1, 25 November) |
+| [Calcium store and channels design](CALCIUM_STORE_AND_CHANNELS_DESIGN.md) | Calcium-permeant channels, a store with its own capacitor, its pump, leaks and gated release, the sodium-calcium exchange, and the step rules they need; built 25 November 2026, not judged ([the short version](ARCHITECTURE.md#what-the-calcium-store-adds)) |
 | [Site occupancy design](SITE_OCCUPANCY_DESIGN.md) | FR-3's binding to sites (`site_occupancy@1`) |
 | [Bath schedule design](BATH_SCHEDULE_DESIGN.md) | Scheduled changes of bath composition |
 | [Inventory coupling design](INVENTORY_COUPLING_DESIGN.md) | Coupling out of the shared inventory (D155, D156) |

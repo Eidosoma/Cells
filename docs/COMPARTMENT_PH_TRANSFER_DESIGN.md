@@ -476,6 +476,9 @@ only, and the refused runs were let complete.
      definition beside `explicit_rate_bound`, at the ordinary constant (about 1).
      - It has no run-time half and no 0.05 constant (the inner-model note §7.4 (g) 3).
      - It is statically gated, so worlds without such a node are unchanged.
+     - **Amended 25 November 2026** ([the calcium note](CALCIUM_STORE_AND_CHANNELS_DESIGN.md) §8.3): one
+       row per patch that faces such a node, and a run-time half, with kinds or without. FR-4's world
+       has one patch there, so its row is the same.
    - **The world's 0.05 is a declaration, not an engine bound.** FR-4 declares 0.025 on the
      max-side G. Its protocol's dt study enforces it.
    - **State accuracy and the ledgers stay separate parts:** state accuracy (J3, J4) and the heat
@@ -1352,6 +1355,8 @@ On the core's gap-2 seams (INNER_MODEL_V4_DESIGN §7.4 (m), landed):
    - No program changes until a kind declares the hook.
    - This lane adds the neutral transporter's term, which closes CLOSED_COMPARTMENT_DESIGN
      §3.4.1's open item.
+     **As of 25 November 2026** the term is on the law's version 2,
+     `atp_driven_transporter_mass_action_positive@2`; version 1's neutral law has none.
 2. **D3:** the check lives in `species_registry` as `check_potentials`, called from
    `check_definition`. A contract hook, `species_potentials(declaration)`, is implemented by D152.
    The core builds both.

@@ -16,8 +16,8 @@ strongly another is read.
 
 ## Seen from each field
 
-- **Biology:** gating by a ligand, by calcium or by both, such as a store's release that a little
-  calcium opens and more calcium closes again.
+- **Biology:** gating by a ligand, by calcium or by both, such as a
+  [store's](../../GLOSSARY.md#store) release that a little calcium opens and more calcium closes again.
 - **Chemistry:** cooperative binding at equilibrium, without depletion of what is bound.
 - **Physics:** a product of logistic functions of the logarithms of concentrations.
 - **Computing:** a pure function of arrays: a sum of logarithms and one exponential, with no state.

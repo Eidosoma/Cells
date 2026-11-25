@@ -52,7 +52,7 @@ how to write one, the [glossary](GLOSSARY.md) defines the words, and
 | Page | In one sentence | Status |
 | --- | --- | --- |
 | [`cells.species_condition@1`](cells/kinds/species_condition@1.md) | A condition at a node reads the concentrations of chosen substances there and gives a number between zero and one that opens or closes routes and channels. | Not stated |
-| [`cells.transporter@1`](cells/kinds/transporter@1.md) | Membrane pumps that each spend one ATP molecule per cycle to move a fixed number of one kind of molecule or ion across a membrane, even against its gradient. | Not stated |
+| [`cells.transporter@1`](cells/kinds/transporter@1.md) | Membrane machines that move a fixed number of ions or molecules across a membrane in each cycle, some of them paid for by ATP, even against a gradient. | Not stated |
 
 ## Operators
 

@@ -185,7 +185,8 @@ two operators. It has no reactions inside, no binding sites and no pH.
   - a compartment node with a face, or one that is a held bath or the gauge;
   - more than one patch facing it, or a patch whose inside is not the owner;
   - an ion route on the bounding patch, or a nonzero charge anchor;
-  - an owner whose capacitor component holds no held bath;
+  - a compartment that is its capacitor component's representative (refusal 6, version 1.1 since
+    25 November 2026; before it, an owner whose component holds no held bath);
   - any operator outside its admitted list;
   - a replacement event on an owner's slot, or with an owner as its donor.
 - **The bath schedule:** a target that is not a held bath; a net-charged formula unit; an event at
