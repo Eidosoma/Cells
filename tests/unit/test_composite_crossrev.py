@@ -132,11 +132,11 @@ def test_compare_names_outputs_without_constants(tmp_path, capsys):
 
 
 def solve(leaf, target=0.01, accept=0.01, atol=1e-3, rtol=2e-3, table=(1.0, 2.0, 3.0)):
-    """A field solve in miniature: a loop to its target, the solve's own convergence and, with the
-    floor leaf, version 3's acceptance test."""
+    """Two steps of a field solve in miniature, the second from the first's result: a loop to its
+    target, the solve's own convergence and, with the floor leaf, version 3's acceptance test."""
     table = np.asarray(table)
 
-    def f(x, *floor):
+    def step(x, floor):
         scale = x * jnp.asarray(table)
         norm = lambda r: jnp.max(jnp.abs(r)) / (atol + rtol * jnp.max(scale))  # noqa: E731
         unsolved = lambda c: norm(c[1]) > target  # noqa: E731
@@ -145,6 +145,11 @@ def solve(leaf, target=0.01, accept=0.01, atol=1e-3, rtol=2e-3, table=(1.0, 2.0,
         if floor:
             rooted |= jnp.all(jnp.abs(r) <= floor[0] * np.finfo(float).eps * jnp.abs(scale))
         return jnp.where(rooted, r, x), rooted
+
+    def f(x, *floor):
+        half, first = step(x, floor)
+        full, second = step(half, floor)
+        return full, first & second
 
     return jax.make_jaxpr(f)(jnp.ones(3), *([np.asarray(1e3)] if leaf else []))
 
@@ -162,11 +167,11 @@ def solve(leaf, target=0.01, accept=0.01, atol=1e-3, rtol=2e-3, table=(1.0, 2.0,
 def test_the_floor_guard_compares_constants_where_they_sit(plant, named):
     two, three = solve(False), solve(True, **plant)
     program, constants, tests = floor_guard.compare_programs(two, three, [1], 0.01, gates=(1,))
-    assert program["accounted"] and len(tests) == 1
+    assert program["accounted"] and len(tests) == 2
     assert constants["ok"] == (named is None or "atol" in plant)
     if named is None:
         assert program["result"] == "equal" and program["slice"]["equal"]
-        assert constants["literals_added"] == {f"float64 {floor_guard.EPS!r}": 1}
+        assert constants["literals_added"] == {f"float64 {floor_guard.EPS!r}": 2}
     else:
         assert program["result"] == "differs"
         assert any(named in d["what"] for d in program["differences"])

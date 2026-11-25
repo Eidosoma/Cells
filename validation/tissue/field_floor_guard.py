@@ -598,7 +598,8 @@ class Pairing:
         covered = set()
         for i, convergence in joins.items():
             (test,) = (v for v in jaxpr.eqns[i].invars if v is not convergence)
-            own = sorted(k for k in _feeding(jaxpr, [test])[0] if k in equations)
+            # Not through an earlier test (a half step's, whose state the next one starts from).
+            own = sorted(_feeding(jaxpr, [test], joins)[0] & equations)
             covered.update(own)
             chain = [jaxpr.eqns[k] for k in own if k in read]
             names = tuple(eqn.primitive.name for eqn in chain)
