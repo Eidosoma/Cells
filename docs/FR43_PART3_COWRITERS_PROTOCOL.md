@@ -173,8 +173,9 @@ to the protocol:
     and rates within 0.4 to 18% of the registered values of 736f0565 (which the author found and reported after that
     head). **Those registered values have since been moved off them** (§11): the present W6 differs from each
     emulation by at least 11% in every physical value but two potentials (the monomer's, 0.9% and 3.3% off; the
-    residue's, 6% and 7%). The horizon, the first rung and the sample grid are the emulations' own (they were set
-    for the sizing and were not moved), and the number of rungs, six, was set by the sizing (below).
+    residue's, 6% and 7%) and the R rows' trace of 10⁻¹² fmol, which the new-regime emulation shares. The horizon,
+    the first rung and the sample grid are the emulations' own (they were set for the sizing and were not moved),
+    and the number of rungs, six, was set by the sizing (below).
   - *A new-regime gene-unit chain and a full W6-kind emulation* (the factor 1 − e^x, the saturation, the monomers,
     the pools as the present inputs' kind), with their own numbers, listed in the scratch record; used for the
     third-order totals' resolution and the pooled orders in this regime.
@@ -208,9 +209,10 @@ to the protocol:
     difference above 256 times its threshold. W6 therefore judges them by size alone (`at_rounding`). The registered
     chain was not run: the references' sizing checks the name (CRITERIA.md §4.2), and a name that is wrong is a
     fault before the tag.
-  - No registered number was used, and no registered world was run on any engine or emulation. The registered W6
-    values were chosen by hand from the laws (closed forms, steady-state estimates and the domain checks, no time
-    stepping).
+  - No registered volume, rate, amount, conductance, potential or seed equals the same quantity of an emulation, the
+    R rows' trace apart (the horizon, the rungs and the sample grid are shared, as said), and no registered world
+    was run on any engine or emulation. The registered W6 values were chosen by hand from the laws (closed forms,
+    steady-state estimates and the domain checks, no time stepping).
 - **`minimum_events` and the 160 draws per copy** were chosen knowing the emulations' event counts (per copy or
   site: W5 kind, 21 to 33 in the design note's probes, 33 to 38 in the emulations with 2 subunits and 55 with 4; W6
   kind, 71 in the design note's probe, 25 to 38 in the emulations with 2 subunits and 142 to 149 with 4). The minima
