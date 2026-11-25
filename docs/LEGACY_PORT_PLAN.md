@@ -607,7 +607,7 @@ direct import. The two BETSE tests on the helpers retire with them.
 
 ## 7. Three routes, priced, with the ensemble kept and the physiology retired
 
-**The record.** The user decided the route on 25 November (status above): route B's order without its gates, as one branch and one deletion. This section
+**The record.** The user decided the route on 25 November (status above): one branch, the deletion before the features and the re-expression, and one test at the end. This section
 stays as the record of what was priced and why.
 
 ### 7.1 First, the user's choice that sets every date (§13, Q1)
