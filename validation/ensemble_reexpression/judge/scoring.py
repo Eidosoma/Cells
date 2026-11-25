@@ -558,7 +558,8 @@ class Stage2:
             if value is None:
                 self.add(**record, outcome=c.NOT_FORMED if judged else c.REPORTED, why=partial)
                 continue
-            over = np.abs(value) if limit == 0 else np.abs(value) / limit
+            with np.errstate(all="ignore"):
+                over = np.abs(value) if limit == 0 else np.abs(value) / limit
             statistic = bands.largest(value)
             good = statistic <= limit
             entity_max = {entity: float(np.max(over[:, i])) for i, entity in enumerate(entities)}

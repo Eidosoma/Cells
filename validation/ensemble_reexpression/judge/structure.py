@@ -179,7 +179,6 @@ def table_faults(folder, consumers=None, part: int = c.PART) -> dict:
     for (consumer, name), entry in tables.runs.items():
         kind = entry_faults(entry, f"{consumer} / {name}", out)
         kinds[kind] = kinds.get(kind, 0) + 1
-        reader_faults(entry, f"{consumer} / {name}", out)
     return {
         "folder": str(folder),
         "consumers": list(found),
@@ -189,7 +188,18 @@ def table_faults(folder, consumers=None, part: int = c.PART) -> dict:
 
 
 def entry_faults(entry, where: str, out: Faults) -> str:
-    """One run's entry against TABLE section 3. Returns what kind of run it is."""
+    """One run's entry against TABLE section 3, and then by the registered readers where nothing
+    departs. Returns what kind of run it is.
+    """
+    before = len(out.items)
+    kind = shape_faults(entry, where, out)
+    if len(out.items) == before:
+        reader_faults(entry, where, out)
+    return kind
+
+
+def shape_faults(entry, where: str, out: Faults) -> str:
+    """One run's entry, every key and type."""
     if not out.need(isinstance(entry, dict), where, "no object"):
         return "unreadable"
     for key in c.RUN_KEYS:
@@ -334,8 +344,6 @@ def reader_faults(entry, where: str, out: Faults):
     """What the readers of the registered tables cannot read of an entry: its rows, its potentials,
     its arrays and paths, its schedules and its block.
     """
-    if not isinstance(entry, dict):
-        return
     if isinstance(entry.get("pool"), dict):
         for cell, block in entry["pool"].items():
             arrays = block.get("arrays") if isinstance(block, dict) else None
