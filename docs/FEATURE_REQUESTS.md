@@ -2642,6 +2642,10 @@ side.
 
 **Status (24 November):** logged. A design note comes first.
 
+**Status (25 November, D385):** the note's question 2 is ruled (b): a flux-force cycle law carries the label in complete cycles, with a limited
+claim (a lower bound where partial steps exchange it). Label on ATP through the Na/K pump also needs row fuel for that pump, a
+candidate request. On hold with the other builds (D383).
+
 ## FR-59 — Reversible transport into an initially empty finite ion pool
 
 **Logged 24 November 2026 by the user; priority normal (the user, D365).**
