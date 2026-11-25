@@ -119,6 +119,47 @@ def _item_faults(group, item, where, records, seen) -> list:
     return out
 
 
+def fabricated(record: dict, counts_as=None, outcome=None) -> Settlements:
+    """Settlements of every flag and every copy guard's refusal of a record, for the judge's own
+    tests: the checker is invented, and so is the lead's note of a lifted refusal.
+    """
+    data, records = fabricated_data(record, counts_as, outcome)
+    return Settlements(data, "fabricated", records)
+
+
+def fabricated_data(record: dict, counts_as=None, outcome=None) -> tuple:
+    """The same as a file would hold them, and the record that they name, by its sha256."""
+    digest = strictjson.sha256(strictjson.encode(record))
+    common = {
+        "record_sha256": digest,
+        "checker": "fabricated by the judge",
+        "when": "2026-11-25T00:00:00Z",
+        "words": "invented, for the judge's self-test",
+        "evidence": [],
+    }
+    note = {"path": "invented", "sha256": "0" * 64, "date": "2026-11-25", "words": "invented"}
+    data = {
+        "kind": c.SETTLEMENTS_KIND,
+        "protocol": c.PROTOCOL,
+        "part": c.PART,
+        "flags": [
+            {"flag": item["id"], "counts_as": counts_as, **common}
+            for item in record["flags_to_settle"]
+        ],
+        "copy_guard": [
+            {
+                "run": hit["run"],
+                "comparison": hit["comparison"],
+                "outcome": outcome,
+                "lead_note": note if outcome == c.LIFTED else None,
+                **common,
+            }
+            for hit in record["copy_guard"]
+        ],
+    }
+    return data, {digest: record}
+
+
 def read(path, wanted: str, records: dict) -> Settlements:
     """The settlements of a file that must have the recorded sha256."""
     try:

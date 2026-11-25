@@ -1,8 +1,8 @@
 """The judge's own tests: the honest fabricated tables pass, each fault row does as CRITERIA section
 5 and Amendment 2 say, and the order of the stages holds.
 
-Seconds: about 40 in all on one idle core, and twice that on a busy machine (the judge's plants are
-15 of them). They read the captures and compile nothing.
+Seconds: about 60 in all on one idle core, and twice that on a busy machine (the judge's plants are
+20 of them). They read the captures and compile nothing.
 """
 
 from __future__ import annotations
@@ -19,6 +19,7 @@ from validation.ensemble_reexpression.judge import __main__ as cli
 from validation.ensemble_reexpression.judge import (
     bands,
     fabricate,
+    flag_rows,
     identities,
     plants,
     scoring,
@@ -26,7 +27,7 @@ from validation.ensemble_reexpression.judge import (
     structure,
 )
 from validation.ensemble_reexpression.judge import constants as c
-from validation.ensemble_reexpression.judge.c0 import C0, same_order
+from validation.ensemble_reexpression.judge.c0 import C0, pins_of, same_order
 from validation.ensemble_reexpression.judge.plants import Lazy, Query, refuse
 from validation.ensemble_reexpression.judge.registration import (
     PART1,
@@ -35,7 +36,11 @@ from validation.ensemble_reexpression.judge.registration import (
     StringsNote,
     changes,
 )
-from validation.ensemble_reexpression.judge.settlements import SettlementFault, Settlements
+from validation.ensemble_reexpression.judge.settlements import (
+    SettlementFault,
+    Settlements,
+    fabricated_data,
+)
 from validation.ensemble_reexpression.judge.table import (
     Echo,
     RunRows,
@@ -105,40 +110,11 @@ class Bench:
         """The record of the altered tables, as a query."""
         return Query(self.judge(self.altered(alter, consumer, missing), **more))
 
-    def settled(self, record, **said):
-        """Settlements of every flag and every copy guard's refusal of a record. `counts_as` is for
-        the flags, `outcome` for the guard's.
+    def settled(self, record, counts_as=None, outcome=None):
+        """Settlements of every flag and every copy guard's refusal of a record, as a file has them,
+        and the record that they name.
         """
-        digest = strictjson.sha256(strictjson.encode(record))
-        common = {
-            "record_sha256": digest,
-            "checker": "the checker",
-            "when": "2026-11-26T09:00:00Z",
-            "words": "read from the run's own record",
-            "evidence": ["runs/x/RUN.json"],
-        }
-        lifted = said.get("outcome") == c.LIFTED
-        note = {"path": "note.md", "sha256": "0" * 64, "date": "2026-11-26", "words": "lifted"}
-        data = {
-            "kind": c.SETTLEMENTS_KIND,
-            "protocol": c.PROTOCOL,
-            "part": 1,
-            "flags": [
-                {"flag": item["id"], "counts_as": said["counts_as"], **common}
-                for item in record["flags_to_settle"]
-            ],
-            "copy_guard": [
-                {
-                    "run": hit["run"],
-                    "comparison": hit["comparison"],
-                    "outcome": said["outcome"],
-                    "lead_note": note if lifted else None,
-                    **common,
-                }
-                for hit in record["copy_guard"]
-            ],
-        }
-        return data, {digest: record}
+        return fabricated_data(record, counts_as, outcome)
 
 
 @pytest.fixture(scope="module")
@@ -1904,10 +1880,23 @@ def test_C0_pins_three_files_and_opens_none_of_them(tmp_path, monkeypatch):
     assert faults(lambda m: outputs(m)["outputs_sha256"].update({"pool_plants.json": "0" * 64}))
     assert faults(lambda m: outputs(m).update(output_folder=str(tmp_path)))  # absent
     assert faults(lambda m: m.reg.manifest["pool_plants"].pop())
-    monkeypatch.setattr(C0, "_object", lambda self, script: b"another script")
+    monkeypatch.setattr(C0, "_object", lambda self, revision, name: b"another script")
     assert faults(lambda m: None)
     monkeypatch.undo()
     assert faults(lambda m: setattr(m, "root", tmp_path))  # no repository there
+
+    def another_table(made):
+        for name in made.texts():
+            text = (SPEC / name).read_text()
+            (tmp_path / name).write_text(text.replace("fe59ed4d", "fe59ed4e", 1))
+        made.reg.folder = tmp_path
+
+    assert faults(another_table)  # the digests are read from the amendment's table
+    assert [name for name, _, _ in pins_of((SPEC / c.AMENDMENTS[-1]).read_text())] == [
+        "validation/betse/spatial_cluster/reference.py",
+        "pool_plants.json",
+        "pool_plants2.json",
+    ]
 
 
 @pytest.mark.parametrize("case", C0_FAULT)
@@ -2420,6 +2409,10 @@ def test_judge_plants_score_as_stated(benches):
         "JP19": [(H[0], "restart junction_K")],
         "JP26": [(name, "balance of regions, Na")],
     }
+    # The self-test's rows of the three flag paths, which no judge's plant covers.
+    found = flag_rows.rows(*args, retry)
+    assert [r["where"] for r in found] == ["reading 12", "reading 24", "item 5 (a)"]
+    assert all(r["scores_as_stated"] for r in found) and {len(r["checks"]) for r in found} == {16}
     # Without a retry run JP26 is not formed, and that is no fault.
     (alone,) = plants.run_plants(*args, only={"JP26"})["plants"]
     assert alone["scores_as_stated"] is None and alone["not_formed"] == f"no {name} is there"

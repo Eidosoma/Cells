@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 
 from . import constants as c
-from . import fabricate, plants, scoring, strictjson, structure
+from . import fabricate, flag_rows, plants, scoring, strictjson, structure
 from .c0 import C0
 from .legacy import Captures, Fault, Planted
 from .registration import SPEC, Registration, StringsNote, load_profile
@@ -275,6 +275,9 @@ def cmd_selftest(args):
         "c0": c0["status"],
         **record,
     }
+    # The three flag paths, which no judge's plant covers (Amendment 2, items 5 (a) and 9).
+    record["flag_rows"] = flag_rows.rows(reg, note, tables, c0, made.captures, made.planted, retry)
+    record["all_as_stated"] &= all(row["scores_as_stated"] for row in record["flag_rows"])
     # Amendment 2, item 9.5: the sha256 of each table as it was made and used. `fabricate` writes
     # the same bytes.
     record["fabricated"] = fabricate.MARK
@@ -312,14 +315,14 @@ def cmd_plants(args):
 def report_plants(args, record) -> bool:
     """Write a record of plants and print each one's score."""
     digest = strictjson.dump(args.out, record)
+    said = {True: "as stated", False: "NOT as stated", None: "not formed"}
     print("baseline:", record["baseline"])
-    for plant in record["plants"]:
-        wrong = [what for what, good in plant.get("checks", []) if good is False]
-        said = {True: "as stated", False: "NOT as stated", None: "not formed"}
-        print(
-            f"{plant['plant']:14s} {said[plant['scores_as_stated']]} "
-            f"{wrong or plant.get('cannot_be_formed') or plant.get('not_formed') or ''}"
-        )
+    lines = [(p["plant"], p) for p in record["plants"]]
+    lines += [(f"{r['row']} ({r['where']})", r) for r in record.get("flag_rows", ())]
+    for name, item in lines:
+        wrong = [what for what, good in item.get("checks", []) if good is False]
+        why = wrong or item.get("cannot_be_formed") or item.get("not_formed") or ""
+        print(f"{name:14s} {said[item['scores_as_stated']]} {why}")
     print("all as stated:", record["all_as_stated"], digest, args.out)
     return record["all_as_stated"]
 

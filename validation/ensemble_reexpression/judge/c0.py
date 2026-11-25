@@ -152,6 +152,7 @@ class C0:
         )
         registered_only = (
             self.amendments,
+            self.pinned_files,
             self.spec_keys,
             self.run_list,
             self.literal_blocks,
@@ -185,7 +186,7 @@ class C0:
             "legacy": self.legacy,
             "opened": {**self.captures.opened, **self.planted.opened},
             "pinned_by_sha256_alone": self.pinned,
-            "not_done": NOT_DONE,
+            "not_done": NOT_DONE_IN_A_REHEARSAL if self.reg.rehearsal else NOT_DONE,
         }
 
     def held_amendments(self) -> list:
@@ -1160,37 +1161,43 @@ class C0:
                 mine == theirs, f"{name}: its definition is not its base with the declared change"
             )
         k.numbers["runs"] = len(self.planted.runs)
+        for pool in self.reg.manifest.get("pool_plants", []) if self.reg.rehearsal else ():
+            k.notes.append(
+                f"{pool['name']}: its output lies outside the folder that the judge may open, so "
+                f"its sha256 is not checked. Class E has no margin."
+            )
 
     def pinned_files(self):
-        """What C0 pins by its sha256 alone, and opens none of (Amendment 2, item 5 (f)): the
-        scalar reference's script and the pool plants' outputs.
+        """What C0 pins by its sha256 alone, and opens none of: the three files of the amendment's
+        table (Amendment 2, item 5 (f)). Their digests are read from it.
         """
         k = self.clause(
             "pinned_files",
             "AMENDMENT-2, item 5 (f)",
-            "the scalar reference's script and the outputs of the pool plants, by their sha256. A "
-            "file that is absent, or whose sha256 is another, is a fault",
+            "the scalar reference's script and the two outputs of the pool plants, by the sha256 "
+            "of the amendment's table. A file that is absent, or whose sha256 is another, is a "
+            "fault",
         )
-        outputs = {}
-        for pool in self.reg.manifest.get("pool_plants", []):
+        pins = pins_of((self.reg.folder / c.AMENDMENTS[-1]).read_text())
+        k.check(len(pins) == 3, f"{len(pins)} files are pinned, and not three")
+        named = {}
+        for pool in self.reg.manifest["pool_plants"]:
             for name, digest in pool["outputs_sha256"].items():
-                outputs[name] = digest
-                path = Path(pool["output_folder"])
-                path = path if path.is_absolute() else self.root / path
-                self._pin(k, str(path / name), digest, lambda p=path / name: p.read_bytes())
-        if not self.reg.rehearsal:
-            k.check(
-                outputs == c.POOL_PLANT_OUTPUTS,
-                "the plants manifest does not name the two outputs that are pinned",
-            )
-            script = c.SCALAR_REFERENCE
-            where = f"{script['path']} at {script['revision']}"
-            self._pin(k, where, script["sha256"], lambda: self._object(script))
-            here = self.root / script["path"]
+                named[name] = digest
+                path = Path(pool["output_folder"]) / name
+                self._pin(k, str(path), digest, path.read_bytes)
+        wanted = {name: digest for name, revision, digest in pins if revision is None}
+        k.check(named == wanted, "the plants manifest's outputs are not the two that are pinned")
+        for name, revision, digest in pins:
+            if revision is None:
+                continue
+            where = f"{name} at {revision}"
+            self._pin(k, where, digest, lambda r=revision, n=name: self._object(r, n))
+            here = self.root / name
             if here.is_file():
-                self._pin(k, str(here), script["sha256"], here.read_bytes)
+                self._pin(k, str(here), digest, here.read_bytes)
             else:
-                k.notes.append(f"{script['path']} is not in this checkout")
+                k.notes.append(f"{name} is not in this checkout")
         k.notes.append(
             "Each file's bytes were hashed, and none was opened. C0 runs no scalar reference: the "
             "author's run of 25 November stands. The counts of the pool plants are not re-formed, "
@@ -1206,10 +1213,10 @@ class C0:
         self.pinned[where] = found
         k.check(found == digest, f"{where}: its sha256 is another")
 
-    def _object(self, script) -> bytes:
+    def _object(self, revision, name) -> bytes:
         """The bytes of a file at a revision, from the repository's objects."""
         done = subprocess.run(
-            ["git", "cat-file", "blob", f"{script['revision']}:{script['path']}"],
+            ["git", "cat-file", "blob", f"{revision}:{name}"],
             cwd=self.root,
             capture_output=True,
             check=False,
@@ -1629,6 +1636,26 @@ NOT_DONE = [
     "The snapshot of integrated_capture lies outside the captures' root: its recorded manifest "
     "sha256 is compared, and no file is opened.",
 ]
+
+
+NOT_DONE_IN_A_REHEARSAL = [
+    "The independent scalar reference of SPEC section 7 was not run: it is of Part 1's worlds.",
+    "The pool plants' outputs (the plants manifest's pool_plants) lie outside the planted folder "
+    "that the judge may open.",
+    NOT_DONE[-1],
+]
+
+
+def pins_of(text: str) -> list:
+    """What item 5 (f) of Amendment 2 pins, from its table: (the file, its revision or None, its
+    sha256).
+    """
+    rows = re.findall(r"^\| (.+?) \| `([0-9a-f]{64})` \|$", items_of(text).get("5", ""), re.M)
+    out = []
+    for cell, digest in rows:
+        revision = re.search(r", at ([0-9a-f]{8})$", cell)
+        out.append((re.search(r"`([^`]+)`", cell)[1], revision and revision[1], digest))
+    return out
 
 
 def items_of(text: str) -> dict:
