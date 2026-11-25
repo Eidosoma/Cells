@@ -49,9 +49,10 @@ is nearly ohmic about E. As V_h grows without bound the route becomes the ohmic 
 - **The law is silent on external Na (D351).** In Na-poor solutions two inward-rectifier
   preparations depart from the square root in the same direction; with Na, the exponent comes close
   to it (about 0.40). These are indications, kept separate from the Kir4.1 line above.
-- **The reference u = V - E is supported for changes of external K only (D352, D355).** For changes
-  of internal K, one lab's series is an indication against a V - E reference; its numbers are in
-  the block law's scope (laws/channels/open_channel_block.py).
+- **The reference u = V - E is supported for changes of external K only (D352, D355).** The evidence
+  is the block law's, its half-conductance shift in two labs' external-K series, and not this law's
+  current. For changes of internal K, one lab's series is an indication against a V - E reference;
+  the numbers are in the block law's scope (laws/channels/open_channel_block.py).
 """
 
 import jax.numpy as jnp
