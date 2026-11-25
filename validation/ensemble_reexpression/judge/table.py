@@ -678,10 +678,8 @@ def recorded_flags(registration: Registration, run: dict, entry: dict) -> list:
         if (refusal.get("kind") == "check") != is_finite(refusal.get("time_s")):
             out.append(["refusal", "time_s is a number for `check` and null otherwise"])
     source = entry.get("source")
-    if (
-        isinstance(source, dict)
-        and source.get("cpu_model") != registration.legacy["captures"]["cpu_model"]
-    ):
+    machine = registration.legacy.get("captures", {}).get("cpu_model")
+    if isinstance(source, dict) and machine is not None and source.get("cpu_model") != machine:
         out.append(["cpu_model", "not the captures' machine, on which class E holds"])
     declared = entry.get("declared_strings")
     if (

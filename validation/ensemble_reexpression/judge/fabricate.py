@@ -146,7 +146,7 @@ class Fabricator:
             {v for x in labels.values() for v in (x if isinstance(x, list) else [x]) if v}
         )
         strings = {label: note["labels"][label] for label in flat}
-        machine = self.reg.legacy["captures"]
+        machine = self.reg.legacy.get("captures", {})
         return {
             "status": "completed",
             "world": run["world"],
@@ -178,7 +178,7 @@ class Fabricator:
                 "numpy": "fabricated",
                 "jax": "fabricated",
                 "jaxlib": "fabricated",
-                "cpu_model": machine["cpu_model"],
+                "cpu_model": machine.get("cpu_model", "fabricated"),
                 "blas_threads": 1,
             },
             "record": f"fabricated/{name}.json",
