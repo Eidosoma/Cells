@@ -1355,7 +1355,7 @@ def _declaration_faults():
         (lambda e: model(e)["operators"].append(copy.deepcopy(_gene(e["definition"]))),
          "the operators"),
         (lambda e: model(e).update(moieties=[{"id": []}]), "the moieties"),
-        (lambda e: model(e).update(species="x"), "K's valence"),
+        (lambda e: model(e).update(species=7), "K's valence"),
     ]  # fmt: skip
     pairs = zip(runs, changes, strict=True)
     return [(is_(r, role, d), f, what) for (r, role, d), (f, what) in pairs]
