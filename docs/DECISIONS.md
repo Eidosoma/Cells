@@ -13094,3 +13094,52 @@ the cleanup branch with a row that fails on the old code. A static scan of 92 fi
 **Streams merged into `legacy-cleanup`:** the live engine without legacy (the deletion itself is held), the live tests on live worlds (window and batch-window tests at 75 and 171 CPU seconds, from 162 and 411), the two
 fixes. The rename's tool is fitted to the cleanup tree, and minting the catalogue leaves no ID bare. FR-43 part 3's registration is written and an independent auditor reads it before its tag.
 Eight agents ran for some minutes, one over the cap.
+
+## D387: a review of the cleanup checked; a solver guard's old condition met late; the calcium core built; two sets of criteria tagged; the removal's second reader and the user's answers
+
+2026-11-25, about 16:32 UTC. The lead's entry, with the advisor. Everything named here is on `legacy-cleanup`, on the branches it names or at the tags it names; nothing has landed on
+main since D386.
+
+**An external review of the cleanup** (as of 12:44, relayed by the user) was checked point by point, with the advisor. Its status and prices are right, but for two statements: the two calcium
+transporters need the transporter's material bound as well as their equations, and 419 worktrees are registered (the review said over 150). Its four points: the exchanger's step terms disagreed between the code, the
+store note and a ruling (settled: none until the bound exists, then both in one commit); the rename's three seams (one moot, two found by a trial run); the solver guard, below; and the missing owners and the disk
+(owners named; 229 GB free, so nothing is pruned).
+
+**The floor guard with constants (D147, D148).** The condition of 13 November, that the guard be rerun with constants before field solver version 3 serves a run of record, had not been met, and the tool could not do it.
+Three judged runs used the version without it: D172's L4 parity (16 November, passed), XC0 (judged fail) and XC0 erratum 2 (passed). The tool now compares the two programs equation by equation with every literal and array, and
+its twelve plants fail as they must. All three runs' definitions and the base and qualification sets are clean at their own snapshots and at the pre-cleanup snapshot (eight sets). No result changes. It is repeated on the
+re-expression's own frozen snapshot, before its first registered run. Records: `/mnt/workspaces/Cells/floor-guard-constants-20261125/`.
+
+**The charge rule beside a floating node (D386, row 1), built and merged** (engine commit e7871b95, parent f38f6789). It is wider than first ruled: a component's representative that no face names, and a node that two cells share, were open too.
+- FR-1's W+ and load_and_react and FR-4's declared world agree in 2,807 of 2,807 arrays before and after (scalar, windowed, vector). The traces differ in exactly the seven worlds that have a floating node, and only in `checked_step`.
+- A scan of the definitions, FR-7's registered worlds and the saved trajectories found no world that the rule would have refused; the largest step times rate is 0.109.
+- **A limit stays, stated:** a face with no charged diffusivity holds nothing, so a conducting patch beside such a gap is still admitted at a step it cannot take. No scanned world has the shape. The fix (a conductive-face set, or a refusal by name) follows the cleanup.
+- Two existing expectations change with the rule (`test_fr4_world_engine.py`, `test_cell_owned_compartments.py`). Its own D148 round is part of the final test.
+
+**The calcium core, steps 1 to 7 of the store note, is built and merged:** the parser reads an ion's valence from its law; `cav1p2_m2h@1`; refusal 6 version 1.1; the sodium-calcium exchanger; `atp_driven_transporter_mass_action_positive@2`
+for both pumps; the two reversible symports (D211); the channel and transporter material bounds; the feedback bound with the source and sink hooks; `species_condition@1` with `hill_product_factor@1`; the assembly driver and its
+observable; the store worlds. Every step has its own before/after traces; only the worlds that gained a term change. The mitochondria's host-P world had read its fastest rate 336 times too low without the new term (a probe). The store
+world agrees with references whose writer saw neither the code nor a result: 56 quantities at three steps, with fitted orders between 2.001 and 2.061; the pump, exchanger and symport forms at 153 states. The lead's rulings L10 to L13 went as recommended,
+but that a law declares a step term only when its bound exists. No claim beyond the tests: the re-expressed worlds are judged by the criteria below.
+
+**The ensemble's criteria.** Part 1 (jupiter, cell, base, integrated) had an independent audit in two readings. It said "not ready" first, for the wording alone; twenty-one rulings revised it, and one of them was the lead's own error (the judge's practice
+tables cannot come from no capture). Tagged `ensemble-reexpression-criteria-part1-2026-11-25` (77680d9e) and amendment 1 (8833f749, eight clarifications the builder asked for; one check is weaker by name and accepted). A second amendment,
+from the judge's questions, is owed. Part 1's definitions, run driver and exporter are built and merged; all 214 registered definitions parse, and none has been run. The judge writes its reader and
+scorer from the rules and the captures alone. The order of the end is kept: criteria, judge, rehearsal, registration, the guard, the campaign, then the user sees the result and the counts, then the deletion, the rename and the one full
+test. Part 2 (the calcium clusters) is being completed. The retry's rule for entries near rounding was written after a builder of invented worlds had reported how such entries behaved; its author must say so, and the audit starts there.
+
+**FR-43 part 3's co-writers:** the criteria, after three readings by an independent auditor, are tagged `fr43-part3-cowriters-criteria-2026-11-25` (6752e526), and the code-blind references `fr43-part3-cowriters-references-2026-11-25` (4eb797ba): every C0 clause passes
+on the registered numbers and on the invented set. The build waits for the cleanup.
+
+**The removal.** The list is final (1,529 files by the script's dry run) and had a second reader, whose verdict is "safe with named corrections"; they are being made. D196 was checked for all 133 registered or kept laws: three lost their last direct reference check
+(Kv1.5's channel law, the junction's voltage relaxation, the mass-action kernel), and each now has a small row beside its law. The reader also found a file that a Lean check imports, which stays, a live test on no list, and that R1's gate check needs declared
+removals and additions. **The user's answers,** verbatim "1. Yes I agree / 2. Yes I agree": the EMT-miRNA two-cell model goes, kept at the tag, which ends D149's exception; and `network_reactions@1` with `network_control_factors@1` go, kept at the tag, which answers the open question
+of `SHARED_INVENTORY_REACTIONS_DESIGN.md` §9 (11) and closes D152's "stays separate" for them. The pair was captured first (the baseline twice, bit for bit; nothing to compare it with, since the earlier recorded runs were not found). The final counts and one optional batch
+of old references are still to be shown before the deletion is merged.
+
+**The rename** was tried end to end on the merged tree with the deletion applied: no unplaced ID, no standing hazard, the engine loads after the strict step. One tool bug and one clean-looking but wrong merge were found and fixed.
+
+**A test review is queued** by the user for after the merge: regression rows for small slips told apart from tests that a feature works, pruned and made faster, "safely but sensibly", with a list before any deletion.
+
+**Slips.** The lead ran sparse-checkout on an old worktree by mistake and restored it at once, whole and clean. Several times typed into private notes were guesses, and are corrected. Agents' privacy scans had been run against the main checkout's HEAD and so tested nothing:
+they were rerun by branch name on every branch, all zero, and the rule is corrected.
