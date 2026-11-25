@@ -9,8 +9,8 @@ and schema IDs keep their names, legacy's own IDs stay bare, and an old ID is re
 - `id-rename-choices.json`, edited by hand: each law interface's family word, the seeds (the IDs
   that no registry holds, each a live module's constant or the keys of a lookup table), the words
   that wait for the user, the groups' switches, the IDs kept bare with their reasons, the
-  hash-pinned files and the digest artifacts with their choices, the frozen rules' exceptions and
-  the reviewed hazards;
+  hash-pinned files and the digest artifacts with their choices, the frozen rules' exceptions, the
+  plants' families, the test IDs the ids rule keeps and the reviewed hazards;
 - the map, written by `table`: its rows, the kept list and what the rewriter leaves alone;
 - the frozen list, written by `frozen` at a given base.
 
@@ -21,6 +21,10 @@ census of the loaded modules, as a computed value), or that a live model's JSON 
 and that neither the table nor the kept list holds. It is refused while a word is pending, unless
 --rehearsal, which marks the map as not final.
 
+**The plants** (D371 Q8) are the pieces a test or a driver declares for itself. Each gets the
+three-part ID of its own family, in its own files only: the family comes from the type or the
+helper that declares it, or from the choices. The engine's table does not hold them.
+
 **The rewriter** maps whole tokens, longest match, and keeps every other byte:
 - it skips a token after `/` (the page rule's) and every line marked `id-moves: keep` (in Python a
   comment, in a shell or TOML file anywhere on the line);
@@ -30,7 +34,10 @@ and that neither the table nor the kept list holds. It is refused while a word i
   `-`, which joins a test's parameters;
 - it writes src/cells/registry/renamed_ids.py, {old: new} for every old spelling.
 No formatting and no hand edit: `rewrap` wraps the lines the move makes too long, for a commit of
-its own, checked at the AST level.
+its own. It cuts a plain string that fills a line, where its value stays the same, and then lets
+ruff format the lines around it; `rewrapped` requires the same AST and the same comments.
+`apply --paths` is the same token rule on a lane's own files, outside the scope; --suffix .md adds
+its pages.
 
 **Its scope** is the tracked Python, JSON, shell and TOML files under src/ (legacy included),
 tests/, validation/, scripts/, examples/ and configs/. Left alone: the frozen files, the pinned
@@ -41,14 +48,16 @@ this file, renamed_ids.py and everything outside those folders.
 to equal the result, byte for byte and mode for mode. It also requires that a second application
 changes nothing, that no hash literal changed, that each string's decoded value changed by the
 token rule and nothing else (Python by AST, JSON by its values), and that no old spelling is left
-in scope: as a token, or in any other form (after `-`, after an escaped dot).
+in scope: as a token, or in any other form (after `-`, after `/`, after an escape's letter, with an
+escaped dot, inside a longer token). `leftovers` is that last rule on a tree's files, for a guard
+that stays in force after the move (H1b's).
 
 Usage (PYTHONPATH=src:. with the venv's Python, from a checkout):
   python scripts/id_moves.py check
   python scripts/id_moves.py table [--rehearsal] [--out MAP] [--tsv FILE] [--compare TSV]
   python scripts/id_moves.py frozen --base REV [--out TSV] [--compare TSV]
   python scripts/id_moves.py scan [--out JSON] [--by-hand TSV] [--skipped JSON]
-  python scripts/id_moves.py apply [--stage] [--paths PATH ...]
+  python scripts/id_moves.py apply [--stage] [--paths PATH ... [--suffix .md]]
   python scripts/id_moves.py verify --base REV --head REV [--out JSON]
   python scripts/id_moves.py ids BASE_IDS HEAD_IDS [--base-log LOG --head-log LOG] [--out JSON]
   python scripts/id_moves.py rewrap --base REV [--out JSON]
@@ -551,6 +560,17 @@ def hash_edits(before, after, report):
     return out
 
 
+def leftovers(files, mp):
+    """[(path, line, kind, text)]: every old spelling left in scope outside the exclusions, in any
+    form; what the moved tree must not hold."""
+    out = []
+    for path, (_, data) in sorted(files.items()):
+        text = None if mp.excluded(path) or not A_MAJOR.search(data) else text_of(data)
+        if text is not None:
+            out += [(path, *found) for found in mp.left_over(path, text)]
+    return out
+
+
 def verify(mp, base, head, cwd=ROOT):
     """The replay of the map on `base` against `head`: each is a revision, or a tree's files."""
     before = base if isinstance(base, dict) else tree_at(base, cwd)
@@ -566,13 +586,10 @@ def verify(mp, base, head, cwd=ROOT):
             old, new = text_of(data), text_of(actual.get(path, ("", b""))[1])
             if old is not None and new is not None:
                 problems += [dict(path=p, why=w) for p, w in decoded_problems(path, old, new, mp)]
-    for path, (_, data) in sorted(expected.items()):
-        text = None if mp.excluded(path) or b"@" not in data else text_of(data)
-        if text is not None:
-            problems += [
-                dict(path=path, line=i, why=f"an old spelling is left ({kind}): {word}")
-                for i, kind, word in mp.left_over(path, text)
-            ]
+    problems += [
+        dict(path=path, line=i, why=f"an old spelling is left ({kind}): {word}")
+        for path, i, kind, word in leftovers(expected, mp)
+    ]
     for path in report["not_text"]:
         if any(old.encode() in before[path][1] for old in mp.new):
             problems.append(dict(path=path, why="not UTF-8 text, and it holds an old spelling"))
@@ -1905,6 +1922,7 @@ class Scanner:
         self.types = types or {}
         self.found = []
         self.known = {}  # What a literal, a pattern or a template was already found to do.
+        self.inside = []  # (path, line, ID): IDs inside longer strings, which the rule rewrites.
 
     def add(self, cls, path, line, text, what):
         self.found.append(
@@ -1965,7 +1983,15 @@ class Scanner:
                 if re.search(r"\btest_\w+\[[^\]]*$", line[: m.start()]):
                     self.add("test ID", path, i, said, "a recorded test ID holds an old spelling")
 
+    def held(self, path, line, text):
+        table = self.mp.table(path)
+        return [(path, line, m[1]) for m in TOKEN.finditer(text) if m[1] in table]
+
     def values(self, path, text, after):
+        if path.endswith(".json"):
+            for value in decoded(path, text) or ():
+                if "@" in value and ID.fullmatch(value) is None:
+                    self.inside += self.held(path, 0, value)
         for _, why in decoded_problems(path, text, after, self.mp):
             self.add("decoded", path, 0, why, "the text rule and the decoded value disagree")
 
@@ -2047,6 +2073,8 @@ class Scanner:
                              f"a text width below the longest new ID's {self.longest}")  # fmt: skip
                 if id(n) not in prose:
                     self.message(path, n, source)
+                    if "@" in n.value and ID.fullmatch(n.value) is None:
+                        self.inside += self.held(path, n.lineno, n.value)
                 if "@" in n.value and after == text:
                     strange += [
                         n for x in lines_of(n.value) if self.mp.line(x, None, TOKEN, path) != x
@@ -2376,6 +2404,7 @@ def run_scan(files, mp, choices):
         elif "choice" in h:
             h["reviewed"] = f"the choice is made: {h['choice']}"
     stale = [r for i, r in enumerate(choices["reviewed"]) if not used[i]]
+    report["inside"] = scanner.inside
     return hazards, report, stale
 
 
@@ -2517,9 +2546,10 @@ def cmd_table(args):
     return 0
 
 
-def by_hand_found(path, hazards):
+def by_hand_found(path, hazards, mp):
     """The rows of a by-hand list (site, class, needed, fails, what) against the hazards: for each
-    row the hazards at its site, and the hazards that no row names."""
+    row the hazards at its site, or what the tool does there instead; and the hazards that no row
+    names."""
     rows, named = [], set()
     for line in Path(path).read_text().splitlines()[1:]:
         site, cls, needed, fails, what = line.split("\t")
@@ -2527,20 +2557,26 @@ def by_hand_found(path, hazards):
         if not number.isdigit():
             name, number = site, None
         wanted = {int(number)} if number else set()
-        m = re.search(r"lines? ([0-9, and]+)", what)
-        if m:
-            wanted |= {int(x) for x in re.findall(r"[0-9]+", m[1])}
-        wanted |= {
-            int(x)
-            for x in re.findall(r"\((?:\w+ \w+ )?([0-9]+)(?:, ([0-9]+))*\)", what)
-            for x in x
-            if x
-        }
-        here = [h for h in hazards if h["path"] == name and (not wanted or h["line"] in wanted
-                or (h["line"] == 0 and not number))]  # fmt: skip
+        for said in re.findall(r"lines? ([0-9, and]+)|\(((?:\w+ )*[0-9]+(?:, [0-9]+)*)\)", what):
+            wanted |= {int(x) for x in re.findall(r"[0-9]+", " ".join(said))}
+        here = [h for h in hazards if h["path"] == name and (not wanted or h["line"] in wanted)]
         named |= {id(h) for h in here}
-        rows.append(dict(site=site, cls=cls, needed=needed,
-                         found=sorted({f"{h['cls']}:{h['line']}" for h in here})))  # fmt: skip
+        done = None
+        if name in mp.test_ids:
+            done = "its test IDs are mapped by the ids rule"
+        elif name in mp.plants:
+            done = "its plants are renamed by the map"
+        elif not in_scope(name, mp.scope):
+            done = "outside the scope"
+        rows.append(
+            dict(
+                site=site,
+                cls=cls,
+                needed=needed,
+                found=sorted({f"{h['cls']}:{h['line']}" for h in here}),
+                instead=done if not here else None,
+            )
+        )
     beyond = [h for h in hazards if id(h) not in named]
     return rows, beyond
 
@@ -2578,14 +2614,16 @@ def cmd_scan(args):
         pages=report["pages"],
         hazards=dict(Counter(h["cls"] for h in hazards)),
         standing=dict(Counter(h["cls"] for h in standing)),
+        inside_longer_strings=dict(Counter(scope_of(p) for p, _, _ in report["inside"])),
         stale_reviews=len(stale),
     )
     if args.by_hand:
-        rows, beyond = by_hand_found(args.by_hand, hazards)
+        rows, beyond = by_hand_found(args.by_hand, hazards, mp)
         summary["by_hand"] = dict(
             rows=len(rows),
             found=sum(bool(r["found"]) for r in rows),
-            not_found=[r for r in rows if not r["found"]],
+            done_otherwise=[f"{r['site']}: {r['instead']}" for r in rows if r["instead"]],
+            not_found=[r["site"] for r in rows if not (r["found"] or r["instead"])],
             standing_beyond_them=len([h for h in beyond if "reviewed" not in h]),
         )
         report["by_hand"] = rows
@@ -2649,7 +2687,7 @@ def cmd_apply(args):
 
 def apply_paths(tree, files, mp, args):
     wanted = [p.rstrip("/") for p in args.paths]
-    suffixes = tuple(mp.scope["suffixes"])
+    suffixes = (*mp.scope["suffixes"], *(args.suffix or ()))
     found = {}
     for path, (_, data) in files.items():
         if not any(path == w or path.startswith(w + "/") for w in wanted):
@@ -3462,6 +3500,12 @@ def _selftest_scan(checks, mp):
         checks[f"scan: a quoted {name} of a file the move changes"] = [
             (h["cls"], h["path"]) for h in hazards
         ] == [("hash pin", "validation/live.py")]
+    longer = {"tests/l.py": ("100644", b'X = "wave_mh@1 and host@3"\nY = "wash@1"\n')}
+    checks["scan: IDs inside longer strings are listed, and are no hazard"] = (
+        lambda found: (
+            found[0] == [] and [i for _, _, i in found[1]["inside"]] == ["wave_mh@1", "host@3"]
+        )
+    )(run_scan(longer, mp, _plant_choices()))
     ruled = _plant_choices(pinned=[dict(path="validation/live.py", kind="python", choice="re-spell",
                                         choices=["re-spell", "leave"], pinned_by=[])])  # fmt: skip
     hazards, _, _ = run_scan(pinned, mp, ruled)
@@ -3768,6 +3812,14 @@ def _selftest_end_to_end(checks):
         checks["verify: one flipped byte is caught in a commit"] = (
             call("verify", "--base", "HEAD~2", "--head", "HEAD")[0] == 1
         )
+        call("apply", "--rehearsal", "--paths", "docs")
+        before = (tree / "docs/NOTE.md").read_text()
+        call("apply", "--rehearsal", "--paths", "docs", "--suffix", ".md")
+        checks["apply --paths: a page only where its suffix is asked for"] = (
+            before == "wave_mh@1 stays here\n"
+            and (tree / "docs/NOTE.md").read_text() == "cells.wave.wave_mh@1 stays here\n"
+        )
+        run("commit", "-q", "-am", "docs")
         code, _ = call("apply", "--rehearsal", "--paths", "lean")
         checks["apply --paths: a lane's own files, outside the scope, by the token rule alone"] = (
             code == 0 and (tree / "lean/claim.py").read_text() == 'LAW = "cells.wave.wave_mh@1"\n'
@@ -3871,6 +3923,7 @@ def main(argv=None):
     p.add_argument("--rehearsal", action="store_true", help="a map that is not final is allowed")
     p.add_argument("--allow-hazards", action="store_true")
     p.add_argument("--paths", nargs="+", help="only these files and folders, by the token rule")
+    p.add_argument("--suffix", action="append", help="with --paths: another suffix, as .md")
     p = command("verify", "the replay of the map on the base against the head")
     p.add_argument("--base", required=True)
     p.add_argument("--head", required=True)
