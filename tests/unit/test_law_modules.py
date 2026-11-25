@@ -28,6 +28,7 @@ OWN = {  # Each law's own module: its declarer.
     "nav1p2_m3h_regularized@1": "cells.laws.channels.nav1p2_m3h_regularized",
     "kleak_always_open@1": "cells.laws.channels.kleak_always_open",
     "naleak_always_open@1": "cells.laws.channels.naleak_always_open",
+    "cav1p2_m2h@1": "cells.laws.channels.cav1p2_m2h",
     "junction_voltage_relaxation@1": "cells.laws.junctions.junction_voltage_relaxation",
     "junction_series_gates@1": "cells.laws.junctions.junction_series_gates",  # FR-30 (D262).
     "nak_atp_mass_action_positive@1": "cells.laws.pumps.nak_atp_mass_action_positive",
@@ -51,6 +52,10 @@ SHIMS = {  # Each older kernel module: the per-law module its names moved to, an
     "cells.laws.channels.sodium_channels": (
         "cells.laws.channels.nav1p2_m3h_regularized",
         ("LAW_ID", "nav1p2_kinetics"),
+    ),
+    "cells.laws.channels.calcium_gates": (
+        "cells.laws.channels.cav1p2_m2h",
+        ("LAW_ID", "VOLTAGE_DOMAIN_V", "kinetics", ("open_probability", "opening")),
     ),
     "cells.laws.junctions.junction_gate": (
         "cells.laws.junctions.junction_voltage_relaxation",

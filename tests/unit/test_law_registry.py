@@ -46,6 +46,7 @@ from cells.definitions import surface_pump_v3_spec as spec3
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.kinds import passive_routes, proton_buffer, transporter
 from cells.laws.channels import (
+    cav1p2_m2h,
     clleak_always_open,
     kv1p1_mh2,
     kv1p2_mh,
@@ -135,9 +136,9 @@ def test_todays_declarations_are_template_instances_with_their_fields_kept():
         laws.ROUTE_LAW: inner_laws.ROUTE_LAWS,
     }
     # @3 also hosts the Kv1 pilot's five, cited laws registered since the Kv1 trigger, and the
-    # always-open chloride leak (D228 item 3); and FR-30's series gates (D262).
+    # always-open chloride leak (D228 item 3); the calcium channel; and FR-30's series gates (D262).
     kv1 = {m.LAW_ID: m.LAW for m in (kv1p1_mh2, kv1p2_mh, kv1p3_mh, kv1p4_mh, kv1p6_mh)}
-    kv1[clleak_always_open.LAW_ID] = clleak_always_open.LAW
+    kv1 |= {m.LAW_ID: m.LAW for m in (clleak_always_open, cav1p2_m2h)}
     extra = {laws.CHANNEL_LAW: kv1, laws.JUNCTION_LAW: {series: junction_series_gates.LAW}}
     assert inner_laws.JUNCTION_LAWS[series] is junction_series_gates.LAW
     series_law = junction_series_gates.LAW

@@ -203,10 +203,12 @@ repeat them.
 - `code`: its registry code in the inner model, which no other law takes;
 - `gates`: the names of its gates, whose open fractions the host keeps as state;
 - `permeant`: each permeant ion as (species, valence, relative permeability), also given as
-  `changes`;
+  `changes`. A model's species must have the valence that its law gives;
 - `voltage_domain_V`: the voltages (V) where it is valid; a step outside is refused;
-- `rk4_step_s`: the reference RK4 step bound (s), or null for a law with no gate;
-- `stage_term`: its term in the step's stage rule; `loop_term`, reserved;
+- `rk4_step_s`: the reference RK4 step bound (s), or null for a law with no gate and for a gated law
+  that runs on no RK4 grid;
+- `stage_term`: its term in the step's stage rule; `material_term`, its material slope per stage, the
+  name of the kernel that supplies it, or null; `loop_term`, reserved;
 - its kernels: `kinetics` (voltage to each gate's target and time constant) and `opening` (the
   gates to the open fraction).
 

@@ -112,7 +112,7 @@ electrochemical gradient. Its gates decide when it is open.
 
 <!-- generated: used-by channel -->
 
-- **Used by:** [`cells.species_condition@1`](cells/kinds/species_condition@1.md), [`cells.hill_product_factor@1`](cells/laws/hill_product_factor@1.md), [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md), [`cells.open_channel_block_weighted_modes@1`](cells/laws/open_channel_block_weighted_modes@1.md) and [`cells.root_component_has_cycle@1`](cells/laws/root_component_has_cycle@1.md).
+- **Used by:** [`cells.species_condition@1`](cells/kinds/species_condition@1.md), [`cells.cav1p2_m2h@1`](cells/laws/cav1p2_m2h@1.md), [`cells.hill_product_factor@1`](cells/laws/hill_product_factor@1.md), [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md), [`cells.open_channel_block_weighted_modes@1`](cells/laws/open_channel_block_weighted_modes@1.md) and [`cells.root_component_has_cycle@1`](cells/laws/root_component_has_cycle@1.md).
 
 <!-- /generated -->
 
@@ -188,7 +188,7 @@ concentrations on both sides.
 
 <!-- generated: used-by constant-field-flux -->
 
-- **Used by:** [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md).
+- **Used by:** [`cells.cav1p2_m2h@1`](cells/laws/cav1p2_m2h@1.md) and [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md).
 
 <!-- /generated -->
 
@@ -307,7 +307,7 @@ population's channels in which that gate is open: a number from 0 to 1.
 
 <!-- generated: used-by gate -->
 
-- **Used by:** [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md).
+- **Used by:** [`cells.cav1p2_m2h@1`](cells/laws/cav1p2_m2h@1.md) and [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md).
 
 <!-- /generated -->
 
@@ -543,7 +543,7 @@ millivolts.
 
 <!-- generated: used-by membrane-voltage -->
 
-- **Used by:** [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md), [`cells.open_channel_block_weighted_modes@1`](cells/laws/open_channel_block_weighted_modes@1.md) and [`cells.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md).
+- **Used by:** [`cells.cav1p2_m2h@1`](cells/laws/cav1p2_m2h@1.md), [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md), [`cells.open_channel_block_weighted_modes@1`](cells/laws/open_channel_block_weighted_modes@1.md) and [`cells.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md).
 
 <!-- /generated -->
 
@@ -608,7 +608,7 @@ taken in the law's order.
 
 <!-- generated: used-by open-fraction -->
 
-- **Used by:** [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md).
+- **Used by:** [`cells.cav1p2_m2h@1`](cells/laws/cav1p2_m2h@1.md) and [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md).
 
 <!-- /generated -->
 
@@ -917,7 +917,7 @@ chloride.
 
 <!-- generated: used-by valence -->
 
-- **Used by:** [`cells.species_condition@1`](cells/kinds/species_condition@1.md).
+- **Used by:** [`cells.species_condition@1`](cells/kinds/species_condition@1.md) and [`cells.cav1p2_m2h@1`](cells/laws/cav1p2_m2h@1.md).
 
 <!-- /generated -->
 

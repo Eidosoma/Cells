@@ -62,6 +62,7 @@ import numpy as np
 
 from validation.tissue import compartment_acceptance_fixtures as af
 from validation.tissue import compartment_fixtures as cf
+from validation.tissue import field_solver_choice
 from validation.tissue import secreted_species_fixtures as fx
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -109,14 +110,18 @@ CHECKS = (
     ("refusal 3 (one compartment per node)", "one compartment per node"),
     ("refusal 4 (an ion route)", "in a world that declares no kind"),
     ("refusal 5 (the charge anchor)", "declares a nonzero charge anchor"),
-    ("refusal 6 (a held-bath topology)", "lies in a capacitor component with no held bath"),
+    ("refusal 6 (a held-bath topology)", "is the representative of its capacitor component"),
     ("refusal 7 (replacement's owners)", "which owns a compartment"),
+)
+# Phrases of earlier versions' messages, as saved records hold them, each its check's too.
+EARLIER = (  # Refusal 6, version 1 (CLOSED_COMPARTMENT_DESIGN §3.5.1 has version 1.1).
+    ("refusal 6 (a held-bath topology)", "lies in a capacitor component with no held bath"),
 )
 
 
 def classify(message):
-    """The check a refusal message names, or None."""
-    for check, phrase in CHECKS:
+    """The check a refusal message names, or None: by its phrase, or an earlier version's."""
+    for check, phrase in (*CHECKS, *EARLIER):
         if phrase in (message or ""):
             return check
     return None
@@ -688,7 +693,7 @@ def refusal_pairs():
     anchored = copy.deepcopy(base)
     cf._anchor(next(o for o in anchored["model"]["extracellular"] if o["id"] == cf.NODE),
                cf.PLANTED_ANCHOR_C)
-    floating = _no_held_bath(base)
+    floating = _floating(base)
     return {
         "R1_a_face": (face, base),
         "R1_a_held_bath": (held, base),
@@ -727,20 +732,23 @@ def _second_cell_on_node(base):
     return out
 
 
-def _no_held_bath(base):
-    """W with its held bath replaced by a finite node, the gauge, under the owner's wall: the
-    owner's capacitor component holds no held bath."""
+def _floating(base):
+    """W with its owner's wall moved from the held bath to a finite node ecs_w, which a face joins
+    to the bath: the owner's capacitor component floats, with no held bath and no gauge, and the
+    compartment's node, declared before ecs_w, is its first outside node. It has one free field
+    offset, so it declares field solver version 3 (D147), outright: `declare` would count the
+    offsets by a parse, which refuses the world."""
     out = copy.deepcopy(base)
     m = out["model"]
     node = copy.deepcopy(next(o for o in m["extracellular"] if o["id"] == cf.NODE))
-    node.update(id="ecs_w", volume_pL=1.0)
-    node["initial_amount_fmol"] = {s: v * 10.0 for s, v in node["initial_amount_fmol"].items()}
-    node["fixed_charge_equivalent_fmol"] *= 10.0
-    m["extracellular"] = [o for o in m["extracellular"] if not o.get("reservoir")] + [node]
-    next(p for p in m["membranes"] if p["id"] == "wall_cell_0")["outside"] = "ecs_w"
-    m["closure"]["gauge_reference"] = "ecs_w"
+    m["extracellular"].append(node | dict(id="ecs_w"))
+    next(p for p in m["membranes"] if p["id"] == cf.WALL)["outside"] = "ecs_w"
+    face = dict(copy.deepcopy(_any_face()), id="face_w", sender="ecs_w", receiver="bath")
+    face["diffusivity_m2_per_s"]["K"] = fx.D_S
+    m["faces"].append(face)
     out["execution"]["extracellular_capacity"] = len(m["extracellular"])
-    return out
+    out["execution"]["face_capacity"] = len(m["faces"])
+    return field_solver_choice.declare(out, "3")
 
 
 def _replaced(events):

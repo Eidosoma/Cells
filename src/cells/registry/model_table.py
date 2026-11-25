@@ -79,6 +79,7 @@ MODELS = MappingProxyType(
                 "cells.laws.channels.kv1p6_mh",
                 # The always-open Cl⁻ leak, code 10 (D228 item 3, the H1 seam's Cl⁻ part).
                 "cells.laws.channels.clleak_always_open",
+                "cells.laws.channels.cav1p2_m2h",  # The CaV1.2-type calcium channel, code 11.
                 "cells.laws.channels.open_channel_block",  # FR-51's block (D371).
                 "cells.laws.junctions.junction_voltage_relaxation",
                 # FR-30, development only (D262; the @3 owner's recorded exception, F's file).

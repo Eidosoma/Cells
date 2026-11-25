@@ -13,7 +13,11 @@ docs/CLOSED_COMPARTMENT_DESIGN.md §1.4 to §1.6 and §4, in NumPy (no compile),
 * the declaration parses and round-trips, its refusals 1 to 7 fire with their reasons, and the
   summary carries the identity block. A label or reference changes no binding. Refusal 5 version
   1.2 admits an anchor where an admitted operator's routes charge the compartment (planted per
-  compartment), at the definition, and FR-1's judged class still holds its prefixed message;
+  compartment), at the definition, and FR-1's judged class still holds its prefixed message.
+  Refusal 6 version 1.1 refuses its component's representative alone, the node that bind fixes, so
+  a closed world with a charged store is admitted (planted: the last outside node, version 1's
+  rule), and FR-1's judged class holds both versions' messages. Refusal 4 admits a pump at a store's
+  node by its law's step terms (a planted law; planted: none of them, its material slope alone);
 * the composite's structure check refuses the providers and closers of what the declaration reads
   as declared, in either order, and admits the operators of its list; the list fails closed. The
   areas and capacitances are reference reads, so membrane state passes the structure check, and the
@@ -23,6 +27,7 @@ docs/CLOSED_COMPARTMENT_DESIGN.md §1.4 to §1.6 and §4, in NumPy (no compile),
 
 import copy
 import dataclasses
+import math
 import re
 from dataclasses import dataclass
 from types import SimpleNamespace
@@ -33,9 +38,12 @@ import pytest
 
 from cells.definitions import pump_composite_spec as cs
 from cells.definitions.specs import ConfigError, parse_spec
+from cells.execution.schedule import control_values
+from cells.laws.cycles.forms import CycleForm, Parameter, Saturation
 from cells.laws.electrochemistry import CHARGE_PER_FMOL
-from cells.models import pump_composite
+from cells.models import pump_composite, surface_tissue
 from cells.models import pump_composite_adapter as adapter
+from cells.numerics import surface_field
 from cells.operators import OPERATORS
 from cells.operators import compartments as comp
 from cells.operators.contract import (
@@ -48,11 +56,14 @@ from cells.operators.contract import (
 )
 from cells.registry import kind_registry
 from cells.registry import laws as law_registry
+from cells.registry.inventory_species import add_inventory_species
 from cells.registry.models import get_model
 from tests import kind_fixtures
 from validation.fr7 import unit_turnover_fixtures as ufx
 from validation.tissue import compartment_fixtures as cfx
+from validation.tissue import field_solver_choice
 from validation.tissue import secreted_species_fixtures as fx
+from validation.tissue import species_reactions_fixtures as rfx
 
 LAW = cfx.LAW
 END = 0.004
@@ -343,6 +354,54 @@ def closed_world(gauge):
     return raw
 
 
+def floating_world(*nodes):
+    """Refusal 6's world, version 1.1: cell_0's wall on the finite node ecs_w, which a face joins to
+    the held bath, so cell_0's capacitor component floats, with the compartment ecs_0 in it. `nodes`
+    orders the two finite nodes. Its one free field offset declares its field solver (D147)."""
+    raw = fx.world(
+        cells=(("cell_0", 1.0),),
+        nodes=tuple((name, 1.0) for name in nodes),
+        contacts=(("contact_0", "cell_0", "ecs_0"),),
+        faces=(("face_0", "ecs_w", "bath", 1e-10, 1e-5),),
+        end=END,
+        concentrations_mM=dict(cell_0=1e-3, ecs_0=1e-6),
+    )
+    patch(raw, "wall_cell_0")["outside"] = "ecs_w"
+    raw["model"]["faces"][0]["diffusivity_m2_per_s"]["K"] = fx.D_S
+    return cfx.with_compartments(field_solver_choice.declare(raw), [cfx.compartment()])
+
+
+def closed_store(charge_C):
+    """A closed world with a store, synthetic: W's cell, its finite `bath` the gauge, and the
+    compartment with a K permeability and a calcium route on its bounding patch (so the world
+    declares a kind, and refusals 4 and 5 admit them), charged to `charge_C`, the cell to its
+    opposite."""
+    raw = rfx.with_charged_trace(fx.face_free(end=END), "Ca", 2, concentrations_mM=dict(ecs_0=0.1))
+    raw["model"]["passive_routes"] = [
+        dict(
+            id="leak_ca",
+            patch="contact_0",
+            law="passive_constant_field_permeation@1",
+            species="Ca",
+            permeability_m_per_s=1e-9,
+        )
+    ]
+    patch(raw, "contact_0")["permeability_m_per_s"]["K"] = 1e-9
+    valence = {s["id"]: s["valence"] for s in raw["model"]["species"]}
+    for name, charge in (("ecs_0", charge_C), ("cell_0", -charge_C)):
+        holder = next(
+            c for c in (*raw["model"]["cells"], *raw["model"]["extracellular"]) if c["id"] == name
+        )
+        amounts = holder["initial_amount_fmol"]
+        holder["initial_charge_C"] = charge
+        holder["fixed_charge_equivalent_fmol"] = charge / CHARGE_PER_FMOL - math.fsum(
+            valence[s] * n for s, n in amounts.items()
+        )
+    node(raw, "bath")["reservoir"] = False
+    raw["model"]["closure"]["gauge_reference"] = "bath"
+    return cfx.with_compartments(raw, [cfx.compartment()])
+
+
 def faced_world():
     raw = fx.world(
         cells=(("cell_0", 1.0),),
@@ -507,7 +566,13 @@ REFUSALS = {
         "carries an ion route refusal 4 refuses there, leak_0",
     ),
     "a charge anchor": (charged, "nonzero charge anchor"),
-    "no held bath in the owner's component": (lambda: closed_world("bath"), "with no held bath"),
+    "the representative of its component": (
+        lambda: floating_world("ecs_0", "ecs_w"),
+        r"compartment 'ecs_0' is the representative of its capacitor component \(no held bath and "
+        r"no gauge is in it, and 'ecs_0' is its first outside node\); the capacitor solve fixes a "
+        r"representative, so its row would carry the component's net charge\. Declare another "
+        r"outside node of the component first \(refusal 6, version 1\.1\)$",
+    ),
     "an empty label": (
         lambda: declared(w(), [cfx.compartment(label=" ")]),
         "null or a non-empty string",
@@ -524,6 +589,52 @@ def test_definition_refusals(name):
     build, message = REFUSALS[name]
     with pytest.raises(ConfigError, match=message):
         parse_spec(build())
+
+
+def fixed_by_bind(spec):
+    """The nodes that the bound capacitor solve fixes beside the held baths, their IDs."""
+    _, p = get_model(spec.model).initial_values(spec)
+    fixed = surface_field.representatives(surface_tissue.field_layout(p))
+    nodes = (*spec.model.cells, *spec.model.extracellular)
+    return {c.id for c, f in zip(nodes, fixed, strict=True) if f}
+
+
+def test_refusal_6_version_1_1_admits_a_compartment_that_is_not_its_components_representative(
+    monkeypatch,
+):
+    """Refusal 6, version 1.1 (docs/CLOSED_COMPARTMENT_DESIGN.md §3.5.1): what it asks for is a free
+    node of the capacitor solve. So a closed world is admitted, whose gauge is the representative,
+    and a floating component whose first outside node is not the compartment's; the one whose first
+    is the compartment's is refused (REFUSALS). The check's representatives are the nodes that bind
+    fixes, in each topology. In a closed world with a store the store's node is free: its patch
+    holds -q/C_b at a nonzero anchor (-5 mV). Planted in the check, each refusing a world it must
+    admit: the last outside node, and version 1's rule, every finite node of a component without a
+    held bath."""
+    charge = 5e-3 * fx.CONTACT_C_F
+    worlds = {
+        "W": (w(), set()),
+        "closed": (closed_world("bath"), {"bath"}),
+        "closed, with a store": (closed_store(charge), {"bath"}),
+        "floating": (floating_world("ecs_w", "ecs_0"), {"ecs_w"}),
+    }
+    specs = {name: parse_spec(raw) for name, (raw, _) in worlds.items()}
+    for name, (_, fixed) in worlds.items():
+        assert fixed_by_bind(specs[name]) == comp.representatives(specs[name].model) == fixed, name
+    spec = specs["closed, with a store"]
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    controls = control_values(spec, [0.0])
+    v = model.readouts(state, type(controls)(*(c[0] for c in controls)), p, xp=np)
+    cell, bath, store = np.asarray(v.field.potential_V)
+    assert bool(v.valid) and bath == 0.0
+    assert abs((cell - store) / (-charge / fx.CONTACT_C_F) - 1) < 1e-12
+    for name, planted in (
+        ("floating", lambda m: {m.extracellular[-1].id}),
+        ("closed", lambda m: {o.id for o in m.extracellular if not o.reservoir}),
+    ):
+        monkeypatch.setattr(comp, "representatives", planted)
+        with pytest.raises(ConfigError, match="is the representative of its capacitor component"):
+            parse_spec(worlds[name][0])
 
 
 def moves_at(spec, node):
@@ -838,6 +949,12 @@ PLANTED_MOVES = {
         dict(material_term=no_slope, bound_rate=no_bound),
         "a charge slope",
     ),
+    "a charged row held only by its material slope": (
+        "K",
+        dict(material_term="slope"),
+        dict(material_term=no_slope),
+        "a charge slope",
+    ),
     "a charged row held only by its charge bound": (
         "K",
         dict(charge_bound="bound"),
@@ -922,6 +1039,96 @@ def moves_at_planted(spec, kind, node):
         for species, at, law in kind.moved_rows(declaration)
         if at == node
     }
+
+
+STORE_PUMP = "tests.store_pump@1"
+STORE_PUMP_FORM = CycleForm(  # One ion of any valence moved from N to P per ATP, held fuel.
+    kinetics="factored",
+    roles=(("role", None), ("ATP", 0), ("ADP", 0), ("Pi", 0)),
+    rows=(("role", "N"), ("role", "P"), ("ATP", "N"), ("ADP", "N"), ("Pi", "N")),
+    modes=(("cycle", ("-stoichiometry", "stoichiometry", -1, 1, 1)),),
+    parameters=(
+        Parameter("stoichiometry", "1", low=1, high=4, integer=True, positive=True),
+        Parameter("km_role_mM", "mM", positive=True),
+        Parameter("km_atp_mM", "mM", positive=True),
+    ),
+    fuel_roles=("ATP", "ADP", "Pi"),
+    saturation=(
+        (
+            Saturation(("role", "N"), "km_role_mM", "stoichiometry"),
+            Saturation(("ATP", "N"), "km_atp_mM", 1),
+        ),
+    ),
+)
+
+
+def pumped_store():
+    """closed_store with a planted pump on the store's patch, which moves calcium from the cytosol
+    into the store on the cytosol's held ATP, ADP and Pi (synthetic)."""
+    raw = closed_store(5e-3 * fx.CONTACT_C_F)
+    compartments = raw["model"]["operators"].pop()
+    fuel = dict(ATP=(1.5, 0.0), ADP=(0.1, -14.0), Pi=(0.1, 0.0))  # mM in the cell, mu/RT.
+    for name, (cell_mM, _) in fuel.items():
+        raw = add_inventory_species(
+            raw,
+            name,
+            trace_mM=fx.TRACE_mM,
+            diffusivity_m2_per_s=fx.D_S,
+            floor_fmol=fx.FLOOR_FMOL,
+            concentrations_mM=dict(cell_0=cell_mM),
+        )
+    m = raw["model"]
+    for species in m["species"]:
+        if species["id"] in fuel:
+            species["standard_mu_RT"] = fuel[species["id"]][1]
+    m["standard_concentration_mM"] = 1.0
+    m["transporters"] = [
+        dict(
+            id="pump_0",
+            host="contact_0",
+            law=STORE_PUMP,
+            orientation={"N": "a"},
+            capacity_fmol_s=1e-3,
+            roles=dict(role="Ca", **{name: name for name in fuel}),
+            parameters=dict(stoichiometry=1, km_role_mM=1e-3, km_atp_mM=0.5),
+            held_rows=[[name, "N"] for name in fuel],
+        )
+    ]
+    m["operators"].append(compartments)
+    return raw
+
+
+@pytest.mark.parametrize(
+    "terms, refusal",
+    [
+        (dict(stage_term="slope", material_term="slope"), None),
+        ({}, "declares no step term"),
+        (dict(material_term="slope"), "declares material_term, .* a charge slope"),
+    ],
+    ids=["both terms", "no term", "its material slope alone"],
+)
+def test_a_pump_at_a_stores_node_is_admitted_by_its_step_terms(terms, refusal):
+    """Refusal 4, version 1.3, at a store's node in a closed world, on the real transporter kind: a
+    planted ATP-driven law that pumps calcium into the store is admitted where it declares its step
+    terms, and refused by name where it declares none, or its material slope alone (a charge slope
+    alone is admitted: PLANTED_MOVES). The law is planted: no registered pump of an ion of any
+    valence declares them."""
+    law = law_registry.CycleLaw(
+        STORE_PUMP,
+        (),
+        ("maintained_held_rows@1",),
+        cycle=STORE_PUMP_FORM,
+        host="cells.transporter@1",
+        **terms,
+    )
+    with law_registry.scope(law_registry.BUILTIN.extended(law)):
+        if refusal is None:
+            moves = moves_at(parse_spec(pumped_store()), cfx.NODE)
+            assert ("cells.transporter@1", "Ca", STORE_PUMP, tuple(terms)) in moves
+            return
+        under = rf"moves the charged row Ca at its node under {STORE_PUMP}, which {refusal}"
+        with pytest.raises(ConfigError, match=under):
+            parse_spec(pumped_store())
 
 
 def test_refusal_4_judges_the_moves_at_the_compartments_node_and_names_no_kind():
@@ -1508,12 +1715,42 @@ def test_fr1s_judged_refusal_class_holds_refusal_5_from_the_definition_check():
     assert spec is not None and message is None
 
 
+V1_HELD_BATH = (  # Refusal 6's message in version 1, as FR-1's saved records hold it.
+    "cell_owned_compartments@1: the owner 'cell_0' of compartment 'ecs_0' lies in a capacitor "
+    "component with no held bath; version 1 requires one, so that the compartment is a free node "
+    "of the capacitor solve, never a representative"
+)
+
+
+def test_fr1s_judged_refusal_class_holds_refusal_6_in_both_versions():
+    """FR-1's R6 pair under refusal 6, version 1.1 (its protocol and record are not edited): the
+    driver's world, a floating component whose first outside node is the compartment's, is refused
+    under the class its protocol registers, and by that alone, since without the declaration it is
+    admitted; its neighbour is admitted; and version 1's message classifies as before."""
+    from validation.tissue import compartment_acceptance_qualification as fr1
+    from validation.tissue.compartment_acceptance_protocol import C1_CHECKS
+
+    refused, admitted = fr1.refusal_pairs()["R6_no_held_bath"]
+    spec, message = fr1.admit(refused)
+    assert spec is None and "(refusal 6, version 1.1)" in message
+    registered = C1_CHECKS["R6_no_held_bath"]
+    assert fr1.classify(message) == fr1.classify(V1_HELD_BATH) == registered
+    undeclared = copy.deepcopy(refused)
+    assert undeclared["model"]["operators"].pop()["law"] == LAW
+    assert fr1.admit(undeclared)[0] is not None and fr1.admit(admitted)[0] is not None
+
+
 def test_the_scope_names_refusal_5_version_1_2_and_no_operator_charges_by_default():
     """The summary's scope string names the code's versions (the lead's ruling (a)): every
-    compartment world's summary says version 1.2. The contract's hook charges nothing by default."""
+    compartment world's summary says version 1.2 of refusal 5, and version 1.1 of refusal 6. The
+    contract's hook charges nothing by default."""
     spec = parse_spec(w())
     scope = OPERATORS[LAW].summary(spec, spec.model.operators[-1], (), None)["compartments_scope"]
-    assert scope.startswith("refusal 4 version 1.3, refusal 5 version 1.2: ")
+    assert scope.startswith(
+        "refusal 4 version 1.3, refusal 5 version 1.2, refusal 6 version 1.1: a node that its "
+        "capacitor component does not take as its representative, at a fixed volume; on a bounding "
+        "patch "
+    )
     assert Operator().charged_compartments(spec, None) == ()
 
 
