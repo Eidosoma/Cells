@@ -191,11 +191,13 @@ def ionic_layout(p, state=None, *, xp=jnp):
     )
 
 
-def law_channels(spec):
+def law_channels(spec, operator=LAW_ID):
     """[capacity, law] channel index of each cell's population of a law (-1: none).
 
     Donor copies read a donor's gates by law; the parser admits only donors with
-    exactly one population of each gated law the slot has.
+    exactly one population of each gated law the slot has. The table's laws are
+    today's five (LAW_CODES): a population of any other, on any cell, is refused by
+    name. operator: the operation's ID, which the refusal names.
     """
     m, x = spec.model, spec.execution
     cells = {c.id: i for i, c in enumerate(m.cells)}
@@ -203,6 +205,11 @@ def law_channels(spec):
     laws = list(LAW_CODES)
     table = -np.ones((x.capacity, len(laws)), dtype=np.int64)
     for k, c in enumerate(m.channels):
+        if c.kinetic_law not in laws:
+            raise ConfigError(
+                f"Channel {c.id}: {c.kinetic_law} carries no donor gate table in {operator}; a "
+                f"replacement copies gates of {', '.join(laws)} only"
+            )
         i, law = owner[c.membrane_id], laws.index(c.kinetic_law)
         if table[i, law] < 0:
             table[i, law] = k
@@ -507,7 +514,7 @@ def bind(spec, declaration, events):
     values = template_tables(declaration.templates, m.species_ids, declaration.template_capacity)
     values |= dict(
         slot_event_count=counts,
-        cell_law_channel=law_channels(spec),
+        cell_law_channel=law_channels(spec, declaration.law),
         formation_initial_abundance=np.asarray(f.initial_abundance),
         formation_lag_s=np.asarray(f.lag_s),
         formation_time_constant_s=np.asarray(f.time_constant_s),

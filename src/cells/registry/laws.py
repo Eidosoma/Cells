@@ -363,18 +363,23 @@ class ChannelLaw(Law):
     """A channel law (docs/INNER_MODEL_V4_DESIGN.md §7.1): gates relax by the exponential stage
     update; leaks have none. A host's codes are distinct. Code 99 is reserved for test plants (the
     lead, 19 November 2026): no registered law takes it, so a planted law never meets one that
-    registers later."""
+    registers later. A law is the one authority for its ions' valences, and @3's parser holds a
+    model's species to it (definitions/surface_pump_v3_spec.parse_channel). `material_term` names
+    the kernel of its material slope per stage, as a cycle's and a route's does (module docstring),
+    or is None: a law that carries an ion other than Na, K and Cl and declares none is refused on
+    @3, since the charge rule alone does not hold a scarce ion's amounts."""
 
     code: int
     gates: tuple[str, ...]
     permeant: tuple[tuple[str, int, float], ...]  # (species, valence, relative permeability)
     voltage_domain_V: tuple[float, float]
-    rk4_step_s: float | None  # The reference RK4 step bound; None for gate-free laws.
+    rk4_step_s: float | None  # Its RK4 step bound. None: gate-free, or gated and on no RK4 grid.
     kinetics: Callable | None = None  # (voltage, *, xp) -> (target, tau), [..., gates, n].
     opening: Callable | None = None  # (gates, *, xp) -> [..., n]; None: always open.
     stage_term: str = "constant_field_slope"  # Today's membrane_rate term at the actual opening.
     reads: tuple = ()  # Stage reads (B4): none for today's laws.
     loop_term: object = None
+    material_term: str | None = None  # Its material slope per stage.
 
     interface: ClassVar[str] = CHANNEL_LAW
     UNITS: ClassVar = MappingProxyType({"voltage_domain_V": "V", "rk4_step_s": "s"})
@@ -424,7 +429,7 @@ class ChannelLaw(Law):
             out.append("a gate-free law gives no kinetics or opening")
         if not _named(self.stage_term) or not isinstance(self.reads, tuple):
             out.append("its stage term is named and its reads are a tuple")
-        return out
+        return out + _named_or_none(self, "material_term")
 
 
 @dataclass(frozen=True)

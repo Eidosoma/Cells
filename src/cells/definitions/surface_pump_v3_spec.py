@@ -166,7 +166,9 @@ def gate_counts():
     return {law_id: len(law.gates) for law_id, law in channel_laws().items()}
 
 
-SPECIES_VALENCE = {"Na": 1, "K": 1, "Cl": -1}  # Cl⁻ for clleak_always_open@1 (D228 item 3).
+# The ions a channel law may carry on the charge rule alone; a law that carries any other, a scarce
+# one, declares its material term (docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md §5.2).
+MAJOR_IONS = ("Na", "K", "Cl")
 CHANNEL_FIELDS = set(kinetic.ChannelPopulation.__dataclass_fields__)
 # B1's door (docs/CORE_SEAMS_DESIGN.md §4.3): a population's optional factor sources, parsed beside
 # the shared ChannelPopulation dataclass (whose fields and fingerprints other families share).
@@ -315,32 +317,52 @@ def projection(spec):
 
 
 def parse_channel(raw, ids, z, membranes):
+    """One channel population, strictly; `ids` and `z` are the model's species and their valences.
+    Its law, from the law registry, is the one authority for its ions: their species, valences and
+    permeability ratios. A law that carries an ion outside MAJOR_IONS and declares no material term
+    is refused by name."""
     _fields(raw, CHANNEL_FIELDS, "channel")
-    law = raw["kinetic_law"]
-    permeabilities, gates = law_permeabilities(), gate_counts()  # The registry's (§8.3).
-    if type(law) is not str or law not in gates or type(raw["permeant_ions"]) is not list:
+    law_id, laws = raw["kinetic_law"], channel_laws()  # The registry's (§8.3).
+    if type(law_id) is not str or law_id not in laws or type(raw["permeant_ions"]) is not list:
         raise ConfigError("Channel requires a resolved_pump_tissue@3 law and permeant ions")
+    law = laws[law_id]
+    valence = {species: own for species, own, _ in law.permeant}
     ions = []
     for ion in raw["permeant_ions"]:
         _fields(ion, set(kinetic.PermeantIon.__dataclass_fields__), "permeant ion")
         species = identifier(ion["species_id"])
         weight = _number(ion["relative_permeability"], "relative permeability")
-        if species not in ids or z[ids.index(species)] != SPECIES_VALENCE.get(species):
-            raise ConfigError("Channel ion requires its law's species and valence")
+        own = valence.get(species)
+        given = z[ids.index(species)] if species in ids else None
+        if own is None or given != own:
+            carries = f"no {species}" if own is None else f"{species} at valence {own}"
+            declares = "no such species" if given is None else f"it at valence {given}"
+            raise ConfigError(
+                f"Channel ion requires its law's species and valence: {law_id} carries {carries}, "
+                f"and the model declares {declares}"
+            )
         ions.append(kinetic.PermeantIon(species, weight))
-    if tuple((i.species_id, i.relative_permeability) for i in ions) != permeabilities[law]:
+    ratios = tuple((species, weight) for species, _, weight in law.permeant)
+    if tuple((i.species_id, i.relative_permeability) for i in ions) != ratios:
         raise ConfigError("Channel ions must exactly match the named law's permeability ratios")
+    scarce = [species for species in valence if species not in MAJOR_IONS]
+    if scarce and law.material_term is None:
+        raise ConfigError(
+            f"Channel {identifier(raw['id'])}: {law_id} carries {scarce[0]}, which is not Na, K or "
+            "Cl, and declares no material_term; the charge rule alone does not hold a scarce ion's "
+            "amounts"
+        )
     patch = identifier(raw["membrane_id"])
     if (
         patch not in membranes
         or type(raw["initial_gate"]) is not list
-        or len(raw["initial_gate"]) != gates[law]
+        or len(raw["initial_gate"]) != len(law.gates)
     ):
         raise ConfigError("Channel requires its patch and exactly its law's gate state")
     return kinetic.ChannelPopulation(
         identifier(raw["id"]),
         patch,
-        law,
+        law_id,
         _number(raw["max_permeability_m_per_s"], "channel permeability"),
         _number(raw["abundance"], "channel abundance"),
         tuple(fraction(v, "initial channel gate") for v in raw["initial_gate"]),

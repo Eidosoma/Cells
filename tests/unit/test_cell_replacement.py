@@ -10,14 +10,19 @@
 * A checkpoint before, at or after an event restarts bitwise.
 * Faults in the supply, charge, energy or generation bookings are refused, host and
   device alike.
-* Definitions off the grid, creating routes, on floating components and the like
-  are refused.
+* Definitions off the grid, creating routes, on floating components, beside a channel law whose
+  gates no donor table holds (named, under @1 and @2 alike), and the like are refused.
 """
+
+import copy
+import re
 
 import jax
 import numpy as np
 import pytest
 
+from cells.definitions import pump_composite_spec as composite_spec
+from cells.definitions import surface_pump_v3_spec as spec3
 from cells.definitions.cell_replacement_spec import exact_event_times
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.execution.errors import NumericalError
@@ -150,6 +155,57 @@ def test_invalid_definitions_are_refused(change, message):
     change(raw)
     with pytest.raises(ConfigError, match=message):
         parse_spec(raw)
+
+
+def with_population(raw, law):
+    """raw with a K+ population of `law` (gates m and h) on cell_6's patch, where no event is."""
+    raw = copy.deepcopy(raw)
+    m, e = raw["model"], raw["experiment"]
+    (patch,) = [p["id"] for p in m["membranes"] if p["inside"] == "cell_6"]
+    m["channels"].append(
+        dict(
+            id="extra_0",
+            membrane_id=patch,
+            kinetic_law=law,
+            max_permeability_m_per_s=1e-8,
+            abundance=1.0,
+            initial_gate=[0.2, 0.9],
+            permeant_ions=[dict(species_id="K", relative_permeability=1.0)],
+        )
+    )
+    e["channel_controls"].append(
+        dict(channel_id="extra_0", schedule=[dict(time=0.0, availability=1.0)])
+    )
+    raw["execution"]["channel_capacity"] = len(m["channels"])
+    return raw
+
+
+def with_events(raw):
+    return fx.with_replacement(raw, templates(raw), EVENTS)
+
+
+V1, V2 = "scheduled_cell_replacement@1", "scheduled_cell_replacement@2"
+FORMS = {  # The operation's ID, and a definition of it on a raw @3 definition.
+    "replacement@1": (V1, with_events),
+    "its composition": (V1, lambda raw: composite_spec.frozen_definition(with_events(raw))),
+    "replacement@2 over water": (V2, lambda raw: fx.over_water(raw, templates(raw), EVENTS)),
+    "replacement@2 without events": (V2, fx.over_water),
+}
+
+
+@pytest.mark.parametrize("form", FORMS)
+def test_replacement_beside_another_channel_law_is_refused_by_name(form):
+    """A population of a law outside the operator's table of five, on a cell that nothing replaces,
+    is refused, naming the operator, the population and the law; one of the five is admitted."""
+    operator, build = FORMS[form]
+    parse_spec(build(with_population(sheet(), spec3.KIR2P1_LAW_ID)))
+    law = "kv1p1_mh2@1"
+    refusal = (
+        f"Channel extra_0: {law} carries no donor gate table in {operator}; a replacement copies "
+        f"gates of {', '.join(spec3.TODAYS_CHANNEL_LAWS)} only"
+    )
+    with pytest.raises(ConfigError, match=f"{re.escape(refusal)}$"):
+        parse_spec(build(with_population(sheet(), law)))
 
 
 def test_template_route_values_select_the_occupant_parameters():
