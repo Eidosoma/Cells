@@ -9,11 +9,12 @@ executed below. Two parts that can be built apart. Part I (G-5) is sections 1 to
 ("the map").
 
 **Marks.** (M) I ran it. (R) I read it in code or a document at 43b22d40. (S) my own derivation or arithmetic.
-(G) a guess. File references are to `src/cells/` at 43b22d40 unless another place is named; on
-`legacy-cleanup` at 149f9df9 the lines of `models/surface_pump_v3.py` are one lower (`_route` 1184,
-`material_rate` 3700, `structure` 5040), and the rest of this note's lines hold. (M2) the second reader
-measured it. All measured runs used CPUs 6, 7, 22 and 23, under `nice`, on the CPU build of JAX, with a fresh
-compile each time. Section 22 lists them.
+(G) a guess. File references are to `src/cells/` at 43b22d40 unless another place is named. On
+`legacy-cleanup` (149f9df9) 54 files of `src/cells` differ, among them `execution/grid.py`,
+`execution/schedule.py`, `models/surface_tissue.py` and `models/surface_pump_v3.py`, so a builder re-reads the
+lines; section 20.1 gives the edit sites there. (M2) the second reader measured it. All measured runs used
+CPUs 6, 7, 22 and 23, under `nice`, on the CPU build of JAX, with a fresh compile each time. Section 22 lists
+them.
 
 **Engine models this note runs** (the milestone rule): `resolved_pump_tissue@3` (@3),
 `resolved_pump_composite@1` over it, and `finite_bond_assembly@1`. Two parts of legacy were run read-only, as
@@ -59,12 +60,15 @@ Otherwise nothing in this note needs a new family word (section 19). The two IDs
 
 ### 0.2 Questions for the lead
 
-1. **What retires** (section 5.10): `ph_condition@1` when FR-5's worlds are judged again on the new kind (0.75
-   day, G); the coupling's instantaneous Hill on channels at that operator's next version; the two reserved
-   `loop_term` fields, one removed and one used by stream D's step 5. I give a recommendation for each; the
-   dates are yours.
-2. **The proton pump's declared loop kernel is bounded by nothing today** (R, section 5.10). It is in the live
-   engine, like the second reader's row 1.
+1. **What retires** (section 5.10): `ph_condition@1`, either in G-5's landing (then + 0.75 day, and FR-5's
+   worlds judged again in it) or after it (my recommendation); the coupling's instantaneous Hill on channels
+   at that operator's next version; the two reserved `loop_term` fields, removed with their reasons. The dates
+   are yours.
+2. **A neighbour of the second reader's row 2** (R, section 5.10): a proton row that a cycle law moves at both
+   ends has no material bound of its own in either layout of the transporter (version 1 has no material term;
+   on the population axis the term covers neutral rows and charged rows changed at one end). Only its charge
+   slope is bounded, and the kernel the proton pump declares for this, `loop_rates_per_s`, is called by one
+   unit test only. It is not known to bind anywhere.
 3. **IDs:** `species_condition@1` and `hill_product_factor@1` need rows in
    `scripts/moves/id-rename-choices.json`; tell the rename's owner.
 4. **If a ruling cannot be executed** I say what I would do instead in section 20.2.
@@ -301,8 +305,10 @@ today (the step's first explicit stage, `:2830`, and each later one, `:2941`):
 - **The factor is inside the product.** J is routed, so it contains f; the product is formed before the
   division, so f is inside df/dn, and the part of dJ/dn that goes through this factor is |J| |slope| / n. At a
   zero amount f and J are 0 and the quotient is 0 / tiny = 0, finite; without the floor on n, or with the
-  division first, it is NaN (0 / 0 or 0 x infinity; M2, `feedback_zero`). On @3 no row reaches zero
-  (`models/surface_tissue.py:414`), so it is unreachable today. It is covered anyway, and a row holds it.
+  division first, it is NaN (0 / 0 or 0 x infinity; M2, `feedback_zero`). It is finite there but not a bound
+  at exactly zero: the direct slope is 0 at coefficient 2, 264 per second at coefficient 1, and unbounded
+  below 1 (M2). On @3 no row reaches zero (`models/surface_tissue.py:414`), so it is unreachable today. It is
+  covered anyway, and a row holds it.
 - **The held control is not used.** At an amount of 1e-9 fmol the held flux times slope over n is 4e7 per
   second and would refuse every step; the routed one is 7e-3 (M2, the same probe).
 - **Both ends, per moved row** (ruling 3). The route's flux changes both of its rows, and every other row of
@@ -325,7 +331,7 @@ it is evaluated at the two explicit stages of ARS(2,2,2).
 - Loops through two routes (one moves X and gates on Y, another moves Y and gates on X) are not bounded.
 - **Loops through a source that has no hooks are not bounded, today `ph_condition` and `patch_damage`**
   (ruling 7). They are used (FR-4, FR-5), so they are not refused, and their docstrings say so
-  (`kinds/ph_condition.py:1` to 31, `kinds/patch_damage.py:1` to 56). The hooks for them are a follow-up for
+  (`kinds/ph_condition.py:1` to 31, `kinds/patch_damage.py:1` to 51). The hooks for them are a follow-up for
   the lead to log, not built here.
 - A Hill coefficient below 1 has no finite d f / d n as n goes to 0: the stage rule then refuses at a trace
   amount (at coefficient 0.5 and 1e-160 fmol the direct slope is 1e80 per second, M2). It is admitted, and the
@@ -416,14 +422,15 @@ backwards compatibility).
 
 | Old | New | Do the shapes agree? | When |
 | --- | --- | --- | --- |
-| `ph_condition@1` and its law `ph_conditioned_factor@1` (a source) | `species_condition@1` with one `hill_activation` read of the proton row, K = 10^(3 - pH50) mM, n = the slope | Yes as a function: on 20,000 random points the two differ by at most 2.3e-15 absolute, 5,222 are bit for bit equal. The pH law's tanh form loses relative accuracy at a small factor (up to 3e-11 relative where f > 1e-6) (M, `ph_same`) | Not in G-5's landing, since its results move by rounding and FR-5's judged records cover the build they judged. From that landing no new definition uses it. It retires when FR-5's worlds are judged again on the new kind (0.75 day, G). Until then its docstring names its successor |
-| The instantaneous Hill of `species_regulated_availability@1` and `@2` on a **channel** population (a neutral species in the channel's own cell) | a condition named in that channel's `factors` | Yes, where the row is one the inner step does not move, the coupling is always on, basal is 0, the world is IMEX and the target is a channel: the factor is the same number at every stage, so the product is bit for bit the coupling's (S; a test row) | Frozen at G-5's landing: no new instantaneous species-to-channel use there. It retires at the coupling's next version, when its judged worlds (A5, the later A5 acceptance) are judged on the door |
+| `ph_condition@1` and its law `ph_conditioned_factor@1` (a source) | `species_condition@1` with one `hill_activation` read of the proton row, K = 10^(3 - pH50) mM, n = the slope | Yes as a function: on 20,000 random points the two differ by at most 2.3e-15 absolute, 5,222 are bit for bit equal. The pH law's tanh form loses relative accuracy at a small factor (up to 3e-11 relative where f > 1e-6) (M, `ph_same`) | The user's standing direction is to retire a superseded mechanism when its replacement lands. (i) In G-5's landing: + 0.75 day, FR-5's worlds re-expressed and judged again in it; its results move by rounding. (ii) After it, my recommendation: FR-5's judged records cover the build they judged, so G-5's landing stays bit for bit for them; from that landing no new definition uses `ph_condition`, its docstring names its successor, and it retires when FR-5's worlds are judged again (0.75 day, G). The lead picks |
+| The instantaneous Hill of `species_regulated_availability@1` and `@2` on a **channel** population (a neutral species in the channel's own cell) | a condition named in that channel's `factors` | Yes, where the row is one the inner step does not move, the coupling is always on, basal is 0, the world is IMEX and the target is a channel: the factor is the same number at every stage, so the product is bit for bit the coupling's (S; a host row holds the two factors equal, section 8) | Frozen at G-5's landing: no new instantaneous species-to-channel use there. It retires at the coupling's next version, when its judged worlds (A5, the later A5 acceptance) are judged on the door |
 | The rest of that operator | none | **No, so two.** The coupling also targets junctions and other operators' rates; its factor is held and works under RK4; it has basal, switches and an identity rule; its sources include two-state, population and site quantities. The door has channel and route sinks only, is IMEX only, and has no basal or switch | stays |
 | `patch_damage@1` | none | No: it has a state and schedules | stays |
-| `ChannelLaw.loop_term` (`registry/laws.py:377`) | none | No law declares it and nothing reads it. A channel population's loop is bounded through `routed_flux` (section 5.5) | removed with that reason, in stream D's step 2 (which already edits `ChannelLaw`) |
-| `CycleLaw.loop_term` (`:446`) | the transporter's material bound | Nothing evaluates it today: `loop_rates_per_s` is called by one unit test only (`tests/unit/test_fr45_proton_laws.py:407`), and only the proton pump declares it. It is a law's own loop, which the factor hooks do not serve | **used:** stream D's step 5 (the transporter's material bound) evaluates it there, with a D148 scan of the FR-4 and FR-5 worlds first (0.25 day, G). If the scan finds a step it would refuse, it is removed with that reason and the proton pump's loop is logged as a gap |
+| `ChannelLaw.loop_term` (`registry/laws.py:377`) | none | No law declares it and nothing reads it. A channel population's loop is bounded through `routed_flux` (section 5.5) | removed, with that reason |
+| `CycleLaw.loop_term` (`:446`) | none | No code evaluates it. Only the proton pump declares it (`laws/pumps/proton_pump.py:137`, 265). A cycle law's own loop is the transporter's material term, which takes it from the law's `d_j_d_ln_c` and the closure's derivative (`kinds/transporter.py:2225` to 2264), not from a declared kernel | removed, with that reason: the field, its check (`:482`) and the two lines of `proton_pump.py`. `loop_rates_per_s` stays as a tested function (`tests/unit/test_fr45_proton_laws.py:407`), documented as not evaluated by the engine |
 
-The last row is also a finding for the lead: the proton pump's declared loop is bounded by nothing today (R).
+The removal loses a name, not a bound: what the transporter bounds today, and what it does not (section 0.2,
+question 2), is unchanged by it.
 
 ## 6. Same equations or a changed model
 
@@ -505,6 +512,9 @@ below are guesses (G) until measured.
 7. A condition as a source of an @3 channel slot: host only, the routed control equals held x f.
 8. A compartment world admits the kind; a source that also declares `bound_rate` is refused there (one parse
    row each).
+9. The coupling's factor at basal 0 and the condition's, for one neutral species at random points and both
+   forms, are the same number bit for bit (host only, about 1 s), which holds section 5.10's agreement of
+   shapes.
 
 D's rows 11 and 12 (the feedback bound against a finite difference of the stage's derivative) use the two
 hooks. The two-cell closed row (two cells, near and far, two free offsets, the floor solver by
@@ -622,9 +632,10 @@ consumer's criterion (3e-9 |e| + 3e-12, `validation/assembly/cluster_protocol.js
 
 ### 13.2 The definition and the driver
 
-`cells assembly-pool resolve COMPOSED.json --output DIR`. The input is a strict JSON object with exactly the
-keys `schema_version`, `ionic` and `pools`. It has no new ID or kind word. `ionic` is an ordinary definition
-(`resolved_pump_tissue@3` or `resolved_pump_composite@1`). Each entry of `pools` is:
+`cells assembly-pool resolve COMPOSED.json --output DIR` (and `run`, which resolves and runs the worlds). The
+input is a strict JSON object with exactly the keys `schema_version`, `ionic` and `pools`. It has no new ID or
+kind word. `ionic` is an ordinary definition (`resolved_pump_tissue@3` or `resolved_pump_composite@1`). Each
+entry of `pools` is:
 
     {"channels": ["channel_0"],            the channel populations it sets, each set by one pool at most
      "observable": "root_component_has_cycle",   a name from a short table; one for now
@@ -647,13 +658,15 @@ batch, one world per pool world). The ionic definition is untouched except its `
   fsum of level x duration), the final pool state and the ionic fingerprint. No run reads it, and a check row
   holds it equal to the definitions' schedules.
 - **The run's inputs.** The ionic definition's fingerprint holds the schedule's numbers and nothing else: not
-  the pool, its seed or the rule. So the driver also writes `inputs.json`: the composed file's SHA-256, each
+  the pool, its seed or the rule. So `resolve` also writes `inputs.json`: the composed file's SHA-256, each
   pool's definition fingerprint and seed, the observable (its law's ID if A5 is (b)), and the switch list of
-  each world. The run commands (`run`, `windowed run`, `batch run`, `batch windowed run`, and their resume and
-  branch) take a new general option `--inputs FILE.json`, and its object is recorded in the run's manifest as
-  `provenance["inputs"]` (`records/io.py:363`, `records/batch_io.py:239`, `records/window_io.py:227`,
-  `records/batch_window_io.py:189`, which take `provenance` today). Any driver can use the option. A run
-  started without it records no composed inputs, and says so.
+  each world. The existing record is the writers' `provenance` argument (`records/io.py:259` and 363,
+  `records/batch_io.py:239`, `records/window_io.py:227`, `records/batch_window_io.py:189`), which the run
+  drivers under `validation/` already fill (R). So `inputs.json` goes into `provenance["composed"]`: the
+  driver's own `run` subcommand passes it when it runs the worlds through the existing runners, and the
+  re-expression's run drivers do the same. No edit to `__main__.py` or `records/`. A run started by `cells
+  run` on a written definition is an ordinary run of that definition, and its manifest holds no composed
+  inputs, so registered runs go through the driver or a run driver.
 - The definitions are written as JSON text, with no shared objects (section 21, item 8).
 
 ### 13.3 Switch times
@@ -728,14 +741,13 @@ Two worlds of the 16 (M): world 0 with one switch in each cell (2 extra steps), 
   two free offsets; the assembly cell and the integrated ensemble's world have none and keep version 2 (M2,
   `free_offsets`). Run drivers and builders under `validation/` declare it with
   `validation/tissue/field_solver_choice.declare(raw)` (the `auto` rule); the composed worlds' builders and
-  tests use it. The driver in `src/cells` cannot import it (section 20.2), and refuses by name a free-offset
-  definition that declares version 2 or the sparse solver. The sparse ID
-  `sparse_capacitive_reduction_gauged_damped_newton@1` has no floor, so `auto` refuses it for a free-offset
-  world. The first version of this note missed the rule. What I measured agrees with it: with `@2` the base
-  cluster's first RK4 step is refused, at 25 us at stage 3 and at 12.5, 6.25 and 3.125 us at stage 2, because
-  the Newton stops at its rounding floor (the current residual is 0.9 to 2.6e-25 A, which is 0.006 to 0.017 of
-  its tolerance, against a target of 0.01), and `@3` accepts the same solves at every stage (M, `rk4_domain`,
-  `rk4_domain_floor`, `field_floor`). It is not an instability of RK4.
+  tests use it. The driver in `src/cells` does not choose a solver: it takes the ionic definition as declared.
+  The sparse ID `sparse_capacitive_reduction_gauged_damped_newton@1` has no floor, so `auto` refuses it for a
+  free-offset world. The first version of this note missed the rule. What I measured agrees with it: with `@2`
+  the base cluster's first RK4 step is refused, at 25 us at stage 3 and at 12.5, 6.25 and 3.125 us at stage 2,
+  because the Newton stops at its rounding floor (the current residual is 0.9 to 2.6e-25 A, which is 0.006 to
+  0.017 of its tolerance, against a target of 0.01), and `@3` accepts the same solves at every stage (M,
+  `rk4_domain`, `rk4_domain_floor`, `field_floor`). It is not an instability of RK4.
 - **The floor guard rerun.** D148's record says that the floor guard of D147 compares primitive counts, not
   constants, and asks to rerun it with constants before version 3 serves a run of record
   (`docs/DECISIONS.md:4910` to 4912). No record of that rerun was found (M2, R). It is a step before the
@@ -750,10 +762,9 @@ In the driver, before any run: an unknown key; an ionic model other than @3 or t
 in the definition, or set by two pools; an observable not in the table; levels that are not in [0, 1] or not
 finite; a pool without `recording: "events"`; a pool horizon different from the ionic `end_time` (or a longer
 one that was not asked for); a world count that differs between pools; a near miss (13.3); a `max_steps` too
-small; a definition with a free field offset that declares version 2 or the sparse field solver (D147); a
-replacement, partition or trafficking operator on an owner's cell (the path belongs to the channel slot and
-would outlive the cell); a pool that faults, naming its world and event cap. In the ionic world, today's
-refusals.
+small; a replacement, partition or trafficking operator on an owner's cell (the path belongs to the channel
+slot and would outlive the cell); a pool that faults, naming its world and event cap. In the ionic world,
+today's refusals.
 
 ### 13.7 Restart, D148, CPU and GPU
 
@@ -868,7 +879,7 @@ FR-43 part 3's unit population should drive a channel. Not before.
 ## 18. Tests for G-7 (rows, with plants)
 
 Rows go into `tests/unit/test_assembly_pool.py` (27.9 s, 90 s cap), which already compiles the pool's program
-once; the ionic rows are host-only except one.
+once; the ionic rows are host only, so no new compile (D224).
 
 1. The driver's path equals a direct walk of `kernel.step`, bit for bit, for 4 worlds and both cells
    (*plants:* a pool given the other pool's seed must fail; `<` in place of `>=` must fail; the level read
@@ -882,11 +893,9 @@ once; the ionic rows are host-only except one.
 5. The definitions written are byte-identical for the same input, and parse; `inputs.json` holds the composed
    file's SHA-256, the seeds and the switch list, and changes when any of them changes (*plants:* a schedule
    object shared between controls must not occur; the seed left out of the inputs).
-6. One composed world, in a new file `tests/unit/test_composed_worlds.py`, compiled, tier 2, about 60 s (G):
-   the two-cell base cluster with the near and far nodes (two free offsets, so version 3, declared by
-   `field_solver_choice.declare()`), RK4 at 25 us, 1 ms. It ends with nominal + distinct switches steps, and
-   its amounts equal the same world run with the schedule written by hand, bit for bit (*plant:* the default
-   field solver is refused by name at the first step). The run's manifest holds the inputs.
+6. The written world parses, its `EventGrid` has nominal + distinct switches steps, and its `channel_controls`
+   equal the schedule written by hand; host only. No world is compiled: an off-grid change of a channel
+   control is existing behaviour (section 13.5). The two-cell closed row is stream D's (ruling 14).
 
 Consumer rows (captures, judged) belong to the re-expression.
 
@@ -916,7 +925,7 @@ No new family word, as recommended (question 3 of section 0.1 could add one). Ev
 
 | Item | Agent-days | What is in it |
 | --- | --- | --- |
-| G-7 driver (F4) | 1 to 1.5 | `schedule.py` and the subcommand 0.4; rows 0.4; the composed example and a check on the two K-only worlds 0.3; library page, run view, review 0.3 |
+| G-7 driver (F4) | 1 to 1.5 | `schedule.py` and the two subcommands (the run inputs in them) 0.4; rows 0.4; the composed example and a check on the two K-only worlds 0.3; library page, run view, review 0.3 |
 | G-5 source kind | 1 to 1.75 | law and kind 0.4; rows 0.35; matrix tag, library page, run view 0.25; composite demonstration 0.25; review and landing 0.3 |
 | The two hooks of section 5.5 | 0.15, inside G-5's range | the bound itself is stream D's (0.75, its note; the second reader reads 1 to 1.5) |
 | Law record and page, if A5 is (b) | + 0.25 | |
@@ -954,15 +963,15 @@ of section 5.5 is stream D's; its edits are named so that the two notes meet.
 | G-5 | new `laws/reactions/hill_product_factor.py` | the law: ln f, f and the slopes (about 70 lines) |
 | G-5 | `kinds/__init__.py:1` to 29 | one docstring line, one import |
 | G-5 | `registry/kind_registry.py:251` to 258, 457 to 460, and `declaration_errors` (about 959) | two optional fields; a kind with one of the two is refused; docstring |
-| G-5 | `kinds/ph_condition.py:1` to 31, `kinds/patch_damage.py:1` to 56 | docstrings: the limit of section 5.5; for `ph_condition`, its successor |
+| G-5 | `kinds/ph_condition.py:1` to 31, `kinds/patch_damage.py:1` to 51 | docstrings: the limit of section 5.5; for `ph_condition`, its successor |
 | G-5 | `docs/library/` and its generator's output, `validation/tissue/composition_matrix.py`, `scripts/moves/id-rename-choices.json` (the last two not mine) | pages, matrix tags, the two ID rows |
-| G-5's hooks, in D's step 6 | `models/inner_laws.py:284` | `loops: tuple = ()` |
-| | `models/surface_pump_v3.py:189`, 331, 1215 (1214), 3701 (3700), 5041 (5040), 5442 (`kind_types`) | the loop layout fields (FR-51's pattern), their fill, the pairing, the rule, the structure field, the layout type |
+| G-5 | `registry/model_table.py` | none: the kind registers through the `cells.kinds` package, a home already, and the law has no Law record (as `ph_conditioned_factor@1`) |
+| G-5's hooks, in D's step 6 | `models/inner_laws.py:284` (283) | `loops: tuple = ()` |
+| | `models/surface_pump_v3.py:189`, 331, 1215 (1214), 3701 (3700), 5041 (5040), 5442 (5441) (`kind_types`) | the loop layout fields (FR-51's pattern), their fill, the pairing, the rule, the structure field, the layout type |
 | | `kinds/passive_routes.py:529` | `routed_rows`, `routed_flux` (and @3's own in `surface_pump_v3`) |
-| D's steps 2 and 5 | `registry/laws.py:377`, 482; `registry/laws.py:446`; `kinds/transporter.py` (material term); `docs/INNER_MODEL_V4_DESIGN.md:558`, 841; `docs/library/DECLARATIONS_FORMAT.md:210`, 224; `tests/unit/test_inner_laws.py:152`, `test_law_registry.py:222` | the `loop_term` reservations (section 5.10) |
+| `loop_term` removal (section 5.10), with D's steps 2 and 5 | `registry/laws.py:377`, 446, 482; `laws/pumps/proton_pump.py:137`, 265; `docs/INNER_MODEL_V4_DESIGN.md:558`, 841; `docs/library/DECLARATIONS_FORMAT.md:210`, 224; `tests/unit/test_inner_laws.py:152`, `tests/unit/test_law_registry.py:222` | the two reserved fields, the check, the two declaring lines, and what documents and tests them |
 | G-7 | new `assembly_pool/schedule.py` | the driver (about 150 lines) |
-| G-7 | `assembly_pool/cli.py:132` | the `resolve` subcommand |
-| G-7 | `__main__.py`: its parser, and 145 (116), 177 (148), 256 (226), 300 (270) | the general `--inputs FILE.json` option, recorded as `provenance["inputs"]` |
+| G-7 | `assembly_pool/cli.py:132` | the `resolve` and `run` subcommands |
 | G-7, only if A5 is (b) | a law module, a library page, one row of the choices file | the observable's law |
 
 My own builds edit nothing in `models/pump_composite.py`, `models/pump_composite_adapter.py`, `operators/`,
@@ -971,26 +980,17 @@ layout fields, as FR-51's are (D's to check).
 
 ### 20.2 If a ruling cannot be executed
 
-- **Ruling 10 as worded for the driver cannot be.** `field_solver_choice.declare()` is in `validation/`, which
-  `src/cells` never imports. I would keep the field solver as the ionic definition declares it, call
-  `declare()` where the composed worlds are *built* (the re-expression's builders, the examples and the tests;
-  D147's guard `tests/unit/test_d147_drivers.py` covers run drivers under `validation/`), and have the driver
-  refuse, by name, a definition with a free field offset that declares version 2 or the sparse solver. The
-  count needs only the layout leaf `field_offset_free` of `initialise(spec).layout`, as `declare` reads it, so
-  the rule is four lines in the driver and no import. If the lead wants one home for the rule,
-  `free_field_offsets` moves to `src/cells` and `validation` re-exports it.
-- **Ruling 9, layout indices:** if stream D cannot add core layout fields in its step, each side keeps its
+No ruling that concerns this note is impossible as worded. Two depend on stream D's builder:
+- **Ruling 9, layout indices:** if the core layout fields cannot be added in D's step, each side keeps its
   own: the source kind its pair rows and nodes in its own layout (two more fields) and a hook
   `factor_amounts(read, p) -> [P]`, the sink its ends in its own layout (it has them) and a hook for them.
   Nothing enters the structure but positions. 0.1 day more here, 0.25 less in the core.
 - **Ruling 3, per moved row:** if a sink cannot enumerate its rows' fluxes, it gives one J per slot and the
-  core adds it to every row of the slot (larger by at most the number of rows, so conservative). A multi-ion
-  slot without `routed_rows` is refused by name rather than bounded wrongly.
-- **Ruling 13, `CycleLaw.loop_term`:** if the D148 scan finds a judged step that the rule would refuse, the
-  field is removed with its reason and the gap is logged, not fixed silently.
-- **Ruling 11, run inputs:** if the `--inputs` option cannot be added while the command line is another
-  agent's, the driver gets its own `run` subcommand that calls the runner and writes `provenance["inputs"]`
-  itself; that covers the scalar run and not the batch and windowed ones.
+  core adds it to every row of the slot (conservative). A multi-ion slot without `routed_rows` is refused by
+  name rather than bounded wrongly.
+
+The judged-record questions (FR-5's and the coupling's) are the lead's dates, not impossibilities (section
+5.10).
 
 ## 21. Corrections to the plan, the map and the docstrings
 
