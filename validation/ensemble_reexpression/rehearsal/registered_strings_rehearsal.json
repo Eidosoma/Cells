@@ -1,7 +1,7 @@
 {
  "kind": "ensemble-reexpression registered strings, version 1",
  "revision": null,
- "rehearsal_revision": "c1a2dc34fd628a332c24958e85bc61d9ac0f9e25",
+ "rehearsal_revision": "363490f44d8aa587bd9702597d9174e26336645e",
  "labels": {
   "inner_model": "resolved_pump_tissue@3",
   "rk4": "rk4",
