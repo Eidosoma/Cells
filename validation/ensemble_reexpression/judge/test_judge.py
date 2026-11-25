@@ -1,8 +1,8 @@
 """The judge's own tests: the honest fabricated tables pass, each fault row does as CRITERIA section
 5 says, and the order of the stages holds.
 
-Seconds: about 30 in all on one core (the judge's plants are 10 of them). They read the captures and
-compile nothing.
+Seconds: about 30 in all on one idle core, and twice that on a busy machine (the judge's plants are
+10 of them). They read the captures and compile nothing.
 """
 
 from __future__ import annotations
@@ -58,6 +58,9 @@ KEEP = {
     "base": lambda run: (
         run["consumer"] == "base" and run["seed_index"] == 0 and run["world_id"] in (None, 0, 2)
     ),
+    "cell": lambda run: (
+        run["consumer"] == "cell" and run["seed_index"] == 0 and run["world_id"] in (None, 0, 1)
+    ),
 }
 
 
@@ -111,7 +114,7 @@ def benches():
 # ----- honest tables -----
 
 
-@pytest.mark.parametrize("name", ["jupiter", "integrated", "base"])
+@pytest.mark.parametrize("name", ["jupiter", "integrated", "cell", "base"])
 def test_honest_tables_pass(benches, name):
     q = benches(name).score()
     block = q.record["consumers"][name]
@@ -876,6 +879,32 @@ def test_class_R_bounds_are_the_formulas():
     assert identities.exposure_bound(0.02, 805) == near(2 * eps * 0.02 * 807)
     bare = Registration(only=KEEP["integrated"]).worlds["integrated"]
     assert identities.balance_bound(bare, "regions", "K", 800) == (0.0, 0.0)  # a class E zero
+
+
+def test_the_energy_identity_is_the_formula():
+    """READOUTS section 5, term by term, on numbers that close nothing."""
+    world = Registration(only=KEEP["jupiter"]).worlds["jupiter_baseline"]
+    rng = np.random.default_rng(1)
+    series = {name: rng.normal(size=(1, len(world.entities(name)))) for name in world.row_series()}
+    volts = rng.normal(size=(1, len(world.membranes)))
+    rows = fabricate.Held(world, [0.0], series, volts, volts[0])
+    R, T, F = 8.31446261815324, 298.15, 96485.33212331001
+    total = 0.0
+    for group, prefix in (("cells", "n_cell_"), ("outside", "n_out_")):
+        for i, block in enumerate(world.block[group].values()):
+            for x in ("Na", "K", "Cl"):
+                n0, V = block["initial_amount_fmol"][x], block["volume_pL"]
+                d = series[prefix + x][0, i]
+                total += 1e-3 * R * T * (d * (math.log(n0 / V) - 1))
+                total += 1e-3 * R * T * (n0 + d) * math.log(1 + d / n0)
+    for i, block in enumerate(world.block["membranes"].values()):
+        charge = sum(z * series[f"n_cell_{x}"][0, i] for x, z in (("Na", 1), ("K", 1), ("Cl", -1)))
+        dV = F * 1e-15 / block["capacitance_F"] * charge
+        total += 0.5 * 1e12 * block["capacitance_F"] * dV * (2 * volts[0, i] + dV)
+    for name in ("heat_leak", "heat_pump", "heat_channel", "heat_junction", "heat_face"):
+        total += series[name].sum()
+    total -= series["work_pump"].sum()
+    assert float(identities.energy(world, rows, [0.0])[0, 0]) == pytest.approx(total, rel=1e-12)
 
 
 def test_exposure_and_changes():
