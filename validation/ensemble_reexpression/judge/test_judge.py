@@ -1263,21 +1263,23 @@ def test_C0_reads_a_world_of_one_run(benches):
 
 
 @pytest.mark.parametrize(
-    "order, printed_as, expected",
+    "order, printed_as, registered, rehearsal",
     [
-        (-0.4849, -0.485, True),  # three digits
-        (-0.4849, -0.48, True),  # two decimals
-        (-0.4849, -0.49, False),
-        (12.344, 12.34, True),
-        (12.344, 12.3, True),
-        (12.344, 12.4, False),
-        (None, None, True),
-        (2.0, None, False),
-        (None, 2.0, False),
+        (-0.4849, -0.48, True, True),  # two decimals
+        (-0.4849, -0.485, False, True),  # three digits
+        (-0.4849, -0.49, False, False),
+        (12.344, 12.34, True, True),
+        (12.344, 12.3, False, True),
+        (12.344, 12.4, False, False),
+        (None, None, True, True),
+        (2.0, None, False, False),
+        (None, 2.0, False, False),
     ],
 )
-def test_an_order_is_printed_at_two_decimals_or_at_three_digits(order, printed_as, expected):
-    assert same_order(order, printed_as) is expected
+def test_an_order_is_printed_at_two_decimals(order, printed_as, registered, rehearsal):
+    """A rehearsal's file may print three digits. The registered file does not."""
+    assert same_order(order, printed_as, False) is registered
+    assert same_order(order, printed_as, True) is rehearsal
 
 
 @pytest.mark.parametrize("case", C0_FAULT)

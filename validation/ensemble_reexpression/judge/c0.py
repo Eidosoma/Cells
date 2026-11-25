@@ -60,11 +60,13 @@ def same(value: float, printed: float, count: int) -> bool:
     return float(digits(value, count)) == printed
 
 
-def same_order(q, printed) -> bool:
-    """True where an observed order is the printed one, at two decimals or at three digits."""
+def same_order(q, printed, rehearsal: bool) -> bool:
+    """True where an observed order is the printed one: at two decimals, as `legacy_part1.json`
+    prints it, and in a rehearsal at three digits too.
+    """
     if q is None or printed is None:
         return q is None and printed is None
-    return round(q, 2) == printed or same(q, printed, 3)
+    return round(q, 2) == printed or (rehearsal and same(q, printed, 3))
 
 
 class LegacyRows:
@@ -987,7 +989,7 @@ class C0:
                         and same(d1, theirs["d1"], 3)
                     )
                     good &= same(theta, theirs["threshold"], 3) and same(size, theirs["largest"], 3)
-                    good &= same_order(q, theirs["observed_order"])
+                    good &= same_order(q, theirs["observed_order"], self.reg.rehearsal)
                 k.check(good, f"{name} {entry.name}: not the printed class or numbers")
         k.numbers["classes"] = counts
         k.check(

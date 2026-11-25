@@ -97,7 +97,7 @@ Where the text left something open, this is what the code does. **[ruled]** is t
 35. **A second pass [ruled, provisional]** (Amendment 2, item 7): `second_pass_completed: true` in the table's `refusal` is flagged to the checker and refuses nothing. Any other key of a `refusal` beyond the contract's three is flagged too.
 36. **The format sample's** refused run without a declaration has empty `definition` and `checks` [ruled], and its refused runs all have empty `checks`. An empty one is flagged in a completed run alone.
 37. **A world of one run** (the rehearsal's `inv_offgrid`, `inv_stop`): C0 forms its classes, identities and padding from its captured runs, as for a family. No other run is needed for that.
-38. **A printed observed order** is the judge's at two decimals (`legacy_part1.json`) or at three digits (`legacy_rehearsal.json`).
+38. **A printed observed order** is the judge's at two decimals (`legacy_part1.json`). In a rehearsal three digits are accepted too (`legacy_rehearsal.json` prints them).
 39. **A printed `largest` of an assembly entry** is the smallest over the worlds (Part 1) or the value of the world with the smallest margin (the rehearsal's file, nine entries). C0 accepts the second, notes it, and judges nothing by it.
 40. **A judge's plant's claim on a consumer's verdict** is not made where the consumer's honest verdict is not a pass, as the rehearsal's `integrated` is, by its designed faults. The plant's other claims are judged.
 41. **The rehearsal's two honest families with one constant schedule** (`inv_cell s0 w2`, `s1 w0`) are equal in every row, and the copy guard does not refuse them (CRITERIA 5: families are not compared with each other).
