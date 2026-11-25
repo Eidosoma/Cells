@@ -15,17 +15,17 @@ would instead inhabit one world with explicit exchange interfaces.
 From Cells, choose new output directories:
 
 ```bash
-taskset -c 0-3 .venv/bin/python -m cells batch validate configs/batch_source_pair.json
-taskset -c 0-3 .venv/bin/python -m cells batch run configs/batch_source_pair.json --output runs/my-worlds --checkpoint-at 0.5
+taskset -c 0-3 .venv/bin/python -m cells batch validate configs/batch_reaction_transport.json
+taskset -c 0-3 .venv/bin/python -m cells batch run configs/batch_reaction_transport.json --output runs/my-worlds --checkpoint-at 6
 taskset -c 0-3 .venv/bin/python -m cells batch resume runs/my-worlds/snapshots/checkpoint-000000 --output runs/my-worlds-replayed
-taskset -c 0-3 .venv/bin/python -m cells batch branch runs/my-worlds/snapshots/checkpoint-000000 configs/batch_source_pair_branch.json --output runs/my-worlds-branched
+taskset -c 0-3 .venv/bin/python -m cells batch branch runs/my-worlds/snapshots/checkpoint-000000 configs/batch_reaction_transport_branch.json --output runs/my-worlds-branched
 ```
 
-The example contains world 101 (frozen S12 release) and world 202 (frozen S13
-independent route/membrane pulse), both on the nominal source clock. Their
-cell/contact IDs may overlap because they belong to different worlds. The
-branch inhibits world 101's miRNA route from 0.5 to 0.713, preserving its ionic
-route and leaving world 202 unchanged. It does not reset either world's history.
+The example contains two `reaction_transport@1` chains: world 101 with its contact
+schedule and a 0.05 s step, and world 202 with its second contact closed throughout and a
+0.025 s step. Their cell and contact IDs are the same, because they belong to different
+worlds. The branch closes both contacts of world 101 at eight seconds and leaves world
+202 unchanged. It does not reset either world's history.
 
 The batch definition is a strict object with `schema_version: 1`,
 `kind: independent_worlds`, `worlds: [{world_id, simulation}, ...]` and an

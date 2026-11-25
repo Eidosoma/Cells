@@ -10,10 +10,10 @@ all prior accepted scalar/cohort arrays unchanged, and exact archived replay.
 ## Using windows
 
 ```bash
-taskset -c 0-3 .venv/bin/python -m cells windowed validate configs/source_pair_baseline.json --window-steps 256
-taskset -c 0-3 .venv/bin/python -m cells windowed run configs/source_pair_baseline.json --window-steps 256 --recording observations --checkpoint-at 5 --output runs/my-windowed-pair
-taskset -c 0-3 .venv/bin/python -m cells windowed resume runs/my-windowed-pair/snapshots/step-0000000500 --window-steps 128 --recording checkpoints --output runs/my-windowed-replay
-taskset -c 0-3 .venv/bin/python -m cells windowed branch runs/my-windowed-pair/snapshots/step-0000000500 configs/source_pair_branch.json --window-steps 256 --recording full --output runs/my-windowed-branch
+taskset -c 0-3 .venv/bin/python -m cells windowed validate configs/reaction_transport_chain.json --window-steps 64
+taskset -c 0-3 .venv/bin/python -m cells windowed run configs/reaction_transport_chain.json --window-steps 64 --recording observations --checkpoint-at 6 --output runs/my-windowed-chain
+taskset -c 0-3 .venv/bin/python -m cells windowed resume runs/my-windowed-chain/snapshots/step-0000000122 --window-steps 32 --recording checkpoints --output runs/my-windowed-replay
+taskset -c 0-3 .venv/bin/python -m cells windowed branch runs/my-windowed-chain/snapshots/step-0000000122 configs/reaction_transport_release.json --window-steps 64 --recording full --output runs/my-windowed-branch
 ```
 
 All output directories must be new. The default is 256 accepted intervals and
@@ -78,7 +78,11 @@ evaluated and validated even when their output is not retained.
 
 ## Explicit local numerical refinement
 
-`resolved_cotransport_water@1` additionally accepts an optional list under
+> **Removed (legacy cleanup, 25 November 2026, D386).** The refinement clock below served
+> `resolved_cotransport_water@1` alone, which left the engine; the tag `pre-cleanup-2026-11-25` keeps both. On
+> live models, `execution.fine_windows` declares finer steps in named windows.
+
+`resolved_cotransport_water@1` additionally accepted an optional list under
 `execution`, for example:
 
 ```json
