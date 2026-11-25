@@ -91,9 +91,9 @@ Sizes are the largest found; `accuracy.json` has them per observable, per contro
 
 **Kernel states** (47 pumps, 38 exchangers, 68 symports; 2,876 numbers): the two routes agree to 6e-41 of each number before
 rounding, and 60 digits agree with 90 to the same. That is the measured floor of 60 digits. It is set by J at the doubles nearest
-a stall or reversal voltage, where the two one-way rates cancel; the next is a pump's slope at 1.7e-42 (below), and the rest is
-1e-53 or better. Every double is the same by both routes and at both precisions. Wanted: 1e-13. The **rates at t = 0** agree to
-1.4e-58.
+a stall or reversal voltage, where the two one-way rates cancel. The next is a pump's slope at N, 1.7e-42 (below); every other
+output agrees to 1.1e-53 or better. Every double is the same by both routes and at both precisions. Wanted: 1e-13. The **rates
+at t = 0** agree to 1.4e-58.
 
 **The store world**, over both variants, as a part of each observable's largest change:
 
