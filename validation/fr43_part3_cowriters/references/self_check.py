@@ -1,6 +1,6 @@
 """Read the written reference files as C0 reads them, and test them against separate code.
 
-    python -I self_check.py [--out DIR] [--fast | --ladder] [--workers N] [--invented-only]
+    python -I self_check.py [--out DIR] [--fast | --ladder] [--workers N] [--world NAME] [--invented-only]
 
 It imports nothing of the writer.  Its parts, per world of the invented and of the registered set:
 
@@ -11,8 +11,8 @@ It imports nothing of the writer.  Its parts, per world of the invented and of t
 2. a third solution of the exact process, honest and planted, by SciPy's DOP853 in doubles with its own
    root finding, the affinities taken from the laws' logarithms;
 3. the split model again at the two coarsest rungs and the Lie plant at its coarsest (`--ladder`: at every
-   rung, the retry's among them) in plain doubles, the reactions' half-step by extrapolated Runge-Kutta
-   steps and the gene unit's by SSPRK(3,3) in its convex form;
+   rung, the retry's among them) with rates in plain doubles, the reactions' half-step by extrapolated
+   Runge-Kutta steps and the gene unit's by SSPRK(3,3) in its convex form;
 4. the invented set's own rules (SPEC 8): names, runs, no shared number, the refused and the stopped run.
 """
 
@@ -650,16 +650,22 @@ def reactions_flow(law, state, tau, pieces=1):
 
 
 def gene_flow(law, state, tau):
-    """W6's B: one SSPRK(3,3) step in Shu and Osher's convex form; the state is the law's without R_node."""
+    """W6's B: one SSPRK(3,3) step in Shu and Osher's convex form; the state is the law's without R_node.
+
+    The rates are doubles.  The combinations are extended (a third and two thirds in doubles sum to 1 less
+    4e-17, a bias that 10^5 half-steps would add up).
+    """
 
     def f(v):
-        full = law.rates(False, [v[0], 0.0, *v[1:], 0.0, 0.0])
-        return np.array([full[0], *full[2 : len(v) + 1]])
+        row = [float(x) for x in v]
+        full = law.rates(False, [row[0], 0.0, *row[1:], 0.0, 0.0])
+        return np.array([full[0], *full[2 : len(row) + 1]], dtype=np.longdouble)
 
-    u = np.array(state)
+    u = np.array(state, dtype=np.longdouble)
+    third = np.longdouble(1) / 3
     one = u + tau * f(u)
-    two = 0.75 * u + 0.25 * (one + tau * f(one))
-    return list(u / 3 + 2 / 3 * (two + tau * f(two)))
+    two = (3 * u + (one + tau * f(one))) / 4
+    return list(third * u + 2 * third * (two + tau * f(two)))
 
 
 def split_again(task):
@@ -836,6 +842,7 @@ def main():
     parser.add_argument("--fast", action="store_true", help="part 1 and part 4 alone")
     parser.add_argument("--ladder", action="store_true", help="part 3 at every rung (about an hour of one processor)")
     parser.add_argument("--workers", type=int, default=1)
+    parser.add_argument("--world", action="append", help="these worlds alone (repeatable)")
     parser.add_argument("--invented-only", action="store_true")
     arguments = parser.parse_args()
 
@@ -864,6 +871,8 @@ def main():
         part_zero(label, inputs, drawn[label])
         expect(set(refs) == set(inputs["worlds"]), f"{label}: the worlds")
         for name, ref in refs.items():
+            if arguments.world and name not in arguments.world:
+                continue
             files = Files(label, inputs, name, ref)
             part_one(files, digest)
             if arguments.fast:
@@ -875,8 +884,7 @@ def main():
                   f"({max(exact, key=exact.get)}); split again, worst relative {max(split.values()):.2e} "
                   f"({max(split, key=split.get)})")
             expect(max(exact.values()) <= 1e-9, f"{label} {name}: the third solution departs: {exact}")
-            expect(max(split.values()) <= (1e-2 if arguments.ladder else 1e-3),
-                   f"{label} {name}: the split again departs: {split}")
+            expect(max(split.values()) <= 1e-3, f"{label} {name}: the split again departs: {split}")
             if arguments.ladder:
                 for key in sorted(split, key=split.get, reverse=True)[:8]:
                     print(f"    {key}: {split[key]:.2e}")

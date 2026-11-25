@@ -53,10 +53,11 @@ the declared decimal, so that a horizon is a whole number of steps.
 
 A published `accuracy` is u times the largest value of the readout over the copy's samples (u T for the events), which
 holds the rounding to the nearest double, plus ten times the largest difference of the two methods. It is one number per
-readout and copy, repeated along its list. The two methods differ by less than 10⁻²⁰ of T or of the scale in every
-world, honest and planted, so the double's rounding is what the accuracy says. SPEC §4's limits are met by four
-decades (W5-exact's events: by a factor of nine). The weights and the tolerances of both methods are far more than ten
-times tighter than the published accuracy.
+readout and copy, repeated along its list. The two methods differ by less than 10⁻²⁴ of the scale (the events by less
+than 10⁻²⁷ T), measured on every copy of both sets, honest and planted, so the double's rounding is what the accuracy
+says. SPEC §4's limits are met by more than four decades (W5-exact's events: by a factor of nine), and both methods are
+far more than ten times tighter than what is claimed. The checks `two methods: ...` hold the difference with the
+rounding to a double added.
 
 ## Readings
 
@@ -129,6 +130,8 @@ Others:
 `checks` of each copy holds SPEC §9's, and copy 0 holds the world's (the relaxation, the totals, the sizing, the pairs, the
 margins). `self_check.py` then reads the files alone and, with code of its own, (1) forms every number C0 reads again from
 the published ones, (2) solves the exact process a third time with SciPy's DOP853 in doubles, the affinities from the
-laws' logarithms, (3) computes the split's first differences, the pairs and the Lie errors again in plain doubles (at every
-rung with `--ladder`), and (4) checks the invented set's rules, the shared numbers among them. It also computes the draws
-again with a vectorised Threefry.
+laws' logarithms, (3) computes the split's first differences, the pairs and the Lie errors again with rates in plain doubles
+(at every rung with `--ladder`), and (4) checks the invented set's rules, the shared numbers among them. It also computes
+the draws again with a vectorised Threefry. On both sets it finds no problem in either mode: the third solution is within
+10⁻¹⁰ of T or of the scale (its own tolerance), and the split's second computation within 10⁻⁷ relative of every d_1, pair
+and coarsest Lie error, and within 2 × 10⁻⁴ of every d_j and E at every rung, the retry's among them.
