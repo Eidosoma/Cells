@@ -63,4 +63,4 @@ def copy_table(seed, site, pairs):
 
 def thresholds(u1, context):
     """E_k = -ln u1_k, each u1 read as the exact value of its double."""
-    return [-context.ln(Decimal(value)) for value in u1]
+    return [context.minus(context.ln(Decimal(value))) for value in u1]

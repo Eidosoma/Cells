@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 
 from . import checks
-from .build import upward
+from .build import context, upward
 
 KIND = "fr43 part 3 co-writers reference, version 2"
 
@@ -74,6 +74,11 @@ def reported(world_set):
 
 def reference(world_set, inputs_sha256, draws_differ, provenance):
     """One world's reference object."""
+    with context():
+        return _reference(world_set, inputs_sha256, draws_differ, provenance)
+
+
+def _reference(world_set, inputs_sha256, draws_differ, provenance):
     name = world_set.name
     copies = []
     for c, copy in enumerate(world_set.copies):
