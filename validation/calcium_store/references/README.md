@@ -90,9 +90,10 @@ The six questions asked are the six decisions above. None is open.
 Sizes are the largest found; `accuracy.json` has them per observable, per control and per setting.
 
 **Kernel states** (47 pumps, 38 exchangers, 68 symports; 2,876 numbers): the two routes agree to 6e-41 of each number before
-rounding, and 60 digits agree with 90 to the same. That is the measured floor of 60 digits. It is set by J at the doubles next to
-a stall or reversal voltage, where the two one-way rates cancel. Every double is the same by both routes and at both precisions.
-Wanted: 1e-13. The **rates at t = 0** agree to 1.4e-58.
+rounding, and 60 digits agree with 90 to the same. That is the measured floor of 60 digits. It is set by J at the doubles nearest
+a stall or reversal voltage, where the two one-way rates cancel; the next is a pump's slope at 1.7e-42 (below), and the rest is
+1e-53 or better. Every double is the same by both routes and at both precisions. Wanted: 1e-13. The **rates at t = 0** agree to
+1.4e-58.
 
 **The store world**, over both variants, as a part of each observable's largest change:
 
@@ -125,9 +126,9 @@ columns) agrees with the published settings to 3e-33. The first column is the im
 **Made again.** `values.json` and `accuracy.json`, each under the hash seeds 1 and 2 with one BLAS thread: the same to the byte.
 (Run with `python -s -P -B`, because `-I` does not read `PYTHONHASHSEED`.)
 
-**Balances.** G + heat - work moves by at most 5e-36 pJ, in every case but `pump_without_voltage`. Matter moves by 1e-44 fmol. The
-voltages from the charges and X_v differ from the integrated ones by 7e-36 V. No mover's heat falls in any case but the release's
-under `release_sign`.
+**Balances.** G + heat - work moves by at most 5e-36 pJ, at every time of the two variants and at the last time of every control
+but `pump_without_voltage`. In the two variants matter moves by 1e-44 fmol, and the voltages from the charges and X_v differ from
+the integrated ones by 7e-36 V. No mover's heat falls in any case but the release's under `release_sign`.
 
 **The material block.** The slopes by hand agree with central differences in 60 digits to 1e-35, and with the second route's
 differences in doubles to 3e-9, about what differences in doubles can reach. The eigenvalues agree with NumPy's to 1e-15 of the
@@ -149,6 +150,11 @@ negative heat in any state or in the random draws. The integrators were tried on
 - **Near equilibrium a symport shows its inputs' rounding.** Reading the literals as decimals instead of doubles moves J by up
   to 6.2e-14 and the heat by 1.25e-13 of themselves, at 0.1% from equilibrium. So a band of 1e-13 on that heat is at its edge:
   a program in doubles loses at least as much. The exchangers and the pumps move by 6e-15 at most.
+- **Some slopes are small differences of large terms.** The pump's dJ/dn at N in `random 0` is 2e-19 of the two terms the product
+  rule gives, so a program in doubles that adds them has no digit of it. They cancel because far below K the backward rate of a
+  reversed cycle does not depend on c_N. The same slope as n J+ (r + e^x) / ((1 + r) c_N V_N), with r = (K/c_N)^n, loses nothing
+  and gives the published number. `beyond the domain, above` is at 2e-12 and `reversed by gradient and voltage` at 2e-4. For the
+  exchanger the worst are d/dNa_P of `sodium saturating outside` at 3e-7 and d/dNa_N of `random 0` at 2e-5.
 - **What each control moves**, in `accuracy.json` under `controls`: at least 4.4e-3 of some observable's largest change (the
   bounding permeability of K), most of them 1e-2 to 8e-2, and the two changes of a law 0.5 to 9. The only ones that move
   nothing are the binding constants without buffers.
