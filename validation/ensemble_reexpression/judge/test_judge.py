@@ -1,0 +1,2503 @@
+"""The judge's own tests: the honest fabricated tables pass, each fault row does as CRITERIA section
+5 and Amendment 2 say, and the order of the stages holds.
+
+Seconds: about 60 in all on one idle core, and twice that on a busy machine (the judge's plants are
+20 of them). They read the captures and compile nothing.
+"""
+
+from __future__ import annotations
+
+import copy
+import json
+import math
+import sys
+
+import numpy as np
+import pytest
+
+from validation.ensemble_reexpression.judge import __main__ as cli
+from validation.ensemble_reexpression.judge import (
+    bands,
+    fabricate,
+    flag_rows,
+    identities,
+    plants,
+    scoring,
+    strictjson,
+    structure,
+)
+from validation.ensemble_reexpression.judge import constants as c
+from validation.ensemble_reexpression.judge.c0 import C0, pins_of, same_order
+from validation.ensemble_reexpression.judge.plants import Lazy, Query, refuse
+from validation.ensemble_reexpression.judge.registration import (
+    PART1,
+    SPEC,
+    Registration,
+    StringsNote,
+    changes,
+)
+from validation.ensemble_reexpression.judge.settlements import (
+    ReloadsConfirmed,
+    SettlementFault,
+    Settlements,
+    fabricated_data,
+)
+from validation.ensemble_reexpression.judge.settlements import read as read_settlements
+from validation.ensemble_reexpression.judge.table import (
+    Echo,
+    RunRows,
+    TableSet,
+    compare_block,
+    hash_folder,
+)
+
+PASS, FAIL, OPEN, UNFORMED = c.PASS, c.FAIL, c.INCONCLUSIVE, c.NOT_FORMED
+H = [f"jupiter_baseline h={h!r}" for h in (2.5e-05, 1.25e-05, 6.25e-06)]
+J = [f"integrated h={h!r}" for h in (0.0001, 5e-05, 2.5e-05)]
+B = [f"base s0 w2 h={h!r}" for h in (2.5e-05, 1.25e-05, 6.25e-06)]
+RESTART, EP1, EP2, POOL, POOL_RESTART = (
+    "jupiter_baseline h=2.5e-05 restart",
+    "jupiter_baseline plant channel",
+    "base plant swapped",
+    "base s0 pool",
+    "base s0 pool restart",
+)
+KEEP = {
+    "jupiter": lambda run: run["consumer"] == "jupiter",
+    "integrated": lambda run: run["consumer"] == "integrated",
+    "base": lambda run: (
+        run["consumer"] == "base" and run["seed_index"] == 0 and run["world_id"] in (None, 0, 2)
+    ),
+    "cell": lambda run: (
+        run["consumer"] == "cell" and run["seed_index"] == 0 and run["world_id"] in (None, 0, 1)
+    ),
+}
+
+
+CONFIRMED = ReloadsConfirmed()
+
+
+def own(record) -> list:
+    """The flags of a record that a test makes, and no restart's reload."""
+    return [f for f in record["flags_to_settle"] if f["kind"] != c.RELOAD]
+
+
+class Bench:
+    """A small set of the registered runs, with its honest fabricated tables."""
+
+    def __init__(self, only):
+        self.reg = Registration(only=only)
+        made = C0(self.reg)
+        made.legacy_classes()
+        self.captures, self.planted = made.captures, made.planted
+        self.c0 = {
+            "kind": c.C0_KIND,
+            "status": "pass",
+            "spec_sha256": self.reg.files,
+            "legacy": made.legacy,
+        }
+        self.tables, self.note_data = fabricate.Fabricator(
+            self.reg, self.captures, self.planted
+        ).tables()
+        self.note = StringsNote(self.note_data, "fabricated")
+
+    def altered(self, alter, consumer=None, missing=()):
+        """The tables with one consumer's runs altered."""
+        consumer = consumer or self.reg.consumers[0]
+        runs = Lazy(self.tables[consumer]["runs"])
+        alter(runs)
+        tables = dict(self.tables)
+        tables[consumer] = dict(tables[consumer], runs=dict(runs), missing=list(missing))
+        return tables
+
+    def judge(self, tables, settlements=CONFIRMED, **more):
+        """Both stages on tables. Every restart's reload is confirmed, unless other settlements, or
+        none, are given.
+        """
+        return plants.judge(
+            self.reg,
+            self.note,
+            tables,
+            self.c0,
+            self.captures,
+            self.planted,
+            settlements=settlements,
+            **more,
+        )
+
+    def score(self, alter=lambda runs: None, consumer=None, missing=(), **more):
+        """The record of the altered tables, as a query."""
+        return Query(self.judge(self.altered(alter, consumer, missing), **more))
+
+    def settled(self, record, counts_as=None, outcome=None):
+        """Settlements of every flag and every copy guard's refusal of a record, as a file has them,
+        and the record that they name. A restart's reload is confirmed.
+        """
+        data, records = fabricated_data(record, counts_as, outcome)
+        reloads = {f["id"] for f in record["flags_to_settle"] if f["kind"] == c.RELOAD}
+        for item in data["flags"]:
+            if item["flag"] in reloads:
+                item["counts_as"] = c.BY_THE_RULE
+        return data, records
+
+
+@pytest.fixture(scope="module")
+def benches():
+    """The benches by name, each made when a test first asks for it."""
+    held = {}
+
+    def get(name):
+        if name not in held:
+            try:
+                held[name] = Bench(KEEP[name])
+            except OSError as error:
+                pytest.skip(f"no captures here: {error}")
+        return held[name]
+
+    return get
+
+
+# ----- honest tables -----
+
+
+@pytest.mark.parametrize("name", ["jupiter", "integrated", "cell", "base"])
+def test_honest_tables_pass(benches, name):
+    q = benches(name).score()
+    block = q.record["consumers"][name]
+    assert block["verdict"] == PASS, [
+        s["inconclusive"] + s["fails"] for s in block["sets"].values()
+    ]
+    assert {p["score"] for p in q.record["plants"]["plants"]} <= {"caught"}
+    assert not q.record["ignored"] and not any(
+        s["causes"] or s["flags"] for s in q.record["runs"].values()
+    )
+    assert {f["what"] for f in q.record["flags"]} <= {"restart to confirm"}
+    assert q.record["retry_owed"]["runs"] == [] and block["final"]
+    assert {s["verdict"] for s in q.record["runs"].values() if s["role"] == "judged"} == {PASS}
+    reg = benches(name).reg
+    pools = [n for n, r in reg.runs.items() if r["role"] == "judged" and reg.is_pool(r)]
+    for part in block["sets"].values():
+        assert all(n["formed"] == n["expected"] for n in part["counts"].values())
+        named = part["members"]
+        assert (named["pool_runs"], named["runs_of_no_family"]) == (pools, [])
+
+
+def test_the_honest_tables_are_the_reference_sides_within_one_unit(benches):
+    """PLANTS section 6: each value is moved by at most one unit in the last place."""
+    bench = benches("integrated")
+    family, world = bench.reg.families["integrated"], bench.reg.worlds["integrated"]
+    for name, step in zip(J, ("h", "h2", "h4"), strict=True):
+        legacy = bench.captures.run(family, step)
+        rows = bench.tables["integrated"]["runs"][name]["rows"]
+        kept = 0
+        for series in world.row_series():
+            theirs = legacy.series(series, world.row_times)
+            mine = np.array([rows[series][k] for k in world.entities(series)]).T
+            assert np.all(np.abs(mine - theirs) <= np.spacing(np.abs(theirs))), series
+            kept += int(np.array_equal(mine, theirs))
+        assert kept == 3  # the structural zeros, which are class E and are not moved
+    assert bench.tables["integrated"]["fabricated"] == fabricate.MARK
+
+
+# ----- the fault rows of CRITERIA section 5 -----
+
+
+def put(*path, value=None):
+    """Set a leaf of a run's entry."""
+
+    def alter(entry):
+        for key in path[:-1]:
+            entry = entry[key]
+        entry[path[-1]] = value(entry[path[-1]]) if callable(value) else value
+
+    return alter
+
+
+def drop(*path):
+    """Delete a leaf of a run's entry."""
+
+    def alter(entry):
+        for key in path[:-1]:
+            entry = entry[key]
+        del entry[path[-1]]
+
+    return alter
+
+
+ECHO = {
+    "a number": put("inputs", "cells", "cell_0", "volume_pL", value=lambda v: v * (1 + 1e-11)),
+    "a declared zero": put(
+        "inputs", "membranes", "membrane_2", "passive", "permeability_m_per_s", "K", value=1e-300
+    ),
+    "an integer": put("inputs", "species", "Na", value=1 + 1e-13),
+    "a string": put("inputs", "closure", "gauge_reference", value="elsewhere"),
+    "a region's charge": put(
+        "inputs", "outside", "outside", "initial_charge_C", value=lambda v: v + 1e-24
+    ),
+    "a pump where there is none": put(
+        "inputs", "membranes", "membrane_0", "pump", value={"law": "nak_pump_positive"}
+    ),
+    "a schedule's time": put(
+        "inputs",
+        "controls",
+        "junction",
+        "junction_2",
+        value=[[0.0, 1.0], [0.005, 0.5], [0.0101, 0.0], [0.015, 1.0]],
+    ),
+    "a schedule left out that is no default": drop("inputs", "controls", "junction", "junction_2"),
+    "a schedule that is no default for a membrane": put(
+        "inputs", "controls", "pump", value={"membrane_0": [[0.0, 1.0], [0.01, 0.0]]}
+    ),
+    "an entity left out": drop("inputs", "junctions", "junction_10"),
+    "an extra junction": put("inputs", "junctions", "junction_12", value=None)
+    and (
+        lambda e: e["inputs"]["junctions"].update(
+            junction_12=copy.deepcopy(e["inputs"]["junctions"]["junction_0"])
+        )
+    ),
+    "an extra cell": lambda e: e["inputs"]["cells"].update(
+        cell_99=copy.deepcopy(e["inputs"]["cells"]["cell_0"])
+    ),
+    "an extra membrane": lambda e: e["inputs"]["membranes"].update(
+        membrane_99=copy.deepcopy(e["inputs"]["membranes"]["membrane_0"])
+    ),
+    "an extra species": lambda e: e["inputs"]["species"].update(Ca=2),
+    "an extra region": lambda e: e["inputs"]["outside"].update(
+        far=copy.deepcopy(e["inputs"]["outside"]["outside"])
+    ),
+    "a channel where there is none": put("inputs", "channels", value={"channel_0": {}}),
+    "a schedule of no entity": lambda e: e["inputs"]["controls"]["junction"].update(
+        junction_99=[[0.0, 1.0]]
+    ),
+    "world": put("world", value="jupiter_baseline"),
+    "seed_index": put("seed_index", value=0),
+    "world_id": put("world_id", value=0),
+    "step_s": put("step_s", value=lambda v: v * (1 + 1e-11)),
+    "a missing label": drop("strings", "rk4"),
+    "an extra label": lambda e: e["strings"].update(kv15_mh="fabricated.kv15_mh"),
+    "another string": put("strings", "rk4", value="fabricated.imex"),
+    "a missing declared string": put("declared_strings", value=lambda v: v[1:]),
+    "no inputs": put("inputs", value=None),
+}
+
+
+ECHO_BASE = {  # Amendment 2, item 2: an ID that the block's own set of that kind does not hold
+    "controls.channel": lambda e: e["inputs"]["controls"]["channel"].update(channel_2=[[0.0, 1.0]]),
+    "controls.leak": lambda e: e["inputs"]["controls"]["leak"].update(membrane_2=[[0.0, 1.0]]),
+    "switch_list": lambda e: e["inputs"]["assembly"]["switch_list"].update(channel_2=[]),
+    "pool_seeds": lambda e: e["inputs"]["assembly"]["pool_seeds"].update(cell_2=1),
+    "a face": lambda e: e["inputs"]["faces"].update(
+        face_3=copy.deepcopy(e["inputs"]["faces"]["face_2"])
+    ),
+}
+
+
+@pytest.mark.parametrize("case", ECHO_BASE)
+def test_an_extra_id_of_an_assembly_run_is_a_departing_echo(benches, case):
+    """And an ID that the block's `controls` leave out, and its own set holds, is not."""
+    q = benches("base").score(lambda runs: ECHO_BASE[case](runs[B[2]]))
+    assert q.cause(B[2], "departing echo") and q.nothing_judged(B[2], "base s0 w2")
+    assert not q.fails() and q.verdict("base") == OPEN
+
+    def written_out(runs):
+        controls = runs[B[2]]["inputs"]["controls"]
+        controls["pump"] = {m: [[0.0, 1.0]] for m in ("membrane_0", "membrane_1")}
+        controls["leak"] = {}
+        controls["junction"] = {"junction": [[0.0, 1.0]]}
+
+    q = benches("base").score(written_out)
+    assert not q.run(B[2])["refused"] and q.verdict("base") == PASS
+
+
+@pytest.mark.parametrize("case", ECHO)
+def test_a_departing_echo_is_refused_and_nothing_of_it_is_judged(benches, case):
+    q = benches("integrated").score(lambda runs: ECHO[case](runs[J[2]]))
+    assert q.run(J[2])["refused"] and q.cause(J[2], "departing echo"), case
+    assert q.nothing_judged(J[2], "integrated") and not q.fails()
+    assert q.verdict("integrated") == OPEN
+
+
+NO_FAULT = {
+    "a number within 1e-12": put(
+        "inputs", "cells", "cell_0", "volume_pL", value=lambda v: v * (1 + 5e-13)
+    ),
+    "an integer as a double": put("inputs", "species", "Na", value=1.0),
+    "an empty map for an empty list": put("inputs", "faces", value={}),
+    "no faces, no channels": lambda e: [e["inputs"].pop(k) for k in ("faces", "channels")],
+    "controls that are empty left out": lambda e: [
+        e["inputs"]["controls"].pop(k) for k in ("pump", "channel")
+    ],
+    "a default schedule left out": drop("inputs", "controls", "leak", "membrane_4"),
+    "a default schedule written out": put(
+        "inputs", "controls", "pump", value={"membrane_0": [[0.0, 1.0]]}
+    ),
+    "the initial entry left out": put(
+        "inputs", "controls", "junction", "junction_2", value=lambda v: v[1:]
+    ),
+    "a pump left out that is null": drop("inputs", "membranes", "membrane_0", "pump"),
+    "an extra key in an entity": put("inputs", "cells", "cell_0", "label", value="x"),
+    "an extra key in the block": put("inputs", "note", value=1),
+    "an extra key in the entry": put("extra", value=1),
+    "an extra series": lambda e: e["rows"].update(leak_K={"membrane_0": [0.0] * 201}),
+    "a negative zero": lambda e: e["rows"]["n_out_K"].update(outside=[-0.0] * 201),
+    "off_grid false": put("off_grid", value=False),
+    "variant": put("variant", value="x"),
+    "no definition": put("definition", value=None),
+    "a check that is not finite": put("checks", value={"a": math.nan}),
+    "a missing record": drop("record"),
+    "another machine": put("source", "cpu_model", value="another"),
+    "extra rows": lambda e: extra_row(e),
+}
+
+
+def extra_row(entry, series=None, entity=None, value=math.nan):
+    """One more accepted row between two compared times, with one value of it where it is named."""
+    entry["t"].insert(1, (entry["t"][0] + entry["t"][1]) / 2)
+    for name, table in entry["rows"].items():
+        for key, values in table.items():
+            values.insert(1, value if (name, key) == (series, entity) else values[0])
+
+
+@pytest.mark.parametrize("case", NO_FAULT)
+def test_what_refuses_nothing(benches, case):
+    q = benches("integrated").score(lambda runs: NO_FAULT[case](runs[J[2]]))
+    assert not q.run(J[2])["refused"], (case, q.run(J[2])["causes"])
+    assert q.verdict("integrated") == PASS
+    flagged = (
+        "extra key",
+        "extra series",
+        "variant",
+        "definition",
+        "check",
+        "record",
+        "machine",
+        "written out",
+    )
+    assert bool(q.run(J[2])["flags"]) == any(word in case for word in flagged), (
+        case,
+        q.run(J[2])["flags"],
+    )
+
+
+PROVENANCE = {
+    "source incomplete": drop("source", "python"),
+    "a missing snapshot": put("source", "snapshot", value=""),
+    "checkout_dirty": put("source", "checkout_dirty", value=True),
+    "engine_revision": put("source", "engine_revision", value="0" * 40),
+    "snapshot_patch_sha256": put("source", "snapshot_patch_sha256", value="0" * 64),
+    "host_patch": put("host_patch", value="x"),
+    "a missing record_sha256": put("record_sha256", value=None),
+    "t": lambda e: (
+        [e["t"].insert(1, 0.0)]
+        + [v.insert(1, v[0]) for table in e["rows"].values() for v in table.values()]
+    ),
+    "off_grid_change": put("steps", value=lambda v: v + 1),
+    "steps": put("steps", value=lambda v: v - 1),
+    "steps mistyped": put("steps", value="800"),
+    "status": put("status", value="refused"),
+    "status completed with a refusal": put(
+        "refusal", value={"kind": "harness", "message": "x", "time_s": None}
+    ),
+    "status, a refusal of no kind": lambda e: e.update(
+        status="refused", refusal={"kind": "crash", "message": "x", "time_s": None}
+    ),
+}
+
+
+@pytest.mark.parametrize("case", PROVENANCE)
+def test_provenance_refuses_the_run_and_its_readouts_are_judged(benches, case):
+    q = benches("integrated").score(lambda runs: PROVENANCE[case](runs[J[2]]))
+    reason = "steps" if case == "steps mistyped" else case.split(",")[0].split(" completed")[0]
+    assert q.run(J[2])["refused"] and reason in q.run(J[2])["reasons"], q.run(J[2])
+    assert q.cause(J[2], "kind harness") is (case.startswith("status") and case != "status")
+    assert not q.fails() and q.verdict("integrated") == OPEN
+    assert [q.run(name)["verdict"] for name in J] == [PASS, PASS, OPEN]
+    R = {e["outcome"] for e in q.R(J[2])}
+    assert R == (
+        {UNFORMED} if case == "t" else {PASS}
+    )  # a doubled time leaves the entries that need it not formed
+    # D is formed where the run completed, and not for a refusal of a kind (Amendment 2, reading 16)
+    completes = UNFORMED if case.startswith("status") else PASS
+    assert q.outcome(run=J[2], readout="completes") == completes
+
+
+@pytest.mark.parametrize(
+    "alter",
+    [PROVENANCE["host_patch"], PROVENANCE["off_grid_change"], lambda e: refuse(e, "domain")],
+)
+def test_a_refusal_never_hides_a_fail(benches, alter):
+    def both(runs):
+        alter(runs[J[2]])
+        runs[J[2]]["rows"]["n_cell_K"]["cell_3"][-1] *= 1 + 1e-3
+
+    q = benches("integrated").score(both)
+    assert q.run(J[2])["refused"] and q.verdict("integrated") == FAIL
+    assert (J[2], "balance of cells, K") in q.fails()
+
+
+LEAF = {
+    "missing": lambda e: e["rows"]["junction_K"].pop("junction_5"),
+    "mistyped": lambda e: e["rows"]["junction_K"]["junction_5"].__setitem__(100, "0.0"),
+    "a boolean": lambda e: e["rows"]["junction_K"]["junction_5"].__setitem__(100, True),
+    "not finite": lambda e: e["rows"]["junction_K"]["junction_5"].__setitem__(100, math.nan),
+    "another length": lambda e: e["rows"]["junction_K"]["junction_5"].pop(),
+}
+
+
+@pytest.mark.parametrize("case", LEAF)
+def test_a_judged_leaf_leaves_its_entries_not_formed(benches, case):
+    q = benches("integrated").score(lambda runs: LEAF[case](runs[J[1]]))
+    assert not q.run(J[1])["refused"] and not q.fails() and q.verdict("integrated") == OPEN
+    unformed = {e["readout"] for e in q.entries if e["judged"] and e["outcome"] == UNFORMED}
+    assert unformed == {"junction_K", "balance of cells, K"}
+    verdicts = [q.run(name)["verdict"] for name in J]
+    assert verdicts == [PASS, OPEN, OPEN]  # h2 owns its balance, and h3 the S entry
+    block = q.record["consumers"]["integrated"]["sets"]["all"]
+    assert block["by_class"] == {"D": PASS, "E": PASS, "R": OPEN, "S": OPEN}
+    assert block["families"]["integrated"]["by_class"] == block["by_class"]
+
+
+def test_a_missing_and_a_doubled_row(benches):
+    def missing(runs):
+        entry = runs[J[1]]
+        entry["t"].pop(7)
+        [v.pop(7) for table in entry["rows"].values() for v in table.values()]
+
+    def doubled(runs):
+        entry = runs[J[1]]
+        entry["t"].insert(8, entry["t"][7] + 1e-13)
+        [v.insert(8, v[7]) for table in entry["rows"].values() for v in table.values()]
+
+    for alter in (missing, doubled):
+        q = benches("integrated").score(alter)
+        assert not q.run(J[1])["refused"] and not q.fails()
+        assert {e["outcome"] for e in q.S("integrated") if e["readout"] != "voltage"} == {UNFORMED}
+        assert q.outcome(family="integrated", readout="voltage", **{"class": "S"}) == PASS
+        assert q.verdict("integrated") == OPEN
+
+
+@pytest.mark.parametrize("kind", ["definition", "domain", "harness"])
+def test_a_refused_run_is_judged_on_the_rows_it_holds(benches, kind):
+    def early(runs, wrong):
+        entry = runs[J[0]]
+        refuse(entry, kind)
+        entry.update(checks={}, steps=49)
+        entry["t"] = entry["t"][:50]
+        for table in entry["rows"].values():
+            for entity in table:
+                table[entity] = table[entity][:50]
+        if wrong:
+            entry["rows"]["n_cell_K"]["cell_0"][40] += 1e-6
+
+    q = benches("integrated").score(lambda runs: early(runs, False))
+    assert q.run(J[0])["refused"] and not q.fails() and q.verdict("integrated") == OPEN
+    assert {e["outcome"] for e in q.R(J[0])} == {UNFORMED}  # no time is dropped from a pass
+    assert q.outcome(run=J[0], readout="completes") == UNFORMED  # D is not judged
+    assert q.run(J[0])["flags"] == [] and q.run(J[0])["reasons"] == []
+    q = benches("integrated").score(lambda runs: early(runs, True))
+    assert (J[0], "balance of cells, K") in q.fails() and q.verdict("integrated") == FAIL
+
+
+def test_a_refused_run_that_has_no_declaration(benches):
+    """Amendment 2, item 7: where no declaration exists, `inputs`, `strings` and `declared_strings`
+    are empty.
+    """
+
+    def alter(runs):
+        refuse(runs[J[0]], "harness", rows=False)
+        runs[J[0]].update(inputs={}, strings={}, declared_strings=[], steps=None)
+        out = structure.Faults()
+        assert (
+            structure.entry_faults(runs[J[0]], "x", out) == "ionic run, refused (harness)"
+            and out.items == []
+        )
+
+    q = benches("integrated").score(alter)
+    assert (
+        q.run(J[0])["refused"]
+        and q.nothing_judged(J[0], "integrated")
+        and q.verdict("integrated") == OPEN
+        and not q.fails()
+    )
+
+
+def test_a_run_in_missing_or_in_neither_list(benches):
+    bench = benches("integrated")
+    for missing in ([J[1]], []):
+        q = bench.score(lambda runs: runs.pop(J[1]), missing=missing)
+        assert (
+            q.run(J[1])["refused"] and q.cause(J[1], "missing") and q.verdict("integrated") == OPEN
+        )
+        assert q.nothing_judged(J[1], "integrated")
+
+
+def test_runs_that_are_not_registered_are_ignored(benches):
+    def alter(runs):
+        runs["integrated h=1.25e-05 retry"] = copy.deepcopy(runs[J[2]])
+        runs["integrated h=1.25e-05 retry"]["record_sha256"] = "1" * 64
+        runs["another run"] = dict(copy.deepcopy(runs[J[2]]), record_sha256="2" * 64)
+
+    q = benches("integrated").score(alter)
+    assert q.verdict("integrated") == PASS and {item["run"] for item in q.record["ignored"]} == {
+        "integrated h=1.25e-05 retry",
+        "another run",
+    }
+    # An unlisted run counts for a shared record_sha256 (Amendment 2, reading 21).
+    q = benches("integrated").score(
+        lambda runs: runs.update({"another run": copy.deepcopy(runs[J[2]])})
+    )
+    assert "a shared record_sha256" in q.run(J[2])["reasons"] and q.verdict("integrated") == OPEN
+
+
+def test_nothing_passes_empty(benches, monkeypatch):
+    """Fewer entries formed than are listed leave the consumer open, in any class."""
+    honest = scoring.expected_counts
+    for name in ("S", "energy", "R", "E", "D"):
+
+        def more(*args, key=name):
+            counts = honest(*args)
+            return {**counts, key: counts[key] + 1}
+
+        monkeypatch.setattr(scoring, "expected_counts", more)
+        q = benches("integrated").score()
+        assert q.verdict("integrated") == OPEN and not q.fails()
+
+
+def test_the_off_grid_switch_refuses_a_registered_run(benches):
+    q = benches("integrated").score(lambda runs: runs[J[0]].update(off_grid=True))
+    assert (
+        q.run(J[0])["refused"] and q.cause(J[0], "kind harness") and q.verdict("integrated") == OPEN
+    )
+    assert q.outcome(run=J[0], readout="completes") == UNFORMED  # a refusal of kind `harness`
+    assert {e["outcome"] for e in q.R(J[0])} == {PASS}
+
+
+def test_a_run_that_is_named_in_both_lists_is_refused(benches):
+    """Amendment 2, reading 20: its readouts are judged, a fail stands, and it cannot pass."""
+    q = benches("integrated").score(missing=[J[1]])
+    assert q.run(J[1])["refused"] and q.cause(J[1], "in `missing`") and not q.fails()
+    assert q.readouts_judged(J[1], "integrated") and q.verdict("integrated") == OPEN
+    assert q.outcome(run=J[1], readout="completes") == PASS
+    q = benches("integrated").score(
+        lambda runs: runs[J[1]]["rows"]["n_cell_K"]["cell_3"].__setitem__(-1, 1.0), missing=[J[1]]
+    )
+    assert (J[1], "balance of cells, K") in q.fails() and q.verdict("integrated") == FAIL
+
+
+def test_extra_series_and_keys_refuse_nothing(benches):
+    """`phi_out` written for `base`, a series of no world, an extra entity in a series, extra keys
+    in an entry and in a refusal: recorded, and nothing is refused or failed.
+    """
+
+    def alter(runs):
+        for name in B:
+            entry = runs[name]
+            entry["potentials"]["phi_out"] = {r: [0.0, 1.0, 2.0, 3.0] for r in ("near", "far")}
+            entry["rows"]["another"] = {"x": [0.0] * 4}
+            entry["rows"]["pump"]["membrane_9"] = [1.0] * 4
+            entry["second_pass_completed"] = True
+
+    q = benches("base").score(alter)
+    assert q.verdict("base") == PASS and not q.run(B[0])["refused"]
+    flags = dict(map(tuple, [[f[0], str(f[1])] for f in q.run(B[0])["flags"]]))
+    assert "second_pass_completed" in flags["extra keys"] and "another" in flags["extra series"]
+
+    def stop(runs):
+        refuse(runs[J[0]], "check")
+        runs[J[0]]["refusal"].update(second_pass_completed=True, more=1)
+
+    q = benches("integrated").score(stop)
+    assert q.run(J[0])["stopped"] and q.verdict("integrated") == FAIL
+    flags = q.run(J[0])["flags"]
+    assert ["second pass", "it completed where the run was refused"] in flags
+    assert ["refusal, keys beyond the contract's", {"more": 1}] in flags
+    assert [(f["run"], f["what"]) for f in q.record["for_the_lead"]] == [
+        (J[0], "the second pass of a stop completed")  # an engine finding (Amendment 2, item 8 (a))
+    ]
+    for kind, said in (("domain", True), ("check", False)):
+        q = benches("integrated").score(
+            lambda runs, k=kind, v=said: [
+                refuse(runs[J[0]], k),
+                runs[J[0]]["refusal"].update(second_pass_completed=v),
+            ]
+        )
+        assert q.record["for_the_lead"] == [] and any(
+            f[0] == "second pass" and "is not true" in f[1] for f in q.run(J[0])["flags"]
+        )
+
+    def pumps(runs, value=0.0):
+        for series in ("pump", "heat_pump", "work_pump"):
+            runs[J[0]]["rows"][series] = {f"membrane_{i}": [value] * 201 for i in range(7)}
+
+    q = benches("integrated").score(pumps)
+    assert q.verdict("integrated") == PASS
+    assert [f[0] for f in q.run(J[0])["flags"]] == ["extra series"]
+    q = benches("integrated").score(lambda runs: pumps(runs, 1.0))
+    assert q.verdict("integrated") == PASS
+    assert "a pump's row without a pump" in [f[0] for f in q.run(J[0])["flags"]]
+
+
+def test_structural_zeros(benches):
+    q = benches("integrated").score(
+        lambda runs: runs[J[0]]["rows"]["n_out_Cl"]["outside"].__setitem__(3, 5e-324)
+    )
+    assert (J[0], "n_out_Cl is zero") in q.fails()
+
+
+# ----- restarts, pools and schedules (class E) -----
+
+
+def test_a_restart_is_of_the_set_that_holds_its_family(benches, monkeypatch):
+    """`base` is reported in two sets: the entries of an ionic restart, and the support run itself,
+    are of the one that holds the family of the run that it is compared with.
+    """
+    bench = benches("base")
+    owner = bench.reg.runs[B[0]]
+    extra = dict(owner, name=f"{B[0]} restart", role="support", family=None)
+    extra["variant"] = "restart at 0.005"
+    sets = scoring.sets_of(bench.reg, "base")
+    holds = {k: owner["family"] in {f.name for f in found} for k, found in sets.items()}
+    assert holds == {"blind": True, "not blind": False}
+
+    def listed():
+        return {k: scoring.expected_counts(bench.reg, "base", f)["E"] for k, f in sets.items()}
+
+    before = listed()
+    monkeypatch.setitem(bench.reg.runs, extra["name"], extra)
+    monkeypatch.setitem(bench.note.runs, extra["name"], bench.note.runs[B[0]])
+    assert {k: n - before[k] for k, n in listed().items()} == {"blind": 25, "not blind": 0}
+    found = bench.score().record["consumers"]["base"]["sets"]
+    assert {k: extra["name"] in t["members"]["support_runs"] for k, t in found.items()} == holds
+    assert {k: t["verdict"] for k, t in found.items()} == {"blind": OPEN, "not blind": PASS}
+
+
+def test_a_restart_equals_the_uninterrupted_run(benches):
+    bench = benches("jupiter")
+    ulp = lambda v: math.nextafter(v, math.inf)  # noqa: E731
+    q = bench.score(
+        lambda runs: runs[RESTART]["rows"]["pump"]["membrane_1"].__setitem__(
+            5, ulp(runs[RESTART]["rows"]["pump"]["membrane_1"][5])
+        )
+    )
+    assert q.fails() == [(H[0], "restart pump")] and q.verdict("jupiter") == FAIL
+    q = bench.score(lambda runs: put("restart", "time_s", value=0.005)(runs[RESTART]))
+    assert {e["outcome"] for e in q.entries if str(e["readout"]).startswith("restart ")} == {
+        UNFORMED
+    }
+    q = bench.score(lambda runs: refuse(runs[RESTART], "harness", rows=False))
+    assert not q.run(H[0])["refused"] and q.verdict("jupiter") == OPEN and not q.fails()
+
+    def without_the_optional_row(runs):
+        entry = runs[RESTART]
+        entry["t"].pop(0)
+        for table in entry["rows"].values():
+            for values in table.values():
+                values.pop(0)
+
+    assert bench.score(without_the_optional_row).verdict("jupiter") == PASS
+
+    def partial(runs, wrong, whole=False):
+        entry = runs[H[0] if whole else RESTART]
+        refuse(entry, "domain")
+        entry["t"] = entry["t"][:150] if whole else entry["t"][:50]
+        for table in entry["rows"].values():
+            for entity in table:
+                table[entity] = table[entity][: len(entry["t"])]
+        if wrong:
+            entry["rows"]["pump"]["membrane_0"][120 if whole else 20] *= 1 + 1e-3
+
+    for whole in (False, True):  # a refusal of either run never hides a difference
+        for wrong in (False, True):
+            q = bench.score(lambda runs, w=wrong, all_=whole: partial(runs, w, all_))
+            assert q.outcome(run=H[0], readout="restart pump") == (FAIL if wrong else UNFORMED)
+            assert q.verdict("jupiter") == (FAIL if wrong else OPEN)
+
+
+def test_a_restart_that_a_check_stopped_is_not_formed(benches):
+    """Amendment 2, reading 13: its rows are another path's. What differs goes to the checker and to
+    the lead, and is no fail.
+    """
+    bench = benches("jupiter")
+
+    def stop(runs, wrong=False):
+        refuse(runs[RESTART], "check")
+        if wrong:
+            runs[RESTART]["rows"]["pump"]["membrane_0"][20] *= 1 + 1e-3
+
+    for wrong in (False, True):
+        q = bench.score(lambda runs, w=wrong: stop(runs, w))
+        found = [e for e in q.entries if str(e["readout"]).startswith("restart ")]
+        assert {e["outcome"] for e in found} == {UNFORMED} and len(found) == 25
+        assert q.run(RESTART)["stopped"] and not q.run(H[0])["refused"]
+        assert not q.fails() and q.verdict("jupiter") == OPEN
+        (told,) = q.record["for_the_lead"]
+        assert told["run"] == RESTART and told["detail"]["resumes"] == H[0]
+        shown = told["detail"]["differences_on_the_rows_that_it_holds"]
+        unequal = {d["readout"]: d["unequal_values"] for d in shown if d["unequal_values"]}
+        assert unequal == ({"pump": 1} if wrong else {})
+        assert {"run": RESTART, "what": told["what"]}.items() <= q.record["flags"][-1].items()
+    # The pool's restart.
+    bench = benches("base")
+    held = bench.tables["base"]["runs"][POOL_RESTART]["path"]["cell_0"]
+    world = next(w for w, path in held.items() if path)
+
+    def stop_pool(runs, wrong):
+        refuse(runs[POOL_RESTART], "check")
+        if wrong:
+            runs[POOL_RESTART]["path"]["cell_0"][world][0][0] *= 1 + 1e-9
+
+    for wrong in (False, True):
+        q = bench.score(lambda runs, w=wrong: stop_pool(runs, w))
+        restarts = [e for e in q.entries if str(e["readout"]).startswith("restart ")]
+        assert {e["outcome"] for e in restarts} == {UNFORMED} and not q.fails()
+        assert q.verdict("base") == OPEN
+        (told,) = q.record["for_the_lead"]
+        shown = told["detail"]["differences_on_the_rows_that_it_holds"]
+        assert [d["worlds_that_differ"] for d in shown] == [[world] if wrong else [], []]
+
+    # A stop by its refusal alone: a `status` of completed beside it (reading 16).
+    def odd(runs):
+        stop_pool(runs, False)
+        runs[POOL_RESTART]["status"] = "completed"
+
+    q = bench.score(odd)
+    restarts = [e for e in q.entries if str(e["readout"]).startswith("restart ")]
+    assert {e["outcome"] for e in restarts} == {UNFORMED} and q.run(POOL_RESTART)["stopped"]
+
+
+def test_the_rows_of_a_stopped_run_are_marked(benches):
+    """Amendment 2, reading 15: S entries that are formed on them are marked in the record."""
+    q = benches("jupiter").score(lambda runs: refuse(runs[H[1]], "check"))
+    marked = [e for e in q.entries if "on_a_stopped_runs_rows" in e]
+    assert {e["family"] for e in marked} == {"jupiter_baseline"} and len(marked) == 26
+    assert {tuple(e["on_a_stopped_runs_rows"]) for e in marked} == {(H[1],)}
+    assert q.fails() == [(H[1], "completes")] and q.verdict("jupiter") == FAIL
+
+
+POOLS = {
+    "path, an event's time": (
+        lambda r: r[POOL]["path"]["cell_1"]["3"][0].__setitem__(
+            0, math.nextafter(r[POOL]["path"]["cell_1"]["3"][0][0], 0)
+        ),
+        {(POOL, "cell_1 path")},
+    ),
+    "path, an availability": (
+        lambda r: r[POOL]["path"]["cell_1"]["2"][1].__setitem__(1, 0),
+        {(POOL, "cell_1 path"), (POOL, "cell_1 exposure")},
+    ),
+    "a seed": (
+        lambda r: [
+            r[POOL]["inputs"]["cell_0"].update(seed=1),
+            r[POOL]["pool"]["cell_0"].update(seed=1),
+        ],
+        {(POOL, "cell_0 seed")},
+    ),
+    "the restart's array": (
+        lambda r: r[POOL_RESTART]["pool"]["cell_0"]["arrays"]["free"].__setitem__(2, 0),
+        {(POOL, "restart cell_0 free")},
+    ),
+    "the restart's path": (
+        lambda r: r[POOL_RESTART]["path"]["cell_0"].update({"2": [[0.0150, 1]]}),
+        {(POOL, "restart cell_0 path")},
+    ),
+    "a schedule's time": (
+        lambda r: r[B[0]]["inputs"]["controls"]["channel"]["channel_0"][1].__setitem__(0, 0.002),
+        {(B[0], "channel schedule")},
+    ),
+    "a recorded seed": (
+        lambda r: r[B[0]]["inputs"]["assembly"]["pool_seeds"].update(cell_1=3),
+        {(B[0], "pool seeds")},
+    ),
+    "a schedule left out": (
+        lambda r: r[B[0]]["inputs"]["controls"].pop("channel"),
+        {(B[0], "channel schedule")},
+    ),
+}
+
+
+@pytest.mark.parametrize("case", POOLS)
+def test_class_E_of_the_pools_and_the_schedules(benches, case):
+    alter, wanted = POOLS[case]
+    q = benches("base").score(alter)
+    assert set(q.fails()) == wanted and q.verdict("base") == FAIL
+
+
+POOL_FORM = {
+    "an array of another shape": lambda r: r[POOL]["pool"]["cell_0"]["arrays"]["free"].pop(),
+    "an array that is not finite": lambda r: r[POOL]["pool"]["cell_0"]["arrays"][
+        "time_s"
+    ].__setitem__(0, math.inf),
+    "a boolean in an array of integers": lambda r: r[POOL]["pool"]["cell_0"]["arrays"][
+        "fault"
+    ].__setitem__(0, False),
+    "an integer in the array of booleans": lambda r: r[POOL]["pool"]["cell_0"]["arrays"][
+        "pending_valid"
+    ].__setitem__(0, int(r[POOL]["pool"]["cell_0"]["arrays"]["pending_valid"][0])),
+    "a path's world left out": lambda r: r[POOL]["path"]["cell_0"].pop("7"),
+    "a switch list's channel left out": lambda r: r[B[0]]["inputs"]["assembly"]["switch_list"].pop(
+        "channel_1"
+    ),
+    "no pool seeds": lambda r: r[B[0]]["inputs"]["assembly"].pop("pool_seeds"),
+}
+
+
+@pytest.mark.parametrize("case", POOL_FORM)
+def test_class_E_leaves_that_are_missing_or_mistyped(benches, case):
+    q = benches("base").score(POOL_FORM[case])
+    assert (
+        not q.fails()
+        and q.verdict("base") == OPEN
+        and any(e["outcome"] == UNFORMED for e in q.entries)
+    )
+
+
+def test_a_refused_pool_run_is_judged_on_the_events_it_holds(benches):
+    """Amendment 2, reading 14: where the status is refused, the path, the exposure and the arrays
+    are not formed, and a path that is no beginning of the reference's fails. Where it is completed,
+    a path that ends early fails too.
+    """
+    bench = benches("base")
+
+    def early(runs, wrong, kind="harness", cut=True):
+        if kind:
+            refuse(runs[POOL], kind)
+        else:
+            runs[POOL]["host_patch"] = "x"
+        path = runs[POOL]["path"]["cell_0"]["2"]
+        if cut:
+            path.pop()
+        if wrong:
+            path[0][0] *= 1 + 1e-9
+
+    for kind in ("harness", "check"):
+        for cut in (True, False):  # the path may even be whole
+            q = bench.score(lambda runs, k=kind, x=cut: early(runs, False, k, x))
+            mine = [e for e in q.entries if e["run"] == POOL and e["judged"] and "support" not in e]
+            formed = {e["readout"] for e in mine if e["outcome"] != UNFORMED}
+            assert formed == {"cell_0 seed", "cell_1 seed"} | (
+                {"completes"} if kind == "check" else set()
+            )
+            failed = [(POOL, "completes")] if kind == "check" else []
+            assert q.fails() == failed and q.verdict("base") == (FAIL if failed else OPEN)
+            # So are the arrays of the restart of it, and its path after the restart's time.
+            held = {e["outcome"] for e in q.entries if e.get("support") == POOL_RESTART}
+            assert held == {UNFORMED}
+    q = bench.score(lambda runs: early(runs, True))
+    assert q.outcome(run=POOL, readout="cell_0 path") == FAIL and q.verdict("base") == FAIL
+    assert q.outcome(run=POOL, readout="cell_0 exposure") == UNFORMED
+    assert q.outcome(run=POOL, readout="cell_0 free") == UNFORMED
+    q = bench.score(lambda runs: early(runs, False, None))
+    assert q.run(POOL)["refused"] and (POOL, "cell_0 path") in q.fails()
+    assert q.outcome(run=POOL, readout="cell_0 free") == PASS and q.verdict("base") == FAIL
+
+    held = bench.tables["base"]["runs"][POOL_RESTART]["path"]["cell_0"]
+    world = next(w for w, path in held.items() if path)
+
+    def restart_cut(runs, wrong):
+        refuse(runs[POOL_RESTART], "harness")
+        path = runs[POOL_RESTART]["path"]["cell_0"][world]
+        path.pop()
+        if wrong:
+            path.insert(0, [0.0151, 1])
+
+    for wrong in (False, True):
+        q = bench.score(lambda runs, w=wrong: restart_cut(runs, w))
+        assert q.fails() == ([(POOL, "restart cell_0 path")] if wrong else [])
+        assert q.outcome(run=POOL, readout="restart cell_0 free") == UNFORMED
+
+
+def test_schedules_may_hold_the_initial_entry_and_repeats(benches):
+    def alter(runs):
+        block = runs[B[1]]["inputs"]
+        for channel, listed in block["assembly"]["switch_list"].items():
+            block["assembly"]["switch_list"][channel] = [[0.0, 1], *listed, [0.0199, listed[-1][1]]]
+            block["controls"]["channel"][channel] = block["controls"]["channel"][channel][1:]
+
+    assert benches("base").score(alter).verdict("base") == PASS
+
+
+def test_pool_runs_echo_and_seed_provenance(benches):
+    bench = benches("base")
+    q = bench.score(lambda r: r[POOL]["pool"]["cell_0"].update(seed=5))
+    assert "pool seed" in q.run(POOL)["reasons"] and not q.fails() and q.verdict("base") == OPEN
+    q = bench.score(lambda r: r[POOL]["inputs"]["cell_0"]["pool"].update(k_off_s_inv=301.0))
+    assert q.cause(POOL, "departing echo") and q.verdict("base") == OPEN
+    q = bench.score(
+        lambda r: r[POOL]["inputs"].update(cell_2=copy.deepcopy(r[POOL]["inputs"]["cell_1"]))
+    )
+    assert q.cause(POOL, "departing echo", "cell_2")
+    q = bench.score(
+        lambda r: [
+            r[POOL]["inputs"]["cell_0"]["pool"].pop(k)
+            for k in ("root_node", "world_id_start", "initial_bond_indices")
+        ]
+    )
+    assert not q.run(POOL)["refused"] and q.verdict("base") == PASS
+
+
+def test_the_steps_of_a_split_run(benches):
+    bench = benches("base")
+    least, events = (
+        3200,
+        sum(len(p) for p in bench.reg.expected_paths(bench.reg.runs[B[2]]).values()),
+    )
+    for steps, good in (
+        (least, True),
+        (least + events, True),
+        (least - 1, False),
+        (least + events + 1, False),
+    ):
+        q = bench.score(lambda r, count=steps: r[B[2]].update(steps=count))
+        assert q.run(B[2])["refused"] is not good and (good or q.run(B[2])["reasons"] == ["steps"])
+
+
+# ----- plants -----
+
+PLANT = {
+    "EP1 missing": ("jupiter", lambda r: r.pop(EP1), "EP1", "unscorable", OPEN),
+    "EP1 without its change": (
+        "jupiter",
+        lambda r: r[EP1]["inputs"]["channels"]["channel_0"].update(max_permeability_m_per_s=3e-10),
+        "EP1",
+        "unscorable",
+        OPEN,
+    ),
+    "EP1 without its change, equal": (
+        "jupiter",
+        lambda r: [
+            r[EP1].update(rows=r[H[2]]["rows"]),
+            r[EP1]["inputs"]["channels"]["channel_0"].update(max_permeability_m_per_s=3e-10),
+        ],
+        "EP1",
+        "unscorable",
+        OPEN,
+    ),
+    "EP1 refused and caught": (
+        "jupiter",
+        lambda r: r[EP1].update(host_patch="x"),
+        "EP1",
+        "unscorable",
+        OPEN,
+    ),
+    "EP1 refused and equal": (
+        "jupiter",
+        lambda r: r[EP1].update(host_patch="x", rows=r[H[2]]["rows"]),
+        "EP1",
+        "not caught",
+        FAIL,
+    ),
+    "EP1 equal, on a refused family": (
+        "jupiter",
+        lambda r: [r[EP1].update(rows=r[H[2]]["rows"]), r[H[0]].update(host_patch="x")],
+        "EP1",
+        "not caught",
+        FAIL,
+    ),
+    "EP1 on a refused family": (
+        "jupiter",
+        lambda r: r[H[0]].update(host_patch="x"),
+        "EP1",
+        "unscorable",
+        OPEN,
+    ),
+    "EP2 not swapped": (
+        "base",
+        lambda r: [
+            x.update(channel_0=x["channel_1"], channel_1=x["channel_0"])
+            for x in [r[EP2]["inputs"]["controls"]["channel"]]
+        ],
+        "EP2",
+        "unscorable",
+        OPEN,
+    ),
+    "EP2 with other seeds": (
+        "base",
+        lambda r: r[EP2]["inputs"]["assembly"]["pool_seeds"].update(cell_0=1),
+        "EP2",
+        "unscorable",
+        OPEN,
+    ),
+    "EP2 equal": ("base", lambda r: r[EP2].update(rows=r[B[2]]["rows"]), "EP2", "not caught", FAIL),
+}
+
+
+def test_a_plant_s_worst_entry_decides():
+    """Amendment 2, item 5 (b): one not caught makes it not caught, whatever else is unscorable."""
+    scores = lambda *names: scoring.overall([{"score": n} for n in names])  # noqa: E731
+    assert scores("unscorable", "not caught", "caught") == "not caught"
+    assert scores("caught", "unscorable") == "unscorable" == scores()
+    assert scores("caught", "caught") == "caught"
+
+
+@pytest.mark.parametrize("case", PLANT)
+def test_engine_plants(benches, case):
+    name, alter, plant, score, verdict = PLANT[case]
+    q = benches(name).score(alter)
+    assert q.plant(plant) == score and q.verdict(name) == verdict
+
+
+def test_a_structural_plant_that_the_candidate_resembles_is_not_caught(benches):
+    bench = benches("integrated")
+    run = bench.planted.run(
+        "ST9 the schedule is not applied", bench.reg.families["integrated"], 2.5e-05
+    )
+    world = bench.reg.worlds["integrated"]
+
+    def alter(runs):
+        for name in J:
+            for series in ("junction_Na", "junction_K", "junction_Cl"):
+                values = run.series(series, world.row_times)
+                runs[name]["rows"][series] = {
+                    j: values[:, i].tolist() for i, j in enumerate(world.junctions)
+                }
+
+    q = bench.score(alter)
+    assert [p["score"] for p in q.record["plants"]["plants"]] == ["not caught"] and q.verdict(
+        "integrated"
+    ) == FAIL
+
+
+# ----- the order rule, the bands and power -----
+
+
+@pytest.mark.parametrize(
+    "d2, d1, expected",
+    [
+        (1.0, 1.0, "unresolved"),
+        (0.0, 0.0, "unresolved"),
+        (3.0, 1.0, "mixed"),
+        (1.0, 3.0, "mixed"),
+        (64.0, 4.0, "resolved"),
+    ]
+    + [
+        (2.0**4.5 * 4, 4.0, "resolved"),
+        (2.0**3.5 * 4, 4.0, "resolved"),
+        (2.0**4.6 * 4, 4.0, "resolved outside its window"),
+    ]
+    + [(2.0**3.4 * 4, 4.0, "resolved outside its window")],
+)
+def test_the_order_rule(d2, d1, expected):
+    assert bands.classify(d2, d1, 2.0, 4) == expected
+    inside, outside = bands.score(1.0, 1.0, expected), bands.score(1.5, 1.0, expected)
+    table = {
+        "unresolved": (PASS, FAIL),
+        "resolved": (PASS, FAIL),
+        "mixed": (OPEN, FAIL),
+        "resolved outside its window": (OPEN, OPEN),
+    }
+    assert (inside, outside) == table[expected]
+    assert (
+        bands.classify(math.inf, d1, 2.0, 4) == "not finite"
+        and bands.score(0.0, 1.0, "not finite") == FAIL
+    )
+
+
+def test_estimates_and_bands_are_the_formulas():
+    """CRITERIA section 1 and 4.3, term by term, with no absolute tolerance."""
+    world = Registration(only=KEEP["jupiter"]).worlds["jupiter_baseline"]
+    e = world.by_name["n_cell_K"]
+    s, ref, eps = e.scale, e.amount_ref, 2.0**-52
+    Y = [np.array([[0.0]]), np.array([[32.0]]), np.array([[33.0]])]
+    assert bands.estimate(*Y, 4) == (32.0, 1.0, max(1 / 15, 32 / 240))
+    assert bands.estimate(*Y, 2) == (32.0, 1.0, max(1 / 3, 32 / 12))
+    assert bands.estimate(Y[0], Y[1], Y[1] + 16, 4)[2] == 16 / 15  # the other pair is the larger
+    assert float(bands.extrapolate(Y[1], Y[2], 4)[0, 0]) == 33.0 + 1 / 15
+
+    def near(value):
+        return pytest.approx(value, rel=1e-14, abs=0.0)
+
+    b = bands.band(e, 3e-13, 2e-13, 3200, 800)
+    assert b["e_round_c"] == near(8 * eps * 3201 * s)
+    assert b["e_round_l"] == near(8 * eps * 801 * s)
+    assert b["e_close"] == near(4e-12 * s)
+    assert b["e_store"] == near(2.5 * eps * 3201 * ref)
+    without = 2 * (3e-13 + 2e-13) + 8 * eps * (3201 + 801) * s + 4e-12 * s
+    assert b["beta_without_store"] == near(without)
+    assert b["beta"] == near(without + 2.5 * eps * 3201 * ref)
+    assert b["theta"] == near(10 * (8 * eps * 3201 * s + 2.5 * eps * 3201 * ref))
+    identity = bands.band(world.energy, 1e-9, 0.0, 3200, None)
+    S, E = world.energy.scale, world.energy.amount_ref
+    wanted = 2e-9 + 8 * eps * 3201 * S + 4e-12 * S + 2.5 * eps * 3201 * E
+    assert identity["beta"] == near(wanted)
+    phi = world.by_name["phi_out"]
+    assert phi.e_close() == 4.3e-12 * 0.12 and phi.e_store(3200) == 0.0
+    assert world.by_name["pump"].e_close() == 4e-12 * 0.002
+    assert bands.legacy_threshold(e, 800) == near(10 * 8 * eps * 801 * s)
+
+
+def test_class_R_bounds_are_the_formulas():
+    """READOUTS section 5, with no absolute tolerance."""
+    world = Registration(only=KEEP["jupiter"]).worlds["jupiter_baseline"]
+    scales, refs, eps = world.data["scales"], world.data["amount_refs"], 2.0**-52
+
+    def near(value):
+        return pytest.approx(value, rel=1e-14, abs=0.0)
+
+    for kind, name in (("cells", "n_cell_K"), ("regions", "n_out_K")):
+        rounding, store = 8 * eps * 801 * scales[name], 2.5 * eps * 801 * refs[name]
+        assert identities.balance_bound(world, kind, "K", 800) == near((rounding + store, rounding))
+    cell, out = scales["n_cell_K"], scales["n_out_K"]
+    rounding = 8 * eps * 801 * (2 * cell + 3 * out)
+    store = 2.5 * eps * 801 * (2 * refs["n_cell_K"] + 3 * refs["n_out_K"])
+    found = identities.balance_bound(world, "closed world", "K", 800)
+    assert found == near((rounding + store, rounding))
+    rounding = (8 * eps * 801 + 4e-12) * scales["voltage"]
+    store = 2.5 * eps * 801 * refs["voltage"]
+    assert identities.capacitor_bound(world, 800) == near((rounding + store, rounding))
+    assert identities.exposure_bound(0.02, 805) == near(2 * eps * 0.02 * 807)
+    bare = Registration(only=KEEP["integrated"]).worlds["integrated"]
+    assert identities.balance_bound(bare, "regions", "K", 800) == (0.0, 0.0)  # a class E zero
+
+
+def test_the_energy_identity_is_the_formula():
+    """READOUTS section 5, term by term, on numbers that close nothing."""
+    world = Registration(only=KEEP["jupiter"]).worlds["jupiter_baseline"]
+    rng = np.random.default_rng(1)
+    series = {name: rng.normal(size=(1, len(world.entities(name)))) for name in world.row_series()}
+    volts = rng.normal(size=(1, len(world.membranes)))
+    rows = fabricate.Held(world, [0.0], series, volts, volts[0])
+    R, T, F = 8.31446261815324, 298.15, 96485.33212331001
+    total = 0.0
+    for group, prefix in (("cells", "n_cell_"), ("outside", "n_out_")):
+        for i, block in enumerate(world.block[group].values()):
+            for x in ("Na", "K", "Cl"):
+                n0, V = block["initial_amount_fmol"][x], block["volume_pL"]
+                d = series[prefix + x][0, i]
+                total += 1e-3 * R * T * (d * (math.log(n0 / V) - 1))
+                total += 1e-3 * R * T * (n0 + d) * math.log(1 + d / n0)
+    for i, block in enumerate(world.block["membranes"].values()):
+        charge = sum(z * series[f"n_cell_{x}"][0, i] for x, z in (("Na", 1), ("K", 1), ("Cl", -1)))
+        dV = F * 1e-15 / block["capacitance_F"] * charge
+        total += 0.5 * 1e12 * block["capacitance_F"] * dV * (2 * volts[0, i] + dV)
+    for name in ("heat_leak", "heat_pump", "heat_channel", "heat_junction", "heat_face"):
+        total += series[name].sum()
+    total -= series["work_pump"].sum()
+    assert float(identities.energy(world, rows, [0.0])[0, 0]) == pytest.approx(total, rel=1e-12)
+
+
+def test_an_amount_below_zero_leaves_the_identity_not_formed(benches):
+    """Amendment 2, reading 31: and no fail is hidden, since the S entries that read it fail."""
+    bench = benches("integrated")
+    world = bench.reg.worlds["integrated"]
+    n0 = world.block["cells"]["cell_0"]["initial_amount_fmol"]["K"]
+
+    def empty(runs):
+        for name in J:
+            runs[name]["rows"]["n_cell_K"]["cell_0"][-1] = -2 * n0
+
+    q = bench.score(empty)
+    assert q.S("integrated", "energy_identity")[0]["outcome"] == UNFORMED
+    assert q.S("integrated", "n_cell_K")[0]["outcome"] == FAIL and q.verdict("integrated") == FAIL
+
+
+def test_exposure_and_changes():
+    assert changes([[0.0, 1], [0.2, 0], [0.3, 0], [0.4, 1]]) == [
+        [0.2, 0],
+        [0.4, 1],
+    ]  # SPEC section 3.2's own example
+    assert identities.exposure([[0.25, 0], [0.5, 0], [0.75, 1]], 1.0) == 0.5
+    assert identities.exposure([], 0.02) == 0.02 and identities.exposure([[0.01, 0]], 0.02) == 0.01
+
+
+def test_the_state_form_is_flagged_and_decides_nothing(benches):
+    """A statistic inside the band with e_store and outside the one without, in class S and R."""
+    bench = benches("integrated")
+    world = bench.reg.worlds["integrated"]
+    entry = world.by_name["n_cell_K"]
+
+    def alter(runs):
+        for name in J:
+            shift = 0.5 * entry.e_store(world.steps(runs[name]["step_s"]))
+            values = runs[name]["rows"]["n_cell_K"]
+            values["cell_2"] = [v + shift for v in values["cell_2"]]
+
+    q = bench.score(alter)
+    item = q.S("integrated", "n_cell_K")[0]
+    assert item["state_form"] and item["outcome"] == PASS
+    flagged = [f["detail"] for f in q.record["flags"] if f["what"] == "state form"]
+    assert any(text.startswith("integrated n_cell_K") for text in flagged)
+    assert sum(text.startswith("balance of cells, K") for text in flagged) == 3
+    assert q.outcome(run=J[2], readout="balance of cells, K") == PASS
+
+
+def test_an_order_two_world_reports_its_identities(benches):
+    bench = benches("integrated")
+    world = bench.reg.worlds["integrated"]
+    world.p = 2
+    try:
+        counts = scoring.expected_counts(bench.reg, "integrated")
+        assert (counts["R"], counts["energy"]) == (0, 0)
+        q = bench.score(
+            lambda runs: [
+                v.__setitem__(-1, 1.0) for v in runs[J[2]]["rows"]["heat_junction"].values()
+            ]
+        )
+        item = next(e for e in q.entries if e["readout"] == "energy_identity")
+        assert item["outcome"] == c.REPORTED and item["reported"] == FAIL and not item["judged"]
+        assert all(not e["judged"] for e in q.entries if e["class"] == "R")
+    finally:
+        world.p = 4
+
+
+def with_margins(bench, alter):
+    """A bench that reads other margins, and its own otherwise."""
+    other = copy.copy(bench)
+    other.reg = copy.copy(bench.reg)
+    other.reg.margins = copy.deepcopy(bench.reg.margins)
+    alter(other.reg.margins["worlds"]["integrated"])
+    return other
+
+
+def test_power_is_read_from_the_margins(benches):
+    """An untested entry counts for neither side. An untested mechanism leaves its consumer open."""
+    bench = benches("integrated")
+    q = with_margins(bench, lambda m: m["entries"]["heat_junction"].update(ratio=1e-12)).score()
+    block = q.record["consumers"]["integrated"]["sets"]["all"]
+    assert q.S("integrated", "heat_junction")[0]["outcome"] == c.NOT_TESTED
+    assert q.verdict("integrated") == PASS
+    assert block["not_tested"] == [["integrated", "heat_junction"]]
+    q = with_margins(bench, lambda m: m["entries"]["junction_gate"].update(ratio=1e-12)).score()
+    assert q.verdict("integrated") == OPEN and q.record["retry_owed"]["runs"] == []
+    assert not q.record["consumers"]["integrated"]["sets"]["all"]["mechanisms"]["junction gate"][
+        "tested"
+    ]
+    q = with_margins(bench, lambda m: m["entries"]["junction_K"].update(ratio=1e-12)).score()
+    assert q.verdict("integrated") == PASS  # its mechanism has two other homes
+
+    def wrong(runs):
+        for name in J:
+            values = runs[name]["rows"]["heat_junction"]
+            runs[name]["rows"]["heat_junction"] = plants.scaled(values, 1.01)
+
+    q = with_margins(bench, lambda m: m["entries"]["heat_junction"].update(ratio=1e-12)).score(
+        wrong
+    )
+    assert q.S("integrated", "heat_junction")[0]["outcome"] == FAIL  # untested, and above beta
+
+
+# ----- the flags that the checker settles (Amendment 2, item 5 (a) and readings 12 and 24) -----
+
+
+def extra_potential(entry):
+    """One more row of the potentials, whose voltage is not finite."""
+    entry["potential_t"].insert(1, entry["potential_t"][1] / 2)
+    for table in entry["potentials"].values():
+        for values in table.values():
+            values.insert(1, math.inf)
+
+
+FLAGS = {
+    "reading 12, a row at time 0": (
+        "base",
+        lambda r: put("rows", "n_cell_K", "cell_0", 0, value=5e-324)(r[B[1]]),
+        f"row at time 0; {B[1]}; n_cell_K",
+        {(B[1], "capacitor")},
+    ),
+    "reading 24, a series of S and R": (
+        "integrated",
+        lambda r: extra_row(r[J[2]], "junction_K", "junction_5"),
+        f"non-finite value; {J[2]}; rows.junction_K",
+        {(J[2], "junction_K"), (J[2], "balance of cells, K")},
+    ),
+    "reading 24, a mistyped value": (
+        "integrated",
+        lambda r: extra_row(r[J[2]], "junction_K", "junction_5", "0.0"),
+        f"non-finite value; {J[2]}; rows.junction_K",
+        {(J[2], "junction_K"), (J[2], "balance of cells, K")},
+    ),
+    "reading 24, a heat of h2": (
+        "jupiter",
+        lambda r: extra_row(r[H[1]], "heat_leak", "membrane_0"),
+        f"non-finite value; {H[1]}; rows.heat_leak",
+        {(H[2], "heat_membrane"), (H[2], "energy_identity")},
+    ),
+    "reading 24, a potential": (
+        "integrated",
+        lambda r: extra_potential(r[J[2]]),
+        f"non-finite value; {J[2]}; potentials.voltage",
+        {(J[2], "voltage"), (J[2], "capacitor"), (J[2], "energy_identity")},
+    ),
+    "reading 24, a restart": (
+        "jupiter",
+        lambda r: extra_row(r[RESTART], "pump", "membrane_1"),
+        f"non-finite value; {RESTART}; rows.pump",
+        {(H[0], "restart pump")},
+    ),
+}
+
+
+def assert_settled(record, name, entries, counts_as, rule=PASS):
+    """The entries, the runs and the verdict with a flag that is open (None) or settled."""
+    wanted = {None: OPEN, "by the rule": rule, "fail": FAIL, "inconclusive": OPEN}[counts_as]
+    mine = {f["id"] for f in own(record)}
+    found = {
+        (e["run"], e["readout"]): e for e in record["entries"] if mine & set(e.get("flags", ()))
+    }
+    assert set(found) == entries
+    for item in found.values():
+        assert (item["outcome"], item["by_rule"]) == (wanted, rule)
+        assert bool(item.get("pending")) is (counts_as is None)
+    block = record["consumers"][name]
+    ends = {None: OPEN, "by the rule": PASS, "fail": FAIL, "inconclusive": OPEN}[counts_as]
+    assert block["verdict"] == ends and block["final"] is (counts_as is not None)
+    assert block["state"] == (c.PENDING if counts_as is None else ends)
+    waiting = {run for run, _ in entries} if counts_as is None else set()
+    assert set(record["runs_pending_on_a_flag"]) == waiting
+    assert record["part_1"]["passes"] is (ends == PASS)
+    assert "pass" not in cli.shown(block) or counts_as == "by the rule"
+    assert scoring.verdict_of(record)["runs_pending_on_a_flag"] == sorted(waiting)
+    assert block["pending"] == (sorted(mine) if counts_as is None else [])
+
+
+@pytest.mark.parametrize("case", FLAGS)
+def test_a_flag_leaves_its_entries_open_until_the_checker_settles_it(benches, case):
+    name, alter, flag, entries = FLAGS[case]
+    bench = benches(name)
+    record = bench.score(alter).record
+    assert [f["id"] for f in own(record)] == [flag]
+    assert own(record)[0]["settled"] is None and record["retry_owed"]["runs"] == []
+    assert not any(s["refused"] for s in record["runs"].values())
+    assert_settled(record, name, entries, None)
+    for counts_as in c.COUNTS_AS:
+        data, records = bench.settled(record, counts_as=counts_as)
+        settled = Settlements(data, "a sha256", records)
+        again = bench.score(alter, settlements=settled).record
+        assert own(again)[0]["settled"]["counts_as"] == counts_as
+        assert_settled(again, name, entries, counts_as)
+    with pytest.raises(scoring.OrderFault, match="that is not there"):
+        bench.score(settlements=settled)  # the honest tables hold no such flag
+
+
+@pytest.mark.parametrize("name", ["jupiter", "base"])
+def test_a_restart_waits_for_the_checker(benches, name):
+    """CRITERIA section 4.1 and Amendment 2, reading 25: until the reload is confirmed, every
+    passing entry of a restart is at best inconclusive, and its consumer pending. A reload is shown
+    or not.
+    """
+    bench = benches(name)
+    record = bench.score(settlements=None).record
+    flags = record["flags_to_settle"]
+    support = RESTART if name == "jupiter" else POOL_RESTART
+    owner = H[0] if name == "jupiter" else POOL
+    assert [f["id"] for f in flags] == [f"{c.RELOAD}; {support}; {owner}"]
+    block = record["consumers"][name]
+    assert (block["verdict"], block["state"], block["final"]) == (OPEN, c.PENDING, False)
+    held = [e for e in record["entries"] if e.get("support") == support]
+    assert held and all(e["pending"] and e["by_rule"] == PASS for e in held)
+    assert record["runs_pending_on_a_flag"] == [owner]
+    for counts_as, verdict in (("by the rule", PASS), ("inconclusive", OPEN)):
+        data, records = fabricated_data(record, counts_as)
+        q = bench.score(settlements=Settlements(data, "x", records))
+        assert q.verdict(name) == verdict and q.record["consumers"][name]["final"]
+    data, records = fabricated_data(record, "fail")
+    data["flags"][0]["counts_as"] = "fail"
+    with pytest.raises(SettlementFault, match="counts_as"):
+        Settlements(data, "x", records)
+    # A restart that fails is no flag's: the fail stands.
+    q = bench.score(
+        lambda runs: runs[support].update(restart=dict(runs[support]["restart"], time_s=0.005)),
+        settlements=None,
+    )
+    assert q.record["flags_to_settle"] == []
+
+
+def test_what_a_flag_does_not_touch(benches):
+    """An honest row at time 0 (even a negative zero), another world's or a compared time's value,
+    and an entry that fails by the rule.
+    """
+    q = benches("base").score(lambda r: put("rows", "n_cell_K", "cell_0", 0, value=-0.0)(r[B[1]]))
+    assert own(q.record) == [] and q.verdict("base") == PASS
+    q = benches("jupiter").score(
+        lambda r: put("rows", "n_cell_K", "cell_0", 0, value=1e-300)(r[H[1]])
+    )
+    assert own(q.record) == []  # time 0 is one of jupiter's times
+    q = benches("integrated").score(
+        lambda r: put("rows", "junction_K", "junction_5", 100, value=math.nan)(r[J[2]])
+    )
+    assert q.record["flags_to_settle"] == []  # a compared time: the entries are not formed
+    assert q.verdict("integrated") == OPEN
+
+    def failing(runs):
+        extra_row(runs[J[2]], "junction_K", "junction_5")
+        for values in runs[J[2]]["rows"]["junction_K"].values():
+            values[-1] += 1.0
+
+    bench = benches("integrated")
+    record = bench.score(failing).record
+    data, records = bench.settled(record, counts_as="by the rule")
+    again = bench.score(failing, settlements=Settlements(data, "x", records))
+    for q in (Query(record), again):  # a fail stays a fail, whatever the checker says
+        assert q.outcome(run=J[2], readout="balance of cells, K") == FAIL
+        assert q.verdict("integrated") == FAIL and q.record["runs_pending_on_a_flag"] == []
+
+
+def corner(bench):
+    """Tables of `integrated` in which `heat_junction`, which is untested, is resolved outside its
+    window and above beta on the first triple, and within both on the retry's.
+    """
+    a = 2e-12
+
+    def alter(runs):
+        for name, shift in zip(J, (a, -11 * a, a), strict=True):
+            runs[name]["rows"]["heat_junction"]["junction_0"][60] += shift
+
+    return bench.altered(alter)
+
+
+def test_the_corner_of_the_order_rule_is_flagged_and_the_retry_waits(benches):
+    """Amendment 2, item 5 (a): untested, outside its window and above beta: inconclusive by order,
+    flagged with its error, and owed the retry. What the retry's triple gives is at best
+    inconclusive until the flag is settled.
+    """
+    bench = with_margins(
+        benches("integrated"), lambda m: m["entries"]["heat_junction"].update(ratio=1e-12)
+    )
+    tables, name = corner(bench), "integrated h=1.25e-05 retry"
+    retry = fabricate.Fabricator(bench.reg, bench.captures, bench.planted).retry_tables([name])
+    first, second = bench.judge(tables, retry=retry)
+    item = Query(first).S("integrated", "heat_junction")[0]
+    assert item["statistic"] > item["band"] and item["tested"] is False
+    assert item["order_class"] == scoring.OUTSIDE and item["outcome"] == OPEN
+    assert first["retry_owed"]["why"] == {"integrated": ["heat_junction: order"]}
+    (flag,) = first["flags_to_settle"]
+    assert flag["id"] == "untested outside its window; integrated; heat_junction"
+    assert flag["detail"]["statistic"] == item["statistic"] and flag["entries"] == []
+    block = first["consumers"]["integrated"]
+    assert (block["verdict"], block["state"], block["pending"]) == (OPEN, OPEN, [])
+    again = Query(second).S("integrated", "heat_junction")[0]
+    assert again["order_class"] == "resolved" and again["pass_of_the_judgement"] == 2
+    entries = {(name, "heat_junction")}
+    assert_settled(second, "integrated", entries, None, rule=c.NOT_TESTED)
+    for counts_as in c.COUNTS_AS:
+        for record in (first, second):  # settled between the passes, or after them
+            data, records = bench.settled(record, counts_as=counts_as)
+            settled = Settlements(data, "x", records)
+            _, final = bench.judge(tables, retry=retry, settlements=settled)
+            assert_settled(final, "integrated", entries, counts_as, rule=c.NOT_TESTED)
+    # Without a retry it stays inconclusive, whatever is said.
+    data, records = bench.settled(first, counts_as="by the rule")
+    alone = bench.judge(tables, settlements=Settlements(data, "x", records))
+    assert Query(alone).verdict("integrated") == OPEN
+    # On the same triple an entry that is tested and above beta is inconclusive too, and no flag.
+    record = benches("integrated").judge(tables)
+    assert record["flags_to_settle"] == []
+    assert Query(record).S("integrated", "heat_junction")[0]["outcome"] == OPEN
+
+    # So is one that is untested, outside its window and within beta.
+    def within(runs):
+        runs[J[1]]["rows"]["heat_junction"]["junction_0"][60] += 2e-12
+
+    record = bench.judge(bench.altered(within))
+    item = Query(record).S("integrated", "heat_junction")[0]
+    assert item["order_class"] == scoring.OUTSIDE and item["statistic"] < item["band"]
+    assert record["flags_to_settle"] == [] and item["outcome"] == OPEN
+
+
+def test_a_corner_that_is_not_judged_again_stays_as_it_is():
+    """Amendment 2, item 5 (a), "Without a retry it stays inconclusive": the settled flag of an
+    entry that the retry did not judge again touches nothing.
+    """
+    stage = object.__new__(scoring.Stage2)
+    common = {"class": "S", "family": "f", "readout": "r", "judged": True, "outcome": OPEN}
+    entries = [{**common, "pass_of_the_judgement": n} for n in (1, 2)]
+    stage.first = {
+        "flags_to_settle": [
+            {"id": f"{c.CORNER}; f; r", "kind": c.CORNER, "detail": {}, "entries": []}
+        ]
+    }
+    for entry, touched in ((entries[0], []), (entries[1], [entries[1]])):
+        stage.entries, stage.to_settle = [entry], []
+        stage._corners_again()
+        assert stage.to_settle[0]["entries"] == touched
+
+
+def test_a_plant_whose_distance_is_at_most_two_bands_is_unscorable(benches):
+    def alter(margins):
+        margins["structural"]["ST9 the schedule is not applied"]["junction_Cl"]["distance"] = 1e-20
+
+    q = with_margins(benches("integrated"), alter).score()
+    (plant,) = q.record["plants"]["plants"]
+    assert plant["score"] == "unscorable" and q.verdict("integrated") == OPEN
+    assert [e["score"] for e in plant["entries"]] == ["caught", "caught", "unscorable"]
+
+
+def test_the_band_decides(benches):
+    """An entry just inside its band passes, and just outside it fails."""
+    bench = benches("integrated")
+    entry = bench.reg.worlds["integrated"].by_name["junction_gate"]
+    beta = bench.score().S("integrated", "junction_gate")[0]["band"]
+    for share, outcome in ((0.98, PASS), (1.02, FAIL)):
+
+        def alter(runs, shift=share * beta):
+            for name in J:
+                runs[name]["rows"]["junction_gate"]["junction_7"][33] += shift
+
+        q = bench.score(alter)
+        item = q.S("integrated", "junction_gate")[0]
+        assert item["outcome"] == outcome and item["at"] == [entry.times[33], "junction_7"]
+        assert item["ratio"] == pytest.approx(share, rel=1e-3)
+
+
+# ----- the retry -----
+
+
+def perturbed(bench, mixed: bool):
+    """Tables of `integrated` in which one home entry is owed the retry: by order (mixed) or by
+    power (resolved and untested).
+    """
+    runs = Lazy(bench.tables["integrated"]["runs"])
+    entry = bench.reg.worlds["integrated"].by_name["junction_gate"]
+    size = 3 * c.THRESHOLD * entry.e_round(800) if mixed else 1e-2
+    values = {name: runs[name]["rows"]["junction_gate"]["junction_0"] for name in J}
+    values[J[0]][60] += size if mixed else 17 * size
+    if not mixed:
+        values[J[1]][60] += size
+    tables = dict(bench.tables)
+    tables["integrated"] = dict(tables["integrated"], runs=dict(runs))
+    return tables
+
+
+@pytest.mark.parametrize("mixed", [True, False])
+def test_the_retry(benches, mixed):
+    bench = benches("integrated")
+    tables = perturbed(bench, mixed)
+    state = scoring.Tables(bench.reg, bench.note, TableSet.from_data(tables))
+    power = scoring.stage1(state, bench.c0, {"a": 1})
+    first = scoring.Stage2(state, bench.c0, power, bench.captures, bench.planted).run()
+    name = "integrated h=1.25e-05 retry"
+    reason = "junction_gate: order" if mixed else "junction_gate: power"
+    assert first["retry_owed"] == {
+        "kind": c.RETRY_KIND,
+        "part": 1,
+        "runs": [name],
+        "why": {"integrated": [reason]},
+    }
+    block = first["consumers"]["integrated"]
+    assert (
+        block["verdict"] == OPEN and not block["final"] and block["retry_owed"] == [name]
+    )  # untested: its mechanism has no other home
+
+    def second(alter=lambda runs: None):
+        made = fabricate.Fabricator(bench.reg, bench.captures, bench.planted).retry_tables([name])
+        alter(made["integrated"]["runs"])
+        again = scoring.Tables(
+            bench.reg,
+            bench.note,
+            TableSet.from_data(tables),
+            TableSet.from_data(made, retry=True),
+            [name],
+        )
+        power2 = scoring.stage1(again, bench.c0, {"a": 2}, first)
+        assert set(power2["families"]["integrated"]) == {"junction_gate"}
+        return Query(
+            scoring.Stage2(
+                again, bench.c0, power, bench.captures, bench.planted, power2, first
+            ).run()
+        )
+
+    q = second()
+    item = q.S("integrated", "junction_gate")[0]
+    assert item["runs"] == [*J[1:], name] and item["pass_of_the_judgement"] == 2
+    if mixed:
+        assert (
+            q.verdict("integrated") == PASS
+            and item["outcome"] == PASS
+            and q.record["consumers"]["integrated"]["final"]
+        )
+        covered = q.record["consumers"]["integrated"]["steps_covered"]
+        assert covered == {
+            "steps_s": [[0.0001, 5e-05, 2.5e-05]],
+            "judged_again": {
+                "integrated": {"steps_s": [5e-05, 2.5e-05, 1.25e-05], "entries": ["junction_gate"]}
+            },
+        }
+        q = second(lambda runs: runs.clear())
+        assert (
+            q.run(name)["refused"] and q.verdict("integrated") == OPEN
+        )  # an owed retry run that is missing is a missing run
+        q = second(lambda runs: runs[name]["rows"]["n_cell_K"]["cell_0"].__setitem__(-1, 1.0))
+        assert (name, "balance of cells, K") in q.fails() and q.verdict(
+            "integrated"
+        ) == FAIL  # its own R entries are judged
+        q = second(lambda runs: runs[name]["rows"]["n_out_K"]["outside"].__setitem__(-1, 1e-30))
+        assert (name, "n_out_K is zero") in q.fails() and q.verdict(
+            "integrated"
+        ) == FAIL  # and its class E (Amendment 2)
+    else:
+        assert (
+            item["outcome"] == OPEN and q.verdict("integrated") == OPEN
+        )  # h2 stays coarse: mixed, and it stays so
+
+
+def test_a_refused_run_takes_no_retry(benches):
+    bench = benches("integrated")
+    tables = perturbed(bench, True)
+    entry = copy.deepcopy(tables["integrated"]["runs"][J[1]])
+    entry["host_patch"] = "x"
+    tables["integrated"]["runs"][J[1]] = entry
+    record = plants.judge(bench.reg, bench.note, tables, bench.c0, bench.captures, bench.planted)
+    assert record["retry_owed"]["runs"] == []
+
+
+def test_the_retry_list_waits_for_the_copy_guard(benches, tmp_path, capsys):
+    """Amendment 2, reading 28: `retry_owed.json` is written once, after the copy guard's refusals
+    are settled. A run whose refusal the lead's note has lifted is no refused run.
+    """
+    bench = benches("jupiter")
+
+    def copied(runs):
+        world = bench.reg.worlds["jupiter_baseline"]
+        for series in (*dict.fromkeys(e.series for e in world.guard_entries()), *plants.HEATS):
+            runs[H[2]]["rows"][series] = copy.deepcopy(runs[H[1]]["rows"][series])
+
+    def partly(runs):  # a partial copy is not compared (reading 19), and it cannot pass
+        copied(runs)
+        runs[H[2]]["t"].pop()
+        for table in runs[H[2]]["rows"].values():
+            for values in table.values():
+                values.pop()
+
+    q = bench.score(partly)
+    assert q.record["copy_guard"] == [] and q.verdict("jupiter") == OPEN and not q.fails()
+    record = bench.score(copied).record
+    assert record["retry_owed_waits_on"] == [[H[1], "a"], [H[2], "a"]]
+    assert not record["consumers"]["jupiter"]["final"]
+    cli.write(tmp_path / "first", record, owed=True)
+    assert "is not written" in capsys.readouterr().out
+    assert not (tmp_path / "first" / "retry_owed.json").exists()
+    for outcome, verdict in (("stands", OPEN), ("lifted", PASS)):
+        data, records = bench.settled(record, outcome=outcome)
+        q = bench.score(copied, settlements=Settlements(data, "x", records))
+        assert q.record["retry_owed_waits_on"] == [] and q.verdict("jupiter") == verdict
+        assert q.run(H[1])["refused"] is (outcome == "stands")
+        assert q.run(H[2]).get("lifted") == (["a"] if outcome == "lifted" else None)
+        assert q.record["consumers"]["jupiter"]["final"]
+        cli.write(tmp_path / outcome, q.record, owed=True)
+        owed = json.loads((tmp_path / outcome / "retry_owed.json").read_text())
+        assert owed == {"kind": c.RETRY_KIND, "part": 1, "runs": [], "why": {}}
+
+
+SETTLEMENT_FAULT = {
+    "another kind": lambda d: d.update(kind="x"),
+    "another part": lambda d: d.update(part=2),
+    "an extra key": lambda d: d.update(more=1),
+    "a flag's extra key": lambda d: d["flags"][0].update(more=1),
+    "a missing key": lambda d: d["flags"][0].pop("words"),
+    "no words": lambda d: d["flags"][0].update(words=" "),
+    "no checker": lambda d: d["flags"][0].update(checker=""),
+    "no time": lambda d: d["flags"][0].update(when="yesterday"),
+    "evidence": lambda d: d["flags"][0].update(evidence="x"),
+    "counts as a pass": lambda d: d["flags"][0].update(counts_as="pass"),
+    "a flag that is not there": lambda d: d["flags"][0].update(flag="x"),
+    "another record": lambda d: d["flags"][0].update(record_sha256="1" * 64),
+    "no record": lambda d: d["flags"][0].update(record_sha256="1"),
+    "a flag settled twice": lambda d: d["flags"].append(dict(d["flags"][0])),
+    "a guard that did not refuse": lambda d: d["copy_guard"].append(
+        {
+            "run": J[0],
+            "comparison": "a",
+            "outcome": "stands",
+            "lead_note": None,
+            **{
+                k: d["flags"][0][k]
+                for k in ("record_sha256", "checker", "when", "words", "evidence")
+            },
+        }
+    ),
+    "flags that are no list": lambda d: d.update(flags={}),
+}
+
+
+@pytest.mark.parametrize("case", SETTLEMENT_FAULT)
+def test_settlements_that_cannot_be_used(benches, case):
+    bench = benches("integrated")
+    record = bench.score(lambda r: extra_row(r[J[2]], "junction_K", "junction_5")).record
+    data, records = bench.settled(record, counts_as="fail")
+    assert Settlements(copy.deepcopy(data), "x", records).flags
+    SETTLEMENT_FAULT[case](data)
+    with pytest.raises(SettlementFault):
+        Settlements(data, "x", records)
+
+
+def test_a_lifted_refusal_needs_the_leads_note(benches):
+    bench = benches("jupiter")
+    record = {"flags_to_settle": [], "copy_guard": [{"run": H[1], "comparison": "a"}]}
+    for outcome, note, good in (
+        ("stands", False, True),
+        ("lifted", True, True),
+        ("stands", True, False),
+        ("lifted", False, False),
+        ("x", False, False),
+    ):
+        data, records = bench.settled(record, outcome=outcome if outcome != "x" else "stands")
+        data["copy_guard"][0]["outcome"] = outcome
+        if not note:
+            data["copy_guard"][0]["lead_note"] = None
+        elif data["copy_guard"][0]["lead_note"] is None:
+            data["copy_guard"][0]["lead_note"] = {
+                "path": "n.md",
+                "sha256": "0" * 64,
+                "date": "2026-11-26",
+                "words": "lifted",
+            }
+        if good:
+            Settlements(data, "x", records)
+        else:
+            with pytest.raises(SettlementFault):
+                Settlements(data, "x", records)
+
+
+def test_the_leads_note_is_hashed(benches, tmp_path, monkeypatch):
+    """A lifted refusal names the lead's note by its path and sha256, in the settlements' file
+    (`--settlements`). The judge hashes the note's bytes, and opens it no further.
+    """
+    bench = benches("jupiter")
+    record = {"flags_to_settle": [], "copy_guard": [{"run": H[1], "comparison": "a"}]}
+    data, records = bench.settled(record, outcome="lifted")
+    note = tmp_path / "note.md"
+    note.write_text("lifted, by the lead")
+    monkeypatch.chdir(tmp_path)
+    for path, digest, good in (
+        ("note.md", strictjson.sha256(note.read_bytes()), True),
+        ("note.md", "0" * 64, False),
+        ("absent.md", "0" * 64, False),
+    ):
+        data["copy_guard"][0]["lead_note"].update(path=path, sha256=digest)
+        written = tmp_path / f"settlements-{path}-{digest[:4]}.json"
+        sha = strictjson.dump(written, data)
+        if good:
+            assert read_settlements(written, sha, records).guard
+        else:
+            with pytest.raises(SettlementFault):
+                read_settlements(written, sha, records)
+
+
+# ----- C0 -----
+
+ST9 = "ST9 the schedule is not applied"
+
+
+def printed(name, *path, **numbers):
+    """Change printed numbers of `integrated` in a data file."""
+
+    def alter(reg):
+        block = getattr(reg, name)["worlds"]["integrated"]
+        for key in path:
+            block = block[key]
+        block.update(numbers)
+
+    return alter
+
+
+C0_FAULT = {
+    "a scale": (
+        "scales",
+        lambda reg: reg.inputs["worlds"]["cell"]["scales"].update(pump=0.0020000001),
+    ),
+    "an amount reference": (
+        "scales",
+        lambda reg: reg.inputs["worlds"]["base"]["amount_refs"].update(voltage=2900.0),
+    ),
+    "a volume of the block": (
+        "definitions",
+        lambda reg: reg.inputs["worlds"]["integrated"]["ionic"]["cells"]["cell_0"].update(
+            volume_pL=0.46
+        ),
+    ),
+    "a seed": (
+        "definitions",
+        lambda reg: reg.inputs["worlds"]["base"]["pools"]["cell_1"]["seeds"].__setitem__(2, 1),
+    ),
+    "a literal block": (
+        "literal_blocks",
+        lambda reg: reg.inputs["worlds"]["cell"]["ionic"].update(end_s=0.03),
+    ),
+    "a run": ("run_list", lambda reg: reg.runs["integrated h=5e-05"].update(step_s=4e-05)),
+    "a path": ("paths", lambda reg: reg.paths["worlds"]["cell"]["s1"]["cell_0"]["0"].pop()),
+    "an exposure": (
+        "exposures",
+        lambda reg: reg.paths["worlds"]["base"]["s0"]["cell_1"]["2"][0].__setitem__(0, 0.0003),
+    ),
+    "a pinned manifest": (
+        "pins",
+        lambda reg: reg.legacy["captures"].update(science_manifest_sha256="0" * 64),
+    ),
+    "a snapshot's record": (
+        "pins",
+        lambda reg: reg.legacy["integrated_capture"].update(snapshot_manifest_sha256="0" * 64),
+    ),
+    "a planted file": (
+        "plant_files",
+        lambda reg: reg.manifest["runs"][3]["outputs_sha256"].update({"run/run.json": "0" * 64}),
+    ),
+    "a declared change": (
+        "plant_files",
+        lambda reg: reg.manifest["runs"][3]["modify"][0].update(mul=1.02),
+    ),
+    "a mechanism's home": (
+        "mechanisms",
+        lambda reg: reg.margins["worlds"]["cell"]["mechanisms"]["channel kinetics"].pop("gate_h"),
+    ),
+    "a key": ("spec_keys", lambda reg: reg.margins.update(extra=1)),
+    "a printed class": (
+        "legacy_classes",
+        lambda reg: reg.legacy["worlds"]["integrated"]["entries"]["voltage"].update(
+            {"class": "resolved"}
+        ),
+    ),
+    "a registered distance": (
+        "engine_plants",
+        lambda reg: reg.margins["worlds"]["base"]["structural"][
+            "ST6 availability on the other cell's channel"
+        ]["channel_K"].update(distance=2.9e-07),
+    ),
+    "a published count": ("counts", lambda reg: reg.worlds["integrated"].entries.pop()),
+    "a printed difference": ("legacy_classes", printed("legacy", "entries", "voltage", d1=1e-16)),
+    "a printed ratio": ("margins", printed("margins", "entries", "junction_K", ratio=0.009251)),
+    "a printed margin": ("margins", printed("margins", "entries", "voltage", margin=24410.0)),
+    "a printed largest": ("margins", printed("margins", "entries", "voltage", largest=0.02058)),
+    "a planted distance": (
+        "structural",
+        printed("margins", "structural", ST9, "junction_K", distance=2.809e-05),
+    ),
+}
+
+
+def test_C0_reads_a_world_of_one_run(benches):
+    """A rehearsal's world may have captures and no family of three: the same classes, identities
+    and padding are read.
+    """
+    benches("integrated")
+    found = []
+    for families in (True, False):
+        reg = Registration()
+        reg.worlds = {"integrated": reg.worlds["integrated"]}
+        reg.families = {"integrated": reg.families["integrated"]} if families else {}
+        made = C0(reg)
+        made.legacy_classes()
+        made.reference_identities()
+        made.padding()
+        found.append([(k.name, k.checked, k.faults) for k in made.clauses])
+    assert found[0] == found[1]
+    assert [(name, faults) for name, _, faults in found[0]] == [
+        ("legacy_classes", []),
+        ("reference_identities", []),
+        ("padding", []),
+    ]
+
+
+@pytest.mark.parametrize(
+    "order, printed_as, registered, rehearsal",
+    [
+        (-0.4849, -0.48, True, True),  # two decimals
+        (-0.4849, -0.485, False, True),  # three digits
+        (-0.4849, -0.49, False, False),
+        (12.344, 12.34, True, True),
+        (12.344, 12.3, False, True),
+        (12.344, 12.4, False, False),
+        (None, None, True, True),
+        (2.0, None, False, False),
+        (None, 2.0, False, False),
+    ],
+)
+def test_an_order_is_printed_at_two_decimals(order, printed_as, registered, rehearsal):
+    """A rehearsal's file may print three digits. The registered file does not."""
+    assert same_order(order, printed_as, False) is registered
+    assert same_order(order, printed_as, True) is rehearsal
+
+
+OPENED, WATCHED = [], [False]
+PART_2 = ("PART2.md", "PART2_BLOCKS.md", "PART2_EXPORTER.md", "inputs_part2.json")
+
+
+def test_C0_reads_the_amendments_and_opens_nothing_of_part_2(tmp_path):
+    """The exporter's copy is a text of Part 1, and word for word the amendment's. The folder may
+    hold Part 2's files: C0 takes every file by its name, and opens none of them.
+    """
+    made = C0(Registration())
+    for name in made.texts():
+        (tmp_path / name).write_text((SPEC / name).read_text())
+    for name in PART_2:
+        (tmp_path / name).mkdir()  # to open one is an error
+    made.reg.folder = tmp_path
+    if not WATCHED[0]:
+        sys.addaudithook(lambda event, args: event == "open" and OPENED.append(str(args[0])))
+        WATCHED[0] = True
+    OPENED.clear()
+    assert sorted(made.held_amendments()) == sorted([*c.AMENDMENTS, c.EXPORTER_COPY])
+    for clause in (made.amendments, made.literal_blocks, made.run_list, made.spec_keys):
+        clause()
+    assert [k.faults for k in made.clauses] == [[], [], [], []]
+    assert any(c.EXPORTER_COPY in name for name in OPENED)
+    assert not any("part2" in name.lower() for name in OPENED)
+    copied, third = tmp_path / c.EXPORTER_COPY, tmp_path / "AMENDMENT-3-2026-11-26.md"
+    honest = copied.read_text()
+    for alter in (
+        lambda: copied.write_text(honest.replace("a departing echo", "an echo", 1)),
+        lambda: copied.write_text(honest + "\n## 3. A retry run\n\nOne more item.\n"),
+        lambda: third.write_text("# Amendment 3\n"),
+    ):
+        copied.write_text(honest)
+        third.unlink(missing_ok=True)
+        alter()
+        made.amendments()
+        assert len(made.clauses[-1].faults) == 1
+
+
+def test_C0_pins_three_files_and_opens_none_of_them(tmp_path, monkeypatch):
+    """Amendment 2, item 5 (f): by their sha256 alone, and an absent or another one is a fault."""
+    good = C0(Registration())
+    good.pinned_files()
+    if good.clauses[-1].faults:
+        pytest.skip("the outputs are not here")
+    assert len(good.pinned) >= 3
+
+    def faults(alter):
+        made = C0(Registration())
+        alter(made)
+        made.pinned_files()
+        return made.clauses[-1].faults
+
+    def outputs(made):
+        return made.reg.manifest["pool_plants"][0]
+
+    assert faults(lambda m: outputs(m)["outputs_sha256"].update({"pool_plants.json": "0" * 64}))
+    assert faults(lambda m: outputs(m).update(output_folder=str(tmp_path)))  # absent
+    assert faults(lambda m: m.reg.manifest["pool_plants"].pop())
+    monkeypatch.setattr(C0, "_object", lambda self, revision, name: b"another script")
+    assert faults(lambda m: None)
+    monkeypatch.undo()
+    assert faults(lambda m: setattr(m, "root", tmp_path))  # no repository there
+
+    def another_table(made):
+        for name in made.texts():
+            text = (SPEC / name).read_text()
+            (tmp_path / name).write_text(text.replace("fe59ed4d", "fe59ed4e", 1))
+        made.reg.folder = tmp_path
+
+    assert faults(another_table)  # the digests are read from the amendment's table
+    assert [name for name, _, _ in pins_of((SPEC / c.AMENDMENTS[-1]).read_text())] == [
+        "validation/betse/spatial_cluster/reference.py",
+        "pool_plants.json",
+        "pool_plants2.json",
+    ]
+
+
+@pytest.mark.parametrize("case", C0_FAULT)
+def test_C0_names_a_fault(benches, case):
+    """Every clause is able to fail: one changed datum, and its clause names it."""
+    benches("integrated")
+    clause, alter = C0_FAULT[case]
+    made = C0(Registration(profile=copy.deepcopy(PART1)))
+    alter(made.reg)
+    kept = {"engine_plants": ("base s0 w2", "jupiter_baseline")}.get(clause, ("integrated",))
+    if clause in ("engine_plants", "margins", "structural"):
+        made.reg.families = {k: v for k, v in made.reg.families.items() if k in kept}
+        if clause == "engine_plants":
+            made.reg.only = lambda run: run["family"] in kept
+        else:
+            made.reg.worlds = {"integrated": made.reg.worlds["integrated"]}
+            worlds = made.reg.margins["worlds"]
+            made.reg.margins["worlds"] = {"integrated": worlds["integrated"]}
+        made.legacy_classes()
+    try:
+        getattr(made, clause)()
+    except Exception as error:  # C0.run turns what cannot go on into a fault
+        assert "0" * 64 in str(error), (case, error)
+    else:
+        faults = [f for f in made.clauses[-1].faults if "published one" not in f]
+        assert len(faults) == 1 if "printed" in case or case == "a planted distance" else faults
+
+
+# ----- files -----
+
+
+def written(tmp_path, bench, consumer="integrated"):
+    """The fabricated table of a consumer, its SHA256SUMS and a strings note, on disk."""
+    cli.write_tables(tmp_path / "table", {consumer: bench.tables[consumer]})
+    strictjson.dump(tmp_path / "strings.json", bench.note_data)
+    strictjson.dump(tmp_path / "c0.json", bench.c0)
+    return tmp_path / "table"
+
+
+def test_files_that_are_refused_whole(benches, tmp_path):
+    bench = benches("integrated")
+    folder = written(tmp_path, bench)
+    path = folder / "table_integrated.json"
+    text, sums = path.read_text(), (folder / "SHA256SUMS").read_text()
+
+    def reasons(content=text, sums_text=sums):
+        path.write_text(content)
+        (folder / "SHA256SUMS").unlink(missing_ok=True)
+        if sums_text is not None:
+            (folder / "SHA256SUMS").write_text(sums_text)
+        tables = TableSet.read(folder, ["integrated"])
+        return tables, tables.files["integrated"].refusals
+
+    assert reasons()[1] == []
+    doubled = text.replace('"kind":', '"kind": "x",\n "kind":', 1)
+    assert "duplicate key" in reasons(doubled, sums)[1][-1]
+    assert "departs" in reasons(text + " ", sums)[1][0]
+    assert "missing from SHA256SUMS" in reasons(text, "0" * 64 + "  table_other.json\n")[1][0]
+    tables, found = reasons(text, None)
+    assert found == [] and tables.flags[0][0] == "SHA256SUMS"
+    for old, new in (
+        ('"part": 1', '"part": 2'),
+        ('"fmol"', '"mol"'),
+        ('"consumer": "integrated"', '"consumer": "cell"'),
+        (c.TABLE_KIND, "x"),
+        ('"missing": []', '"absent": []'),
+        ('"runs": {', '"entries": {'),
+        ('"units": {', '"unit": {'),
+        ('"kind": ', '"kinds": '),
+        ('"part": 1', '"part": true'),
+    ):
+        assert old in text and reasons(text.replace(old, new, 1), None)[1], new
+    # A key beyond the six is recorded, and refuses nothing.
+    assert reasons(text, None)[0].files["integrated"].flags == [
+        ["extra top-level keys", ["fabricated"]]
+    ]
+    assert reasons("{", None)[1]
+    tables, _ = reasons(text + " ", sums)
+    state = scoring.Tables(bench.reg, bench.note, tables)
+    record = scoring.Stage2(
+        state, bench.c0, scoring.stage1(state, bench.c0, {}), bench.captures, bench.planted
+    ).run()
+    block = record["consumers"]["integrated"]
+    assert (
+        block["verdict"] == OPEN
+        and "its file is refused" in block["sets"]["all"]["inconclusive"][0]
+    )
+    assert {e["outcome"] for e in record["entries"] if e["judged"]} == {UNFORMED}
+
+
+def test_the_fabricated_tables_are_the_same_bytes_each_time(benches, tmp_path):
+    """Amendment 2, item 9.5: the judge keeps no folder of its honest tables. The program gives the
+    same bytes each time, each table says that it is fabricated, and the sha256 of what is used is
+    the sha256 of what is written.
+    """
+    bench = benches("integrated")
+    made = fabricate.Fabricator(bench.reg, bench.captures, bench.planted)
+    digests = fabricate.digests(made.tables()[0])
+    assert digests == fabricate.digests(bench.tables)
+    assert all(t["fabricated"] == fabricate.MARK for t in bench.tables.values())
+    cli.write_tables(tmp_path, bench.tables)
+    written_files = hash_folder(tmp_path)["files"]
+    assert written_files["table_integrated.json"] == digests["table_integrated.json"]
+    retry = [made.retry_tables(["integrated h=1.25e-05 retry"]) for _ in range(2)]
+    assert fabricate.digests(retry[0]) == fabricate.digests(retry[1])
+    assert retry[0]["integrated"]["fabricated"] == fabricate.MARK
+
+
+def test_the_profile_names_the_switch_and_where_a_change_begins(benches):
+    """Amendment 2, item 6. The registered runs have no profile: the names are 9.1's."""
+    bench = benches("integrated")
+    other = copy.copy(bench)
+    other.reg = copy.copy(bench.reg)
+    other.reg.profile = {**bench.reg.profile, "off_grid_flag": "switched"}
+    q = other.score(lambda runs: runs[J[0]].update(switched=True))
+    assert q.cause(J[0], "kind harness") and other.reg.off_grid_flag == "switched"
+    q = other.score(lambda runs: runs[J[0]].update(off_grid=True))
+    assert not q.run(J[0])["refused"]
+    bare = {k: v for k, v in PART1.items() if k != "off_grid_flag"}
+    assert Registration(profile=bare, only=KEEP["integrated"]).off_grid_flag == "off_grid"
+    other.reg.profile = {**bench.reg.profile, "declared_change_begins_at": "elsewhere"}
+    with pytest.raises(ValueError, match="begins at"):
+        other.reg.expected_block(bench.reg.runs[J[0]])
+
+
+def test_nan_and_infinity_are_read():
+    assert math.isnan(strictjson.loads(b'{"a": NaN}')["a"]) and strictjson.loads(b"[Infinity]") == [
+        math.inf
+    ]
+    with pytest.raises(strictjson.DuplicateKey):
+        strictjson.loads(b'{"a": {"b": 1, "b": 1}}')
+
+
+# ----- the order of the stages -----
+
+
+def test_the_order_of_the_stages(benches, tmp_path, monkeypatch, capsys):
+    """power.json comes from the tables and C0 alone, and stage 2 starts only from its recorded
+    sha256 and the recorded tables.
+    """
+    bench = benches("integrated")
+    folder = written(tmp_path, bench)
+    monkeypatch.setattr(cli, "registration", lambda args: bench.reg)
+    first = [
+        "--tables",
+        str(folder),
+        "--tables-record",
+        str(tmp_path / "hashes.json"),
+        "--strings",
+        str(tmp_path / "strings.json"),
+        "--c0",
+        str(tmp_path / "c0.json"),
+    ]
+    power, out = tmp_path / "power.json", tmp_path / "judged"
+
+    def stage2(digest, where=out):
+        return cli.main(
+            ["stage2", *first, "--power", str(power), "--power-sha256", digest, "--out", str(where)]
+        )
+
+    assert cli.main(["hash", "--tables", str(folder), "--out", str(tmp_path / "hashes.json")]) == 0
+    other = tmp_path / "other"
+    cli.write_tables(other, {"integrated": {**bench.tables["integrated"], "note": 1}})
+    changed = [str(other) if item == str(folder) else item for item in first]
+    assert cli.main(["stage1", *changed, "--out", str(power)]) == 2  # not the recorded tables
+
+    def closed(*args, **kwargs):
+        raise AssertionError("stage 1 opened the reference side")
+
+    with monkeypatch.context() as patch:
+        for name in ("Captures", "Planted"):
+            patch.setattr(cli, name, closed)
+        assert cli.main(["stage1", *first, "--out", str(power)]) == 0
+        assert stage2("0" * 64) == 2  # refused before it opens the reference side
+    digest = strictjson.sha256(power.read_bytes())
+    with pytest.raises(FileExistsError):
+        cli.main(["stage1", *first, "--out", str(power)])  # nothing is overwritten
+
+    table = folder / "table_integrated.json"
+    honest = table.read_bytes()
+    table.write_bytes(honest.replace(b"0.02", b"0.020", 1))
+    assert stage2(digest) == 2  # the tables are not the recorded ones
+    table.write_bytes(honest)
+    changed = json.loads(power.read_text())
+    changed["families"]["integrated"]["junction_K"]["beta"] *= 2
+    power.write_text(json.dumps(changed))
+    assert (
+        stage2(strictjson.sha256(power.read_bytes())) == 2
+    )  # not what stage 1 makes of these tables
+    power.unlink()
+    assert (
+        cli.main(["stage1", *first, "--out", str(power)]) == 0
+        and strictjson.sha256(power.read_bytes()) == digest
+    )
+    assert stage2(digest) == 0
+    record = json.loads((out / "record.json").read_text())
+    assert (
+        record["hashes"]["power_sha256"] == digest
+        and record["consumers"]["integrated"]["verdict"] == PASS
+    )
+    assert json.loads((out / "retry_owed.json").read_text())["runs"] == []
+    capsys.readouterr()
+
+
+def test_the_retry_by_command(benches, tmp_path, monkeypatch, capsys):
+    """The retry's two stages read the first pass's files by their recorded sha256, and refuse
+    others.
+    """
+    bench = benches("integrated")
+    written(tmp_path, bench)
+    monkeypatch.setattr(cli, "registration", lambda args: bench.reg)
+    cli.write_tables(tmp_path / "owed", {"integrated": perturbed(bench, True)["integrated"]})
+    T, R = tmp_path / "owed", tmp_path / "table-retry"
+    first = [
+        "--tables",
+        str(T),
+        "--tables-record",
+        str(tmp_path / "h.json"),
+        "--strings",
+        str(tmp_path / "strings.json"),
+        "--c0",
+        str(tmp_path / "c0.json"),
+    ]
+    digest = lambda name: strictjson.sha256((tmp_path / name).read_bytes())  # noqa: E731
+    assert cli.main(["hash", "--tables", str(T), "--out", str(tmp_path / "h.json")]) == 0
+    assert cli.main(["stage1", *first, "--out", str(tmp_path / "power.json")]) == 0
+    power = ["--power", str(tmp_path / "power.json"), "--power-sha256", digest("power.json")]
+    assert cli.main(["stage2", *first, *power, "--out", str(tmp_path / "judged")]) == 0
+    owed = json.loads((tmp_path / "judged/retry_owed.json").read_text())
+    assert owed["runs"] == ["integrated h=1.25e-05 retry"]
+    cli.write_tables(
+        R, fabricate.Fabricator(bench.reg, bench.captures, bench.planted).retry_tables(owed["runs"])
+    )
+    assert cli.main(["hash", "--tables", str(R), "--out", str(tmp_path / "hr.json")]) == 0
+
+    recorded = digest("judged/retry_owed.json")
+
+    def again(command, *more, owed_digest=recorded):
+        return cli.main(
+            [
+                command,
+                *first,
+                *power,
+                "--record",
+                str(tmp_path / "judged/record.json"),
+                "--owed",
+                str(tmp_path / "judged/retry_owed.json"),
+                "--owed-sha256",
+                owed_digest,
+            ]
+            + ["--retry-tables", str(R), "--retry-record", str(tmp_path / "hr.json"), *more]
+        )
+
+    assert again("retry-stage1", "--out", str(tmp_path / "p2.json"), owed_digest="0" * 64) == 2
+    assert again("retry-stage1", "--out", str(tmp_path / "p2.json")) == 0
+    assert (
+        again(
+            "retry-stage2",
+            "--power-retry",
+            str(tmp_path / "p2.json"),
+            "--power-retry-sha256",
+            "0" * 64,
+            "--out",
+            str(tmp_path / "final"),
+        )
+        == 2
+    )
+    assert (
+        again(
+            "retry-stage2",
+            "--power-retry",
+            str(tmp_path / "p2.json"),
+            "--power-retry-sha256",
+            digest("p2.json"),
+            "--out",
+            str(tmp_path / "final"),
+        )
+        == 0
+    )
+    verdict = json.loads((tmp_path / "final/verdict.json").read_text())
+    assert (
+        verdict["consumers"]["integrated"]["verdict"] == PASS
+        and verdict["pass_of_the_judgement"] == 2
+        and verdict["retry_owed"] == []
+    )
+    capsys.readouterr()
+
+
+def test_settlements_by_command(benches, tmp_path, monkeypatch, capsys):
+    """Stage 2 reads settlements by their recorded sha256, beside the record that they settle."""
+    bench = benches("integrated")
+    written(tmp_path, bench)
+    tables = bench.altered(lambda r: extra_row(r[J[2]], "junction_K", "junction_5"))
+    cli.write_tables(tmp_path / "flagged", tables)
+    monkeypatch.setattr(cli, "registration", lambda args: bench.reg)
+    T = tmp_path / "flagged"
+    common = [
+        "--tables",
+        str(T),
+        "--tables-record",
+        str(tmp_path / "h.json"),
+        "--strings",
+        str(tmp_path / "strings.json"),
+        "--c0",
+        str(tmp_path / "c0.json"),
+    ]
+    digest = lambda path: strictjson.sha256(path.read_bytes())  # noqa: E731
+    assert cli.main(["hash", "--tables", str(T), "--out", str(tmp_path / "h.json")]) == 0
+    assert cli.main(["stage1", *common, "--out", str(tmp_path / "power.json")]) == 0
+    power = ["--power", str(tmp_path / "power.json")]
+    power += ["--power-sha256", digest(tmp_path / "power.json")]
+
+    def stage2(where, *more):
+        out = str(tmp_path / where)
+        return cli.main(["stage2", *common, *power, *more, "--out", out])
+
+    assert stage2("judged") == 0
+    assert "pending on 1 flag(s)" in capsys.readouterr().out
+    record = tmp_path / "judged/record.json"
+    held = json.loads(record.read_text())
+    data, _ = bench.settled(held, counts_as="by the rule")
+    data["flags"][0]["record_sha256"] = digest(record)
+    strictjson.dump(tmp_path / "settlements.json", data)
+    sha = digest(tmp_path / "settlements.json")
+    path = ["--settlements", str(tmp_path / "settlements.json")]
+    said, beside = ["--settlements-sha256", sha], ["--settled-record", str(record)]
+    assert stage2("a", *path, "--settlements-sha256", "0" * 64, *beside) == 2
+    assert stage2("a", *path, *said) == 2  # no record beside it
+    assert stage2("a", *beside) == 2  # a record, and no settlements
+    strictjson.dump(tmp_path / "other.json", {**held, "hashes": {**held["hashes"], "spec": {}}})
+    data["flags"][0]["record_sha256"] = digest(tmp_path / "other.json")
+    strictjson.dump(tmp_path / "of_other.json", data)
+    other = ["--settlements", str(tmp_path / "of_other.json")]
+    other += ["--settlements-sha256", digest(tmp_path / "of_other.json")]
+    other += ["--settled-record", str(tmp_path / "other.json")]
+    assert stage2("a", *other) == 2  # a judgement of other files
+    assert stage2("final", *path, *said, *beside) == 0
+    # It is written once: the first judgement's stands, since no copy waited for the checker.
+    assert (tmp_path / "judged/retry_owed.json").exists()
+    assert not (tmp_path / "final/retry_owed.json").exists()
+    held["retry_owed"]["runs"] = ["x"]
+    record.write_bytes(strictjson.encode(held))
+    data["flags"][0]["record_sha256"] = digest(record)
+    strictjson.dump(tmp_path / "again.json", data)
+    again = ["--settlements", str(tmp_path / "again.json")]
+    again += ["--settlements-sha256", digest(tmp_path / "again.json")]
+    assert stage2("a", *again, *beside) == 2  # not what is written already
+    verdict = json.loads((tmp_path / "final/verdict.json").read_text())
+    assert verdict["consumers"]["integrated"]["verdict"] == PASS
+    assert verdict["hashes"]["settlements_sha256"] == sha and verdict["part_1"]["passes"]
+    capsys.readouterr()
+
+
+def test_stage_1_needs_a_passing_C0(benches):
+    bench = benches("integrated")
+    state = scoring.Tables(bench.reg, bench.note, TableSet.from_data(bench.tables))
+    for change in ({"status": "fail"}, {"spec_sha256": {}}):
+        with pytest.raises(scoring.OrderFault):
+            scoring.stage1(state, {**bench.c0, **change}, {})
+    for alter in (
+        lambda note: note["runs"].pop(J[0]),
+        lambda note: note["labels"].update(rk4=""),
+        lambda note: note["runs"][J[0]]["laws"].append("x"),
+    ):
+        note = copy.deepcopy(bench.note_data)
+        alter(note)
+        with pytest.raises(scoring.OrderFault, match="strings note"):
+            scoring.Tables(bench.reg, StringsNote(note, "x"), TableSet.from_data(bench.tables))
+
+
+# ----- the structure-only mode and the rehearsal's mode -----
+
+
+def test_structure_only(benches, tmp_path):
+    bench = benches("integrated")
+    folder = written(tmp_path, bench)
+    found = structure.table_faults(folder)
+    assert found["faults"] == [] and found["kinds_of_run"] == {"ionic run": 3}
+    assert structure.nested([[True, False]], True) and not structure.nested([[True, 0]], True)
+    assert structure.nested([[1, 2.5]]) and not structure.nested([[1, True]])
+    entry = copy.deepcopy(bench.tables["integrated"]["runs"][J[0]])
+    for alter in (
+        drop("checks"),
+        put("rows", "pump_x", value={"m": [True]}),
+        put("source", "blas_threads", value="1"),
+        put("restart", value={}),
+        put("inputs", "cells", "cell_0", value={}),
+        drop("rows", "n_cell_Na"),  # sound in shape, and the registered reader cannot read it
+        drop("rows", "heat_junction", "junction_11"),
+        put("t", 0, value=math.nan),
+    ):
+        broken, out = copy.deepcopy(entry), structure.Faults()
+        alter(broken)
+        structure.entry_faults(broken, "x", out)
+        assert out.items
+
+
+def test_declared_changes_make_the_expected_run():
+    """Amendment 1, item 4: a run's own changes, else its plant's by `variant` (PLANTS 5)."""
+    reg = Registration(only=KEEP["base"])
+    run = reg.runs[B[2]]
+    honest, paths = reg.expected_block(run), reg.expected_paths(run)
+    item = {"path": ["channels", "channel_1", "abundance"], "value": 0.7}
+    changed = reg.expected_block({**run, "declared_change": [item]})
+    assert changed["channels"]["channel_1"]["abundance"] == 0.7 and changed != honest
+    changed["channels"]["channel_1"]["abundance"] = honest["channels"]["channel_1"]["abundance"]
+    assert changed == honest and reg.worlds["base"].block == honest
+    item = {"exchange_channels": ["cell_0", "cell_1"]}
+    swapped = reg.expected_paths({**run, "declared_change": [item]})
+    assert swapped == {"channel_0": paths["channel_1"], "channel_1": paths["channel_0"]}
+    assert reg.expected_paths(reg.runs[EP2]) == swapped
+    reg = Registration(only=KEEP["jupiter"])
+    found = reg.expected_block(reg.runs[EP1])["channels"]
+    assert all(v["max_permeability_m_per_s"] == 3e-10 * 1.01 for v in found.values())
+
+
+def test_a_profile_reads_a_rehearsal(tmp_path, benches):
+    """The rehearsal's path, on the registered files under a profile: C0's general clauses pass, and
+    the tables pass.
+    """
+    benches("integrated")
+    (tmp_path / "profile.json").write_text(json.dumps({**PART1, "not_blind": {}, "counts": {}}))
+    args = cli.parser().parse_args(
+        ["c0", "--profile", str(tmp_path / "profile.json"), "--out", "x"]
+    )
+    reg = cli.registration(args)
+    assert reg.rehearsal and reg.profile["not_blind"] == {}
+    made = C0(Registration(profile=reg.profile, rehearsal=True, only=KEEP["integrated"]))
+    made.scales()
+    made.reference_identities()
+    assert [clause.faults for clause in made.clauses] == [[], []]
+
+
+# ----- the echo alone -----
+
+
+def test_an_echo_of_the_inputs_departs_nowhere():
+    reg = Registration(only=KEEP["jupiter"])
+    for world in reg.worlds.values():
+        out = Echo()
+        compare_block(world.block, plants.reversed_maps(copy.deepcopy(world.block)), world, out)
+        assert out.departures == [] and out.extras == []
+
+
+def test_rows_are_matched_by_time_and_not_by_bits(benches):
+    bench = benches("integrated")
+    entry = copy.deepcopy(bench.tables["integrated"]["runs"][J[0]])
+    entry["t"] = [t + (1e-13 if t else 0.0) for t in entry["t"]]
+    rows = RunRows(bench.reg.worlds["integrated"], entry)
+    assert rows.get("junction_K", (0.0, 0.015)).shape == (2, 12)
+    assert hash_folder.__doc__
+
+
+# ----- the judge's plants -----
+
+
+def test_a_whole_amount_is_a_regions_or_else_a_cells():
+    """What JP10 writes without its point: a rehearsal's regions may hold no whole amount."""
+    amounts = {k: {"initial_amount_fmol": {"K": v}} for k, v in {"a": 29.28, "b": 61.0}.items()}
+    block = {"outside": {"bath": amounts["a"]}, "cells": {"cell_0": amounts["b"]}}
+    assert plants.whole_potassium(block)["K"] == 61.0
+    block["outside"]["far"] = {"initial_amount_fmol": {"K": 9.0}}
+    assert plants.whole_potassium(block)["K"] == 9.0
+
+
+def test_what_a_plant_fails_is_what_it_lists():
+    """Amendment 2, item 1: what a plant names, and what fails besides by the rule, and no more."""
+    named, by_rule = ("a", "x"), ("a", "y")
+    plant = plants.Plant("JP", "c", "", "", None, None, named=[named], by_rule=[by_rule])
+
+    class Found:
+        def __init__(self, *fails):
+            self.fails = lambda: list(fails)
+
+    for fails, good in (
+        ((named, by_rule), True),
+        ((named,), False),
+        ((by_rule,), False),
+        ((named, by_rule, ("b", "x")), False),
+    ):
+        ((_, found),) = plant.fails_as_listed(Found(*fails))
+        assert found is good
+    assert plants.Plant("JP", "c", "", "", None, None).fails_as_listed(Found(named)) == []
+
+
+def test_judge_plants_score_as_stated(benches):
+    """JP1 to JP27 (JP14 at h2, Amendment 2), on a subset of the registered runs."""
+    wanted = {"base s0 w0", "base s0 w1", "base s0 w2", "base s1 w0", "cell s0 w0", "cell s0 w1"}
+    bench = Bench(
+        lambda r: (
+            r["consumer"] in ("jupiter", "integrated")
+            or (
+                r["consumer"] in ("base", "cell")
+                and (r["family"] in wanted or (r["family"] is None and r["seed_index"] in (0, 1)))
+            )
+        )
+    )
+    name = "integrated h=1.25e-05 retry"
+    retry = fabricate.Fabricator(bench.reg, bench.captures, bench.planted).retry_tables([name])
+    args = (bench.reg, bench.note, bench.tables, bench.c0, bench.captures, bench.planted)
+    out = plants.run_plants(*args, retry=retry)
+    assert len(out["plants"]) == 29
+    assert [p["plant"] for p in out["plants"] if not p["scores_as_stated"]] == []
+    # What fails besides, by rule, is listed (Amendment 2, items 1 and 11).
+    listed = [p for p in out["plants"] if "fails_besides_by_rule" in p]
+    assert {p["plant"]: p["fails_besides_by_rule"] for p in listed} == {
+        "JP1": [(H[0], "restart leak_K")],
+        "JP2": [(H[0], "restart heat_membrane")],
+        "JP7": [(H[0], "restart heat_junction")],
+        "JP19": [(H[0], "restart junction_K")],
+        "JP26": [(name, "balance of regions, Na")],
+    }
+    # The self-test's rows of the four flag paths, which no judge's plant covers.
+    found = flag_rows.rows(*args, retry)
+    assert [r["where"] for r in found] == ["reading 12", "reading 24", "item 5 (a)", "reading 25"]
+    assert all(r["scores_as_stated"] for r in found)
+    assert [len(r["checks"]) for r in found] == [16, 16, 16, 13]
+    # Without a retry run JP26 is not formed, and that is no fault.
+    (alone,) = plants.run_plants(*args, only={"JP26"})["plants"]
+    assert alone["scores_as_stated"] is None and alone["not_formed"] == f"no {name} is there"

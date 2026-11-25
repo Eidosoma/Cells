@@ -1,9 +1,11 @@
 """What inputs.json registers: its worlds, its runs, their steps and their compared times, and the
-grid rule (spec/SPEC.md §4). inputs_rehearsal.json has the same schema and is read by the same code.
+grid rule (spec/SPEC.md §4). inputs_part2.json and inputs_rehearsal.json have the same schema and
+are read by the same code.
 
 Nothing here reads a record, and every number is inputs.json's own decimal.
 """
 
+import copy
 import hashlib
 import json
 import re
@@ -13,10 +15,18 @@ from pathlib import Path
 FOLDER = Path(__file__).resolve().parent
 ROOT = FOLDER.parents[1]
 REGISTERED = FOLDER / "spec/inputs.json"
+REGISTERED_PART2 = FOLDER / "spec/inputs_part2.json"
 SCHEMA = "ensemble-reexpression inputs, version 1"
 EPS = 2.0**-52
 MATCH_S = 1e-12  # A time matches a registered one within this (spec/SPEC.md §4).
 INVENTED = "inv_"  # The rehearsal's and the builder's own worlds and runs (spec/SPEC.md §8).
+
+# A world's blocks: the inner model's own, and those that Part 2 has beside it (PART2_BLOCKS).
+INNER = "ionic"
+BESIDE = ("stores", "plasma_transport", "calcium_channels", "ip3_release", "calcium_controls")
+# What a world's entry may say of its declaration that is no part of its block: the potentials of
+# its calcium pumps' fuel rows, which a rehearsal's world gives in place of the generator's own.
+FUEL_POTENTIALS = "fuel_standard_mu_RT"
 
 IONIC, DRIVEN, POOL = "ionic", "driven", "pool"
 RUN_KEYS = {
@@ -100,7 +110,20 @@ class World:
 
     @property
     def block(self):
-        return self.raw["ionic"]
+        """The world's one block: the inner model's keys, and Part 2's beside them."""
+        return flat(self.root)
+
+    @property
+    def root(self):
+        """What a declared change's path begins in: the inner model's block in Part 1, and the map
+        of a world's blocks in Part 2."""
+        blocks = {key: self.raw[key] for key in (INNER, *BESIDE) if key in self.raw}
+        return blocks if len(blocks) > 1 else blocks[INNER]
+
+    @property
+    def told(self):
+        """What the entry says of the world's declaration that is no part of its block."""
+        return {key: self.raw[key] for key in (FUEL_POTENTIALS,) if key in self.raw}
 
     @property
     def pools(self):
@@ -118,13 +141,17 @@ class World:
     @property
     def history_times(self):
         """The compared times of every readout but the potentials, where the entry gives a grid of
-        them: i x spacing from its first to its last."""
+        them, or several one after another: i x spacing from each one's first to its last."""
         grid = self.raw.get("history_times")
         if grid is None:
             return None
-        spacing = grid["spacing_s"]
-        first, last = round(grid["first_s"] / spacing), round(grid["last_s"] / spacing)
-        return tuple(i * spacing for i in range(first, last + 1))
+        grids = [grid] if "spacing_s" in grid else sorted(grid.values(), key=lambda g: g["first_s"])
+        out = []
+        for each in grids:
+            spacing = each["spacing_s"]
+            first, last = round(each["first_s"] / spacing), round(each["last_s"] / spacing)
+            out += [i * spacing for i in range(first, last + 1)]
+        return tuple(out)
 
     @property
     def potential_times(self):
@@ -140,6 +167,31 @@ class World:
         if times is None:
             times = [0.0, *self.raw["summary_times_s"], self.end]
         return tuple(merged([0.0, *times]))
+
+
+def flat(root):
+    """One block of a world's root: the inner model's keys, and Part 2's beside them."""
+    if INNER not in root:
+        return root
+    return {**root[INNER], **{key: root[key] for key in BESIDE if key in root}}
+
+
+def same_as(entries, name):
+    """A world's entry, with the blocks of the world that it says it is the same as (a cluster is
+    its child's, but for the channels' schedules, which are a pool's path: inputs_part2.json)."""
+    entry = entries[name]
+    if "same_as" not in entry:
+        return entry
+    child = entries.get(entry["same_as"])
+    if child is None or "same_as" in child:
+        raise InputsError(f"{name!r} is the same as {entry['same_as']!r}, which is no world")
+    blocks = {key: copy.deepcopy(child[key]) for key in (INNER, *BESIDE) if key in child}
+    if set(blocks) & set(entry):
+        raise InputsError(f"{name!r} has blocks of its own beside {entry['same_as']!r}'s")
+    blocks[INNER]["controls"]["channel"] = entry["controls_channel"]
+    if entry["final_s"] != blocks[INNER]["end_s"]:
+        raise InputsError(f"{name!r} ends at {entry['final_s']!r} s and its child does not")
+    return blocks | entry
 
 
 def merged(times):
@@ -207,9 +259,9 @@ class Inputs:
         if self.raw.get("schema") != SCHEMA:
             raise InputsError(f"{path}: its schema is not {SCHEMA!r}")
         self.part = self.raw["part"]
+        entries = {name: same_as(self.raw["worlds"], name) for name in self.raw["worlds"]}
         self.worlds = {
-            name: World(name, entry["consumer"], entry)
-            for name, entry in self.raw["worlds"].items()
+            name: World(name, entry["consumer"], entry) for name, entry in entries.items()
         }
         self.runs = {}
         for entry in self.raw["runs"]:
@@ -281,6 +333,13 @@ class Inputs:
             retry=True,
         )
 
+    def retries(self):
+        """The retry's run of every family, by the rule of its name."""
+        return tuple(
+            self.retry(f"{name} h={runs[-1].step_s / 2!r} retry")
+            for name, runs in self.families().items()
+        )
+
     def run(self, name):
         """The run of this name, a retry's among them."""
         if name in self.runs:
@@ -294,6 +353,8 @@ class Inputs:
         note = read_json(path)
         if note.get("kind") != "ensemble-reexpression retry owed, version 1":
             raise InputsError(f"{path} is no retry note")
+        if note.get("part") != self.part:
+            raise InputsError(f"{path} is a retry note of part {note.get('part')!r}")
         return tuple(self.retry(name) for name in note["runs"])
 
 

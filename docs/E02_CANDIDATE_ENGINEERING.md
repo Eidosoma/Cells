@@ -1,5 +1,10 @@
 # E02 candidate engineering: bounded checked RK4
 
+> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names
+> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag
+> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay. Old records
+> pin this page's bytes by their hash: the pinned bytes are the tag's, without this note.
+
 D037 / NUM-005c2a, 2026-09-09. The user approved building and benchmarking a
 bounded RK4 candidate on short fixtures after the
 [A2 reference panel](../reports/NUM005C1_A2_REFERENCE_PANEL.md). This step does

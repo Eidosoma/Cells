@@ -1,6 +1,7 @@
 """The exporter: from the records of runs to the engine's table (spec/TABLE.md, spec/READOUTS.md).
 
     python -m validation.ensemble_reexpression.table export --runs DIR --output DIR [--owed FILE]
+        [--owed-sha256 HEX] [--inputs FILE]
     python -m validation.ensemble_reexpression.table check DIRECTORY [--strings NOTE]
 
 `export` writes one `table_<consumer>.json` for each consumer and their `SHA256SUMS`, and replaces
@@ -8,11 +9,16 @@ nothing. Each entry is made from one run's own record and from no other run: not
 difference, a ratio or an estimate. A world's block is read back from the definition that the engine
 parsed and ran (worlds.read), and never from inputs.json. `check` holds a folder of tables to the
 contract's keys and types, and to a strings note where one is given.
+
+**The retry's runs.** `--owed FILE` exports the runs that the judge's note lists, which were made
+after it. Where they were made up front with the batch (`run all --retries`), they stand apart and
+are exported with `--owed-sha256 HEX` too, and only if HEX is the note's own sha256.
 """
 
 import argparse
 import json
 import math
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -31,8 +37,10 @@ from validation.ensemble_reexpression.inputs import (
     read_json,
 )
 from validation.ensemble_reexpression.labels import LABELS, declared_strings, label, strings
+from validation.ensemble_reexpression.pieces import Pieces
 from validation.ensemble_reexpression.refusals import PARTIAL, SECOND_PASS
 from validation.ensemble_reexpression.run import RECORD, Folders, digest
+from validation.ensemble_reexpression.stores import TRACE_MM
 
 KIND = "ensemble-reexpression engine table, version 1"
 UNITS = {"amount": "fmol", "energy": "pJ", "potential": "V", "time": "s"}
@@ -77,11 +85,80 @@ def ionic_definition(attempt):
 
 
 def driven_cells(definition):
-    """The cells that have a channel, in the definition's order of cells: the k-th is the cell of
-    the k-th pool of a composed file (Amendment 1, items 3 and 7)."""
-    inside = {m["id"]: m["inside"] for m in definition["model"]["membranes"]}
-    held = {inside.get(c["membrane_id"]) for c in definition["model"]["channels"]}
-    return [c["id"] for c in definition["model"]["cells"] if c["id"] in held]
+    """The cells that have a channel (one that carries calcium apart), in the definition's order of
+    cells: the k-th is the cell of the k-th pool of a composed file (Amendment 1, items 3 and 7)."""
+    model, own = definition["model"], Pieces(definition).channels
+    inside = {m["id"]: m["inside"] for m in model["membranes"]}
+    held = {inside.get(c["membrane_id"]) for c in model["channels"] if c["id"] in own}
+    return [c["id"] for c in model["cells"] if c["id"] in held]
+
+
+def block(definition):
+    """The block of a definition as a table's `inputs` holds it."""
+    return worlds.shown(worlds.read(definition))
+
+
+def unnamed(p):
+    """{node: the rows of it that a block names no amount of}, for each node that has one: the
+    regions' are the rows that no ion's are, the stores' the fuel, a cell's none where it has a
+    store and a pump (PART2 §2.5). A store is named by its cell."""
+    pumped = {p.cell_of_patch.get(q["host"]) for q in p.store_pump.values()}
+    inside = {m["id"]: m["inside"] for m in p.model["membranes"]}
+    pumped |= {inside[membrane] for membrane in p.plasma_pump}
+    mixed = [s for s in p.chemical if s not in p.ionic]
+    out = {name: [s for s in p.species if s not in p.ionic] for name in p.regions}
+    out |= {f"store:{cell}": [s for s in p.species if s in p.fuel] for cell in p.store}
+    for cell in (c["id"] for c in p.model["cells"]):
+        rows = [] if cell in p.store else list(mixed)
+        rows += [] if cell in pumped else [s for s in p.species if s in p.fuel]
+        out |= {cell: rows} if rows else {}
+    return out
+
+
+def held(p, node, species):
+    """The concentration (mM) of a row at a node, which is named as `unnamed` names it."""
+    model = p.model
+    name = p.store[node[len("store:") :]] if node.startswith("store:") else node
+    (entry,) = (n for n in (*model["cells"], *model["extracellular"]) if n["id"] == name)
+    return entry["initial_amount_fmol"][species] / entry["volume_pL"]
+
+
+def beyond(definition):
+    """What a composite's definition holds beyond its block, for `definition` (PART2 §2.5). The
+    judge reads `species_rows`, `traces` and `entities` as echo: the rows declared, the rows at each
+    node that hold the trace, and how many of each entity there are. A row that the block does not
+    name at a node and that holds another concentration is in no list of `traces`, so it departs.
+    The concentrations themselves and the release's conditions are recorded."""
+    p = Pieces(definition)
+    if not p.composite:
+        return {}
+    model = p.model
+    own = {node: {s: held(p, node, s) for s in rows} for node, rows in unnamed(p).items()}
+    reactions = [o for o in model["operators"] if o["law"] == LABELS["local_reactions"]]
+    compartments = [o for o in model["operators"] if o["law"] == LABELS["compartment_law"]]
+    return {
+        "species_rows": sorted(p.species),
+        "traces": {
+            node: sorted(s for s, c in rows.items() if math.isclose(c, TRACE_MM, rel_tol=1e-14))
+            for node, rows in own.items()
+        },
+        "entities": {
+            "cells": len(model["cells"]),
+            "outside_nodes": len(model["extracellular"]),
+            "membranes": len(model["membranes"]),
+            "channels": len(model["channels"]),
+            "junctions": len(model["junctions"]),
+            "faces": len(model["faces"]),
+            "compartments": sum(len(o["compartments"]) for o in compartments),
+            "passive_routes": len(p.routes),
+            "species_conditions": len(model.get("species_conditions", ())),
+            "populations": len(p.populations),
+            "reactions": sum(len(o["reactions"]) for o in reactions),
+            "operators": len(model["operators"]),
+        },
+        "release_conditions": {cell: c["id"] for cell, c in p.release_condition.items()},
+        "trace_mM": own,
+    }
 
 
 def readable(read_back, *args):
@@ -93,8 +170,9 @@ def readable(read_back, *args):
 
 
 def unswitched(definition):
-    """A switch list without a switch: every channel of the world is a key (Amendment 2, 9.1)."""
-    return {channel["id"]: [] for channel in definition["model"]["channels"]}
+    """A switch list without a switch: every channel of the world is a key (Amendment 2, 9.1), the
+    ones that carry calcium apart, which no pool's availability touches (PART2 §1)."""
+    return {channel: [] for channel in Pieces(definition).channels}
 
 
 def assembly(definition, made_from, world_id):
@@ -178,8 +256,8 @@ def ionic_entry(world, run, record, attempt):
     parsed = record["definition"].get("fingerprint")
     if manifest.get("definition_sha256", parsed) != parsed:
         raise ExportError("the engine's record is of another definition than the one parsed")
-    inputs, declared = readable(worlds.read, definition), declared_strings(definition)
-    shown = {"ionic": definition}
+    inputs, declared = readable(block, definition), declared_strings(definition)
+    shown = {"ionic": definition} | readable(beyond, definition)
     if run.kind == DRIVEN:
         made_from = manifest.get("provenance", {}).get("inputs") or read(attempt / "inputs.json")
         if made_from is not None:
@@ -405,6 +483,9 @@ def entry(inputs, run, folders):
 def tables(inputs, folders, *, owed=None):
     """{consumer: its table}; with `owed`, the retry's runs alone."""
     runs = list(inputs.runs.values()) if owed is None else list(inputs.owed(owed))
+    early = [r.name for r in runs if r.retry and not folders.held and folders.made_early(r)]
+    if early:
+        raise ExportError(f"{early[0]!r} was made up front: it needs the sha256 of the retry note")
     out = {}
     for run in runs:
         table = out.setdefault(
@@ -626,6 +707,16 @@ def check(folder, note=None):
     return out
 
 
+def open_folders(args):
+    """The folders of the records to export. The retry's, made up front, are opened by the sha256 of
+    the judge's note alone."""
+    if args.owed_sha256 is None:
+        return Folders(args.runs)
+    if args.owed is None or digest(args.owed) != args.owed_sha256:
+        raise ExportError("--owed-sha256 is not the sha256 of the retry note that --owed names")
+    return Folders(args.runs, held=True)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     commands = parser.add_subparsers(dest="command", required=True)
@@ -634,12 +725,17 @@ def main(argv=None):
     export.add_argument("--runs", type=Path, required=True)
     export.add_argument("--output", type=Path, required=True, help="a new folder")
     export.add_argument("--owed", type=Path, help="the judge's retry_owed.json: the retry's tables")
+    export.add_argument("--owed-sha256", help="its sha256: opens the runs made up front")
     checked = commands.add_parser("check", help="hold a folder of tables to the contract")
     checked.add_argument("folder", type=Path)
     checked.add_argument("--strings", type=Path, help="the strings note")
     args = parser.parse_args(argv)
     if args.command == "export":
-        found = tables(Inputs(args.inputs), Folders(args.runs), owed=args.owed)
+        try:
+            found = tables(Inputs(args.inputs), open_folders(args), owed=args.owed)
+        except ExportError as error:
+            print(f"refused: {error}", file=sys.stderr)
+            return 2
         write(found, args.output)
         faults = check(args.output)
         for consumer, table in found.items():

@@ -3,6 +3,7 @@
 import json
 from dataclasses import replace
 
+import jax
 import numpy as np
 import pytest
 
@@ -13,6 +14,7 @@ from cells.execution.batch_windows import iter_batch_windows, plan_batch_windows
 from cells.execution.errors import NumericalError
 from cells.execution.resources import trace_bytes
 from cells.execution.runner import run, timeline
+from cells.execution.state import initialise
 from cells.execution.windows import WindowPolicy, iter_windows, merge_diagnostics, run_windowed
 from cells.records import batch_window_io
 from cells.records.batch_io import load_batch_snapshot, write_batch_snapshot
@@ -30,6 +32,7 @@ from tests.batch_fixtures import (
     synthetic_pair,
 )
 from tests.unit.test_windows import assert_windows
+from validation.calcium_store import worlds as store_worlds
 
 
 def local_parts(rounds, identity):
@@ -244,6 +247,53 @@ def test_prepared_parameters_and_compiled_widths_are_reused(monkeypatch):
     assert (
         result.resources["padded_step_slots"] <= result.resources["conservative_padded_step_bound"]
     )
+
+
+def store_world(scale):
+    """A store world whose pumps, exchanger, routes, conditions and reactions have numbers of their
+    own: each is `scale` times the specification's."""
+    data = store_worlds.store_data()
+    for pump in data["pumps"].values():
+        pump["capacity_fmol_per_s"] *= scale
+    data["exchanger"]["K_Ca_mM"] *= scale
+    for route in data["calcium_routes"].values():
+        route["permeability_m_per_s"] *= scale
+    for condition in data["conditions"].values():
+        condition["reads"][0]["half_saturation_mM"] *= scale
+    for reaction in data["buffers"]["reactions"]:
+        reaction["forward_rate_per_s"] *= scale
+    return parse_spec(store_worlds.store_world(dt=1e-5, steps=2, data=data))
+
+
+def test_a_mapped_batch_binds_each_worlds_own_kind_numbers(monkeypatch):
+    """Both mapped paths give their one program, world by world, the numbers that the model has for
+    that world's definition. The program is not compiled: a stop stands in its place, so this reads
+    what it is given, and the general rows hold what it does with it."""
+    specs = [store_world(scale) for scale in (1.0, 1.25)]
+    model = get_model(specs[0].model)
+    own = [model.parameters(s, initialise(s).layout) for s in specs]
+    for kind in ("cycle_", "passive_", "species_condition", "reaction_"):  # Not vacuous.
+        names = [n for n in own[0]._fields if n.startswith(kind)]
+        assert any(not np.array_equal(*(getattr(p, n) for p in own)) for n in names), kind
+
+    class Given(Exception):
+        pass
+
+    class Stop:
+        def lower(self, inputs, *functions):
+            raise Given(inputs)
+
+    cohort = definition(specs)
+    for module, path in ((batch, run_batch), (batch_windows, run_batch_windowed)):
+        monkeypatch.setattr(module, "_compiled_batch", Stop())
+        with pytest.raises(Given) as stopped:
+            path(cohort)
+        given = stopped.value.args[0][3]  # (state, steps, controls, parameters, active, counts)
+        for i, numbers in enumerate(own):
+            for name in type(numbers)._fields:
+                mine, bound = jax.tree.leaves(getattr(numbers, name)), getattr(given, name)
+                for a, b in zip(mine, jax.tree.leaves(bound), strict=True):
+                    assert np.asarray(a).tobytes() == np.asarray(b)[i].tobytes(), (path, i, name)
 
 
 def test_tail_padding_respects_the_existing_padded_work_budget():

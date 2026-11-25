@@ -1,5 +1,10 @@
 # Next build: explicit multispecies membrane assembly
 
+> **Legacy cleanup (25 November 2026, D386).** The models, configurations, commands, tests and tools
+> that this page names for the older families left the tree, and the tag `pre-cleanup-2026-11-25` keeps
+> them. Old records pin this page's bytes by their hash: the pinned bytes are the tag's, without
+> this note.
+
 2026-09-09, D045–D048. **SPEC-005 and NUM-006 are complete as references.** The
 [physical contract](MULTISPECIES_MEMBRANE_SPEC.md) and
 [1,546-check result](../reports/SPEC005_DESIGN_CHECK.md) now implement the brief

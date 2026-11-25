@@ -150,8 +150,9 @@ openings, in a world of two cells that share one small node. Exchanging the two 
 the term at one end only, and leaving it out at the node must each miss, and the rate is never less
 than the fastest rate of calcium's own block there. A step above the bound is refused.
 
-Older rows run the source's unchanged class out of process and compare it with these kernels, which the
-older families still call. No run was compared with a measurement.
+Rows of the older calcium catalogue's test run the source's unchanged class out of process and compare
+it with these kernels, which that catalogue (`resolved_tissue@8`'s) still calls. No run was compared
+with a measurement.
 
 ## Status
 

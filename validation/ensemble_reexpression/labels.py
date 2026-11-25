@@ -4,7 +4,6 @@ definition declares.
 Every string here is the engine's own constant, so this file holds no registered ID of its own. The
 lead's strings note (spec/TABLE.md §5) is the one file through which a string enters the judgement.
 This map is what the generator writes a definition with and what the exporter reads one back with.
-Part 2 adds its labels to LABELS.
 """
 
 import re
@@ -13,17 +12,32 @@ from cells.assembly.graph import TOPOLOGY_ID
 from cells.assembly_pool import MODEL_ID as POOL_MODEL_ID
 from cells.assembly_pool.observables import LAW_ID as ASSEMBLY_OBSERVABLE_ID
 from cells.definitions.kinetic_pump_spec import METABOLISM_ID
+from cells.definitions.pump_composite_spec import MODEL_ID as COMPOSITE_ID
 from cells.definitions.surface_pump_spec import GATE_LAW_ID
 from cells.definitions.surface_pump_v3_spec import KV1P5_LAW_ID
 from cells.definitions.surface_pump_v3_spec import MODEL_ID as INNER_MODEL_ID
 from cells.definitions.surface_tissue_spec import FACE_LAW_ID
+from cells.kinds.passive_routes import KIND_ID as PASSIVE_ROUTES_ID
+from cells.kinds.species_condition import KIND_ID as SPECIES_CONDITION_ID
+from cells.kinds.species_condition import LAW_ID as HILL_PRODUCT_ID
+from cells.kinds.transporter import KIND_ID as TRANSPORTER_ID
+from cells.laws.channels.cav1p2_m2h import LAW_ID as CAV1P2_LAW_ID
+from cells.laws.cycles.sodium_calcium_exchange_symmetric_barrier import DECLARED_ID as EXCHANGE_ID
+from cells.laws.pumps.atp_transporter_v2 import LAW_ID as ATP_TRANSPORTER_ID
 from cells.laws.pumps.kinetic_pump import LAW_ID as NAK_PUMP_ID
 from cells.laws.routes.constant_field import LAW_ID as CONSTANT_FIELD_ID
+from cells.laws.routes.constant_field_permeation import LAW_ID as PASSIVE_PERMEATION_ID
+from cells.modules import qualified
 from cells.numerics.surface_field import FACTORED_SOLVER_ID, FLOOR_SOLVER_ID
 from cells.numerics.surface_field import LAW_ID as CLOSURE_ID
 from cells.numerics.surface_imex import ARS222_ID
+from cells.operators.compartments import LAW_ID as COMPARTMENTS_ID
+from cells.operators.species_reactions import LAW_ID as REACTIONS_ID
+from cells.operators.species_reactions import PASSIVE_LAW as MASS_ACTION_ID
+from cells.registry import kind_registry
 
-# {label: registered string}. "imex" is the rehearsal's alone (Amendment 1, item 5).
+# {label: registered string}, as the engine writes a definition: some laws namespaced, some not. In
+# Part 1 "imex" is the rehearsal's alone (Amendment 1, item 5); Part 2's worlds declare it.
 LABELS = {
     "inner_model": INNER_MODEL_ID,
     "rk4": "rk4",
@@ -40,6 +54,18 @@ LABELS = {
     "pool_model": POOL_MODEL_ID,
     "pool_topology": TOPOLOGY_ID,
     "assembly_observable": ASSEMBLY_OBSERVABLE_ID,
+    "composite_model": COMPOSITE_ID,
+    "passive_routes_kind": PASSIVE_ROUTES_ID,
+    "transporter_kind": TRANSPORTER_ID,
+    "species_condition_kind": SPECIES_CONDITION_ID,
+    "compartment_law": COMPARTMENTS_ID,
+    "local_reactions": REACTIONS_ID,
+    "mass_action_passive": MASS_ACTION_ID,
+    "calcium_pump_positive": qualified(ATP_TRANSPORTER_ID),
+    "exchanger_3na_1ca": EXCHANGE_ID,
+    "cav12_m2h": CAV1P2_LAW_ID,
+    "hill_product_factor": HILL_PRODUCT_ID,
+    "passive_constant_field": PASSIVE_PERMEATION_ID,
 }
 
 # A world's order of integration, `p` of its block, and the integrator it is declared with.
@@ -47,9 +73,15 @@ INTEGRATORS = {4: "rk4", 2: "imex"}
 
 # The place of each label in an entry of the strings note's `runs` (spec/TABLE.md §5). The closure
 # and the fuel stand among the laws: the note has no word of their own for them, and `kinds` holds
-# declared kinds, of which no definition here has one.
+# declared kinds. A composite's inner model stands among the laws too: the note has one model.
 PLACES = {
     "inner_model": "model",
+    "composite_model": "model",
+    "compartment_law": "operators",
+    "local_reactions": "operators",
+    "passive_routes_kind": "kinds",
+    "transporter_kind": "kinds",
+    "species_condition_kind": "kinds",
     "rk4": "solver",
     "imex": "solver",
     "field_solver": "field_solver",
@@ -90,9 +122,19 @@ def integrator(order):
     return string(INTEGRATORS[order])
 
 
+def kinds(model):
+    """The IDs of the kinds that a definition's model declares. A definition names a kind by its
+    model key alone, so its ID is the engine's for that key."""
+    if not isinstance(model, dict):
+        return set()
+    by_key = kind_registry.active().model_keys()
+    return {qualified(kind.kind_id) for key, kind in by_key.items() if key in model}
+
+
 def declared_strings(*definitions):
     """Every registered string that these JSON values declare, sorted, one each: a value or a key
-    of the form name@version, and an execution's solver, which has no version of its own."""
+    of the form name@version, the kinds whose keys a model holds, and an execution's solver, which
+    has no version of its own."""
     found = set()
 
     def walk(value):
@@ -109,7 +151,10 @@ def declared_strings(*definitions):
 
     for definition in definitions:
         walk(definition)
-        execution = definition.get("execution") if isinstance(definition, dict) else None
+        if not isinstance(definition, dict):
+            continue
+        found |= kinds(definition.get("model"))
+        execution = definition.get("execution")
         if isinstance(execution, dict) and isinstance(execution.get("solver"), str):
             found.add(execution["solver"])
     return sorted(found)
@@ -134,9 +179,11 @@ def note_entry(declared):
         "pool": [],
         "observable": None,
     }
-    for value in declared:
-        name = label(value)
+    names = [label(value) for value in declared]
+    for name in names:
         place = PLACES.get(name, "laws")
+        if name == "inner_model" and "composite_model" in names:
+            place = "laws"
         if isinstance(entry[place], list):
             entry[place].append(name)
         else:

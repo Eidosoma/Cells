@@ -10,6 +10,7 @@ The mapping, which README.md lists for the checker:
 - `harness`: anything the engine did not raise as one of these.
 """
 
+import dataclasses
 import re
 
 import numpy as np
@@ -26,14 +27,19 @@ from cells.registry.models import get_model
 DEFINITION, DOMAIN, CHECK, HARNESS = "definition", "domain", "check", "harness"
 SECOND_PASS = "second_pass_completed"  # A check's refusal that its second pass does not meet.
 PARTIAL, WINDOW_STEPS = "partial.npz", 1  # The second pass's rows, and its windows' length.
+POLICY = WindowPolicy(WINDOW_STEPS, "full")  # The second pass's windows, every row recorded.
 CHECKS = (LEDGER_MESSAGE, DISSIPATION_MESSAGE, ENERGY_MESSAGE)
 POOL_CHECKS = ("Finite material conservation failed", "Material transfer counters disagree")
 # A declared value that left a range the message states. The engine's words: "domain" (the laws' and
 # the field's), "RK4 steps" and "step exceeds" (the laws' and the solvers' step bounds), "must lie
-# in", "cannot exceed", "must be finite and positive" and "nonnegative", "exceeds".
+# in", "cannot exceed", "must be finite and positive" and "nonnegative", "exceeds"; and of Part 2's
+# pieces "must be >" a number, "finite positive number", "is finite and >= 0", a parameter that "is
+# positive", "at least" or "at most", "is a normal float".
 OUT_OF_RANGE = re.compile(
     r"\bdomain\b|RK4 steps|\bstep exceeds\b|must lie in|must be in \[|cannot exceed|"
-    r"must be finite and (?:positive|nonnegative)|exceeds positive finite|reached its event cap"
+    r"must be finite and (?:positive|nonnegative)|exceeds positive finite|reached its event cap|"
+    r"must be >=? |must be a finite positive number|is finite and >= 0|"
+    r"parameter \S+ is (?:positive|at least|at most)|is a normal float"
 )
 # One refusal of the engine's names a law and a range together. Its law is today's in every block
 # that reaches it with the label's string, so what left its place is the range.
@@ -59,6 +65,16 @@ def kind_of(error, *, stage, gates=()):
     return HARNESS
 
 
+def qualified(kind):
+    """A class's full name: its module and its name in it (a record's `raised`)."""
+    return f"{kind.__module__}.{kind.__qualname__}"
+
+
+def policy():
+    """Every field of the second pass's window policy, its defaults written out."""
+    return dataclasses.asdict(POLICY)
+
+
 def refusal(error, *, stage, gates=(), time=None):
     """A table entry's `refusal`."""
     return {
@@ -70,20 +86,21 @@ def refusal(error, *, stage, gates=(), time=None):
 
 def rows_before(spec, checkpoint=None):
     """(the accepted rows of a run that the engine refuses, as trajectory.npz's arrays; the time of
-    the row that failed, or None where the pass completes).
+    the row that failed, or None where the pass completes; the class of what the pass raised there).
 
     The scalar runner keeps no row of a run it refuses. This runs the same definition again in
     windows of one step, through the engine's own windowed path, and keeps each one it accepts."""
     applied = applied_definition(spec)[0]
     grid = EventGrid(applied)
     start = 0 if checkpoint is None else checkpoint.step_index
-    windows, failed = [], None
+    windows, failed, raised = [], None, None
     try:
-        for window in iter_windows(spec, WindowPolicy(WINDOW_STEPS, "full"), checkpoint):
+        for window in iter_windows(spec, POLICY, checkpoint):
             windows.append(window)
-    except NumericalError:
+    except NumericalError as error:
         failed = float(grid[min(start + len(windows) + 1, len(grid) - 1)])
-    return joined(windows, get_model(spec.model)), failed
+        raised = qualified(type(error))
+    return joined(windows, get_model(spec.model)), failed, raised
 
 
 def joined(windows, model):

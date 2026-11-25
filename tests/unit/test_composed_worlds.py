@@ -881,7 +881,7 @@ def test_a_composed_world_conducts_exactly_on_its_pools_paths(outputs):
         for pair in ((result, still), closed)
     )
     assert not any(np.any(r.history.junction_transferred) for r in closed)
-    assert abs(alone) < 1e-3 * abs(answer)
+    assert abs(alone) < 1e-6 * abs(answer)  # A patch that reads 1e-6 of cell 0 gives 1.7e-4.
     # Open, cell 1's patch keeps between exp(-G T / C) and all of what the junction gave it, G the
     # patch's largest conductance: all its permeabilities at once, at the largest concentration.
     given = [np.asarray(r.history.junction_transferred)[-1, :, 0] for r in (result, still)]

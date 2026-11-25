@@ -1,5 +1,10 @@
 # Source correspondence: what a contact actually means
 
+> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names
+> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag
+> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay. Old records
+> pin this page's bytes by their hash: the pinned bytes are the tag's, without this note.
+
 R005 / D021, reviewed 2026-09-08. This is the first completed correspondence
 slice of CONTACT-003, not coupled source-assay acceptance. The proposed
 [physical pair](SELECTIVE_CONTACT_SPEC.md) and a future source-compatible model

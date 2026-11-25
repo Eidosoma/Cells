@@ -3,7 +3,8 @@
     python -m validation.ensemble_reexpression.run list [--inputs FILE]
     python -m validation.ensemble_reexpression.run snapshot DESTINATION
     python -m validation.ensemble_reexpression.run one NAME --runs DIR [--tag TAG] [...]
-    python -m validation.ensemble_reexpression.run all --runs DIR [--tag TAG] [--workers N] [...]
+    python -m validation.ensemble_reexpression.run all --runs DIR [--tag TAG] [--workers N]
+        [--retries] [...]
     python -m validation.ensemble_reexpression.run commands --runs DIR [--tag TAG] [...]
     python -m validation.ensemble_reexpression.run status --runs DIR [--inputs FILE]
 
@@ -18,9 +19,14 @@ the old record). A run that stopped with no record starts a new attempt beside t
 is registered: it is made from a clean, complete frozen snapshot (`snapshot`), and the caller names
 the registration tag, which must be the snapshot's revision. A declared time off its grid is refused
 by name before any run; `--off-grid` makes that one run all the same, and the record says so.
+
+**The retry's runs** are made when the judge's note owes them (`--owed`), or every family's with the
+batch (`--retries`). Those stand apart, in `retries/`, and the exporter opens them by the sha256 of
+the judge's note alone (table.py).
 """
 
 import argparse
+import dataclasses
 import fcntl
 import hashlib
 import json
@@ -40,6 +46,7 @@ from validation.ensemble_reexpression.inputs import (
     IONIC,
     MATCH_S,
     REGISTERED,
+    REGISTERED_PART2,
     ROOT,
     Inputs,
     InputsError,
@@ -54,16 +61,20 @@ SNAPSHOT = "SNAPSHOT.json"
 NO_SNAPSHOT = "none"  # `source.snapshot` of a run made from a checkout.
 EMPTY = hashlib.sha256(b"").hexdigest()
 # What a frozen snapshot of this registration holds beside the engine: this folder's modules, the
-# two files of the spec that they read, the tools they use and the script that starts a unit.
+# files of the spec that they read, the tools they use and the script that starts a unit.
 MODULES = (
     "__init__",
+    "blocks",
     "definitions",
     "inputs",
     "labels",
+    "pieces",
     "readouts",
     "refusals",
     "run",
     "sample",
+    "sample_part2",
+    "stores",
     "table",
     "worlds",
 )
@@ -74,6 +85,11 @@ DRIVERS = (
     "validation/tissue/field_solver_choice.py",
     "validation/source_snapshot.py",
     "scripts/run_detached.sh",
+)
+# Part 2's files of the spec, which a snapshot holds once its tag has them.
+PART2 = (
+    "validation/ensemble_reexpression/spec/PART2_BLOCKS.md",
+    "validation/ensemble_reexpression/spec/inputs_part2.json",
 )
 WORKER_ENVIRONMENT = {
     "JAX_ENABLE_X64": "1",
@@ -169,7 +185,8 @@ def guard(inputs, run, tag, root=ROOT):
         return
     if not (Path(root) / SNAPSHOT).is_file():
         raise Guarded(f"{run.name!r} is registered: it is made from a frozen snapshot, not here")
-    if inputs.path.resolve() != (Path(root) / REGISTERED.relative_to(ROOT)).resolve():
+    own = [(Path(root) / p.relative_to(ROOT)).resolve() for p in (REGISTERED, REGISTERED_PART2)]
+    if inputs.path.resolve() not in own:
         raise Guarded(f"{run.name!r} is registered: {inputs.path} is not the snapshot's own inputs")
     from validation import source_snapshot
 
@@ -221,7 +238,8 @@ def freeze(destination):
     """A frozen snapshot of the engine and of what this driver needs (source_snapshot.freeze)."""
     from validation import source_snapshot
 
-    names = _git(ROOT, "ls-files", "-z", "--", "src/cells", *DRIVERS).decode().split("\0")
+    selected = ("src/cells", *DRIVERS, *PART2)
+    names = _git(ROOT, "ls-files", "-z", "--", *selected).decode().split("\0")
     return source_snapshot.freeze(ROOT, destination, {name: name for name in names if name})
 
 
@@ -229,15 +247,20 @@ def freeze(destination):
 
 
 class Folders:
-    """Where the records of one campaign stand: a folder outside the tree they are made from."""
+    """Where the records of one campaign stand: a folder outside the tree they are made from. The
+    retry's runs stand apart where they were made up front (`held`)."""
 
-    def __init__(self, runs):
-        self.root = Path(runs).resolve()
+    def __init__(self, runs, *, held=False):
+        self.root, self.held = Path(runs).resolve(), held
         if self.root.is_relative_to(ROOT):
             raise Guarded(f"Records are kept outside the tree they are made from: {self.root}")
 
     def run(self, run):
-        return self.root / "runs" / run.slug
+        return self.root / ("retries" if self.held and run.retry else "runs") / run.slug
+
+    def made_early(self, run):
+        """Whether a retry's run has a folder among those made up front."""
+        return (self.root / "retries" / run.slug).exists()
 
     def record(self, run):
         path = self.run(run) / RECORD
@@ -266,6 +289,60 @@ def next_attempt(folder):
         return path
 
 
+# ------------------------------------------------------------------ what a record says of its run
+
+
+# The blocks of a parsed definition beside its execution that change how its steps are taken or
+# checked (None where the definition has none).
+OPT_IN = ("projective", "energy_check", "fine_windows")
+COUNTS = ("executed_steps", "global_step_index")  # The scalar run's own, in its summary.json.
+POOL_COUNTS = ("committed_events", "chunks")  # A pool's own, in its result.json.
+
+
+def new_facts():
+    """What a worker's record says beside its outcome, before anything is known (README)."""
+    return {
+        "definition": {},
+        "resolution": None,
+        "restart": None,
+        "timings": {},
+        "path": None,
+        "rows": None,
+        "check_options": None,
+        "raised": None,
+    }
+
+
+def no_rows():
+    """The record's `rows`, before the engine reports any."""
+    return dict.fromkeys((*COUNTS, "checked_rows", "second_pass_windows", "pools"))
+
+
+def plain(value):
+    """A value of a parsed definition as JSON: a dataclass by every field, its defaults written."""
+    if dataclasses.is_dataclass(value) and not isinstance(value, type):
+        return {f.name: plain(getattr(value, f.name)) for f in dataclasses.fields(value)}
+    if isinstance(value, (list, tuple)):
+        return [plain(v) for v in value]
+    if isinstance(value, dict):
+        return {str(k): plain(v) for k, v in value.items()}
+    if hasattr(value, "tolist"):  # A number or an array of numpy's.
+        return value.tolist()
+    return value if value is None or isinstance(value, (bool, int, float, str)) else str(value)
+
+
+def check_options(spec):
+    """Every field of a parsed definition's execution, its defaults written out, and each block
+    that changes how its steps are taken or checked, "absent" where it has none."""
+    out = {
+        f.name: plain(getattr(spec.execution, f.name)) for f in dataclasses.fields(spec.execution)
+    }
+    for name in OPT_IN:
+        block = getattr(spec, name, None)
+        out[name] = "absent" if block is None else plain(block)
+    return out
+
+
 # ------------------------------------------------------------------ the worker: one attempt
 
 
@@ -277,23 +354,33 @@ class Worker:
         self.job = read_json(self.attempt / "job.json")
         self.inputs = Inputs(self.job["inputs"])
         self.run = self.inputs.run(self.job["run"])
-        self.folders = Folders(self.job["runs"])
-        self.facts = {"definition": {}, "resolution": None, "restart": None, "timings": {}}
+        self.folders = Folders(self.job["runs"], held=self.job.get("held", False))
+        self.facts, self.stage = new_facts(), "declaration"
 
     @property
     def output(self):
         return self.attempt / "output"
 
+    def raised(self, error, stage=None):
+        """What was raised (an exception, or its class's full name), by its class and module, and
+        the stage it was raised at, after what was raised before it (`raised`)."""
+        from validation.ensemble_reexpression.refusals import qualified
+
+        kind = error if isinstance(error, str) else qualified(type(error))
+        found = {"class": kind, "stage": stage or self.stage}
+        self.facts["raised"] = [*(self.facts.get("raised") or ()), found]
+
     # ---- what is submitted
 
     def declaration(self, definitions):
         """What the generator makes for this run; its own refusals are no engine's (`harness`)."""
+        from validation.ensemble_reexpression.blocks import NoSection
         from validation.ensemble_reexpression.labels import UnknownOrder
-        from validation.ensemble_reexpression.worlds import NoSection
 
         try:
             return definitions.definition(self.inputs, self.run)
         except (UnknownOrder, NoSection, InputsError) as error:
+            self.raised(error)
             raise refused("harness", str(error)) from error
 
     def submit(self, raw):
@@ -314,7 +401,7 @@ class Worker:
         from validation.ensemble_reexpression.labels import string
 
         change = definitions.declared_change(self.inputs, self.run)
-        block = definitions.changed_block(self.inputs.worlds[self.run.world].block, change)
+        block = definitions.block_of(self.inputs.worlds[self.run.world], change)
         junctions = block.get("junctions")
         if not isinstance(junctions, dict):
             return ()
@@ -334,6 +421,7 @@ class Worker:
         try:
             yield
         except caught as error:
+            self.raised(error)
             raise Refused(refusals.refusal(error, stage=stage, gates=self.gates())) from error
 
     # ---- the three kinds of run
@@ -358,34 +446,43 @@ class Worker:
     def ionic(self, path):
         from cells.definitions.specs import load_spec
 
+        self.stage = "parse"
         with self.engine("parse"):
             spec = self.parsed(load_spec(path))
+        self.facts["check_options"] = check_options(spec)  # Outside the parse: no refusal of it.
         if self.run.restart_time is not None:
             return self.resume(spec)
+        self.facts["path"] = "run"
         return self.execute(spec, None, {"operation": "run"})
 
     def driven(self, raw):
         from cells.definitions.specs import load_spec
 
         resolved = self.resolve(raw)
+        self.stage = "parse"
         with self.engine("parse"):
             spec = self.parsed(load_spec(resolved / f"worlds/world-{self.run.world_id}.json"))
+        self.facts["check_options"] = check_options(spec)
         made_from = read_json(resolved / "inputs.json")
         if spec.fingerprint not in made_from["definitions_sha256"]:
             raise RuntimeError("The resolution's inputs.json is not about this definition")
         write_json(self.attempt / "inputs.json", made_from)
         if self.run.restart_time is not None:
             return self.resume(spec, made_from)
+        self.facts["path"] = "run"
         return self.execute(spec, None, {"operation": "run", "inputs": made_from})
 
     def pools(self, path):
         from cells.assembly_pool import resolve
 
+        self.stage = "parse"
         with self.engine("parse"):
             composed = resolve.load_composed(path)
         self.facts["definition"]["composed_fingerprint"] = composed.fingerprint
         folder = self.output / "pools"
         folder.mkdir(parents=True)
+        self.facts["path"] = "pool" if self.run.restart_time is None else "pool legs"
+        self.stage = "run"
         for k, drive in enumerate(composed.drives):
             pool = folder / f"pool-{k:03}"
             try:
@@ -397,7 +494,17 @@ class Worker:
             except Refused as refusal:
                 if refusal.refusal["kind"] == "check":  # A pool has no rows: its horizon.
                     refusal.refusal["time_s"] = drive.pool.end_time_s
+                self.facts["rows"] = self.pool_rows()
                 raise
+        self.facts["rows"] = self.pool_rows()
+
+    def pool_rows(self):
+        """`rows` of a pool run: each pool's and leg's own counts, from its result.json."""
+        counts = {}
+        for path in sorted(self.output.rglob("result.json")):
+            made = read_json(path)
+            counts[str(path.parent.relative_to(self.output))] = {k: made[k] for k in POOL_COUNTS}
+        return no_rows() | {"pools": counts}
 
     def legs(self, k, pool, folder, first):
         """A pool's restart: a first leg of the same definition to the checkpoint's time, its
@@ -444,13 +551,14 @@ class Worker:
                 write_json(composed, raw)
                 record = {"kind": RESOLUTION_KIND, "resolution": name, "attempt": attempt.name}
                 record |= {"source": source(), "started_utc": utc()}
-                began = time.perf_counter()
+                began, self.stage = time.perf_counter(), "resolve"
                 try:
                     with self.engine("parse"):
                         resolve.resolve(composed, attempt / "resolved")
                     record |= {"status": "completed", "refusal": None}
                 except Refused as error:
                     record |= {"status": "refused", "refusal": error.refusal}
+                record["raised"] = self.facts["raised"]
                 record |= {"seconds": time.perf_counter() - began, "finished_utc": utc()}
                 record["files_sha256"] = files(attempt)
                 write_json(folder / RESOLUTION, record)
@@ -465,6 +573,7 @@ class Worker:
             "composed_file_sha256": digest(attempt / "composed.json"),
         }
         if record["status"] != "completed":
+            self.facts["raised"] = record["raised"]  # Whichever run made the resolution.
             raise Refused(record["refusal"])
         return attempt / "resolved"
 
@@ -488,15 +597,18 @@ class Worker:
         from cells.records.io import write_run
         from validation.ensemble_reexpression import refusals
 
+        self.stage = "run"
         try:
             result = run(spec, checkpoint)
         except (ConfigError, NumericalError) as error:
+            self.raised(error)
             refusal = refusals.refusal(error, stage="run", gates=self.gates())
             if isinstance(error, NumericalError):
                 try:
                     self.kept(spec, checkpoint, refusal)
                 except Exception as fault:  # The engine's own refusal stands, whatever this did.
                     self.facts["second_pass"] = {"fault": f"{type(fault).__name__}: {fault}"}
+                    self.raised(fault, "second pass")
                     if refusal["kind"] == refusals.CHECK:
                         refusal["time_s"] = spec.experiment.end_time
             raise Refused(refusal) from error
@@ -506,6 +618,8 @@ class Worker:
             checkpoint_times=self.checkpoints(result.times),
             provenance=provenance | {"registered_run": self.run.name},
         )
+        summary = read_json(self.output / "summary.json")  # The engine's own counts.
+        self.facts["rows"] = no_rows() | {key: summary[key] for key in COUNTS}
         self.facts["timings"] = dict(result.timings)
         self.facts["snapped_events"] = [list(pair) for pair in result.snapped_events]
 
@@ -517,14 +631,19 @@ class Worker:
 
         from validation.ensemble_reexpression import refusals
 
-        arrays, failed = refusals.rows_before(spec, checkpoint)
+        self.stage = "second pass"
+        arrays, failed, raised = refusals.rows_before(spec, checkpoint)
+        if raised is not None:
+            self.raised(raised)
         if arrays is not None:
             np.savez(self.attempt / refusals.PARTIAL, **arrays)
-        self.facts["second_pass"] = {
-            "window_steps": refusals.WINDOW_STEPS,
+        self.facts["second_pass"] = refusals.policy() | {
             "rows": None if arrays is None else refusals.PARTIAL,
             "completed": failed is None,
         }
+        # The windows that the pass yielded, each after its checks: its rows, but the first.
+        windows = 0 if arrays is None else len(arrays["accepted_times"]) - 1
+        self.facts["rows"] = no_rows() | {"second_pass_windows": windows}
         if refusal["kind"] == refusals.CHECK:
             refusal["time_s"] = spec.experiment.end_time if failed is None else failed
             if failed is None:
@@ -535,6 +654,7 @@ class Worker:
         """A restart: the checkpoint that its judged run wrote at the time, through its file."""
         from cells.records.io import load_snapshot
 
+        self.facts["path"], self.stage = "resume", "run"
         judged = self.inputs.run(self.run.judged_name)
         record = self.folders.record(judged)
         if record is None or record["status"] != "completed":
@@ -569,6 +689,7 @@ class Worker:
         except Refused as error:
             outcome |= {"status": "refused", "refusal": error.refusal}
         except Exception as error:  # Anything the engine did not raise as a refusal.
+            self.raised(error)
             message = f"{type(error).__name__}: {error}"
             outcome |= {
                 "status": "refused",
@@ -612,10 +733,10 @@ def worker_environment():
     return environment
 
 
-def one(inputs, run, runs, *, tag=None, off_grid=False, max_seconds=None, again=False):
-    """Make one run and write its record; its record."""
+def one(inputs, run, runs, *, tag=None, off_grid=False, max_seconds=None, again=False, held=False):
+    """Make one run and write its record; its record. held: a retry's run is made up front."""
     guard(inputs, run, tag)
-    folders = Folders(runs)
+    folders = Folders(runs, held=held)
     folder = folders.run(run)
     with locked(folder.with_name(folder.name + ".lock")):
         previous = folders.record(run)
@@ -633,6 +754,7 @@ def one(inputs, run, runs, *, tag=None, off_grid=False, max_seconds=None, again=
                 "off_grid": off_grid,
                 "max_seconds": max_seconds,
                 "tag": tag,
+                "held": held,
                 "started_utc": utc(),
             },
         )
@@ -673,7 +795,7 @@ def made(inputs, run, attempt, crash, *, tag, off_grid):
             "refusal": {"kind": "harness", "message": crash, "time_s": None},
             "source": source(),
             "source_from": "driver",
-            "facts": {"definition": {}, "resolution": None, "restart": None, "timings": {}},
+            "facts": new_facts(),
         }
     engine_revision, dirty, snapshot, patch = revision()
     return {
@@ -724,14 +846,23 @@ def earlier(attempt):
 # ------------------------------------------------------------------ the campaign
 
 
-def ordered(inputs, *, consumers=None, owed=None):
+def ordered(inputs, *, consumers=None, owed=None, retries=False):
     """The runs in an order that makes each after what it needs: the judged ones, then plants, then
-    the restarts. With `owed`, the retry's runs alone."""
+    the retry's of every family (`retries`), then the restarts. With `owed`, the retry's runs that
+    the note lists, alone."""
+    if owed is not None and retries:
+        raise InputsError("the retry's runs are made by a note, or up front, and not both")
     runs = list(inputs.runs.values()) if owed is None else list(inputs.owed(owed))
+    runs += inputs.retries() if retries else ()
     if consumers:
         runs = [r for r in runs if r.consumer in consumers]
     place = {"judged": 0, "plant": 1, "support": 2}
-    return sorted(runs, key=lambda r: (r.restart_time is not None, place.get(r.role, 3)))
+    return sorted(runs, key=lambda r: (r.restart_time is not None, r.retry, place.get(r.role, 3)))
+
+
+def selected(inputs, args):
+    """The runs that a campaign's options select."""
+    return ordered(inputs, consumers=args.consumer, owed=args.owed, retries=args.retries)
 
 
 def options(args):
@@ -741,7 +872,7 @@ def options(args):
         value = getattr(args, name)
         if value is not None:
             out += ["--" + name.replace("_", "-"), str(value)]
-    return out
+    return out + (["--retries"] if args.retries else [])
 
 
 def command_of(run, args):
@@ -751,8 +882,8 @@ def command_of(run, args):
 def campaign(inputs, args):
     """Every run of the campaign that has no record yet, in stages, `--workers` at a time, each in
     its own process on this one's CPUs."""
-    runs = ordered(inputs, consumers=args.consumer, owed=args.owed)
-    folders = Folders(args.runs)
+    runs = selected(inputs, args)
+    folders = Folders(args.runs, held=args.retries)
 
     def make(run):
         if folders.record(run) is None:
@@ -786,8 +917,8 @@ def ended(record):
 
 def status(inputs, args):
     """{consumer: {how a run ended: how many}} of a campaign's records."""
-    folders, out = Folders(args.runs), {}
-    for run in ordered(inputs, consumers=args.consumer, owed=args.owed):
+    folders, out = Folders(args.runs, held=args.retries), {}
+    for run in selected(inputs, args):
         counts = out.setdefault(run.consumer, {})
         word = ended(folders.record(run))
         counts[word] = counts.get(word, 0) + 1
@@ -835,6 +966,8 @@ def _parser():
     for command in (every, shown, counted):
         command.add_argument("--consumer", action="append")
         command.add_argument("--owed", type=Path, help="the judge's retry_owed.json")
+    for command in (single, every, shown, counted):
+        command.add_argument("--retries", action="store_true", help="the retry's runs, up front")
     every.add_argument("--workers", type=int, default=1)
     shown.add_argument("--memory", default="4G")
     shown.add_argument("--cpus", default="")
@@ -855,14 +988,14 @@ def main(argv=None):
         for run in inputs.runs.values():
             print(json.dumps({"run": run.name, "kind": run.kind, "role": run.role}))
         return 0
-    if args.command == "commands":
-        for run in ordered(inputs, consumers=args.consumer, owed=args.owed):
-            print(shlex.join(detached(run, args)))
-        return 0
-    if args.command == "status":
-        print(json.dumps(status(inputs, args)))
-        return 0
     try:
+        if args.command == "commands":
+            for run in selected(inputs, args):
+                print(shlex.join(detached(run, args)))
+            return 0
+        if args.command == "status":
+            print(json.dumps(status(inputs, args)))
+            return 0
         if args.command == "all":
             return campaign(inputs, args)
         record = one(
@@ -873,6 +1006,7 @@ def main(argv=None):
             off_grid=args.off_grid,
             max_seconds=args.max_seconds,
             again=args.again,
+            held=args.retries,
         )
     except (Guarded, InputsError) as error:
         print(f"refused: {error}", file=sys.stderr)

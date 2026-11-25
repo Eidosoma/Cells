@@ -30,6 +30,9 @@ of them.
   carry exactly zero, and its pumps, at their stall, turn no cycle (planted, each moves it: 1e-15 RT
   of the fuel's drive, one rounding of the store's calcium, 1e-15 V on the store's patch). This one
   reads no reference.
+- What is closed carries nothing: with every control at 0 only the gates move (in the two-cell
+  world, the faces too), and a channel of abundance 0 conducts nothing (planted, each moves it: a
+  closed patch's or junction's routes passing 1e-9 of themselves, or a hundredth of their flux).
 
 Seconds: 20 on the shared CPUs, 18 of them 340 NumPy steps on one CPU (9 s where the CPU is
 quiet), so tier 1. The reason (D224): no other row holds a store world, its order and its heats
@@ -336,6 +339,21 @@ def test_the_rates_at_the_start_are_the_references(runs):
     assert out == {}
 
 
+def moved_in_two_steps(raw, *, off=False):
+    """(the fields that two steps move, the state after them), `off` with every control at 0."""
+    spec = parse_spec(raw)
+    model, start, control, p = bound(spec)
+    if off:
+        shut = {n: np.zeros_like(v) for n, v in control._asdict().items()}
+        control = type(control)(**(shut | dict(passive_multiplier=control.passive_multiplier)))
+    state = start
+    for _ in range(2):
+        state, valid = host_step(model, state, raw["execution"]["dt"], control, p)
+        assert valid
+    pairs = zip(start._fields, start, state, strict=True)
+    return {name for name, a, b in pairs if not np.array_equal(a, b)}, state
+
+
 def at_equilibrium(*, fuel=0.0, calcium=None, volts=0.0):
     """The fields that two steps move, of the world without buffers at equilibrium: every node has
     the cell's volume and its ions, no patch has a voltage, and the fuel has no drive. Each option
@@ -352,14 +370,7 @@ def at_equilibrium(*, fuel=0.0, calcium=None, volts=0.0):
     for name, patch in data["patches"].items():
         patch["initial_voltage_V"] = volts if name == "bounding" else 0.0
     dt = STEPS["store_world"][0]
-    spec = parse_spec(worlds.store_world(dt=dt, steps=2, buffers=False, data=data))
-    model, start, control, p = bound(spec)
-    state = start
-    for _ in range(2):
-        state, valid = host_step(model, state, dt, control, p)
-        assert valid
-    pairs = zip(start._fields, start, state, strict=True)
-    return {name for name, a, b in pairs if not np.array_equal(a, b)}
+    return moved_in_two_steps(worlds.store_world(dt=dt, steps=2, buffers=False, data=data))[0]
 
 
 def test_a_world_at_equilibrium_does_not_move_at_all():
@@ -371,6 +382,23 @@ def test_a_world_at_equilibrium_does_not_move_at_all():
     moved = at_equilibrium(volts=1e-15)
     every = {"membrane_transferred", "passive_transferred", "channel_transferred", "cycle_count"}
     assert every <= moved
+
+
+def test_what_is_closed_carries_nothing():
+    """With every control at 0 (the passive multiplier apart) a closed patch, a closed junction and
+    a closed channel carry nothing: in two host steps only the gates move, and the faces' ions in
+    the two-cell world. A channel of abundance 0 conducts nothing, and its step is valid.
+    Seconds: 0.7 to 1.3 (measured), host steps and no compile. The reason (D224): no other row
+    holds that a closed route passes no flux (the fresh reader of the retiring rows, 25 November
+    2026)."""
+    store, gates = worlds.store_world(dt=STEPS["store_world"][0], steps=2), {"channel_gate"}
+    assert moved_in_two_steps(store, off=True)[0] == gates
+    faces = {"extracellular_amount_increment", "face_transferred", "face_dissipated_energy_pJ"}
+    two = worlds.two_cells(dt=1.25e-5, steps=5)
+    assert moved_in_two_steps(two, off=True)[0] == gates | faces | {"junction_gate"}
+    store["model"]["channels"][0]["abundance"] = 0.0
+    end = moved_in_two_steps(store)[1]  # Its steps are valid (asserted there).
+    assert not np.any(end.channel_transferred) and not np.any(end.channel_dissipated_energy_pJ)
 
 
 def test_the_stages_material_rate_holds_the_references_block(runs):
