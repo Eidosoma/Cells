@@ -389,8 +389,8 @@ availability.
   here). Its channels' declared schedules are the base.
 - `channels` are the populations the pool sets. A population is set by one pool at most.
 - `observable` is the ID of a registered law that reads the assembly
-  ([its page](library/cells/laws/root_component_has_cycle@1.md)). The ID commits the readout alone.
-  The `levels` are data, one number in [0, 1] for each of its values.
+  ([the library](library/README.md) has its page, under `cells.assembly_observable@1`). The ID
+  commits the readout alone. The `levels` are data, one number in [0, 1] for each of its values.
 - `pool` is an ordinary `finite_bond_assembly@1` definition (cut short here). Every pool declares the
   same worlds, `"recording": "events"`, the ionic definition's `end_time` as its horizon, and its
   own seed. Two pools with one seed are refused, since they would draw the same numbers.
