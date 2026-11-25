@@ -7,13 +7,13 @@
 Cells keep free calcium scarce, and one way to push it out is to let sodium in. In each cycle this
 law swaps three sodium ions for one calcium ion. It spends no fuel: sodium running downhill pays for
 calcium climbing. Each swap carries one charge, so the
-[membrane voltage](../../GLOSSARY.md#membrane-voltage) helps to set its direction. It stops, and then
-runs backward, at the voltage where the two gradients balance. That balance is the only part that
-measurements support. The rest is synthetic: how fast the swap runs, how it saturates and how the
-voltage splits between its two directions are a made-up form, with no measured number in it. A
-definition gives the capacity and both half-saturations, and the law has none of its own. It leaves
-out inactivation, regulation, other swap ratios, leaks and any competition between the two ions. It
-is not a model of any exchanger protein.
+[membrane voltage](../../GLOSSARY.md#membrane-voltage) helps to set its direction: the swap stops at
+the voltage where the two gradients balance and runs backward beyond it. That balance is the only
+part that measurements support. The rest is synthetic: how fast the swap runs, how it saturates and
+how the voltage splits between its two directions are a made-up form, with no measured number in it.
+A definition gives the capacity and both half-saturations. The law leaves out inactivation,
+regulation, other swap ratios, leaks and any competition between the two ions. It is not a model of
+any exchanger protein.
 
 ## Seen from each field
 
@@ -98,9 +98,10 @@ with $S = b^3 c\, e^{-\psi/2} / [(1 + a^3 + b^3)(1 + c + d)]$.
   (`ncx_3na_1ca_symmetric_barrier@1`) kept $|x| \le 80$ and $|V| \le 0.15$ V.
 - **Step rules:** at each [stage](../../GLOSSARY.md#stage) the kind bounds its charge slope, at both
   ends. Its material slope is not bounded: the kind's material term counts no charged
-  [species row](../../GLOSSARY.md#species-row) that crosses, so a world with scarce calcium holds that
-  step itself. It declares no step term, so its moves at a closed compartment's node are refused
-  ([refusal 4](../../../CLOSED_COMPARTMENT_DESIGN.md)). RK4 runs are refused, as for every kind.
+  [species row](../../GLOSSARY.md#species-row) that crosses, so a world with scarce calcium must choose
+  a step small enough for it. The law declares no step term, so its moves at a closed compartment's
+  node are refused ([refusal 4](../../../CLOSED_COMPARTMENT_DESIGN.md)). RK4 runs are refused, as for
+  every kind.
 - **At a binding closure:** it declares the read `rapid_binding@1` and base forms, so where a closure
   holds calcium or sodium it reads the free amount and moves the total.
 - **Left out:** inactivation, regulation by either ion, other coupling ratios and transport modes,
@@ -115,7 +116,7 @@ Provenance: `cited` (taken from a cited source).
 - **Source, as declared:** only the 3:1 coupling, so the reversal, is supported: measured reversals of the sodium-calcium exchange current of guinea-pig ventricular cells, in giant patches (1992) and in whole cells (2002). The denominator, the equal voltage split and every number are synthetic: no source gives them
 - **Place:** the abstracts of the works below (1992, item e; 2002, the conclusion); none was read in full
 - **Licence of the numbers:** no number taken: the capacity and the two half-saturations are a definition's values, none of them measured for this form
-- **Departures:** the denominator, a sodium factor times a calcium factor, is synthetic: it has no competition between the two ions, which the 1992 abstract reports at the inner face; the equal voltage split is synthetic: each one-way flux changes by a factor 2 in 36 mV (298 K), where the 1992 abstract reports currents that change by a factor 2 in about 100 mV, and voltage dependences that move with the concentrations; one mode at 3:1: a 2000 abstract concludes 4:1 or a variable coupling in patches of the same cells, and a 2004 abstract reports flux ratios near 3.2 and two minor modes; no inactivation, no regulation by either ion, no leak mode and no temperature dependence beyond RT
+- **Departures:** the denominator, a sodium factor times a calcium factor, is synthetic: it has no competition between the two ions, which the 1992 abstract reports at the inner face; the equal voltage split is synthetic: each one-way flux changes by a factor 2 in 36 mV (298 K), where the 1992 abstract reports currents that change by a factor 2 in about 100 mV, and voltage dependences that move with the concentrations; one mode at 3:1: a 2000 abstract concludes 4:1 or a variable coupling in patches of the same cells, and a 2004 abstract reports flux ratios near 3.2, two minor modes and a net current and a calcium flux that can reverse at different potentials; no inactivation, no regulation by either ion, no leak mode and no temperature dependence beyond RT
 - **Work:** Matsuoka S and Hilgemann DW (1992). Steady-state and dynamic properties of cardiac sodium-calcium exchange. Ion and voltage dependencies of the transport cycle. doi:10.1085/jgp.100.6.963
 - **Work:** Hinata M, Yamamura H, Li L, Watanabe Y, Watano T, Imaizumi Y and Kimura J (2002). Stoichiometry of Na+-Ca2+ exchange is 3:1 in guinea-pig ventricular myocytes. doi:10.1113/jphysiol.2002.025866
 - **Work:** Fujioka Y, Komeda M and Matsuoka S (2000). Stoichiometry of Na+-Ca2+ exchange in inside-out patches excised from guinea-pig ventricular myocytes. doi:10.1111/j.1469-7793.2000.t01-2-00339.x
@@ -128,12 +129,12 @@ Provenance: `cited` (taken from a cited source).
 | Matsuoka and Hilgemann (1992), J. Gen. Physiol. 100:963–1001 | The 3:1 coupling: measured reversals "close to the equilibrium potential expected for a 3 Na to 1 Ca exchange". Against this form: the two ions compete at the inner face, the currents change by a factor 2 in about 100 mV, and their voltage dependence moves with the concentrations. No numbers | ABS |
 | Hinata and colleagues (2002), J. Physiol. 545:453–461 | The 3:1 coupling, their conclusion in whole cells. No numbers | ABS |
 | Fujioka, Komeda and Matsuoka (2000), J. Physiol. 523:339–351 | Against the coupling: "either 4Na:1Ca or variable", in patches of the same cells | ABS |
-| Kang and Hilgemann (2004), Nature 427:544–548 | Against one mode: flux ratios of about 3.2 and two minor transport modes | ABS |
+| Kang and Hilgemann (2004), Nature 427:544–548 | Against one mode: flux ratios of about 3.2, two minor transport modes, and a net current and a calcium flux that "can reverse at different membrane potentials". It says that calcium flux equilibria had indicated 3:1 and current reversals a ratio closer to 4:1 | ABS |
 
-The abstracts and records were read at Europe PMC on 25 November 2026. The coupling rests on two
-labs' work, and one lab's speaks against it: each single study is an indication. Nothing else in
-the law rests on a source. **The departures** are the rest of the law: the denominator, the equal
-split of the charge, the single mode, and the absence of regulation.
+The abstracts and records were read at Europe PMC on 25 November 2026. Two works support the coupling
+(1992, 2002) and two speak against a single 3:1 mode (2000, 2004); each is one study, an indication.
+Nothing else in the law rests on a source. **The departures** are the rest of the law: the
+denominator, the equal split of the charge, the single mode, and the absence of regulation.
 
 **The same rate elsewhere:** an older model family ran it as `ncx_3na_1ca_symmetric_barrier@1`. No
 live model runs that kernel. It goes when that family leaves the tree. A four-state exchange cycle is
@@ -157,7 +158,7 @@ charge, the reversal and the sign on either side, the slopes and the domain. Eac
 exactly the criteria it is planted against. Ten are changed laws (the split reversed or left out, a
 half-saturation's power, activities against 1 M, a constant off by 1e-9, the orders of the two ions
 exchanged or taken at the other ends, a one-sided calcium factor, four sodium, the cycle run
-backward) and three are changes to the kind's evaluation. The plants of the form keep the reversal
+backward) and four are changes to the kind's evaluation. The plants of the form keep the reversal
 and the detailed balance, which are the counts', and that is what the law claims.
 
 Other rows run a small closed world. Each end's amounts follow the cycles, the voltage follows the

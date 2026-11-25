@@ -10,8 +10,8 @@ nothing, so no standard part survives in it:
 
     x = dG_cyc / RT = 3 ln(Na_N / Na_P) + ln(Ca_P / Ca_N) + psi,   psi = F (phi_N - phi_P) / RT.
 
-Its rate, with a = Na_N/K_Na, b = Na_P/K_Na, c = Ca_N/K_Ca, d = Ca_P/K_Ca, k the capacity and v the
-availability, is
+Its rate (fmol cycles/s), with a = Na_N/K_Na, b = Na_P/K_Na, c = Ca_N/K_Ca, d = Ca_P/K_Ca (each in
+mM), k the capacity and v the availability, is
 
     J = k v [b^3 c e^(-psi/2) - a^3 d e^(psi/2)] / [(1 + a^3 + b^3) (1 + c + d)],
 
@@ -23,9 +23,9 @@ Its consequences: J vanishes at phi_N - phi_P = 3 E_Na - 2 E_Ca (the Nernst pote
 stage's concentrations), its sign is that of -x on either side, and neither the capacity nor a
 half-saturation moves that potential.
 
-**What it claims.** Only the 3:1 coupling, so the reversal, which rests on measurements (the
-Citation). The denominator, the equal split of the one charge over the two directions and every
-number are synthetic: no source gives them. The capacity and both half-saturations are a
+**What it claims.** Only the 3:1 coupling, so the reversal, which rests on measurements that do not
+all agree (the Citation). The denominator, the equal split of the one charge over the two directions
+and every number are synthetic: no source gives them. The capacity and both half-saturations are a
 population's declared parameters, and no value of theirs is a measured one. The sodium and calcium
 factors multiply, so the form has no competition between the two ions at a face, and each one-way
 flux changes by a factor 2 in (2 ln 2) RT/F (35.6 mV at 298.15 K) at every concentration. It has no
@@ -123,7 +123,8 @@ LAW = CycleLaw(
             "mV (298 K), where the 1992 abstract reports currents that change by a factor 2 in "
             "about 100 mV, and voltage dependences that move with the concentrations",
             "one mode at 3:1: a 2000 abstract concludes 4:1 or a variable coupling in patches of "
-            "the same cells, and a 2004 abstract reports flux ratios near 3.2 and two minor modes",
+            "the same cells, and a 2004 abstract reports flux ratios near 3.2, two minor modes and "
+            "a net current and a calcium flux that can reverse at different potentials",
             "no inactivation, no regulation by either ion, no leak mode and no temperature "
             "dependence beyond RT",
         ),

@@ -36,7 +36,7 @@ Each claim with its plant (D187); every world is this file's own (no seam-A refe
   times it, and 0 runs no cycle;
 - the sodium-calcium exchange (its section): the registered law meets its rate equation, its
   reversal, its stoichiometry and charge at both ends, detailed balance with a heat that is never
-  negative, its slopes and its one-sided domain against 60-digit decimals; each of 13 plants misses
+  negative, its slopes and its one-sided domain against 60-digit decimals; each of 14 plants misses
   exactly its criteria; a closed world's steps close every ledger both ways; its charge slope holds
   the step; its refusals; a closure's free calcium; a restart from the checkpoint file;
 - M2 (amendment 2): log, exp, expm1 and log1p within 1, 2, 4 and 2 ulp under jit on this device and
@@ -2065,6 +2065,7 @@ NA_CA_RUN_MISSES = {  # The registered law besides: under jit, and under plants 
     "domain at 79": {"domain"},
     "no slope of its own": {"slopes"},
     "a standard part": NA_CA_CRITERIA - {"cycle"},
+    "the flux reversed": NA_CA_CRITERIA - {"cycle"},  # Its heat is negative: the guard refuses it.
 }
 
 
@@ -2072,7 +2073,7 @@ NA_CA_RUN_MISSES = {  # The registered law besides: under jit, and under plants 
 def na_ca_judged():
     """{plant: the criteria it misses}: None, the registered law, and each planted law, in one world
     that holds six populations of each, every one with its own capacity, K_Na and K_Ca; and the
-    registered law's six alone, under jit and under three plants of the kind's evaluation."""
+    registered law's six alone, under jit and under four plants of the kind's evaluation."""
     rng = np.random.default_rng(7)
     spans = ((-4, 1), (0, 2.3), (-5, 0.5))
     sets = [tuple(float(10 ** rng.uniform(*span)) for span in spans) for _ in range(6)]
@@ -2103,6 +2104,10 @@ def na_ca_judged():
     with pytest.MonkeyPatch.context() as patch:
         patch.setattr(transporter, "MAX_ABS_AFFINITY_OVER_RT", 79.0)
         out["domain at 79"] = missed(na_ca_misses(world, sets), 0)
+    with pytest.MonkeyPatch.context() as patch:
+        flux = forms.sign_exact_flux
+        patch.setattr(forms, "sign_exact_flux", lambda *a, **kw: -flux(*a, **kw))
+        out["the flux reversed"] = missed(na_ca_misses(world, sets), 0)
     with pytest.MonkeyPatch.context() as patch:
         logs = forms.monomial_logs
         patch.setattr(forms, "monomial_logs", lambda *a, **kw: flat(logs(*a, **kw)))
