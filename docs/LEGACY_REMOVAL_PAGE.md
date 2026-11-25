@@ -44,12 +44,12 @@ No data file loses its last reader, and no module of the engine is reached by th
 This holds whether or not you say yes, since the rows below run at the tag only.
 
 - **Driven store worlds.** The campaign judges each driven cluster once, against the captured runs of the old engine. No test compares one with an independent reference afterwards, as the retiring rows did. New now: a pool on a store world's calcium channel conducts exactly on its path, and its restart is bit for bit.
-- **The error of a driven world falls with its step.** Nothing live holds it: the order rows run undriven worlds, and Part 1 does not show it. The neighbour's answer through a junction is held, but not that its voltages meet an independent integrator (the older eight runs did, at 3e-9).
-- **A batch of store worlds, run by its program.** No row compiles one (about 50 s of CPU). New now: a host row that both mapped paths give each world its own numbers. The vectorized path has no row whose worlds differ in their pump, route or condition numbers: a planted fault passes the five rows that were tried, and the rows of reactions fail on theirs (m). Two driven worlds with different schedules in one batch, and a driven world with a store in one, have none.
+- **The error of a driven world falls with its step.** Nothing live holds it: the order rows run a world whose channels hold one availability throughout (r), and Part 1 does not show it. The neighbour's answer through a junction is held, but not that its voltages meet an independent integrator (the older eight runs did, at 3e-9).
+- **A batch of store worlds, run by its program.** No row compiles one (about 50 s of CPU). New now: a host row that both mapped paths give each world its own numbers. On the vectorized path, every world given the first one's pump, route or condition numbers passes the five rows that were tried; whether their worlds differ in those numbers was not measured. Given the first one's reaction numbers, two rows fail (m, and the reader). Two driven worlds with different schedules in one batch, and a driven world with a store in one, have none.
 - **The order of a definition's lists matters now.** Another order of species, cells, patches, faces, channels, transporters, conditions, compartments, reactions or pools is another fingerprint. The older forms did not mind.
 - **A pool's checkpoint from another backend is accepted.** The live one holds the packages, the flags and the Python, and no device. The older refused it. This is a follow-up after the landing, and nothing changes now.
 - **A live pool's shape and clock in a checkpoint** are checked by no row. The retiring rows missed them too (reader).
-- **A closed patch, a closed junction, and abundance 0.** A closed patch that still passes some of its routes fails one staying row, at any size. A closed junction that passes a hundredth, and a channel of abundance 0 that conducts as one of 1, fail none that the reader ran. Two lines that see all three are written and planted (2 s of CPU, no compile), and are not added yet.
+- **A closed patch, a closed junction, and abundance 0.** Still being checked (not final): in the reader's runs so far, a closed patch that still passes some of its routes fails one staying row, and a closed junction that passes a hundredth, or a channel of abundance 0 that conducts as one of 1, fails none.
 - **On a GPU:** a saved restart, windows, and a mapped batch of an ionic world have no row; CPU and GPU agreement of driven and of store worlds has none. The two rows of the ionic GPU queue stay. They ran once on the L4 after their edit (2 pass, 305 s, m), and no gate runs a GPU.
 - **`er_calcium.pump_rates` itself,** at its stall and over its availability: one row on the BETSE side holds it (`test_betse_emulator_laws.py`), and the claim leaves with that file (reader).
 - **A switch and a change of one channel at one instant** are refused now; the older form put them in order.
@@ -61,8 +61,8 @@ Every row below was run, and fails on a planted fault at its own assertion.
 
 | Row (branch `legacy-retiring-rows`) | Holds | Seconds of CPU | Planted, and failed by its assertion |
 |---|---|---|---|
-| `test_calcium_store_compiled.py`, a pool on its calcium channel | a driven store world: its path, and its restart bit for bit; it reuses the file's one program | 4.2 | the path read a step early, a closed channel that leaks, and a restart one part in 2^52 off |
-| `test_batch_windows.py`, each world's own kind numbers | what both mapped paths give their one program, world by world; nothing compiles | 2.0 | every world given the first one's numbers, in each path |
+| `test_calcium_store_compiled.py`, a pool on its calcium channel | a driven store world: its path, and its restart bit for bit; it reuses the file's one program | 4.2 | the engine reads a schedule a step late; a channel conducts 1e-9 of itself where its availability is 0; a restart's gate one part in 2^52 off |
+| `test_batch_windows.py`, each world's own kind numbers | what both mapped paths give their one program, world by world; nothing compiles | 2.0 | every world given the first one's kind numbers, in each path |
 | `test_composed_worlds.py`, the neighbour | its bound is 1e-6 of the answer now (it was 1e-3; honest is 3.7e-8) | none more | each patch reading a millionth of the other cell's potential |
 
 They merge after Part 1's strings tag. The preferred form of the batch row, a staying batch whose worlds differ, does not exist: no staying mapped batch has these kinds.
@@ -77,7 +77,7 @@ Two rows stay after the reader's report: `test_integrated_ensemble.py`'s checkpo
 | Tests, and their helpers | 302 of 894 files (101,495 lines), and 77 files (18,717) (m) |
 | Validation drivers and references | 758 of 1,720 files, 212,182 lines (m) |
 | Scripts; configurations; examples; test data | 98 of 123; 116 of 157; all 15; 7 (m) |
-| Test IDs | **11,217 of 21,927**: 10,956 in files that go, 261 rows in files that stay; 615 are new (m) |
+| Test IDs | **11,531 of 21,927 no longer collect:** 10,956 in files that go, 261 rows of files that stay, 138 of the two files that the pump and symports work rewrote, and 176 in the eight files that fail to import. 615 are new, so 11,011 collect (m) |
 
 The optional batch is in these counts (165 files, 49,055 lines, 1,933 IDs). The deletion saves 2,766 of 13,784 test-seconds in tiers 1 and 2 (m), about 8.6 minutes of wall per full gate (e), and 142 of 222 tier-3 files.
 
@@ -98,7 +98,7 @@ Nothing that stays imports or loads what goes, `lean/` and `visualizer/` include
 | The JUPITER world, the cluster base, the assembly cell, the integrated ensemble's world | closed `resolved_pump_tissue@3` worlds, same equations | their registered runs and the judge |
 | The four calcium clusters | a composite over @3, one store per cell | the same |
 | The assembly commands and ensemble kinds | CPU runs, one process per world. The GPU path is parked | the same |
-| The JUPITER platform check | its device part as it is; its model part is refused by name | **your choice after the cleanup:** rebuild it on the re-expressed JUPITER world, half a day (e) |
+| The JUPITER platform check | its device part as it is; its model part reads a configuration that goes, so it stops there (r; the module imports, m) | **your choice after the cleanup:** rebuild it on the re-expressed JUPITER world, half a day (e) |
 | NKCC and the generic symport | two laws on the transporter kind | nothing: in |
 
 ## 6. What is lost, as you approved
