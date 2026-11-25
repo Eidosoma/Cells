@@ -454,6 +454,11 @@ process. W3 is the same form beside a writer whose rates read nothing (productio
     5.3e-5 s, order 1.0). It is a mutant of the engine's run, not of the reference.
 - **The cost:** five steps of each world and the plants, a lane for about 15 minutes.
 
+**Superseded by the registration (25 November 2026).** The protocol (`docs/FR43_PART3_COWRITERS_PROTOCOL.md`, with the
+spec folder, both on branch `fr43-part3-spec`) keeps this comparison's worlds and plants but not its bounds. It runs 8
+independent copies of each world and sites of 2 subunits, judges the order by one pooled fit over the five steps, and
+takes its windows and tolerances from a declared order and from counted rounding. No bound is set by an engine run.
+
 ### 5.4 If no judged comparison is made
 
 The rows of §5.2 hold books, ledgers, restarts and one closed-form event. None sees the order of the coupled
