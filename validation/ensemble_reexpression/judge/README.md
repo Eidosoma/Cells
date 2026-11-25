@@ -1,7 +1,7 @@
 # The judge of Part 1
 
 **What it is.** The reader and the scorer of `spec/` (`ensemble-reexpression-v1`, Part 1), with `spec/AMENDMENT-1-2026-11-25.md` and the lead's rulings of 25 November on the judge's questions (Amendment 2). It imports nothing of the engine: the standard library and numpy.
-It was written from the spec folder, the protocol, the captures and the planted legacy arrays alone. Its author has read no engine source, no test, no builder's branch, no candidate, and no table of a candidate. None existed.
+It was written from the spec folder, the protocol, the captures and the planted legacy arrays alone. Its author has read no engine source, no test, no builder's branch, no candidate, and no table of a candidate. None existed. The builders' format sample (invented worlds, meaningless numbers) was read after the reader was written (§6).
 
 ## 1. Files
 
@@ -47,7 +47,8 @@ It was written from the spec folder, the protocol, the captures and the planted 
 | 11 | `J plants` with stage 1's options, `--out O/plants.json` (any time after 5) | The tables, the captures and the planted runs | `plants.json`: JP1 to JP24 on altered copies of the registered tables |
 
 **Before the campaign:** `J selftest --out O/selftest.json` (C0, the fabricated tables, JP1 to JP24; about a minute), `J structure --tables <sample>/table --retry-tables <sample>/table-retry` (the format sample, TABLE section 7), and the tests:
-`PYTHONPATH=src:. JAX_ENABLE_X64=1 /mnt/workspaces/Cells/venv-cpu/bin/python -m pytest -q -p no:cacheprovider validation/ensemble_reexpression/judge/test_judge.py` (147 rows, about 25 to 30 s on one core; they read the captures, compile nothing, and skip where no capture is).
+`PYTHONPATH=src:. JAX_ENABLE_X64=1 /mnt/workspaces/Cells/venv-cpu/bin/python -m pytest -q -p no:cacheprovider validation/ensemble_reexpression/judge/test_judge.py` (159 rows, about 40 s of one core on a busy machine; they read the captures, compile nothing, and skip where no capture is).
+**They were tried on faults of the code:** some ninety one-line changes of the judge's own code, each in a scratch copy, were run against them. Those that survived were either equivalent (a check that another one repeats) or led to a stronger test (§6).
 
 `J fabricate --out O/fab` writes the honest tables of the judge's own with their `SHA256SUMS` and a strings note. They are marked as fabricated and no engine ran.
 
@@ -59,7 +60,7 @@ A first pass's verdict is marked as not final where a retry is owed.
 
 Where the text left something open, this is what the code does. **[ruled]** is the lead's ruling of 25 November (Amendment 2, which the criteria's author writes). The others are the judge's own.
 
-1. **An extra entity [ruled]** (SPEC 2.4, "a key that `inputs.json` does not hold is recorded, and refuses nothing"): a cell, region, membrane, channel, junction, face or species that the registered block does not have is a departing echo. So is an ID in `controls`, `switch_list` or `pool_seeds` that is no entity of the block, and an extra pool of a pool run. A key inside an entity stays recorded.
+1. **An extra entity [ruled]** (SPEC 2.4, "a key that `inputs.json` does not hold is recorded, and refuses nothing"): in the echoed `inputs` alone, a cell, region, membrane, channel, junction, face or species that the registered block does not have is a departing echo. So is an ID in `controls`, `switch_list` or `pool_seeds` that is no entity of the block, and an extra pool of a pool run. A key inside an entity stays recorded. **Extra series and keys elsewhere refuse nothing:** `phi_out` of `base`, a series of no world, an entity of a series that the world does not have, a key of an entry.
 2. **JP14 [ruled]** shifts h₂ and not h₁, whose rows the restart is compared with.
 3. **Not tested and inconclusive by order [ruled]** (CRITERIA 4.5, 8): it stays inconclusive by order and owes the retry. An untested entry that is unresolved or resolved and inside β counts for neither side.
 4. **Plants [ruled]** (CRITERIA 6): one not caught and one unscorable entry make a plant not caught. A plant run that is refused with its rows there: caught becomes unscorable, not caught stays. A departing echo of a plant run, and EP2 whose switch list, schedule or seeds depart, is unscorable before the equality with the honest run is read.
@@ -92,6 +93,9 @@ Where the text left something open, this is what the code does. **[ruled]** is t
 31. **An energy identity that is not finite on finite rows** (an amount at or below zero) is not formed. The entries that read the amount fail.
 32. **Flagged and not refused:** another `cpu_model` than the captures', a first time that is not 0, an unsorted `declared_strings`, a recorded leaf that is missing, mistyped or not finite, a pool run's `t` or `rows` that is not empty.
 33. **Empty strings** in `source` count as missing.
+34. **A membrane without a pump [ruled]** in a world that has pumps (none is registered): `pump`, `heat_pump` and `work_pump` are read on the membranes that have one. Zero rows of the others are accepted, and a row of theirs that is not zero is flagged.
+35. **A second pass [ruled, provisional]** (Amendment 2, item 7): `second_pass_completed: true` in the table's `refusal` is flagged to the checker and refuses nothing. Any other key of a `refusal` beyond the contract's three is flagged too.
+36. **The format sample's** refused run without a declaration has empty `definition` and `checks` [ruled], and its refused runs all have empty `checks`. An empty one is flagged in a completed run alone.
 
 ## 5. The rehearsal's profile
 
@@ -117,16 +121,20 @@ A rehearsal is read with `--profile FILE` (and `--spec` the rehearsal's folder).
 - **`engine_plants`:** a plant run's `variant` is its key. `distance` is a power plant's ratio times the entry's `largest`, or `{"world", "entry", "structural": "<plant>"}`. `change` may stay empty where the run's `declared_change` holds it. Its `path` begins inside the ionic block.
 - **`margins_rehearsal.json`** needs, per world, `entries.<readout>.ratio` for every class S entry, `mechanisms` with a home each, and `structural` (it may be empty) in `margins.json`'s form. `legacy_rehearsal.json` needs `captured_steps_s` per world. Its `entries` may be left out.
 - **C0 leaves out, for a rehearsal,** what is Part 1's alone: the run list, the literal blocks, the captured definitions, the pins of the snapshot, the controls, the margins' re-formation, the mechanism list and the published numbers.
+- **`judge_plants/`** (SPEC section 8): `fabricate --profile FILE --out <folder>` makes the honest tables from the rehearsal's `runs/`, always the same ones. None is committed, and the registered ones are made in the same way for `selftest`.
 - **An ionic assembly world with more than one summary time** has an entry `channel_<x>_summary`, as `base` does.
 
 ## 6. What the judge's own plants say
 
 On the honest fabricated tables (every registered run, 214): the four consumers pass, the eleven structural plants and both engine plants are caught, and JP1 to JP24 score as PLANTS section 6 states (JP14 as ruled, at h₂; as first written it did not, since the restart's class E entry failed by rule). This is evidence about the judge and none about a candidate.
 
+**The format sample** (TABLE section 7; the lead's copy of 25 November, from b707a24d's tree) parses with no fault in the structure-only mode: the files and their sums by the registered reader, every key and type to the leaf, and the registered readers run on its rows, potentials, arrays, paths, schedules and block.
+No number of it was used. TABLE, READOUTS and Amendment 1 were enough to read it, with Amendment 2's item 7 for a refused run without a declaration.
+
 ## 7. Not done
 
 - The independent scalar reference and the pool plants' two outputs (reading 8). The author's runs of 25 November are the evidence for them.
 - The snapshot of `integrated_capture` lies outside the captures' root. Its recorded manifest sha256 is compared, and no file of it is opened.
 - What only the checker can do: that a restart reloaded a checkpoint, that the engine checked every accepted row, the fingerprint of the composed file, and that the off-grid switch was off.
-- The format sample and the rehearsal: their files did not exist when this was written. The rehearsal's mode was run on the registered files under a profile alone.
+- The rehearsal: its files did not exist when this was written. Its mode was run on the registered files under a profile alone.
 - Part 2.

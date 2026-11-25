@@ -184,6 +184,7 @@ def plants(registration: Registration, captures: Captures) -> list:
     H1, H2, H3 = A.runs
     I1, I2, I3 = junctions.runs
     pool_run, (path_run, path_cell, path_world) = target["pool"], target["pool_path"]
+    pool_cell = next(iter(registration.worlds[registration.runs[pool_run]["world"]].pools))
     ionic, J, pools = A.consumer, junctions.consumer, seen.consumer
     world = A.world
     facing = tuple(dict.fromkeys(m["outside"] for m in world.block["membranes"].values()))
@@ -278,10 +279,10 @@ def plants(registration: Registration, captures: Captures) -> list:
     )
 
     def jp4_integer(runs):
-        runs[pool_run]["pool"]["cell_0"]["arrays"]["event_count"][0] += 1
+        runs[pool_run]["pool"][pool_cell]["arrays"]["event_count"][0] += 1
 
     def jp4_time(runs):
-        times = runs[pool_run]["pool"]["cell_0"]["arrays"]["last_event_time_s"]
+        times = runs[pool_run]["pool"][pool_cell]["arrays"]["last_event_time_s"]
         times[-1] = math.nextafter(times[-1], math.inf)
 
     def check4(readout):
@@ -302,7 +303,7 @@ def plants(registration: Registration, captures: Captures) -> list:
         f"{pool_run}: one value of event_count by 1",
         must4,
         jp4_integer,
-        check4("cell_0 event_count"),
+        check4(f"{pool_cell} event_count"),
     )
     add(
         "JP4 (time)",
@@ -310,7 +311,7 @@ def plants(registration: Registration, captures: Captures) -> list:
         f"{pool_run}: one value of last_event_time_s by one unit in the last place",
         must4,
         jp4_time,
-        check4("cell_0 last_event_time_s"),
+        check4(f"{pool_cell} last_event_time_s"),
     )
 
     def jp5(runs):

@@ -471,13 +471,24 @@ def test_extra_series_and_keys_refuse_nothing(benches):
 
     def stop(runs):
         refuse(runs[J[0]], "check")
-        runs[J[0]]["refusal"]["second_pass_completed"] = True
+        runs[J[0]]["refusal"].update(second_pass_completed=True, more=1)
 
     q = benches("integrated").score(stop)
     assert q.run(J[0])["stopped"] and q.verdict("integrated") == FAIL
-    assert ["refusal, keys beyond the contract's", {"second_pass_completed": True}] in q.run(J[0])[
-        "flags"
-    ]
+    flags = q.run(J[0])["flags"]
+    assert ["second pass", "it completed where the run was refused"] in flags
+    assert ["refusal, keys beyond the contract's", {"more": 1}] in flags
+
+    def pumps(runs, value=0.0):
+        for series in ("pump", "heat_pump", "work_pump"):
+            runs[J[0]]["rows"][series] = {f"membrane_{i}": [value] * 201 for i in range(7)}
+
+    q = benches("integrated").score(pumps)
+    assert q.verdict("integrated") == PASS
+    assert [f[0] for f in q.run(J[0])["flags"]] == ["extra series"]
+    q = benches("integrated").score(lambda runs: pumps(runs, 1.0))
+    assert q.verdict("integrated") == PASS
+    assert "a pump's row without a pump" in [f[0] for f in q.run(J[0])["flags"]]
 
 
 def test_structural_zeros(benches):

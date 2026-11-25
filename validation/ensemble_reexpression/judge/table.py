@@ -667,9 +667,12 @@ def recorded_flags(registration: Registration, run: dict, entry: dict) -> list:
         out.append(["restart", "not null in a run that is no restart"])
     refusal = entry.get("refusal")
     if isinstance(refusal, dict):
-        more = {k: v for k, v in refusal.items() if k not in ("kind", "message", "time_s")}
-        if more:  # for example, that the second pass of a `check` completed (Amendment 2, item 7)
+        known = ("kind", "message", "time_s", "second_pass_completed")
+        more = {k: v for k, v in refusal.items() if k not in known}
+        if more:
             out.append(["refusal, keys beyond the contract's", more])
+        if refusal.get("second_pass_completed") not in (None, False):  # Amendment 2, item 7
+            out.append(["second pass", "it completed where the run was refused"])
         if not isinstance(refusal.get("message"), str):
             out.append(["refusal", "its message is missing"])
         if (refusal.get("kind") == "check") != is_finite(refusal.get("time_s")):
@@ -720,6 +723,7 @@ def recorded_flags(registration: Registration, run: dict, entry: dict) -> list:
                     "inputs.assembly.composed_file_fingerprint is missing or mistyped",
                 ]
             )
+    out += absent_pump_flags(world, entry.get("rows"))
     out += [
         ["recorded leaf", f"{key} is not null in an ionic run"]
         for key in ("pool", "path")
@@ -764,6 +768,18 @@ def recorded_flags(registration: Registration, run: dict, entry: dict) -> list:
                     f"finite: {bad[:5]} ({len(bad)})",
                 ]
             )
+    return out
+
+
+def absent_pump_flags(world: World, rows) -> list:
+    """A pump's series may be written for a membrane that has none, as zeros. Others are flagged."""
+    out = []
+    for series in ("pump", "heat_pump", "work_pump"):
+        table = rows.get(series) if isinstance(rows, dict) else None
+        for membrane, values in table.items() if isinstance(table, dict) else ():
+            if membrane in world.membranes and membrane not in world.pumps:
+                if not isinstance(values, list) or not np.all(column(values) == 0.0):
+                    out.append(["a pump's row without a pump", f"{series}/{membrane} is not zero"])
     return out
 
 
