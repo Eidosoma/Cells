@@ -6,9 +6,10 @@ with a planted error it must catch (D187):
   registration (planted, each refused: an unknown role, a non-bool monotone, a heat-suffixed field
   declared work, a stray field, the tableau's unversioned ID, a repeated booking, a structural role
   without a fill, an intensive one with a fill, a non-finite fill, ledgers without their bounds,
-  FR-42's label transfers without label refusals and a label refusal that is not a callable);
-  today's built-in kinds declare none, but the transporter, which admits the trapezoid booking
-  (K2), and register as before;
+  FR-42's label transfers without label refusals and a label refusal that is not a callable, and a
+  factor's feedback hooks alone, not callable, or without its factors); today's built-in kinds
+  declare none, but the transporter, which admits the trapezoid booking (K2), and register as
+  before;
 - an undeclared state field takes today's suffix rule, a declaration overrides it (planted: a
   heat field declared non-monotone reads non-monotone; an unsuffixed field books no energy);
 - a kind's missing partition roles are its state, layout and control fields with none, on a bound
@@ -129,7 +130,16 @@ def test_seam_declarations_are_checked_at_registration():
     )
     assert kind_registry.declaration_errors(good) == []
     assert kind_registry.KindRegistry().register(good) is good
+    # A factor's feedback hooks (G-5): both or neither, beside the factors they belong to.
+    factors = dict(factor_sources=lambda d: (), factors=lambda read, p, *, xp: ())
+    rows = dict(factor_rows=lambda declaration: ())
+    slopes = dict(factor_log_slopes=lambda read, p, *, xp: ())
+    assert kind_registry.declaration_errors(planted(**factors, **rows, **slopes)) == []
     plants = {
+        "factor rows alone": dict(**factors, **rows),
+        "factor slopes alone": dict(**factors, **slopes),
+        "feedback hooks without factors": dict(**rows, **slopes),
+        "factor rows not a callable": dict(**factors, **slopes, factor_rows=()),
         "unknown role": dict(energy_roles={"booked_moved_fmol": EnergyRole("light", True)}),
         "non-bool monotone": dict(energy_roles={"booked_moved_fmol": EnergyRole("stored", 1)}),
         "suffix contradicted": dict(energy_roles={"booked_work_pJ": EnergyRole("heat", True)}),

@@ -42,6 +42,7 @@ LAW_FAMILIES = MappingProxyType(  # {a law interface: its laws' family}
         "cells.junction_law@1": "junction",
         "cells.binding_law@1": "binding",
         "cells.channel_block_law@1": "channel_block",
+        "cells.transfer_factor_law@1": "transfer_factor",
         "cells.exchange_law@1": "exchange",
         "cells.reaction_law@1": "reaction",
         "cells.rate_factor_law@1": "rate_factor",

@@ -35,12 +35,19 @@ how to write one, the [glossary](GLOSSARY.md) defines the words, and
 | --- | --- | --- |
 | [`cells.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md) | Three sodium ions cross a membrane one way for each calcium ion that crosses the other way, each exchange carrying one charge, at a rate whose form is synthetic. | Not stated |
 
+### `cells.transfer_factor_law@1`
+
+| Page | In one sentence | Status |
+| --- | --- | --- |
+| [`cells.hill_product_factor@1`](cells/laws/hill_product_factor@1.md) | A number between zero and one that rises or falls smoothly with each of the concentrations it reads, by which a transfer's rate is multiplied. | Not stated |
+
 ## Kinds
 
 ### `cells.kind@1`
 
 | Page | In one sentence | Status |
 | --- | --- | --- |
+| [`cells.species_condition@1`](cells/kinds/species_condition@1.md) | A condition at a node reads the concentrations of chosen substances there and gives a number between zero and one that opens or closes routes and channels. | Not stated |
 | [`cells.transporter@1`](cells/kinds/transporter@1.md) | Membrane pumps that each spend one ATP molecule per cycle to move a fixed number of one kind of molecule or ion across a membrane, even against its gradient. | Not stated |
 
 ## Operators

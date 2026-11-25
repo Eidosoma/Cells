@@ -39,6 +39,9 @@ keeps its start, and the definition keeps its form.
 - **domain:** d in [0, 1], zeros off the declared patches.
 - **The routing door's source** (§7.4 (n)): `factor_sources(declaration)`, the damage IDs in
   declared order, and `factors(read, p, *, xp)`, d at each one's patch on the stage's state.
+- **No loop closes through it:** its factor is its own state d, which follows its schedules and
+  reads no amount, and no route moves it. So it has no feedback hooks (factor_rows and
+  factor_log_slopes; kind_registry.Kind) and needs none.
 - **The lifecycle's declarations** (CORE_SEAMS §4.2, and §18's B1 lift, the lead's rulings of 18
   November 2026): every field's partition role and axes, and the host of its own axis (the damage
   entities, each on its patch). d is a level of its patch, a uniform damage of every member (§9),
