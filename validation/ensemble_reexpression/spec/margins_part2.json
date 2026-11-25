@@ -1028,6 +1028,22 @@
      }
     }
    },
+   "first_homes_not_tested_there": {
+    "store K leak": {
+     "entry": "store_leak_K",
+     "plant": "storeleakK",
+     "ratio": 0.0001426,
+     "margin": 1560.0,
+     "why": "the first declared home, replaced on 25 November after the planted runs had been read on the reference side; not tested there"
+    },
+    "store capacitor": {
+     "entry": "store_voltage",
+     "plant": "storecap",
+     "ratio": 9.938e-05,
+     "margin": 12.97,
+     "why": "the first declared home, replaced on 25 November after the planted runs had been read on the reference side; not tested there"
+    }
+   },
    "cluster_entries_at_the_end": {
     "n_out_Na": {
      "home": false,
@@ -2145,14 +2161,15 @@
        "margin": 145100000.0
       }
      }
-    },
+    }
+   },
+   "cluster_not_tested": {
     "store capacitor": {
-     "store_K": {
-      "storecap": {
-       "ratio": 7.775e-05,
-       "margin": 850.2
-      }
-     }
+     "why": "a cluster's captures hold one end state and not the early rows where the capacitor shows; it is tested in the four children alone (the lead's ruling of 25 November)",
+     "entry": "store_K",
+     "plant": "storecap",
+     "ratio_halved": 3.888e-05,
+     "margin_at_the_end": 850.2
     }
    }
   },
@@ -3200,6 +3217,22 @@
        "margin": 126400.0
       }
      }
+    }
+   },
+   "first_homes_not_tested_there": {
+    "store K leak": {
+     "entry": "store_leak_K",
+     "plant": "storeleakK",
+     "ratio": 0.000144,
+     "margin": 1559.0,
+     "why": "the first declared home, replaced on 25 November after the planted runs had been read on the reference side; not tested there"
+    },
+    "store capacitor": {
+     "entry": "store_voltage",
+     "plant": "storecap",
+     "ratio": 0.0001009,
+     "margin": 13.15,
+     "why": "the first declared home, replaced on 25 November after the planted runs had been read on the reference side; not tested there"
     }
    },
    "cluster_entries_at_the_end": {
@@ -4383,14 +4416,6 @@
       }
      }
     },
-    "store capacitor": {
-     "store_K": {
-      "storecap": {
-       "ratio": 7.625e-05,
-       "margin": 825.5
-      }
-     }
-    },
     "plasma calcium pump": {
      "ca_pump": {
       "pmca": {
@@ -4410,6 +4435,15 @@
        "margin": 126400.0
       }
      }
+    }
+   },
+   "cluster_not_tested": {
+    "store capacitor": {
+     "why": "a cluster's captures hold one end state and not the early rows where the capacitor shows; it is tested in the four children alone (the lead's ruling of 25 November)",
+     "entry": "store_K",
+     "plant": "storecap",
+     "ratio_halved": 3.812e-05,
+     "margin_at_the_end": 825.5
     }
    }
   },
@@ -5517,6 +5551,22 @@
        "margin": 45280000.0
       }
      }
+    }
+   },
+   "first_homes_not_tested_there": {
+    "store K leak": {
+     "entry": "store_leak_K",
+     "plant": "storeleakK",
+     "ratio": 0.0001439,
+     "margin": 1559.0,
+     "why": "the first declared home, replaced on 25 November after the planted runs had been read on the reference side; not tested there"
+    },
+    "store capacitor": {
+     "entry": "store_voltage",
+     "plant": "storecap",
+     "ratio": 0.0001008,
+     "margin": 13.13,
+     "why": "the first declared home, replaced on 25 November after the planted runs had been read on the reference side; not tested there"
     }
    },
    "cluster_entries_at_the_end": {
@@ -6765,14 +6815,6 @@
       }
      }
     },
-    "store capacitor": {
-     "store_K": {
-      "storecap": {
-       "ratio": 7.635e-05,
-       "margin": 827.3
-      }
-     }
-    },
     "plasma calcium pump": {
      "ca_pump": {
       "pmca": {
@@ -6814,6 +6856,15 @@
        "margin": 45280000.0
       }
      }
+    }
+   },
+   "cluster_not_tested": {
+    "store capacitor": {
+     "why": "a cluster's captures hold one end state and not the early rows where the capacitor shows; it is tested in the four children alone (the lead's ruling of 25 November)",
+     "entry": "store_K",
+     "plant": "storecap",
+     "ratio_halved": 3.817e-05,
+     "margin_at_the_end": 827.3
     }
    }
   },
@@ -7986,6 +8037,22 @@
        "margin": 64330000.0
       }
      }
+    }
+   },
+   "first_homes_not_tested_there": {
+    "store K leak": {
+     "entry": "store_leak_K",
+     "plant": "storeleakK",
+     "ratio": 0.0001706,
+     "margin": 678.7,
+     "why": "the first declared home, replaced on 25 November after the planted runs had been read on the reference side; not tested there"
+    },
+    "store capacitor": {
+     "entry": "store_voltage",
+     "plant": "storecap",
+     "ratio": 0.0001518,
+     "margin": 8.357,
+     "why": "the first declared home, replaced on 25 November after the planted runs had been read on the reference side; not tested there"
     }
    },
    "cluster_entries_at_the_end": {
@@ -9304,14 +9371,6 @@
       }
      }
     },
-    "store capacitor": {
-     "store_K": {
-      "storecap": {
-       "ratio": 5.781e-05,
-       "margin": 230.0
-      }
-     }
-    },
     "plasma calcium pump": {
      "ca_pump": {
       "pmca": {
@@ -9369,6 +9428,15 @@
        "margin": 64330000.0
       }
      }
+    }
+   },
+   "cluster_not_tested": {
+    "store capacitor": {
+     "why": "a cluster's captures hold one end state and not the early rows where the capacitor shows; it is tested in the four children alone (the lead's ruling of 25 November)",
+     "entry": "store_K",
+     "plant": "storecap",
+     "ratio_halved": 2.89e-05,
+     "margin_at_the_end": 230.0
     }
    }
   }

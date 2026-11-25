@@ -51,12 +51,13 @@ read. Entities are matched by their ID.
 
 | Consumer | Class S, over the compared times | Class S at `potential_times_s` | Others |
 | --- | --- | --- | --- |
-| `jupiter` (a family: one arm) | `n_cell_x` (3), `n_out_x` (3), `leak_x` (3), `channel_K`, `junction_x` (3), `face_x` (3), `pump`, `gate_m`, `gate_h`, `junction_gate`, `heat_membrane`, `heat_junction`, `heat_face`. 23 | `voltage`, `phi_out`. 2 | E (restart), D |
-| `cell` (a family: one seed, one world ID) | `n_cell_x` (3), `n_out_x` (3), `leak_x` (3), `channel_K`, `pump`, `gate_m`, `gate_h`, `heat_membrane`. 14 | `voltage` at 0.02 s. 1 | E on the pool and the schedule (§4), R (exposure), D |
-| `base` (a family: one seed, one world ID) | the `jupiter` 23 at 0.02 s. 23 | `voltage` at 0.005, 0.01 and 0.02 s, and `channel_K` at 0.005, 0.01 and 0.02 s (`channel_K_summary`, whose scale is `channel_K`'s). 2 | E on the pool and the schedule, R, D |
-| `integrated` | `n_cell_x` (3), `junction_x` (3), `junction_gate`, `heat_junction`. 8 | `voltage`. 1 | E: `n_out_x` zero. D |
+| `jupiter` (a family: one arm) | `n_cell_x` (3), `n_out_x` (3), `leak_x` (3), `channel_K`, `junction_x` (3), `face_x` (3), `pump`, `gate_m`, `gate_h`, `junction_gate`, `heat_membrane`, `heat_junction`, `heat_face`. 23 | `voltage`, `phi_out`. 2 | E (restart), R (§5), D. `energy_identity` is class S (§5) |
+| `cell` (a family: one seed, one world ID) | `n_cell_x` (3), `n_out_x` (3), `leak_x` (3), `channel_K`, `pump`, `gate_m`, `gate_h`, `heat_membrane`. 14 | `voltage` at 0.02 s. 1 | E on the pool and the schedule (§4), R (§5: exposure and balances), D, `energy_identity` |
+| `base` (a family: one seed, one world ID) | the `jupiter` 23 at 0.02 s. 23 | `voltage` at 0.005, 0.01 and 0.02 s, and `channel_K` at 0.005, 0.01 and 0.02 s (`channel_K_summary`, whose scale is `channel_K`'s). 2 | E on the pool and the schedule, R, D, `energy_identity` |
+| `integrated` | `n_cell_x` (3), `junction_x` (3), `junction_gate`, `heat_junction`. 8 | `voltage`. 1 | E: `n_out_x` zero. R, D, `energy_identity` |
 
-- **`jupiter`** has two families, so 50 S entries. **`cell`:** 32 families, 15 each, 480. **`base`:** 32 families, 25 each, 800. **`integrated`:** 1 family, 9.
+- **`jupiter`** has two families, so 50 S entries against captures and 2 `energy_identity` entries. **`cell`:** 32 families, 15 each, 480, with 32 `energy_identity`. **`base`:** 32 families, 25 each, 800, with 32. **`integrated`:** 1 family, 9, with 1.
+- **`energy_identity` has no captured counterpart.** It is the run's own identity (§5).
 
 ## 4. The assembly pool's arrays (class E)
 
@@ -77,20 +78,29 @@ A pool run (`cell s<k> pool`, `base s<k> pool`) exports, per cell, the 19 final 
 | Formed | From | Class and tolerance |
 | --- | --- | --- |
 | `heat_membrane` (per membrane) | `heat_leak` + `heat_pump` + Σ `heat_channel` of that membrane's channels, against the captured `dissipated_energy_pJ[membrane]` | S. **Legacy lumps the three**, so only the sum is compared |
+| **Balance of a cell**, at every compared time | `n_cell_x` = Σ over its membranes (`leak_x` + `channel_x` + ν_x `pump`) ± Σ over its junctions, with ν = −3 for Na, +2 for K, 0 for Cl, and a junction's amount minus at its sender, plus at its receiver | R: 8 ε (S + 1) s(`n_cell_x`) |
+| **Balance of a region** | `n_out_x` = −Σ over the membranes that face it (`leak_x` + `channel_x` + ν_x `pump`) ± Σ over its faces | R: 8 ε (S + 1) s(`n_out_x`) |
+| **Closed world** | Σ over cells `n_cell_x` + Σ over regions `n_out_x` = 0 | R: 8 ε (S + 1) (N_cells s(`n_cell_x`) + N_regions s(`n_out_x`)) |
+| **Capacitor**, at the potential times | `voltage` − V₀ = (F 10⁻¹⁵/C) Σ_x z_x `n_cell_x` of its cell | R: (8 ε (S + 1) + 4 × 10⁻¹²) s(`voltage`) |
+| `energy_identity`, at every compared time | below | **S with the exact value 0**, scale s(`energy_identity`) |
 | Exposure of a pool | Σ of the intervals of the event path during which the availability is 1, against the captured `availability_exposure_s` of that world and cell at h/4 | R: 2 ε × 0.02 s × (2 + the captured job's `segments` of that world) |
 
-**Conservation is not judged from the table's rows.** It is the engine's own rule, checked by the engine at every accepted step (`CRITERIA.md` §4.4). Legacy's own ledgers are its own side's evidence. The judge also forms the identities
-below and **reports them, with nothing decided by them**. Beside each it prints the bound of the author's draft, which the lead's ruling replaced before the first commit (the protocol's §11): for an amount's balance, the closed world and the capacitor 8 ε (S + 1) s, with s the scale of the identity's own readout and S the run's steps; for the energy
-2 U_c + 8 ε (S_c + 1) s + 4 × 10⁻¹² s, with s the sum of the scales of the heats and works it reads. A residual above its printed bound is **flagged to the checker**:
-- **balance of a cell:** `n_cell_x` = Σ over its membranes (`leak_x` + `channel_x` + ν_x `pump`) ± Σ over its junctions, with ν = −3 for Na, +2 for K, 0 for Cl, a junction's amount minus at its sender and plus at its receiver;
-- **balance of a region:** `n_out_x` = −Σ over the membranes that face it (`leak_x` + `channel_x` + ν_x `pump`) ± Σ over its faces;
-- **closed world:** Σ over cells `n_cell_x` + Σ over regions `n_out_x` = 0;
-- **capacitor,** at the potential times: `voltage` − V₀ = (F 10⁻¹⁵/C) Σ_x z_x `n_cell_x` of its cell;
-- **energy:** Σ compartments and species 10⁻³ R T [ d (ln(n₀/V) − 1) + (n₀ + d) ln(1 + d/n₀) ] + Σ membranes ½ 10¹² C ΔV (2 V₀ + ΔV) + Σ heats − Σ `work_pump`, with d the increment, n₀ the initial amount, V the volume and ΔV the voltage's change.
+**The energy identity** (a closed world, no reservoir):
+
+    E(t) = Σ_compartments Σ_x 10⁻³ R T [ d (ln(n₀/V) − 1) + (n₀ + d) ln(1 + d/n₀) ]          (d the increment, n₀ the initial amount, V the volume)
+         + Σ_membranes ½ 10¹² C ΔV (2 V₀ + ΔV),   ΔV = (F 10⁻¹⁵/C) Σ_x z_x n_cell_x
+         + Σ heats (heat_leak, heat_pump, heat_channel, heat_junction, heat_face)  −  Σ work_pump  =  0
+
+- **The times of the identities** are: `jupiter` and `integrated`, every compared time (201); `cell`, 0.02 s; `base`, 0.005, 0.01 and 0.02 s. A run needs rows of every series that an identity reads at those times.
+- **It is a property and not a comparison with legacy.** Where an integrator books its heats as integrals, it closes at the integrator's order and not at rounding. That is why it is class S (FR-38's amendment 3), and the balances are class R.
+- **The sign of `work_pump`:** the fuel's work enters the world, so it is subtracted from the stored and dissipated energy.
+- **Where an identity has zero scale** (a species with no route), the value is exactly zero.
+- **Conservation is judged beside the engine's own rule, and not instead of it** (`CRITERIA.md` §4.4). These are Part 1's (the lead's ruling of 25 November, which reverses its earlier one for Part 1). In Part 2 the same formulas are reported and not judged (`PART2.md` §9).
+- **The formulas, signs and scales were checked on the reference side,** on the captured arrays of every Part 1 world at h/4: every balance is at most 5.3 × 10⁻⁴ of its bound, the capacitor at most 3.1 × 10⁻⁶ of its, and every energy identity at most 1.1 × 10⁻⁶ of its, with U_c = 0 (the author's check of 25 November, after the ruling and after the planted numbers had been read). No bound moved because of it.
 
 ## 6. Recorded, never judged
 
-- **The table's** `definition`, `checks`, `steps`, `heat_leak`, `heat_pump`, `heat_channel` alone, and any extra series.
+- **The table's** `definition`, `checks`, `steps`, `heat_leak`, `heat_pump`, `heat_channel` alone, and any extra series. `heat_leak`, `heat_pump`, `heat_channel` and `work_pump` feed `heat_membrane` and `energy_identity`, so a missing one leaves those entries not formed.
 - **Not compared, and why:**
   - legacy's rates, affinities, currents and powers at the observations. The transfers carry their integrals.
   - `segments` and `tick` (§4).

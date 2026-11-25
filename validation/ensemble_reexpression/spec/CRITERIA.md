@@ -24,8 +24,8 @@ A family is three runs of one world at steps h₁ > h₂ > h₃, each half the l
 | Class | What | Judged by |
 | --- | --- | --- |
 | **E** | Equal as numbers: integers equal, doubles equal as doubles, and +0.0 equals −0.0 | §4.1 |
-| **R** | An assembly pool's exposure, within a rounding bound | §4.2 |
-| **S** | Stepped, against the captures: three runs, extrapolated, with an order rule | §4.3 |
+| **R** | An assembly pool's exposure, and (Part 1) a run's own balances, within a rounding bound | §4.2 |
+| **S** | Stepped, against the captures (`energy_identity`, Part 1, against 0): three runs, extrapolated, with an order rule | §4.3 |
 | **D** | Completes, with the engine's own ledger rule held at every accepted step | §4.4 |
 | **P** | Power: whether the entry could have failed | §4.5, judged first |
 
@@ -48,7 +48,10 @@ Every value equals the named value.
 
 ### 4.2 R, rounded
 
-|value − expected| ≤ the bound READOUTS §5 gives. The exposure uses the run's own event path, over every world and cell of the pool run.
+|value − expected| ≤ the bound READOUTS §5 gives, at every compared time and every entity, in **every judged run that ran** (a retry's too), whatever its step. A support run's and a plant run's are reported, a miss is flagged to the checker, and they own no entry.
+- The step count S in the bound is the run's own grid's, end_s over its step.
+- The balances use the run's own rows. The exposure uses the run's own event path, over every world and cell of the pool run.
+- **The balances are Part 1's.** In Part 2 they are reported and not judged (`PART2.md` §9).
 
 ### 4.3 S, stepped
 
@@ -66,6 +69,7 @@ For a family and an entry, over its compared times and entities, with Y₁, Y₂
   - **the floor of 64 ulp × max|X| is replaced** by e_round and e_close. Legacy's own runs refute that floor: between its own h/2 and h/4, arrays at rounding differ by up to about 3000 ulp of their
     largest entry. The two terms come from a count and from two declared acceptance constants (`SPEC.md` §6), and they are kept apart from the truncation term;
   - the error estimates take the **larger of the two step-halving pairs** (D271, D334).
+- **`energy_identity`** (Part 1): L* = 0, U_l = 0, and β = 2 U_c + 8 ε (S_c + 1) s + 4 × 10⁻¹² s.
 - Every compared time needs one row in each run the entry needs (within 10⁻¹² s). Where one is missing, or there are two, the entry is not formed (§5), and no time is dropped from it.
 
 **The order rule.** Let θ = 10 × 8 ε (S_c + 1) s.
@@ -83,10 +87,11 @@ For a family and an entry, over its compared times and entities, with Y₁, Y₂
 - **The legacy side** is classed by the same rule with p = 4, S_l and its own differences (`legacy_part1.json`). Every captured entry of this folder is unresolved. A legacy entry resolved outside [3½, 4½], or with d₁ˡ > θ ≥ d₂ˡ, is a **C0 fault**, found before any run and settled by a
   further legacy capture, never by a judgement.
 
-### 4.4 D, completes: conservation is the engine's own rule
+### 4.4 D, completes: the engine's own ledgers at every accepted step
 
 A judged run completes, and so does every accepted row's check. The engine checks its own ledgers (material, charge, energy and the rest it declares) at **every accepted step**, each against its declared
-allowance, and stops at the first that fails. That rule is the criterion. No absolute number of legacy's is used, since legacy's 10⁻⁹ pJ belongs to a fourth-order integrator and is not established for an order-2 one.
+allowance, and stops at the first that fails. That rule is a criterion. No absolute number of legacy's is used, since legacy's 10⁻⁹ pJ belongs to a fourth-order integrator and is not established for an order-2 one.
+- **In Part 1 the judge also judges the balances and the energy identity** from the rows, **beside** that rule: the balances as class R (§4.2) and `energy_identity` as class S (§4.3), with READOUTS §5's bounds. The candidate of Part 1 is fourth order as legacy was, so the reason above does not hold there. In Part 2 they are reported and not judged.
 - **A run that the engine's own check stops fails** (as FR-54's protocol has it, and for its reason: the check's residual above its allowance is the evidence). A refusal at parse, or one that a harness made, is a refusal (§5).
 - **The checks were on.** The table's `checks` (recorded) name each ledger the engine checks and its largest residual. The checker confirms from the run's own record that the engine checked every accepted row and that no check was switched off. A run whose record cannot show it
   is refused, its readouts are judged, and a fail stands.
@@ -105,7 +110,7 @@ writes `power.json` and the lead records its sha256. Stage 2 forms the differenc
   not tested is owed the retry (§7) where 2 U_c is the larger part of β, since a finer step lowers U_c. Where it is not, the retry cannot help and the entry stays not tested.
 - **An observable that a mechanism cannot reach** in 20 ms is declared so in `PLANTS.md`, with the number, before any run. It is "not tested" in advance, and is not made a
   home. A plant of such a mechanism is enlarged or replaced by a dated line before the tag, never after.
-- The R and E entries have no power entry. Their own plants are §6's. Class D has none.
+- `energy_identity` and the R and E entries have no power entry. Their own plants are §6's. Class D has none.
 
 ## 5. Faults and refusals
 
@@ -128,7 +133,7 @@ writes `power.json` and the lead records its sha256. Stage 2 forms the differenc
 - **A refused or missing support run** leaves its consumer at best inconclusive. It does not refuse the run it supports.
 - **The one place a fail can go unseen** is a departing echo. It leaves nothing of that run judged, and its family's S entries are not formed. It is kept: such a run is not the registered
   world. The checker sees the departure and its cause.
-- **The owner of an entry.** An S entry belongs to the run at h₃. A D entry belongs to its own run, and the exposure to its pool run. A restart's E entry belongs to the judged run it resumes, never to the support run. The exposure, the path and the pool's arrays belong to the pool run. The switch list's, the channel schedule's and the recorded seeds' E entries belong to the ionic run that records them, and a pool run's seeds to the pool run.
+- **The owner of an entry.** An S entry and its `energy_identity` belong to the run at h₃. A D entry belongs to its own run, and so do a judged run's balances (class R). The exposure belongs to its pool run. A restart's E entry belongs to the judged run it resumes, never to the support run. The exposure, the path and the pool's arrays belong to the pool run. The switch list's, the channel schedule's and the recorded seeds' E entries belong to the ionic run that records them, and a pool run's seeds to the pool run.
 - **Nothing passes empty.** A consumer's S entries that were formed are counted. If they are fewer than READOUTS §3 lists, the consumer is at best inconclusive. A plant whose named entry is not formed is unscorable, never caught.
 
 **C0, before any table is read:** the judge reads `inputs.json`, `legacy_part1.json`, `reference_paths.json`, `margins.json` and the manifest, and the captures they name. It checks every sha256, every key, the scales
@@ -190,7 +195,8 @@ tables' hashes are recorded, then C0, then stage 1, then the tables are opened f
 - **A miss in class S with the others passing** says that the candidate's equations, or its declared constants, are not the captured ones, or that a rounding or closure bound is too tight. The plants say which readout a mechanism moves.
   - The largest ratio and the entities it lies at go to a labelled, non-blind diagnosis, by someone other than the author, the builders, the judge and the checker. It names the equation or the bound.
   - **A bound that the count left out is corrected only at the rehearsal** (§10), never after a registered run. A miss that a registered run shows is recorded as a miss.
-- **A reported identity that a run misses** (READOUTS §5) while its own checks pass says that the exporter's rows and the engine's ledgers disagree. It is a question for the checker, and decides nothing by itself.
+- **A miss in class R on a balance, or of `energy_identity`** (READOUTS §5, Part 1), with the engine's own checks passing, says that the exporter's rows and the engine's ledgers disagree, or that the engine's allowance is looser than the count. It fails its run, and a labelled, non-blind diagnosis follows. In Part 2 a reported identity that a run misses is a question for the checker, and decides nothing by itself.
+- **A miss in class R on the capacitor** says that the voltage's solve and the charge it was made from disagree beyond the closure term. It fails its run.
 - **A failed consumer stays in legacy.** Its capture, its pre-cleanup tag and its snapshot hold it. The cleanup does not remove it until a new registration passes, and the user decides what happens to the rest.
 - A miss is never dropped, rescaled or re-run at another step. Any new run is a new registration, with this one's record beside it.
 

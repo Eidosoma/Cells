@@ -97,8 +97,8 @@ Formed by the judge from the honest tables, before the judge's tag and again on 
 | JP3 | `jupiter_baseline` read as `jupiter_pump_release` | a fail of `pump` |
 | JP4 | One value of one pool array moved by one unit (an integer by 1, a time by one unit in the last place) | a fail of class E |
 | JP5 | h₃'s rows copied from h₂'s | both runs refused (the copy guard), and the readouts judged |
-| JP6 | One run of a family refused, and an E entry of another run altered to fail | the fail stands |
-| JP7 | `heat_junction` set to zero | a fail of `heat_junction` (S), and a reported energy residual |
+| JP6 | One run of a family refused, and a balance (R) of another run altered to fail | the fail stands |
+| JP7 | `heat_junction` set to zero | a fail of `heat_junction` (S) and of `energy_identity` (jupiter) |
 | JP8 | One event deleted from a path | a fail of class E, and of the schedule |
 | JP9 | An echo with one number off by 10⁻⁹ | refused, and nothing of the run judged |
 | JP10 | An echo with its maps in another order, a 4 for a 4.0, and a schedule with a repeated value | not refused |
@@ -110,6 +110,8 @@ Formed by the judge from the honest tables, before the judge's tag and again on 
 | JP16 | `base s0 w0` refused, every blind family honest | `base` inconclusive, and the record shows that its 30 blind families pass |
 | JP17 | An ionic run of `base` whose `switch_list` and `controls.channel` differ by one entry | a fail of class E at the one that departs from the path, and the other entry passes |
 | JP18 | An ionic run of `base` whose `assembly_observable` string differs by one character from the strings note's | refused, and nothing of the run is judged |
+| JP19 | One `junction_K` of `jupiter_baseline` raised by 10⁻⁶ of its largest value, the rest honest | a fail of `junction_K` (S), and of the two cells' balances (R) |
+| JP20 | One `work_pump` scaled by 1.01 | a fail of `energy_identity`, and of no S entry against a capture |
 
 **A judge's plant that the code scores otherwise stops the judge's tag.**
 

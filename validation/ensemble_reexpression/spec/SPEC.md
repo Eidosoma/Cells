@@ -177,6 +177,7 @@ initial concentrations of the species on the two sides (mM).
 | `voltage` | max |V₀| + max over membranes of (F 10⁻¹⁵/C) Σ_x |z| × the cell's sum of route scales |
 | `phi_out` | R T_K/F |
 | An entry named `<readout>_summary` | The scale of `<readout>` |
+| `energy_identity` | The sum over membranes of `heat_membrane`'s terms (leak, pump, channels), over junctions and over faces, plus the pumps' work, plus the amounts' and the capacitors' terms. Work: Σ over pumps of capacity × T × 10⁻³ × (|ΔG⁰| + R T_K |ln(ADP Pi/(1000 ATP))|). Amounts: Σ over compartments and species of (the sum of the scales of the routes that touch it) × 10⁻³ R T_K (1 + |ln(initial concentration)|), in the numeric mM of the concentration. Capacitors: Σ over membranes of 10¹² C s(`voltage`)² |
 
 **Why this scale.** It is the gross one-way throughput that a readout is formed from, so a rounding or a solver residual relative to it is
 the one the arithmetic makes. It comes from the declared values alone. It is at least the magnitude of the captured ledger in every

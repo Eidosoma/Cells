@@ -165,7 +165,7 @@ As Part 1 §2.3. The captured release, pump and passive multipliers are 1 throug
 | Cytosolic buffer, second site | `extent_bind_0_second` | all eight |
 | Store buffer, first site | `extent_bind_1_first` | all eight |
 | Store buffer, second site | `extent_bind_1_second` | all eight |
-| Store capacitor | `store_K` | all eight |
+| Store capacitor | `store_K` | the four children. **In the four clusters it is not tested** (§7.4) |
 | Plasma calcium pump | `ca_pump` | plasma, gated, ip3, and their clusters |
 | Exchanger | `exchanger` | plasma, gated, ip3, and their clusters |
 | Ca channel permeability | `ca_channel` | gated, ip3, and their clusters |
@@ -174,8 +174,8 @@ As Part 1 §2.3. The captured release, pump and passive multipliers are 1 throug
 | IP3 binding | `extent_ip3_binding` | ip3 and its cluster |
 
 - **Part 1's mechanisms** (leak of Na, K, Cl, K channel, its kinetics, the pump, the junction, its gate, the faces, the closure) are in every one of the eight, and their homes are Part 1's. **Their ratios come from their own planted runs** in each of the four ionic children (§7.2), and not from Part 1's.
-- **Where a home entry has several plants** (the calcium factor's two constants, the exchanger's two, and the IP3 factor's, all on one entry), each plant is tested at it with its own ratio, the entry takes the largest, and the mechanism is tested when one of its plants is. **This rule waits for the lead's ruling:** it goes beyond `CRITERIA.md` §4.5, which gives a home entry one plant. The literal alternative
-  is that every plant of a mechanism must be tested. The choice changes nothing of Part 1, where no home has two plants.
+- **Where a home entry has several plants** (the calcium factor's two constants, the exchanger's two, and the IP3 factor's, all on one entry), each plant is tested at it with its own ratio, the entry takes the largest, and the mechanism is tested when one of its plants is (the lead's ruling of 25 November). **A mechanism whose plants are all unseen,** so that none is tested at a home entry, is listed as **not tested, and nothing may be claimed of it.** This goes beyond
+  `CRITERIA.md` §4.5, which gives a home entry one plant, and it changes nothing of Part 1, where no home has two.
 - **The four clusters** take their ionic child's ratio, formed at 0.02 s alone (the summary entries at the summary times), **halved**. That is a declared lower bound. The availability changes the channel's current, not its relative response to a 1 % change in it. No cluster was run with a power plant.
 - **A mechanism whose plant has no effect above its band** is declared not observable in §7.4, and is not a home.
 
@@ -210,7 +210,7 @@ As Part 1 §2.3. The captured release, pump and passive multipliers are 1 throug
 **103 power runs, 15 structural runs (SC3 stopped by legacy's domain check, and the refused stoichiometry of SC6 among them), and nine controls, 127 runs in the manifest,** of the frozen snapshot at the captured 12.5 µs, under the lead's conditions of 25 November, after the first commit of this branch. `plants_manifest_part2.json` holds each run, its patch text and its sha256, and `margins_part2.json` the numbers below, entry by entry.
 **The controls are bit-identical to their captures:** `spatial_calcium` 371 arrays, `plasma_calcium` 413, `gated_calcium` 455, `ip3_calcium` 469 (each twice, before and after its batch), and `cluster_gated_calcium` seed 0, 48.
 
-**Every mechanism of every consumer is observable** at U_c = 0. Each row holds the planted ratio and the smallest margin over the children that hold the mechanism, and for the clusters (at 0.02 s, with the ratio halved, §7.1) the ratio used and the smallest margin:
+**Every mechanism is observable at U_c = 0, but the store's capacitor in the four clusters, which is not tested there.** Each row holds the planted ratio and the smallest margin over the children that hold the mechanism, and for the clusters (at 0.02 s, with the ratio halved, §7.1) the ratio used and the smallest margin:
 
 | Mechanism | Home (plant) | Children: ratio, smallest margin | Clusters at 0.02 s: ratio halved, smallest margin |
 | --- | --- | --- | --- |
@@ -243,7 +243,7 @@ As Part 1 §2.3. The captured release, pump and passive multipliers are 1 throug
 | cytosolic buffer, second site | `extent_bind_0_second` (P-bind0b) | 9.7e-03 to 9.8e-03, 9e+06 | 4.9e-03, 9e+06 |
 | store buffer, first site | `extent_bind_1_first` (P-bind1a) | 3.5e-03, 2e+07 | 6.3e-04 to 6.4e-04, 9e+06 |
 | store buffer, second site | `extent_bind_1_second` (P-bind1b) | 8.3e-03, 1e+08 | 4.1e-03, 1e+08 |
-| store capacitor | `store_K` (P-storecap) | 1.4e-04 to 1.7e-04, 7e+02 | 2.9e-05 to 3.9e-05, 2e+02 |
+| store capacitor | `store_K` (P-storecap) | 1.4e-04 to 1.7e-04, 7e+02 | **not tested** (ratio halved 2.9e-05 to 3.9e-05, margin 2e+02 to 9e+02) |
 | plasma calcium pump | `ca_pump` (P-pmca) | 1.0e-02, 2e+08 | 5.0e-03, 2e+08 |
 | exchanger | `exchanger` (P-ncx) | 9.9e-03, 1e+07 | 4.9e-03, 1e+07 |
 | exchanger | `exchanger` (P-ncxkm) | 8.7e-05, 1e+05 | 4.3e-05, 1e+05 |
@@ -252,11 +252,14 @@ As Part 1 §2.3. The captured release, pump and passive multipliers are 1 throug
 | Ca channel kinetics | `ca_gate_h` (P-cavkinetics) | 1.7e-03, 5e+07 | 9.9e-04, 5e+07 |
 | IP3 factor | `store_release` (P-ip3activation) | 1.3e-02, 9e+06 | 6.4e-03, 9e+06 |
 | IP3 binding | `extent_ip3_binding` (P-ip3binding) | 7.8e-03, 6e+07 | 3.9e-03, 6e+07 |
+| store K leak, **first home: not tested there** | `store_leak_K` (P-storeleakK) | 1.4e-04 to 1.7e-04, 679 to 1560 | not tested there |
+| store capacitor, **first home: not tested there** | `store_voltage` (P-storecap) | 9.9e-05 to 1.5e-04, 8 to 13 | not tested there |
 
-- **Mechanisms with several plants** (the calcium factor, the exchanger) are tested by the largest of them (§7.1, waiting for the ruling). The inhibition constant and the exchanger's Na constant are weak plants (a ratio of 10⁻⁴ or less), and their mechanisms are tested by the activation constant and the capacity.
-- **The store's capacitor** is the weakest mechanism: its 1 % plant moves `store_K` by 1.4 × 10⁻⁴ to 1.7 × 10⁻⁴ of itself in the children and by 5.8 × 10⁻⁵ to 7.8 × 10⁻⁵ at the clusters' end. A candidate whose error estimate on `store_K` is above about 10⁻⁵ of its largest value cannot test it, and the consumer is then inconclusive. The candidate's step decides, and no band is widened for it.
+- **Mechanisms with several plants** (the calcium factor, the exchanger) are tested by the largest of them (§7.1). The inhibition constant and the exchanger's Na constant are weak plants (a ratio of 10⁻⁴ or less), and their mechanisms are tested by the activation constant and the capacity.
+- **The store's capacitor** is the weakest mechanism: its 1 % plant moves `store_K` by 1.4 × 10⁻⁴ to 1.7 × 10⁻⁴ of itself in the children. A candidate whose error estimate on `store_K` is above about 10⁻⁵ of its largest value cannot test it, and the child is then inconclusive. The candidate's step decides, and no band is widened for it.
+- **In the four clusters the capacitor is not tested** (the lead's ruling of 25 November): a cluster's captures hold one end state, and not the early rows where the capacitor shows. At the clusters' end its plant moves `store_K` by 2.9 × 10⁻⁵ to 3.9 × 10⁻⁵ (halved), with a margin of 230 to 850, so a comparison there would be a thin one. It is listed as not tested in each cluster, and nothing may be claimed of it there.
 
-**Homes moved on 25 November, after the planted runs had been read, and before any candidate run (dated line). They wait for the lead's ruling,** because the lead's condition of 25 November is that a plant under 10 is enlarged or replaced, and moving the home is neither (the protocol's §10). The literal alternative is to keep both homes as first written, and to declare the two mechanisms untested or to enlarge their plants.
+**Homes replaced on 25 November, after the planted runs had been read on the reference side, and before any candidate run (dated line).** The lead accepted it as a replacement of plants. The first homes stay in the table, marked **not tested there**, with their figures (`margins_part2.json` `first_homes_not_tested_there`). The protocol's §11 says that the choice came after the planted runs were read.
 - **Store K leak:** from `store_leak_K` to `store_voltage`. The K leak is so fast that K's own transfer follows calcium's, and its 1 % plant moves `store_leak_K` by 1.4 × 10⁻⁴, while the store's voltage is set by the leak and moves by 1 %.
 - **Store capacitor:** from `store_voltage` to `store_K`. At the potential times the store's voltage is quasi-steady and does not know its capacitance (a margin of 8 to 13, under 10 in `ip3_calcium`). `store_K` holds the early charging, and its margin is 680 to 1,600.
 
@@ -295,7 +298,7 @@ As Part 1 §2.3. The captured release, pump and passive multipliers are 1 throug
 
 ## 9. Conservation and the reported identities
 
-**Conservation is the engine's own rule at every accepted step** (`CRITERIA.md` §4.4). No identity below is judged. The judge forms and reports them, each beside READOUTS §5's printed bounds, and flags a residual above its bound to the checker:
+**Conservation is the engine's own rule at every accepted step** (`CRITERIA.md` §4.4). No identity below is judged. The judge forms and reports them, each beside READOUTS §5's bounds (which are Part 1's judged ones; the energy's with its own U_c), and flags a residual above its bound to the checker:
 - the balances of each cell, region, store row and cytosol row, and the closed world;
 - **the moieties** in each compartment: B + CaB + Ca2B (cytosol and store apart), IP3 + IP3_bound and IP3_buffer + IP3_bound (cytosol), and calcium's total: cytosol (Ca + CaB + 2 Ca2B) + store (the same) = `exchange_Ca`;
 - **the capacitors:** `voltage` − V₀ = (F 10⁻¹⁵/C_m) Σ_x z_x `exchange_x`, and `store_voltage` = (F 10⁻¹⁵/C_s) Σ_c z_c `store_c`;
