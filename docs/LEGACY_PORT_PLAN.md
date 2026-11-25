@@ -1608,8 +1608,8 @@ and the 35 it asked about are resolved here. A second reader has read the list, 
   an import that does not resolve are 8 of the 17 retargeted tests, and the only other mentions of a going path are the rename's tool and tables, one guard's exemption list, four
   of the viewer's files and documents. Run-time imports and path loads were read one by one (75 sites). `test_surface_catalog_planning.py` reads two going configurations through
   `test_integrated_ensemble.py`'s helper, which neither imports nor collection show: it is the 17th retarget.
-- **Test IDs,** by collecting that tree at 5429a49b: 12,922 collect, and 8 files fail to (58 of the IDs that collect are in seven more retargeted files, which use what goes and are not
-  expected to pass until they are rewritten). Of 21,927, 9,023 go with their files, 261 leave files that
+- **Test IDs,** by collecting that tree at 5429a49b: 12,922 collect, and 8 files fail to (58 of the IDs that collect are in seven more retargeted files: read, 24 use what goes and are
+  expected to fail until they are rewritten, 6 run on a GPU only and use it too, 28 do not use it). Of 21,927, 9,023 go with their files, 261 leave files that
   stay, and 314 are in the retargeted files: 130 settled by the pump and symports builder, 8 left to the re-expression, 176 waiting in 8 files. 593 are new.
   `removed_rows.tsv` names the group of each. The deletion's own collection gives the final ones.
 

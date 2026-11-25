@@ -33,10 +33,10 @@ place of 9b0debe6) is merged only after you have seen them. One answer is left: 
 | **Optional, your yes or no:** what the oldest families were checked with, a graph study that never ran, and the last REF-era folders | 165 files: 40 helpers, 37 tests, 68 scripts, 20 REF-era files | 49,055 | (m); 1,933 more test IDs, 192 more test-seconds in tiers 1 and 2, about 36 s of wall per full gate |
 
 On the tree without all of this, **12,922 tests collect and only the 8 files above fail to** (m). 58 of them are in seven more of the files being
-rewritten, which collect but use what goes, so they are not expected to pass until then (r). Apart from the retargeted tests, no remaining file imports or loads
-anything that goes, `lean/` and `visualizer/` included, by any way of importing (m). The nightly's record of the files that tests open (main, tiers 1 and 2) showed
-one test more, which is now on the list, and no other that still does (m, r); tier 3 is known by its imports only. The rename's tool, one guard and six of the
-viewer's files still name some of it. The deletion saves 2,574 of 13,784 test-seconds in tiers 1 and 2 (m), about 8 minutes of wall per full gate (e: 0.186 s of
+rewritten: 24 use what goes and are expected to fail until then, 6 run on a GPU only and use it too, and 28 do not use it (r). Apart from the retargeted tests, no
+remaining file imports or loads anything that goes, `lean/` and `visualizer/` included, by any way of importing (m). The nightly's record of the files that tests open
+(main, tiers 1 and 2) showed one test more, which is now on the list, and no other that still does (m, r); tier 3 is known by its imports only. The rename's tool, one
+guard and six of the viewer's files still name some of it. The deletion saves 2,574 of 13,784 test-seconds in tiers 1 and 2 (m), about 8 minutes of wall per full gate (e: 0.186 s of
 wall per test-second, measured 24 November). 142 of 222 tier-3 files go (m). The gate's fingerprints lose 129
 definitions in 125 files, of the 194 in the three folders (m, the tool's own enumeration). The tag has 173: the live engine's two batch configurations brought four, and
 the re-expression's format sample 17, which are placeholders that no parser accepts. G1's 113 worlds are unaffected (r). The fingerprint tool's comparison
