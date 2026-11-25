@@ -3,7 +3,7 @@
 A kind is one module's contribution to the inner model: its fields (state, layout, control and
 observation columns) and optional hooks that the core calls at fixed seams. The core reaches
 kinds only through the registry active for the model build: BUILTIN, unless a caller builds
-inside `scope(registry)`. It imports no kind module. Built-in kinds (models/inner_kinds/)
+inside `scope(registry)`. It imports no kind module. Built-in kinds (the cells.kinds package)
 register on BUILTIN exactly as an external package would, with `registry.register(kind)`.
 
 IDs are namespaced ("cells.transporter@1"); a bare ID resolves in the `cells` namespace, so an
