@@ -45,8 +45,8 @@ helper that declares it, or from the choices. The engine's table does not hold t
 No formatting and no hand edit: `rewrap` wraps the lines the move makes too long, for a commit of
 its own. It cuts a plain string that fills a line, where its value stays the same, and then lets
 ruff format the lines around it; `rewrapped` requires the same AST and the same comments.
-`apply --paths` is the same token rule on a lane's own files, outside the scope; --suffix .md adds
-its pages.
+`apply --paths` is the same token rule on a lane's own files, outside the scope, less the files the
+move leaves; --suffix .md adds its pages.
 
 **Its scope** is the tracked Python, JSON, shell and TOML files under src/, tests/, validation/,
 scripts/, examples/ and configs/. Left alone: the frozen files, the pinned files whose choice is to
@@ -3070,7 +3070,9 @@ def apply_paths(tree, files, mp, args):
     for path, (_, data) in files.items():
         if not any(path == w or path.startswith(w + "/") for w in wanted):
             continue
-        text = text_of(data) if path.endswith(suffixes) and path not in mp.frozen else None
+        if path in mp.frozen or path in mp.left or path == RENAMED or path.startswith(SELF):
+            continue  # What the move leaves, a folder's name does not reach either.
+        text = text_of(data) if path.endswith(suffixes) else None
         if text is not None and mp.text(path, text) != text:
             found[path] = mp.text(path, text)
     for path, text in found.items():
@@ -4190,7 +4192,8 @@ def _selftest_end_to_end(checks):
         choices = _plant_choices(frozen=dict(
             live=[dict(path="validation/live.py", reason="a live tool")],
             declared=[dict(path="validation/frozen/judge.py", reason="declared")],
-            owners={}))  # fmt: skip
+            owners={}), pinned=[
+            dict(path="configs/world.json", choice="leave", choices=["leave"])])  # fmt: skip
         mp, _, _ = _planted_map(files, choices, rehearsal=True)
         paths = {n: Path(data) / f"{n}.json" for n in ("choices", "map")}
         paths["choices"].write_text(json.dumps(choices))
@@ -4267,6 +4270,14 @@ def _selftest_end_to_end(checks):
             and (tree / "docs/NOTE.md").read_text() == "cells.wave.wave_mh@1 stays here\n"
         )
         run("commit", "-q", "-am", "docs")
+        world = (tree / "configs/world.json").read_bytes()
+        code, _ = call("apply", "--rehearsal", "--paths", "configs", "validation")
+        checks["apply --paths: a folder's name does not reach what the move leaves"] = (
+            code == 0
+            and world == files["configs/world.json"][1]
+            and (tree / "configs/world.json").read_bytes() == world
+            and (tree / "validation/frozen/judge.py").read_text() == 'LAW = "wave_mh@1"\n'
+        )
         code, _ = call("apply", "--rehearsal", "--paths", "lean")
         checks["apply --paths: a lane's own files, outside the scope, by the token rule alone"] = (
             code == 0 and (tree / "lean/claim.py").read_text() == 'LAW = "cells.wave.wave_mh@1"\n'
