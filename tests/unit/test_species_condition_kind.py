@@ -345,7 +345,7 @@ def channel_world(factors=("gate_a", "gate_b"), *, name="gate_a"):
 
 def test_a_channel_slot_takes_its_held_value_times_its_conditions_in_declared_order():
     spec, impl, state, p, control = host(channel_world())
-    order = (("cells.species_condition@1", 0), ("cells.species_condition@1", 1))
+    order = ((species.KIND_ID, 0), (species.KIND_ID, 1))
     assert impl.structure.routes == ((tissue3.OWN_SINK, "channel", 0, order),)
     f_a, f_b = species.factors(state, p, xp=np)
     _, backward, *_ = host(channel_world(("gate_b", "gate_a")))
@@ -483,12 +483,12 @@ def test_the_kind_s_place_beside_operators_is_admitted_or_refused_by_name():
         )  # fmt: skip
 
     for hooks, world, match in (
-        (dict(bound_rate=lambda s, d: 0.0), stored, "species_condition@1.*it has bound_rate"),
-        (moves, washed, "S may cross node well's surface by cells.species_condition@1"),
+        (dict(bound_rate=lambda s, d: 0.0), stored, f"{species.KIND_ID}.*it has bound_rate"),
+        (moves, washed, f"S may cross node well's surface by {species.KIND_ID}"),
         (
             dict(rates=still),
             with_labels(composite(plain), [("K", ["base"], {})]),
-            "species_condition@1 has a rates hook and no label_refusals",
+            f"{species.KIND_ID} has a rates hook and no label_refusals",
         ),
     ):
         with kind_registry.scope(registry(**hooks)):
@@ -497,7 +497,7 @@ def test_the_kind_s_place_beside_operators_is_admitted_or_refused_by_name():
     # Refused by name: RK4, an operator that builds today's fixed inner fields, a closer.
     fourth = copy.deepcopy(plain)
     fourth["execution"]["solver"] = "rk4"
-    with pytest.raises(ConfigError, match="cells.species_condition@1.* require an IMEX solver"):
+    with pytest.raises(ConfigError, match=f"{species.KIND_ID}.* require an IMEX solver"):
         parse_spec(fourth)
     replaced = fx.face_free(end=0.004)
     replaced = fx.with_replacement(
@@ -505,7 +505,7 @@ def test_the_kind_s_place_beside_operators_is_admitted_or_refused_by_name():
     )
     assert parse_spec(replaced)
     replaced["model"]["species_conditions"] = [dict(tracer, node="cell_0")]
-    with pytest.raises(ConfigError, match="does not run beside declared kinds .cells.species_cond"):
+    with pytest.raises(ConfigError, match=f"not run beside declared kinds .{species.KIND_ID}"):
         parse_spec(replaced)
     reason, fields = adapter.kind_lifecycle_errors(species.SPECIES_CONDITION)
     assert reason == "roles" and set(fields) == set(species.LAYOUT_FIELDS)  # No partition roles.

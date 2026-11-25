@@ -333,10 +333,10 @@ def reading(row, form, half_saturation_mM, hill_coefficient):
 
 
 # Two conditions: K twice and ATP at the cell; the free proton at the lumen, as CONDITION reads it.
-GATE = dict(id="gate_0", node=defs.CELL, law="hill_product_factor@1", reads=[
+GATE = dict(id="gate_0", node=defs.CELL, law=product.LAW_ID, reads=[
     reading("K", "hill_activation", 100.0, 2.0), reading("ATP", "hill_inhibition", 2.0, 1.5),
     reading("K", "hill_inhibition", 300.0, 1.0)])
-ACID = dict(id="gate_1", node=defs.LUMEN, law="hill_product_factor@1", reads=[
+ACID = dict(id="gate_1", node=defs.LUMEN, law=product.LAW_ID, reads=[
     reading("H", "hill_activation", 10.0 ** (3.0 - 5.5), 4.0)])
 
 
@@ -426,7 +426,7 @@ def test_the_species_condition_s_view_and_its_planted_set(gate_world):
     entry = impl.view_sets(spec)["species_condition"]
     assert entry["ids"] == ["gate_0", "gate_1"] and entry["kinds"] == ["factor", "factor"]
     assert entry["at"] == [{"node": defs.CELL}, {"node": defs.LUMEN}]
-    assert entry["laws"] == [{"law_id": "cells.hill_product_factor@1"}] * 2
+    assert entry["laws"] == [{"law_id": species.LAW_ID}] * 2
     assert entry["reads"] == [GATE["reads"], ACID["reads"]] and set(entry["roles"]) == {"node"}
     assert prepared(spec).sets["species_condition"]["reads"] == entry["reads"]  # Admitted.
     # Planted: without its set, the axis is refused by the run view's writer.
@@ -448,8 +448,8 @@ def changed_read(**changes):
 @pytest.mark.parametrize("change, match", [
     (dict(node="nowhere"), "unknown node 'nowhere'"),
     (dict(node=[defs.CELL]), "unknown node"),
-    (dict(law="ph_conditioned_factor@1"), "law is one of cells.hill_product_factor@1"),
-    (dict(law=None), "law is one of cells.hill_product_factor@1"),
+    (dict(law=phc.LAW_ID), f"law is one of {species.LAW_ID}"),
+    (dict(law=None), f"law is one of {species.LAW_ID}"),
     (dict(reads=[]), "reads is a non-empty list"),
     (dict(reads=GATE["reads"][0]), "reads is a non-empty list"),
     (changed_read(species="Q"), "read 0: unknown species 'Q'"),
@@ -492,7 +492,7 @@ def test_a_species_condition_s_list_ids_and_law_are_refused_by_name(gate_world):
     # A law of its interface and host that version 1 has no kernel path for, and none at all.
     other = dataclasses.replace(product.LAW, law_id="tests.planted_factor@1")
     with law_registry.scope(law_registry.BUILTIN.extended(other)):
-        with pytest.raises(ConfigError, match="version 1 runs cells.hill_product_factor@1, not "):
+        with pytest.raises(ConfigError, match=f"version 1 runs {species.LAW_ID}, not tests"):
             species.parse([dict(GATE, law="tests.planted_factor@1")], spec)
     with law_registry.scope(law_registry.LawRegistry()):
         with pytest.raises(ConfigError, match="'gate_0': law is one of $"):
