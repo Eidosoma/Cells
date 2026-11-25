@@ -157,8 +157,8 @@ CASES = {
 def test_the_80_digit_rates_at_stall_forward_backward_and_the_far_domain(name, case):
     """The cycles, the affinity (-RT x), each species' transport and the heat are the reference's to
     the protocol's tolerances; the heat is never negative, no charge moves and nothing works. The
-    domain admits each case, the far one-sided one among them. Planted: the cycles of a 0.1%
-    larger gradient of potassium are told apart wherever the route is open."""
+    domain admits each case, the far one-sided one among them. Planted: the cycles of a gradient of
+    potassium larger by 0.1% are told apart at the two gradients."""
     ci, co, temperature, capacity, opening = CASES[case]
     world = lone(name, capacity, temperature)
     state, control = world.at(ci, co), world.opened(opening)
