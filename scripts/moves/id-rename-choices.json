@@ -775,14 +775,15 @@
   {
    "path": "configs/resolved_hcn_extra_ionic.json",
    "kind": "data",
-   "choice": "leave",
+   "choice": "re-spell",
    "choices": [
     "re-spell",
     "leave"
    ],
    "pinned_by": [
     "tests/tier3_record.json"
-   ]
+   ],
+   "note": "live: its only quote is a logged assertion line of tests/tier3_record.json, and three protocols' pins of it are already stale (the lead's ruling, 25 November)"
   },
   {
    "path": "examples/tissue_geometry/irregular_native_radial.request.json",
@@ -795,7 +796,8 @@
    "pinned_by": [
     "tests/fixtures/tissue_geometry_cli/tissue_geometry_cli_contract.json",
     "validation/geometry/geometry_profile_preparation_protocol.json"
-   ]
+   ],
+   "note": "stays with the eight artifacts: left as it is, and its reader translates (the lead's ruling, 25 November)"
   },
   {
    "path": "src/cells/assembly/__init__.py",
@@ -1210,47 +1212,6 @@
     "validation/geometry/geometry_tissue_preparation_protocol.json",
     "validation/topology/tissue_profile_composition_protocol.json"
    ]
-  },
-  {
-   "path": "validation/closed_compartment/reference_inputs.json",
-   "kind": "data",
-   "choice": "leave",
-   "choices": [
-    "re-spell",
-    "leave"
-   ],
-   "pinned_by": [
-    "validation/fr1/references/README.md",
-    "validation/fr1/references/designs/fr1_reference_design.json"
-   ],
-   "note": "pinned by its git blob, found by this tool; registered inputs. The lead's ruling on pinned data files (left) is applied until it is ruled on"
-  },
-  {
-   "path": "validation/fr1/references/reference_inputs.json",
-   "kind": "data",
-   "choice": "leave",
-   "choices": [
-    "re-spell",
-    "leave"
-   ],
-   "pinned_by": [
-    "validation/fr1/references/README.md",
-    "validation/fr1/references/designs/fr1_reference_design.json"
-   ],
-   "note": "pinned by its git blob, found by this tool; registered inputs. The lead's ruling on pinned data files (left) is applied until it is ruled on"
-  },
-  {
-   "path": "validation/fr6/references/reference_inputs.json",
-   "kind": "data",
-   "choice": "leave",
-   "choices": [
-    "re-spell",
-    "leave"
-   ],
-   "pinned_by": [
-    "validation/fr6/references/designs/fr6_a5pp_design.json"
-   ],
-   "note": "pinned by its git blob, found by this tool; registered inputs. The lead's ruling on pinned data files (left) is applied until it is ruled on"
   }
  ],
  "artifacts": [
@@ -1351,7 +1312,463 @@
     "reason": "the tag rule catches its blob, but it is a live tool: follow-ups edit it (D364) and a test runs it"
    }
   ],
-  "declared": [],
+  "declared": [
+   {
+    "path": "validation/betse/protocols/physical_default_world_dense.json",
+    "reason": "pre-registered: its one commit, 3c098911, begins 'Pre-register'",
+    "owner": "validation/betse"
+   },
+   {
+    "path": "validation/betse/protocols/physical_default_world_dense_fine.json",
+    "reason": "pre-registered: its one commit, 3c098911, begins 'Pre-register'",
+    "owner": "validation/betse"
+   },
+   {
+    "path": "validation/betse/protocols/physical_default_world_mammal_dense.json",
+    "reason": "pre-registered: its one commit, 82452a0e, begins 'Pre-register'",
+    "owner": "validation/betse"
+   },
+   {
+    "path": "validation/betse/protocols/physical_default_world_mammal_dense_fine.json",
+    "reason": "pre-registered: its one commit, 82452a0e, begins 'Pre-register'",
+    "owner": "validation/betse"
+   },
+   {
+    "path": "validation/betse/protocols/physical_default_world_mammal_dense_fine_v2.json",
+    "reason": "pre-registered: its one commit, cecfb13d, begins 'Pre-register'",
+    "owner": "validation/betse"
+   },
+   {
+    "path": "validation/betse/protocols/physical_default_world_mammal_dense_v2.json",
+    "reason": "pre-registered: its one commit, cecfb13d, begins 'Pre-register'",
+    "owner": "validation/betse"
+   },
+   {
+    "path": "validation/closed_compartment/reference_inputs.json",
+    "reason": "registered reference inputs, whose git blob FR-1's design pins and a test checks",
+    "owner": "fr1"
+   },
+   {
+    "path": "validation/fr1/references/reference_inputs.json",
+    "reason": "registered reference inputs, whose git blob FR-1's design pins and a test checks",
+    "owner": "fr1"
+   },
+   {
+    "path": "validation/fr43_part1/performance.json",
+    "reason": "a record: the measured summary of FR-43 part 1's performance report (C1.4)",
+    "owner": "fr43"
+   },
+   {
+    "path": "validation/fr6/references/reference_inputs.json",
+    "reason": "registered reference inputs, whose git blob FR-6's design pins and a test checks",
+    "owner": "fr6"
+   },
+   {
+    "path": "validation/fr6/references/worlds.py",
+    "reason": "the generator of FR-6's registered inputs, which a test compares with it",
+    "owner": "fr6"
+   },
+   {
+    "path": "validation/long_duration/registration_20261118.json",
+    "reason": "registered before any measurement (its status)",
+    "owner": "fr8"
+   },
+   {
+    "path": "validation/long_duration/rung0_20261119.json",
+    "reason": "the registration of rung 0 (its registration field)",
+    "owner": "fr8"
+   },
+   {
+    "path": "validation/long_duration/rung0_results_20261119.json",
+    "reason": "the registered results of rung 0 (its registration field)",
+    "owner": "fr8"
+   },
+   {
+    "path": "validation/morphogenesis/protocols/mg0a_gradient_v1.json",
+    "reason": "pre-registered before the judged run (its status)",
+    "owner": "mg0a"
+   },
+   {
+    "path": "validation/ool/references/designs/ol1_boundary.world.json",
+    "reason": "a registered OL1 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol1_boundary_probe_states.json",
+    "reason": "a registered OL1 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol1_closed_world_states.json",
+    "reason": "a registered OL1 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol1_conventions.json",
+    "reason": "a registered OL1 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol1_design.json",
+    "reason": "a registered OL1 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol1_kernel_probe_states.json",
+    "reason": "a registered OL1 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol1_wa.world.json",
+    "reason": "a registered OL1 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol1_wa_closed.world.json",
+    "reason": "a registered OL1 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol1_wa_closed_uncatalysed.world.json",
+    "reason": "a registered OL1 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol1_wa_closed_x2.world.json",
+    "reason": "a registered OL1 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol1_wb_m20.world.json",
+    "reason": "a registered OL1 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol1_wb_m320.world.json",
+    "reason": "a registered OL1 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol1_wb_m5.world.json",
+    "reason": "a registered OL1 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol1_wb_m80.world.json",
+    "reason": "a registered OL1 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol2_closed.world2.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol2_closed_states.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol2_lysis.world2.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol2_lysis_run.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol2_shared.world2.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol2_shared_run.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol2_two.world2.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol2_two_states.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol2_wa.world2.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol2_wa_diffusion.world2.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol2_wa_diffusion_probe_states.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol2_wa_probe_states.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol3_lineage.world2.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol3_lineage_run.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol3_parents.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol3_population.world2.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol3_population_run.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol3_shear_probe.world2.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol3_shear_probe_run.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol3_slots_full.world2.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol3_slots_full_run.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals/refuse_changes_nothing.world.json",
+    "reason": "a registered OL1 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals/refuse_chi_diagonal.world.json",
+    "reason": "a registered OL1 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals/refuse_coefficient.world.json",
+    "reason": "a registered OL1 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals/refuse_dilute_catalyst.world.json",
+    "reason": "a registered OL1 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals/refuse_four_products.world.json",
+    "reason": "a registered OL1 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals/refuse_four_reactants.world.json",
+    "reason": "a registered OL1 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals/refuse_non_integer.world.json",
+    "reason": "a registered OL1 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals/refuse_own_delta_G.world.json",
+    "reason": "a registered OL1 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals/refuse_singular_step_without_probe_role.world.json",
+    "reason": "a registered OL1 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals/refuse_wrong_locus.world.json",
+    "reason": "a registered OL1 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_c_ext_below_pool_solutes.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_count_on_m_cross_phase.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_encounter_without_geometry.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_exit_declared.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_floor_below_one.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_floor_without_kept.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_founder_beyond_sigma_max.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_fresh_pool_above_c_ext.run2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_geometry_without_encounter.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_geometry_without_floor.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_interfacial_reaction.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_join_from_lumen.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_leave_declared.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_lumen_step_two_lumen_reactants.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_lysis_species_without_pool_place.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_membrane_species_without_area.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_membrane_step_lumen_reactant.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_non_integer_area_quanta.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_osmotic_without_sigma_max.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_pool_to_lumen_reaction.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_shear_without_k.run2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_sigma_max_without_source.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/engine_layout.py",
+    "reason": "the code-blind reader of the engine's OL1 records, with the references it was committed for",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/refusals2.py",
+    "reason": "the generator of the registered OL2 and OL3 refusals, whose bytes a test compares with it",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/registered.py",
+    "reason": "the generator of the registered OL1 designs, whose bytes a test compares with it",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/stationary/protocols/stationary_analysis_e_v1.json",
+    "reason": "pre-registered before the judged run (its status)",
+    "owner": "stationary"
+   },
+   {
+    "path": "validation/tissue/bath_schedule_protocol.json",
+    "reason": "registered by the lead (its status)",
+    "owner": "fr10"
+   },
+   {
+    "path": "validation/tissue/e07_v1_protocol.json",
+    "reason": "registered by the lead before any engine run (its status)",
+    "owner": "e07"
+   },
+   {
+    "path": "validation/tissue/l4_variants/g2_backend_variant.json",
+    "reason": "registered (its status); it goes with cell_replacement_protocol.json, which is frozen",
+    "owner": "validation/tissue"
+   },
+   {
+    "path": "validation/tissue/protocols/projective_c_qualification_v1.json",
+    "reason": "pre-registered before any judged run (its status)",
+    "owner": "projective"
+   },
+   {
+    "path": "validation/tissue/site_occupancy_acceptance_protocol.json",
+    "reason": "registered by the lead (its status)",
+    "owner": "fr3"
+   }
+  ],
   "owners": {
    "core-seams": "core-seams",
    "fr7-": "fr7",
