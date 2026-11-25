@@ -54,6 +54,21 @@ def get_model(spec):
         from cells.models import surface_pump
 
         return surface_pump
+    from cells.definitions.surface_kinetic_spec import SurfaceCatalogModel, SurfaceKineticModel
+    from cells.definitions.surface_tissue_spec import SurfaceTissueModel
+
+    if type(spec) is SurfaceTissueModel:  # Each resolved tissue derives from the one before it.
+        from cells.models import surface_tissue
+
+        return surface_tissue
+    if type(spec) is SurfaceKineticModel:
+        from cells.models import surface_kinetic
+
+        return surface_kinetic
+    if type(spec) is SurfaceCatalogModel:
+        from cells.models import surface_catalog
+
+        return surface_catalog
     if isinstance(spec, ReactionTransportSpec):
         return reaction_transport
     from cells.models.assembly_lineages.spec import LineageModel

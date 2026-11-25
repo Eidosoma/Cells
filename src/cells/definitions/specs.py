@@ -842,6 +842,15 @@ class SimulationSpec:
 
         if isinstance(m, SurfacePumpModel):
             return to_dict(self)
+        from cells.definitions.surface_kinetic_spec import SurfaceCatalogModel, SurfaceKineticModel
+        from cells.definitions.surface_kinetic_spec import to_dict as surface_kinetic_to_dict
+        from cells.definitions.surface_tissue_spec import SurfaceTissueModel
+        from cells.definitions.surface_tissue_spec import to_dict as surface_tissue_to_dict
+
+        if type(m) is SurfaceTissueModel:
+            return surface_tissue_to_dict(self)
+        if type(m) in (SurfaceKineticModel, SurfaceCatalogModel):
+            return surface_kinetic_to_dict(self)
         from cells.models.assembly_lineages.spec import LineageModel
         from cells.models.assembly_lineages.spec import to_dict as lineage_to_dict
 
@@ -1020,6 +1029,18 @@ def parse_spec(data: dict) -> SimulationSpec:
         return parse(data)
     if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_pump_tissue@3":
         from cells.definitions.surface_pump_v3_spec import parse
+
+        return parse(data)
+    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_tissue@1":
+        from cells.definitions.surface_tissue_spec import parse
+
+        return parse(data)
+    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_tissue@2":
+        from cells.definitions.surface_kinetic_spec import parse
+
+        return parse(data)
+    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_tissue@8":
+        from cells.definitions.surface_kinetic_spec import parse
 
         return parse(data)
     if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_pump_water@1":
