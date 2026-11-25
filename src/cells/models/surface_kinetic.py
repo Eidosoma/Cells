@@ -15,33 +15,11 @@ import numpy as np
 from cells.definitions.specs import ConfigError
 from cells.definitions.surface_kinetic_spec import (
     MODEL_ID,  # noqa: F401
-    SurfaceCalciumActivatedModel,
     SurfaceCatalogModel,
-    SurfaceCavModel,
-    SurfaceChannelModel,
-    SurfaceExtendedCatalogModel,
-    SurfaceHCNExtraModel,
-    SurfaceHCNModel,
-    SurfaceKv1Model,
-    SurfaceMorrisLecarModel,
-    SurfaceSodiumModel,
     model_id,
 )
 from cells.execution.errors import NumericalError
-from cells.laws.channels import (
-    calcium_activated_catalog,
-    cav_channels,
-    hcn_channels,
-    hcn_extra_catalog,
-    kv1_channels,
-    morris_lecar_catalog,
-    morris_lecar_channels,
-    potassium_channels,
-    shared_channel_catalog,
-    shared_channel_catalog_v2,
-    sodium_channels,
-    voltage_gates,
-)
+from cells.laws.channels import shared_channel_catalog, voltage_gates
 from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
 from cells.laws.junctions import junction_gate
 from cells.laws.junctions.selective import selective_flux
@@ -88,7 +66,7 @@ LAYOUT_TYPE = NamedTuple(
         )
     ],
 )
-# Factored field (surface_field.FACTORED_SOLVER_ID); channel catalogs excluded.
+# Factored field (surface_field.FACTORED_SOLVER_ID); the channel catalogue excluded.
 FACTORED_LAYOUT_TYPE = NamedTuple(
     "SurfaceKineticFactoredLayout",
     [(k, object) for k in (*LAYOUT_TYPE._fields, "field_capacitor_factor")],
@@ -99,7 +77,7 @@ FLOOR_LAYOUT_TYPE = NamedTuple(
     [(k, object) for k in (*FACTORED_LAYOUT_TYPE._fields, "field_current_floor")],
 )
 # The sparse field (surface_field.SPARSE_SOLVER_ID): the base's sparse layout and this family's own
-# fields, in LAYOUT_TYPE's order; channel catalogs excluded, as for the factored field.
+# fields, in LAYOUT_TYPE's order; the channel catalogue excluded, as for the factored field.
 SPARSE_LAYOUT_TYPE = NamedTuple(
     "SurfaceKineticSparseLayout",
     [
@@ -110,97 +88,16 @@ SPARSE_LAYOUT_TYPE = NamedTuple(
         )
     ],
 )
-CHANNEL_LAYOUT_TYPE = NamedTuple(
-    "SurfaceChannelLayout", [(k, object) for k in (*LAYOUT_TYPE._fields, "channel_laws")]
-)
-SODIUM_LAYOUT_TYPE = NamedTuple(
-    "SurfaceSodiumLayout", [(k, object) for k in CHANNEL_LAYOUT_TYPE._fields]
-)
-SODIUM_OWNED_VIEW_TYPE = NamedTuple(
-    "SurfaceSodiumOwnedView",
-    [(k, object) for k in (*SODIUM_LAYOUT_TYPE._fields, "cytosol_amount")],
-)
-HCN_LAYOUT_TYPE = NamedTuple(
-    "SurfaceHCNLayout",
+# The shared gate catalogue: a law per population, and each of its permeant ions' relative
+# permeability in place of the one species.
+CATALOG_LAYOUT_TYPE = NamedTuple(
+    "SurfaceCatalogLayout",
     [
         (k, object)
-        for k in (*SODIUM_LAYOUT_TYPE._fields, "channel_relative_permeability")
+        for k in (*LAYOUT_TYPE._fields, "channel_laws", "channel_relative_permeability")
         if k != "channel_species"
     ],
 )
-HCN_OWNED_VIEW_TYPE = NamedTuple(
-    "SurfaceHCNOwnedView",
-    [(k, object) for k in (*HCN_LAYOUT_TYPE._fields, "cytosol_amount")],
-)
-KV1_LAYOUT_TYPE = NamedTuple("SurfaceKv1Layout", [(k, object) for k in HCN_LAYOUT_TYPE._fields])
-KV1_OWNED_VIEW_TYPE = NamedTuple(
-    "SurfaceKv1OwnedView", [(k, object) for k in HCN_OWNED_VIEW_TYPE._fields]
-)
-
-CAV_LAYOUT_TYPE = NamedTuple("SurfaceCavLayout", [(k, object) for k in HCN_LAYOUT_TYPE._fields])
-CAV_OWNED_VIEW_TYPE = NamedTuple(
-    "SurfaceCavOwnedView", [(k, object) for k in HCN_OWNED_VIEW_TYPE._fields]
-)
-CATALOG_LAYOUT_TYPE = NamedTuple(
-    "SurfaceCatalogLayout", [(k, object) for k in HCN_LAYOUT_TYPE._fields]
-)
-CATALOG_OWNED_VIEW_TYPE = NamedTuple(
-    "SurfaceCatalogOwnedView", [(k, object) for k in HCN_OWNED_VIEW_TYPE._fields]
-)
-
-EXTENDED_CATALOG_LAYOUT_TYPE = NamedTuple(
-    "SurfaceExtendedCatalogLayout", [(k, object) for k in CATALOG_LAYOUT_TYPE._fields]
-)
-EXTENDED_CATALOG_OWNED_VIEW_TYPE = NamedTuple(
-    "SurfaceExtendedCatalogOwnedView", [(k, object) for k in CATALOG_OWNED_VIEW_TYPE._fields]
-)
-CALCIUM_ACTIVATED_LAYOUT_TYPE = NamedTuple(
-    "SurfaceCalciumActivatedLayout",
-    [(k, object) for k in (*HCN_LAYOUT_TYPE._fields, "channel_calcium_species")],
-)
-CALCIUM_ACTIVATED_OWNED_VIEW_TYPE = NamedTuple(
-    "SurfaceCalciumActivatedOwnedView",
-    [(k, object) for k in (*CALCIUM_ACTIVATED_LAYOUT_TYPE._fields, "cytosol_amount")],
-)
-MORRIS_LECAR_LAYOUT_TYPE = NamedTuple(
-    "SurfaceMorrisLecarLayout", [(k, object) for k in CALCIUM_ACTIVATED_LAYOUT_TYPE._fields]
-)
-MORRIS_LECAR_OWNED_VIEW_TYPE = NamedTuple(
-    "SurfaceMorrisLecarOwnedView", [(k, object) for k in CALCIUM_ACTIVATED_OWNED_VIEW_TYPE._fields]
-)
-
-HCN_EXTRA_LAYOUT_TYPE = NamedTuple(
-    "SurfaceHCNExtraLayout", [(k, object) for k in MORRIS_LECAR_LAYOUT_TYPE._fields]
-)
-HCN_EXTRA_OWNED_VIEW_TYPE = NamedTuple(
-    "SurfaceHCNExtraOwnedView", [(k, object) for k in MORRIS_LECAR_OWNED_VIEW_TYPE._fields]
-)
-
-
-def channel_process(layout):
-    # Layout type is static through JAX transformations and complete checkpoints.
-    # Older potassium/calcium layouts retain their restricted law catalog.
-    if isinstance(layout, (HCN_EXTRA_LAYOUT_TYPE, HCN_EXTRA_OWNED_VIEW_TYPE)):
-        return hcn_extra_catalog
-    if isinstance(layout, (MORRIS_LECAR_LAYOUT_TYPE, MORRIS_LECAR_OWNED_VIEW_TYPE)):
-        return morris_lecar_catalog
-    if isinstance(layout, (CALCIUM_ACTIVATED_LAYOUT_TYPE, CALCIUM_ACTIVATED_OWNED_VIEW_TYPE)):
-        return calcium_activated_catalog
-    if isinstance(layout, (EXTENDED_CATALOG_LAYOUT_TYPE, EXTENDED_CATALOG_OWNED_VIEW_TYPE)):
-        return shared_channel_catalog_v2
-    if isinstance(layout, (CATALOG_LAYOUT_TYPE, CATALOG_OWNED_VIEW_TYPE)):
-        return shared_channel_catalog
-    if isinstance(layout, (CAV_LAYOUT_TYPE, CAV_OWNED_VIEW_TYPE)):
-        return cav_channels
-    if isinstance(layout, (KV1_LAYOUT_TYPE, KV1_OWNED_VIEW_TYPE)):
-        return kv1_channels
-    if isinstance(layout, (HCN_LAYOUT_TYPE, HCN_OWNED_VIEW_TYPE)):
-        return hcn_channels
-    return (
-        sodium_channels
-        if isinstance(layout, (SODIUM_LAYOUT_TYPE, SODIUM_OWNED_VIEW_TYPE))
-        else potassium_channels
-    )
 
 
 class Values(NamedTuple):
@@ -234,7 +131,7 @@ def initial_values(spec):
     state, layout = base.initial_values(spec)
     v, m, x = layout._asdict(), spec.model, spec.execution
     nc, nm, ne = x.channel_capacity, x.membrane_capacity, x.edge_capacity
-    multi_ion = isinstance(m, SurfaceHCNModel)
+    multi_ion = isinstance(m, SurfaceCatalogModel)
     v.update(
         channel_active=np.arange(nc) < len(m.channels),
         channel_membranes=np.zeros(nc, dtype=np.int64),
@@ -275,63 +172,18 @@ def initial_values(spec):
         jg[i] = p.initial_gate
     kinetic.bind_pumps(spec, v)
     layout_type = LAYOUT_TYPE
-    if isinstance(m, SurfaceChannelModel):
+    if multi_ion:
         v["channel_laws"] = np.zeros(nc, dtype=np.int64)
-        laws = (
-            hcn_extra_catalog.LAW_CODES
-            if isinstance(m, SurfaceHCNExtraModel)
-            else morris_lecar_catalog.LAW_CODES
-            if isinstance(m, SurfaceMorrisLecarModel)
-            else calcium_activated_catalog.LAW_CODES
-            if isinstance(m, SurfaceCalciumActivatedModel)
-            else shared_channel_catalog_v2.LAW_CODES
-            if isinstance(m, SurfaceExtendedCatalogModel)
-            else shared_channel_catalog.LAW_CODES
-            if isinstance(m, SurfaceCatalogModel)
-            else cav_channels.LAW_CODES
-            if isinstance(m, SurfaceCavModel)
-            else kv1_channels.LAW_CODES
-            if isinstance(m, SurfaceKv1Model)
-            else hcn_channels.LAW_CODES
-            if multi_ion
-            else sodium_channels.LAW_CODES
-            if isinstance(m, SurfaceSodiumModel)
-            else potassium_channels.LAW_CODES
-        )
         for i, channel in enumerate(m.channels):
-            v["channel_laws"][i] = laws[channel.kinetic_law]
-        layout_type = (
-            HCN_EXTRA_LAYOUT_TYPE
-            if isinstance(m, SurfaceHCNExtraModel)
-            else MORRIS_LECAR_LAYOUT_TYPE
-            if isinstance(m, SurfaceMorrisLecarModel)
-            else CALCIUM_ACTIVATED_LAYOUT_TYPE
-            if isinstance(m, SurfaceCalciumActivatedModel)
-            else EXTENDED_CATALOG_LAYOUT_TYPE
-            if isinstance(m, SurfaceExtendedCatalogModel)
-            else CATALOG_LAYOUT_TYPE
-            if isinstance(m, SurfaceCatalogModel)
-            else CAV_LAYOUT_TYPE
-            if isinstance(m, SurfaceCavModel)
-            else KV1_LAYOUT_TYPE
-            if isinstance(m, SurfaceKv1Model)
-            else HCN_LAYOUT_TYPE
-            if multi_ion
-            else SODIUM_LAYOUT_TYPE
-            if isinstance(m, SurfaceSodiumModel)
-            else CHANNEL_LAYOUT_TYPE
-        )
-        if isinstance(m, SurfaceCalciumActivatedModel):
-            v["channel_calcium_species"] = np.int32(
-                m.species_ids.index("Ca") if "Ca" in m.species_ids else 0
-            )
+            v["channel_laws"][i] = shared_channel_catalog.LAW_CODES[channel.kinetic_law]
+        layout_type = CATALOG_LAYOUT_TYPE
     if "field_capacitor_factor" in v:
         if layout_type is not LAYOUT_TYPE:
-            raise ConfigError("The factored resolved field excludes channel catalogs")
+            raise ConfigError("The factored resolved field excludes the channel catalogue")
         layout_type = FLOOR_LAYOUT_TYPE if "field_current_floor" in v else FACTORED_LAYOUT_TYPE
     elif "field_capacitor_values" in v:
         if layout_type is not LAYOUT_TYPE:
-            raise ConfigError("The sparse resolved field excludes channel catalogs")
+            raise ConfigError("The sparse resolved field excludes the channel catalogue")
         layout_type = SPARSE_LAYOUT_TYPE
     transfer_shape = (len(m.species_ids), nc) if multi_ion else (nc,)
     return (
@@ -381,32 +233,12 @@ def readouts(state, control, p, *, xp=jnp):
     patch = p.channel_membranes
     cv = xp.where(p.channel_active, r.membrane_voltage_V[patch], 0.0)
     if hasattr(p, "channel_laws"):
-        process = channel_process(p)
-        target, tau = process.kinetics(cv, p.channel_laws, xp=xp)
-        if hasattr(p, "channel_calcium_species"):
-            sensed = ci[p.channel_calcium_species, p.membrane_cell[patch]]
-            opened = process.opening(
-                state.channel_gate,
-                p.channel_laws,
-                voltage=cv,
-                calcium_free_mM=sensed,
-                temperature_K=p.temperature,
-                xp=xp,
-            )
-        else:
-            opened = process.opening(state.channel_gate, p.channel_laws, xp=xp)
+        target, tau = shared_channel_catalog.kinetics(cv, p.channel_laws, xp=xp)
+        opened = shared_channel_catalog.opening(state.channel_gate, p.channel_laws, xp=xp)
     else:
         target, tau = voltage_gates.kinetics(cv, xp=xp)
         opened = state.channel_gate[0] * state.channel_gate[1]
-    if hasattr(p, "channel_calcium_species"):
-        gated = channel_process(p).gate_active(p.channel_laws, xp=xp)
-        gate_rate = xp.where(
-            p.channel_active & gated,
-            (target - state.channel_gate) / xp.where(gated, tau, 1.0),
-            0.0,
-        )
-    else:
-        gate_rate = xp.where(p.channel_active, (target - state.channel_gate) / tau, 0.0)
+    gate_rate = xp.where(p.channel_active, (target - state.channel_gate) / tau, 0.0)
     if hasattr(p, "channel_relative_permeability"):
         inside, outside = ci[:, p.membrane_cell[patch]], co[:, p.membrane_outside[patch]]
         valence = p.valence
@@ -526,39 +358,9 @@ def readouts(state, control, p, *, xp=jnp):
         metabolic,
     )
     valid = v.converged & xp.all(pump.domain_valid(*args, xp=xp))
-    if isinstance(
-        p,
-        (
-            CATALOG_LAYOUT_TYPE,
-            CATALOG_OWNED_VIEW_TYPE,
-            EXTENDED_CATALOG_LAYOUT_TYPE,
-            EXTENDED_CATALOG_OWNED_VIEW_TYPE,
-            CALCIUM_ACTIVATED_LAYOUT_TYPE,
-            CALCIUM_ACTIVATED_OWNED_VIEW_TYPE,
-            MORRIS_LECAR_LAYOUT_TYPE,
-            HCN_EXTRA_LAYOUT_TYPE,
-            MORRIS_LECAR_OWNED_VIEW_TYPE,
-            HCN_EXTRA_OWNED_VIEW_TYPE,
-        ),
-    ):
-        valid &= channel_process(p).controls_valid(
+    if hasattr(p, "channel_laws"):
+        valid &= shared_channel_catalog.controls_valid(
             p.channel_laws, control.channel, p.channel_active, xp=xp
-        )
-    if isinstance(
-        p,
-        (
-            MORRIS_LECAR_LAYOUT_TYPE,
-            MORRIS_LECAR_OWNED_VIEW_TYPE,
-            HCN_EXTRA_LAYOUT_TYPE,
-            HCN_EXTRA_OWNED_VIEW_TYPE,
-        ),
-    ):
-        valid &= channel_process(p).hybrid_domain_valid(
-            state.channel_gate, cv, sensed, p.temperature, p.channel_laws, control.channel, xp=xp
-        )
-    elif hasattr(p, "channel_calcium_species"):
-        valid &= calcium_activated_catalog.instantaneous_domain_valid(
-            cv, sensed, p.temperature, p.channel_laws, control.channel, xp=xp
         )
     for value in control:
         valid &= xp.all(xp.isfinite(value) & (value >= 0) & (value <= 1))
@@ -620,16 +422,8 @@ def rhs(state, control, p, active, *, xp=jnp):
 def domain_valid(state, p, active, *, xp=jnp):
     valid = base.domain_valid(passive_state(state), p, active, xp=xp)
     if hasattr(p, "channel_laws"):
-        valid &= channel_process(p).valid_codes(p.channel_laws, xp=xp)
+        valid &= shared_channel_catalog.valid_codes(p.channel_laws, xp=xp)
         valid &= xp.all(xp.where(p.channel_active, True, p.channel_laws == 0))
-    if hasattr(p, "channel_calcium_species"):
-        valid &= xp.all(
-            xp.where(
-                channel_process(p).gate_active(p.channel_laws, xp=xp),
-                True,
-                state.channel_gate == 0,
-            )
-        )
     masks = (
         p.channel_active,
         p.channel_active,
@@ -703,47 +497,14 @@ def check_definition(spec):
 
 def check_steps(spec, steps, controls):
     base.check_steps(spec, steps, controls)
-    # Empty and instantaneous-only populations have no channel-gate time scale.
-    # Blocked or zero-permeability populations still evolve their gates and
-    # retain these ceilings. Instantaneous populations have initial_gate=().
-    has_gates = any(p.initial_gate for p in spec.model.channels)
-    if isinstance(spec.model, SurfaceMorrisLecarModel):
-        # The old catalog's conservative ceilings remain for its actual gates.
-        # New ML-only gates instead use their bounded physical relaxation rate.
-        has_gates = any(len(p.initial_gate) == 2 for p in spec.model.channels)
-        codes = np.array(
-            [
-                morris_lecar_catalog.LAW_CODES[p.kinetic_law]
-                for p in spec.model.channels
-                if len(p.initial_gate) == 1
-            ],
-            dtype=np.int64,
-        )
-        if codes.size:
-            _, tau = morris_lecar_channels.kinetics(
-                np.array(morris_lecar_channels.VOLTAGE_DOMAIN_V)[:, None], codes[None, :], xp=np
-            )
-            # sech has its minimum at a domain endpoint for these fixed curves.
-            if np.max(steps, initial=0) / np.min(tau) > 0.125 + 1e-14:
-                raise ConfigError("Resolved Morris–Lecar step exceeds the physical gate-rate bound")
+    # Without a population there is no channel-gate time scale; blocked and zero-permeability
+    # populations still evolve their gates.
     if (
-        has_gates
-        and isinstance(spec.model, SurfaceCavModel)
+        spec.model.channels
+        and isinstance(spec.model, SurfaceCatalogModel)
         and np.max(steps, initial=0) > 1.25e-6 + 1e-16
     ):
         raise ConfigError("Resolved shared CaV channels require RK4 steps <= 1.25 us")
-    if (
-        has_gates
-        and isinstance(spec.model, SurfaceSodiumModel)
-        and np.max(steps, initial=0) > 2.5e-6 + 1e-16
-    ):
-        raise ConfigError("Resolved sodium/potassium channels require RK4 steps <= 2.5 us")
-    if (
-        has_gates
-        and isinstance(spec.model, SurfaceChannelModel)
-        and np.max(steps, initial=0) > 25e-6 + 1e-16
-    ):
-        raise ConfigError("Resolved mixed potassium channels require RK4 steps <= 25 us")
     bound = max(
         (1.3 * np.exp(77 * p.threshold_voltage_V) + 20 for p in spec.model.junctions), default=0.0
     )
@@ -920,7 +681,7 @@ def summarize(history, diagnostics, spec):
         "state_fields": list(STATE_TYPE._fields),
         **(
             {"channel_laws": {c.id: c.kinetic_law for c in spec.model.channels}}
-            if isinstance(spec.model, SurfaceChannelModel)
+            if isinstance(spec.model, SurfaceCatalogModel)
             else {"channel_law": voltage_gates.LAW_ID}
         ),
         "junction_law": junction_gate.LAW_ID,
