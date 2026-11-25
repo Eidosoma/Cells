@@ -29,7 +29,7 @@ A family is three runs of one world at steps h₁ > h₂ > h₃, each half the l
 | **D** | Completes, with the engine's own ledger rule held at every accepted step | §4.4 |
 | **P** | Power: whether the entry could have failed | §4.5, judged first |
 
-No ruling assigns a class, and none changes after a run.
+No ruling assigns a class to a run's entry after a run. Two of the lead's rulings of 25 November, before any candidate run, changed what is judged: it took the identities out of Part 1 and put them back (the protocol's §11), and it named the assembly coupling's form.
 
 ## 4. The criteria
 
@@ -163,7 +163,7 @@ tables' hashes are recorded, then C0, then stage 1, then the tables are opened f
 
 **Once, for the entries that are owed it:** an entry inconclusive by order, or a home entry not tested whose 2 U_c is the larger part of β. The judge's first pass writes `retry_owed.json` (`TABLE.md` §6). The lead records its sha256, and the builders run exactly those.
 - **The run:** one more halving, h₃/2, of every family that holds an owed entry, named `<family> h=<step> retry`, with its own support runs only if owed. The triple becomes (h₂, h₃, h₃/2), and S_c is its finest.
-- **Entries that passed or failed keep their score.** An owed entry is judged again by §4.3 and §4.5 on the new triple. The retry run's own D entry is judged, and a fail there counts.
+- **Entries that passed or failed keep their score.** An owed entry is judged again by §4.3 and §4.5 on the new triple. The retry run's own R and D entries are judged, and a fail there counts.
 - **An entry still inconclusive, or still not tested, stays so.** A wrong coarse run that the retry drops is forgiven (the protocol's §9 says so), and the verdict states the steps that its pass covers.
 - A refused or stopped run takes no retry. No tolerance, window or class changes.
 - **A retry run that is present and not owed** is recorded, flagged and not judged. An owed retry run that is missing is a missing run.
@@ -197,7 +197,7 @@ tables' hashes are recorded, then C0, then stage 1, then the tables are opened f
   - **A bound that the count left out is corrected only at the rehearsal** (§10), never after a registered run. A miss that a registered run shows is recorded as a miss.
 - **A miss in class R on a balance, or of `energy_identity`** (READOUTS §5, Part 1), with the engine's own checks passing, says that the exporter's rows and the engine's ledgers disagree, or that the engine's allowance is looser than the count. It fails its run, and a labelled, non-blind diagnosis follows. In Part 2 a reported identity that a run misses is a question for the checker, and decides nothing by itself.
 - **A miss in class R on the capacitor** says that the voltage's solve and the charge it was made from disagree beyond the closure term. It fails its run.
-- **A failed consumer stays in legacy.** Its capture, its pre-cleanup tag and its snapshot hold it. The cleanup does not remove it until a new registration passes, and the user decides what happens to the rest.
+- **A consumer that fails, or is inconclusive after the retry, is reported to the user before any landing,** and the landing of the deletion waits for the user's decision on it (the lead's ruling of 25 November). The pre-cleanup tag keeps its legacy code in either case, and its capture and its snapshot hold it.
 - A miss is never dropped, rescaled or re-run at another step. Any new run is a new registration, with this one's record beside it.
 
 ## 10. The rehearsal, and correcting a bound

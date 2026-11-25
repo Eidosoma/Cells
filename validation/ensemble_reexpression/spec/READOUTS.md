@@ -58,6 +58,7 @@ read. Entities are matched by their ID.
 
 - **`jupiter`** has two families, so 50 S entries against captures and 2 `energy_identity` entries. **`cell`:** 32 families, 15 each, 480, with 32 `energy_identity`. **`base`:** 32 families, 25 each, 800, with 32. **`integrated`:** 1 family, 9, with 1.
 - **`energy_identity` has no captured counterpart.** It is the run's own identity (§5).
+- **R entries per ionic run** (§5): three balances of cells (one per species, over all cells and times), three of regions, three of the closed world, and one of the capacitor. In all ten, each for the judged runs of every family. A pool run has one exposure per cell. A consumer whose R entries formed are fewer is at best inconclusive (`CRITERIA.md` §5).
 
 ## 4. The assembly pool's arrays (class E)
 
