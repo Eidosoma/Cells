@@ -48,8 +48,10 @@ the checker read this folder too (the protocol's roles).
 | `AMENDMENT-4-2026-11-25.md` | Arm 7's runs, retry runs, the restart and no-router runs, the spec auditor |
 | `AMENDMENT-5-2026-11-25.md` | The spec audit's findings as ruled, the layouts they give, what the references must do |
 
-**Files outside this folder that the registration uses:** `validation/liquid_routing/takeover_map.json` (the builder's),
-`registered_strings.json` and its phase-2 and rehearsal counterparts (the lead's). Layouts: amendment 5.
+**Files outside this folder that the registration uses:** in `validation/liquid_routing/`, `takeover_map.json`,
+`takeover_map_rehearsal.json` and `takeover_pairs.json` (the builder's), and `registered_strings.json` with its phase-2 and
+rehearsal counterparts (the lead's); in `table-retry/` and `table-arm6-retry/`, `retry_owed.json` (the judge's). Layouts:
+amendment 5.
 
 **What this folder does not test.** A bound species at a node that a link touches is not tested here. `F7` has its
 sites at a node no link touches, and a builder's own row must test a linked one.

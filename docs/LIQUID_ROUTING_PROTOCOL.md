@@ -65,17 +65,19 @@ Each is a different agent, and its work goes through the lead.
 | Author (this document's) | This document, the spec folder | – (as the disclosures list) | engine source, tests, run output |
 | dt-study agent | The study's edges, the default heat's declared law, the propagator's re-measured bounds, the arm 7 pairs | Engine source; its own runs on today's engine | the spec folder's answers (`references/`), the judge's code |
 | References agent | `validation/liquid_routing/references/` | `validation/liquid_routing/spec/` only | this document, the design note, engine source, tests, any run output |
-| Builder | The operator, and the lift branch; `validation/liquid_routing/worlds.py`, the exporter, `takeover_map.json` (and its rehearsal pair), the format sample | The design note, the spec folder, its own code | `references/out/`, the judge's code |
+| Builder | The operator, and the lift branch; `validation/liquid_routing/worlds.py`, the exporter, `takeover_map.json` (and its rehearsal pair), `takeover_pairs.json` and its script, the format sample | The design note, the spec folder, its own code | `references/out/`, the judge's code |
 | Spec auditor (amendment 4) | A reader skeleton, fabricated honest tables, its report | The spec folder only | everything else; its tables are read by no one who references, builds, judges or checks |
-| Judge | Its reader, its synthetic checks, `retry_owed.json`, the verdict | This document, the spec folder, the references (from C0 on), the format samples, the strings note | engine source, tests, the builder's code, the design note |
-| Checker | Its own recomputation | The hashed table, the references, the judge's record, and the runs' `definition` against their `inputs` | the judge's code until its own is written |
+| Judge | Its reader, its synthetic checks, `retry_owed.json`, the verdict | This document, the spec folder, the references (from C0 on), the tables, the format samples, `takeover_map.json`, the strings note | engine source, tests, the builder's code, the design note |
+| Checker | Its own recomputation | The hashed table, the references, the judge's record, `takeover_map.json`, the record files it recomputes from, and the runs' `definition` against their `inputs` | the judge's code until its own is written |
 | Lead | Tags, freezes, launches, hashes, the strings notes, the decision entry | everything | – |
 
 - The builder runs no registered world before the run tag: parse checks, unit rows and invented worlds only.
 - The judge's reader is written from this folder alone. The builder's exporter is written from `TABLE.md`
   alone. Neither reads the other's code.
 - The checker also confirms that each run's `inputs` is what its `definition` says, that P8's patches were
-  on, and that a refused or stopped run is the engine's own.
+  on, and that a refused or stopped run is the engine's own. It recomputes the digests of one arm 7 pair from its two
+  record files (all six if cheap), confirms every `both_differ`, `wash_only` and `router_only` entry and its reason, and
+  the restart's checkpoint from its record.
 
 ## 4. Power, before any run (D366)
 
@@ -122,24 +124,29 @@ dated change, before the registration tag and never after a run.
    (re-derived, dated, disclosed), before any registered run.
 10. **The registration tag `liquid-routing-registered-2026-11-2x`,** at the head that merges main, the spec, the
     references, the build and the judge, before any registered run. At that head the lead re-runs the builder's checks,
-    the judge's tests and C0, regenerates the sample, and makes a trial merge. `takeover_map.json`'s content is filed
-    before it.
+    the judge's tests and C0, regenerates the sample, and makes a trial merge. `takeover_map.json`'s content and
+    `takeover_pairs.json` (the pairs' wash-side declarations, from the fixtures by a committed script) are filed before it;
+    the lead regenerates the pairs from the fixtures, compares, and writes the note's hashes from that.
 11. **The strings tag `liquid-routing-strings-2026-11-2x`,** on the next commit, which holds only
     `registered_strings.json`. A file inside the tagged commit cannot hold its own revision. `engine_revision` is the
-    registration tag's. The same is done at phase 2 (`registered_strings_phase2.json`).
+    registration tag's. Before this tag the lead checks the note by parse against the builder's declared worlds and pairs,
+    with no run: one wrong operator ID would refuse every run of its world. The same is done at phase 2
+    (`registered_strings_phase2.json`).
 12. **Phase 1:** arms 1, 2, 3, 4, 5 and 7 (nothing of arm 6), from a clean frozen snapshot of the registration tag
     (`scripts/gates/freeze_snapshot.py --scope full --require-clean`), detached, one thread each, cold (no compilation
     cache), on CPUs the lead allots, on one machine. The lead records the tables' hashes; the judge runs C0 on the
     references, then opens the tables. **Arms 1 and 2 are judged first,** with any retry they owe (and arm 5's),
-    before FR-54's verdict and before phase 2 is decided. A retry runs only what the judge's `retry_owed.json` names.
+    before FR-54's verdict and before phase 2 is decided. A retry runs only what the judge's `retry_owed.json` names (in
+    `table-retry/`, and at phase 2 in `table-arm6-retry/`).
 13. **Phase 2: arm 6, only if FR-54 passes** (Q8). The router's first landing refuses a flow at a faced node (a tier
     row asserts it), so arm 6 cannot run from phase 1's snapshot. After FR-54 passes, a small gated landing lifts that
     refusal, and arm 6 runs from that landing's own clean snapshot and tag,
     `liquid-routing-phase2-registered-2026-11-2x`. Its `src` differs from phase 1's only by the lift and its tests, and
     is compared with the rehearsed lift branch's; if a file that arm 6 runs through differs, its rehearsal is repeated
-    before the tag (a miss is recorded, no bound is corrected). Nothing of arms 1 to 5 and 7 is re-run, and phase 1 is
-    never re-scored. The judge is not re-tagged unless its code changes, and then by a dated erratum tagged before the
-    runs. Arm 6's retry, if owed, is from that snapshot.
+    before the tag (a miss is recorded, no bound is corrected, and the entries that rest on it, named by the lead in a
+    dated note before the tag, are recorded and not judged, so arm 6 is at best inconclusive). Nothing of arms 1 to 5 and
+    7 is re-run, and phase 1 is never re-scored. The judge is not re-tagged unless its code changes, and then by a dated
+    erratum tagged before the runs. Arm 6's retry, if owed, is from that snapshot.
 14. **The checker,** then the record and the decision entry.
 
 ## 6. The verdicts, and what they decide
@@ -166,13 +173,14 @@ dated change, before the registration tag and never after a run.
   for this registration. Its diagnosis is non-blind and labelled, by someone other than the author, the
   judge and the checker, and any new run is a new registration.
 
-## 7. One departure from the precedent
+## 7. Two departures from the precedent
 
 FR-38's amendment 6 scores a run that the engine itself stops as refused, at best inconclusive. Here an
 honest run that the engine's own energy, material or charge check stops **fails** (`CRITERIA.md` §3.7): the
 check's residual above its tolerance is the evidence. A refused definition, domain or harness failure stays
-refused. Nothing else differs from amendment 6: a fail is never hidden by a refusal, every entry that can be
-formed is judged, and a refused or missing support run only makes its arm inconclusive.
+refused. **The second** is amendment 5's V7: a class-S entry whose error exceeds τ fails even where its order lies outside
+the window, which D271 reads as inconclusive. Nothing else differs from amendment 6: a fail is never hidden by a refusal,
+every entry that can be formed is judged, and a refused or missing support run only makes its arm inconclusive.
 
 ## 8. Not judged here: tier rows
 
@@ -188,11 +196,16 @@ formed is judged, and a refused or missing support run only makes its arm inconc
 - T1 does not identify ARS(2,2,2) among second-order explicit pairs.
 - One full step in place of two half-steps in an exact propagator.
 - How a step's heat is split among holders below arm 5's tolerance, and not at all in arms 3 and 6.
-- A portion's `resident` and `arriving`, and the sign of `transfer_T`.
+- A portion's `resident` and `arriving`.
 - A wrong coarse run that a retry drops.
 - The size of the numbers in a stop other than P8's.
 - A bound species at a linked node: `F7`'s sites stand at a node that no link touches, and a builder's row must
   test a linked one.
+- How much and how fast `F7` binds.
+- Which step an exact-propagator run took, as far as its values show.
+- `transfer_T`, its sign and beyond its sign, and `largest_ion_change_fmol`.
+- Any difference below a stated tolerance or τ, arm 2's default heat included.
+- That a restart was a restart, and what a digest hashes: the checker's to confirm.
 
 ## 9. What it costs
 
@@ -226,7 +239,8 @@ in §11.
    (start, step) and the author moves any that stops (§11).
 3. **The order window** is [p − ½, 2.5] for each class, the scheme's order 2 plus D271's half, narrower than
    D271's. A resolved order outside it is inconclusive, as D271 has it; an unresolved one is reported, not judged
-   (`CRITERIA.md` §3.5). Adopted.
+   (`CRITERIA.md` §3.5). Adopted. Amendment 5's V7 governs since: where one difference alone is at rounding the entry is
+   inconclusive, and an error above τ fails whatever the order.
 4. **The default heat's law** (LAWS.md §2) is declared from the study agent's reading of the engine at main
    0e563668, checked here for its algebra and its Taylor bound only. T4 tests it through the composite. Its class
    R is a scheme check whose pass is expected, since the law was transcribed from the engine; its class B is the
@@ -323,8 +337,9 @@ NumPy and decimal code, no engine, on CPU 6, in
 **Not read:** engine source, tests, any run output, any reference file, the judge's code, the builder's code.
 
 **Amendments 1 to 5** are in the spec folder, each with its own disclosures. Amendment 5 follows the lead's rulings on
-the spec audit. This author did not read the audit, its folder or its numbers; the lead read the references' README
-layout section and printed key names, and no value, to answer this author's questions about forms.
+the spec audit, and its second rulings after the auditor's re-run. This author did not read the audit, its folder or its
+numbers; the lead read the references' README layout section and printed key names, and no value, to answer this
+author's questions about forms.
 
 **The advisor** answered this author on the plan. It was called three times on the draft, the last after the dt
 study's report was written in, and timed out each time. The lead's own advisor review of the protocol and the
