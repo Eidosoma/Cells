@@ -9,8 +9,8 @@ runs, taken on 25 November 2026 from frozen snapshots of the engine. It holds do
 **Two parts, with their own tags.**
 - **Part 1:** the four consumers that need no new ionic piece. `SPEC.md`, `READOUTS.md`, `CRITERIA.md`, `TABLE.md`, `PLANTS.md`, `inputs.json`,
   `legacy_part1.json`, `reference_paths.json`, `margins.json`, `plants_manifest.json`.
-- **Part 2:** the four calcium clusters and the four assembly-regulated calcium clusters. `PART2.md`, `inputs_part2.json`,
-  `legacy_part2.json`, `margins_part2.json`, `plants_manifest_part2.json`. It waits for two design notes, which `PART2.md` §0 names.
+- **Part 2:** the four calcium clusters and the four assembly-regulated calcium clusters. `PART2.md`, `PART2_BLOCKS.md`, `PART2_EXPORTER.md`, `inputs_part2.json`,
+  `legacy_part2.json`, `margins_part2.json`, `plants_manifest_part2.json`. Its open rows are answered (`PART2.md` §0), its own auditor has read it, and it waits for its tag.
 - Completing Part 2 changes none of Part 1's files. What Part 2 needs beyond them is in its own files.
 
 ## Files
@@ -27,8 +27,10 @@ runs, taken on 25 November 2026 from frozen snapshots of the engine. It holds do
 | `reference_paths.json` | Every committed event of the captured assembly pools | Class E on the event path |
 | `plants_manifest.json` | Every planted legacy run of Part 1: command, patch text, output folder, sha256 | The plants' provenance |
 | `margins.json` | Part 1: the plants' distances, ratios and margins, the mechanisms and their home entries, from the legacy side alone | Power |
-| `PART2.md`, `inputs_part2.json`, `legacy_part2.json`, `margins_part2.json`, `plants_manifest_part2.json` | Part 2, the same files by part | Part 2 |
+| `PART2.md`, `PART2_BLOCKS.md`, `PART2_EXPORTER.md`, `inputs_part2.json`, `legacy_part2.json`, `margins_part2.json`, `plants_manifest_part2.json` | Part 2, the same files by part (`PART2_BLOCKS.md`: its literal blocks; `PART2_EXPORTER.md`: what its exporter's builder receives of `PART2.md`, word for word) | Part 2 |
 | `AMENDMENT-<n>-<date>.md` | Dated changes, the latest first. None exists at the criteria tag | Over every file above |
+| `AMENDMENT-2-2026-11-25.md` | The judge's and the builder's questions, and the judge's own readings, after Amendment 1: the rung of JP14, an extra entity, a retry run's class E entries, a file that is not the contract's, the readings that the lead confirmed, the rehearsal's profile, the builder's clarifications, a stop's second pass, the judge's readings one by one (four corrected), C0's two notes, `judge_plants/`, and three judge's plants | Over every file above, and over Amendment 1 |
+| `AMENDMENT-2-2026-11-25_EXPORTER.md` | What the exporter's builder receives of Amendment 2, word for word (items 2, 4, 7, 8, 9.1 and 10) | The same |
 | `AMENDMENT-1-2026-11-25.md` | Eight clarifications of the contract, after the Part 1 criteria tag: a pool restart, `restart.step_index`, a pool's `stream_id`, `declared_change`, the rehearsal's `p` and its off-grid run, EP2's `pool_seeds`, what a pool run submits and where an ionic run's schedule comes from | Over every file above |
 
 **Files outside this folder that the registration uses,** all in `validation/ensemble_reexpression/` but the rehearsal's `runs/` and `table-rehearsal/`: the lead's
@@ -37,7 +39,7 @@ runs, taken on 25 November 2026 from frozen snapshots of the engine. It holds do
 ## Rules for every reader
 
 - **Who may read what** is the protocol's §3. Two lines matter most here.
-  - **The exporter's builder receives `TABLE.md`, `READOUTS.md`, `SPEC.md`, `inputs.json` and `AMENDMENT-1-2026-11-25.md`.** The judge's reader is written from this folder alone.
+  - **The exporter's builder receives `TABLE.md`, `READOUTS.md`, `SPEC.md`, `inputs.json`, `AMENDMENT-1-2026-11-25.md` and `AMENDMENT-2-2026-11-25_EXPORTER.md`,** and for Part 2 `PART2_EXPORTER.md`, `PART2_BLOCKS.md` and `inputs_part2.json`, and neither `PART2.md` nor `AMENDMENT-2-2026-11-25.md`. The judge's reader is written from this folder alone.
     Neither reads the other's code.
   - The judge reads the captures, the planted legacy arrays and this folder. It reads no engine source and no builder's code.
 - **Value-silent about the candidate.** This folder holds legacy numbers (scales from the inputs, the legacy runs' own refinement,
