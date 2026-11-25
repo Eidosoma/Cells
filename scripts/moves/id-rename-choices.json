@@ -2038,6 +2038,14 @@
    "path": "validation/protocol_models.py",
    "text": "^name\\.startswith",
    "reason": "H2: a model's name alone, from the one key"
+  },
+  {
+   "cls": [
+    "computed"
+   ],
+   "path": "tests/unit/test_j2_bright_line.py",
+   "text": "isopotential_",
+   "reason": "split on purpose, so that the guard holds no source of its own; it looks for the text inside longer strings, which hold the new ID's tail too (ids_kept)"
   }
  ],
  "plants": {
@@ -2129,5 +2137,11 @@
    "acme.a_law@1": "an example of the grammar"
   }
  },
- "artifacts_note": "D380: the outcomes are declared and the tests leave with legacy, unless regenerating them proves easy; the script re-spells the files (regenerate, declare) or leaves them (keep_on_snapshot)"
+ "artifacts_note": "D380: the outcomes are declared and the tests leave with legacy, unless regenerating them proves easy; the script re-spells the files (regenerate, declare) or leaves them (keep_on_snapshot)",
+ "ids_kept": [
+  {
+   "test": "tests/unit/test_j2_bright_line.py::test_the_scan_sees_each_form",
+   "reason": "its parameters hold the partition law's ID built from two literals (the module splits them so that it holds no source of its own); the guard looks for that text inside longer strings, so it finds the new ID too"
+  }
+ ]
 }

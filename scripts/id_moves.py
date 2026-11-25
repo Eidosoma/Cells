@@ -431,8 +431,8 @@ class Map:
         )
 
 
-def load_map(path, frozen):
-    return Map(load_json(path, MAP_KIND), read_frozen(frozen))
+def load_map(path, frozen=None):
+    return Map(load_json(path, MAP_KIND), frozen)
 
 
 RENAMED_HEAD = '''\
@@ -1365,6 +1365,21 @@ def frozen_rules(tree, base):
     return dict(out)
 
 
+def frozen_list(tree, path, choices, also=None):
+    """{path: why} of the frozen files: the recorded list where there is one, the rules at `also`
+    (a revision) where it is given or no list is recorded, and the declared files; less the live
+    exceptions. So a branch's own registrations, made since the list, are left alone too."""
+    out = read_frozen(path)
+    if also is not None or not out:
+        for name, found in frozen_rules(tree, also or "HEAD").items():
+            out.setdefault(name, sorted(found))
+    for row in choices["frozen"]["declared"]:
+        out.setdefault(row["path"], [["declared", row["reason"]]])
+    for row in choices["frozen"]["live"]:
+        out.pop(row["path"], None)
+    return out
+
+
 def owner_of(path, rule, reason, owners):
     """Who confirms a frozen file: the tag's leading word (as the choices' owners name it), or, for
     the commit rule, its folder."""
@@ -1847,6 +1862,9 @@ MODULES = re.compile(
 ORDER = re.compile(
     r"(sorted|\.sort|\bmin|\bmax)\(.*(law_id|kind_id|LAW_ID|operator_id|kinetic_law)"
 )
+# A word after other text, at a literal's end or before a pattern's next mark: where an expected
+# message holds the start of an ID, the move's longer ID no longer follows the text before it.
+STARTS = re.compile(r"(?<=[\s\"'(\[:=,])([A-Za-z][A-Za-z0-9_]{4,})(?=$|[.\\(\[*+?])")
 WIDTH = re.compile(r"[<>=|]?[US]([0-9]+)")
 FILE_NAME = re.compile(r"\.(md|json|py|npz|npy|csv|tsv|txt|png|svg|log|toml|sh)\b")
 
@@ -2003,10 +2021,13 @@ class Scanner:
             return "\n".join(lines[max(0, node.lineno - 5) : node.end_lineno + 2])
 
         inside = set()  # The operands of a chain of +, which the chain's own template covers.
+        prose = set()  # Docstrings and bare strings.
         strange = []
         for n in ast.walk(tree):
             if isinstance(n, ast.BinOp) and isinstance(n.op, ast.Add):
                 inside |= {id(n.left), id(n.right)}
+            elif isinstance(n, ast.Expr):
+                prose.add(id(n.value))
             if isinstance(n, (ast.JoinedStr, ast.BinOp, ast.Call)) and id(n) not in inside:
                 self.computed(path, n, source)
             if isinstance(n, ast.JoinedStr):
@@ -2024,6 +2045,8 @@ class Scanner:
                 if m and 1 < int(m[1]) < self.longest and re.search(r"dtype|astype", said):
                     self.add("width", path, n.lineno, said,
                              f"a text width below the longest new ID's {self.longest}")  # fmt: skip
+                if id(n) not in prose:
+                    self.message(path, n, source)
                 if "@" in n.value and after == text:
                     strange += [
                         n for x in lines_of(n.value) if self.mp.line(x, None, TOKEN, path) != x
@@ -2038,9 +2061,34 @@ class Scanner:
                 if ORDER.search(line) and "qualified(" not in line:
                     self.add("order", path, i, line.strip(), "a sort over declared spellings")
 
+    def message(self, path, node, source):
+        for m in STARTS.finditer(node.value):
+            word = m[1]
+            if not re.search(r"[_0-9]", word):
+                continue  # A plain word.
+            if word in self.short and m.end() < len(node.value):
+                continue  # A whole name before a dot or a pattern's mark: a module, not an ID.
+            if word not in self.known:
+                starts = [n for n in self.mp.names if n.startswith(word)]
+                self.known[word] = starts[0] if starts else None
+            if self.known[word]:
+                what = f"{word!r} is the start of {self.known[word]}, after other text"
+                self.add("message", path, node.lineno, source(node), what)
+                return
+
     def computed(self, path, node, source):
         built = template(node)
-        if built is None or HOLE not in built:
+        if built is None:
+            return
+        if HOLE not in built:  # Literals joined by +, whose ends no token rule joins.
+            parts = [n.value for n in ast.walk(node) if isinstance(n, ast.Constant)]
+            if "@" in built and len(parts) > 1:
+                token = [m[1] for m in TOKEN.finditer(built) if m[1] in self.mp.table(path)]
+                whole = [m[1] for x in parts for m in TOKEN.finditer(str(x))]
+                split = [x for x in token if token.count(x) > whole.count(x)]
+                if split:
+                    self.add("computed", path, node.lineno, source(node),
+                             f"joined literals make {split[0]}")  # fmt: skip
             return
         for word in WORDS.split(built):
             literal = word.replace(HOLE, "")
@@ -2402,7 +2450,7 @@ def cmd_table(args):
     doc["types"] = engine_types(choices, engine)
     planted, by_hand = Plants(
         files,
-        Map(doc, read_frozen(data_paths(args)[2])),
+        Map(doc, frozen_list(args.tree, data_paths(args)[2], choices)),
         doc["types"],
         choices["plants"]["families"],
     ).rows()
@@ -2518,7 +2566,7 @@ def skipped_found(path, hazards, files, mp):
 def cmd_scan(args):
     choices_path, map_path, frozen_path = data_paths(args)
     choices = load_choices(choices_path)
-    mp = load_map(map_path, frozen_path)
+    mp = load_map(map_path, frozen_list(args.tree, frozen_path, choices))
     files = worktree_files(args.tree)
     hazards, report, stale = run_scan(files, mp, choices)
     standing = [h for h in hazards if "reviewed" not in h]
@@ -2559,30 +2607,18 @@ def cmd_scan(args):
 # ------------------------------------------------------------------ actions: apply and verify
 
 
-def frozen_also(tree, rev, mp, choices):
-    """The files that the rules freeze at a revision and the recorded list does not hold (a
-    branch's own registrations, or a tag made since the list), less the live exceptions."""
-    live = {r["path"] for r in choices["frozen"]["live"]}
-    return {
-        path: sorted(found)
-        for path, found in frozen_rules(tree, rev).items()
-        if path not in mp.frozen and path not in live
-    }
-
-
 def cmd_apply(args):
     choices_path, map_path, frozen_path = data_paths(args)
-    choices, mp = load_choices(choices_path), load_map(map_path, frozen_path)
-    tree = Path(args.tree)
+    choices, tree = load_choices(choices_path), Path(args.tree)
+    mp = load_map(map_path)
     if git("status", "--porcelain", "--untracked-files=no", cwd=tree).strip():
         raise Refused(f"{tree} has uncommitted changes: apply works on a clean head")
     if not mp.final and not args.rehearsal:
         raise Refused("the map is a rehearsal's, not final (--rehearsal for a scratch copy)")
     files = worktree_files(tree)
+    mp.frozen = frozen_list(tree, frozen_path, choices, "HEAD")
     if args.paths:  # A lane's own files: the token rule alone, wherever they are.
         return apply_paths(tree, files, mp, args)
-    also = frozen_also(tree, "HEAD", mp, choices)
-    mp.frozen.update(also)
     hazards, _, _ = run_scan(files, mp, choices)
     standing = [h for h in hazards if "reviewed" not in h]
     if standing and not args.allow_hazards:
@@ -2602,7 +2638,7 @@ def cmd_apply(args):
                 pages=report["pages"],
                 renamed_ids=RENAMED,
                 left=dict(Counter(why for why, _ in report["left"].values())),
-                frozen_beyond_the_list=sorted(also),
+                frozen_beyond_the_list=sorted(set(mp.frozen) - set(read_frozen(frozen_path))),
                 hazards_standing=len(standing),
             ),
             indent=1,
@@ -2648,14 +2684,13 @@ def write_tree(tree, files, out, report):
 
 def cmd_verify(args):
     choices_path, map_path, frozen_path = data_paths(args)
-    choices, mp = load_choices(choices_path), load_map(map_path, frozen_path)
-    also = frozen_also(args.tree, args.base, mp, choices)
-    mp.frozen.update(also)
+    choices = load_choices(choices_path)
+    mp = load_map(map_path, frozen_list(args.tree, frozen_path, choices, args.base))
     result = verify(mp, args.base, args.head, cwd=args.tree)
     result |= dict(
         base=git("rev-parse", args.base, cwd=args.tree).decode().strip(),
         head=git("rev-parse", args.head, cwd=args.tree).decode().strip(),
-        frozen_beyond_the_list=sorted(also),
+        frozen_beyond_the_list=sorted(set(mp.frozen) - set(read_frozen(frozen_path))),
     )
     if args.out:
         Path(args.out).write_text(json.dumps(result, indent=1) + "\n")
@@ -2667,12 +2702,14 @@ def cmd_verify(args):
 # ------------------------------------------------------------------ the collected-ID gate
 
 
-def compare_ids(mp, base, head):
+def compare_ids(mp, base, head, kept=()):
     """The collected test IDs of two trees, through the map's ids rule. Returns the differences;
-    empty when the gate holds."""
+    empty when the gate holds. `kept` names the tests ("file::test") whose IDs stay as they are: a
+    parameter there is built from split literals, which the move does not see."""
     mapped = defaultdict(list)
     for test_id in base:
-        mapped[mp.test_id(test_id)].append(test_id)
+        same = test_id.split("[", 1)[0] in kept
+        mapped[test_id if same else mp.test_id(test_id)].append(test_id)
     head = set(head)
     return dict(
         collisions=sorted(sorted(v) for v in mapped.values() if len(v) > 1),
@@ -2689,14 +2726,15 @@ def recorded_ids(path):
 
 
 def cmd_ids(args):
-    _, map_path, frozen_path = data_paths(args)
-    mp = load_map(map_path, frozen_path)
+    choices_path, map_path, _ = data_paths(args)
+    mp = load_map(map_path)
+    kept = {r["test"]: r["reason"] for r in load_choices(choices_path).get("ids_kept", ())}
     lines = {
         side: [x for x in Path(path).read_text().splitlines() if "::" in x]
         for side, path in (("base", args.base_ids), ("head", args.head_ids))
     }
     result = dict(kind=REPORT_KIND, base=len(lines["base"]), head=len(lines["head"]))
-    result["ids"] = compare_ids(mp, lines["base"], lines["head"])
+    result["ids"] = compare_ids(mp, lines["base"], lines["head"], kept)
     if args.base_log and args.head_log:  # Collection errors, compared the same way.
         errors = [
             [x for x in Path(p).read_text().splitlines() if x.startswith("ERROR ")]
@@ -2794,15 +2832,41 @@ def ruff_range(text, line, path):
     return proc.stdout if proc.returncode == 0 and proc.stdout else text
 
 
+A_LITERAL = re.compile(r"""^(\s*)([rRfFbBuU]{0,2})(["'])((?:(?!\3).)*)\3([,)\]}:]*)$""")
+
+
+def split_literal(text, line):
+    """The text with a line that one literal fills cut in two at a space, each with its quotes; the
+    text as it is where the line is no such line, or where the two would be other code."""
+    rows = lines_of(text)
+    m = A_LITERAL.match(rows[line - 1])
+    if m is None or rows[line - 1].lstrip().startswith(('"""', "'''")):
+        return text
+    indent, prefix, quote, body, tail = m.groups()
+    room = WIDEST - len(indent) - len(prefix) - 2
+    cut = body.rfind(" ", 0, room) + 1
+    if cut < 20 or len(body) - cut + len(indent) + len(prefix) + 2 + len(tail) > WIDEST:
+        return text
+    rows[line - 1 : line] = [
+        f"{indent}{prefix}{quote}{body[:cut]}{quote}",
+        f"{indent}{prefix}{quote}{body[cut:]}{quote}{tail}",
+    ]
+    new = "\n".join(rows)
+    return new if same_code(text, new) else text
+
+
 def rewrap_text(text, lines, path):
-    """(text, [(line, why)]): the statements that hold the given lines wrapped, and the lines that
-    stay too long: prose, or a text that no formatter splits."""
+    """(text, [(line, why)]): the statements that hold the given lines wrapped, a line that one
+    literal fills cut in two, and the lines that stay too long: prose, or a text that neither
+    splits."""
     prose, left = prose_lines(text), []
     for line in sorted(lines, reverse=True):  # From the end, so the numbers above stay.
         if line in prose:
             left.append((line, prose[line]))
             continue
-        new = ruff_range(text, line, path)
+        new = split_literal(text, line)
+        if new == text:
+            new = ruff_range(text, line, path)
         if new == text:
             left.append((line, "ruff leaves it"))
         elif not same_code(text, new):
@@ -2891,6 +2955,11 @@ def _selftest_rewrap(checks):
         and same_code(after, new)
         and new != after
         and all(len(x) <= WIDEST for x in lines_of(new) if "call" in x or "argument" in x)
+    )
+    said = 'X = (\n    f"{a} ' + "a word " * 14 + 'wave_mh@1"\n)\n'
+    cut, kept = rewrap_text(said, [2], "tests/p.py")
+    checks["rewrap: a line that one literal fills is cut at a space, and stays one value"] = (
+        kept == [] and same_code(said, cut) and max(map(len, lines_of(cut))) <= WIDEST
     )
     a = {"tests/p.py": ("100644", after.encode()), "configs/a.json": ("100644", b"{}")}
     good = dict(a, **{"tests/p.py": ("100644", new.encode())})
@@ -3315,6 +3384,11 @@ def _selftest_ids(checks, mp):
         == ["tests/x.py::test_new"]
         and compare_ids(mp, base, [base[0], *head[1:]])["new_in_head"] == [base[0]]
     )
+    checks["ids: a test whose IDs are kept is compared as it is"] = compare_ids(
+        mp, base, [base[0], *head[1:]], {"tests/test_wave.py::test_a"}
+    )["new_in_head"] == [] and compare_ids(mp, base, head, {"tests/test_wave.py::test_a"})[
+        "missing_in_head"
+    ] == [base[0]]
     checks["ids: two tests that the map makes one are caught"] = (
         len(compare_ids(mp, [base[0], head[0]], head)["collisions"]) == 1
     )
@@ -3326,6 +3400,7 @@ def _selftest_scan(checks, mp):
         "computed, joined": b'X = "cells." + LAW_ID\n',
         "computed, format": b'X = "wave_{}@1".format(kind)\n',
         "computed, percent": b'X = "wave_%s@1" % kind\n',
+        "computed, split": b'X = "wave_" + "mh@1"\n',
         "f-string": b'X = f"wave_mh@1{suffix}"\n',
         "cut": b'X = law.split("@")[0]\n',
         "partial": b'X = law.startswith("wave")\n',
@@ -3334,6 +3409,9 @@ def _selftest_scan(checks, mp):
         "name": b'X = family == "wave_mh"\n',
         "escaped dot": b'X = r"cells\\.wave_mh@1 x"\n',
         "unseen": b'X = "a-wave_mh@1"\n',
+        "message": b'with raises(E, match="requires wave_m"):\n    f()\n',
+        "message, a whole name at its end": b'assert "is not wave_mh" in str(e)\n',
+        "message, a pattern": b'with raises(E, match=r"requires imex_t\\S* first"):\n    f()\n',
         "path": b'X = "runs/wave_mh@1/out"\n',
         "page path": b'X = "docs/library/cells/laws/wave_mh@1.md"\n',
         "file name": b'X = "wave_mh@1.json"\n',
@@ -3349,8 +3427,11 @@ def _selftest_scan(checks, mp):
         "module names": b"import sys\nX = [n for n in sys.modules if n.startswith('cells.')]\n",
         "an unrelated prefix": b'X = name.startswith("junction")\n',
         "a whole ID": b'X = law == "wave_mh@1"\n',
+        "whole IDs in joined literals": b'X = "wave_mh@1, " + "host@3"\n',
         "a pattern of any ID": b'import re\nX = re.compile(r"[A-Za-z0-9_.]+@[0-9]+")\n',
         "an unrelated name": b'X = family == "wash_basin"\n',
+        "the start of an ID alone, or in a path": b'X = "wave_m"\nY = "runs/wave_m"\n',
+        "a module of an ID's name": b'X = "the wave_mh.rate function"\n',
     }
     for name, text in quiet.items():
         found = Scanner({"tests/p.py": ("100644", text)}, mp).scan()
@@ -3597,6 +3678,102 @@ def _selftest_frozen(checks):
         ]
 
 
+def _planted_repository(folder, files):
+    """A git repository of planted files, with one commit; returns a runner of git in it."""
+    tree = Path(folder)
+    env = dict(os.environ, GIT_AUTHOR_NAME="p", GIT_AUTHOR_EMAIL="p@p", GIT_COMMITTER_NAME="p",
+               GIT_COMMITTER_EMAIL="p@p", GIT_CONFIG_GLOBAL="/dev/null")  # fmt: skip
+
+    def run(*words):
+        subprocess.run(["git", *words], cwd=tree, env=env, check=True, capture_output=True)
+
+    for name, (mode, data) in files.items():
+        (tree / name).parent.mkdir(parents=True, exist_ok=True)
+        (tree / name).write_bytes(data)
+        (tree / name).chmod(0o755 if mode == "100755" else 0o644)
+    run("init", "-q", "-b", "main")
+    run("add", ".")
+    run("commit", "-q", "-m", "base")
+    return run
+
+
+def _selftest_end_to_end(checks):
+    """apply and verify on a planted repository, as they are called."""
+    with tempfile.TemporaryDirectory() as folder, tempfile.TemporaryDirectory() as data:
+        files = _planted_files()
+        files["tests/test_wave.py"] = (
+            "100644",
+            files["tests/test_wave.py"][1].replace(b'PATHS = "runs/wave_mh@1/out"\n', b""),
+        )
+        run = _planted_repository(folder, files)
+        tree = Path(folder)
+        (tree / "validation/own").mkdir()
+        (tree / "validation/own/spec.py").write_text('LAW = "wave_mh@1"\n')
+        run("add", "validation/own/spec.py")
+        run("commit", "-q", "-m", "a spec")
+        run("tag", "own-registered-1")  # A registration that the recorded list does not hold.
+        (tree / "tests/late.py").write_text('LAW = "host@3"\n')
+        run("add", "tests/late.py")
+        run("commit", "-q", "-m", "later work")
+        choices = _plant_choices(frozen=dict(
+            live=[dict(path="validation/live.py", reason="a live tool")],
+            declared=[dict(path="validation/frozen/judge.py", reason="declared")],
+            owners={}))  # fmt: skip
+        mp, _, _ = _planted_map(files, choices, rehearsal=True)
+        paths = {n: Path(data) / f"{n}.json" for n in ("choices", "map")}
+        paths["choices"].write_text(json.dumps(choices))
+        paths["map"].write_text(json.dumps(dict(mp.doc, plants=[])))
+        common = ["--tree", folder, "--choices", str(paths["choices"]), "--map", str(paths["map"]),
+                  "--frozen", str(Path(data) / "none.tsv")]  # fmt: skip
+
+        def call(*words):
+            with (
+                contextlib.redirect_stdout(io.StringIO()) as out,
+                contextlib.redirect_stderr(io.StringIO()),
+            ):
+                code = main([*words, *common])
+            return code, out.getvalue()
+
+        frozen = frozen_list(folder, Path(data) / "none.tsv", choices, "HEAD")
+        checks["frozen: the rules' files, the declared ones, less the live exceptions"] = {
+            "validation/own/spec.py",
+            "validation/frozen/judge.py",
+        } <= set(frozen) and "validation/live.py" not in frozen
+        checks["apply: a map that is not final is refused"] = call("apply")[0] == 2
+        code, _ = call("apply", "--rehearsal", "--allow-hazards", "--stage")
+        run("commit", "-q", "-m", "the move")
+        checks["apply: rewrites the tree, renames the page, leaves the frozen files"] = (
+            code == 0
+            and (tree / "tests/late.py").read_text() == 'LAW = "cells.model.host@3"\n'
+            and (tree / "docs/library/cells/laws/wave.wave_mh@1.md").exists()
+            and not (tree / "docs/library/cells/laws/wave_mh@1.md").exists()
+            and (tree / "validation/own/spec.py").read_text() == 'LAW = "wave_mh@1"\n'
+            and (tree / "validation/frozen/judge.py").read_text() == 'LAW = "wave_mh@1"\n'
+            and os.access(tree / "scripts/run.sh", os.X_OK)
+        )
+        checks["verify: the applied move holds"] = (
+            call("verify", "--base", "HEAD~1", "--head", "HEAD")[0] == 0
+        )
+        (tree / "tests/late.py").write_text('LAW = "wave_mh@1"\n')
+        dirty = call("apply", "--rehearsal", "--allow-hazards")[0] == 2
+        run("checkout", "-q", "--", "tests/late.py")
+        again = call("apply", "--rehearsal", "--allow-hazards")[0] == 0
+        clean = subprocess.run(["git", "status", "--porcelain"], cwd=tree, capture_output=True)
+        checks["apply: refused on a tree with changes; again, it changes nothing"] = (
+            dirty and again and clean.stdout == b""
+        )
+        spec = tree / "src/cells/steps.py"
+        spec.write_bytes(spec.read_bytes().replace(b"imex", b"Imex"))
+        run("commit", "-q", "-am", "one byte")
+        checks["verify: one flipped byte is caught in a commit"] = (
+            call("verify", "--base", "HEAD~2", "--head", "HEAD")[0] == 1
+        )
+        code, _ = call("apply", "--rehearsal", "--paths", "lean")
+        checks["apply --paths: a lane's own files, outside the scope, by the token rule alone"] = (
+            code == 0 and (tree / "lean/claim.py").read_text() == 'LAW = "cells.wave.wave_mh@1"\n'
+        )
+
+
 def _selftest_choices(checks):
     checks["choices: a choice outside its list, and two groups ruled apart, are refused"] = (
         check_choices(_plant_choices()) == []
@@ -3637,6 +3814,7 @@ def cmd_selftest(args):
     _selftest_scan(checks, mp)
     _selftest_plants(checks, mp)
     _selftest_frozen(checks)
+    _selftest_end_to_end(checks)
     _selftest_rewrap(checks)
     failed = [k for k, v in checks.items() if not v]
     print(json.dumps(dict(checks=len(checks), failed=failed), indent=1))
