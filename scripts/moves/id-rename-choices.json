@@ -2345,6 +2345,14 @@
   },
   {
    "cls": [
+    "cut"
+   ],
+   "path": "tests/unit/test_law_registry.py",
+   "text": "value\\.split\\(\"\\.\", 2\\)",
+   "reason": "H1b: the last part of a planted ID of three parts (the strict grammar's line, so a scan before its merge lists this review as stale)"
+  },
+  {
+   "cls": [
     "message"
    ],
    "path": "tests/unit/test_fr5_source_kinds.py",
