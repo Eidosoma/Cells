@@ -1,0 +1,84 @@
+{
+ "kind": "fr30-revilla1999-diagnostic-declaration@1",
+ "label": "FR-30, Revilla, Castro and Barrio (1999): a labelled, non-blind diagnostic (D343, D344). It decides nothing (W6) and changes no verdict and no law. Every result is one study's indication. Its author never fits FR-30 again in any registered role.",
+ "declared": {
+  "utc": "2026-11-24T17:20Z",
+  "what": "Deliverable 2's margins, meanings, identity criteria and search, committed on branch fr30-revilla-diagnostic before its driver exists and before any evaluation of the law at 80 mV other than at the judged parameters, whose 80 mV values predictions.json already records.",
+  "seen_before": "Deliverable 1 (the windows at the six voltages, the in-sample residuals, D320's six lines and the polarity chi^2 floor), from the record only. One timing of predict and readout at the judged parameters at 60 and 100 mV.",
+  "rulings": "the lead's rulings of 24 November 2026 on Deliverable 1: no six-voltage minimax (a), no pooled window (c); (b) with G_ss kept in the training set; the identity check first and no refit; the driver on branch fr30-revilla-diagnostic in a worktree, committed by path and never pushed, run detached from a frozen snapshot of that branch on CPUs 6, 7, 22 and 23, calling only the tagged predict and readout."
+ },
+ "inputs": {
+  "fit_json": {"path": "/mnt/workspaces/Cells/fr30-candidates4-extraction/revilla1999/extraction/fit.json", "sha256": "36d4a56e01a217e3fae8eedbfa09b1ed404f3c749a1ae223c6d46c160562e404"},
+  "held_out_json": {"path": "/mnt/workspaces/Cells/fr30-candidates4-extraction/revilla1999/extraction/held_out.json", "sha256": "e83680830219a58ab6b47d268518543b90e63c52d6b7d7694ee8a8e45c7a7285"},
+  "fit_report_json": {"path": "/mnt/workspaces/Cells/fr30-benchmark-20261123/fit/run-f734b96e/fit_report.json", "sha256": "8c9c9852e6d4d0c236933102396ffdf1e1ce8e3b460e30aefec1b63828a2a979"},
+  "params_json": {"path": "/mnt/workspaces/Cells/fr30-benchmark-20261123/fit/run-f734b96e/params.json", "sha256": "38fc419306d1586bd67ca0673499e9cc7bae2c77673596706812d4185e0b1438"},
+  "predictions_json": {"path": "/mnt/workspaces/Cells/fr30-benchmark-20261123/fit/predictions.json", "sha256": "20ca2a4a4e53fe04fe3a335a824f1148df1df436676e69d07064ec75f2252401"},
+  "verdict_json": {"path": "/mnt/workspaces/Cells/fr30-benchmark-20261123/verdict/verdict.json", "sha256": "c28010d5b5cc06f9a11774f47b84e46128749fdb5835c35a014808b831df9d9e"},
+  "checker_verdict_json": {"path": "/mnt/workspaces/Cells/fr30-benchmark-20261123/verdict/checker_verdict.json", "sha256": "af9f402d62dacb56768396443a7c2245524a8d48640869bae16b1b111f56645e"}
+ },
+ "identity": {
+  "predict": {
+   "what": "the tagged predict stage reproduces predictions.json apart from utc and provenance.root",
+   "command": "from /mnt/workspaces/Cells/fr30-benchmark-20261123/fit/snapshot-main-ddcf32c1 as the working directory: PYTHONPATH=src JAX_ENABLE_X64=1 PYTHONDONTWRITEBYTECODE=1 taskset -c 6 /mnt/workspaces/Cells/venv-cpu/bin/python -m validation.junction_gate_benchmark.revilla1999 predict <params_json> <OUT>, with OUT outside the snapshot",
+   "pass": "OUT's bytes equal predictions.json's (sha256 20ca2a4a...) once OUT's utc value, and its provenance.root if it differs, are replaced by the recorded ones",
+   "fallback": "if only trailing digits differ, once more pinned to CPUs 6, 7, 22 and 23 together; if it still differs, stop and report the difference with verify's result; no further attempts"
+  },
+  "objective": {
+   "what": "this diagnostic's re-implementation of the registered fit's objective (validation/junction_gate_benchmark/fit_revilla1999.py at f734b96e, branch fr30-revilla-fit, run run-f734b96e), with the exact tagged readout",
+   "pass": "at params_json, chi^2 within a relative 1e-9 of 49.468663901555985, and each of the 17 residuals within a relative 1e-9 (or 1e-12 absolute) of fit_report.json's weighted_residual for the same (vj_mV, observable)",
+   "on_failure": "stop and report; the search does not run"
+  },
+  "shared_slope_and_midpoint": "confirm from the law's code that each boltzmann_eyring gate's steady target and relaxation rate come from one u = A(|V| - V0), and check numerically at params_json at 80 mV that the recomputed rates and targets equal predictions.json's recorded gates within a relative 1e-12"
+ },
+ "objective": {
+  "residuals": "fit.json's 17 training rows as the registered fitter reads them: tau_fast and tau_slow at -100, -60, +60 and +100 mV as ln(pred/obs)/(SEM/obs); G_ss/G_0 at -100, -60, -40, -20, +20, +40, +60 and +100 mV as (pred - obs)/sigma, sigma the SEM or, where none is reported, the median reported G_ss SEM (0.0232); the fast-to-slow amplitude ratio at -100 mV as ln(pred/3)/0.2. A residual where the law gives no reading is 30 (the fitter's penalty).",
+  "chi2": "the sum of the squared residuals",
+  "floor": 48.34445947511761,
+  "floor_source": "Deliverable 1: the polarity chi^2 floor, the least chi^2 any prediction equal at +V and -V can reach; the registered fit's free mode reaches it to 7e-15",
+  "excess": "chi^2 - floor"
+ },
+ "compatibility": {
+  "margins": [0.5, 1.0, 2.0],
+  "training_compatible_at_margin_m": [
+   "the parameters lie in the registered fit's box: per gate ln(rate/s^-1) in [ln 1e-4, ln 1e3], slope in [1, 330] per V, midpoint in [0, 0.12] V, split in [0, 1], residual in [0, 0.999] (fit_revilla1999.py's LOWER and UPPER)",
+   "predict is in the law's domain at 20, 40, 60, 80 and 100 mV (hold, prepulse, step, end state, finite)",
+   "the exact readouts at 60 and 100 mV are not degenerate (the registered fitter's selection rule)",
+   "the exact excess is at most m"
+  ],
+  "primary_family": "the free mode: both gates boltzmann_eyring with all ten parameters free in the box. It contains the judged fit's symmetric_barrier family as its split = 1/2 slice. The lead's meanings below are read on this family only.",
+  "beside_no_meaning": "the split = 1/2 slice (the judged fit's family, eight free): its own tau_slow(80) profile and deciding number, reported beside with no meaning of its own. Its least excess is 1.124 (the judged fit), so at margins 0.5 and 1.0 it holds no compatible set."
+ },
+ "reported": {
+  "per_margin": "over every exact-evaluated compatible set found: the range [min, max] of tau_slow and tau_fast at 80 mV from the exact readout (not degenerate at 80 mV), and where each range lies against the -80 and +80 mV comparisons; compatible sets whose 80 mV readout is degenerate are counted apart (both time comparisons fail by rule)",
+  "inside_a_window": "decided by the tagged scorer's compare_time on held_out.json's entries at -80 and +80 mV (resolve), never by typed edges. For orientation only, Deliverable 1 printed tau_slow -80 [10.0163, 16.7647] s, +80 [12.1361, 20.7601] s, both [12.1361, 16.7647] s; tau_fast -80 (0, 3.7662] s, +80 [0.4746, 3.8554] s, both [0.4746, 3.7662] s",
+  "deciding_number": "the least exact excess found among training-compatible sets (any margin) whose 80 mV readout is not degenerate and whose tau_slow(80) passes both the -80 and the +80 mV comparisons. Its least is compared with each margin.",
+  "meanings_fixed_by_the_lead": {
+   "reached": "compatible sets reaching tau_slow inside both windows (12.14-16.76 s) mean the split could not test the law",
+   "not_reached": "none reaching it means the law with this training data misses -80, as one study's indication"
+  },
+  "witness": "for the set that gives the deciding number (and the slice's beside), all six -80 and +80 mV lines from the tagged predict and readout (revilla1999.predictions_document) scored by the tagged scorer's score against held_out.json",
+  "none_found": "if no set reaches the window at a margin, the report gives the search: the starts, the solves and their statuses, and the profile curve (achieved tau_slow(80) against exact excess)",
+  "profiles": "every profile point is saved: its target, the achieved tau_slow, tau_fast and G_ss/G_0 at 80 mV (exact), its exact excess, its degenerate flags, its pass flags at -80 and +80 mV, and its parameters",
+  "kinetics_alone": "beside, so labelled: whether any set in the box, in the domain and with readouts not degenerate at 60, 80 and 100 mV, passes all twelve tau comparisons (tau_fast and tau_slow at -100, -80, -60, +60, +80 and +100 mV, by compare_time against fit.json's and held_out.json's entries), with no G_ss and no amplitude ratio. A feasible point is shown with its twelve lines; if none is found, the best max|u| found and the search."
+ },
+ "window_units": "u = (pred - obs)/|edge - obs|, edge the window's edge on the prediction's side (the scorer's applied edge); |u| <= 1 is the registered pass (Deliverable 1)",
+ "search": {
+  "readout_disclosure": "The search's inner loop uses the registered fitter's surrogate readout: the tagged fit_two_exponentials and degenerate_reasons on every 10th sample of the tagged predict's trace in the readout window, with G_ss/G_0 from the full trace. It is search-only. Every reported number and every compatibility or window decision comes from the exact tagged readout (revilla1999.readout on revilla1999.predict).",
+  "coordinates": "the registered fitter's internal coordinates per gate: ln rate, slope/100, midpoint/0.1, split, residual; the slice drops split (1/2)",
+  "optimizer": "scipy.optimize.least_squares, method trf, bounds the box, diff_step 1e-6, xtol = ftol = gtol = 1e-9 (the registered fitter's settings)",
+  "starts_free": "38: the registered fitter's 16 free-mode starts (its rule, on fit.json); the registered fit's 3 refined free-mode solutions and its 3 refined symmetric_barrier solutions with split 1/2 (fit_report.json's refined z); 16 uniform draws in the box from numpy.random.default_rng(20261124)",
+  "starts_slice": "35: the registered fitter's 16 symmetric_barrier starts; its 3 refined symmetric_barrier solutions; 16 uniform draws in the eight-coordinate box from numpy.random.default_rng(20261125)",
+  "stage_A": "unconstrained minimization of chi^2 from every start (surrogate, at most 1500 evaluations)",
+  "stage_B_profiles": {
+   "what": "profile points: chi^2 plus a constraint residual (ln Q - ln q)/0.002 minimized at each grid target q (surrogate, at most 400 evaluations per solve)",
+   "profiles": ["free family, Q = tau_slow at 80 mV", "free family, Q = tau_fast at 80 mV", "split = 1/2 slice, Q = tau_slow at 80 mV (beside)"],
+   "grid_tau_slow_s": "31 values log-spaced from 5 to 50 s, with 10.0163, 12.1361, 14.2638, 16.7647 and 20.7601 s, and 12.1361 x 1.005 and 16.7647 / 1.005 s",
+   "grid_tau_fast_s": "25 values log-spaced from 0.2 to 6 s, with 0.4746, 1.3370, 3.7662 and 3.8554 s, and 0.4746 x 1.005 and 3.7662 / 1.005 s",
+   "chains": "per profile, up to 6 stage-A solutions of its family with the lowest surrogate chi^2 (excess at most 10) whose Q differ pairwise by more than 2%; from each, a chain starting at the grid target nearest its Q, then ascending through the grid and, separately, descending, each solve warm-started from the previous solve",
+   "repair": "per profile, one ascending and one descending sweep re-solving each target from its neighbour's best solution, keeping any lower chi^2 whose achieved ln Q is within 0.01 of the target"
+  },
+  "stage_C_exact": "every stage A and stage B solution re-evaluated with the exact readout; each profile target's best solution with exact excess at most 3.0 polished with the exact readout (the same constrained problem, at most 60 evaluations) and re-evaluated",
+  "kinetics_alone_search": "least squares on hinge residuals: max(0, |u| - 0.8) for the twelve tau comparisons, and, at 60, 80 and 100 mV, max(0, 1.6 - tau_slow/tau_fast), 100 max(0, 0.002 - A_fast), 100 max(0, 0.002 - A_slow) and max(0, tau_slow - 250 s)/250 s; from the 38 free starts and the free profiles' chain seeds (surrogate, at most 400 evaluations); every solution verified with the exact readout",
+  "parallelism": "4 spawn workers, BLAS pinned to one thread, in one systemd unit on CPUs 6, 7, 22 and 23 (scripts/run_detached.sh), with its own log, an exit-code marker and one JSON line per solve"
+ }
+}

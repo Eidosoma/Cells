@@ -39,6 +39,15 @@ Inert (docs/CORE_SEAMS_DESIGN.md §8.2): the module declares its one law as LAW 
 nothing at import; its registration on the passive routes kind is the kinds owner's.
 
 Pure functions in the xp style of processes/; nothing floors or clips.
+
+**Scope (D351, D355).** The law has one permeability at every voltage. Two indications go against
+carrying one across voltage: red-cell chloride and a valinomycin bilayer miss in opposite
+directions. Neither is confirmed.
+
+**A comparison rule (D344).** Raising outside K depolarizes squid axons, intact and perfused, and
+the law reproduces the direction. Quantitative comparisons use preparation-specific permeability
+ratios: its +12.63 mV against the measured +2.0 mV carried the intact axons' ratios to perfused
+axons, whose own were never measured.
 """
 
 import jax.numpy as jnp

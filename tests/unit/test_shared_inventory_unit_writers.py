@@ -15,12 +15,19 @@ and exported rows keep one writer.
   unit's books less the producer's consumption, to rounding; both writers move P.
 - Restart: resumed from a mid-run checkpoint, in process and through a written snapshot, the run is
   bit for bit the unbroken one, books included.
+- Restart at the switch-off (D349): the pair with both sources switched off at one instant by their
+  declared schedules, cut at that row, one step after it and one step before it. Resumed, every
+  state array, ledger and observation is the unbroken run's, bit for bit; a redo and a skip of each
+  source's switch, planted in the schedule the resumed run reads, are caught.
 Its reason and cost: one compiled world of the composition FR-43 admits, resumed twice (seconds
-as the tier tool measures).
+as the tier tool measures). The switch-off's rows compile nothing: a schedule is data, and their
+runs have the two programs' 40 and 20 steps.
 """
 
+import itertools
 import math
 import tempfile
+from dataclasses import replace
 from pathlib import Path
 
 import jax
@@ -29,6 +36,7 @@ import pytest
 
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.execution.runner import run
+from cells.execution.schedule import event_index
 from cells.operators import population_unit_turnover as put
 from cells.operators import templated_polymerisation as tp
 from cells.records.io import load_snapshot, write_snapshot
@@ -154,3 +162,99 @@ def test_the_shared_stock_closes_per_writer_and_restarts_bitwise():
         for x, y in zip(rerun.history, result.history, strict=True):
             tail = np.asarray(y)[checkpoint.step_index :]
             assert np.asarray(x).tobytes() == tail.tobytes()
+
+
+# ------------------------------------------------------------------ a restart at the switch-off
+
+DT = 0.5  # s: the pair's step.
+CUT = END / 2  # s: row 20, where the restart above cuts too, so its 40- and 20-step programs serve.
+SOURCES = {  # The fixture's keyword for each source's switch, and the source's own count.
+    "gene_off": "poly_initiated_fmol",  # The gene unit's: chains of P initiated by tl.
+    "assembly_off": "unit_assembled_units",  # The unit producer's: units assembled by its route.
+}
+
+
+def switched(**times):
+    """The pair, its sources switched at these times, observed every 2.5 s, the cut among them."""
+    return parse_spec(sif.unit_pair(end=END, every=2.5, **times))
+
+
+def reported(result, start):
+    """{name: its rows} of everything a run reports from accepted step `start` on: the times, every
+    state array (each writer's books among them), every ledger's residual, every observation."""
+    model, first = get_model(result.spec.model), start - result.start_step
+    rows = type(result.history)(*(np.asarray(v)[first:] for v in result.history))
+    _, p = model.initial_values(result.spec)
+    ledgers = [model.balances(type(rows)(*(v[i] for v in rows)), p) for i in range(len(rows[0]))]
+    seen = result.observations.times >= result.times[first]
+    return (
+        {"times": result.times[first:], **rows._asdict()}
+        | {f"ledger {k}": np.stack([row[k] for row in ledgers]) for k in ledgers[0]}
+        | {f"observed {k}": v[seen] for k, v in vars(result.observations).items()}
+    )
+
+
+def differing(a, b):
+    """{name: the first of its rows that two runs' reports do not share bit for bit}."""
+    assert a.keys() == b.keys()
+    out = {}
+    for name in a:
+        pairs = enumerate(zip(a[name], b[name], strict=True))
+        row = next((i for i, (x, y) in pairs if x.tobytes() != y.tobytes()), None)
+        if row is not None:
+            out[name] = row
+    return out
+
+
+@pytest.mark.parametrize(
+    ("after", "plants"),
+    ((0, ("redo", "skip")), (1, ("redo",)), (-1, ())),
+    ids=("at the switch", "one step after it", "one step before it"),
+)
+def test_a_restart_at_the_sources_switch_off_is_bitwise_and_a_redo_or_skip_is_caught(
+    after, plants, tmp_path
+):
+    """D349: the run cut `after` steps from the row of both sources' switch-off, and resumed.
+
+    The switch acts in the step that leaves its row, for both sources: each still makes in the step
+    that ends there, and nothing after it. So a cut at the switch holds the state the switch acts
+    on, and the resumed run's first step applies it, though the checkpoint's event position counts
+    it already. The chains of P in production go on to their release.
+
+    The plants (FR-44's method). A schedule sets a level: the checkpoint holds no count of its
+    switches to shift, a shifted event position is refused, and a rate of 0 set to 0 again changes
+    nothing. So each is planted, one source at a time, in what the resumed run reads, its
+    definition's schedule. Each completes, and the comparison catches it at the end of its first
+    wrong step, where the source has made more than the unbroken run's:
+    - redo: on again for the step after the switch's own, then switched off a second time;
+    - skip: never switched off."""
+    off = CUT - after * DT
+    switch = dict.fromkeys(SOURCES, (off,))
+    spec = switched(**switch)
+    full = run(spec)
+    k = int(np.flatnonzero(full.times == off)[0])
+    for count in SOURCES.values():
+        made = np.asarray(getattr(full.history, count))
+        assert np.all(made[k] > made[k - 1]) and np.all(made[k:] == made[k]), count
+    released = np.asarray(full.history.poly_released_fmol)
+    assert np.all(released[-1] > released[k])
+    checkpoint = full.checkpoint_at(CUT)
+    assert checkpoint.event_index == int(after >= 0)
+    start = checkpoint.step_index
+    whole = reported(full, start)
+    assert differing(reported(run(spec, checkpoint), start), whole) == {}
+    if after == 0:  # The cut at the switch, through a written snapshot too.
+        write_snapshot(tmp_path / "checkpoint", spec, checkpoint)
+        loaded = load_snapshot(tmp_path / "checkpoint")
+        assert differing(reported(run(loaded.spec, loaded.checkpoint), start), whole) == {}
+    changes = {"redo": (off, off + DT, off + 2 * DT), "skip": ()}
+    wrong = {"redo": off + DT, "skip": off}  # The first step a plant takes wrong, by its start.
+    for (source, count), plant in itertools.product(SOURCES.items(), plants):
+        read = switched(**(switch | {source: changes[plant]}))
+        planted = run(read, replace(checkpoint, event_index=event_index(read, CUT)))
+        rows = differing(reported(planted, start), whole)
+        assert count in rows, (source, plant)
+        row = rows[count]
+        assert full.times[start + row] == wrong[plant] + DT, (source, plant)
+        made, unbroken = (getattr(r.history, count) for r in (planted, full))
+        assert np.all(made[row] > unbroken[start + row]), (source, plant)
