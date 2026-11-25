@@ -237,7 +237,7 @@ def test_requires_kinds_is_refused_without_its_kind():
     [
         (["tests.exchange@1"], "a tuple of kind IDs"),
         (("",), "non-empty string"),
-        (("exchange@1", "cells.exchange@1"), "names a kind twice"),
+        (("tests.kind.exchange@1",) * 2, "names a kind twice"),
     ],
 )
 def test_requires_kinds_declarations_are_checked(kinds, message):
