@@ -136,10 +136,12 @@ The abstracts and records were read at Europe PMC on 25 November 2026. Two works
 Nothing else in the law rests on a source. **The departures** are the rest of the law: the
 denominator, the equal split of the charge, the single mode, and the absence of regulation.
 
-**The same rate elsewhere:** an older model family ran it as `ncx_3na_1ca_symmetric_barrier@1`. No
-live model runs that kernel. It goes when that family leaves the tree. A four-state exchange cycle is
-planned for cardiac cells ([the cardiac note](../../../HUMAN_CARDIAC_LAWS_DESIGN.md)), a second form of
-this mechanism. Which of the two stays is decided when it lands.
+**The same rate elsewhere:** an older model family runs it as `ncx_3na_1ca_symmetric_barrier@1`,
+through a kernel that no live model runs. Deleting that family does not remove the kernel, because a
+test still checks it. It retires when that test is retargeted onto this law, and its file then keeps
+the calcium pump alone. A four-state exchange cycle is planned for cardiac cells
+([the cardiac note](../../../HUMAN_CARDIAC_LAWS_DESIGN.md)), a second form of this mechanism. Which of
+the two stays is decided when it lands.
 
 ## How it is checked
 
