@@ -634,6 +634,25 @@ def test_class_E_leaves_that_are_missing_or_mistyped(benches, case):
     )
 
 
+def test_a_refused_pool_run_is_judged_on_the_events_it_holds(benches):
+    """A path that is a beginning of the reference's is not formed, and another one fails."""
+
+    def early(runs, wrong):
+        refuse(runs[POOL], "harness")
+        path = runs[POOL]["path"]["cell_0"]["2"]
+        path.pop()
+        if wrong:
+            path[0][0] *= 1 + 1e-9
+
+    q = benches("base").score(lambda runs: early(runs, False))
+    for readout in ("cell_0 path", "cell_0 exposure"):
+        assert q.outcome(run=POOL, readout=readout) == UNFORMED
+    assert q.outcome(run=POOL, readout="cell_1 path") == PASS
+    assert not q.fails() and q.verdict("base") == OPEN
+    q = benches("base").score(lambda runs: early(runs, True))
+    assert q.outcome(run=POOL, readout="cell_0 path") == FAIL and q.verdict("base") == FAIL
+
+
 def test_schedules_may_hold_the_initial_entry_and_repeats(benches):
     def alter(runs):
         block = runs[B[1]]["inputs"]
