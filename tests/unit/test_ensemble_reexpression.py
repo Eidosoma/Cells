@@ -551,6 +551,12 @@ def test_a_refused_runs_entry_keeps_what_it_has(invented, tmp_path):
     assert exporter.entry_faults(run.name, entry) == []
     assert entry["t"] == [0.0, 4e-05, 8e-05] and entry["steps"] == 2
     assert entry["potential_t"] == [0.0, 4e-05] and entry["refusal"] == stop
+    folders = driver.Folders(tmp_path / "check")  # The record holds the hash of those rows' file.
+    record, partial = folders.record(run), folders.attempt(run) / "partial.npz"
+    assert record["files_sha256"]["partial.npz"] == driver.digest(partial)
+    partial.write_bytes(partial.read_bytes() + b" ")
+    changed = exporter.entry(invented, run, folders)
+    assert "partial.npz is not what its record lists" in changed["refusal"]["message"]
 
     run = invented.run("inv_sample_slow h=4e-05")
     crash = driver.Folders(tmp_path / "crash")
@@ -743,6 +749,12 @@ def test_a_driven_entry_says_what_its_schedule_came_from(invented, tmp_path, pla
     resolved.write_text("{} ")
     changed = exporter.entry(invented, run, folders)
     assert "its resolution is not what its record lists" in changed["refusal"]["message"]
+    # A channel that no pool drives is a key too, with an empty list (Amendment 2, 9.1).
+    lone = {"pools": made_from["pools"][:1], "composed_file_sha256": "c" * 64}
+    lone["worlds"] = [{"world": 1, "switches": [s for s in switches if s["pool"] == 0]}]
+    given = exporter.assembly(parsed, lone, 1)
+    assert given["switch_list"] == {driven[0]: path[0], driven[1]: []}
+    assert given["pool_seeds"] == {"c_a": 711}
     # Refused before it had a schedule: what its composed file submits, and the engine's own kind.
     refusal = {"kind": "definition", "message": "a near miss", "time_s": None}
     folders, _ = attempted(
@@ -887,7 +899,14 @@ def test_a_check_that_its_second_pass_does_not_meet_says_so(invented, tmp_path, 
         refusal = {"kind": kind, "message": LEDGER_MESSAGE + "energy", "time_s": None}
         worker.kept(spec, None, refusal)
         assert worker.facts["refused_row_found"] is (failed is not None)
+        told = {"window_steps": 1, "rows": None, "completed": failed is None}
+        assert worker.facts["second_pass"] == told
         found[kind, failed] = refusal
+    rows = {"accepted_times": np.zeros(2)}
+    monkeypatch.setattr(refusals, "rows_before", lambda *_: (rows, 4e-05))
+    worker.kept(spec, None, {"kind": "check", "message": "", "time_s": None})
+    assert worker.facts["second_pass"]["rows"] == "partial.npz"
+    assert (tmp_path / "partial.npz").is_file()
     said = {"time_s": 0.0002, "second_pass_completed": True}
     assert found["check", None] == found["domain", None] | {"kind": "check"} | said
     assert found["check", 4e-05] == found["domain", None] | {"kind": "check", "time_s": 4e-05}
