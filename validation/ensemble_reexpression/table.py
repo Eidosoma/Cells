@@ -31,6 +31,7 @@ from validation.ensemble_reexpression.inputs import (
     read_json,
 )
 from validation.ensemble_reexpression.labels import LABELS, declared_strings, label, strings
+from validation.ensemble_reexpression.refusals import SECOND_PASS
 from validation.ensemble_reexpression.run import RECORD, Folders, digest
 
 KIND = "ensemble-reexpression engine table, version 1"
@@ -540,11 +541,14 @@ def entry_faults(name, e, *, retried=False):
         need((restart is not None) == (e["t"][0] != 0.0), "t's first time")
     need(e["host_patch"] is None, "host_patch")
     if e["refusal"] is not None:
-        need(set(e["refusal"]) == {"kind", "message", "time_s"}, "refusal's keys")
+        need({"kind", "message", "time_s"} <= set(e["refusal"]), "refusal's keys")
         need(e["refusal"]["kind"] in KINDS, "refusal's kind")
         time = e["refusal"]["time_s"]
         need((time is not None) == (e["refusal"]["kind"] == "check"), "refusal's time_s")
         need(time is None or _finite(time), "refusal's time_s is a number")
+        if SECOND_PASS in e["refusal"]:  # True and of a check, or absent.
+            own = e["refusal"]["kind"] == "check" and e["refusal"][SECOND_PASS] is True
+            need(own, f"refusal's {SECOND_PASS}")
     need(set(e["source"]) == set(SOURCE), "source")
     for key, kind in SOURCE.items():
         need(type(e["source"].get(key)) is kind, f"source.{key}")
