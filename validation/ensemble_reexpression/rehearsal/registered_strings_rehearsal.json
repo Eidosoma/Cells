@@ -1,0 +1,1564 @@
+{
+ "kind": "ensemble-reexpression registered strings, version 1",
+ "revision": null,
+ "rehearsal_revision": "c1a2dc34fd628a332c24958e85bc61d9ac0f9e25",
+ "labels": {
+  "inner_model": "resolved_pump_tissue@3",
+  "rk4": "rk4",
+  "imex": "imex_ars222_face_electromigration@1",
+  "field_solver": "capacitive_reduction_gauged_damped_newton@2",
+  "field_solver_floor": "capacitive_reduction_gauged_damped_newton@3",
+  "closure": "resolved_capacitor_components_current_continuity@1",
+  "constant_field": "constant_field@1",
+  "kv15_mh": "kv1p5_mh@1",
+  "nak_pump_positive": "nak_atp_mass_action_positive@1",
+  "maintained_fuel": "maintained_chemical_reservoirs@1",
+  "junction_relaxation": "junction_voltage_relaxation@1",
+  "logmean_face": "logmean_electrodiffusion@1",
+  "pool_model": "finite_bond_assembly@1",
+  "pool_topology": "dodecahedron_g10_2@1",
+  "assembly_observable": "root_component_has_cycle@1"
+ },
+ "runs": {
+  "inv_cluster h=2.4e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "inv_cluster h=1.2e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "inv_cluster h=6e-06": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "inv_release h=2.4e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "inv_release h=1.2e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "inv_release h=6e-06": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "inv_bound h=2.5e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "inv_bound h=1.25e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "inv_bound h=6.25e-06": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "inv_cross h=1.6e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "inv_cross h=8e-06": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "inv_cross h=4e-06": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "inv_amounts h=2e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "inv_amounts h=1e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "inv_amounts h=5e-06": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "inv_junctions h=8e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "inv_junctions h=4e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "inv_junctions h=2e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "inv_imex h=9.6e-05": {
+   "model": "inner_model",
+   "solver": "imex",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "inv_imex h=4.8e-05": {
+   "model": "inner_model",
+   "solver": "imex",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "inv_imex h=2.4e-05": {
+   "model": "inner_model",
+   "solver": "imex",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "inv_offgrid h=8e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "inv_stop h=8e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "inv_default_omitted h=8e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "inv_default_omitted h=4e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "inv_default_omitted h=2e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "inv_default_written h=8e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "inv_default_written h=4e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "inv_default_written h=2e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "inv_cluster h=2.4e-05 restart": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "inv_junctions h=8e-05 restart": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "inv_cluster plant channel": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "inv_release plant channel": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "inv_junctions refused definition": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "inv_junctions refused domain": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "inv_junctions refused harness": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "inv_cell s0 pool": {
+   "model": "pool_model",
+   "solver": null,
+   "field_solver": null,
+   "operators": [],
+   "kinds": [],
+   "laws": [],
+   "pool": [
+    "pool_model",
+    "pool_topology"
+   ],
+   "observable": "assembly_observable"
+  },
+  "inv_cell s1 pool": {
+   "model": "pool_model",
+   "solver": null,
+   "field_solver": null,
+   "operators": [],
+   "kinds": [],
+   "laws": [],
+   "pool": [
+    "pool_model",
+    "pool_topology"
+   ],
+   "observable": "assembly_observable"
+  },
+  "inv_cell s0 pool restart": {
+   "model": "pool_model",
+   "solver": null,
+   "field_solver": null,
+   "operators": [],
+   "kinds": [],
+   "laws": [],
+   "pool": [
+    "pool_model",
+    "pool_topology"
+   ],
+   "observable": "assembly_observable"
+  },
+  "inv_cell s0 w0 h=2e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "kv15_mh",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_cell s0 w0 h=1e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "kv15_mh",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_cell s0 w0 h=5e-06": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "kv15_mh",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_cell s0 w1 h=2e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "kv15_mh",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_cell s0 w1 h=1e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "kv15_mh",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_cell s0 w1 h=5e-06": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "kv15_mh",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_cell s0 w2 h=2e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "kv15_mh",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_cell s0 w2 h=1e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "kv15_mh",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_cell s0 w2 h=5e-06": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "kv15_mh",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_cell s0 w3 h=2e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "kv15_mh",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_cell s0 w3 h=1e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "kv15_mh",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_cell s0 w3 h=5e-06": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "kv15_mh",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_cell s1 w0 h=2e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "kv15_mh",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_cell s1 w0 h=1e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "kv15_mh",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_cell s1 w0 h=5e-06": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "kv15_mh",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_cell s1 w1 h=2e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "kv15_mh",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_cell s1 w1 h=1e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "kv15_mh",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_cell s1 w1 h=5e-06": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "kv15_mh",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_cell s1 w2 h=2e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "kv15_mh",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_cell s1 w2 h=1e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "kv15_mh",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_cell s1 w2 h=5e-06": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "kv15_mh",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_cell s1 w3 h=2e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "kv15_mh",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_cell s1 w3 h=1e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "kv15_mh",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_cell s1 w3 h=5e-06": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "kv15_mh",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_cell s1 w1 h=2e-05 restart": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "kv15_mh",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_base s0 pool": {
+   "model": "pool_model",
+   "solver": null,
+   "field_solver": null,
+   "operators": [],
+   "kinds": [],
+   "laws": [],
+   "pool": [
+    "pool_model",
+    "pool_topology"
+   ],
+   "observable": "assembly_observable"
+  },
+  "inv_base s1 pool": {
+   "model": "pool_model",
+   "solver": null,
+   "field_solver": null,
+   "operators": [],
+   "kinds": [],
+   "laws": [],
+   "pool": [
+    "pool_model",
+    "pool_topology"
+   ],
+   "observable": "assembly_observable"
+  },
+  "inv_base s0 pool restart": {
+   "model": "pool_model",
+   "solver": null,
+   "field_solver": null,
+   "operators": [],
+   "kinds": [],
+   "laws": [],
+   "pool": [
+    "pool_model",
+    "pool_topology"
+   ],
+   "observable": "assembly_observable"
+  },
+  "inv_base s0 w0 h=2e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_base s0 w0 h=1e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_base s0 w0 h=5e-06": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_base s0 w1 h=2e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_base s0 w1 h=1e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_base s0 w1 h=5e-06": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_base s0 w2 h=2e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_base s0 w2 h=1e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_base s0 w2 h=5e-06": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_base s0 w3 h=2e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_base s0 w3 h=1e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_base s0 w3 h=5e-06": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_base s1 w0 h=2e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_base s1 w0 h=1e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_base s1 w0 h=5e-06": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_base s1 w1 h=2e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_base s1 w1 h=1e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_base s1 w1 h=5e-06": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_base s1 w2 h=2e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_base s1 w2 h=1e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_base s1 w2 h=5e-06": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_base s1 w3 h=2e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_base s1 w3 h=1e-05": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_base s1 w3 h=5e-06": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_base s0 w2 h=2e-05 restart": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_base plant swapped": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "inv_base plant swapped by variant": {
+   "model": "inner_model",
+   "solver": "rk4",
+   "field_solver": "field_solver_floor",
+   "operators": [],
+   "kinds": [],
+   "laws": [
+    "closure",
+    "constant_field",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "nak_pump_positive"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  }
+ }
+}

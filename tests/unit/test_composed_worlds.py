@@ -876,12 +876,12 @@ def test_a_composed_world_conducts_exactly_on_its_pools_paths(outputs):
     constant = [[(t, paths[0][0][1]) for t, *_ in paths[0]], paths[1]]
     still = run(parse_spec(written(declared, constant)))
     closed = [run(parse_spec(written(declared, p, junction=0.0))) for p in (paths, constant)]
-    moved, alone = (
+    answer, alone = (
         np.subtract(*(r.observations.membrane_voltage_V[-1, 1] for r in pair))
         for pair in ((result, still), closed)
     )
     assert not any(np.any(r.history.junction_transferred) for r in closed)
-    assert abs(alone) < 1e-3 * abs(moved)
+    assert abs(alone) < 1e-3 * abs(answer)
     # Open, cell 1's patch keeps between exp(-G T / C) and all of what the junction gave it, G the
     # patch's largest conductance: all its permeabilities at once, at the largest concentration.
     given = [np.asarray(r.history.junction_transferred)[-1, :, 0] for r in (result, still)]
@@ -893,4 +893,4 @@ def test_a_composed_world_conducts_exactly_on_its_pools_paths(outputs):
     conductance = patch["area_m2"] * permeability * max(*INSIDE.values(), *OUTSIDE.values())
     conductance *= F**2 / (R * declared["model"]["temperature_K"])
     left = math.exp(-conductance * NEAR_FAR_END / patch["capacitance_F"])
-    assert 0.05 < left < moved / (charge / patch["capacitance_F"]) < 1.0
+    assert 0.05 < left < answer / (charge / patch["capacitance_F"]) < 1.0

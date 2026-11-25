@@ -277,9 +277,9 @@ and qualification evidence belong in [Progress](../PROGRESS.md).
 > **Legacy cleanup (25 November 2026, D386).** A reader of *How Patterns Return* finds this section's
 > starting components at the tag `pre-cleanup-2026-11-25`: the isolated regulation (`emt_mirna@1`),
 > the coupled two-cell model (`emt_mirna_pair@1`, whose going the user approved that day, which ends
-> D149's exception) and the independent graph references, which the cleanup's optional batch would
-> take. After the cleanup the first two are not on `main`, and with the batch none of the three is. The
-> EMT switch itself runs on the live engine, as `local_species_reactions@1` reactions, in the
+> D149's exception) and the independent graph references, which go with the cleanup's optional batch
+> (the user approved it the same day). After the cleanup none of the three is on `main`. The EMT switch
+> itself runs on the live engine, as `local_species_reactions@1` reactions, in the
 > [gap-junction replication](GAP_JUNCTION_CANCER_REPLICATION.md). What is not live is the pair written
 > the source's way and the full lineage replication.
 

@@ -551,6 +551,12 @@ def test_a_refused_runs_entry_keeps_what_it_has(invented, tmp_path):
     assert exporter.entry_faults(run.name, entry) == []
     assert entry["t"] == [0.0, 4e-05, 8e-05] and entry["steps"] == 2
     assert entry["potential_t"] == [0.0, 4e-05] and entry["refusal"] == stop
+    folders, made_run = driver.Folders(tmp_path / "check"), run
+    record, partial = folders.record(run), folders.attempt(run) / "partial.npz"  # Its file's hash.
+    assert record["files_sha256"]["partial.npz"] == driver.digest(partial)
+    partial.write_bytes(partial.read_bytes() + b" ")
+    changed = exporter.entry(invented, run, folders)
+    assert "partial.npz is not what its record lists" in changed["refusal"]["message"]
 
     run = invented.run("inv_sample_slow h=4e-05")
     crash = driver.Folders(tmp_path / "crash")
@@ -561,6 +567,10 @@ def test_a_refused_runs_entry_keeps_what_it_has(invented, tmp_path):
     entry = exporter.entry(invented, run, crash)
     assert exporter.entry_faults(run.name, entry) == []
     assert entry["refusal"] == {"kind": "harness", "message": "ended by signal 9", "time_s": None}
+    # Its source is the driver's own, since the worker was ended before it could say.
+    assert record["source_from"] == "driver" and folders.record(made_run)["source_from"] == "worker"
+    assert set(entry["source"]) == set(exporter.SOURCE) and entry["source"]["blas_threads"] == 1
+    assert all(entry["source"][key] for key in exporter.SOURCE if key != "checkout_dirty")
 
 
 # ------------------------------------------------------------------ pools and driven runs
@@ -743,6 +753,12 @@ def test_a_driven_entry_says_what_its_schedule_came_from(invented, tmp_path, pla
     resolved.write_text("{} ")
     changed = exporter.entry(invented, run, folders)
     assert "its resolution is not what its record lists" in changed["refusal"]["message"]
+    # A channel that no pool drives is a key too, with an empty list (Amendment 2, 9.1).
+    lone = {"pools": made_from["pools"][:1], "composed_file_sha256": "c" * 64}
+    lone["worlds"] = [{"world": 1, "switches": [s for s in switches if s["pool"] == 0]}]
+    given = exporter.assembly(parsed, lone, 1)
+    assert given["switch_list"] == {driven[0]: path[0], driven[1]: []}
+    assert given["pool_seeds"] == {"c_a": 711}
     # Refused before it had a schedule: what its composed file submits, and the engine's own kind.
     refusal = {"kind": "definition", "message": "a near miss", "time_s": None}
     folders, _ = attempted(
@@ -887,7 +903,14 @@ def test_a_check_that_its_second_pass_does_not_meet_says_so(invented, tmp_path, 
         refusal = {"kind": kind, "message": LEDGER_MESSAGE + "energy", "time_s": None}
         worker.kept(spec, None, refusal)
         assert worker.facts["refused_row_found"] is (failed is not None)
+        told = {"window_steps": 1, "rows": None, "completed": failed is None}
+        assert worker.facts["second_pass"] == told
         found[kind, failed] = refusal
+    rows = {"accepted_times": np.zeros(2)}
+    monkeypatch.setattr(refusals, "rows_before", lambda *_: (rows, 4e-05))
+    worker.kept(spec, None, {"kind": "check", "message": "", "time_s": None})
+    assert worker.facts["second_pass"]["rows"] == "partial.npz"
+    assert (tmp_path / "partial.npz").is_file()
     said = {"time_s": 0.0002, "second_pass_completed": True}
     assert found["check", None] == found["domain", None] | {"kind": "check"} | said
     assert found["check", 4e-05] == found["domain", None] | {"kind": "check", "time_s": 4e-05}
@@ -907,6 +930,31 @@ def test_a_check_that_its_second_pass_does_not_meet_says_so(invented, tmp_path, 
     for wrong in ({"second_pass_completed": False}, {"kind": "domain", "time_s": None}):
         faults = exporter.entry_faults(run.name, entry | {"refusal": entry["refusal"] | wrong})
         assert faults == [f"{run.name}: refusal's second_pass_completed"]
+
+
+def test_a_second_pass_that_fails_hides_no_refusal_of_the_engines(invented, tmp_path, monkeypatch):
+    """The engine's refusal is the run's, whatever the pass that keeps its rows then does."""
+    spec = SimpleNamespace(experiment=SimpleNamespace(end_time=0.0002))
+    for message, kind, time in (
+        (LEDGER_MESSAGE + "energy", "check", 0.0002),
+        ("x", "domain", None),
+    ):
+        worker = object.__new__(driver.Worker)
+        worker.inputs, worker.run = invented, invented.run("inv_sample_tight h=4e-05")
+        worker.attempt, worker.facts = tmp_path, {}
+
+        def stopped(*_, text=message):
+            raise NumericalError(text)
+
+        def broken(*_):
+            raise KeyError("a window")
+
+        monkeypatch.setattr("cells.execution.runner.run", stopped)
+        monkeypatch.setattr(refusals, "rows_before", broken)
+        with pytest.raises(driver.Refused) as found:
+            worker.execute(spec, None, {})
+        assert found.value.refusal == {"kind": kind, "message": message, "time_s": time}
+        assert worker.facts["second_pass"] == {"fault": "KeyError: 'a window'"}
 
 
 def test_a_judged_run_writes_the_checkpoint_that_its_restart_resumes(invented, tmp_path):

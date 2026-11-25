@@ -493,7 +493,12 @@ class Worker:
         except (ConfigError, NumericalError) as error:
             refusal = refusals.refusal(error, stage="run", gates=self.gates())
             if isinstance(error, NumericalError):
-                self.kept(spec, checkpoint, refusal)
+                try:
+                    self.kept(spec, checkpoint, refusal)
+                except Exception as fault:  # The engine's own refusal stands, whatever this did.
+                    self.facts["second_pass"] = {"fault": f"{type(fault).__name__}: {fault}"}
+                    if refusal["kind"] == refusals.CHECK:
+                        refusal["time_s"] = spec.experiment.end_time
             raise Refused(refusal) from error
         write_run(
             self.output,
@@ -506,14 +511,20 @@ class Worker:
 
     def kept(self, spec, checkpoint, refusal):
         """The rows of a refused run, and for a check that failed the time of the row it failed at:
-        where the pass that finds it completes, the end of the run, and the refusal says so."""
+        where the pass that finds it completes, the end of the run, and the refusal says so. The
+        record says whose rows they are, and holds the sha256 of their file with the others'."""
         import numpy as np
 
         from validation.ensemble_reexpression import refusals
 
         arrays, failed = refusals.rows_before(spec, checkpoint)
         if arrays is not None:
-            np.savez(self.attempt / "partial.npz", **arrays)
+            np.savez(self.attempt / refusals.PARTIAL, **arrays)
+        self.facts["second_pass"] = {
+            "window_steps": refusals.WINDOW_STEPS,
+            "rows": None if arrays is None else refusals.PARTIAL,
+            "completed": failed is None,
+        }
         if refusal["kind"] == refusals.CHECK:
             refusal["time_s"] = spec.experiment.end_time if failed is None else failed
             if failed is None:
@@ -652,14 +663,16 @@ def work_apart(attempt, max_seconds):
 
 
 def made(inputs, run, attempt, crash, *, tag, off_grid):
-    """A run's record, from its attempt's outcome, or from what ended it where it has none."""
+    """A run's record, from its attempt's outcome, or from what ended it where it has none: its
+    source is then this process's own, which runs from the same tree on the same machine."""
     if crash is None:
-        outcome = read_json(attempt / "outcome.json")
+        outcome = read_json(attempt / "outcome.json") | {"source_from": "worker"}
     else:
         outcome = {
             "status": "refused",
             "refusal": {"kind": "harness", "message": crash, "time_s": None},
-            "source": None,
+            "source": source(),
+            "source_from": "driver",
             "facts": {"definition": {}, "resolution": None, "restart": None, "timings": {}},
         }
     engine_revision, dirty, snapshot, patch = revision()
@@ -692,6 +705,7 @@ def made(inputs, run, attempt, crash, *, tag, off_grid):
             "snapshot_patch_sha256": patch,
         },
         "source": outcome["source"],
+        "source_from": outcome["source_from"],
         **outcome["facts"],
         "started_utc": read_json(attempt / "job.json")["started_utc"],
         "finished_utc": utc(),
