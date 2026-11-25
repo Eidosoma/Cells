@@ -12890,3 +12890,79 @@ Lean's answer, stop, or an erratum that discloses this.
 
 **Disclosed:** the hand-refactor builder asked to remove its 18 scratch trees (3.2 GB), and the harness refused. Nobody has run it,
 and it waits for the user. `/mnt/workspaces` is at 93%.
+
+## D383: the user's decisions on legacy, the rename's words and FR-43 part 3: one cleanup branch with one test at its end; the routing spec's audit and amendment 5
+
+2026-11-25, about 10:20 UTC. The user's answers this morning, then the lead's plan for them, with the advisor.
+
+**The user's decisions.**
+- **Legacy's route,** verbatim: "Re-express and put everything else on hold and test just once after the re-expression, fine to
+  prune in place but we want to get this cleanup done and not run any tests until it's more or less done (so save test time
+  by testing many coding things at the same time) - we're still in pre-alpha dev, I'm the only user of Cells so we can
+  move as we like". The lead read it back as: one branch, nothing lands, no gate, tier or suite runs until the cleanup is coded, then
+  one full test of it all. The user confirmed ("Yes, go").
+- **A CPU re-expression of the calcium ensemble counts** as leaving legacy. Its GPU path, which works today at about 1.5 times the
+  speed, is parked until a GPU qualification passes. No date is set for one.
+- **Four design notes are written now:** calcium-permeant channels, an ER store, IP3-gated release, and assembly topology
+  setting channel availability. Each build comes back to the user with a price.
+- **While coding, a builder may run the rows it writes or changes,** and nothing else.
+- **The rename's words: all 12,** for 16 IDs. `exponential_mean_rate_linear_target_gates@1` is left out of the move, since
+  nothing in `src` reads it.
+
+| Family word | Pieces |
+| --- | --- |
+| `species_reaction` | `ideal_detailed_balance_mass_action@1` |
+| `transfer_factor` | `ph_conditioned_factor@1`, `exponential_volume_activation@1` |
+| `junction_formation` | `delayed_first_order_junction_formation@1` |
+| `damage` | `bounding_patch_damage@1` |
+| `regulation` | `hill_regulated_two_state@1` |
+| `site_binding` | `langmuir_site_binding@1` |
+| `site_internalisation` | `site_conserving_internalisation@1` |
+| `fuel_kind` | `maintained_held_rows@1`, `finite_fuel_rows@1`, `maintained_chemical_reservoirs@1` |
+| `field_closure` | `resolved_capacitor_components_current_continuity@1` |
+| `potential_set` | `beard2005@1`, `beard2005@2` |
+| `topology` | `dodecahedron_g10_2@1` |
+| `analysis` | `stationary_continuation_analysis@1` |
+
+- **FR-43 part 3's four questions** are accepted as the note recommends (`fr43-part3-cowriters`, c82d8d42): split writers, one judged run with
+  code-blind references, part 3 closes at that landing, and the declared general rule. Its spec and references start
+  now. Its build waits for the cleanup.
+- **The scratch trees** of two finished agents are deleted: 17 under `id-rename-hand-20261125/` and 39 under
+  `id-rename-tool-20261125/rehearsal/` (219 to 230 GB free). Logs, scripts and outputs stay.
+
+**How it is run (the lead, with the advisor).**
+- **Integration branch `legacy-cleanup`,** from the rename's first landing (43b22d40, at its gate). The order on it: the live side
+  without legacy; the deletion, whole; the four features; the re-expressed ensemble; and the ID move last.
+- **The move comes last** so that it runs once on a smaller tree, over code that is already final. Two rulings fall away
+  with that. The example artifacts leave with the commands they serve, so none is regenerated or declared. And the 48 IDs that were to stay
+  bare until legacy's first deletion are in the move, since their dispatch is live by then. D348's single deletion stands;
+  the plan's two-deletion route is not taken.
+- **"Once" is an order.** The re-expression's criteria are tagged before any re-expressed run. Then come the registered
+  qualification against the captures, the user's approval of the removal list, and one full gate with tier 3 and FR's set. Nothing lands
+  ungated.
+- **What goes on meanwhile:** the first landing's gate, which was already running and gives the final test the table option it
+  needs; GJ-N1's field run; FR-43 part 3's spec and references; and closing the routing amendments, after which routing
+  holds. Everything else waits, every other queued build included. The cleanup is roughly 30 to 45 agent-days, spread over at
+  most seven agents. Main moves by docs and Lean's merges only. No nightly on demand follows the first landing.
+
+**FR-54 and FR-57: the spec was audited before any judge was built.** An independent agent read the spec folder alone, wrote a reader and
+honest tables for every registered run, and perturbed them. The numeric core holds: every honest entry passes and every plant is
+caught. The text did not: 9 findings that change a verdict, 10 refusals or passes with nothing judged, and 18 places with two
+readings. Read literally, an honest engine could not have passed FR-57, and some wrong tables could have passed.
+- **Amendment 5** (`liquid-routing-amendment-5-2026-11-25`, 3c71ab61) settles all of them after two re-runs of the audit on the
+  amended text. It moves no constant, window, scale or existing count, and states what it changes in classes and in what is judged. The audit's own
+  numbers are used for nothing.
+- **Two rulings to know:** arm 6 (a flow beside a face) is rehearsed from an unlanded branch before the registration, so that no bound
+  moves after a registered run; and a retry can still forgive one wrong coarse run, which the protocol says.
+- **Two of the lead's rulings were wrong and are reversed.** An order outside its window with an error above the tolerance was to be a fail.
+  FR-25's and FR-38's precedent makes it inconclusive with a retry, and that stands. And "any fault" on an expected stop
+  was narrowed by the author, since the stop is itself a refused entry.
+- **The references agent,** conforming to amendment 5, found one clause it cannot meet (R8 for a remainder bound at a trace start) and three
+  wordings. Amendment 6 follows. Then the references are tagged, and the line holds: no judge is started.
+- **Disclosed:** the lead read the references' README layout section and printed key names, no value, to answer the author.
+  Eight subagents ran for some minutes, one over the cap.
+
+**Lean's message of last night** (its rebuilt tip, the citation map, the 5.4 mM anchor) was relayed by the user this morning. All of it was done
+overnight (D378 to D381): the tip is merged at 18198688, its map is in D378, the docstring cites the new commit, and FR-51's
+external-K registration is tagged. The 15 files outside `lean/` that its audit lists hold one published cell line's name in
+ordinary citations, and are left as they are unless the user says otherwise.
