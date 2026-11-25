@@ -793,6 +793,69 @@ def test_an_order_two_world_reports_its_identities(benches):
         world.p = 4
 
 
+def with_margins(bench, alter):
+    """A bench that reads other margins, and its own otherwise."""
+    other = copy.copy(bench)
+    other.reg = copy.copy(bench.reg)
+    other.reg.margins = copy.deepcopy(bench.reg.margins)
+    alter(other.reg.margins["worlds"]["integrated"])
+    return other
+
+
+def test_power_is_read_from_the_margins(benches):
+    """An untested entry counts for neither side. An untested mechanism leaves its consumer open."""
+    bench = benches("integrated")
+    q = with_margins(bench, lambda m: m["entries"]["heat_junction"].update(ratio=1e-12)).score()
+    block = q.record["consumers"]["integrated"]["sets"]["all"]
+    assert q.S("integrated", "heat_junction")[0]["outcome"] == c.NOT_TESTED
+    assert q.verdict("integrated") == PASS
+    assert block["not_tested"] == [["integrated", "heat_junction"]]
+    q = with_margins(bench, lambda m: m["entries"]["junction_gate"].update(ratio=1e-12)).score()
+    assert q.verdict("integrated") == OPEN and q.record["retry_owed"]["runs"] == []
+    assert not q.record["consumers"]["integrated"]["sets"]["all"]["mechanisms"]["junction gate"][
+        "tested"
+    ]
+    q = with_margins(bench, lambda m: m["entries"]["junction_K"].update(ratio=1e-12)).score()
+    assert q.verdict("integrated") == PASS  # its mechanism has two other homes
+
+    def wrong(runs):
+        for name in J:
+            values = runs[name]["rows"]["heat_junction"]
+            runs[name]["rows"]["heat_junction"] = plants.scaled(values, 1.01)
+
+    q = with_margins(bench, lambda m: m["entries"]["heat_junction"].update(ratio=1e-12)).score(
+        wrong
+    )
+    assert q.S("integrated", "heat_junction")[0]["outcome"] == FAIL  # untested, and above beta
+
+
+def test_a_plant_whose_distance_is_at_most_two_bands_is_unscorable(benches):
+    def alter(margins):
+        margins["structural"]["ST9 the schedule is not applied"]["junction_Cl"]["distance"] = 1e-20
+
+    q = with_margins(benches("integrated"), alter).score()
+    (plant,) = q.record["plants"]["plants"]
+    assert plant["score"] == "unscorable" and q.verdict("integrated") == OPEN
+    assert [e["score"] for e in plant["entries"]] == ["caught", "caught", "unscorable"]
+
+
+def test_the_band_decides(benches):
+    """An entry just inside its band passes, and just outside it fails."""
+    bench = benches("integrated")
+    entry = bench.reg.worlds["integrated"].by_name["junction_gate"]
+    beta = bench.score().S("integrated", "junction_gate")[0]["band"]
+    for share, outcome in ((0.98, PASS), (1.02, FAIL)):
+
+        def alter(runs, shift=share * beta):
+            for name in J:
+                runs[name]["rows"]["junction_gate"]["junction_7"][33] += shift
+
+        q = bench.score(alter)
+        item = q.S("integrated", "junction_gate")[0]
+        assert item["outcome"] == outcome and item["at"] == [entry.times[33], "junction_7"]
+        assert item["ratio"] == pytest.approx(share, rel=1e-3)
+
+
 # ----- the retry -----
 
 
