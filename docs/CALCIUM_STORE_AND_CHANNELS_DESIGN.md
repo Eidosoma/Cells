@@ -1,7 +1,8 @@
 # Calcium: channels that carry it, a store, and the sodium/calcium exchanger (design)
 
 **Status: proposed, 25 November 2026, for the lead.** Desk work only: no engine code. Written on branch
-`calcium-store-design` from 43b22d40 (main's 49529e71 differs from it by docs only).
+`calcium-store-design` from 43b22d40 (main's 49529e71 differs from it by docs only). **No second reader yet:** the
+advisor was asked three times and timed out each time, so the checks below are this note's own.
 
 **What it answers.** Candidates G-1 (calcium-permeant channels) and G-4 (a calcium store) and row B2 (the 3 Na : 1
 Ca exchanger) of the legacy port plan, with the corrections of its re-expression map (`legacy-port-plan` at
@@ -27,7 +28,7 @@ G-7.
 2. **What is missing is small** (the table below). The pieces are general. None is written for one experiment.
 3. **Every piece keeps the ensemble's equations.** Only the integrator and the splitting change. So a derived band
    can apply to every row, and no row needs the consumer's own 3e-9 criterion (§12).
-4. **The price is about 5.5 to 8 agent-days (S),** against the plan's 7.5 to 13 for the same three items (§15).
+4. **The price is about 6 to 7.5 agent-days (S),** against the plan's 7.5 to 13 for the same three items (§15).
 5. **No new family word is needed** (§13). One question goes to the user, nine to the lead (§16).
 
 | Piece | Today | What this note adds | Equations |
@@ -357,7 +358,8 @@ refused: one representation of a pathway per patch (D175).
 
 **The law: `atp_driven_transporter_mass_action_positive@2`.** The neutral law's factored form with the role's
 valence free (`CycleForm` roles `("role", None)`), held fuel only in this build. @1 and the proton law keep their
-IDs and their judged worlds. @2 refuses a neutral role, naming @1, so no two laws cover one case.
+IDs and their judged worlds. At z = 0 @2 is @1's equation, so @1 can retire when its own worlds move to @2, as the
+roadmap queues for the pumps.
 - **Why a new major, not a calcium name:** the mechanism is ATP-driven transport of one species. Nothing in it is
   calcium's.
 - **Its potentials:** the three fuel rows' are the species registry's, at its c0. D152's standard concentration is
@@ -377,7 +379,8 @@ its fields and programs. The neutral rows are as today.
 - **Ledgers:** role -n at N and +n at P per cycle; charge through the field; heat -J x RT, work -J times the fuel's
   drive, the held fuel's supply recorded. **Roles:** heat and work.
 - **Refused:** |x| above 80; K or K_ATP not positive; n outside 1 to 4; fuel rows that are not neutral or that
-  another route moves; @3's calcium pump on the same patch for the same species; RK4.
+  another route moves; @3's calcium pump on the same patch for the same species (a host-side check in the kind: one
+  law moves a species by this mechanism on a patch); RK4.
 - **Provenance:** the form is the engine's own mass-action completion
   (`laws/pumps/nak_atp_mass_action_positive.py`), no number taken. One calcium per ATP is the ensemble's declared
   stoichiometry. A two-calcium cycle is the biological SERCA's (Tran et al. 2009 [rec]); n = 2 is a parameter.
@@ -672,7 +675,7 @@ is measured at the landing. A planted row must fail the criterion it names.
 | 5 | the reactions door: a Ca channel beside a written Ca row, with and without the term; RK4 | `test_species_reactions_refusals.py` (its charged-rows table) | a law that declares none; a membrane permeability | 1 s |
 | 6 | refusal 6: a closed store world admitted, a store as a component's lowest outside node refused, the gauge refused, and the helper equal to `bind`'s fixed nodes | `test_cell_owned_compartments.py` (its refusal table) | a representative picked the other way | 3 s |
 | 7 | refusal 4: the new cycle laws at a store's node, moved by step terms; both pump laws on one patch refused | the same (its planted-moves table) | a law that declares one term or none | 2 s |
-| 8 | the pump @2 against the NumPy closed form, at z = 2, 1 and -1, n = 1 to 4 (a neutral role refused, naming @1); the slopes at both ends against finite differences | `test_cycle_kind.py` | the electrical sign; n applied to K twice | 2 s |
+| 8 | the pump @2 against the NumPy closed form, at z = 2, 1, -1 and 0 (at 0 its rate is @1's), n = 1 to 4; the slopes at both ends against finite differences | `test_cycle_kind.py` | the electrical sign; n applied to K twice | 2 s |
 | 9 | the exchanger against the product formula at random states, and its reversal, heat sign and slopes | the same | zeta +1/2; K^3 for K; Ca and Na roles exchanged | 2 s |
 | 10 | the material bound counts charged crossing rows where declared, and nothing else changes | `test_cycle_kind.py` | a world without the declaration differs by one bit | 2 s |
 | 11 | the feedback bound against a finite difference of the stage's derivative; no term without a loop | `test_passive_routes_kind.py` | the slope dropped; a source on another node | 2 s |
@@ -694,7 +697,7 @@ note's equations, and never from the code.
 | 6 | the feedback bound (with E's hooks) | `models/surface_pump_v3.py`, `registry/kind_registry.py`, `kinds/passive_routes.py` | 0.75 |
 | 7 | the store world: references, rows 12 and 13 | `tests/unit/` | 1 to 1.5 |
 | 8 | pages, notes, matrix, the roadmap | `docs/` | 0.5 to 0.75 |
-| | **In all** | | **5.5 to 8** |
+| | **In all** | | **6.25 to 7.25, so about 6 to 7.5** |
 
 - **Order.** 1, 3 and 4 are independent. 2 follows 1. 5 follows 4. 6 waits for E's source. 7 waits for all. The
   re-expression of the four worlds follows.
