@@ -958,6 +958,16 @@ compartment, and none of the 140 worlds has one. The rule takes the larger of th
 today. Outside worlds with a floating node the cell's sum still counts a patch that a closer has closed (487 and
 3674 have no activity mask, 3694 has).
 
+**How far a face holds a node, measured at the build (25 November 2026, M).** Only where the step times the face's
+charged conductance is at least about the node's capacitance. A face with no charged diffusivity holds nothing: at a
+true dt x rate of 2.2 the rule reads 0.2 for a conducting patch on such a node and 0.51 for one on its cell, admits
+the step, and the voltage grows 0.122, 0.149, 0.222, 0.491, 1.09 mV at steps 1, 2, 4, 8, 12, as in world A. In the
+second world it still grows at ion diffusivities of 1e-14 m2/s and decays at 1e-12. In the scan no world has a
+conducting patch beside a face with no charged diffusivity. Three have one where the faces hold weakly (dt g / C at
+most 0.011: the pump family's fixture, the padded replacement world on it, the insertion fixture's cleft cell), and
+their dt x rate is at most 0.028 with those nodes floating. A compartment is named by no face. It stays a limit, in
+the docstring (the lead).
+
 **Price: 0.75 to 1 day (S). Its own commit, first, one D148 round.**
 
 ## 9. Ledgers

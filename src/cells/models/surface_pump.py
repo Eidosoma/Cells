@@ -482,12 +482,22 @@ def explicit_rate_bound(spec, *, floating=None):
     Neutral species' material relaxation (neutral_material_rate) closes the gap that
     docs/INNER_MODEL_V4_DESIGN.md §13.6 found (I0). All terms read one layout, built once.
 
-    Limits. A face is taken to hold both its nodes, so two or more nodes that faces join to each
-    other and to no clamp (a lumen of two nodes) are counted as held; a compartment is never one
-    (cell_owned_compartments@1's refusal 1). The bound is the larger of the junction and the patch
-    terms, not their sum, inside its margin of 2 (the explicit stages of ARS(2,2,2) are stable to
-    2, the rule holds 1). Every declared patch counts here; surface_pump_v3.membrane_rate, which
-    holds the same rows at a stage, names its own limit.
+    Limits.
+    - A face is taken to hold both its nodes. That is true only where the step times the face's
+      charged conductance is at least about the node's capacitance: a face with no charged
+      diffusivity holds nothing, nor do faces that join nodes to each other and to no clamp (a
+      lumen of two nodes). Such a node floats, but its patches are counted in their cells' rows,
+      slope and capacitance, so a conducting patch there, or on a cell that has a patch there, is
+      admitted at a step it cannot take (measured beside a face with no charged diffusivity: at a
+      true dt x rate of 2.2, read as 0.2 and 0.51, the voltage doubles and more). In the scan of
+      25 November 2026 no world has a conducting patch beside a face with no charged diffusivity,
+      and three have one where the faces hold weakly (step times conductance at most 0.011 of the
+      capacitance): their dt x rate is at most 0.028 with those nodes floating. A compartment is
+      named by no face (cell_owned_compartments@1's refusal 1), so it is never such a node.
+    - The bound is the larger of the junction and the patch terms, not their sum, inside its
+      margin of 2 (the explicit stages of ARS(2,2,2) are stable to 2, the rule holds 1).
+    - Every declared patch counts here; surface_pump_v3.membrane_rate, which holds the same rows
+      at a stage, names its own limit.
     """
     _, p = kinetic.initial_values(spec)
     z2 = p.valence**2
