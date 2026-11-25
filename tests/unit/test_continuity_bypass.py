@@ -56,18 +56,8 @@ PROBE = (
     "under S0 and S1, keeps every other loader check, and never continues a run"
 )
 EXEMPT = {
-    # Read-only comparisons, audits and writers of their own output (16).
+    # Read-only comparisons, audits and writers of their own output (6).
     "validation/assembly/compare_throughput.py": READ,
-    "validation/betse/channel_feedback_audit/feedback_audit_cells.py": READ,
-    "validation/betse/channel_feedback_audit/feedback_audit_context.py": READ,
-    "validation/betse/channel_history_audit/history_audit_cells.py": READ,
-    "validation/betse/channel_history_pilot/preparation_review.py": READ,
-    "validation/betse/channel_release_audit/release_audit_cells.py": READ,
-    "validation/betse/channel_release_audit/release_audit_context.py": READ,
-    "validation/betse/channel_release_pilot/timed_cells_check.py": READ,
-    "validation/betse/live_recording/matched_windows.py": READ,
-    "validation/betse/live_recording_audit/cells_review.py": READ,
-    "validation/betse/pump_pilot_diagnosis/diagnose.py": READ,
     "validation/ensemble/jupiter_check.py": READ,
     "validation/ensemble/spatial_matrix.py": READ,
     "validation/ensemble_reexpression/rehearsal/legacy_arrays.py": READ,
@@ -100,8 +90,6 @@ EXEMPT = {
     "stage 0's R3 state at each window's start from its kept rows.npz into H2's declared initial "
     "values; each run checks the file's sha256 against the registered digest and records it)",
     # Same-process restart and independent references.
-    "validation/betse/fresh_rerun/workers.py": SAME
-    + " (restart.npz written and read in one process)",
     "validation/mitochondria/references_r2/steady.py": SAME
     + " (R2, MT-1b's code-blind reference: start_state solves the anchored start state with R2's"
     " own solver from a freshly settled state; it reads no saved Cells state and runs no Cells "

@@ -144,7 +144,7 @@ law.
 | `cells.proton_atp_mass_action_positive@1` (a proton) | FR-4's and FR-5's judged worlds | It folds into this law, with the form's pH band, when those worlds are judged again. Until then it stays: it has a band and a closure read that this law does not declare |
 | `cells.ca_atp_mass_action_positive@1` (the inner model's own) | the inner model's worlds | When the sodium-potassium and calcium pumps move onto the kind ([the roadmap](../../../CORE_LAWS_ROADMAP.md), family 2) |
 | `cells.nak_atp_mass_action_positive@1` (the inner model's own) | the inner model's worlds | With the same item, into a cycle law of its own: it moves two ions, so it is another mechanism |
-| the older family's two calcium pump laws | that family | At its deletion; the two rate functions they are built on stay, since the inner model's own calcium pump calls them |
+| the older family's two calcium pump laws | no one: the family is gone | Gone with it; the two rate functions they were built on stay, since the inner model's own calcium pump calls them |
 
 ## How it is checked
 

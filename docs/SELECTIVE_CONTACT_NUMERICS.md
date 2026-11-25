@@ -1,5 +1,10 @@
 # Independent physical-pair numerics
 
+> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names
+> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag
+> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay. Old records
+> pin this page's bytes by their hash: the pinned bytes are the tag's, without this note.
+
 NUM-003 / D022, 2026-09-08. This reference qualifies the numerical model specified
 by [SPEC-002](SELECTIVE_CONTACT_SPEC.md), not a production or source-compatible
 simulator. [Qualification evidence](../reports/NUM003_REFERENCE.md) records the

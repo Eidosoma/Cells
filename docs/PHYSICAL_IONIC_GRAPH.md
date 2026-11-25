@@ -1,5 +1,10 @@
 # Physical ionic graph production engineering
 
+> **Legacy cleanup (25 November 2026, D386).** The models, configurations, commands, tests and tools
+> that this page names for the older families left the tree, and the tag `pre-cleanup-2026-11-25` keeps
+> them. Old records pin this page's bytes by their hash: the pinned bytes are the tag's, without
+> this note.
+
 CORE-008 implements `physical_ionic_graph@1` in Cells 0.13.0. Acceptance requires
 the separately recorded production verification; [Progress](../PROGRESS.md)
 tracks its current status. The

@@ -1,11 +1,10 @@
 """Positive-domain plasma-membrane Ca-ATPase: one Ca out per formal cycle.
 
-Neutral identity for the equations of the existing Cells law
-``plasma_calcium.PUMP_LAW``, evaluated by that same kernel
-(``plasma_calcium.pump_rates``); its module cites the source law. Positive
-cycles move one divalent Ca from the cytosol to the outside and hydrolyse one
-ATP from maintained ATP/ADP/Pi pools. Saturation is in cytosolic Ca and ATP;
-the thermodynamic factor is (1 - exp(affinity)) with
+Neutral identity for the equations of an older family's calcium pump, evaluated
+by that family's kernel (``plasma_calcium.pump_rates``); its module cites the
+source law. Positive cycles move one divalent Ca from the cytosol to the outside
+and hydrolyse one ATP from maintained ATP/ADP/Pi pools. Saturation is in
+cytosolic Ca and ATP; the thermodynamic factor is (1 - exp(affinity)) with
 
     affinity RT = drive - mu_Ca,   mu_Ca = RT ln(ci/co) + 2 F V   (V inside - outside).
 

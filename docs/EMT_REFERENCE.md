@@ -5,6 +5,10 @@
 > reactions ([replication note](GAP_JUNCTION_CANCER_REPLICATION.md)). The tag
 > `pre-cleanup-2026-11-25` keeps the code.
 
+> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names
+> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag
+> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay.
+
 Implemented as Cells 0.2.0 on 2026-09-08. This is an independently expressed JAX
 implementation of the isolated miR200/Zeb/ZEB equations identified in BITSEY,
 not the whole bioelectric simulator or a reproduction of the cancer paper tables.

@@ -170,7 +170,7 @@ effort and the main risk.
   | The seven instantaneous Morris-Lecar laws | 7 | `morris_lecar_channels` | G-2, a law without a gate |
   | Calcium-activated K | 1 | `calcium_activated_potassium` | G-3, a channel that reads a species, which the cardiac plan's H1 holds |
   | The Na/Ca exchanger and the store's pump | 2 | `sodium_calcium_exchange_symmetric_barrier`, `atp_transporter_v2` | registered on the transporter kind, with both step terms (the calcium note's step 5) |
-  | The store's release and the IP3 release | 2 | `hill_product_factor`, read by `species_condition@1`; the older kernels are `er_calcium`'s `release_open` and, for IP3, only at the tag | the factor and its source are registered, and a one-cell store world and a two-cell closed world run as tests (the calcium note's step 7). The ensemble's four worlds are not re-expressed |
+  | The store's release and the IP3 release | 2 | `hill_product_factor`, read by `species_condition@1`; the older kernels are only at the tag | the factor and its source are registered, and a one-cell store world and a two-cell closed world run as tests (the calcium note's step 7). The ensemble's four worlds are not re-expressed |
   | The finite-ATP store pump | 1 | only at the tag | row fuel, a request the user may make |
   | NKCC and the generic symport | 2 | `na_k_2anion_symport_reversible_tanh`, `electroneutral_symport_reversible_tanh` | registered on the transporter kind, in the older law's manufactured form; a store's node refuses them, and no consumer puts one there |
   | The cell-zone transporter | 1 | only at the tag | left there (the user, D386) |

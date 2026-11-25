@@ -141,9 +141,9 @@ So the reversal, the one thing the law claims, is contested. Nothing else in the
 source. **The departures** are the rest of the law: the denominator, the equal split of the charge,
 the single mode, and the absence of regulation.
 
-**The same rate elsewhere:** an older model family runs it as `ncx_3na_1ca_symmetric_barrier@1`,
-through a kernel that no live model runs and no test checks any more: the rows that checked it now
-check this law. It retires in that family's deletion, and its file then keeps the calcium pump alone.
+**The same rate elsewhere:** nowhere now. An older model family ran it as
+`ncx_3na_1ca_symmetric_barrier@1` and left with its kernel; the rows that checked that kernel check
+this law.
 A four-state exchange cycle is planned for cardiac cells
 ([the cardiac note](../../../HUMAN_CARDIAC_LAWS_DESIGN.md)), a second form of this mechanism. Which of
 the two stays is decided when it lands.
