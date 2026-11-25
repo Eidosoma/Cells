@@ -272,8 +272,8 @@ def capacitor_components(model):
 
 def representatives(model):
     """The outside nodes that the capacitor solve fixes as representatives, their IDs: one per
-    capacitor component without a held bath (surface_field.representative, the rule that bind
-    applies, on the declared topology)."""
+    capacitor component without a held bath. surface_field.representative, the rule that bind
+    applies, on the declared topology; a bound layout's are surface_field.representatives."""
     nodes = [c.id for c in (*model.cells, *model.extracellular)]
     first = len(model.cells)
     reservoirs = {first + k for k, o in enumerate(model.extracellular) if o.reservoir}

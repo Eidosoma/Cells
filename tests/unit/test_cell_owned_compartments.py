@@ -37,8 +37,9 @@ from cells.definitions.specs import ConfigError, parse_spec
 from cells.execution.schedule import control_values
 from cells.laws.cycles.forms import CycleForm, Parameter, Saturation
 from cells.laws.electrochemistry import CHARGE_PER_FMOL
-from cells.models import pump_composite
+from cells.models import pump_composite, surface_tissue
 from cells.models import pump_composite_adapter as adapter
+from cells.numerics import surface_field
 from cells.operators import OPERATORS
 from cells.operators import compartments as comp
 from cells.operators.contract import (
@@ -587,11 +588,11 @@ def test_definition_refusals(name):
 
 
 def fixed_by_bind(spec):
-    """The outside nodes that the bound capacitor solve fixes beside the held baths, their IDs."""
+    """The nodes that the bound capacitor solve fixes beside the held baths, their IDs."""
     _, p = get_model(spec.model).initial_values(spec)
-    fixed = np.asarray(p.field_fixed)[p.active.size :]
-    nodes = zip(spec.model.extracellular, fixed, strict=True)
-    return {o.id for o, f in nodes if f and not o.reservoir}
+    fixed = surface_field.representatives(surface_tissue.field_layout(p))
+    nodes = (*spec.model.cells, *spec.model.extracellular)
+    return {c.id for c, f in zip(nodes, fixed, strict=True) if f}
 
 
 def test_refusal_6_version_1_1_admits_a_compartment_that_is_not_its_components_representative(

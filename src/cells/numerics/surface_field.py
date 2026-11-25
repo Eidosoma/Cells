@@ -242,12 +242,12 @@ def representative(members, first_outside, reservoirs, gauge):
     holds it, else its lowest outside node, the first in the definition's order; None where it
     holds a held bath, whose imposed potential fixes the component. members: the component's node
     indices, its cells' and its outside nodes' (from first_outside on); reservoirs and gauge: the
-    held baths' and the gauge's, as sets. cell_owned_compartments@1 reads it too: a compartment is
-    never a representative (its refusal 6)."""
+    held baths' and the gauge's, as sets. cell_owned_compartments@1 applies it to the declared
+    topology (its refusal 6); representatives reads the fixed nodes from a bound layout."""
     if reservoirs.intersection(members):
         return None
-    held = gauge.intersection(members)
-    return next(iter(held)) if held else min(i for i in members if i >= first_outside)
+    zero = gauge.intersection(members)
+    return next(iter(zero)) if zero else min(i for i in members if i >= first_outside)
 
 
 def bind(layout, gauge_mask, *, solver=SOLVER_ID):
