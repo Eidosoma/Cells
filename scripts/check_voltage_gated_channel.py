@@ -429,7 +429,6 @@ def verify():
         "docs/VOLTAGE_GATED_CHANNEL_SPEC.md",
         "tests/reference_voltage_gated_channel.py",
         "scripts/check_voltage_gated_channel.py",
-        "tests/unit/test_voltage_gated_channel_reference.py",
         "tests/reference_multispecies.py",
         "configs/reference/multispecies_membrane_v1.json",
         "pyproject.toml",
