@@ -1,6 +1,6 @@
 """Host-only tests of FR-38's second comparison judge, on invented inputs only.
 
-**Seconds:** 50 to 70 s of CPU for its 32 tests, on light CPUs other jobs shared (25 November 2026).
+**Seconds:** 65 to 100 s of CPU for its 39 tests, on light CPUs other jobs shared (25 November 2026).
 **Reason (D224):** the judge decides FR-38's registered verdict, so each C0 refusal, each failure
 and inconclusive mode, the retry and each plant (caught and not caught) must be shown to move it
 the registered way before any engine run is judged.
@@ -1221,22 +1221,22 @@ def test_what_the_rungs_that_ran_can_form(invented, mapping, tmp_path):
     def hold(rec):
         rec["series"]["int_Q_tx"] = rec["series"]["int_Q_tx"] * (1 + 1e-9)
 
-    for name, tweak, dt, what in (
-        ("route2", r2, 2.0, "C2: route2_short_lived"),
-        ("identity", hold, 0.5, "C4: hold at 1.0 s"),
+    for name, tweak, gone, at, what in (
+        ("route2", r2, 2.0, 0.5, "C2: route2_short_lived"),
+        ("identity", hold, 0.5, 1.0, "C4: hold at 1.0 s"),
+        ("not_at_h", r2, 0.5, 1.0, None),
     ):
-        at = 0.5 if name == "route2" else 1.0
         v = _perturbed(
             invented,
             mapping,
             tmp_path,
-            [(is_("p_sched held", "honest", dt), refuse),
+            [(is_("p_sched held", "honest", gone), refuse),
              (is_("p_sched held", "honest", at), tweak)],
             f"formed_{name}",
         )  # fmt: skip
         one = v["families"]["invented"]["runs"]["p_sched held"]["primary"]
-        assert one["verdict"] == "fail" and one["refused"], name
-        assert any(w.startswith(what) for w in one["why"]), (name, one["why"])
+        assert one["verdict"] == ("fail" if what else "refused") and one["refused"], name
+        assert what is None or any(w.startswith(what) for w in one["why"]), (name, one["why"])
 
     # an excess that is there though C0 refuses its blank is not judged, and is flagged
     def excess(rec):
@@ -1249,9 +1249,10 @@ def test_what_the_rungs_that_ran_can_form(invented, mapping, tmp_path):
         invented,
         mapping,
         tmp_path,
-        [(is_("p_sched held", "honest", 0.5), excess), (is_("blank", "blank", 0.5), dirty)],
+        [(is_("p_sched held", "honest", 0.5), excess), (is_("blank", "blank", 1.0), dirty)],
         "formed_excess",
     )
+    assert plant_status(v, "P1″") == "refused"
     assert verdict_of(v, "invented", "p_sched held") == "pass"
     assert verdict_of(v, "invented", "blank") == "refused"
     assert v["families"]["invented"]["verdict"] == "inconclusive"
@@ -1343,8 +1344,6 @@ def _entry_faults():
     def transcribes(e):
         control({"definition": e["definition"]}, "tx")["schedule"][0]["value"] = 50000.0
 
-    alive = {"fate": "durable", "t2_s": 300.0, "ts_s": 450.0, "alive_t2": 0.0, "alive_ts": 0.0,
-             "ratio": None}  # fmt: skip
     h = "honest"
     return [
         (is_("p=0 returned", h, 2.0), drop("own_ledgers_at_end"), "own_ledgers_at_end: missing"),
@@ -1363,12 +1362,13 @@ def _entry_faults():
         (is_("p_sched returned", h, 1.0), lambda e: e["checks"].pop("exported_cell"),
          "checks.exported_cell: missing"),
         (is_("p_sched returned", h, 0.5), nan, "readouts.n_M[3]: type: float expected"),
-        (is_("p_sched returned", "twin", 2.0), put([alive], "survival"), "a twin is unlabelled"),
+        (is_("p_sched returned", "twin", 2.0), put(["x"], "survival"), "a twin is unlabelled"),
         (is_("p_sched returned", "twin", 1.0), labelled, "a twin is unlabelled"),
         (is_("p_sched returned", "twin", 0.5), own_labels, "the operators"),
         (is_("blank", "blank", 2.0), constant_p, "durable_fraction: p:"),
         (is_("blank", "blank", 1.0), transcribes, "k_I:"),
-        (is_("blank", "blank", 0.5), lambda e: (e.pop("route2"), e.pop("survival")), None),
+        (is_("blank", "blank", 0.5), lambda e: (
+            e.pop("route2"), e.pop("survival"), e.update(excess_over_blank=None)), None),
         (is_(role="restart"), put(7200.0, "checkpoint", "time_s"), "checkpoint.time_s: 7200.0"),
         (is_(plant="P2"), put(dict(V0_PATCH), "host_patch"), "host_patch: type: null expected"),
         (is_(plant="P3a"), put("p_sched held", "judged_as"), "judged_as: type"),
@@ -1557,6 +1557,9 @@ def test_flags_and_records_refuse_nothing(invented, mapping, tmp_path):
         (is_("p_sched returned", "twin", 2.0), lambda e: e["readouts"].update(
             H_total=[1.0] * len(e["t"]))),
         (is_("p_sched returned", "twin", 1.0), lambda e: e["route2"][0].update(grid_error=1.0)),
+        (is_("p_sched returned", "twin", 0.5), lambda e: e["route2"][0].update(k_per_s=1.0)),
+        (is_("p_sched returned", "honest", 2.0),  # a twin's ledgers are a subset of its run's
+         lambda e: e["own_ledgers_at_end"].update(labels=[1.0])),
         (is_(role="restart"), lambda e: e["own_ledgers_at_end"].update(poly_machines=[1.0])),
         (is_("blank", "blank", 0.5, machine="held"), lambda e: e["checks"].update(
             G_identity_largest_pJ=2.0)),
@@ -1575,9 +1578,10 @@ def test_flags_and_records_refuse_nothing(invented, mapping, tmp_path):
     # verdict and flagged, and fails nothing
     beside = v["recorded_differences"]
     for needle in ("twin@2.0: readouts.H_total", "twin@1.0: route2 (short_lived, 570.0 s).grid_er",
+                   "twin@0.5: route2 (short_lived, 570.0 s).k_per_s",
                    "restart: own_ledgers_at_end", "two_blanks@0.5: checks"):  # fmt: skip
         assert any(needle in x for x in beside), (needle, beside)
-    assert len(beside) == 4 and set(beside) <= set(flags)
+    assert len(beside) == 5 and set(beside) <= set(flags)
 
 
 def test_index_and_table_hash(invented, mapping, read_once, tmp_path):
@@ -2574,6 +2578,7 @@ def test_registered_restart_and_patch(registered):
     v = judge_one(registered, "inv_AF", "stray", where("inv_AF", run="p=0 held"),
                   table=lambda t, a: t.update(restart={"x": 1}))  # fmt: skip
     assert v["families"]["inv_AF"]["verdict"] == "pass"
+    assert v["comparison"]["arms"]["A"] == "inconclusive"  # AN is not there
     assert any("only AN's primary table has one" in n for n in v["c0"]["engine"]["notes"])
     # P9 without its patch, or with another's: unscorable. Refused by the engine it is caught, for
     # the checker to confirm, unless D's honest run is itself refused (amendment 6, §4); a refused

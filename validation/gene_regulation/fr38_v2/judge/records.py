@@ -960,8 +960,11 @@ def _values(rec, obj, times, samples, window):
     faults = rec.faults
     for k, v in obj["readouts"].items():
         rec.series[k] = np.asarray(v, dtype=np.float64)
-    for fate, v in obj.get("excess_over_blank", {}).items():
-        rec.series[f"excess_over_blank_{fate}"] = np.asarray(v, dtype=np.float64)
+    if rec.kind in shapes.EXCESS_KINDS and not rec.excess_absent:
+        for fate in spec.FATES:
+            rec.series[f"excess_over_blank_{fate}"] = np.asarray(
+                obj["excess_over_blank"][fate], dtype=np.float64
+            )
     rec.times = [float(x) for x in obj["t"]]
     rec.steps, rec.checks, rec.own_ledgers = obj["steps"], obj["checks"], obj["own_ledgers_at_end"]
     rec.record, rec.source, rec.blank_name = obj["record"], obj["source"], obj["blank"]
@@ -989,7 +992,9 @@ def _values(rec, obj, times, samples, window):
         for ts in samples:
             if (fate, ts) not in rec.route2:
                 faults.append(f"{rec.where}.route2: missing ({fate}, {ts!r} s)")
-    if "survival" not in obj:
+    if rec.role == "twin":
+        if "survival" in obj:
+            faults.append(f"{rec.where}: a twin is unlabelled, yet it carries survival (item 7)")
         return
     for i, e in enumerate(obj["survival"]):
         ts = _matched(e["ts_s"], samples[1:])
@@ -1064,7 +1069,7 @@ def _required(rec, mapping, profile):
     """Every readout the kind of entry owes (READOUTS.md; the README's kinds); what a twin must not
     carry (item 7); the engine's other exports are recorded only. An absent excess is decided once
     the blanks are read (`judge._decide_excess`)."""
-    kind_excess = rec.kind in ("labelled", "twin", "restart", "P8") and not rec.excess_absent
+    kind_excess = rec.kind in shapes.EXCESS_KINDS and not rec.excess_absent
     for e in mapping_entries(mapping, profile, blank=True if rec.blank else None):
         kind, _, name = e["engine"].partition("/")
         if kind != "series":
@@ -1077,9 +1082,9 @@ def _required(rec, mapping, profile):
             rec.faults.append(f"{rec.where}.readouts.{name}: missing readout")
     if rec.role == "twin":
         carried = sorted(k for k in rec.series if not physical(k))
-        if carried or rec.survival:
-            rec.faults.append(f"{rec.where}: a twin is unlabelled, yet it carries "
-                              f"{carried or ['survival']} (item 7)")  # fmt: skip
+        if carried:
+            rec.faults.append(f"{rec.where}: a twin is unlabelled, yet it carries {carried} "
+                              "(item 7)")  # fmt: skip
 
 
 def _finite_ratios(rec, inputs):

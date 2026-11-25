@@ -288,7 +288,7 @@ def _decide_excess(recs, index, fams):
     flags = []
     for rec in recs:
         fam = fams[rec.family]
-        if rec.kind not in ("labelled", "twin", "restart", "P8") or not spec.has_blank(fam.profile):
+        if rec.kind not in shapes.EXCESS_KINDS:
             continue
         blank = _blank_of(rec, index, fam)
         why = _usable(blank, "its blank")

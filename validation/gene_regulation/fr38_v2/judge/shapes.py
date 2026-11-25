@@ -64,6 +64,7 @@ JUDGE_PLANTS = ("P1", "P1′", "P1″", "P6", "P1'", "P1''")  # formed by the ju
 # blank, and a planted blank is a plant without the excess.
 ENTRY_KINDS = ("labelled", "blank", "twin", "B run", "B twin", "restart", "plant", "P8",
                "P8 blank", "refused")  # fmt: skip
+EXCESS_KINDS = ("labelled", "twin", "restart", "P8")  # those that list `excess_over_blank`
 
 
 def load_shapes(path=SHAPES_PATH):
