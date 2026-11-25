@@ -1,5 +1,9 @@
 # REF-003e1: audit the rejected held-input response
 
+> **Legacy cleanup (25 November 2026, D386).** The drivers that this record names under
+> `validation/betse/` are retired (D374), and their code left the tree; the tag
+> `pre-cleanup-2026-11-25` keeps it. The record, its protocols and its reports stay.
+
 2026-09-13, D082. **Saved-data audit implementation, not a new simulation or
 response qualification.** The complete audit/regression runs separately and
 detached. This document precedes that execution; see the

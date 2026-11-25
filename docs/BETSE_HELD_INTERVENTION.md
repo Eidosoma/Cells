@@ -1,5 +1,9 @@
 # REF-003e1: prescribed suppression and recovery
 
+> **Legacy cleanup (25 November 2026, D386).** The drivers that this record names under
+> `validation/betse/` are retired (D374), and their code left the tree; the tag
+> `pre-cleanup-2026-11-25` keeps it. The record, its protocols and its reports stay.
+
 2026-09-12, D079. This is a control-design/compiler slice, not a registered
 trajectory. It extends the frozen [D072 input-law design](BETSE_INTERVENTION_PLAN.md)
 after the expanded no-op SIM bridge passed its independently executed

@@ -137,10 +137,10 @@ Complete cohort snapshots and future-branch validation no longer require a
 full-horizon recording reservation. They retain identity, state/domain and global
 work limits; the chosen run policy separately validates its working-array needs.
 
-To regenerate acceptance or the bounded profile with new outputs:
+To regenerate the bounded profile with new outputs (the acceptance script of the old build left
+with the legacy cleanup; the tag `pre-cleanup-2026-11-25` keeps it):
 
 ```bash
-taskset -c 0-3 .venv/bin/python -W error scripts/verify_world_build.py --output runs/my-world-acceptance
 taskset -c 0-3 .venv/bin/python -W error scripts/profile_worlds.py --output runs/my-world-profile
 ```
 
