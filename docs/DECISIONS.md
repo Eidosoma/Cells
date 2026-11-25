@@ -13045,7 +13045,7 @@ exchanger's two kinetic forms. The note has had no second reader yet; one is giv
 
 ## D386: the user's answers on the cleanup's open questions; the legacy list is corrected against D211; a live stage-bound gap found by the second reader; a correction to D383
 
-2026-11-25, about 13:20 UTC. The user's answers, then the lead's, with the advisor.
+2026-11-25, about 12:12 UTC. The user's answers, then the lead's, with the advisor.
 
 **The user's decisions,** "agreed" on each and on the rest as below.
 - **The exchanger (A2):** the ensemble's form is registered now, labelled synthetic (only its reversal is supported). Whether it stays beside the cardiac
