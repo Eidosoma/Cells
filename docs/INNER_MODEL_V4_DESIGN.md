@@ -157,7 +157,7 @@ HANDOFF.md holds every probe's criterion, written before its run, its amendments
 | The law table | `surface_pump_v3_spec.LAW_CODES`: five laws, codes 0–4 | `domain_valid`'s `laws < len(LAW_CODES)`, a literal 5 in every program, the channel-free one included (P1) |
 | Gate rows | `GATED_CODES = 3`; `channel_gate` is [2, channel_slot] | Two relaxation gates or none. A j gate needs a third row |
 | The dispatch | `channel_kinetics` → `sodium_channels.kinetics` → `potassium_channels.kinetics` | The Kv1.5, Kir2.1 and NaV1.2 kinetics are traced for every population and selected by code, even with no population (P1). The heredity cells of W1, W2, G2-Q1 and E07, and the 825-node world, declare only Kir2.1 and NaV1.2 |
-| Channel ions | `SPECIES_VALENCE = {"Na": 1, "K": 1}` | No Ca²⁺ channel |
+| Channel ions | `SPECIES_VALENCE = {"Na": 1, "K": 1}` | No Ca²⁺ channel. **Lifted 25 November 2026:** the table is gone, each law is the authority for its own ions, and `cav1p2_m2h@1` carries Ca²⁺ (CALCIUM_STORE_AND_CHANNELS_DESIGN §5.2) |
 | The voltage domain | `VOLTAGE_DOMAIN_V = (−0.120, 0.060)` | One domain for every population, leaks included |
 | Kinetics' inputs | `potential_kinetics(potential, p)` | Voltage only, although `explicit_rates` holds the stage concentrations |
 | The junction law | `junction_gate.domain_valid`, \|V\| ≤ 0.120, with gate state on every junction | Applied to every junction, pinned and closed ones included |
@@ -527,6 +527,10 @@ are recorded here.
   - from later landings, each present only when declared: the passive law (A5), transporters (B5),
     stage reads (B4), implicit route kinds, and B7's flag for a free face-free node with an ion
     route.
+  - **added 25 November 2026** (CALCIUM_STORE_AND_CHANNELS_DESIGN §8.3 and §6.5): `floating_nodes`,
+    whether an outside node floats (B7's flag, for the corrected charge rule), and `loops`, the
+    loops that routed slots close on their own gates, by position. False and () for every other
+    definition, so no structure or program of theirs moves.
 - **Values** are layout arrays, bound per world and passed as arguments: permeabilities,
   abundances, capacities, initial gates, rates and schedules, **and each population's law code**
   (`channel_laws`, int [channel_slot]), that is, which declared law a slot runs. P2's bitwise
@@ -554,10 +558,11 @@ registry code.
 | `gates` | ("m", "h") for the three gated laws; none for the leaks |
 | `kinetics(voltage, *, xp)` → (target, tau), each [..., gates, n] | The existing kernels |
 | `opening(gates, *, xp)` → [..., n] | Today's operation order, which P2's bitwise result needs: Kv1.5 m·h, Kir2.1 (m·h)·h, NaV1.2 m³·h. None for the leaks (open fraction 1) |
-| `permeant` | (species, valence, relative permeability): today's `LAW_PERMEABILITIES` with `SPECIES_VALENCE` |
+| `permeant` | (species, valence, relative permeability): today's `LAW_PERMEABILITIES` with `SPECIES_VALENCE`. Since 25 November 2026 the parser reads each ion's valence from the law, and `SPECIES_VALENCE` is gone |
 | `voltage_domain` | (−0.120, 0.060) V for all five |
 | `rk4_step_s` | 2.5e-6 for NaV1.2, 25e-6 for Kv1.5 and Kir2.1, none for the leaks (today's `RK4_*_STEP`) |
 | `stage_term` | `constant_field_slope`, today's `membrane_rate` term at the actual opening |
+| `material_term` | Added 25 November 2026. None for these five. A law that carries an ion other than Na, K and Cl names the kernel of its material slope here (`material_slope_per_s`, the one @3 runs): the stage holds dt to its ions' own relaxation, and the parser refuses such a law that names none (CALCIUM_STORE_AND_CHANNELS_DESIGN §5.2 and §5.3) |
 | `reads` | None for these five; (g) 1 below. `loop_term`, reserved beside it, was removed on 25 November 2026: no law declared it (CALCIUM_STORE_AND_CHANNELS_DESIGN §6.5) |
 | `provenance` | `parity` |
 | B8's four fields | Reserved, empty (D175) |
@@ -886,6 +891,9 @@ registry code.
      no face) of Σ_m G_m/C_node at the declared state, with G_m the max-side constant-field slope of
      each ion route on the node's patches. The step checks refuse dt × that rate above the bound's
      **ordinary constant**, `EXPLICIT_STEP_BOUND`, as for every other term.
+     **Amended 25 November 2026** (§13.6): the fixed-node exclusion is gone, each patch that faces such a
+     node has its own row, and the cell's row and the junction term divide by the capacitance of the
+     cell's other patches alone.
    - **One commit with finding 3's term,** with one D148 record and @1's and @2's cases, since they
      share `surface_pump`. P3 swept @3's family only; for @1 and @2, FR-1's static sweep of 99
      model blocks found no free face-free node with an ion route in their worlds
@@ -1331,6 +1339,13 @@ undeclared built-in changes nothing:
      node over its own capacitance (`charge_rows`). It reads each `stage_term` twice, as it is for
      those patches' rows and with them closed for the cells'. A world with no floating node keeps
      the sentence above and its program.
+   - **The material rule, as of 25 November 2026** (CALCIUM_STORE_AND_CHANNELS_DESIGN §8.2):
+     `material_rate` adds, per node, the blocked populations' part (FR-51), each kind's
+     `material_term`, the channel populations' whose law declares one (`channel_material_rates`) and
+     the loops that routed slots close on their own gates (`loop_material_rates`). In each part a
+     mode's own rate goes to every row the mode moves, at both ends, held baths left out; the modes
+     add per row and a node's rate is its largest row. dt x rate is held to the charge rule's bound,
+     at every explicit stage. A world with none of the four has none of the rule.
    - **One writer (gap 8, 669f8ed6):** `held_rows(declaration)` → ((species, node ID), ...), rows
      the kind reads and never moves; binding refuses any inner route or other kind that moves
      one. The operators' writers are the composite's admission.
@@ -1689,6 +1704,15 @@ follow a schedule ((l)).
   `_check_routes` (factors traced as [len(sources)] floats, slots inside their field).
 - **The sink:** `cells.passive_routes@1`'s entry is `Factored(laws)` only where a route declares
   factors; otherwise it is today's tuple of laws.
+
+**The hooks that bound a factor's feedback (25 November 2026; CALCIUM_STORE_AND_CHANNELS_DESIGN
+§6.5).** A source may have `factor_rows` and `factor_log_slopes`, and a sink `routed_rows` and
+`routed_flux`: both or neither of a side. Binding pairs a slot's rows with the rows its sources read
+into `InnerStructure.loops`, and the stage adds |J| |d ln f / d ln n| / n, J at the routed control,
+at both ends of every row the slot moves. @3 has the sink's two for its channel slots, and
+`cells.passive_routes@1` for factored declarations. Refused by name: one hook of a side without the
+other; a sink with neither, where a loop would close; and, beside a loop, an operator that opens,
+closes or retires slots.
 
 #### (o) insertion@2's gate at opening (item 4; options for a ruling, 16 November 2026, before code)
 

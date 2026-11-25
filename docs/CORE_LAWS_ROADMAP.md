@@ -85,7 +85,7 @@ and **MT-2**.
 | 2 | Transport | FR-4's proton pump on held fuel (`fr4-v1-qualified-2026-11-17`) | Seam A's population axis (compared); symporter version 1 | Symporter version 2 and availability schedules (branches); pumps moved onto the kind | — |
 | 3 | Chemistry | MG0c's reactions (`mg0c-v1-qualified-2026-11-15`); D150's faces and turnover clearance (`secreted-species-v1-qualified-2026-11-14`); exchange, with FR-1; FR-10 (`fr10-v1-qualified-2026-11-17`) | FR-15 S1, charged species in reactions | FR-15 P2 (branch); metabolism at scale and a stochastic regime (not designed as notes) | Exchange stays neutral; the 16-row cap rises only by D148 changes (D165) |
 | 4 | Binding, buffers, pH | FR-4; FR-3 (`fr3-v1-qualified-2026-11-18`) | The general closure `rapid_binding@1` (compared); P1's predictor | A first real mover of closure rows; registry moieties | — |
-| 5 | Compartments, organelles | FR-1 (`fr1-v1-qualified-2026-11-18`); FR-5 (`fr5-v1-qualified-2026-11-17`) | Refusal 4 version 1.3; refusal 5 version 1.2 | FR-1's later doors; pools at the cell's potential; mitochondria | Subspace Ca²⁺; nested capacitors |
+| 5 | Compartments, organelles | FR-1 (`fr1-v1-qualified-2026-11-18`); FR-5 (`fr5-v1-qualified-2026-11-17`) | Refusal 4 version 1.3; refusal 5 version 1.2; refusal 6 version 1.1 (25 November 2026) | FR-1's later doors; pools at the cell's potential; mitochondria | Subspace Ca²⁺; nested capacitors |
 | 6 | Trafficking, abundance | S5a's insertion@2 (`cell-division-s5a-qualified-2026-11-14`); the coupling operator (`coupling-v1-qualified-2026-11-15`); FR-6's A5″ (`fr6-a5pp-v1-qualified-2026-11-18`) | FR-2 version 1 (compared, weaker evidence); FR-7 F1; B1′ | FR-7 F2–F4 | Catalogue stage 3 (D145) |
 | 7 | Gene expression, regulation | — | Building blocks only | A design note | D145, narrowed by D218 |
 | 8 | Metabolism, energy | FR-4, on held fuel | Finite fuel rows (compared at component level) | The first finite-fuel acceptance; pumps on finite fuel | — |
@@ -137,8 +137,9 @@ effort and the main risk.
   - `kleak_always_open@1`, `naleak_always_open@1`, `nav1p2_m3h_regularized@1` and `kir2p1_mh2@1`;
   - the Kv1 laws, registered as law homes (c7d570a0);
   - `clleak_always_open@1` (D228 item 3; 6ed4b280, tag `f-chloride-leak-landed-2026-11-19`).
-  - Channel populations carry Na⁺, K⁺ and Cl⁻ (`surface_pump_v3_spec.SPECIES_VALENCE`). They do not
-    carry Ca²⁺.
+  - Channel populations carry the ions that their law declares, at the law's valences. `cav1p2_m2h@1`
+    carries Ca²⁺ (25 November 2026; before it, populations carried Na⁺, K⁺ and Cl⁻ only). A law that
+    carries another ion must declare its material term.
 - **Junctions:** `junction_voltage_relaxation@1` and `delayed_first_order_junction_formation@1`,
   with junction heat booked by `trapezoid_nonnegative@1`.
 - **Routes on the passive-routes kind:**
@@ -169,7 +170,7 @@ effort and the main risk.
   | The seven instantaneous Morris-Lecar laws | 7 | `morris_lecar_channels` | G-2, a law without a gate |
   | Calcium-activated K | 1 | `calcium_activated_potassium` | G-3, a channel that reads a species, which the cardiac plan's H1 holds |
   | The Na/Ca exchanger and the store's pump | 2 | `sodium_calcium_exchange_symmetric_barrier`, `atp_transporter_v2` | registered on the transporter kind, with both step terms (the calcium note's step 5) |
-  | The store's release and the IP3 release | 2 | `hill_product_factor`, read by `species_condition@1`; the older kernels are `er_calcium`'s `release_open` and, for IP3, only at the tag | the factor and its source are registered; the store's worlds are the calcium note's step 7 |
+  | The store's release and the IP3 release | 2 | `hill_product_factor`, read by `species_condition@1`; the older kernels are `er_calcium`'s `release_open` and, for IP3, only at the tag | the factor and its source are registered, and a one-cell store world and a two-cell closed world run as tests (the calcium note's step 7). The ensemble's four worlds are not re-expressed |
   | The finite-ATP store pump | 1 | only at the tag | row fuel, a request the user may make |
   | NKCC and the generic symport | 2 | `na_k_2anion_symport_reversible_tanh`, `electroneutral_symport_reversible_tanh` | registered on the transporter kind, in the older law's manufactured form; a store's node refuses them, and no consumer puts one there |
   | The cell-zone transporter | 1 | only at the tag | left there (the user, D386) |
@@ -177,7 +178,7 @@ effort and the main risk.
 
 **Designed.**
 - Cardiac H1 (HUMAN_CARDIAC_LAWS_DESIGN §4.5, §8):
-  - Ca²⁺ as a permeant ion;
+  - Ca²⁺ as a permeant ion (built 25 November 2026, `cav1p2_m2h@1`);
   - per-law gate counts and domains;
   - a linear driving force, and coefficients as data;
   - routes that face a pool;
@@ -229,6 +230,11 @@ effort and the main risk.
   - `na_anion_symport_factored@1` (D228 item 1; 845ee670, tag `symporter-v1-landed-2026-11-19`):
     electrogenic and fuel-free, with n_Na from 1 to 4. It is refused at a compartment's node by
     design.
+  - added 25 November 2026 (the [calcium note](CALCIUM_STORE_AND_CHANNELS_DESIGN.md)'s steps 4 and 5):
+    `atp_driven_transporter_mass_action_positive@2`, one role of any valence on held fuel;
+    `sodium_calcium_exchange_symmetric_barrier@1`; `na_k_2anion_symport_reversible_tanh@1` and
+    `electroneutral_symport_reversible_tanh@1`. Each declares the kind's material term, the first
+    two its charge slope as well, and so do the mitochondria's seven. None is judged.
 - **@3's own pumps:** `nak_atp_mass_action_positive@1` and `ca_atp_mass_action_positive@1`, on
   maintained pools.
 - **Routes:** the passive-routes kind's laws (family 1); `k_anion_symport_mass_action@1` with its
@@ -349,6 +355,8 @@ guard world (D165).
   None does, so the tests use a test-namespace law (`tests/unit/test_rapid_binding_world.py`). The
   docstrings still say no kind declares `role_species`; the transporter's landed at c9549dfc, and
   the law side is what is missing.
+  **Amended 25 November 2026:** the mitochondria's cycle laws (20 November) and the calcium note's
+  four (above) declare base forms and the read, so built-in laws do move closure rows.
 - **No moieties in the registry** (the binding owner's item 6). The cycle references' moiety plant
   waits for it.
 - FR-3's shared SSPRK(3,3) block, FR-3's own milestone.
@@ -393,7 +401,9 @@ to D173's licence condition); FR-15 P2.
 **The organelles, by engine feature.**
 - **Mitochondria:** Part 2.
 - **ER and SR:** the cardiac note's pools at the cell's potential (§3.2), unruled. Legacy ER calcium
-  is the reference.
+  is the reference. **Since 25 November 2026** a store with its own capacitor runs on @3 as a
+  cell-owned compartment, with its pump, leaks, gated release and buffers (the
+  [calcium note](CALCIUM_STORE_AND_CHANNELS_DESIGN.md) §6). The pools stay planned.
 - **The endosome and lysosome path.** On main: a closed compartment with a proton pump, a buffer and a
   leak (FR-4); state-conditioned transfer (FR-5); membrane retrieval into a compartment pool (FR-2).
   Missing: the creation and fusion doors; the volume door; and Cl⁻ counter-ions on a bounding patch,
@@ -575,10 +585,13 @@ pump's fuel pools); origin of life, in its own family.
   passed, weaker evidence after version 1 failed).
 - **Left with the legacy cleanup:** the calcium families, `er_calcium@1` and `ip3_er_release@1`, being
   re-expressed.
-- **Not on @3:** Ca²⁺ in channel populations, Ca²⁺ buffers and pools.
-- **Second messengers:** only the IP₃ release of the older families, being re-expressed as a source
-  kind. No modular design exists for IP₃ as a messenger, cAMP or
-  others. FR-15 names second messengers among the junction-crossing species it would serve.
+- **On @3 since 25 November 2026** (the [calcium note](CALCIUM_STORE_AND_CHANNELS_DESIGN.md)): Ca²⁺
+  in channel populations (`cav1p2_m2h@1`), its buffers as reactions beside them, a closed store and
+  the concentration-gated release. Not judged. **Not on @3:** pools at the cell's potential.
+- **Second messengers:** a source kind reads a ligand's concentration and opens a release
+  (`species_condition@1`, 25 November 2026). The IP₃ release of the older families is being
+  re-expressed with it. No modular design exists for IP₃ as a messenger, cAMP or others. FR-15 names
+  second messengers among the junction-crossing species it would serve.
 
 **Designed.**
 - Cardiac H2 (HUMAN_CARDIAC_LAWS_DESIGN §3):
