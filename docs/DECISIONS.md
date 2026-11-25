@@ -12528,3 +12528,77 @@ FR-38, FR-44, FR-45, FR-47), which are now current. FR-45 has no engine code on 
   registry, using exact-type checks, since legacy classes that stay derive from the two spec classes.
 - The choice for the user is whether a CPU re-expression of the calcium ensemble counts as leaving legacy, with its GPU
   path parked, or whether legacy's core waits for the GPU. The plan recommends the first.
+
+## D378: Lean's rebuilt tip is merged with its commit map; FR-51's two-potassium registration and FR-38's amendment 5 are tagged; the legacy dry run, the gate-speed evidence, and a correction to D339 and D371
+
+2026-11-25, about 01:18 UTC.
+
+**Lean's tip dfe2a723 is merged unedited at 18198688** (71 files, all under `lean/`). Lean reworded published-paper
+evidence at the user's request and rebuilt its 17 unpublished commits, so their numbers changed. The gate passed on
+exactly that tip, run by the lead on lane B from Lean's own frozen snapshots, because lane A holds the GJ-N1 run
+(`/mnt/workspaces/Cells/lean-dfe2a723-laneb-20261125`). The check of D376 was GO. **Earlier entries name commits by
+their old numbers.** They map as:
+
+| Cited as | Now |
+| --- | --- |
+| 59fe4896 (D355, D356) | 369431f7 |
+| fccbb5e5 (D355, D356, D360 and FR-51's follow-up; the block law's docstring) | 48fb7e0f |
+| c1924c89 (D376) | 2473ba85 |
+| 647b4c15 (D351) | d8c90f12 |
+| 27d641a6, e28a6046, 0cd4bab4 (D376) | e43b2757, 7d74bbcc, 8aba3211 |
+
+The docstring is updated in the next docstring batch. The old entries stay as written.
+
+**FR-51's two-potassium registration is tagged** `fr51-two-potassium-registered-2026-11-25` (28e8e734,
+`validation/fr51_two_potassium/REGISTRATION.md`), before either held-out curve is read.
+- **The scope.** Panama and Lopatin's 10 and 20 mM levels, on the 5.4 mM calibration that Lean re-read on the 5 mV grid
+  (half crossing −74.05 mV, bracket [−75, −70]), with FR-51's landing 955765ef as the engine and the frozen scorer and
+  calibration at 18198688.
+- **The rule was written knowing this study's 60 mM result (ratio 0.83), and says so.** The 20 mM level decides and
+  10 mM supports. A pass rejects a shift under about seven tenths of the concentration-based one at 20 mM. It cannot tell
+  a Nernst shift from one that tracks the measured reversal, D355's open gap. The label a pass would lift says
+  direction, and that size is not judged.
+- **Safeguards.** Two fresh readers with a blind control on the 5.4 mM trace, a sheet of the panel's labels written by
+  another agent, no re-read and no third reader, and no other extraction scored. The engine check uses Lean's K(0) rule
+  and catches a wrong external K, a wrong internal K, the membrane-voltage reference and a flipped sign.
+- **The advisor's review** found the first draft's faults: a planted error that could not fail, readers with choices,
+  and a rule written knowing a result without saying so.
+
+**FR-38's second comparison: amendment 5 is tagged** `fr38-v2-amendment-5-2026-11-25` (fcbcb8e7). The builder's tables'
+shapes are pinned by a registered format sample (`/mnt/workspaces/Cells/fr38-v2-format-sample-20261124/`, read-only) that
+holds invented worlds only: 0 of its numbers match 99,441 numbers of the run records, the registered definitions and the
+spec's literals. It shows every key, name and type; a judge may not take values, lengths, identities or orders from it.
+The judge conforms next, and must parse the sample before its tag. The sample took three attempts: the first let one
+number survive the scrub, and the second had the wrong number of transcription stages in four families, which the
+builder's own check missed and later caught.
+
+**Legacy: the dry run** (tool `validation/legacy_port/dry_delete.py` on `legacy-dry-run`, 144e0ef9; records in
+`/mnt/workspaces/Cells/legacy-dry-run-20261124/`). With `src/cells/legacy/` deleted from a scratch copy:
+- **Tiers 1 and 2:** 508 of 671 files pass, 147 fail, 16 failures unchanged from the control. Classes: 105 test only
+  legacy models (30 physiology, 8 in route C's kept core, 67 not checked row by row), 27 test live code with a legacy
+  vehicle, 4 fail through one validation tool, and 11 are helpers and lists.
+- **Tier 3:** all 11 files run failed. 211 were not run, among them the calcium ensemble's own tests.
+- **A gap:** two refusals of a wrong execution or experiment type live in legacy's `to_dict`, and no test covers them.
+  After deletion a live model with a wrong type raises an `AttributeError`. They move to live code with the first batch,
+  with a test.
+- **The lead's rulings:** the eight planning tests and test_recovery_response_grid are live code with a legacy vehicle;
+  test_spatial_extracellular_acceptance_resources is in the kept core. The plan (`legacy-port-plan`) is being corrected.
+
+**Gate speed (D358): the evidence for the third change.** Of 469 reader files, 243 were traced, and for regular files
+the map is complete in all 216 the change would release. One bug blocks it: `sitecustomize.py:148` keys a folder listing by
+the folder alone, so a test's own listing is dropped when a library lists that folder first. It is fixed, the map is
+re-recorded from a passing nightly, and a standing trace check is added, before the change is built. The 37 files with
+unmapped children are explained: 31 can be mapped by small rules. On a lean-only change, today's readers rule selects 475
+files (10,271 test-seconds), the change 66 (1,452), and both changes 37 (1,052). Evidence:
+`/mnt/workspaces/Cells/d358-evidence-20261125/`.
+
+**FR-47's ledger limit: a correction to D339 and D371.** They tie the limit to E2 places and a zero start. A builder
+measured otherwise: it comes from Q's absolute tolerance in any world whose energy bookings are small. Plain one-molecule E1
+worlds are refused too, and W1, W1Δ and W2 have zero starts. A term gated on a zero start would loosen W1's closing test up
+to 24 times and still refuse those worlds. The form that follows the cause adds a term at every controlled step of every (d)
+world, in its own ledger column (D370's truncation class). That is larger than the small fix D371 recorded, so it waits for
+the user: build it as its own gated change, or keep the documented limit until FR-53. FR-47's `FORMAT_RATE_EQUATIONS.md`
+wording is corrected on its branch. A tiny world is refused, never wrong.
+
+**FR-55's design note** (`fr55-design`, 6109cfad) recommends no build: the two published records do not support a
+dose-dependent closing rate, and a same-patch low-dose rise and washout would reopen it. The user's decision is pending.
