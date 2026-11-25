@@ -78,7 +78,7 @@ For each copy of each world, the exact coupled process (LAWS.md §4), to the acc
   (another method, at least 10 times tighter), and by a closed form where one exists (LAWS.md §4's decimal sums for
   W5-exact, where the accuracy is at most 10⁻¹⁵ T). T is the world's `end_s`.
 - **W5-exact's rows and books are published, and no judgement compares them with the engine's** (they enter the
-  run's own identities only).
+  run's own identities, and the running check of CRITERIA.md §3.2 reads their size).
 - **The classes** of the judged entries are READOUTS.md §3's and no others. The reference file lists the judged
   readouts of its world, and nothing else, under `classes`.
 - **A reference file that departs from its accuracy** is refused by C0.
@@ -92,13 +92,14 @@ and each S readout, at every rung and at the retry's:
   E_n and the expected τ, all by CRITERIA.md §3.3, with the engine's series replaced by the model's. Every S readout
   not named in `at_rounding` must be resolved (at least three used differences) and have q within [p − 0.4, p +
   0.4]; a named one must have fewer than three used differences (its name is checked); and every S readout's E_n
-  must be at most its τ. The gene unit's third-order error comes from the model's SSPRK(3,3) (LAWS.md §5).
+  must be at most its τ. The gene unit's third-order error comes from the model's SSPRK(3,3) (LAWS.md §5). The same
+  over the finest n of the n + 1 rungs (the retry's) is published under `retry` (§7) and is required of nothing.
 - **The plants' sizes and margins** (CRITERIA.md §6), per plant, per family and, for P4, per family with its shift:
   the distance, the expected tolerance and their ratio. A margin below 10 (1 − 10⁻⁹) is a fault. P3's expected order
-  over its three rungs is at most p − ¾.
+  over its three rungs is within ¼ of p − 1 (CRITERIA.md §6.2).
 - **The pairs** (CRITERIA.md §3.5): for each world and each readout of its `orders_differ`, the pooled root mean
   square of the difference between the model's two declared orders at h_1 (W5-exact's too), over 10 e_round(h_1): at
-  least 10, so that an honest pair is seen to differ.
+  least 10, so that an honest pair is seen to differ; and in W5-exact the same between its two rungs, in each order.
 - **The power of W6's co-writer plants** (P11 to P15) is yours to compute, and the only place it can be sized. The
   author states no margin for them: this folder is value-silent.
 - **The margins' inputs** (the sizing) are under `sizing` (§7). It is used by C0 alone (CRITERIA.md §4.2). It is
@@ -130,9 +131,11 @@ the values (sorted keys, fixed separators, no timestamps, floats as JSON numbers
  "classes": {"t_events": "S", "...": "..."},
  "planted": {"P1": {"W5 reactions-first": [{"copy": 0, "events": {}, "series": {}}]},
              "P4": {"W5 reactions-first": {"shift_s": 0.0}}},
- "sizing": {"W5 reactions-first": {"t_events": {"d": [0.0], "used": 0, "q": 0.0, "E": 0.0, "est": 0.0, "tau": 0.0}},
+ "sizing": {"W5 reactions-first": {"t_events": {"d": [0.0], "used": 0, "q": 0.0, "E": 0.0, "est": 0.0, "tau": 0.0,
+                    "retry": {"d": [0.0], "used": 0, "q": 0.0, "E": 0.0, "est": 0.0, "tau": 0.0}}},
             "mutant": {"W5 reactions-first": {"E": [0.0], "q": 0.0}},
-            "pair": {"t_events": {"rms": 0.0, "threshold": 0.0, "ratio": 0.0}}},
+            "pair": {"t_events": {"rms": 0.0, "threshold": 0.0, "ratio": 0.0}},
+            "rungs": {"W5-exact reactions-first": {"n_S_c": {"rms": 0.0, "threshold": 0.0, "ratio": 0.0}}}},
  "plants": [{"plant": "P1", "family": "W5 reactions-first", "check": "t_events", "distance": 0.0,
              "expected_tolerance": 0.0, "margin": 0.0, "no_margin": false}],
  "draws_check": {"identical": true, "entries": 0},
@@ -152,8 +155,10 @@ the values (sorted keys, fixed separators, no timestamps, floats as JSON numbers
   each family, and the judge forms its planted times from `shift_s`. A plant whose effect does not depend on the
   declared order may hold one copy list under both families.
 - `sizing`: for each family and each S readout, the n − 1 `d` (in the order of `rungs_s`), the number of used
-  differences, the fitted `q`, `E` (E_n), `est` and `tau`; `mutant` (P3) with its three rungs' `E` and its `q` (the
-  slope of ln E against ln h); and `pair` per readout of `orders_differ` (its threshold is 10 e_round(h_1)).
+  differences, the fitted `q`, `E` (E_n), `est` and `tau`, and under `retry` the same over the finest n of the n + 1
+  rungs (reported; C0 does not read it); `mutant` (P3) with its three rungs' `E` and its `q` (the slope of ln E
+  against ln h); `pair` per readout of `orders_differ` (its threshold is 10 e_round(h_1)); and, for W5-exact,
+  `rungs` per family and row (the same between its two rungs).
 - A `plants` entry names its plant, its family (null for a record plant) and the check it is measured at.
 - `reported` is defined: values this folder asks for that neither C0 nor a verdict reads. It lists K_all per copy,
   the pairwise orders and the coarse-rung errors of the sizing, and the number of draws used per copy, each by name.
@@ -164,9 +169,10 @@ of entries compared. A false one stops the references' tag.
 ## 8. The invented files
 
 - `reference_invented.json` and `inputs_invented.json`, and `draws_invented.json` (the same generator's rule on its
-  own seeds, a draws table of its own): the same layouts as the registered ones, for worlds of your own invention,
-  in the kinds of §1 (a reactions world with a read, one with constant rates, and a gene world), with 4 copies each,
-  your own numbers, and a full set of runs (judged, restart, Lie plant, refused, stopped, retry).
+  own seeds, a draws table of its own): the same layouts as the registered ones (`reference_invented.json` is one
+  object, world name to §7's layout, for the three worlds), for worlds of your own invention, in the kinds of §1 (a
+  reactions world with a read, one with constant rates, and a gene world), with 4 copies each, your own numbers, and
+  a full set of runs (judged, restart, Lie plant, refused, stopped, retry).
 - **No number of it equals a registered number of the same kind** (a volume, a rate, an amount, a conductance, a
   seed, a horizon, a rung, a sample time, a count of copies of a template or of machines; a zero, `c0_mM`, and
   structural integers such as the subunits of a unit state are not of a kind). The check is mechanical: a file of

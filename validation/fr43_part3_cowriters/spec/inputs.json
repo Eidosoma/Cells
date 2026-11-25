@@ -3092,7 +3092,8 @@
      "xi_2",
      "moved"
     ],
-    "multiple": 10000.0
+    "multiple": 10000.0,
+    "fraction_of_reference": 0.5
    }
   },
   "W6": {
@@ -4169,7 +4170,19 @@
    "must_fail": [
     [
      "R",
-     "start"
+     "start n_N"
+    ],
+    [
+     "R",
+     "start n_M"
+    ],
+    [
+     "R",
+     "start n_Pi"
+    ],
+    [
+     "R",
+     "start free"
     ]
    ]
   },

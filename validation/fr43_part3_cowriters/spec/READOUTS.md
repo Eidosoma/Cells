@@ -58,8 +58,8 @@ for its accuracy only (SPEC.md §4). W5-exact's scales are published too, and §
 | pair | the two declared orders differ, at the coarsest rung (CRITERIA.md §3.5) | the two families of a world | yes | yes (two recorded rows) | yes |
 
 - **Published and not judged:** `n_X`, `n_Y`, `n_W` and `xi_1` in W5 enter §4's identities only; W5-exact's rows
-  (its references publish them) enter them only, and are not compared with the references; `n_N`, `n_M`, `n_Pi`,
-  `free`, `engaged`, `transit`, `inits` in W6 likewise.
+  (its references publish them) enter them only, and are not compared with the references (but for the running
+  check's half, CRITERIA.md §3.2); `n_N`, `n_M`, `n_Pi`, `free`, `engaged`, `transit`, `inits` in W6 likewise.
 - `inputs.json`'s `judged` is the list, machine-readable; where it differs from this table, `inputs.json` governs (a
   difference is a fault of this file).
 

@@ -35,32 +35,32 @@ dropped, so the order is fitted and the size read over the finest n. Nothing els
 
 ### 3.0 Formation, and what a refusal does
 
-**Formed.** An entry is **formed** where everything it reads is present, readable and registered. A judged entry
-that is not formed makes its **family inconclusive, never a pass.** (A run's entries are its family's. A restart's
-are those of the run it resumes, §3.6.)
+**Formed.** An entry is **formed** where no run it reads is missing or refused by any row of §4 (**provenance and a
+shared record hash included**), and everything it reads is present, readable and registered. A judged entry that is
+not formed makes its **family inconclusive, never a pass.** (A run's entries are its family's. A restart's are those
+of the run it resumes, §3.6: a restart made from a dirty checkout leaves its judged run's restart entry unformed.)
 
-**Refused.** The faults of §4 say which runs are refused. A refused run cannot pass, and it hides no fail:
+**Refused.** The faults of §4 say which runs are refused. A refused run leaves its entries unformed, so it cannot
+pass. Unformed is not unread: what can be compared is compared, and a miss fails.
 - Where the echo departs, or the table's hash does (§4's first two rows), **nothing of the run is judged**, in any
   class.
-- By any other refusal, the E and R entries that can be formed from what the run holds are judged, and a fail
-  stands. A run that did not complete is judged on the events and samples it lists, and their number is not asked of
-  it.
-- The S entries (and §3.5's pair) of a refused run are unformed, **but not by a provenance refusal or a shared
-  record hash:** there they are formed, a miss stands, and the run cannot pass.
+- By any other refusal, the E and R entries are compared on what the run holds, and a miss fails. A run that did not
+  complete is compared on the events and samples it lists, and their number is not asked of it.
+- The S entries of a run refused by provenance or a shared record hash are compared too, and a miss fails. Those of
+  a run refused otherwise, and §3.5's pair of a refused run, are not compared.
 
 **What unforms an S entry, or the pair, listed once.** Any one of these, in any run it reads (every copy at every
 rung of the family; for the pair, every copy of both families at h_1):
 - the run is missing, or did not complete (§4);
 - nothing of it is judged: its echo departs, or its table's hash does;
-- it is refused by **any other row of §4, but provenance and a shared record hash**: a key of its table or of its
-  entry (missing, or of another type), its `host_patch` or its `restart`, its sample times, a name listed twice or
-  in `missing` and `runs`, a JSON fault;
+- it is refused by **any other row of §4, provenance and a shared record hash included** (of these two a miss fails
+  all the same): a key of its table or of its entry (missing, or of another type), its `host_patch` or its
+  `restart`, its sample times, a name listed twice or in `missing` and `runs`, a duplicate key;
 - a leaf the entry reads is missing, mistyped or non-finite, or is not as long as `t`;
 - for `t_events`: its record contradicts itself or lists fewer than K_c events (its trace then fails E too, §3.1).
 
-**What unforms an E or R entry** is only a fault in what that entry reads: the run is missing, nothing of it is
-judged, or a leaf it reads is missing, mistyped or non-finite, or is not as long as `t`. (W5-exact's identities have
-the running check of §3.2 besides.)
+**What unforms an E or R entry:** its run is missing or refused by any row of §4, or a leaf it reads is missing,
+mistyped or non-finite, or is not as long as `t`. (W5-exact's identities have the running check of §3.2 besides.)
 
 ### 3.1 E, equal
 
@@ -85,9 +85,10 @@ Bit for bit, the sign of zero included:
 - **The restart.** Every row, book and event the resumed run lists, and its `events_total`, equal the uninterrupted
   run's, matched by sample time and by event index (`first_index` plus its place in the list). An event the
   uninterrupted run does not have is a difference. **The resumed run is checked at its registered time:** its
-  `restart.time_s` is `inputs.json`'s (10⁻¹² relative), its `t` holds every registered sample at and after it, and
-  its list holds every event the uninterrupted run has after it. One that does not is refused and its restart entry
-  is not formed; a difference in what it lists, or in `events_total`, fails all the same.
+  `restart.time_s` is `inputs.json`'s (10⁻¹² relative), its `first_index` is the number of events the uninterrupted
+  run has at or before that time, its `t` holds every registered sample at and after it, and its list holds every
+  event the uninterrupted run has after it. One that does not is refused and its restart entry is not formed; a
+  difference in what it lists, or in `events_total`, fails all the same.
 
 ### 3.2 R, rounded
 
@@ -101,11 +102,13 @@ Bit for bit, the sign of zero included:
 - **W5-exact's event times:** within e_round (m = 4) plus the reference's accuracy, at each rung, for k < K_c.
 - **W5-exact's running check.** An identity of zero against zero proves nothing. So in W5-exact the identities are
   formed only where ξ_1, ξ_2 and |moved| at the last sample each exceed 10⁴ times the bound (16 (S + 1) u s_id, at
-  the last sample) of the identity that carries it: `X` for ξ_1, `Y` for ξ_2 and `S node` for moved. The 10⁴ is
+  the last sample) of the identity that carries it: `X` for ξ_1, `Y` for ξ_2 and `S node` for moved, **and each is
+  there at least half of the reference's, of the same sign** (nearer to its size than to absent). The 10⁴ is
   derived: a plant that raises a book by 10⁻³ must fail its identity by a margin of 10, so a book below 10⁴ times
-  its identity's bound cannot be told from rounding. In a run in which one is not exceeded, an identity inside its
-  bound is not formed (it passes nothing, so the family is inconclusive) and one outside it fails all the same
-  (`inputs.json`'s `judged` holds the readouts and the multiple under `running`).
+  its identity's bound cannot be told from rounding. In a run in which one is not exceeded, or one is below half, an
+  identity inside its bound is not formed (it passes nothing, so the family is inconclusive) and one outside it
+  fails all the same (`inputs.json`'s `judged` holds the readouts, the multiple and the half,
+  `fraction_of_reference`, under `running`).
 
 ### 3.3 S, stepped
 
@@ -127,13 +130,15 @@ the entries of READOUTS.md §5:
   named entry is judged by its size alone.
 - **The size:** E_n ≤ τ. A wrong law converges at its order to the wrong value, so it misses its size; a split of
   the wrong order leaves its window.
-- **Score.** An entry that is not formed (§3.0) is inconclusive. Of the formed ones:
+- **Score.** An entry that is not formed (§3.0) is inconclusive, unless §3.0 compares it and it misses: it fails. Of
+  the formed ones:
   - **an entry named in `at_rounding`** passes where its size is inside τ and fails where it is not, whatever its
     order;
   - **any other entry** passes where its size is inside τ and its order is inside the window, and fails where its
     size misses and its order is inside the window. Where its order is formed and outside the window it is
     inconclusive, whatever the size (the window is what lets τ be trusted: FR-25 and FR-38's precedent), and it owes
-    the retry (§7). Where its order cannot be formed it is inconclusive and owes none.
+    the retry (§7). Where its order cannot be formed, or where a d_j is exactly zero (two rungs that are one
+    series), it is inconclusive and owes none.
 - **The pooled root mean square is the one statistic:** order, estimate and size use it. The errors against the
   reference at the coarser rungs, the pairwise orders and the finest triple are reported and judge nothing.
 
@@ -153,6 +158,9 @@ families' runs at h_1 must exceed 10 e_round(h_1). **Otherwise the two are the s
 both families are inconclusive.** A fail of theirs stands.
 - Readouts the order cannot change are excluded by name: W6's `made` and `exits`, which only the gene unit writes.
 - W5-exact has no S entry, so it checks two of its recorded rows, `n_S_c` and `moved`.
+- **W5-exact's two rungs differ as the pair does:** in each of its families the pooled root mean square of the
+  difference between the runs at h_1 and at h_1/4, in each of those two rows, must exceed 10 e_round(h_1). Otherwise
+  the two are one rung (a copied one), and the family is inconclusive.
 
 ### 3.6 What the plant runs' and support runs' entries count for
 
@@ -164,37 +172,37 @@ both families are inconclusive.** A fail of theirs stands.
 
 ## 4. Faults and refusals
 
-**Nothing hides a fail.** Every entry that can be formed is judged (§3.0). If any judged entry of a run or a family
-fails, its arm fails, whatever else of that run or family is refused, stopped or missing.
+**What can be compared is compared** (§3.0; §11 says where a fail can go unseen). If any judged entry of a run or a
+family fails, its arm fails, whatever else of that run or family is refused, stopped or missing.
 
 | Fault | What follows |
 | --- | --- |
-| The echo departs from the registered run (§4.1) | The run is not the registered one. It is refused, and **nothing of it is judged.** This is one of two places where a fail of a run's own (E, R or D) can go unseen (§11) |
-| A table's hash departs from its line in `SHA256SUMS`, has no line in that file, departs from the lead's record, or is one of the format sample's | Its runs are refused, and **nothing of them is judged.** This is the second place where a fail can go unseen (§11). An absent `SHA256SUMS` is recorded and flagged, and refuses nothing by itself |
+| The echo departs from the registered run (§4.1) | The run is not the registered one. It is refused, and **nothing of it is judged** (§11) |
+| A table's hash departs from its line in `SHA256SUMS`, has no line in that file, departs from the lead's record, or is one of the format sample's | Its runs are refused, and **nothing of them is judged** (§11). An absent `SHA256SUMS` is recorded and flagged, and refuses nothing by itself |
 | A top-level key of a table is missing, of another type, or (for `kind`, `arm`, `units`) of another value | Every run in it is refused |
-| A key of an entry (a row of TABLE.md §3; `source`, `record` and `record_sha256` are the provenance row's) is missing or of another type (a `null` only where that row allows it) | The run is refused |
+| A key of an entry (a row of TABLE.md §3; `source`, `record` and `record_sha256` are the provenance row's, and a name missing from `series` is the missing leaf's) is missing or of another type (a `null` only where that row allows it) | The run is refused |
 | A completed run with a non-null `refusal`, or a refused run without one | The run did not complete: it is refused with the refusal's kind, or `harness` if there is none |
 | `events_total` above `trace_capacity` (a truncated trace) | The run did not complete: refused with kind `harness` |
 | A completed run whose `t` is not the registered `samples_s`: a sample missing, one extra, or one that departs (10⁻¹² relative; 0 exactly). A resumed run: §3.1 | The run is refused |
-| A `host_patch` on a run that is not the Lie plant's, or a null or another `id` on one that is; a `restart` on a run that is not a resumed one, or a null on one that is | The run is refused |
-| A judged leaf is missing, mistyped or non-finite, or not as long as `t` | The entries that read it unform, in that run. The rest of the run is judged |
+| A `host_patch` on a run that is not the Lie plant's, or a null or another `id` on one that is (such a run's echo is its honest run's **apart from `variant`**, §4.1); a `restart` on a run that is not a resumed one, or a null on one that is | The run is refused |
+| **The missing leaf:** a judged leaf is missing (a name missing from `series` included), mistyped or non-finite (a NaN or an infinity in an entry included), or not as long as `t` | The entries that read it unform, in that run. The rest of the run is judged |
 | A record that contradicts itself (counts against its `channel`, `events_total` against its list, an event out of order), or with fewer than K_c events | Its trace fails E (§3.1), and the S entry `t_events` unforms |
-| A resumed run whose `restart.time_s` departs, or that does not list each later sample and event | It is refused, and its restart entry is not formed (§3.1). A difference in what it lists fails |
-| Two runs with the same `record_sha256` | Both are refused, all their entries are formed and a fail stands. No two runs share one |
-| Provenance: `source`, `record` or `record_sha256` missing or incomplete, `checkout_dirty` true, a missing snapshot, or an `engine_revision` that is not the registration tag's (not checked at the rehearsal, §10) | The run is refused, all its entries are formed and a fail stands |
+| A resumed run whose `restart.time_s` departs, whose `first_index` is not the number of events the uninterrupted run has at or before that time, or that does not list each later sample and event | It is refused, and its restart entry is not formed (§3.1). A difference in what it lists fails |
+| Two runs with the same `record_sha256` (a record plant's edited copy, which the judge makes and no table holds, is no run of its own) | Both are refused: their entries are unformed, compared all the same, and a miss fails. No two runs share one |
+| Provenance: `source`, `record` or `record_sha256` missing or incomplete, `checkout_dirty` true, a missing snapshot, or an `engine_revision` that is not the registration tag's (not checked at the rehearsal, §10) | The run is refused: its entries are unformed, compared all the same, and a miss fails |
 | A judged run refused with kind `check` | **Fails** (§3.4) |
 | A run refused with kind `domain`, `definition` or `harness`, or any refused support or plant run | It did not complete, and is refused. No registered run is expected to be refused or to stop |
 | A run in `missing` (and not in `runs`), or in neither list | It is missing: refused |
 | A run in `missing` and in `runs`, or a run name listed twice (in two tables, or twice in one `runs`) | The run is refused. Each entry under its name is judged (E, R, D) and a fail in any stands |
 | A run name that neither `inputs.json` nor the retry's rule (§7) lists | Ignored and recorded. A retry's name (§7) is listed where a retry is owed |
 | An unowed retry run | Recorded, flagged, and not judged |
-| A support run missing or refused | Leaves its judged run's restart entry unformed, and nothing else |
+| A support run missing or refused (by any row, provenance and a shared record hash included) | Leaves its judged run's restart entry unformed, and nothing else |
 | A leaf inside a recorded-only key (`definition`, `checks`, `pools_at_event`, `samples_echo`, `steps`) is missing, mistyped, non-finite, or another than the grid's | Flagged to the checker. Refuses nothing |
-| A JSON object with a duplicate key, a NaN or an infinity | In a reference file: that file is refused. In a table's entry: that run is refused, and the entries that read the leaf unform. Elsewhere in a table (a name twice in `runs` is above): its runs are refused |
+| A JSON object with a duplicate key | In a reference file: that file is refused. In a table's entry: that run is refused. Elsewhere in a table (a name twice in `runs` is above): its runs are refused |
+| A NaN or an infinity | In a reference file: that file is refused. In a table's entry: it is the missing leaf's case (or, inside a recorded-only key, that row's). Elsewhere in a table: its runs are refused |
 
 - **An arm is inconclusive at best** where any of its judged entries is unformed or inconclusive, or any of its
-  judged runs is refused, unless one of them fails. (So an S miss can also go unseen: where a run it reads is
-  refused, its entry is unformed, and its family cannot pass.)
+  judged runs is refused, unless one of them fails.
 - **A non-finite value anywhere is a fault, not a gap.**
 - **Nothing passes empty.** An arm, a family, or a line of the request with no judged entry formed is inconclusive,
   never a pass. A plant whose named entry is not formed is unscorable, never caught.
@@ -209,9 +217,11 @@ with the registered ones:
 - **Collections.** A collection keyed by id (the reactions, the rows, the reactants) is compared by id, in any
   order. A declared order (`channels`, `unit_states`, `operators`) is compared as a list.
 - **The echoed keys** are exactly `inputs.json`'s `echo`: the world's keys of its kind and the run's keys, the
-  excluded ones left out. A plant's echo equals its honest run's (the Lie plant's declared change is in its
-  `host_patch`, not in its echo).
-- **IDs compare exactly with the strings note** (the protocol's §5) and with nothing in this folder.
+  excluded ones left out. A planted run's echo (the Lie plant's) equals its honest run's, and a resumed run's its
+  uninterrupted run's, **apart from `variant`**, which is its own registered one (the Lie plant's declared change is
+  in its `host_patch`, not in its echo).
+- **IDs compare exactly with the strings note** (the protocol's §5) and with nothing in this folder. At the
+  rehearsal, which comes before that note, `operators` is compared with the list in the builder's own README (§10).
 - An echo is the definition the engine parsed and ran, in this schema: never a copy of this folder's numbers. A run
   refused at parse has none (TABLE.md §3): it did not complete, and it holds nothing to judge.
 
@@ -227,10 +237,10 @@ world:
 - **the sizing** (SPEC.md §5): for an S entry not named in `at_rounding`, an expected order that cannot be formed or
   is outside [p − 0.4, p + 0.4] (a tenth inside the window); **for an entry named there, three or more used
   differences** (it is not at rounding, so its name is wrong); for any S entry, an expected E_n above its expected
-  τ; a plant's margin below 10 (1 − 10⁻⁹) (§6.2); a class E plant with a zero distance; a pair (§3.5) whose expected
-  ratio to its threshold is below 10; W5-exact's running check (§3.2) not met by the references' own extents; a
-  family with fewer than its `minimum_events` (by the reference's K_c: per copy and in all); a missing expected
-  value.
+  τ; a plant's margin below 10 (1 − 10⁻⁹) (§6.2); P3's expected order not within ¼ of p − 1 (§6.2); a class E plant
+  with a zero distance; a pair (§3.5), or W5-exact's two rungs, whose expected ratio to its threshold is below 10;
+  W5-exact's running check (§3.2) not met by the references' own extents; a family with fewer than its
+  `minimum_events` (by the reference's K_c: per copy and in all); a missing expected value.
 
 These are the conditions under which an honest run is expected to be judged. A world that misses one is changed by a
 dated amendment to the registered inputs (never to a criterion), with the reason, before the tag.
@@ -252,7 +262,7 @@ run with a declared change of the driver. The plants of a world's families are i
 | --- | --- | --- | --- |
 | P1 | W5's k_1 1% high | reference | S on every S readout of W5 |
 | P2 | W6's initiation k_I 1% high | reference | S on every S readout of W6 |
-| P3 | The second halves in declared order: Lie splitting | engine: the runs ` lie`, W5 reactions-first, three finest rungs | S on `t_events`: its own order (over its three rungs) outside the window [1.5, 2.5] |
+| P3 | The second halves in declared order: Lie splitting | engine: the runs ` lie`, W5 reactions-first, three finest rungs | S on `t_events`: its own order (over its three rungs) inside [p − 3/2, p − ½], one order lost (§6.3) |
 | P4 | A size: every reference event time moved by 10 expected τ | reference, the shift and the margin per family | S on `t_events` |
 | P5 | W5-exact's `assemble` rate 1% high | reference | R on `t_events` |
 | P6 | One book 10⁻³ high (`xi_2`; `lost`) | record | R: the identities that carry it |
@@ -263,16 +273,16 @@ run with a declared change of the driver. The plants of a world's families are i
 | P11 | W6: the transcription's factor 1 − e^x dropped | reference | S on `made`, `exits`, `n_R_c`, `lost`, `t_events` |
 | P12 | W6: the degradation's factor 1 − e^y dropped | reference | S on `lost`, `n_R_c` |
 | P13 | W6: a product not released (Pi) | record | R: the identity `Pi` |
-| P14 | W6: a start amount 1% off (N, M, Pi, free machines) | record | R: `start` |
+| P14 | W6: a start amount 1% off (N, M, Pi, free machines) | record | R: `start`, on each of the four |
 | P15 | W6: the monomer neither made nor consumed (N, M unchanged) | record | R: the identities `N` and `M` |
 
 - **Wrong W6 engines that must fail a judged entry:** a reversibility factor dropped (P11, P12), a product not
   released (P13), a start amount wrong (P14), and the monomer neither made nor consumed (P15). Each must fail a
   judged entry with a margin of at least 10: P11 and P12 fail the size of `made`, `exits` or `lost`, P13 and P15 the
-  identities of W6's monomers, P14 the start.
+  identities of W6's monomers, P14 the start (each of its four).
 - **P3 and P4 rest on the order check.** The size of S has almost no power against a first-order engine, since τ is
-  formed from that engine's own differences and grows with its error. P3 (Lie) is caught because its own order
-  leaves the window, not by its size. P4 shows the size only for a family whose honest order has passed, against the
+  formed from that engine's own differences and grows with its error. P3 (Lie) is caught because its own order is
+  one lower (§6.3), not by its size. P4 shows the size only for a family whose honest order has passed, against the
   honest τ; a first-order engine is caught by the window alone.
 
 ### 6.2 Power, stated before any run (D366)
@@ -285,8 +295,9 @@ run with a declared change of the driver. The plants of a world's families are i
 - **Distances.** S: the pooled RMS between the honest and the planted references over the common entries (for
   `t_events` the events k < K_c that the planted reference also has, for a row or a book every sample t > 0; with
   none, the plant has no margin, a fault of §4.2). P3: the pooled RMS between the honest reference and the Lie
-  emulation at its rungs, and its expected order over them at most p − ¾. P4: the shift, per family, with its
-  margin. R: |planted − honest|. E: the number of entries that differ. P14: the 1% of each start amount.
+  emulation at its rungs, and its expected order over them within ¼ of p − 1 (a quarter inside the ends of §6.3's
+  window). P4: the shift, per family, with its margin. R: |planted − honest|. E: the number of entries that differ.
+  P14: the 1% of each start amount.
 - **The references compute every margin**, per family, and report it, or the reason for a plant with none (P8,
   `no_margin`). A plant below 10 is enlarged or replaced by a dated amendment before the tag, never after a run.
 
@@ -302,7 +313,9 @@ run with a declared change of the driver. The plants of a world's families are i
   common entries (§6.2), exceeds the family's honest τ. R: at least one entry of the check exceeds its bound. E: the
   entry departs.
 - **A reference plant** is caught when every one of its entries fails. P3 is caught when its own order, the slope of
-  ln E (its own runs against the reference) against ln h over its three rungs, is outside the window [1.5, 2.5].
+  ln E (its own runs against the reference) against ln h over its three rungs, is inside [p − 3/2, p − ½] (p = 2,
+  the scheme's order: 0.5 to 1.5): the half window of §3.3 about p − 1, the order of a step whose second halves run
+  in declared order. Another order does not show the loss, and P3 is then not caught.
 - **A record plant** edits the honest run of copy 0 of the family named, at the world's coarsest rung, and is caught
   when every named check fails on the edited record.
 - **A plant with an unscorable entry** is not caught if one of its scored entries is not caught, else unscorable.
@@ -330,8 +343,8 @@ run with a declared change of the driver. The plants of a world's families are i
 
 - **A run** fails if any judged entry (E, R) of it or of its restart fails, or if D fails. **A family** fails if any
   of its S entries fails or any of its runs fails; else it is inconclusive if any of its judged entries (E, R, S) is
-  unformed or inconclusive, its pair (§3.5) is unformed or does not differ, or any of its runs is refused (a
-  provenance refusal included); else it passes.
+  unformed or inconclusive, its pair (§3.5) is unformed or does not differ, W5-exact's two rungs do not differ, or
+  any of its runs is refused (a provenance refusal included); else it passes.
 - **An arm** (W5: both families; W5-exact: both families; W6: both families; with their restarts and plants), after
   the retry, fails if any family fails or a plant is not caught (its must-fail checks), else is inconclusive if any
   family is inconclusive or a plant is unscorable, else passes.
@@ -339,9 +352,9 @@ run with a declared change of the driver. The plants of a world's families are i
   is inconclusive otherwise. It is reported on three lines: second order beside the reactions (W5), exact times with
   constant rates (W5-exact), second order beside the gene unit (W6, with the gene unit's own material judged). Each
   line stands on its own arm. No other line of the request is judged here.
-- **The record** lists every entry: family, run, readout, class, statistic, tolerance, ratio, q and p, the pairwise
-  and triple orders, and the verdict; every refusal, stop and flag, with its cause; and every plant's margin and
-  score.
+- **The record** lists every entry: family, run, readout, class, statistic, tolerance, ratio (0 where the statistic
+  and the tolerance are both 0, as for `engaged` and `transit` at t = 0), q and p, the pairwise and triple orders,
+  and the verdict; every refusal, stop and flag, with its cause; and every plant's margin and score.
 
 ## 9. What a miss means, stated before any run
 
@@ -362,7 +375,8 @@ run with a declared change of the driver. The plants of a world's families are i
 **The rehearsal** is the judge's whole scoring path, run on **invented** worlds through the registered exporter
 (TABLE.md), before the registration tag: the invented runs, references, plants, restart, retry and every fault of §4
 planted. It must pass every honest entry that its sizing says will pass, catch every plant, and flag every fault as
-§4 says. The `engine_revision` check of §4 is not applied to it, since no registration tag exists yet.
+§4 says. The `engine_revision` check of §4 is not applied to it, since no registration tag exists yet. Nor does the
+strings note, so there `operators` is compared with the list in the builder's own README.
 
 - **No final fail can rest on a bound the rehearsal has not met.** The event-time count of LAWS.md §7 was written
   with the engine's own clock and hazard sum in view (the author read the source; the protocol's §10), the count of
@@ -388,6 +402,13 @@ planted. It must pass every honest entry that its sizing says will pass, catch e
   order window is what catches it.
 - **The order of `made` and `exits`.** They are judged by size alone (§3.3): the gene unit's own half-step may be of
   another order and still inside the size.
+- **Books formed from rows.** TABLE.md asks for the writer's own account. Books formed as differences of rows would
+  satisfy every identity, and nothing in a table shows which they are.
+- **The order of W5's reactions' own half-step.** A half-step of second order keeps W5's order inside its window and
+  its size, so a pass does not show that the reactions' own order is higher.
+- **A family copied at finer rungs.** The pair is read at the coarsest rung alone, so a family whose finer rungs are
+  the other's passes it.
+- **A pass after a retry drops the coarsest rung.** It is read over the finest n rungs, and says nothing of h_1.
 - **An equal error in W6's `inits`, `engaged` and `free`.** The identities tie them to each other and to `made`, and
   no reference judges them, so an error the three share passes.
 - **The two declared orders' labels.** The results of W5 and W6's two families differ (§3.5), and nothing in a run
@@ -396,10 +417,13 @@ planted. It must pass every honest entry that its sizing says will pass, catch e
   engine's own differences. A pass says nothing of an engine's error at a step above the ladder, or at λ dt of order
   one.
 - **W5-exact judges event times and identities only.** Its amounts, published by the references, are not judged
-  against them.
-- **A wrong engine in the two places where a fail of a run's own goes unseen:** a run whose echo departs, or a table
-  whose hash departs, is refused and nothing of it is judged (§4). An S miss goes unseen also where a run it reads
-  is refused (§3.0). In each the family cannot pass.
+  against them (the running check of §3.2 asks only that each book be at least half of its reference).
+- **A fail that goes unseen.** A record that is there is not judged at these rows of §4: an echo that departs and a
+  table whose hash departs (nothing of the run); a run name that is not registered and an unowed retry run (no run
+  of the registration); and, for the S entries, every other refusal but provenance and a shared record hash (for the
+  pair, any refusal). A missing run, a run cut short (the events and samples it does not list) and a non-finite
+  value in a judged leaf can hide a fail too. **None of these can become a pass:** each leaves its entries unformed,
+  and its family is inconclusive at best (a run that is not registered belongs to no family).
 - **The gene unit beyond W6's readouts:** heats, release, recharging, translation, a hold, an export, or a second
   gene.
 - **Streams' statistics:** the draws' distribution, only their rule. **Energies:** no energy readout is judged.

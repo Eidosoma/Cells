@@ -1,11 +1,11 @@
 # The engine table: the contract
 
 This is the contract between the builder, whose exporter writes the table, and the judge, whose reader parses it.
-**Both read only this folder, with three exceptions:** the strings note (the protocol's §5: the operators' IDs), the
-protocol's hashes and tags (the record of what was hashed), and the registration tag's revision (compared with
-`source.engine_revision`). The contract is what this file says. A key the judge needs that is not here is asked for
-through the lead and added by a dated change, never taken from the other side's code. Extra keys are allowed and
-ignored.
+**Both read only this folder, with three exceptions:** the strings note (the protocol's §5: the operators' IDs; at
+the rehearsal, the list in the builder's own README in its place), the protocol's hashes and tags (the record of
+what was hashed), and the registration tag's revision (compared with `source.engine_revision`). The contract is what
+this file says. A key the judge needs that is not here is asked for through the lead and added by a dated change,
+never taken from the other side's code. Extra keys are allowed and ignored.
 
 ## 1. Files
 
@@ -51,7 +51,7 @@ of `events` are empty).
 | `seed` | integer |
 | `t` | list of numbers: the sample times of the rows, in `samples_s` order. A completed judged run holds every registered sample time |
 | `series` | object: the world's names to lists, each as long as `t`. W5 and W5-exact: `n_S_c`, `n_S_o`, `n_X`, `n_Y`, `n_W`, `xi_1`, `xi_2`, `moved`. W6: `n_R_c`, `n_R_o`, `n_N`, `n_M`, `n_Pi`, `free`, `engaged`, `transit`, `inits`, `exits`, `made`, `lost`, `moved`. A resumed run carries the samples at and after its checkpoint |
-| `events` | object: `{"time_s": [...], "channel": [...], "counts_after": [[...], ...], "first_index": 0}`, parallel lists of one site's events in order of time. `channel` is the declared channel id. `counts_after` holds the counts after the event in the declared order of the unit states (free, active), as integers. `first_index` is the index (from 0, over the whole run) of the first listed event: 0 in a run that starts at t = 0, and in a resumed run the number of events before the checkpoint |
+| `events` | object: `{"time_s": [...], "channel": [...], "counts_after": [[...], ...], "first_index": 0}`, parallel lists of one site's events in order of time. `channel` is the declared channel id. `counts_after` holds the counts after the event in the declared order of the unit states (free, active), as integers. `first_index` is the index (from 0, over the whole run) of the first listed event: 0 in a run that starts at t = 0, and in a resumed run the number of events the uninterrupted run has at or before the checkpoint's time |
 | `events_total` | integer: the engine's own cumulative count of the site's events over the whole run. It equals `first_index` plus the number of listed events |
 | `trace_capacity` | integer: the number of events the engine's trace records. A run whose `events_total` exceeds it (a truncated trace) is refused, with kind `harness` |
 | `integer_ledger` | list of integers, one per sample of `t`: Σ_k w_k n_k. The total after each event is not listed (the judge forms it from `counts_after`) |
@@ -78,7 +78,7 @@ of `events` are empty).
   machines.
 - **The restart.** A resumed run's `restart.time_s` is the registered checkpoint time (10⁻¹² relative), and its `t`
   lists every registered sample at and after the checkpoint. Its `events` list holds every event after it, and
-  `first_index` is the number of events before it. One that does not is refused.
+  `first_index` is the number of events the uninterrupted run has at or before it. One that does not is refused.
 
 **The kinds of refusal,** set by the exporter from what the engine raised (its README lists the mapping, and the
 checker confirms it): `domain` (a refusal by name of a value outside a declared domain, at parse or at run time),
@@ -91,12 +91,13 @@ only for one kind.
 
 ## 4. The Lie plant's runs and the restart
 
-- **A plant run** (`host_patch` not null): its `operators`, `inputs` and `definition` equal those of the honest run
-  it mirrors (its run name without ` lie`), but for the patch, and its `host_patch.id` is
-  `second_halves_declared_order`. It has no restart.
-- **A restart run** echoes the interrupted world's `inputs`, and `restart` names the checkpoint's time, its step
-  index and how the state was saved. It has no t = 0 row: its identities use the uninterrupted run's t = 0 row
-  (CRITERIA.md §3.6), and it has no `start` entry.
+- **A plant run** (`host_patch` not null): its `operators`, `inputs` and `definition`, and its `world`, `first`,
+  `copy`, `step_s` and `seed`, equal those of the honest run it mirrors (its run name without ` lie`), **apart from
+  `variant`** and but for the patch, and its `host_patch.id` is `second_halves_declared_order`. It has no restart.
+- **A restart run** echoes the interrupted run's `inputs` (and its `world`, `first`, `copy`, `step_s` and `seed`),
+  **apart from `variant`**, and `restart` names the checkpoint's time, its step index and how the state was saved.
+  It has no t = 0 row: its identities use the uninterrupted run's t = 0 row (CRITERIA.md §3.6), and it has no
+  `start` entry.
 
 ## 5. The format sample
 
