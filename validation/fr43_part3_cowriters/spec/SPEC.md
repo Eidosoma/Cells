@@ -21,9 +21,9 @@ is zero.**
   each (`seeds[c]`), so 8 paths of one world, not 8 worlds. Nothing couples two copies. In this registration each
   copy is one run's world.
 - **Why copies.** A site's event times carry the split error of earlier events, and the order of one path scatters.
-  Pooled over the copies, whose paths are independent, the fitted order over five steps is smooth (LAWS.md §5). The
-  number was sized by the author before any run, on an emulation of the declared split with made-up numbers (the
-  protocol's disclosures); the references size it again for the registered numbers (§5), before the tag.
+  Pooled over the copies, whose paths are independent, the fitted order is smooth (LAWS.md §5). The number was sized
+  by the author before any run, on an emulation of the declared split with made-up numbers (the protocol's
+  disclosures); the references size it again for the registered numbers (§5), before the tag.
 - **Both declared orders.** Every judged world runs with the co-writer declared first and with the population
   declared first. Each is a family with its own runs.
 - **Structure of a copy:** one cell, one finite outside node, one patch between them with one site of 2 subunits.
@@ -37,8 +37,8 @@ is zero.**
 role and variant. `judged` runs are compared. `support` runs are restarts. `plant` runs carry a declared change of
 the engine's driver. There is no other role.
 
-- **Steps.** `W5` and `W6` run at five steps, each half the last (`rungs_s`). `W5-exact` runs at two (a factor 4
-  apart). Each of a judged world's `retry_rung_s` (the next halving) is run only when owed (CRITERIA.md §7).
+- **Steps.** `W5` and `W6` run at n steps, each half the last (`rungs_s`), `W5-exact` at two (a factor 4 apart).
+  Each of a judged world's `retry_rung_s` (the next halving) is run only when owed (CRITERIA.md §7).
 - **The restarts:** `inputs.json`'s `restart` names the run they resume and the checkpoint's time: one of `W5` (copy
   0, one of the finer rungs) and one of `W6`.
 - **The Lie plant:** `W5 reactions-first`, the three finest rungs, every copy, with the second halves of each step
@@ -82,9 +82,10 @@ For each copy of each world, the exact coupled process (LAWS.md §4), to the acc
 With the declared split of LAWS.md §5 (your own code, on the registered numbers and draws), for each judged family
 and each S readout, at every rung of it and at the retry's:
 
-- **The expected honest statistics.** E_j (CRITERIA.md §3.3) at each rung, the fitted order q over the rungs, the
-  step differences, and the expected tolerance τ at the finest rung, all by CRITERIA.md's rules, with the engine's
-  series replaced by the emulation's.
+- **The expected honest statistics.** The n − 1 step differences d_j, the fitted order q, E_n and the expected
+  tolerance τ, all by CRITERIA.md §3.3's rules, with the engine's series replaced by the emulation's. Every S
+  readout of every family must be **resolved** in them (at least three used differences), or the world is changed by
+  an amendment, as any missing value.
 - **The plants' sizes** (CRITERIA.md §6): each plant's distance and its margin, and P3's expected order at the rungs
   it is run at.
 - **The margins** (CRITERIA.md §6.2): for each plant and, for S plants, each family of its world, the distance, the
@@ -93,10 +94,11 @@ and each S readout, at every rung of it and at the retry's:
 - **Report every one** under `sizing` (§7). It is used by C0 alone (CRITERIA.md §4.2). It is never a tolerance, a
   scale or a verdict.
 
-**What C0 requires of it** (CRITERIA.md §4.2): every expected q inside [1.6, 2.4] (a tenth inside the window), every
-plant margin at least 10, the minimum counts of `inputs.json`'s `minimum_events`, and every E-class plant's distance
-non-zero. A world that misses one is changed by a dated amendment before the registration tag, with the reason and
-the disclosure that the sizing showed it. A change of a seed is an amendment of the registered inputs.
+**What C0 requires of it** (CRITERIA.md §4.2): every expected q resolved and inside [1.6, 2.4] (a tenth inside the
+window), every plant margin at least 10, the minimum counts of `inputs.json`'s `minimum_events`, and every E-class
+plant's distance non-zero. A world that misses one is changed by a dated amendment before the registration tag, with
+the reason and the disclosure that the sizing showed it. A change of a seed is an amendment of the registered
+inputs.
 
 ## 6. Where a run's events, rows and books come from in the engine
 
@@ -121,7 +123,7 @@ the values (sorted keys, fixed separators, no timestamps, floats as JSON numbers
  "scales": {"n_S_c": 0.0, "...": 0.0},
  "classes": {"n_S_c": "S", "t_events": "S", "...": "..."},
  "planted": {"P1": {"copies": [{"copy": 0, "events": {}, "series": {}}]}},
- "sizing": {"W5 reactions-first": {"t_events": {"E": [0.0], "used": 0, "q": 0.0, "est": 0.0, "tau": 0.0}},
+   "sizing": {"W5 reactions-first": {"t_events": {"d": [0.0], "used": 0, "q": 0.0, "E": 0.0, "est": 0.0, "tau": 0.0}},
             "W5 population-first": {}, "mutant": {"W5 reactions-first": {"E": [0.0], "q": 0.0}}},
  "plants": [{"plant": "P1", "family": "W5 reactions-first", "check": "t_events", "distance": 0.0,
              "expected_tolerance": 0.0, "margin": 0.0, "no_margin": false}],
@@ -134,10 +136,10 @@ the values (sorted keys, fixed separators, no timestamps, floats as JSON numbers
   missing registered key is a fault (CRITERIA.md C0).
 - A copy's `events` list holds the first K_all events. K_all is the number with t_k ≤ T (published for information),
   K is K_c of §3. `channel` is the channel's id, `counts_after` the `[free, active]` counts after the event.
-- The `sizing` entry lists, for each family and each S readout, `E` at each rung (in the order of `rungs_s`), the
-  number of used rungs, the fitted `q`, `est` and `tau` at the finest, all by CRITERIA.md §3.3, and `mutant` (P3)
-  with its three rungs' `E` and its `q`. A `plants` entry names its plant, its family (null for W5-exact's P5 and
-  for the record plants) and the check it is measured at.
+- The `sizing` entry lists, for each family and each S readout, the n − 1 `d` (in the order of `rungs_s`), the
+  number of used differences, the fitted `q`, `E` (E_n), `est` and `tau`, all by CRITERIA.md §3.3, and `mutant` (P3)
+  with its three rungs' `E` and its `q` (the slope of ln E against ln h). A `plants` entry names its plant, its
+  family (null for W5-exact's P5 and for the record plants) and the check it is measured at.
 - Series names are READOUTS.md's. Every copy carries every series of its world (`W5-exact`'s `series` is empty).
   `classes` lists every readout of READOUTS.md §3 and its class for this world, the E entries included.
 
@@ -167,12 +169,11 @@ pass:
 2. **Closed-form relaxation:** the transfer alone between two pools is LAWS.md §1's λ-relaxation to 10⁻³⁰ relative
    in decimal.
 3. **W5-exact:** the events' times equal the decimal sums of LAWS.md §4 to 10⁻¹² s.
-4. **Conservation:** in W5 the two sums of LAWS.md §2, in W6 the machines' identity and N + r Σ(chain residues) (in
-   words: the reduced sums of the sheet's §4.8), to the accuracy of §4.
+4. **Conservation:** in W5 the two sums of LAWS.md §2, in W6 the machines' identity of LAWS.md §3, and in both the
+   identities of READOUTS.md §4 on your own rows and books, to the accuracy of §4.
 5. **A two-method agreement** for every row, book and event (primary and second method) within the claimed accuracy.
-6. **The split model's own order** (sizing only): the emulation of §5 is second order. Over the five registered
-   rungs and four further halvings, for each judged S readout of each family, the fitted slope of its error against
-   the exact process is within [1.8, 2.2].
+6. **The sizing's order.** For each judged S readout of each family, the expected order of §5 (the fitted slope of
+   its step differences) is resolved and inside [1.6, 2.4], and `E` is at most the expected `tau`.
 7. **The minimum counts** of `inputs.json`, and no event of any copy within 10⁻⁹ T of T − g h₁ (K_c must not depend
    on the integration error).
 8. **The sizing of §5** is complete and inside the requirements of CRITERIA.md §4.2.

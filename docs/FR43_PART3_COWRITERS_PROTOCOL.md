@@ -25,8 +25,8 @@ With the engine's two writers as separate split parts in declared order (`intege
 
 - **W5 (reactions), W6 (gene unit).** The event times and the shared row's amounts, and each writer's own book that
   the coupling touches, agree with code-blind references of the exact coupled process to their own step-halving
-  estimate, at second order in dt (order p = 2 declared; window [1.5, 2.5], the split scheme's half windows), in
-  both declared orders of the writers.
+  estimate, at second order in dt (order p = 2 declared; window [1.5, 2.5], the split scheme's half windows, fitted
+  on the engine's own step differences), in both declared orders of the writers.
 - **W5-exact.** Where no rate reads a row, the event times equal the exact decimal times to rounding at each of two
   steps (W5-exact runs with the same reactions and transfer, in both declared orders).
 - **Every row, every writer's book** satisfies its identity to rounding (the books are exact), in every run; the
@@ -54,8 +54,8 @@ strings note lists.
 
 All inputs are in the spec folder's `inputs.json`. Each world is 8 independent copies (its own seed), so that a
 pooled statistic averages over the phase noise of a single event path (LAWS.md §5). Every judged world runs with the
-co-writer declared first and with the population declared first. W5 and W6 run at five steps each, W5-exact at two,
-plus one restart in each of W5 and W6, plus the Lie plant (§6). All 192 judged runs, 2 support runs and 24 plant
+co-writer declared first and with the population declared first. W5 and W6 run at six steps each, W5-exact at two,
+plus one restart in each of W5 and W6, plus the Lie plant (§6). All 224 judged runs, 2 support runs and 24 plant
 runs are listed in `inputs.json`.
 
 ## 5. Roles, tags and the order of work
@@ -103,9 +103,9 @@ runs are listed in `inputs.json`.
 4. **The rehearsal** is CRITERIA.md §10's: the whole scoring path on the invented worlds through the registered
    exporter, before the registration tag. It exercises every class, the faults and the plants. A bound that an
    honest invented run misses is corrected by re-derivation, or is the engine's or the exporter's defect.
-5. **The runs:** about 218 registered runs plus a retry of 8 at each owed family (§7), each on one copy of its
-   world, from a clean frozen snapshot of the registration tag, each run's process cold and one-threaded, on CPUs
-   the lead allots, detached. The plants' runs are included.
+5. **The runs:** 250 registered runs plus a retry of 8 at each owed family (§7), each on one copy of its world, from
+   a clean frozen snapshot of the registration tag, each run's process cold and one-threaded, on CPUs the lead
+   allots, detached. The plants' runs are included.
 6. **The table** is built from the runs' records alone, and is hashed by the lead before the judge opens it.
 7. **The judge** runs C0, the first pass, and (if owed) the retry pass, in an environment built from a clean
    snapshot of the registration tag, and writes the verdict with the record of CRITERIA.md §8. Then the checker.
@@ -122,10 +122,10 @@ runs are listed in `inputs.json`.
 | The recomputation | Checker | 0.5 |
 | **Total** | | **4.25–5.25** |
 
-**CPU-hours:** about 218 registered runs, each a compile of 30 to 60 s (estimated: the design note's probe worlds
-took 55 to 74 s, compile and run) and a run of 20 s to 2 minutes (W6 at its finest is 19,200 steps), one thread
-each. About 3 to 6 CPU-hours in all. The retry, at most 8 runs per owed family, adds up to about 30 minutes. The
-references: under one hour. These are estimates, not measurements of the registered runs.
+**CPU-hours:** 250 registered runs, each a compile of 30 to 60 s (estimated: the design note's probe worlds took 55
+to 74 s, compile and run) and a run of 20 s to 3 minutes (W6 at its finest is 38,400 steps), one thread each. About
+4 to 9 CPU-hours in all. The retry, at most 8 runs per owed family, adds up to about 30 minutes. The references:
+under one hour. These are estimates, not measurements of the registered runs.
 
 ## 8. What is left, and what is not claimed
 
@@ -145,14 +145,14 @@ The comparison tests the laws and the two writers it runs, and only at the sizes
 - **The channel rule's use of the second draw.** W5 and W6 sites have one non-zero propensity at every state, so u2
   never decides a channel (LAWS.md §1).
 - **The random streams' statistics.** The judge tests the draws against the written rule, not their distribution.
-- **The finest-step error is the only size test.** A pass says that at the finest step the error is within three
-  times the step-halving estimate, and the order is inside its window; not that the error at the coarsest step is
-  small. W5-exact is the only exact line.
+- **The finest-step error is the only size test.** A pass says that at the finest step the error against the
+  reference is within three times the step-halving estimate, and the order (of the engine's own step differences) is
+  inside its window; not that the error at the coarsest step is small. W5-exact is the only exact line.
 - **The two declared orders are not told apart by the results** (they are told apart by the echo of the operators).
 - **The reach of one spatial size and parameter set:** one volume pair per world, one gain, constants as declared,
   one reaction network of first- and second-order routes, one gene unit with a single chain, one transfer per world.
   A faster transfer, a stiffer network, a step at λ dt of order one, are outside (§8).
-- **Discretisation beyond step halving:** the order is fitted on pooled rungs in [1.25 ms, 20 ms] (W5) and [31.25
+- **Discretisation beyond step halving:** the order is fitted on pooled rungs in [0.625 ms, 20 ms] (W5) and [15.6
   ms, 0.5 s] (W6), and says nothing of a coarser step.
 - **Anything the engine records but the table does not**, and the engine's own ledger checks (recorded, not judged).
 - **Operators the world does not hold:** no turnover, exchange, label owner, water, lumen, wash, division or

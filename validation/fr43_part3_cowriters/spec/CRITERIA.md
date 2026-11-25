@@ -22,9 +22,9 @@ reference, an engine run or a probe of the registered worlds.
 
 ## 2. Rungs
 
-`W5` and `W6`: five rungs, each half the last. `W5-exact`: two (h_1 and h_1/4). The **retry**, when owed (§7), adds
-the next halving (`retry_rung_s`) as a sixth rung of a family, and the fit is then over the finest five. No other
-run of the family is remade.
+`W5` and `W6`: n rungs, each half the last (`inputs.json`'s `rungs_s`, n of them). `W5-exact`: two, h_1 and h_1/4.
+The **retry**, when owed (§7), adds the next halving (`retry_rung_s`) as one more rung of a family, and the fit is
+then over the finest n of the n + 1, renumbered 1 to n. No other run of the family is remade.
 
 ## 3. The criteria, by class
 
@@ -43,9 +43,9 @@ engine's own ledger or domain check of a completed row failed) **fails**: the ch
 comparison would have formed. A judged run refused for another reason is refused (§4). No registered run is expected
 to be refused or to stop.
 
-**Runs that ran.** E, R and identity entries, and D, are judged on every run whose status is completed, whether or
-not its provenance refuses it (§4). A run that did not complete has no rows to judge and forms none: a stop (D)
-fails it, and any other refusal leaves its family's S entries not formed.
+**Runs that ran.** E, R and identity entries, and D, are judged on every run whose status is completed and whose
+echo matches, whether or not its provenance or its record hash refuses it (§4). A run that did not complete has no
+rows to judge and forms none: a stop (D) fails it, and any other refusal leaves its family's S entries not formed.
 
 ### 3.2 R, rounded
 
@@ -59,32 +59,36 @@ and s_id the identity's terms of the run's own values). An R entry is judged at 
 
 ### 3.3 S, stepped
 
-For readout y of a family with rungs h_1 … h_5 (or after a retry h_2 … h_6), formed when every copy's run at every
-one of those rungs is present and not refused, with entries over the copies (READOUTS.md §5):
+For readout y of a family with rungs h_1 … h_n (after a retry, the finest n of its n + 1, renumbered 1 to n), with
+entries over the copies (READOUTS.md §5):
 
-    E_j = sqrt( mean over entries of (y_{h_j} − y_ref)² )                          (engine against the reference)
-    d_j = sqrt( mean over entries of (y_{h_{j+1}} − y_{h_j})² ),   j = 1 … 4            (engine only)
-    est = max( d_4/(2^p − 1),  d_3/(2^p (2^p − 1)) ),    p = 2                          (Roache's estimate; d_4 is the finest difference)
-    τ   = 3 est + e_ref + e_round(h_5)
+    E_n = sqrt( mean over entries of (y_{h_n} − y_ref)² )                        (the finest rung against the reference)
+    d_j = sqrt( mean over entries of (y_{h_{j+1}} − y_{h_j})² ),   j = 1 … n−1      (engine only)
+    est = max( d_{n−1}/(2^p − 1),  d_{n−2}/(2^p (2^p − 1)) ),    p = 2              (Roache's estimate; d_{n−1} is the finest)
+    τ   = 3 est + e_ref + e_round(h_n)
 
-- **The one statistic is E, the pooled root mean square.** The order, the estimate and the size test all use it.
-- **Used rungs:** the longest run of consecutive rungs from the coarsest with E_j > 10 (e_round(h_j) + e_ref). The
-  order is **resolved** where at least three rungs are used, and then q is the least-squares slope of ln E_j against
-  ln h_j over them. Otherwise it is **unresolved**: reported, not judged.
+- **The order is engine-only,** as FR-38's and the routing registration's are: no reference enters it. A d_j is
+  **resolved** where d_j > 10 (e_round(h_j) + e_round(h_{j+1})). The used differences are the longest run of
+  resolved ones from j = 1, of the n − 1. The order is **resolved** where at least three are used, and then q is the
+  least-squares slope of ln d_j against ln h_j over them. Otherwise it is **unresolved**: reported, not judged.
 - **The order window:** resolved, with q in [p − ½, p + ½] = [1.5, 2.5] (D271's half window; p = 2 is the declared
   order of the split scheme, since each half-step is exact or third order and the sequence is symmetric).
-- **The size:** E_5 ≤ τ.
+- **The size:** E_n ≤ τ. This is the one place the reference enters S. A wrong law converges at order 2 to the wrong
+  value, so it passes its order and misses its size; a split of the wrong order misses its window.
 - **Score.** An entry (readout, family) **passes** where the size is inside τ and the order is inside the window or
   unresolved. It **fails** where the size misses and the order is inside the window or unresolved. It **is
   inconclusive** where the order is resolved and outside the window, whatever the size, since the window is what
-  lets τ be trusted (FR-25 and FR-38's precedent): it owes the retry (§7), and after it the finest five rungs,
-  renumbered 1 to 5, are scored by the same rule, so that an order still outside the window stays inconclusive,
-  never a pass and never a fail. It **is not formed** where any copy's run of any rung is missing or refused, or the
-  readout is missing in one: then it is inconclusive, and takes no retry.
-- **Why one fit over five rungs, and not the finest triple.** The scatter of a single ratio of neighbouring rungs is
-  set by the phases of the events of that step (LAWS.md §5). The fit over the five rungs is the precedent of W3
-  (FR-43 part 3, §2), with the window taken from the declared order (no tuned number). The pairwise orders and the
-  triples of the finest rungs are reported for the record, and judge nothing.
+  lets τ be trusted (FR-25 and FR-38's precedent): it owes the retry (§7), and after it the finest n rungs are
+  scored by the same rule, so that an order still outside the window stays inconclusive, never a pass and never a
+  fail. It **is not formed** where any copy's run of any of its rungs is missing, did not complete, or departs in
+  its echo, or the readout is missing in one: then it is inconclusive, and takes no retry.
+- **The pooled root mean square is the one statistic:** the order, the estimate and the size use it. The errors
+  against the reference at the coarser rungs, the pairwise orders and the finest triple are reported and judge
+  nothing.
+- **Why one fit over the differences, and not the finest pair.** The scatter of one ratio of neighbouring rungs is
+  set by the phases of the events of that step (LAWS.md §5), so the order is one fit over several halvings, as W3's
+  (FR-43 part 3, §2) was over its errors. It is taken here on the engine's own differences, with the window from the
+  declared order (no tuned number) and the size from the engine's own step-halving.
 
 ## 4. Faults and refusals
 
@@ -95,8 +99,8 @@ its arm fails, whatever else of that run or family is refused, stopped or missin
 | --- | --- |
 | The echo of `inputs`, `seed`, `first` or `operators` departs from the registered run (numbers to 10⁻¹² relative; an exact zero exactly; integers, strings and booleans exact, with the formatting rules of §4.1; a plant differs only by its declared change) | The run is not the registered one. It is **refused**, and nothing of it is judged |
 | A judged leaf is missing, mistyped or non-finite | That readout is **refused** in that run. The rest of the run is judged |
-| A sample time, event time or grid departs from the registered one (10⁻¹² relative; event times strictly increasing; duplicates refused) | As above |
-| Provenance: `source` incomplete, `checkout_dirty` true, a missing snapshot or `record_sha256`, or an `engine_revision` that is not the registration tag's | The run is **refused**, but its readouts are judged and a fail stands |
+| A sample time departs from its registered value (10⁻¹² relative; the resumed run's may start later), the event times are not strictly increasing, or an event or sample is duplicated | That readout is **refused** in that run. The rest of the run is judged |
+| Provenance: `source` incomplete, `checkout_dirty` true, a missing snapshot or `record_sha256`, or an `engine_revision` that is not the registration tag's (not checked at the rehearsal, CRITERIA.md §10) | The run is **refused**, but its readouts are judged and a fail stands |
 | Two runs with the same `record_sha256` | **Both** are refused (their readouts are judged and a fail stands). No two runs share one |
 | A run's table keys are missing, or a table's hash departs from its `SHA256SUMS` | The run, or the table, is refused |
 | A recorded-only leaf is missing, mistyped or non-finite | Flagged to the checker. Refuses nothing |
@@ -109,8 +113,12 @@ its arm fails, whatever else of that run or family is refused, stopped or missin
 
 - **A refused run cannot pass.** With no failing entry it leaves its family's readouts not formed, and its arm at
   best inconclusive.
-- **A family whose entry is not formed cannot pass** (§3.3). A `trace` (E) entry of a run that ran is judged
-  whatever the family's S entries do.
+- **A refusal of provenance or of a shared record hash forms the entry.** The S entries are formed from every run
+  that completed and whose echo matches; such a refused run caps its family's and its arm's result at inconclusive,
+  and a fail (an E or R entry, or an S size miss with the order in its window or unresolved) that any of its entries
+  gives is kept.
+- **A family whose entry is not formed cannot pass** (§3.3). An E entry of a run that ran is judged whatever the
+  family's S entries do.
 - **A non-finite value anywhere is a fault, not a gap.**
 - **Nothing passes empty.** An arm, a family, or a claim's line with no judged entry formed is inconclusive, never a
   pass. A plant whose named entry is not formed is unscorable, never caught. A class E entry with no event to
@@ -137,11 +145,12 @@ protocol's hashes. It refuses, naming the fault:
 - a missing registered key, or a class not in {E, R, S}, or an entry of a world the references do not carry;
 - an `accuracy` above SPEC.md §4's, or a scale that is not positive, or a value that is not finite;
 - `checks` with any entry not passing, a `draws_check` that is not identical;
-- **the sizing** (SPEC.md §5): an expected honest q of any S entry outside [p − 0.4, p + 0.4] (here [1.6, 2.4], a
-  tenth inside the judged window), a plant with a margin below 10 (§6.2), a class E plant with a zero distance, a
-  family with fewer than its `minimum_events` (by the reference's K_c: per copy and in all), and a **missing**
-  expected value. These are the conditions under which an honest run is expected to be judged: one that fails is
-  corrected by a dated amendment to the registered inputs (never a criterion), with the reason, before the tag.
+- **the sizing** (SPEC.md §5): an expected honest q of any S entry that is unresolved, or outside [p − 0.4, p + 0.4]
+  (here [1.6, 2.4], a tenth inside the judged window), an expected E_n above its τ, a plant with a margin below 10
+  (§6.2), a class E plant with a zero distance, a family with fewer than its `minimum_events` (by the reference's
+  K_c: per copy and in all), and a **missing** expected value. These are the conditions under which an honest run is
+  expected to be judged: one that fails is corrected by a dated amendment to the registered inputs (never a
+  criterion), with the reason, before the tag.
 
 A fault is a refusal of the reference. A refused reference refuses the whole comparison of its world. A JSON object
 with a duplicate key is a fault, in any file the judge reads.
@@ -160,16 +169,16 @@ change of the driver.
 
 | Plant | What | Formed by | Must fail | Arm |
 | --- | --- | --- | --- | --- |
-| P1 | W5's k_1 1% high | reference (SPEC.md §3) | S on `t_events` and on `n_S_c` | W5 |
-| P2 | W6's initiation k_I 1% high | reference | S on `t_events` and on `n_R_c` | W6 |
-| P3 | The second halves in declared order: Lie splitting, not Strang | engine: the runs `… lie`, `W5 reactions-first`, three finest rungs | S on `t_events`: the error at the finest of its rungs above the honest τ, and its fitted order (over its own three rungs) outside the window | W5 |
+| P1 | W5's k_1 1% high | reference (SPEC.md §3) | S on `t_events`, `n_S_c`, `n_S_o`, `moved`, `xi_2` | W5 |
+| P2 | W6's initiation k_I 1% high | reference | S on `t_events`, `n_R_c`, `n_R_o`, `lost`, `moved` | W6 |
+| P3 | The second halves in declared order: Lie splitting, not Strang | engine: the runs `… lie`, `W5 reactions-first`, three finest rungs | S on `t_events`: E at its finest rung above the honest τ, and its fitted order (of E against the reference, over its own three rungs) outside the window | W5 |
 | P4 | The size: every reference event time shifted by 10 times the expected honest τ | reference (the references form it from their sizing) | S on `t_events` | W5 and W6 |
 | P5 | W5-exact's `assemble` rate 1% high | reference | R on `t_events` | W5-exact |
 | P6 | One writer's book 10⁻³ high: `xi_2` of W5, `lost` of W6 | record | R: the identity carrying it | W5 and W6 |
 | P7 | The transfer booked on one side only: the run's `n_S_o` (W5) or `n_R_o` (W6) with the moved amount left out | record | R: that row's identity | W5 and W6 |
 | P8 | One judged event removed from the coarsest rung's copy 0, its later events renumbered | record | E: the trace | W5 and W6 |
 | P9 | `assemble` reads the row at the node, not the cell | reference | S on `t_events` | W5 |
-| P10 | The co-writer off | reference | S on `n_S_c` (W5) and on `n_R_c` (W6) | W5, W6 |
+| P10 | The co-writer off | reference | S on `n_S_c`, `n_S_o`, `moved`, `xi_2` (W5) and on `n_R_c`, `n_R_o`, `lost`, `moved` (W6) | W5, W6 |
 
 - The plants of the judged runs are formed by the judge from the honest runs, or by the references. Only P3 needs an
   engine run.
@@ -193,14 +202,15 @@ change of the driver.
 
 - A plant is scored with the **honest run's** tolerance (the honest τ, or the rounding bound), never with a planted
   series' own. If the honest tolerance exceeds the planted distance the plant is **not caught**.
-- **What "fails its check" means for a plant.** S: the pooled E at the finest of the family's rungs, against the
-  planted reference, exceeds the family's honest τ; the order is not read (a planted run is not asked to be of order
-  2). R: the entry exceeds its bound. E: the entry departs.
+- **What "fails its check" means for a plant.** S: the pooled E_n against the planted reference exceeds the family's
+  honest τ (the order is engine-only, so a wrong law or planted reference leaves it as it is). R: the entry exceeds
+  its bound. E: the entry departs.
 - **A reference plant** (P1, P2, P4, P5, P9, P10) is scored against every family of its world (both declared
   orders), and is **caught** when every series it names fails in every one. A plant of one family (P3) is scored on
   it alone.
-- **P3 is caught** when its E at the finest of its rungs exceeds the honest τ (§3.3), and its fitted order over the
-  three rungs is below p − ½ (outside the window). It does not need the honest runs' order to fail.
+- **P3 is caught** when its E (at the finest of its rungs, against the reference) exceeds the honest τ (§3.3), and
+  its own fitted order, the slope of ln E against ln h over its three rungs, is below p − ½ (outside the window). It
+  does not need the honest runs' order to fail.
 - **P6, P7 and P8** are formed on the honest run of copy 0 at the world's coarsest rung: `W5 reactions-first` for P6
   to P8, `W6 gene-first` for P6-W6 to P8-W6. P6 multiplies the book, and is caught when an identity that carries it
   fails (READOUTS.md §4: n_S_c's, or n_R_c's). P7 sets the node row to its value at t = 0 at every sample, and is
@@ -222,12 +232,14 @@ change of the driver.
   judge writes `retry_owed.json`: `{"kind": "fr43 part 3 co-writers retry, version 1", "families": [...], "runs":
   [sorted run names]}`, and the lead records its hash. An entry that is inconclusive because it is not formed owes
   none.
-- **What is run:** for each owed family, the sixth rung's runs (every copy), named by `inputs.json`'s rule with the
-  step `retry_rung_s`, role `judged`, no other role.
-- **Then:** the family's readouts are re-scored over the finest five rungs by the same rule. Entries that passed or
+- **What is run:** for each owed family, the (n + 1)th rung's runs (every copy), named `{world} {first}-first
+  h={retry_rung_s!r} c{copy} retry` (the step as its `repr`, as `inputs.json`'s names write it), role `judged`, no
+  other role.
+- **Then:** the family's readouts are re-scored over the finest n rungs by the same rule. Entries that passed or
   failed keep their score.
-- **Only once.** A retry run present though not owed is recorded, flagged and not judged. Its own R, E and identity
-  entries are judged, and a fail there counts. A missing owed retry run leaves the family's entry inconclusive.
+- **Only once.** An owed retry run is judged as any judged run (its E, R and D entries, and a fail there counts),
+  and the family's S entries are re-scored with its finest n rungs. A retry run present though not owed is recorded
+  and flagged, and nothing of it is judged. A missing owed retry run leaves the family's entry inconclusive.
 
 ## 8. Verdicts
 
@@ -266,8 +278,9 @@ change of the driver.
 
 **The rehearsal** (the protocol's §6) is the judge's whole scoring path run on **invented** worlds through the
 registered exporter, before the registration tag: a table of the invented worlds' runs (2 copies or more), an
-invented reference, the plants, the restart, and every fault of §4 planted. It must: pass every honest entry (that
-its sizing says will pass, §8 of SPEC.md), catch every plant, and flag every fault as §4 says.
+invented reference, the plants, the restart, and every fault of §4 planted. The `engine_revision` check of §4 is not
+applied to it, since no registration tag exists yet. It must: pass every honest entry (that its sizing says will
+pass, §8 of SPEC.md), catch every plant, and flag every fault as §4 says.
 
 - **No final fail can rest on a bound the rehearsal has not met.** The counts of LAWS.md §7 are derived from an
   arithmetic and not the engine's. A bound that an honest invented run misses is a defect (of the exporter, the

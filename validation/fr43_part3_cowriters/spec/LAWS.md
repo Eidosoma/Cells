@@ -17,24 +17,23 @@ here is engine code. Read each declared real as the exact value of its nearest d
 
 ## 1. The population of one site
 
-**State.** The counts N = (n_free, n_active) of two unit states, `free` (1 subunit) and `active` (2 subunits),
-starting at the world's `initial_counts` (2 free, 0 active). The site's subunits Σ_k w_k n_k = n_free + 2 n_active
-are constant.
+**State.** The counts (f, a) of two unit states, `free` (1 subunit) and `active` (2 subunits): f free units and a
+active ones, starting at the world's `initial_counts` (2 free, 0 active). The site's subunits f + 2a are constant.
 
 **Channels, in declared order:** `assemble` (2 free → 1 active), then `dissolve` (1 active → 2 free). Channel j has
 the propensity (1/s)
 
-    a_j = k_j Π_k ff(n_k, r_jk) φ_j,     ff(n, r) = n!/(n − r)!,  ff(n, 0) = 1, ff(n, r) = 0 for r > n
+    a_j = k_j Π_k ff(n_k, r_jk) φ_j, ff(n, r) = n!/(n − r)!,  ff(n, 0) = 1, ff(n, r) = 0 for r > n
 
-- r_jk is channel j's reactant order in state k. ff counts ordered tuples: at n_free = 2, `assemble` has ff(2, 2) =
-  2, and `dissolve` has ff(1, 1) = 1 at one active unit.
+- r_jk is channel j's reactant order in state k, and n_k the count of state k (f or a). ff counts ordered tuples: at
+  f = 2, `assemble` has ff(2, 2) = 2, and `dissolve` has ff(1, 1) = 1 at a = 1.
 - φ_j is the read of §0. In W5 and W6 `assemble` reads the moved row in the **cell**. In W5-exact no channel reads.
 - a₀ = Σ_j a_j, summed left to right in declared order.
 
 **The transfer.** The active units conduct one species x between the cell and the node, linearly and passively, with
 g the conductance of one active unit (pL/s):
 
-    J = G (n_x,c/V_c − n_x,o/V_o)   (fmol/s, cell to node),   G = g n_active
+    J = G (n_x,c/V_c − n_x,o/V_o) (fmol/s, cell to node), G = g a
     dn_x,c/dt = −J + (the co-writer's terms),    dn_x,o/dt = +J
 
 The units carry no free energy and no amount of x. Volumes are constant. The transfer moves x between the two pools
@@ -46,7 +45,8 @@ and the co-writer's terms (§2, §3) are the only other change of n_x,c. At the 
 2. **Event k** (k = 0, 1, …, in order) fires at the first t with H(t) = E_k = −ln u1_k.
 3. **Its channel** is the first j with c_j > min(u2_k a₀, nextafter(a₀, 0)), where c_j = a_1 + … + a_j are the
    partial sums at the crossing state in declared order, and nextafter is binary64's.
-4. **The jump.** N ← N − r_j + p_j, p_j the products. The rows are continuous across it: an event moves no material.
+4. **The jump.** The counts change by −r_j + p_j, p_j the products. The rows are continuous across it: an event
+   moves no material.
 5. (u1_k, u2_k) is draw k of the site's own stream (§6).
 
 In these worlds one channel has a non-zero propensity at every state: `assemble` while 2 are free, `dissolve` while
@@ -104,13 +104,13 @@ no translation, recharging, regulator, hold or release step: a finished chain is
 
 ## 4. The coupled process
 
-Between events N is constant, and the rows (and H) obey the ODEs of §2 (W5, W5-exact) or §3 (W6) together with the
-transfer and dH/dt = a₀. At an event N jumps and the rows do not. The reference is this process, solved exactly: it
-has no step and no splitting.
+Between events the counts are constant, and the rows (and H) obey the ODEs of §2 (W5, W5-exact) or §3 (W6) together
+with the transfer and dH/dt = a₀. At an event the counts jump and the rows do not. The reference is this process,
+solved exactly: it has no step and no splitting.
 
-- **W5-exact:** no channel reads a row. So a₀ depends on N alone, the events' times are t_k = Σ_{i ≤ k} E_i/a₀(N_i)
-  (E_i the hazard thresholds, a₀ the propensity total in the state between events i − 1 and i), and the reactions
-  and the transfer run but no rate of the site depends on them.
+- **W5-exact:** no channel reads a row. So a₀ depends on the counts alone, the events' times are t_k = Σ_{i ≤ k}
+  E_i/a₀,i (E_i the hazard thresholds, a₀,i the propensity total in the state between events i − 1 and i), and the
+  reactions and the transfer run but no rate of the site depends on them.
 
 ## 5. What each writer does, and the declared split (sizing only)
 
@@ -120,9 +120,9 @@ declared order, then the same parts in reverse. A run declares which of the two 
 **The sizing model.** Where a reference agent sizes a plant or a statistic, it may compute the split scheme's own
 result at step h, with each sub-flow solved accurately (any method, error below 10⁻³ of the split's own error):
 
-- **B(τ), the co-writer's flow** over τ: the equations of §2 or §3 with the transfer off (J = 0), N and the node's
-  row fixed, and no hazard accruing. (The engine's own half-step of these is third order: the model's flow is exact,
-  so the two differ by O(h³), far below the split's own error.)
+- **B(τ), the co-writer's flow** over τ: the equations of §2 or §3 with the transfer off (J = 0), the counts and the
+  node's row fixed, and no hazard accruing. (The engine's own half-step of these is third order: the model's flow is
+  exact, so the two differ by O(h³), far below the split's own error.)
 - **A(τ), the population's flow** over τ: the two pools of the shared row relax through the transfer at the current
   counts, H accrues at the current propensities (which read the cell's row as it relaxes), events fire inside τ as
   §1 says, and every other row is fixed.
@@ -134,7 +134,7 @@ pooled statistic's expected value and order, are estimated before any run.
 
 **The phase of an event.** In a step of the split scheme an event at phase φ of its step (0 at the start, 1 at the
 end) is off by a term of order h² that depends on φ, so the errors of neighbouring steps scatter, and only an
-average over many events is smooth. That is why CRITERIA.md's order is one fit over five steps on a pooled
+average over many events is smooth. That is why CRITERIA.md's order is one fit over the family's rungs on a pooled
 statistic, and why no judgement rests on one ratio of neighbouring steps.
 
 ## 6. The draws
