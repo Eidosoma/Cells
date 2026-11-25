@@ -1400,16 +1400,14 @@ class C0:
                 k.check(distance / beta >= c.PLANT_RULE, f"{what}: below the sizing rule")
                 k.check(printed["distance"] > 2 * beta, f"{what}: unscorable at U_c = 0")
                 star = bands.extrapolate(honest[1], honest[2], c.LEGACY_ORDER)
-                k.check(
-                    bands.largest(star - wrong) > beta,
-                    f"{what}: the reference side's own L* does not catch it",
-                )
+                caught = bands.largest(star - wrong) > beta
+                k.check(caught, f"{what}: the reference side's own L* does not catch it")
                 table[what] = {
                     "distance": digits(distance, 2),
                     "margin": digits(distance / beta, 1),
-                    "score": "caught",
+                    "score": "caught" if caught else "not caught",
                 }
-            if "recorded_channel_K_relative_per_world" in plant:
+            if "recorded_channel_K_relative_per_world" in plant and not self.reg.rehearsal:
                 got = []
                 for wid in range(len(plant["recorded_channel_K_relative_per_world"])):
                     other = self.reg.family(world.name, 0, wid)
