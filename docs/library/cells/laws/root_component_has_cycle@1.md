@@ -85,7 +85,7 @@ $$\text{true where } E \ge V, \qquad \text{false where } E < V .$$
 Provenance: `cited` (taken from a cited source).
 
 - **Source, as declared:** The cycle rank of a connected graph, E - V + 1 (elementary graph theory), read from an assembly of finite_bond_assembly@1: a topology readout, no number
-- **Place:** docs/CAPSID_ASSEMBLY.md, 'One-way assembly regulation of a cell', which states the rule; its use as a channel's control is a hypothesis with no literature source
+- **Place:** docs/CAPSID_ASSEMBLY.md, 'Driving ionic channels from pools', which states the rule; its use as a channel's control is a hypothesis with no literature source
 - **Licence of the numbers:** no numbers taken: the levels of its values are a composed file's data
 - **Departures:** the pool keeps its assembly connected to its root, so one component is assumed
 - **Works, as data:** none declared
@@ -95,7 +95,7 @@ Provenance: `cited` (taken from a cited source).
 | Work | What was taken | Mark |
 | --- | --- | --- |
 | Elementary graph theory | The cycle rank of a connected graph, $E - V + 1$: a spanning tree has $V - 1$ bonds, and each bond beyond it closes one ring. No numbers | Der |
-| [Capsid assembly](../../../CAPSID_ASSEMBLY.md), "One-way assembly regulation of a cell" | The rule's statement, with the comparison of the two counts. No numbers | relayed |
+| [Capsid assembly](../../../CAPSID_ASSEMBLY.md), "Driving ionic channels from pools" | The rule's statement, with the comparison of the two counts. No numbers | Der |
 
 No work is cited for the rule's use as a channel's control. It is a hypothesis of the composed file
 that declares it.

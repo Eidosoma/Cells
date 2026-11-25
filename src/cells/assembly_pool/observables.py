@@ -95,8 +95,8 @@ LAW = AssemblyObservable(
     source=Citation(
         "The cycle rank of a connected graph, E - V + 1 (elementary graph theory), read from an "
         "assembly of finite_bond_assembly@1: a topology readout, no number",
-        "docs/CAPSID_ASSEMBLY.md, 'One-way assembly regulation of a cell', which states the rule; "
-        "its use as a channel's control is a hypothesis with no literature source",
+        "docs/CAPSID_ASSEMBLY.md, 'Driving ionic channels from pools', which states the rule; its "
+        "use as a channel's control is a hypothesis with no literature source",
         "no numbers taken: the levels of its values are a composed file's data",
         ("the pool keeps its assembly connected to its root, so one component is assumed",),
     ),

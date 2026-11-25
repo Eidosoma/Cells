@@ -364,9 +364,8 @@ experimental validation and multi-GPU scaling are separate work.
 A pool can drive channel populations of an ionic world, one way: the pool reads nothing of the ionic
 side. `cells assembly-pool resolve` turns a composed file into ordinary definitions, so the ionic
 world needs no new model and no new operator
-([the design](IP3_RELEASE_AND_ASSEMBLY_AVAILABILITY_DESIGN.md), Part II). This is a hypothesis of the
-composed file, as above: no experiment says that an assembly's topology sets a channel's
-availability.
+([the design](IP3_RELEASE_AND_ASSEMBLY_AVAILABILITY_DESIGN.md), Part II). The drive is a hypothesis
+of the composed file: no experiment says that an assembly's topology sets a channel's availability.
 
 **The composed file** is a strict JSON object with exactly three keys:
 
@@ -389,8 +388,10 @@ availability.
   here). Its channels' declared schedules are the base.
 - `channels` are the populations the pool sets. A population is set by one pool at most.
 - `observable` is the ID of a registered law that reads the assembly
-  ([the library](library/README.md) has its page, under `cells.assembly_observable@1`). The ID
-  commits the readout alone. The `levels` are data, one number in [0, 1] for each of its values.
+  ([the library](library/README.md) has its page, under `cells.assembly_observable@1`).
+  `root_component_has_cycle@1` is true where the assembly has at least as many bonds as occupied
+  sites. The assembly is one connected piece, so that means at least one closed ring. The ID commits
+  the readout alone. The `levels` are data, one number in [0, 1] for each of its values.
 - `pool` is an ordinary `finite_bond_assembly@1` definition (cut short here). Every pool declares the
   same worlds, `"recording": "events"`, the ionic definition's `end_time` as its horizon, and its
   own seed. Two pools with one seed are refused, since they would draw the same numbers.
@@ -401,9 +402,9 @@ PYTHONPATH=src /mnt/workspaces/Cells/venv-cpu/bin/python -B -m cells run /mnt/wo
 ```
 
 **The rule.** Each committed event of a pool gives a value of the observable, and so a level. A
-switch is an event that changes the level; most events are none. The level of a switch is the one
-after its event. A driven population's availability is its declared schedule times the level, both
-right-continuous:
+switch is an event that changes the level; an event that leaves it as it was is none. The level of a
+switch is the one after its event. A driven population's availability is its declared schedule times
+the level, both right-continuous:
 
 $$a(t) = b(t)\,\ell(t)$$
 
