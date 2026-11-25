@@ -27,6 +27,7 @@ how to write one, the [glossary](GLOSSARY.md) defines the words, and
 
 | Page | In one sentence | Status |
 | --- | --- | --- |
+| [`cells.cav1p2_m2h@1`](cells/laws/cav1p2_m2h@1.md) | A calcium channel that opens within milliseconds when the membrane voltage rises and shuts within tens of milliseconds, so that a rise lets in a short pulse of calcium. | Not stated |
 | [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md) | A potassium channel that opens within milliseconds when the membrane voltage rises, then slowly shuts over seconds, letting potassium out so that the voltage falls back. | Not stated |
 
 ### `cells.cycle_law@1`
