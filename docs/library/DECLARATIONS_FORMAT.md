@@ -226,6 +226,9 @@ repeat them.
 - `cycle`: its general form (seam A's cycle form), or null. Where it is set, the form carries the
   law: the form's own checks apply, `moves` may be empty and the kernels null, and `changes` holds
   the form's rows, one for each row a mode changes, with that `mode`;
+- `electroneutral`: true where a cycle moves no charge from one end to the other whatever species a
+  population binds, as for a law whose rate has no voltage term. Its host refuses by name a
+  population that moves charge. Only a law with a general form can declare it;
 - its kernels: `kinetics` and `domain_valid`. Its stage reads are its `reads`.
 
 ### Route laws

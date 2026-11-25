@@ -27,6 +27,9 @@ how to write one, the [glossary](GLOSSARY.md) defines the words, and
 
 | Page | In one sentence | Status |
 | --- | --- | --- |
+| [`cells.atp_driven_transporter_mass_action_positive@2`](cells/laws/atp_driven_transporter_mass_action_positive@2.md) | A membrane pump that spends one ATP per cycle, from a supply held constant, to move a fixed number of ions or molecules of one kind, charged or not. | Not stated |
+| [`cells.electroneutral_symport_reversible_tanh@1`](cells/laws/electroneutral_symport_reversible_tanh@1.md) | One kind of cation and one kind of anion cross a membrane together, in a declared ratio that carries no net charge, at a rate whose form is manufactured. | Not stated |
+| [`cells.na_k_2anion_symport_reversible_tanh@1`](cells/laws/na_k_2anion_symport_reversible_tanh@1.md) | One sodium ion, one potassium ion and two single-charged anions cross a membrane together, carrying no net charge, at a rate whose form is manufactured. | Not stated |
 | [`cells.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md) | Three sodium ions cross a membrane one way for each calcium ion that crosses the other way, each exchange carrying one charge, at a rate whose form is synthetic. | Not stated |
 
 ## Kinds

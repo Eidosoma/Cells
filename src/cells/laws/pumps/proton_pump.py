@@ -17,6 +17,10 @@ dG'° comes from the registry's transformed potentials (B3), never from the pump
 
 Pure functions in the xp style of processes/. The composing model supplies valid, positive inputs
 and refuses a trial whose domain fails; nothing here floors or clips.
+
+atp_driven_transporter_mass_action_positive@2 (laws/pumps/atp_transporter_v2.py) is this cycle for a
+species of any valence, with no pH band. This law stays until the worlds that run it are judged
+again, and then folds into that one (docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md §6.3).
 """
 
 from typing import Any, NamedTuple
