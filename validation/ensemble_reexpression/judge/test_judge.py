@@ -129,6 +129,23 @@ def test_honest_tables_pass(benches, name):
         assert all(n["formed"] == n["expected"] for n in part["counts"].values())
 
 
+def test_the_honest_tables_are_the_reference_sides_within_one_unit(benches):
+    """PLANTS section 6: each value is moved by at most one unit in the last place."""
+    bench = benches("integrated")
+    family, world = bench.reg.families["integrated"], bench.reg.worlds["integrated"]
+    for name, step in zip(J, ("h", "h2", "h4"), strict=True):
+        legacy = bench.captures.run(family, step)
+        rows = bench.tables["integrated"]["runs"][name]["rows"]
+        kept = 0
+        for series in world.row_series():
+            theirs = legacy.series(series, world.row_times)
+            mine = np.array([rows[series][k] for k in world.entities(series)]).T
+            assert np.all(np.abs(mine - theirs) <= np.spacing(np.abs(theirs))), series
+            kept += int(np.array_equal(mine, theirs))
+        assert kept == 3  # the structural zeros, which are class E and are not moved
+    assert bench.tables["integrated"]["fabricated"] == fabricate.MARK
+
+
 # ----- the fault rows of CRITERIA section 5 -----
 
 
@@ -343,6 +360,9 @@ def test_a_judged_leaf_leaves_its_entries_not_formed(benches, case):
     assert unformed == {"junction_K", "balance of cells, K"}
     verdicts = [q.run(name)["verdict"] for name in J]
     assert verdicts == [PASS, OPEN, OPEN]  # h2 owns its balance, and h3 the S entry
+    block = q.record["consumers"]["integrated"]["sets"]["all"]
+    assert block["by_class"] == {"D": PASS, "E": PASS, "R": OPEN, "S": OPEN}
+    assert block["families"]["integrated"]["by_class"] == block["by_class"]
 
 
 def test_a_missing_and_a_doubled_row(benches):

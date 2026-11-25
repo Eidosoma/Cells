@@ -1440,6 +1440,7 @@ class Stage2:
             },
             "counts": counts,
             "outcomes": self._outcomes(entries),
+            "by_class": by_class(entries),
             "mechanisms": found,
             "not_tested": [
                 [e["family"], e["readout"]] for e in entries if e["outcome"] == c.NOT_TESTED
@@ -1482,28 +1483,31 @@ class Stage2:
     @staticmethod
     def _family_summary(family, entries):
         mine = [e for e in entries if e["family"] == family.name]
-        outcomes = {}
-        for item in mine:
-            table = outcomes.setdefault(item["class"], {})
-            table[item["outcome"]] = table.get(item["outcome"], 0) + 1
-        flat = {e["outcome"] for e in mine}
-        verdict = (
-            c.FAIL
-            if c.FAIL in flat
-            else c.INCONCLUSIVE
-            if flat & {c.INCONCLUSIVE, c.NOT_FORMED}
-            else c.PASS
-        )
         worst = max(
             (e for e in mine if e["class"] == "S" and e.get("ratio") is not None),
             key=lambda e: e["ratio"],
             default=None,
         )
         return {
-            "verdict_of_its_entries": verdict,
-            "outcomes": outcomes,
+            "verdict_of_its_entries": worst_of(mine),
+            "by_class": by_class(mine),
+            "outcomes": Stage2._outcomes(mine),
             "largest_S_ratio": None if worst is None else [worst["readout"], worst["ratio"]],
         }
+
+
+def worst_of(entries) -> str:
+    """Fail where one fails, inconclusive where one is inconclusive or not formed, else pass."""
+    found = {e["outcome"] for e in entries}
+    if c.FAIL in found:
+        return c.FAIL
+    return c.INCONCLUSIVE if found & {c.INCONCLUSIVE, c.NOT_FORMED} else c.PASS
+
+
+def by_class(entries) -> dict:
+    """The worst outcome of the entries of each class."""
+    names = sorted({e["class"] for e in entries})
+    return {name: worst_of([e for e in entries if e["class"] == name]) for name in names}
 
 
 def overall(named) -> str:
