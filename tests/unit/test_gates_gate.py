@@ -1578,6 +1578,7 @@ def test_a_trace_that_is_not_whole_checks_nothing(tmp_path, plant, words):
 @pytest.mark.parametrize("argv, cwd, asks", [
     (["git", "-C", "/t", "rev-parse", "HEAD"], "/", {".git", ".git/HEAD", "HEAD"}),
     (["git", "status"], "/t/docs", {".git", ".git/HEAD", "HEAD", "docs/.git", "docs/.git/HEAD", "docs/HEAD"}),
+    (["git", "-C", "/t", "log", "-1", "--", ".", ":(exclude)docs"], "/", {".git", ".git/HEAD", "HEAD"}),
     (["git", "-C", "/t", "diff", "--", "a", "b"], "/", None),  # Outside a repository it compares the two.
     (["git", "-C", "/t", "--git-dir=/r", "status"], "/", None),
     (["git", "-C", "/r", "-c", "user.name=t", "add", "src/cells"], "/t", set()),

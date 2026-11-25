@@ -246,7 +246,9 @@ def read_trace(folder, root):
             "parent": {t: process(p) for t, p in parent.items() if t not in threads}}, None
 
 
-GIT_ASKS = ("rev-parse", "status", "show")  # The commands traced in a tree that is no repository.
+# The commands traced in a tree that is no repository: each stops there (exit 128). git diff is not one
+# of them, since it then compares two paths.
+GIT_ASKS = ("cat-file", "log", "ls-files", "ls-tree", "rev-parse", "show", "status")
 
 
 def git_asks(argv, cwd, root):
