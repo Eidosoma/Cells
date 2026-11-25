@@ -1,6 +1,6 @@
 """Host-only tests of FR-38's second comparison judge, on invented inputs only.
 
-**Seconds:** 50 to 65 s of CPU for its 32 tests, on light CPUs other jobs shared (25 November 2026).
+**Seconds:** 50 to 70 s of CPU for its 32 tests, on light CPUs other jobs shared (25 November 2026).
 **Reason (D224):** the judge decides FR-38's registered verdict, so each C0 refusal, each failure
 and inconclusive mode, the retry and each plant (caught and not caught) must be shown to move it
 the registered way before any engine run is judged.
@@ -1327,9 +1327,13 @@ def _declaration_faults():
     def labels(e):
         return operator(e["definition"], "neutral_arrival_labels@1")["species"][0]["labels"]
 
+    def unnamed(e):  # malformed: no set of names can hold it
+        model(e)["operators"].append({"law": []})
+
     runs = [(r, "honest", d) for r in ("p=0 returned", "p=1 returned", "p_sched held",
                                        "p_sched returned") for d in (2.0, 1.0, 0.5)]  # fmt: skip
-    runs += [("p_sched returned", "twin", 1.0), ("p_sched returned", "twin", 0.5)]
+    runs += [("p_sched returned", "twin", 1.0), ("p_sched returned", "twin", 0.5),
+             ("blank", "blank", 0.5), ("p_sched returned", "restart", 0.5)]  # fmt: skip
     changes = [
         (lambda e: model(e)["extracellular"][0].update(volume_pL=2.0), "the bath's volume"),
         (lambda e: patch(e).update(area_m2=2e-10), "the patch's area"),
@@ -1342,14 +1346,16 @@ def _declaration_faults():
         (lambda e: labels(e).remove("pre"), "labels"),
         (lambda e: model(e)["operators"].append({"law": "scheduled_compartment_wash@1"}),
          "the operators"),
-        (lambda e: control(rec(e), "tx")["schedule"].append({"time": 50.0, "value": 50000.0}),
-         "k_I"),
-        (lambda e: release(rec(e)).update(fates=[{"durable": "R_s", "short_lived": "R"}]),
-         "the fates"),
-        (lambda e: _gene(e["definition"]).update(law="templated_polymerisation@2"),
-         "the operators"),
+        (lambda e: (control(rec(e), "tx")["schedule"].append({"time": 50.0, "value": 50000.0}),
+                    unnamed(e)), "k_I"),
+        (lambda e: (release(rec(e)).update(fates=[{"durable": "R_s", "short_lived": "R"}]),
+                    unnamed(e)), "the fates"),
+        (lambda e: (_gene(e["definition"]).update(law="templated_polymerisation@2"),
+                    e["definition"].update(experiment=None)), "the operators"),
         (lambda e: model(e)["operators"].append(copy.deepcopy(_gene(e["definition"]))),
          "the operators"),
+        (lambda e: model(e).update(moieties=[{"id": []}]), "the moieties"),
+        (lambda e: model(e).update(species="x"), "K's valence"),
     ]  # fmt: skip
     pairs = zip(runs, changes, strict=True)
     return [(is_(r, role, d), f, what) for (r, role, d), (f, what) in pairs]
@@ -1377,12 +1383,17 @@ def test_c0_names_each_declaration_fault(invented, mapping, read_once, tmp_path)
     for pred, _, what in rows:
         rec = next(r for r in s.base() if pred(r))
         at = f"rungs.{float(rec['dt_s'])!r}.runs.{rec['name']}"
+        at = "restart" if rec["role"] == "restart" else at
         assert any(what in x for x in faults_of(report, at)), (at, what)
     assert len(report["refused_records"]) >= len(rows)
     for where in ("rungs.2.0.runs.blank returned", "rungs.1.0.runs.blank returned",
                   "rungs.2.0.runs.p_sched returned unlabelled"):  # fmt: skip
         assert faults_of(report, where) == [], where
     flags = report["flags_for_the_checker"]
+    # a malformed declaration is refused, and what is compared with it is not: nothing crashes
+    assert any("P5: unhashable" in x for x in faults_of(report, "plants.P5"))
+    assert any("rungs.1.0.runs.blank returned" in f and "not compared: unhashable" in f
+               for f in flags)  # fmt: skip
     assert any("monomers" in f and "the sheet reads" in f for f in flags)
     assert any("beside its run's: execution/backend" in f for f in flags)
     assert any(".execution.backend: type" in m for m in report["definition_shape"])

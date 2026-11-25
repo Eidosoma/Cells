@@ -46,6 +46,10 @@ class Unreadable(Exception):
     """A key, its type or its value is not what SPEC.md and the amendments state."""
 
 
+# what a malformed declaration may raise where a name or a list is another type: C0 refuses it
+MALFORMED = (Unreadable, TypeError, AttributeError, ValueError)
+
+
 # ------------------------------------------------------------------ paths
 
 _STEP = re.compile(r"([^.\[\]]+)|\[([^=\]]+)=([^\]]+)\]")
@@ -506,12 +510,12 @@ def check_definition(defn, inputs, profile, run, role, machine, dt):
                 _absent(defn, path)
                 continue
             compare(kind, locate(defn, path), exp)
-        except Unreadable as exc:
+        except MALFORMED as exc:
             faults.append(f"definition.{path}: {what}: {exc}")
     if role == "twin":  # item 7: no label owner (the operators above) and no label_arrivals
         try:
             _absent(defn, "experiment.label_arrivals")
-        except Unreadable as exc:
+        except MALFORMED as exc:
             faults.append(f"definition.experiment.label_arrivals: a twin is unlabelled: {exc}")
     return faults
 
@@ -562,7 +566,10 @@ def recorded(defn, inputs, profile):
         take("model.membranes[id=patch_0].permeability_m_per_s",
              lambda v: not any(v.values()),
              "no exchange (SPEC.md §2 declares no bath)")  # fmt: skip
-    have = {e.get("id") for e in defn.get("model", {}).get("species", []) if isinstance(e, dict)}
+    model = defn.get("model")
+    species = model.get("species") if isinstance(model, dict) else None
+    have = {e["id"] for e in species if isinstance(e, dict) and isinstance(e.get("id"), str)
+            } if isinstance(species, list) else set()  # fmt: skip
     rows = {"N", "M", "Pi", "R", "R_s", "K", "Y"} | ({"Mx"} if profile == "C" else set())
     if profile == "B":
         rows |= {"X", "A", "ATP", "ADP", "P"}
@@ -678,7 +685,7 @@ def plant_change_faults(plant, honest, planted, inputs):
     """Item 6: the registered change, at its key, is all that may differ from the honest run's."""
     try:
         diff = leaf_diff(canonical(honest), canonical(planted))
-    except Unreadable as exc:
+    except MALFORMED as exc:
         return [f"{plant}: {exc}"]
     key, ok = _change(plant, inputs)
     faults = []
@@ -700,7 +707,7 @@ def twin_differences(labelled, twin):
         a, b = canonical(labelled), canonical(twin)
         a["model"]["operators"].pop(LABEL_OWNER, None)
         a["experiment"].pop("label_arrivals", None)
-    except (Unreadable, KeyError, TypeError, AttributeError) as exc:
+    except (KeyError, *MALFORMED) as exc:
         return [f"not compared: {exc}"]
     return [f"{_where(p)}: {h!r} → {q!r}"[:200] for p, h, q in leaf_diff(a, b)]
 
@@ -712,6 +719,6 @@ def blank_differences(p_sched, blank):
                ("experiment", "polymerisation_controls", "tx", "schedule", 0, "value")}  # fmt: skip
     try:
         diff = leaf_diff(canonical(p_sched), canonical(blank))
-    except Unreadable as exc:
+    except MALFORMED as exc:
         return [f"not compared: {exc}"]
     return [f"{_where(p)}: {h!r} → {q!r}"[:200] for p, h, q in diff if p not in allowed]
