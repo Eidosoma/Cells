@@ -178,13 +178,17 @@ The comparison tests the laws and the two writers it runs, and only at the sizes
   of their own, not the registered ones). What they were used for, and what they gave: (i) the number of copies and
   the pooled statistic: the standard deviation of the fitted order of the event times was about 0.16 for 4 copies
   and 0.06 for 16 pooled (a 4-subunit world), and neighbouring-step ratios scattered by 0.15 to 0.35 even at 16.
-  (ii) The registered design (8 copies, 2 subunits): in 6 seeds of each declared order of a W5-like world, the
-  fitted orders of the event times were 1.77 to 2.13 (S_c: 1.91 to 2.06), and in 3 seeds of each order of a W6-like
-  world 1.80 to 2.13. The honest error at the finest step over the size tolerance was 0.17 to 0.46 (W5-like events),
-  0.21 to 0.42 (S_c) and 0.24 to 0.33 (W6-like events). (iii) The choice of 2 subunits per site over 4: with 4, a
-  channel choice differed from the reference's at the coarsest steps in some runs, which would fail the class E
-  trace of an honest run (the note's original choice was 2). No registered number was used, and no registered world
-  was run on any engine or emulation.
+  (ii) The registered design (8 copies, 2 subunits), with the errors fitted against the exact process (a five-rung
+  fit, the draft's form): in 6 seeds of each declared order of a W5-like world, the fitted orders of the event times
+  were 1.77 to 2.13 (S_c: 1.91 to 2.06), and in 3 seeds of each order of a W6-like world 1.80 to 2.13; the honest
+  error at the finest step over the size tolerance was 0.17 to 0.46 (W5-like events), 0.21 to 0.42 (S_c) and 0.24 to
+  0.33 (W6-like events). With the criteria's engine-only fit (CRITERIA.md §3.3, the step differences of the rungs),
+  a five-rung fit gave 1.75 to 2.47 in 16 runs of the W5-like world (8 seeds of each order) and six rungs gave 1.78
+  to 2.14, which is why the ladder has six rungs; in the W6-like world six rungs gave 1.83 to 2.15 in five runs (two
+  gene-first and three population-first). (iii) The choice of 2 subunits per site over 4: with 4, a channel choice
+  differed from the reference's at the coarsest steps in some runs, which would fail the class E trace of an honest
+  run (the note's original choice was 2). No registered number was used, and no registered world was run on any
+  engine or emulation.
 - **A premise check:** `make_draws.py`'s table was compared with the engine's own stream function
   (`cells.numerics.counter_streams`) at all 24 copies × 160 pairs: no differences.
 - **The exemplars,** read in full or in the parts that matter: FR-38's second registration (its protocol, spec
