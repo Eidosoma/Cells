@@ -1,5 +1,5 @@
 {
- "_note": "A7's frozen allow-list of entity sums (tests/unit/test_species_sum_sites.py; the summation SPEC.md section 4): every entity_sum call in models/surface_pump_v3.py, operators/*.py and kinds/*.py as [module (its path under src/cells, the folders of D188 move 2), enclosing function, expression text]. Each sums entity axes only, never the species axis (the tag's site classification, operators/summation/SITES.md, regenerated on integration-d172, and the kinds' seams; the core, 16 November 2026), except the three entries of partition's summary: its host-only end-of-run figures (live, record and total) reduce each retired field whole (axis=None), so on the [species, slot] transfer fields they sum over species too, while the heat fields are [slot]. Those figures enter no ledger, check or program, and G1 compares none of them (the lead's ruling, 16 November 2026: the wording fixed, the sums kept). A full reduce over a species-leading array is entity_sum(species_sum(...)). A new entry is reviewed once before it is added. The population axis of kinds/transporter.py (seam A) sums over its own law-internal axes only (its modes, its law's rows, a net-flow mode's terms and a diagram's edge directions) and, for the kind's produced record, over nodes, never over the species axis (the kinds owner, 19 November 2026).",
+ "_note": "A7's frozen allow-list of entity sums (tests/unit/test_species_sum_sites.py; the summation SPEC.md section 4): every entity_sum call in models/surface_pump_v3.py, operators/*.py and kinds/*.py as [module (its path under src/cells, the folders of D188 move 2), enclosing function, expression text]. Each sums entity axes only, never the species axis (the tag's site classification, operators/summation/SITES.md, regenerated on integration-d172, and the kinds' seams; the core, 16 November 2026), except the three entries of partition's summary: its host-only end-of-run figures (live, record and total) reduce each retired field whole (axis=None), so on the [species, slot] transfer fields they sum over species too, while the heat fields are [slot]. Those figures enter no ledger, check or program, and G1 compares none of them (the lead's ruling, 16 November 2026: the wording fixed, the sums kept). A full reduce over a species-leading array is entity_sum(species_sum(...)). A new entry is reviewed once before it is added. The population axis of kinds/transporter.py (seam A) sums over its own law-internal axes only (its modes, its law's rows, a net-flow mode's terms and a diagram's edge directions) and, for the kind's produced record, over nodes, never over the species axis (the kinds owner, 19 November 2026). Reviewed for calcium step 5 (25 November 2026): _material_slopes sums |nu dJ/d ln c| over the modes (cycle_mode, axis 0 of [M, K, P]) and a population's own rate over its moved rows (cycle_row, axis 0 of [K, P]), both law-internal axes of the kind (transporter.INTERNAL_AXES).",
  "entity_sums": [
   [
    "kinds/passive_routes.py",
@@ -20,6 +20,11 @@
    "kinds/transporter.py",
    "_material_slopes",
    "entity_sum(xp.abs(p.cycle_nu * e.d_j_d_ln_c), axis=0, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "_material_slopes",
+   "entity_sum(xp.where(moved, slope, 0.0), axis=0, xp=xp)"
   ],
   [
    "kinds/transporter.py",
