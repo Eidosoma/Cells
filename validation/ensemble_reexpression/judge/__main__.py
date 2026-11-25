@@ -292,6 +292,8 @@ def cmd_plants(args):
         raise OrderFault(f"a table is refused or absent, so no plant is formed: {refused}")
     data = {consumer: file.data for consumer, file in tables.files.items()}
     retry = None
+    if bool(args.retry_tables) != bool(args.retry_record):
+        raise OrderFault("a retry's tables and their hashes are given together, or not at all")
     if args.retry_tables:
         hashes["retry_tables"] = recorded(args.retry_tables, args.retry_record)
         held = TableSet.read(args.retry_tables, reg.consumers, retry=True).files

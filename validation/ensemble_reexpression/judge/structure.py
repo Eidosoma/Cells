@@ -477,10 +477,11 @@ def pool_faults(entry, where, out: Faults, pool: bool):
             arrays = block.get("arrays")
             if out.need(isinstance(arrays, dict), f"{here}.arrays", "no object"):
                 for name in c.POOL_ARRAYS:
+                    kind = "booleans" if name == c.BOOLEAN_ARRAY else "numbers"
                     out.need(
-                        nested(arrays.get(name)),
+                        nested(arrays.get(name), name == c.BOOLEAN_ARRAY),
                         f"{here}.arrays.{name}",
-                        "no nested list of numbers by world",
+                        f"no nested list of {kind} by world",
                     )
     if out.need(isinstance(path, dict) and path, f"{where}.path", "no object by cell"):
         for cell, worlds in path.items():
@@ -496,17 +497,15 @@ def pool_faults(entry, where, out: Faults, pool: bool):
             )
 
 
-def nested(value) -> bool:
-    """True for a nested list of numbers or booleans, by world."""
+def nested(value, booleans: bool = False) -> bool:
+    """True for a nested list of numbers, or of booleans, by world (Amendment 2, item 7 (d))."""
     if not isinstance(value, list) or not value:
         return False
 
     def leaf(item):
-        return (
-            all(leaf(part) for part in item)
-            if isinstance(item, list)
-            else is_number(item) or isinstance(item, bool)
-        )
+        if isinstance(item, list):
+            return all(leaf(part) for part in item)
+        return isinstance(item, bool) if booleans else is_number(item)
 
     return leaf(value)
 

@@ -255,6 +255,12 @@ ECHO = {
             junction_12=copy.deepcopy(e["inputs"]["junctions"]["junction_0"])
         )
     ),
+    "an extra cell": lambda e: e["inputs"]["cells"].update(
+        cell_99=copy.deepcopy(e["inputs"]["cells"]["cell_0"])
+    ),
+    "an extra membrane": lambda e: e["inputs"]["membranes"].update(
+        membrane_99=copy.deepcopy(e["inputs"]["membranes"]["membrane_0"])
+    ),
     "an extra species": lambda e: e["inputs"]["species"].update(Ca=2),
     "an extra region": lambda e: e["inputs"]["outside"].update(
         far=copy.deepcopy(e["inputs"]["outside"]["outside"])
@@ -2280,6 +2286,8 @@ def test_structure_only(benches, tmp_path):
     folder = written(tmp_path, bench)
     found = structure.table_faults(folder)
     assert found["faults"] == [] and found["kinds_of_run"] == {"ionic run": 3}
+    assert structure.nested([[True, False]], True) and not structure.nested([[True, 0]], True)
+    assert structure.nested([[1, 2.5]]) and not structure.nested([[1, True]])
     entry = copy.deepcopy(bench.tables["integrated"]["runs"][J[0]])
     for alter in (
         drop("checks"),
