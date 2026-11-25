@@ -932,6 +932,31 @@ def test_a_check_that_its_second_pass_does_not_meet_says_so(invented, tmp_path, 
         assert faults == [f"{run.name}: refusal's second_pass_completed"]
 
 
+def test_a_second_pass_that_fails_hides_no_refusal_of_the_engines(invented, tmp_path, monkeypatch):
+    """The engine's refusal is the run's, whatever the pass that keeps its rows then does."""
+    spec = SimpleNamespace(experiment=SimpleNamespace(end_time=0.0002))
+    for message, kind, time in (
+        (LEDGER_MESSAGE + "energy", "check", 0.0002),
+        ("x", "domain", None),
+    ):
+        worker = object.__new__(driver.Worker)
+        worker.inputs, worker.run = invented, invented.run("inv_sample_tight h=4e-05")
+        worker.attempt, worker.facts = tmp_path, {}
+
+        def stopped(*_, text=message):
+            raise NumericalError(text)
+
+        def broken(*_):
+            raise KeyError("a window")
+
+        monkeypatch.setattr("cells.execution.runner.run", stopped)
+        monkeypatch.setattr(refusals, "rows_before", broken)
+        with pytest.raises(driver.Refused) as found:
+            worker.execute(spec, None, {})
+        assert found.value.refusal == {"kind": kind, "message": message, "time_s": time}
+        assert worker.facts["second_pass"] == {"fault": "KeyError: 'a window'"}
+
+
 def test_a_judged_run_writes_the_checkpoint_that_its_restart_resumes(invented, tmp_path):
     worker = object.__new__(driver.Worker)
     worker.inputs = invented
