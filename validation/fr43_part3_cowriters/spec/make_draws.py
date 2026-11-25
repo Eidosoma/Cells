@@ -65,7 +65,7 @@ def table(spec):
         "jax_threefry_partitionable": bool(jax.config.jax_threefry_partitionable),
         "worlds": {},
     }
-    pairs = spec["draws"]["per_copy"]
+    pairs = spec["draws"]["pairs_per_copy"]
     for name, world in spec["worlds"].items():
         rows = []
         for c, seed in enumerate(world["seeds"]):

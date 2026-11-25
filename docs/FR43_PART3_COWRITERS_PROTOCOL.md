@@ -1,12 +1,12 @@
 # FR-43 part 3's co-writers: the registered comparison (protocol)
 
-**Status: written on 25 November 2026, for the lead's tags. Nothing is built, run or judged.** This document and the
-spec folder (`validation/fr43_part3_cowriters/spec/`) are written by the protocol's author, who writes no reference,
-builds nothing, judges nothing and checks nothing. Branch `fr43-part3-spec`, from main 5cf41d7c. The design note is
-`docs/FR43_PART3_COWRITERS_DESIGN.md` (branch `fr43-part3-cowriters`), whose four questions the user decided on this
-day (§11). This is the second registered comparison of FR-43 part 3 (the first:
-`validation/fr43_part3/REGISTRATION.md`, judged D319). It is for the open item that D328 named, a moved row
-co-written by local reactions or the gene unit.
+**Status: written on 25 November 2026, revised after an independent audit of 736f0565 (the same day), for the lead's
+tags. Nothing is built, run or judged.** This document and the spec folder (`validation/fr43_part3_cowriters/spec/`)
+are written by the protocol's author, who writes no reference, builds nothing, judges nothing and checks nothing.
+Branch `fr43-part3-spec`, from main 5cf41d7c. The design note is `docs/FR43_PART3_COWRITERS_DESIGN.md` (branch
+`fr43-part3-cowriters`), whose four questions the user decided on this day (§11). This is the second registered
+comparison of FR-43 part 3 (the first: `validation/fr43_part3/REGISTRATION.md`, judged D319). It is for the open
+item that D328 named, a moved row co-written by local reactions or the gene unit.
 
 ## 1. Why a registered comparison
 
@@ -23,18 +23,22 @@ restarts and refusals, and cannot see an order.
 With the engine's two writers as separate split parts in declared order (`integer_unit_population@1` beside
 `local_species_reactions@1`, or beside `templated_polymerisation@1`):
 
-- **W5 (reactions), W6 (gene unit).** The event times and the shared row's amounts, and each writer's own book that
-  the coupling touches, agree with code-blind references of the exact coupled process to their own step-halving
-  estimate, at second order in dt (order p = 2 declared; window [1.5, 2.5], the split scheme's half windows, fitted
-  on the engine's own step differences), in both declared orders of the writers.
+- **W5 (reactions), W6 (gene unit).** The event times, the shared row's amounts and the writers' books that the
+  coupling touches agree with code-blind references of the exact coupled process to their own step-halving estimate,
+  at second order in dt (order p = 2 declared; window [1.5, 2.5], the split scheme's half windows, fitted on the
+  engine's own step differences), in both declared orders of the writers. In W6 the gene unit's own effect is judged
+  too: its finished chains and stage exits by size, and its monomers, product and machines by ledger (below).
 - **W5-exact.** Where no rate reads a row, the event times equal the exact decimal times to rounding at each of two
   steps (W5-exact runs with the same reactions and transfer, in both declared orders).
-- **Every row, every writer's book** satisfies its identity to rounding (the books are exact), in every run; the
-  event sequence (channels, counts, integer ledger) and a restart are exact (class E).
+- **Every row, every writer's book** satisfies its identity to rounding, and starts at its declared value, in every
+  run (class R); the event sequence (channels, counts, integer ledger) and a restart are exact (class E). In W6 this
+  holds for N, M, Pi, R, the machines and the residues in transit, so that an engine that drops a reversibility
+  factor, releases a product late or never, starts from a wrong amount, or neither makes nor consumes the monomer
+  fails a judged entry (plants P11 to P15, sized by the references).
 
-**What it does not claim** is in §8 and §9 (and in the note's §8). **The spec's tolerances and windows are
-derived**, from a counted rounding bound or the split's declared order. No window or tolerance is fitted to any run
-or to a probe.
+**What it does not claim** is in §8 and §9 and, as the list a pass cannot show, in the spec folder (CRITERIA.md
+§11). **The spec's tolerances and windows are derived**, from a counted rounding bound or the split's declared
+order. No window or tolerance is fitted to any run or to a probe.
 
 ## 3. The engine models it runs
 
@@ -53,29 +57,30 @@ strings note lists.
 ## 4. The worlds
 
 All inputs are in the spec folder's `inputs.json`. Each world is 8 independent copies (its own seed), so that a
-pooled statistic averages over the phase noise of a single event path (LAWS.md §5). Every judged world runs with the
-co-writer declared first and with the population declared first. W5 and W6 run at six steps each, W5-exact at two,
-plus one restart in each of W5 and W6, plus the Lie plant (§6). All 224 judged runs, 2 support runs and 24 plant
-runs are listed in `inputs.json`.
+pooled statistic averages over the phase noise of a single event path (LAWS.md §5). Each copy is one run's world
+(§11, ruling 1): the copies of a W6 world do not fit one world's rate bound, and W5's are kept apart for one entry
+shape. Every judged world runs with the co-writer declared first and with the population declared first. W5 and W6
+run at six steps each, W5-exact at two, plus one restart in each of W5 and W6, plus the Lie plant (§6). All 224
+judged runs, 2 support runs and 24 plant runs are listed in `inputs.json`.
 
 ## 5. Roles, tags and the order of work
 
 | Role | Who | Writes | Reads |
 | --- | --- | --- | --- |
 | Protocol author | The author of this document | The spec folder and this document, tagged by the lead. Writes no reference, builds nothing, judges nothing | – |
-| References | A code-blind agent | `validation/fr43_part3_cowriters/references/`, the invented pair first | The spec folder and the sheet sections LAWS.md §3 names. Nothing else |
-| Spec auditor | An agent who wrote none of this text, and builds nothing else | A reader skeleton and a fabricated honest table, its report (§6, step 2) | The spec folder only |
+| References | A code-blind agent | `validation/fr43_part3_cowriters/references/`, the invented set first | The spec folder and the sheet sections LAWS.md §3 names. Nothing else |
+| Spec auditor | An agent who wrote none of this text, and builds nothing else | A reader skeleton, a fabricated honest table, its report (§6, step 2), and a second pass on each revision | The spec folder only |
 | Builder | The FR-43 part 3 build lane (after the legacy cleanup lands) | `validation/fr43_part3_cowriters/` engine side: the world builders, the exporter (TABLE.md), the Lie patch, the format sample | The spec folder, its own code |
 | Judge | A new agent, blind to any engine output and to the engine's development results | The reader and the scorer, `retry_owed.json`, the verdict | The spec folder, the reference files (C0, before any engine run exists), and, once their hashes are recorded, the engine tables and the strings note |
 | Checker | An independent agent | Its own recomputation of the verdict | The hashed table, the reference files, the judge's record |
 | Lead | The lead | Tags, hashes, the strings note, the record, the decision | Everything |
 
 **The tags, in order** (each by the lead, none by this author):
-1. `fr43-part3-cowriters-criteria-2026-11-25`: this document, the spec folder, before any reference exists. It fixes
-   the criteria, bands and plants.
-2. The spec auditor reports. Its findings change the text only by a dated amendment of this folder (the routing
-   registration's practice), before the references' tag where they change what the references publish, and always
-   before the judge's tag.
+1. `fr43-part3-cowriters-criteria-2026-11-25`: this document, the spec folder, **after the auditor's second pass on
+   the revised head.** It fixes the criteria, bands and plants before any reference exists.
+2. The spec auditor reports on every revision before the tag, and its findings change the files themselves (the
+   routing registration's practice is an amendment after the tag). After the tag they change the text only by a
+   dated amendment.
 3. `fr43-part3-cowriters-references-2026-11-2x`: the references' files, after C0's checks (including the sizing)
    pass.
 4. The builder's worlds, exporter, Lie patch and format sample (`fr43-part3-cowriters-build-2026-11-2x`), on the
@@ -95,9 +100,10 @@ runs are listed in `inputs.json`.
 
 1. The references agent starts after tag 1. It may start before the builder exists, since the folder names no engine
    ID.
-2. **The spec auditor** starts after tag 1. It writes its own reader skeleton and a fabricated honest table for
+2. **The spec auditor** reads the folder before tag 1 and re-reads every revision before it (it reported on
+   736f0565; this head is its second pass). It writes its own reader skeleton and a fabricated honest table for
    every registered run and says what is refused, what passes with nothing judged, and what an honest run would
-   fail. A finding changes the text only by a dated amendment. Its tables and numbers are its own.
+   fail. After the tag a finding changes the text only by a dated amendment. Its tables and numbers are its own.
 3. **The builder** builds only after the legacy cleanup lands and the user releases the hold on builds. It does not
    read the references' values.
 4. **The rehearsal** is CRITERIA.md §10's: the whole scoring path on the invented worlds through the registered
@@ -141,26 +147,11 @@ under one hour. These are estimates, not measurements of the registered runs.
 
 ## 9. What a pass cannot show
 
-The comparison tests the laws and the two writers it runs, and only at the sizes above.
-- **The channel rule's use of the second draw.** W5 and W6 sites have one non-zero propensity at every state, so u2
-  never decides a channel (LAWS.md §1).
-- **The random streams' statistics.** The judge tests the draws against the written rule, not their distribution.
-- **The finest-step error is the only size test.** A pass says that at the finest step the error against the
-  reference is within three times the step-halving estimate, and the order (of the engine's own step differences) is
-  inside its window; not that the error at the coarsest step is small. W5-exact is the only exact line.
-- **The two declared orders are not told apart by the results** (they are told apart by the echo of the operators).
-- **The reach of one spatial size and parameter set:** one volume pair per world, one gain, constants as declared,
-  one reaction network of first- and second-order routes, one gene unit with a single chain, one transfer per world.
-  A faster transfer, a stiffer network, a step at λ dt of order one, are outside (§8).
-- **Discretisation beyond step halving:** the order is fitted on pooled rungs in [0.625 ms, 20 ms] (W5) and [15.6
-  ms, 0.5 s] (W6), and says nothing of a coarser step.
+The list is in the spec folder, CRITERIA.md §11, as the audit required. Two things beside it, which the list leaves
+to the protocol:
+- **The claim has no independent form at a step above its ladder**, nor in a fast-transfer or stiff regime (§8):
+  W5's is [0.625 ms, 20 ms] and W6's [15.6 ms, 0.5 s].
 - **Anything the engine records but the table does not**, and the engine's own ledger checks (recorded, not judged).
-- **Operators the world does not hold:** no turnover, exchange, label owner, water, lumen, wash, division or
-  replaced cell in these worlds.
-- **A fail that a departing echo hides.** A run whose definition departs from the registered one is refused, not
-  judged.
-- **The same bugs in two places.** The references and the engine share the law text (LAWS.md), as any pair does; a
-  wrong law is found only by the plants and by the checks on the references' files (SPEC.md §9).
 
 ## 10. Disclosures: what this registration's author has seen
 
@@ -173,35 +164,71 @@ The comparison tests the laws and the two writers it runs, and only at the sizes
   ratios of successive errors). Constant rates: exact to 3.7e-13 s. Lie order: errors of 4.2e-4 to 5.3e-5 s at 20 to
   2.5 ms, order 1.0 in the prototype. The half-step sequence was measured to leave the rows of the world untouched
   in the tissue's inner step (identity).
-- **Sizing emulations for this registration** (`/mnt/workspaces/Cells/fr43-part3-spec-20261125/`, host NumPy, no
-  engine): an emulation of the declared split on invented worlds of the W5 and W6 kinds (numbers, seeds and horizons
-  of their own, not the registered ones). What they were used for, and what they gave: (i) the number of copies and
-  the pooled statistic: the standard deviation of the fitted order of the event times was about 0.16 for 4 copies
-  and 0.06 for 16 pooled (a 4-subunit world), and neighbouring-step ratios scattered by 0.15 to 0.35 even at 16.
-  (ii) The registered design (8 copies, 2 subunits), with the errors fitted against the exact process (a five-rung
-  fit, the draft's form): in 6 seeds of each declared order of a W5-like world, the fitted orders of the event times
-  were 1.77 to 2.13 (S_c: 1.91 to 2.06), and in 3 seeds of each order of a W6-like world 1.80 to 2.13; the honest
-  error at the finest step over the size tolerance was 0.17 to 0.46 (W5-like events), 0.21 to 0.42 (S_c) and 0.24 to
-  0.33 (W6-like events). With the criteria's engine-only fit (CRITERIA.md §3.3, the step differences of the rungs),
-  a five-rung fit gave 1.75 to 2.47 in 16 runs of the W5-like world (8 seeds of each order) and six rungs gave 1.78
-  to 2.14, which is why the ladder has six rungs; in the W6-like world six rungs gave 1.83 to 2.15 in five runs (two
-  gene-first and three population-first). (iii) The choice of 2 subunits per site over 4: with 4, a channel choice
-  differed from the reference's at the coarsest steps in some runs, which would fail the class E trace of an honest
-  run (the note's original choice was 2). No registered number was used, and no registered world was run on any
-  engine or emulation.
+- **Emulations of the declared split, for sizing** (`/mnt/workspaces/Cells/fr43-part3-spec-20261125/`, host NumPy,
+  no engine). **They are close to the registered worlds, in part by coincidence:**
+  - *W5's kind:* T = 20 s, the rungs and the sample grid are the registered ones (the design fixed them). The rates
+    and amounts differ by 3 to 26% from the registered (W5-exact's `assemble` rate by 3%), except the W row's trace.
+  - *W6's kind, before the audit:* T = 600 s, the rungs, 15 machines, 6 stages, conductance 0.012, a 1.0 pL cell,
+    and rates within 0.4 to 18% of the registered values of 736f0565 (which the author found and reported after that
+    head). **Those registered values have since been moved off them** (§11): the present W6 differs from each
+    emulation by at least 11% in every physical value but two potentials (the monomer's, 0.9% and 3.3% off; the
+    residue's, 6% and 7%). The horizon, the rungs and the sample grid are the same, by the ladder's design.
+  - *A new-regime gene-unit chain and a full W6-kind emulation* (the factor 1 − e^x, the saturation, the monomers,
+    the pools as the present inputs' kind), with their own numbers, listed in the scratch record; used for the
+    third-order totals' resolution and the pooled orders in this regime.
+  - What they gave: (i) the number of copies and the pooled statistic: the standard deviation of the fitted order of
+    the event times was about 0.16 for 4 copies and 0.06 for 16 pooled (a 4-subunit world), and neighbouring-step
+    ratios scattered by 0.15 to 0.35 even at 16. (ii) The registered design (8 copies, 2 subunits): with the errors
+    fitted against the exact process (a five-rung fit, the draft's form), in 6 seeds of each declared order of a
+    W5-like world the fitted orders of the event times were 1.77 to 2.13 (S_c: 1.91 to 2.06), and in 3 seeds of each
+    order of a W6-like world 1.80 to 2.13; the honest error at the finest step over the size tolerance was 0.17 to
+    0.46 (W5-like events), 0.21 to 0.42 (S_c) and 0.24 to 0.33 (W6-like events). With the criteria's engine-only fit
+    (CRITERIA.md §3.3), a five-rung fit gave 1.75 to 2.47 in 16 runs of the W5-like world (8 seeds of each order)
+    and six rungs gave 1.78 to 2.14, which is why the ladder has six rungs; in the W6-like world (before the audit)
+    six rungs gave 1.83 to 2.15 in five runs (two gene-first and three population-first). In the present regime, six
+    rungs: see below. (iii) The choice of 2 subunits per site over 4: with 4, a channel choice differed from the
+    reference's at the coarsest steps in some runs, which would fail the class E trace of an honest run (the note's
+    original choice was 2).
+  - In the new W6 regime (invented numbers, none of the registered ones): the orders of `n_R_c`, `n_R_o`, `lost`,
+    `moved` and the event times over six rungs and the errors over the size tolerance: in 3 seeds of each order
+    (24.9 to 31.0 events per copy) the fitted orders were 1.98 to 2.18 for the event times, 1.86 to 2.07 for
+    `n_R_c`, 1.87 to 2.07 for `n_R_o` and `moved` and 1.85 to 2.04 for `lost`; the error at the finest step over the
+    size tolerance was 0.20 to 0.49 (event times) and 0.16 to 0.39 (rows and books). With the counted rounding
+    bounds, 4 or 5 of the 5 step differences were resolved for every judged readout (3 are needed), the third by at
+    least 35 times its threshold (2 seeds of each order). In the W5 kind (invented numbers, 3 seeds of each order,
+    every judged readout, `xi_2` among them): 4 or 5 of 5 resolved, the third by at least 14 times its threshold,
+    orders 1.87 to 2.16, errors over the tolerance 0.15 to 0.33.
+  - The gene unit's chain alone (invented numbers, its own sample grid, the registered ladder): the first step
+    difference of `made` and of `exits` was half the counted bound's resolution threshold, so none of the five was
+    resolved. The differences fall 8-fold per halving and the threshold doubles, so three resolved ones need a first
+    difference above 256 times its threshold. W6 therefore judges them by size alone (`at_rounding`). The registered
+    chain was not run: the references' sizing checks the name (CRITERIA.md §4.2), and a name that is wrong is a
+    fault before the tag.
+  - No registered number was used, and no registered world was run on any engine or emulation. The registered W6
+    values were chosen by hand from the laws (closed forms, steady-state estimates and the domain checks, no time
+    stepping).
+- **`minimum_events` and the 160 draws per copy** were chosen knowing the emulations' event counts (25 to 38 per
+  copy in the W6 kinds and 33 to 38 in the W5 kind, in the runs whose counts are in the scratch record; the minima
+  of 736f0565, unchanged, are 12 and 10 per copy); the references' counts are judged at C0.
 - **A premise check:** `make_draws.py`'s table was compared with the engine's own stream function
-  (`cells.numerics.counter_streams`) at all 24 copies × 160 pairs: no differences.
+  (`cells.numerics.counter_streams`) at all 24 copies × 160 pairs: no differences. The seeds are the registered ones
+  and unchanged.
+- **The rounding counts.** LAWS.md §7's event-time count was written with the engine's own clock and hazard sum in
+  view (the population operator's half-step, the composite's clock), and the row count from its increments. **The
+  earlier version of this document said nothing of the engine source appears in the folder; that was wrong for the
+  counts.** They are described in words there, and no engine name or code is.
+- **Engine source read by the author:** the population operator, the reactions' and the gene unit's laws and
+  half-steps, the composite's step, the streams. LAWS.md restates laws the sheet and the operators' pages declare.
 - **The exemplars,** read in full or in the parts that matter: FR-38's second registration (its protocol, spec
   folder and amendments 1 to 6), the routing spec (tag `liquid-routing-amendment-5-2026-11-25`) with its five
   amendments, FR-43 part 2's criteria and part 3's registration. No registered result, reference value or judged
   table of any comparison was opened.
-- **Engine source** (read by the author for the declared laws and the split's order; nothing of it appears in the
-  folder): the population operator, the reactions' and the gene unit's laws, the composite's step, the streams.
-- **The registered worlds have been run by no engine or emulation.** Their inputs are declared values, some of them
-  close in kind to the probe's (same laws, neighbouring numbers). Their draws were generated by the stated rule
-  (`draws.json`), without running any of the worlds.
-- **The advisor** reviewed the plan before writing (its points are followed) and the finished draft before the
-  report.
+- **The audit:** the lead's rulings on the auditor's findings, in words
+  (`/mnt/workspaces/Cells/d172-restructure-20261115-01/fr43-spec-audit-rulings.md`). The auditor's folder and report
+  were not read, as ordered. The advisor reviewed the plan and the draft (two rounds, applied); a third round timed
+  out, and the audit followed.
+- **The registered worlds have been run by no engine or emulation.** Their inputs are declared values. Their draws
+  were generated by the stated rule (`draws.json`), without running any of the worlds.
 
 ## 11. Decisions
 
@@ -210,5 +237,29 @@ and W5′ (`W5-exact` here) with code-blind references, (3) part 3 closes at thi
 changing volume logged as its own request, (4) the declared general rule. The lead ruled L1 to L4 (the note's §7).
 The build waits for the legacy cleanup (the user put every other build on hold). D315, D328, D336, D370, D373, D377
 and the design note's §5.3 are the basis. A later amendment in this folder governs where it differs.
+
+**The lead's rulings on the first report (25 November 2026):**
+1. Eight copies as separate runs: accepted, with the cost stated (§7) and the fallback (one site) not taken. A W5
+   copy is its own run for one entry shape; the reason given in the report first (the rate bound) holds for W6 only.
+2. Criteria derived, not set from a development run: accepted.
+3. W6's placement near its limit: accepted as registered; the build measures it at parse, and a refusal means a
+   dated amendment before any run.
+4. A judged run that stops on the engine's own check fails (D): accepted.
+5. Two subunits and the weak class E: accepted, and stated (CRITERIA.md §11).
+6. W6's values that coincided with the emulation's: moved off them, with the placement recomputed. W5's copies stay
+   separate runs.
+
+**The lead's rulings on the audit** (V1 to V12, E1 to E9, W, the readings decided) are in this revision; what each
+became is in the author's report of the revised head. Two are narrower than their words, and the report says so
+first: E3 leaves out the gene unit's `made` and `exits`, which are the same in both orders by construction, and uses
+two recorded rows in W5-exact, which has no S entry; E1's multiple is of the carrying identity's bound (a book's own
+bound is proportional to the book, so every non-zero book would exceed any multiple of it).
+
+**Added by the author beyond the rulings' words,** each to keep an honest run from being inconclusive, or a fail
+from being hidden: C0 checks the name of an at-rounding entry (fewer than three used differences), the pair's
+expected ratio to its threshold and W5-exact's running check, from the references' side; the resumed run's
+`events_total` is compared with the uninterrupted run's; a refused run's E and R entries are judged on what it
+holds; a plant's entry that was inconclusive at the first pass is scored after the retry if it then passed (its
+first and only score).
 
 **Questions to the lead before the criteria tag** are in the author's report to the lead, not here.
