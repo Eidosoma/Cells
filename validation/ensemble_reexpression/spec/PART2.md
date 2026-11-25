@@ -59,17 +59,17 @@ Besides Part 1's keys (`SPEC.md` §2.1), with Ca (valence +2) as a fourth specie
 | `stores.<cell>.law`, `temperature_K`, `standard_concentration_mM` | The reactions' passive mass-action law. The model's one standard concentration, **1 mM**, which the reactions and the fuel rows read. Another number is a departing echo |
 | `stores.<cell>.species` | The chemical rows, each with its valence and its standard potential over RT at 1 mM: Ca (+2), B (−2), CaB (0), Ca2B (+2), K, Na, Cl, and in `ip3_calcium` IP3 (−3), IP3_buffer (0) and IP3_bound (−3) |
 | `stores.<cell>.compartments` | `cytosol`: the cell's own rows and volume, whose Na, K, Cl and Ca are also the cell's in `ionic`. `er`: the store's, an outside node of the inner model with the compartment law |
-| `stores.<cell>.reactions` | For each reaction: its compartment, its reactants and products, its forward rate. The reverse rate is the forward one times exp(Σ products' − Σ reactants' standard potentials). A canonical reaction may be declared once for several sites. The exporter writes each site's under the captured ID, by its stoichiometry and its compartment |
+| `stores.<cell>.reactions` | For each reaction: its compartment, its reactants and products, its forward rate. The reverse rate is the forward one times exp(Σ products' − Σ reactants' standard potentials). Each captured reaction is declared once, under its captured ID, at the cytosols' sites (`bind_0_*`, `ip3_binding`) or at the stores' (`bind_1_*`), and `extent_r` is named by it |
 | `stores.<cell>.membrane` | The bounding patch: area, capacitance, initial voltage (the store's potential less the cytosol's) and charge, the permeability of every row (Ca and K alone are non-zero), the pump and the release. **K's permeability is the patch's own. Ca's is a passive route's** |
-| `...membrane.pump`, `plasma_transport.<membrane>.pump` | One cycle law on the transporter kind, N at the cell: one Ca a cycle. Capacity, the two constants, the held ATP, ADP and Pi in mM, and the standard free energy **at a 1 M standard state**, which the exporter forms (§2.2) |
-| `...membrane.release` | A passive route of Ca on the bounding patch, its permeability, and the two Hill reads of free Ca in its factor: an activation (half saturation, coefficient) and an inhibition |
+| `...membrane.pump`, `plasma_transport.<membrane>.pump` | One cycle law on the transporter kind, N at the cell: one Ca a cycle. Capacity, the two constants, the held ATP, ADP and Pi in mM, and the standard free energy **at a 1 M standard state**, which the exporter forms (§2.2). **One set of fuel rows is held at a cell,** and its store pump and its plasma pump share it. A block whose two pumps of one cell hold different fuel is refused by the generator by name (kind `harness`); the registered ones do not |
+| `...membrane.release` | A passive route of Ca on the bounding patch, its permeability, and the two Hill reads of free Ca in its factor: an activation (half saturation, coefficient) and an inhibition. The store's Ca leak and its release are two routes on the bounding patch |
 | `plasma_transport.<membrane>.exchanger` | The exchanger law on the transporter kind: 3 Na in and 1 Ca out a forward cycle. Capacity and the two constants |
 | `calcium_channels.<id>` | A channel population of the inner model: membrane, species Ca, its law, maximal permeability, abundance and initial gates in the law's order |
 | `ip3_release.<cell>` | The third Hill read of the release's factor: an activation by free IP3 |
-| `calcium_controls` | The schedules of the calcium pieces. Every one is [[0.0, 1.0]] |
+| `calcium_controls` | The schedules of the calcium pieces. Every one is [[0.0, 1.0]]. **The engine has one availability per patch,** which multiplies the patch's own permeability and every passive route on it. So `store_passive.<cell>.Ca`, `store_passive.<cell>.K` and `store_release.<cell>` are one schedule there, and so is Ca's plasma leak with `ionic.controls.leak`. The exporter writes each from that one. A block where they differ is refused by the generator by name (kind `harness`); all are 1 here, so nothing is touched |
 | `ionic.membranes.<m>.passive`, `ionic.junctions`, `ionic.faces`: the Ca entry | The plasma leak and the junction's Ca permeability are passive routes (the junction's with condition 8 of §3). The faces' Ca diffusivity is the face law's own |
 
-**The release may be one condition that reads both species, or two** (ruling 7). Either gives the same factor, and the block is the same. The build names which, and it is recorded in `definition`.
+**The release is one species condition a cell, with all its reads** (the build's choice; ruling 7 admits two, and either gives the same factor and the same block). It is recorded in `definition` (`release_conditions`).
 
 ### 2.2 Derived declarations, by rule
 
@@ -79,8 +79,8 @@ Besides Part 1's keys (`SPEC.md` §2.1), with Ca (valence +2) as a fourth specie
 
       delta_g0_at_1M_J_per_mol = R T [ μ°(ADP) + μ°(Pi) − μ°(ATP) + ln(1000/c°) ]
 
-  since a potential is μ° + ln(c/c°), and a 1 M standard state is c° = 1000 mM. The captured number is the one for the numeric-mM quotient (−37,000 J/mol for every pump), and R T ln 1000 is added to it (−19,875.97 J/mol at 298.15 K). Only the combination is compared, and no single potential is.
-- **Fixed charges.** A cell's and a store's are the builder's, by the model's own anchor rule, from the node's charge and **every** row of the node, B, Ca2B and the IP3 rows with it. They are recorded and not compared, since the captured ones refer to Na, K, Cl and Ca alone. The outside regions' (`local`, `near`, `far`) are compared, as in Part 1.
+  since a potential is μ° + ln(c/c°), and a 1 M standard state is c° = 1000 mM. The registry declares a standard potential for every row (0 for a row that the block does not give one), and the standard concentration once. The captured number is the one for the numeric-mM quotient (−37,000 J/mol for every pump), and R T ln 1000 is added to it (−19,875.97 J/mol at 298.15 K). Only the combination is compared, and no single potential is.
+- **Fixed charges.** A cell's and a store's are the builder's, by the model's own anchor rule, from the node's charge and **every** row of the node, B, Ca2B, the IP3 rows, the fuel and the traces with it. They are recorded and not compared, since the captured ones refer to Na, K, Cl and Ca alone. The outside regions' (`local`, `near`, `far`) are compared, as in Part 1.
 - **The controls** of the captured definitions are 1 at all times (`calcium_controls`).
 
 ### 2.3 What the captured form holds and the blocks do not, and why
@@ -97,7 +97,32 @@ Besides Part 1's keys (`SPEC.md` §2.1), with Ca (valence +2) as a fourth specie
 - **`delta_g0_at_1M_J_per_mol`** is compared within 10⁻¹² of itself **plus 16 ε R T A,** with A = |μ°(ATP)| + |μ°(ADP)| + |μ°(Pi)| + |ln(1000/c°)| of the candidate's own potentials. The exporter writes the three potentials and c° beside it, as two more keys of `pump`: `fuel_standard_mu_RT`, an object with `ATP`, `ADP` and `Pi`, and `standard_concentration_mM`. Without them the second term is 0. **The derivation** of the second term, in units of ε/2 R T A: forming R T, the logarithm, three additions and the product take at most 11. The builder's potentials, which must give the captured number, take at most 8. The registered number's own forming takes at most 9. They add to 28, which is 14 ε, and 16 ε is the power of two above. The term matters only where A is above 2,000, since below it 10⁻¹² is the larger. **A is at most 3,200, and a larger one is a departing echo.** The derivation: the number enters the pumps' affinity, and a forward cycle changes by at most capacity × saturation for each unit of affinity over R T, so an error δ in it moves a pump's cycles by at most δ/(R T) of its scale, and its heat by less. The second term is 16 ε A of R T. At A = (S + 1)/2, with S = 6,400 the steps of the finest judged run, it is 8 ε (S + 1), which is e_round's own share. So the tolerance hides no more than the rounding count that the band already holds. The engine forms the drive from the same potentials at every rate, so its own rounding of it is of that size too.
 - **More defaults:** a zero permeability, and any schedule of `calcium_controls`, may be omitted.
 - **`standard_mu_RT`** to 10⁻¹² of itself. A declared zero is exactly zero.
-- **Other rows.** A row that the block does not name (the fuel rows) is recorded, and refuses nothing. The exporter lists in `definition` every species row that the definition declares.
+- **What stands beyond the block** is §2.5's, and anything else is a departing echo. `inputs` holds the block's own entities and no other.
+- **The material tolerances** of the rows that the block gives none for are the engine's largest. They are recorded, and not compared.
+
+### 2.5 What a definition holds beyond its block, exactly
+
+The blocks name the physics. A canonical definition also holds what the engine needs to declare it, and it stands in `definition`, not in `inputs`. **It is this and nothing else. Another species row, another row at a node, or another entity than the table's is a departing echo.** For Part 2 these words govern.
+
+| Beyond the block | Exactly |
+| --- | --- |
+| Species rows | ATP, ADP and Pi, neutral. There is no fourth. With the block's own, a definition has ten species rows: Na, K, Cl, Ca, B, CaB, Ca2B and the three, and in `ip3_calcium` thirteen, with IP3, IP3_buffer and IP3_bound |
+| Rows at a node | **Every node has an amount of every row, which must be positive.** At each cell: ATP, ADP and Pi, held at the pumps' concentrations. At each store's node: ATP, ADP and Pi, a trace. At each region (`local`, `near`, `far`): B, CaB, Ca2B, ATP, ADP and Pi, and in `ip3_calcium` IP3, IP3_buffer and IP3_bound, a trace. No other: a store's own chemical rows are all in its `er`, and a cell's in its `cytosol` |
+| The trace | One concentration, the same at every node and for every such row, with no background key: 10⁻¹² mM, a number that the definition chooses. It is recorded, and not compared |
+| In the lists by species | A zero permeability of every such row on every membrane, bounding patch and junction, a zero diffusivity on every face, and a material tolerance of every row |
+| Entities | For each store: one outside node, one compartment declaration, one bounding patch with no pump of the inner model, one availability schedule. Passive routes, all of Ca: one for each plasma membrane, one for each junction, two for each store. One species condition for each cell. Transporter populations: one for each store, and in `plasma_calcium`, `gated_calcium` and `ip3_calcium` two more for each plasma membrane. Two operators: the compartment law and the local reactions |
+| Declared values | The fuel rows' standard potentials, the moieties that the reactions imply, the sites of each reaction and one multiplier schedule a reaction and site, each population's orientation, roles, held rows and availability, the fixed charges of cells and stores, and the IDs of all of these |
+| Written as nothing | No pump of the inner model on a bounding patch, no calcium pump of the inner model, no factor on a reaction, no catalogue or evidence of a species, no background, no reservoir |
+
+**The exporter writes in `definition`** (beside the engine's own form), and the judge reads the first three as echo, exactly. It forms the expected rows, traces and counts from the block by the table's rule, so the rehearsal's worlds have theirs. The numbers below are the registered worlds':
+- `species_rows`: the sorted list of every species row declared;
+- `traces`: an object, node to the sorted list of the rows that hold the trace there, for `local`, `near`, `far`, `store:cell_0` and `store:cell_1`;
+- `entities`: an object of counts: `cells` 2, `outside_nodes` 5 (the regions and the stores), `membranes` 4 (the plasma ones and the bounding patches), `channels` 2 (4 in `gated_calcium` and `ip3_calcium`, K's and calcium's), `junctions` 1, `faces` 3, `compartments` 2, `passive_routes` 7, `species_conditions` 2, `populations` 2 (6 in the three worlds with plasma transport), `reactions` 4 (5 in `ip3_calcium`; the declared reactions, and not their sites), `operators` 2;
+- `trace_mM`, `release_conditions` and the rest: recorded.
+
+A cluster's are its child's.
+
+**What a trace of 10⁻¹² mM touches** (the author's arithmetic): **nothing that is compared.** Nothing carries it: its permeabilities and diffusivities are zero, no reaction is declared at a region, and no pump reads the fuel there. So its increments are zero, and no class E zero, no moiety and no balance has it in a sum: those are sums of increments at the cytosols and the stores, and the regions' sums are over Na, K, Cl and Ca. Its charge at a region is that of the IP3 rows alone (B's and Ca2B's cancel and the fuel is neutral): at most 1.7 × 10⁻²¹ C, at `far` in `ip3_calcium`, and zero in the other worlds. The regions' fixed charges may therefore be the block's, double for double: the model's charge anchor has a floor of 10⁻²⁰ C (`SPEC.md` §2.2). It enters no potential, which is formed from the anchors and the increments. At a store the fuel's trace is neutral.
 
 ## 3. When it is the same equations, and when it is a changed model
 
@@ -111,6 +136,8 @@ Besides Part 1's keys (`SPEC.md` §2.1), with Ca (valence +2) as a fourth specie
 7. **The Ca channel** carries Ca²⁺ by the constant-field law at valence 2 with P = P_max × abundance × availability × m² h, and the captured gate kinetics with their −10 mV shift and no temperature term.
 8. **Calcium's junction route carries the junction's own open fraction:** the captured flux multiplies every species' permeability, Ca's with the others', by the relaxation gate and the availability (read in the captured code). A Ca route that does not is a changed model. The captured gate starts at 0.6, so it would differ by tens of per cent in `junction_Ca`. **The live passive kind does it:** a passive route on a junction is opened by that junction's gate times its availability at every explicit stage, and the junction's sender and receiver give the sign (the lead's statement of 25 November, a fact of the kind's code, which this author has not read).
 9. **The splitting** is an error of the candidate's order and not of the equations. The reactions are Strang halves around the inner step, whose stages start from the state after the first half.
+
+**This section states the captured forms,** read in the captured code. The live forms are stated by the builders' README, read in the live code, and the lead confirms both at the tag. The builders read conditions 1, 2 and 9 in the definition (one gauge; a free store node with one patch; Strang halves around the IMEX step), condition 3 as a condition read at every explicit stage from that stage's amounts over the cell's volume, which multiplies the route's opening, condition 5 as the live exchanger's monomial form with the constants that the builders' README gives, and condition 7 as m² h with the ten-millivolt shift and no temperature term. This author has read none of the live forms.
 
 **If any does not hold, the consumer is a changed model.** No band of this folder applies to it, and it is not judged here. It is judged by the consumer's own registered criterion
 (the calcium ensemble's independent reference at 3 × 10⁻⁹ relative and 3 × 10⁻¹² absolute, §12) or by a reference written for it, in a **new registration** that the user approves. The Part 2 tag records which consumers are which, before any run.
@@ -159,7 +186,7 @@ Besides Part 1's keys (`SPEC.md` §2.1), with Ca (valence +2) as a fourth specie
 | `passive_constant_field` | the passive routes' constant-field law | |
 | `assembly_observable` | Part 1's | |
 
-Part 1's labels of the inner world stand (`kv15_mh`, `nak_pump_positive`, `maintained_fuel`, `junction_relaxation`, `logmean_face`, `constant_field`, `closure`, and the pool's). **The note comes after the build** (ruling 8). If the build declares a string that no label here names, the lead adds the label by a dated line, before any run. `delta_g0_at_1M_J_per_mol` carries no ID. A pool run's entry is Amendment 1's item 8.
+Part 1's labels of the inner world stand (`kv15_mh`, `nak_pump_positive`, `maintained_fuel`, `junction_relaxation`, `logmean_face`, `constant_field`, `closure`, and the pool's). **A run's entry in the note** (`TABLE.md` §5): its `model` is the composite's, and its inner model stands among `laws`; `operators` are the compartment law and the local reactions; `kinds` are the three kinds, taken from the parsed definition's declared kinds, since a definition does not write them; the rest are `laws`. **The note comes after the build** (ruling 8). If the build declares a string that no label here names, the lead adds the label by a dated line, before any run. `delta_g0_at_1M_J_per_mol` carries no ID. A pool run's entry is Amendment 1's item 8.
 
 ### 4.4 The consumers' tables
 
@@ -236,7 +263,7 @@ One file per consumer: `table_<consumer>.json` for the eight names of §1, in th
 | `heat_reactions_store` | pJ | cells | `reaction_outside_dissipated_energy_pJ[store node]` | the same sum over the reactions of `er` |
 | `work_pump`, `work_store_pump`, `work_ca_pump` | pJ | membranes, cells, membranes | `metabolic_work_pJ`, `cycle_metabolic_work_pJ[population]`. Recorded: §9's reported energy reads them | none |
 
-**The potentials** (`potentials`, at `potential_t`): `voltage` (membranes: `membrane_voltage_V[plasma patch]`; captured `observations.plasma_voltage_V`, and `final_voltage_V` in the clusters' summaries), `phi_out` (regions but the gauge: `extracellular_potential_V[region]`; captured `observations.extracellular_potential_V`, children alone), and `store_voltage` (cells: minus `membrane_voltage_V[bounding patch]`; captured `observations.er_voltage_V`, and `calcium.er_voltage_V` in the summaries). They exist at observed rows alone, since no state field holds a voltage.
+**The potentials** (`potentials`, at `potential_t`): `voltage` (membranes: `membrane_voltage_V[plasma patch]`; captured `observations.plasma_voltage_V`, and `final_voltage_V` in the clusters' summaries), `phi_out` (regions but the gauge: `extracellular_potential_V[region]`; captured `observations.extracellular_potential_V`, children alone), and `store_voltage` (cells: 0 minus `membrane_voltage_V[bounding patch]`; captured `observations.er_voltage_V`, and `calcium.er_voltage_V` in the summaries). They exist at observed rows alone, since no state field holds a voltage. **At potential time 0** `store_voltage` is the field solve's own residue and need not be exactly 0. It is judged there as at every potential time, in class S and within its entry's band, and it is no class E zero.
 
 **The clusters' summaries.** `channel_K_summary`: `channel_transferred_fmol`. `cyt_x_summary`: `calcium.cytosol_amounts_fmol[x, cell]` **less the block's initial amount**, which the judge subtracts, since the summary holds amounts. The tick of a summary time t is t over the captured step.
 
@@ -338,59 +365,59 @@ A series that a world lacks counts as zero in every sum that names it, and is no
 
 | Band | The children | The clusters (halved) |
 | --- | --- | --- |
-| the first triple's, U_c = 0 | 132 (`store_K` of `ip3_calcium`) | 176 (`store_voltage` of `ip3_calcium`'s cluster) |
-| the retry's, U_c = 0 | 110 (`store_K`) | 105 (`store_voltage`) |
-| the retry's at the widest that an unresolved triple gives (U_c = θ/3) | 33 (`store_voltage` of `ip3_calcium`) | 16 (`store_voltage` of `ip3_calcium`'s cluster) |
+| the first triple's, U_c = 0 | 75 (`store_K` of `ip3_calcium`) | 176 (`store_voltage` of `ip3_calcium`'s cluster) |
+| the retry's, U_c = 0 | 68 (`store_K`) | 105 (`store_voltage`) |
+| the retry's at the widest that an unresolved triple gives (U_c = θ/3) | 29 (`store_K` of `ip3_calcium`) | 16 (`store_voltage` of `ip3_calcium`'s cluster) |
 
-The structural plants' smallest is 2e+05 at that last band (SC5, `store_release`). Each row below holds the planted ratio and the smallest margin over the children that hold the mechanism, and for the clusters (at 0.02 s, §7.1) the ratio used and the smallest margin, at the first triple's band:
+The structural plants' smallest is 1e+05 at that last band (SC5, `store_release`). Each row below holds the planted ratio and the smallest margin over the children that hold the mechanism, and for the clusters (at 0.02 s, §7.1) the ratio used and the smallest margin, at the first triple's band:
 
 | Mechanism | Home (plant) | Children: ratio, smallest margin | Clusters at 0.02 s: ratio and smallest margin, both halved |
 | --- | --- | --- | --- |
 | leak permeability | `leak_Na` (P-leak) | 1.0e-02, 3e+07 | 5.0e-03, 2e+07 |
 | leak permeability | `leak_K` (P-leak) | 9.9e-03, 3e+06 | 5.0e-03, 2e+06 |
 | leak permeability | `leak_Cl` (P-leak) | 9.8e-03, 1e+06 | 4.9e-03, 5e+05 |
-| channel permeability | `channel_K` (P-channel) | 1.0e-02, 3e+05 | 5.0e-03, 1e+05 |
-| channel kinetics | `gate_m` (P-kinetics) | 3.7e-03, 6e+06 | 6.3e-03, 3e+06 |
-| channel kinetics | `gate_h` (P-kinetics) | 3.4e-05, 2e+05 | 1.7e-05, 1e+05 |
-| Na/K pump | `pump` (P-pump) | 1.0e-02, 4e+07 | 5.0e-03, 2e+07 |
-| junction permeability | `junction_Na` (P-junction) | 9.3e-03, 5e+06 | 4.7e-03, 2e+06 |
-| junction permeability | `junction_K` (P-junction) | 8.8e-03, 3e+06 | 4.4e-03, 1e+06 |
-| junction permeability | `junction_Cl` (P-junction) | 8.6e-03 to 8.7e-03, 1e+06 | 3.9e-03, 6e+05 |
-| junction gate | `junction_gate` (P-jgate) | 5.6e-04, 3e+06 | 2.8e-04, 1e+06 |
+| channel permeability | `channel_K` (P-channel) | 1.0e-02, 2e+04 | 5.0e-03, 1e+04 |
+| channel kinetics | `gate_m` (P-kinetics) | 3.7e-03, 1e+06 | 6.3e-03, 5e+05 |
+| channel kinetics | `gate_h` (P-kinetics) | 3.4e-05, 3e+04 | 1.7e-05, 2e+04 |
+| Na/K pump | `pump` (P-pump) | 1.0e-02, 1e+07 | 5.0e-03, 6e+06 |
+| junction permeability | `junction_Na` (P-junction) | 9.3e-03, 3e+05 | 4.7e-03, 2e+05 |
+| junction permeability | `junction_K` (P-junction) | 8.8e-03, 2e+05 | 4.4e-03, 9e+04 |
+| junction permeability | `junction_Cl` (P-junction) | 8.6e-03 to 8.7e-03, 1e+05 | 3.9e-03, 4e+04 |
+| junction gate | `junction_gate` (P-jgate) | 5.6e-04, 2e+05 | 2.8e-04, 1e+05 |
 | faces | `face_Na` (P-face) | 9.8e-03, 3e+06 | 4.9e-03, 1e+06 |
 | faces | `face_K` (P-face) | 9.8e-03, 9e+06 | 4.9e-03, 4e+06 |
 | faces | `face_Cl` (P-face) | 9.9e-03, 1e+06 | 4.9e-03, 7e+05 |
 | electrical closure | `voltage` (P-pump) | 3.5e-03, 2e+04 | 1.7e-03 to 1.8e-03, 1e+04 |
 | electrical closure | `phi_out` (P-faceK) | 9.2e-03, 4e+06 |  |
 | plasma Ca leak | `leak_Ca` (P-leakCa) | 9.9e-03, 3e+07 | 5.0e-03, 2e+07 |
-| Ca junction route | `junction_Ca` (P-junctionCa) | 1.0e-02, 3e+06 | 5.0e-03, 2e+06 |
+| Ca junction route | `junction_Ca` (P-junctionCa) | 1.0e-02, 2e+05 | 5.0e-03, 1e+05 |
 | Ca faces | `face_Ca` (P-faceCa) | 9.9e-03, 3e+06 | 5.0e-03, 2e+06 |
-| store Ca leak | `store_leak_Ca` (P-storeleakCa) | 1.0e-02, 6e+06 | 5.0e-03, 3e+06 |
+| store Ca leak | `store_leak_Ca` (P-storeleakCa) | 1.0e-02, 3e+06 | 5.0e-03, 2e+06 |
 | store K leak | `store_voltage` (P-storeleakK) | 9.9e-03 to 1.0e-02, 4e+02 | 5.0e-03, 2e+02 |
-| store pump | `store_pump` (P-storepump) | 9.9e-03, 3e+07 | 5.0e-03, 2e+07 |
-| release permeability | `store_release` (P-release) | 1.0e-02 to 1.1e-02, 1e+06 | 5.1e-03 to 5.3e-03, 7e+05 |
-| release's calcium factor | `store_release` (P-activation) | 6.3e-03 to 6.6e-03, 1e+06 | 3.1e-03 to 3.3e-03, 5e+05 |
-| release's calcium factor | `store_release` (P-inhibition) | 1.2e-04 to 1.3e-04, 2e+04 | 5.9e-05 to 6.6e-05, 9e+03 |
-| cytosolic buffer, first site | `extent_bind_0_first` (P-bind0a) | 5.7e-03, 3e+06 | 2.9e-03, 2e+06 |
-| cytosolic buffer, second site | `extent_bind_0_second` (P-bind0b) | 9.7e-03 to 9.8e-03, 2e+06 | 4.9e-03, 1e+06 |
+| store pump | `store_pump` (P-storepump) | 9.9e-03, 2e+06 | 5.0e-03, 9e+05 |
+| release permeability | `store_release` (P-release) | 1.0e-02 to 1.1e-02, 7e+05 | 5.1e-03 to 5.3e-03, 4e+05 |
+| release's calcium factor | `store_release` (P-activation) | 6.3e-03 to 6.6e-03, 5e+05 | 3.1e-03 to 3.3e-03, 2e+05 |
+| release's calcium factor | `store_release` (P-inhibition) | 1.2e-04 to 1.3e-04, 9e+03 | 5.9e-05 to 6.6e-05, 4e+03 |
+| cytosolic buffer, first site | `extent_bind_0_first` (P-bind0a) | 5.7e-03, 1e+06 | 2.9e-03, 6e+05 |
+| cytosolic buffer, second site | `extent_bind_0_second` (P-bind0b) | 9.7e-03 to 9.8e-03, 2e+04 | 4.9e-03, 9e+03 |
 | store buffer, first site | `extent_bind_1_first` (P-bind1a) | 3.5e-03, 5e+06 | 6.3e-04 to 6.4e-04, 9e+05 |
-| store buffer, second site | `extent_bind_1_second` (P-bind1b) | 8.3e-03, 3e+07 | 4.1e-03, 2e+07 |
-| store capacitor | `store_K` (P-storecap) | 1.4e-04 to 1.7e-04, 1e+02 | **not tested** (ratio halved 2.9e-05 to 3.9e-05, margin halved 22 to 82) |
-| plasma calcium pump | `ca_pump` (P-pmca) | 1.0e-02, 4e+07 | 5.0e-03, 2e+07 |
-| exchanger | `exchanger` (P-ncx) | 9.9e-03, 3e+06 | 4.9e-03, 1e+06 |
-| exchanger | `exchanger` (P-ncxkm) | 8.7e-05, 3e+04 | 4.3e-05, 1e+04 |
-| Ca channel permeability | `ca_channel` (P-cav) | 1.0e-02, 4e+05 | 5.0e-03, 2e+05 |
-| Ca channel kinetics | `ca_gate_m` (P-cavkinetics) | 3.6e-03, 6e+06 | 3.8e-03, 3e+06 |
-| Ca channel kinetics | `ca_gate_h` (P-cavkinetics) | 1.7e-03, 1e+07 | 9.9e-04, 5e+06 |
-| IP3 factor | `store_release` (P-ip3activation) | 1.3e-02, 2e+06 | 6.4e-03, 9e+05 |
+| store buffer, second site | `extent_bind_1_second` (P-bind1b) | 8.3e-03, 4e+06 | 4.1e-03, 2e+06 |
+| store capacitor | `store_K` (P-storecap) | 1.4e-04 to 1.7e-04, 8e+01 | **not tested** (ratio halved 2.9e-05 to 3.9e-05, margin halved 13 to 47) |
+| plasma calcium pump | `ca_pump` (P-pmca) | 1.0e-02, 6e+06 | 5.0e-03, 3e+06 |
+| exchanger | `exchanger` (P-ncx) | 9.9e-03, 6e+05 | 4.9e-03, 3e+05 |
+| exchanger | `exchanger` (P-ncxkm) | 8.7e-05, 5e+03 | 4.3e-05, 3e+03 |
+| Ca channel permeability | `ca_channel` (P-cav) | 1.0e-02, 3e+04 | 5.0e-03, 1e+04 |
+| Ca channel kinetics | `ca_gate_m` (P-cavkinetics) | 3.6e-03, 1e+06 | 3.8e-03, 5e+05 |
+| Ca channel kinetics | `ca_gate_h` (P-cavkinetics) | 1.7e-03, 2e+06 | 9.9e-04, 1e+06 |
+| IP3 factor | `store_release` (P-ip3activation) | 1.3e-02, 9e+05 | 6.4e-03, 5e+05 |
 | IP3 binding | `extent_ip3_binding` (P-ip3binding) | 7.8e-03, 1e+07 | 3.9e-03, 7e+06 |
-| store K leak, **first home: not tested there** | `store_leak_K` (P-storeleakK) | 1.4e-04 to 1.7e-04, 148 to 340 | not tested there |
+| store K leak, **first home: not tested there** | `store_leak_K` (P-storeleakK) | 1.4e-04 to 1.7e-04, 80 to 184 | not tested there |
 | store capacitor, **first home: not tested there** | `store_voltage` (P-storecap) | 9.9e-05 to 1.5e-04, 5 to 8 | not tested there |
 
 - **Mechanisms with several plants** (the calcium factor, the exchanger) are tested by the largest of them (§7.1). The inhibition constant and the exchanger's Na constant are weak plants (a ratio of 10⁻⁴ or less), and their mechanisms are tested by the activation constant and the capacity.
 - **The store's two electrical mechanisms are the weakest.** The K leak's 1 % plant moves `store_voltage` by 1 % of a voltage that is small against its scale (the gross throughput of K), and the capacitor's moves `store_K` by 1.4 × 10⁻⁴ to 1.7 × 10⁻⁴ of itself in the children. A candidate whose error estimate there is above about a tenth of the planted distance cannot test them, and the child is then inconclusive, with the reason `power`. The candidate's step decides, and no band is widened for it.
 - **In the four clusters the capacitor is not tested** (the lead's ruling of 25 November): a cluster's captures hold one end state, and not the early rows where the capacitor shows. At the clusters' end its plant moves `store_K` by 2.9 × 10⁻⁵ to 3.9 × 10⁻⁵ (halved), so a comparison there would be a thin one. It is listed as not tested in each cluster, and nothing may be claimed of it there. This exemption is declared before any run, so `CRITERIA.md` §8's rule (a consumer with an untested mechanism is at best inconclusive) does not apply to it: the capacitor is no mechanism of the four clusters' test (`margins_part2.json` `cluster_not_tested`).
-- **The margins were formed again on 25 November under §8's bands** (e_store, the closure, the reactions' heats per compartment), and once more after Part 2's audit, with the two voltages' own closure. No home moved.
+- **The margins were formed again on 25 November under §8's bands** (e_store, the closure, the reactions' heats per compartment), and again after Part 2's audit, with the voltages' and the gated entries' own closure. No home moved.
 
 **Homes replaced on 25 November, after the planted runs had been read on the reference side, and before any candidate run (dated line).** The lead accepted it as a replacement of plants. The first homes stay in the table, marked **not tested there**, with their figures (`margins_part2.json` `first_homes_not_tested_there`). The protocol's §11 says that the choice came after the planted runs were read.
 - **Store K leak:** from `store_leak_K` to `store_voltage`. The K leak is so fast that K's own transfer follows calcium's, and its 1 % plant moves `store_leak_K` by 1.4 × 10⁻⁴, while the store's voltage is set by the leak and moves by 1 %.
@@ -400,20 +427,20 @@ The structural plants' smallest is 2e+05 at that last band (SC5, `store_release`
 
 | Plant | Named entry: distance, margin |
 | --- | --- |
-| SC1 (`spatial_calcium`) | `store_release`: 1.3e-04, 2e+08; `store_Ca`: 1.2e-04, 4e+07 |
-| SC3b (`spatial_calcium`) | `store_leak_Ca`: 1.5e-07, 2e+06; `store_release`: 1.1e-06, 2e+06 |
-| SC4 (`spatial_calcium`) | `store_pump`: 1.0e-04, 1e+10; `store_Ca`: 9.9e-05, 3e+07 |
-| SC5 (`spatial_calcium`) | `store_leak_Ca`: 3.7e-08, 5e+05; `store_release`: 2.9e-07, 4e+05 |
-| SC6 (`spatial_calcium`) | `extent_bind_0_first`: 1.0e-03, 7e+08; `cyt_Ca`: 1.1e-03, 5e+08 |
-| SC13 (`spatial_calcium`) | `heat_store_pump`: 6.5e-04, 7e+08 |
-| SC7 (`plasma_calcium`) | `exchanger`: 6.0e-07, 8e+06 |
-| SC8 (`plasma_calcium`) | `ca_pump`: 6.2e-05, 9e+09; `cyt_Ca`: 4.2e-05, 2e+07 |
-| SC12 (`plasma_calcium`) | `heat_ca_pump`: 4.3e-04, 8e+08 |
-| SC9 (`gated_calcium`) | `ca_channel`: 2.2e-06, 2e+07 |
-| SC10 (`gated_calcium`) | `ca_channel`: 2.1e-05, 2e+08 |
-| SC2 (`ip3_calcium`) | `store_release`: 1.9e-04, 3e+08 |
-| SC11 (`cluster_gated_calcium`, seed index 1) | `ca_channel`: world 0 3.6e-06, 4e+07; world 1 3.6e-06, 4e+07 |
-| SC14 (`cluster_gated_calcium`, seed index 1) | `channel_K`: world 0 4.3e-07, 4e+06; world 1 2.1e-07, 2e+06 |
+| SC1 (`spatial_calcium`) | `store_release`: 1.3e-04, 9e+07; `store_Ca`: 1.2e-04, 4e+07 |
+| SC3b (`spatial_calcium`) | `store_leak_Ca`: 1.5e-07, 1e+06; `store_release`: 1.1e-06, 8e+05 |
+| SC4 (`spatial_calcium`) | `store_pump`: 1.0e-04, 5e+08; `store_Ca`: 9.9e-05, 3e+07 |
+| SC5 (`spatial_calcium`) | `store_leak_Ca`: 3.7e-08, 3e+05; `store_release`: 2.9e-07, 2e+05 |
+| SC6 (`spatial_calcium`) | `extent_bind_0_first`: 1.0e-03, 6e+08; `cyt_Ca`: 1.1e-03, 5e+08 |
+| SC13 (`spatial_calcium`) | `heat_store_pump`: 6.5e-04, 3e+07 |
+| SC7 (`plasma_calcium`) | `exchanger`: 6.0e-07, 2e+06 |
+| SC8 (`plasma_calcium`) | `ca_pump`: 6.2e-05, 1e+09; `cyt_Ca`: 4.2e-05, 2e+07 |
+| SC12 (`plasma_calcium`) | `heat_ca_pump`: 4.3e-04, 1e+08 |
+| SC9 (`gated_calcium`) | `ca_channel`: 2.2e-06, 2e+06 |
+| SC10 (`gated_calcium`) | `ca_channel`: 2.1e-05, 1e+07 |
+| SC2 (`ip3_calcium`) | `store_release`: 1.9e-04, 1e+08 |
+| SC11 (`cluster_gated_calcium`, seed index 1) | `ca_channel`: world 0 3.6e-06, 3e+06; world 1 3.6e-06, 3e+06 |
+| SC14 (`cluster_gated_calcium`, seed index 1) | `channel_K`: world 0 4.3e-07, 3e+05; world 1 2.1e-07, 1e+05 |
 
 - **SC3 is replaced by SC3b (dated line, 25 November).** With the store voltage's sign reversed in the K leak the store runs away, and legacy's own domain check stops the run at 1.4875 ms. There is no planted array, so nothing can be scored, and a candidate with that error is stopped by its own check or leaves its domain. SC3b reverses the sign in the calcium leak and release alone, and is scored.
 - **SC6 is the runnable stand-in for a wrong stoichiometry.** The captured first buffer with two calcium bound (2 Ca + B = CaB) was tried too, and legacy refuses it at parse ("Each reaction must conserve every declared moiety and charge"). So SC6 changes the kinetic order and not the stoichiometry. The refused run is in the manifest.
@@ -435,33 +462,44 @@ The structural plants' smallest is 2e+05 at that last band (SC5, `store_release`
 
 **`amount_refs`,** by Part 1's rule (the declared amounts that an entry reads, for e_store(S) = 2.5 ε (S + 1) × it): `cyt_c`, `store_c`, `n_out_x`, `voltage` (its cell's rows and its store's, since the membrane's charge is the two nodes' together) and `store_voltage` (the store's rows). **A row that a reaction of its compartment touches is added to seven times a step and not five, so its reference is 7/5 of its amount.** The transfers, the extents, the cycles, the heats, the gates, `phi_out` and the formed `exchange_x` read no amount and have none. The engine's documented state stores increments, as in Part 1, and the `state form` flag is Part 1's (`CRITERIA.md` §4.3).
 
-**The closure:** `closure_share` = 10⁻¹⁰, and **e_close = 10⁻¹⁰ s in every entry of Part 2, but the three potentials,** which have their own (`closure_terms_V`): `phi_out` Part 1's 5.16 × 10⁻¹³ V (the conductances formed again with calcium's: its share of a face's is 7 × 10⁻⁵, the row sum of K⁻¹ is 2.0035 and no conductance exceeds 0.526 of the smallest ΣG, as before), **`voltage` 9 × 10⁻¹² V and `store_voltage` 2.9 × 10⁻¹¹ V,** derived below.
-**The derivation.** It is Part 1's question, what potential error the two codes admit, asked of an IMEX step and of every path that a potential takes.
+**The closure:** `closure_share` = 10⁻¹⁰, and **e_close = 10⁻¹⁰ s in every entry that has no number of its own.** Those that have one are in `closure_terms_V` (the three potentials, in V) and in `closure_terms` (the entries that a drifted voltage reaches above that share, each in its own unit; 35 in `spatial_calcium`, 41 in `plasma_calcium`, 45 in the other two), and it takes the place of the share.
+
+**The derivation.** It is Part 1's question, what potential error the two codes admit, asked of an IMEX step and of every path that a potential takes. **A criterion may not rest on a code's staying below what it admits.**
 - **What the engine admits.** At each implicit stage a node's charge residual is at most 3 × 10⁻²⁵ C + 2 × 10⁻¹² of the larger of its charge and of the solve's own product (its declared constants, read at 49529e71). Legacy forms a membrane's and a store's voltage from its charges with no solve, and its free offsets are Part 1's (2.13 × 10⁻¹² V*).
-- **As potential errors:** a membrane's 2 × 10⁻¹² V* + 2 × 3 × 10⁻²⁵ C/C_m (its cell's and its store's residuals) = 4.4 × 10⁻¹³ V. The junction's, the two membranes' together, 8.5 × 10⁻¹³ V. A store's 2 × 10⁻¹² V* + 3 × 10⁻²⁵ C/C_s = 2.7 × 10⁻¹³ V. A free offset's 2.01 × 2 × 10⁻¹² V* + 3 × 10⁻²⁵ C × Σ|K⁻¹|/(γ h) = 1.4 × 10⁻¹² V at the retry's 1.5625 µs, the largest of the four steps (γ = 1 − 1/√2).
+- **As a stage's potential errors:** a membrane's 2 × 10⁻¹² V* + 2 × 3 × 10⁻²⁵ C/C_m (its cell's and its store's residuals) = 4.4 × 10⁻¹³ V. The junction's, the two membranes' together, 8.5 × 10⁻¹³ V. A store's 2 × 10⁻¹² V* + 3 × 10⁻²⁵ C/C_s = 2.7 × 10⁻¹³ V. A free offset's 2.01 × 2 × 10⁻¹² V* + 3 × 10⁻²⁵ C × Σ|K⁻¹|/(γ h) = 1.4 × 10⁻¹² V at the retry's 1.5625 µs, the largest of the four steps (γ = 1 − 1/√2).
+- **What the voltages may have drifted by** (`closure_terms_V`, the same in every world):
+  - **`phi_out`, 5.16 × 10⁻¹³ V:** Part 1's number (the conductances formed again with calcium's: its share of a face's is 7 × 10⁻⁵, the row sum of K⁻¹ is 2.0035 and no conductance exceeds 0.526 of the smallest ΣG). It is not a stage's potential. It is solved again at an observed row, from that row's amounts, by the field solver of §4.1. A stage's error enters the faces' transfers and through them the regions' amounts, which move it by at most 7 × 10⁻¹⁴ V (the faces' share of their scales, over the smallest amount, as a change of a logarithm). Legacy's solve at its limit (2.6 × 10⁻¹³ V), the floor variant's at its own (9.0 × 10⁻¹³ V* = 1.1 × 10⁻¹³ V, `SPEC.md` §6) and that drift are 4.3 × 10⁻¹³ V.
+  - **`voltage`, 9 × 10⁻¹² V, and `store_voltage`, 2.9 × 10⁻¹¹ V:** the observed row's solve (4.4 × 10⁻¹³ V and 2.7 × 10⁻¹³ V) and what the stages' errors have done to the charge: Σ over the membrane's routes of the route's one-pass share (below) × its scale × its charge a move, over the capacitance, with no restoring current counted: 8.5 × 10⁻¹² V (the Ca channel, the K channel and the junction's K are the larger parts; 4.6 × 10⁻¹² V in `spatial_calcium`) and 2.86 × 10⁻¹¹ V (K's leak is nearly all of it). They are potentials, and a share of their scale is not their closure: their scales are gross throughputs over a capacitance, 0.4 to 0.5 V and 16 V, where the store's voltage is 5 × 10⁻⁵ V.
+  - Each code at its limit: **legacy's share of the last two is zero.**
+- **Two passes are counted.** A stage's potential error moves the readout that is formed with it, which is one pass. A route, a gate or a channel then reads a voltage that has drifted by what `closure_terms_V` admits, which is one more. So a path is taken at δ = the stage's error + the drift: 9.4 × 10⁻¹² V at a membrane, 1.9 × 10⁻¹¹ V at the junction (two membranes), 2.9 × 10⁻¹¹ V at a store and 2.2 × 10⁻¹² V at a free offset (both codes and `phi_out`'s).
 - **As shares of s,** with u = F/(R T) and χ as in `SPEC.md` §5: a constant-field route's |z| u δ/χ; a pump's u δ a net charge (1, and 2 for the calcium pumps), and 1.5 u δ for the exchanger; a gate's (its target's largest slope + 0.37 × its time constant's largest logarithmic slope) × δ, from the captured laws over their domain; a channel's and the junction's, their route's and their open fraction's together; a heat's, its transfer's and its affinity's together:
 
-| Path | Share of s |
-| --- | --- |
-| plasma leaks | 3.0 to 3.3 × 10⁻¹² |
-| store leaks and release | 1.9 to 2.0 × 10⁻¹² |
-| Na/K pump, calcium pumps, exchanger | 1.7 × 10⁻¹¹, 3.4 × 10⁻¹¹ (the store's 2.1 × 10⁻¹¹), 2.6 × 10⁻¹¹ |
-| faces, both codes | 1.1 to 1.2 × 10⁻¹¹ |
-| `gate_m`, `gate_h`, `ca_gate_m`, `ca_gate_h` | 3.1, 3.5, 3.1 and 2.4 × 10⁻¹¹ |
-| `junction_gate`, and the junction's routes | 6.7 × 10⁻¹¹, 7.3 × 10⁻¹¹ |
-| `channel_K`, `ca_channel` | 6.9 × 10⁻¹¹, 8.9 × 10⁻¹¹ |
-| `heat_junction`, `heat_membrane`, `heat_ca_channel` (the largest of the heats) | 8.0, 7.2 and 9.2 × 10⁻¹¹ |
+| Path | One pass | With the drift |
+| --- | --- | --- |
+| plasma leaks (z = 1, Ca) | 3.0, 3.3 × 10⁻¹² | 6.5, 7.1 × 10⁻¹¹ |
+| Na/K pump | 1.7 × 10⁻¹¹ | 3.7 × 10⁻¹⁰ |
+| plasma calcium pump | 3.4 × 10⁻¹¹ | 7.4 × 10⁻¹⁰ |
+| exchanger | 2.6 × 10⁻¹¹ | 5.5 × 10⁻¹⁰ |
+| `gate_m`, `gate_h`, `ca_gate_m`, `ca_gate_h` | 3.1, 3.5, 3.1 and 2.4 × 10⁻¹¹ | 6.7, 7.5, 6.6 and 5.2 × 10⁻¹⁰ |
+| `junction_gate` | 6.7 × 10⁻¹¹ | 1.5 × 10⁻⁹ |
+| the junction's routes | 7.3 × 10⁻¹¹ | 1.6 × 10⁻⁹ |
+| `channel_K` | 6.9 × 10⁻¹¹ | 1.5 × 10⁻⁹ |
+| `ca_channel` | 8.9 × 10⁻¹¹ | 1.9 × 10⁻⁹ |
+| faces (both codes) | 1.1 to 1.2 × 10⁻¹¹ | 1.5 to 1.6 × 10⁻¹¹ |
+| store leaks, release | 1.9 to 2.0 × 10⁻¹² | 2.0 to 2.2 × 10⁻¹⁰ |
+| store pump | 2.1 × 10⁻¹¹ | 2.3 × 10⁻⁹ |
 
-The largest is 9.2 × 10⁻¹¹, and 10⁻¹⁰ is the power of ten above. A sum of routes is at most its largest route's share.
-- **`voltage` and `store_voltage` are potentials, and a share of their scale is not their closure** (their scales are gross throughputs over a capacitance: 0.4 to 0.5 V and 16 V, where the store's voltage is 5 × 10⁻⁵ V). Each code at its limit. **Legacy's is zero:** it forms both from its charges, with no solve. **The candidate's is the observed row's solve** (4.4 × 10⁻¹³ V and 2.7 × 10⁻¹³ V, above) **and what the stages' errors have done to the charge:** Σ over the routes that carry a charge of the membrane, of the route's share in the table × its scale × its charge a move, over the capacitance, with no restoring current counted. That is 8.5 × 10⁻¹² V for `voltage` (the Ca channel, the K channel and the junction's K are the larger parts; 4.6 × 10⁻¹² V in `spatial_calcium`) and 2.86 × 10⁻¹¹ V for `store_voltage` (K's leak is nearly all of it). The sums are 8.9 × 10⁻¹² and 2.89 × 10⁻¹¹ V, rounded up. One number each, the largest of the eight worlds'. The reactions are advanced by an explicit scheme with no solve, so they have no closure of their own. **`phi_out` is not a stage's potential.** It is solved again at an observed row, from that row's amounts, by the field solver of §4.1, whose acceptance is Part 1's. A stage's free-offset error enters the faces' transfers, and through them the regions' amounts, which move `phi_out` by at most 7 × 10⁻¹⁴ V (the faces' share of their scales, over the smallest amount, as a change of a logarithm). **So its closure is Part 1's number, and not the stage's 1.4 × 10⁻¹² V:** legacy's solve at its limit (2.6 × 10⁻¹³ V), the floor variant's at its own (9.0 × 10⁻¹³ V* = 1.1 × 10⁻¹³ V, `SPEC.md` §6) and that drift are 4.3 × 10⁻¹³ V, inside 5.16 × 10⁻¹³ V. **What a direct solve leaves is far below what the engine admits,** and the bound is on what is admitted.
-- **What the shares count is one pass:** what a stage's potential error does to the readout that is formed with it, and for a voltage what it has done to the charge. A gate, a channel or a junction that follows a voltage drifted by that much (8.9 × 10⁻¹² V) would add up to 7 × 10⁻¹⁰ in a gate, 1.4 × 10⁻⁹ in the junction's gate and 1.8 × 10⁻⁹ s in a channel, and this is **not counted,** as e_round does not count a state's own error in the rates. An engine at its limit in every solve and of one sign could miss those entries, and one that solves directly does not come near. No margin rests on it: with a share of 2 × 10⁻⁹ the smallest margin of a home among them is 1.1 × 10⁴ (`gate_h`).
+- **A sum takes the sum.** `exchange_x`, the cells' and regions' rows and the heats are sums of routes, and their closure is Σ share × scale over the routes, as their scale is Σ scale. An extent, a buffer's row and a reaction's heat follow the calcium that has moved: their closure is what calcium's movers into their compartment may be off by, since binding can follow no more.
+- **An entry whose sum is at most 10⁻¹⁰ s keeps the share** (the plasma leaks, the faces and their heat, the regions' Na, K and Cl, the IP3 rows and a few more: `closure_terms` says which by not naming them). **Every other has its own number in `closure_terms`,** rounded up to two figures: the gates, the channels, the junction's routes, the pumps, the exchanger, the store's routes, their heats, and the sums and the reactions that hold or follow them.
+- **A third pass is not counted.** Counted without a restoring current the passes have no end: the second one's shares would drift `voltage` by up to 4 × 10⁻¹⁰ V, inside its own band (e_store alone is 1.1 × 10⁻⁸ V), and `store_voltage` by 4 × 10⁻⁹ V, which its band does not hold and which its K leak would undo within a fifth of a millisecond. **What a direct solve leaves is far below what the engine admits at any pass,** and the rehearsal looks at it (§15).
+- **The reactions** are advanced by an explicit scheme with no solve, so they have no closure of their own.
 
 ## 9. Conservation and the reported identities
 
 **Conservation is the engine's own rule at every accepted step** (`CRITERIA.md` §4.4). No identity below is judged. The judge forms and reports them, each beside READOUTS §5's bounds (which are Part 1's judged ones; the energy's with its own U_c), and flags a residual above its bound to the checker:
 - the balances of each cell's whole-cell ledger, region, store row and cytosol row, and the closed world;
 - **the moieties** in each compartment: B + CaB + Ca2B (cytosol and store apart), IP3 + IP3_bound and IP3_buffer + IP3_bound (cytosol), and calcium's total: cytosol (Ca + CaB + 2 Ca2B) + store (the same) = `exchange_Ca`;
-- **the capacitors:** `voltage` − V₀ = (F 10⁻¹⁵/C_m) Σ_x z_x `exchange_x`, and `store_voltage` = (F 10⁻¹⁵/C_s) Σ_c z_c `store_c`;
+- **the capacitors:** `voltage` − V₀ = (F 10⁻¹⁵/C_m) Σ_x z_x `exchange_x`, and `store_voltage` less its own value at time 0 = (F 10⁻¹⁵/C_s) Σ_c z_c `store_c`;
 - **the energy:** every chemical row of cytosol and store (d (μ°_RT + ln(n₀/(V c₀)) − 1) + (n₀ + d) ln(1 + d/n₀)), both capacitors, the heats and the works.
 
 **In Part 2 the engine's own energy allowance is looser than the comparison's.** The declared rule allows 2 × 10⁻³ of the integrated flows on the IMEX integrator. So the heats are judged against the captures, readout by readout, and not by the identity.
@@ -495,13 +533,13 @@ The largest is 9.2 × 10⁻¹¹, and 10⁻¹⁰ is the power of ten above. A sum
 - **The restart** (support): `ip3_calcium h=1.25e-05 restart`, at 0.01 s, by `SPEC.md` §4 and `TABLE.md` §3. It resumes a checkpoint of its judged run. `ip3_calcium` holds every mechanism of the eight consumers but the pools, so its state holds every kind of state there is. The clusters have no pool restart: their pools are `base`'s code and seeds, and Part 1 restarts those.
 - **EP3** (`ip3_calcium plant release`, at h₃): both stores' release permeability × 1.01.
 - **EP4** (`cluster_gated_calcium plant swapped`, seed index 1, world 0, at h₃): each K channel's schedule is the other cell's path. Its `pool_seeds` are by position, and so its honest run's (Amendment 1, item 7, which holds for EP4).
-- **An engine plant's block differs from its honest run's only by its change.**
-- **The retry's runs** are named by rule: `<family> h=1.5625e-06 retry`, with an extra support run only if owed. The retry run of every family is made in the registered batch.
+- **An engine plant's block differs from its honest run's only by its change.** EP3's is the release permeability × 1.01 in both cells, EP4's is `exchange_channels` of the two cells. A `declared_change`'s path begins at the world's block, whose first key is `ionic`, `stores` or another of §2.1's (in Part 1 it begins inside `ionic`).
+- **The retry's runs** are named by rule: `<family> h=1.5625e-06 retry`. The retry run of every family is made in the registered batch. They are exported only with the sha256 of `retry_owed.json`, which the lead gives from the judge's record. No support run is made at the retry's step.
 
 ### 11.1 The engine plants' named entries
 
-- **EP3:** `store_release`. Its registered distance is the planted run's (`P-release`): 1.1 × 10⁻⁶ fmol, a margin of 1.5 × 10⁶.
-- **EP4:** `channel_K` and `channel_K_summary`. Its registered distance is SC14's: 4.3 × 10⁻⁷ fmol, 2.2 times the honest `channel_K`, a margin of 3.7 × 10⁶. **Its `switch_list` and its `controls.channel` are class E against the swapped paths,** and it is unscorable if they or its `pool_seeds` depart.
+- **EP3:** `store_release`. Its registered distance is the planted run's (`P-release`): 1.1 × 10⁻⁶ fmol, a margin of 7.4 × 10⁵.
+- **EP4:** `channel_K` and `channel_K_summary`. Its registered distance is SC14's: 4.3 × 10⁻⁷ fmol, 2.2 times the honest `channel_K`, a margin of 2.9 × 10⁵. **Its `switch_list` and its `controls.channel` are class E against the swapped paths,** and it is unscorable if they or its `pool_seeds` depart.
 - They are scored as `CRITERIA.md` §6 says.
 
 ## 12. The independent reference
@@ -523,7 +561,7 @@ the store, plasma-pump, channel and IP3 references of the live tests, with an ad
 
 **The retry's triple** is (h₂, h₃, h₃/2) = (6.25, 3.125, 1.5625) µs, with S_c = 12,800 in e_round, e_store and θ (`CRITERIA.md` §7). It is owed as there, by the reasons `order` and `power`.
 
-**The runs are made up front.** An honest order-2 run can leave entries mixed at the first triple (below), and each is owed the retry. So the retry run of every family is made in the registered batch (§11), from the same snapshot: 36 of them. **They are kept unread.** No retry table is exported before `retry_owed.json` is hashed, and `table-retry/` is exported only after that. Each retry run is judged only where it is owed. One that is not owed is recorded, flagged and not judged (`CRITERIA.md` §7).
+**The runs are made up front.** An honest order-2 run can leave entries mixed at the first triple (below), and each is owed the retry. So the retry run of every family is made in the registered batch (§11), from the same snapshot: 36 of them. **They are kept unread.** No retry table is exported before `retry_owed.json` is hashed, and `table-retry/` is exported only after that, with the sha256 of `retry_owed.json` that the lead gives from the judge's record. No support run is made at the retry's step: `ip3_calcium`'s restart is at h₁, and no other is registered. Each retry run is judged only where it is owed. One that is not owed is recorded, flagged and not judged (`CRITERIA.md` §7).
 
 **The arithmetic.** Let e = e_round(S_c) + e_store(S_c) at a triple's finest run, so θ = 10 e, and let a run lie within e of its scheme's exact value. A difference of two runs carries at most 2 e of rounding. For an honest entry of order 2 let t be the truncation in d₂. Then d₂ lies in t ± 2 e, and d₁ in t/4 ± 2 e. At the retry's triple the truncation in d₂ is t/4 and e is doubled.
 - **Unresolved at the first triple** (t at most 12 e): unresolved at the retry's, where the truncation is at most 1.5 of its e.
@@ -548,7 +586,7 @@ the store, plasma-pump, channel and IP3 references of the live tests, with an ad
 - **How much that is.** In an entry that reads no amount, e is 2.3 × 10⁻¹¹ s, and 24 e is 5.5 × 10⁻¹⁰ s. In Y* it leaves at most 1.8 × 10⁻¹⁰ s.
 - **The first triple may have shown it.** Where its differences were above θ there, an order of 1 was resolved and the entry was owed the retry for it. The retry's triple replaces the first, so that evidence is in the record and decides nothing. The record says both classes.
 
-- **What e leaves out, and why.** e is rounding. The closure that the engine admits (§8) is about nine times e at the first triple, and it is in neither e nor θ, as in Part 1, since what a direct solve leaves is far below it. Where a solve left as much as it may, a difference would carry up to 18 e of noise, and an honest entry could be mixed, or outside its window, by noise alone. **Tried on 200,000 random honest entries** (t log-uniform from 0.1 e to 1.6 × 10³ e; each difference t or t/4 plus a uniform noise within ± 2 (e + c), c = 8.8 e the admitted closure at the first triple, and at the retry's t/4 and t/16 with ± 2 (2 e + c)): one in five outside its window at the first triple and one in seventeen at the retry's, at the whole admitted closure, and none at a hundredth of it. **Such an entry is inconclusive by `order`, and it never fails:** |Y* − L*| is at most U_c + e_round + e_store + the two codes' closure + U_l + e_round(S_l), and β holds each of them, and U_c and U_l twice. The rehearsal looks for it (§15).
+- **What e leaves out, and why.** e is rounding. The closure that the engine admits (§8) is nine times e at the first triple in an entry that has the share, and more in one with a closure of its own (170 times e in `ca_channel`). It is in neither e nor θ, as in Part 1, since what a direct solve leaves is far below it. Where a solve left as much as it may, a difference would carry up to 2 (e + c) of noise, c the admitted closure, and an honest entry could be mixed, or outside its window, by noise alone. **Tried on 200,000 random honest entries** (t log-uniform from 0.1 e to 1.6 × 10³ e; each difference t or t/4 plus a uniform noise within ± 2 (e + c), and at the retry's t/4 and t/16 with ± 2 (2 e + c)): with c = 8.8 e, one in five outside its window at the first triple and one in seventeen at the retry's at the whole admitted closure, and none at a hundredth of it; with c = 167 e (`ca_channel`'s own), three in four at the whole of it, one in eighty at a hundredth, and none at a thousandth. **Such an entry is inconclusive by `order`, and it never fails:** |Y* − L*| is at most U_c + e_round + e_store + the two codes' closure + U_l + e_round(S_l), and β holds each of them, and U_c and U_l twice. The rehearsal looks for it (§15).
 - **What the retry's run judges:** the owed entries of its family, its own D, and its own class E (the structural zeros, and a cluster's switch list, channel schedule and pool seeds). A miss of its class E fails: the retry's triple is the same world.
 - **What passed is not turned.** An entry that passed at the first triple keeps its pass, and one that failed keeps its fail, whatever its class and its difference at the retry's (`CRITERIA.md` §7).
 - **Why the first triple is not changed.** A mixed entry there is owed the retry, and an honest one is unresolved by it. So the first triple's "inconclusive by order" costs one run and no verdict.
@@ -556,7 +594,7 @@ the store, plasma-pump, channel and IP3 references of the live tests, with an ad
 
 ### 13.1 The band that judges size, the plants and the power at the retry's
 
-**An owed entry's size is judged by the retry's β:** its U_c, its e_round and e_store at S_c = 12,800, with the same U_l, e_round(S_l) and closure. It is the band of the pass that is reported, since the retry's triple is what the entry is judged on. **It is not always the smaller.** U_c falls with the step, and the rounding count grows with the number of steps: at U_c = 0 the retry's β is 1.09 times the first triple's in an entry that reads no amount, and up to twice it where e_store is the larger part.
+**An owed entry's size is judged by the retry's β:** its U_c, its e_round and e_store at S_c = 12,800, with the same U_l, e_round(S_l) and closure. It is the band of the pass that is reported, since the retry's triple is what the entry is judged on. **It is not always the smaller.** U_c falls with the step, and the rounding count grows with the number of steps: at U_c = 0 the retry's β is 1.09 times the first triple's in an entry that reads no amount and has the closure share, less in one with a closure of its own, and up to twice it where e_store is the larger part.
 - **A plant that names an owed entry is scored with that band,** and with the retry's Y* where its scoring reads Y*. Its score waits for the retry. A plant none of whose named entries is owed is scored with the first triple's.
 - **Stage 1 is repeated on the retry tables** (`CRITERIA.md` §4.5). The judge forms the retry's β of every owed entry, and whether it is tested, writes `power_retry.json`, and the lead records its sha256 **before any difference of a retry table is formed.** An owed home entry is tested, or not, by that.
 - **The margins stand at both bands** (§7.4).
@@ -598,12 +636,15 @@ the store, plasma-pump, channel and IP3 references of the live tests, with an ad
 | JQ29 | an owed entry, an invented first-order error with d₂ = 26 e and d₁ = 13 e at the retry's | resolved outside its window, and inconclusive by `order` |
 | JQ30 | the same, with d₂ = 16 e and d₁ = 8 e | mixed, its order not excluded, and a pass, `order not shown`: §13's limit |
 | JQ31 | SC1 where `store_release` is owed, with the retry table honest | scored with the retry's β and Y*, after `power_retry.json` |
+| JQ32 | `spatial_calcium`, h₁: `definition.species_rows` with one row more | refused, and nothing of the run judged |
+| JQ33 | `spatial_calcium`, h₁: `definition.entities.passive_routes` 8 | refused, and nothing of the run judged |
+| JQ34 | `spatial_calcium`, h₁: `definition.trace_mM` ten times as large, its nodes and rows the same | not refused |
 
-**A judge's plant that the code scores otherwise stops the judge's tag.** The sizes that the plants rest on were formed from the captured arrays: each altered row moves by at least 10⁴ bands at U_c = 0, and the IP3 reaction's heat is 10⁶ bands of `heat_reactions_cytosol`.
+**A judge's plant that the code scores otherwise stops the judge's tag.** The sizes that the plants rest on were formed from the captured arrays: each altered row moves by at least 10⁵ bands of §8 at U_c = 0 but the store leak's heat (JQ5, 4 × 10³), and the IP3 reaction's heat is 2 × 10⁵ bands of `heat_reactions_cytosol`.
 
 ## 15. The rehearsal set of Part 2
 
-`SPEC.md` §8 and `CRITERIA.md` §10 hold. Part 2 has its own rehearsal, before its registration, in the same folders: `inputs_rehearsal_part2.json` (with `inputs_part2.json`'s schema, `p`, `amount_refs`, `closure_share` and `closure_terms_V` in every world, and runs named `inv_<name>`), `legacy_rehearsal_part2.json`, `margins_rehearsal_part2.json` and `plants_manifest_rehearsal_part2.json`, with the makers and readers of `SPEC.md` §8. **No value of this part's captured worlds is used.** It holds, at least:
+`SPEC.md` §8 and `CRITERIA.md` §10 hold. Part 2 has its own rehearsal, before its registration, in the same folders: `inputs_rehearsal_part2.json` (with `inputs_part2.json`'s schema, `p`, `amount_refs`, `closure_share`, `closure_terms_V` and `closure_terms` in every world, formed by the rehearsal's runner by §8's rules from the invented blocks, and runs named `inv_<name>`), `legacy_rehearsal_part2.json`, `margins_rehearsal_part2.json` and `plants_manifest_rehearsal_part2.json`, with the makers and readers of `SPEC.md` §8. **No value of this part's captured worlds is used.** It holds, at least:
 - one cell with one store, and a two-cell cluster with a store each, free field offsets, a gated junction that carries Ca (§3, condition 8) and Ca on its faces;
 - one world with the plasma pump and the exchanger, one with the calcium channel, and one with IP3 and its Hill read;
 - a two-pool cluster on one of these, with at least one event in each path, so that a step splits;
@@ -611,7 +652,7 @@ the store, plasma-pump, channel and IP3 references of the live tests, with an ad
 - one world whose fuel potentials are large against their difference (A between 2,500 and its cap), for §2.4's second term;
 - the retry run of every one of its families, unread until its `retry_owed.json` is hashed, so that §13's order of reading is run;
 - **one world whose amounts are as large against s as the registered ones:** `amount_refs`/`scales` at least 1.7 × 10⁴ for a cytosol's row, 4.4 for a store's, 22 for `n_out_x`, 7.7 × 10³ for `voltage` and 4.8 for `store_voltage` (the largest of `inputs_part2.json`). Its honest run must pass every entry;
-- one restart, one refusal of each kind, one run stopped by the engine's own check, one engine plant of each kind (EP3's and EP4's), and the faulty tables of JQ1 to JQ31 that a table can carry.
+- one restart, one refusal of each kind, one run stopped by the engine's own check, one engine plant of each kind (EP3's and EP4's), and the faulty tables of JQ1 to JQ34 that a table can carry.
 
 **The noise of the solves is looked at there:** in the honest runs, the step-halving differences of the entries at rounding, against 2 e (§13). One above it says that the closure is real, and θ is then corrected by `CRITERIA.md` §10's route, before the registration tag.
 
@@ -620,12 +661,13 @@ the store, plasma-pump, channel and IP3 references of the live tests, with an ad
 | What | Part 1 | Part 2 | Why |
 | --- | --- | --- | --- |
 | Integrator and order | RK4, p = 4 | IMEX with Strang halves, p = 2 for every S entry | The candidate is the composite (ruling 5) |
-| e_close | 4 × 10⁻¹² s, `phi_out` its own | 10⁻¹⁰ s, and the three potentials their own | The IMEX stage's charge tolerance, and every path of a potential error counted (§8) |
+| e_close | 4 × 10⁻¹² s, `phi_out` its own | 10⁻¹⁰ s, and their own in the three potentials and in the entries that a drifted voltage reaches above it | The IMEX stage's charge tolerance, every path of a potential error, and the drift that the voltages' closures admit (§8) |
 | θ | 10 × (e_round + e_store), without the closure | the same | §13 says what follows, since the closure is larger here |
 | `amount_refs` | the declared amounts | 7/5 of them in a row that a reaction touches | Two more additions a step (§8) |
 | Balances, capacitors, energy | judged (R and S) | reported | The integrator (§9) |
 | A reaction's heat | none | per compartment, the captured ones summed by the judge | The engine books a node's reactions together (ruling 1) |
 | `heat_junction` | one row | the junction's own and Ca's route, summed | Ca's junction route is a passive route, and legacy sums the four ions |
+| What a definition holds beyond its block | a key that the block has not is recorded | listed exactly in §2.5, and anything else is a departing echo | The engine needs a positive amount of every row at every node, and the kinds' declarations (§2.5) |
 | Cells' fixed charges | compared | recorded | The captured ones do not count the buffer's rows (§2.2) |
 | The pumps' free energy | declared, compared | formed by the exporter, compared with a rounding term | The cycle law declares none (ruling 2) |
 | The retry's runs | made when owed | made in the registered batch, unread until `retry_owed.json` is hashed | An honest order-2 run can leave entries mixed at the first triple (§13) |
@@ -647,25 +689,25 @@ Everything else of `CRITERIA.md`, `TABLE.md` and Amendment 1 is as in Part 1.
 Besides the protocol's §9:
 1. **The order of an entry that is unresolved, or mixed and passed at the retry's.** The record says `order not shown`, entry by entry. **A first-order error is not excluded there where its difference between 6.25 and 3.125 µs is at most 2 θ + 4 e = 24 e** (§13; 5.5 × 10⁻¹⁰ of the gross throughput in an entry that reads no amount).
 2. **The heat of a single reaction,** and how a lumped heat divides (a membrane's, the junction's, the store's leak).
-3. **Whether the release's factor is one condition or two,** and any single fuel potential. Only the factor's effect and the combination are compared.
+3. **Any single fuel potential,** or how the release's factor is declared. Only the factor's effect and the combination are compared.
 4. **The store's capacitor in the clusters,** and any claim of it there.
 5. **The clusters' trajectories.** One end state and five summaries are captured.
 6. **The balances, the moieties, the capacitors and the energy,** which are reported. The engine's own ledgers, with their looser energy allowance, are the criterion.
 7. **The fixed charges of cells and stores,** which the engine's own anchor rule holds.
 8. **What holds the fuel rows** (`cycle_supplied_fmol`), the condition's observed factor, and the reactions' standard terms.
 9. **A blind test of the pools of seed index 0.**
-10. **That Ca's junction route takes the gate as the captured one does,** beyond what `junction_Ca` and `exchange_Ca` show.
+10. **That Ca's junction route takes the gate as the captured one does,** beyond what `junction_Ca` and `exchange_Ca` show, and the live kind's code says (§3, condition 8).
 11. **The integrator.** A run on another scheme of order 3 or 4 passes wherever it agrees: its order lies in the window [1.5, 4.5]. The strings declare the scheme, and the record and the checker confirm what was declared.
 12. **A factor held through a step, where its error is that small.** A held factor is a first-order error: where it is resolved it shows as order 1, so the entry is inconclusive, and it is settled as a changed model (§3, condition 3). Below item 1's bound it is not seen.
-13. **Anything below a band:** at U_c = 0 about 1.2 × 10⁻¹⁰ of the gross throughput, and in general the candidate's own error estimate.
+13. **Anything below a band:** at U_c = 0 about 1.2 × 10⁻¹⁰ of the gross throughput, more in an entry with a closure of its own (2 × 10⁻⁹ in `ca_channel`), and in general the candidate's own error estimate.
 
 ## 18. For Part 2's independent auditor: what to look at first
 
 The auditor reads this folder alone, and the captured arrays and planted runs that `README.md` lists. It comes before Part 2's tag, and it asks its questions through the lead.
 1. **§13 and §13.1:** the retry's rule, its arithmetic and its limit, the runs made up front, the band that scores a plant, against `CRITERIA.md` §4.3, §4.5 and §7.
-2. **§8:** the closure's paths and their numbers, the rounding count for the IMEX step with its reaction halves, `amount_refs` and the 7/5.
+2. **§8:** the closure's paths, its two passes and the entries' own numbers (`closure_terms`), the rounding count for the IMEX step with its reaction halves, `amount_refs` and the 7/5.
 3. **§6:** the names, the signs and the sums. Check the signs against the arrays, and the lumps (`heat_junction`, `heat_store_leak`, `heat_membrane`, `exchange_x`, the reactions' heats per compartment) against the captured code's numbers.
-4. **§2.2 and §2.4:** the one-molar number, its three potentials and its tolerance.
+4. **§2.2, §2.4 and §2.5:** the one-molar number, its three potentials, its tolerance and its cap; what a definition holds beyond its block, and what a trace touches.
 5. **§3, condition 8:** what a Ca junction route without the gate would do, and where it would be seen.
 6. **§5:** the two sets of a cluster, and what each owns.
 7. **§7 and `margins_part2.json`:** the homes, the two replaced ones, the halved ratios, the margins under §8's bands, SC11's move and SC14.
