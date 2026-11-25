@@ -14,12 +14,12 @@ Host side, on two held-bath cells, with planted errors that must fail each row (
   schedule object shared by two controls, and records without the seeds);
 - the refusals of a composed file, each by its name, and a pool's fault by its world and event cap.
 
-Compiled, in one row (about 15 s of it, IMEX; the RK4 program of this world compiles for 40): a two-
-cell world with a near and a far outside node (two free field offsets, so the floor solver, D147),
-run by the command line with its inputs, conducts exactly where its pools' levels say, and is bit
-for bit the run of a definition whose schedules were written by hand from the kernel's walk
-(planted: the other pool's path, the levels of the step's start on the grid, and a path read one
-event early or late).
+Compiled, in one row (about 18 s; on IMEX, since the RK4 program of its world compiles for 40): a
+two-cell world with a near and a far outside node (two free field offsets, so the floor solver,
+D147), run by the command line with its inputs, conducts exactly where its pools' levels say, and is
+bit for bit the run of a definition whose schedules were written by hand from the kernel's walk
+(planted: the other pool's path, a path read one event early or late, switches moved to the steps,
+and the base schedule alone).
 """
 
 import copy
@@ -246,7 +246,7 @@ def test_a_near_miss_is_what_the_clock_refuses(fine):
         assert schedule.step_count(spec, changes) == len(EventGrid(declared)) - 1
 
 
-def test_a_near_miss_is_refused_by_name_or_declared_at_its_point(composed, monkeypatch):
+def test_a_near_miss_is_refused_by_name_or_declared_at_its_point(composed):
     point = 37 * DT
     near, off = point + 1e-9 * DT, 60.25 * DT
     paths = [hand_path((0.5 * DT, 0.0)), hand_path((near, 0.25), (off, 0.75))]
@@ -525,12 +525,20 @@ def test_a_composed_file_is_refused_by_name(change, reason):
         resolve.parse_composed(data)
 
 
-def test_a_refused_file_leaves_no_output_and_a_faulted_pool_is_named(outputs, capsys):
+def test_a_refused_file_leaves_no_output_and_a_faulted_pool_is_named(outputs, capsys, monkeypatch):
     given = outputs / "composed.json"
     given.write_text(json.dumps(composed_file())[:-1] + ', "pools": []}')
     out = outputs / "refused"
-    assert main(["assembly-pool", "resolve", str(given), "--output", str(out)]) == 2
+    argv = ["assembly-pool", "resolve", str(given), "--output", str(out)]
+    assert main(argv) == 2
     assert "Duplicate JSON field: pools" in capsys.readouterr().err and not out.exists()
+    asked = []  # What the command asks for, with and without its options.
+    with monkeypatch.context() as patch:
+        patch.setattr(resolve, "resolve", lambda *args, **options: asked.append(options) or {})
+        assert main(argv) == main([*argv, "--near-misses-to-grid", "--batch", "7"]) == 0
+    capsys.readouterr()
+    defaults = dict(backend="cpu", device_index=0, near_misses="refuse", max_working_bytes=None)
+    assert asked == [defaults, defaults | dict(near_misses="to_grid", max_working_bytes=7)]
     given.write_text(json.dumps(composed_file(max_events_per_world=12)))
     with pytest.raises(
         AssemblyError,
@@ -586,7 +594,7 @@ def test_an_operator_that_ends_or_empties_a_driven_cell_is_refused():
     # Planted: an operator that replaces or retires cells and names none reaches every cell.
     spec = parse_spec(partition_fixtures.divided())
     blind = SimpleNamespace(
-        LAW_ID="tests.blind@1",
+        LAW_ID="a blind operator",
         RETIRES=True,
         EVENT_REPLACES={"amount_increment": ()},
         living_intervals=lambda *_: {},

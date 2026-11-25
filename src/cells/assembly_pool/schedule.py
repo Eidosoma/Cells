@@ -4,7 +4,8 @@ A pool is one event-driven walk that reads nothing outside itself. An observable
 (assembly_pool/observables.py) gives a value after each committed event, and a composed file gives
 each value a level in [0, 1]. So a pool's level in one world is a path: piecewise constant and
 right-continuous, with a switch at each event that changes the level. The level of a switch is the
-one after its event, and it holds until the next switch. Most events are no switch.
+one after its event, and it holds until the next switch. An event that leaves the level as it was is
+no switch.
 
 A driven channel's availability is base(t) x level(t), where base is the schedule the ionic
 definition declares for it. Both factors are right-continuous, so the product is a schedule too,

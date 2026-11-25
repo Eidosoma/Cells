@@ -402,8 +402,8 @@ def test_the_cycle_observable_is_the_cycle_rank_of_every_connected_assembly():
         ("evaluate", None, "its evaluate is callable"),
     ):
         assert any(reason in e for e in replace(law, **{field: value}).errors())
-    with pytest.raises(ConfigError, match="Unknown assembly observable 'ring@1'; registered: root"):
-        observables.resolve("ring@1")
+    with pytest.raises(ConfigError, match=f"observable 'ring'; registered: {law.law_id}"):
+        observables.resolve("ring")
 
 
 def test_the_driver_s_path_is_a_direct_walk_of_the_pool_s_kernel(driven):
