@@ -114,7 +114,6 @@ GUARDS = (
     "tests/unit/test_continuity_bypass.py",
     "tests/unit/test_judge_imports.py",
     "tests/unit/test_law_modules.py",
-    "tests/unit/test_source_profile_boundary.py",
     # The modules surface (built-in kinds import engine code only through cells.modules): about 3 s,
     # added 23 November 2026 after FR-15 F2's gate met its refusal only at tiers, about 50 minutes in.
     "tests/unit/test_modules_surface.py",
