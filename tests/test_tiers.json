@@ -394,7 +394,8 @@
   "/mnt/workspaces/Cells/fr50-build-20261124/tiers/measured.json/measured.json",
   "/mnt/workspaces/Cells/fr50-build-20261124/tiers2/measured-quiet/measured.json",
   "/mnt/workspaces/Cells/fr43-part1-gaps-20261124/tiers/measure-4f4c4812/measured.json",
-  "/mnt/workspaces/Cells/docstring-batch-20261125/tiers/measure-1fc363ff/measured.json"
+  "/mnt/workspaces/Cells/docstring-batch-20261125/tiers/measure-1fc363ff/measured.json",
+  "/mnt/workspaces/Cells/d349-restart-row-20261125/evidence/measure-c81c6491/measured.json"
  ],
  "measured_provenance": [
   {
@@ -3370,6 +3371,13 @@
    "root": "/mnt/workspaces/Cells/docstring-batch-20261125/snap-1fc363ff",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-25T01:46:06+00:00"
+  },
+  {
+   "git_revision": "c81c6491b18719aa6bdcd834cf864bba369008ae",
+   "dirty": false,
+   "root": ".claude/worktrees/d349-restart-row",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-25T03:05:50+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -8308,10 +8316,10 @@
    },
    {
     "file": "tests/unit/test_shared_inventory_unit_writers.py",
-    "seconds": 64.48,
+    "seconds": 72.37,
     "exit_code": 0,
     "counts": {
-     "passed": 6
+     "passed": 9
     }
    },
    {
