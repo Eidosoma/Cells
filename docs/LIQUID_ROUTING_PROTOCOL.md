@@ -4,7 +4,7 @@
 Docs and validation only, with no `src/` change. Its author does not write references, build, judge or
 check. Branch `fr54-57-protocol`, from main 0e563668. The dt study of 25 November filled its placements (`spec/SPEC.md`
 §6), through the lead's report only (§11). The study agent's later answers are folded in (§11) and none is
-pending. **Amendments 1 to 5 of 25 November 2026** (`spec/AMENDMENT-<n>-2026-11-25.md`) govern this document and the
+pending. **Amendments 1 to 6 of 25 November 2026** (`spec/AMENDMENT-<n>-2026-11-25.md`) govern this document and the
 folder where they differ, the latest first.
 
 **What it registers.** This document and `validation/liquid_routing/spec/`: `README.md`, `SPEC.md`,
@@ -337,7 +337,7 @@ NumPy and decimal code, no engine, on CPU 6, in
 
 **Not read:** engine source, tests, any run output, any reference file, the judge's code, the builder's code.
 
-**Amendments 1 to 5** are in the spec folder, each with its own disclosures. Amendment 5 follows the lead's rulings on
+**Amendments 1 to 6** are in the spec folder, each with its own disclosures. Amendment 5 follows the lead's rulings on
 the spec audit, its second rulings after the auditor's re-run, and its answers on that text, the last after the
 auditor's third pass. This author did not read the audit, its folder or its numbers; the lead read the references'
 README layout section and printed key names, and no value, to answer this author's questions about forms.

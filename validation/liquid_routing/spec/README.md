@@ -47,6 +47,7 @@ the checker read this folder too (the protocol's roles).
 | `AMENDMENT-3-2026-11-25.md` | Which holders have a mixing heat, the exchange's interval, an M1 miss, the invented set's near-tight start |
 | `AMENDMENT-4-2026-11-25.md` | Arm 7's runs, retry runs, the restart and no-router runs, the spec auditor |
 | `AMENDMENT-5-2026-11-25.md` | The spec audit's findings as ruled, the layouts they give, what the references must do |
+| `AMENDMENT-6-2026-11-25.md` | The scale of `B_def`'s accuracy, `J0`'s `n_U_K`, P16's `heat`, which run a plant reads |
 
 **Files outside this folder that the registration uses:** in `validation/liquid_routing/`, `takeover_map.json`,
 `takeover_map_rehearsal.json` and `takeover_pairs.json` (the builder's), and `registered_strings.json` with its phase-2 and
