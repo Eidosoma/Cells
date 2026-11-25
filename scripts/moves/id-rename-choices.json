@@ -1114,6 +1114,11 @@
     "owner": "ensemble"
    },
    {
+    "path": "validation/ensemble_reexpression/rehearsal/registered_strings_rehearsal.json",
+    "reason": "the rehearsal's registered strings, in the IDs they were declared with (the protocol, section 5: the strings notes and the rehearsal's files are frozen for the move)",
+    "owner": "the lead"
+   },
+   {
     "path": "validation/fr1/references/reference_inputs.json",
     "reason": "registered reference inputs, whose git blob FR-1's design pins and a test checks",
     "owner": "fr1"
