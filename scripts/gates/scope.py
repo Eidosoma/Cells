@@ -12,10 +12,11 @@ cells or JAX.
         absent), and for a file by its size and whether it is executable (the one mode bit git
         keeps);
       - listing: the folders they listed, by the digest of their names and those names' kinds. The
-        standard library's discovery for a library (jaxlib's plugin search through pkgutil, metadata
-        lookups) depends only on the names discovery can use (DISCOVERY: distribution metadata, path
-        files, extension modules and plugins), so its listings and existence questions are compared
-        on those names alone; a new test file is not a JAX plugin. Any other listing counts whole;
+        standard library's discovery for a library (jaxlib's plugin search through pkgutil over
+        sys.path, metadata lookups) depends only on the names discovery can use (DISCOVERY:
+        distribution metadata, path files, extension modules and plugins), so its listings and
+        existence questions are compared on those names alone; a new test file is not a JAX plugin.
+        Any other listing counts whole;
       - imports: the names its imports looked up, in the repository's folders on sys.path and in its
         packages. A file that such a lookup would now find, first or at all, reaches the test: a new
         module that shadows another, a package beside a module of its name, a module that an import
@@ -307,7 +308,7 @@ def entry(logs, tree, trace=None):
     """One test file's entry: its dependencies by kind, its reads and its children, checked against
     strace's view of the same run when there is one."""
     content, exists, lists, finds, why = set(), set(), set(), set(), []
-    roots, tops, subs, known = set(), set(), set(), set()
+    roots, tops, subs, known, searched = set(), set(), set(), set(), []
     modules, reads, scans, processes = set(), [], False, []
     for name, rows in logs.items():
         head = next((r for r in rows if "process" in r), None)
@@ -350,11 +351,13 @@ def entry(logs, tree, trace=None):
                 p["touched"] = True
             if "stat" in r and useful(r["stat"]):
                 p["touched"] |= not r["stat"].startswith(RECORDER)
-                if by != "library" or not via or DISCOVERY.search(r["stat"].rsplit("/", 1)[-1]):
+                if by == "library" and via:
+                    searched.append((r["stat"], "stat"))
+                else:
                     exists.add(r["stat"])
             if "list" in r and useful(r["list"]):
                 if via == "metadata" or (via == "pkgutil" and by == "library"):
-                    finds.add(r["list"])  # Discovery: whoever asks, only names it can use count.
+                    searched.append((r["list"], "list" if via == "pkgutil" else "metadata"))
                 elif by in ("import", "pytest"):
                     known.add(r["list"])
                 else:
@@ -363,6 +366,16 @@ def entry(logs, tree, trace=None):
                     p["touched"] = True
                     if r.get("entries"):  # Its code holds the entries, which tell their sizes and modes.
                         exists.update(path for path in tree.inside(r["list"]).values())
+    # Discovery: only names it can use count. pkgutil looks through sys.path's folders and, for packages,
+    # the folders in them; a library that sends it elsewhere lists, and asks about, that place whole.
+    for path, how in searched:
+        place = os.path.dirname(path) or "."
+        if how == "metadata" or (how == "list" and {path, place} & roots):
+            finds.add(path)
+        elif how == "list":
+            lists.add(path)
+        elif place not in roots or DISCOVERY.search(os.path.basename(path)):
+            exists.add(path)
     subs.update(module_place(m) for m in modules if MODULE.match(m.rsplit("/", 1)[-1]))
     # The import system's own listings are replaced by the names it looked up; one of any other
     # folder (a finder that code built itself) counts whole.

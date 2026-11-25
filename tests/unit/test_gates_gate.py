@@ -1241,17 +1241,20 @@ def test_a_planted_read_of_a_repository_file_pulls_its_test_in(scope_map, tmp_pa
     assert after[P] == ["touched paths changed since the map: ['docs/b.md']"]
 
 
-@pytest.mark.parametrize("changes, via, chosen", [
-    ({"tests/unit/test_new.py": "def test_new():\n    pass\n"}, "pkgutil", False),  # Not a plugin's name.
-    ({"tests/unit/test_reader.py": None}, "pkgutil", False),  # A library's stat of a file it cannot use.
-    ({"tests/unit/jax_rocm7_plugin/__init__.py": ""}, "pkgutil", True),  # A plugin it would find.
-    ({"tests/unit/test_new.py": "def test_new():\n    pass\n"}, None, True),  # Its own listing (D358).
-    ({"tests/unit/test_reader.py": "X = 1\n"}, None, True),  # And its own question.
+@pytest.mark.parametrize("changes, via, root, chosen", [
+    ({"tests/unit/test_new.py": "def test_new():\n    pass\n"}, "pkgutil", "tests/unit", False),  # No plugin.
+    ({"tests/unit/test_reader.py": None}, "pkgutil", "tests/unit", False),  # A file it cannot use.
+    ({"tests/unit/jax_rocm7_plugin/__init__.py": ""}, "pkgutil", "tests/unit", True),  # A plugin.
+    ({"tests/unit/test_new.py": "X = 1\n"}, "metadata", "src", False),  # No distribution, wherever it looks.
+    ({"tests/unit/test_new.py": "X = 1\n"}, "pkgutil", "src", True),  # Sent past sys.path (D358),
+    ({"tests/unit/test_reader.py": "X = 1\n"}, "pkgutil", "src", True),
+    ({"tests/unit/test_new.py": "X = 1\n"}, None, "tests/unit", True),  # or listing by itself.
+    ({"tests/unit/test_reader.py": "X = 1\n"}, None, "tests/unit", True),
 ])
-def test_a_librarys_own_discovery_is_compared_on_the_names_it_can_use(tmp_path, changes, via, chosen):
+def test_a_librarys_own_discovery_is_compared_on_the_names_it_can_use(tmp_path, changes, via, root, chosen):
     """jaxlib's plugin search (pkgutil over sys.path) lists tests/unit and asks about each entry:
     only names discovery can use (DISCOVERY) count, so a new test file selects nothing. What a
-    library lists or asks in another way counts whole."""
+    library lists or asks elsewhere, or in another way, counts whole."""
     snap = scope_snapshot(tmp_path / "nightly")
     run, record = tmp_path / "run", json.loads((snap / "tests/test_tiers.json").read_text())
     logs = run / "scope" / "tests__unit__test_plain.py"
@@ -1259,7 +1262,7 @@ def test_a_librarys_own_discovery_is_compared_on_the_names_it_can_use(tmp_path, 
     (logs / "10-a.jsonl").write_text("".join(json.dumps(r) + "\n" for r in [
         {"process": 10, "parent": 1, "forked": False, "argv": ["python", "-m", "pytest"]},
         {"list": "tests/unit", "by": "library", "via": via},
-        {"stat": "tests/unit/test_reader.py", "by": "library", "via": via},
+        {"stat": "tests/unit/test_reader.py", "by": "library", "via": via}, {"root": root},
         {"exit": True, "modules": ["tests/unit/test_plain.py"]}]))
     (run / "run.json").write_text(json.dumps({"scope_map": str(run / "scope"), "files": [
         dict(r, timed_out=False) for r in record["tiers"]["1"]]}))
