@@ -5,6 +5,7 @@
 - **What changes.** Part 2's order of work, and what it ends in. No band, class, window, threshold, scale, count, data file or number moves. Nothing of Part 1 moves.
 - **Its name.** It is not named `AMENDMENT-*`, since Part 1's C0 requires exactly Part 1's amendments under that name.
 - **Value-silent.** It holds no number of a run of either side.
+- **Who receives it.** Every reader of this folder, the exporter's builder among them.
 - **Precedence.** For Part 2 it governs where it differs from `PART2.md`, `PART2_EXPORTER.md`, the amendments of Part 1 that hold there (`PART2.md` §16.1) and the protocol's §5, §6 and §8. Every other sentence stands.
 
 Each item quotes the sentence that it replaces or adds to, as it stands at Part 2's criteria tag, and says where.
@@ -17,18 +18,32 @@ Each item quotes the sentence that it replaces or adds to, as it stands at Part 
 
 **Now, for Part 2:** the 127 registered runs and the 36 retry runs (by rule and up front, as `PART2.md` §13 has it) are made once, from a clean frozen snapshot of Part 2's registration tag. They are made before any judge of Part 2 exists and before its rehearsal is scored.
 - **The tables.** The lead exports the tables of the 127 and hashes them (`TABLE.md` §1). The lead records the hashes.
-- **The retry runs.** Their records are kept. Their tables are not exported, since no `retry_owed.json` exists. **Unchanged,** in `PART2.md` §13:
+- **The retry runs.** Their records are kept, and the lead records the sha256 of every file of them, so that a later scoring reads them pinned. Their tables are not exported, since no `retry_owed.json` exists. **Unchanged,** in `PART2.md` §13:
 
 > They are kept unread.
 
 - **Sealed.** Nobody opens a table, or the numbers of a record.
-- **What the user is told,** per consumer and of the 127 alone: how many runs completed, how many were refused, by kind, and how many were stopped, and whether the engine's own checks held. They held where none was stopped, since a stop is the engine's own check failing. A program counts them from each entry's `status` and `refusal.kind`, and prints the counts alone.
+- **What the user is told,** per consumer, of the 127 and, apart from them, of the 36 retry runs, in the same words: how many runs completed, how many were refused, by kind, and how many were stopped, and whether the engine's own checks held. They held where none was stopped, since a stop is the engine's own check failing. On a line of its own, as a number alone: how many stops had a second pass that completed (Amendment 2, item 8 (a)).
+- **How they are counted.** A program reads each run's status, its refusal's kind and `second_pass_completed` alone, and prints the counts alone. For the 127 it reads them in the tables. For a retry run it reads them in its record, with the exporter's mapping of what the engine raised to a kind (`TABLE.md` §4).
 
 **Replaces, for the judge's reader alone,** in the protocol's §5, step 3:
 
 > The judge's reader and the exporter are then extended from its files alone, and it has its own rehearsal (`spec/PART2.md` §15).
 
 **Now:** the exporter is extended before the runs, since the lead exports with it. The judge's reader is not extended to Part 2 now.
+
+**Adds to** the protocol's §5, step 13:
+
+> Part 2's are named in its tag.
+
+**Now also:** Part 2's repeated runs after the ID move stay, by Part 1's pattern: each child at its finest registered step, and each cluster's `s1 w0` at its finest step, with its `s1 pool`. They are:
+- `spatial_calcium h=3.125e-06`, `plasma_calcium h=3.125e-06`, `gated_calcium h=3.125e-06` and `ip3_calcium h=3.125e-06`;
+- `cluster_spatial_calcium s1 w0 h=3.125e-06` with `cluster_spatial_calcium s1 pool`;
+- `cluster_plasma_calcium s1 w0 h=3.125e-06` with `cluster_plasma_calcium s1 pool`;
+- `cluster_gated_calcium s1 w0 h=3.125e-06` with `cluster_gated_calcium s1 pool`;
+- `cluster_ip3_calcium s1 w0 h=3.125e-06` with `cluster_ip3_calcium s1 pool`.
+
+A program compares each with its sealed table value by value, the IDs through the move's table. The user hears equal or not, and nobody opens a table.
 
 ## 2. What still comes first, unchanged
 
@@ -89,11 +104,12 @@ Agreement with legacy shows that the equations were kept, and validates no physi
 
 ## 6. Where it is pointed to
 
-The protocol's §5 and §6 each have one line that points here, and `README.md` lists this file. No other file moves.
+The protocol's §5 and §6 each have one line that points here, and its §11 one row in the table of what changed. `README.md` lists this file, and gives it to the exporter's builder. No other file moves.
 
 ## What this author added to the lead's words
 
-- "Of the 127 alone", and the program that counts from `status` and `refusal.kind` (item 1). The lead's word was "how many runs".
+- The program that counts, from each run's status and refusal alone (item 1).
+- That a retry run's counts are read in its record, with the exporter's mapping to a kind (item 1).
 - That the exporter is extended before the runs, and the judge's reader not (item 1). The runs need the one, and the lead's word excludes the other.
 - That a changed model's runs are made and sealed with the rest (item 2). The lead's word was the 127.
 - Four of the points that are weaker: the checks' being on, the rehearsal's route, the reader, and that a later verdict is of the snapshot before the deletion (items 3 and 4).

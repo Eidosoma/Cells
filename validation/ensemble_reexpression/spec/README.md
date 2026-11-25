@@ -40,7 +40,7 @@ runs, taken on 25 November 2026 from frozen snapshots of the engine. It holds do
 ## Rules for every reader
 
 - **Who may read what** is the protocol's §3. Two lines matter most here.
-  - **The exporter's builder receives `TABLE.md`, `READOUTS.md`, `SPEC.md`, `inputs.json`, `AMENDMENT-1-2026-11-25.md` and `AMENDMENT-2-2026-11-25_EXPORTER.md`,** and for Part 2 `PART2_EXPORTER.md`, `PART2_BLOCKS.md` and `inputs_part2.json`, and neither `PART2.md` nor `AMENDMENT-2-2026-11-25.md`. The judge's reader is written from this folder alone.
+  - **The exporter's builder receives `TABLE.md`, `READOUTS.md`, `SPEC.md`, `inputs.json`, `AMENDMENT-1-2026-11-25.md` and `AMENDMENT-2-2026-11-25_EXPORTER.md`,** and for Part 2 `PART2_EXPORTER.md`, `PART2_BLOCKS.md`, `inputs_part2.json` and `PART2-AMENDMENT-1-2026-11-25.md`, and neither `PART2.md` nor `AMENDMENT-2-2026-11-25.md`. The judge's reader is written from this folder alone.
     Neither reads the other's code.
   - The judge reads the captures, the planted legacy arrays and this folder. It reads no engine source and no builder's code.
 - **Value-silent about the candidate.** This folder holds legacy numbers (scales from the inputs, the legacy runs' own refinement,
