@@ -1,8 +1,8 @@
 # The laws: closed forms
 
 Every input is in `inputs.json`. Work in the standard library's `decimal` at 60 digits or more, and
-read each declared number as the exact value of its nearest double. Nothing here comes from engine
-code.
+read each declared number as the exact value of its nearest double. Nothing here is engine code. One law, the
+default heat's in §2, was read from the engine by the dt-study agent and is declared here as a formula.
 
 ## 0. Conventions
 

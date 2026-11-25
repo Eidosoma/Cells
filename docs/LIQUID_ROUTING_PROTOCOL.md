@@ -257,5 +257,5 @@ NumPy and decimal code, no engine, on CPU 6, in
 
 **Not read:** engine source, tests, any run output, any reference file, the judge's code, the builder's code.
 
-**The advisor** answered on the plan. It was called twice on this draft and timed out both times, so the
-draft was not reviewed by it.
+**The advisor** answered on the plan. It was called three times on the draft, the last after the dt study's
+report was written in, and timed out each time, so no draft was reviewed by it.

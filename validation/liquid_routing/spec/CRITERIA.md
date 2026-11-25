@@ -28,7 +28,7 @@ here. None comes from a reference or a run.
 | Arm 6 heats | m_n + m_f + m_h | s_F |
 
 - An exchange's sample and supplied, from the run's own `before`: 8 u N_x. Its heat from the same: 32 u
-  s_F.
+  s_F. By class S, `before`, `sample` and `heat` take their amount's and their heat's row above, at S = 16 s/h.
 
 ## 2. Rungs and the retry
 

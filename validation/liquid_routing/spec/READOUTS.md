@@ -42,7 +42,7 @@ registered grid, never from the table) and u = 2⁻⁵³. The reference's own er
 | 2 | the sums; the exchange's numbers and the first step after it, from the run's own rows; `H_face` exact, from the run's own rows; `supplied` | `n_T_1`, `n_T_2`, `H_face` (both heats), `before`, `sample`, `heat` (p = 2) | E: to the exchange, the `N-none` twin, and `before` |
 | 3 | every `n`, `V_K`, `supplied`, label and their sums, `H_tot` | – | E: twins; N: every `H_<i>` never falls |
 | 4 | every `n`, `V_K`, `supplied`, `H_K`, each portion's `amount`, `volume` and `loss` | – | E: the first portion's loss, +0.0; the restart |
-| 5 | every `n`, `V_K`, `H_tot` at every step | `H_A`, `H_B`, `H_K` (p = 1) | U: `H5`; N |
+| 5 | every `n`, `V_K`, `H_tot` at every step, `H5` included | `H_A`, `H_B`, `H_K` (p = 1), `H1` to `H4` | U: `H5`; N |
 | 6 | `n_U_*`, `V_K`, sums, the energy identity on the run's own rows | `n_T_*`, and `H_tot` with `H_face` against the reference (p = 2) | E: `J0` against its twin |
 | 7 | – | – | E: digests |
 
