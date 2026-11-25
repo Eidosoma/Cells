@@ -5,27 +5,28 @@ import sys
 import traceback
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "fresh_rerun"))
-import common as u  # noqa: E402
-import prepare  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+import native_hooks as hooks  # noqa: E402
+
+u = hooks.u
 
 
 def preparation(
     output, workspace, *, clock=None, extracellular=False, configuration_overrides=None
 ):
-    native, package, template, upstream, np = prepare.native_setup(workspace)
+    package, template, upstream, np = hooks.native_setup(workspace)
     from betse.science.enum.enumphase import SimPhaseKind
     from betse.science.parameters import Parameters
     from betse.science.phase.phasecls import SimPhase
     from betse.science.simrunner import SimRunner
     from ruamel.yaml import YAML
 
-    protocol = u.read(native.ctx.PROTOCOL)
+    protocol = u.read(hooks.PROTOCOL)
     variant = next(v for v in protocol["variants"] if v["id"] == "all_blocked")
     output.mkdir(parents=True, exist_ok=False)
     yaml = YAML(typ="safe")
     yaml.default_flow_style = False
-    configuration = native.ctx.configuration(template, protocol, variant, output)
+    configuration = hooks.configuration(template, protocol, variant, output)
     if configuration_overrides is not None:
         configuration.update(configuration_overrides)
     if extracellular:
