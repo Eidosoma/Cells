@@ -584,7 +584,7 @@ a node's rate  +=  the largest over species of its rows
   zero-amount row gives 0/tiny = 0, finite; the division first gives NaN (M2, `feedback_zero`). It is finite there
   but not a bound at exactly zero. On @3 no row reaches zero (`models/surface_tissue.py:414`): unreachable today,
   covered anyway, with a row (§14, row 11).
-- **The held control is never used:** at 1e-9 mM it would read 4e7 per second (M2).
+- **The held control is never used:** at 1e-9 fmol it would read 4e7 per second (M2).
 - **Both ends, per moved row** (row 3). For one row, as the release's, this is the loop's own rate. For a slot with
   several rows it is a row sum of the block, a bound that can be looser than the mode's own rate by |J_m|/|J_p|. The
   core could take the read row's J for every row of the slot later, with the same hooks.
@@ -597,7 +597,8 @@ it would change FR-5's layouts, whose sources have no hooks. So the hook returns
 control field's slot order, `{control field: [species, slot]}` (for the passive routes, the `flux` of `_flux`,
 `kinds/passive_routes.py:702`, as it stands), and the core takes J_m at (`loop_flux_row`[m], the static slot of m).
 One J per slot and row, at the routed control, as ruled. The source's hooks, the pairing, the fields and the rule
-are E's.
+are E's. Binding traces both stage hooks once, as it traces `factors` (`models/surface_pump_v3.py:3589-3612`), and
+refuses a wrong shape by name.
 
 **Limits, stated (row 7), in this note and in E's:**
 - loops through two routes (one moves X and gates on Y, another moves Y and gates on X) are not bounded;
@@ -816,14 +817,17 @@ Second order in h. `cell_owned_compartments@1` runs no part.
   5,291 per second (M), the K leak's 5,257 of it (S), so 0.066 at 12.5 µs, well below the limit. The plasma rows are
   16 to 17 per second (M). FR-4's 0.05 was a limit of the energy ledger in other worlds; here the ledger holds at
   1.6e-7 (M);
-- material: h times the largest material rate exceeds 1. 2.4 per second measured today, about 11 with the channels,
-  the cycles' charged rows and the feedback (S);
+- material: h times the largest material rate exceeds 1. 2.4 per second today (M), 4.2 with the cycles' charged rows
+  (M), about 11 with the channel and the feedback (S);
 - domain: each law's own. D152's halves hold h L <= 1 at each stage, on unidirectional rates.
 
 **One material rule (rows 2 and 3).** A mode's own rate goes to every row the mode moves, at both ends, held baths
 left out; the modes add per row; a node's rate is its largest row. It is D310's rule for a route (T_c + T_o), §5.3's
 for a channel's ion, §6.3's for a cycle, and §6.5's row sum for a loop. Each kind's and each core term stays one
-array per node, and `material_rate` adds the arrays, as today.
+array per node, and `material_rate` adds the arrays, as today. **Checked (M, `material_check`):** in the store
+world, at fixed potentials, the true largest rate of the calcium and sodium rows is 3.37 per second with a held bath
+and 3.38 closed (finite differences of the live `explicit_rates`), and the rule reads 4.21 and 4.30. At a thousandth
+of the calcium they are 20.90 and 20.94, and 22.55 and 22.59.
 
 **RK4 is refused** for every world with a store (§1, row 8) and for every world with a calcium channel (§5.2).
 
@@ -1134,7 +1138,7 @@ Lines at 43b22d40. On `legacy-cleanup` (e67f4660) `models/surface_pump_v3.py` is
 | 1 | `registry/laws.py:362-432` | `ChannelLaw.material_term`, its check | core |
 | 1 | `operators/cell_replacement.py:194-209` | the refusal by name | operators |
 | 1 | new `laws/channels/cav1p2_m2h.py`; `registry/model_table.py:67-82` | the module and its home | laws |
-| 2, 6 | `models/surface_pump_v3.py:3701-3727` (`material_rate`), 795-825 (`block_material_rates`), 189-196, 332-400, 1185-1262, 5041, 5354-5401, 5442-5458; call sites 2830 and 2941 | the channel term, the loops, their layout fields, pairing, types and the rule: **one edit, one owner** | core |
+| 2, 6 | `models/surface_pump_v3.py:3701-3727` (`material_rate`), 795-825 (`block_material_rates`), 189-196, 332-400, 1185-1262, 3589-3612 (`_check_routes`), 5041, 5354-5401, 5442-5458; call sites 2830 and 2941 | the channel term, the loops, their layout fields, pairing, types and the rule: **one edit, one owner** | core |
 | 2 | `operators/species_common.py:167-192` | the reactions door | operators |
 | 3 | `operators/compartments.py:42-45, 256-268, 445-451, 512-518, 698-707` | the docstring's item 6, the representative, the check and its message, the scope string | operators |
 | 3 | `numerics/surface_field.py:299-304` | `representative(...)`, used by `bind` | core |
@@ -1296,6 +1300,7 @@ only.
 | `row1_kinds` | the corrected stage rate with kinds, on FR-4's declared world, FR-5's arm T with its factors, the store world open and closed | today's rates to every printed digit; cell rows 0, 0, 15.7, 15.7 per s |
 | `scan_shapes`, `scan_rates`, `scan_wide` | the scan of §8.3: 140 worlds' shapes; the rates of those that parse; 222 further modules searched for zero-argument builders (89 not importable here, 11 worlds built, one more floating node, in a legacy family at 0.67) | 47 with a floating node, no hit; 69 without one equal bit for bit in both rates; 17 refused at the parse; 23 skipped, 22 of them replacement worlds, whose control records the probe's reader does not handle and which hold no floating node |
 | `mode_rates` | the planted cycles' mode rates in the store world against their blocks' eigenvalues and the largest over species | §6.3 |
+| `material_check` | the rule of §8.2 for the routes and the cycles against the eigenvalues of the live explicit rates' Jacobian at fixed potentials, Ca and Na rows, at the start and at a thousandth of the calcium | the rule is 1.25 to 1.27 times the true rate at the start, 1.08 times at the trace; §8.2 |
 | `proton_rows` | FR-4's buffers: n_eff, n_C and their ratio at two pH, with and without a closure | §6.3 |
 | `nkcc_probe`, `symport_forms` | the symports' forms: `errors()`, parse, 4,000 and 200 random states against `legacy/processes/cotransport.py` and the closed form; non-neutral bindings | §7.2 |
 | `two_cell` | the two-cell closed world (E's source absent, so the release is ungated at 0.238 of its permeability): parse, one host evaluation, compile and five steps of 12.5 µs | version 2 refused at the parse; version 3: parse 1.7 s, two free offsets, energy balance -5e-14 pJ/s, charge rate 5,268 per s, material rate 0.91 per s, compile and run 27.4 s, capacitor error 1.7e-28 C, electrode error 0 C, worst relative energy ledger 7.3e-5 |
