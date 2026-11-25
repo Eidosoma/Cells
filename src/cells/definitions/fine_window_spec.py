@@ -26,8 +26,8 @@ execution, not physics: the model, experiment and the other execution fields are
 model's own parser, unchanged, as for execution.projective and execution.energy_check.
 
 Refused, fail-closed:
-- a model other than ADMITTED_MODELS: the older families read execution.dt in their dynamics, and
-  a model with its own runner would ignore the block;
+- a model other than ADMITTED_MODELS: one that reads execution.dt in its dynamics would take it for
+  its step, and a model with its own runner would ignore the block;
 - in the composite, an operator law not on ADMITTED_OPERATORS. Each admitted law's step parts, and
   the functions they pass the step to, were read for version 1: its events compare its state with
   time-scheduled controls, its half-steps, RK4 rates and in-step process take the step the
