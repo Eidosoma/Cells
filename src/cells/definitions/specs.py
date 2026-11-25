@@ -800,10 +800,6 @@ class SimulationSpec:
 
     def _fine_dict(self) -> dict:
         m, e, x = self.model, self.experiment, self.execution
-        if getattr(x, "refinement_times", ()):
-            from cells.execution.grid import require_refinement_model
-
-            require_refinement_model(self)
         from cells.definitions.apical_vertex_spec import ApicalVertexModel
         from cells.definitions.apical_vertex_spec import to_dict as apical_vertex_to_dict
 

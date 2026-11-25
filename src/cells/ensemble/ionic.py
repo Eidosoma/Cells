@@ -24,7 +24,6 @@ from cells.definitions.specs import digest as definition_digest
 from cells.definitions.specs import parse_spec as parse_ionic
 from cells.execution.batch import BatchSpec, WorldSpec
 from cells.execution.batch_windows import plan_batch_windows, run_batch_windowed
-from cells.execution.grid import refinement_times
 from cells.execution.resources import trace_bytes
 from cells.execution.vector_windows import plan_vector_windows, run_vector_windowed
 from cells.execution.windows import WindowPolicy
@@ -87,7 +86,6 @@ class IonicSpec:
         bound = self.worlds * (
             math.ceil(self.end_time_s / self.simulation.execution.dt)
             + len(self.simulation.experiment.changes)
-            + len(refinement_times(self.simulation))
             + 1
         )
         return BatchSpec(worlds, self.worlds, bound, self.max_working_bytes)

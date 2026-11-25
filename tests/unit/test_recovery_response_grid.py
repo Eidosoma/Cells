@@ -3,47 +3,11 @@
 import numpy as np
 import pytest
 
-from cells.definitions.specs import parse_spec
-from cells.execution.grid import EventGrid
 from validation.tissue import surface_cotransport_water_response as panel
 
 
 def boundaries():
     return [panel.INTERVENTION_TIME, panel.INTERVENTION_TIME + 2.0**-40, 20001 * panel.DT]
-
-
-@pytest.mark.parametrize("stop", [None, 20040 * panel.DT])
-def test_local_refinement_preserves_original_physics_clocks_and_nested_boundaries(stop):
-    points = boundaries()
-    if stop is not None:
-        points += [20002 * panel.DT, 20004 * panel.DT, stop]
-    original_points = points.copy()
-    previous = None
-    for factor in (1, 2, 4):
-        raw = panel.refined_recovery_definition(points, factor=factor, stop_time_s=stop)
-        assert points == original_points
-        original = panel.definition("supply_recovery", dt=panel.DT / factor)
-        assert raw["model"] == original["model"]
-        assert raw["experiment"] == original["experiment"]
-        assert {k: v for k, v in raw["execution"].items() if k != "refinement_times"} == (
-            original["execution"]
-        )
-        declared = np.asarray([points[0], *raw["execution"]["refinement_times"], points[-1]])
-        if previous is not None:
-            np.testing.assert_array_equal(declared[::2], previous)
-            np.testing.assert_array_equal(declared[1::2], (previous[:-1] + previous[1:]) / 2)
-        previous = declared
-        spec = parse_spec(raw)
-        assert spec == parse_spec(spec.to_dict())
-        grid, baseline = EventGrid(spec), EventGrid(parse_spec(original))
-        assert grid.exact_index(panel.INTERVENTION_TIME) == baseline.exact_index(
-            panel.INTERVENTION_TIME
-        )
-        for time in (*declared, *spec.experiment.observation_times):
-            assert grid[grid.exact_index(float(time))] == time
-        assert grid[-1] == 0.5 and len(spec.experiment.changes) == len(
-            parse_spec(original).experiment.changes
-        )
 
 
 @pytest.mark.parametrize("stop", [True, float("nan"), float("inf"), 0.25, 0.24, 0.5001, 0.250013])

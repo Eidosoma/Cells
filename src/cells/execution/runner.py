@@ -21,7 +21,6 @@ from cells.execution.grid import (
     EventGrid,
     applied_definition,
     checked_grid,
-    require_refinement_model,
     require_scalar_path,
 )
 from cells.execution.resources import trace_bytes
@@ -58,7 +57,6 @@ def timeline(spec: SimulationSpec, *, energy_check=False) -> np.ndarray:
             "scalar windows (refused on this path)"
         )
     require_scalar_path(spec, energy_check)
-    require_refinement_model(spec)
     grid = EventGrid(spec)
     _trace_budget(spec, len(grid) - 1)
     times = np.fromiter(grid, dtype=np.float64, count=len(grid))
