@@ -72,7 +72,7 @@ Whoever writes the rows should use the same ones. The second to the fifth say wh
 6. J at V_stall and V_rev, and 1e-6 V either side, is at the exact real voltage, so J there is exactly 0. `near_V_stall` and
    `near_V_rev` hold the doubles nearest those three voltages and J at each, taken exactly.
 
-## Other readings
+## Other readings, taken without asking
 
 7. The numbers in SPEC's text (0.010 V, 0.006, 1e-15, the SI constants) are exact decimals.
 8. G and the fixed charges run over every row of every node: the constant rows too, and the buffer's rows where its reactions
@@ -83,14 +83,16 @@ Whoever writes the rows should use the same ones. The second to the fifth say wh
 11. "J with V_NP changed" is J at V_NP + 0.1 V and at -V_NP. The law has no voltage, so it is J.
 12. `in_domain` is decided on the exact x.
 
-No question is open.
+The six questions asked are the six decisions above. None is open.
 
 ## What was reached
 
 Sizes are the largest found; `accuracy.json` has them per observable, per control and per setting.
 
 **Kernel states** (47 pumps, 38 exchangers, 68 symports; 2,876 numbers): the two routes agree to 6e-41 of each number before
-rounding, and every double is the same. So do 60 and 90 digits. Wanted: 1e-13. The **rates at t = 0** agree to 1.4e-58.
+rounding, and 60 digits agree with 90 to the same. That is the measured floor of 60 digits. It is set by J at the doubles next to
+a stall or reversal voltage, where the two one-way rates cancel. Every double is the same by both routes and at both precisions.
+Wanted: 1e-13. The **rates at t = 0** agree to 1.4e-58.
 
 **The store world**, over both variants, as a part of each observable's largest change:
 
@@ -101,11 +103,11 @@ rounding, and every double is the same. So do 60 and 90 digits. Wanted: 1e-13. T
 | m, h | 3.8e-33 | 1.2e-15 |
 | transfers | 2.1e-27 | 2.1e-14 |
 | heats | 5.4e-27 | 5.0e-14 |
-| works | 1.2e-28 | 1.4e-15 |
-| energies, totals | 5.6e-28 | 1.1e-14 |
+| works | 1.2e-28 | 1.3e-15 |
+| energies, totals | 5.5e-28 | 1.0e-14 |
 
 Wanted: 1e-10, and 1e-9 for transfers, heats and work. Over all 36 cases with their controls the two columns are at most
-6.8e-27 and 1.3e-13. The published value is then one rounding away: 1.1e-16 of itself.
+6.8e-27 and 1.2e-13. The published value is then one rounding away: 1.1e-16 of itself.
 
 **How it is known.** The error of each method falls as its order says, and a run beyond all of them (4 steps in 2 ms, 14
 columns) agrees with the published settings to 3e-33. The first column is the implicit method's own error.
@@ -120,11 +122,16 @@ columns) agrees with the published settings to 3e-33. The first column is the im
 | SciPy BDF, second route | rtol 1e-6 / 1e-9 / 1e-12 | 1.7e-5 / 5.3e-8 / 5.2e-10 |
 | SciPy LSODA, second route | rtol 1e-6 / 1e-9 / 1e-12 | 2.2e-6 / 3.6e-9 / 5.6e-12 |
 
-**Balances.** G + heat - work moves by at most 5e-36 pJ; matter by 1e-44 fmol; the voltages from the charges and X_v differ from
-the integrated ones by 7e-36 V. No mover's heat falls in any case but the release's under `release_sign`.
+**Made again.** `values.json` and `accuracy.json`, each under the hash seeds 1 and 2 with one BLAS thread: the same to the byte.
+(Run with `python -s -P -B`, because `-I` does not read `PYTHONHASHSEED`.)
+
+**Balances.** G + heat - work moves by at most 5e-36 pJ, in every case but `pump_without_voltage`. Matter moves by 1e-44 fmol. The
+voltages from the charges and X_v differ from the integrated ones by 7e-36 V. No mover's heat falls in any case but the release's
+under `release_sign`.
 
 **The material block.** The slopes by hand agree with central differences in 60 digits to 1e-35, and with the second route's
-differences in doubles to 3e-9 (which is the differences' own error). The eigenvalues agree with NumPy's to 1e-15 of the largest.
+differences in doubles to 3e-9, about what differences in doubles can reach. The eigenvalues agree with NumPy's to 1e-15 of the
+largest.
 
 **The fastest rates** are 445 1/s and 245 1/s, then 54, 51 and 40 1/s. By their size the first is the charging of the bounding
 patch, the second the store's free buffer and the last the m gate; that naming is an estimate. No eigenvalue of the whole system
@@ -140,8 +147,8 @@ negative heat in any state or in the random draws. The integrators were tried on
 - **A double of a large amount does not hold 1e-10 of its own change.** Outside Cl holds 1.3e-8 of it, outside Na 1.1e-9, and G
   7e-10. Compare the changes, which are published as doubles of their own. All other amounts hold 8.5e-11 or better.
 - **Near equilibrium a symport shows its inputs' rounding.** Reading the literals as decimals instead of doubles moves J by up
-  to 6.2e-14 and the heat by 1.25e-13 of themselves, at 0.1% from equilibrium. The exchangers and the pumps move by 6e-15 at
-  most. A program in doubles loses at least as much.
+  to 6.2e-14 and the heat by 1.25e-13 of themselves, at 0.1% from equilibrium. So a band of 1e-13 on that heat is at its edge:
+  a program in doubles loses at least as much. The exchangers and the pumps move by 6e-15 at most.
 - **What each control moves**, in `accuracy.json` under `controls`: at least 4.4e-3 of some observable's largest change (the
   bounding permeability of K), most of them 1e-2 to 8e-2, and the two changes of a law 0.5 to 9. The only ones that move
   nothing are the binding constants without buffers.

@@ -1,0 +1,1345 @@
+{
+ "schema": "calcium_store_references_accuracy@1",
+ "what": "Written by accuracy_study.py; see README.md.",
+ "kernel_states": {
+  "pump_states": {
+   "states": 47,
+   "numbers_compared": 998,
+   "largest_relative_difference_of_the_two_routes": 1.1e-41,
+   "largest_relative_difference_of_60_and_90_digits": 1.1e-41,
+   "doubles_that_differ_between_the_routes": 0.0,
+   "doubles_that_differ_between_60_and_90_digits": 0.0,
+   "second_route_at_the_exact_zeros_over_k_a": 1.5e-142,
+   "inputs_as_literals_instead_of_doubles": {
+    "largest_relative_change": 6e-15,
+    "where": "V_stall_V, typical z=2 n=4",
+    "by_output": {
+     "J_at_V_stall_minus_1e-6_V_fmol_per_s": 2.23e-16,
+     "J_at_V_stall_plus_1e-6_V_fmol_per_s": 2.23e-16,
+     "J_fmol_per_s": 1.55e-15,
+     "J_plus_fmol_per_s": 2.25e-16,
+     "S": 2.23e-16,
+     "V_stall_V": 6e-15,
+     "current_N_to_P_A": 1.55e-15,
+     "dJ_dV_NP_fmol_per_s_per_V": 3.4e-15,
+     "dJ_dn_N_per_s": 1.8e-15,
+     "dJ_dn_P_per_s": 3.49e-15,
+     "heat_rate_pJ_per_s": 2.35e-15,
+     "move_N_fmol_per_s": 1.55e-15,
+     "move_P_fmol_per_s": 1.55e-15,
+     "work_rate_pJ_per_s": 1.95e-15,
+     "x": 7.77e-16,
+     "x_fuel": 5.65e-16
+    }
+   }
+  },
+  "exchanger_states": {
+   "states": 38,
+   "numbers_compared": 722,
+   "largest_relative_difference_of_the_two_routes": 5.53e-41,
+   "largest_relative_difference_of_60_and_90_digits": 5.53e-41,
+   "doubles_that_differ_between_the_routes": 0.0,
+   "doubles_that_differ_between_60_and_90_digits": 0.0,
+   "second_route_at_the_exact_zeros_over_k_a": 7.32e-145,
+   "inputs_as_literals_instead_of_doubles": {
+    "largest_relative_change": 4.46e-15,
+    "where": "V_rev_V, random 13",
+    "by_output": {
+     "J_at_V_rev_minus_1e-6_V_fmol_per_s": 4.11e-16,
+     "J_at_V_rev_plus_1e-6_V_fmol_per_s": 4.11e-16,
+     "J_fmol_per_s": 4.48e-16,
+     "S": 3.97e-16,
+     "V_rev_V": 4.46e-15,
+     "current_N_to_P_A": 4.48e-16,
+     "dJ_dV_NP_fmol_per_s_per_V": 4.89e-16,
+     "dJ_dn_Ca_N_per_s": 5.34e-16,
+     "dJ_dn_Ca_P_per_s": 4.19e-16,
+     "dJ_dn_Na_N_per_s": 4.68e-16,
+     "dJ_dn_Na_P_per_s": 6.94e-16,
+     "heat_rate_pJ_per_s": 5.25e-16,
+     "x": 1.75e-16
+    }
+   }
+  },
+  "symport_states": {
+   "states": 68,
+   "numbers_compared": 1156,
+   "largest_relative_difference_of_the_two_routes": 6.01e-58,
+   "largest_relative_difference_of_60_and_90_digits": 6.01e-58,
+   "doubles_that_differ_between_the_routes": 0.0,
+   "doubles_that_differ_between_60_and_90_digits": 0.0,
+   "second_route_at_the_exact_zeros_over_k_a": 0.0,
+   "inputs_as_literals_instead_of_doubles": {
+    "largest_relative_change": 1.25e-13,
+    "where": "heat_rate_pJ_per_s, salt_1_2, near equilibrium",
+    "by_output": {
+     "J_fmol_per_s": 6.24e-14,
+     "dJ_dn_N_per_s": 4.25e-16,
+     "dJ_dn_P_per_s": 4.01e-16,
+     "heat_rate_pJ_per_s": 1.25e-13,
+     "moves_N_fmol_per_s": 6.24e-14,
+     "moves_P_fmol_per_s": 6.24e-14,
+     "one_way_rates_sum_fmol_per_s": 1.41e-16,
+     "with_V_NP_changed": 6.24e-14,
+     "x": 6.24e-14
+    }
+   }
+  }
+ },
+ "initial_rates": {
+  "numbers_compared": 36,
+  "largest_relative_difference_of_the_two_routes": 1.35e-58
+ },
+ "known_limits": {
+  "B(-x) = B(x) + x": 1.73e-60,
+  "constant field: flux at the reversal potential over the one-way flux": 1.4e-58,
+  "constant field: the two sides and the voltage exchanged": 2.57e-59,
+  "constant field: A P (c_i - c_o) at no voltage, and near it": 2e-37,
+  "constant field: the least of 400 heat rates is not negative": true,
+  "a read at its half saturation is 1/2": 0.0,
+  "activation + inhibition of one read is 1": 0.0,
+  "m at rest at u = -0.030 V is 1/2": 0.0,
+  "h at rest at u = -0.080 V is 1/2": 0.0,
+  "pumps: the least heat rate of the states is not negative": true,
+  "pumps: S is below 1 in every state": true,
+  "pumps: J changes sign at the stall voltage, by the sign of z": true,
+  "exchanger: the least heat rate of the states is not negative": true,
+  "exchanger: J falls through zero at the reversal voltage": true,
+  "symports: the least heat rate of the states is not negative": true,
+  "symports: J is at most k a in modulus": true,
+  "symports: x, J and heat are exactly 0 at equal concentrations": true,
+  "symports: J does not move with the voltage": true,
+  "reactions: the rate at equilibrium over the one-way rate": 8.87e-60,
+  "reactions: the least of 200 heat rates is not negative": true
+ },
+ "integrators_on_known_solutions": {
+  "extrapolated_midpoint, y' = -y^2 to t = 1": 2.76e-38,
+  "extrapolated_midpoint, a rotation to t = 1, its radius": 2.05e-36,
+  "extrapolated_midpoint, y' = -500 y to t = 4 ms, steps of 1 ms": 1.68e-33,
+  "radau_iia, y' = -y^2 to t = 1": -1.48e-37,
+  "radau_iia, its quadrature of y^2 = 1/(1 + t)^2": 1.48e-37,
+  "radau_iia, y' = -500 y to t = 4 ms, steps of 1 ms": 1.29e-26
+ },
+ "material_block": {
+  "store_world, t = 0": {
+   "release_opening_moving": {
+    "slopes_against_central_differences": 3.27e-36,
+    "slopes_against_the_second_route_in_doubles": 1.34e-10,
+    "eigenvalues_against_numpy_over_the_largest": 9.5e-16,
+    "column_sums_over_Ca_and_Na_per_s": 5e-59,
+    "largest_modulus_per_s": 4.67
+   },
+   "release_opening_held": {
+    "slopes_against_central_differences": 3.27e-36,
+    "slopes_against_the_second_route_in_doubles": 7.4e-12,
+    "eigenvalues_against_numpy_over_the_largest": 8.33e-16,
+    "column_sums_over_Ca_and_Na_per_s": 4e-59,
+    "largest_modulus_per_s": 17.1
+   }
+  },
+  "store_world, the last time": {
+   "release_opening_moving": {
+    "slopes_against_central_differences": 4.32e-36,
+    "slopes_against_the_second_route_in_doubles": 6.45e-10,
+    "eigenvalues_against_numpy_over_the_largest": 8.12e-16,
+    "column_sums_over_Ca_and_Na_per_s": 1e-59,
+    "largest_modulus_per_s": 5.47
+   },
+   "release_opening_held": {
+    "slopes_against_central_differences": 3.27e-36,
+    "slopes_against_the_second_route_in_doubles": 8.58e-12,
+    "eigenvalues_against_numpy_over_the_largest": 2.09e-16,
+    "column_sums_over_Ca_and_Na_per_s": 7e-59,
+    "largest_modulus_per_s": 17.0
+   }
+  },
+  "store_world_without_buffers, t = 0": {
+   "release_opening_moving": {
+    "slopes_against_central_differences": 3.27e-36,
+    "slopes_against_the_second_route_in_doubles": 1.34e-10,
+    "eigenvalues_against_numpy_over_the_largest": 9.5e-16,
+    "column_sums_over_Ca_and_Na_per_s": 5e-59,
+    "largest_modulus_per_s": 4.67
+   },
+   "release_opening_held": {
+    "slopes_against_central_differences": 3.27e-36,
+    "slopes_against_the_second_route_in_doubles": 7.4e-12,
+    "eigenvalues_against_numpy_over_the_largest": 8.33e-16,
+    "column_sums_over_Ca_and_Na_per_s": 4e-59,
+    "largest_modulus_per_s": 17.1
+   }
+  },
+  "store_world_without_buffers, the last time": {
+   "release_opening_moving": {
+    "slopes_against_central_differences": 9.72e-36,
+    "slopes_against_the_second_route_in_doubles": 3.02e-09,
+    "eigenvalues_against_numpy_over_the_largest": 3.41e-16,
+    "column_sums_over_Ca_and_Na_per_s": 9e-59,
+    "largest_modulus_per_s": 5.21
+   },
+   "release_opening_held": {
+    "slopes_against_central_differences": 3.27e-36,
+    "slopes_against_the_second_route_in_doubles": 2.38e-11,
+    "eigenvalues_against_numpy_over_the_largest": 6.25e-16,
+    "column_sums_over_Ca_and_Na_per_s": 5e-59,
+    "largest_modulus_per_s": 17.0
+   }
+  }
+ },
+ "fastest_rates_per_s": {
+  "store_world, t = 0": [
+   [-445.0, 0.0],
+   [-245.0, 0.0],
+   [-54.1, 0.0],
+   [-51.1, 0.0],
+   [-40.3, 0.0],
+   [-10.5, 1.11],
+   [-10.5, -1.11],
+   [-1.83, 0.0],
+   [-0.138, 0.0447],
+   [-0.138, -0.0447],
+   [-0.0143, 0.0],
+   [-0.000132, 0.0],
+   [-7.59e-05, 0.0]
+  ],
+  "store_world, the last time": [
+   [-445.0, 0.0],
+   [-242.0, 0.0],
+   [-54.9, 0.0],
+   [-50.4, 0.0],
+   [-40.2, 0.0],
+   [-13.4, 0.0],
+   [-7.32, 0.0],
+   [-1.83, 0.0],
+   [-0.164, 0.0],
+   [-0.121, 0.0],
+   [-0.0145, 0.0],
+   [-0.000132, 0.0],
+   [-7.69e-05, 0.0]
+  ],
+  "store_world_without_buffers, t = 0": [
+   [-445.0, 0.0],
+   [-40.3, 0.0],
+   [-10.7, 1.83],
+   [-10.7, -1.83],
+   [-4.32, 0.0],
+   [-0.229, 0.0],
+   [-0.0143, 0.0],
+   [-0.000132, 0.0],
+   [-7.59e-05, 0.0]
+  ],
+  "store_world_without_buffers, the last time": [
+   [-446.0, 0.0],
+   [-40.2, 0.0],
+   [-13.2, 0.0],
+   [-7.74, 0.0],
+   [-4.94, 0.0],
+   [-0.201, 0.0],
+   [-0.0145, 0.0],
+   [-0.000131, 0.0],
+   [-7.67e-05, 0.0]
+  ]
+ },
+ "integrators": {
+  "measure": "the largest difference over the unknowns and the times, over each unknown's largest change",
+  "against": "extrapolated midpoint, 4 steps per interval of 2 ms, 14 columns (order 28), 40 digits",
+  "extrapolated_midpoint": {
+   "1 steps per interval, 6 columns": 3.53e-10,
+   "1 steps per interval, 8 columns": 5.63e-15,
+   "1 steps per interval, 10 columns": 3.29e-20,
+   "1 steps per interval, 12 columns": 8.59e-26,
+   "2 steps per interval, 6 columns": 6.62e-14,
+   "2 steps per interval, 8 columns": 6.12e-20,
+   "2 steps per interval, 10 columns": 2.11e-26,
+   "2 steps per interval, 12 columns": 3.3e-33,
+   "2 steps per interval, 14 columns": 7.8e-35
+  },
+  "radau_iia": {
+   "1 steps per interval, 3 stages": 6.47e-05,
+   "2 steps per interval, 3 stages": 2.27e-06,
+   "4 steps per interval, 3 stages": 7.47e-08,
+   "1 steps per interval, 5 stages": 6.7e-10,
+   "2 steps per interval, 5 stages": 1.44e-12,
+   "4 steps per interval, 5 stages": 2.92e-15,
+   "1 steps per interval, 7 stages": 1.26e-15,
+   "2 steps per interval, 7 stages": 1.67e-19,
+   "1 steps per interval, 9 stages": 6.62e-22,
+   "2 steps per interval, 9 stages": 5.37e-27
+  },
+  "scipy_on_the_second_route_in_doubles": {
+   "DOP853, rtol 1.0e-06": {
+    "largest_difference": 6.1e-09,
+    "evaluations": 80
+   },
+   "DOP853, rtol 1.0e-09": {
+    "largest_difference": 1.68e-10,
+    "evaluations": 164
+   },
+   "DOP853, rtol 1.0e-12": {
+    "largest_difference": 1.71e-13,
+    "evaluations": 272
+   },
+   "DOP853, rtol 2.3e-14": {
+    "largest_difference": 6.08e-14,
+    "evaluations": 404
+   },
+   "Radau, rtol 1.0e-06": {
+    "largest_difference": 1.51e-08,
+    "evaluations": 245
+   },
+   "Radau, rtol 1.0e-09": {
+    "largest_difference": 2.64e-12,
+    "evaluations": 975
+   },
+   "Radau, rtol 1.0e-12": {
+    "largest_difference": 1.96e-14,
+    "evaluations": 4838
+   },
+   "BDF, rtol 1.0e-06": {
+    "largest_difference": 1.73e-05,
+    "evaluations": 172
+   },
+   "BDF, rtol 1.0e-09": {
+    "largest_difference": 5.32e-08,
+    "evaluations": 370
+   },
+   "BDF, rtol 1.0e-12": {
+    "largest_difference": 5.17e-10,
+    "evaluations": 764
+   },
+   "LSODA, rtol 1.0e-06": {
+    "largest_difference": 2.2e-06,
+    "evaluations": 136
+   },
+   "LSODA, rtol 1.0e-09": {
+    "largest_difference": 3.6e-09,
+    "evaluations": 260
+   },
+   "LSODA, rtol 1.0e-12": {
+    "largest_difference": 5.59e-12,
+    "evaluations": 430
+   }
+  }
+ },
+ "world": {
+  "store_world": {
+   "largest_difference_radau_iia": 5.37e-27,
+   "largest_difference_scipy_dop853": 4.27e-14,
+   "scipy_dop853_evaluations": 404,
+   "G_plus_heat_less_work_pJ": 3.53e-36,
+   "matter_fmol": 1e-44,
+   "charge_against_the_fixed_charges_V": 6.53e-36,
+   "observables": {
+    "amount_changes_fmol/cell/Na": {
+     "largest_change": 2.56e-05,
+     "radau_iia": 1.6e-30,
+     "scipy_dop853": 4.62e-16
+    },
+    "amount_changes_fmol/cell/K": {
+     "largest_change": 8.39e-05,
+     "radau_iia": 2.57e-27,
+     "scipy_dop853": 1.45e-14
+    },
+    "amount_changes_fmol/cell/Cl": {
+     "largest_change": 2.77e-05,
+     "radau_iia": 1.02e-28,
+     "scipy_dop853": 8.28e-16
+    },
+    "amount_changes_fmol/cell/Ca": {
+     "largest_change": 2.58e-06,
+     "radau_iia": 5.61e-28,
+     "scipy_dop853": 4.27e-14
+    },
+    "amount_changes_fmol/cell/B": {
+     "largest_change": 1.99e-05,
+     "radau_iia": 1.02e-29,
+     "scipy_dop853": 4.78e-15
+    },
+    "amount_changes_fmol/cell/CaB": {
+     "largest_change": 2.54e-05,
+     "radau_iia": 7.77e-30,
+     "scipy_dop853": 3.73e-15
+    },
+    "amount_changes_fmol/cell/Ca2B": {
+     "largest_change": 5.49e-06,
+     "radau_iia": 1.05e-30,
+     "scipy_dop853": 2.16e-15
+    },
+    "amount_changes_fmol/cell/ATP": {
+     "largest_change": 0.0,
+     "radau_iia": 0.0,
+     "scipy_dop853": 0.0
+    },
+    "amount_changes_fmol/cell/ADP": {
+     "largest_change": 0.0,
+     "radau_iia": 0.0,
+     "scipy_dop853": 0.0
+    },
+    "amount_changes_fmol/cell/Pi": {
+     "largest_change": 0.0,
+     "radau_iia": 0.0,
+     "scipy_dop853": 0.0
+    },
+    "amount_changes_fmol/cell/IP3": {
+     "largest_change": 0.0,
+     "radau_iia": 0.0,
+     "scipy_dop853": 0.0
+    },
+    "amount_changes_fmol/store/Na": {
+     "largest_change": 0.0,
+     "radau_iia": 0.0,
+     "scipy_dop853": 0.0
+    },
+    "amount_changes_fmol/store/K": {
+     "largest_change": 0.000105,
+     "radau_iia": 2.06e-27,
+     "scipy_dop853": 1.15e-14
+    },
+    "amount_changes_fmol/store/Cl": {
+     "largest_change": 2.56e-05,
+     "radau_iia": 1.11e-28,
+     "scipy_dop853": 8.12e-16
+    },
+    "amount_changes_fmol/store/Ca": {
+     "largest_change": 0.000136,
+     "radau_iia": 1.08e-29,
+     "scipy_dop853": 6.93e-15
+    },
+    "amount_changes_fmol/store/B": {
+     "largest_change": 1.28e-06,
+     "radau_iia": 5.68e-31,
+     "scipy_dop853": 2.08e-14
+    },
+    "amount_changes_fmol/store/CaB": {
+     "largest_change": 0.000126,
+     "radau_iia": 4e-31,
+     "scipy_dop853": 7.98e-15
+    },
+    "amount_changes_fmol/store/Ca2B": {
+     "largest_change": 0.000127,
+     "radau_iia": 4e-31,
+     "scipy_dop853": 7.59e-15
+    },
+    "amount_changes_fmol/outside/Na": {
+     "largest_change": 2.56e-05,
+     "radau_iia": 1.6e-30,
+     "scipy_dop853": 4.62e-16
+    },
+    "amount_changes_fmol/outside/K": {
+     "largest_change": 2.1e-05,
+     "radau_iia": 4.82e-33,
+     "scipy_dop853": 6.96e-16
+    },
+    "amount_changes_fmol/outside/Cl": {
+     "largest_change": 2.13e-06,
+     "radau_iia": 1.14e-32,
+     "scipy_dop853": 3.25e-15
+    },
+    "amount_changes_fmol/outside/Ca": {
+     "largest_change": 4.52e-06,
+     "radau_iia": 5.18e-30,
+     "scipy_dop853": 4.52e-15
+    },
+    "V_m_change_V": {
+     "largest_change": 0.000285,
+     "radau_iia": 4.84e-31,
+     "scipy_dop853": 4.16e-15
+    },
+    "V_b_change_V": {
+     "largest_change": 0.00146,
+     "radau_iia": 2.36e-27,
+     "scipy_dop853": 1.26e-14
+    },
+    "m": {
+     "largest_change": 0.0649,
+     "radau_iia": 2.2e-34,
+     "scipy_dop853": 3.25e-16
+    },
+    "h": {
+     "largest_change": 0.0632,
+     "radau_iia": 2.38e-33,
+     "scipy_dop853": 1.2e-15
+    },
+    "transfers_fmol/plasma_permeability/Na": {
+     "largest_change": 1.4e-05,
+     "radau_iia": 1.29e-33,
+     "scipy_dop853": 6.25e-16
+    },
+    "transfers_fmol/plasma_permeability/K": {
+     "largest_change": 2.1e-05,
+     "radau_iia": 4.82e-33,
+     "scipy_dop853": 6.96e-16
+    },
+    "transfers_fmol/plasma_permeability/Cl": {
+     "largest_change": 2.13e-06,
+     "radau_iia": 1.14e-32,
+     "scipy_dop853": 3.25e-15
+    },
+    "transfers_fmol/bounding_permeability/K": {
+     "largest_change": 0.000105,
+     "radau_iia": 2.06e-27,
+     "scipy_dop853": 1.15e-14
+    },
+    "transfers_fmol/bounding_permeability/Cl": {
+     "largest_change": 2.56e-05,
+     "radau_iia": 1.11e-28,
+     "scipy_dop853": 8.12e-16
+    },
+    "transfers_fmol/plasma_leak/Ca": {
+     "largest_change": 8.1e-06,
+     "radau_iia": 1.65e-33,
+     "scipy_dop853": 1.27e-15
+    },
+    "transfers_fmol/store_leak/Ca": {
+     "largest_change": 7.38e-06,
+     "radau_iia": 4.27e-29,
+     "scipy_dop853": 3.69e-16
+    },
+    "transfers_fmol/release/Ca": {
+     "largest_change": 1.53e-05,
+     "radau_iia": 3.87e-29,
+     "scipy_dop853": 5.33e-16
+    },
+    "transfers_fmol/calcium_channel/Ca": {
+     "largest_change": 6.6e-06,
+     "radau_iia": 1.34e-33,
+     "scipy_dop853": 1.28e-15
+    },
+    "transfers_fmol/plasma_pump/cycles": {
+     "largest_change": 6.31e-06,
+     "radau_iia": 1.54e-30,
+     "scipy_dop853": 3.81e-16
+    },
+    "transfers_fmol/store_pump/cycles": {
+     "largest_change": 7.68e-06,
+     "radau_iia": 1.17e-28,
+     "scipy_dop853": 3.59e-16
+    },
+    "transfers_fmol/exchanger/cycles": {
+     "largest_change": 3.87e-06,
+     "radau_iia": 3.53e-30,
+     "scipy_dop853": 6.45e-16
+    },
+    "transfers_fmol/bind_first/cell": {
+     "largest_change": 1.99e-05,
+     "radau_iia": 1.02e-29,
+     "scipy_dop853": 4.78e-15
+    },
+    "transfers_fmol/bind_first/store": {
+     "largest_change": 1.28e-06,
+     "radau_iia": 5.68e-31,
+     "scipy_dop853": 2.08e-14
+    },
+    "transfers_fmol/bind_second/cell": {
+     "largest_change": 5.49e-06,
+     "radau_iia": 1.05e-30,
+     "scipy_dop853": 2.16e-15
+    },
+    "transfers_fmol/bind_second/store": {
+     "largest_change": 0.000127,
+     "radau_iia": 4e-31,
+     "scipy_dop853": 7.59e-15
+    },
+    "heats_pJ/plasma_permeability/Na": {
+     "largest_change": 0.00016,
+     "radau_iia": 2.12e-33,
+     "scipy_dop853": 7.22e-16
+    },
+    "heats_pJ/plasma_permeability/K": {
+     "largest_change": 5.42e-05,
+     "radau_iia": 8.64e-33,
+     "scipy_dop853": 1.03e-15
+    },
+    "heats_pJ/plasma_permeability/Cl": {
+     "largest_change": 1.87e-06,
+     "radau_iia": 2.22e-32,
+     "scipy_dop853": 5.27e-15
+    },
+    "heats_pJ/plasma_permeability/total": {
+     "largest_change": 0.000216,
+     "radau_iia": 8e-34,
+     "scipy_dop853": 7.01e-16
+    },
+    "heats_pJ/bounding_permeability/K": {
+     "largest_change": 7.96e-06,
+     "radau_iia": 5.37e-27,
+     "scipy_dop853": 2.87e-14
+    },
+    "heats_pJ/bounding_permeability/Cl": {
+     "largest_change": 2.25e-05,
+     "radau_iia": 2.96e-28,
+     "scipy_dop853": 2.01e-15
+    },
+    "heats_pJ/bounding_permeability/total": {
+     "largest_change": 3.05e-05,
+     "radau_iia": 1.18e-27,
+     "scipy_dop853": 7.97e-15
+    },
+    "heats_pJ/plasma_leak/Ca": {
+     "largest_change": 0.000258,
+     "radau_iia": 1.64e-31,
+     "scipy_dop853": 1.21e-15
+    },
+    "heats_pJ/store_leak/Ca": {
+     "largest_change": 0.000129,
+     "radau_iia": 2.98e-29,
+     "scipy_dop853": 3.75e-16
+    },
+    "heats_pJ/release/Ca": {
+     "largest_change": 0.000267,
+     "radau_iia": 5.01e-29,
+     "scipy_dop853": 6.32e-16
+    },
+    "heats_pJ/calcium_channel/Ca": {
+     "largest_change": 0.000211,
+     "radau_iia": 1.73e-31,
+     "scipy_dop853": 1.48e-15
+    },
+    "heats_pJ/plasma_pump/cycles": {
+     "largest_change": 0.000132,
+     "radau_iia": 1.79e-30,
+     "scipy_dop853": 2.96e-16
+    },
+    "heats_pJ/store_pump/cycles": {
+     "largest_change": 0.000138,
+     "radau_iia": 5.21e-29,
+     "scipy_dop853": 6.83e-16
+    },
+    "heats_pJ/exchanger/cycles": {
+     "largest_change": 8.72e-06,
+     "radau_iia": 5.79e-30,
+     "scipy_dop853": 1.69e-15
+    },
+    "heats_pJ/bind_first/cell": {
+     "largest_change": 1.14e-05,
+     "radau_iia": 1.82e-29,
+     "scipy_dop853": 1.02e-14
+    },
+    "heats_pJ/bind_first/store": {
+     "largest_change": 1.03e-07,
+     "radau_iia": 2.3e-30,
+     "scipy_dop853": 3.64e-14
+    },
+    "heats_pJ/bind_first/total": {
+     "largest_change": 1.15e-05,
+     "radau_iia": 1.8e-29,
+     "scipy_dop853": 9.88e-15
+    },
+    "heats_pJ/bind_second/cell": {
+     "largest_change": 1.52e-05,
+     "radau_iia": 3.02e-30,
+     "scipy_dop853": 3.79e-15
+    },
+    "heats_pJ/bind_second/store": {
+     "largest_change": 3.22e-05,
+     "radau_iia": 7.94e-31,
+     "scipy_dop853": 1.84e-14
+    },
+    "heats_pJ/bind_second/total": {
+     "largest_change": 4.73e-05,
+     "radau_iia": 1.51e-30,
+     "scipy_dop853": 1.31e-14
+    },
+    "works_pJ/plasma_pump": {
+     "largest_change": 0.000333,
+     "radau_iia": 1.54e-30,
+     "scipy_dop853": 1.36e-16
+    },
+    "works_pJ/store_pump": {
+     "largest_change": 0.000406,
+     "radau_iia": 1.17e-28,
+     "scipy_dop853": 4.32e-16
+    },
+    "capacitor_energy_change_pJ": {
+     "largest_change": 8.15e-05,
+     "radau_iia": 5.54e-28,
+     "scipy_dop853": 5.67e-15
+    },
+    "free_energy_change_pJ": {
+     "largest_change": 0.000709,
+     "radau_iia": 5.26e-29,
+     "scipy_dop853": 1.26e-15
+    },
+    "heat_total_pJ": {
+     "largest_change": 0.00145,
+     "radau_iia": 1.67e-29,
+     "scipy_dop853": 1.06e-15
+    },
+    "work_total_pJ": {
+     "largest_change": 0.000739,
+     "radau_iia": 6.41e-29,
+     "scipy_dop853": 2.97e-16
+    }
+   },
+   "what_a_double_of_the_whole_value_can_hold": {
+    "amounts_fmol/cell/Na": 3.47e-11,
+    "amounts_fmol/cell/K": 8.47e-11,
+    "amounts_fmol/cell/Cl": 3.21e-11,
+    "amounts_fmol/cell/Ca": 1.05e-14,
+    "amounts_fmol/cell/B": 1.74e-13,
+    "amounts_fmol/cell/CaB": 3.41e-14,
+    "amounts_fmol/cell/Ca2B": 9.87e-15,
+    "amounts_fmol/store/K": 4.23e-12,
+    "amounts_fmol/store/Cl": 2.17e-12,
+    "amounts_fmol/store/Ca": 6.38e-15,
+    "amounts_fmol/store/B": 1.33e-15,
+    "amounts_fmol/store/CaB": 3.44e-15,
+    "amounts_fmol/store/Ca2B": 5.45e-14,
+    "amounts_fmol/outside/Na": 1.11e-09,
+    "amounts_fmol/outside/K": 4.23e-11,
+    "amounts_fmol/outside/Cl": 1.33e-08,
+    "amounts_fmol/outside/Ca": 4.92e-11,
+    "V_m_V": 1.22e-14,
+    "V_b_V": 1.48e-16,
+    "capacitor_energy_pJ": 5.32e-15,
+    "free_energy_pJ": 6.41e-10
+   }
+  },
+  "store_world_without_buffers": {
+   "largest_difference_radau_iia": 5.3e-27,
+   "largest_difference_scipy_dop853": 5.02e-14,
+   "scipy_dop853_evaluations": 404,
+   "G_plus_heat_less_work_pJ": 4.89e-36,
+   "matter_fmol": 7e-45,
+   "charge_against_the_fixed_charges_V": 6.09e-36,
+   "observables": {
+    "amount_changes_fmol/cell/Na": {
+     "largest_change": 2.62e-05,
+     "radau_iia": 2.59e-30,
+     "scipy_dop853": 4.27e-16
+    },
+    "amount_changes_fmol/cell/K": {
+     "largest_change": 8.37e-05,
+     "radau_iia": 2.56e-27,
+     "scipy_dop853": 2.69e-14
+    },
+    "amount_changes_fmol/cell/Cl": {
+     "largest_change": 2.77e-05,
+     "radau_iia": 1.02e-28,
+     "scipy_dop853": 1.82e-15
+    },
+    "amount_changes_fmol/cell/Ca": {
+     "largest_change": 1.16e-05,
+     "radau_iia": 1.37e-28,
+     "scipy_dop853": 1.08e-14
+    },
+    "amount_changes_fmol/cell/B": {
+     "largest_change": 0.0,
+     "radau_iia": 0.0,
+     "scipy_dop853": 0.0
+    },
+    "amount_changes_fmol/cell/CaB": {
+     "largest_change": 0.0,
+     "radau_iia": 0.0,
+     "scipy_dop853": 0.0
+    },
+    "amount_changes_fmol/cell/Ca2B": {
+     "largest_change": 0.0,
+     "radau_iia": 0.0,
+     "scipy_dop853": 0.0
+    },
+    "amount_changes_fmol/cell/ATP": {
+     "largest_change": 0.0,
+     "radau_iia": 0.0,
+     "scipy_dop853": 0.0
+    },
+    "amount_changes_fmol/cell/ADP": {
+     "largest_change": 0.0,
+     "radau_iia": 0.0,
+     "scipy_dop853": 0.0
+    },
+    "amount_changes_fmol/cell/Pi": {
+     "largest_change": 0.0,
+     "radau_iia": 0.0,
+     "scipy_dop853": 0.0
+    },
+    "amount_changes_fmol/cell/IP3": {
+     "largest_change": 0.0,
+     "radau_iia": 0.0,
+     "scipy_dop853": 0.0
+    },
+    "amount_changes_fmol/store/Na": {
+     "largest_change": 0.0,
+     "radau_iia": 0.0,
+     "scipy_dop853": 0.0
+    },
+    "amount_changes_fmol/store/K": {
+     "largest_change": 0.000105,
+     "radau_iia": 2.05e-27,
+     "scipy_dop853": 2.13e-14
+    },
+    "amount_changes_fmol/store/Cl": {
+     "largest_change": 2.56e-05,
+     "radau_iia": 1.1e-28,
+     "scipy_dop853": 1.99e-15
+    },
+    "amount_changes_fmol/store/Ca": {
+     "largest_change": 7.44e-06,
+     "radau_iia": 2.15e-28,
+     "scipy_dop853": 9.5e-15
+    },
+    "amount_changes_fmol/store/B": {
+     "largest_change": 0.0,
+     "radau_iia": 0.0,
+     "scipy_dop853": 0.0
+    },
+    "amount_changes_fmol/store/CaB": {
+     "largest_change": 0.0,
+     "radau_iia": 0.0,
+     "scipy_dop853": 0.0
+    },
+    "amount_changes_fmol/store/Ca2B": {
+     "largest_change": 0.0,
+     "radau_iia": 0.0,
+     "scipy_dop853": 0.0
+    },
+    "amount_changes_fmol/outside/Na": {
+     "largest_change": 2.62e-05,
+     "radau_iia": 2.59e-30,
+     "scipy_dop853": 4.27e-16
+    },
+    "amount_changes_fmol/outside/K": {
+     "largest_change": 2.1e-05,
+     "radau_iia": 7.57e-33,
+     "scipy_dop853": 6.97e-16
+    },
+    "amount_changes_fmol/outside/Cl": {
+     "largest_change": 2.13e-06,
+     "radau_iia": 1.83e-32,
+     "scipy_dop853": 1.46e-15
+    },
+    "amount_changes_fmol/outside/Ca": {
+     "largest_change": 4.21e-06,
+     "radau_iia": 9.13e-30,
+     "scipy_dop853": 1.08e-14
+    },
+    "V_m_change_V": {
+     "largest_change": 0.000283,
+     "radau_iia": 7.67e-31,
+     "scipy_dop853": 1.11e-14
+    },
+    "V_b_change_V": {
+     "largest_change": 0.00146,
+     "radau_iia": 2.35e-27,
+     "scipy_dop853": 2.46e-14
+    },
+    "m": {
+     "largest_change": 0.0649,
+     "radau_iia": 3.39e-34,
+     "scipy_dop853": 4.83e-16
+    },
+    "h": {
+     "largest_change": 0.0632,
+     "radau_iia": 3.78e-33,
+     "scipy_dop853": 8.43e-16
+    },
+    "transfers_fmol/plasma_permeability/Na": {
+     "largest_change": 1.4e-05,
+     "radau_iia": 2.07e-33,
+     "scipy_dop853": 5.95e-16
+    },
+    "transfers_fmol/plasma_permeability/K": {
+     "largest_change": 2.1e-05,
+     "radau_iia": 7.57e-33,
+     "scipy_dop853": 6.97e-16
+    },
+    "transfers_fmol/plasma_permeability/Cl": {
+     "largest_change": 2.13e-06,
+     "radau_iia": 1.83e-32,
+     "scipy_dop853": 1.46e-15
+    },
+    "transfers_fmol/bounding_permeability/K": {
+     "largest_change": 0.000105,
+     "radau_iia": 2.05e-27,
+     "scipy_dop853": 2.13e-14
+    },
+    "transfers_fmol/bounding_permeability/Cl": {
+     "largest_change": 2.56e-05,
+     "radau_iia": 1.1e-28,
+     "scipy_dop853": 1.99e-15
+    },
+    "transfers_fmol/plasma_leak/Ca": {
+     "largest_change": 8.1e-06,
+     "radau_iia": 2.66e-33,
+     "scipy_dop853": 3.01e-15
+    },
+    "transfers_fmol/store_leak/Ca": {
+     "largest_change": 7.42e-06,
+     "radau_iia": 4.13e-29,
+     "scipy_dop853": 3.39e-15
+    },
+    "transfers_fmol/release/Ca": {
+     "largest_change": 1.6e-05,
+     "radau_iia": 2.61e-29,
+     "scipy_dop853": 3.96e-15
+    },
+    "transfers_fmol/calcium_channel/Ca": {
+     "largest_change": 6.6e-06,
+     "radau_iia": 2.59e-33,
+     "scipy_dop853": 2.87e-15
+    },
+    "transfers_fmol/plasma_pump/cycles": {
+     "largest_change": 6.44e-06,
+     "radau_iia": 2.46e-30,
+     "scipy_dop853": 2.48e-16
+    },
+    "transfers_fmol/store_pump/cycles": {
+     "largest_change": 8.01e-06,
+     "radau_iia": 1.1e-28,
+     "scipy_dop853": 1.13e-15
+    },
+    "transfers_fmol/exchanger/cycles": {
+     "largest_change": 4.05e-06,
+     "radau_iia": 5.58e-30,
+     "scipy_dop853": 1.16e-15
+    },
+    "transfers_fmol/bind_first/cell": {
+     "largest_change": 0.0,
+     "radau_iia": 0.0,
+     "scipy_dop853": 0.0
+    },
+    "transfers_fmol/bind_first/store": {
+     "largest_change": 0.0,
+     "radau_iia": 0.0,
+     "scipy_dop853": 0.0
+    },
+    "transfers_fmol/bind_second/cell": {
+     "largest_change": 0.0,
+     "radau_iia": 0.0,
+     "scipy_dop853": 0.0
+    },
+    "transfers_fmol/bind_second/store": {
+     "largest_change": 0.0,
+     "radau_iia": 0.0,
+     "scipy_dop853": 0.0
+    },
+    "heats_pJ/plasma_permeability/Na": {
+     "largest_change": 0.00016,
+     "radau_iia": 3.39e-33,
+     "scipy_dop853": 8.19e-16
+    },
+    "heats_pJ/plasma_permeability/K": {
+     "largest_change": 5.42e-05,
+     "radau_iia": 1.36e-32,
+     "scipy_dop853": 1.43e-15
+    },
+    "heats_pJ/plasma_permeability/Cl": {
+     "largest_change": 1.87e-06,
+     "radau_iia": 3.54e-32,
+     "scipy_dop853": 2.07e-15
+    },
+    "heats_pJ/plasma_permeability/total": {
+     "largest_change": 0.000216,
+     "radau_iia": 1.21e-33,
+     "scipy_dop853": 2.88e-16
+    },
+    "heats_pJ/bounding_permeability/K": {
+     "largest_change": 7.96e-06,
+     "radau_iia": 5.3e-27,
+     "scipy_dop853": 5.02e-14
+    },
+    "heats_pJ/bounding_permeability/Cl": {
+     "largest_change": 2.25e-05,
+     "radau_iia": 2.94e-28,
+     "scipy_dop853": 3.99e-15
+    },
+    "heats_pJ/bounding_permeability/total": {
+     "largest_change": 3.05e-05,
+     "radau_iia": 1.17e-27,
+     "scipy_dop853": 1.33e-14
+    },
+    "heats_pJ/plasma_leak/Ca": {
+     "largest_change": 0.000258,
+     "radau_iia": 2.67e-31,
+     "scipy_dop853": 3.33e-15
+    },
+    "heats_pJ/store_leak/Ca": {
+     "largest_change": 0.000129,
+     "radau_iia": 3.03e-29,
+     "scipy_dop853": 3.69e-15
+    },
+    "heats_pJ/release/Ca": {
+     "largest_change": 0.000279,
+     "radau_iia": 3.72e-29,
+     "scipy_dop853": 4.28e-15
+    },
+    "heats_pJ/calcium_channel/Ca": {
+     "largest_change": 0.00021,
+     "radau_iia": 3.08e-31,
+     "scipy_dop853": 3.33e-15
+    },
+    "heats_pJ/plasma_pump/cycles": {
+     "largest_change": 0.000135,
+     "radau_iia": 2.86e-30,
+     "scipy_dop853": 1.15e-16
+    },
+    "heats_pJ/store_pump/cycles": {
+     "largest_change": 0.000145,
+     "radau_iia": 4.79e-29,
+     "scipy_dop853": 6.76e-16
+    },
+    "heats_pJ/exchanger/cycles": {
+     "largest_change": 9.41e-06,
+     "radau_iia": 9.08e-30,
+     "scipy_dop853": 3.54e-15
+    },
+    "heats_pJ/bind_first/cell": {
+     "largest_change": 0.0,
+     "radau_iia": 0.0,
+     "scipy_dop853": 0.0
+    },
+    "heats_pJ/bind_first/store": {
+     "largest_change": 0.0,
+     "radau_iia": 0.0,
+     "scipy_dop853": 0.0
+    },
+    "heats_pJ/bind_first/total": {
+     "largest_change": 0.0,
+     "radau_iia": 0.0,
+     "scipy_dop853": 0.0
+    },
+    "heats_pJ/bind_second/cell": {
+     "largest_change": 0.0,
+     "radau_iia": 0.0,
+     "scipy_dop853": 0.0
+    },
+    "heats_pJ/bind_second/store": {
+     "largest_change": 0.0,
+     "radau_iia": 0.0,
+     "scipy_dop853": 0.0
+    },
+    "heats_pJ/bind_second/total": {
+     "largest_change": 0.0,
+     "radau_iia": 0.0,
+     "scipy_dop853": 0.0
+    },
+    "works_pJ/plasma_pump": {
+     "largest_change": 0.00034,
+     "radau_iia": 2.46e-30,
+     "scipy_dop853": 1.65e-16
+    },
+    "works_pJ/store_pump": {
+     "largest_change": 0.000423,
+     "radau_iia": 1.1e-28,
+     "scipy_dop853": 1.34e-15
+    },
+    "capacitor_energy_change_pJ": {
+     "largest_change": 8.12e-05,
+     "radau_iia": 5.54e-28,
+     "scipy_dop853": 1.01e-14
+    },
+    "free_energy_change_pJ": {
+     "largest_change": 0.000648,
+     "radau_iia": 6.08e-29,
+     "scipy_dop853": 4.29e-15
+    },
+    "heat_total_pJ": {
+     "largest_change": 0.00141,
+     "radau_iia": 1.9e-29,
+     "scipy_dop853": 2.64e-15
+    },
+    "work_total_pJ": {
+     "largest_change": 0.000763,
+     "radau_iia": 6.05e-29,
+     "scipy_dop853": 8.19e-16
+    }
+   },
+   "what_a_double_of_the_whole_value_can_hold": {
+    "amounts_fmol/cell/Na": 3.39e-11,
+    "amounts_fmol/cell/K": 8.48e-11,
+    "amounts_fmol/cell/Cl": 3.21e-11,
+    "amounts_fmol/cell/Ca": 2.33e-15,
+    "amounts_fmol/store/K": 4.24e-12,
+    "amounts_fmol/store/Cl": 2.17e-12,
+    "amounts_fmol/store/Ca": 1.17e-13,
+    "amounts_fmol/outside/Na": 1.09e-09,
+    "amounts_fmol/outside/K": 4.23e-11,
+    "amounts_fmol/outside/Cl": 1.34e-08,
+    "amounts_fmol/outside/Ca": 5.28e-11,
+    "V_m_V": 1.23e-14,
+    "V_b_V": 1.48e-16,
+    "capacitor_energy_pJ": 5.34e-15,
+    "free_energy_pJ": 7.02e-10
+   }
+  }
+ },
+ "controls": {
+  "store_world": {
+   "release_sign": {
+    "largest_difference_radau_iia": 2.87e-27,
+    "largest_difference_scipy_dop853": 4.35e-14,
+    "G_plus_heat_less_work_at_the_last_time_pJ": -1.84e-36,
+    "movers_whose_heat_falls": ["release/Ca"],
+    "largest_shift_over_the_base_s_largest_change": 8.87,
+    "observable_most_shifted": "amount_changes_fmol/cell/Ca"
+   },
+   "pump_without_voltage": {
+    "largest_difference_radau_iia": 6.8e-27,
+    "largest_difference_scipy_dop853": 8.51e-14,
+    "G_plus_heat_less_work_at_the_last_time_pJ": 7.24e-05,
+    "movers_whose_heat_falls": [],
+    "largest_shift_over_the_base_s_largest_change": 0.506,
+    "observable_most_shifted": "heats_pJ/plasma_pump/cycles"
+   },
+   "constants_one_percent: plasma permeability K": {
+    "largest_difference_radau_iia": 5.37e-27,
+    "largest_difference_scipy_dop853": 9.37e-14,
+    "G_plus_heat_less_work_at_the_last_time_pJ": -3.68e-36,
+    "movers_whose_heat_falls": [],
+    "largest_shift_over_the_base_s_largest_change": 0.0178,
+    "observable_most_shifted": "V_m_change_V"
+   },
+   "constants_one_percent: bounding permeability K": {
+    "largest_difference_radau_iia": 6.34e-27,
+    "largest_difference_scipy_dop853": 7.42e-14,
+    "G_plus_heat_less_work_at_the_last_time_pJ": -1.18e-36,
+    "movers_whose_heat_falls": [],
+    "largest_shift_over_the_base_s_largest_change": 0.00442,
+    "observable_most_shifted": "amount_changes_fmol/cell/K"
+   },
+   "constants_one_percent: plasma_leak permeability": {
+    "largest_difference_radau_iia": 5.37e-27,
+    "largest_difference_scipy_dop853": 6.52e-14,
+    "G_plus_heat_less_work_at_the_last_time_pJ": 1.86e-37,
+    "movers_whose_heat_falls": [],
+    "largest_shift_over_the_base_s_largest_change": 0.0255,
+    "observable_most_shifted": "amount_changes_fmol/cell/Ca"
+   },
+   "constants_one_percent: store_leak permeability": {
+    "largest_difference_radau_iia": 5.38e-27,
+    "largest_difference_scipy_dop853": 1.23e-13,
+    "G_plus_heat_less_work_at_the_last_time_pJ": -4.29e-36,
+    "movers_whose_heat_falls": [],
+    "largest_shift_over_the_base_s_largest_change": 0.0231,
+    "observable_most_shifted": "amount_changes_fmol/cell/Ca"
+   },
+   "constants_one_percent: release permeability": {
+    "largest_difference_radau_iia": 5.4e-27,
+    "largest_difference_scipy_dop853": 9.07e-14,
+    "G_plus_heat_less_work_at_the_last_time_pJ": -7.3e-37,
+    "movers_whose_heat_falls": [],
+    "largest_shift_over_the_base_s_largest_change": 0.0479,
+    "observable_most_shifted": "amount_changes_fmol/cell/Ca"
+   },
+   "constants_one_percent: channel max_permeability": {
+    "largest_difference_radau_iia": 5.37e-27,
+    "largest_difference_scipy_dop853": 3.84e-14,
+    "G_plus_heat_less_work_at_the_last_time_pJ": 3.49e-36,
+    "movers_whose_heat_falls": [],
+    "largest_shift_over_the_base_s_largest_change": 0.0203,
+    "observable_most_shifted": "amount_changes_fmol/cell/Ca"
+   },
+   "constants_one_percent: plasma_pump capacity": {
+    "largest_difference_radau_iia": 5.37e-27,
+    "largest_difference_scipy_dop853": 7.01e-14,
+    "G_plus_heat_less_work_at_the_last_time_pJ": -1.84e-36,
+    "movers_whose_heat_falls": [],
+    "largest_shift_over_the_base_s_largest_change": 0.0199,
+    "observable_most_shifted": "amount_changes_fmol/cell/Ca"
+   },
+   "constants_one_percent: store_pump capacity": {
+    "largest_difference_radau_iia": 5.35e-27,
+    "largest_difference_scipy_dop853": 4.24e-14,
+    "G_plus_heat_less_work_at_the_last_time_pJ": -9.26e-37,
+    "movers_whose_heat_falls": [],
+    "largest_shift_over_the_base_s_largest_change": 0.0481,
+    "observable_most_shifted": "amount_changes_fmol/cell/Ca"
+   },
+   "constants_one_percent: exchanger capacity": {
+    "largest_difference_radau_iia": 5.37e-27,
+    "largest_difference_scipy_dop853": 6.51e-14,
+    "G_plus_heat_less_work_at_the_last_time_pJ": -3.57e-36,
+    "movers_whose_heat_falls": [],
+    "largest_shift_over_the_base_s_largest_change": 0.0122,
+    "observable_most_shifted": "amount_changes_fmol/cell/Ca"
+   },
+   "constants_one_percent: bind_first forward_rate": {
+    "largest_difference_radau_iia": 5.37e-27,
+    "largest_difference_scipy_dop853": 5.9e-14,
+    "G_plus_heat_less_work_at_the_last_time_pJ": -3.05e-36,
+    "movers_whose_heat_falls": [],
+    "largest_shift_over_the_base_s_largest_change": 0.0623,
+    "observable_most_shifted": "amount_changes_fmol/cell/Ca"
+   },
+   "constants_one_percent: bind_second forward_rate": {
+    "largest_difference_radau_iia": 5.37e-27,
+    "largest_difference_scipy_dop853": 8.7e-14,
+    "G_plus_heat_less_work_at_the_last_time_pJ": -3.48e-36,
+    "movers_whose_heat_falls": [],
+    "largest_shift_over_the_base_s_largest_change": 0.017,
+    "observable_most_shifted": "amount_changes_fmol/cell/Ca"
+   },
+   "constants_one_percent: release_calcium activation half_saturation": {
+    "largest_difference_radau_iia": 5.33e-27,
+    "largest_difference_scipy_dop853": 5.29e-14,
+    "G_plus_heat_less_work_at_the_last_time_pJ": 2.14e-36,
+    "movers_whose_heat_falls": [],
+    "largest_shift_over_the_base_s_largest_change": 0.0759,
+    "observable_most_shifted": "amount_changes_fmol/cell/Ca"
+   },
+   "constants_one_percent: release_ip3 half_saturation": {
+    "largest_difference_radau_iia": 5.33e-27,
+    "largest_difference_scipy_dop853": 9.62e-14,
+    "G_plus_heat_less_work_at_the_last_time_pJ": -1.14e-36,
+    "movers_whose_heat_falls": [],
+    "largest_shift_over_the_base_s_largest_change": 0.0724,
+    "observable_most_shifted": "amount_changes_fmol/cell/Ca"
+   },
+   "constants_one_percent: plasma capacitance": {
+    "largest_difference_radau_iia": 5.37e-27,
+    "largest_difference_scipy_dop853": 7.3e-14,
+    "G_plus_heat_less_work_at_the_last_time_pJ": -2.82e-36,
+    "movers_whose_heat_falls": [],
+    "largest_shift_over_the_base_s_largest_change": 0.00962,
+    "observable_most_shifted": "V_m_change_V"
+   },
+   "constants_one_percent: bounding capacitance": {
+    "largest_difference_radau_iia": 4.54e-27,
+    "largest_difference_scipy_dop853": 5.95e-14,
+    "G_plus_heat_less_work_at_the_last_time_pJ": -1.87e-36,
+    "movers_whose_heat_falls": [],
+    "largest_shift_over_the_base_s_largest_change": 0.00982,
+    "observable_most_shifted": "amount_changes_fmol/cell/K"
+   }
+  },
+  "store_world_without_buffers": {
+   "release_sign": {
+    "largest_difference_radau_iia": 2.81e-27,
+    "largest_difference_scipy_dop853": 2.94e-14,
+    "G_plus_heat_less_work_at_the_last_time_pJ": -1.61e-36,
+    "movers_whose_heat_falls": ["release/Ca"],
+    "largest_shift_over_the_base_s_largest_change": 3.95,
+    "observable_most_shifted": "amount_changes_fmol/store/Ca"
+   },
+   "pump_without_voltage": {
+    "largest_difference_radau_iia": 6.72e-27,
+    "largest_difference_scipy_dop853": 6.6e-14,
+    "G_plus_heat_less_work_at_the_last_time_pJ": 7.4e-05,
+    "movers_whose_heat_falls": [],
+    "largest_shift_over_the_base_s_largest_change": 0.505,
+    "observable_most_shifted": "heats_pJ/plasma_pump/cycles"
+   },
+   "constants_one_percent: plasma permeability K": {
+    "largest_difference_radau_iia": 5.3e-27,
+    "largest_difference_scipy_dop853": 9.81e-15,
+    "G_plus_heat_less_work_at_the_last_time_pJ": -2.16e-36,
+    "movers_whose_heat_falls": [],
+    "largest_shift_over_the_base_s_largest_change": 0.0179,
+    "observable_most_shifted": "V_m_change_V"
+   },
+   "constants_one_percent: bounding permeability K": {
+    "largest_difference_radau_iia": 6.26e-27,
+    "largest_difference_scipy_dop853": 3.36e-14,
+    "G_plus_heat_less_work_at_the_last_time_pJ": -1.29e-36,
+    "movers_whose_heat_falls": [],
+    "largest_shift_over_the_base_s_largest_change": 0.00442,
+    "observable_most_shifted": "amount_changes_fmol/cell/K"
+   },
+   "constants_one_percent: plasma_leak permeability": {
+    "largest_difference_radau_iia": 5.3e-27,
+    "largest_difference_scipy_dop853": 3.54e-14,
+    "G_plus_heat_less_work_at_the_last_time_pJ": -2.89e-36,
+    "movers_whose_heat_falls": [],
+    "largest_shift_over_the_base_s_largest_change": 0.0188,
+    "observable_most_shifted": "amount_changes_fmol/outside/Ca"
+   },
+   "constants_one_percent: store_leak permeability": {
+    "largest_difference_radau_iia": 5.31e-27,
+    "largest_difference_scipy_dop853": 1.78e-14,
+    "G_plus_heat_less_work_at_the_last_time_pJ": -1.68e-37,
+    "movers_whose_heat_falls": [],
+    "largest_shift_over_the_base_s_largest_change": 0.00998,
+    "observable_most_shifted": "transfers_fmol/store_leak/Ca"
+   },
+   "constants_one_percent: release permeability": {
+    "largest_difference_radau_iia": 5.33e-27,
+    "largest_difference_scipy_dop853": 1.61e-14,
+    "G_plus_heat_less_work_at_the_last_time_pJ": -2.84e-36,
+    "movers_whose_heat_falls": [],
+    "largest_shift_over_the_base_s_largest_change": 0.0215,
+    "observable_most_shifted": "amount_changes_fmol/store/Ca"
+   },
+   "constants_one_percent: channel max_permeability": {
+    "largest_difference_radau_iia": 5.3e-27,
+    "largest_difference_scipy_dop853": 3.81e-14,
+    "G_plus_heat_less_work_at_the_last_time_pJ": -2.48e-36,
+    "movers_whose_heat_falls": [],
+    "largest_shift_over_the_base_s_largest_change": 0.0153,
+    "observable_most_shifted": "amount_changes_fmol/outside/Ca"
+   },
+   "constants_one_percent: plasma_pump capacity": {
+    "largest_difference_radau_iia": 5.3e-27,
+    "largest_difference_scipy_dop853": 3.36e-14,
+    "G_plus_heat_less_work_at_the_last_time_pJ": -1.6e-36,
+    "movers_whose_heat_falls": [],
+    "largest_shift_over_the_base_s_largest_change": 0.015,
+    "observable_most_shifted": "amount_changes_fmol/outside/Ca"
+   },
+   "constants_one_percent: store_pump capacity": {
+    "largest_difference_radau_iia": 5.28e-27,
+    "largest_difference_scipy_dop853": 2.37e-14,
+    "G_plus_heat_less_work_at_the_last_time_pJ": 5.86e-38,
+    "movers_whose_heat_falls": [],
+    "largest_shift_over_the_base_s_largest_change": 0.0214,
+    "observable_most_shifted": "amount_changes_fmol/store/Ca"
+   },
+   "constants_one_percent: exchanger capacity": {
+    "largest_difference_radau_iia": 5.3e-27,
+    "largest_difference_scipy_dop853": 3.42e-14,
+    "G_plus_heat_less_work_at_the_last_time_pJ": -1.95e-37,
+    "movers_whose_heat_falls": [],
+    "largest_shift_over_the_base_s_largest_change": 0.00985,
+    "observable_most_shifted": "transfers_fmol/exchanger/cycles"
+   },
+   "constants_one_percent: bind_first forward_rate": {
+    "largest_difference_radau_iia": 5.3e-27,
+    "largest_difference_scipy_dop853": 5.02e-14,
+    "G_plus_heat_less_work_at_the_last_time_pJ": -4.89e-36,
+    "movers_whose_heat_falls": [],
+    "largest_shift_over_the_base_s_largest_change": 0.0,
+    "observable_most_shifted": null
+   },
+   "constants_one_percent: bind_second forward_rate": {
+    "largest_difference_radau_iia": 5.3e-27,
+    "largest_difference_scipy_dop853": 5.02e-14,
+    "G_plus_heat_less_work_at_the_last_time_pJ": -4.89e-36,
+    "movers_whose_heat_falls": [],
+    "largest_shift_over_the_base_s_largest_change": 0.0,
+    "observable_most_shifted": null
+   },
+   "constants_one_percent: release_calcium activation half_saturation": {
+    "largest_difference_radau_iia": 5.27e-27,
+    "largest_difference_scipy_dop853": 3.61e-14,
+    "G_plus_heat_less_work_at_the_last_time_pJ": -1.22e-36,
+    "movers_whose_heat_falls": [],
+    "largest_shift_over_the_base_s_largest_change": 0.0337,
+    "observable_most_shifted": "amount_changes_fmol/store/Ca"
+   },
+   "constants_one_percent: release_ip3 half_saturation": {
+    "largest_difference_radau_iia": 5.27e-27,
+    "largest_difference_scipy_dop853": 1.29e-14,
+    "G_plus_heat_less_work_at_the_last_time_pJ": -2.73e-36,
+    "movers_whose_heat_falls": [],
+    "largest_shift_over_the_base_s_largest_change": 0.0324,
+    "observable_most_shifted": "amount_changes_fmol/store/Ca"
+   },
+   "constants_one_percent: plasma capacitance": {
+    "largest_difference_radau_iia": 5.3e-27,
+    "largest_difference_scipy_dop853": 2.61e-14,
+    "G_plus_heat_less_work_at_the_last_time_pJ": 1.71e-37,
+    "movers_whose_heat_falls": [],
+    "largest_shift_over_the_base_s_largest_change": 0.00962,
+    "observable_most_shifted": "V_m_change_V"
+   },
+   "constants_one_percent: bounding capacitance": {
+    "largest_difference_radau_iia": 4.48e-27,
+    "largest_difference_scipy_dop853": 2.07e-14,
+    "G_plus_heat_less_work_at_the_last_time_pJ": 1.48e-36,
+    "movers_whose_heat_falls": [],
+    "largest_shift_over_the_base_s_largest_change": 0.00984,
+    "observable_most_shifted": "amount_changes_fmol/cell/K"
+   }
+  }
+ },
+ "failed": []
+}

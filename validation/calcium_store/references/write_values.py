@@ -3,7 +3,7 @@
     python write_values.py [--jobs N]          write
     python write_values.py --check [--jobs N]  make every number again; exit 1 at the first difference
 
-Every published number is made by decimal arithmetic alone, so the file is the same on every machine, to the byte.
+Every published number is made by decimal arithmetic alone, so the file should be the same on every machine, to the byte.
 Both modes run the store world 36 times (two variants, 17 controls and none). `--jobs` processes share that work.
 """
 
