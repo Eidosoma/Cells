@@ -30,8 +30,8 @@ POPULATIONS = (
         for i, patch in enumerate((0, 2))
     ),
     *(
-        (f"hcn_{n}", i, f"hcn{n}_m@1", HCN, 3e-10, 0.12 + 0.08 * i, [0.35 + 0.1 * i, 0.7])
-        for i, n in enumerate((1, 2, 4))
+        (f"hcn_{n}", i, law, HCN, 3e-10, 0.12 + 0.08 * i, [0.35 + 0.1 * i, 0.7])
+        for i, (n, law) in enumerate(((1, "hcn1_m@1"), (2, "hcn2_m@1"), (4, "hcn4_m@1")))
     ),
     *(
         (
