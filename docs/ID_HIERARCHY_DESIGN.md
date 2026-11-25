@@ -1,7 +1,7 @@
 # The ID hierarchy: the rename's design
 
 25 November 2026. Settled by D371 (the user's decisions and the lead's rulings on this note's questions), with the
-legacy plan's input (`legacy-port-plan` ef344334, §11.1). Three items are still open, listed in §11. A design note
+legacy plan's input (`legacy-port-plan` ef344334, §11.1). Four items are still open, listed in §11. A design note
 only: it writes no engine code and changes no live file.
 
 **What is decided** (D345, D346, D348, D371):
@@ -41,9 +41,11 @@ the timed lock (70 s, then 20 s for the digests), with git, jq and shell for the
   folder.
 - **The grammar:** one module holds it. A piece ID has three parts in every namespace, outside modules included.
   Refusal is by table lookup. `qualified()` stays as the one normaliser, now a checker.
-- **Frozen files:** 352 files under four rules, 160 of which hold old spellings. A judged run is pinned to its
-  pre-rename snapshot; a live driver that feeds a frozen file to the renamed engine translates it in `validation/`.
-- **The move:** 927 files and about 6,400 changed lines, plus three `src` modules a hash pins (§5).
+- **Frozen files:** 319 under the three rules D346 names, 127 of which hold old spellings. 33 more are pinned by hash,
+  and the lead rules on them (§11). A judged run is pinned to its pre-rename snapshot; a live driver that feeds a
+  frozen file to the renamed engine translates it in `validation/`.
+- **The move:** 927 files and about 6,400 changed lines, with the three models of §1.4 and without the 33 pinned files
+  (three of which, in `src`, are re-spelled in any case: 930); 877 files if the three models stay bare.
 - **The gate:** one stack, the full gate, with G1 and crossrev through the table. Tier 3 runs the night after, and the
   scope map is refreshed right after the landing.
 - **Test cost:** 14 rows in existing files, under 5 s.
@@ -110,7 +112,8 @@ re-spells legacy's files too.
 
 `resolved_tissue@1`, `@2` and `@8` are live models: their spec classes, parsers and model modules are live
 (`surface_tissue_spec.py:22`, `surface_kinetic_spec.py:36` and `:42`; `models/surface_tissue.py`,
-`models/surface_kinetic.py`, and for `@8` legacy's wrapper `legacy/models/surface_catalog.py`). Only their dispatch is
+`models/surface_kinetic.py`, and for `@8` legacy's wrapper `legacy/models/surface_catalog.py`, laid out as the other
+kinetic majors are, whose IDs stay bare with legacy's). Only their dispatch is
 in legacy, at `legacy/registration.py:1196–1211` and `1444–1447` (parse), `794–833` (models) and `1946–1980`
 (dicts). The first version of the table listed them with legacy's frozen models.
 
@@ -135,7 +138,7 @@ equivalence files) are all in tier 3; the eight in tiers 1 and 2 reach them thro
 | --- | --- | --- |
 | Rows | 3, `cells.model.resolved_tissue@1`, `@2` and `@8` | none: they stay on the kept list |
 | Now | 92 files, the hub's 3 literals among them, and the generator's frozen set needs an exception with a planted case | nothing changes |
-| Then | nothing | at C-1, when their dispatch moves to the live registry, a second small scripted move: 3 rows, and the files that still exist |
+| Then | nothing | at C-1, when their dispatch moves to the live registry, a second small scripted move (3 rows, the files that still exist), and a second table for Lean and the viewer |
 | Coverage | the eight test files of tiers 1 and 2 parse the re-spelled dispatch in the gate; the live-subject tests run in tier 3 the night after | none needed |
 | D346 | every live ID is hierarchical | three live IDs stay bare until C-1 |
 | Manifest | `legacy_entries()` lists them under their new IDs, still as legacy's | unchanged |
@@ -155,14 +158,14 @@ exception in the one rule that decides what is rewritten; its gain is one move a
 - **Line length:** 1,156 lines become longer than 100 characters, in 447 Python files. They are wrapped in a
   separate commit after the move (D371), checked at the AST level; docstring lines stay. No gate runs ruff.
 - **Hash pins.** 33 files that the move would change have their SHA-256 quoted by another file in `src`, `tests`,
-  `validation`, `scripts`, `examples` or `configs` (`PINS2.tsv`). 30 are excluded by rule (§6). Three are `src`
-  modules:
-  `assembly/__init__.py`, `assembly_pool/__init__.py` and `ensemble/worker.py`, pinned by
-  `validation/topology/joint_water_profile_phase_handoff_protocol.json`. They carry live IDs, so they are re-spelled.
-  D187 holds: no hash is ever updated, and the tiers show whether a live reader checks those pins.
-- **The legacy digest check** (D371 Q3): 8 example artifacts hold 19 digests of their own nested definitions
-  (`digest_pins.json`, the raw canonical digest of each object). Re-spelling them leaves the digests stale. The 83
-  definitions that parse had no fingerprint pinned anywhere. §11 has the choice.
+  `validation`, `scripts`, `examples` or `configs` (`PINS2.tsv`): 15 Python and 18 data. Three are `src` modules that
+  carry live IDs (`assembly/__init__.py`, `assembly_pool/__init__.py`, `ensemble/worker.py`, pinned by
+  `validation/topology/joint_water_profile_phase_handoff_protocol.json`). D187 holds: no hash is ever updated. The
+  earlier pin check had hashed `src/` only. §11 has the choice.
+- **The legacy digest check** (D371 Q3): 8 example artifacts hold 19 raw digests of their own nested definitions
+  (`digest_pins.json`), so re-spelling them leaves the digests stale. The check covers the 83 files with a top-level
+  model, experiment and execution by fingerprint (none pinned), and the raw nested digests of the other 136 JSON files.
+  Digests of definitions that Python code builds are left to the tiers, so the condition is not fully discharged.
 - **Three schema kinds already have three parts** (`cells.assembly_lineages.probe@1`,
   `cells.assembly_lineages.f12_table@1`, `cells.source_moves.report@1`). No piece slot reads them.
 - **Sorts** (CHECKS.md item 1): every sort that sets an array's order is over qualified keys of one family, or over
@@ -253,13 +256,15 @@ past decision entry or a Lean claim is read through it. The refusal costs one di
 | `cells.modules` (provisional, D195) | exports `qualified`; its docstring states the new contract |
 | Outside src: `qualified()` in 12 files of `validation/`, `scripts/` and `tests/` | unchanged |
 | Outside src: `tests/unit/test_cell_owned_compartments.py:1029` (`model_key` from `kind_id.split(".")[1]`) and the `"cells." +` test sites | H2. No ID regex exists outside src |
+| Outside src: `tests/unit/test_declarations.py:170` (`declarations.INNER.split(".", 1)[1]`, a set test that would pass without testing anything after the move) | H2: the exact ID |
 
 **The library pages** (D371 Q6), checked: the six pages are at `docs/library/cells/<section>/<name>@<major>.md`
 (one kind, one law, four operators). `page_path()` takes what follows the namespace, so for
 `cells.channel.kv1p5_mh@1` it gives `docs/library/cells/laws/channel.kv1p5_mh@1.md`, and `page_identity()` still
-reads three parts and returns the same ID. No code changes: the six files are renamed by the script, and
-`test_library_pages.py`'s four path strings, the text of `LAW_DOCUMENTATION_DESIGN.md` §1.2, `TEMPLATE.md` and the
-format page (`<name>` becomes `<family>.<name>`) and the regenerated index follow. The viewer's tests quote one page
+reads three parts and returns the same ID. No code changes, and the section folder stays (this reverses the first
+version, which dropped it). M renames the six files by the page rule. `test_library_pages.py`'s four path strings, the
+text of `LAW_DOCUMENTATION_DESIGN.md` §1.2, `TEMPLATE.md` and the format page (`<name>` becomes `<family>.<name>`) and
+the regenerated index follow. The viewer's tests quote one page
 path (`visualizer/tests/laws_library.test.mjs`); the lead tells the viewer session.
 
 ## 4. The block law
@@ -268,8 +273,8 @@ path (`visualizer/tests/laws_library.test.mjs`); the lead tells the viewer sessi
 follows the word. The law and the interface are registered in the hand refactors (H1), so the table holds no seeded
 law row. H1 gives `open_channel_block.py` its Law record on a `ChannelBlockLaw` type, adds the module to @3's
 `law_homes` in the model table and the interface to its row. The generator then maps
-`open_channel_block_weighted_modes@1` to `cells.channel_block.open_channel_block_weighted_modes@1` as it maps every other
-law. `fr51-slot-refusal` landed at f66fa681 without registering it.
+`open_channel_block_weighted_modes@1` to `cells.channel_block.open_channel_block_weighted_modes@1` as it maps every
+other law. `fr51-slot-refusal` landed at f66fa681 without registering it.
 - FR-51's tagged `cases.json` names no block ID (`engine.py` adds the constant), so registering it touches no tagged
   file.
 - H1's record gives it a citation (Woodhull 1973), its D187 test and a library page (a seventh page).
@@ -300,15 +305,17 @@ key names a kind piece, not a format).
 
 **Its scope:** tracked Python, JSON, shell and TOML files under `src/` (legacy included, D371 Q3), `tests/`,
 `validation/`, `scripts/`, `examples/` and `configs/`, less the exclusions. Today that is 927 files and about 6,350
-lines: 171 in live `src`, 12 in legacy, 281 in tests, 331 in validation, 117 in configs, 9 in examples and 6 in scripts
-(`move_files.tsv`), plus the three hash-pinned `src` modules.
+lines (171 in live `src`, 12 in legacy, 281 in tests, 331 in validation, 117 in configs, 9 in examples and 6 in scripts;
+`move_files.tsv`), with the three models of §1.4 minted and the 33 hash-pinned files excluded: 877 files without the
+three. The 8 artifacts of §1.5 are counted in it.
 
 ## 6. Exclusions, and how frozen files keep being read
 
 **Never rewritten:**
-- **Frozen files, by four rules,** recomputed at the morning's tagged base (`frozen_rule_v2.sh`, git and shell only).
+- **Frozen files, by three rules,** recomputed at the morning's tagged base (`frozen_rule_v2.sh`, git and shell only).
   The tag and merge rules take only files whose blob on main is still the tag's. The dry run prints the list for each
-  owner to confirm:
+  owner to confirm, both ways: a rule can miss a registered file, and it can catch a live tool whose blob happens to be
+  a tag's, as it does `validation/tissue/composition_matrix.py`, which follow-ups edit (D364):
   - **tag** (195 files): the non-merge commits a registration-style tag owns. The tags are named registered,
     registration, judge, references, erratum, amendment, criteria, rule, sheet, predictions, declaration, supplement
     or protocol. For a tag on a side branch, the merge that brought it in is found by searching main's first-parent
@@ -318,10 +325,11 @@ lines: 171 in live `src`, 12 in legacy, 281 in tests, 331 in validation, 117 in 
     REGISTRATION, CRITERIA, AMENDMENT, ERRATUM, judge, rule, protocol, predictions, RUNG and sheet names. 35 of the
     files the old rules missed hold old spellings, 29 of them spec-like;
   - **commit** (48): the last change is a commit whose subject begins "Freeze" or "Register". This covers the protocols
-    and predictions that predate tags;
-  - **pin** (33): another file quotes the SHA-256 (§1.5). The three `src` modules are re-spelled, so 30 are excluded.
-- **Together: 352 files, 160 of which hold old spellings** (98 JSON, 44 Python, 18 Markdown; `FROZEN2.tsv`). FR-50's
-  registration files joined when FR-50 landed.
+    and predictions that predate tags.
+- **Together: 319 files, 127 of which hold old spellings.** FR-50's registration files joined when FR-50 landed.
+- **33 files another file pins by hash** (§1.5), all of which hold old spellings: 3 in `src`, 12 other Python files
+  (fixtures and references, live code that other modules import), and 18 data files. The candidate excludes all 33,
+  which would make 352 frozen files, 160 with old spellings. That choice is the lead's (§11).
 - **`lean/`:** 173 files hold 2,498 old spellings.
 - **The crossrev replication record** and every record under `/mnt/workspaces`, which are outside the tree.
 - **Past decision entries,** `docs/` in general, `reports/`, `agent-work/`, `visualizer/` and D188's maps.
@@ -335,13 +343,18 @@ lines: 171 in live `src`, 12 in legacy, 281 in tests, 331 in validation, 117 in 
 | translate | `validation/id_table.py` maps old spellings to new through the committed table, recursively over JSON-like data, refusing an ambiguous one. A live driver applies it to a frozen input before parse. The engine stays strict | G1's saved definitions, crossrev's predictions, regression tests, FR-51's `cases.json`, and every live reader the dry run finds |
 | erratum | a tagged erratum names the new spellings | only where a judge's own code must change |
 
+**Eight frozen modules call the engine themselves,** so no translator fits inside them: `fr47_worlds.py`,
+`fr49/judge_l.py` and `worlds.py`, `gap_junction_tissue/run.py`, `junction_gate_benchmark/revilla1999.py`,
+`xenopus_bioelectric/xc0_engine.py` and `xc0_worlds.py`, and `composition_matrix.py`, which is a live tool (above).
+The rest are pinned. Their judged runs are done, except those of the next table.
+
 **Registrations with a run still to come** (D371 Q7):
 
 | Registration | Old spellings in its frozen text | Marked |
 | --- | --- | --- |
 | FR-38 v2, the second comparison | prose in its spec (6); the judge, untagged, is on `fr38-v2-judge` (15) | **pinned.** Its judged run comes before its branch merges main after the rename (D371) |
-| FR-45 (W1 to W7s) | prose in its spec (4); no references JSON | **translated** only if a driver feeds old text to the engine; its engine code is not on main, so it is built after the rename from constants. W2 and W7 stay on the wash, or on a pre-rename snapshot (D364). Its judge is written after the rename (D376) |
-| FR-49 (World B, C1, C2, C4) | `judge_l.py` (1) and `worlds.py` (4), frozen code that calls the engine; `REGISTRATION.md` (16) | **translated** at B's and C's live judges, which wrap the frozen builders' definitions before parse. World L is judged (D331). Until those judges exist, B and C1 stay pinned to their snapshot (D362) |
+| FR-45 (W1 to W7s) | prose in its spec (4); its references hold none | **translated, with nothing to translate.** Its engine code and its judge both come after the rename (D376, D377), built from constants; the registration's prose is read through the table. W2 and W7 run on the wash, whose retirement waits for them (D364) |
+| FR-49 (World B, C1, C2) | `judge_l.py` (1) and `worlds.py` (4), frozen code that calls the engine; `REGISTRATION.md` (16) | **translated.** The live judges of B, C1 and C2 are not written; they wrap the frozen builders' definitions before parse. World L is judged (D331), and its frozen code is pinned |
 | FR-30's Ek-Vitorín 2016 fit | none frozen: prose in `docs/JUNCTION_TWO_RELAXATION_DESIGN.md`; `harness.py` and `score.py` on `fr30-next` hold one each | neither: the branch re-spells its live files when it merges main. The fit waits for its amendment (D366) |
 | GJ-N1's field point | `neither_rule.json` and the judge (frozen) | **pinned**, in flight on its snapshot |
 | FR-51's two-potassium run (D353) | not tagged yet | written after the move, or pinned to 955765ef (D361) |
@@ -371,12 +384,13 @@ lines: 171 in live `src`, 12 in legacy, 281 in tests, 331 in validation, 117 in 
      registration (§4);
    - H2: the computed IDs of §1.5;
    - H3: `validation/id_table.py`, G1's `--map`, and one translator call at each live reader of a frozen file.
-4. **M: the scripted move,** alone in its commit and pure: no folder move, no hash edit. It includes the 22 shared
-   pieces in legacy's files. `verify --base H3 --head M` must hold: the replay is equal, a second application
-   changes nothing, and no old spelling is left in scope.
+4. **M: the scripted move,** alone in its commit and pure: no folder move, no hash edit. It includes the shared pieces
+   in legacy's files (§1.3: 22, or 19 if the three models stay bare) and renames the six library pages.
+   `verify --base H3 --head M` must hold: the replay is equal, a second application changes nothing, and no old
+   spelling is left in scope.
 5. **W: the long-line rewrap,** a separate commit, checked at the AST level.
-6. **D: docs.** The page renames, the format page's ID rule, ARCHITECTURE's where-it-lives lines, PROGRESS and the
-   decision entry.
+6. **D: docs.** The library's regenerated blocks and index, the format page's ID rule, ARCHITECTURE's where-it-lives
+   lines, PROGRESS and the decision entry.
 
 **The checks:**
 - **Pre-lock:** the IDs step through the table (`id_moves.py ids`), the guard set, and the changed test files within
@@ -444,30 +458,42 @@ Rows in existing files. None compiles a world:
 | Q8, test plants | the three-part shape, with the grammar for outside modules in §3 |
 
 **Open:**
-1. **The words for the ten sub-laws and the field closure law** (D371: a new word comes back to the user). Three have an
-   existing word that fits; the other eight need seven new ones:
+1. **The words for the ten sub-laws and the field closure law** (D371: a new word comes back to the user). Eight new
+   words cover ten of them; one reuses `solver`:
 
 | ID | Named in | Proposed word |
 | --- | --- | --- |
 | `delayed_first_order_junction_formation@1` | `junction_formation.law` of the replacement operator | `junction_formation`, new |
-| `ph_conditioned_factor@1` | `law` of a pH condition | `rate_factor`, existing |
+| `ph_conditioned_factor@1` | `law` of a pH condition, on a transfer's rate | `transfer_factor`, new |
+| `exponential_volume_activation@1` | `volume_factor` of the symport, on a route's rate | `transfer_factor`, new |
 | `bounding_patch_damage@1` | `law` of a patch damage | `damage`, new |
 | `hill_regulated_two_state@1` | `states[].law` of regulated availability | `regulation`, new |
 | `langmuir_site_binding@1` | the site operator's recorded `laws` | `site_binding`, new |
 | `site_conserving_internalisation@1` | the site operator's recorded `laws` | `site_internalisation`, new |
-| `exponential_volume_activation@1` | `volume_factor` of the symport | `rate_factor`, existing |
-| `exponential_mean_rate_linear_target_gates@1` | its module constant and 15 protocol notes; nothing in `src` reads it | `solver`, existing |
-| `maintained_held_rows@1`, `finite_fuel_rows@1` | `fuel.kind` of a transporter | `fuel_kind`, new (two rows) |
+| `maintained_held_rows@1`, `finite_fuel_rows@1` | `fuel.kind` of a transporter | `fuel_kind`, new |
 | `resolved_capacitor_components_current_continuity@1` | `closure.law` of every @3 world | `field_closure`, new |
+| `exponential_mean_rate_linear_target_gates@1` | its module constant and 15 protocol notes; nothing in `src` reads it | `solver`, existing, or leave it out of the table |
 
    They carry no Law record, so each is a seed row whose family the user fixes now. The word must be the one its later
-   interface would take, or the ID moves again. The recommendation is the words above: seven new ones and three reuses.
-   A smaller set is possible by grouping (`site` for the two site laws, one `factor` word); a larger one by giving
-   each its own.
-2. **The three models of §1.4:** mint now, or leave bare until C-1. The lead rules.
-3. **The legacy digest pins of §1.5:** leave the 8 example artifacts unspelled, with the readers checking the digest on
-   the raw text before translating (recommended); regenerate them with their own tools after the move (new digests); or
-   let them go with legacy's tests at C-1. The lead rules.
+   interface would take, or the ID moves again. That is why the two factors do not take `rate_factor`: its interface is
+   the assembly's, whose type they could not be. The site laws are two words because their contracts differ. A smaller
+   set is possible by grouping them.
+2. **The three models of §1.4** (the lead): mint now, or leave bare until C-1 (recommended).
+3. **The hash-pinned files of §1.5** (the lead). The three `src` modules are re-spelled in every option, and their pins
+   go stale, as D188's precedent (its §5) had it; D187 holds.
+   - (a) leave the other 30 as frozen (349 frozen files, 157 with old spellings; 930 to move):
+     their callers translate or stay pinned;
+   - (b) re-spell all 33 and let the pins go stale: 960 files. The tiers show which live readers enforce them;
+   - (c) re-spell the 15 Python files and leave the 18 data files: 942 files, with the 12 fixtures and references
+     live code that other modules import. **Recommended.**
+4. **The 8 example artifacts of §1.5** (the lead). Their embedded digests go stale if they are re-spelled, and the
+   re-spelled legacy code refuses them if they are not. Their readers are tests: `test_geometry_profiles_cli.py` and
+   `test_environment_barrier_profiles_cli.py` in tier 1, `test_surface_active_profile_interventions_dispatch.py` in
+   tier 2, and the phase CLI tests in tier 3 (`tests/phase_fixtures.py`). So the gate cannot pass untouched.
+   - (a) regenerate them with their own tools after the move, with new digests (recommended if their inputs allow, which
+     is not checked);
+   - (b) declare those outcomes and retire the tests with legacy's at C-1;
+   - (c) keep the 8 and their tests pinned to the pre-rename snapshot.
 
 **For the user:** private modules' IDs change shape, from `namespace.name@major` to `namespace.family.name@major`, and
 the engine refuses the old shape without naming a new ID.
