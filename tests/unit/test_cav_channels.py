@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+import os
 import subprocess
 from pathlib import Path
 
@@ -10,11 +11,11 @@ import numpy as np
 
 from cells.laws.channels import cav_channels as channels
 from cells.laws.channels import kv1_channels as prior
-from tests.unit import test_surface_calcium as shared
 from tests.unit.test_surface_kinetic import exact
 from validation.tissue import cav_reference as reference
 
-BACKEND = shared.BACKEND
+BACKEND = os.environ.get("CELLS_COMPONENT_BACKEND", "cpu")
+EVIDENCE = os.environ.get("CELLS_COMPONENT_EVIDENCE")
 PREFIX = "resolved-calcium-cav"
 SOURCE_HASHES = {
     "vg_ca.py": "843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6",
@@ -23,7 +24,13 @@ SOURCE_HASHES = {
 
 
 def evidence(name, value, arrays=None):
-    shared.evidence(PREFIX + "-" + name, value, arrays)
+    if EVIDENCE:
+        path = Path(EVIDENCE) / BACKEND
+        path.mkdir(parents=True, exist_ok=True)
+        path = path / f"{PREFIX}-{name}.json"
+        path.write_text(json.dumps(value, indent=2, allow_nan=False) + "\n")
+        if arrays is not None:
+            np.savez_compressed(path.with_suffix(".npz"), **arrays)
 
 
 def decimal_parameters(voltage, family):

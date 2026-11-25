@@ -2,6 +2,7 @@
 
 import json
 import os
+from collections import namedtuple
 from dataclasses import replace
 from pathlib import Path
 
@@ -12,13 +13,14 @@ import pytest
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.ensemble import ionic
 from cells.execution.batch import BatchSpec, WorldSpec, parse_batch
+from cells.execution.grid import EventGrid
 from cells.execution.runner import branch_checkpoint, run, timeline, validate_checkpoint
 from cells.execution.schedule import control_values, event_index
 from cells.execution.state import Checkpoint
 from cells.laws.channels import cav_channels, leak_channels, potassium_catalog, sodium_catalog
 from cells.laws.channels import shared_channel_catalog as channels
-from cells.legacy.models import surface_catalog as model
-from cells.legacy.models import surface_cav as prior
+from cells.models import surface_kinetic as kinetic
+from cells.numerics.clock_instants import same_instant
 from cells.records.io import load_snapshot, write_run, write_snapshot
 from cells.registry.models import get_model
 from tests.unit.test_surface_kinetic import assert_states, exact
@@ -40,16 +42,18 @@ def evidence(name, value, arrays=None):
 
 def initial(raw=None, time=0.0):
     spec = parse_spec(fixtures.definition() if raw is None else raw)
-    state, layout = get_model(spec.model).initial_values(spec)
+    model = get_model(spec.model)
+    state, layout = model.initial_values(spec)
     controls = control_values(spec, [time])
-    return spec, state, layout, type(controls)(*(v[0] for v in controls))
+    return model, spec, state, layout, type(controls)(*(v[0] for v in controls))
 
 
 @pytest.mark.parametrize("backend", ["cpu", "gpu"])
 def test_identity_roundtrip_routes_and_ensemble_registration(backend):
     raw = fixtures.definition(backend=backend)
-    spec, state, p, _ = initial(raw)
-    assert get_model(spec.model) is model and type(p) is model.LAYOUT_TYPE
+    model, spec, state, p, _ = initial(raw)
+    assert model.MODEL_ID == "resolved_tissue@8"
+    assert type(p) is model.LAYOUT_TYPE is kinetic.CATALOG_LAYOUT_TYPE
     assert spec == parse_spec(spec.to_dict())
     assert spec.to_dict()["model"]["id"] == "resolved_tissue@8"
     assert len(state) == 19 and state.channel_gate.shape == (2, 40)
@@ -69,13 +73,13 @@ def test_identity_roundtrip_routes_and_ensemble_registration(backend):
 
 @pytest.mark.parametrize(
     "fault",
-    ["old_identity", "law", "valence", "ratio", "zero_ca", "order", "owner", "capacity", "step"],
+    ["identity", "law", "valence", "ratio", "zero_ca", "order", "owner", "capacity", "step"],
 )
 def test_declarations_reject_incompatible_catalogs(fault):
     raw = fixtures.definition()
     m, x = raw["model"], raw["execution"]
-    if fault == "old_identity":
-        m["id"] = "resolved_tissue@7"
+    if fault == "identity":
+        m["id"] = "resolved_tissue@2"  # An earlier family, whose channels carry one ion each.
     elif fault == "law":
         m["channels"][-1]["kinetic_law"] = "invented_leak@1"
     elif fault == "valence":
@@ -92,36 +96,14 @@ def test_declarations_reject_incompatible_catalogs(fault):
         x["channel_capacity"] = 38
     else:
         x["dt"] = 2.5e-6
-    with pytest.raises(ConfigError):
+    message = "unknown=.'permeant_ions'" if fault == "identity" else ""  # Not an unknown model.
+    with pytest.raises(ConfigError, match=message):
         timeline(parse_spec(raw))
-
-
-def test_old_catalog_state_rates_and_fields_are_bitwise_unchanged():
-    raw = fixtures.legacy_definition()
-    old, state, p, control = initial(raw)
-    raw["model"]["id"] = "resolved_tissue@8"
-    new, newer, q, held = initial(raw)
-    assert get_model(old.model) is prior and get_model(new.model) is model
-    exact(state, newer)
-    first, second = prior.readouts(state, control, p, xp=np), model.readouts(newer, held, q, xp=np)
-    exact(first.derivative, second.derivative)
-    exact(jax.tree.leaves(first.field), jax.tree.leaves(second.field))
-    voltage = np.linspace(-0.12, 0.06, 61)[:, None] * np.ones((1, 18))
-    codes = np.arange(18, dtype=np.int64)
-    exact(channels.kinetics(voltage, codes, xp=np), cav_channels.kinetics(voltage, codes, xp=np))
-    gates = np.stack((np.full_like(voltage, 0.17), np.full_like(voltage, 0.81)), axis=-2)
-    np.testing.assert_array_equal(
-        channels.opening(gates, codes, xp=np), cav_channels.opening(gates, codes, xp=np)
-    )
-    evidence(
-        "legacy",
-        dict(status="passed", scope="Old 18 laws and complete initial stage", comparison="bitwise"),
-    )
 
 
 def test_catalog_dispatch_supports_mixed_population_world_axes():
     codes = np.arange(35, dtype=np.int64)
-    voltage = np.linspace(-0.12, 0.06, 6)[:, None] * np.ones((1, 35))
+    voltage = np.linspace(-0.12, 0.06, 61)[:, None] * np.ones((1, 35))
     gates = np.stack((np.full_like(voltage, 0.17), np.full_like(voltage, 0.81)), axis=-2)
     target, tau = channels.kinetics(voltage, codes, xp=np)
     opened = channels.opening(gates, codes, xp=np)
@@ -149,7 +131,7 @@ def test_catalog_dispatch_supports_mixed_population_world_axes():
 @pytest.mark.parametrize("padded", [False, True])
 def test_complete_stages_match_independent_reference(arm, padded):
     raw = fixtures.definition(arm, padded=padded)
-    spec, state, p, control = initial(raw)
+    model, spec, state, p, control = initial(raw)
     actual = model.readouts(state, control, p, xp=np)
     c = reference.bind(raw)
     target, _, proof = reference.evaluate(c, reference.initial(c), 0.0)
@@ -180,7 +162,7 @@ def test_complete_stages_match_independent_reference(arm, padded):
 
 
 def test_blocking_keeps_clocks_and_zero_calcium_route():
-    _, state, p, control = initial()
+    model, _, state, p, control = initial()
     opened = model.readouts(state, control, p, xp=np)
     blocked = control._replace(channel=np.zeros_like(control.channel))
     stopped = model.readouts(state, blocked, p, xp=np)
@@ -199,7 +181,7 @@ def test_blocking_keeps_clocks_and_zero_calcium_route():
 
 @pytest.mark.parametrize("fault", ["nan", "negative", "high", "pad", "gate", "law", "inactive_law"])
 def test_invalid_controls_or_gates_do_not_hide_behind_blocking(fault):
-    _, state, p, control = initial(fixtures.definition("blocked"))
+    model, _, state, p, control = initial(fixtures.definition("blocked"))
     levels = control.channel.copy()
     if fault in ("nan", "negative", "high", "pad"):
         levels[-1 if fault == "pad" else -2] = dict(nan=np.nan, negative=-0.01, high=1.01, pad=0.1)[
@@ -223,7 +205,9 @@ def test_control_clock_union_and_empty_populations():
     events = sorted(
         {v["time"] for g in raw["experiment"]["channel_controls"] for v in g["schedule"]}
     )
-    assert set(events) <= set(timeline(spec))
+    grid, times = EventGrid(spec), timeline(spec)
+    for t in events:  # Each a boundary of the clock, to its same-instant tolerance (D283).
+        assert same_instant(times[grid.exact_index(t)], t)
     times = sorted({*events, *(np.nextafter(t, 0) for t in events if t > 0)})
     table = control_values(spec, times)
     groups = {g["channel_id"]: g["schedule"] for g in raw["experiment"]["channel_controls"]}
@@ -237,14 +221,14 @@ def test_control_clock_union_and_empty_populations():
     raw["model"]["channels"] = []
     raw["experiment"]["channel_controls"] = []
     raw["execution"]["channel_capacity"] = 0
-    empty, state, p, control = initial(raw)
+    model, empty, state, p, control = initial(raw)
     assert model.readouts(state, control, p, xp=np).valid
     assert state.channel_gate.shape == (2, 0) and state.channel_transferred.shape == (4, 0)
     assert parse_spec(empty.to_dict()) == empty
 
 
 def test_complete_initial_checkpoint_and_model_branch_protection(tmp_path):
-    spec, state, p, _ = initial(fixtures.compact_probe())
+    model, spec, state, p, _ = initial(fixtures.compact_probe())
     checkpoint = Checkpoint(state, p, 0.0, 0, event_index(spec, 0.0))
     write_snapshot(tmp_path / "initial", spec, checkpoint)
     restored = load_snapshot(tmp_path / "initial")
@@ -257,7 +241,7 @@ def test_complete_initial_checkpoint_and_model_branch_protection(tmp_path):
     )
     branch = branch_checkpoint(spec, checkpoint, parse_spec(changed))
     exact(branch.state, state)
-    wrong_layout = prior.LAYOUT_TYPE(*p)
+    wrong_layout = namedtuple("OtherLayout", p._fields)(*p)  # The same arrays, another type.
     with pytest.raises(ConfigError, match="state/layout types"):
         validate_checkpoint(spec, replace(checkpoint, layout=wrong_layout))
     laws = p.channel_laws.copy()
@@ -279,7 +263,7 @@ def test_complete_initial_checkpoint_and_model_branch_protection(tmp_path):
 
 
 def test_compiled_mixed_stage_and_strict_domain():
-    spec, state, p, control = initial()
+    model, spec, state, p, control = initial()
     evaluate = jax.jit(
         lambda y, u, q: (
             model.rhs(y, u, q, q.active),
@@ -334,7 +318,8 @@ def test_compiled_early_trajectory_and_complete_snapshot(tmp_path):
     loaded = load_snapshot(tmp_path / "early/checkpoint_final")
     exact(loaded.checkpoint.state, value.final.state)
     exact(loaded.checkpoint.layout, value.final.layout)
-    assert loaded.spec == value.spec and type(loaded.checkpoint.layout) is model.LAYOUT_TYPE
+    layout_type = get_model(value.spec.model).LAYOUT_TYPE
+    assert loaded.spec == value.spec and type(loaded.checkpoint.layout) is layout_type
     evidence(
         "early-trajectory",
         report | dict(status="passed", max_error_over_budget=ratio, complete_final_snapshot=True),
