@@ -40,6 +40,7 @@ from validation.ensemble_reexpression.labels import LABELS, declared_strings, la
 from validation.ensemble_reexpression.pieces import Pieces
 from validation.ensemble_reexpression.refusals import PARTIAL, SECOND_PASS
 from validation.ensemble_reexpression.run import RECORD, Folders, digest
+from validation.ensemble_reexpression.stores import TRACE_MM
 
 KIND = "ensemble-reexpression engine table, version 1"
 UNITS = {"amount": "fmol", "energy": "pJ", "potential": "V", "time": "s"}
@@ -97,23 +98,66 @@ def block(definition):
     return worlds.shown(worlds.read(definition))
 
 
+def unnamed(p):
+    """{node: the rows of it that a block names no amount of}, for each node that has one: the
+    regions' are the rows that no ion's are, the stores' the fuel, a cell's none where it has a
+    store and a pump (PART2 §2.5). A store is named by its cell."""
+    pumped = {p.cell_of_patch.get(q["host"]) for q in p.store_pump.values()}
+    inside = {m["id"]: m["inside"] for m in p.model["membranes"]}
+    pumped |= {inside[membrane] for membrane in p.plasma_pump}
+    mixed = [s for s in p.chemical if s not in p.ionic]
+    out = {name: [s for s in p.species if s not in p.ionic] for name in p.regions}
+    out |= {f"store:{cell}": [s for s in p.species if s in p.fuel] for cell in p.store}
+    for cell in (c["id"] for c in p.model["cells"]):
+        rows = [] if cell in p.store else list(mixed)
+        rows += [] if cell in pumped else [s for s in p.species if s in p.fuel]
+        out |= {cell: rows} if rows else {}
+    return out
+
+
+def held(p, node, species):
+    """The concentration (mM) of a row at a node, which is named as `unnamed` names it."""
+    model = p.model
+    name = p.store[node[len("store:") :]] if node.startswith("store:") else node
+    (entry,) = (n for n in (*model["cells"], *model["extracellular"]) if n["id"] == name)
+    return entry["initial_amount_fmol"][species] / entry["volume_pL"]
+
+
 def beyond(definition):
-    """What a composite's definition holds that its block does not say, for `definition` (PART2 §2.1
-    and §2.4): every species row, the release's conditions by cell, and the concentration of each
-    row at each node that no block names it at."""
+    """What a composite's definition holds beyond its block, for `definition` (PART2 §2.5). The
+    judge reads `species_rows`, `traces` and `entities` as echo: the rows declared, the rows at each
+    node that hold the trace, and how many of each entity there are. A row that the block does not
+    name at a node and that holds another concentration is in no list of `traces`, so it departs.
+    The concentrations themselves and the release's conditions are recorded."""
     p = Pieces(definition)
     if not p.composite:
         return {}
     model = p.model
-    unnamed = {name: [s for s in p.species if s not in p.ionic] for name in p.regions}
-    unnamed |= {node: [s for s in p.species if s in p.fuel] for node in p.store.values()}
+    own = {node: {s: held(p, node, s) for s in rows} for node, rows in unnamed(p).items()}
+    reactions = [o for o in model["operators"] if o["law"] == LABELS["local_reactions"]]
+    compartments = [o for o in model["operators"] if o["law"] == LABELS["compartment_law"]]
     return {
-        "species_rows": list(p.species),
-        "release_conditions": {cell: c["id"] for cell, c in p.release_condition.items()},
-        "trace_mM": {
-            o["id"]: {s: o["initial_amount_fmol"][s] / o["volume_pL"] for s in unnamed[o["id"]]}
-            for o in model["extracellular"]
+        "species_rows": sorted(p.species),
+        "traces": {
+            node: sorted(s for s, c in rows.items() if math.isclose(c, TRACE_MM, rel_tol=1e-14))
+            for node, rows in own.items()
         },
+        "entities": {
+            "cells": len(model["cells"]),
+            "outside_nodes": len(model["extracellular"]),
+            "membranes": len(model["membranes"]),
+            "channels": len(model["channels"]),
+            "junctions": len(model["junctions"]),
+            "faces": len(model["faces"]),
+            "compartments": sum(len(o["compartments"]) for o in compartments),
+            "passive_routes": len(p.routes),
+            "species_conditions": len(model.get("species_conditions", ())),
+            "populations": len(p.populations),
+            "reactions": sum(len(o["reactions"]) for o in reactions),
+            "operators": len(model["operators"]),
+        },
+        "release_conditions": {cell: c["id"] for cell, c in p.release_condition.items()},
+        "trace_mM": own,
     }
 
 

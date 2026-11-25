@@ -364,6 +364,8 @@ def _write_stores(block, raw):
         if pump is not None:
             where = f"the store's pump of {cell}"
             write_pump(raw, store_pump_id(cell), patch_id(cell), cell, pump, where, fuel)
+    for entry in model["species"]:  # A row that the block gives no potential has 0 (PART2 §2.2).
+        entry.setdefault("standard_mu_RT", 0.0)
     anchor(raw)
 
 

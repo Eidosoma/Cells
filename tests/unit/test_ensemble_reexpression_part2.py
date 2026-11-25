@@ -1040,8 +1040,8 @@ def record(tmp_path, inputs, run, raw, parsed, saved, **facts):
 
 
 def test_an_ionic_entry_of_part_2_is_the_contracts(invented, tmp_path, whole):
-    """PART2_BLOCKS: `inputs` holds the world's blocks by their names; `definition` holds what the
-    block does not say (the lead's answers 1, 6 and 15); the rows are at the child's two grids."""
+    """PART2_BLOCKS: `inputs` holds the world's blocks by their names; the rows are at the child's
+    two grids; `definition` holds what PART2 §2.5 says beside the engine's own form."""
     _, raw, parsed = whole
     run = invented.run(f"{WHOLE} h=2e-05")
     times = [k * 2e-05 for k in range(11)]
@@ -1066,14 +1066,93 @@ def test_an_ionic_entry_of_part_2_is_the_contracts(invented, tmp_path, whole):
     assert set(entry["strings"]) == definitions._labels(invented, run)
     assert entry["declared_strings"] == sorted(entry["strings"].values())
     beyond = entry["definition"]
-    assert beyond["species_rows"] == [*ROWS, *FUEL] and beyond["ionic"] == parsed
-    assert beyond["release_conditions"] == {c: f"release_factor_{c}" for c in CELLS}
-    assert set(beyond["trace_mM"]) == {*REGIONS, "store_c_a", "store_c_b"}
-    assert list(beyond["trace_mM"]["rim"]) == [*ROWS[B:], *FUEL]
-    assert list(beyond["trace_mM"]["store_c_b"]) == FUEL
-    for rows in beyond["trace_mM"].values():
-        assert all(v == pytest.approx(1e-12, rel=1e-15) for v in rows.values())
+    assert beyond["ionic"] == parsed and beyond == {"ionic": parsed} | exporter.beyond(parsed)
     assert json.loads(json.dumps(entry)) == entry
+
+
+COUNTS = {  # PART2 §2.5's table, for two cells with a store each: {child: what differs}.
+    "spatial": {"channels": 2, "populations": 2, "reactions": 4},
+    "plasma": {"channels": 2, "populations": 6, "reactions": 4},
+    "gated": {"channels": 4, "populations": 6, "reactions": 4},
+    "ip3": {"channels": 4, "populations": 6, "reactions": 5},
+}
+
+
+@pytest.mark.parametrize("name", CHILDREN)
+def test_definition_says_exactly_what_stands_beyond_the_block(name):
+    """PART2 §2.5: the sorted species rows (ten, or thirteen), the sorted rows that hold the trace
+    at each region and store ("store:" and the cell), and the counts. Names by code point."""
+    found = exporter.beyond(parse_spec(written(child(name))).to_dict())
+    further = ["IP3", "IP3_bound", "IP3_buffer"] if name == "ip3" else []
+    own = ["B", "Ca", "Ca2B", "CaB", "Cl", *further, "K", "Na"]
+    assert found["species_rows"] == sorted([*own, "ATP", "ADP", "Pi"])
+    assert found["species_rows"][0] == "ADP" and len(found["species_rows"]) == 10 + len(further)
+    region = sorted(["B", "CaB", "Ca2B", "ATP", "ADP", "Pi", *further])
+    assert found["traces"] == {r: region for r in REGIONS} | {
+        f"store:{c}": ["ADP", "ATP", "Pi"] for c in CELLS
+    }
+    assert region[:3] == ["ADP", "ATP", "B"]
+    everywhere = dict(cells=2, outside_nodes=5, membranes=4, junctions=1, faces=3, compartments=2)
+    everywhere |= dict(passive_routes=7, species_conditions=2, operators=2)
+    assert found["entities"] == everywhere | COUNTS[name]
+    assert found["release_conditions"] == {c: f"release_factor_{c}" for c in CELLS}
+    assert {node: sorted(rows) for node, rows in found["trace_mM"].items()} == found["traces"]
+    for rows in found["trace_mM"].values():
+        assert all(v == pytest.approx(1e-12, rel=1e-15) for v in rows.values())
+
+
+def test_a_row_or_an_entity_beyond_the_table_shows(whole):
+    """A row that a block does not name at a node, at another concentration than the trace, is in no
+    list of the traces; a cell without a store or without a pump has a list of its own; another
+    entity is counted. A definition of the inner model has none of these keys."""
+    _, raw, parsed = whole
+    honest = exporter.beyond(parsed)
+    moved = copy.deepcopy(raw)
+    rim = moved["model"]["extracellular"][2]
+    rim["initial_amount_fmol"]["Pi"] = 2e-12 * rim["volume_pL"]
+    found = exporter.beyond(parse_spec(moved).to_dict())
+    assert found["traces"]["rim"] == [s for s in honest["traces"]["rim"] if s != "Pi"]
+    assert found["trace_mM"]["rim"]["Pi"] == pytest.approx(2e-12)
+    assert {k: v for k, v in found.items() if k not in ("traces", "trace_mM")} == {
+        k: v for k, v in honest.items() if k not in ("traces", "trace_mM")
+    }
+    bare = copy.deepcopy(raw)  # Read as submitted: no pump and no store at c_b.
+    model = bare["model"]
+    model["transporters"] = [t for t in model["transporters"] if t["id"] != "store_pump_c_b"]
+    assert "c_b" not in exporter.beyond(bare)["traces"]  # Its plasma pump names its fuel.
+    model["operators"].append({"law": "another@1"})
+    assert exporter.beyond(bare)["entities"]["operators"] == 3
+    model["operators"].pop()
+    model["transporters"] = [t for t in model["transporters"] if not t["id"].endswith("b")]
+    cell = _entity(model["cells"], "c_b")
+    for s in FUEL:
+        cell["initial_amount_fmol"][s] = 1e-12 * cell["volume_pL"]
+    assert exporter.beyond(bare)["traces"]["c_b"] == ["ADP", "ATP", "Pi"]
+    assert exporter.beyond(bare)["entities"]["populations"] == 3
+    del model["operators"][0]["compartments"][1]
+    mixed = sorted([*ROWS[B:], *FUEL])
+    assert exporter.beyond(bare)["traces"]["c_b"] == [s for s in mixed if s in FUEL]
+    assert exporter.beyond(bare)["trace_mM"]["c_b"]["B"] > 1e-3
+    assert exporter.beyond(bare)["entities"]["compartments"] == 1
+    twice = copy.deepcopy(raw)
+    twice["model"]["species"].append({"id": "X", "valence": 0})
+    for node in (*twice["model"]["cells"], *twice["model"]["extracellular"]):
+        node["initial_amount_fmol"]["X"] = 1e-12 * node["volume_pL"]
+    assert "X" in exporter.beyond(twice)["species_rows"]
+    assert exporter.beyond({"model": written_inner()}) == {}
+
+
+def test_a_row_that_the_block_gives_no_potential_has_zero():
+    """PART2 §2.2: the registry declares a standard potential for every row."""
+    block = child("spatial")
+    for cell in ("c_a", "c_b"):
+        store = block["stores"][cell]
+        del store["species"]["Na"], store["membrane"]["permeability_m_per_s"]["Na"]
+        del store["compartments"]["er"]["initial_amount_fmol"]["Na"]
+    raw = written(block)
+    assert all("standard_mu_RT" in s for s in raw["model"]["species"])
+    assert _entity(raw["model"]["species"], "Na")["standard_mu_RT"] == 0.0
+    parse_spec(raw)
 
 
 def test_a_clusters_entry_says_what_its_schedule_came_from(invented, tmp_path):

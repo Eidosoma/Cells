@@ -3,10 +3,10 @@
 This folder makes the definitions, the runs and the tables that `spec/` registers (tag `ensemble-reexpression-criteria-part1-2026-11-25`).
 It judges nothing. Its builder read `spec/SPEC.md`, `spec/READOUTS.md`, `spec/TABLE.md`, `spec/inputs.json`, the rules of `spec/README.md`, and the engine with its documents.
 From 25 November also `spec/AMENDMENT-1-2026-11-25.md`, which holds what the lead answered ("Amendment 1" below), and the exporter's copy of Amendment 2 (its items 2, 4, 7, 8, 9.1 and 10; "Amendment 2" below).
-For Part 2 its builder read the exporter's part of it (sections 1 to 6 and 11 of `PART2.md`, word for word), `PART2_BLOCKS.md`, `inputs_part2.json` (their text of 25 November, before the tag) and what the lead answered.
+For Part 2 its builder read `PART2_EXPORTER.md` (sections 1 to 6 and 11 of `PART2.md`, word for word), `PART2_BLOCKS.md` and `inputs_part2.json`, at their tag `ensemble-reexpression-criteria-part2-2026-11-25` and in two earlier states of 25 November, and what the lead answered.
 The builder read no other file of `spec/`, no capture, no legacy output, no code of the judge, and no test or validation file of the calcium store.
 
-No registered world has been run by the builder, and no registered definition of Part 2 has been parsed. The run driver refuses to run a registered world from a checkout.
+No registered world has been run by the builder. The registered definitions of both parts have been parsed (`definitions check`), Part 2's after its tag. The run driver refuses to run a registered world from a checkout.
 Everything up to "Part 2" below is Part 1's, and holds for Part 2 unless that section says otherwise.
 
 ## Files
@@ -178,7 +178,7 @@ The exporter and the generator read `inputs_rehearsal.json` with the code that r
   - every chemical row declares its standard potential, a zero with the rest. ATP and Pi are at 0 and ADP carries the pump's free energy: μ°(ADP) = `delta_g0_at_1M`/(R T) − ln(1000/c°). So A is about 22, against the 3,200 of PART2 §2.4;
   - one set of fuel rows is held at a cell, for its store's pump and its plasma pump: the block's mM times the volume;
   - each captured reaction is declared once, under its own ID, at both cells or both stores. A species that no reaction makes is its own moiety, and one that a reaction makes is what its reactants are;
-  - the release's factor is one condition for each cell, at the cell, with all its reads. `definition` names them (`release_conditions`);
+  - the release's factor is one condition for each cell, at the cell, with all its reads. `definition` names them (`release_conditions`). A row that the block gives no potential has 0;
   - a bounding patch has one availability, so a store's two leaks and its release have one schedule.
 - **What one definition cannot hold is refused by name** (`no_section`, kind `harness`): two pumps of one cell with different fuel, two stores with different species or reactions, a patch with two schedules, a charged store. **A piece of a definition that a block has no place for** (a second leak, a turned pump, an operator) is refused when it is read back, so `inputs` is
   `{"unreadable": ...}` and no echo passes.
@@ -193,10 +193,10 @@ Read in the engine's code at the branch's head, and not compared with any captur
 | 1, closed, one gauge | The definition: `closure.gauge_reference` is the block's, every node is finite |
 | 2, the store's own voltage | `operators/compartments.py`: the store is an outside node with one bounding patch, a free node of the capacitor solve. The patch holds the area and the capacitance |
 | 3, the release's factor | `kinds/species_condition.py` and `laws/reactions/hill_product_factor.py`: read at every explicit stage, from that stage's amounts of the cell's own rows over the cell's volume, x^n/(K^n + x^n) or K^n/(K^n + x^n), the product of the reads. The routing door (`models/surface_pump_v3.py`, `kinds/passive_routes.py` `_opening`) multiplies the route's opening by it |
-| 4, the pumps' standard state | `laws/pumps/atp_transporter_v2.py`: J = k v S (1 − e^x), x from the registry's potentials at c°, S = [1 + K/c_N]⁻¹ [1 + K_ATP/c_ATP]⁻¹. c° is 1 mM here, and `delta_g0_at_1M` is formed as §2.2 says |
-| 5, the exchanger | `laws/cycles/sodium_calcium_exchange_symmetric_barrier.py`: J = k v [b³ c e^(−ψ/2) − a³ d e^(ψ/2)] / [(1 + a³ + b³)(1 + c + d)], no standard part |
+| 4, the pumps' standard state | `laws/pumps/atp_transporter_v2.py`: J = k v S (1 − e^x), S = [1 + K/c_N]⁻¹ [1 + K_ATP/c_ATP]⁻¹, x = [μ°(ADP) + μ°(Pi) − μ°(ATP)]/RT + ln(c_ADP c_Pi/(c_ATP c°)) + ln(c_P/c_N) − 2ψ, ψ = F(φ_N − φ_P)/RT, N the cell, one Ca a cycle. The potentials are the registry's, c° is the model's one standard concentration (1 mM here), and `delta_g0_at_1M` is formed as §2.2 says. k, K and K_ATP are the block's `capacity`, `km_ca_mM` and `km_atp_mM`, v the availability |
+| 5, the exchanger | `laws/cycles/sodium_calcium_exchange_symmetric_barrier.py`: J = k v [b³ c e^(−ψ/2) − a³ d e^(ψ/2)] / [(1 + a³ + b³)(1 + c + d)], with a = Na_N/K_Na, b = Na_P/K_Na, c = Ca_N/K_Ca, d = Ca_P/K_Ca in mM, ψ = F(φ_N − φ_P)/RT, N the cell: 3 Na in and 1 Ca out a forward cycle. K_Na and K_Ca are the block's `km_na_mM` and `km_ca_mM`, k its capacity. No standard part: x = 3 ln(Na_N/Na_P) + ln(Ca_P/Ca_N) + ψ |
 | 6, the reactions | `operators/species_reactions.py`: J = m V c° k_f [Π a^α − exp(Σ ν μ°/RT) Π a^β], a = c/c°, the passive mass-action law |
-| 7, the calcium channel | `laws/channels/cav1p2_m2h.py`: m² h, gates at V − 10 mV, no temperature term; the host's constant-field flux at valence 2 with P_max × abundance × availability |
+| 7, the calcium channel | `laws/channels/cav1p2_m2h.py`: m² h, gates read at u = V − 10 mV, no temperature term: m∞ = 1/(1 + e^(−(u + 30 mV)/6 mV)), h∞ = 1/(1 + e^((u + 80 mV)/6.4 mV)), τ_m = 5 ms + 20 ms/(1 + e^((u + 25 mV)/5 mV)), τ_h = 20 ms + 50 ms/(1 + e^((u + 40 mV)/7 mV)). The host's constant-field flux at valence 2 with P_max × abundance × availability × m² h |
 | 8, calcium's junction route | `kinds/passive_routes.py` `_opening`: `control.junction * state.junction_gate` at the stage's own state, times no factor. It is the gate and the availability that the model's own junction routes read. **Measured on the engine's kernel at a parsed invented world:** the flux of calcium's junction route is proportional to gate × availability within 10⁻¹⁴, 0 at a closed gate, and no other route's depends on them (row `test_calciums_junction_route_is_opened_by_the_gate_and_the_availability`) |
 | 9, the splitting | `models/pump_composite.py`: P(dt/2) ∘ I(dt) ∘ P(dt/2), P the reactions' half-step, I the inner IMEX step, which starts from the state after the first half |
 
@@ -213,7 +213,8 @@ laws and the condition's law namespaced and the others bare. The held fuel's kin
 25. **`store_voltage`** is 0 minus the observed voltage of the bounding patch, so never a negative zero. At time 0 it is the field solver's own residue and not exactly 0.
 26. **A child's compared times** are its two grids, each i × spacing. A cluster's rows are at 0, its summary times and its end.
 27. **A `declared_change`'s path** begins in the world's blocks (`ionic`, `stores`, ...). In Part 1 it stays inside `ionic`.
-28. **`definition`** also holds `species_rows` (every row declared), `release_conditions`, and `trace_mM` (each row's concentration at each node that the block does not name it at).
+28. **`definition`** of an ionic run also holds what PART2 §2.5 says, and a pool run's does not. `species_rows`: the sorted names of every row. `traces`: for each region, and each store as `store:<cell>`, the sorted rows that the block does not name there and that hold the trace (10⁻¹² mM within rounding). A row that the block does not name at a node and that holds another concentration is in no list, so it departs. A cell appears where it has a row that is no block's: a cell without a
+  store, or without a pump. `entities`: the counts. Recorded: `trace_mM` (the concentrations) and `release_conditions`.
 29. **EP3** multiplies both stores' release permeability by 1.01 (the double product), and **EP4** exchanges the two pools' channels, as EP2.
 30. **A cluster's `switch_list`** is over the K channels alone, since no pool touches a calcium channel (the lead, 25 November).
 31. **A world's own potentials.** An entry of an inputs file may hold `fuel_standard_mu_RT` (`ATP`, `ADP`, `Pi`) beside `p`. It is no part of the block, and no registered world has it. The generator then declares those three for the calcium pumps' fuel rows, and the exporter echoes them as it does its own. A world is refused by name (`no_section`, kind `harness`) where they do not make the block's
