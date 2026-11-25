@@ -72,7 +72,8 @@ OTHER_END = {"a": "b", "b": "a"}
 
 
 def engine_id(law):
-    return f"seamtest.ref_{re.sub(r'[^a-z0-9_]', '_', law['id'].lower())}@1"
+    name = "ref_" + re.sub(r"[^a-z0-9_]", "_", law["id"].lower())
+    return "seamtest.ref_law@1".replace("ref_law", name)
 
 
 def law_rows(law):

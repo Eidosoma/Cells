@@ -21,10 +21,10 @@ from cells.laws.cycles.forms import (
     Reference,
 )
 from cells.laws.cycles.mitochondria_source import citation
-from cells.modules import CycleLaw
+from cells.modules import CycleLaw, qualified
 
 LAW_ID = "electrogenic_nucleotide_exchange@1"
-DECLARED_ID = f"cells.{LAW_ID}"  # As definitions write it; a module-level name, for the manifest.
+DECLARED_ID = qualified(LAW_ID)  # As definitions write it; a module-level name, for the manifest.
 THETA_P = Affine("theta_P")  # e^(-theta_P u) = e^(theta_P psi)
 MINUS_THETA_N = Affine("theta_P", 1.0, -1.0)  # -theta_N = theta_P - 1: e^(theta_N u)
 RATIO_P = ((Reference("ATP", "P"), 1.0), (Reference("ADP", "P"), -1.0))

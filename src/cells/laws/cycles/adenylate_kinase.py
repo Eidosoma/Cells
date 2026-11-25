@@ -42,10 +42,10 @@ from cells.laws.cycles.forms import (
     Scaled,
 )
 from cells.laws.cycles.mitochondria_source import citation
-from cells.modules import CycleLaw
+from cells.modules import CycleLaw, qualified
 
 LAW_ID = "adenylate_kinase@1"
-DECLARED_ID = f"cells.{LAW_ID}"  # As definitions write it; a module-level name, for the manifest.
+DECLARED_ID = qualified(LAW_ID)  # As definitions write it; a module-level name, for the manifest.
 K_BASE = 0.38896453805908730400  # §7's K_base at full precision (its match; D236).
 MG_P = Reference("Mg", "P")  # The free Mg2+ at P, read and never moved.
 CYCLE = CycleForm(

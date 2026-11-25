@@ -90,7 +90,7 @@ def test_operators_register_with_check_declarations():
 
 def test_a_duplicate_operator_id_is_refused_whatever_its_spelling():
     class Twin(OsmoticWater):
-        LAW_ID = "cells." + OsmoticWater.LAW_ID  # The namespaced spelling of a built-in's ID.
+        LAW_ID = kind_registry.qualified(OsmoticWater.LAW_ID)  # A built-in's, namespaced.
 
     section = operators.BUILTIN.extended()
     with pytest.raises(ValueError, match="already registered"):
@@ -109,7 +109,9 @@ def test_operators_is_the_active_section_with_todays_keys():
     assert tuple(OPERATORS)[: len(TODAY)] == TODAY and len(OPERATORS) == count
     assert all(type(op).LAW_ID == law for law, op in OPERATORS.items())
     assert tuple(OPERATORS.values()) == operators.BUILTIN.operators()
-    assert "cells." + TODAY[0] not in OPERATORS  # Exact keys, as definitions compare them.
+    name = TODAY[0].rsplit(".", 1)[-1]
+    spellings = (name, f"cells.{name}", f"cells.operator.{name}")
+    assert [s for s in spellings if s in OPERATORS] == [TODAY[0]]  # Exact keys: one spelling.
     assert dict(OPERATORS) == OPERATORS and OPERATORS == dict(OPERATORS)
     with operators.scope(operators.BUILTIN.extended(Planted)):
         assert Planted.LAW_ID in OPERATORS and len(OPERATORS) == count + 1

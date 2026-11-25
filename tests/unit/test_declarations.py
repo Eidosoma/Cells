@@ -167,7 +167,7 @@ def test_older_families_are_listed_by_model_id_only(tmp_path):
     )
     ids = {entry["id"] for entry in legacy}
     assert "resolved_tissue@12" in ids and "finite_extracellular@1" in ids  # A literal, a name.
-    assert not ids & {declarations.INNER.split(".", 1)[1], "resolved_pump_composite@1"}
+    assert not ids & {"resolved_pump_tissue@3", "resolved_pump_composite@1"}
     planted = tmp_path / "registration.py"
     planted.write_text(
         "def parse(data):\n"
@@ -231,7 +231,7 @@ def test_version_2_joins_a_real_definition_and_states_lines_reads_and_units(tmp_
     inner = composite_spec.frozen_definition(definition)["model"]["inner_model"]
     pieces = {e["id"]: e for e in doc["pieces"]}
     kv1p5 = pieces["cells.kv1p5_mh@1"]
-    assert kv1p5["declared_host"] == inner and kv1p5["host"] == "cells." + inner
+    assert kv1p5["declared_host"] == inner and kv1p5["host"] == declarations.qualified(inner)
     # Its file and its declaration's first line, and its kernels' lines.
     path = Path(cells.__file__).resolve().parents[1].parent / kv1p5["module_path"]
     assert kv1p5["module_path"] == "src/" + kv1p5["module"].replace(".", "/") + ".py"
@@ -255,11 +255,13 @@ def test_version_2_joins_a_real_definition_and_states_lines_reads_and_units(tmp_
         ("cells.operator@1", "test"),
     }
     assert all(e["doc"] is None for e in doc["pieces"])  # Until the pages are complete.
-    # Planted: a definition naming a law in its namespaced spelling joins nothing byte for byte.
+    # Planted: a definition naming its laws in their namespaced spelling (D185's, no declared one)
+    # joins nothing byte for byte.
     renamed = copy.deepcopy(definition)
     for channel in renamed["model"]["channels"]:
-        channel["kinetic_law"] = "cells." + channel["kinetic_law"]
-    assert joins(doc, renamed)[("/model/channels[*]/kinetic_law", "cells.kir2p1_mh2@1")] is None
+        channel["kinetic_law"] = "cells." + channel["kinetic_law"].rsplit(".", 1)[-1]
+    joined = [j for (p, _), j in joins(doc, renamed).items() if p.endswith("/kinetic_law")]
+    assert joined and not any(joined)
     # Planted: a module with two declarations of one ID, whose line the read refuses to guess.
     source = (
         "from cells.registry.laws import RouteLaw\n"
@@ -279,7 +281,7 @@ def test_reads_are_one_per_stage_and_a_cycle_form_gives_its_change_rows(monkeypa
     before = {e["id"]: e for e in declarations.manifest()["pieces"]}[water]["reads"]
     assert before == [dict(name="membrane_area", mode="fixed", stage="split", scoped=False)]
     # Planted: the field read at two stages, which the manifest must list as two reads.
-    cls = type(OPERATORS[water.split(".", 1)[1]])
+    cls = type(operator_registry.active().lookup(water))
     two = (contract.Read("fixed", "split"), contract.Read("current", "inner"))
     monkeypatch.setattr(cls, "SCOPED_READS", {"membrane_area": two})
     after = {e["id"]: e for e in declarations.manifest()["pieces"]}[water]["reads"]

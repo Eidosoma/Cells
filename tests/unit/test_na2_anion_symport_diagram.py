@@ -21,6 +21,7 @@ last backward constant closes prod k0+ = prod k0-, and the zeta are dyadic, summ
 
 import copy
 import math
+import re
 from decimal import Decimal, localcontext
 
 import numpy as np
@@ -149,7 +150,7 @@ def test_a_population_parses_with_its_declared_rates_and_refuses_each_plant():
     assert w.psi == 0 and all(b == 0 for *_, b in w.coefficients)  # B and B_psi: exactly 0.
     assert abs(w.constant) <= w.band  # R0 of the declared doubles, inside 32 eps (T + N).
     cycle = (
-        r"\(cells\.na2_anion_symport_diagram@1\): mode import, its cycle through na1_P, .*, "
+        rf"\({re.escape(law.DECLARED_ID)}\): mode import, its cycle through na1_P, .*, "
         r"empty, "
     )
     for planted in (

@@ -96,7 +96,7 @@ def bound(raw):
     model = get_model(spec.model)
     state, p = model.initial_values(spec)
     op, declaration, schedule = next(
-        e for e in cs.entries(spec) if e[0].LAW_ID.startswith("species_regulated")
+        e for e in cs.entries(spec) if e[0].LAW_ID in (sra.LAW_ID, sra.LAW_ID_V2)
     )
     return spec, model, state, p, op, declaration, schedule
 

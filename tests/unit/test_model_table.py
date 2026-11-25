@@ -396,7 +396,7 @@ def test_a_family_s_operators_are_a_section_apart_from_the_composite_s():
     assert pump_composite._implementation.cache_info() == cache  # The compositions' cache.
     # Planted: a family operator under a composite operator's ID, and a cells family operator
     # held outside BUILTIN (one object per cells ID, as for the composite's).
-    twin = LineageOperator("cells." + keys[0], host=LINEAGES)
+    twin = LineageOperator(declarations.qualified(keys[0]), host=LINEAGES)
     with pytest.raises(ValueError, match="already registered"):
         operator_registry.BUILTIN.extended(twin)
     with pytest.raises(ValueError, match="only as BUILTIN's own"):

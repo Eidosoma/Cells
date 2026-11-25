@@ -358,7 +358,7 @@ def as_pump_tissue(raw, version):
     if m.pop("channels") or e.pop("channel_controls"):
         raise ValueError("Only channel-free worlds have an @1/@2 counterpart")
     x.pop("channel_capacity")
-    m["id"] = f"resolved_pump_tissue@{version}"
+    m["id"] = {1: "resolved_pump_tissue@1", 2: "resolved_pump_tissue@2"}[version]
     if version == 1:
         for p in m["membranes"]:
             if p.pop("calcium_pump") is not None:

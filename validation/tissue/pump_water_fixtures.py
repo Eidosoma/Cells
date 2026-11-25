@@ -157,7 +157,7 @@ def scheduled(raw, *, channel_change=(0.4, 0.5), pump_change=(0.6, 0.8)):
     """
     raw = copy.deepcopy(raw)
     m, e = raw["model"], raw["experiment"]
-    nav = {c["id"] for c in m["channels"] if c["kinetic_law"].startswith("nav1p2")}
+    nav = {c["id"] for c in m["channels"] if c["kinetic_law"] == "nav1p2_m3h_regularized@1"}
     for group in e["channel_controls"]:
         if group["channel_id"] in nav:
             held = group["schedule"][0]["availability"]

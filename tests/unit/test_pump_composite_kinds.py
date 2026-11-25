@@ -19,6 +19,8 @@ The integration owner's part of schema A, with the planted kinds of tests/kind_f
   changes no composition, and a kind world's composition follows its kind registry.
 """
 
+import re
+
 import jax
 import numpy as np
 import pytest
@@ -47,7 +49,7 @@ RATE = 1e-3  # fmol/s, as the core's seam test.
 METHODS = ("inner_state", "layout_kind", "inner_layout", "inner_control", "view", "control_view")
 FIXED_REFUSAL = (
     r"builds the inner model's state, layout or control with today's fixed fields, so it does not "
-    r"run beside declared kinds \(tests\.exchange@1\)"
+    rf"run beside declared kinds \({re.escape(kf.KIND_ID)}\)"
 )
 
 

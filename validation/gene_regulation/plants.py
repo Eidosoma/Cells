@@ -39,6 +39,7 @@ from cells.operators import templated_polymerisation as tp
 from validation.gene_regulation import engine_run, worlds
 
 FUEL = ("ATP", "ADP", "Pi")
+COUPLING_LAWS = ("species_regulated_availability@1", "species_regulated_availability@2")
 
 
 def _block(raw):
@@ -118,8 +119,7 @@ def plant(name, dt=0.5):
         return "A1", raw
     if name == "A1-5":
         raw = worlds.world("A1", dt=dt)
-        (coupling,) = [o for o in raw["model"]["operators"] if o["law"].startswith(
-            "species_regulated_availability")]  # fmt: skip
+        (coupling,) = [o for o in raw["model"]["operators"] if o["law"] in COUPLING_LAWS]
         twice = copy.deepcopy(coupling["couplings"][0])
         twice["id"] = f"{twice['id']}_twice"
         coupling["couplings"].append(twice)
