@@ -1,6 +1,6 @@
 """Host-only tests of FR-38's second comparison judge, on invented inputs only.
 
-**Seconds:** 52 s of CPU for its 32 tests (57 s on CPU 7, 25 November 2026).
+**Seconds:** 50 to 65 s of CPU for its 32 tests, on light CPUs other jobs shared (25 November 2026).
 **Reason (D224):** the judge decides FR-38's registered verdict, so each C0 refusal, each failure
 and inconclusive mode, the retry and each plant (caught and not caught) must be shown to move it
 the registered way before any engine run is judged.
@@ -354,6 +354,7 @@ CHECKS = {k: 1e-20 for k in (
     "energy_magnitude_at_end_pJ", "routes_minus_total_largest_pJ",
     "routes_minus_total_over_magnitude")}  # fmt: skip
 LABELLED_ONLY = ("label_", "released_present_gross_")
+_BASES, _REFERENCES = {}, {}
 
 
 class Synth:
@@ -374,9 +375,12 @@ class Synth:
         self._base = None
 
     def base(self):
-        """The honest records, built once (writes copy them)."""
+        """The honest records, built once per document and role (writes copy them)."""
         if self._base is None:
-            self._base = self.all_records()
+            key = (id(self.doc), self.profile, self.role, self.two_blanks)
+            if key not in _BASES:
+                _BASES[key] = (self.doc, self.all_records())  # the document stays alive: its id too
+            self._base = _BASES[key][1]
         return self._base
 
     def has_blank(self):
@@ -605,15 +609,18 @@ def write_refs(folder, doc):
 
 
 def run_judge(tmp_path, docs, synths, name="x", roles=None):
-    """docs: reference documents; synths: their engine writers. Returns the verdict."""
-    refs = write_refs(str(tmp_path / f"refs_{name}"), docs[0])
-    for d in docs[1:]:
-        write_refs(refs, d)
+    """docs: reference documents; synths: their engine writers. Returns the verdict. The documents
+    are read once each time they are the same objects."""
+    fams = {d["family"]: s.profile for d, s in zip(docs, synths, strict=True)}
+    refs, key = str(tmp_path / f"refs_{name}"), tuple(map(id, docs))
+    if key not in _REFERENCES:
+        for d in docs:
+            write_refs(refs, d)
+        _REFERENCES[key] = (docs, J.read_references(refs, fams, synths[0].mapping))
     export = str(tmp_path / f"export_{name}")
     for s in synths:
         s.write(export, getattr(s, "records_override", None))
-    fams = {d["family"]: s.profile for d, s in zip(docs, synths, strict=True)}
-    return J.judge(refs, export, families=fams, roles=roles)
+    return J.judge(refs, export, families=fams, roles=roles, references=_REFERENCES[key][1])
 
 
 def verdict_of(v, family, run):
