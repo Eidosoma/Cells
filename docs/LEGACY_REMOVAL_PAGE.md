@@ -28,12 +28,12 @@ Each test function was read against what stays. A reader who had not seen that w
 | The older definitions' own refusals | 68 | Each refuses a field or a rule of a form that goes. The new forms refuse the same things by rows that stay (thirteen were missing and are written). **About 22 of the 68 have no counterpart, because the live form takes the input** (reader): a store at 0.2 V parses and steps, and a Hill power of 9 is accepted |
 | General rows | 38 | Saving, loading, the command line, schedules, changed files: held by rows that belong to no family |
 | Carried | 42 | A row that stays holds the claim, **and a planted fault of that claim makes it fail**. Most fail at their own assertion. Eleven of the named plants are caught by a ledger or a refusal of the engine's first, which is a real detection and is labelled so (`carrier_plants.tsv`); the reader's finer plants of the same claims (1e-9 in a flux, a heat or a work; one part in 2^52 at each kind of restart), which no ledger sees, fail by an assertion. What no row holds is named in section 2 |
-| The campaign's own worlds | 9 | Judged by the registered campaign, once |
+| The campaign's own worlds | 9 | 2 are Part 1's, which passes (its judge and the independent checker agree). 7 are Part 2's, which is run and sealed by your decision: not judged, which is neither pass, fail nor inconclusive |
 | Parked with the assembly ensembles | 27 | Commands, planning of a parked kind, sums over an ensemble, GPU agreement: parked by your earlier decision. Ten of them hold planning that other rows carry, or sums that nothing replaces |
 | GPU only | 2 | No gate runs a GPU, and their tolerances are the older model's |
 | Others | 7 | A tool's own row (the tool goes), one on the older kernel's two code paths, a reduction between two families that both go, three cubic proofs of the older observers, and a reference's own sampling |
 
-**How they would go.** In a second commit, right after the deletion's own, after your word. Part 1 of the campaign passes. Part 2 is run and sealed, by your decision, and no verdict of it is formed: the reference's sampling row is the only one of a reference that its judge may use beside a miss, so that row's file retires after Part 2 is judged. If a consumer of the campaign fails or stays inconclusive, its rows come to you with it.
+**How they would go.** In a second commit, right after the deletion's own, after your word. Part 1 of the campaign passes. Part 2 is run and sealed, by your decision, and is not judged. **So a yes now retires Part 2's seven rows, and the reference's sampling row (the only one of a reference that a later judge of Part 2 may use beside a miss), before any verdict of Part 2.** The second commit is prepared that way. It could instead wait for a later scoring of Part 2: that is yours to say.
 With them go 11 files: `test_assembly_cell.py`, `test_assembly_cluster.py`, `test_assembly_controls.py`, the four calcium tests (`er`, `gated`, `ip3`, `spatial`), one GPU test file, and three drivers (`integrated_matrix.py`, `spatial_matrix.py`, `cluster_reference.py`).
 No data file loses its last reader, and no module of the engine is reached by them alone (m).
 
@@ -43,7 +43,7 @@ No data file loses its last reader, and no module of the engine is reached by th
 
 This holds whether or not you say yes, since the rows below run at the tag only.
 
-- **Driven store worlds.** The campaign judges each driven cluster once, against the captured runs of the old engine. No test compares one with an independent reference afterwards, as the retiring rows did. New now: a pool on a store world's calcium channel conducts exactly on its path, and its restart is bit for bit.
+- **Driven store worlds.** Part 2 of the campaign ran each driven cluster and sealed its tables, by your decision; nothing judges them. No test compares a driven cluster with the captured runs or with an independent reference afterwards, as the retiring rows did. New now: a pool on a store world's calcium channel conducts exactly on its path, and its restart is bit for bit.
 - **The error of a driven world falls with its step.** Nothing live holds it: the order rows run a world whose channels hold one availability throughout (r), and Part 1 does not show it. The neighbour's answer through a junction is held, but not that its voltages meet an independent integrator (the older eight runs did, at 3e-9).
 - **A batch of store worlds, run by its program.** No row compiles one (about 50 s of CPU). New now: a host row that both mapped paths give each world its own numbers. On the vectorized path, every world given the first one's pump, route or condition numbers passes the five rows that were tried; whether their worlds differ in those numbers was not measured. Given the first one's reaction numbers, two rows fail (m, and the reader). Two driven worlds with different schedules in one batch, and a driven world with a store in one, have none.
 - **The order of a definition's lists matters now.** Another order of species, cells, patches, faces, channels, transporters, conditions, compartments, reactions or pools is another fingerprint. The older forms did not mind.
@@ -88,16 +88,16 @@ The optional batch is in these counts (165 files, 49,055 lines, 1,933 IDs). The 
 | Files that fail to import | 8 | 0 |
 | Commit | 3747bb3e | 34e2e8c1 |
 
-On the first tree, five rows of three staying files fail when they run, since they read what left. The second commit takes them out, with the prepared rows of `legacy-open-retirements`, right after the first; no gate runs between the two. On the second, the rows of the six files that the prepared retirements change and the guard pass (59), and two GPU rows skip (m). On the first, the rows that read the law modules the deletion edits pass (236, m). The guard of saved states flags three new readers of the campaign's captures there; they are listed now (`legacy-guard-list`, merged between the two commits), and with them it passes all 17 rows (m). The 15 library pages pass their check (m). 129 definitions leave the gate's fingerprints, of 194. 302 rows of the tier record leave with the deletion, and 8 more with the second commit, since the gate refuses a row without a file.
+On the first tree, five rows of three staying files fail when they run, since they read what left. The second commit takes them out, with the prepared rows of `legacy-open-retirements`, right after the first; no gate runs between the two. On the second, the rows of the six files that the prepared retirements change and the guard pass (59), and two GPU rows skip (m). On the first, the rows that read the law modules the deletion edits pass (236, m). The guard of saved states flags three new readers of the campaign's captures there; they are listed now (`legacy-guard-list`, proposed to merge between the two commits), and with them it passes all 17 rows (m). The 15 library pages pass their check (m). 129 definitions leave the gate's fingerprints, of 194. 302 rows of the tier record leave with the deletion, and 8 more with the second commit, since the gate refuses a row without a file.
 Nothing that stays imports or loads what goes, `lean/` and `visualizer/` included, but for two scripts of the campaign's rehearsals, which run the frozen legacy snapshot (m). Nothing that the campaign added since is touched by either commit or reached only by retiring files (m).
 
 ## 5. What comes back
 
 | You use | It becomes | Needs |
 |---|---|---|
-| The JUPITER world, the cluster base, the assembly cell, the integrated ensemble's world | closed `resolved_pump_tissue@3` worlds, same equations | their registered runs and the judge |
-| The four calcium clusters | a composite over @3, one store per cell | the same |
-| The assembly commands and ensemble kinds | CPU runs, one process per world. The GPU path is parked | the same |
+| The JUPITER world, the cluster base, the assembly cell, the integrated ensemble's world | closed `resolved_pump_tissue@3` worlds, same equations | done: registered, run and judged (Part 1 passes) |
+| The four calcium clusters | a composite over @3, one store per cell | registered and run; sealed by your decision, not judged (Part 2) |
+| The assembly commands and ensemble kinds | CPU runs, one process per world. The GPU path is parked | as their worlds |
 | The JUPITER platform check | its device part as it is; its model part reads a configuration that goes, so it stops there (r; the module imports, m) | **your choice after the cleanup:** rebuild it on the re-expressed JUPITER world, half a day (e) |
 | NKCC and the generic symport | two laws on the transporter kind | nothing: in |
 
