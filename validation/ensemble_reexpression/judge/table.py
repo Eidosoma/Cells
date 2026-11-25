@@ -239,6 +239,10 @@ def compare_block(expected: dict, got, world: World, out: Echo):
             compare_controls(value, got.get("controls", {}), world, out)
         elif key in SETS:
             compare_set(key, value, got, world, out)
+        elif key == "species":
+            compare(value, got.get(key), f"inputs/{key}", out)
+            if isinstance(got.get(key), dict):
+                extra_entities(f"inputs/{key}", got[key], value, out)
         elif key not in got:
             out.depart(f"inputs/{key}", "missing")
         else:
@@ -285,7 +289,15 @@ def compare_set(key, expected, got, world: World, out: Echo):
                 out.depart(f"{path}/initial_charge_C", f"{entity.get('initial_charge_C')!r} and not {charge!r}")
             continue
         compare(value, entity, path, out)
-    out.extras += [f"inputs/{key}/{name} (an entity)" for name in found if name not in wanted]
+    extra_entities(f"inputs/{key}", found, wanted, out)
+
+
+def extra_entities(path, found, wanted, out: Echo):
+    """An entity that the registered block does not have is a departing echo (the lead's ruling, Amendment 2)."""
+    for name in found:
+        if name not in wanted:
+            out.extras = [extra for extra in out.extras if extra != f"{path}/{name}"]
+            out.depart(f"{path}/{name}", "an entity that the registered block does not have")
 
 
 def compare_controls(expected, got, world: World, out: Echo):
@@ -301,7 +313,9 @@ def compare_controls(expected, got, world: World, out: Echo):
         if found is None:
             out.depart(path, "not a map")
             continue
-        for name in [*wanted, *(n for n in found if n not in wanted)]:
+        known = {"leak": world.membranes, "pump": world.membranes, "channel": world.channels, "junction": world.junctions}[group]
+        extra_entities(path, found, known, out)
+        for name in [*wanted, *(n for n in found if n not in wanted and n in known)]:
             a = wanted.get(name, [[0.0, 1.0]])
             b = parse_schedule(found.get(name, [[0.0, 1.0]]))
             if b is None or not same_schedule(a, b):
@@ -337,7 +351,7 @@ def compare_pools(world: World, got, out: Echo):
             found.pop("initial_bond_indices", None)
         compare(wanted, found, f"{path}/pool", out)
         out.extras += [f"{path}/{key}" for key in mine if key not in ("channel", "stream_id", "seed", "pool")]
-    out.extras += [f"inputs/{cell}" for cell in got if cell not in world.pools]
+    extra_entities("inputs", got, world.pools, out)
 
 
 def echo(registration: Registration, note: StringsNote, run: dict, entry: dict) -> Echo:
@@ -362,6 +376,12 @@ def echo(registration: Registration, note: StringsNote, run: dict, entry: dict) 
             else:
                 compare(world.data["coupling"]["law"], assembly.get("assembly_observable"), "inputs/assembly/assembly_observable", out)
                 out.extras += [f"inputs/assembly/{key}" for key in assembly if key not in c.ASSEMBLY_KEYS]
+                for key, known in (("pool_seeds", world.pools), ("switch_list", world.channels)):
+                    if isinstance(assembly.get(key), dict):
+                        extra_entities(f"inputs/assembly/{key}", assembly[key], known, out)
+            controls = inputs.get("controls")
+            if isinstance(controls, dict) and isinstance(controls.get("channel"), dict):
+                extra_entities("inputs/controls/channel", controls["channel"], world.channels, out)
     expected = note.expected(note_name(registration, run))
     strings = entry.get("strings")
     if not isinstance(strings, dict):
@@ -530,7 +550,7 @@ def recorded_flags(registration: Registration, run: dict, entry: dict) -> list:
     world = registration.worlds[run["world"]]
     pool = registration.is_pool(run)
     out += [["a key is absent", key] for key in c.RUN_KEYS if key not in entry]
-    extra = [key for key in entry if key not in c.RUN_KEYS]
+    extra = [key for key in entry if key not in c.RUN_KEYS and key != "off_grid"]
     if extra:
         out.append(["extra keys", {key: entry[key] if isinstance(entry[key], (bool, int, float, str)) else "recorded" for key in extra}])
     if entry.get("variant") != run["variant"]:
@@ -589,10 +609,27 @@ def recorded_flags(registration: Registration, run: dict, entry: dict) -> list:
             for series, table in rows.items():
                 if isinstance(table, dict):
                     for entity, values in table.items():
-                        if not isinstance(values, list) or len(values) != len(t) or not all(is_finite(v) for v in values):
+                        if not isinstance(values, list) or len(values) != len(t) or not np.all(np.isfinite(column(values))):
                             bad.append(f"{series}/{entity}")
             if bad:
                 out.append(["rows", f"a list of another length, or a value that is missing, mistyped or not finite: {bad[:5]} ({len(bad)})"])
+    return out
+
+
+def column(values: list) -> np.ndarray:
+    """A list of JSON values as doubles. What is no finite number (a boolean, a string, null, NaN, infinity) is NaN."""
+    if set(map(type, values)) <= {float, int}:
+        try:
+            return np.array(values, dtype=float)
+        except OverflowError:
+            pass
+    out = np.full(len(values), np.nan)
+    for i, value in enumerate(values):
+        if is_finite(value):
+            try:
+                out[i] = value
+            except OverflowError:
+                continue
     return out
 
 
@@ -608,6 +645,9 @@ def all_finite(value) -> bool:
 def assess(registration: Registration, note: StringsNote, tables: TableSet, retry: TableSet | None = None, owed=()) -> tuple:
     """Every registered run's state, and what else the tables hold. A retry's runs are read from `retry`, when they are owed."""
     states, ignored = {}, []
+    for consumer, names in tables.missing.items():
+        for name in sorted(names - set(registration.runs)):
+            ignored.append({"consumer": consumer, "run": name, "what": "a name in `missing` that the inputs do not list"})
     sets = [tables] + ([retry] if retry is not None else [])
     digests = {}
     for table in sets:
@@ -663,6 +703,13 @@ def assess(registration: Registration, note: StringsNote, tables: TableSet, retr
             kind = refusal.get("kind") if isinstance(refusal, dict) else None
             state.refusal_kind = kind if kind in c.REFUSAL_KINDS else "harness"
             state.refusal_message = refusal.get("message") if isinstance(refusal, dict) else None
+        switch = entry.get("off_grid")
+        if switch is True and name not in registration.profile.get("off_grid_runs", ()):
+            if state.refusal_kind != "check":
+                state.refusal_kind, state.refusal_message = "harness", "the off-grid switch is on (Amendment 1, item 6)"
+            state.flags.append(["off_grid", "the switch is on"])
+        elif switch not in (None, False, True):
+            state.flags.append(["off_grid", f"{switch!r} is no boolean"])
         state.completed = entry.get("status") == "completed" and refusal is None
         state.flags += recorded_flags(registration, run, entry)
     return states, ignored
@@ -678,19 +725,22 @@ class RunRows:
         self.world, self.entry_ = world, entry
         self.rows = entry.get("rows")
         self.potentials = entry.get("potentials")
-        self._index = {}
+        self._index, self._held, self._columns = {}, {}, {}
 
     def _times(self, key):
-        times = self.entry_.get(key)
-        if not isinstance(times, list) or not all(is_finite(v) for v in times):
+        if key not in self._held:
+            times = self.entry_.get(key)
+            good = isinstance(times, list) and bool(np.all(np.isfinite(column(times))))
+            self._held[key] = column(times) if good else None
+        if self._held[key] is None:
             raise NotFormed(f"{key} is missing or mistyped")
-        return times
+        return self._held[key]
 
     def index(self, times, key="t") -> list:
         """The row of each compared time. Each needs exactly one (CRITERIA section 4.3)."""
         times = tuple(times)
         if (key, times) not in self._index:
-            held = np.asarray(self._times(key), dtype=float)
+            held = self._times(key)
             out = []
             for time in times:
                 found = np.flatnonzero(np.abs(held - time) <= c.TIME_TOL_S)
@@ -716,15 +766,19 @@ class RunRows:
             raise NotFormed(f"{key}.{series} is missing or mistyped")
         table = where[series]
         length = len(self._times(times_key))
+        rows = list(rows)
         out = np.empty((len(rows), len(entities)))
         for i, entity in enumerate(entities):
             values = table.get(entity)
             if not isinstance(values, list) or len(values) != length:
                 raise NotFormed(f"{key}.{series}.{entity} is missing, mistyped or not as long as {times_key}")
-            for j, row in enumerate(rows):
-                if not is_finite(values[row]):
-                    raise NotFormed(f"{key}.{series}.{entity} holds {values[row]!r} at a compared time")
-                out[j, i] = values[row]
+            where_ = (key, series, entity)
+            if where_ not in self._columns:
+                self._columns[where_] = column(values)
+            out[:, i] = self._columns[where_][rows]
+            if not np.all(np.isfinite(out[:, i])):
+                bad = next(row for row in rows if not np.isfinite(self._columns[where_][row]))
+                raise NotFormed(f"{key}.{series}.{entity} holds {values[bad]!r} at a compared time")
         return out
 
     def get(self, series: str, times) -> np.ndarray:
@@ -756,7 +810,11 @@ class RunRows:
     def entry(self, entry) -> np.ndarray:
         """An entry's array, [compared time, entity]."""
         if entry.where == "identity":
-            return identities.energy(self.world, self, entry.times)
+            with np.errstate(all="ignore"):
+                value = identities.energy(self.world, self, entry.times)
+            if not np.all(np.isfinite(value)):
+                raise NotFormed("the energy identity is not finite on these rows")
+            return value
         if entry.where == "potentials":
             return self.potential(entry.series, entry.times)
         return self.get(entry.series, entry.times)

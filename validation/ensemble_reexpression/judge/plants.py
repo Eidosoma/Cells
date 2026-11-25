@@ -1,6 +1,7 @@
-"""The judge's plants JP1 to JP24 (PLANTS section 6): altered copies of honest tables, and what each must score.
+"""The judge's plants JP1 to JP24 (PLANTS section 6, and Amendment 2 for JP14): altered copies of honest tables, and what each must score.
 
-A plant alters rows only, or the one leaf that it names. Each is scored by the code that scores the registered tables.
+A plant alters rows only, or the one leaf that it names. Each is scored by the code that scores the registered tables. What a plant names
+(a family, a run) comes from the profile, so the rehearsal's worlds can stand in for the registered ones.
 """
 
 from __future__ import annotations
@@ -8,21 +9,12 @@ from __future__ import annotations
 import copy
 import math
 
-import numpy as np
-
 from . import constants as c
 from . import scoring
 from .legacy import Captures
 from .registration import Registration, StringsNote
 from .table import TableSet
 
-H1, H2, H3 = (f"jupiter_baseline h={h!r}" for h in (2.5e-05, 1.25e-05, 6.25e-06))
-R1, R2, R3 = (f"jupiter_pump_release h={h!r}" for h in (2.5e-05, 1.25e-05, 6.25e-06))
-I1, I2, I3 = (f"integrated h={h!r}" for h in (0.0001, 5e-05, 2.5e-05))
-CLASS_S_SERIES = (
-    "n_cell_Na n_cell_K n_cell_Cl n_out_Na n_out_K n_out_Cl leak_Na leak_K leak_Cl channel_K junction_Na junction_K junction_Cl "
-    "face_Na face_K face_Cl pump gate_m gate_h junction_gate heat_junction heat_face"
-).split()
 HEATS = ("heat_leak", "heat_pump", "heat_channel")
 
 
@@ -37,6 +29,14 @@ class Query:
         """The judged entries that have these values."""
         return [e for e in self.entries if e["judged"] and all(e.get(k) == v for k, v in wanted.items())]
 
+    def S(self, family, readout=None) -> list:
+        """The judged class S entries of a family, or the one of a readout."""
+        return [e for e in self.find(family=family, **{"class": "S"}) if readout in (None, e["readout"])]
+
+    def R(self, run) -> list:
+        """The judged class R entries of a run."""
+        return self.find(run=run, **{"class": "R"})
+
     def outcome(self, **wanted):
         """The outcome of the one judged entry that has these values."""
         found = self.find(**wanted)
@@ -50,35 +50,76 @@ class Query:
         """A run's state."""
         return self.record["runs"][name]
 
+    def cause(self, name, *words) -> bool:
+        """True where one cause of a run's refusal holds all the words."""
+        return any(all(word in cause for word in words) for cause in self.run(name)["causes"])
+
     def verdict(self, consumer) -> str:
         """A consumer's verdict."""
         return self.record["consumers"][consumer]["verdict"]
-
-    def blind(self) -> dict:
-        """`base`'s blind set."""
-        return self.record["consumers"]["base"]["sets"]["blind"]
 
     def plant(self, name) -> str:
         """An engine plant's score."""
         return next(p["score"] for p in self.record["plants"]["plants"] if p["plant"] == name)
 
+    def balances_fail(self, runs, species, cells=(), regions=()) -> bool:
+        """True where the balances of these cells and regions fail in each of the runs."""
+        good = True
+        for run in runs:
+            for kind, entities in (("cells", cells), ("regions", regions)):
+                if entities:
+                    found = self.find(run=run, readout=f"balance of {kind}, {species}")
+                    good &= len(found) == 1 and found[0]["outcome"] == c.FAIL and all(found[0]["by_entity"][k] > 1 for k in entities)
+        return good
 
-def scaled(values, factor):
-    """A row times a factor."""
-    return [v * factor for v in values]
+    def readouts_judged(self, run, family) -> bool:
+        """True where a refused run's readouts are judged: its R entries and its family's S entries are formed."""
+        found = self.R(run) + self.S(family)
+        return bool(found) and all(e["outcome"] != c.NOT_FORMED for e in found)
+
+    def nothing_judged(self, run, family) -> bool:
+        """True where nothing of a run is judged, and its family's S entries are not formed."""
+        own = [e for e in self.entries if e["run"] == run and e["judged"] and e["class"] != "S"] + self.S(family)
+        return bool(own) and all(e["outcome"] == c.NOT_FORMED for e in own)
 
 
-def largest(table) -> float:
+class Lazy(dict):
+    """A table's runs, each copied when a plant first takes it."""
+
+    def __init__(self, base):
+        super().__init__(base)
+        self._own = set()
+
+    def __getitem__(self, key):
+        if key not in self._own:
+            super().__setitem__(key, copy.deepcopy(super().__getitem__(key)))
+            self._own.add(key)
+        return super().__getitem__(key)
+
+
+def scaled(table: dict, factor: float) -> dict:
+    """A series times a factor."""
+    return {entity: [v * factor for v in values] for entity, values in table.items()}
+
+
+def largest(table: dict) -> float:
     """The largest magnitude of a series, over its entities."""
     return max(abs(v) for values in table.values() for v in values)
 
 
-def refuse(entry, kind, message, rows=True):
+def refuse(entry: dict, kind: str, rows: bool = True):
     """Make an entry a refused one of a kind. Without rows, as a refusal before any accepted row."""
     entry["status"] = "refused"
-    entry["refusal"] = {"kind": kind, "message": message, "time_s": 0.01 if kind == "check" else None}
+    entry["refusal"] = {"kind": kind, "message": "planted", "time_s": 0.01 if kind == "check" else None}
     if not rows:
         entry.update(t=[], rows={}, potential_t=[], potentials={})
+
+
+def reversed_maps(value):
+    """The same JSON value with every map in the opposite order."""
+    if isinstance(value, dict):
+        return {k: reversed_maps(v) for k, v in reversed(list(value.items()))}
+    return [reversed_maps(v) for v in value] if isinstance(value, list) else value
 
 
 class Plant:
@@ -88,244 +129,211 @@ class Plant:
         self.name, self.consumer, self.what, self.must, self.alter, self.check = name, consumer, what, must, alter, check
 
 
-def all_balances(q: Query, runs, species, cells=(), regions=()):
-    """True where the balances of these cells and regions fail in each of the runs."""
-    good = True
-    for run in runs:
-        if cells:
-            found = q.find(run=run, readout=f"balance of cells, {species}")
-            good &= len(found) == 1 and found[0]["outcome"] == c.FAIL and all(found[0]["by_entity"][k] > 1 for k in cells)
-        if regions:
-            found = q.find(run=run, readout=f"balance of regions, {species}")
-            good &= len(found) == 1 and found[0]["outcome"] == c.FAIL and all(found[0]["by_entity"][k] > 1 for k in regions)
-    return good
-
-
-def judged_readouts(q: Query, run, family=None):
-    """True where a refused run's readouts are judged: its R entries and, in its family, the S entries are formed."""
-    R = [e for e in q.find(run=run, **{"class": "R"})]
-    S = [e for e in q.find(family=family, **{"class": "S"})] if family else []
-    formed = [e for e in R + S if e["outcome"] != c.NOT_FORMED]
-    return bool(formed) and len(formed) == len(R + S)
-
-
-def nothing_judged(q: Query, run, family):
-    """True where nothing of a run is judged, and its family's S entries are not formed."""
-    own = [e for e in q.entries if e["run"] == run and e["judged"] and e["class"] != "S"]
-    S = [e for e in q.find(family=family, **{"class": "S"})]
-    return all(e["outcome"] == c.NOT_FORMED for e in own + S) and bool(own + S)
-
-
 def plants(registration: Registration, captures: Captures) -> list:
-    """The 24 plants (JP4 has two forms: an integer by 1, and a time by one unit in the last place)."""
+    """The plants. JP4 has two forms: an integer by 1, and a time by one unit in the last place."""
+    target = registration.profile["plant_targets"]
+    A, B, junctions = (registration.families[target[k]] for k in ("ionic", "other_schedule", "junctions"))
+    seen, assembly = registration.families[target["not_blind"]], registration.families[target["assembly"]]
+    H1, H2, H3 = A.runs
+    I1, I2, I3 = junctions.runs
+    pool_run, (path_run, path_cell, path_world) = target["pool"], target["pool_path"]
+    ionic, J, pools = A.consumer, junctions.consumer, seen.consumer
+    world = A.world
+    facing = tuple(dict.fromkeys(m["outside"] for m in world.block["membranes"].values()))
+    W3 = assembly.finest
     out = []
 
     def add(name, consumer, what, must, alter, check):
         out.append(Plant(name, consumer, what, must, alter, check))
 
-    # ----- JP1 to JP3 -----
+    known = registration.profile.get("not_blind", {}).get(pools, [seen.name])
+    others = [f.name for f in registration.by_consumer[pools] if f.name not in known]
+
+    def blind_passes(q):
+        sets = q.record["consumers"][pools]["sets"]
+        families = {name: f for block in sets.values() for name, f in block["families"].items()}
+        good = all(families[name]["verdict_of_its_entries"] == c.PASS for name in others) and bool(others)
+        return good and ("blind" not in sets or (sets["blind"]["verdict"] == c.PASS and set(sets["blind"]["families"]) == set(others)))
 
     def jp1(runs):
-        for name in (H1, H2, H3):
-            rows = runs[name]["rows"]
-            rows["leak_K"] = {k: scaled(v, -1.0) for k, v in rows["leak_K"].items()}
+        for name in A.runs:
+            runs[name]["rows"]["leak_K"] = scaled(runs[name]["rows"]["leak_K"], -1.0)
 
     add(
-        "JP1", "jupiter", "jupiter_baseline, all three rungs: the rows leak_K negated",
+        "JP1", ionic, f"{A.name}, all three rungs: the rows leak_K negated",
         "a fail of leak_K (S), and of the balances of both cells and of the region they face (R)", jp1,
         lambda q: [
-            ("leak_K fails (S)", q.outcome(family="jupiter_baseline", readout="leak_K", **{"class": "S"}) == c.FAIL),
-            ("the balances of both cells and of `local` fail (R), in each rung", all_balances(q, (H1, H2, H3), "K", ("cell_0", "cell_1"), ("local",))),
-            ("no run is refused", not any(q.run(n)["refused"] for n in (H1, H2, H3))),
-            ("jupiter fails", q.verdict("jupiter") == c.FAIL),
+            ("leak_K fails (S)", q.outcome(family=A.name, readout="leak_K", **{"class": "S"}) == c.FAIL),
+            ("the balances of both cells and of the region they face fail (R), in each rung", q.balances_fail(A.runs, "K", world.cells, facing)),
+            ("no run is refused", not any(q.run(n)["refused"] for n in A.runs)),
+            ("the consumer fails", q.verdict(ionic) == c.FAIL),
         ],
     )
 
     def jp2(runs):
-        for name in (H1, H2, H3):
-            rows = runs[name]["rows"]
-            rows["heat_pump"] = {k: scaled(v, 0.0) for k, v in rows["heat_pump"].items()}
+        for name in A.runs:
+            runs[name]["rows"]["heat_pump"] = scaled(runs[name]["rows"]["heat_pump"], 0.0)
 
     add(
-        "JP2", "jupiter", "jupiter_baseline, all three rungs: the rows heat_pump set to zero",
-        "a fail of heat_membrane (S), and of energy_identity", jp2,
+        "JP2", ionic, f"{A.name}, all three rungs: the rows heat_pump set to zero", "a fail of heat_membrane (S), and of energy_identity", jp2,
         lambda q: [
-            ("heat_membrane fails (S)", q.outcome(family="jupiter_baseline", readout="heat_membrane", **{"class": "S"}) == c.FAIL),
-            ("energy_identity fails", q.outcome(family="jupiter_baseline", readout="energy_identity") == c.FAIL),
-            ("no run is refused", not any(q.run(n)["refused"] for n in (H1, H2, H3))),
+            ("heat_membrane fails (S)", q.outcome(family=A.name, readout="heat_membrane", **{"class": "S"}) == c.FAIL),
+            ("energy_identity fails", q.outcome(family=A.name, readout="energy_identity") == c.FAIL),
+            ("no run is refused", not any(q.run(n)["refused"] for n in A.runs)),
         ],
     )
 
     def jp3(runs):
-        for mine, theirs in zip((R1, R2, R3), (H1, H2, H3)):
-            for key in ("rows", "potentials", "t", "potential_t"):
+        for mine, theirs in zip(B.runs, A.runs):
+            for key in ("rows", "potentials"):
                 runs[mine][key] = copy.deepcopy(runs[theirs][key])
 
     add(
-        "JP3", "jupiter", "jupiter_pump_release, all three rungs: the rows and potentials replaced by jupiter_baseline's of the same step",
-        "a fail of pump (S), and not refused", jp3,
+        "JP3", ionic, f"{B.name}, all three rungs: the rows and potentials replaced by {A.name}'s of the same step", "a fail of pump (S), and not refused", jp3,
         lambda q: [
-            ("pump fails (S)", q.outcome(family="jupiter_pump_release", readout="pump", **{"class": "S"}) == c.FAIL),
-            ("not refused", not any(q.run(n)["refused"] for n in (R1, R2, R3))),
+            ("pump fails (S)", q.outcome(family=B.name, readout="pump", **{"class": "S"}) == c.FAIL),
+            ("not refused", not any(q.run(n)["refused"] for n in B.runs)),
         ],
     )
 
-    # ----- JP4 -----
-
     def jp4_integer(runs):
-        runs["base s1 pool"]["pool"]["cell_0"]["arrays"]["event_count"][0] += 1
+        runs[pool_run]["pool"]["cell_0"]["arrays"]["event_count"][0] += 1
 
     def jp4_time(runs):
-        times = runs["base s1 pool"]["pool"]["cell_1"]["arrays"]["last_event_time_s"]
-        times[3] = math.nextafter(times[3], math.inf)
+        times = runs[pool_run]["pool"]["cell_0"]["arrays"]["last_event_time_s"]
+        times[-1] = math.nextafter(times[-1], math.inf)
 
-    def check4(cell, array):
-        def check(q):
-            E = q.find(run="base s1 pool", **{"class": "E"})
-            wrong = [e["readout"] for e in E if e["outcome"] == c.FAIL]
-            return [
-                (f"class E of {cell} {array} fails for that run", f"{cell} {array}" in wrong),
-                ("no other entry fails", q.fails() == [("base s1 pool", f"{cell} {array}")]),
-                ("the run is not refused", not q.run("base s1 pool")["refused"]),
-                ("base fails", q.verdict("base") == c.FAIL),
-            ]
-
-        return check
+    def check4(readout):
+        return lambda q: [
+            ("class E of that array fails, for that run", q.outcome(run=pool_run, readout=readout) == c.FAIL),
+            ("no other entry fails", q.fails() == [(pool_run, readout)]),
+            ("the run is not refused", not q.run(pool_run)["refused"]),
+            ("the consumer fails", q.verdict(pools) == c.FAIL),
+        ]
 
     must4 = "a fail of class E of that array, for that run"
-    add("JP4 (integer)", "base", "base s1 pool: one value of event_count by 1", must4, jp4_integer, check4("cell_0", "event_count"))
-    add("JP4 (time)", "base", "base s1 pool: one value of last_event_time_s by one unit in the last place", must4, jp4_time, check4("cell_1", "last_event_time_s"))
-
-    # ----- JP5 to JP7 -----
+    add("JP4 (integer)", pools, f"{pool_run}: one value of event_count by 1", must4, jp4_integer, check4("cell_0 event_count"))
+    add("JP4 (time)", pools, f"{pool_run}: one value of last_event_time_s by one unit in the last place", must4, jp4_time, check4("cell_0 last_event_time_s"))
 
     def jp5(runs):
-        for series in (*CLASS_S_SERIES, *HEATS):
+        for series in (*dict.fromkeys(e.series for e in world.guard_entries()), *HEATS):
             runs[H3]["rows"][series] = copy.deepcopy(runs[H2]["rows"][series])
 
     add(
-        "JP5", "jupiter", "jupiter_baseline, h3: its class S rows, and the three heats, replaced by h2's",
+        "JP5", ionic, f"{A.name}, h3: its class S rows, and the three heats, replaced by h2's",
         "both runs refused by the copy guard (a), their readouts judged, for the checker to settle", jp5,
         lambda q: [
-            ("both runs are refused by the copy guard (a)", all(any("copy guard (a)" in x for x in q.run(n)["causes"]) for n in (H2, H3))),
+            ("both runs are refused by the copy guard (a)", all(q.cause(n, "copy guard (a)") for n in (H2, H3))),
             ("the third run is not refused", not q.run(H1)["refused"]),
-            ("their readouts are judged", judged_readouts(q, H2, "jupiter_baseline") and judged_readouts(q, H3, "jupiter_baseline")),
+            ("their readouts are judged", q.readouts_judged(H2, A.name) and q.readouts_judged(H3, A.name)),
             ("no entry fails", not q.fails()),
-            ("jupiter is at best inconclusive", q.verdict("jupiter") == c.INCONCLUSIVE),
+            ("the consumer is inconclusive", q.verdict(ionic) == c.INCONCLUSIVE),
         ],
     )
 
     def jp6(runs):
-        refuse(runs[H1], "harness", "planted", rows=False)
+        refuse(runs[H1], "harness", rows=False)
         table = runs[H3]["rows"]["n_cell_K"]
-        table["cell_0"][-1] += 1e-6 * largest(table)
+        table[world.cells[0]][-1] += 1e-6 * largest(table)
 
     add(
-        "JP6", "jupiter", "jupiter_baseline: h1 refused (kind harness, no row), and one n_cell_K of h3 raised by 1e-6 of its largest value",
-        "the fail of h3's balances stands, and jupiter fails", jp6,
+        "JP6", ionic, f"{A.name}: h1 refused (kind harness, no row), and one n_cell_K of h3 raised by 1e-6 of its largest value",
+        "the fail of h3's balances stands, and the consumer fails", jp6,
         lambda q: [
             ("h1 is refused and not stopped", q.run(H1)["refused"] and not q.run(H1)["stopped"]),
-            ("h3's balance of cells fails (R)", all_balances(q, (H3,), "K", ("cell_0",))),
-            ("the family's S entries are not formed", {e["outcome"] for e in q.find(family="jupiter_baseline", **{"class": "S"})} == {c.NOT_FORMED}),
-            ("jupiter fails", q.verdict("jupiter") == c.FAIL),
+            ("h3's balance of that cell fails (R)", q.balances_fail((H3,), "K", world.cells[:1])),
+            ("the family's S entries are not formed", {e["outcome"] for e in q.S(A.name)} == {c.NOT_FORMED}),
+            ("the consumer fails", q.verdict(ionic) == c.FAIL),
         ],
     )
 
     def jp7(runs):
-        for name in (H1, H2, H3):
-            rows = runs[name]["rows"]
-            rows["heat_junction"] = {k: scaled(v, 0.0) for k, v in rows["heat_junction"].items()}
+        for name in A.runs:
+            runs[name]["rows"]["heat_junction"] = scaled(runs[name]["rows"]["heat_junction"], 0.0)
 
     add(
-        "JP7", "jupiter", "jupiter_baseline, all three rungs: the rows heat_junction set to zero",
-        "a fail of heat_junction (S) and of energy_identity", jp7,
+        "JP7", ionic, f"{A.name}, all three rungs: the rows heat_junction set to zero", "a fail of heat_junction (S) and of energy_identity", jp7,
         lambda q: [
-            ("heat_junction fails (S)", q.outcome(family="jupiter_baseline", readout="heat_junction", **{"class": "S"}) == c.FAIL),
-            ("energy_identity fails", q.outcome(family="jupiter_baseline", readout="energy_identity") == c.FAIL),
+            ("heat_junction fails (S)", q.outcome(family=A.name, readout="heat_junction", **{"class": "S"}) == c.FAIL),
+            ("energy_identity fails", q.outcome(family=A.name, readout="energy_identity") == c.FAIL),
         ],
     )
-
-    # ----- JP8 -----
 
     def jp8(runs):
-        runs["base s0 pool"]["path"]["cell_0"]["2"].pop()
+        runs[path_run]["path"][path_cell][path_world].pop()
 
     add(
-        "JP8", "base", "base s0 pool: the last event deleted from the run's own path of world 2, cell_0",
-        "a fail of class E of the run's own path for that run. The exposure is unchanged and passes (R). The ionic runs' schedule entries are not touched", jp8,
+        "JP8", pools, f"{path_run}: the last event deleted from the run's own path of world {path_world}, {path_cell}",
+        "a fail of class E of the run's own path for that run. The exposure is unchanged and passes (R). The schedule entries of the ionic runs are not touched", jp8,
         lambda q: [
-            ("class E of the run's own path fails", q.outcome(run="base s0 pool", readout="cell_0 path") == c.FAIL),
-            ("the exposure passes (R)", q.outcome(run="base s0 pool", readout="cell_0 exposure") == c.PASS),
+            ("class E of the run's own path fails", q.outcome(run=path_run, readout=f"{path_cell} path") == c.FAIL),
+            ("the exposure passes (R)", q.outcome(run=path_run, readout=f"{path_cell} exposure") == c.PASS),
             ("the schedule entries of the ionic runs pass", {e["outcome"] for e in q.entries if e["judged"] and e["readout"] in ("switch list", "channel schedule")} == {c.PASS}),
-            ("no other entry but the restart's path fails", set(q.fails()) == {("base s0 pool", "cell_0 path")}),
-            ("base fails", q.verdict("base") == c.FAIL),
+            ("no other entry fails", q.fails() == [(path_run, f"{path_cell} path")]),
+            ("the consumer fails", q.verdict(pools) == c.FAIL),
         ],
     )
-
-    # ----- JP9, JP10 -----
 
     def jp9(runs):
         runs[H1]["inputs"]["temperature_K"] *= 1 + 1e-9
 
     add(
-        "JP9", "jupiter", "jupiter_baseline, h1: one number of inputs moved by 1e-9 of itself",
-        "refused, and nothing of the run judged. Not a fail plant", jp9,
+        "JP9", ionic, f"{A.name}, h1: one number of inputs moved by 1e-9 of itself", "refused, and nothing of the run judged. Not a fail plant", jp9,
         lambda q: [
-            ("refused by its echo", any("departing echo" in x for x in q.run(H1)["causes"])),
-            ("nothing of the run is judged", nothing_judged(q, H1, "jupiter_baseline")),
+            ("refused by its echo", q.cause(H1, "departing echo", "temperature_K")),
+            ("nothing of the run is judged", q.nothing_judged(H1, A.name)),
             ("no entry fails", not q.fails()),
-            ("jupiter is at best inconclusive", q.verdict("jupiter") == c.INCONCLUSIVE),
+            ("the consumer is inconclusive", q.verdict(ionic) == c.INCONCLUSIVE),
         ],
     )
 
     def jp10(runs):
-        entry = runs[I1]
-        block = entry["inputs"]
-        block["outside"]["outside"]["initial_amount_fmol"]["K"] = int(block["outside"]["outside"]["initial_amount_fmol"]["K"])
-        del block["membranes"]["membrane_3"]["pump"]
+        block = runs[I1]["inputs"]
+        amounts = next(r["initial_amount_fmol"] for r in block["outside"].values())
+        whole = next(x for x, value in amounts.items() if x == "K" and float(value).is_integer())
+        amounts[whole] = int(amounts[whole])
+        bare = next(m for m, v in block["membranes"].items() if v["pump"] is None)
+        del block["membranes"][bare]["pump"]
         del block["controls"]["pump"]
-        schedule = block["controls"]["junction"]["junction_4"]
-        schedule.insert(2, [0.0075, schedule[1][1]])
-        entry["inputs"] = reversed_maps(block)
-        entry["strings"] = reversed_maps(entry["strings"])
+        schedule = next(s for s in block["controls"]["junction"].values() if len(s) > 1)
+        schedule.insert(2, [(schedule[1][0] + schedule[2][0]) / 2, schedule[1][1]])
+        runs[I1]["inputs"] = reversed_maps(block)
+        runs[I1]["strings"] = reversed_maps(runs[I1]["strings"])
 
     add(
-        "JP10", "integrated", "integrated, h1: the echo's maps in another order, a 27 for a 27.0, a default omitted, a schedule with a repeated value",
+        "JP10", J, f"{junctions.name}, h1: an echo with its maps in another order, a whole number without its point, a default omitted, and a schedule with a repeated value",
         "not refused", jp10,
         lambda q: [
             ("not refused", not q.run(I1)["refused"]),
             ("no entry fails", not q.fails()),
-            ("integrated passes", q.verdict("integrated") == c.PASS),
+            ("the consumer passes", q.verdict(J) == c.PASS),
         ],
     )
 
-    # ----- JP11 to JP14 -----
-
     def jp11(runs):
-        refuse(runs[H1], "check", "planted")
+        refuse(runs[H1], "check")
 
     add(
-        "JP11", "jupiter", "jupiter_baseline, h1: status refused, kind check",
-        "a stop, and a fail (D). The rows it holds are judged", jp11,
+        "JP11", ionic, f"{A.name}, h1: status refused, kind check", "a stop, and a fail (D). The rows it holds are judged", jp11,
         lambda q: [
             ("a stop", q.run(H1)["stopped"]),
             ("D fails", q.outcome(run=H1, readout="completes") == c.FAIL),
-            ("the rows it holds are judged", {e["outcome"] for e in q.find(run=H1, **{"class": "R"})} == {c.PASS}),
+            ("the rows it holds are judged", {e["outcome"] for e in q.R(H1)} == {c.PASS}),
             ("no other entry fails", q.fails() == [(H1, "completes")]),
-            ("jupiter fails", q.verdict("jupiter") == c.FAIL),
+            ("the consumer fails", q.verdict(ionic) == c.FAIL),
         ],
     )
 
     def jp12(runs):
-        del runs[f"{H1} restart"]
+        del runs[target["restart"]]
 
     add(
-        "JP12", "jupiter", "the support run jupiter_baseline h=2.5e-05 restart missing",
-        "the consumer at best inconclusive", jp12,
+        "JP12", ionic, f"the support run {target['restart']} missing", "the consumer at best inconclusive", jp12,
         lambda q: [
-            ("the support run is missing", any("missing" in x for x in q.run(f"{H1} restart")["causes"])),
-            ("the run it supports is not refused", not q.run(H1)["refused"]),
+            ("the support run is missing", q.cause(target["restart"], "missing")),
+            ("the run it supports is not refused", not q.run(registration.restarted(registration.runs[target["restart"]]))["refused"]),
             ("no entry fails", not q.fails()),
-            ("jupiter is at best inconclusive", q.verdict("jupiter") == c.INCONCLUSIVE),
+            ("the consumer is inconclusive", q.verdict(ionic) == c.INCONCLUSIVE),
         ],
     )
 
@@ -333,140 +341,127 @@ def plants(registration: Registration, captures: Captures) -> list:
         runs[I2]["record_sha256"] = runs[I1]["record_sha256"]
 
     add(
-        "JP13", "integrated", "integrated, h1 and h2: the same record_sha256", "both refused, readouts judged", jp13,
+        "JP13", J, f"{junctions.name}, h1 and h2: the same record_sha256", "both refused, readouts judged", jp13,
         lambda q: [
             ("both are refused, for the shared record_sha256", all("a shared record_sha256" in q.run(n)["reasons"] for n in (I1, I2))),
             ("h3 is not refused", not q.run(I3)["refused"]),
-            ("their readouts are judged", judged_readouts(q, I1, "integrated") and judged_readouts(q, I2, "integrated")),
+            ("their readouts are judged", q.readouts_judged(I1, junctions.name) and q.readouts_judged(I2, junctions.name)),
             ("no entry fails", not q.fails()),
-            ("integrated is at best inconclusive", q.verdict("integrated") == c.INCONCLUSIVE),
+            ("the consumer is inconclusive", q.verdict(J) == c.INCONCLUSIVE),
         ],
     )
 
     def jp14(runs):
-        table = runs[H1]["rows"]["leak_K"]
+        table = runs[H2]["rows"]["leak_K"]
         shift = 2.0**-52 * largest(table)
-        runs[H1]["rows"]["leak_K"] = {k: [v + shift for v in values] for k, values in table.items()}
+        runs[H2]["rows"]["leak_K"] = {entity: [v + shift for v in values] for entity, values in table.items()}
 
     def check14(q):
-        found = q.find(family="jupiter_baseline", readout="leak_K", **{"class": "S"})
+        found = q.S(A.name, "leak_K")
         item = found[0] if len(found) == 1 else {}
-        theta = c.THRESHOLD * registration.worlds["jupiter_baseline"].by_name["leak_K"].e_round(3200)
-        by_rule = "unresolved" if item.get("d1", 1) <= theta and item.get("d2", 1) <= theta else "another"
+        theta = c.THRESHOLD * world.by_name["leak_K"].e_round(world.steps(A.steps_s[2]))
+        below = item.get("d1", math.inf) <= theta and item.get("d2", math.inf) <= theta
         return [
-            ("the entry's class is by the rule", item.get("order_class") == by_rule == "unresolved"),
+            ("the entry's class is by the rule", below and item.get("order_class") == "unresolved"),
             ("no fail is invented", item.get("outcome") == c.PASS and not q.fails()),
         ]
 
     add(
-        "JP14", "jupiter", "jupiter_baseline, h1: leak_K shifted by 2^-52 of its largest value, the other two rungs honest",
+        "JP14", ionic, f"{A.name}, h2: one series leak_K shifted by 2^-52 of its largest value, the other two rungs honest (Amendment 2)",
         "the entry's class is by the rule, and no fail is invented", jp14, check14,
     )
 
-    # ----- JP15 to JP18 -----
-
-    W0 = [f"base s0 w0 h={h!r}" for h in (2.5e-05, 1.25e-05, 6.25e-06)]
-
     def jp15(runs):
-        for name in W0:
-            rows = runs[name]["rows"]
-            rows["channel_K"] = {k: scaled(v, 1.01) for k, v in rows["channel_K"].items()}
-
-    def blind_passes(q):
-        blind = q.blind()
-        return blind["verdict"] == c.PASS and len(blind["families"]) == 30 and {f["verdict_of_its_entries"] for f in blind["families"].values()} == {c.PASS}
+        for name in seen.runs:
+            runs[name]["rows"]["channel_K"] = scaled(runs[name]["rows"]["channel_K"], 1.01)
 
     add(
-        "JP15", "base", "base s0 w0, all three rungs: the rows channel_K multiplied by 1.01",
-        "base fails, and the record shows that its 30 blind families pass", jp15,
+        "JP15", pools, f"{seen.name}, all three rungs: the rows channel_K multiplied by 1.01, every blind family honest",
+        "the consumer fails, and the record shows that its blind families pass", jp15,
         lambda q: [
-            ("channel_K of base s0 w0 fails", q.outcome(family="base s0 w0", readout="channel_K", **{"class": "S"}) == c.FAIL),
-            ("base fails", q.verdict("base") == c.FAIL),
-            ("its 30 blind families pass", blind_passes(q)),
+            ("channel_K of that family fails (S)", q.outcome(family=seen.name, readout="channel_K", **{"class": "S"}) == c.FAIL),
+            ("the consumer fails", q.verdict(pools) == c.FAIL),
+            ("its blind families pass", blind_passes(q)),
         ],
     )
 
     def jp16(runs):
-        refuse(runs[W0[0]], "domain", "planted")
+        refuse(runs[seen.runs[0]], "domain")
 
     add(
-        "JP16", "base", "base s0 w0, h1, refused (kind domain)",
-        "base inconclusive, and the record shows that its 30 blind families pass", jp16,
+        "JP16", pools, f"{seen.name}, h1, refused (kind domain), every blind family honest",
+        "the consumer inconclusive, and the record shows that its blind families pass", jp16,
         lambda q: [
-            ("the run is refused", q.run(W0[0])["refused"] and not q.run(W0[0])["stopped"]),
-            ("base is inconclusive", q.verdict("base") == c.INCONCLUSIVE),
-            ("its 30 blind families pass", blind_passes(q)),
+            ("the run is refused, and not stopped", q.run(seen.runs[0])["refused"] and not q.run(seen.runs[0])["stopped"]),
+            ("the consumer is inconclusive", q.verdict(pools) == c.INCONCLUSIVE),
+            ("its blind families pass", blind_passes(q)),
         ],
     )
 
-    W1 = "base s1 w0 h=6.25e-06"
-
     def jp17(runs):
-        listed = runs[W1]["inputs"]["assembly"]["switch_list"]
-        channel = max(listed, key=lambda k: len(listed[k]))
-        listed[channel].pop()
+        listed = runs[W3]["inputs"]["assembly"]["switch_list"]
+        next(changes for changes in listed.values() if changes).pop()
 
     add(
-        "JP17", "base", "base s1 w0, h3: one change deleted from switch_list alone",
+        "JP17", pools, f"{assembly.name}, h3: one change deleted from switch_list alone",
         "a fail of class E of the switch list. The channel schedule's entry passes", jp17,
         lambda q: [
-            ("the switch list fails (E)", q.outcome(run=W1, readout="switch list") == c.FAIL),
-            ("the channel schedule passes", q.outcome(run=W1, readout="channel schedule") == c.PASS),
-            ("no other entry fails", q.fails() == [(W1, "switch list")]),
-            ("the run is not refused", not q.run(W1)["refused"]),
+            ("the switch list fails (E)", q.outcome(run=W3, readout="switch list") == c.FAIL),
+            ("the channel schedule passes", q.outcome(run=W3, readout="channel schedule") == c.PASS),
+            ("no other entry fails", q.fails() == [(W3, "switch list")]),
+            ("the run is not refused", not q.run(W3)["refused"]),
         ],
     )
 
     def jp18(runs):
-        strings = runs[W1]["strings"]
+        strings = runs[W3]["strings"]
         text = strings["assembly_observable"]
         strings["assembly_observable"] = text[:-1] + ("x" if text[-1] != "x" else "y")
 
     add(
-        "JP18", "base", "base s1 w0, h3: one character of the assembly_observable string changed, and the label kept",
+        "JP18", pools, f"{assembly.name}, h3: one character of the assembly_observable string changed, and the label kept",
         "refused, and nothing of the run judged. Not a fail plant", jp18,
         lambda q: [
-            ("refused by its echo", any("departing echo" in x and "assembly_observable" in x for x in q.run(W1)["causes"])),
-            ("nothing of the run is judged", nothing_judged(q, W1, "base s1 w0")),
+            ("refused by its echo", q.cause(W3, "departing echo", "assembly_observable")),
+            ("nothing of the run is judged", q.nothing_judged(W3, assembly.name)),
             ("no entry fails", not q.fails()),
         ],
     )
 
-    # ----- JP19 to JP24 -----
+    joined = world.junctions[0]
+    ends = (world.block["junctions"][joined]["from_cell"], world.block["junctions"][joined]["to_cell"])
 
     def jp19(runs):
-        for name in (H1, H2, H3):
+        for name in A.runs:
             table = runs[name]["rows"]["junction_K"]
-            table["junction"][-1] += 1e-4 * largest(table)
+            table[joined][-1] += 1e-4 * largest(table)
 
     add(
-        "JP19", "jupiter", "jupiter_baseline, all three rungs: one junction_K (the last time) raised by 1e-4 of its largest value",
+        "JP19", ionic, f"{A.name}, all three rungs: one junction_K (the last time) raised by 1e-4 of its largest value",
         "a fail of junction_K (S), and of the balances of the two cells (R)", jp19,
         lambda q: [
-            ("junction_K fails (S)", q.outcome(family="jupiter_baseline", readout="junction_K", **{"class": "S"}) == c.FAIL),
-            ("the balances of the two cells fail (R), in each rung", all_balances(q, (H1, H2, H3), "K", ("cell_0", "cell_1"))),
+            ("junction_K fails (S)", q.outcome(family=A.name, readout="junction_K", **{"class": "S"}) == c.FAIL),
+            ("the balances of the two cells fail (R), in each rung", q.balances_fail(A.runs, "K", ends)),
         ],
     )
 
     def jp20(runs):
-        for name in (H1, H2, H3):
-            rows = runs[name]["rows"]
-            rows["work_pump"] = {k: scaled(v, 1.01) for k, v in rows["work_pump"].items()}
+        for name in A.runs:
+            runs[name]["rows"]["work_pump"] = scaled(runs[name]["rows"]["work_pump"], 1.01)
 
     add(
-        "JP20", "jupiter", "jupiter_baseline, all three rungs: the rows work_pump multiplied by 1.01",
-        "a fail of energy_identity, and of no S entry against a capture", jp20,
+        "JP20", ionic, f"{A.name}, all three rungs: the rows work_pump multiplied by 1.01", "a fail of energy_identity, and of no S entry against a capture", jp20,
         lambda q: [
-            ("energy_identity fails", q.outcome(family="jupiter_baseline", readout="energy_identity") == c.FAIL),
-            ("no S entry against a capture fails", [r for _, r in q.fails()] == ["energy_identity"]),
+            ("energy_identity fails", q.outcome(family=A.name, readout="energy_identity") == c.FAIL),
+            ("no S entry against a capture fails", [e["readout"] for e in q.S(A.name) if e["outcome"] == c.FAIL] == ["energy_identity"]),
+            ("no other entry fails", [readout for _, readout in q.fails()] == ["energy_identity"]),
         ],
     )
 
     def jp21(runs):
-        world = registration.worlds["jupiter_baseline"]
-        legacy = captures.ionic("jupiter_baseline", "h2")
+        legacy = captures.run(A, "h2")
         rows = runs[H2]["rows"]
-        for series in CLASS_S_SERIES:
+        for series in dict.fromkeys(e.series for e in world.guard_entries()):
             values = legacy.series(series, world.row_times)
             rows[series] = {k: values[:, i].tolist() for i, k in enumerate(world.entities(series))}
         heat = legacy.series("heat_membrane", world.row_times)
@@ -477,40 +472,40 @@ def plants(registration: Registration, captures: Captures) -> list:
                 rows["heat_channel"][channel] = (0.5 * heat[:, i]).tolist()
 
     add(
-        "JP21", "jupiter", "jupiter_baseline, h2: its class S rows replaced by the captured rows of jupiter_baseline-h2, and the heats by a split of the captured sum",
+        "JP21", ionic, f"{A.name}, h2: its class S rows replaced by the captured rows at h/2, and the three heats by a split of the captured sum",
         "refused by the copy guard (b), its readouts judged", jp21,
         lambda q: [
-            ("refused by the copy guard (b)", any("copy guard (b)" in x for x in q.run(H2)["causes"])),
+            ("refused by the copy guard (b)", q.cause(H2, "copy guard (b)")),
             ("the other two rungs are not refused", not q.run(H1)["refused"] and not q.run(H3)["refused"]),
-            ("its readouts are judged", judged_readouts(q, H2, "jupiter_baseline")),
+            ("its readouts are judged", q.readouts_judged(H2, A.name)),
             ("no entry fails", not q.fails()),
-            ("jupiter is at best inconclusive", q.verdict("jupiter") == c.INCONCLUSIVE),
+            ("the consumer is inconclusive", q.verdict(ionic) == c.INCONCLUSIVE),
         ],
     )
 
     def jp22(runs):
-        for key in ("rows", "potentials", "t", "potential_t"):
-            runs["jupiter_baseline plant channel"][key] = copy.deepcopy(runs[H3][key])
+        for key in ("rows", "potentials"):
+            runs[target["engine_plant"]][key] = copy.deepcopy(runs[H3][key])
 
+    variant = registration.runs[target["engine_plant"]]["variant"]
     add(
-        "JP22", "jupiter", "EP1's rows made equal to its honest run's (jupiter_baseline, h3)", "EP1 is not caught, and jupiter fails", jp22,
+        "JP22", ionic, f"the rows of {target['engine_plant']} made equal to its honest run's ({A.name}, h3)", "the plant is not caught, and the consumer fails", jp22,
         lambda q: [
-            ("EP1 is not caught", q.plant("EP1") == "not caught"),
-            ("jupiter fails", q.verdict("jupiter") == c.FAIL),
+            ("the plant is not caught", q.plant(variant) == "not caught"),
+            ("the consumer fails", q.verdict(ionic) == c.FAIL),
         ],
     )
 
     def jp23(runs):
-        runs[I3]["declared_strings"] = sorted([*runs[I3]["declared_strings"], "an.extra.string@1"])
+        runs[I3]["declared_strings"] = sorted([*runs[I3]["declared_strings"], "an.extra.string"])
 
     add(
-        "JP23", "integrated", "integrated, h3: an extra string in declared_strings",
-        "refused, and nothing of the run judged. Not a fail plant", jp23,
+        "JP23", J, f"{junctions.name}, h3: an extra string in declared_strings", "refused, and nothing of the run judged. Not a fail plant", jp23,
         lambda q: [
-            ("refused by its echo", any("departing echo" in x and "declared_strings" in x for x in q.run(I3)["causes"])),
-            ("nothing of the run is judged", nothing_judged(q, I3, "integrated")),
+            ("refused by its echo", q.cause(I3, "departing echo", "declared_strings")),
+            ("nothing of the run is judged", q.nothing_judged(I3, junctions.name)),
             ("no entry fails", not q.fails()),
-            ("integrated is at best inconclusive", q.verdict("integrated") == c.INCONCLUSIVE),
+            ("the consumer is inconclusive", q.verdict(J) == c.INCONCLUSIVE),
         ],
     )
 
@@ -518,23 +513,15 @@ def plants(registration: Registration, captures: Captures) -> list:
         runs[H3]["steps"] += 1
 
     add(
-        "JP24", "jupiter", "jupiter_baseline, h3: steps one more than end_s/step_s",
-        "refused (the reason off_grid_change), its readouts judged", jp24,
+        "JP24", ionic, f"{A.name}, h3: steps one more than end_s/step_s", "refused (the reason off_grid_change), its readouts judged", jp24,
         lambda q: [
             ("refused, with the reason off_grid_change", q.run(H3)["refused"] and "off_grid_change" in q.run(H3)["reasons"]),
-            ("its readouts are judged", judged_readouts(q, H3, "jupiter_baseline")),
+            ("its readouts are judged", q.readouts_judged(H3, A.name)),
             ("no entry fails", not q.fails()),
-            ("jupiter is at best inconclusive", q.verdict("jupiter") == c.INCONCLUSIVE),
+            ("the consumer is inconclusive", q.verdict(ionic) == c.INCONCLUSIVE),
         ],
     )
     return out
-
-
-def reversed_maps(value):
-    """The same JSON value with every map in the opposite order."""
-    if isinstance(value, dict):
-        return {k: reversed_maps(v) for k, v in reversed(list(value.items()))}
-    return [reversed_maps(v) for v in value] if isinstance(value, list) else value
 
 
 def judge(registration: Registration, note: StringsNote, tables: dict, c0: dict, captures, planted) -> dict:
@@ -542,7 +529,7 @@ def judge(registration: Registration, note: StringsNote, tables: dict, c0: dict,
     state = scoring.Tables(registration, note, TableSet.from_data(tables))
     hashes = {"tables": "in memory"}
     power = scoring.stage1(state, c0, hashes)
-    scoring.check_power(scoring.Tables(registration, note, TableSet.from_data(tables)), c0, power, hashes)
+    scoring.check_power(state, c0, power, hashes)
     return scoring.Stage2(state, c0, power, captures, planted).run()
 
 
@@ -557,26 +544,20 @@ def run_plants(registration: Registration, note: StringsNote, tables: dict, c0: 
     for plant in plants(registration, captures):
         if only and plant.name.split()[0] not in only:
             continue
+        item = {"plant": plant.name, "consumer": plant.consumer, "what": plant.what, "must_be": plant.must}
+        runs = Lazy(tables[plant.consumer]["runs"])
+        try:
+            plant.alter(runs)
+        except (KeyError, IndexError, StopIteration, TypeError) as error:
+            item.update(scores_as_stated=False, cannot_be_formed=f"{type(error).__name__}: {error}")
+            out["plants"].append(item)
+            continue
         altered = dict(tables)
-        altered[plant.consumer] = dict(tables[plant.consumer], runs=dict(tables[plant.consumer]["runs"]))
-        runs = altered[plant.consumer]["runs"]
-        runs.update(copy.deepcopy(runs))
-        plant.alter(runs)
+        altered[plant.consumer] = dict(tables[plant.consumer], runs=dict(runs))
         record = judge(registration, note, altered, c0, captures, planted)
         checks = [[what, bool(good)] for what, good in plant.check(Query(record))]
-        out["plants"].append(
-            {
-                "plant": plant.name,
-                "consumer": plant.consumer,
-                "what": plant.what,
-                "must_be": plant.must,
-                "scores_as_stated": all(good for _, good in checks),
-                "checks": checks,
-                "verdicts": {k: v["verdict"] for k, v in record["consumers"].items()},
-            }
-        )
+        item.update(scores_as_stated=all(good for _, good in checks), checks=checks)
+        item["verdicts"] = {k: v["verdict"] for k, v in record["consumers"].items()}
+        out["plants"].append(item)
     out["all_as_stated"] = all(p["scores_as_stated"] for p in out["plants"])
     return out
-
-
-__all__ = ["Plant", "Query", "judge", "plants", "run_plants", "np"]

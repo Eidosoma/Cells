@@ -142,12 +142,12 @@ class Fabricator:
         if world.assembly:
             paths = self.reg.expected_paths(run)
             switches = {channel: changes(path) for channel, path in paths.items()}
-            block["controls"]["channel"] = {channel: [[0.0, 1.0], *listed] for channel, listed in switches.items()}
+            block["controls"]["channel"] = {channel: [[0.0, 1.0], *copy.deepcopy(listed)] for channel, listed in switches.items()}
             block["assembly"] = {
                 "assembly_observable": world.data["coupling"]["law"],
                 "composed_file_fingerprint": "fabricated",
                 "pool_seeds": {cell: pool["seeds"][run["seed_index"]] for cell, pool in world.pools.items()},
-                "switch_list": switches,
+                "switch_list": copy.deepcopy(switches),
             }
         return block
 
@@ -328,7 +328,7 @@ class Fabricator:
             elif run["role"] == "plant":
                 family = self.reg.families[run["family"]]
                 step_s = self.captures.step_s(run["world"], "h4")
-                planted = self.planted.run(PLANTED[run["variant"]], family, step_s)
+                planted = self.planted.run(self.reg.profile["engine_plants"][run["variant"]]["planted_run"], family, step_s)
                 runs[name] = self.ionic(name, run, planted, name)
         tables = {}
         for consumer in self.reg.consumers:
@@ -355,10 +355,6 @@ class Fabricator:
             )
             table["runs"][name] = entry
         return tables
-
-
-# The planted legacy runs that the engine plants' fabricated rows are made from (PLANTS section 5).
-PLANTED = {"EP1": "PW-channel jupiter_baseline", "EP2": "ST6 availability on the other cell's channel"}
 
 
 def _digest(name: str) -> str:

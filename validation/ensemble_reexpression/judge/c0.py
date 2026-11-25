@@ -18,7 +18,7 @@ import numpy as np
 from . import bands, identities, rules, strictjson
 from . import constants as c
 from .legacy import STEPS, Captures, Fault, Planted
-from .registration import PART1, Registration, changes
+from .registration import Registration, changes
 
 
 class Clause:
@@ -124,6 +124,9 @@ class C0:
             self.engine_plants,
             self.counts,
         )
+        registered_only = (self.spec_keys, self.run_list, self.literal_blocks, self.pins, self.definitions, self.controls, self.margins, self.mechanisms)
+        if self.reg.rehearsal:
+            steps = [step for step in steps if step not in registered_only]
         for step in steps:
             before = len(self.clauses)
             try:
@@ -143,6 +146,11 @@ class C0:
             "opened": len(self.captures.opened) + len(self.planted.opened),
             "not_done": NOT_DONE,
         }
+
+    def seeds(self, world) -> list:
+        """The seed indices of the world's judged pool runs, or one None for a world without pools."""
+        found = [r["seed_index"] for r in self.reg.runs.values() if r["world"] == world.name and r["role"] == "judged" and self.reg.is_pool(r)]
+        return sorted(found) if world.assembly else [None]
 
     def clause(self, name, where, what) -> Clause:
         """A new clause."""
@@ -322,9 +330,8 @@ class C0:
         """Every file of every captured run that Part 1 names."""
         k = self.clause("captured_files", "SPEC 7", "every file of the captured runs of Part 1, against the manifests' sha256")
         for world, where in self.reg.profile["captures"].items():
-            seeds = range(4) if self.reg.worlds[world].assembly else (None,)
             for step in STEPS:
-                for seed in seeds:
+                for seed in self.seeds(self.reg.worlds[world]):
                     folder = where["folder"].format(step=step, seed=seed) + "/"
                     names = [n for n in self.captures.manifest(where["set"])["files"] if n.startswith(folder)]
                     k.check(names, f"{world}: no file in {folder}")
@@ -340,8 +347,7 @@ class C0:
         k = self.clause("definitions", "SPEC 2.1, 2.2, 2.5", "every block and pool of the inputs against the captured definitions, value by value")
         worst_anchor = 0.0
         for name, world in self.reg.worlds.items():
-            seeds = range(4) if world.assembly else (None,)
-            for seed in seeds:
+            for seed in self.seeds(world):
                 for step in STEPS:
                     whole = self.captures.definition(name, step, seed)
                     ionic = whole["ionic"] if world.assembly else whole["definition"]
@@ -413,10 +419,16 @@ class C0:
                 for time in times:
                     point = round(time / step) * step
                     gap = abs(time - point)
+                    if gap > c.GRID_TOL * time and self.reg.rehearsal:
+                        k.checked += 1
+                        k.notes.append(f"{family.name}: {time!r} s is off the grid of {step!r} s")
+                        continue
                     k.check(gap <= c.GRID_TOL * time, f"{family.name}: {time!r} s is off the grid of {step!r} s")
                     if time:
                         worst = max(worst, gap / (c.EPS * time))
         k.numbers["largest_gap_over_eps_t"] = digits(worst, 2)
+        if self.reg.rehearsal:
+            return
         steps = (2.5e-05, 1.25e-05, 6.25e-06, 3.125e-06, 1.5625e-06)
         nearest, stage = (Fraction(1), None), (Fraction(1), None)
         events = 0
@@ -450,7 +462,7 @@ class C0:
         for name, world in self.reg.worlds.items():
             if not world.assembly:
                 continue
-            for seed in range(4):
+            for seed in self.seeds(world):
                 for cell, pool in world.pools.items():
                     fine = self.captures.pool_arrays(name, seed, cell)
                     for step in STEPS[:2]:
@@ -468,7 +480,7 @@ class C0:
         for name, world in self.reg.worlds.items():
             if not world.assembly:
                 continue
-            for seed in range(4):
+            for seed in self.seeds(world):
                 for cell, pool in world.pools.items():
                     arrays = self.captures.pool_arrays(name, seed, cell)
                     for i in range(pool["pool"]["worlds"]):
@@ -525,7 +537,7 @@ class C0:
         counts = {}
         for name, world in self.reg.worlds.items():
             steps_l = self.captures.steps(name)
-            printed = self.reg.legacy["worlds"][name]["entries"]
+            printed = self.reg.legacy["worlds"][name].get("entries", {})
             found = {entry.name: [] for entry in world.entries}
             for family in [f for f in self.reg.families.values() if f.world is world]:
                 runs = [self.captures.run(family, step) for step in STEPS]
@@ -552,6 +564,8 @@ class C0:
                     bad = order_class == "resolved outside its window" or d1 > theta >= d2
                     k.check(not bad, f"{family.name} {entry.name}: {order_class}, a C0 fault")
             for entry in world.entries:
+                if (self.reg.rehearsal and entry.name not in printed) or self.reg.only is not None:
+                    continue
                 rows, theirs = found[entry.name], printed[entry.name]
                 if world.assembly:
                     tally = {}
@@ -568,7 +582,7 @@ class C0:
                     good &= (q is None) == (theirs["observed_order"] is None) and (q is None or round(q, 2) == theirs["observed_order"])
                 k.check(good, f"{name} {entry.name}: not the printed class or numbers")
         k.numbers["classes"] = counts
-        k.check(set(counts) == {"unresolved"}, f"the spec says that every captured entry is unresolved, and the classes are {counts}")
+        k.check(self.reg.rehearsal or set(counts) == {"unresolved"}, f"the spec says that every captured entry is unresolved, and the classes are {counts}")
 
     def reference_identities(self):
         """The balances, the capacitor and the energy identity on the captured arrays at h/4."""
@@ -610,7 +624,7 @@ class C0:
         for name, world in self.reg.worlds.items():
             if not world.assembly:
                 continue
-            for seed in range(4):
+            for seed in self.seeds(world):
                 for cell, pool in world.pools.items():
                     captured, segments = self.captures.exposure(name, seed, cell)
                     for i in range(pool["pool"]["worlds"]):
@@ -637,7 +651,7 @@ class C0:
                     k.check(False, str(error))
             k.check(run["definition_sha256"] == run["outputs_sha256"].get("definition.json"), f"{name}: the definition's sha256")
             base = Path(run["base"])
-            k.check(base.is_relative_to(root), f"{name}: its base is not a captured definition")
+            k.check(self.reg.rehearsal or base.is_relative_to(root), f"{name}: its base is not a captured definition")
             data = base.read_bytes()
             k.check(strictjson.sha256(data) == run["base_sha256"], f"{name}: the sha256 of its base")
             mine = strictjson.loads(self.planted.read(name, "definition.json"))
@@ -650,7 +664,7 @@ class C0:
             k.check(leaves == run["modified_leaves"] or sum(leaves) == sum(run["modified_leaves"]), f"{name}: {leaves} leaves changed")
             k.check(mine == theirs, f"{name}: its definition is not its base with the declared change")
         k.numbers["runs"] = len(self.planted.runs)
-        for pool in self.reg.manifest["pool_plants"]:
+        for pool in self.reg.manifest.get("pool_plants", []):
             k.notes.append(f"{pool['name']}: its output lies outside the folder that the judge may open, so its sha256 is not checked. Class E has no margin.")
 
     def controls(self):
@@ -822,8 +836,8 @@ class C0:
                 table[what] = {"distance": digits(distance, 2), "margin": digits(distance / beta, 1), "score": "caught"}
             if "recorded_channel_K_relative_per_world" in plant:
                 got = []
-                for wid in range(8):
-                    other = self.reg.families[f"{world.name} s0 w{wid}"]
+                for wid in range(len(plant["recorded_channel_K_relative_per_world"])):
+                    other = self.reg.family(world.name, 0, wid)
                     entry = world.by_name["channel_K"]
                     honest = self.captures.run(other, "h4").entry(entry)
                     wrong = self.planted.run(plant["run"], other, step_s).entry(entry)
@@ -835,12 +849,12 @@ class C0:
     def engine_plants(self):
         """The engine plants' registered distances from the planted runs, and that they are scorable at U_c = 0."""
         k = self.clause("engine_plants", "PLANTS 5", "EP1's and EP2's registered distances, and that each is above 2 beta at U_c = 0")
-        source = {"EP1": ("PW-channel jupiter_baseline", "jupiter_baseline"), "EP2": ("ST6 availability on the other cell's channel", "base s0 w2")}
+        expected = {"EP1": "jupiter_baseline", "EP2": "base s0 w2"}
         for consumer, run, name, plant, distances in self.reg.engine():
             family = self.reg.families[run["family"]]
             world = family.world
-            planted, expected = source[name]
-            k.check(family.name == expected, f"{name}: its family is {family.name}")
+            planted = plant["planted_run"]
+            k.check(self.reg.rehearsal or family.name == expected[name], f"{name}: its family is {family.name}")
             steps_c, steps_l = world.steps(family.steps_s[2]), self.captures.steps(world.name)
             for named, distance in distances.items():
                 entry = world.by_name[named]
@@ -851,6 +865,8 @@ class C0:
                 U_l = self.legacy[family.name]["entries"][named]["U_l"]
                 beta = bands.band(entry, 0.0, U_l, steps_c, steps_l)["beta"]
                 k.check(distance > 2 * beta, f"{name} {named}: unscorable at U_c = 0")
+        if self.reg.rehearsal:
+            return
         k.check([name for _, _, name, _, _ in self.reg.engine()] == ["EP1", "EP2"], "the engine plants are not EP1 and EP2")
         run = self.reg.runs["base plant swapped"]
         swapped = self.reg.expected_paths(run)
@@ -864,7 +880,7 @@ class C0:
         from .scoring import expected_counts
 
         table = {}
-        for consumer, wanted in self.reg.profile["counts"].items():
+        for consumer, wanted in self.reg.profile.get("counts", {}).items():
             found = expected_counts(self.reg, consumer)
             table[consumer] = found
             for name, number in wanted.items():
@@ -1025,5 +1041,3 @@ def canonical(definition: dict, world) -> dict:
         "end_s": experiment["end_time"],
     }
 
-
-assert PART1["runs"] == 214

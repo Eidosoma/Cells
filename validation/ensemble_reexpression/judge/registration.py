@@ -74,11 +74,13 @@ PART1 = {
             "change": [{"path": ["channels", "*", "max_permeability_m_per_s"], "multiply": 1.01}],
             "named": ["channel_K"],
             "distance": {"world": "jupiter_baseline", "entry": "channel_K", "power_plant": "channel"},
+            "planted_run": "PW-channel jupiter_baseline",
         },
         "EP2": {
             "change": [{"exchange_channels": ["cell_0", "cell_1"]}],
             "named": ["channel_K"],
             "distance": {"world": "base", "entry": "channel_K", "structural": "ST6 availability on the other cell's channel"},
+            "planted_run": "ST6 availability on the other cell's channel",
         },
     },
     "counts": {  # READOUTS section 3, the published counts
@@ -88,6 +90,20 @@ PART1 = {
         "integrated": {"S": 9, "energy": 1, "R": 30, "E": 9},
     },
     "runs": 214,
+    # Amendment 1, item 6: the runs that may be made with the off-grid switch on. None is registered.
+    "off_grid_runs": [],
+    # PLANTS section 6: what the judge's plants name.
+    "plant_targets": {
+        "ionic": "jupiter_baseline",
+        "other_schedule": "jupiter_pump_release",
+        "junctions": "integrated",
+        "restart": "jupiter_baseline h=2.5e-05 restart",
+        "engine_plant": "jupiter_baseline plant channel",
+        "pool": "base s1 pool",
+        "pool_path": ["base s0 pool", "cell_0", "2"],
+        "not_blind": "base s0 w0",
+        "assembly": "base s1 w0",
+    },
 }
 
 
@@ -314,6 +330,7 @@ class Registration:
     folder: Path = SPEC
     profile: dict = field(default_factory=lambda: PART1)
     rehearsal: bool = False
+    only: object = None  # a predicate on a run, for the small tests: the registered runs that are kept
 
     def __post_init__(self):
         self.folder = Path(self.folder)
@@ -330,8 +347,10 @@ class Registration:
         for run in self.inputs["runs"]:
             if run["name"] in self.runs:
                 raise ValueError(f"the run {run['name']!r} stands twice in the inputs")
-            self.runs[run["name"]] = run
-        self.consumers = tuple(dict.fromkeys(w.consumer for w in self.worlds.values()))
+            if self.only is None or self.only(run):
+                self.runs[run["name"]] = run
+        kept = {run["consumer"] for run in self.runs.values()}
+        self.consumers = tuple(dict.fromkeys(w.consumer for w in self.worlds.values() if w.consumer in kept))
         self.families = self._families()
         self.by_consumer = {k: [f for f in self.families.values() if f.consumer == k] for k in self.consumers}
 
@@ -359,6 +378,15 @@ class Registration:
                 tuple(r["step_s"] for r in runs),
             )
         return out
+
+    def family(self, world: str, seed_index, world_id):
+        """The family of a world, a seed index and a world ID. A missing one is an error, but in a test's subset."""
+        for family in self.families.values():
+            if (family.world.name, family.seed_index, family.world_id) == (world, seed_index, world_id):
+                return family
+        if self.only is None:
+            raise KeyError((world, seed_index, world_id))
+        return None
 
     # ----- by run -----
 
@@ -440,8 +468,10 @@ class Registration:
         for world_name, block in self.margins["worlds"].items():
             world = self.worlds[world_name]
             for name, plant in block["structural"].items():
-                family = world_name if not world.assembly else f"{world_name} s0 w{plant['world']}"
-                out.append((world.consumer, world, self.families[family], name, plant))
+                seed, wid = (0, plant["world"]) if world.assembly else (None, None)
+                family = self.family(world_name, seed, wid)
+                if family is not None:
+                    out.append((world.consumer, world, family, name, plant))
         return out
 
     def engine(self) -> list:
