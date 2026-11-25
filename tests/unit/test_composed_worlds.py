@@ -438,6 +438,23 @@ def test_resolve_writes_the_pools_paths_and_says_where_they_came_from(outputs, c
     bare = {k: v for k, v in resolve.pool_record(made.drives[0]).items() if k != "seed"}
     assert [bare.get("seed")] != seeds[:1]
 
+    # Planted: a pool's record that has lost an event, or holds another state after its last one.
+    folder = first / "pools/pool-000"
+    assert np.any(resolve.recorded(folder)[0].event >= 0)
+    (file,) = folder.glob("events-*.npz")
+    with np.load(file) as saved:
+        kept = {k: saved[k] for k in saved.files}
+    row = np.flatnonzero(kept["event"][:, 0] >= 0)[-1]
+    for name, value, reason in (
+        ("event", -1, "its recorded events are not its checkpoint's"),
+        ("free", 1, "its last event is not its checkpoint's state"),
+    ):
+        wrong = {k: v.copy() for k, v in kept.items()}
+        wrong[name][row, 0] = value
+        np.savez_compressed(file, **wrong)
+        with pytest.raises(AssemblyError, match=f"pool-000: {reason}"):
+            resolve.recorded(folder)
+
 
 def as_path(points, pool):
     times, levels, counts = zip(*points, strict=True)

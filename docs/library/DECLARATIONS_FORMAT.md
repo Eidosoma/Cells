@@ -285,6 +285,10 @@ type built on the law template (`Law`), and an operator of one a type built on t
 template (`FamilyOperator`). The manifest does not interpret their fields: every field of its own
 is under `fields`, its functions under `kernels`, and the role keys are null.
 
+One is declared in the row of the model it serves, since its laws' host has no row:
+`cells.assembly_observable@1`, a readout of a pool's assembly, is in the inner model's row, whose
+channel controls its levels set. Its laws list no model, because no model's definitions name them.
+
 ## Models
 
 `models` lists every active model of the static model table, in its order. Its pieces are the
