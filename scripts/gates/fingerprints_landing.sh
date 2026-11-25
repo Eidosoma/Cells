@@ -18,7 +18,9 @@
 # results are read through the head's (fingerprints.py record, --inputs and --outputs), and that
 # table is in the cache's key. Two trees with one table compare the engine's own fingerprints, as
 # before. DECLARED names a file of the worlds whose difference is declared before the run, an exact
-# list.
+# list. REMOVED names a file of the definitions that the head removes, an exact list too (compare's
+# --removed): the run reads its copy, OUT/removed.txt, and both records and the cache's key hold its
+# digest. An empty list is no list. A pre-move record names no list, so the two are refused together.
 # Usage: fingerprints_landing.sh OUT HEAD_SNAPSHOT BASE_SNAPSHOT [PREMOVE_BASE_RECORD_DIR]
 set -uo pipefail
 O=${1:?out}; H=${2:?head snapshot}; B=${3:?base snapshot}; P=${4:-}
@@ -43,12 +45,21 @@ log() { echo "$(date -u +%FT%TZ) $*" >> "$O/run.log"; }
 rev() { python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['git_revision'][:8])" "$1/SNAPSHOT.json"; }
 log "affinity $(taskset -pc $$ | sed 's/.*: //'); base $B ($(rev "$B")), head $H ($(rev "$H")); map $MAP; \
 results read through ${OUTPUTS:-no table of renamed IDs}"
+refuse() { log "refused: $*"; echo 2 > "$O/done"; exit 2; }
+LIST=
+if [ -n "${REMOVED:-}" ]; then
+  cp "$REMOVED" "$O/removed.txt" || refuse "the list of removals $REMOVED cannot be copied"
+  ! grep -q '[^[:space:]]' "$O/removed.txt" || LIST=$O/removed.txt
+  [ -z "$LIST" ] || [ -z "$P" ] || refuse "a list of removals with a pre-move record"
+  log "removals listed: $(grep -c '[^[:space:]]' "$O/removed.txt") ($REMOVED, sha256 $(sha256sum "$O/removed.txt" | cut -c1-64))"
+fi
 status=0
 items=()
 cached=
 if [ -n "$GATE_CACHE" ] && [ -f "$MAP" ]; then
   items=("map=$(sha256sum "$MAP" | cut -c1-64)" "tool=$(sha256sum "$T" | cut -c1-64)" "g1=$G1" "layout=moved")
   [ -z "$OUTPUTS" ] || items+=("renamed=$(sha256sum "$OUTPUTS" | cut -c1-64)")
+  [ -z "$LIST" ] || items+=("removed=$(sha256sum "$LIST" | cut -c1-64)")
   cached=$(python3 -I "$G/gate_steps.py" cache-find "$GATE_CACHE" r1 "$B" "${items[@]}" --python "$PY" 2> /dev/null)
 fi
 for side in base head; do
@@ -66,6 +77,7 @@ for side in base head; do
   mapfile -t ids < <(through "$tree")
   "$PY" -B -I "$T" record "$tree" "$O/$side" --layout moved --map "$MAP" \
     --defs "$tree/configs" "$tree/examples" "$tree/validation" --g1 "$G1" "${ids[@]}" \
+    ${LIST:+--removed "$LIST"} \
     > "$O/record-$side.log" 2>&1 || { side_status=1; log "record $side failed (record-$side.log)"; }
   log "record $side: $(tail -1 "$O/record-$side.log")"
   [ $side_status -eq 0 ] || status=1
@@ -78,6 +90,7 @@ for side in base head; do
   fi
 done
 "$PY" -B -I "$T" compare "$O/base" "$O/head" "$MAP" "$O/compare.json" ${DECLARED:+--declared "$DECLARED"} \
+  ${LIST:+--removed "$LIST"} \
   > "$O/compare.log" 2>&1 || status=1
 log "compare base / head: $(python3 -c "import json; print(json.load(open('$O/compare.json'))['verdict'])" 2>&1)"
 if [ -n "$P" ]; then
