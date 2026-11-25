@@ -396,7 +396,8 @@
   "/mnt/workspaces/Cells/fr43-part1-gaps-20261124/tiers/measure-4f4c4812/measured.json",
   "/mnt/workspaces/Cells/docstring-batch-20261125/tiers/measure-1fc363ff/measured.json",
   "/mnt/workspaces/Cells/d349-restart-row-20261125/evidence/measure-c81c6491/measured.json",
-  "/mnt/workspaces/Cells/pre-rename-stack-20261125/measure-52c41033/measured.json"
+  "/mnt/workspaces/Cells/pre-rename-stack-20261125/measure-52c41033/measured.json",
+  "/mnt/workspaces/Cells/d358-gate-speed-20261125/timed3/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -3387,6 +3388,13 @@
    "root": "/mnt/workspaces/Cells/pre-rename-stack-20261125/snap-52c41033",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-25T04:50:10+00:00"
+  },
+  {
+   "git_revision": "6d169ae630158c645408a52dd3047a29acbbaac3",
+   "dirty": false,
+   "root": ".claude/worktrees/d358-gate-speed",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-25T06:10:06+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -7772,10 +7780,10 @@
    },
    {
     "file": "tests/unit/test_gates_gate.py",
-    "seconds": 57.5,
+    "seconds": 64.41,
     "exit_code": 0,
     "counts": {
-     "passed": 124
+     "passed": 200
     }
    },
    {

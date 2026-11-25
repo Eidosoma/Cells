@@ -29,7 +29,11 @@ files are timed individually and grouped into tiers:
            above the row's is reported in summary.json's count_increases (a stale
            row to re-measure), not changed. With --scope-map DIR (the nightly run only,
            D229), each file's processes also record what they read of the tree, into
-           DIR/<file> (scripts/gates/scope_inject; scripts/gates/scope.py builds the map)
+           DIR/<file> (scripts/gates/scope_inject; scripts/gates/scope.py builds the map).
+           With --trace DIR as well (D358), strace also writes the opens and processes of each
+           file into DIR/<file>, as scope.py's check on the recorder; where strace cannot
+           trace (absent, or the run is traced already), the run goes on without it and its
+           record says why
 
 JAX's persistent compilation cache (D321 R1): every test process runs with it disabled
 (JAX_ENABLE_COMPILATION_CACHE=false, no cache folder), whatever the caller's environment, since tier
@@ -172,7 +176,41 @@ def cache_environment(env, jax_cache=None):
     return env
 
 
-def _run_file(path, cpu, cap, log_dir, scope=None, jax_cache=None):
+# strace for the scope map's check (D358): the opens that succeed (a folder is listed only through its
+# own), with the path the kernel opened (-y), and the processes. -D keeps the test process this
+# runner's own child, so a process that outlives it does not hold the run up; --seccomp-bpf stops it
+# at these calls alone.
+STRACE = ("strace", "-D", "-ff", "-y", "-z", "-q", "--seccomp-bpf", "-s", "200", "-e", "signal=!SIGCHLD", "-e",
+          "trace=open,openat,openat2,creat,execve,execveat,clone,clone3,fork,vfork,open_by_handle_at,"
+          "io_uring_setup")
+
+
+def trace_refused():
+    """Why strace cannot trace here, or None."""
+    try:
+        done = subprocess.run(["strace", "-f", "-qq", "--seccomp-bpf", "-o", os.devnull, "true"],
+                              capture_output=True, text=True, timeout=30)
+    except (OSError, subprocess.TimeoutExpired) as error:
+        return f"strace: {type(error).__name__}"
+    return None if done.returncode == 0 else f"strace: {done.stderr.strip()[-200:] or done.returncode}"
+
+
+def _await_trace(folder, seconds=10.0):
+    """strace ends just after the last process it follows, so this waits until every trace has its
+    closing line. A process that outlives its test file is not waited for: its trace is not whole."""
+    end, open_logs = time.monotonic() + seconds, None
+    while open_logs is None or (open_logs and time.monotonic() < end):
+        if open_logs:
+            time.sleep(0.02)
+        open_logs = []
+        for log in folder.glob("t.*"):
+            with log.open("rb") as stream:
+                stream.seek(max(0, os.fstat(stream.fileno()).st_size - 120))
+                if b"\n+++ " not in b"\n" + stream.read():
+                    open_logs.append(log)
+
+
+def _run_file(path, cpu, cap, log_dir, scope=None, jax_cache=None, trace=None):
     """One test file under the standard gate environment.
 
     Scientific code is float64 (JAX_ENABLE_X64), and tests that write outputs or
@@ -200,10 +238,16 @@ def _run_file(path, cpu, cap, log_dir, scope=None, jax_cache=None):
                                              env["PYTHONPATH"]])
         env.update(CELLS_SCOPE_LOG=str(Path(scope) / slug), CELLS_SCOPE_ROOT=str(ROOT))
     log = log_dir / (slug + ".log")
+    tracer = []
+    if trace:
+        folder = Path(trace) / slug
+        folder.mkdir(parents=True, exist_ok=True)
+        tracer = [*STRACE, "-o", str(folder / "t")]
     cmd = [
         "taskset",
         "-c",
         str(cpu),
+        *tracer,
         sys.executable,
         "-B",
         "-m",
@@ -226,6 +270,9 @@ def _run_file(path, cpu, cap, log_dir, scope=None, jax_cache=None):
             os.killpg(proc.pid, 9)
             proc.wait()
             code, timed_out = None, True
+    seconds = round(time.monotonic() - start, 2)
+    if tracer:
+        _await_trace(folder)
     tail = log.read_text(errors="replace")[-2000:]
     counts = {}
     last = [line for line in tail.splitlines() if " in " in line and COUNTS.search(line)]
@@ -233,7 +280,7 @@ def _run_file(path, cpu, cap, log_dir, scope=None, jax_cache=None):
         counts[kind.rstrip("s") if kind.startswith("error") else kind] = int(number)
     return {
         "file": path,
-        "seconds": round(time.monotonic() - start, 2),
+        "seconds": seconds,
         "exit_code": code,
         "timed_out": timed_out,
         "counts": counts,
@@ -241,7 +288,7 @@ def _run_file(path, cpu, cap, log_dir, scope=None, jax_cache=None):
     }
 
 
-def _parallel(files, cpus, cap, out_dir, record_path, header, scope=None, jax_cache=None):
+def _parallel(files, cpus, cap, out_dir, record_path, header, scope=None, jax_cache=None, trace=None):
     log_dir = out_dir / "logs"
     log_dir.mkdir(parents=True, exist_ok=True)
     results, free = [], list(cpus)
@@ -249,7 +296,7 @@ def _parallel(files, cpus, cap, out_dir, record_path, header, scope=None, jax_ca
     def task(path):
         cpu = free.pop()
         try:
-            return _run_file(path, cpu, cap, log_dir, scope, jax_cache)
+            return _run_file(path, cpu, cap, log_dir, scope, jax_cache, trace)
         finally:
             free.append(cpu)
 
@@ -495,12 +542,17 @@ def run(args):
         "cap_seconds": args.cap,
         "jax_compilation_cache": str(jax_cache) if jax_cache else COLD,
     }
-    scope = getattr(args, "scope_map", None)
+    scope, trace = getattr(args, "scope_map", None), getattr(args, "trace", None)
     if scope:
         header["scope_map"] = str(Path(scope).resolve())
+    if trace:
+        refused = trace_refused()
+        header["trace"] = None if refused else str(Path(trace).resolve())
+        if refused:
+            header["trace_refused"], trace = refused, None
     results = _parallel(
         [r["file"] for r in wanted], args.cpus, args.cap, out, out / "run.json", header,
-        scope and Path(scope).resolve(), jax_cache,
+        scope and Path(scope).resolve(), jax_cache, trace and Path(trace).resolve(),
     )
     changed, increases = compare_with_record(results, {r["file"]: r for r in wanted})
     summary = {
@@ -1112,6 +1164,7 @@ def main(argv=None):
     r.add_argument("--cpus", type=cpus, default=[4, 5, 6, 7])
     r.add_argument("--cap", type=float, default=300.0)
     r.add_argument("--scope-map", help="record each file's reads of the tree into this folder")
+    r.add_argument("--trace", help="strace's view of each file too, as a check on --scope-map's record")
     r.add_argument("--jax-cache", help="run with JAX's persistent compilation cache in this folder "
                    "(every compile written); default disabled. Never for tier seconds (D321)")
     c = sub.add_parser("collect", help="the test IDs of finished runs' files, from their tree")
