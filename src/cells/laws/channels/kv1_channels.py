@@ -7,7 +7,7 @@ equations preserve source gate powers; they do not adopt BETSE's update clock.
 Each law's numbers live in its own module, laws/channels/kv1p{1,2,3,4,6}_mh*.py, the law's one
 source (docs/CORE_SEAMS_DESIGN.md §8.6 as amended: the lead's ruling (B), 18 November 2026). This
 dispatcher gathers the same floats per element: a recorded temporary second form of the five laws'
-math, which retires with the legacy catalogue families, holds these five, and takes no new law
+math, which retires with the shared catalogue, holds these five, and takes no new law
 (tests/unit/test_kv1_channel_laws.py). Its program text and outputs are today's. Why the two forms
 differ under JAX: XLA on CPU rewrites x / constant as x * (1/constant), while this dispatcher
 divides by gathered arrays, which it keeps exact; the per-law kernels, which divide by constants,

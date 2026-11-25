@@ -1545,7 +1545,7 @@ def check_background(spec, *, rtol=1e-12):
     """With a registry declared: no row is an exact zero (or below zero, or not finite) at a cell
     or outside node, since an absent row is a declared trace (operators/PLAN.md §2.4); each declared
     background holds (amount >= trace_mM x volume at every node), and the species' ledger floor is
-    its material_balance_atol_fmol. Legacy definitions (no registry) keep the inner model's own
+    its material_balance_atol_fmol. Definitions without a registry keep the inner model's own
     refusal."""
     model = declared(spec)
     if model is None:

@@ -1,6 +1,6 @@
 """The declarations manifest (D185; FR-12; seam F): every registered law, kind and operator, and
 every active model, written from the registries and the static model table in the versioned
-format cells.declarations@2 (docs/library/DECLARATIONS_FORMAT.md).
+format cells.declarations@3 (docs/library/DECLARATIONS_FORMAT.md).
 
 Each claim with a planted error it must catch (D187):
 - every registered piece has its entry and every entry is registered, a family's own operators
@@ -8,11 +8,9 @@ Each claim with a planted error it must catch (D187):
   a manifest was written, which the coverage check must name and the counts must include; and the
   reverse, entries whose pieces are no longer registered);
 - the format round-trips through the command line, the same registries give the same bytes, and
-  the reader refuses a malformed manifest (planted: each of nine breaks, @1's kind among them);
-- the older families are listed by model ID only, flagged legacy, read without importing them
-  (planted: a dispatch form the reader does not know, which must refuse rather than drop a
-  family);
-- @2's IDs join a real definition byte for byte: every ID it names is a declared spelling of the
+  the reader refuses a malformed manifest (planted: each of nine breaks, @2's kind and its `legacy`
+  key among them);
+- its IDs join a real definition byte for byte: every ID it names is a declared spelling of the
   manifest (a piece's, a host's, a model's or a model row's), except the solvers and the closure
   law, which no registry declares; each piece names its file and declaration line, each read its
   mode, each field its unit as the run view resolves it (planted: a definition naming a law in its
@@ -138,12 +136,12 @@ def test_the_format_round_trips_and_the_reader_refuses_a_malformed_manifest(tmp_
     kind = next(e for e in doc["pieces"] if e["piece"] == "kind")
     operator = next(e for e in doc["pieces"] if e["reads"] and e["piece"] == "operator")
     breaks = {
-        "its kind is": dict(doc, kind="cells.declarations@1"),  # The format before @2.
+        "its kind is": dict(doc, kind="cells.declarations@2"),  # The format before @3,
+        "its top-level keys are": dict(doc, legacy=[]),  # and the key it had besides.
         "a piece has exactly the keys": dict(
             doc, pieces=[{k: v for k, v in entry.items() if k != "status"}]
         ),
         "listed once": dict(doc, pieces=[entry, entry]),
-        "flagged legacy": dict(doc, legacy=[dict(doc["legacy"][0], legacy=False)]),
         "copied from a record": dict(doc, pieces=[dict(entry, status="judged")]),
         "not extracted, so null": dict(doc, pieces=[dict(kind, ledgers=["material"])]),
         "each read has exactly the keys": dict(
@@ -159,30 +157,6 @@ def test_the_format_round_trips_and_the_reader_refuses_a_malformed_manifest(tmp_
         path.write_text(declarations.dumps(broken))
         with pytest.raises(ValueError, match=reason):
             declarations.read(path)
-
-
-def test_older_families_are_listed_by_model_id_only(tmp_path):
-    legacy = declarations.manifest()["legacy"]
-    assert legacy and all(
-        entry == dict(id=entry["id"], legacy=True, piece="model") for entry in legacy
-    )
-    ids = {entry["id"] for entry in legacy}
-    assert "resolved_tissue@12" in ids and "finite_extracellular@1" in ids  # A literal, a name.
-    assert not ids & {"resolved_pump_tissue@3", "resolved_pump_composite@1"}
-    planted = tmp_path / "registration.py"
-    planted.write_text(
-        "def parse(data):\n"
-        "    if data['model'].get('id') == 'kept@1':\n        return 1\n"
-        "    if data['model'].get('id') == f'{data}@1':\n        return 2\n"
-    )
-    with pytest.raises(ValueError, match="An unread model-ID form"):
-        declarations.legacy_entries(planted)
-    planted.write_text(
-        "from cells.legacy.core.old_spec import OLD_ID\n"
-        "def parse(data):\n    if data['model'].get('id') == OLD_ID:\n        return 1\n"
-    )
-    with pytest.raises(ValueError, match="An unread model-ID form"):
-        declarations.legacy_entries(planted)  # A legacy module's name is never imported.
 
 
 # A real definition in the repository: the frozen water composition of the KCC predictions.
@@ -219,7 +193,7 @@ def joins(doc, definition):
     return {(path, i): spellings.get(i) for path, i in sorted(set(_ids(definition)))}
 
 
-def test_version_2_joins_a_real_definition_and_states_lines_reads_and_units(tmp_path, monkeypatch):
+def test_it_joins_a_real_definition_and_states_lines_reads_and_units(tmp_path, monkeypatch):
     doc = declarations.manifest()
     definition = id_table.load(DEFINITION)["definition"]
     found = joins(doc, definition)

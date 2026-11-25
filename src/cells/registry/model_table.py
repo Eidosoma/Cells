@@ -205,5 +205,8 @@ MODELS = MappingProxyType(
         "reaction_transport@1": Model(type="family", module="cells.definitions.specs"),
         "resolved_pump_tissue@1": Model(type="family", module="cells.definitions.surface_pump_spec"),  # noqa: E501
         "resolved_pump_tissue@2": Model(type="family", module="cells.definitions.surface_pump_v2_spec"),  # noqa: E501
+        "resolved_tissue@1": Model(type="family", module="cells.definitions.surface_tissue_spec"),
+        "resolved_tissue@2": Model(type="family", module="cells.definitions.surface_kinetic_spec"),
+        "resolved_tissue@8": Model(type="family", module="cells.definitions.surface_kinetic_spec"),
     }
 )

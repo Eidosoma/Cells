@@ -80,8 +80,6 @@ class Harness:
         "cells/__main__.py",
         "cells/ensemble/families.py",
         "cells/ensemble/cli.py",
-        "cells/legacy/registration.py",
-        "cells/core/legacy_entry.py",
     )
 
     def __init__(self, gives=None):

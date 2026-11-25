@@ -5,7 +5,7 @@ A gate-free population: open at all times, so its flux is the host's constant-fi
 fluxes are of theirs (laws/channels/kleak_always_open.py, naleak_always_open.py). Channel code 10
 of resolved_pump_tissue@3 (cells.channel_law@1), after the Kv1 laws' 5-9, registered by the law
 registry's loader from @3's row of the model table (docs/CORE_SEAMS_DESIGN.md §8.2); it carries no
-gate state, kernel or RK4 step bound. It takes the ID of the legacy catalogue's always-open Cl⁻
+gate state, kernel or RK4 step bound. It takes the ID of the shared catalogue's always-open Cl⁻
 population (laws/channels/leak_channels.py), the same form; this is @3's declaration of it.
 
 Its constitutively open uses (D228 item 3, the H1 seam's Cl⁻ part): the population's availability

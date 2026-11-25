@@ -9,8 +9,8 @@ powers one; SPEC-006 read the source. The gates follow the continuous equations,
 update clock, and carry no temperature term (fixed at 298.15 K); the domain, -120 to 60 mV, keeps
 both time constants positive. It is a law of the inner model resolved_pump_tissue@3, channel code
 0 (cells.channel_law@1), declared here and registered by the law registry's loader
-(registry/laws.py; docs/CORE_SEAMS_DESIGN.md §8.2). Moved from laws/channels/voltage_gates.py,
-which re-imports these names for the older families.
+(registry/laws.py; docs/CORE_SEAMS_DESIGN.md §8.2). laws/channels/voltage_gates.py re-imports
+these names.
 """
 
 import jax.numpy as jnp
@@ -34,9 +34,7 @@ def kinetics(voltage, *, xp=jnp):
     return targets, tau
 
 
-RK4_STEP_S = (
-    25e-6  # The resolved channel family's qualified RK4 bound (surface_kinetic.check_steps).
-)
+RK4_STEP_S = 25e-6  # The resolved channel family's qualified RK4 bound.
 
 
 def opening(gates, *, xp):

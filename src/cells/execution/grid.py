@@ -1,9 +1,9 @@
 """An indexed event-split clock without horizon-length arrays.
 
 The clock (EventGrid) is the coarse lattice i * dt from 0 to its last point before the end, the end
-itself, and the events: schedule changes (doses, writes and operators' schedules among them) and
-numerical refinement times. An event equal to a lattice point is that point; any other splits the
-step it falls in, at its own time.
+itself, and the events: schedule changes (doses, writes and operators' schedules among them). An
+event equal to a lattice point is that point; any other splits the step it falls in, at its own
+time.
 
 Fine windows (execution.fine_windows, definitions/fine_window_spec.py; C, D235;
 docs/LONG_DURATION_MODE_DESIGN.md §4.2) refine the lattice inside each declared window. Between
@@ -48,10 +48,6 @@ from cells.registry.models import get_model
 # less, is never an intended event: it is a computed time that missed the grid (0.1 * 3 against
 # 3 * 0.1 is within the tolerance and snaps; 1800.3000001 at dt 0.1 is in the band). Both of D283's
 # scans, every saved run definition and the judged worlds' builders, found no event in the band.
-# The band is the events' (schedule changes, doses, writes). A declared numerical refinement time
-# (execution.refinement_times) exists to make a deliberately small step, such as the recovery
-# panel's nested boundary 2**-40 s after its intervention, so it is exempt; like every time, it
-# snaps where it is within the tolerance of a point.
 NEAR_MISS = 1e-6
 
 
@@ -102,8 +98,7 @@ def applied_definition(spec):
     from cells.definitions.specs import parse_spec
 
     grid = EventGrid(spec)
-    changed = {c.time for c in spec.experiment.changes}
-    snapped = {d: a for d, a in grid.snapped if d in changed}  # The events'; refinements stay.
+    snapped = dict(grid.snapped)
     rows = [t for t in spec.experiment.observation_times if grid.instant(t) != t]
     if not snapped and not rows:
         return spec, ()
@@ -115,7 +110,7 @@ def applied_definition(spec):
             grid.instant(t) for t in raw["experiment"]["observation_times"]
         ]
     applied = parse_spec(raw)
-    if {d for d, _ in EventGrid(applied).snapped} & {c.time for c in applied.experiment.changes}:
+    if EventGrid(applied).snapped:
         raise ConfigError("The applied definition still holds an event to snap (D283)")
     return applied, tuple(sorted(set(pairs)))
 
@@ -214,42 +209,16 @@ def fine_spans(spec, dt, end, last):
     return tuple(spans)
 
 
-def refinement_times(spec):
-    """Validate immutable optional numerical boundaries independently of events."""
-    points = getattr(spec.execution, "refinement_times", ())
-    if type(points) is not tuple or len(points) > spec.execution.max_steps:
-        raise ConfigError("refinement_times must be an immutable sequence within max_steps")
-    previous = 0.0
-    for time in points:
-        if (
-            type(time) not in (int, float)
-            or not math.isfinite(time)
-            or not previous < time < spec.experiment.end_time
-        ):
-            raise ConfigError("refinement_times must strictly increase inside the horizon")
-        previous = time
-    return points
-
-
-def require_refinement_model(spec):
-    """Public execution must not silently refine discrete/native clock models."""
-    if refinement_times(spec) and getattr(get_model(spec.model), "MODEL_ID", None) != (
-        "resolved_cotransport_water@1"
-    ):
-        raise ConfigError("refinement_times currently require resolved_cotransport_water@1")
-
-
 @dataclass(frozen=True, init=False)
 class EventGrid(Sequence):
-    """Exact union of float i*dt, declared fine windows, events, numerical refinement, zero and end.
+    """Exact union of float i*dt, declared fine windows, events, zero and end.
 
     The nominal points are the lattice (module docstring): the coarse products i*dt and, inside a
     declared fine window, the fine products between them. Only the windows (spans, one FineSpan
     each), off-nominal boundaries (extras) and their global indices are stored. Binary searches
     compare actual products rather than rounding a time/dt quotient. Without fine windows a
     nominal point n is n*dt and last_nominal the last coarse index, as before; with them
-    last_nominal is the last lattice point's place. Internal model projections may use this clock
-    during inherited validation; public execution additionally calls require_refinement_model().
+    last_nominal is the last lattice point's place.
     """
 
     dt: float
@@ -282,9 +251,7 @@ class EventGrid(Sequence):
         ):
             object.__setattr__(self, key, value)
         extras, indices, snapped = [], [], []
-        changed = {c.time for c in spec.experiment.changes}  # The events: the band is theirs.
-        points = sorted({*changed, *refinement_times(spec)})
-        for t in points:
+        for t in sorted({c.time for c in spec.experiment.changes}):
             if t == 0 or t == end:
                 continue
             lo, hi = 0, nominal
@@ -296,7 +263,7 @@ class EventGrid(Sequence):
                     hi = mid
             if lo < nominal and self._nominal(lo) == t:
                 continue
-            point = self._near_point(t, lo, band=t in changed)  # D283: its point, or None.
+            point = self._near_point(t, lo)  # D283: its point, or None.
             if point is not None:
                 snapped.append((t, point))
                 continue
@@ -352,7 +319,7 @@ class EventGrid(Sequence):
         point, fine = self._windowed(n)
         return point, "fine" if fine else "coarse"
 
-    def _near_point(self, t, lo, *, band=True):
+    def _near_point(self, t, lo):
         """D283: the point of the clock (fine, coarse or the end; the points either side of t,
         lo - 1 and lo) that the event t is within the same-instant tolerance, or None; an event in
         the near-miss band of the step it would split is refused, naming the point."""
@@ -360,7 +327,7 @@ class EventGrid(Sequence):
         for point, _ in near:
             if same_instant(point, t):
                 return point
-        if band and len(near) == 2:  # A refinement time (band=False) is exempt (NEAR_MISS).
+        if len(near) == 2:
             step = near[1][0] - near[0][0]
             for point, kind in near:
                 if near_miss(t, point, step):
@@ -428,7 +395,6 @@ def checked_grid(spec, *, window_steps=1024):
     Used for portable checkpoint validation, not a promise about execution RSS.
     Execution policies make their own (larger) working-array reservation.
     """
-    require_refinement_model(spec)
     grid = EventGrid(spec)
     base = trace_bytes(spec, 0, 0)
     per_step = trace_bytes(spec, 1, 0) - base

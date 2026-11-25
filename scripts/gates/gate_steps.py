@@ -109,13 +109,11 @@ def xr():
 # 18-19 November, each after about 25 minutes of tiers.
 GUARDS = (
     "tests/unit/test_species_sum_sites.py",
-    "tests/unit/test_legacy_entry.py",
     "tests/unit/test_engine_betse_boundary.py",
     "tests/unit/test_j2_bright_line.py",
     "tests/unit/test_continuity_bypass.py",
     "tests/unit/test_judge_imports.py",
     "tests/unit/test_law_modules.py",
-    "tests/unit/test_source_profile_boundary.py",
     # The modules surface (built-in kinds import engine code only through cells.modules): about 3 s,
     # added 23 November 2026 after FR-15 F2's gate met its refusal only at tiers, about 50 minutes in.
     "tests/unit/test_modules_surface.py",

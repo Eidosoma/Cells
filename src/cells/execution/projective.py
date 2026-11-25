@@ -53,7 +53,7 @@ import numpy as np
 from cells.definitions.specs import ConfigError
 from cells.execution.devices import execution_device
 from cells.execution.errors import NumericalError
-from cells.execution.grid import EventGrid, clock_checks, require_refinement_model
+from cells.execution.grid import EventGrid, clock_checks
 from cells.execution.resources import trace_bytes
 from cells.execution.runner import (
     RunResult,
@@ -285,7 +285,6 @@ class _Run:
             raise ConfigError("Projective execution requires a compiled (jit) definition")
         if not hasattr(self.model, "checked_step"):
             raise ConfigError("Projective execution requires the model's checked step")
-        require_refinement_model(spec)
         self.grid = EventGrid(spec)
         _admit_clock(spec, self.grid)
         self.checkpoint = initialise(spec) if checkpoint is None else checkpoint

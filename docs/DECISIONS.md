@@ -12890,3 +12890,155 @@ Lean's answer, stop, or an erratum that discloses this.
 
 **Disclosed:** the hand-refactor builder asked to remove its 18 scratch trees (3.2 GB), and the harness refused. Nobody has run it,
 and it waits for the user. `/mnt/workspaces` is at 93%.
+
+## D383: the user's decisions on legacy, the rename's words and FR-43 part 3: one cleanup branch with one test at its end; the routing spec's audit and amendment 5
+
+2026-11-25, about 10:20 UTC. The user's answers this morning, then the lead's plan for them, with the advisor.
+
+**The user's decisions.**
+- **Legacy's route,** verbatim: "Re-express and put everything else on hold and test just once after the re-expression, fine to
+  prune in place but we want to get this cleanup done and not run any tests until it's more or less done (so save test time
+  by testing many coding things at the same time) - we're still in pre-alpha dev, I'm the only user of Cells so we can
+  move as we like". The lead read it back as: one branch, nothing lands, no gate, tier or suite runs until the cleanup is coded, then
+  one full test of it all. The user confirmed ("Yes, go").
+- **A CPU re-expression of the calcium ensemble counts** as leaving legacy. Its GPU path, which works today at about 1.5 times the
+  speed, is parked until a GPU qualification passes. No date is set for one.
+- **Four design notes are written now:** calcium-permeant channels, an ER store, IP3-gated release, and assembly topology
+  setting channel availability. Each build comes back to the user with a price.
+- **While coding, a builder may run the rows it writes or changes,** and nothing else.
+- **The rename's words: all 12,** for 16 IDs. `exponential_mean_rate_linear_target_gates@1` is left out of the move, since
+  nothing in `src` reads it.
+
+| Family word | Pieces |
+| --- | --- |
+| `species_reaction` | `ideal_detailed_balance_mass_action@1` |
+| `transfer_factor` | `ph_conditioned_factor@1`, `exponential_volume_activation@1` |
+| `junction_formation` | `delayed_first_order_junction_formation@1` |
+| `damage` | `bounding_patch_damage@1` |
+| `regulation` | `hill_regulated_two_state@1` |
+| `site_binding` | `langmuir_site_binding@1` |
+| `site_internalisation` | `site_conserving_internalisation@1` |
+| `fuel_kind` | `maintained_held_rows@1`, `finite_fuel_rows@1`, `maintained_chemical_reservoirs@1` |
+| `field_closure` | `resolved_capacitor_components_current_continuity@1` |
+| `potential_set` | `beard2005@1`, `beard2005@2` |
+| `topology` | `dodecahedron_g10_2@1` |
+| `analysis` | `stationary_continuation_analysis@1` |
+
+- **FR-43 part 3's four questions** are accepted as the note recommends (`fr43-part3-cowriters`, c82d8d42): split writers, one judged run with
+  code-blind references, part 3 closes at that landing, and the declared general rule. Its spec and references start
+  now. Its build waits for the cleanup.
+- **The scratch trees** of two finished agents are deleted: 17 under `id-rename-hand-20261125/` and 39 under
+  `id-rename-tool-20261125/rehearsal/` (219 to 230 GB free). Logs, scripts and outputs stay.
+
+**How it is run (the lead, with the advisor).**
+- **Integration branch `legacy-cleanup`,** from the rename's first landing (43b22d40, at its gate). The order on it: the live side
+  without legacy; the deletion, whole; the four features; the re-expressed ensemble; and the ID move last.
+- **The move comes last** so that it runs once on a smaller tree, over code that is already final. Two rulings fall away
+  with that. The example artifacts leave with the commands they serve, so none is regenerated or declared. And the 48 IDs that were to stay
+  bare until legacy's first deletion are in the move, since their dispatch is live by then. D348's single deletion stands;
+  the plan's two-deletion route is not taken.
+- **"Once" is an order.** The re-expression's criteria are tagged before any re-expressed run. Then come the registered
+  qualification against the captures, the user's approval of the removal list, and one full gate with tier 3 and FR's set. Nothing lands
+  ungated.
+- **What goes on meanwhile:** the first landing's gate, which was already running and gives the final test the table option it
+  needs; GJ-N1's field run; FR-43 part 3's spec and references; and closing the routing amendments, after which routing
+  holds. Everything else waits, every other queued build included. The cleanup is roughly 30 to 45 agent-days, spread over at
+  most seven agents. Main moves by docs and Lean's merges only. No nightly on demand follows the first landing.
+
+**FR-54 and FR-57: the spec was audited before any judge was built.** An independent agent read the spec folder alone, wrote a reader and
+honest tables for every registered run, and perturbed them. The numeric core holds: every honest entry passes and every plant is
+caught. The text did not: 9 findings that change a verdict, 10 refusals or passes with nothing judged, and 18 places with two
+readings. Read literally, an honest engine could not have passed FR-57, and some wrong tables could have passed.
+- **Amendment 5** (`liquid-routing-amendment-5-2026-11-25`, 3c71ab61) settles all of them after two re-runs of the audit on the
+  amended text. It moves no constant, window, scale or existing count, and states what it changes in classes and in what is judged. The audit's own
+  numbers are used for nothing.
+- **Two rulings to know:** arm 6 (a flow beside a face) is rehearsed from an unlanded branch before the registration, so that no bound
+  moves after a registered run; and a retry can still forgive one wrong coarse run, which the protocol says.
+- **Two of the lead's rulings were wrong and are reversed.** An order outside its window with an error above the tolerance was to be a fail.
+  FR-25's and FR-38's precedent makes it inconclusive with a retry, and that stands. And "any fault" on an expected stop
+  was narrowed by the author, since the stop is itself a refused entry.
+- **The references agent,** conforming to amendment 5, found one clause it cannot meet (R8 for a remainder bound at a trace start) and three
+  wordings. Amendment 6 follows. Then the references are tagged, and the line holds: no judge is started.
+- **Disclosed:** the lead read the references' README layout section and printed key names, no value, to answer the author.
+  Eight subagents ran for some minutes, one over the cap.
+
+**Lean's message of last night** (its rebuilt tip, the citation map, the 5.4 mM anchor) was relayed by the user this morning. All of it was done
+overnight (D378 to D381): the tip is merged at 18198688, its map is in D378, the docstring cites the new commit, and FR-51's
+external-K registration is tagged. The 15 files outside `lean/` that its audit lists hold one published cell line's name in
+ordinary citations, and are left as they are unless the user says otherwise.
+
+## D384: the rename's first landing; the cleanup's baseline is tagged and checked; the routing references are tagged and that line holds; what the re-expression map found
+
+2026-11-25, about 10:42 UTC. The lead.
+
+**The rename's first landing** is at 49529e71 (tag `id-rename-landing-1-2026-11-25`). No ID changes. Its gate at 43b22d40: IDs
+additions only (26), crossrev 11 of 11 identical, tiers 1 and 2 (672 files, 0 changed), G1 113 of 113, FR's bitwise set passed; the landing's
+trial 479 passed.
+
+**The baseline of the cleanup's one test:** tag `pre-cleanup-2026-11-25` at 49529e71, its frozen snapshot under
+`/mnt/workspaces/Cells/pre-cleanup-20261125/`. The first steps of every captured legacy world were run again from that snapshot and
+compared with the captures of 76a498ae: 12 of 12 jobs identical, bit for bit. So the captures stand at the baseline, and the hand refactors
+moved none of these worlds.
+
+**FR-54 and FR-57:** amendment 6 is tagged (`liquid-routing-amendment-6-2026-11-25`, dd21509b) and the code-blind references conform to all six
+(`liquid-routing-references-2026-11-25`, fa3eccbd): 867 check rows, 626 of 626 self-check rows, 54 of 54 mutations flagged, byte-identical
+under two other hash seeds; every `accuracy` is within its bound (the largest at 0.102 of it); the smallest plant margin is 13.2 on the
+registered worlds. The line holds here (D383).
+
+**The re-expression map** (`legacy-port-plan`, a1db6ab9, section 14) corrects the plan and shrinks the work.
+- **The sodium-calcium exchanger needs no engine feature.** The plan said the transporter kind refuses a mode that moves charge. It refuses one
+  that creates charge. The exchanger is one law module, and the plasma calcium pump is a re-parameterisation of the live one.
+- **The calcium-gated opening of the store blocks all four calcium clusters,** not the IP3 one alone. It and the IP3 factor are one per-stage
+  factor source on one route, so one note owns the source and the other the route.
+- **A calcium row with a channel route on the pump tissue cannot be buffered today.** Either a per-stage bound for channels is added, or
+  the channel's gates become a factor source on a passive route. The note weighs both.
+- **Four consumers need no new piece:** the JUPITER world, the assembly cluster's base, the assembly cell and the integrated ensemble's world.
+  The last has no capture yet and is captured from the baseline.
+- **The assembly half is one-way and live already.** An assembly world can be written today as a live pool run whose event path becomes a channel
+  schedule. The note weighs that against an operator.
+- **The calcium worlds keep their equations and change their integrator** (fourth-order RK4 to a second-order split), so no bitwise
+  comparison with legacy is possible for them. The criteria are written and tagged before any candidate run (D383).
+
+**Rulings (the lead):** the live side owns the ensemble families' file, the command line and the ionic list until its merge, with a refusal by
+name for the two assembly commands and the two kinds; the manifest's `legacy` key leaves under a new major (`cells.declarations@3`), which also
+covers the ID rule the move amends (D371, Q6); and the shared test worlds move to `reaction_transport@1`.
+
+## D385: a review the user relayed, checked: the rename's seam with the cleanup, FR-58's pump question and FR-61 and FR-62; rulings on the calcium store note
+
+2026-11-25, about 11:18 UTC. The lead, with the advisor; the two open points of the review were delegated by the user.
+
+**A review of the cleanup branch and five design notes** was relayed by the user and checked against the branches.
+- **The rename's seam with the cleanup: its four points hold,** none a fault of the cleanup branch, all of them due before the move, which runs
+  last. Two were known: the tool calls a manifest function that has left, and `cells.declarations@3` is in no kept list. Two are new: three seeds
+  of the choices file name constants that have left, and the models' rows now silently override the choice "bare" of the group
+  `three_models`, while `catalogue` still says bare. Minting is what D383 decides, so both groups are set to mint explicitly.
+- **What follows for the tool:** its whole legacy side leaves, the 11 kept constants whose reason is "read by legacy" are decided again, it refuses a seed,
+  path or ID in the choices that is gone or shadowed, and the rehearsal's counts are taken again on the final tree.
+- **The manifest's readers,** the viewer's two tools and Lean's `generate_claims.py`, refuse the new major. They are told before the landing. The
+  final test does not read the viewer's copy of the manifest.
+- **The five notes:** prices and recommendations agree with the notes. A "latent bug" that FR-58's note is said to have found is not one: a species
+  listed twice is refused at parse today.
+
+**FR-58's question 2, pump cycles, is ruled by the lead with the advisor:** option (b), a flux-force law carries the label in complete cycles, forward
+and reverse, about 1.5 to 2 agent-days more, with a limited claim. The label is a lower bound wherever partial steps of the cycle exchange it, and
+any comparison with a measurement of incorporation is one-sided. The note refused these laws "until a study needs it". Two labs' papers on the Na/K pump
+running in reverse in red cells are that study: one reports ouabain-sensitive incorporation of labelled phosphate in high-sodium,
+potassium-free media (doi:10.1113/jphysiol.1967.sp008298), the other ouabain-sensitive, sodium-dependent potassium efflux
+(doi:10.1113/jphysiol.1970.sp009062). Both were read as abstracts and search records only. Incorporation through partial steps at zero net
+flux is not what (b) carries. The state-resolved form (the note's (c)) is for diagram laws, and the live Na/K law is
+a mass-action cycle, so it would be a new law with sourced step rates: a separate request.
+- **What (b) does not reach on its own:** the live pump takes its fuel from maintained reservoirs, not species rows, so the label on ATP needs row fuel
+  for the Na/K pump. That is a candidate request, the user's to log, in the order FR-59, row fuel, then FR-58 with (b).
+
+**FR-61 and FR-62 leave the round of "accept the note's recommendations".** The note defers two requested items, the finite-reservoir version
+with the capacitor charge at each event (its Q4) and the calibration-range readout (its Q6). Both go to the user singly when those builds come
+off hold. The rest of the two requests is in the note. The part of the review that claims scope gaps was not in what the user relayed.
+
+**The calcium store note** (`calcium-store-design`, c5006ff6) measures that a one-cell store world already parses and steps on the composite with two
+planted law modules, and prices the missing pieces at 6 to 7.5 agent-days, against the plan's 7.5 to 13. No piece changes the ensemble's
+equations. **Rulings, as recommended:** a calcium channel stays a channel population on the pump tissue, its law the one authority for
+its ions' valences (L1); one ATP-driven transport law on the transporter kind serves both calcium pumps (L2); the bound on the feedback of a factor
+read by what it opens is built (L3); a compartment is admitted where its node is not its component's representative (L4); the door for
+buffered calcium rows is for `local_species_reactions@1` alone (L5); conservation is judged by the engine's own ledger rule (L6); no schedules for passive
+routes and no non-negative booking for them now (L7, L9); the independent calcium reference is kept (L8). One question goes to the user, the
+exchanger's two kinetic forms. The note has had no second reader yet; one is given before its build.

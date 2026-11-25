@@ -21,7 +21,6 @@ from cells.execution.grid import (
     EventGrid,
     applied_definition,
     checked_grid,
-    require_refinement_model,
     require_scalar_path,
 )
 from cells.execution.resources import trace_bytes
@@ -58,7 +57,6 @@ def timeline(spec: SimulationSpec, *, energy_check=False) -> np.ndarray:
             "scalar windows (refused on this path)"
         )
     require_scalar_path(spec, energy_check)
-    require_refinement_model(spec)
     grid = EventGrid(spec)
     _trace_budget(spec, len(grid) - 1)
     times = np.fromiter(grid, dtype=np.float64, count=len(grid))
@@ -110,8 +108,6 @@ def validate_checkpoint(
         or len(checkpoint.layout) != len(initial.layout)
     ):
         raise ConfigError("Checkpoint state/layout types do not match the declared model")
-    if checkpoint.time < initial.time:
-        raise ConfigError("Checkpoint precedes this model's initial epoch")
     for name, values, target in zip(
         model.STATE_TYPE._fields, checkpoint.state, initial.state, strict=True
     ):
@@ -128,8 +124,6 @@ def validate_checkpoint(
         spec,
         **check_steps(model, checkpoint.step_index, 1),
     )
-    if hasattr(model, "check_checkpoint"):
-        model.check_checkpoint(spec, checkpoint)
     if checkpoint.step_index == initial.step_index and any(
         not np.array_equal(a, b) for a, b in zip(checkpoint.state, initial.state, strict=True)
     ):

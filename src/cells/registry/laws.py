@@ -704,8 +704,8 @@ def _load_builtins():
     outside package uses has registered its laws by then. An inert law module (docs/
     CORE_SEAMS_DESIGN.md §8.2; the lead's ruling R1, 18 November 2026) declares its one law as a
     module-level `LAW` and registers nothing at import; it is registered here, with that module
-    as its declarer, so importing a law module, as the older families' kernel modules do, changes
-    no registry."""
+    as its declarer, so importing a law module, as the shared kernel modules do, changes no
+    registry."""
     global _builtins_loaded
     if not _builtins_loaded:
         for name in BUILTIN_PACKAGES:
