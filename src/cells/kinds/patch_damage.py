@@ -2,7 +2,7 @@
 
 docs/COMPARTMENT_PH_TRANSFER_DESIGN.md §9 and §16 (the lead's rulings of 16 November 2026) and
 INNER_MODEL_V4_DESIGN.md §7.4 (l) and (n); the law is `bounding_patch_damage@1`
-(laws/transport/patch_damage.py), the older family's injury and resealing re-expressed as a kind:
+(laws/transport/patch_damage.py), injury and resealing as a kind:
 
     dd/dt = a (1 - d) - b d,   a = k_inj u_inj(t),  b = k_res u_res(t),   d in [0, 1],
 

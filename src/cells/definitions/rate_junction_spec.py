@@ -1,8 +1,6 @@
 """The gated rate junction's declaration: a junction between two cells with the junction-gate law.
 
-Moved verbatim from finite_extracellular@3's schema (junction_finite_spec), which re-imports
-them; resolved_tissue@2's schema (surface_kinetic_spec, which stays in the core) imports them
-from here (D188 R3).
+The resolved tissues' schema (surface_kinetic_spec) parses its junctions with it.
 """
 
 from cells.definitions.spec_values import aligned, fraction, identifier, positive

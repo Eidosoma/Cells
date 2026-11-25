@@ -12,8 +12,8 @@ EMBO J. 1990 Jun (no title given); that work is not read here.
 
 Ported from the Kv1 catalogue (laws/channels/kv1_channels.py, its code 10), as seam F's step-2
 extraction (D211, D213): this module holds the law's numbers, and the catalogue's dispatcher
-gathers the same floats, a recorded temporary second form that retires with the legacy catalogue
-families (the lead's ruling (B), 18 November 2026). Held bitwise to it under NumPy; under JAX
+gathers the same floats, a recorded temporary second form that retires with the shared catalogue
+(the lead's ruling (B), 18 November 2026). Held bitwise to it under NumPy; under JAX
 within 32 ulps, because XLA on CPU rewrites x / constant as x * (1/constant) while the dispatcher
 divides by gathered arrays (tests/unit/test_kv1_channel_laws.py).
 
@@ -31,8 +31,7 @@ ACTIVATION = (-0.0208, -0.0081)  # Its target's logistic: (midpoint V, slope V).
 INACTIVATION = (-0.022, 0.01139)
 ACTIVATION_TAU = (0.03, -0.04656, 0.04414)  # (scale s, midpoint V, slope V)
 INACTIVATION_TAU = (5, -0.04656, -0.04414)
-# The legacy Kv1 family's RK4 bound (resolved_tissue@6: surface_kinetic.check_steps' rule for
-# sodium-family catalogues, 2.5 us), which its tissue tests qualified.
+# The RK4 bound that the Kv1 populations' tissue tests qualified, as with sodium channels: 2.5 us.
 RK4_STEP_S = 2.5e-6
 
 

@@ -63,8 +63,7 @@ physical_amounts = ionic.physical_amounts
 WATER_STEP_ID = "heun_frozen_amount_water@1"
 
 
-# dt x (water relaxation rate) per step: the bound of the existing water
-# families (legacy/models/surface_water.py); physiological values give 1e-5-2e-3 at 1 ms.
+# dt x (water relaxation rate) per step; physiological values give 1e-5-2e-3 at 1 ms.
 MAX_WATER_RELAXATION_PER_STEP = 0.05
 
 

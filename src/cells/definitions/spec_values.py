@@ -1,9 +1,5 @@
 """The value parsers that the definition schemas share: finite signed and positive numbers,
 identifiers, species-aligned tuples, typed immutable tuples and fractions.
-
-Moved verbatim from the older families' schemas (bioelectric_spec, multispecies_spec,
-physical_ionic_graph_spec, voltage_gated_spec), which re-import them, so the active schemas and
-operators no longer import those modules (D188 R3).
 """
 
 from cells.definitions.specs import ConfigError, _fields, _number

@@ -16,7 +16,7 @@ from cells.laws.channels.kv1p5_mh import VOLTAGE_DOMAIN_V  # @3's channel domain
 from cells.modules import ChannelLaw
 
 LAW_ID = "kir2p1_mh2@1"
-RK4_STEP_S = 25e-6  # The resolved channel family's qualified RK4 bound (surface_kinetic).
+RK4_STEP_S = 25e-6  # The resolved channel family's qualified RK4 bound.
 
 
 def kir2p1_kinetics(voltage, *, xp=jnp):

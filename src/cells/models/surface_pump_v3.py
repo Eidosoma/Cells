@@ -3,7 +3,7 @@
 A channel population (definitions/surface_pump_v3_spec.py) is one more membrane process
 at its patch: the constant-field flux of its law's ion with permeability
 P * abundance * opening(gates) * availability, the shared-gate population
-equations of resolved_tissue@5 and later (surface_kinetic.readouts). It moves
+equations of resolved_tissue@8 (surface_kinetic.readouts). It moves
 material from the cell to the patch's outside node, charging both capacitor
 components, and has its own per-species transfer and dissipation ledgers. The
 field law, factored solver, junction gate, both pumps and every @2 check are
@@ -226,9 +226,8 @@ LEDGER_DIAGNOSTICS = first.LEDGER_DIAGNOSTICS
 ledger_limits = first.ledger_limits
 GATE_INTEGRATOR_ID = gates.LAW_ID
 VOLTAGE_DOMAIN_V = voltage_gates.VOLTAGE_DOMAIN_V
-# RK4 reference steps keep the resolved channel family's qualified bounds
-# (surface_kinetic.check_steps): 2.5 us with NaV1.2, 25 us with Kv1.5/Kir2.1. The laws'
-# declarations hold them (models/inner_laws.py).
+# RK4 reference steps keep the resolved channel family's qualified bounds: 2.5 us with NaV1.2,
+# 25 us with Kv1.5/Kir2.1. The laws' declarations hold them (models/inner_laws.py).
 RK4_SODIUM_STEP = inner_laws.RK4_SODIUM_STEP_S
 RK4_POTASSIUM_STEP = inner_laws.RK4_POTASSIUM_STEP_S
 # Inactive population slots carry code 0 (domain_valid; the composite adapter's close), the
