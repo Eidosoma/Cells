@@ -398,7 +398,8 @@
   "/mnt/workspaces/Cells/d349-restart-row-20261125/evidence/measure-c81c6491/measured.json",
   "/mnt/workspaces/Cells/pre-rename-stack-20261125/measure-52c41033/measured.json",
   "/mnt/workspaces/Cells/d358-gate-speed-20261125/timed3/measure/measured.json",
-  "/mnt/workspaces/Cells/fr38-v2-landing-20261125/measure/measured.json"
+  "/mnt/workspaces/Cells/fr38-v2-landing-20261125/measure/measured.json",
+  "/mnt/workspaces/Cells/id-rename-tool-20261125/measure-l1/measured.json"
  ],
  "measured_provenance": [
   {
@@ -3404,6 +3405,13 @@
    "root": "/mnt/workspaces/Cells/fr38-v2-landing-20261125/snap-3f15b329",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-25T06:32:44+00:00"
+  },
+  {
+   "git_revision": "57d22a912fad2ec85d6ac7b8f4d92b4fcb142291",
+   "dirty": false,
+   "root": ".claude/worktrees/id-rename-landing-1",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-25T08:42:58+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -4969,10 +4977,10 @@
    },
    {
     "file": "tests/unit/test_gates_fingerprints.py",
-    "seconds": 0.62,
+    "seconds": 0.72,
     "exit_code": 0,
     "counts": {
-     "passed": 9
+     "passed": 12
     }
    },
    {
@@ -5556,14 +5564,6 @@
     "counts": {
      "passed": 5,
      "skipped": 1
-    }
-   },
-   {
-    "file": "tests/unit/test_model_table.py",
-    "seconds": 13.96,
-    "exit_code": 0,
-    "counts": {
-     "passed": 7
     }
    },
    {
@@ -6186,10 +6186,10 @@
    },
    {
     "file": "tests/unit/test_results_baseline.py",
-    "seconds": 1.09,
+    "seconds": 1.47,
     "exit_code": 0,
     "counts": {
-     "passed": 10
+     "passed": 11
     }
    },
    {
@@ -7797,10 +7797,10 @@
    },
    {
     "file": "tests/unit/test_gates_gate.py",
-    "seconds": 64.41,
+    "seconds": 63.39,
     "exit_code": 0,
     "counts": {
-     "passed": 200
+     "passed": 201
     }
    },
    {
@@ -7934,10 +7934,10 @@
    },
    {
     "file": "tests/unit/test_law_registry.py",
-    "seconds": 21.61,
+    "seconds": 22.48,
     "exit_code": 0,
     "counts": {
-     "passed": 9
+     "passed": 27
     }
    },
    {
@@ -8010,6 +8010,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 5
+    }
+   },
+   {
+    "file": "tests/unit/test_model_table.py",
+    "seconds": 22.89,
+    "exit_code": 0,
+    "counts": {
+     "passed": 8
     }
    },
    {
@@ -8695,10 +8703,10 @@
    },
    {
     "file": "tests/unit/test_surface_pump_v3_populations.py",
-    "seconds": 23.75,
+    "seconds": 23.5,
     "exit_code": 0,
     "counts": {
-     "passed": 61
+     "passed": 62
     }
    },
    {
@@ -8712,10 +8720,10 @@
    },
    {
     "file": "tests/unit/test_templated_polymerisation.py",
-    "seconds": 25.34,
+    "seconds": 25.35,
     "exit_code": 0,
     "counts": {
-     "passed": 57
+     "passed": 58
     }
    },
    {
