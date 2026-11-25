@@ -1108,8 +1108,8 @@ fixture's cleft cell (B).
 **As built (25 November 2026):** engine commit e7871b95 alone (its parent f38f6789), its rows 1066e291, merged
 6e7c8b76. The builder compared 2,807 arrays before and after (FR-1's W+ and load-and-react worlds and FR-4's declared
 world; scalar, windowed and vector runs): all are identical. Among the traced worlds only the seven with a floating
-node differ, in `checked_step` alone. Its scan of 11,419 saved rows of FR-5's and FR-7's runs found no hit; the
-largest dt x corrected rate is 0.109, at FR-7's (B, 6e7c8b76). The round itself is owed to the cleanup's gate.
+node differ, in `checked_step` alone. Its scan of 11,419 saved rows of FR-4's, FR-5's and FR-7's runs found no hit;
+the largest dt x corrected rate is 0.109, at FR-7's (B, 6e7c8b76). The round itself is owed to the cleanup's gate.
 
 ## 9. Ledgers
 
@@ -1425,9 +1425,9 @@ now.
 - **L13. The configured symport's refusal** (§7.2): `CycleLaw.electroneutral` in the template, recommended, or only
   fixed-stoichiometry modules and no configured law.
 
-**L10 to L13 are ruled as recommended (D387), and are built so (25 November 2026, R):** the flux's shape (§6.5),
-worlds C and D in the set (§8.3), the mitochondria's seven laws with step 5 (§6.3), and `CycleLaw.electroneutral`
-(§7.2).
+**L10 to L13 went as recommended (D387), with one condition, a law declares a step term only when its bound exists, and
+are built so (25 November 2026, R):** the flux's shape (§6.5), worlds C and D in the set (§8.3), the mitochondria's
+seven laws with step 5 (§6.3), and `CycleLaw.electroneutral` (§7.2).
 
 ## 17. What is wrong in the plan and the docstrings
 

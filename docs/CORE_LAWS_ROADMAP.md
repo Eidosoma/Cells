@@ -234,7 +234,8 @@ effort and the main risk.
     `atp_driven_transporter_mass_action_positive@2`, one role of any valence on held fuel;
     `sodium_calcium_exchange_symmetric_barrier@1`; `na_k_2anion_symport_reversible_tanh@1` and
     `electroneutral_symport_reversible_tanh@1`. Each declares the kind's material term, the first
-    two its charge slope as well, and so do the mitochondria's seven. None is judged.
+    two its charge slope as well. The mitochondria's seven declare the material term since then.
+    None is judged.
 - **@3's own pumps:** `nak_atp_mass_action_positive@1` and `ca_atp_mass_action_positive@1`, on
   maintained pools.
 - **Routes:** the passive-routes kind's laws (family 1); `k_anion_symport_mass_action@1` with its
