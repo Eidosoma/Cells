@@ -17,8 +17,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from time import monotonic
 
-import numpy as np
-
 from cells.assembly.io import digest, write_json
 from cells.definitions.specs import digest as definition_digest
 from cells.definitions.specs import parse_spec as parse_ionic
@@ -31,6 +29,17 @@ from cells.records.batch_io import load_batch_snapshot, write_batch_snapshot
 from cells.registry.models import get_model
 
 MODEL_ID = "ionic_worlds@1"
+SIMULATIONS = (  # The models an ionic world may run.
+    "resolved_tissue@1",
+    "resolved_tissue@2",
+    "resolved_tissue@8",
+    "resolved_pump_tissue@1",
+    "resolved_pump_tissue@2",
+    "resolved_pump_tissue@3",
+    "resolved_pump_water@1",
+    "resolved_pump_water@2",
+    "resolved_pump_replacement@1",
+)
 WORLD_BATCHING = ("lax_map", "vmap")
 # Vectorized worlds keep their parameters and dense field temporaries resident
 # together, so their working bound is the device's, admitted at compile time.
@@ -139,130 +148,8 @@ def parse_spec(data):
     if type(wall) not in (int, float) or not math.isfinite(wall) or not 0 < wall <= 43200:
         raise ValueError("Invalid ionic task wall limit")
     simulation = parse_ionic(values["simulation"])
-    if simulation.to_dict()["model"]["id"] not in (
-        "finite_extracellular@2",
-        "finite_extracellular@3",
-        "spatial_extracellular@2",
-        "spatial_extracellular@3",
-        "spatial_calcium@5",
-        "resolved_membrane_profile_epoch@1",
-        "resolved_membrane_profiles@1",
-        "resolved_extracellular_barriers@1",
-        "resolved_passive_bath_events@1",
-        "resolved_active_bath_events@1",
-        "resolved_passive_bath_epoch@1",
-        "resolved_active_bath_epoch@1",
-        "resolved_active_profile_barriers@1",
-        "resolved_active_profile_barrier_epoch@1",
-        "resolved_calcium_profile_barriers@1",
-        "resolved_calcium_energy_profile_barriers@1",
-        "resolved_calcium_energy_water_profile_barriers@1",
-        "resolved_calcium_energy_water_repair_profile_barriers@1",
-        "resolved_calcium_energy_water_profile_barrier_epoch@1",
-        "resolved_calcium_energy_water_repair_profile_barrier_epoch@1",
-        "resolved_calcium_profile_barrier_epoch@1",
-        "resolved_calcium_energy_profile_barrier_epoch@1",
-        "resolved_calcium_energy_water_extracellular_barrier_epoch@1",
-        "resolved_calcium_energy_water_repair_extracellular_barrier_epoch@1",
-        "resolved_calcium_energy_water_extracellular_barriers@1",
-        "resolved_calcium_energy_water_repair_extracellular_barriers@1",
-        "resolved_active_extracellular_barrier_epoch@1",
-        "resolved_calcium_extracellular_barrier_epoch@1",
-        "resolved_calcium_energy_extracellular_barrier_epoch@1",
-        "resolved_active_extracellular_barriers@1",
-        "resolved_calcium_extracellular_barriers@1",
-        "resolved_calcium_energy_extracellular_barriers@1",
-        "resolved_tissue@1",
-        "resolved_tissue_excision@1",
-        "resolved_tissue_active_excision@1",
-        "resolved_calcium_excision@1",
-        "resolved_calcium_energy_excision@1",
-        "resolved_calcium_energy_water_excision@1",
-        "resolved_calcium_energy_transport_excision@1",
-        "resolved_calcium_energy_irreversible_transport_excision@1",
-        "resolved_calcium_energy_atp_transport_excision@1",
-        "resolved_calcium_energy_mitochondria_excision@1",
-        "resolved_water@1",
-        "resolved_water@2",
-        "resolved_water@3",
-        "resolved_energy@1",
-        "resolved_energy@2",
-        "resolved_energy_water@1",
-        "resolved_energy_water@2",
-        "resolved_cotransport@1",
-        "resolved_cotransport_water@1",
-        "resolved_tissue@2",
-        "resolved_tissue@3",
-        "resolved_tissue@4",
-        "resolved_tissue@5",
-        "resolved_tissue@6",
-        "resolved_tissue@7",
-        "resolved_tissue@8",
-        "resolved_tissue@9",
-        "resolved_tissue@10",
-        "resolved_tissue@11",
-        "resolved_active_membrane_profiles@1",
-        "resolved_active_membrane_profile_epoch@1",
-        "resolved_calcium_membrane_profiles@1",
-        "resolved_calcium_energy_membrane_profiles@1",
-        "resolved_calcium_membrane_profile_epoch@1",
-        "resolved_calcium_energy_membrane_profile_epoch@1",
-        "resolved_tissue@12",
-        "resolved_pump_tissue@1",
-        "resolved_pump_tissue@2",
-        "resolved_pump_tissue@3",
-        "resolved_pump_water@1",
-        "resolved_pump_water@2",
-        "resolved_pump_replacement@1",
-        "resolved_calcium@1",
-        "resolved_calcium@2",
-        "resolved_calcium@3",
-        "resolved_calcium@4",
-        "resolved_calcium@5",
-        "resolved_calcium@6",
-        "resolved_calcium@7",
-        "resolved_calcium@8",
-        "resolved_calcium@9",
-        "resolved_calcium@10",
-        "resolved_calcium@11",
-        "resolved_open_calcium@1",
-        "resolved_open_calcium_energy@1",
-        "resolved_open_calcium_bath_events@1",
-        "resolved_open_calcium_energy_bath_events@1",
-        "resolved_open_calcium_bath_epoch@1",
-        "resolved_open_calcium_energy_bath_epoch@1",
-        "resolved_calcium_water@1",
-        "resolved_calcium_energy_water_repair@1",
-        "resolved_calcium_energy_water_repair@2",
-        "resolved_calcium_energy_water_repair_membrane_profiles@1",
-        "resolved_calcium_energy_water_repair_membrane_profile_epoch@1",
-        "resolved_calcium_energy_water@1",
-        "resolved_calcium_energy_water@2",
-        "resolved_calcium_energy_water_membrane_profiles@1",
-        "resolved_calcium_energy_water_membrane_profile_epoch@1",
-        "resolved_calcium_energy@1",
-        "resolved_calcium_energy@2",
-        "resolved_calcium_energy@3",
-        "resolved_calcium_energy@4",
-        "resolved_calcium_energy@5",
-        "resolved_calcium_energy_regulated@1",
-        "resolved_calcium_energy_regulated@2",
-        "resolved_calcium_energy_regulated_excision@1",
-        "resolved_calcium_energy_transport@1",
-        "resolved_calcium_energy_irreversible_transport@1",
-        "resolved_calcium_energy_atp_transport@1",
-        "resolved_calcium_energy_mitochondria@1",
-        "resolved_repair@1",
-        "resolved_repair@2",
-        "resolved_repair@3",
-        "resolved_repair@4",
-        "resolved_redistribution@1",
-        "resolved_redistribution@2",
-        "resolved_redistribution@3",
-    ):
-        raise ValueError(
-            "Ionic ensembles require a registered finite, spatial or tissue calcium family"
-        )
+    if simulation.to_dict()["model"]["id"] not in SIMULATIONS:
+        raise ValueError(f"Ionic ensembles require one of {', '.join(SIMULATIONS)}")
     if values["recording"] != "summary" or not simulation.execution.jit:
         raise ValueError("Ionic ensembles require summary recording and JIT")
     spec = IonicSpec(**(values | {"simulation": simulation}))
@@ -292,18 +179,10 @@ def run(spec, *, backend="gpu", state=None, callback=None):
     checkpoints = result.checkpoints
     values = list(result.worlds.values())
     diagnostics = {k: max(w.diagnostics[k] for w in values) for k in values[0].diagnostics}
-    if hasattr(model, "ensemble_voltage"):
-        voltage = [
-            model.ensemble_voltage(cp.state, cp.layout, spec.simulation, cp.time).tolist()
-            for cp in checkpoints.values()
-        ]
-    else:
-        voltage = [
-            np.asarray(model.cell_voltage(cp.state.amount_increment, cp.layout, xp=np))[
-                : len(spec.simulation.model.cells)
-            ].tolist()
-            for cp in checkpoints.values()
-        ]
+    voltage = [
+        model.ensemble_voltage(cp.state, cp.layout, spec.simulation, cp.time).tolist()
+        for cp in checkpoints.values()
+    ]
     return checkpoints, {
         "model": MODEL_ID,
         "physical_model": spec.simulation.to_dict()["model"]["id"],
@@ -313,7 +192,7 @@ def run(spec, *, backend="gpu", state=None, callback=None):
         "through_time_s": min(cp.time for cp in checkpoints.values()),
         "integrated_world_steps": sum(cp.step_index for cp in checkpoints.values()),
         "final_voltage_V": voltage,
-        **({"final_voltage_axis": "membrane_patch"} if hasattr(model, "ensemble_voltage") else {}),
+        "final_voltage_axis": "membrane_patch",
         "ionic_accounting": diagnostics,
         "compile_seconds": result.timings.get("compile_seconds", 0.0),
         "execute_seconds": result.timings.get("execute_seconds", 0.0),
