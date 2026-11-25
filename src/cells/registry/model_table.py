@@ -117,8 +117,14 @@ MODELS = MappingProxyType(
                 # line, a recorded exception (the lead, 18 November 2026).
                 "cells.laws.reactions.rapid_binding",
                 "cells.kinds",
+                # G-7: what is read from a pool's assembly, whose levels set this model's channel
+                # controls. Its host, the pool's model, is dispatched elsewhere and has no row.
+                "cells.assembly_pool.observables",
             ),
-            interfaces=("cells.channel_block_law@1",),  # FR-51's block (D371).
+            interfaces=(
+                "cells.channel_block_law@1",  # FR-51's block (D371).
+                "cells.assembly_observable@1",  # G-7.
+            ),
         ),
         "resolved_pump_composite@1": Model(
             type="composite",

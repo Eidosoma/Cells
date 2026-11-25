@@ -75,7 +75,7 @@ the five `cells` law interfaces; "operators" the composite's operators (`cells.o
 | `host` | The namespaced ID of what runs it: a kind or a model. Kinds run in the inner model, and operators in the composite | All |
 | `declared_host` | The host's declared spelling (the ID rule). Null where the host is no registered model, kind or operator: not stated | All |
 | `family` | The model whose registries hold it: the inner model for its own laws, its kinds and its kinds' laws; the composite for its operators; a family's model for that family's pieces | All |
-| `models` | The models whose definitions can declare it: its family, and, for the inner model's pieces, the composite | All |
+| `models` | The models whose definitions can declare it: its family, and, for the inner model's pieces, the composite. Empty where its family is no active model | All |
 | `module` | Its declaring module, dotted: for a law or a family operator, the module that registered it; for a kind, the module of its hooks; for an operator, its class's | All |
 | `module_path` | That module's file in this repository, `src/cells/...`. Null for a module outside the `cells` package, such as an outside package's or a test's | All |
 | `line` | The first line of its declaration in that file: the call that builds a law's, a kind's or a family operator's declaration, or an operator's class statement. Null with `module_path` | All |
@@ -284,6 +284,10 @@ A model family's own interface, declared in its row of the static model table. A
 type built on the law template (`Law`), and an operator of one a type built on the operator
 template (`FamilyOperator`). The manifest does not interpret their fields: every field of its own
 is under `fields`, its functions under `kernels`, and the role keys are null.
+
+One is declared in the row of the model it serves, since its laws' host has no row:
+`cells.assembly_observable@1`, a readout of a pool's assembly, is in the inner model's row, whose
+channel controls its levels set. Its laws list no model, because no model's definitions name them.
 
 ## Models
 

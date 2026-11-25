@@ -101,6 +101,11 @@ def test_every_registered_piece_has_its_entry_and_every_entry_is_registered():
     assert declarations.format_errors(doc) == [] and declarations.coverage_errors(doc) == []
     listed, registered = counts(doc)
     assert listed == registered
+    # A piece lists active models alone: none where its host is no active model's (the pool's).
+    active = {m["id"] for m in doc["models"]}
+    assert all(set(e["models"]) <= active for e in doc["pieces"])
+    (readout,) = (e for e in doc["pieces"] if e["interface"] == "cells.assembly_observable@1")
+    assert readout["models"] == [] and readout["family"] == readout["host"] not in active
     laws_scope, kinds_scope, operators_scope = planted_scopes()
     with laws_scope, kinds_scope, operators_scope:
         missing = declarations.coverage_errors(doc)  # The earlier manifest misses each one.

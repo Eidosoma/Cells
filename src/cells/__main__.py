@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 from cells import __version__
-from cells.definitions.specs import ConfigError, load_spec
+from cells.definitions.specs import ConfigError, load_spec, read_json
 from cells.ensemble.families import parked
 from cells.execution.batch import branch_batch_checkpoints, load_batch, plan_batch, run_batch
 from cells.execution.batch_windows import plan_batch_windows
@@ -17,6 +17,16 @@ from cells.records.batch_window_io import write_windowed_batch
 from cells.records.io import load_snapshot, write_run
 from cells.records.window_io import write_windowed_run
 from cells.registry.models import get_model
+
+
+def _add_inputs(command):
+    command.add_argument(
+        "--inputs",
+        type=Path,
+        metavar="FILE.json",
+        help="a JSON object that says what the definition was made from, recorded as "
+        "provenance.inputs in the run's manifest",
+    )
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -46,6 +56,7 @@ def _parser() -> argparse.ArgumentParser:
             "--output", type=Path, required=True, help="new directory; never overwritten"
         )
         command.add_argument("--checkpoint-at", type=float, action="append", default=[])
+        _add_inputs(command)
     batch = commands.add_parser("batch", help="validate/run/resume/branch independent worlds")
     batch_commands = batch.add_subparsers(dest="batch_command", required=True)
     for name in ("validate", "run", "resume", "branch"):
@@ -57,6 +68,7 @@ def _parser() -> argparse.ArgumentParser:
         if name != "validate":
             command.add_argument("--output", type=Path, required=True)
             command.add_argument("--checkpoint-at", type=float, action="append", default=[])
+            _add_inputs(command)
     batch_windowed = batch_commands.add_parser(
         "windowed", help="bounded rounds with independent clocks and complete cohort checkpoints"
     )
@@ -74,6 +86,7 @@ def _parser() -> argparse.ArgumentParser:
         if name != "validate":
             command.add_argument("--output", type=Path, required=True)
             command.add_argument("--checkpoint-every-windows", type=int, default=0)
+            _add_inputs(command)
     windowed = commands.add_parser("windowed", help="bounded single-world execution and recording")
     window_commands = windowed.add_subparsers(dest="window_command", required=True)
     for name in ("validate", "run", "resume", "branch"):
@@ -95,7 +108,27 @@ def _parser() -> argparse.ArgumentParser:
         if name != "validate":
             command.add_argument("--output", type=Path, required=True)
             command.add_argument("--checkpoint-at", type=float, action="append", default=[])
+            _add_inputs(command)
     return parser
+
+
+def _inputs(path, spec):
+    """The --inputs object for a run's provenance, or None where no file is given: what the
+    definition (a batch's, for a batch) was made from, recorded as it is. The run follows none of
+    it. An object that lists the definitions it is about (`definitions_sha256`, their fingerprints)
+    is refused beside any other."""
+    if path is None:
+        return None
+    value = read_json(path)
+    if not isinstance(value, dict):
+        raise ConfigError(f"--inputs takes a JSON object: {path}")
+    about = value.get("definitions_sha256", [spec.fingerprint])
+    if not isinstance(about, list) or spec.fingerprint not in about:
+        raise ConfigError(
+            f"The inputs of {path} are another definition's: their definitions_sha256 do not list "
+            f"this one's, {spec.fingerprint}"
+        )
+    return value
 
 
 def _batch_main(args):
@@ -123,6 +156,7 @@ def _batch_main(args):
         if args.batch_command == "branch":
             spec = load_batch(args.config)
             checkpoints = branch_batch_checkpoints(saved.spec, checkpoints, spec)
+    provenance["inputs"] = _inputs(args.inputs, spec)
     result = run_batch(spec, checkpoints)
     return write_batch_run(
         args.output, result, checkpoint_times=tuple(args.checkpoint_at), provenance=provenance
@@ -155,6 +189,7 @@ def _batch_window_main(args):
         if args.cohort_command == "branch":
             spec = load_batch(args.config)
             checkpoints = branch_batch_checkpoints(saved.spec, checkpoints, spec)
+    provenance["inputs"] = _inputs(args.inputs, spec)
     return write_windowed_batch(
         args.output,
         spec,
@@ -240,6 +275,7 @@ def main(argv=None) -> int:
             if args.command == "branch":
                 spec = load_spec(args.config)
                 checkpoint = branch_checkpoint(snapshot.spec, checkpoint, spec)
+        provenance["inputs"] = _inputs(args.inputs, spec)
         result = run(spec, checkpoint)
         summary = write_run(
             args.output, result, checkpoint_times=tuple(args.checkpoint_at), provenance=provenance
@@ -281,6 +317,7 @@ def _window_main(args):
         if args.window_command == "branch":
             spec = load_spec(args.config)
             checkpoint = branch_checkpoint(saved.spec, checkpoint, spec)
+    provenance["inputs"] = _inputs(args.inputs, spec)
     return write_windowed_run(
         args.output,
         spec,

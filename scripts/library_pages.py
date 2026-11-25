@@ -221,6 +221,8 @@ class Render:
         text = f"{host}, its host"
         if entry["declared_host"] and entry["declared_host"] != entry["host"]:
             text += f", which definitions write {_c(entry['declared_host'])}"
+        if not entry["models"]:  # Its host is no active model.
+            return f"{text}. No model's definitions can declare it"
         if entry["host"] not in entry["models"]:
             family = self.ref(page, entry["family"], "model")
             text += f", in {family}"
