@@ -49,8 +49,9 @@ split over literals, tested or matched in part (by a literal, or through a name,
 file's constant or an argument), inside a path or a file name, in an expected message, sorted by,
 pinned by a hash. A hazard stands until the tree no longer holds it or a review in the choices gives
 the reason why it is none, and `apply` refuses while one stands. Beside them it lists the live
-readers of the files the move leaves (and whether they read through the table), what frozen code
-does with part of an ID, and the paths outside the tree that code names.
+readers of the files the move leaves (and whether they name the table of renamed IDs: one that does
+not may read no ID, or translate in its own way), what frozen code does with part of an ID, and the
+paths outside the tree that code names.
 
 **The verifier** replays the map on the base commit's tracked files in memory and requires the head
 to equal the result, byte for byte and mode for mode. It also requires that a second application
@@ -2763,7 +2764,7 @@ def left_readers(files, left, reads):
             why=left[target][0],
             reader=reader,
             line=line,
-            through_the_table=b"id_table" in files[reader][1],
+            names_the_table=b"id_table" in files[reader][1],
         )
         for (target, reader), line in sorted(first.items())
     ]
@@ -3004,7 +3005,7 @@ def cmd_scan(args):
         inside_longer_strings=dict(Counter(scope_of(p) for p, _, _ in report["inside"])),
         readers_of_files_left=dict(
             Counter(
-                ("through the table" if r["through_the_table"] else "not through the table")
+                ("names the table" if r["names_the_table"] else "does not name the table")
                 + f", {r['why']}"
                 for r in report["left_readers"]
             )
@@ -3953,7 +3954,7 @@ def _selftest_scan(checks, mp):
     }
     frozen = Map(mp.doc, {p: [["tag", "t", "o"]] for p in left if p.startswith("validation/ref/")})
     hazards, found, _ = run_scan(left, frozen, _plant_choices())
-    rows = {(r["left"], r["reader"], r["through_the_table"]) for r in found["left_readers"]}
+    rows = {(r["left"], r["reader"], r["names_the_table"]) for r in found["left_readers"]}
     checks["scan: readers of what the move leaves, and what frozen code tests, are listed"] = (
         hazards == []
         and rows
