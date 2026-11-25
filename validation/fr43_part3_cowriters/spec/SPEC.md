@@ -77,8 +77,8 @@ For each copy of each world, the exact coupled process (LAWS.md §4), to the acc
   10⁻¹¹ T, every row and book 10⁻¹¹ × its scale (READOUTS.md §2). It is checked by a second, different integration
   (another method, at least 10 times tighter), and by a closed form where one exists (LAWS.md §4's decimal sums for
   W5-exact, where the accuracy is at most 10⁻¹⁵ T). T is the world's `end_s`.
-- **W5-exact's rows and books are published, and no judgement compares them with the engine's** (they enter the
-  run's own identities, and the running check of CRITERIA.md §3.2 reads their size).
+- **W5-exact's rows and books are published,** enter the run's own identities, and are not compared with the
+  engine's but for the running check's half (CRITERIA.md §3.2).
 - **The classes** of the judged entries are READOUTS.md §3's and no others. The reference file lists the judged
   readouts of its world, and nothing else, under `classes`.
 - **A reference file that departs from its accuracy** is refused by C0.
@@ -147,7 +147,8 @@ the values (sorted keys, fixed separators, no timestamps, floats as JSON numbers
   missing registered key is a fault (CRITERIA.md §4.2).
 - `classes` holds the judged readouts of the world (READOUTS.md §1's names), and nothing else: those of class S, and
   in W5-exact `t_events` alone, of class R. The E entries, `start`, the identities and the pair are not readouts and
-  are not listed. W5-exact's `series` holds its rows and books (published, not judged).
+  are not listed. W5-exact's `series` holds its rows and books (published; not judged, but for the running check's
+  half).
 - A copy's `events` list holds the first K_all events. K_all is the number with t_k ≤ T (published for information),
   K is K_c of §3. `channel` is the channel's id, `counts_after` the `[free, active]` counts after the event.
 - `planted` is keyed by the plant's `id` in `inputs.json` (`P4-W6`, `P10-W6`, …). For a reference plant of a world

@@ -290,9 +290,19 @@ read or derived:
 - `inputs.json` gains the half (`fraction_of_reference`) and P14's four checks. No other number, no class and no
   window of an honest entry moved.
 
-**The author's own skeleton was run again on the revised inputs** (25 November 2026, 13:48 UTC; scratch, its own
-fabricated tables, no judge): all six families pass honestly; the pairs and W5-exact's two rungs differ; every fault
-row, the restart rows, the running check and each of N1 to N10 come out as the text says; each of the eight wrong W6
-engines of the author's list fails in both families. The skeleton shares the author's reading.
+**The author's own skeleton was run again on the revised inputs** (25 November 2026, 13:56 UTC; scratch, its own
+fabricated tables, its own reading, no judge). What ran on it:
+- all six families pass honestly; the three pairs and W5-exact's two rungs differ; each of the eight wrong W6
+  engines of the author's list fails in both W6 families;
+- the fault rows it has a scenario for come out as the text says, each by hand or by a flag the scenario sets: the
+  echo, the table hash, a top-level key, a key of an entry, `status` against `refusal`, the truncated trace, the
+  samples, `host_patch` and `restart`, a missing or non-finite leaf, a duplicate key, a shared record hash,
+  provenance, kinds `check` and `domain`, a missing run, a name listed twice or in both lists, a name that is not
+  registered, an unowed retry, and the restart cases (time, samples, events, `first_index`, a row, `events_total`, a
+  null `restart`, a dirty or shared-hash restart);
+- N1, N4, N5, N8 and N9 have a scenario on it. N2, N3 and N10 were one-off checks beside it (the echo comparison,
+  P3's slope against its window, P14's four starts). N6, N7, N11, N12 and the cosmetics are text only.
+
+The skeleton has no plant scoring, no C0, no retry flow across plants and no row for a recorded-only leaf.
 
 **Questions to the lead before the criteria tag** are in the author's report to the lead, not here.
