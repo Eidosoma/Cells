@@ -698,7 +698,10 @@ unit's comes from its laws (TEMPLATED_POLYMERISATION_LAWS.md §4):
     made only by degradation, and with a D152 route on the precursor;
   - R5 including the gene unit's supply, exactly once;
   - the per-writer books at every saved row;
-  - a mid-run restart, in process and through a written snapshot, bit for bit the unbroken run.
+  - a mid-run restart, in process and through a written snapshot, bit for bit the unbroken run;
+  - a restart cut exactly at both sources' switch-off, and one step to each side of it (D349): bit for bit the unbroken
+    run, with a switch that is skipped or undone after the resume caught. The switch acts in the step that leaves its row,
+    so the checkpoint at that row holds the state before it.
 
 ## 3. Part 3. An integer population on continuous chemistry (B selected)
 

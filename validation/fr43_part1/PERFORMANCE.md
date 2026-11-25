@@ -116,9 +116,10 @@ This is the note's §1.8 column (`/mnt/workspaces/Cells/fr43-20261123/out/gpu/`)
 the cap raised in its process. It ran through the runner with every host check, on the NVIDIA L4 in float64, with its
 host thread on a shared CPU.
 
-**It was taken on the composite on a GPU, a path D336 found unqualified.** The composite's device checks failed their
-GPU qualification (D330, D336). Since D336, the vector windows refuse the composite on a GPU
-(`execution/vector_windows.refuse_unqualified_gpu`).
+**It was taken on the composite on a GPU through the plain runner, whose rows the host checks (D380).** D336 closed the
+composite's own device checks as unqualified (D330), and the vector windows refuse the composite on a GPU
+(`execution/vector_windows.refuse_unqualified_gpu`). The plain path stays admitted, and an unflagged GPU run varies from
+one repeat to the next (up to 1.9e-11 relative on one tissue; under XLA's deterministic flag, repeats are bitwise).
 
 | Rows, sum | Compile s | ms per step | s per simulated s | Host peak RSS MiB | Card peak MiB | Error / largest |
 | --- | --- | --- | --- | --- | --- | --- |
