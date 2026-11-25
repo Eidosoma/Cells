@@ -2,7 +2,8 @@
 
 Parse only, and fabricated records: no row compiles or runs a world. The records are made by the
 driver's own code around numbered arrays, so that every slot of every array differs and a swapped
-index, a turned sign or a shifted clock changes a number that a row holds.
+index, a turned sign or a shifted clock changes a number that a row holds. The 49 rows take about
+25 s on the shared CPUs, most of it the engine's parse of definitions.
 """
 
 import ast
