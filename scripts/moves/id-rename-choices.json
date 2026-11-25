@@ -1109,6 +1109,11 @@
     "owner": "fr1"
    },
    {
+    "path": "validation/energy_step_doubling/RESULTS.md",
+    "reason": "a record: the results of FR-18's criterion X, in the IDs of their time",
+    "owner": "fr18"
+   },
+   {
     "path": "validation/ensemble_reexpression/rehearsal/make_inputs.py",
     "reason": "the rehearsal's maker: it writes legacy definitions for the frozen snapshot, in the IDs that the snapshot spells, and verify.py compares the captured definitions with what it writes; the protocol (section 5) freezes the rehearsal's files for the move",
     "owner": "ensemble"
@@ -1124,9 +1129,24 @@
     "owner": "fr1"
    },
    {
+    "path": "validation/fr10/references/README.md",
+    "reason": "a record: the page of FR-10's registered references, in the IDs of their time",
+    "owner": "fr10"
+   },
+   {
+    "path": "validation/fr43_part1/PERFORMANCE.md",
+    "reason": "a record: FR-43 part 1's performance report (C1.4), beside its measured summary, performance.json",
+    "owner": "fr43"
+   },
+   {
     "path": "validation/fr43_part1/performance.json",
     "reason": "a record: the measured summary of FR-43 part 1's performance report (C1.4)",
     "owner": "fr43"
+   },
+   {
+    "path": "validation/fr6/references/README.md",
+    "reason": "a record: the page of FR-6's registered references, in the IDs of their time",
+    "owner": "fr6"
    },
    {
     "path": "validation/fr6/references/reference_inputs.json",
@@ -1137,6 +1157,26 @@
     "path": "validation/fr6/references/worlds.py",
     "reason": "the generator of FR-6's registered inputs, which a test compares with it",
     "owner": "fr6"
+   },
+   {
+    "path": "validation/gard/references/README.md",
+    "reason": "a record: the page of GARD's references (G2), in the IDs of their time",
+    "owner": "gard"
+   },
+   {
+    "path": "validation/long_duration/REGISTRATION_20261118.md",
+    "reason": "a record: FR-8 stage 0's registration, in the IDs of its time",
+    "owner": "fr8"
+   },
+   {
+    "path": "validation/long_duration/RESULTS_20261118.md",
+    "reason": "a record: FR-8 stage 0's results, in the IDs of their time",
+    "owner": "fr8"
+   },
+   {
+    "path": "validation/long_duration/RUNG0_20261119.md",
+    "reason": "a record: FR-8 rung 0's registration and results, in the IDs of their time",
+    "owner": "fr8"
    },
    {
     "path": "validation/long_duration/registration_20261118.json",
@@ -1152,6 +1192,11 @@
     "path": "validation/long_duration/rung0_results_20261119.json",
     "reason": "the registered results of rung 0 (its registration field)",
     "owner": "fr8"
+   },
+   {
+    "path": "validation/membrane_trafficking/references/README.md",
+    "reason": "a record: the page of FR-2's registered references, in the IDs of their time",
+    "owner": "fr2"
    },
    {
     "path": "validation/morphogenesis/protocols/mg0a_gradient_v1.json",
