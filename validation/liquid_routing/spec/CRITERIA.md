@@ -117,15 +117,16 @@ For readout y in world w with steps h₁ > h₂ > h₃ (each half the last), ove
 
 - **A stop** is an entry whose status is `refused` with kind `check` (TABLE.md): the engine's own energy,
   material or charge check failed a completed row.
-- **M1, on every stop** (a recorded run's too): the message holds the word `residual` and then a number, and
-  the word `tolerance` and then a number, each with the unit of the ledger that failed, which the message
-  names (a stop may be the energy, the material or the charge check). Both are finite, in the same unit, with
-  |residual| > tolerance > 0.
+- **M1, on every stop** (a recorded run's too): the message names the ledger that failed, and holds the word
+  `residual` and then a number, and the word `tolerance` and then a number, with the ledger's own unit: pJ for the
+  energy and work ledgers; fmol for the local, outside, total and wash_ions ledgers; C for the charge, electrode
+  and global_charge ledgers. Both numbers are finite, in that unit, with |residual| > tolerance > 0. Today's
+  messages hold a ledger name and no number or unit, so M1 is a deliverable of the build (FR-54, item 2).
 - **M2, on P8's stops** (the energy ledger, in pJ): | |residual| − H_missing | ≤ tolerance + (half a unit in the
-  residual's last printed digit) + e_round. H_missing is what the ledger's residual spans: for `P8 event`, H_ev
-  of the run's own row at 16 s; for `P8 flow`, *(pending the study)*, the reference's H_tot to the stop row if
-  the residual is cumulative from t = 0, or the missing heat of the step that ended there if it is that row's
-  alone. If neither fits, `P8 flow` is scored on the stop and M1 alone, by a dated change before the tag.
+  residual's last printed digit) + e_round. The energy residual is cumulative from t = 0 (measured on today's
+  engine), so H_missing is the heat missing from t = 0 to the stop row: for `P8 event`, H_ev of the run's own row at 16 s (the exchange's heat is the only one
+  missing); for `P8 flow`, the reference's H_tot at the stop row. The residual spans exactly that, whatever it
+  shows beside it.
 - **D, on every run of role `judged`:** it completes. One that the engine's own check stops **fails**: the
   check's residual above its tolerance is the evidence the comparison would have formed. This departs from
   FR-38's amendment 6, where a refused run is at best inconclusive, and is stated here before any run.
@@ -250,11 +251,13 @@ inconclusive after it stays so. No tolerance, window or class changes.
 
 ## 8. Verdicts
 
+- **A recorded run** (role `recorded`) is never judged: its outcome is reported, and M1 applies to its stop. A
+  stop, a refusal or a missing recorded run counts toward neither its arm nor its request.
 - **A run** fails if any judged entry fails, or if D fails. Otherwise it is inconclusive if any judged
   entry is, or if it or any of its readouts is refused. Otherwise it passes.
-- **An arm,** after the retry, fails if any run fails; otherwise it is inconclusive if any run or support
-  run is inconclusive, refused, stopped or missing; otherwise it passes. The expected stop is judged
-  only by §3.7.
+- **An arm,** after the retry, fails if any judged run fails; otherwise it is inconclusive if any judged or
+  support run is inconclusive, refused, stopped or missing; otherwise it passes. The expected stop and the
+  recorded runs count only as §3.7 and the line above say.
 - **FR-54** reads arms 1 and 2, on three lines: the first step (arm 1), the exchange (arm 2), and the
   stopped-run report (M on the stops of its own tables). It passes if all three pass and P8 (event) and
   P14 to P18 are caught. It fails if any line fails or a plant is not caught. Otherwise it is inconclusive.

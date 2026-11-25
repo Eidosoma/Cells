@@ -3,8 +3,8 @@
 **Status: written 25 November 2026 for the lead's tags, before the build** (D341, D352, D362, D364).
 Docs and validation only, with no `src/` change. Its author does not write references, build, judge or
 check. Branch `fr54-57-protocol`, from main 0e563668. The dt study of 25 November filled its placements (`spec/SPEC.md`
-§6), through the lead's report only (§11). A few of the study agent's answers are still pending and are marked
-where they go (§11).
+§6), through the lead's report only (§11). The study agent's later answers are folded in (§11) and none is
+pending.
 
 **What it registers.** This document and `validation/liquid_routing/spec/`: `README.md`, `SPEC.md`,
 `LAWS.md`, `READOUTS.md`, `CRITERIA.md`, `TABLE.md` and `inputs.json`. With the code-blind references and
@@ -50,8 +50,9 @@ here qualifies by integration (D143): only the verdict does.
 `cells.operator.liquid_routing@1` (new). Arms 1 to 6 use `cells.solver.imex_ars222_face_electromigration@1`
 (ARS(2,2,2) only; IMEX Euler stays in tier rows). Arms 1, 2 and 6 add `cells.route.logmean_electrodiffusion@1`
 faces, under the default face heat or `cells.heat.exact_free_energy_heat@1`. Arm 3 adds `cells.operator.neutral_arrival_labels@1`
-and `cells.operator.site_occupancy@1`. Arm 7 also runs `cells.operator.scheduled_compartment_wash@1`. The
-IDs are the rename candidate's (2dd54f72), checked against its mapping table at the criteria tag.
+and `cells.operator.site_occupancy@1`. Arm 7 also runs `cells.operator.scheduled_compartment_wash@1`. Arm 2's
+exchange is the builder's to execute, by the operator the build provides; each table records the declared
+operators, and the judge compares nothing to them. The IDs are the rename candidate's (2dd54f72), checked against its mapping table at the criteria tag.
 
 ## 3. The roles
 
@@ -203,10 +204,11 @@ All seven were ruled as recommended, with the changes noted. Items 2 and 7 wait 
    claim. Kept.
 5. **The default-heat starts are the study's starts** (§11). Accepted.
 6. **Arm 7's failing** fails FR-57, as the note's §8.2 reads, on the takeover line. Accepted.
-7. **The propagator's domain** (throughput at most 1 per half-step) is the lead's ruling. The study measured
-   4.0 of the 8 ε on entries and 0.84 of the 4 ε on columns inside it, and failures at 5. The registered worlds
-   stay inside it, `F6 h=4.0` must be refused, and `LAWS.md` §9 uses the 8 ε. A 64-node network is not claimed
-   without a separate qualification. Adopted, after the study's definition is taken word for word (§11).
+7. **The propagator's domain** (throughput ρ at most 1) is the lead's ruling, and the study's definition is in
+   `SPEC.md` §1 word for word. Over 657 networks at ρ ≤ 1 the study measured at most 1.36 ε on entries and 1.89 ε
+   on column sums, and the first failure sampled is at ρ = 2 (it replaces earlier figures that carried wrong ρ
+   labels). The registered worlds stay at 0.625 or below, `F6 h=4.0` must be refused, and `LAWS.md` §9 uses the
+   declared 8 ε. A 64-node network is not claimed without a separate qualification. Adopted.
 
 ## 11. Disclosures (25 November 2026)
 
@@ -240,10 +242,19 @@ and CRITERIA on `fr45-protocol`.
   place cases and set no band. z_def = 1/64 (4.5 times below the smallest completing edge) is a placement, and
   so is this author's estimate for arm 2's start.
 
-**Waiting on the study agent's answers,** to be filled before the criteria tag, each marked in the files:
-which (start, step) runs complete (item 1 above, for `SPEC.md` §6); the throughput definition word for word
-(item 7; `SPEC.md` §1 and `LAWS.md` §4); whether the failing energy ledger's residual is cumulative or per
-row, and its unit (M2, `CRITERIA.md` §3.7); and what amounts the parse refuses at a node.
+**The study agent's later answers,** relayed by the lead on 25 November, all folded in:
+- every judged default-heat run completes (16 in arm 1, 9 in arm 2, the exchange emulated by hand), the two expected
+  stops stop, and the three recorded runs stop at their first row (`SPEC.md` §6; `CRITERIA.md` §8);
+- the throughput definition, taken word for word (`SPEC.md` §1; LAWS §4), and the propagator's basis at ρ ≤ 1;
+- the energy residual is cumulative from t = 0 (it spans the missing heat to the stop row), so `P8 flow` compares
+  with H_tot at that row (M2);
+- the ledgers' units (M1), and that today's messages hold no number, so M1 is a deliverable of the build;
+- the registered zero-amount text (`SPEC.md` §0), and what parses (2 × 10⁻¹⁵ and above);
+- at an exchange at a faced node under the default heat, the build refuses by name outside χ ≤ 0.25 and kh ≤ 0.2 (the
+  lead's ruling on Q7, named constants with their provenance; χ is the lower well's relative change in a step). A
+  wash at a faced node is refused today by the wash's face check and by the surface-crossing check behind it; the
+  build lifts both by rule. Nothing refuses a flow at a faced node today, since no flow operator exists, so arm 6
+  lifts the router's own refusal.
 
 **Seen and not used:** D362's and D364's desk figures for the default heat's domain (kh at most 0.2 and 0.05)
 and the note author's propagator probe (at most 1.0 ε an entry). z_def is a formula of the measured edges.

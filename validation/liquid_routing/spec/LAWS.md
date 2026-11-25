@@ -94,10 +94,11 @@ with constant G between switches. Then y(t) = e^(Gt) y(0).
   series until a term is below 10⁻⁵⁸ of the sum, and square back, carrying at least 20 digits more
   than are published.
 - **Equal rates need no special case here.** The closed forms below are the independent check.
-- **The operator's domain.** A flow is admitted for a step of h only where every node's throughput, its
-  outflow times h/2 over its volume, is at most 1 (the definition: SPEC.md §1). Above it the operator refuses
-  by name, at parse. Inside it the propagator's entries are declared within 8 ε and its columns within 4 ε of
-  exact (the dt study).
+- **The operator's domain.** A flow is admitted for a step of h only where its throughput ρ is at most 1 (SPEC.md
+  §1). Inside it the propagator's entries are declared within 8 ε and its columns' sums within 4 ε of exact. The
+  dt study measured at most 1.36 ε on entries and 1.89 ε on column sums, over 657 networks at ρ ≤ 1 (chains,
+  splits and merges, loops, up to 64 nodes); the first failure sampled is at ρ = 2. The bounds are declared, not
+  fitted to it.
 
 **A chain I → A → B → K,** with a = Q/V_A, b = Q/V_B, u_A = n_A(0) − V_A x and u_B = n_B(0) − V_B x:
 

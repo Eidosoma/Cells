@@ -24,7 +24,7 @@ code. Extra keys are allowed and ignored.
 | `arm` | integer 1 to 7 |
 | `runs` | object: run name to entry (`inputs.json`'s names; the retry's add ` retry`) |
 | `missing` | list of run names for which no record was found |
-| `units` | object: `{"amount": "fmol", "volume": "pL", "energy": "pJ", "time": "s"}` |
+| `units` | object: `{"amount": "fmol", "volume": "pL", "energy": "pJ", "time": "s"}` (of the series; a refusal's message states its own units) |
 
 A run in neither `runs` nor `missing` is missing. Matching is by name, never by position or key order.
 
@@ -62,8 +62,8 @@ has (`t` and `series` may be short or empty).
   `supplied_<x>`, `H_<i>`, the labels in `F1L` and `F6L`, `n_L_S`, `free_sites_S` and `bound_L_S` in
   `F7`, `H_face` in arm 6. **Arm 7:** `digests` and `operators` (`series` may be empty), the runs named
   `<pair> wash` and `<pair> router`. A resumed run's `t` holds the rows it recorded.
-- **`refusal.message`** for kind `check` states the residual and the tolerance by those two words, each with
-  its unit, and names the ledger that failed.
+- **`refusal.message`** for kind `check` names the ledger that failed, and states its residual and its tolerance
+  by those two words, each with the ledger's own unit (CRITERIA.md §3.7's M1 lists the units).
 
 **The kinds of refusal,** set by the exporter from what the engine raised (its README lists the mapping, and the
 checker confirms it):

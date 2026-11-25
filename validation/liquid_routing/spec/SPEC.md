@@ -8,7 +8,9 @@ Amounts in fmol, volumes in pL, concentrations in mM (= fmol/pL), flows and perm
 energies in pJ (1 kJ/mol × 1 fmol), times in s, temperature 298.15 K (a bench, and only a scale for
 RT). Every declared real is a decimal literal, and both sides use its nearest double. Read each as the
 exact value of that double. A trace is 10⁻¹² mM: the concentration of a species where nothing else is
-declared.
+declared. **No start amount is zero** (today's parse refuses a zero, negative, infinite, NaN or boolean amount, and
+5 × 10⁻³²⁴ fmol, the smallest double; it accepted 2 × 10⁻¹⁵, 2 × 10⁻¹² and 10⁻⁹ fmol). The smallest registered
+is `H4`'s B, 4 × 10⁻¹⁵ fmol.
 
 **Every event, switch, restart and output time is a multiple of the coarsest step of its runs,** the
 retry's included.
@@ -58,11 +60,16 @@ U starts in B (`F1` to `F4`, `F6`), or in C (`F5`). The inlet carries every spec
 horizon is 16 s. Steps are 8, 1 and 1/8 s in `F1` to `F4` (one, eight and 64 to a residence time), and 2, 1
 and 1/8 s in `F5` and `F6`.
 
-**The operator's domain, declared** *(wording pending: to be the study agent's definition, word for word)*. A flow
-is admitted for a step of h only where every node's throughput, its outflow × (h/2) / its volume, is at most 1;
-above it the operator refuses by name, at parse. Every registered
-world is inside: `F1` at 8 s has 0.5, `F5` at 2 s has 0.5 (at D) and `F6` at 2 s has 0.625 (at B). **The refusal
-case** is `F6` at 4 s, whose throughput at B is 1.25 (run `F6 h=4.0 refused`).
+**The throughput (the study agent's definition, word for word).** "The throughput of a node over a step of h is
+its outflow × (h/2) / its volume. Its outflow is the sum of the declared rates, in the segment of the schedule
+in force, of the flow links that leave it, to another node or to a collector. A link that leaves an inlet is not
+a node's outflow, and a link that enters a node is not counted. The throughput ρ of a flow is the largest over
+its nodes, and 0 where it has none (an inlet into a collector). A flow is admitted for a step of h only where
+ρ is at most 1. Above it the operator refuses by name, at parse for every declared segment and at run time where
+a schedule changes Q."
+
+Every judged run has ρ at most 0.625 (`F6` at 2 s, at B); `G5` has ρ = 0. **The refusal case** is `F6` at 4 s, with
+ρ = 1.25 at B (run `F6 h=4.0 refused`).
 
 **Arm 4, the growing collector.** From zero volume.
 - `G1`, `G2`: portions of 1 pL at 1 mM then 3 mM, and the reverse. `G3`, `G4`: 1, 3, 3 and 3, 3, 1 mM.
@@ -82,7 +89,9 @@ every flow off.
 
 **What admits arms 2 and 6, and from where.** Arm 2's exchange at a faced node is admitted by rule, for the
 qualified form only (one neutral species crossing by a passive route), with no declaration: under the exact
-heat always, and under the default heat only inside its measured domain (§6), refused by name outside. Arm 6's
+heat always, and under the default heat only where kh ≤ 0.2 and the lower well's relative change in a step is at
+most 0.25 (§6, χ), refused by name outside (the build's event check, named constants, at a ruling of the lead;
+the registration judges nothing at that boundary). Arm 6's
 flow at a faced node is refused by the router's first landing, so **arm 6 is not run from this snapshot**: it
 runs from a second one (CRITERIA.md §4, the protocol's §5), whose `src` differs only by the lift of that refusal
 and its tests. Nothing of arms 1 to 5 and 7 is re-run there.
@@ -134,7 +143,8 @@ value, the distance, the expected honest tolerance (§6.2 there) and their ratio
 
 **These numbers decide which case runs at which step. They never set a band, a class or a tolerance.** They
 were fitted after the study's grid, on the host-level one-step routine of main 0e563668's engine (its record
-is not read by anyone who judges), and the engine has no admission rule today, so they are candidate edges.
+is not read by anyone who judges). The engine has no admission rule today, so they are candidate edges; the build
+adds one for the exchange at a faced node under the default heat (§1, χ ≤ 0.25 and kh ≤ 0.2, the lead's ruling).
 "W" is the largest kh at which the default heat's observed local order ratio is at least 7.2 (third order is 8),
 "O" at least 6, and "completes" is the largest kh at which a default-heat run passes its energy check, with
 the next that "stops". The higher level is in well 1 (the 5 pL well where volumes differ; with the volumes
@@ -152,20 +162,19 @@ swapped the (4, 1) edges move).
 
 - **z_def = 1/64,** so that the smallest completing edge (0.0707) is 4.5 times it. Arm 1's default runs take kh =
   1/64, 1/128, 1/256 and 1/512 (steps 1/8 to 1/64 s at k = 1/8), and arm 2's 1/64, 1/128 and 1/256.
-- **T4 is placed** only where kh ≤ 0.2 and the lower well's relative change in a step (the moved amount over its
-  content) is at most 0.25. Every judged default run meets both: the largest kh is 1/64, and the largest change
-  is `eq-mid`'s, M∞ z/n₂ = 0.023.
-- **Stop cases:** `eq-tr` at kh 0.05 (step 0.4 s) and `eq-mid`, 8 and 2 fmol, at kh 0.1 (step 0.8 s; the
-  study completes it at 0.05). `eq-lo` and `r4-lo` default runs are recorded, since they lie outside the
-  placement rule.
-- **The arm 2 start** (4.43 and 0.57 mM) was not in the study's list. By the declared law its relative heat error
-  in a step of kh = 1/64 is C₂ z² = 1.7 × 10⁻⁴. The measured starts stop where C₂ z² is about 1.9 to 2.0 × 10⁻³
-  (the author's arithmetic from the table and the law), so the start lies well inside. Placement only.
+- **T4, and the default exchange at a faced node, are placed** only where kh ≤ 0.2 and χ ≤ 0.25, with χ the lower
+  well's relative change in a step: the moved amount over its content. The rule was fitted after the study's grid
+  and is not exactly the W edge: by the booked law it admits a step slightly outside W at 61 of the study's 123
+  starts. It is placement, not a band. The registered default runs lie far inside it: kh is at most 1/64, and χ at
+  most 0.023 in arm 1 (`eq-mid`) and 0.052 at arm 2's start.
+- **Completion, from the study** on today's engine: every judged default-heat (start, step) completes, 16 in arm 1
+  and 9 in arm 2 (its exchange emulated by hand). The two expected stops stop, and the three recorded runs stop at
+  their first row.
+- **Stop cases:** `eq-tr` at kh 0.05 (step 0.4 s) and `eq-mid`, 8 and 2 fmol, at kh 0.1 (step 0.8 s; the study
+  completes it at 0.05). The `recorded` default runs (`eq-tr`, `eq-lo`, `r4-lo` at kh 1/64) lie outside the
+  placement rule, so their outcome is reported and not judged (CRITERIA.md §8).
 - **Arm 7's pairs** (W7): FR-27's review well, FR-44's twins (labelled True and False), and FR-37's three draws
   (unmixed, mixed, port). Both sides run from the registration tag's snapshot, where the wash still exists.
-- **Every registered default-heat run** (start and step) is run by the study agent on today's engine before the
-  criteria tag. One that stops moves to a smaller step, in the same dated commit. (Pending: the study agent's
-  answer, D-rule, CRITERIA.md §3.7.)
 
 ## 7. The file
 
