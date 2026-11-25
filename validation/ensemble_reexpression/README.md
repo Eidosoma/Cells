@@ -93,7 +93,7 @@ interruption and goes on. `commands` prints one `run_detached.sh` command for ea
 | Anything else: memory, the disk, a signal, the driver's own clock (`--max-seconds`), the generator (`no_section`, `unknown_order`, `off_grid_change`), the exporter | `harness` |
 
 - **The message is the engine's**, as raised.
-- **`time_s` of a `check`.** The scalar runner keeps no row of a run that it refuses. So the driver runs the same definition again in windows of one step, by the engine's windowed path, keeps every row that it accepts (`partial.npz`), and takes the time of the first row that it refuses. If that pass completes, or for a pool, which has no rows, the time is the end of the run.
+- **`time_s` of a `check`.** The scalar runner keeps no row of a run that it refuses. So the driver runs the same definition again in windows of one step, by the engine's windowed path, keeps every row that it accepts (`partial.npz`), and takes the time of the first row that it refuses. If that pass completes, or for a pool, which has no rows, the time is the end of the run. Where it completes, the refusal also holds `second_pass_completed: true`, in the record and in the table entry (absent otherwise; provisional until Amendment 2 states it).
 - **A refused run at run time** keeps its rows at the compared times that it reached, and `steps` counts the accepted steps before it.
 
 ## The readings taken
@@ -111,7 +111,7 @@ Each is this builder's, with the sentence it rests on. What the lead answered is
 9. **`stream_id`** is the pool's position in the composed file, the first 0 (Amendment 1). **A pool's cell**, for `pool`, `path`, `inputs` and `pool_seeds`, is the cell of that position among the cells that have a channel, in the definition's order. So the swapped plant's seeds are its honest run's (Amendment 1).
 10. **EP1 and EP2** are what the lead told: both channels' maximal permeability times 1.01; the two pools' channels exchanged. In the rehearsal a run's entry may carry `declared_change`, a list whose items are `{"path": [...], "value": ...}`, with the path inside the world's ionic block (`worlds.<w>.ionic`; its first key is for example `channels`, and the path must exist there), or `{"exchange_channels": [cell, cell]}`.
 11. **`p` = 4 is RK4 and `p` = 2 is ARS(2,2,2)**; any other is refused by the generator, by name (`unknown_order`), with kind `harness` (Amendment 1).
-12. **A route's series exist in a world that has the route** (READOUTS §2: "A series absent from a world counts as zero"). A leak exists where some membrane has a nonzero permeability, which is why `integrated` has none. A pump's series hold every membrane of a world that has a pump.
+12. **A route's series exist in a world that has the route** (READOUTS §2: "A series absent from a world counts as zero"). A leak exists where some membrane has a nonzero permeability, which is why `integrated` has none. A pump's series hold every membrane of a world that has a pump, with zeros for one that has none.
 13. **`phi_out`** is written for every region but the gauge, in `base` too, where it has no captured counterpart (READOUTS §2: "no captured `phi_out`").
 14. **`composed_file_fingerprint`** is the sha256 of the composed file's bytes, which a checker forms with `sha256sum` (TABLE §3: "The checker recomputes it from the composed file").
 15. **A restart's potentials** are those after the checkpoint, strictly (TABLE §3: "For a restart, the ones after the checkpoint"). Its row at the checkpoint's time is written (SPEC §4: optional).

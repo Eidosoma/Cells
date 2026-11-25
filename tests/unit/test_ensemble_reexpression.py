@@ -844,6 +844,40 @@ def test_the_rows_before_a_refusal_and_the_row_that_failed(invented, monkeypatch
     assert found["observed_voltage"].ravel().tolist() == [0.0, 2.0]
 
 
+def test_a_check_that_its_second_pass_does_not_meet_says_so(invented, tmp_path, monkeypatch):
+    """The lead's ruling: `second_pass_completed: true` where the one-step pass of a check's refusal
+    completes, in the record's refusal and the entry's; absent otherwise, and on no other kind."""
+    worker = object.__new__(driver.Worker)
+    worker.attempt, worker.facts = tmp_path, {}
+    spec = SimpleNamespace(experiment=SimpleNamespace(end_time=0.0002))
+    found = {}
+    for kind, failed in (("check", None), ("check", 4e-05), ("domain", None), ("domain", 4e-05)):
+        monkeypatch.setattr(refusals, "rows_before", lambda *_, at=failed: (None, at))
+        refusal = {"kind": kind, "message": LEDGER_MESSAGE + "energy", "time_s": None}
+        worker.kept(spec, None, refusal)
+        assert worker.facts["refused_row_found"] is (failed is not None)
+        found[kind, failed] = refusal
+    said = {"time_s": 0.0002, "second_pass_completed": True}
+    assert found["check", None] == found["domain", None] | {"kind": "check"} | said
+    assert found["check", 4e-05] == found["domain", None] | {"kind": "check", "time_s": 4e-05}
+    assert found["domain", 4e-05] == found["domain", None]
+    entry, _, run = ionic_record(
+        tmp_path / "entry",
+        invented,
+        "inv_sample_tight h=4e-05",
+        [0.0, 4e-05, 8e-05],
+        [0.0, 4e-05],
+        file="partial.npz",
+        status="refused",
+        refusal=found["check", None],
+    )
+    assert entry["refusal"] == found["check", None]
+    assert exporter.entry_faults(run.name, entry) == []
+    for wrong in ({"second_pass_completed": False}, {"kind": "domain", "time_s": None}):
+        faults = exporter.entry_faults(run.name, entry | {"refusal": entry["refusal"] | wrong})
+        assert faults == [f"{run.name}: refusal's second_pass_completed"]
+
+
 def test_a_judged_run_writes_the_checkpoint_that_its_restart_resumes(invented, tmp_path):
     worker = object.__new__(driver.Worker)
     worker.inputs = invented
