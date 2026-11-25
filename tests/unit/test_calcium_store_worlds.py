@@ -5,11 +5,12 @@ validation/calcium_store/reference_spec. The references (validation/calcium_stor
 were written from that folder alone, by someone who had read nothing of the engine, so a row here
 reads their numbers (values.json) and runs no integrator.
 
-The engine's steps are the composite's own, in NumPy (host_step), so nothing compiles: 0.2, 0.1
-and 0.05 ms to 8 ms, recorded at 2, 4, 6 and 8 ms; without the buffers, 0.2 and 0.1 ms to 4 ms.
-The observables are each node's amounts, V_m, V_b, both gates, each mover's transfer, heat and
-work, each reaction's extent, and the capacitor energy. An observable's error at a step is its
-largest over the recorded times. Every ledger closes at each of them.
+The engine's steps are the composite's, in NumPy (host_step; row 13 holds them to the compiled
+ones), so nothing compiles: 0.2, 0.1 and 0.05 ms to 8 ms, recorded at 2, 4, 6 and 8 ms; without
+the buffers, 0.2 and 0.1 ms to 4 ms. The observables are each node's amounts, V_m, V_b, both
+gates, each mover's transfer, heat and work, each reaction's extent, and the capacitor energy. An
+observable's error at a step is its largest over the recorded times. Every ledger closes at each
+of them.
 
 - Band: at the finest step, the error is within 1.5 times the engine's own estimate (a third of
   the change from the step before, the rest of a second-order error) plus BAND_FLOOR of the
@@ -37,9 +38,8 @@ import numpy as np
 import pytest
 
 from cells.definitions.specs import parse_spec
-from cells.execution.schedule import control_values
 from cells.models import surface_pump_v3
-from cells.registry.models import get_model
+from tests.calcium_store_fixtures import bound, host_step
 from validation.calcium_store import worlds
 from validation.calcium_store.references import api
 
@@ -71,38 +71,6 @@ START_BAND = 1e-12
 
 
 # ------------------------------------------------------------------ the engine's runs
-
-
-def bound(variant, dt):
-    """(spec, model, state, control, layout) of the world at step dt."""
-    raw = worlds.store_world(dt=dt, steps=round(TIMES[-1] / dt), buffers=variant == "store_world")
-    spec = parse_spec(raw)
-    model = get_model(spec.model)
-    state, p = model.initial_values(spec)
-    controls = control_values(spec, [0.0])
-    return spec, model, state, type(controls)(*(np.asarray(v[0]) for v in controls)), p
-
-
-def host_step(model, state, dt, control, p):
-    """One composite step in NumPy, as split_step takes it: each operator's half-step, the inner
-    model's IMEX step at the view, the half-steps in reverse."""
-    valid = True
-    for op in model.splits:
-        state, ok = model._half_step(op, state, 0.5 * dt, control, p, xp=np)
-        valid &= bool(ok)
-    moved, ok = model.inner.imex_step(
-        model.inner.inner_state(state),
-        dt,
-        model.control_view(control, state, p, xp=np),
-        model.view(p, state, xp=np),
-        xp=np,
-    )
-    valid &= bool(ok)
-    state = state._replace(**moved._asdict())
-    for op in reversed(model.splits):
-        state, ok = model._half_step(op, state, 0.5 * dt, control, p, xp=np)
-        valid &= bool(ok)
-    return state, valid
 
 
 class Names:
@@ -177,7 +145,9 @@ class Run:
     its end. Every ledger that @3 and the operators check closes at each of those rows."""
 
     def __init__(self, variant, dt):
-        self.spec, self.model, self.start, self.control, self.p = bound(variant, dt)
+        buffers, end = variant == "store_world", round(TIMES[-1] / dt)
+        self.spec = parse_spec(worlds.store_world(dt=dt, steps=end, buffers=buffers))
+        self.model, self.start, self.control, self.p = bound(self.spec)
         state, states, every = self.start, [self.start], round(TIMES[0] / dt)
         steps = every * ROWS[variant]
         for k in range(1, steps + 1):

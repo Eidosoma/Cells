@@ -22,6 +22,7 @@ import math
 import numpy as np
 
 from cells.definitions.specs import parse_spec
+from cells.execution.schedule import control_values
 from cells.execution.windows import WindowPolicy, iter_windows
 from cells.records.io import load_snapshot, write_snapshot
 from cells.registry.models import get_model
@@ -144,6 +145,36 @@ class Run(Start):
     def observations(self):
         self.windows = list(iter_windows(self.spec, POLICY))
         return [window.observations for window in self.windows]
+
+
+def bound(spec):
+    """(model, state, control, layout) of a definition at its start, in NumPy."""
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    controls = control_values(spec, [0.0])
+    return model, state, type(controls)(*(np.asarray(v[0]) for v in controls)), p
+
+
+def host_step(model, state, dt, control, p):
+    """One composite step in NumPy, as split_step takes it: each operator's half-step, the inner
+    model's IMEX step at the view, the half-steps in reverse."""
+    valid = True
+    for op in model.splits:
+        state, ok = model._half_step(op, state, 0.5 * dt, control, p, xp=np)
+        valid &= bool(ok)
+    moved, ok = model.inner.imex_step(
+        model.inner.inner_state(state),
+        dt,
+        model.control_view(control, state, p, xp=np),
+        model.view(p, state, xp=np),
+        xp=np,
+    )
+    valid &= bool(ok)
+    state = state._replace(**moved._asdict())
+    for op in reversed(model.splits):
+        state, ok = model._half_step(op, state, 0.5 * dt, control, p, xp=np)
+        valid &= bool(ok)
+    return state, valid
 
 
 def run_one():

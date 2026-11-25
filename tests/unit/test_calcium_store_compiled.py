@@ -4,7 +4,8 @@ at -5 mV. Ten steps in two windows meet every criterion of tests/calcium_store_f
 restart from the written checkpoint repeats the second window bit for bit; and the first window's
 end, imported as a new definition, continues the run (planted: the store's charge anchor dropped,
 so its voltage starts at 0). Planted in the criteria, each missed: a pump without its voltage,
-the exchanger's two ions exchanged, one patch's capacitance 0.01% off.
+the exchanger's two ions exchanged, one patch's capacitance 0.01% off. The first window's rows
+are also those of row 12's NumPy steps, to rounding.
 
 Seconds: 40 to 55 on the shared CPUs, of which 30 to 45 are its one compile (a window's program,
 which the restart and the import reuse), so tier 2. The reason (D224): a closed world with a
@@ -35,6 +36,26 @@ def test_the_store_world_moves_as_its_equations_and_restarts(one, tmp_path):
     assert abs(v[-1]) < abs(v[0])  # The store's voltage relaxes.
     rows.agrees(one)
     rows.restarts(one, tmp_path)
+
+
+def test_the_compiled_steps_are_the_numpy_steps(one):
+    """Row 12's steps (host_step) are these: five of them, every field of every row, to rounding.
+    Planted: a step longer by 1e-9 of itself."""
+
+    def off(dt):
+        model, state, control, p = rows.bound(one.spec)
+        history, worst = one.windows[0].history, 0.0
+        for k in range(1, rows.WINDOW + 1):
+            state, valid = rows.host_step(model, state, dt, control, p)
+            assert valid
+            for name, value in state._asdict().items():
+                compiled = np.asarray(getattr(history, name))[k]
+                size = np.max(np.abs(compiled), initial=0.0)
+                if size > 0:
+                    worst = max(worst, np.max(np.abs(np.asarray(value) - compiled)) / size)
+        return worst
+
+    assert off(rows.DT) <= 1e-12 < off(rows.DT * (1 + 1e-9))
 
 
 def imported(run, *, anchor=True):
