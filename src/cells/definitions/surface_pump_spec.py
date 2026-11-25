@@ -204,15 +204,24 @@ def parse(data):
     original = copy.deepcopy(e["junction_controls"])
     if type(original) is not list:
         raise ConfigError("Require explicit junction controls")
+    scaled = []
     for group in e["junction_controls"]:
         _fields(group, {"junction_id", "schedule"}, "junction control")
         if group["junction_id"] not in gates or type(group["schedule"]) is not list:
             raise ConfigError("Unknown or malformed junction control")
+        changes = []
         for c in group["schedule"]:
             _fields(c, {"time", "availability"}, "junction control change")
-            c["availability"] = (
-                fraction(c["availability"], "availability") * (gates[group["junction_id"]][3])
+            changes.append(
+                {
+                    **c,
+                    "availability": fraction(c["availability"], "availability")
+                    * (gates[group["junction_id"]][3]),
+                }
             )
+        scaled.append({**group, "schedule": changes})
+    # New control objects: a schedule shared with another control stays unscaled there.
+    e["junction_controls"] = scaled
     m["id"], x["solver"] = base.MODEL_ID, "rk4"
     # The factored field, version 2 or (declared) version 3, or a field solver a later family
     # admits (admitting_field_solvers); any other declaration fails the passive parser's field

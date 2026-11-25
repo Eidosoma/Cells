@@ -286,11 +286,21 @@ def parse(data):
     # Validate the initial field with the actual intrinsic junction openings.
     original = copy.deepcopy(e["junction_controls"])
     gate_by_id = {g.id: g.initial_gate for g in gates}
+    scaled = []
     for group in e["junction_controls"]:
         if group["junction_id"] not in gate_by_id:
             raise ConfigError("Unknown junction control")
-        for c in group["schedule"]:
-            c["availability"] *= gate_by_id[group["junction_id"]]
+        initial = gate_by_id[group["junction_id"]]
+        scaled.append(
+            {
+                **group,
+                "schedule": [
+                    {**c, "availability": c["availability"] * initial} for c in group["schedule"]
+                ],
+            }
+        )
+    # New control objects: a schedule shared with another control stays unscaled there.
+    e["junction_controls"] = scaled
     passive = base.parse(raw)
     m0 = passive.model
     if m0.temperature_K != voltage_gates.TEMPERATURE_K:

@@ -748,9 +748,9 @@ def _parse_couplings(raw, base, listed, states, *, version=1):
             if valence[origin] != 0:
                 raise ConfigError(
                     f"{LAW_ID}: coupling {name} reads the charged species {origin!r} "
-                    "instantaneously; "
-                    "@3's step moves it, so a factor held through the step would lag (first order) "
-                    "and could close a loop @3's bound does not see: read it through a state (§1.4)"
+                    "instantaneously; an instantaneous source must be a neutral row (valence 0), "
+                    "whether or not the row has a route or is moved by the step: read it through "
+                    "a state (§1.4)"
                 )
             common.check_impermeant(m, origin, LAW_ID)
             k = _positive(entry["half_saturation_mM"], f"coupling {name}'s half_saturation_mM")
