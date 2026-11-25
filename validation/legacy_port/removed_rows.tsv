@@ -396,19 +396,19 @@ tests/unit/test_numerics.py::test_constant_input_cases[0-0.4-1]	a row of a file 
 tests/unit/test_numerics.py::test_constant_input_cases[1-0-0]	a row of a file that stays	moved to a live world, or dropped with its legacy world	the file's new IDs are in new_test_ids.txt	C
 tests/unit/test_numerics.py::test_constant_input_cases[1-0.4-0]	a row of a file that stays	moved to a live world, or dropped with its legacy world	the file's new IDs are in new_test_ids.txt	C
 tests/unit/test_numerics.py::test_nonfinite_derived_state_is_refused_even_without_sampling	a row of a file that stays	moved to a live world, or dropped with its legacy world	the file's new IDs are in new_test_ids.txt	C
-tests/unit/test_plasma_calcium.py::test_assembly_independent_event_reference	a retargeted file, settled	left to the re-expression		pump-and-symports-build
-tests/unit/test_plasma_calcium.py::test_assembly_restart_partition_and_transport_effect	a retargeted file, settled	left to the re-expression		pump-and-symports-build
-tests/unit/test_plasma_calcium.py::test_canonical_schema_and_complete_artifacts	a retargeted file, settled	left to the re-expression		pump-and-symports-build
-tests/unit/test_plasma_calcium.py::test_complete_restart_windows_partitions_and_future_controls	a retargeted file, settled	left to the re-expression	its batch windows and partitions; its restart half is of the dropped kind	pump-and-symports-build
+tests/unit/test_plasma_calcium.py::test_assembly_independent_event_reference	a retargeted file, open	left to the re-expression		D and E
+tests/unit/test_plasma_calcium.py::test_assembly_restart_partition_and_transport_effect	a retargeted file, open	left to the re-expression		D and E
+tests/unit/test_plasma_calcium.py::test_canonical_schema_and_complete_artifacts	a retargeted file, open	left to the re-expression		D and E
+tests/unit/test_plasma_calcium.py::test_complete_restart_windows_partitions_and_future_controls	a retargeted file, open	left to the re-expression	its batch windows and partitions; its restart half is of the dropped kind	D and E
 tests/unit/test_plasma_calcium.py::test_corrupt_complete_checkpoint_is_rejected[dissipation]	a retargeted file, settled	dropped: the engine's general tests hold it (the lead, ruling 3)		pump-and-symports-build
 tests/unit/test_plasma_calcium.py::test_corrupt_complete_checkpoint_is_rejected[exchanger_cycles]	a retargeted file, settled	dropped: the engine's general tests hold it (the lead, ruling 3)		pump-and-symports-build
 tests/unit/test_plasma_calcium.py::test_corrupt_complete_checkpoint_is_rejected[negative_dissipation]	a retargeted file, settled	dropped: the engine's general tests hold it (the lead, ruling 3)		pump-and-symports-build
 tests/unit/test_plasma_calcium.py::test_corrupt_complete_checkpoint_is_rejected[padding]	a retargeted file, settled	dropped: the engine's general tests hold it (the lead, ruling 3)		pump-and-symports-build
 tests/unit/test_plasma_calcium.py::test_corrupt_complete_checkpoint_is_rejected[pump_cycles]	a retargeted file, settled	dropped: the engine's general tests hold it (the lead, ruling 3)		pump-and-symports-build
-tests/unit/test_plasma_calcium.py::test_cpu_gpu_agreement	a retargeted file, settled	left to the re-expression		pump-and-symports-build
+tests/unit/test_plasma_calcium.py::test_cpu_gpu_agreement	a retargeted file, open	left to the re-expression		D and E
 tests/unit/test_plasma_calcium.py::test_cubic_dissipation_enclosure_rejects_interior_excursion	a retargeted file, settled	gone with the older definition (neither of the ruling's groups names it)	no counterpart: kinds refuse RK4	pump-and-symports-build
-tests/unit/test_plasma_calcium.py::test_ensemble_aggregation	a retargeted file, settled	left to the re-expression		pump-and-symports-build
-tests/unit/test_plasma_calcium.py::test_ensemble_planning_preserves_model_and_world_identity	a retargeted file, settled	left to the re-expression		pump-and-symports-build
+tests/unit/test_plasma_calcium.py::test_ensemble_aggregation	a retargeted file, open	left to the re-expression		D and E
+tests/unit/test_plasma_calcium.py::test_ensemble_planning_preserves_model_and_world_identity	a retargeted file, open	left to the re-expression		D and E
 tests/unit/test_plasma_calcium.py::test_independent_references_and_timestep_refinement	a retargeted file, settled	retargeted	test_the_closed_run_converges_to_the_independent_ode_at_second_order	pump-and-symports-build
 tests/unit/test_plasma_calcium.py::test_interventions_and_previous_model_reduction[absent]	a retargeted file, settled	dropped: the engine's general tests hold it (the lead, ruling 3)		pump-and-symports-build
 tests/unit/test_plasma_calcium.py::test_interventions_and_previous_model_reduction[both_off]	a retargeted file, settled	dropped: the engine's general tests hold it (the lead, ruling 3)		pump-and-symports-build
@@ -438,7 +438,7 @@ tests/unit/test_plasma_calcium.py::test_invalid_transport_definitions[unknown_ow
 tests/unit/test_plasma_calcium.py::test_invalid_transport_definitions[zero_km]	a retargeted file, settled	gone with the older definition (neither of the ruling's groups names it)	test_cycle_kind: 'K of zero', 'K_ATP of zero', 'a half-saturation of zero'	pump-and-symports-build
 tests/unit/test_plasma_calcium.py::test_native_pmca_positive_domain_and_explicit_blocker	a retargeted file, settled	retargeted	test_the_pump_is_the_pinned_sources_positive_law_and_an_independent_scalar_form	pump-and-symports-build
 tests/unit/test_plasma_calcium.py::test_ncx_reference_reversal_stoichiometry_and_stall_gradient	a retargeted file, settled	retargeted	test_the_exchange_meets_the_direct_products_at_its_reversal_and_on_both_sides	pump-and-symports-build
-tests/unit/test_plasma_calcium.py::test_public_cli	a retargeted file, settled	left to the re-expression		pump-and-symports-build
+tests/unit/test_plasma_calcium.py::test_public_cli	a retargeted file, open	left to the re-expression		D and E
 tests/unit/test_plasma_calcium.py::test_stage_stoichiometry_owned_scatter_and_energy	a retargeted file, settled	retargeted	test_a_stage_moves_each_laws_counts_where_they_belong_and_its_energy_balances	pump-and-symports-build
 tests/unit/test_projective.py::test_unsupported_model_rejects	a row of a file that stays	moved to a live world, or dropped with its legacy world	the file's new IDs are in new_test_ids.txt	C
 tests/unit/test_scalar_tail_reuse.py::test_short_tail_reuses_one_executable_with_exact_complete_history[bioelectric_baseline]	a row of a file that stays	moved to a live world, or dropped with its legacy world	the file's new IDs are in new_test_ids.txt	C
