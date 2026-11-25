@@ -81,6 +81,16 @@ def written(block):
 # ------------------------------------------------------------------ definitions
 
 
+def beside(found, block, path=()):
+    """The paths of a block that was read back that the block itself does not have."""
+    if not (isinstance(found, dict) and isinstance(block, dict)):
+        return []
+    out = [(*path, key) for key in found if key not in block]
+    return out + [
+        p for key in found if key in block for p in beside(found[key], block[key], (*path, key))
+    ]
+
+
 @pytest.mark.parametrize("name", CHILDREN)
 def test_each_childs_block_is_read_back_from_its_parsed_definition(name):
     """PART2 §2: leaf for leaf, with no departure by the rule and none by the doubles but for what
@@ -92,6 +102,7 @@ def test_each_childs_block_is_read_back_from_its_parsed_definition(name):
     assert set(found) == set(block) and set(worlds.shown(found)) == {"ionic", *BESIDE} & set(
         worlds.shown(block)
     )
+    assert {p[-1] for p in beside(found, block)} == set(stores.OWN)  # A pump's two further keys.
     for cell, node in found["cells"].items():  # By the anchor rule, so not the block's.
         own = block["cells"][cell]["fixed_charge_equivalent_fmol"]
         assert node["fixed_charge_equivalent_fmol"] != own
@@ -450,6 +461,58 @@ UNPLACED = {
         m["species_conditions"][0] | {"id": "another"}
     ),
     "a one-way record": lambda m: m["transporters"][2].update(one_way=True),
+    "a release of two factors": lambda m: _entity(m["passive_routes"], "store_release_c_a").update(
+        factors=["release_factor_c_a", "release_factor_c_b"]
+    ),
+    "a factor read in the other cell": lambda m: m["species_conditions"][0].update(node="c_b"),
+    "a release's one-way record": lambda m: _entity(
+        m["passive_routes"], "store_release_c_a"
+    ).update(one_way=True),
+    "a leak's one-way record": lambda m: _entity(m["passive_routes"], "leak_Ca_m_b").update(
+        one_way=True
+    ),
+    "a store leak's one-way record": lambda m: _entity(
+        m["passive_routes"], "store_leak_Ca_c_b"
+    ).update(one_way=True),
+    "an exchanger with N outside": lambda m: m["transporters"][3].update(orientation={"N": "b"}),
+    "a factor of an activation alone": lambda m: m["species_conditions"][0]["reads"].pop(1),
+    "a factor with a second further read": lambda m: m["species_conditions"][0]["reads"].append(
+        m["species_conditions"][0]["reads"][2] | {"species": "B"}
+    ),
+}
+UNREADABLE = {  # What the engine refuses too, so that the declaration as submitted is read.
+    "a store's calcium by its own patch too": lambda m: _entity(
+        m["membranes"], "store_membrane_c_a"
+    )["permeability_m_per_s"].update(Ca=1e-08),
+    "a membrane's calcium by its own route too": lambda m: _entity(m["membranes"], "m_b")[
+        "permeability_m_per_s"
+    ].update(Ca=1e-08),
+    "the junction's calcium by its own route too": lambda m: m["junctions"][0][
+        "permeability_m_per_s"
+    ].update(Ca=1e-08),
+    "a held store": lambda m: _entity(m["extracellular"], "store_c_b").update(reservoir=True),
+    "an operator that no block has": lambda m: m["operators"].append({"law": "another@1"}),
+    "a second store of a cell": lambda m: m["operators"][0]["compartments"].append(
+        m["operators"][0]["compartments"][0] | {"id": "another", "node": "rim", "patch": "m_b"}
+    ),
+    "a reaction at a region": lambda m: m["operators"][1]["reactions"][2]["sites"].update(
+        outside=["rim"]
+    ),
+    "a pump of another stoichiometry": lambda m: m["transporters"][1]["parameters"].update(
+        stoichiometry=2
+    ),
+    "a route of another species": lambda m: m["passive_routes"].append(
+        _extra_route(patch="m_a", species="B")
+    ),
+    "a route of another law": lambda m: _entity(m["passive_routes"], "leak_Ca_m_a").update(
+        law="passive_neutral_permeation@1"
+    ),
+    "a second pump of a store": lambda m: m["transporters"].append(
+        m["transporters"][0] | {"id": "another"}
+    ),
+    "a pump with a store's host": lambda m: m["transporters"][3].update(host="store_membrane_c_a"),
+    "a reaction with a factor": lambda m: m["operators"][1]["reactions"][0].update(factors=[1]),
+    "a row with a background": lambda m: _entity(m["species"], "B").update(background={}),
 }
 
 
@@ -461,6 +524,16 @@ def test_a_piece_that_a_block_has_no_place_for_is_refused_by_name(whole, piece):
     UNPLACED[piece](raw["model"])
     found = exporter.readable(exporter.block, parse_spec(raw).to_dict())
     assert list(found) == ["unreadable"] and "no_section: " in found["unreadable"]
+
+
+@pytest.mark.parametrize("piece", UNREADABLE)
+def test_a_declaration_that_a_block_has_no_place_for_is_refused_by_name(whole, piece):
+    """The same of a declaration that the engine refuses, which is read as it was submitted."""
+    _, raw, _ = whole
+    raw = copy.deepcopy(raw)
+    UNREADABLE[piece](raw["model"])
+    found = exporter.readable(exporter.block, raw)
+    assert list(found) == ["unreadable"] and "no_section: " in found["unreadable"], found
 
 
 BROKEN = {
@@ -484,6 +557,12 @@ BROKEN = {
     "a cytosol that is not its cell": lambda b: b["stores"]["c_a"]["compartments"]["cytosol"][
         "initial_amount_fmol"
     ].update(K=100.0),
+    "a cytosol of another volume": lambda b: b["stores"]["c_a"]["compartments"]["cytosol"].update(
+        volume_pL=0.9
+    ),
+    "a row of two valences": lambda b: [
+        s["species"]["K"].update(valence=2) for s in b["stores"].values()
+    ],
     "a charged store": lambda b: b["stores"]["c_a"]["membrane"].update(initial_charge_C=1e-15),
     "a field with no place": lambda b: b["stores"]["c_a"]["membrane"].update(colour=1),
     "a control with no place": lambda b: b["calcium_controls"].update(nothing={}),
@@ -499,6 +578,7 @@ BROKEN = {
     "a reaction that differs by cell": lambda b: b["stores"]["c_b"]["reactions"][
         "bind_0_first"
     ].update(forward_rate_per_s=1.0),
+    "a further read of another law": lambda b: b["ip3_release"]["c_a"].update(law="cav12_m2h"),
     "a further read without a release": lambda b: b["stores"]["c_a"]["membrane"].update(
         release=None
     ),
@@ -532,9 +612,9 @@ def test_the_echo_of_a_pumps_energy_and_of_part_2s_defaults(whole):
 
     assert not departs(energy * (1 + 5e-13)) and departs(energy * (1 + 2e-12))
     large = {"ATP": 1500.0, "ADP": 1500.0, "Pi": 100.0}
-    wide = 16 * 2.0**-52 * R * 301.0 * (3100.0 + math.log(1000.0))
-    assert wide > 1e-12 * abs(energy)
-    assert not departs(energy + 0.99 * wide, large) and departs(energy + 2 * wide, large)
+    wide = 16 * 2.0**-52 * R * 301.0 * (3100.0 + math.log(1000.0)) + 1e-12 * abs(energy)
+    assert wide > 2e-12 * abs(energy)
+    assert not departs(energy + 0.99 * wide, large) and departs(energy + 1.01 * wide, large)
     assert departs(energy, large | {"Pi": 200.0})  # A above 3,200.
     own = found["stores"]["c_a"]["membrane"]["pump"]
     size = sum(abs(v) for v in own["fuel_standard_mu_RT"].values()) + math.log(1000.0)
@@ -630,6 +710,11 @@ def test_a_cluster_is_its_child_with_the_pools_path(invented):
     runs = [run, invented.run(f"{PAIR} s1 w0 h=2e-05"), invented.run(f"{SMALL} h=2e-05")]
     faults, counts = definitions.check(invented, runs=runs)
     assert faults == [] and (counts["composed files"], counts["ionic definitions"]) == (1, 1)
+    charged = copy.deepcopy(invented.raw["worlds"][WHOLE])
+    charged["stores"]["c_b"]["membrane"]["initial_voltage_V"] = 0.01
+    world = type(whole_)(WHOLE, "ip3_calcium", charged)
+    assert definitions.derived_faults(world) == [f"{WHOLE} c_b: its store is charged"]
+    assert definitions.derived_faults(whole_) == []
     for broken, text in (
         ({"same_as": "no_such"}, "which is no world"),
         ({"final_s": 0.0003}, "ends at 0.0003 s"),
@@ -791,6 +876,22 @@ def test_the_first_childs_readouts_are_the_ones_it_has():
         "extent_bind_1_first",
     } <= set(rows)
     assert not {"n_cell_K", "heat_junction"} & set(rows)
+    # A reaction that one cell lacks has no slot there, and moves the others' along the axis.
+    block = child("spatial")
+    for name in ("bind_0_first", "bind_0_second"):
+        del block["stores"]["c_b"]["reactions"][name]
+        del block["calcium_controls"]["reactions"]["c_b"][name]
+    raw = parse_spec(written(block)).to_dict()
+    assert worlds.departures(worlds.read(raw), block) == []
+    found = arrays(parse_spec(raw), [0.0, 2e-05], [0.0])
+    rows = readouts.rows(raw, found, [1])
+    extents = {"bind_0_second": {"c_a": 1}, "bind_1_first": {"c_a": 2, "c_b": 3}}
+    for name, places in extents.items():
+        assert rows[f"extent_{name}"] == {
+            cell: [found["reaction_extent_fmol"][1, k]] for cell, k in places.items()
+        }
+    assert set(rows["heat_reactions_cytosol"]) == {"c_a"}
+    assert set(rows["heat_reactions_store"]) == {"c_a", "c_b"}
 
 
 SOURCE = {name: kind() for name, kind in exporter.SOURCE.items()}
