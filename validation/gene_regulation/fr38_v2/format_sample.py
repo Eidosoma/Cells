@@ -11,6 +11,12 @@
   campaign.restart_record, campaign.v0_patch for P9) and is written with its provenance as
   `campaign run` writes it. So every key the real table carries appears, from the real export.
 - The retry's `table-retry/` holds family C, with the invented C run at 0.25 s as well.
+- One run is refused by the engine, so that the refusal's form is in the sample once (the lead's
+  ruling, 24 November 2026): D's `p_sched returned unlabelled` at 2.0 s, on an invented D whose
+  volume cap the swelling crosses. Every other entry keeps its blank and its own form.
+- The writer runs from a frozen snapshot of its own head (`scripts/gates/freeze_snapshot.py --scope
+  full --require-clean`), as the registered runs do, so every entry's `source` carries the
+  registered form (engine_revision, checkout_dirty, snapshot, snapshot_patch_sha256).
 - campaign.table builds the tables, with the invented windows and sample times in place of the
   registered ones (its `grids`).
 - **Scrubbing.** Every number in the tables is then replaced by a meaningless one of the same
@@ -30,6 +36,8 @@
   - A1's internals in B would otherwise follow registered B's own trajectory, since X's turnover
     does not depend on the release.
   - The lane's layout constants would otherwise echo SPEC.md's.
+  - A refusal's message keeps its words and its type (a string), but its numbers become `<number>`,
+    so none of the run's numbers survives in it.
 - **Paths.** Each entry's `record` path is cut to its part under the campaign folder. The records
   themselves stay in the work folder, unscrubbed, outside the sample.
 - SHA256SUMS lists the scrubbed files. README.md is written from the files themselves: every key
@@ -52,7 +60,7 @@ from validation.gene_regulation.fr38_v2 import campaign, worlds
 
 # Invented inputs, none of them SPEC.md's (and every number is scrubbed in the sample anyway).
 _HOLD = dict(m0_mM=0.02, n0_mM=1.7, pi0_mM=3.0, mu_N=23.0, r0_copies=11.0, rs0_copies=7.0,
-             residues=900, stages=6, speed=15.0, k_N_mM=0.04, pool_copies=2500.0, k_I=4.0e4,
+             residues=960, stages=8, speed=15.0, k_N_mM=0.04, pool_copies=2500.0, k_I=4.0e4,
              tau_s=50.0, h0_copies=25.0, k_d=0.003, k_s=0.015,
              p_sched=((0.0, 0.6), (128.0, 0.3)), window=(80.0, 240.0), horizon=480.0,
              every=8.0, samples=(240.0, 360.0, 456.0), background_mM=130.0)  # fmt: skip
@@ -67,6 +75,9 @@ INVENTED["D"] = replace(INVENTED["AN"], name="sample D",
 INVENTED_B = replace(worlds.ARM_B, tau_s=45.0, p=0.4, k_d=1 / 400, k_s=1 / 90,
                      window=(96.0, 288.0), horizon=480.0, every=24.0,
                      samples=(288.0, 384.0, 456.0))  # fmt: skip
+# The refused run (see the module docstring): the swelling crosses the 1.05 pL cap.
+REFUSED = dict(family="D", run="p_sched returned unlabelled", dt=2.0)
+REFUSED_HOLD = replace(INVENTED["D"], water=replace(INVENTED["D"].water, v_max_pL=1.05))
 GRIDS = {f: (h.window, h.samples) for f, h in INVENTED.items()} | {
     "B": (INVENTED_B.window, INVENTED_B.samples)
 }
@@ -106,7 +117,13 @@ def world(job):
     identity = dict(family=family, run=run) | ({"restart": True} if job.get("restart") else {})
     if family == "B":
         return worlds.b(_invented_b_run(run), dt=dt, f=INVENTED_B), identity, None
-    return worlds.hold(family, run, dt=dt, f=INVENTED[family]), identity, None
+    f = REFUSED_HOLD if _is_refused(job) else INVENTED[family]
+    return worlds.hold(family, run, dt=dt, f=f), identity, None
+
+
+def _is_refused(job):
+    """Whether a planned job is the sample's one refused run (the module docstring)."""
+    return {k: job.get(k) for k in ("family", "run", "dt")} == REFUSED and not job.get("restart")
 
 
 def run_jobs(work):
@@ -130,8 +147,8 @@ def run_jobs(work):
                                                  RESTART_POLICY, **identity)  # fmt: skip
             else:
                 record = campaign.one(raw, **identity)
-        if record.get("refused"):
-            raise RuntimeError(f"the invented world of {job} was refused: {record['refusal']}")
+        if bool(record.get("refused")) != _is_refused(job):
+            raise RuntimeError(f"the invented world of {job} was refused: {record.get('refusal')}")
         campaign._write(path, record, engine_run.late_sources(folder, source))
         done.append(str(path))
     return done
@@ -206,13 +223,24 @@ class _Scrub:
         raise TypeError(type(x))
 
 
-def _cut_paths(x, work):
-    """Each `record` path to its part under the campaign folder (`records/...`)."""
+NUMBER_IN_TEXT = re.compile(r"(?<![\w.@])-?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?(?![\w.])")
+
+
+def _cut_strings(x, work):
+    """Each `record` path to its part under the campaign folder (`records/...`), and each
+    refusal's message with its numbers replaced (the module docstring)."""
     if isinstance(x, dict):
-        return {k: (str(Path(v).relative_to(work)) if k == "record" and isinstance(v, str)
-                    else _cut_paths(v, work)) for k, v in x.items()}  # fmt: skip
+        out = {}
+        for k, v in x.items():
+            if k == "record" and isinstance(v, str):
+                out[k] = str(Path(v).relative_to(work))
+            elif k == "refusal" and isinstance(v, str):
+                out[k] = NUMBER_IN_TEXT.sub("<number>", v)
+            else:
+                out[k] = _cut_strings(v, work)
+        return out
     if isinstance(x, list):
-        return [_cut_paths(v, work) for v in x]
+        return [_cut_strings(v, work) for v in x]
     return x
 
 
@@ -225,7 +253,7 @@ def scrub_tables(work, out, forbidden):
         lines = []
         (out / folder).mkdir(parents=True, exist_ok=True)
         for source in sorted((Path(work) / folder).glob("table_*.json")):
-            doc = _cut_paths(json.loads(source.read_text()), Path(work))
+            doc = _cut_strings(json.loads(source.read_text()), Path(work))
             text = json.dumps(_Scrub(forbidden)(doc), sort_keys=True, separators=(",", ":"))
             left = [v for v in _numbers(json.loads(text)) if float(v) in forbidden]
             if left:
@@ -343,6 +371,30 @@ def _describe(v):
     return _type(v)
 
 
+def _first(table):
+    return next(iter(table["rungs"]["0.5"]["runs"]))
+
+
+def _length_lines(tables):
+    """The README's note on list lengths: the sample's, and the registered run's beside it."""
+    counts = []
+    for f, t in tables.items():
+        mine = len(t["rungs"]["0.5"]["runs"][_first(t)]["t"])
+        counts.append(f"{mine} in {f} (the registered run has {_registered_outputs(f)})")
+    return [
+        "**Lengths.** Every list of outputs has the invented worlds' length, not the registered",
+        "one: " + "; ".join(counts) + ".",
+        "That covers `t`, every `readouts` series, each `excess_over_blank` list and",
+        "`definition.experiment.observation_times`. `window_s` (2), `samples_s` (3), `route2` (6)",
+        "and `survival` (4) have the registered lengths.",
+    ]
+
+
+def _registered_outputs(family):
+    raw = worlds.world(family, worlds.LABELLED[family][0], dt=worlds.H)
+    return len(raw["experiment"]["observation_times"])
+
+
 def readme(out, head, sums, n_forbidden):
     """README.md: the layout, every key and its type to the leaf, and the lead's four answers."""
     tables = {p.stem.split("_", 1)[1]: json.loads(p.read_text())
@@ -355,7 +407,8 @@ def readme(out, head, sums, n_forbidden):
         "# FR-38 v2: a format sample of the engine's tables (amendment 4, §8)",
         "",
         "Written by validation/gene_regulation/fr38_v2/format_sample.py at the builder's",
-        f"head `{head}`, on invented inputs only. Every record is a real engine run of an",
+        f"head `{head}`, on invented inputs only, from a frozen snapshot of that head (so each",
+        "entry's `source` has the registered runs' form). Every record is a real engine run of an",
         "invented world with the registered structure, filed under its registered run name and",
         "built into the tables by the campaign's own code. Every number is then replaced by a",
         "meaningless one of the same type: an int by an int and a float by a float, with lists",
@@ -365,7 +418,14 @@ def readme(out, head, sums, n_forbidden):
         "registered definitions and the spec's text, and none equals one of them or its original.",
         "So the keys, nesting and types are the real table's, and no value of any world can be",
         "read here. Each entry's `record` is cut to its part under the campaign folder; in the",
-        "real table it is the record's path as written.",
+        "real table it is the record's path as written. A refusal's message keeps its words, with",
+        "its numbers replaced by `<number>`.",
+        "",
+        *_length_lines(tables),
+        "",
+        "**K and Y.** In every family, `definition.model.species` gives K and Y an `id` and a",
+        "`valence` only: no `standard_mu_RT` is declared for them. LAWS.md §5 reads them at mu°",
+        "0 in family D; the declaration does not say so.",
         "",
         "## Files",
         "",
@@ -445,8 +505,9 @@ def readme(out, head, sums, n_forbidden):
                 ("P8, with its planted blank", tables["C"]["plants"]["P8"]),
             )
         ),  # fmt: skip
-        "- a refused run (none in this sample) would carry `refused` (true), `refusal` (string),",
-        "  `definition` and `record` only",
+        '- a refused run (`table_D.json`, `"2.0"`, `p_sched returned unlabelled`: an invented D',
+        "  whose 1.05 pL volume cap the swelling crosses, which the engine refuses at run time):",
+        "  `refused` (true), `refusal` (string), `definition` and `record` only",
         "",
         "`restart.checkpoint`:",
         *_lines(an["restart"]["checkpoint"], 0),
@@ -459,6 +520,10 @@ def readme(out, head, sums, n_forbidden):
     for f, t in tables.items():
         labelled = t["rungs"]["0.5"]["runs"][next(iter(t["rungs"]["0.5"]["runs"]))]["readouts"]
         lines.append(f"- {f} ({len(labelled)}): " + ", ".join(f"`{k}`" for k in sorted(labelled)))
+    refused = tables["D"]["rungs"]["2.0"]["runs"]["p_sched returned unlabelled"]
+    lines += ["", '**The refused entry** (D, `p_sched returned unlabelled` at `"2.0"`):']
+    lines += _lines({k: v for k, v in refused.items() if k != "definition"}, 0)
+    lines.append("- `definition`: object, the engine's declaration as run (as any run entry's)")
     lines += ["", "**`checks`** (AN `p_sched returned`):", *_lines(honest["checks"], 0)]
     lines += ["", "**`own_ledgers_at_end`** (AN `p_sched returned`):",
               *_lines(honest["own_ledgers_at_end"], 0)]  # fmt: skip
@@ -471,6 +536,14 @@ def readme(out, head, sums, n_forbidden):
         definition = runs[next(iter(runs))]["definition"]
         lines += [f"### {label}: `{f}`'s first run", "", *_lines(definition, 0), ""]
     (out / "README.md").write_text("\n".join(lines) + "\n")
+
+
+def _head():
+    """The Git revision the sample is written at: the frozen snapshot's, or the checkout's."""
+    snapshot = engine_run.ROOT / "SNAPSHOT.json"
+    if snapshot.exists():
+        return json.loads(snapshot.read_text())["git_revision"]
+    return engine_run.git("rev-parse", "HEAD").strip()
 
 
 def main(argv=None):
@@ -486,9 +559,8 @@ def main(argv=None):
     out.mkdir(parents=True, exist_ok=False)
     forbidden = forbidden_numbers(work)
     sums = scrub_tables(work, out, forbidden)
-    head = engine_run.git("rev-parse", "HEAD").strip()
-    readme(out, head, sums, len(forbidden))
-    print(json.dumps(dict(out=str(out), head=head, sha256=sums), indent=1))
+    readme(out, _head(), sums, len(forbidden))
+    print(json.dumps(dict(out=str(out), head=_head(), sha256=sums), indent=1))
     return 0
 
 
