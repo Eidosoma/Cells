@@ -2260,14 +2260,6 @@
    "cls": [
     "cut"
    ],
-   "path": "tests/unit/test_cotransport.py",
-   "text": "law\\.split\\(\"_\"\\)",
-   "reason": "the name of an optional evidence file, which nothing reads"
-  },
-  {
-   "cls": [
-    "cut"
-   ],
    "path": "tests/unit/test_kind_lifecycle_roles.py",
    "text": "planted_law\\[",
    "reason": "an array of codes"
