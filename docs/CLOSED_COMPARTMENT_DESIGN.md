@@ -695,8 +695,8 @@ it failed open.
 
 **Amended 25 November 2026:** the per-stage rule holds the compartment's node with kinds or without
 (CALCIUM_STORE_AND_CHANNELS_DESIGN §8.3). So the reason below for admitting a permeability only
-beside kinds is weaker than it was. The rule itself is unchanged, and widening it would need a
-ruling of its own.
+beside kinds is weaker than it was (**S**, the calcium note's author's reading; not tried). The rule
+itself is unchanged, and widening it would need a ruling of its own.
 
 **The rule (refusal 4, version 1.1).** For each declared compartment's bounding patch:
 - **@3's own routes:** a Na/K or Ca pump, or a channel population, stays refused: the per-stage

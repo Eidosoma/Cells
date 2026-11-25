@@ -139,7 +139,7 @@ effort and the main risk.
   - `clleak_always_open@1` (D228 item 3; 6ed4b280, tag `f-chloride-leak-landed-2026-11-19`).
   - Channel populations carry the ions that their law declares, at the law's valences. `cav1p2_m2h@1`
     carries Ca²⁺ (25 November 2026; before it, populations carried Na⁺, K⁺ and Cl⁻ only). A law that
-    carries another ion must declare its material term.
+    carries an ion other than Na⁺, K⁺ and Cl⁻ must declare its material term.
 - **Junctions:** `junction_voltage_relaxation@1` and `delayed_first_order_junction_formation@1`,
   with junction heat booked by `trapezoid_nonnegative@1`.
 - **Routes on the passive-routes kind:**
@@ -896,6 +896,12 @@ the rest follow in order).
 ## 2.2 The prerequisites, and their state on main
 
 Read in the code at 7f357cfb and in git's log.
+
+**Two statements of the table are out of date (25 November 2026).** The mitochondria's cycle laws landed
+on 20 November with base forms and the read `rapid_binding@1`, so built-in laws move closure rows. The
+seven of them that move a charged row at both ends declare `material_term` since the calcium note's step 5,
+and so do its pump, its exchanger and its two symports (the first two their charge slope as well): the
+proton pump's is not the only step term.
 
 | Prerequisite | State on main | Still missing |
 | --- | --- | --- |

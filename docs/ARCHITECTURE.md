@@ -252,16 +252,17 @@ experiment. The status words are the ones above.
 - **A gate that reads concentrations. Holds today.** `species_condition@1` turns the concentrations
   at a node into a factor between 0 and 1. Any route or channel may name it, as a store's release
   does.
-- **A step that these pieces cannot take is refused. Holds today.** The step checks, at every
-  explicit stage, the charge behind each patch beside a store, the amounts of a scarce ion through a
-  channel, the rows that a cycle moves where its law declares them bounded, and the feedback of a
-  release on the concentration its gate reads. Nothing is clipped.
+- **Four rules hold the step. Hold today.** At every explicit stage the step is refused, never
+  clipped, where it is too long for the charge behind each patch beside a store, for the amounts of a
+  scarce ion through a channel, for the rows that a cycle moves where its law declares them bounded,
+  or for the feedback of a release on the concentration its gate reads. Their gaps are below.
 
 **What was compared.** None of it is judged.
-- **One cell and one store,** in the engine's own NumPy steps, against code-blind references: 56
-  observables at three step sizes, each within 1.5 times the engine's own error estimate (plus 1e-8
-  of its change), and second order wherever the order is judged (2.00 to 2.06). The laws' rates,
-  slopes, heats and works meet the same references at 153 states.
+- **One cell and one store,** in the engine's own NumPy steps, against code-blind references, at
+  three step sizes. At the finest each of 56 observables is within 1.5 times the engine's own error
+  estimate (plus 1e-8 of its change). The error falls at second order, 2.00 to 2.06, wherever an
+  order can be judged. The laws' rates, slopes, heats and works meet the same references at 153
+  states.
 - **The same world compiled** repeats those steps to rounding, and a restart from a checkpoint
   repeats its own run bit for bit. The two-cell closed world, with two stores, a junction and two
   gated releases, closes every ledger, keeps each ion's whole-world amount and gives the potentials

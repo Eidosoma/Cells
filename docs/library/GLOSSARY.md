@@ -286,9 +286,9 @@ or out. A held bath is not one.
 
 ### Floating node
 
-A finite space outside the cells whose potential nothing holds: it is no held bath, it is not the
-world's zero of potential, and no face names it. Its voltage follows the charge on its own patches,
-so a long step is refused at those patches.
+A finite space that is not a cell, such as a closed space inside one, whose potential nothing
+holds: it is no held bath, it is not the world's zero of potential, and no face names it. Its
+voltage follows the charge on its own patches, so a long step is refused at those patches.
 
 - **In other fields:** an organelle's inside, or any closed space (biology); a compartment with no
   clamp (chemistry, physics); a free node of the capacitor network (computing).
