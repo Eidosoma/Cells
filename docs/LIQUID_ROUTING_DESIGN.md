@@ -39,10 +39,10 @@ routed into a node or a record and the supply drawn from a node or a declared in
 | **Today** | The wash exchanges a node's liquid with a buffer, and its sample goes to a record (D246). No operator moves one region's liquid into another. A face at a washed node is refused (D246 item 5), and a stopped energy check names no numbers |
 | **The mechanism** | One definition: well-mixed liquid moved between holders (inlets, finite nodes, records). A wash is two moves at an instant; a flow is moves at prescribed rates (§2) |
 | **Decided** | One new operator, `liquid_routing@1`. Its event part moves portions at declared times. Its split part runs prescribed flows by the exact step of the declared network. It takes over the wash after a bitwise check (§3.1). Its collector is a record that a later landing can open as a node (§3.2) |
-| **Exact to rounding** | The flow's trajectory at any step; volume and every solute; each portion's free energy and mixing heat; a step's total heat, which equals the state-function balance because flows end in collectors; labels |
+| **Exact to rounding** | The flow's trajectory at any admitted step (throughput ρ at most 1, §3.3); volume and every solute; each portion's free energy and mixing heat; a step's total heat, which equals the state-function balance because flows end in collectors; labels |
 | **Carrying an order** | How a step's heat is split among the holders (first order in the step); flow beside diffusion (Strang splitting, second order); @3's face transfer (the tableau's polynomial) and its default heat (third order per step, at resolved levels only) |
 | **FR-54** | A two-well harness on @3's faces against closed forms (§4.1). A stopped run reports its residual and bound (§4.2). The wash at a faced node, admitted for one neutral species once measured (§4.3) |
-| **Decisions** | Made on 24 November: Q1 and Q3 by the user, the rest by the coordinator (§10) |
+| **Decisions** | Made on 24 November: Q1 and Q3 by the user, the rest by the coordinator, with the flow's step limit on 25 November (§10) |
 
 ## 1. What exists
 
@@ -261,18 +261,66 @@ fixes the record so that opening changes none of its meaning or bits.
     start.
   - @3's outside and total ledgers gain (to records − from inlets) at each node, D150's sign, as the
     wash's do.
-- **The rounding bound,** derived:
+- **The rounding bound,** derived, for an admitted step:
   - P's columns, with their record entries, are checked on the host, as each segment's P is computed, to
     sum to 1 within 4 eps. The protocol also checks P̂ entry by entry against the references' decimal P,
     within 8 eps absolute (‖P‖ ≤ 1).
-  - **Both thresholds were probed** (S) on the pinned scipy against a 40-digit decimal exponential.
-    - The shapes: the equal-rate chain (a Jordan block), an unequal chain, and networks with loops of 8
-      and 64 nodes, at ρ up to 10.
-    - The results: the largest entry error was 1.0 eps, at 64 nodes, and the largest column-sum defect
-      0.97 eps.
-    - So the thresholds stand 4 and 8 times above what was seen.
-    - The probe is `/mnt/workspaces/Cells/fr54-57-design-20261124/probes/expm_probe.py`, with its output
-      beside it.
+  - **The admitted step** (the coordinator's ruling, 25 November):
+    - The throughput of a node over a step of h is its outflow × (h/2) / its volume. Its outflow is the sum
+      of the declared rates, in the segment of the schedule in force, of the flow links that leave it, to
+      another node or to a collector. A link that leaves an inlet is not a node's outflow, and a link that
+      enters a node is not counted. The throughput ρ of a flow is the largest over its nodes. A flow is
+      admitted for a step of h only where ρ is at most 1; above it the operator refuses by name.
+    - It is a ratio per half-step. §3.4's ρ = Qh/V is a whole step's, so it is twice this one at a node.
+    - So a step is at most two residence times (V/Q_out) at its fastest node. One step per residence time is
+      ρ = 0.5, and stays.
+    - The refusal names the node and its ρ. It comes at parse for every declared segment, and at run time,
+      as a segment's P is computed, where the schedule changes Q.
+    - The 4 and 8 eps thresholds then hold as measured, in the families below.
+    - **The later widening,** not built: a propagator in sub-steps, each at ρ ≤ 1, with a bound of 8 eps
+      per sub-step.
+  - **What was measured.** Every number here is scipy 1.18.1's `expm` on the host against decimal
+    references, in no engine run. The folder is `/mnt/workspaces/Cells/fr54-57-dt-study-20261125/` (its
+    `SHA256SUMS.txt`, and its `ERRATUM-1.txt` with `addendum-rho1/`, which has sums of its own).
+    - **The first probes** (24 November, `/mnt/workspaces/Cells/fr54-57-design-20261124/probes/expm_probe.py`,
+      with its output beside it) had two-node chains, to ρ = 5, and looped networks of 8 and 64 nodes whose
+      ρ was at most 0.995 and 1.19. The largest entry error was 1.0 eps and the largest column-sum defect
+      0.97 eps. **This note said "at ρ up to 10", which was wrong. D364 records the 1.0 eps from these
+      probes without their range, so it inherits the gap.**
+    - **The re-measurement found failures above ρ = 1** (25 November, `probes/propagator_thresholds.py`; 33
+      cases, 40-digit references). Three failed, all recorded as "ρ = 5":
+      - the chain of 64 nodes with random volumes (seed 11), at ρ = 5: 118 eps in an entry, and 118 eps in a
+        column sum, where 8 and 4 were allowed;
+      - the equal-volume loops of 8 and of 64 nodes, whose ρ is really 7.5 (the record had counted Q = 1 per
+        node, not the outflow): 4.22 and 5.82 eps in a column sum, with entries within;
+      - the error is scipy's own. Against the exact exponential of the very matrix it was given, the chain's
+        entry is off by 117.7 eps, and the product's rounding is below 0.31 eps (`addendum-rho1/attribution.py`).
+    - **The dense sweep** (`addendum-rho1/propagator_rho1.py`, run after the ruling with its question fixed
+      first; 60-digit references, the ruling's ρ): chains, splits and merges, and loops, of 2, 8 and 64 nodes;
+      equal, random and nearly equal volumes; one inlet column. 1107 cases:
+
+      | ρ | Cases | Worst entry (of 8 eps) | Worst column sum (of 4 eps) | Cases outside a limit |
+      | --- | ---: | ---: | ---: | ---: |
+      | ≤ 1 (13 values) | 657 | 1.36 | 1.89 | 0 |
+      | 1.25 | 63 | 2.76 | 2.41 | 0 |
+      | 1.5 | 63 | 5.57 | 2.89 | 0 |
+      | 2 | 63 | 18.6 | 2.78 | 43 |
+      | 2.5 (8 nodes at most) | 36 | 26.6 | 3.00 | 18 |
+      | 3 | 63 | 55.5 | 4.59 | 29 |
+      | 4 (8 nodes at most) | 36 | 2.20 | 3.88 | 0 |
+      | 5 | 63 | 2.91 | 5.87 | 10 |
+      | 7.5 | 63 | 3.28 | 9.02 | 13 |
+
+      - At ρ ≤ 1 the thresholds stand about 2 (column) and 6 (entry) times above what was seen.
+      - ρ = 2 is the first sampled failure, and nothing lies between it and 1.5. The error is not
+        monotone in ρ, so the zero at 4 says nothing of 64 nodes, which were not sampled there.
+      - At ρ ≤ 1 the matrix's 1-norm was at most 2, and every case that broke a limit had a norm of 4 or
+        more, to rounding (S: a reading of these numbers, not of scipy's source).
+      - The inlet's column was the dimensionless Q_in h/V_fed, bounded by ρ. A column in fmol would not be
+        bounded by ρ, so the engine's call must use this form (S: a condition of the measured basis that
+        the ruling does not state).
+      - These families were measured and not proved. Another balanced network (Q4) has the host's column
+        check at its own segment, which fails closed, and no entry check but the protocol's.
     - The registration re-measures both on the engine's own call before the tag.
   - Each half-step's material error is then at most (K + 4) eps of the moved amounts, with K the routed
     nodes. Over S steps each amount lies within 2S (K + 12) eps of the total amount from the exact one,
@@ -597,7 +645,7 @@ sets its tolerance: a rounding bound or an order window, never the other.
 | **57** Volume: inflow equals outflow at every chamber, or refused by name | Refusal rows | — |
 | **57** An exact coupled step; derived tolerance; the sum to a derived rounding bound | §2 and §3.3; kernel rows at 1, 8 and 64 steps per residence time agree within the bound | Plant 10 |
 | **57** Mixing heat booked; otherwise the energy check stops the run | Runs, with host checks on every row | Plant 8, refused with item 2's message |
-| **57** Version-1 refusals: ions; flow beside diffusion or binding at one node | Refusal rows: ions across a node-to-node link, at the definition and at run time (§3.3). Diffusion opens with §4.3 | — |
+| **57** Version-1 refusals: ions; a throughput above 1; flow beside diffusion or binding at one node | Refusal rows: ρ above 1 at parse, with the node and its ρ named, and where a schedule changes Q (§3.3); ions across a node-to-node link, at the definition and at run time (§3.3). Diffusion opens with §4.3 | — |
 | **57** Wording: V/Q of one chamber; clean buffer at the trace | The references include the inlet's trace exactly (the system is linear) | — |
 | **57** D148: absent unless declared; washed worlds bit for bit; a restart mid-flow bit for bit | A new operator; arm 7, the takeover's bitwise check; the resume file (§3.6) | The restart plants |
 | **57 energy** The loss rate Q[x ln(x/y) − x + y] against storage and fluxes | Kernel rows per step, exact; arm 5, each chamber's heat converging to ∫ RT Q y φ(x/y) dt at first order | Plant 5 |
@@ -620,6 +668,8 @@ sets its tolerance: a rounding bound or an order window, never the other.
   ligand's trace;
 - a link out of a record or into an inlet, and a record declared with contents but no volume;
 - a flow into a sink (flows end in collectors, §3.4);
+- a flow whose throughput ρ exceeds 1, at any node and in any declared segment, with the node and its ρ
+  named (§3.3);
 - a flow at a node that a face touches, unless the faces take `exact_free_energy_heat@1` (§4.3);
 - a path across a routed node's surface (`surface_crossings`), apart from §4.3's lift;
 - at a flow's nodes: binding, turnover, the reactions and species exchange;
@@ -635,6 +685,7 @@ sets its tolerance: a rounding bound or an order window, never the other.
 - a heat that is not finite, or below its rounding floor;
 - a stale event count;
 - ions differing beyond rounding across a node-to-node link;
+- a flow whose throughput ρ exceeds 1 where the schedule changes Q, as that segment's P is computed (§3.3);
 - under the default face heat, a state after an event outside §4.1's domain at a faced node.
 
 **Domains:**
@@ -643,8 +694,8 @@ sets its tolerance: a rounding bound or an order window, never the other.
 - the solutes are neutral;
 - a node's concentration is positive (a trace at least), and a record's is ≥ 0 with zero volume
   admitted;
-- the step is any size for the flow itself, since the step is exact. Beside diffusion it is the step the
-  registration declares.
+- a flow's step is at most two residence times of its fastest node (throughput ρ at most 1, §3.3), and
+  within that it is exact to rounding. Beside diffusion it is the step the registration declares.
 
 ## 7. IDs under the planned rename (D345, D346)
 
@@ -691,7 +742,7 @@ FR-54's T2 and T4 carry the tableau's own orders, with derived bounds and ratios
 
 | Claim | The cheapest proof |
 | --- | --- |
-| The flow's trajectory is exact at any step | Kernel rows: the half-step applied twice per step, against the closed forms in decimal, at 1, 8 and 64 steps per residence time |
+| The flow's trajectory is exact at any admitted step (§3.3) | Kernel rows: the half-step applied twice per step, against the closed forms in decimal, at 1, 8 and 64 steps per residence time |
 | Volume and every solute are conserved | The same rows' own ledgers; the runner's host checks on Runs' every row |
 | Each portion's heat is exact and ≥ 0, and the total is the state-function balance | Kernel rows: the growing collector in both orders and with three deliveries; the uniform stream; the wash's 50-digit φ rows, kept |
 | The one-mechanism link | One kernel row: an f-ladder with ratio 4 |
@@ -772,7 +823,7 @@ The seconds below are priced from measured rows in `tests/test_tiers.json`. The 
 
 | File | Change | Seconds | Reason |
 | --- | --- | --- | --- |
-| `test_wash_schedule.py` (tier 1, 9.7 s; renamed with the operator when the wash is retired) | Kernel and refusal rows, NumPy | +3 | The operator's own rows, with no world compiled |
+| `test_wash_schedule.py` (tier 1, 9.7 s; renamed with the operator when the wash is retired) | Kernel and refusal rows (the throughput's among them), NumPy | +3 | The operator's own rows, with no world compiled |
 | `test_heat_bookings_formula.py` (tier 2, 35 s) | §4.1's host one-step rows on `face_world`, both heats; the trace-start row reads item 2's numbers | +20 | No runner needed |
 | `test_neutral_arrival_labels.py` (tier 2, 60 s) | The exact map with `carried` and `collected`, the chain row and plant 11; `same_physics` gains `label_collected_fmol` | +2 | NumPy |
 | One vector-window refusal test | Item 2's numbers | 0 | An extended row |
