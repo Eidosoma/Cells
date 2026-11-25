@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from cells.registry.legacy_entry import legacy
+from cells.registry.model_table import MODELS
 
 if TYPE_CHECKING:
     from cells.definitions.surface_tissue_spec import SurfaceExperiment, SurfaceTissueModel
@@ -861,11 +862,13 @@ class SimulationSpec:
 
         if isinstance(m, AssemblyModel):
             return assembly_to_dict(self)
-        # The older families (D188 R1); their half also holds the execution and experiment
-        # type refusals that stood between them, so they still apply to the models below.
-        older = legacy().to_dict(self)
+        older = legacy().to_dict(self)  # The older families (D188 R1).
         if older is not None:
             return older
+        if isinstance(x, MultispeciesExecutionSpec):
+            raise ConfigError("Multispecies execution settings require their own model identity")
+        if not isinstance(e, ExperimentSpec):
+            raise ConfigError("Experiment type does not match the declared model")
         if e.leak or e.pump or x.membrane_capacity != 0:
             raise ConfigError("This model does not support membrane controls or capacity")
         contact_type = GraphContactChange if isinstance(m, ReactionTransportSpec) else ContactChange
@@ -1070,17 +1073,16 @@ def parse_spec(data: dict) -> SimulationSpec:
     older = legacy().parse(data)  # The older families (D188 R1).
     if older is not None:
         return older
+    if not isinstance(data["model"], dict):
+        raise ConfigError("model must be an object")
+    model_id = data["model"].get("id")
+    if model_id not in (MODEL_ID, EMT_MODEL_ID, PAIR_MODEL_ID, REACTION_TRANSPORT_ID):
+        available = ", ".join((MODEL_ID, EMT_MODEL_ID, PAIR_MODEL_ID, *MODELS))
+        raise ConfigError(f"Unknown model: {model_id!r}; available: {available}")
     model_fields = {"id", "units", "population", "initial_state", "parameters"}
     if isinstance(data["model"], dict) and data["model"].get("id") == REACTION_TRANSPORT_ID:
         model_fields.add("species")
     model = _fields(data["model"], model_fields, "model")
-    if model["id"] not in (MODEL_ID, EMT_MODEL_ID, PAIR_MODEL_ID, REACTION_TRANSPORT_ID):
-        raise ConfigError(
-            f"Unknown model: {model['id']!r}; "
-            f"available: {MODEL_ID}, {EMT_MODEL_ID}, {PAIR_MODEL_ID}, "
-            f"{REACTION_TRANSPORT_ID}, {BIOELECTRIC_ID}, {BIOELECTRIC_PAIR_ID}, {SOURCE_PAIR_ID}, "
-            f"{MULTISPECIES_ID}, {VOLTAGE_GATED_ID}"
-        )
     units = EMT_UNITS if model["id"] == EMT_MODEL_ID else UNITS
     if model["units"] != units:
         raise ConfigError(f"This model requires exactly {units}; no implicit unit conversion")

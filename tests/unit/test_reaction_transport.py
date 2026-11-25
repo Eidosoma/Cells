@@ -12,9 +12,11 @@ from cells.definitions.specs import (
     ContactChange,
     GraphContactChange,
     InputChange,
+    MultispeciesExecutionSpec,
     load_spec,
     parse_spec,
 )
+from cells.definitions.surface_tissue_spec import SurfaceExperiment
 from cells.execution.errors import NumericalError
 from cells.execution.runner import branch_checkpoint, run, timeline, validate_checkpoint
 from cells.execution.schedule import control_values
@@ -135,6 +137,21 @@ def test_python_api_cannot_drop_or_substitute_controls(graph_data):
     ):
         with pytest.raises(ConfigError):
             run(replace(spec, experiment=changed))
+    settings = MultispeciesExecutionSpec(
+        **vars(spec.execution), material_balance_atol_fmol=(1e-12, 1e-12)
+    )
+    for changed, message in (
+        (
+            replace(spec, execution=settings),
+            "Multispecies execution settings require their own model identity",
+        ),
+        (
+            replace(spec, experiment=SurfaceExperiment(12.0, (0.0, 12.0), (), ())),
+            "Experiment type does not match the declared model",
+        ),
+    ):
+        with pytest.raises(ConfigError, match=message):
+            changed.to_dict()
 
 
 def test_contact_ids_resolve_control_order_and_no_alias(graph_data):

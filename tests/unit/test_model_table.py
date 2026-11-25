@@ -11,7 +11,8 @@ Each claim with a planted error it must catch (D187):
   module registers nothing (planted: the same module imported but not a home, which a fresh
   manifest then lacks);
 - the table's models are the ones core/specs.parse_spec dispatches itself, each with the module
-  its branch parses with (planted: a dispatch with one more model);
+  its branch parses with, and any other ID is refused by its name (planted: a dispatch with one
+  more model, and an ID that the table does not list);
 - the registries load every home, so a fresh process lists every home's pieces and the manifest's
   bytes do not depend on what was imported first (planted: a loader that misses a home, whose
   pieces a fresh manifest then lacks);
@@ -213,6 +214,11 @@ def test_the_table_s_models_are_parse_spec_s_own_dispatch():
     assert planted != source
     extra = dispatched(planted, vars(specs))
     assert extra != table and extra["planted@1"] == "cells.planted_spec"
+    # An ID that the table does not list is refused by its name, before its fields are read.
+    unknown = dict(schema_version=1, model=dict(id="planted@1"), experiment={}, execution={})
+    with pytest.raises(ConfigError, match="^Unknown model: 'planted@1'; available: ") as refused:
+        parse_spec(unknown)
+    assert str(refused.value).endswith(", ".join(MODELS))
 
 
 # ------------------------------------------------------------------ loading
