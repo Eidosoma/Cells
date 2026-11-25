@@ -281,8 +281,9 @@ NumPy and decimal code, no engine, on CPU 6, in
     declared law and its Taylor bound, which were checked on neighbouring inputs too (err at 0.956 to 1.000 of the
     bound, and P16's planted error 109 to 127 times it at kh = 1/64; `default_law.py`).
 - **Registered inputs it touched:** the four portion orders of arm 4, whose losses the request states; arm
-  2's start, to show that its exact solution holds 8 and 2 fmol at 16 s; and the sign of `F6`'s
-  discriminant, to show that the ring has complex rates. No stand-in ran on a registered world.
+  2's start, to show that its exact solution holds 8 and 2 fmol at 16 s; the sign of `F6`'s discriminant, to
+  show that the ring has complex rates; and, for placement only, the lower well's change χ at each registered
+  default start. No stand-in ran on a registered world, and no reference value was computed on one.
 - **The first pass of the event check** printed orders near 1. Its outputs were off the step grid, not the
   scheme's order; it is kept as `native_run_first_offgrid.out`. SPEC.md §0 therefore requires every
   compared time on the grid.
