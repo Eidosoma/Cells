@@ -790,15 +790,21 @@ def conducts(times, transferred, level_at):
     return np.array_equal(~still, [level_at(t) > 0 for t in times[:-1]])
 
 
-def test_a_composed_world_conducts_exactly_on_its_pools_paths(outputs):
+def test_a_definition_with_free_field_offsets_declares_the_floor_solver():
+    """D147, before any pool runs: neither version 2 nor the sparse solver, which has no floor."""
     raw = near_far()
     assert field_solver_choice.free_field_offsets(raw) == 2
     sparse = copy.deepcopy(raw)
     sparse["execution"]["field_solver"] = "sparse_capacitive_reduction_gauged_damped_newton@1"
-    for wrong in (raw, sparse):  # D147: two free offsets, and no floor.
+    for wrong in (raw, sparse):
         with pytest.raises(ConfigError, match=r"has 2 free field offsets and declares .* \(D147\)"):
             resolve.parse_composed(near_far_file(wrong))
-    declared = field_solver_choice.declare(raw)
+    floor = field_solver_choice.declare(raw)
+    assert resolve.parse_composed(near_far_file(floor)).raw == floor  # Taken as declared.
+
+
+def test_a_composed_world_conducts_exactly_on_its_pools_paths(outputs):
+    declared = field_solver_choice.declare(near_far())
     data = near_far_file(declared)
     given = outputs / "composed.json"
     given.write_text(json.dumps(data))
