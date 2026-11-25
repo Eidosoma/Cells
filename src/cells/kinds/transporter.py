@@ -163,11 +163,12 @@ What the hooks do:
 - **No material slope in version 1's layout** (its limit): the rows that its two laws move at both
   ends have none, since a term there would change the programs of FR-4's, FR-5's and FR-50's judged
   worlds. A proton row's relaxation is held by its charge slope where its node has a charge row and
-  n_eff >= n_C / z^2, with n_C = R T C 1e15 / F^2 in fmol (C the capacitance of the node's charge
-  row) and n_eff = dn_total / d ln c_free, the buffer's. In FR-4's declared world the charge rule is
-  67 times tighter than the proton's material rate at the lumen and 15,000 times at the cytosol;
-  without the buffer it would be 527 and 13 times looser (n_eff / n_C at its start). A neutral
-  role's row has no bound there.
+  n_eff >= n_C / z^2, with n_C = R T C 1e15 / F^2 in fmol (C the capacitance in the node's charge
+  row: the lumen's one patch, and for the cell its held patches') and n_eff = dn_total / d ln
+  c_free, the buffer's. In FR-4's declared world the charge rule is 67 times tighter than the
+  proton's material rate at the lumen and 15,000 times at the cytosol; without the buffer it would
+  be 527 and 13 times looser (n_eff / n_C at its start, with the plasma patch's C at the cytosol).
+  A neutral role's row has no bound there.
 - **held_rows** (gap 8): held fuel's rows at its node, which binding refuses any other writer of.
 - **ledger_terms:** the role's cumulative transfers (n x cycles at its two nodes), the heat and
   the held fuel's work, folded into @3's ledgers by role (rule (a)).

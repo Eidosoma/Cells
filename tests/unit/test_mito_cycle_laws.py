@@ -31,7 +31,8 @@ The full comparison, every registered row with both plants, is the harness's run
 evidence, outside the suite (the lead's ruling 4).
 
 Its cost (D224): 10.4 s for the five tests, measured at f671fc2d on the timed lane. The world
-test parses one numpy world and steps it twice, uncompiled; the others parse it or read rows."""
+test parses one numpy world and steps it twice, uncompiled; the others parse it or read rows. Its
+material part, added since, is four evaluations more."""
 
 import contextlib
 import copy

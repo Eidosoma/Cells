@@ -363,7 +363,7 @@ def test_a_current_readout_needs_no_proton_row_and_reads_the_populations_own_cur
             parse_spec(core_world(entries[0] | {transporter.PROTON_READOUT_KEY: "Ca"}))
         ((_, entry),) = surface_pump_v3.structure(spec.model).kinds
     assert transporter.to_dict(dict(spec.model.kinds)[transporter.KIND_ID]) == entries
-    assert entry == transporter.CycleAxis((atp_pump.DECLARED_ID,), False, False, True)
+    assert entry == transporter.CycleAxis((atp_pump.DECLARED_ID,), False, False, True, True)
     bound = kind_registry.bound(transporter.TRANSPORTER, entry)
     assert bound.readout_columns[-1:] == transporter.CURRENT_READOUT_COLUMNS
     assert not set(transporter.PROTON_READOUT_COLUMNS) & set(bound.readout_columns)
@@ -3340,9 +3340,9 @@ def test_a_population_without_the_term_keeps_its_rows_and_a_world_without_it_its
 
 def test_a_row_that_version_1s_proton_buffer_holds_is_refused_to_a_law_with_the_term():
     """Version 1's proton buffer gives its read no derivative, so a law with a material term that
-    moves the proton row at a buffered node is refused by name; the same law without the term is
-    admitted there, and with it where the buffer holds nothing. (The general closure's derivative
-    is in the row of the closure's free rows.)"""
+    moves the proton row at a buffered node is refused by name: a planted uniport, and the pump. The
+    same uniport without the term is admitted there, and with it where no buffer holds the row. (The
+    general closure's derivative is in the row of the closure's free rows.)"""
     buffered = dataclasses.replace(
         UNIPORT, law_id="seamtest.buffered_uniport@1", reads=("rapid_proton_buffer@1",)
     )
@@ -3353,23 +3353,26 @@ def test_a_row_that_version_1s_proton_buffer_holds_is_refused_to_a_law_with_the_
         material_term="material_term",
     )
 
-    def parsed(law, buffers=True):
-        raw = tk.charged_world()
-        raw["model"]["transporters"] = [exchanger(law.law_id, capacity=1e-6, roles={"H": "H"})]
-        kinds = tk.CHARGED_KINDS
-        if not buffers:
-            del raw["model"]["stage_reads"]
-            kinds = ()
-        with mono_scoped(buffered, termed) if not kinds else tk.scoped(*kinds):
-            with law_registry.scope(law_registry.BUILTIN.extended(buffered, termed)):
-                return parse_spec(raw)
+    pump = pump_case("Na", 1, (1e-6, 1e-4, 0.1), "atp_0").entry
+    pump = pump | dict(roles=pump["roles"] | dict(role="H"))
+    uniports = [
+        exchanger(law.law_id, capacity=1e-6, roles=dict(H="H")) for law in (buffered, termed)
+    ]
 
-    parsed(buffered)
-    parsed(termed, buffers=False)
-    with pytest.raises(
-        ConfigError, match="moves H at cell_0, a row that version 1's proton buffer"
-    ):
-        parsed(termed)
+    def parsed(entry, kinds=tk.CHARGED_KINDS):
+        raw = tk.charged_world()
+        raw["model"]["transporters"] = [entry]
+        if not kinds:  # The same world without the buffer.
+            del raw["model"]["stage_reads"]
+        laws = law_registry.BUILTIN.extended(buffered, termed)
+        with tk.scoped(*(kinds or (transporter.TRANSPORTER,))), law_registry.scope(laws):
+            parse_spec(raw)
+
+    parsed(uniports[0])
+    parsed(uniports[1], kinds=())
+    for entry in (uniports[1], pump):
+        with pytest.raises(ConfigError, match="moves H at cell_0, a row that version 1's proton"):
+            parsed(entry)
 
 
 # ------------------------------------------------------------------ M2 on this device (amendment 2)
