@@ -551,8 +551,8 @@ def test_a_refused_runs_entry_keeps_what_it_has(invented, tmp_path):
     assert exporter.entry_faults(run.name, entry) == []
     assert entry["t"] == [0.0, 4e-05, 8e-05] and entry["steps"] == 2
     assert entry["potential_t"] == [0.0, 4e-05] and entry["refusal"] == stop
-    folders = driver.Folders(tmp_path / "check")  # The record holds the hash of those rows' file.
-    record, partial = folders.record(run), folders.attempt(run) / "partial.npz"
+    folders, made_run = driver.Folders(tmp_path / "check"), run
+    record, partial = folders.record(run), folders.attempt(run) / "partial.npz"  # Its file's hash.
     assert record["files_sha256"]["partial.npz"] == driver.digest(partial)
     partial.write_bytes(partial.read_bytes() + b" ")
     changed = exporter.entry(invented, run, folders)
@@ -567,6 +567,10 @@ def test_a_refused_runs_entry_keeps_what_it_has(invented, tmp_path):
     entry = exporter.entry(invented, run, crash)
     assert exporter.entry_faults(run.name, entry) == []
     assert entry["refusal"] == {"kind": "harness", "message": "ended by signal 9", "time_s": None}
+    # Its source is the driver's own, since the worker was ended before it could say.
+    assert record["source_from"] == "driver" and folders.record(made_run)["source_from"] == "worker"
+    assert set(entry["source"]) == set(exporter.SOURCE) and entry["source"]["blas_threads"] == 1
+    assert all(entry["source"][key] for key in exporter.SOURCE if key != "checkout_dirty")
 
 
 # ------------------------------------------------------------------ pools and driven runs

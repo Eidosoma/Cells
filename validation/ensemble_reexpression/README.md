@@ -115,7 +115,7 @@ Each is this builder's, with the sentence it rests on. What the lead answered is
 13. **`phi_out`** is written for every region but the gauge, in `base` too, where it has no captured counterpart (READOUTS §2: "no captured `phi_out`").
 14. **`composed_file_fingerprint`** is the sha256 of the composed file's bytes, which a checker forms with `sha256sum` (TABLE §3: "The checker recomputes it from the composed file").
 15. **A restart's potentials** are those after the checkpoint, strictly (TABLE §3: "For a restart, the ones after the checkpoint"). Its row at the checkpoint's time is written (SPEC §4: optional).
-16. **`restart.through`** is the string "file". **`source.snapshot`** of a run from a checkout is "none".
+16. **`restart.through`** is the string "file". **`source.snapshot`** of a run from a checkout is "none". The `source` of a run whose worker was ended before it could say is the driver's own process's (`source_from` in the record).
 17. **`pending_valid`** is written as JSON booleans, as the array is. Every mask is an integer.
 18. **`switch_list`** leaves out the entry [0, 1], and holds every channel of the world, an empty list for one without a change (TABLE §3: "may be written or left out"; Amendment 2, 9.1). A pool's `path` holds every world of the pool, an empty list for one without an event. `controls.channel` holds every channel, as the engine's definition does.
 19. **An extra field of a definition** that the block has no name for is read back under its own name (TABLE §3: extra keys are recorded), so nothing declared is hidden.

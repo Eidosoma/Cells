@@ -658,14 +658,16 @@ def work_apart(attempt, max_seconds):
 
 
 def made(inputs, run, attempt, crash, *, tag, off_grid):
-    """A run's record, from its attempt's outcome, or from what ended it where it has none."""
+    """A run's record, from its attempt's outcome, or from what ended it where it has none: its
+    source is then this process's own, which runs from the same tree on the same machine."""
     if crash is None:
-        outcome = read_json(attempt / "outcome.json")
+        outcome = read_json(attempt / "outcome.json") | {"source_from": "worker"}
     else:
         outcome = {
             "status": "refused",
             "refusal": {"kind": "harness", "message": crash, "time_s": None},
-            "source": None,
+            "source": source(),
+            "source_from": "driver",
             "facts": {"definition": {}, "resolution": None, "restart": None, "timings": {}},
         }
     engine_revision, dirty, snapshot, patch = revision()
@@ -698,6 +700,7 @@ def made(inputs, run, attempt, crash, *, tag, off_grid):
             "snapshot_patch_sha256": patch,
         },
         "source": outcome["source"],
+        "source_from": outcome["source_from"],
         **outcome["facts"],
         "started_utc": read_json(attempt / "job.json")["started_utc"],
         "finished_utc": utc(),
