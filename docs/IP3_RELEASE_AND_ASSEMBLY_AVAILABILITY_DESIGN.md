@@ -303,6 +303,12 @@ and the passive routes' kernels, and it is evaluated in the two explicit stages 
 with the cytosolic Ca of 0.001 fmol, is 20 per second at most, as the sum of n_j / 4 over the reads is 1). It
 binds nothing at 12.5 us (dt x L 7.5e-5 to 2.5e-4).
 
+**A limit to state in both notes.** Where a closure owns the read row, the stage read's n is the free amount,
+while the route moves the total. The chain through the closure's own slope (dn_free / dn_total) is not in this
+hook, so the bound would not be the true one there. No captured world has a closure on a row that a gated
+route moves, and D's charged route refuses one. If a later world needs it, the closure's owner must supply
+that slope, as the proton pump's loop term does (`laws/pumps/proton_pump.py:137`).
+
 ### 5.6 Refusals by name
 
 Each refusal names the kind, the condition and the thing: an unknown node; an unknown species; a law other
