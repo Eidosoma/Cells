@@ -126,6 +126,7 @@ class Family:
         return spec.blank_machines(self.role)
 
     def twin_runs(self):
+        """The unlabelled twins: of p_sched `returned` in the hold worlds, of each run in B."""
         if self.profile == "B":
             return spec.honest_runs(self.inputs)
         return [r for r in spec.honest_runs(self.inputs) if r == "p_sched returned"]

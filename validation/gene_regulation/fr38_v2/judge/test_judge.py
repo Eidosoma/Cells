@@ -1,6 +1,6 @@
 """Host-only tests of FR-38's second comparison judge, on invented inputs only.
 
-**Seconds:** 47 s of CPU for its 32 tests (53 s on CPU 7, 25 November 2026).
+**Seconds:** 52 s of CPU for its 32 tests (57 s on CPU 7, 25 November 2026).
 **Reason (D224):** the judge decides FR-38's registered verdict, so each C0 refusal, each failure
 and inconclusive mode, the retry and each plant (caught and not caught) must be shown to move it
 the registered way before any engine run is judged.
@@ -498,7 +498,7 @@ class Synth:
             recs.append(self.record("p_sched returned", "restart", 0.5))
         allowed = shapes.PLANT_NAMES[self.role] if self.role else tuple(shapes.JUDGED_AS)
         for plant in sorted({e["plant"] for e in self.doc["plants"]}):
-            if plant not in records.RECORD_PLANTS:
+            if plant in shapes.JUDGE_PLANTS:
                 continue
             for run in sorted({e["run"] for e in self.doc["plants"] if e["plant"] == plant}):
                 if self.plant_name(plant, run) in allowed:
@@ -1233,7 +1233,42 @@ def _entry_faults():
         (is_(plant="P3b"), lambda e: e["t"].pop(), "output grid"),
         (is_(plant="P4"), put(1.0, "dt_s"), "dt_s: 1.0 is not its step"),
         (is_(plant="P5"), put(1, "extra_key"), None),
-        (is_(plant="P7"), drop("survival"), "survival: missing"),
+        (is_(plant="P7"), lambda e: e["survival"].pop(), "survival: missing (durable"),
+    ]  # fmt: skip
+
+
+def _more_entry_faults():
+    def twice(key):
+        return lambda e: e[key].append(dict(e[key][0]))
+
+    h = "honest"
+    return [
+        (is_("p=0 returned", h, 2.0), lambda e: e["readouts"].pop("H_deg_R_s"),
+         "readouts.H_deg_R_s: missing readout"),
+        (is_("p=0 returned", h, 1.0), lambda e: e.pop("record_sha256"), "record_sha256: missing"),
+        (is_("p=0 returned", h, 0.5), lambda e: e["readouts"]["n_M"].append(0.0), "n_M has 62"),
+        (is_("p=1 returned", h, 2.0), lambda e: e["route2"][0].update(fate="x"),
+         "no registered fate and sample time"),
+        (is_("p=1 returned", h, 1.0), lambda e: e.pop("survival"), "survival: missing"),
+        (is_("p=1 returned", h, 0.5), lambda e: e.update(refused=False), "true expected"),
+        (is_("p_sched held", h, 2.0), lambda e: e["excess_over_blank"].pop("durable"),
+         "excess_over_blank.durable: missing"),
+        (is_("p_sched held", h, 1.0), lambda e: e["excess_over_blank"]["durable"].pop(),
+         "excess_over_blank_durable has 60"),
+        (is_("p_sched held", h, 0.5), lambda e: e.update(record=None), "record: type"),
+        (is_("p_sched returned", h, 2.0), lambda e: e.update(definition=[]), "definition: type"),
+        (is_("p_sched returned", h, 1.0), lambda e: e.update(steps=True),
+         "integer expected, boolean found"),
+        (is_("p_sched returned", h, 0.5), lambda e: e["t"].__setitem__(1, "x"), "t[1]: type"),
+        (is_("p_sched returned", "twin", 2.0), lambda e: e["route2"].pop(), "route2: missing ("),
+        (is_("p_sched returned", "twin", 1.0), lambda e: e["source"].update(engine_revision=3),
+         "source.engine_revision: type"),
+        (is_("p_sched returned", "twin", 0.5), lambda e: e.pop("excess_over_blank"),
+         "excess_over_blank: missing"),
+        (is_(role="restart"), twice("survival"), "is duplicated"),
+        (is_(plant="P2"), lambda e: e.pop("judged_as"), "judged_as: missing"),
+        (is_(plant="P3a"), twice("route2"), "is duplicated"),
+        (is_(plant="P5"), lambda e: e.update(blank="blank returned"), "blank: type: null expected"),
     ]  # fmt: skip
 
 
@@ -1241,20 +1276,21 @@ def test_c0_names_each_entry_fault(invented, mapping, read_once, tmp_path):
     """Amendment 5, §2 to §4: a missing or mistyped pinned key, an incomplete or doubled route-2 or
     survival list, a dirty checkout, a wrong checkpoint, `judged_as` or patch: each refuses its own
     entry and names it by path. An extra key, and a blank without its lists, refuse nothing."""
-    s = Synth(invented, "A", mapping)
-    rows = _entry_faults()
-    s.entry_tweaks = [(pred, change) for pred, change, _ in rows]
-    tables, report = c0_of(read_once, mapping, s.write(str(tmp_path / "entries")))
-    for pred, _, needle in rows:
-        rec = next(r for r in s.base() if pred(r))
-        where = {"restart": "restart", "plant": f"plants.{rec['name']}"}.get(
-            rec["role"], f"rungs.{float(rec['dt_s'])!r}.runs.{rec['name']}")  # fmt: skip
-        faults = faults_of(report, where)
-        if needle is None:
-            assert faults == [], (where, faults)
-        else:
-            assert any(needle in x for x in faults), (where, needle, faults[:3])
-    assert any("extra_key" in m for m in report["extra_keys"])
+    for tag, rows in (("entries", _entry_faults()), ("more", _more_entry_faults())):
+        s = Synth(invented, "A", mapping)
+        s.entry_tweaks = [(pred, change) for pred, change, _ in rows]
+        _, report = c0_of(read_once, mapping, s.write(str(tmp_path / tag)))
+        for pred, _, needle in rows:
+            rec = next(r for r in s.base() if pred(r))
+            where = {"restart": "restart", "plant": f"plants.{rec['name']}"}.get(
+                rec["role"], f"rungs.{float(rec['dt_s'])!r}.runs.{rec['name']}"
+            )
+            faults = faults_of(report, where)
+            if needle is None:
+                assert faults == [], (where, faults)
+            else:
+                assert any(needle in x for x in faults), (where, needle, faults[:3])
+        assert tag == "more" or any("extra_key" in m for m in report["extra_keys"])
     # a null plant is a missing record, unscorable; a table's other plants are still read
     s = Synth(invented, "A", mapping)
     s.table_tweaks = [lambda t, attempt: t["plants"].update(P7=None)]
@@ -1282,8 +1318,9 @@ def _declaration_faults():
     def labels(e):
         return operator(e["definition"], "neutral_arrival_labels@1")["species"][0]["labels"]
 
-    runs = [(r, d) for r in ("p=0 returned", "p=1 returned", "p_sched held", "p_sched returned")
-            for d in (2.0, 1.0, 0.5)]  # fmt: skip
+    runs = [(r, "honest", d) for r in ("p=0 returned", "p=1 returned", "p_sched held",
+                                       "p_sched returned") for d in (2.0, 1.0, 0.5)]  # fmt: skip
+    runs += [("p_sched returned", "twin", 1.0), ("p_sched returned", "twin", 0.5)]
     changes = [
         (lambda e: model(e)["extracellular"][0].update(volume_pL=2.0), "the bath's volume"),
         (lambda e: patch(e).update(area_m2=2e-10), "the patch's area"),
@@ -1300,8 +1337,13 @@ def _declaration_faults():
          "k_I"),
         (lambda e: release(rec(e)).update(fates=[{"durable": "R_s", "short_lived": "R"}]),
          "the fates"),
+        (lambda e: _gene(e["definition"]).update(law="templated_polymerisation@2"),
+         "the operators"),
+        (lambda e: model(e)["operators"].append(copy.deepcopy(_gene(e["definition"]))),
+         "the operators"),
     ]  # fmt: skip
-    return [(is_(r, "honest", d), f, what) for (r, d), (f, what) in zip(runs, changes, strict=True)]
+    pairs = zip(runs, changes, strict=True)
+    return [(is_(r, role, d), f, what) for (r, role, d), (f, what) in pairs]
 
 
 def test_c0_names_each_declaration_fault(invented, mapping, read_once, tmp_path):
@@ -1325,8 +1367,8 @@ def test_c0_names_each_declaration_fault(invented, mapping, read_once, tmp_path)
     tables, report = c0_of(read_once, mapping, s.write(str(tmp_path / "declarations")))
     for pred, _, what in rows:
         rec = next(r for r in s.base() if pred(r))
-        where = f"rungs.{float(rec['dt_s'])!r}.runs.{rec['name']}"
-        assert any(what in x for x in faults_of(report, where)), (where, what)
+        at = f"rungs.{float(rec['dt_s'])!r}.runs.{rec['name']}"
+        assert any(what in x for x in faults_of(report, at)), (at, what)
     assert len(report["refused_records"]) >= len(rows)
     for where in ("rungs.2.0.runs.blank returned", "rungs.1.0.runs.blank returned",
                   "rungs.2.0.runs.p_sched returned unlabelled"):  # fmt: skip
@@ -1559,6 +1601,16 @@ def test_plants_not_caught(invented, mapping, tmp_path):
     faults = [x for r in v["c0"]["engine"]["refused_records"] for x in r["faults"]]
     assert plant_status(v, "P5") == "refused" and any(
         "its registered change at" in x for x in faults)  # fmt: skip
+
+    # the registered change made at another key too is not the registered change
+    def also_k_d(rec):
+        step = control(rec, "deg_R")["schedule"][0]
+        step["value"] = step["value"] * (1 + 1e-4)
+
+    v = _perturbed(invented, mapping, tmp_path, [(is_(role="plant", plant="P5"), also_k_d)], "p5kd")
+    faults = [x for r in v["c0"]["engine"]["refused_records"] for x in r["faults"]]
+    assert plant_status(v, "P5") == "refused"
+    assert any("not its registered change" in x for x in faults)
 
     # a judge-side refusal is not a catch: a plant whose definition carries an unregistered change
     def wrong(rec):

@@ -386,19 +386,11 @@ def blank_machines(family):
     return ("returned", "held") if family == "AF" else ("returned",)
 
 
-def twin_runs(family, family_inputs):
-    """The unlabelled twins: of p_sched `returned` in the hold worlds, of each run in B."""
-    if FAMILY_PROFILE.get(family) == "B":
-        return honest_runs(family_inputs)
-    return [r for r in honest_runs(family_inputs) if r == "p_sched returned"]
-
-
 RESTART = {"AN": ("p_sched returned", 7200.0)}  # at h only
 
 # ------------------------------------------------------------------ the plants (CRITERIA §6)
 
 CORE_PLANTS = ("P1", "P1′", "P1″", "P2", "P3a", "P3b", "P4", "P5", "P6", "P7")
-FAMILY_PLANTS = {"C": ("P8",), "D": ("P9",)}
 PLANT_KIND = {
     "P1": "mapping",
     "P1′": "host",

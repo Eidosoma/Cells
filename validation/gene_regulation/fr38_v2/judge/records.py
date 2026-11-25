@@ -339,7 +339,7 @@ def _check_invented_exercises(ref):
         ref.faults.append(f"the invented file sizes no entry of {missing} (SPEC.md §8)")
 
 
-def _series_from(obj, n, where, faults, *, judged_constant_ok=True):
+def _series_from(obj, n, where, faults):
     """One {class, value, accuracy, scale} block, checked entry by entry."""
     for k in ("class", "value", "accuracy", "scale"):
         if k not in obj:
@@ -768,8 +768,6 @@ def _read_provenance(p, ref):
 
 
 TABLE_DIRS = (("primary", "table"), ("retry", "table-retry"))
-ROLES = ("honest", "blank", "twin", "restart", "plant")
-RECORD_PLANTS = ("P2", "P3a", "P3b", "P4", "P5", "P7", "P8", "P9")
 
 
 @dataclasses.dataclass
@@ -861,6 +859,9 @@ def read_tables(export_dir, families, sample=None):
         if sums is None:
             out["flags"].append(f"{sub}/SHA256SUMS is missing (recorded, not refused; amendment "
                                 "4, item 6)")  # fmt: skip
+        if bad:
+            out["flags"].append(f"{sub}/SHA256SUMS has malformed lines: {bad!r} (the table a line "
+                                "should name is then not listed, §4 (a))")  # fmt: skip
         for fn in sorted(sums or ()):
             if not os.path.exists(os.path.join(d, fn)):
                 out["faults"].append(f"{sub}/{fn} is listed in {sub}/SHA256SUMS and missing from "
