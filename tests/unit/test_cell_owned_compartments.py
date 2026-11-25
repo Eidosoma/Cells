@@ -748,6 +748,7 @@ def test_the_built_in_kinds_hold_the_step_terms_their_laws_declare():
         # Declares no step term: refused at a compartment's node (fail-closed).
         "cells.na_anion_symport_factored@1": (),
         "cells.na2_anion_symport_diagram@1": (),  # Version 2: likewise, no step term.
+        "cells.sodium_calcium_exchange_symmetric_barrier@1": (),  # Likewise: refused there.
         # The mitochondrion's inner-membrane laws: likewise.
         **dict.fromkeys(
             (
