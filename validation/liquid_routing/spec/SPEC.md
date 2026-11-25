@@ -80,20 +80,19 @@ every flow off.
 
 **Arm 7** has no reference: both sides are engine runs (CRITERIA.md §3.8).
 
-**Admissions.** Two constructs are refused by default and admitted only by a declaration in the world,
-`admission` in `inputs.json`, whose sole effect is that admission: `exchange_at_faced_node` (an exchange at a
-well a face touches: arm 2's `N-buffered` and `N-clean`) and `flow_beside_face` (a flow at a node a face
-touches: arm 6's `J1` and `J0`, the flow off included). No other world declares one. Two registered runs
-have their admission off (`N-clean exact j=0 no admission`, `J1 h=0.25 no admission`), and must be refused
-(CRITERIA.md §3.7). So arm 6 is run by what its world declares, from the same snapshot as the rest, and the
-default stays refused.
+**What admits arms 2 and 6, and from where.** Arm 2's exchange at a faced node is admitted by rule, for the
+qualified form only (one neutral species crossing by a passive route), with no declaration: under the exact
+heat always, and under the default heat only inside its measured domain (§6), refused by name outside. Arm 6's
+flow at a faced node is refused by the router's first landing, so **arm 6 is not run from this snapshot**: it
+runs from a second one (CRITERIA.md §4, the protocol's §5), whose `src` differs only by the lift of that refusal
+and its tests. Nothing of arms 1 to 5 and 7 is re-run there.
 
 ## 2. The runs
 
 `inputs.json` lists every registered run: its name, arm, world, heat, step, role and variant. `judged`
 runs are compared, `support` runs are twins and restarts, `recorded` runs report an outcome, the
 `expected stop` is meant to stop, the `expected refusal` is meant to be refused (CRITERIA.md §3.7), and `plant`
-runs carry a declared change. A run's `expects` is the outcome it is meant to have: null, or a `refused` status with a kind (CRITERIA.md
+runs carry a declared change. Arm 6's runs are listed here and executed in phase 2 only. A run's `expects` is the outcome it is meant to have: null, or a `refused` status with a kind (CRITERIA.md
 §3.7). The retry (CRITERIA.md §7) adds runs by rule. A run's outputs are its world's times that its step divides, and t = 0.
 
 ## 3. What to compute

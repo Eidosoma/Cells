@@ -132,13 +132,11 @@ For readout y in world w with steps h₁ > h₂ > h₃ (each half the last), ove
 - **The expected stops** (`eq-tr default stop` and `eq-mid default stop`) must stop. If one completes, M1
   is not formed on it and arm 2 is at best inconclusive. They never count against the heat. A stopped
   support run is a refused one.
-- **The expected refusals,** each as its run's `expects` says. The message is recorded.
+- **The expected refusal,** as its run's `expects` says. The message is recorded.
   - `F6 h=4.0 refused` (a throughput of 1.25 at B, above SPEC.md §1's domain) must be `refused` with kind
     `domain`, at parse.
-  - `N-clean exact j=0 no admission` (arm 2) and `J1 h=0.25 no admission` (arm 6) declare no admission (SPEC.md
-    §1) and must be `refused` with kind `domain`, so the construct is refused unless admitted.
-  - If one completes, its arm fails: the operator admitted what its domain or admission rule refuses. If it
-    is refused another way, its arm is at best inconclusive.
+  - If it completes, arm 3 fails: the operator admitted a flow its domain refuses. If it is refused another
+    way, arm 3 is at best inconclusive.
 
 ### 3.8 Arm 7: the takeover
 
@@ -165,13 +163,15 @@ fails, whatever else of that run or of its support is refused, stopped or missin
 | --- | --- |
 | The echo of `inputs`, `solver`, `heat` or `operators` departs from the registered run (numbers to 10⁻¹² relative, exact zeros, strings and integers exact; a plant differs only by its declared change) | The run is not the registered one. It is **refused**, and nothing of it is judged |
 | A judged leaf is missing, mistyped or non-finite | That readout is **refused**. The rest of the run is judged |
-| Provenance: `source` incomplete, `checkout_dirty` true, a missing `record_sha256` or snapshot | The run is **refused**, but its readouts are judged and a fail stands |
+| Provenance: `source` incomplete, `checkout_dirty` true, a missing `record_sha256` or snapshot, or an `engine_revision` that is not the registration tag's (arms 1 to 5 and 7) or the phase-2 tag's (arm 6) | The run is **refused**, but its readouts are judged and a fail stands |
 | A recorded-only leaf is missing, mistyped or non-finite | Flagged to the checker. Refuses nothing |
 | A `refused` entry of kind `domain`, `definition` or `harness` | **Refused** |
 | A `refused` entry of kind `check` | A **stop** (§3.7) |
 | A run in `missing`, or in neither list | **Refused** |
 | A run name `inputs.json` does not list, or lists twice | Ignored and recorded |
 
+- **Arm 6 is one table, from a second snapshot:** its runs are missing from phase 1's tables, which is no
+  fault, and its `source` names the phase-2 tag.
 - **A refused run cannot pass.** With no failing entry it is at best inconclusive, and so is its arm.
 - **A refused or missing support run** leaves its arm at best inconclusive. It does not refuse the run it
   supports.

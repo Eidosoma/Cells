@@ -109,15 +109,16 @@ dated change, before the registration tag and never after a run.
 7. **The registration tag `liquid-routing-registered-2026-11-2x`,** at the head that merges main, the spec,
    the references, the build and the judge, before any registered run. At that head the lead re-runs the
    builder's checks, the judge's tests and C0, regenerates the sample, and makes a trial merge.
-8. **Phase 1:** arms 1, 2, 3, 4, 5 and 7, from a clean frozen snapshot of the registration tag
+8. **Phase 1:** arms 1, 2, 3, 4, 5 and 7 (nothing of arm 6), from a clean frozen snapshot of the registration tag
    (`scripts/gates/freeze_snapshot.py --scope full --require-clean`), detached, one thread each, cold (no
    compilation cache), on CPUs the lead allots, on one machine. The exporter's table is hashed before any
    reference value is read. **Arms 1 and 2 are judged first.**
-9. **Phase 2:** arm 6, from the same snapshot, **only if FR-54 passes** (Q8). Its table is hashed first too.
-   Arm 6 is admitted by the snapshot's own rule, not by a change after FR-54: its worlds declare an admission
-   (`flow_beside_face`), and the engine refuses the construct without one (`SPEC.md` §1; two registered runs
-   with the admission off must be refused). FR-54's verdict decides whether phase 2 runs, not whether the
-   construct exists.
+9. **Phase 2: arm 6, only if FR-54 passes** (Q8). The router's first landing refuses a flow at a faced node (a
+   tier row asserts it), so arm 6 cannot run from phase 1's snapshot. After FR-54 passes, a small gated landing
+   lifts that refusal, and arm 6 runs from that landing's own clean snapshot and tag,
+   `liquid-routing-phase2-registered-2026-11-2x`. Its `src` differs from phase 1's only by the lift and its
+   tests; the lead records that diff and the checker confirms it. Nothing of arms 1 to 5 and 7 is re-run. The
+   table is hashed before any reference value is read, as in phase 1.
 10. **The retry,** if any entry is owed one, from the same snapshot, its table hashed the same way.
 11. **The checker,** then the record and the decision entry.
 
@@ -138,7 +139,8 @@ dated change, before the registration tag and never after a run.
     networks of the kinds run (a chain, a split and merge, a loop), up to the size run.
   - **Takeover** permits the wash's retirement, under D364's wait for FR-45's W2 and W7 and FR-49's B and C1
     runs (or their pinning). It changes no past verdict.
-  - **Flow beside diffusion** lifts the version-1 refusal of a flow at a faced node, under the exact heat.
+  - **Flow beside diffusion** qualifies a flow at a faced node, under the exact heat, for the construct the
+    phase-2 landing lifts.
   - Arm 6 not run leaves FR-57 inconclusive as a whole, with the other two lines as they stand.
 - **An inconclusive verdict is not a fail,** and the retry is the only answer to it (D271). A fail is final
   for this registration. Its diagnosis is non-blind and labelled, by someone other than the author, the

@@ -11,7 +11,8 @@ code. Extra keys are allowed and ignored.
   the name). The retry's go in `table-retry/`, arm 6's in `table-arm6/`.
 - A table whose sha256 is missing from its folder's `SHA256SUMS`, or departs from it, is refused: every
   run in it is refused. An absent `SHA256SUMS` is recorded and flagged, and refuses nothing by itself.
-- The lead records each file's sha256 before any reference value is read.
+- The lead records each file's sha256 before any reference value is read. Phase 1's tables hold arms 1 to 5 and
+  7, arm 6's alone comes from the second snapshot (`table-arm6/`), and neither re-runs the other's runs.
 - The exporter writes **nothing that needs a second run:** no difference, ratio or estimate. The judge
   forms those.
 
@@ -42,7 +43,7 @@ has (`t` and `series` may be short or empty).
 | `t` | list of numbers: the rows' times, the first 0 |
 | `series` | object: READOUTS.md's names to lists, each as long as `t` |
 | `events` | list, in time order; [] where the world has none. Arm 2: `{"kind": "exchange", "time_s", "node", "before", "sample", "supplied", "heat"}`, the four being `{species: number}` except `heat` (number). Arm 4: `{"kind": "delivery", "time_s", "volume", "amount", "loss", "resident", "arriving"}`, `amount` by species, the rest numbers |
-| `inputs` | the world's block in `inputs.json`, without `outputs_s` and `compare_s`, with its `admission`, read back from **the definition the engine parsed and ran**, with `step_s` added and `end_s` a number (a world whose `end_s` is `one step` is echoed with the step). Not a copy of this folder's numbers |
+| `inputs` | the world's block in `inputs.json`, without `outputs_s` and `compare_s`, read back from **the definition the engine parsed and ran**, with `step_s` added and `end_s` a number (a world whose `end_s` is `one step` is echoed with the step). Not a copy of this folder's numbers |
 | `definition` | the engine's own declaration, as run (recorded) |
 | `checks` | the engine's own ledgers and checks at the end (recorded) |
 | `restart` | null, or `{"time_s", "step_index", "through"}` (the checkpoint's time, and how it was saved) |
@@ -69,7 +70,7 @@ checker confirms it):
 
 | Kind | What produced it |
 | --- | --- |
-| `domain` | The engine refused, by name, a value outside a declared domain, at parse or at run time: a throughput above its bound, a default-heat exchange outside its domain, a construct that needs an admission and has none |
+| `domain` | The engine refused, by name, a value outside a declared domain, at parse or at run time: a throughput above its bound, a default-heat exchange outside its domain, a flow at a faced node (phase 1's snapshot) |
 | `definition` | A declaration the engine could not read or does not support, at parse: a missing or malformed key, an unbalanced node, an unsupported combination |
 | `check` | The engine's own energy, material or charge check failed a completed row |
 | `harness` | Anything the engine did not raise: the exporter, the driver, memory, a crash |
