@@ -38,12 +38,10 @@ definitions in 123 files, of 274 (m); G1's 113 worlds are unaffected (r).
 **Measured where:** files and lines at 49529e71, the tag's commit; seconds in the tier record; IDs, imports and the dry run at `legacy-cleanup` c368c9f2;
 the parity runs at 63c181fc, on a tree without 1,472 of the files (the other 63 are outside their import chain).
 
-**The optional batch** imports nothing that goes, so the deletion does not need it. It is what the oldest families were checked with: independent
-references, trajectories, audits and their tests (the EMT pair and graph, the bioelectric cell and pair, the multispecies, voltage-gated, ionic-graph,
-finite and spatial extracellular families), and the REF-era pump and gate contacts. Nothing that stays uses it (m, import graph); the
-re-expression's criteria and design notes do not name it, and no kept law's reference is in it. Kept out because something does use them:
-`tests/reference_er_calcium.py` and its four sisters, `spatial_cluster/reference.py`, `pump_contact/pump_reference.py` and
-`voltage_gate_audit/gate_independent.py`. Its frozen panels (JSON) stay as records either way. **The lead recommends that it goes.**
+**The optional batch** is what the oldest families were checked with: their independent references, trajectories, audits and tests, and the last REF-era
+contacts. The deletion does not need it, because it imports nothing that goes. Nothing that stays uses it: no test, no re-expression reference, no kept
+law, no capture (m, import graph; the re-expression's criteria, notes and branches do not name it). Its frozen panels stay as records either way. **The
+lead recommends that it goes.**
 
 ## 2. What comes back
 
@@ -59,8 +57,7 @@ law module, now built. Calcium through a channel is not smaller than priced: the
 
 ## 3. What is lost, what stays, and what waits
 
-**The laws stay (D211).** The channel laws keep their kernels in live `laws/`, with their references and a test of each kernel. Only the
-old tissue that hosted them goes.
+**The laws stay (D211)** in live `laws/`, with their references and a test of each kernel. Only the old tissue that hosted them goes.
 
 | Group | Laws | Waits for |
 |---|---|---|
@@ -70,8 +67,8 @@ old tissue that hosted them goes.
 | Instantaneous Morris-Lecar | 7 | G-2, a law without a gate |
 | Calcium-activated K | 1 | G-3, which the cardiac plan's H1 already holds |
 
-D211's programme is recorded as open, continuing after the cleanup, in `docs/CORE_LAWS_ROADMAP.md`. Three of the HCN laws would have had no test of
-their kernel; `test_channel_law_kernels.py` gives them one, and keeps the kernel rows of three tissue tests that go.
+D211's programme is recorded as open, after the cleanup, in `docs/CORE_LAWS_ROADMAP.md`. `test_channel_law_kernels.py` tests three HCN laws that would have
+had no test, and keeps the kernel rows of three tissue tests that go.
 
 | Lost, or not carried over | In one sentence |
 |---|---|
@@ -87,10 +84,10 @@ their kernel; `test_channel_law_kernels.py` gives them one, and keeps the kernel
 | **Live BETSE runs in four parity files** | Three files lose an optional live run that has not started since 11 October 2026 (the source it is bound to changed), and one that is skipped loses its call. Their closed-form rows stay: 55 pass, 70 that could only error leave. The tag keeps the driver; it does not run it either. |
 | `source_decay@1`, `emt_mirna@1`, `passive_pair@1` (G1, G2), source-pair terms, neutral mobile leak, mitochondrial passive (I1 to I3, I11) | Gone; the tests that used them run live worlds. U34, U37, U38, U39 and U47 lose a law record in the viewer's inventory. |
 
-**Nothing in use is lost** in the oldest families (A11), the baths and clusters (A10), mitochondria (C4), water, injury, bath schedules,
-barriers and membrane profiles (D3, D4, D6 to D8): @3's line does the same physics. The owned-calcium tissues (B6, B7) go and the ensemble
-rebuilds their parts. **The three parity files whose live BETSE run works keep it** (16, 38 and 25 rows pass on the tree without what goes,
-and the 64 native captures equal the saved ones bit for bit (m)): they now take what they need from one module instead of 19 old ones.
+**Nothing in use is lost** in the oldest families (A11), the baths and clusters (A10), mitochondria (C4), water, injury, bath schedules, barriers and
+membrane profiles (D3, D4, D6 to D8): @3's line does the same physics. The ensemble rebuilds the parts of the owned-calcium tissues (B6, B7). **The three
+parity files whose live BETSE run works keep it:** 16, 38 and 25 rows pass without what goes, and the 64 native captures equal the saved ones bit for
+bit (m).
 
 ## 4. Commands, examples, scripts, the GPU
 
@@ -105,19 +102,16 @@ and the 64 native captures equal the saved ones bit for bit (m)): they now take 
 ## 5. Tests
 
 265 files with 9,023 IDs test families that are canonical elsewhere, dropped or retired. **16 tests of used capabilities are rewritten, not
-deleted:** the store, the four calcium worlds, the assembly cell and cluster, the integrated ensemble, the JUPITER planning, and the
-cotransport laws. 260 more IDs leave files that stay: 187 were rows on worlds that went (107 new or renamed ones replace them), 70 are the
-parity rows above, and 3 followed the old registry (2 new).
+deleted:** the store, the four calcium worlds, the assembly cell and cluster, the integrated ensemble, the JUPITER planning, and the cotransport laws. Of
+the 260 IDs that leave files that stay, 187 were rows on worlds that went (107 replace them), 70 are the parity rows, and 3 followed the old registry.
 
 ## 6. Records, and what is open
 
 - **Records stay:** 53 protocol and data files, the other results, the design notes and the decisions.
-- **Open:** the builders' 16 tests, three files of laws and three validation scripts; the rename's tool, table and design note; the tier records; and one
-  guard whose list changes in the deletion's own commit. The documents are done (`legacy-cleanup-docs`): 48 carry a note of what left, and the run
-  guides name live worlds, each command run once.
-- **The deletion is one commit,** made by a script from the list, on one branch that takes the place of 9b0debe6. Its dry run on `legacy-cleanup`
-  f38f6789 and on c368c9f2 removed 1,529 files, found every path, left nothing under `src/cells/legacy`, and broke no import but the 10 tests' (m).
-- **On commit 63c181fc:** its message says that the drivers load eight files where they loaded 24. Measured: six Python files (eight with two JSON
-  protocols) where they loaded 24 Python files.
-- **Four names in live laws and numerics** that nothing calls any more are listed for their files' owners, after the core edits.
+- **Open:** the builders' 16 tests, three law files and three validation scripts; the rename's tool, table and note; the tier records. The documents are
+  done (`legacy-cleanup-docs`): 48 say what left, and the run guides name live worlds, each command run once.
+- **The deletion is one commit,** made from the list by a script, in place of 9b0debe6. Its dry runs on `legacy-cleanup` f38f6789 and c368c9f2 removed 1,529
+  files (six are gone already), found every path, and broke no import but the 10 tests' (m). One guard's list changes in the same commit.
+- **On commit 63c181fc:** its message's numbers are wrong. Measured: the drivers load six Python files (and two JSON protocols) where they loaded 24.
+- **Four names** in live laws and numerics that nothing calls any more are listed for their files' owners, after the core edits.
 - **Not run:** no gate and no suite. The full test of the cleanup branch is the test of it.
