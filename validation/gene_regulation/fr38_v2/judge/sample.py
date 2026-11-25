@@ -75,7 +75,8 @@ def _table(tab, table_shapes):
     inputs = spec.spec_inputs(family)
     restart = spec.RESTART.get(family)
     st = records.table_structure(tab, profile, family, inputs, restart and restart[0], table_shapes)
-    faults = list(tab["faults"]) + [records._finding(f) for f in st.faults]
+    faults = list(tab["faults"])
+    faults += [records._finding(f) for f in st.faults + shapes.excess_faults(st)]
     if family in spec.RESTART and tab["attempt"] == "primary" and st.restart != "present":
         faults.append(f"restart: {st.restart}")
     unexpected = [f[1] for f in st.findings if f[0] == "unexpected"]
@@ -87,9 +88,9 @@ def _table(tab, table_shapes):
             e.name
         )
         for f in e.findings + e.definition_findings:
-            if f[0] in shapes.SAMPLE_FAULTS:
+            if f[0] in shapes.FAULTS:
                 faults.append(records._finding(f))
-            else:
+            elif f[0] != shapes.ABSENT_EXCESS:
                 unexpected.append(f[1])
         if isinstance(e.obj, dict) and isinstance(e.obj.get("readouts"), dict):
             want = set(table_shapes["readouts"][family])

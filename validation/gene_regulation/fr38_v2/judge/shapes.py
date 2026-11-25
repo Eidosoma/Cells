@@ -1,4 +1,4 @@
-"""The engine tables' registered shapes (amendment 5), and the structure pass that reads them.
+"""The engine tables' registered shapes (amendments 5 and 6), and the pass that reads them.
 
 - **Where the shapes come from.** `table_shapes.json` is the format sample's README (registered by
   hash, amendment 5, §1) read by `schema_from_readme`, with amendment 5's own pins (`_pins`). No
@@ -8,15 +8,19 @@
   by kind, and every definition, as keys, nesting and types to the leaf, matched by name. It takes
   no number. The judgement and the sample check run this same pass; the value pass (`records`) is
   the judgement's alone.
-- **What a finding does** (amendment 5, §2 and §4). `missing`, `type`, `duplicate` and `forbidden`
-  findings are faults: at a top-level key they refuse the table, at an entry's pinned key the
-  entry. In a definition they are recorded, since C0's echo (`definitions`) decides there, and so
-  is a departure in a blank's `route2` or `survival` (`blank list`), which are not pinned; the
-  sample check counts every one of them. `unexpected` keys are recorded, never a fault (amendment
-  2, Q6).
+- **What a finding does** (amendment 5, §2 and §4; amendment 6, §2). `missing`, `type`, `duplicate`
+  and `forbidden` findings are faults: at a top-level key they refuse the table, at an entry's
+  pinned key the entry, a recorded-only leaf's included. In a definition they are recorded, since
+  C0's echo (`definitions`) decides there; the sample check counts them too. `unexpected` keys are
+  recorded, never a fault (amendment 2, Q6).
+- **The excess** (amendment 6, §1). An `absent excess` is a fault only where the entry's blank is
+  there and not refused, which a single entry does not show: the judge's C0 and the sample check
+  each decide it from the blank.
 - **Types.** "float" is any finite JSON number and "integer" only a JSON integer; a boolean is
-  neither. "number" is a survival ratio's: a NaN or Infinity token too, which C1 fails at an idle
-  fate and C0 refuses at an active one (amendment 1, item 3; amendment 4, item 7).
+  neither. A blank may lack its `route2` and `survival`; where present they have their types.
+- **A non-finite number anywhere in an entry refuses it** (CRITERIA.md C0; amendment 6, §2), but for
+  a survival ratio ("number"), whose NaN or Infinity token C1 fails at an idle fate and the value
+  pass refuses at an active one (amendment 1, item 3; amendment 4, item 7).
 """
 
 import dataclasses
@@ -31,7 +35,7 @@ SHAPES_KIND = "cells.fr38_v2.table_shapes@1"
 TABLE_KIND = "cells.fr38_v2.engine_table@1"
 EMPTY_SHA256 = hashlib.sha256(b"").hexdigest()
 FAULTS = ("missing", "type", "duplicate", "forbidden")
-SAMPLE_FAULTS = FAULTS + ("blank list",)
+ABSENT_EXCESS = "absent excess"
 
 GENE_UNIT = "templated_polymerisation@1"
 LABEL_OWNER = "neutral_arrival_labels@1"
@@ -60,6 +64,7 @@ JUDGE_PLANTS = ("P1", "P1′", "P1″", "P6", "P1'", "P1''")  # formed by the ju
 # blank, and a planted blank is a plant without the excess.
 ENTRY_KINDS = ("labelled", "blank", "twin", "B run", "B twin", "restart", "plant", "P8",
                "P8 blank", "refused")  # fmt: skip
+EXCESS_KINDS = ("labelled", "twin", "restart", "P8")  # those that list `excess_over_blank`
 
 
 def load_shapes(path=SHAPES_PATH):
@@ -382,6 +387,10 @@ class Entry:
     def faults(self):
         return [f for f in self.findings if f[0] in FAULTS]
 
+    @property
+    def excess_absent(self):
+        return any(f[0] == ABSENT_EXCESS for f in self.findings)
+
 
 @dataclasses.dataclass
 class Structure:
@@ -455,6 +464,27 @@ def _hex64(x):
     return isinstance(x, str) and re.fullmatch(r"[0-9a-fA-F]{64}", x) is not None
 
 
+def nonfinite(x, path):
+    """The paths of every number in a JSON value that is not finite (the first of each list)."""
+    if isinstance(x, dict):
+        return [p for k, v in x.items() for p in nonfinite(v, f"{path}.{k}")]
+    if isinstance(x, list):
+        if all(type(v) in (int, float) for v in x):
+            return [f"{path}[{i}]" for i, v in enumerate(x) if not math.isfinite(v)][:1]
+        return [p for i, v in enumerate(x) for p in nonfinite(v, f"{path}[{i}]")]
+    return [path] if type(x) is float and not math.isfinite(x) else []
+
+
+def _without_ratios(e):
+    """The entry but for its survival ratios, which the value pass and C1 decide; a blank's, never
+    judged, stay."""
+    rows = e.obj.get("survival")
+    if e.kind in ("blank", "P8 blank") or not isinstance(rows, list):
+        return e.obj
+    cut = [{k: v for k, v in r.items() if k != "ratio"} if isinstance(r, dict) else r for r in rows]
+    return dict(e.obj, survival=cut)
+
+
 def entry_findings(e, profile, shapes):
     """One entry's own keys (and its definition's shape), against its kind."""
     obj, out = e.obj, e.findings
@@ -468,13 +498,14 @@ def entry_findings(e, profile, shapes):
             out.append(("type", f"{e.where}.refused", "true expected, false found"))
     else:
         walk(_entry_node(e.kind, e.name, shapes), obj, e.where, out)
-        if e.kind in ("blank", "P8 blank"):  # §2, point 4: a blank's two lists are not pinned
-            lists = (f"{e.where}.route2", f"{e.where}.survival")
-            out[:] = [("blank list", p, f"{k}: {d}") if k in FAULTS and p.startswith(lists)
-                      else (k, p, d) for k, p, d in out]  # fmt: skip
+        excess = ("missing", f"{e.where}.excess_over_blank")
+        out[:] = [(ABSENT_EXCESS if f[:2] == excess else f[0], *f[1:]) for f in out]
         sha = obj.get("record_sha256")
         if isinstance(sha, str) and not _hex64(sha):
             out.append(("type", f"{e.where}.record_sha256", "64 hexadecimal digits expected"))
+    named = {f[1] for f in out if f[0] in FAULTS}
+    out += [("type", p, "a non-finite number found")
+            for p in nonfinite(_without_ratios(e), e.where) if p not in named]  # fmt: skip
     if isinstance(obj.get("definition"), dict):
         definition_findings(obj["definition"], profile, e.role != "twin",
                             f"{e.where}.definition", shapes, e.definition_findings)  # fmt: skip
@@ -594,6 +625,22 @@ def structure(doc, family, attempt, profile, role, honest, shapes, *, restart_ru
             out.entries.append(e)
     _plants(doc.get("plants"), out, attempt, profile, role, honest, shapes)
     _restart(doc, out, attempt, profile, restart_run, shapes)
+    return out
+
+
+def excess_faults(st):
+    """Amendment 6, §1, by structure alone (the sample check's): an absent `excess_over_blank` is a
+    fault where the blank its entry names is in the table and not refused. The judgement decides it
+    from the registered blank and C0 (`judge._decide_excess`)."""
+    at, out = {e.where: e for e in st.entries}, []
+    for e in st.entries:
+        if not e.excess_absent:
+            continue
+        rung = e.where[: e.where.index(".runs.") + 6] if ".runs." in e.where else "plants."
+        rung = "rungs.0.5.runs." if e.role == "restart" else rung
+        blank = at.get(rung + str(e.obj.get("blank")))
+        if blank is not None and blank.kind != "refused" and not blank.faults:
+            out.append(("missing", f"{e.where}.excess_over_blank", "its blank is there"))
     return out
 
 

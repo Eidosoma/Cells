@@ -1,6 +1,6 @@
 """Host-only tests of FR-38's second comparison judge, on invented inputs only.
 
-**Seconds:** 50 to 70 s of CPU for its 32 tests, on light CPUs other jobs shared (25 November 2026).
+**Seconds:** 65 to 100 s of CPU for 39 tests, on light CPUs other jobs shared (25 November 2026).
 **Reason (D224):** the judge decides FR-38's registered verdict, so each C0 refusal, each failure
 and inconclusive mode, the retry and each plant (caught and not caught) must be shown to move it
 the registered way before any engine run is judged.
@@ -826,6 +826,7 @@ def test_honest_invented_engine_passes(honest):
     }
     assert not bad, bad
     assert not v["c0"]["engine"]["refused_records"], v["c0"]["engine"]["refused_records"][:2]
+    assert v["c0"]["engine"]["flags_for_the_checker"] == []
     for p in ("P1", "P1′", "P1″", "P2", "P3a", "P3b", "P4", "P5", "P6", "P7"):
         assert plant_status(v, p) == "caught", (p, v["plants"][p]["must_catch"])
     assert v["comparison"]["invented"] == "pass"
@@ -871,18 +872,22 @@ def test_twin_restart_and_two_blank_mismatches_fail(invented, mapping, tmp_path)
     )
     run = v["families"]["invented"]["runs"]["p_sched returned"]["primary"]
     assert run["verdict"] == "fail" and run["equalities"]["twin@2.0"]["fails"]
+
+    def survives(rec):
+        bump("label_R_win")(rec)
+        rec["survival"] = [dict(rec["survival"][0], alive_ts=1e-30), *rec["survival"][1:]]
+
     v = _perturbed(
-        invented,
-        mapping,
-        tmp_path,
-        [(is_("p_sched returned", "restart"), bump("label_R_win"))],
-        "restart",
+        invented, mapping, tmp_path, [(is_("p_sched returned", "restart"), survives)], "restart"
     )
     run = v["families"]["invented"]["runs"]["p_sched returned"]["primary"]
+    differ = run["equalities"]["restart"]["differences"]
     assert run["verdict"] == "fail" and run["equalities"]["restart"]["fails"]
+    assert [x for x in differ if x.startswith("series/label_R_win")] and len(differ) == 2, differ
+    assert [x for x in differ if x.startswith("survival/")], differ
 
-    # the restart compares every record, labels and released_present_gross included (amendment 4,
-    # item 7, CRITERIA.md §2): a difference there alone fails
+    # the restart's equality covers the labels and released_present_gross (amendment 6, §3): a
+    # difference there alone fails
     v = _perturbed(
         invented,
         mapping,
@@ -1060,10 +1065,52 @@ def test_retry(invented, mapping, tmp_path):
         run = v["families"]["invented"]["runs"]["p_sched held"]
         assert run["primary"]["verdict"] == "inconclusive", name
         assert run["retry"]["rungs_s"] == [1.0, 0.5, 0.25] and run["verdict"] == expect, name
+        assert v["families"]["invented"]["verdict"] == expect, name
+
+    # a support run refused at the retry, or at the primary attempt of a run the retry then passes,
+    # leaves the family inconclusive (amendment 6, §1), and the run's verdict is the retry's
+    def slow(rec):
+        return rec["run"] == "p_sched returned" and rec["role"] in ("honest", "twin", "restart")
+
+    for name, at, dt, where_ in (
+        ("retry_blank", is_("blank", "blank", 0.25), 0.25, "its blank (returned)"),
+        ("primary_twin", is_("p_sched returned", "twin", 1.0, attempt="primary"), 1.0, "its twin"),
+    ):
+        s = Synth(invented, "A", mapping)
+        s.records_override = s.all_records() + s.retry_records(["p_sched returned"])
+        s.tweaks = [(lambda rec: slow(rec) and rec["attempt"] == "primary", second[1]),
+                    (at, None)]  # fmt: skip
+        v = run_judge(tmp_path, [invented], [s], name=f"retry_{name}")
+        run = v["families"]["invented"]["runs"]["p_sched returned"]
+        assert (run["primary"]["verdict"], run["verdict"]) == ("inconclusive", "pass"), name
+        assert v["families"]["invented"]["verdict"] == "inconclusive", name
+        (listed,) = v["support_refused"]
+        assert f"{where_} at {dt!r} s: missing" in listed, name
 
 
 def refuse(rec):
     rec["status"], rec["refusal"] = "refused", "domain: y_f above X_DOM (invented)"
+
+
+def refused_entry(e):
+    return {"refused": True, "refusal": "invented", "definition": e["definition"],
+            "record": e["record"]}  # fmt: skip
+
+
+def blank_refused(name, *rungs):
+    """The engine refuses that blank at those rungs, and the table writer leaves out the excess of
+    every entry that names it (amendment 6, §1)."""
+
+    def f(table, attempt):
+        for key in rungs if attempt == "primary" else ():
+            runs = table["rungs"][key]["runs"]
+            runs[name] = refused_entry(runs[name])
+            restart = [table["restart"]] if key == "0.5" and "restart" in table else []
+            for e in [*runs.values(), *restart]:
+                if e.get("blank") == name:
+                    e.pop("excess_over_blank")
+
+    return f
 
 
 def test_refused_runs(invented, mapping, tmp_path):
@@ -1113,29 +1160,117 @@ def test_refused_runs(invented, mapping, tmp_path):
     assert verdict_of(v, "invented", "p=1 returned") == "refused"
 
 
-def test_a_refused_run_lists_its_failing_entries(invented, mapping, tmp_path):
-    """CRITERIA.md §4: a run with a refused rung, twin or blank is scored refused. What C0 accepts
-    of it is judged all the same, and a failing entry is listed beside the refusal, not hidden."""
+def negzero(rec):
+    rec["series"]["label_R_win"] = np.asarray(rec["series"]["label_R_win"], dtype=float).copy()
+    rec["series"]["label_R_win"][0] = -0.0
 
-    def negzero(rec):
-        rec["series"]["label_R_win"] = rec["series"]["label_R_win"].copy()
-        rec["series"]["label_R_win"][0] = -0.0
 
-    bad = (is_("p_sched returned", "honest", 2.0), negzero)
-    for name, gone in (
-        ("twin", (is_("p_sched returned", "twin", 1.0), refuse)),
-        ("blank", (is_("blank", "blank", 0.5), refuse)),
-        ("rung", (is_("p_sched returned", "honest", 0.5), refuse)),
+TWIN_REFUSED = (is_("p_sched returned", "twin", 1.0), refuse)
+RUNG_REFUSED = (is_("p_sched returned", "honest", 0.5), refuse)
+BAD = (is_("p_sched returned", "honest", 2.0), negzero)
+
+
+# what is refused, whether an entry of the run fails, the run's verdict, its family's, the blank's
+@pytest.mark.parametrize(
+    "gone, bad, run, family, blank",
+    [
+        ("twin", False, "pass", "inconclusive", "pass"),
+        ("twin", True, "fail", "fail", "pass"),
+        ("blank", False, "pass", "inconclusive", "refused"),
+        ("blank", True, "fail", "fail", "refused"),
+        ("rung", False, "refused", "inconclusive", "pass"),
+        ("rung", True, "fail", "fail", "pass"),
+    ],
+)
+def test_a_refusal_never_hides_a_fail(invented, mapping, tmp_path, gone, bad, run, family, blank):
+    """Amendment 6, §1: a failing entry fails its run whatever is refused. With none, a refused twin
+    or blank leaves the run as it is and its family inconclusive, and a refused rung refuses it."""
+    s = Synth(invented, "A", mapping)
+    s.tweaks = {"twin": [TWIN_REFUSED], "rung": [RUNG_REFUSED]}.get(gone, []) + [BAD] * bad
+    s.table_tweaks = [blank_refused("blank returned", "0.5")] if gone == "blank" else []
+    v = run_judge(tmp_path, [invented], [s], name="refusal")
+    fam = v["families"]["invented"]
+    one = fam["runs"]["p_sched returned"]["primary"]
+    assert (one["verdict"], fam["verdict"], fam["runs"]["blank"]["verdict"]) == (run, family, blank)
+    assert bool(one["refused"]) == (gone == "rung")
+    assert bool(one["support_refused"]) == (gone != "rung") == bool(v["support_refused"])
+    assert any(w.startswith("C1: label_R_win") for w in one["why"]) == bad
+    # what can be formed is judged: with a blank refused at h, all but the excess
+    formed = {i["readout"] for i in one["readouts"] if "C2" in i}
+    excess = {f"excess_over_blank_{f}" for f in spec.FATES}
+    if gone == "blank":
+        assert set(one["not_formed"]) == excess and "n_R" in formed
+        assert not v["c0"]["engine"]["refused_records"]
+    elif gone == "twin":
+        assert one["not_formed"] == [] and excess <= formed
+    else:
+        assert "n_R" not in formed and "n_R" in one["not_formed"]
+        assert sorted(one["identities"]) == ["1.0", "2.0"]
+    # a refused twin or blank makes no plant unscorable but P1″; a refused rung makes its run's so
+    assert plant_status(v, "P4") == ("refused" if gone == "rung" else "caught")
+    assert plant_status(v, "P1″") == ("refused" if gone == "blank" else "caught")
+
+
+def test_what_the_rungs_that_ran_can_form(invented, mapping, tmp_path):
+    """Amendment 6, §1: route 2 is judged at h alone, and a C4 identity at each rung that ran; a run
+    with a refused rung takes no retry; an absent excess refuses its entry where its blank is
+    there."""
+
+    def r2(rec):
+        rec["route2"] = [dict(e, value=e["value"] * 1.01) for e in rec["route2"]]
+
+    def hold(rec):
+        rec["series"]["int_Q_tx"] = rec["series"]["int_Q_tx"] * (1 + 1e-9)
+
+    for name, tweak, gone, at, what in (
+        ("route2", r2, 2.0, 0.5, "C2: route2_short_lived"),
+        ("identity", hold, 0.5, 1.0, "C4: hold at 1.0 s"),
+        ("not_at_h", r2, 0.5, 1.0, None),
     ):
-        v = _perturbed(invented, mapping, tmp_path, [gone], f"alone_{name}")
-        assert verdict_of(v, "invented", "p_sched returned") == "refused", name
-        assert v["refused_with_failing_entries"] == [], name
-        v = _perturbed(invented, mapping, tmp_path, [bad, gone], f"both_{name}")
-        assert verdict_of(v, "invented", "p_sched returned") == "refused", name
-        listed = [x for x in v["refused_with_failing_entries"] if "p_sched returned (" in x]
-        assert any("C1: label_R_win" in x for x in listed), (name, listed)
-    # where the rungs are not all there, the plants on that run are unscorable
-    assert plant_status(v, "P4") == "refused"
+        v = _perturbed(
+            invented,
+            mapping,
+            tmp_path,
+            [(is_("p_sched held", "honest", gone), refuse),
+             (is_("p_sched held", "honest", at), tweak)],
+            f"formed_{name}",
+        )  # fmt: skip
+        one = v["families"]["invented"]["runs"]["p_sched held"]["primary"]
+        assert one["verdict"] == ("fail" if what else "refused") and one["refused"], name
+        assert what is None or any(w.startswith(what) for w in one["why"]), (name, one["why"])
+
+    # an excess that is there though C0 refuses its blank is not judged, and is flagged
+    def excess(rec):
+        rec["series"]["excess_over_blank_durable"] = rec["series"]["excess_over_blank_durable"] * 2
+
+    def dirty(rec):
+        rec["source"] = dict(rec["source"], checkout_dirty=True)
+
+    v = _perturbed(
+        invented,
+        mapping,
+        tmp_path,
+        [(is_("p_sched held", "honest", 0.5), excess), (is_("blank", "blank", 1.0), dirty)],
+        "formed_excess",
+    )
+    assert plant_status(v, "P1″") == "refused"
+    assert verdict_of(v, "invented", "p_sched held") == "pass"
+    assert verdict_of(v, "invented", "blank") == "refused"
+    assert v["families"]["invented"]["verdict"] == "inconclusive"
+    flags = v["c0"]["engine"]["flags_for_the_checker"]
+    assert any("p_sched held: its excess over the blank is there, and not judged" in f
+               for f in flags)  # fmt: skip
+    s = Synth(invented, "A", mapping)
+    s.records_override = s.all_records() + s.retry_records(["p_sched held"])
+    s.tweaks = [(is_("p_sched held", "honest", 1.0, attempt="primary"), refuse)]
+    s.entry_tweaks = [(is_("p=0 returned", "honest", 1.0), lambda e: e.pop("excess_over_blank"))]
+    v = run_judge(tmp_path, [invented], [s], name="noretry")
+    run = v["families"]["invented"]["runs"]["p_sched held"]
+    assert run["verdict"] == "refused" and "retry" not in run and "retry_ignored" in run
+    (gone,) = v["c0"]["engine"]["refused_records"]
+    assert gone["entry"] == "rungs.1.0.runs.p=0 returned"
+    assert "its blank (rungs.1.0.runs.blank returned) is there" in gone["faults"][0]
+    assert verdict_of(v, "invented", "p=0 returned") == "refused"
 
 
 # ------------------------------------------------------------------ the tables (amendment 5)
@@ -1210,8 +1345,6 @@ def _entry_faults():
     def transcribes(e):
         control({"definition": e["definition"]}, "tx")["schedule"][0]["value"] = 50000.0
 
-    alive = {"fate": "durable", "t2_s": 300.0, "ts_s": 450.0, "alive_t2": 0.0, "alive_ts": 0.0,
-             "ratio": None}  # fmt: skip
     h = "honest"
     return [
         (is_("p=0 returned", h, 2.0), drop("own_ledgers_at_end"), "own_ledgers_at_end: missing"),
@@ -1230,12 +1363,13 @@ def _entry_faults():
         (is_("p_sched returned", h, 1.0), lambda e: e["checks"].pop("exported_cell"),
          "checks.exported_cell: missing"),
         (is_("p_sched returned", h, 0.5), nan, "readouts.n_M[3]: type: float expected"),
-        (is_("p_sched returned", "twin", 2.0), put([alive], "survival"), "a twin is unlabelled"),
+        (is_("p_sched returned", "twin", 2.0), put(["x"], "survival"), "a twin is unlabelled"),
         (is_("p_sched returned", "twin", 1.0), labelled, "a twin is unlabelled"),
         (is_("p_sched returned", "twin", 0.5), own_labels, "the operators"),
         (is_("blank", "blank", 2.0), constant_p, "durable_fraction: p:"),
         (is_("blank", "blank", 1.0), transcribes, "k_I:"),
-        (is_("blank", "blank", 0.5), lambda e: (e.pop("route2"), e.pop("survival")), None),
+        (is_("blank", "blank", 0.5), lambda e: (
+            e.pop("route2"), e.pop("survival"), e.update(excess_over_blank=None)), None),
         (is_(role="restart"), put(7200.0, "checkpoint", "time_s"), "checkpoint.time_s: 7200.0"),
         (is_(plant="P2"), put(dict(V0_PATCH), "host_patch"), "host_patch: type: null expected"),
         (is_(plant="P3a"), put("p_sched held", "judged_as"), "judged_as: type"),
@@ -1275,9 +1409,21 @@ def _more_entry_faults():
         (is_("p_sched returned", "twin", 0.5), lambda e: e.pop("excess_over_blank"),
          "excess_over_blank: missing"),
         (is_(role="restart"), twice("survival"), "is duplicated"),
-        (is_(plant="P2"), lambda e: e.pop("judged_as"), "judged_as: missing"),
+        (is_(plant="P7"), lambda e: e.pop("judged_as"), "judged_as: missing"),
         (is_(plant="P3a"), twice("route2"), "is duplicated"),
         (is_(plant="P5"), lambda e: e.update(blank="blank returned"), "blank: type: null expected"),
+        # amendment 6, §2: a blank's lists have their types where present, and a non-finite number
+        # anywhere refuses its entry
+        (is_("blank", "blank", 2.0), lambda e: e["route2"][0].update(grid_error="x"),
+         "route2[0].grid_error: type"),
+        (is_("blank", "blank", 1.0), lambda e: e["survival"][0].update(ratio=float("nan")),
+         "survival[0].ratio: type: a non-finite number"),
+        (is_(plant="P3b"), lambda e: e["definition"]["execution"].update(capacity=float("inf")),
+         "definition.execution.capacity: type: a non-finite number"),
+        (is_(plant="P4"), lambda e: e.update(extra=float("nan"), more={"x": [1.0, float("nan")]}),
+         ("extra: type: a non-finite number", "more.x[1]: type: a non-finite number")),
+        (is_(plant="P2"), lambda e: [x.update(ratio=float("inf")) for x in e["survival"]
+                                     if x["fate"] == "short_lived"], "s): a non-finite ratio"),
     ]  # fmt: skip
 
 
@@ -1295,10 +1441,9 @@ def test_c0_names_each_entry_fault(invented, mapping, read_once, tmp_path):
                 rec["role"], f"rungs.{float(rec['dt_s'])!r}.runs.{rec['name']}"
             )
             faults = faults_of(report, where)
-            if needle is None:
-                assert faults == [], (where, faults)
-            else:
-                assert any(needle in x for x in faults), (where, needle, faults[:3])
+            assert needle is not None or faults == [], (where, faults)
+            for one in (needle,) if isinstance(needle, str) else needle or ():
+                assert any(one in x for x in faults), (where, one, faults[:3])
         assert tag == "more" or any("extra_key" in m for m in report["extra_keys"])
     # a null plant is a missing record, unscorable; a table's other plants are still read
     s = Synth(invented, "A", mapping)
@@ -1401,8 +1546,9 @@ def test_c0_names_each_declaration_fault(invented, mapping, read_once, tmp_path)
 
 
 def test_flags_and_records_refuse_nothing(invented, mapping, tmp_path):
-    """Item 4 and item 5: recorded and flagged to the checker, never judged."""
+    """Items 4 and 5, and amendment 6, §3: recorded and flagged to the checker, never judged."""
     s = Synth(invented, "A", mapping)
+    s.two_blanks = True
     s.entry_tweaks = [
         (is_("p=0 returned", "honest", 2.0), lambda e: e.update(blank="blank held")),
         (is_("p=0 returned", "honest", 1.0), lambda e: e["route2"][0].update(k_per_s=1.0)),
@@ -1411,7 +1557,13 @@ def test_flags_and_records_refuse_nothing(invented, mapping, tmp_path):
          lambda e: e["source"].update(snapshot_patch_sha256="0" * 64)),
         (is_("p_sched returned", "twin", 2.0), lambda e: e["readouts"].update(
             H_total=[1.0] * len(e["t"]))),
-        (is_("blank", "blank", 2.0), lambda e: e["route2"][0].update(grid_error="x")),
+        (is_("p_sched returned", "twin", 1.0), lambda e: e["route2"][0].update(grid_error=1.0)),
+        (is_("p_sched returned", "twin", 0.5), lambda e: e["route2"][0].update(k_per_s=1.0)),
+        (is_("p_sched returned", "honest", 2.0),  # a twin's ledgers are a subset of its run's
+         lambda e: e["own_ledgers_at_end"].update(labels=[1.0])),
+        (is_(role="restart"), lambda e: e["own_ledgers_at_end"].update(poly_machines=[1.0])),
+        (is_("blank", "blank", 0.5, machine="held"), lambda e: e["checks"].update(
+            G_identity_largest_pJ=2.0)),
     ]  # fmt: skip
     v = run_judge(tmp_path, [invented], [s], name="flags")
     assert v["comparison"]["invented"] == "pass"
@@ -1421,10 +1573,16 @@ def test_flags_and_records_refuse_nothing(invented, mapping, tmp_path):
         "k_per_s 1.0 is not the declared",
         "differ in source.snapshot",
         "not an empty file's",
-        "twin@2.0: an export that is never judged differs: H_total",
     ):
         assert any(needle in f for f in flags), (needle, flags)
-    assert any("route2[0].grid_error: blank list" in m for m in v["c0"]["engine"]["extra_keys"])
+    # amendment 6, §3: outside an equality's named things a difference is reported beside the
+    # verdict and flagged, and fails nothing
+    beside = v["recorded_differences"]
+    for needle in ("twin@2.0: readouts.H_total", "twin@1.0: route2 (short_lived, 570.0 s).grid_er",
+                   "twin@0.5: route2 (short_lived, 570.0 s).k_per_s",
+                   "restart: own_ledgers_at_end", "two_blanks@0.5: checks"):  # fmt: skip
+        assert any(needle in x for x in beside), (needle, beside)
+    assert len(beside) == 5 and set(beside) <= set(flags)
 
 
 def test_index_and_table_hash(invented, mapping, read_once, tmp_path):
@@ -2078,7 +2236,7 @@ def test_profile_b_split_and_p4(invented, mapping, tmp_path):
     assert v["families"]["invented_B"]["runs"]["p=0.55 held"]["verdict"] == "fail"
 
 
-def test_cli_writes_a_verdict(invented, mapping, tmp_path):
+def test_cli_writes_a_verdict(invented, mapping, tmp_path, capsys):
     from validation.gene_regulation.fr38_v2.judge import __main__ as cli
 
     refs = write_refs(str(tmp_path / "cli_refs"), invented)
@@ -2090,8 +2248,12 @@ def test_cli_writes_a_verdict(invented, mapping, tmp_path):
     v = json.load(open(out))
     assert v["c0"]["references"]["invented"]["accepted"]
     assert not v["c0"]["references"]["AN"]["accepted"]
+    capsys.readouterr()
     assert cli.main(["judge", "--engine", export, "--references", refs, "--out", out]) == 0
     v = json.load(open(out))
+    printed = json.loads(capsys.readouterr().out)
+    assert {k: v[k] for k in printed} == printed
+    assert {"comparison", "support_refused", "recorded_differences"} <= set(printed)
     assert v["comparison"]["FR-38"] == "inconclusive" and v["comparison"]["invented"] == "pass"
 
 
@@ -2264,19 +2426,83 @@ def test_registered_fail_and_inconclusive(registered):
     )
     assert v["comparison"]["arms"] == {"A": "pass", "B": "pass"}
     assert plant_status(v, "P5") == "refused" and v["comparison"]["FR-38"] == "inconclusive"
-    # AN's restart is required, and AF's held blank
-    v = judge_registered(
-        registered, edited(registered, "norestart", where("invented", role="restart"))
-    )
-    assert verdict_of(v, "invented", "p_sched returned") == "refused"
-    assert v["comparison"]["FR-38"] == "inconclusive"
+
+    # AN's restart is null and a twin of B's is refused: support runs, so both arms are at best
+    # inconclusive, and the runs they support are judged all the same (amendment 6, §1 and §5)
+    def support(table, attempt):
+        if "restart" in table:
+            table["restart"] = None
+        else:
+            runs = table["rungs"]["1.0"]["runs"]
+            runs["p=0.55 held unlabelled"] = refused_entry(runs["p=0.55 held unlabelled"])
+
     v = judge_registered(
         registered,
-        edited(registered, "noheld", where("inv_AF", role="blank", dt=1.0, machine="held")),
+        edited(registered, "support", lambda r: r["family"] in ("invented", "inv_B"),
+               table=support),
+    )  # fmt: skip
+    assert verdict_of(v, "invented", "p_sched returned") == "pass"
+    assert verdict_of(v, "inv_B", "p=0.55 held") == "pass"
+    assert v["comparison"]["arms"] == {"A": "inconclusive", "B": "inconclusive"}
+    assert v["comparison"]["FR-38"] == "inconclusive" and len(v["support_refused"]) == 2
+    assert all(plant_status(v, p) == "caught" for p in spec.CORE_PLANTS)
+    # a family that fails fails its arm where the arm's other family is not there to judge
+    v = judge_one(
+        registered, "invented", "an_alone", where("invented", run="p=0 returned", dt=2.0), negzero
     )
-    assert verdict_of(v, "inv_AF", "p_sched held") == "refused"
+    assert v["comparison"]["arms"]["A"] == "fail" and v["comparison"]["FR-38"] == "fail"
+
+
+def test_a_refused_blank_and_p1(registered):
+    """Amendment 6, §1: P1″ reads the excess, so a refused blank makes it unscorable: in AF only its
+    own machine option's idle fates, in AN every group; and it hides no group that is judged."""
+
+    def groups(v):
+        return {g["unit"]: g["caught"] for g in v["plants"]["P1″"]["must_catch"]}
+
+    idle = {"p=0": "durable", "p=1": "short_lived"}
+    af = [f"inv_AF {p} {m} idle excess_over_blank_{f}" for p, f in idle.items()
+          for m in ("returned", "held")]  # fmt: skip
+    an = [f"invented {p} returned idle excess_over_blank_{f}" for p, f in idle.items()]
+    an.append("invented (any run)")
+    held = {"table": blank_refused("blank held", "1.0")}
+    v = judge_registered(
+        registered, edited(registered, "af_held", where("inv_AF", run="p=0 held"), **held)
+    )
+    assert groups(v) == {u: None if " held " in u else True for u in af + an}
+    assert plant_status(v, "P1″") == "refused" and v["comparison"]["FR-38"] == "inconclusive"
+    for run in ("p=0 held", "p=1 held", "p_sched held"):  # judged on all but the excess
+        assert verdict_of(v, "inv_AF", run) == "pass", run
     assert verdict_of(v, "inv_AF", "blank held") == "refused"
-    assert v["comparison"]["FR-38"] == "inconclusive"
+    assert v["families"]["inv_AF"]["verdict"] == "inconclusive"
+    assert all(plant_status(v, p) == "caught" for p in spec.CORE_PLANTS if p != "P1″")
+
+    # the other option's blank is there: a P1″ not caught at one of its idle fates is still a fail
+    def both(table, attempt):
+        held["table"](table, attempt)
+        for rung in table["rungs"].values():
+            ex = rung["runs"]["p=0 returned"]["excess_over_blank"]
+            ex["durable"] = [0.0] * len(ex["durable"])
+
+    v = judge_registered(
+        registered, edited(registered, "af_both", where("inv_AF", run="p=0 held"), table=both)
+    )
+    got = groups(v)
+    assert got[af[0]] is False and got[af[1]] is None and got[af[2]] is True
+    assert plant_status(v, "P1″") == "not caught" and v["comparison"]["FR-38"] == "fail"
+    # AF's returned blank refused: the held one stands, and their equality is formed elsewhere
+    v = judge_one(registered, "inv_AF", "af_ret", where("inv_AF", run="p=0 held"),
+                  table=blank_refused("blank returned", "1.0"))  # fmt: skip
+    assert groups(v) == {u: True if " held " in u else None for u in af}
+    assert verdict_of(v, "inv_AF", "blank") == "refused"
+    assert verdict_of(v, "inv_AF", "blank held") == "pass"
+    equal = v["families"]["inv_AF"]["runs"]["blank held"]["primary"]["equalities"]
+    assert sorted(equal) == ["two_blanks@0.5", "two_blanks@2.0"]
+    v = judge_one(registered, "invented", "an_blank", where("invented", run="p=0 returned"),
+                  table=blank_refused("blank returned", "0.5"))  # fmt: skip
+    assert groups(v) == dict.fromkeys(an) and plant_status(v, "P1″") == "refused"
+    restart = v["families"]["invented"]["runs"]["p_sched returned"]["primary"]["equalities"]
+    assert restart["restart"]["passes"]  # formed without the excess
 
 
 def test_registered_af_p1_does_not_decide(registered):
@@ -2311,8 +2537,8 @@ def test_registered_af_p1_does_not_decide(registered):
 
 
 def test_registered_restart_and_patch(registered):
-    """Items 5 and 7 and §4 (b) and (c) in the registered roles: AN's restart and its checkpoint,
-    P9's patch, and what is ignored and recorded."""
+    """Amendment 5, items 5 and 7 and §4 (b) and (c), and amendment 6, §1, §4 and §5, in the
+    registered roles: AN's restart and its twin, P9's patch, and what is ignored and recorded."""
     an = where("invented", role="restart")
     for name, kw in (
         ("null", {"table": lambda t, a: t.update(restart=None)}),
@@ -2322,25 +2548,67 @@ def test_registered_restart_and_patch(registered):
         ("typed", {"entry": lambda e: e["checkpoint"].update(step_index=600.0)}),
     ):
         v = judge_one(registered, "invented", f"re_{name}", an, **kw)
-        assert verdict_of(v, "invented", "p_sched returned") == "refused", name
-        assert verdict_of(v, "invented", "p_sched held") == "pass", name
+        # the restart alone is refused: AN is at best inconclusive, and its runs stand (amendment
+        # 6, §1 and §5)
+        run = v["families"]["invented"]["runs"]["p_sched returned"]
+        assert run["verdict"] == "pass" and run["primary"]["refused"] == [], name
+        assert [x for x in v["support_refused"] if "the restart: " in x], name
+        assert len(v["support_refused"]) == 1 and "restart" not in run["primary"]["equalities"]
         assert v["families"]["invented"]["verdict"] == "inconclusive", name
+        assert all(plant_status(v, p) == "caught" for p in ("P3a", "P3b", "P4")), name
+
+    # a refused twin likewise, and a failing entry beside it fails its run and its arm (§1)
+    def twin(bad):
+        def f(rec):
+            if rec["role"] == "twin" and rec["dt_s"] == 1.0:
+                refuse(rec)
+            elif bad and rec["role"] == "honest" and rec["dt_s"] == 2.0:
+                negzero(rec)
+
+        return f
+
+    anyone = where("invented", run="p_sched returned")
+    for bad, run_is, an_is in ((False, "pass", "inconclusive"), (True, "fail", "fail")):
+        v = judge_one(registered, "invented", f"twin_{bad}", anyone, twin(bad))
+        assert verdict_of(v, "invented", "p_sched returned") == run_is
+        assert v["families"]["invented"]["verdict"] == an_is
+        assert v["comparison"]["arms"]["A"] == an_is and v["comparison"]["FR-38"] == an_is
+        (listed,) = v["support_refused"]
+        assert "its twin at 1.0 s: refused by the engine" in listed
     # a restart in any other table is ignored and recorded (§4 (b))
     v = judge_one(registered, "inv_AF", "stray", where("inv_AF", run="p=0 held"),
                   table=lambda t, a: t.update(restart={"x": 1}))  # fmt: skip
     assert v["families"]["inv_AF"]["verdict"] == "pass"
+    assert v["comparison"]["arms"]["A"] == "inconclusive"  # AN is not there
     assert any("only AN's primary table has one" in n for n in v["c0"]["engine"]["notes"])
-    # P9 without its patch, with another's, or refused (a refused entry names no patch): unscorable
+    # P9 without its patch, or with another's: unscorable. Refused by the engine it is caught, for
+    # the checker to confirm, unless D's honest run is itself refused (amendment 6, §4); a refused
+    # twin of that run leaves P9 caught and D inconclusive
     p9 = where("invented_D", role="plant", plant="P9")
-    for name, kw in (
-        ("none", {"entry": lambda e: e.update(host_patch=None)}),
-        ("other", {"entry": lambda e: e["host_patch"].update(id="V1")}),
-        ("operator", {"entry": lambda e: e["host_patch"].update(operator="x")}),
-        ("refused", {"fn": refuse}),
-    ):
-        v = judge_one(registered, "invented_D", f"p9_{name}", p9, **kw)
-        assert plant_status(v, "P9") == "refused", name
-        assert v["comparison"]["D"] == "inconclusive", name
+
+    def refuses(*names):
+        def f(rec):
+            if rec["role"] in names and (rec["role"] == "plant" or rec["dt_s"] == 2.0):
+                refuse(rec)
+
+        return f
+
+    anyone = where("invented_D", run="p_sched returned")
+    for name, pred, kw, p9_is, d_is in (
+        ("none", p9, {"entry": lambda e: e.update(host_patch=None)}, "refused", "inconclusive"),
+        ("other", p9, {"entry": lambda e: e["host_patch"].update(id="V1")}, "refused",
+         "inconclusive"),
+        ("operator", p9, {"entry": lambda e: e["host_patch"].update(operator="x")}, "refused",
+         "inconclusive"),
+        ("refused", anyone, {"fn": refuses("plant")}, "caught", "pass"),
+        ("both", anyone, {"fn": refuses("plant", "honest")}, "refused", "inconclusive"),
+        ("twin", anyone, {"fn": refuses("plant", "twin")}, "caught", "inconclusive"),
+    ):  # fmt: skip
+        v = judge_one(registered, "invented_D", f"p9_{name}", pred, **kw)
+        assert plant_status(v, "P9") == p9_is and v["comparison"]["D"] == d_is, name
+        flagged = any("P9 is refused by the engine: caught" in f
+                      for f in v["c0"]["engine"]["flags_for_the_checker"])  # fmt: skip
+        assert flagged == (p9_is == "caught"), name
     # P9's patch is recorded in the verdict
     v = judge_one(registered, "invented_D", "p9_as_is", p9, entry=lambda e: None)
     assert list(v["c0"]["engine"]["host_patches"].values()) == [V0_PATCH]
@@ -2480,7 +2748,7 @@ def test_sample_check_on_an_invented_sample(invented_sample, monkeypatch, tmp_pa
     stopped = sample.check(invented_sample, SHAPES)
     assert stopped["stopped"] and not stopped["passes"] and "files" not in stopped
 
-    # nine faults in one table, each on its own entry, each named by path
+    # ten faults in one table, each on its own entry, each named by path
     root = str(tmp_path / "faulted")
     shutil.copytree(invented_sample, root)
     path = os.path.join(root, "table", "table_AN.json")
@@ -2494,6 +2762,11 @@ def test_sample_check_on_an_invented_sample(invented_sample, monkeypatch, tmp_pa
     runs["p_sched returned unlabelled"]["definition"]["experiment"].update(label_arrivals=[])
     runs["blank returned"]["readouts"].pop("H_route_tx")
     runs["stray"] = {}
+    # amendment 6, §1: an absent excess is a fault where its blank is there, and none where not
+    doc["rungs"]["1.0"]["runs"]["p=0 returned"].pop("excess_over_blank")
+    at2 = doc["rungs"]["2.0"]["runs"]
+    at2["blank returned"] = refused_entry(at2["blank returned"])
+    at2["p=0 returned"].pop("excess_over_blank")
     doc["plants"]["P3a"]["refused"] = False
     doc.pop("restart")
     with open(path, "w") as fh:
@@ -2508,11 +2781,13 @@ def test_sample_check_on_an_invented_sample(invented_sample, monkeypatch, tmp_pa
         f"{at}.p=1 returned.definition.model.operators[law=x@1]: forbidden",
         f"{at}.p_sched returned unlabelled.definition.experiment.label_arrivals: forbidden",
         f"{at}.blank returned.readouts.H_route_tx: missing",
+        "rungs.1.0.runs.p=0 returned.excess_over_blank: missing",
         "entries in the file",
         "plants.P3a.refused: type",
         "restart: absent",
     ):
         assert any(needle in x for x in r["structural_faults"]), needle
+    assert not any("rungs.2.0." in x for x in r["structural_faults"])
     assert not r["passes"] and not r["coverage"]["the restart's checkpoint"]
     # a README the committed shapes do not equal, and a kind of entry the sample lacks
     with monkeypatch.context() as m:
@@ -2523,12 +2798,21 @@ def test_sample_check_on_an_invented_sample(invented_sample, monkeypatch, tmp_pa
     path = os.path.join(gone, "table", "table_C.json")
     with open(path) as fh:
         doc = json.loads(fh.read())
-    doc["plants"] = {}
+    doc["plants"].pop("P8 blank")
+    doc["plants"]["P8"].pop("excess_over_blank")
+    with open(path, "w") as fh:
+        fh.write(json.dumps(doc))
+    path = os.path.join(gone, "table", "table_AN.json")
+    with open(path) as fh:
+        doc = json.loads(fh.read())
+    doc["restart"].pop("excess_over_blank")
     with open(path, "w") as fh:
         fh.write(json.dumps(doc))
     write_sums(os.path.join(gone, "table"))
     r = sample.check(gone, _registered_as(gone))
     assert not r["coverage"]["P8 blank"] and not r["passes"]
+    (fault,) = r["structural_faults"]  # P8's blank is gone, and the restart's is there
+    assert "restart.excess_over_blank: missing" in fault
     # the CLI's check stops on the registered hashes
     from validation.gene_regulation.fr38_v2.judge import __main__ as cli
 
@@ -2545,6 +2829,35 @@ def _honest_h(reg, family, run):
 def test_registered_c_and_d_verdicts(registered):
     """C and D carry their own verdicts beside FR-38's and never decide it (CRITERIA.md §4)."""
     hc = _honest_h(registered, "invented_C", "p_sched returned")
+
+    # P8's catch does not depend on its blank: refused or missing, P8's excess is absent or not
+    # judged, and its other readouts decide (amendment 6, §1)
+    def planted_blank(table, attempt, *, how="refused", same=False):
+        p = table["plants"]
+        p["P8"].pop("excess_over_blank")
+        p["P8 blank"] = None if how == "null" else refused_entry(p["P8 blank"])
+        if same:
+            p["P8"]["readouts"].update({k: [float(x) for x in hc["series"][k]]
+                                        for k in p["P8"]["readouts"]})  # fmt: skip
+
+    p8 = where("invented_C", role="plant")
+    for name, kw, p8_is, c_is in (
+        ("ref", {}, "caught", "pass"),
+        ("null", {"how": "null"}, "caught", "pass"),
+        ("same", {"same": True}, "not caught", "fail"),
+    ):
+        v = judge_one(registered, "invented_C", f"c_pb_{name}", p8,
+                      table=lambda t, a, kw=kw: planted_blank(t, a, **kw))  # fmt: skip
+        (unit,) = v["plants"]["P8"]["units"]
+        assert plant_status(v, "P8") == p8_is and v["comparison"]["C"] == c_is, name
+        assert len(unit["not_formed"]) == 2 and len(unit["items"]) == 4, name
+    # the honest excess has no tolerance where C's own blank is refused at a rung
+    v = judge_one(registered, "invented_C", "c_hb", where("invented_C", run="blank"),
+                  table=blank_refused("blank returned", "2.0"))  # fmt: skip
+    (unit,) = v["plants"]["P8"]["units"]
+    assert plant_status(v, "P8") == "caught" and v["comparison"]["C"] == "inconclusive"
+    assert len(unit["not_formed"]) == 2 and len(unit["items"]) == 4
+    assert verdict_of(v, "invented_C", "p_sched returned") == "pass"
     v = judge_registered(
         registered,
         edited(

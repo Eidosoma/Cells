@@ -1,7 +1,7 @@
 """The judge of FR-38's second registered comparison, built from the spec folder alone.
 
-The spec is `validation/gene_regulation/fr38_v2/spec/` at tag `fr38-v2-amendment-5-2026-11-25`
-(README, SPEC, LAWS, READOUTS, CRITERIA and amendments 1 to 5), with the shared pair rule
+The spec is `validation/gene_regulation/fr38_v2/spec/` at tag `fr38-v2-amendment-6-2026-11-25`
+(README, SPEC, LAWS, READOUTS, CRITERIA and amendments 1 to 6), with the shared pair rule
 `validation/assembly_lineages_v2/agreement.py`. The references are read only as CRITERIA's C0
 directs: `reference_invented.json` first, then each reference file.
 

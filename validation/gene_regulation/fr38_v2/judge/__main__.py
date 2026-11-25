@@ -8,7 +8,9 @@
 `c0` is the reader's first read alone: `reference_invented.json`, then each reference file.
 `sample` is the reader's check on the registered format sample (amendment 5, §5): structure only.
 `judge` adds the engine's export, the folder holding amendment 4, §8's `table/` (and
-`table-retry/`), and writes the verdict per family, arm and criterion. DIR for the references is
+`table-retry/`), and writes the verdict per family, arm and criterion. It prints the comparison's
+verdict and, beside it, the refused support runs and the recorded differences (amendment 6, §1 and
+§3). DIR for the references is
 their folder or its `out/`. The exit status is 0 when every read file is accepted (c0), the sample
 check passes (sample) or a verdict is written (judge), else 1.
 """
@@ -53,13 +55,8 @@ def main(argv=None):
         return 0 if report["passes"] else 1
     verdict = judge.judge(args.references, args.engine)
     judge.write_verdict(verdict, args.out)
-    print(
-        json.dumps(
-            verdict.get("comparison", {"refused": verdict.get("refused")}),
-            indent=1,
-            ensure_ascii=False,
-        )
-    )
+    beside = ("comparison", "refused", "support_refused", "recorded_differences", "retry_pending")
+    print(json.dumps({k: verdict[k] for k in beside if k in verdict}, indent=1, ensure_ascii=False))
     return 0
 
 

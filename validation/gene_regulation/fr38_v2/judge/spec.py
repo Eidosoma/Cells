@@ -1,4 +1,4 @@
-"""The judge's transcription of the spec folder (tag `fr38-v2-amendment-5-2026-11-25`).
+"""The judge's transcription of the spec folder (tag `fr38-v2-amendment-6-2026-11-25`).
 
 Every value here is read from SPEC.md, its amendments, or the sheet sections LAWS.md names (the
 sheet's §1.4 moieties and §5.1 table for arm B). None is taken from a reference file, so C0's
