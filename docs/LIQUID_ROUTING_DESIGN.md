@@ -2,9 +2,11 @@
 
 **Status: a design, written 24 November 2026 at main 05826ec1 on branch `fr54-57-design`. It was
 revised the same day with the user's decisions (Q1 and Q3) and the coordinator's rulings on the rest
-(§10). Nothing is built.** Integration would grant no acceptance (D143). **S** marks this note's own
-reading, derivation or proposal. The desk sketches cited are decimal and NumPy arithmetic on the
-note's reading of the code, not engine runs; each is measured before any tag (§8.2).
+(§10), and corrected on 25 November with the recorded dt study (§8.2) and the coordinator's ruling on the
+flow's step (§3.3). Nothing is built.** Integration would grant no acceptance (D143). **S** marks this
+note's own reading, derivation or proposal. The desk sketches first written here were decimal and NumPy
+arithmetic on the note's reading of the code, not engine runs. The dt study has measured them, and its
+numbers replace them below.
 
 **The requests** ([FEATURE_REQUESTS.md](FEATURE_REQUESTS.md)), both high priority (the user; D341 for
 FR-54):
@@ -535,19 +537,80 @@ Its parameters are volumes V₁ and V₂, permeance κ = DA/L and k = κ(1/V₁ 
 
 D(m*) − D(m_engine) follows from T2 with no tolerance of its own: about Δμ̄ (m* − m_engine).
 
-**The default's domain.** Its series bound holds only where a step changes both ends little, roughly
-kh · c_max/c_min ≲ 1, pinned by the registration's dt study.
-- At a trace background its first step stays a few percent off as h falls. That is FR-10's onset limit
-  (BATH_SCHEDULE_DESIGN §3.2), recorded as such, not judged.
+**The default's domain, measured** (the recorded dt study, §8.2; engine-side; class truncation). The old
+sketch, kh · c_max/c_min ≲ 1, is contradicted.
+- **The governing variable is approximately χ,** the lower well's relative change over a step: χ = m/n_low,
+  with m the tableau's transfer and n_low the lower well's amount. (The study and the coordinator write it ρ.
+  Here ρ is §3.3's throughput.) With r = c_max/c_min and V_low the lower well's volume, under ARS(2,2,2),
+  χ = kh (1 − kh/2)(r − 1)(1/V_low)/(1/V₁ + 1/V₂). Under IMEX Euler the factor (1 − kh/2) is 1.
+- **Two edges were read** from T4's halving ratio, the absolute local error at kh over that at kh/2. W is the
+  largest kh before the ratio leaves [7.2, 8.8], and O the largest before it leaves [6, 10]. Both bands were
+  written before the grid was read (`CRITERIA.txt`). Neither is selected, and an edge is never a tolerance:
+  edges place cases.
+- **χ as the variable, and the 1% in kh the edges were refined to, were chosen after the grid was seen.**
+  They are fitted descriptions, for the two volume ratios and the r below. By the booked law, which
+  reproduces all 15 measured W brackets, where W lies at kh ≤ 0.2 its χ runs from 0.19 to 0.29 over
+  V₂/V₁ = 0.25, 1 and 4 (the study's ERRATUM-1).
+- **The edges measured,** as the kh bracket and, in parentheses, χ there (ARS(2,2,2); the higher level in well
+  1; every entry of class truncation):
 
-**A desk sketch** (S, the default as this note reads it). Its edges are measured on the engine, in a
-recorded dt study, before any tag, and the measured edges replace them:
-- At kh = 0.2 and c₁/c₂ = 4, T2's error is −0.70% and T4's is −1.6%. With backgrounds of 10 and 1000 mM,
-  T4's is −1.1%.
-- T4's ratios approach 8 per halving.
-- At c₂ = 10⁻⁹ mM, T4 stays between −3% and −12% from h = 0.1 to 10⁻⁴.
-- So under ARS(2,2,2), whose energy allowance is 2·10⁻³ of the flows, a species-only two-well run is
-  expected to stop above about kh ≈ 0.08. The cases include steps on both sides, which also tests item 2.
+  | r = c_max/c_min | W, V₂ = V₁ | O, V₂ = V₁ | W, V₂ = 4 V₁ | O, V₂ = 4 V₁ |
+  | --- | --- | --- | --- | --- |
+  | 1.001 | 0.363–0.365 (0.00) | > 0.4 | 0.363–0.365 (0.00) | > 0.4 |
+  | 1.1 | 0.361–0.363 (0.01) | > 0.4 | 0.379–0.381 (0.01) | > 0.4 |
+  | 2 | 0.297–0.299 (0.13) | > 0.4 | > 0.4 | > 0.4 |
+  | 4 | 0.169–0.170 (0.23) | > 0.4 | 0.373–0.375 (0.18) | > 0.4 |
+  | 8 | 0.079–0.080 (0.27) | 0.284–0.286 (0.85) | 0.216–0.217 (0.27) | > 0.4 |
+  | 11 | 0.055 (0.27) | 0.199–0.200 (0.90) | 0.153–0.154 (0.28) | > 0.4 |
+  | 16 | 0.036 (0.26) | 0.129–0.130 (0.90) | 0.100–0.101 (0.28) | 0.379–0.381 (0.92) |
+  | 32 | below 0.0177 | 0.058 (0.87) | 0.045 (0.27) | 0.167–0.168 (0.95) |
+  | 64 | below 0.0177 | 0.027 (0.83) | 0.021 (0.26) | 0.074 (0.90) |
+  | 128 | below 0.0177 | below 0.0177 | below 0.0177 | 0.034 (0.85) |
+
+  - "> 0.4": no edge up to the grid's top. The named starts reach further: r = 4 at equal volumes has O at
+    0.530 (χ 0.58), and r = 2 has O at 0.729 (0.23). "Below 0.0177" is below the grid's smallest halving
+    pair.
+  - **W sits at χ ≈ 0.23–0.27** where V₂ = V₁ and r ≥ 4, and at 0.26–0.29 where V₂ = 4 V₁ and r ≥ 8. At the
+    smaller r it lies at kh 0.30–0.38 with a smaller χ, and kh sets it. **O sits at χ ≈ 0.83–0.95** (r ≥ 8).
+  - **Swapping the volumes moves both.** With the higher level in the larger well (V₂ = V₁/4, r = 4) W is at
+    0.105 (χ 0.24) and O at 0.351 (0.69).
+  - **At a trace background** its first step stays a few percent off as h falls: T4 is −12.4% at h = 0.1 s,
+    −5.65% at 10⁻² s, −3.89% at 10⁻³, −3.01% at 10⁻⁴ and −2.45% at 10⁻⁵. Neither W nor O is reached in the
+    grid. That is FR-10's onset limit (BATH_SCHEDULE_DESIGN §3.2), recorded as such, not judged.
+- **The event check's bound** (§4.3) is fixed by the registration from this table. No number is set here.
+- **The classes:** T1 and T3 are rounding class, at most 2.9 A and 5.7 A eps over the 672 one-step records,
+  with A = 1 + |ln c_max| / |ln(c₁/c₂)|. T2, T4, the edges and the stops below are truncation class.
+
+**The desk figures, now measured.**
+- At kh = 0.2 and c₁/c₂ = 4, T2's error is −0.700% and T4's is −1.56% (equal volumes, ARS). With backgrounds of
+  10 and 1000 mM, T4's is −1.10%. The note had −0.70%, −1.6% and −1.1%.
+- T4's ratios at r = 4 and equal volumes are 7.08, 7.50, 7.74 and 7.87 at kh = 0.2, 0.1, 0.05 and 0.025,
+  approaching 8.
+- At c₂ = 10⁻⁹ mM, T4's range is the trace's above. The note had −3% to −12%.
+
+**Where the default heat's energy check stops a run** (class truncation). Under ARS(2,2,2), whose energy
+allowance is 2·10⁻³ of the flows, a species-only two-well run stops at a kh that depends on r, not at one
+value. Each bracket is the largest kh that completes to kT = 4 and the next that the engine's own energy
+ledger refuses, within 1% of kh. It was checked against `check_values` in 240 runs, with no disagreement.
+
+| Start | ARS(2,2,2): completes..stops | IMEX Euler |
+| --- | --- | --- |
+| V₂ = V₁, the trace (r = 10⁹) | stops at every kh tried, down to 2.8·10⁻⁴ | the same |
+| V₂ = V₁, r = 11 | 0.0474..0.0476 | 0.0180..0.0181 |
+| V₂ = V₁, r = 4 (8 and 2) | 0.0707..0.0711 | 0.0299..0.0301 |
+| V₂ = V₁, r = 2.5 | 0.0797..0.0801 | 0.0350..0.0352 |
+| V₂ = V₁, r = 2 (the state after the half wash) | 0.0827..0.0832 | 0.0369..0.0371 |
+| V₂ = V₁, r = 1.1 | 0.0873..0.0878 | 0.0398..0.0400 |
+| V₂ = V₁, r = 1.001 | 0.0878..0.0883 | 0.0400..0.0403 |
+| V₂ = 4 V₁, r = 11 | 0.0771..0.0775 | 0.0355..0.0357 |
+| V₂ = 4 V₁, r = 4 | 0.0942..0.0947 | 0.0461..0.0463 |
+| V₂ = 4 V₁, r = 2 | 0.0932..0.0937 | 0.0444..0.0446 |
+| V₂ = 4 V₁, r = 1.1 | 0.0883..0.0888 | 0.0407..0.0409 |
+
+- **The stop is at the first row** in nearly every case. The cases include steps on both sides, which also
+  tests item 2.
+- That r = 4 at equal volumes stops between kh = 0.05 and 0.1 was seen in a dry run before the edge criteria
+  were written, so that reading is not blind.
 
 **The cases** are fixed in the registration. A proposal:
 - kh ∈ {0.2, 0.1, 0.05, 0.025};
@@ -600,14 +663,17 @@ both heat laws. Three checks are read from the event's level records against the
 - The legs before and after the event are compared with the closed form, restarted at the event's exact
   map, at successively smaller steps.
 
-**The 8 and 2 fmol world lies inside the admitted domain** (desk figures, measured before any tag).
-- Before the event its two wells stand at c_max/c_min = 4, at equal volumes.
-- After the half wash at the trace, they stand at 2: 4 fmol plus the refill's trace, against 2 fmol.
-- So at the declared steps, kh ≤ 0.2, kh · c_max/c_min is at most 0.8 before and 0.4 after: inside the
-  sketched edge near 1.
-- **The energy check is a separate limit.** Under the default heat it is expected to stop this world
-  above kh ≈ 0.08 (§4.1). So arm 2 runs the default heat to completion at kh ≤ 0.05, and its larger steps
-  are item 2's stop cases.
+**The 8 and 2 fmol world and the domain** (measured, §4.1; class truncation):
+- **What the lift checks** is the state after the event: two wells at r = 2 (4 fmol plus the refill's trace,
+  against 2 fmol). It lies inside W to kh = 0.297–0.299 and inside O to 0.73. So at the declared steps,
+  kh ≤ 0.2, the event is admitted under either edge.
+- **Before the event** the wells stand at r = 4 with equal volumes. W ends at kh = 0.169–0.170 and O at 0.53,
+  so at kh = 0.2 (χ = 0.27) that start is outside W: T4's halving ratio is 7.08. That places T4's cases only.
+  The event does not read it.
+- **The energy check is a separate limit.** Under the default heat this world stops above kh = 0.0707 before
+  the event and 0.0827 after it (the engine refuses at 0.0711 and 0.0832). At kh = 0.1 the first row's
+  |residual| is 1.98 (before) and 1.46 (after) times its bound. At 0.05 it is 0.498 and 0.359. So arm 2 runs
+  the default heat to completion at kh ≤ 0.05, and its larger steps are item 2's stop cases.
 
 **"With FR-10's schedule"** (item 3's words; Q10, ruled). FR-10 is the held baths' dose schedule. Item 3
 says "a withdrawal and a refill at a connected finite node", so the plain reading holds: the events'
@@ -763,8 +829,16 @@ FR-54's T2 and T4 carry the tableau's own orders, with derived bounds and ratios
     figures.
   - The spec and references are tagged before any engine reading.
   - They compute P in decimal, and FR-57's equal-rate chain in its confluent form (§2).
-- **Before the tag,** a recorded dt study on the engine measures §4.1's and §4.3's desk edges. The
-  measured edges replace the sketched ones.
+- **The dt study is recorded** (25 November, engine 0e563668, @3's own host step on `face_world`, no compiled
+  world): `/mnt/workspaces/Cells/fr54-57-dt-study-20261125/`, its `DT_STUDY.md`, scripts, outputs and
+  `SHA256SUMS.txt`, its `ERRATUM-1.txt`, and `addendum-rho1/` with a `SHA256SUMS.txt` of its own. Its edges and
+  stops replace the sketched ones (§4.1, §4.3), and its addendum's thresholds replace §3.3's first probes.
+  - They are **engine-side measurements, seen before the edge criteria where the study says so**: the
+    design's desk figures, and a dry run of the 8 and 2 fmol world that showed its stop between kh = 0.05 and
+    0.1. χ and the 1% refinement were chosen after the grid was seen. The bands of W and O were written before
+    it. The propagator's numbers are scipy on the host against decimal references, not the engine's.
+  - The references' agent receives the edges through the coordinator, and reads neither this note nor that
+    folder.
 - **Two verdicts.**
   - FR-54's verdict reads arms 1 and 2. Item 2's message is read on arm 2's stop cases.
   - FR-57's verdict reads arms 3 to 7. Arm 6 runs only once FR-54's arms pass (Q8).
@@ -824,7 +898,7 @@ The seconds below are priced from measured rows in `tests/test_tiers.json`. The 
 | File | Change | Seconds | Reason |
 | --- | --- | --- | --- |
 | `test_wash_schedule.py` (tier 1, 9.7 s; renamed with the operator when the wash is retired) | Kernel and refusal rows (the throughput's among them), NumPy | +3 | The operator's own rows, with no world compiled |
-| `test_heat_bookings_formula.py` (tier 2, 35 s) | §4.1's host one-step rows on `face_world`, both heats; the trace-start row reads item 2's numbers | +20 | No runner needed |
+| `test_heat_bookings_formula.py` (tier 2, 35 s) | §4.1's host one-step rows on `face_world`, both heats, placed by its measured edges; the trace-start row reads item 2's numbers | +20 | No runner needed |
 | `test_neutral_arrival_labels.py` (tier 2, 60 s) | The exact map with `carried` and `collected`, the chain row and plant 11; `same_physics` gains `label_collected_fmol` | +2 | NumPy |
 | One vector-window refusal test | Item 2's numbers | 0 | An extended row |
 | **New** `test_liquid_routing_runs.py` (tier 2) | Two compiles: the flow world with the label owner (forward and reversed on one compile) and the faced-node wash under exact heat | About 60 | The only path through the compiled split part, and the event at a faced node, under the runner's host checks. The wash's runs file (76 s) and the twins (70 s) have no room |
@@ -857,7 +931,8 @@ The seconds below are priced from measured rows in `tests/test_tiers.json`. The 
 ## 10. Decisions, the price and the order
 
 The decisions were made on 24 November 2026. The user decided Q1 and Q3, and the coordinator ruled the
-rest as this note recommended.
+rest as this note recommended. The coordinator ruled the flow's step limit (Q11) on 25 November, after the
+dt study.
 
 | Question | Decision | By |
 | --- | --- | --- |
@@ -867,10 +942,11 @@ rest as this note recommended.
 | Q4. Networks | Any balanced network of at most 64 nodes, qualified on a chain, a split and merge, and a loop | The coordinator |
 | Q5. "Different per-portion losses" | Each delivery's loss, with a third delivery added: 1, 3 and 3 mM give (0, 0.523248, 0.137341); 3, 3 and 1 mM give (0, 0, 0.660589). The two-delivery resident and arriving split is recorded too. D362 corrects D352 | The coordinator |
 | Q6. The heat's form | Records outside the IMEX flow bound, as the wash's, with H ≥ 0 checked at every event and step | The coordinator |
-| Q7. The default face heat at a faced exchanged node | For events, admitted within §4.1's resolved domain and refused by name outside it. A flow's faced nodes take the exact heat. Both limits are desk figures, measured before any tag: the 8 and 2 fmol world lies inside the domain at kh ≤ 0.2, and is expected to complete under the default heat only at kh ≤ 0.05 (§4.3) | The coordinator |
+| Q7. The default face heat at a faced exchanged node | For events, admitted within §4.1's resolved domain and refused by name outside it. A flow's faced nodes take the exact heat. Both limits are measured (§4.1, §4.3): the 8 and 2 fmol world's state after the event lies inside W and O at kh ≤ 0.2, its state before it inside W only to kh ≈ 0.17 and inside O at kh ≤ 0.2, and it completes under the default heat only at kh ≤ 0.05. The domain's bound is the registration's to fix, and neither edge is selected | The coordinator |
 | Q8. Flow beside diffusion | In the same build, once arms 1 and 2 pass | The coordinator |
 | Q9. Qualification | One registered protocol, with a verdict per request: FR-54's and FR-57's (§8.2) | The coordinator |
 | Q10. "With FR-10's schedule" | The events' grid form. Item 3 says "a withdrawal and a refill at a connected finite node" | The coordinator |
+| Q11. The flow's step | Throughput ρ at most 1 per half-step, as §3.3 defines it. Above it the operator refuses by name, at parse and where the schedule changes Q. A sub-stepped propagator (8 eps per sub-step) is the later widening, not built | The coordinator, 25 November |
 
 **The price** (S, in agent-days):
 
@@ -893,8 +969,8 @@ rest as this note recommended.
    `cells.operator.liquid_routing@1`, with no mapping row. The wash's files carry FR-49's wash narrowing
    first (D327).
 3. **The registered protocol is tagged before the build.**
-   - Its dt study runs on today's engine first. The default face heat's edges need only @3's faces: the
-     8 and 2 fmol world before and after the event is a two-well start.
+   - Its dt study ran on today's engine on 25 November (§8.2). The default face heat's edges need only @3's
+     faces: the 8 and 2 fmol world before and after the event is a two-well start.
    - Its references come from a separate code-blind agent (§8.2).
 4. **FR-49's judge erratum 2** is tagged with the router's landing, before any FR-49 judged run on an
    engine that has the router (§3.5).
