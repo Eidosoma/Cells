@@ -82,6 +82,7 @@ test IDs of both; `rewrap`, its own commit; `rewrapped`.
 import argparse
 import ast
 import contextlib
+import difflib
 import hashlib
 import io
 import json
@@ -3234,15 +3235,18 @@ def same_code(a, b):
 
 
 def newly_long(before, after):
-    """The lines (from 1) that are too long now and were not, in two texts of as many lines."""
+    """The lines (from 1) that are too long now and were not; in two texts whose lines differ in
+    number, the changed and the new ones that are too long."""
     a, b = lines_of(before), lines_of(after)
-    if len(a) != len(b):
-        return None
-    return [
-        i
-        for i, (x, y) in enumerate(zip(a, b, strict=True), 1)
-        if len(y) > WIDEST and len(x) <= WIDEST
-    ]
+    if len(a) == len(b):
+        return [
+            i
+            for i, (x, y) in enumerate(zip(a, b, strict=True), 1)
+            if len(y) > WIDEST and len(x) <= WIDEST
+        ]
+    matcher = difflib.SequenceMatcher(None, a, b, autojunk=False)
+    same = {m.b + k for m in matcher.get_matching_blocks() for k in range(m.size)}
+    return [i for i, y in enumerate(b, 1) if len(y) > WIDEST and i - 1 not in same]
 
 
 def prose_lines(text):
@@ -3317,17 +3321,14 @@ def cmd_rewrap(args):
     before = tree_at(args.base, tree)
     after = worktree_files(tree)
     back = {}
-    result = dict(files=0, lines=0, left=Counter(), not_aligned=[], still_long=0)
+    result = dict(files=0, lines=0, left=Counter(), still_long=0)
     detail = {}
     for path, (_, data) in sorted(after.items()):
         old = before.get(back.get(path, path))
-        if not path.endswith(".py") or old is None or old[1] == data:
+        if not path.endswith(".py") or old is None or old[1] == data or path == RENAMED:
             continue
         text = text_of(data)
         lines = newly_long(text_of(old[1]), text)
-        if lines is None:
-            result["not_aligned"].append(path)
-            continue
         if not lines:
             continue
         new, left = rewrap_text(text, lines, path)
@@ -3391,6 +3392,10 @@ def _selftest_rewrap(checks):
         and same_code(after, new)
         and new != after
         and all(len(x) <= WIDEST for x in lines_of(new) if "call" in x or "argument" in x)
+    )
+    checks["rewrap: in a file whose lines a later commit changed in number, the new long lines"] = (
+        newly_long(before, "import x\n" + after) == [i + 1 for i in lines]
+        and newly_long(before + "Y = 1\n" * 3, after) == lines
     )
     said = 'X = (\n    f"{a} ' + "a word " * 14 + 'wave_mh@1"\n)\n'
     cut, kept = rewrap_text(said, [2], "tests/p.py")
