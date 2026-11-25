@@ -8,7 +8,7 @@ non-finite value, is a fault; any fault refuses the file. Unknown keys are ignor
 Q6). The invented family's inputs are its own, so they are checked for consistency, not against
 SPEC.md.
 
-**The engine's export** is the registered tables (amendment 4, §8; amendment 5):
+**The engine's export** is the registered tables (amendment 4, §8; amendments 5 and 6):
 `table/table_<family>.json` for AF, AN, B, C and D with `table/SHA256SUMS`, and `table-retry/` for
 the retry.
 
@@ -16,16 +16,21 @@ the retry.
   as the format sample's check reads them. Where it finds no fault, the value pass here reads the
   numbers, and C0's echo (`definitions`) the declaration.
 - **What refuses.** A missing or mistyped pinned key; a table that departs from `SHA256SUMS`, is not
-  listed there, or is the format sample's; a dirty checkout; a missing or doubled `route2` or
-  `survival` entry; a checkpoint or a V₀ patch that is not the registered one; a grid, readout or
-  declaration that is not SPEC.md's. Each is named by path. A refusal is never read as a gap.
-- **What is recorded** (amendment 5, item 4): extra keys, unregistered names, engine_run's other
-  exports, a blank's `route2` and `survival`, `blank`, `k_per_s`, `steps`, `host_patch`, the three
-  other keys of `checkpoint` and the four of `source`. What departs is flagged to the checker.
+  listed there, or is the format sample's; a dirty checkout; a non-finite value; a missing or
+  doubled `route2` or `survival` entry; a checkpoint or a V₀ patch that is not the registered one; a
+  grid, readout or declaration that is not SPEC.md's. Each is named by path. A refusal is never
+  read as a gap. An absent `excess_over_blank` refuses only where the entry's blank is there and not
+  refused (amendment 6, §1), which the judge decides once every entry is read.
+- **What is recorded** (amendment 5, item 4; amendment 6, §2): extra keys, unregistered names,
+  engine_run's other exports, a blank's `route2` and `survival`, `blank`, `k_per_s`, `grid_error`,
+  `own_ledgers_at_end`, `steps`, `host_patch`, the three other keys of `checkpoint` and the four of
+  `source`. A value that departs is flagged to the checker; a leaf that is missing, of another type
+  or not finite refuses its entry all the same.
 - **What the judge forms itself:** S from the registered grid, g(ts) from the engine's counters, and
   the plants P1, P1′, P1″ and P6, whose entries are excluded (amendment 4, item 5).
-- **Numbers** are finite, except a survival ratio, whose undefined, NaN or infinite values are
-  judged by C1 at an idle fate (amendment 1, item 3); elsewhere a non-finite ratio is refused.
+- **Numbers** are finite, except a survival ratio, whose undefined, NaN or infinite values C1 judges
+  at an idle fate (amendment 1, item 3). At an active fate a NaN or infinite ratio refuses its
+  entry (amendment 4, item 7).
 """
 
 import dataclasses
@@ -803,6 +808,7 @@ class EngineRun:
     times: list = dataclasses.field(default_factory=list)
     steps: object = None
     blank_name: object = None
+    excess_absent: bool = False  # a fault only where its blank is there (amendment 6, §1)
     source: dict = dataclasses.field(default_factory=dict)
     recorded: dict = dataclasses.field(default_factory=dict)
 
@@ -928,7 +934,9 @@ def table_records(tab, st, inputs, times, samples, window):
         rec = EngineRun(tab["path"], tab["sha256"], tab["family"], e.where, e.name, e.kind, e.run,
                         e.role, e.plant, tab["attempt"], e.dt, e.machine or "")  # fmt: skip
         rec.faults += table_faults + [_finding(f) for f in e.faults]
-        rec.notes += [_finding(f) for f in e.findings if f[0] not in shapes.FAULTS]
+        rec.excess_absent = e.excess_absent  # decided, and flagged, from its blank
+        rec.notes += [_finding(f) for f in e.findings
+                      if f[0] not in shapes.FAULTS + (shapes.ABSENT_EXCESS,)]  # fmt: skip
         if e.definition_findings:
             rec.recorded["definition_shape"] = [_finding(f) for f in e.definition_findings]
         if isinstance(e.obj, dict):
@@ -1029,6 +1037,7 @@ def check_record(rec, inputs, times, mapping, profile, *, blank_machines, two_bl
         rec.flags.append(f"{rec.where}.steps: {rec.steps}, where the registered grid gives S = {S} "
                          "(§4 (d): S comes from the grid)")  # fmt: skip
     _required(rec, mapping, profile)
+    _finite_ratios(rec, inputs)
     _flag_rates(rec)
     want = None
     if rec.plant == "P8" and not rec.blank:
@@ -1053,8 +1062,9 @@ def check_record(rec, inputs, times, mapping, profile, *, blank_machines, two_bl
 
 def _required(rec, mapping, profile):
     """Every readout the kind of entry owes (READOUTS.md; the README's kinds); what a twin must not
-    carry (item 7); the engine's other exports are recorded only."""
-    kind_excess = rec.kind in ("labelled", "twin", "restart", "P8")
+    carry (item 7); the engine's other exports are recorded only. An absent excess is decided once
+    the blanks are read (`judge._decide_excess`)."""
+    kind_excess = rec.kind in ("labelled", "twin", "restart", "P8") and not rec.excess_absent
     for e in mapping_entries(mapping, profile, blank=True if rec.blank else None):
         kind, _, name = e["engine"].partition("/")
         if kind != "series":
@@ -1070,6 +1080,16 @@ def _required(rec, mapping, profile):
         if carried or rec.survival:
             rec.faults.append(f"{rec.where}: a twin is unlabelled, yet it carries "
                               f"{carried or ['survival']} (item 7)")  # fmt: skip
+
+
+def _finite_ratios(rec, inputs):
+    """A NaN or infinite survival ratio refuses its entry (CRITERIA.md C0; amendment 4, item 7), but
+    at a judged run's idle fate, where it fails C1 (amendment 1, item 3)."""
+    idle = spec.idle_fate(inputs["runs"][rec.run]["p"]) if rec.survival else None
+    for (fate, ts), (_, _, ratio) in sorted(rec.survival.items()):
+        judged_by_c1 = rec.role == "honest" and fate == idle
+        if ratio is not None and not math.isfinite(ratio) and not judged_by_c1:
+            rec.faults.append(f"{rec.where}.survival ({fate}, {ts!r} s): a non-finite ratio")
 
 
 def physical(name):
