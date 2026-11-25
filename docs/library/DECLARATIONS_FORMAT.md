@@ -208,7 +208,7 @@ repeat them.
 - `rk4_step_s`: the reference RK4 step bound (s), or null for a law with no gate and for a gated law
   that runs on no RK4 grid;
 - `stage_term`: its term in the step's stage rule; `material_term`, its material slope per stage, the
-  name of the kernel that supplies it, or null; `loop_term`, reserved;
+  name of the kernel that supplies it, or null;
 - its kernels: `kinetics` (voltage to each gate's target and time constant) and `opening` (the
   gates to the open fraction).
 
@@ -222,7 +222,6 @@ repeat them.
 - `stage_term`, its charge slope in the step's stage rule; `material_term`, its material slope
   per stage; `charge_bound` and `material_bound`, its definition-time bounds on a charged and on
   a neutral row. Each names the kernel that supplies it, or is null where the law has none;
-- `loop_term`: its loop term, where its host takes one;
 - `forms`: `"base"` where its moves are written in base forms with every ligand out, so a rapid
   binding closure's totals stay exact (CORE_SEAMS §5.2), or null;
 - `cycle`: its general form (seam A's cycle form), or null. Where it is set, the form carries the
