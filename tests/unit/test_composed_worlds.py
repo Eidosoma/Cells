@@ -528,6 +528,7 @@ REFUSALS = [
     (pool(1, worlds=3), "Pool 1 declares 3 worlds from ID 0, and pool 0 4 from ID 0"),
     (pool(1, world_id_start=4), "Pool 1 declares 4 worlds from ID 4, and pool 0 4 from ID 0"),
     (pool(1, seed=SEEDS[0]), f"Pools 0 and 1 have one seed, {SEEDS[0]}"),
+    (drop("pools", 1, "pool", "seed"), "Pool 1 declares no seed"),
     (
         put(["ionic", "experiment", "channel_controls", 3, "schedule", 1, "time"], 5e-3 + 1e-13),
         "a near miss, D283",

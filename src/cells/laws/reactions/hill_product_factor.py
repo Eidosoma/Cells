@@ -148,7 +148,7 @@ LAW = TransferFactorLaw(
     factor,
     log_slopes,
     host="cells.species_condition@1",
-    provenance="cited",
+    provenance="parity",
     source=Citation(
         "Hill's equation (A. V. Hill, 1910; reviewed by J. N. Weiss, 1997): one saturating factor "
         "per read, and their product",
