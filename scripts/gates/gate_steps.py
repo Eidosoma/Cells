@@ -109,7 +109,6 @@ def xr():
 # 18-19 November, each after about 25 minutes of tiers.
 GUARDS = (
     "tests/unit/test_species_sum_sites.py",
-    "tests/unit/test_legacy_entry.py",
     "tests/unit/test_engine_betse_boundary.py",
     "tests/unit/test_j2_bright_line.py",
     "tests/unit/test_continuity_bypass.py",
