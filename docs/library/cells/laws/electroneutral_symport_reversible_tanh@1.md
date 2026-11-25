@@ -87,12 +87,15 @@ $$x = n_C \ln\frac{[\text{C}]_N}{[\text{C}]_P} + n_A \ln\frac{[\text{A}]_N}{[\te
   clipped. The older law of the same rate kept its own domain, with temperatures from 200 to 400 K;
   here the inner model's is the same.
 - **Step rules:** the law moves charged [species rows](../../GLOSSARY.md#species-row) and no net
-  charge, so it has no charge slope, and the kind's material term counts no charged row that
-  crosses. No per-stage rule bounds its rows' relaxation, so a definition must choose a step small
-  enough for it. It declares no step term, and its moves at a closed compartment's node are refused
-  ([refusal 4](../../../CLOSED_COMPARTMENT_DESIGN.md)). RK4 runs are refused, as for every kind.
+  charge, so it has no charge slope. The kind bounds the population's own material rate: over the
+  four rows it moves, the sum of $|\nu_k\, \partial J/\partial n_k|$ (1/s; $\nu_k$ the row's count
+  and $n_k$ its amount in fmol), given to each of them. A held bath's rows are left out. It declares
+  that term alone, which holds no charged row at a closed compartment's node, so its moves there are
+  refused ([refusal 4](../../../CLOSED_COMPARTMENT_DESIGN.md)). RK4 runs are refused, as for every
+  kind.
 - **At a binding closure:** it declares the read `rapid_binding@1` and base forms, so where a
-  closure holds one of its ions it reads the free amount and moves the total.
+  closure holds one of its ions it reads the free amount and moves the total, and the material rate
+  runs through the closure's derivative.
 - **Not a second potassium-chloride symport:** the canonical one is `k_anion_symport_mass_action@1`,
   an operator beside water, whose rate is mass action with a volume factor. The kind reads no
   volume.
@@ -148,8 +151,9 @@ protocol's tolerances.
 Other rows run closed worlds: amounts follow the cycles at each end, no charge crosses, the heat
 grows and every [ledger](../../GLOSSARY.md#ledger) closes, and a neutral corruption of the amounts
 is refused by its ledger. A salt whose counts move charge is refused by name, and admitted for a
-copy of the law that does not declare itself electroneutral. Counts above two and wrong species are
-refused. Beside a calcium binder under a closure it reads the free calcium. Each has a planted
+copy of the law that does not declare itself electroneutral. Counts above two, wrong species and a
+population at a store's node are refused. The population's own material rate is the reference's at
+both ends. Beside a calcium binder under a closure it reads the free calcium. Each has a planted
 error. No run was compared with a measurement.
 
 ## Status
