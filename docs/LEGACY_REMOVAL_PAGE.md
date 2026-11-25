@@ -10,7 +10,8 @@ the engine's own forms. The old code, its runs and its captures stay at the tag 
 
 **Status.** You approved the losses on 25 November (D386): yes to the table in section 3, the cell-zone transporter left at the tag,
 NKCC and the generic symport ported in the cleanup, and D211's other ports as the next step after it. **The counts below are the final
-ones. The deletion (9b0debe6) is merged only after you have seen them.**
+ones, but for what the builders still add. The deletion (branch `legacy-deletion`, in place of 9b0debe6) is merged only after you have seen them, and
+you say yes or no to the optional batch.**
 
 ## 1. Counts, by area
 
