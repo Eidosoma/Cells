@@ -355,7 +355,8 @@ def test_every_law_interface_has_its_family_word():
     declared = {*law_registry.INTERFACES, *law_registry.FAMILY_INTERFACES}
     assert wordless(declared) == [] and set(ids.LAW_FAMILIES) <= declared
     assert {type(law).interface for law in law_registry.active()._laws.values()} <= declared
-    assert not set(ids.LAW_FAMILIES.values()) & set(ids.FIXED_FAMILIES)
+    words = [*ids.FIXED_FAMILIES, *set(ids.LAW_FAMILIES.values()), *ids.SUBLAW_FAMILIES]
+    assert len(words) == len(set(words))
     # Planted: an interface without a word.
     assert wordless({*declared, "cells.undeclared_law@1"}) == ["cells.undeclared_law@1"]
 

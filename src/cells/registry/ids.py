@@ -25,6 +25,7 @@ __all__ = (
     "FIXED_FAMILIES",
     "LAW_FAMILIES",
     "NAMESPACE",
+    "SUBLAW_FAMILIES",
     "Parts",
     "interface",
     "parts",
@@ -52,7 +53,10 @@ LAW_FAMILIES = MappingProxyType(  # {a law interface: its laws' family}
         "cells.assembly_representation@1": "assembly_representation",
     }
 )
-FAMILIES = frozenset({*FIXED_FAMILIES, *LAW_FAMILIES.values()})
+# The words of the pieces that no registry holds: a law inside an operator or a kind, a fuel kind, a
+# lookup table's key.
+SUBLAW_FAMILIES = ()
+FAMILIES = frozenset({*FIXED_FAMILIES, *LAW_FAMILIES.values(), *SUBLAW_FAMILIES})
 
 _PART = r"[a-z][a-z0-9_]*"
 _NAME = r"[a-z][A-Za-z0-9_]*"  # Names are kept, and one has upper case.
