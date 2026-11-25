@@ -50,6 +50,7 @@ LAW_FAMILIES = MappingProxyType(  # {a law interface: its laws' family}
         "cells.population_structure@1": "population",
         "cells.assembly_geometry@1": "assembly_geometry",
         "cells.assembly_hazard@1": "assembly_hazard",
+        "cells.assembly_observable@1": "assembly_observable",
         "cells.assembly_representation@1": "assembly_representation",
     }
 )

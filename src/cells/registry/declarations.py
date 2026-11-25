@@ -319,7 +319,10 @@ class _Context:
 
 def _models(family):
     """The models whose definitions can declare a piece of `family`: the model itself, and each
-    composite whose inner model it is."""
+    composite whose inner model it is; none where `family` is no active model (a host that has no
+    row in the static model table)."""
+    if family not in {qualified(key) for key in model_table.MODELS}:
+        return []
     out = [family]
     if family == INNER and inner_spec.MODEL_ID in composite_spec.INNER_MODEL_IDS:
         out.append(COMPOSITE)
