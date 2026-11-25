@@ -869,10 +869,12 @@ def channel_material_rates(state, read, potentials, control, p, *, xp=jnp, struc
     a open v u B(x)/V_o at its outside node (the kernel CHANNEL_MATERIAL_TERM; v is the routed
     availability, and u is 1 without a block). Where a block reads the ion's reversal potential, u
     moves with those amounts too, and its part of each slope joins (channel_block_terms' parts
-    through E). Both rows that the ion moves take T_c + T_o, its mode's rate; beside a held bath,
-    whose row does not relax, the cell's takes T_c alone and the bath's nothing. The populations add
-    per row, and a node's rate is the largest of its rows. Without potentials it fails closed: +inf
-    at the ends of each such population, since B has no bound over the voltages."""
+    through E; a law with several ions, whose other fluxes would have no such part, is refused under
+    such a block at the parse). Both rows that the ion moves take T_c + T_o, its mode's rate; beside
+    a held bath, whose row does not relax, the cell's takes T_c alone and the bath's nothing. The
+    populations add per row, and a node's rate is the largest of its rows. Without potentials it
+    fails closed: +inf at the ends of each such population, since B has no bound over the
+    voltages."""
     n, o, patch = p.active.size, p.outside_active.size, p.channel_membranes
     cell, outside = p.membrane_cell[patch], p.membrane_outside[patch]
     own = material_term_slots(p, structure, xp=xp)

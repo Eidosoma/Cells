@@ -4,10 +4,18 @@ The kernel rows of three tissue tests and of the 56-law catalogue's test, which 
 tissues (25 November 2026): Kv1.5 and Kir2.1 (potassium_channels), Nav1.2 (sodium_channels), HCN1, 2
 and 4 (hcn_channels), and the three further HCN laws (hcn_extra_channels), which no host runs today.
 BETSE is run out of process, in its own environment, and only by the native rows.
+
+And Kv1.5's own module (kv1p5_mh.py) at the 19 voltages of an older family's cases, its declared
+test (D196's safeguard): its kernels meet the independent SI decimals
+(validation/betse/voltage_gate_audit/gate_independent.py), in NumPy and compiled (planted: each of
+the eight coefficients moved by a part in 10^9, and m h^2 for m h).
 """
 
+import functools
 import json
 import subprocess
+import types
+from decimal import localcontext
 from pathlib import Path
 
 import jax
@@ -17,9 +25,11 @@ import pytest
 from cells.laws.channels import (
     hcn_channels,
     hcn_extra_channels,
+    kv1p5_mh,
     potassium_channels,
     sodium_channels,
 )
+from validation.betse.voltage_gate_audit import gate_independent
 from validation.channels import hcn_extra_reference
 from validation.tissue import hcn_reference, kir_reference, sodium_reference
 
@@ -102,6 +112,46 @@ def test_kv1p5_and_kir2p1_follow_the_native_laws_and_clock(tmp_path):
         assert row["powers"] == [1, 1 + code]
         for trace in row["traces"]:
             follow_native_clock(potassium_channels, codes, trace, trace["voltages_V"])
+
+
+def kv1p5_errors(kinetics, opening=kv1p5_mh.opening):
+    """Where Kv1.5's kernels leave the independent decimals at 19 voltages (empty: they keep them).
+
+    The bound is relative, with no absolute part: h's target falls to 4e-11 at 60 mV. The largest
+    distance measured is 3.8e-15.
+    """
+    voltage = np.linspace(-0.12, 0.06, 19)
+    with localcontext() as context:
+        context.prec = 50
+        rows = [gate_independent.kinetics(float(v)) for v in voltage]
+    gates = np.stack((np.linspace(0.0, 1.0, 19), np.linspace(1.0, 0.0, 19)))
+    found = dict(zip(("target", "tau"), kinetics(voltage), strict=True))
+    wanted = {
+        name: np.asarray([[float(x) for x in row[i]] for row in rows]).T
+        for i, name in enumerate(found)
+    }
+    found["opening"], wanted["opening"] = opening(gates, xp=np), gates[0] * gates[1]
+    return [k for k, v in found.items() if not np.allclose(v, wanted[k], rtol=1e-14, atol=0)]
+
+
+def test_kv1p5_meets_the_independent_decimals_and_each_plant_misses_them():
+    kinetics = functools.partial(kv1p5_mh.kinetics, xp=np)
+    assert kv1p5_errors(kinetics) == [] and kv1p5_errors(jax.jit(kv1p5_mh.kinetics)) == []
+    # Planted: one constant of the kernel moved, the module untouched.
+    code = kv1p5_mh.kinetics.__code__
+    for name, coefficients in (
+        ("target", (0.0060, 0.0064, 0.0253, 0.0035)),
+        ("tau", (0.008330, 0.1163, 1.620000, 15.500)),
+    ):
+        for moved in coefficients:
+            assert code.co_consts.count(moved) == 1
+            constants = tuple(c * (1 + 1e-9) if c == moved else c for c in code.co_consts)
+            planted = types.FunctionType(
+                code.replace(co_consts=constants), kv1p5_mh.kinetics.__globals__
+            )
+            assert kv1p5_errors(functools.partial(planted, xp=np)) == [name], moved
+    squared = lambda gates, *, xp: gates[..., 0, :] * gates[..., 1, :] ** 2  # noqa: E731
+    assert kv1p5_errors(kinetics, squared) == ["opening"]  # Planted: Kir2.1's power.
 
 
 def test_kir2p1_matches_its_reference_and_an_exact_clamp():
