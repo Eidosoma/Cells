@@ -37,8 +37,8 @@ Actions:
   shard SNAPSHOT ORIGIN OUT SET   claim and run jobs until none is left (one per CPU; capture.sh)
   finish SNAPSHOT ORIGIN OUT SET  MANIFEST.json (every file's sha256) and EXIT
   compare BASE OTHER [--science OUT] [--output FILE]   two outputs of the same set, bit for bit;
-                             --science also compares the ionic check's rows with the first rows of
-                             the science runs at h (both from BASE's snapshot)
+                             --science also ties BASE's check to the science runs at h from the same
+                             snapshot (the ionic rows, the clusters' summaries at the same ticks)
 """
 
 import argparse
@@ -790,29 +790,29 @@ def compare(base, other, science=None):
 
 
 def science_rows(base, science, manifest):
-    """Each ionic check job's accepted rows against the first rows of the science run at h."""
-    import numpy as np
-
+    """Each check job against the science run at h that it is the start of: an ionic job's accepted
+    rows against the first rows of the first window, and a cluster job's observation summaries
+    against those at the same ticks (seed 0). The cell family records no summary, so its check is
+    tied to the science run by the snapshot and the definition alone (`linked` is false)."""
     rows = []
     for job in manifest["jobs"]:
-        if job["kind"] != "ionic" or "first_steps" not in job:
-            continue
-        with (
-            np.load(base / "runs" / job["job"] / "window-0000.npz") as x,
-            np.load(science / "runs" / f"{job['world']}-h" / "window-0000.npz") as y,
-        ):
-            keys = [k for k in x.files if k == "times" or k.startswith("history.")]
+        mine = base / "runs" / job["job"]
+        row = dict(job=job["job"], compared=0, differing=[], linked=True)
+        if job["kind"] == "ionic":
+            theirs = science / "runs" / f"{job['world']}-h"
+            x, y = saved_arrays(mine), saved_arrays(theirs)
+            keys = [k for k in x if k.split(":")[1].split(".")[0] in ("times", "history")]
             n = job["first_steps"] + 1
-            differing = [k for k in keys if not same_bits(x[k], y[k][:n])]
-        rows.append(
-            dict(
-                job=job["job"],
-                rows=n,
-                arrays=len(keys),
-                differing=differing[:20],
-                identical=bool(keys) and not differing,
-            )
-        )
+            row["differing"] = [k for k in keys if k not in y or not same_bits(x[k], y[k][:n])]
+        else:
+            x = saved_summaries(mine)
+            y = saved_summaries(science / "runs" / f"{job['world']}-h-s0")
+            keys = sorted(x)
+            row["differing"] = [k for k in keys if x[k] != y.get(k)]
+            row["linked"] = bool(keys)
+        row.update(compared=len(keys), differing=row["differing"][:20])
+        row["identical"] = not row["differing"] and (bool(keys) or not row["linked"])
+        rows.append(row)
     return rows
 
 
