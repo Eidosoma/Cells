@@ -88,7 +88,7 @@ So an extra series, an entity of a series that the world does not have, and an e
 
 > A refused run keeps the rows it has.
 
-**Now also:** the rows of a `check`-refused run come from the second pass. That is another execution path than the refused run's, and the table says so by that pass's record.
+**Now also:** by rule, the rows of every `check`-refused run are the second pass's, in one-step windows. That is another execution path than the refused run's.
 
 **(c) Empty keys. Adds to** `TABLE.md` §3, the row `definition`:
 
