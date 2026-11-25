@@ -96,7 +96,7 @@ def test_declarations_reject_incompatible_catalogs(fault):
         x["channel_capacity"] = 38
     else:
         x["dt"] = 2.5e-6
-    message = "unknown=.'permeant_ions'" if fault == "identity" else ""  # Not an unknown model.
+    message = "unknown=.'permeant_ions'" if fault == "identity" else None  # Not an unknown model.
     with pytest.raises(ConfigError, match=message):
         timeline(parse_spec(raw))
 
