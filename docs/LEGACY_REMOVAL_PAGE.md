@@ -1,6 +1,6 @@
 # The legacy cleanup: what goes, and what you approved
 
-25 November 2026. Eight minutes to read. Basis of each number: **(m)** measured, **(r)** read in the code, **(e)** estimated.
+25 November 2026. Nine minutes to read. Basis of each number: **(m)** measured, **(r)** read in the code, **(e)** estimated.
 The list behind this page is `validation/legacy_port/removal_list.tsv` on branch `legacy-removal-list`: one row per file, with its
 owner, reason, basis and state.
 
@@ -11,7 +11,7 @@ the engine's own forms. The old code, its runs and its captures stay at the tag 
 **Status.** You approved the losses on 25 November (D386): yes to the table in section 3, the cell-zone transporter left at the tag,
 NKCC and the generic symport ported in the cleanup, and D211's other ports as the next step after it. The same day you agreed that two things which your earlier
 decisions held go too, kept at the tag: the network laws and the EMT-miRNA two-cell model (section 3). A second reader has read the list, the script and the optional
-batch: safe, with corrections, which are in. **The counts below are at 36165b70, but for what the builders still add. The deletion (branch `legacy-deletion`, in
+batch: safe, with corrections, which are in. **The counts below are at 1fec66a6, but for what the builders still add. The deletion (branch `legacy-deletion`, in
 place of 9b0debe6) is merged only after you have seen them. One answer is left: the optional batch, yes or no.**
 
 ## 1. Counts, by area
@@ -27,20 +27,21 @@ place of 9b0debe6) is merged only after you have seen them. One answer is left: 
 | Configurations | 116 of 157 | JSON | (m) |
 | Examples | all 15 (ten inputs, five guides) | JSON | (m) |
 | Test data | 7 files | 1,200 | (m) |
-| Test IDs | **9,284 of 21,927**: 9,023 in files that go, 261 rows in files that stay | | (m), collection of the staged deletion; 515 are new |
+| Test IDs | **9,284 of 21,927**: 9,023 in files that go, 261 rows in files that stay | | (m), collection of the staged deletion; 564 are new |
 | Test IDs of the files being rewritten | 314, in 10 files: 138 in the two that moved onto the new laws (60 rewritten, 70 dropped, 8 left to the calcium worlds), 176 in 8 files still to be rewritten | | (m); those 8 files do not import until then |
 | Written or rewritten by an owner | 212 files edited (83 of them documents), 17 tests retargeted | | (r); 194 of the 212 edits are done, and one of the 17 tests |
 | **Optional, your yes or no:** what the oldest families were checked with, a graph study that never ran, and the last REF-era folders | 165 files: 40 helpers, 37 tests, 68 scripts, 20 REF-era files | 49,055 | (m); 1,933 more test IDs, 192 more test-seconds in tiers 1 and 2, about 36 s of wall per full gate |
 
-On the tree without all of this, **12,844 tests collect and only the 8 files above fail to** (m). Apart from the retargeted tests, no
-remaining file imports or loads anything that goes, `lean/` and `visualizer/` included, by any way of importing (m). The nightly's record of the files that tests
-open (main, tiers 1 and 2) showed one test more, which is now on the list, and no other that still does (m, r); tier 3 is known by its imports only. The rename's
-tool, one guard and four of the viewer's files still name some of it. The
-deletion saves 2,574 of 13,784 test-seconds in tiers 1 and 2 (m), about 8 minutes of wall per full
-gate (e: 0.186 s of wall per test-second, measured 24 November). 142 of 222 tier-3 files go (m). The gate's fingerprints lose 129
-definitions in 125 files, of the 177 in the three folders (m, the tool's own enumeration); G1's 113 worlds are unaffected (r). The fingerprint tool's comparison
-needs a list of them (`removed_definitions.txt`), and the tier record loses 265 rows in the deletion's own commit, since the gate refuses a row without a file.
-**Measured where:** files and lines at 49529e71, the tag's commit; seconds in the tier record; IDs, imports and the last dry run at 36165b70, which is `legacy-cleanup` 96ec6faf with the documents;
+On the tree without all of this, **12,893 tests collect and only the 8 files above fail to** (m). 58 of them are in seven more of the files being
+rewritten, which collect but use what goes, so they are not expected to pass until then (r). Apart from the retargeted tests, no remaining file imports or loads
+anything that goes, `lean/` and `visualizer/` included, by any way of importing (m). The nightly's record of the files that tests open (main, tiers 1 and 2) showed
+one test more, which is now on the list, and no other that still does (m, r); tier 3 is known by its imports only. The rename's tool, one guard and six of the
+viewer's files still name some of it. The deletion saves 2,574 of 13,784 test-seconds in tiers 1 and 2 (m), about 8 minutes of wall per full gate (e: 0.186 s of
+wall per test-second, measured 24 November). 142 of 222 tier-3 files go (m). The gate's fingerprints lose 129
+definitions in 125 files, of the 194 in the three folders (m, the tool's own enumeration). The tag has 173: the live engine's two batch configurations brought four, and
+the re-expression's format sample 17, which are placeholders that no parser accepts. G1's 113 worlds are unaffected (r). The fingerprint tool's comparison
+needs both lists (`removed_definitions.txt`, and the 21 in `added_definitions.txt`), and the tier record loses 265 rows in the deletion's own commit, since the gate refuses a row without a file.
+**Measured where:** files and lines at 49529e71, the tag's commit; seconds in the tier record; IDs, imports and the last dry run at 1fec66a6, which is `legacy-cleanup` 99d1b875 with the documents;
 the parity runs at 63c181fc, on a tree without 1,472 of the files (the other 63 are outside their import chain).
 
 **The optional batch** has four parts: 50 files of E02-SW1's graph study, a frozen protocol that never ran, for a model never built
@@ -54,14 +55,15 @@ that stays checks those pins. Its frozen panels stay as records. **The lead reco
 
 | You use | It becomes | Needs |
 |---|---|---|
-| The JUPITER world, the cluster base, the assembly cell, the integrated ensemble's world | closed `resolved_pump_tissue@3` worlds, same equations | the worlds themselves; the assembly coupling is in |
-| The four calcium clusters | a composite over @3, one store per cell | the worlds themselves; the calcium work is in |
+| The JUPITER world, the cluster base, the assembly cell, the integrated ensemble's world | closed `resolved_pump_tissue@3` worlds, same equations | their registered runs and the judge; the definitions (Part 1), the run driver and the assembly coupling are in |
+| The four calcium clusters | a composite over @3, one store per cell | their definitions and criteria (Part 2); the calcium work is in |
 | The assembly command lines and ensemble kinds | CPU batch runs; the GPU path is **parked** | the same as their worlds |
 | NKCC and the generic symport | `na_k_2anion_symport_reversible_tanh@1` and `electroneutral_symport_reversible_tanh@1`, on the transporter kind | nothing: in |
 
-**In the engine now (r, at 36165b70):** the Na/Ca exchanger; one pump law for an ion of any valence, `atp_driven_transporter_mass_action_positive@2`, for
+**In the engine now (r, at 1fec66a6):** the Na/Ca exchanger; one pump law for an ion of any valence, `atp_driven_transporter_mass_action_positive@2`, for
 the plasma's calcium pump and the store's, with the step terms that a store's node needs; the two symports; the release's factor and its source; the assembly
-coupling; calcium through a channel, with its step bound, and the CaV1.2 law; and the loop's bound. **Not yet:** the worlds themselves.
+coupling; calcium through a channel, with its step bound, and the CaV1.2 law; and the loop's bound. **Not yet:** a registered run of any of them. Part 1's 214 definitions
+parse, and none has been run; Part 2's criteria are being completed (D387).
 
 ## 3. What is lost, what stays, and what waits
 
@@ -79,11 +81,14 @@ coupling; calcium through a channel, with its step bound, and the CaV1.2 law; an
 D211's programme is recorded as open, after the cleanup, in `docs/CORE_LAWS_ROADMAP.md`. `test_channel_law_kernels.py` tests three HCN laws that would have
 had no test, and keeps the kernel rows of three tissue tests that go.
 
-**D196's condition is met:** before a batch drops a test that is a live law's only reference check, the check moves beside the law. `law_reference_checks.tsv`
-holds one row for each of 133 laws and kernels: the 71 registered laws, the catalogues' 44 and 18 kernels that live models import. 44 of them declare a test, and
-all 44 are collected after the deletion (m). Three had lost their only direct check: Kv1.5 (the 19 cases that D196 names), the one-gate junction law and the passive
-reaction kernel. Each has a row beside it now, with planted errors, and the first two are the laws' declared tests. With the optional batch gone too, no row of the
-table changes (m); which rows check a kernel was read (r).
+**D196's condition:** before a batch drops a test that is a live law's only reference check, the check moves beside the law. `law_reference_checks.tsv` holds one
+row for each of 134 laws and kernels: the 71 registered laws, the catalogues' 44 and 19 kernels that live models import. 44 of the 71 registered laws declare a test,
+and all 44 are collected after the deletion (m). Three had lost their only direct check: Kv1.5 (the 19 cases that D196 names), the one-gate junction law and the
+passive reaction kernel. Each has a row beside it now, with planted errors, and the first two are the laws' declared tests. **A fourth came out when the table was
+rebuilt under one standard:** `edge_flux`, the junction flux of `reaction_transport@1`, loses its two direct rows of hand values; whole worlds against matrix
+exponentials still check it. The lead decides whether it gets a small row first, and the script makes no branch until then. One helper, `bernoulli`, loses its one
+direct row too; every law that calls it is checked in decimals. With the optional batch gone as well, no row of the table changes (m); which rows check a kernel was
+read (r).
 
 | Lost, or not carried over | In one sentence |
 |---|---|
@@ -127,12 +132,13 @@ registry, and one is a refusal that the calcium work replaced. `removed_rows.tsv
 
 ## 6. Records, and what is open
 
-- **Records stay:** 53 protocol and data files, the other results, the design notes and the decisions.
+- **Records stay:** 59 protocol, data and record files, the other results, the design notes and the decisions.
 - **Open:** the builders' 16 tests and three validation scripts; the rename's tool, table and note; the fingerprint tool's list of removals; tier 3's record.
-- **The deletion is one commit,** made from the list by a script, in place of 9b0debe6. Its dry runs at f38f6789, c368c9f2, 34d173d7, 9c30104e and 36165b70 found every path;
-  the last removed 1,528 files (six are gone already), and broke no import but the retargeted tests', 8 of them (m). With the optional batch (at 9c30104e) it removed 1,693, with the same 8.
-  The same commit takes one guard's list, the tier record's rows, the old exchanger's kernel, an old release function and nine names that only legacy uses (`plasma_calcium.py`,
-  `er_calcium.py`, `calcium_gates.py`), and the words of three library pages. On that tree the 15 library pages pass their check (m).
+- **The deletion is one commit,** made from the list by a script, in place of 9b0debe6. Its dry runs at f38f6789, c368c9f2, 34d173d7, 9c30104e, 36165b70 and 1fec66a6 found every path;
+  the last removed 1,528 files (six are gone already), and broke no import but the retargeted tests', 8 of them (m). With the optional batch it removed 1,693, with the same 8 (m).
+  The same commit takes one guard's list, the tier record's rows, the old exchanger's kernel and nine names that only legacy uses (`plasma_calcium.py`,
+  `er_calcium.py`, `calcium_gates.py`), and the words of three library pages. On that tree the 15 library pages pass their check (m). One old function, the store's `release_open`,
+  stays unless the lead says that it goes: only a test that is being rewritten names it, and the roadmap calls it the older kernel of D211's store release.
 - **Documents:** 57 say what left, with seven folders of old drivers, and the run guides name live worlds. 420 relative links into removed files break, in 52 Markdown files
   (m), most of them under such a note.
 - **14 reference files stay** whose last test goes: each is imported by an old native probe or reference that stays and that no test runs at the tag either (m).
