@@ -23,6 +23,12 @@ how to write one, the [glossary](GLOSSARY.md) defines the words, and
 | --- | --- | --- |
 | [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md) | A potassium channel that opens within milliseconds when the membrane voltage rises, then slowly shuts over seconds, letting potassium out so that the voltage falls back. | Not stated |
 
+### `cells.cycle_law@1`
+
+| Page | In one sentence | Status |
+| --- | --- | --- |
+| [`cells.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md) | Three sodium ions cross a membrane one way for each calcium ion that crosses the other way, each exchange carrying one charge, at a rate whose form is synthetic. | Not stated |
+
 ## Kinds
 
 ### `cells.kind@1`
