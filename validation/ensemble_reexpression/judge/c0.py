@@ -1024,7 +1024,7 @@ class C0:
             "energy_identity": "1.1e-06",
         }
         k.notes.append(
-            "Both residuals are rounding of their own formation, so the last digit of the "
+            "The residuals are rounding of their own formation, so the last digit of the "
             "published maxima is not a criterion."
         )
         k.notes.append(
