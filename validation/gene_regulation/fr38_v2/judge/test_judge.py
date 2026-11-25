@@ -1,6 +1,6 @@
 """Host-only tests of FR-38's second comparison judge, on invented inputs only.
 
-**Seconds:** 65 to 100 s of CPU for its 39 tests, on light CPUs other jobs shared (25 November 2026).
+**Seconds:** 65 to 100 s of CPU for 39 tests, on light CPUs other jobs shared (25 November 2026).
 **Reason (D224):** the judge decides FR-38's registered verdict, so each C0 refusal, each failure
 and inconclusive mode, the retry and each plant (caught and not caught) must be shown to move it
 the registered way before any engine run is judged.
