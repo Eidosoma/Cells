@@ -1,0 +1,26 @@
+{
+ "to the end of arm 1": {
+  "cpu_s": 5.67,
+  "wall_s": 34.64
+ },
+ "to the end of arm 2": {
+  "cpu_s": 9.62,
+  "wall_s": 59.71
+ },
+ "to the end of arm 3": {
+  "cpu_s": 62.68,
+  "wall_s": 211.3
+ },
+ "to the end of arm 4": {
+  "cpu_s": 62.8,
+  "wall_s": 211.42
+ },
+ "to the end of arm 5": {
+  "cpu_s": 81.75,
+  "wall_s": 230.37
+ },
+ "to the end of arm 6": {
+  "cpu_s": 95.92,
+  "wall_s": 244.54
+ }
+}
