@@ -183,7 +183,8 @@ exactly 0.
 **The hold's tissue lives at the edge.** From t = 0, about half of its sampled states are
 above 0.3 of the target, and the worst is 0.995. Exposure needs free field offsets, which
 means finite extracellular space: the full-tissue worlds, E07-v1's among them. The turnover
-pre-screen's held-bath sheets have none (last section).
+pre-screen's held-bath sheets have none (last section). (25 November 2026: E07-v1's registered
+protocol is held-bath sheets with 0 free offsets, and it ran version 2.)
 
 ## Version 3 on the hold's edge states (CPU)
 
@@ -313,7 +314,8 @@ discs: 37 cells at s 1.0, 0.6 and 0.3, and 19 cells at s 0.6 and 0.3, on the hel
 127-cell sheet under `resolved_pump_replacement@1` over @3. Their residual is exactly 0 with
 no Newton iteration, in all three programs (`margins-turnover.json`). The pre-screen's "no
 refusal" therefore did not depend on the program, for this refusal class. E07-v1's
-registered world is the full tissue (172 free offsets), so D147 applies to it.
+registered world is the full tissue (172 free offsets), so D147 applies to it. (25 November
+2026: this is wrong for the registered protocol, as above: its sheets have 0 free offsets.)
 
 **A restart under version 3 needed a driver change; it is done.** The hold's definitions
 took their field solver from `validation/tissue/resolved_scale_world.py`, which declared
