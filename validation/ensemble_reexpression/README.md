@@ -1,34 +1,40 @@
-# The ensemble's re-expression: the builder's side (Part 1)
+# The ensemble's re-expression: the builder's side (Parts 1 and 2)
 
 This folder makes the definitions, the runs and the tables that `spec/` registers (tag `ensemble-reexpression-criteria-part1-2026-11-25`).
 It judges nothing. Its builder read `spec/SPEC.md`, `spec/READOUTS.md`, `spec/TABLE.md`, `spec/inputs.json`, the rules of `spec/README.md`, and the engine with its documents.
 From 25 November also `spec/AMENDMENT-1-2026-11-25.md`, which holds what the lead answered ("Amendment 1" below).
-The builder read no other file of `spec/`, no capture, no legacy output and no code of the judge.
+For Part 2 its builder read the exporter's part of it (sections 1 to 6 and 11 of `PART2.md`, word for word), `PART2_BLOCKS.md`, `inputs_part2.json` (their text of 25 November, before the tag) and what the lead answered.
+The builder read no other file of `spec/`, no capture, no legacy output, no code of the judge, and no test or validation file of the calcium store.
 
-No registered world has been run by the builder. The run driver refuses to run one from a checkout.
+No registered world has been run by the builder, and no registered definition of Part 2 has been parsed. The run driver refuses to run a registered world from a checkout.
+Everything up to "Part 2" below is Part 1's, and holds for Part 2 unless that section says otherwise.
 
 ## Files
 
 | File | What it does |
 | --- | --- |
 | `labels.py` | The spec's labels and the registered strings they stand for, from the engine's own constants. The strings that a definition declares |
-| `inputs.py` | Reads `inputs.json` (and `inputs_rehearsal.json`): worlds, runs, retries, compared times, the grid rule |
+| `inputs.py` | Reads `inputs.json` (and `inputs_part2.json`, `inputs_rehearsal.json`): worlds, runs, retries, compared times, the grid rule |
 | `worlds.py` | A block and the engine's definition of it, each written from the other, section by section. The echo's comparison |
+| `stores.py` | Part 2's sections: the calcium stores, what carries calcium across the plasma membranes, and their schedules |
+| `pieces.py` | Where the pieces of a composite stand, read from its definition: stores, patches, routes, populations, reactions, rows, and their places on the record's axes |
+| `blocks.py` | What every section is written and read with |
 | `definitions.py` | Every run's definition and its checks (`check`, `write`, `strings`) |
 | `run.py` | The run driver: one command makes one run and its record |
 | `refusals.py` | What the engine raised, as a kind of refusal. The rows that a refused run keeps |
 | `readouts.py` | The series and potentials of READOUTS §2, read from a run's own rows |
 | `table.py` | The exporter (`export`) and the contract's keys and types (`check`) |
 | `sample.py`, `format_sample/` | The invented worlds of the format sample, how it is made, and the sample itself |
+| `sample_part2.py` | The invented worlds of Part 2, which the rows use |
 
-The rows are `tests/unit/test_ensemble_reexpression.py` (parse only and fabricated records).
+The rows are `tests/unit/test_ensemble_reexpression.py` and `test_ensemble_reexpression_part2.py` (parse only and fabricated records).
 
 ## How to use it
 
 From the registered head, in the checkout (parse and validate only, about 40 s):
 
     python -m validation.ensemble_reexpression.definitions check
-    python -m validation.ensemble_reexpression.definitions strings
+    python -m validation.ensemble_reexpression.definitions strings [--json FILE]
 
 The campaign, from a frozen snapshot, by whoever starts it:
 
@@ -59,14 +65,14 @@ interruption and goes on. `commands` prints one `run_detached.sh` command for ea
 - **A driven world** is a composed file for `cells assembly-pool resolve`. Its ionic part declares the channel at 1 throughout, and the pool's path multiplies that. An ionic run's schedule comes from the resolution of its own composed file's pools (Amendment 1). The ionic runs of one seed and step have one composed file, and so one resolution.
 - **A pool run** submits its world's composed file at the first step and runs the file's pools with the function that `resolve` uses, so `channel` and `stream_id` are read back from that file (Amendment 1).
 - **The field solver** is D147's (`validation/tissue/field_solver_choice.py`). The count of free offsets is made on the floor variant, which parses every world, and `declare()` has the last word. `check` holds the count to the block's own topology.
-- **Part 2** adds sections to `worlds.SECTIONS`, labels to `labels.LABELS` (and their place in the strings note to `labels.PLACES`), and series to `readouts.SERIES` and `readouts.POTENTIALS`. Nothing else names a section, a label or a series. A key of a block that no section holds is refused by name
+- **The sections** are `worlds.SECTIONS` (Part 2's are `stores.SECTIONS`, in the same list), the labels `labels.LABELS` (and their place in the strings note `labels.PLACES`), and the series `readouts.SERIES` and `readouts.POTENTIALS`. Nothing else names a section, a label or a series. A key of a block that no section holds is refused by name
   (`no_section`), and so is a field of an entity that has no place.
 
 **What the 214 runs parse to** (measured, `definitions check`, no fault): 10 ionic definitions for the 11 ionic runs (a restart has its judged run's); 25 composed files, of whose world definitions 193 are run; 15 pools in the 10 pool runs.
 
 ## The strings, for the lead's note
 
-`definitions strings` prints each run's entry. `labels.LABELS` is the map, from the engine's constants, so the ID move rewrites no literal here.
+`definitions strings` prints each kind of run's entry, and `--json FILE` writes them as one file (each kind's entry, labels and strings, every run's kind, and the labels' map). `labels.LABELS` is the map, from the engine's constants, so the ID move rewrites no literal here.
 
 | Runs | `model` | `solver` | `field_solver` | `laws` | `pool` | `observable` |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -87,7 +93,7 @@ interruption and goes on. `commands` prints one `run_detached.sh` command for ea
 | --- | --- |
 | `NumericalError` of the engine's ledgers ("Resolved pump accounting failed: ..."), of its dissipation, or of its step-doubled energy check; a pool whose finite material or transfer counters do not balance | `check` |
 | Any other `NumericalError` (a step's or a row's domain) | `domain` |
-| `ConfigError` or `AssemblyError` that says "domain", "RK4 steps", "step exceeds", "must lie in", "must be in [", "cannot exceed", "must be finite and positive" or "nonnegative", "exceeds positive finite" or "reached its event cap" | `domain` |
+| `ConfigError` or `AssemblyError` that says "domain", "RK4 steps", "step exceeds", "must lie in", "must be in [", "cannot exceed", "must be finite and positive" or "nonnegative", "exceeds positive finite" or "reached its event cap"; of Part 2's pieces also "must be >" or ">=" a number, "must be a finite positive number", "is finite and >= 0", a parameter that "is positive", "is at least" or "is at most", "is a normal float" | `domain` |
 | The junction gate's message, which names a law and a range together, where the declared law is the one it names | `domain` |
 | Any other `ConfigError` or `AssemblyError`; a `KeyError`, `TypeError`, `AttributeError` or `IndexError` of the parser | `definition` |
 | Anything else: memory, the disk, a signal, the driver's own clock (`--max-seconds`), the generator (`no_section`, `unknown_order`, `off_grid_change`), the exporter | `harness` |
@@ -146,3 +152,64 @@ The exporter and the generator read `inputs_rehearsal.json` with the code that r
 
     python -m validation.ensemble_reexpression.sample make RUNS
     python -m validation.ensemble_reexpression.sample scrub RUNS validation/ensemble_reexpression/format_sample
+
+## Part 2 (the calcium clusters)
+
+    python -m validation.ensemble_reexpression.definitions check --inputs validation/ensemble_reexpression/spec/inputs_part2.json     # after the tag
+    python -m validation.ensemble_reexpression.run all --inputs .../spec/inputs_part2.json --runs RUNS2 --tag TAG2 --workers 8 --retries
+    python -m validation.ensemble_reexpression.table export --inputs .../spec/inputs_part2.json --runs RUNS2 --output RUNS2/table
+    python -m validation.ensemble_reexpression.table export --inputs .../spec/inputs_part2.json --runs RUNS2 --output RUNS2/table-retry --owed retry_owed.json --owed-sha256 HEX
+
+- **The retry's runs, up front.** `--retries` makes `<family> h=1.5625e-06 retry` of every family in the same batch, after the judged runs and the plants. Their records stand in `RUNS2/retries/`, which nothing reads but the exporter, and only with the sha256 of the judge's note: without `--owed-sha256`, or with another hash, `export` refuses by name and
+  writes nothing. `--owed` alone makes and exports runs that are made after the note, in `RUNS2/runs/`, as in Part 1.
+- **What a run costs** (measured on an invented world with every mechanism, on four shared threads that others filled, so CPU seconds): 82 to 88 s to compile (every run compiles), 6.3 to 6.5 ms for an accepted step, of which 5.0 ms are the engine's own row checks, about 10 s for the rest, 6.7 kB of record for a step, 1.2 GB at the peak. A driven run also resolves its two pools
+  (15 s). **An estimate:** 105, 115, 135 and 180 s for the four steps, 6 CPU hours for the batch with the retry's runs.
+
+### The definitions
+
+- **A world** is a composite over the inner tissue model, version 3. The inner model's sections write `ionic` (with Ca as a fourth ion), and Part 2's write the rest and then take calcium's own permeabilities off the membranes and junctions and declare them as passive routes. `table.py` reads the block back through the same sections in the opposite order, so a block and its definition are each
+  other's. On the four children's forms the parsed definition gives the block double for double, but for the cells' fixed charge and the pumps' free energy, which are derived (measured on invented blocks: one or two units in the last place).
+- **What a composite holds beyond its block, by rule** (the lead's answers of 25 November):
+  - every row at a node that the block does not name it at has a trace of 10⁻¹² mM: B, CaB, Ca2B and the IP3 rows at the regions, the fuel rows at the regions and the stores. The regions keep the block's fixed charges, double for double (measured: it parses at 10⁻¹² mM, and from 10⁻¹¹ mM up the engine's anchor check refuses it). Cells and stores have theirs by the anchor rule over every row;
+  - the material tolerance of a row that the block gives none is 10⁻¹⁰ fmol;
+  - every chemical row declares its standard potential, a zero with the rest. ATP and Pi are at 0 and ADP carries the pump's free energy: μ°(ADP) = `delta_g0_at_1M`/(R T) − ln(1000/c°). So A is about 22, against the 3,200 of PART2 §2.4;
+  - one set of fuel rows is held at a cell, for its store's pump and its plasma pump: the block's mM times the volume;
+  - each captured reaction is declared once, under its own ID, at both cells or both stores. A species that no reaction makes is its own moiety, and one that a reaction makes is what its reactants are;
+  - the release's factor is one condition for each cell, at the cell, with all its reads. `definition` names them (`release_conditions`);
+  - a bounding patch has one availability, so a store's two leaks and its release have one schedule.
+- **What one definition cannot hold is refused by name** (`no_section`, kind `harness`): two pumps of one cell with different fuel, two stores with different species or reactions, a patch with two schedules, a charged store. **A piece of a definition that a block has no place for** (a second leak, a turned pump, an operator) is refused when it is read back, so `inputs` is
+  `{"unreadable": ...}` and no echo passes.
+- **IDs** are made from the block's: `store_<cell>`, `store_membrane_<cell>`, `compartment_<cell>`, `release_factor_<cell>`, `store_release_<cell>`, `store_leak_Ca_<cell>`, `store_pump_<cell>`, `leak_Ca_<membrane>`, `calcium_pump_<membrane>`, `exchanger_<membrane>`, `junction_Ca_<junction>`.
+
+### The same equations (PART2 §3), as the live code has them
+
+Read in the engine's code at the branch's head, and not compared with any captured code. The lead confirms them for the tag.
+
+| Condition | Where the live engine has it |
+| --- | --- |
+| 1, closed, one gauge | The definition: `closure.gauge_reference` is the block's, every node is finite |
+| 2, the store's own voltage | `operators/compartments.py`: the store is an outside node with one bounding patch, a free node of the capacitor solve. The patch holds the area and the capacitance |
+| 3, the release's factor | `kinds/species_condition.py` and `laws/reactions/hill_product_factor.py`: read at every explicit stage, from that stage's amounts of the cell's own rows over the cell's volume, x^n/(K^n + x^n) or K^n/(K^n + x^n), the product of the reads. The routing door (`models/surface_pump_v3.py`, `kinds/passive_routes.py` `_opening`) multiplies the route's opening by it |
+| 4, the pumps' standard state | `laws/pumps/atp_transporter_v2.py`: J = k v S (1 − e^x), x from the registry's potentials at c°, S = [1 + K/c_N]⁻¹ [1 + K_ATP/c_ATP]⁻¹. c° is 1 mM here, and `delta_g0_at_1M` is formed as §2.2 says |
+| 5, the exchanger | `laws/cycles/sodium_calcium_exchange_symmetric_barrier.py`: J = k v [b³ c e^(−ψ/2) − a³ d e^(ψ/2)] / [(1 + a³ + b³)(1 + c + d)], no standard part |
+| 6, the reactions | `operators/species_reactions.py`: J = m V c° k_f [Π a^α − exp(Σ ν μ°/RT) Π a^β], a = c/c°, the passive mass-action law |
+| 7, the calcium channel | `laws/channels/cav1p2_m2h.py`: m² h, gates at V − 10 mV, no temperature term; the host's constant-field flux at valence 2 with P_max × abundance × availability |
+| 8, calcium's junction route | `kinds/passive_routes.py` `_opening`: `control.junction * state.junction_gate` at the stage's own state, times no factor. It is the gate and the availability that the model's own junction routes read. **Measured on the engine's kernel at a parsed invented world:** the flux of calcium's junction route is proportional to gate × availability within 10⁻¹⁴, 0 at a closed gate, and no other route's depends on
+  them (row `test_calciums_junction_route_is_opened_by_the_gate_and_the_availability`) |
+| 9, the splitting | `models/pump_composite.py`: P(dt/2) ∘ I(dt) ∘ P(dt/2), P the reactions' half-step, I the inner IMEX step, which starts from the state after the first half |
+
+### The strings
+
+As Part 1's, with the labels of PART2 §4.3. `model` is `composite_model`, with `inner_model` among `laws` (the note has one model). `operators` are `compartment_law` and `local_reactions`, `kinds` the three kinds. A kind's own ID is not written in a definition, whose model has its key alone, so the exporter adds the IDs of the declared kinds. The engine writes both cycle
+laws and the condition's law namespaced and the others bare. The held fuel's kind has no string in this form.
+
+### Readings beyond Part 1's
+
+22. **`inputs`** holds the world's blocks by their names (PART2_BLOCKS), a cluster's `assembly` beside them.
+23. **The rows** are PART2 §6.1's names and no other: `cyt_c` and no `n_cell_x`, `heat_junction_own` and `heat_junction_Ca` and no `heat_junction`. A chemical row is every row that no population holds as fuel. The stores' rows and `extent_r` are by the owner cell. Calcium's channels are the ones whose one ion is Ca, and the others are `channels`.
+24. **Where each entity stands on an axis** is read from the definition: stores and bounding patches from the compartment law, routes in the order of their IDs, reaction routes one reaction after another (cells first), populations as declared.
+25. **`store_voltage`** is 0 minus the observed voltage of the bounding patch, so never a negative zero. At time 0 it is the field solver's own residue and not exactly 0.
+26. **A child's compared times** are its two grids, each i × spacing. A cluster's rows are at 0, its summary times and its end.
+27. **A `declared_change`'s path** begins in the world's blocks (`ionic`, `stores`, ...). In Part 1 it stays inside `ionic`.
+28. **`definition`** also holds `species_rows` (every row declared), `release_conditions`, and `trace_mM` (each row's concentration at each node that the block does not name it at).
+29. **EP3** multiplies both stores' release permeability by 1.01 (the double product), and **EP4** exchanges the two pools' channels, as EP2.
