@@ -1,4 +1,5 @@
-"""cells assembly-pool resolve: the ionic definitions whose channels assembly pools drive.
+"""cells assembly-pool resolve: the ionic definitions whose channels assembly pools drive (G-7;
+docs/IP3_RELEASE_AND_ASSEMBLY_AVAILABILITY_DESIGN.md Part II, docs/CAPSID_ASSEMBLY.md).
 
 **The composed file** is a strict JSON object with exactly the keys `schema_version` (1), `ionic`
 and `pools`. `ionic` is an ordinary definition (resolved_pump_tissue@3 or

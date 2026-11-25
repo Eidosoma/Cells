@@ -363,8 +363,10 @@ experimental validation and multi-GPU scaling are separate work.
 
 A pool can drive channel populations of an ionic world, one way: the pool reads nothing of the ionic
 side. `cells assembly-pool resolve` turns a composed file into ordinary definitions, so the ionic
-world needs no new model and no new operator. This is a hypothesis of the composed file, as above:
-no experiment says that an assembly's topology sets a channel's availability.
+world needs no new model and no new operator
+([the design](IP3_RELEASE_AND_ASSEMBLY_AVAILABILITY_DESIGN.md), Part II). This is a hypothesis of the
+composed file, as above: no experiment says that an assembly's topology sets a channel's
+availability.
 
 **The composed file** is a strict JSON object with exactly three keys:
 
