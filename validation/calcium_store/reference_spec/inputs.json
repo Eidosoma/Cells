@@ -1,0 +1,3155 @@
+{
+ "schema": "cells.calcium_store_reference_spec@1",
+ "written": "25 November 2026, by the store worlds' builder, before any reference exists. Inputs only: no output of any run.",
+ "constants": {
+  "note": "exact SI (2019): N_A = 6.02214076e23, e = 1.602176634e-19, k_B = 1.380649e-23; F = N_A e, R = N_A k_B; one fmol of unit charge is 1e-15 F coulomb"
+ },
+ "store_world": {
+  "id": "store_world",
+  "temperature_K": 303.65,
+  "standard_concentration_mM": 1.0,
+  "valence": {
+   "Na": 1,
+   "K": 1,
+   "Cl": -1,
+   "Ca": 2,
+   "B": -2,
+   "CaB": 0,
+   "Ca2B": 2,
+   "ATP": 0,
+   "ADP": 0,
+   "Pi": 0,
+   "IP3": -3
+  },
+  "nodes": {
+   "cell": {
+    "volume_pL": 0.85,
+    "amounts_fmol": {
+     "Na": 10.54,
+     "K": 111.35,
+     "Cl": 8.925,
+     "Ca": 0.0002635,
+     "B": 0.0442,
+     "CaB": 0.00799,
+     "Ca2B": 0.0006035,
+     "ATP": 1.955,
+     "ADP": 0.1445,
+     "Pi": 0.68,
+     "IP3": 0.0001785
+    }
+   },
+   "store": {
+    "volume_pL": 0.055,
+    "amounts_fmol": {
+     "Na": 0.5225,
+     "K": 6.82,
+     "Cl": 0.88,
+     "Ca": 0.01485,
+     "B": 2.42e-05,
+     "CaB": 0.004565,
+     "Ca2B": 0.0891
+    }
+   },
+   "outside": {
+    "volume_pL": 2.6,
+    "amounts_fmol": {
+     "Na": 361.4,
+     "K": 15.08,
+     "Cl": 314.6,
+     "Ca": 3.77
+    }
+   }
+  },
+  "constant_rows": {
+   "cell": [
+    "ATP",
+    "ADP",
+    "Pi",
+    "IP3"
+   ],
+   "store": [
+    "Na"
+   ],
+   "outside": []
+  },
+  "patches": {
+   "plasma": {
+    "inside": "cell",
+    "outside": "outside",
+    "area_m2": 4.1e-10,
+    "capacitance_F": 3.9e-12,
+    "initial_voltage_V": -0.055,
+    "permeability_m_per_s": {
+     "Na": 1.3e-11,
+     "K": 2.6e-10,
+     "Cl": 6.2e-11
+    }
+   },
+   "bounding": {
+    "inside": "cell",
+    "outside": "store",
+    "area_m2": 6.4e-10,
+    "capacitance_F": 6.2e-12,
+    "initial_voltage_V": -0.003,
+    "permeability_m_per_s": {
+     "K": 9e-09,
+     "Cl": 1.1e-09
+    }
+   }
+  },
+  "calcium_routes": {
+   "plasma_leak": {
+    "patch": "plasma",
+    "permeability_m_per_s": 4e-10
+   },
+   "store_leak": {
+    "patch": "bounding",
+    "permeability_m_per_s": 5e-09
+   },
+   "release": {
+    "patch": "bounding",
+    "permeability_m_per_s": 1.6e-07,
+    "factors": [
+     "release_ip3",
+     "release_calcium"
+    ]
+   }
+  },
+  "conditions": {
+   "release_ip3": {
+    "node": "cell",
+    "reads": [
+     {
+      "species": "IP3",
+      "form": "activation",
+      "half_saturation_mM": 0.00024,
+      "hill_coefficient": 2.6
+     }
+    ]
+   },
+   "release_calcium": {
+    "node": "cell",
+    "reads": [
+     {
+      "species": "Ca",
+      "form": "activation",
+      "half_saturation_mM": 0.00075,
+      "hill_coefficient": 1.9
+     },
+     {
+      "species": "Ca",
+      "form": "inhibition",
+      "half_saturation_mM": 0.028,
+      "hill_coefficient": 1.6
+     }
+    ]
+   }
+  },
+  "calcium_channel": {
+   "patch": "plasma",
+   "max_permeability_m_per_s": 2.2e-08,
+   "abundance": 0.55,
+   "initial_m": 0.24,
+   "initial_h": 0.66
+  },
+  "pumps": {
+   "plasma_pump": {
+    "patch": "plasma",
+    "N": "cell",
+    "P": "outside",
+    "capacity_fmol_per_s": 0.0035,
+    "stoichiometry": 1,
+    "K_role_mM": 0.00085,
+    "K_ATP_mM": 0.42
+   },
+   "store_pump": {
+    "patch": "bounding",
+    "N": "cell",
+    "P": "store",
+    "capacity_fmol_per_s": 0.0052,
+    "stoichiometry": 2,
+    "K_role_mM": 0.0006,
+    "K_ATP_mM": 0.31
+   }
+  },
+  "fuel_potentials_RT": {
+   "ATP": 0.0,
+   "ADP": -18.1,
+   "Pi": 0.0
+  },
+  "exchanger": {
+   "patch": "plasma",
+   "N": "cell",
+   "P": "outside",
+   "capacity_fmol_per_s": 2.2,
+   "K_Na_mM": 23.0,
+   "K_Ca_mM": 0.9
+  },
+  "buffers": {
+   "sites": [
+    "cell",
+    "store"
+   ],
+   "standard_mu_RT": {
+    "Ca": 0.0,
+    "B": 0.0,
+    "CaB": -6.6,
+    "Ca2B": -11.0
+   },
+   "reactions": [
+    {
+     "id": "bind_first",
+     "reactants": {
+      "Ca": 1,
+      "B": 1
+     },
+     "products": {
+      "CaB": 1
+     },
+     "forward_rate_per_s": 900.0
+    },
+    {
+     "id": "bind_second",
+     "reactants": {
+      "Ca": 1,
+      "CaB": 1
+     },
+     "products": {
+      "Ca2B": 1
+     },
+     "forward_rate_per_s": 140.0
+    }
+   ]
+  },
+  "times_s": [
+   0.0,
+   0.002,
+   0.004,
+   0.006,
+   0.008
+  ],
+  "variants": {
+   "store_world": {
+    "bounding_initial_voltage_V": -0.003
+   },
+   "store_world_without_buffers": {
+    "bounding_initial_voltage_V": -0.003,
+    "buffers": "none: the two reactions do not run, every other number is the same"
+   }
+  },
+  "accuracy": {
+   "relative_to_each_observable_s_largest_change": 1e-10,
+   "state_the_achieved_bound": true
+  },
+  "controls": {
+   "note": "each is the whole world with one thing changed; the references return the same observables for each",
+   "list": [
+    {
+     "id": "release_sign",
+     "change": "the release flux enters the store and leaves the cell (its sign turned)"
+    },
+    {
+     "id": "pump_without_voltage",
+     "change": "both pumps' x without the term -n z psi"
+    },
+    {
+     "id": "constants_one_percent",
+     "change": "each constant below raised by 1%, one at a time",
+     "constants": [
+      "plasma permeability K",
+      "bounding permeability K",
+      "plasma_leak permeability",
+      "store_leak permeability",
+      "release permeability",
+      "channel max_permeability",
+      "plasma_pump capacity",
+      "store_pump capacity",
+      "exchanger capacity",
+      "bind_first forward_rate",
+      "bind_second forward_rate",
+      "release_calcium activation half_saturation",
+      "release_ip3 half_saturation",
+      "plasma capacitance",
+      "bounding capacitance"
+     ]
+    }
+   ]
+  }
+ },
+ "pump_states": [
+  {
+   "tag": "typical z=2 n=1",
+   "temperature_K": 303.65,
+   "z": 2,
+   "n": 1,
+   "c_N_mM": 0.01162,
+   "c_P_mM": 0.001293,
+   "atp_mM": 2.3,
+   "adp_mM": 0.17,
+   "pi_mM": 0.8,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -18.1,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 0.0007,
+   "K_ATP_mM": 0.37,
+   "capacity_fmol_per_s": 0.0045,
+   "availability": 1.0,
+   "V_NP_V": -0.04358,
+   "volume_N_pL": 0.7,
+   "volume_P_pL": 0.05
+  },
+  {
+   "tag": "typical z=2 n=2",
+   "temperature_K": 303.65,
+   "z": 2,
+   "n": 2,
+   "c_N_mM": 0.001084,
+   "c_P_mM": 0.03167,
+   "atp_mM": 2.3,
+   "adp_mM": 0.17,
+   "pi_mM": 0.8,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -18.1,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 0.0007,
+   "K_ATP_mM": 0.37,
+   "capacity_fmol_per_s": 0.0045,
+   "availability": 1.0,
+   "V_NP_V": 0.02779,
+   "volume_N_pL": 0.7,
+   "volume_P_pL": 0.05
+  },
+  {
+   "tag": "typical z=2 n=3",
+   "temperature_K": 303.65,
+   "z": 2,
+   "n": 3,
+   "c_N_mM": 0.001196,
+   "c_P_mM": 0.2375,
+   "atp_mM": 2.3,
+   "adp_mM": 0.17,
+   "pi_mM": 0.8,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -18.1,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 0.0007,
+   "K_ATP_mM": 0.37,
+   "capacity_fmol_per_s": 0.0045,
+   "availability": 1.0,
+   "V_NP_V": 0.02767,
+   "volume_N_pL": 0.7,
+   "volume_P_pL": 0.05
+  },
+  {
+   "tag": "typical z=2 n=4",
+   "temperature_K": 303.65,
+   "z": 2,
+   "n": 4,
+   "c_N_mM": 0.001062,
+   "c_P_mM": 0.189,
+   "atp_mM": 2.3,
+   "adp_mM": 0.17,
+   "pi_mM": 0.8,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -18.1,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 0.0007,
+   "K_ATP_mM": 0.37,
+   "capacity_fmol_per_s": 0.0045,
+   "availability": 1.0,
+   "V_NP_V": -0.07352,
+   "volume_N_pL": 0.7,
+   "volume_P_pL": 0.05
+  },
+  {
+   "tag": "typical z=1 n=1",
+   "temperature_K": 303.65,
+   "z": 1,
+   "n": 1,
+   "c_N_mM": 0.9078,
+   "c_P_mM": 0.2714,
+   "atp_mM": 2.3,
+   "adp_mM": 0.17,
+   "pi_mM": 0.8,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -18.1,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 0.0007,
+   "K_ATP_mM": 0.37,
+   "capacity_fmol_per_s": 0.0045,
+   "availability": 1.0,
+   "V_NP_V": -0.04001,
+   "volume_N_pL": 0.7,
+   "volume_P_pL": 0.05
+  },
+  {
+   "tag": "typical z=1 n=2",
+   "temperature_K": 303.65,
+   "z": 1,
+   "n": 2,
+   "c_N_mM": 0.08347,
+   "c_P_mM": 0.01279,
+   "atp_mM": 2.3,
+   "adp_mM": 0.17,
+   "pi_mM": 0.8,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -18.1,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 0.0007,
+   "K_ATP_mM": 0.37,
+   "capacity_fmol_per_s": 0.0045,
+   "availability": 1.0,
+   "V_NP_V": 0.03197,
+   "volume_N_pL": 0.7,
+   "volume_P_pL": 0.05
+  },
+  {
+   "tag": "typical z=1 n=3",
+   "temperature_K": 303.65,
+   "z": 1,
+   "n": 3,
+   "c_N_mM": 0.02707,
+   "c_P_mM": 0.001795,
+   "atp_mM": 2.3,
+   "adp_mM": 0.17,
+   "pi_mM": 0.8,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -18.1,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 0.0007,
+   "K_ATP_mM": 0.37,
+   "capacity_fmol_per_s": 0.0045,
+   "availability": 1.0,
+   "V_NP_V": 0.01059,
+   "volume_N_pL": 0.7,
+   "volume_P_pL": 0.05
+  },
+  {
+   "tag": "typical z=1 n=4",
+   "temperature_K": 303.65,
+   "z": 1,
+   "n": 4,
+   "c_N_mM": 0.0252,
+   "c_P_mM": 0.05607,
+   "atp_mM": 2.3,
+   "adp_mM": 0.17,
+   "pi_mM": 0.8,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -18.1,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 0.0007,
+   "K_ATP_mM": 0.37,
+   "capacity_fmol_per_s": 0.0045,
+   "availability": 1.0,
+   "V_NP_V": 0.05359,
+   "volume_N_pL": 0.7,
+   "volume_P_pL": 0.05
+  },
+  {
+   "tag": "typical z=-1 n=1",
+   "temperature_K": 303.65,
+   "z": -1,
+   "n": 1,
+   "c_N_mM": 0.5068,
+   "c_P_mM": 0.004198,
+   "atp_mM": 2.3,
+   "adp_mM": 0.17,
+   "pi_mM": 0.8,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -18.1,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 0.0007,
+   "K_ATP_mM": 0.37,
+   "capacity_fmol_per_s": 0.0045,
+   "availability": 1.0,
+   "V_NP_V": -0.05525,
+   "volume_N_pL": 0.7,
+   "volume_P_pL": 0.05
+  },
+  {
+   "tag": "typical z=-1 n=2",
+   "temperature_K": 303.65,
+   "z": -1,
+   "n": 2,
+   "c_N_mM": 0.04119,
+   "c_P_mM": 0.01568,
+   "atp_mM": 2.3,
+   "adp_mM": 0.17,
+   "pi_mM": 0.8,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -18.1,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 0.0007,
+   "K_ATP_mM": 0.37,
+   "capacity_fmol_per_s": 0.0045,
+   "availability": 1.0,
+   "V_NP_V": 0.03739,
+   "volume_N_pL": 0.7,
+   "volume_P_pL": 0.05
+  },
+  {
+   "tag": "typical z=-1 n=3",
+   "temperature_K": 303.65,
+   "z": -1,
+   "n": 3,
+   "c_N_mM": 0.005475,
+   "c_P_mM": 0.06449,
+   "atp_mM": 2.3,
+   "adp_mM": 0.17,
+   "pi_mM": 0.8,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -18.1,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 0.0007,
+   "K_ATP_mM": 0.37,
+   "capacity_fmol_per_s": 0.0045,
+   "availability": 1.0,
+   "V_NP_V": 0.05136,
+   "volume_N_pL": 0.7,
+   "volume_P_pL": 0.05
+  },
+  {
+   "tag": "typical z=-1 n=4",
+   "temperature_K": 303.65,
+   "z": -1,
+   "n": 4,
+   "c_N_mM": 0.01739,
+   "c_P_mM": 0.001091,
+   "atp_mM": 2.3,
+   "adp_mM": 0.17,
+   "pi_mM": 0.8,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -18.1,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 0.0007,
+   "K_ATP_mM": 0.37,
+   "capacity_fmol_per_s": 0.0045,
+   "availability": 1.0,
+   "V_NP_V": -0.03024,
+   "volume_N_pL": 0.7,
+   "volume_P_pL": 0.05
+  },
+  {
+   "tag": "typical z=0 n=1",
+   "temperature_K": 303.65,
+   "z": 0,
+   "n": 1,
+   "c_N_mM": 0.1139,
+   "c_P_mM": 0.03063,
+   "atp_mM": 2.3,
+   "adp_mM": 0.17,
+   "pi_mM": 0.8,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -18.1,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 0.0007,
+   "K_ATP_mM": 0.37,
+   "capacity_fmol_per_s": 0.0045,
+   "availability": 1.0,
+   "V_NP_V": 0.01893,
+   "volume_N_pL": 0.7,
+   "volume_P_pL": 0.05
+  },
+  {
+   "tag": "typical z=0 n=2",
+   "temperature_K": 303.65,
+   "z": 0,
+   "n": 2,
+   "c_N_mM": 0.005739,
+   "c_P_mM": 0.01164,
+   "atp_mM": 2.3,
+   "adp_mM": 0.17,
+   "pi_mM": 0.8,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -18.1,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 0.0007,
+   "K_ATP_mM": 0.37,
+   "capacity_fmol_per_s": 0.0045,
+   "availability": 1.0,
+   "V_NP_V": 0.03788,
+   "volume_N_pL": 0.7,
+   "volume_P_pL": 0.05
+  },
+  {
+   "tag": "typical z=0 n=3",
+   "temperature_K": 303.65,
+   "z": 0,
+   "n": 3,
+   "c_N_mM": 0.02625,
+   "c_P_mM": 0.0978,
+   "atp_mM": 2.3,
+   "adp_mM": 0.17,
+   "pi_mM": 0.8,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -18.1,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 0.0007,
+   "K_ATP_mM": 0.37,
+   "capacity_fmol_per_s": 0.0045,
+   "availability": 1.0,
+   "V_NP_V": 0.02854,
+   "volume_N_pL": 0.7,
+   "volume_P_pL": 0.05
+  },
+  {
+   "tag": "typical z=0 n=4",
+   "temperature_K": 303.65,
+   "z": 0,
+   "n": 4,
+   "c_N_mM": 0.02691,
+   "c_P_mM": 0.1335,
+   "atp_mM": 2.3,
+   "adp_mM": 0.17,
+   "pi_mM": 0.8,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -18.1,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 0.0007,
+   "K_ATP_mM": 0.37,
+   "capacity_fmol_per_s": 0.0045,
+   "availability": 1.0,
+   "V_NP_V": -0.01146,
+   "volume_N_pL": 0.7,
+   "volume_P_pL": 0.05
+  },
+  {
+   "tag": "random 0",
+   "temperature_K": 288.2,
+   "z": 2,
+   "n": 4,
+   "c_N_mM": 3.769e-06,
+   "c_P_mM": 36.11,
+   "atp_mM": 0.01742,
+   "adp_mM": 0.01103,
+   "pi_mM": 0.7959,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -12.15,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 2.424,
+   "K_ATP_mM": 0.02793,
+   "capacity_fmol_per_s": 0.001622,
+   "availability": 0.7846,
+   "V_NP_V": 0.02795,
+   "volume_N_pL": 0.2485,
+   "volume_P_pL": 0.4447
+  },
+  {
+   "tag": "random 1",
+   "temperature_K": 312.5,
+   "z": 1,
+   "n": 1,
+   "c_N_mM": 0.0002883,
+   "c_P_mM": 5.08e-05,
+   "atp_mM": 0.03845,
+   "adp_mM": 0.3917,
+   "pi_mM": 1.186,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -10.16,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 6.723e-05,
+   "K_ATP_mM": 7.231,
+   "capacity_fmol_per_s": 0.01784,
+   "availability": 0.1117,
+   "V_NP_V": -0.1089,
+   "volume_N_pL": 0.03277,
+   "volume_P_pL": 0.03917
+  },
+  {
+   "tag": "random 2",
+   "temperature_K": 314.3,
+   "z": 1,
+   "n": 3,
+   "c_N_mM": 0.1487,
+   "c_P_mM": 7.201e-06,
+   "atp_mM": 3.639,
+   "adp_mM": 0.1968,
+   "pi_mM": 0.03077,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -15.82,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 0.0002863,
+   "K_ATP_mM": 0.08385,
+   "capacity_fmol_per_s": 0.001295,
+   "availability": 0.4264,
+   "V_NP_V": -0.1049,
+   "volume_N_pL": 1.074,
+   "volume_P_pL": 0.1035
+  },
+  {
+   "tag": "random 3",
+   "temperature_K": 314.0,
+   "z": -1,
+   "n": 4,
+   "c_N_mM": 63.39,
+   "c_P_mM": 0.2538,
+   "atp_mM": 6.614,
+   "adp_mM": 0.1036,
+   "pi_mM": 0.2758,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -12.45,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 0.001559,
+   "K_ATP_mM": 0.09577,
+   "capacity_fmol_per_s": 0.1463,
+   "availability": 0.2142,
+   "V_NP_V": -0.1196,
+   "volume_N_pL": 0.8224,
+   "volume_P_pL": 1.247
+  },
+  {
+   "tag": "random 4",
+   "temperature_K": 283.3,
+   "z": -1,
+   "n": 2,
+   "c_N_mM": 1.109,
+   "c_P_mM": 1.138e-06,
+   "atp_mM": 8.241,
+   "adp_mM": 0.001187,
+   "pi_mM": 4.865,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -16.77,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 0.004163,
+   "K_ATP_mM": 0.09475,
+   "capacity_fmol_per_s": 0.005492,
+   "availability": 0.308,
+   "V_NP_V": 0.01255,
+   "volume_N_pL": 0.1148,
+   "volume_P_pL": 2.893
+  },
+  {
+   "tag": "random 5",
+   "temperature_K": 304.8,
+   "z": -1,
+   "n": 2,
+   "c_N_mM": 8.899e-05,
+   "c_P_mM": 0.0004349,
+   "atp_mM": 5.676,
+   "adp_mM": 1.255,
+   "pi_mM": 0.06762,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -14.04,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 6.895,
+   "K_ATP_mM": 0.04372,
+   "capacity_fmol_per_s": 0.02855,
+   "availability": 0.3694,
+   "V_NP_V": 0.07037,
+   "volume_N_pL": 0.08461,
+   "volume_P_pL": 0.3738
+  },
+  {
+   "tag": "random 6",
+   "temperature_K": 283.7,
+   "z": 2,
+   "n": 2,
+   "c_N_mM": 89.78,
+   "c_P_mM": 4.716e-05,
+   "atp_mM": 0.1281,
+   "adp_mM": 0.003812,
+   "pi_mM": 0.0351,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -19.14,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 0.00244,
+   "K_ATP_mM": 0.7314,
+   "capacity_fmol_per_s": 0.01131,
+   "availability": 0.8712,
+   "V_NP_V": 0.08808,
+   "volume_N_pL": 0.2039,
+   "volume_P_pL": 7.481
+  },
+  {
+   "tag": "random 7",
+   "temperature_K": 289.2,
+   "z": 1,
+   "n": 1,
+   "c_N_mM": 0.00587,
+   "c_P_mM": 3.003,
+   "atp_mM": 0.06154,
+   "adp_mM": 0.002993,
+   "pi_mM": 0.04463,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -15.14,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 0.002079,
+   "K_ATP_mM": 1.256,
+   "capacity_fmol_per_s": 0.0007586,
+   "availability": 0.7074,
+   "V_NP_V": -0.02784,
+   "volume_N_pL": 0.2148,
+   "volume_P_pL": 3.161
+  },
+  {
+   "tag": "random 8",
+   "temperature_K": 278.2,
+   "z": -1,
+   "n": 2,
+   "c_N_mM": 0.7184,
+   "c_P_mM": 0.03356,
+   "atp_mM": 0.01471,
+   "adp_mM": 0.1936,
+   "pi_mM": 0.01141,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -16.45,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 0.001634,
+   "K_ATP_mM": 0.05227,
+   "capacity_fmol_per_s": 0.004658,
+   "availability": 0.2472,
+   "V_NP_V": 0.005677,
+   "volume_N_pL": 0.03746,
+   "volume_P_pL": 0.2022
+  },
+  {
+   "tag": "random 9",
+   "temperature_K": 281.5,
+   "z": -1,
+   "n": 4,
+   "c_N_mM": 0.193,
+   "c_P_mM": 0.0001181,
+   "atp_mM": 1.079,
+   "adp_mM": 0.006521,
+   "pi_mM": 3.783,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -14.99,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 0.02116,
+   "K_ATP_mM": 0.2176,
+   "capacity_fmol_per_s": 0.0008419,
+   "availability": 0.8222,
+   "V_NP_V": 0.09071,
+   "volume_N_pL": 5.116,
+   "volume_P_pL": 0.1542
+  },
+  {
+   "tag": "random 10",
+   "temperature_K": 275.7,
+   "z": 1,
+   "n": 3,
+   "c_N_mM": 81.89,
+   "c_P_mM": 80.0,
+   "atp_mM": 0.01971,
+   "adp_mM": 0.002454,
+   "pi_mM": 0.02409,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -11.9,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 3.3e-05,
+   "K_ATP_mM": 0.03437,
+   "capacity_fmol_per_s": 0.2023,
+   "availability": 0.9056,
+   "V_NP_V": 0.07609,
+   "volume_N_pL": 0.1771,
+   "volume_P_pL": 0.3895
+  },
+  {
+   "tag": "random 11",
+   "temperature_K": 275.9,
+   "z": 1,
+   "n": 1,
+   "c_N_mM": 7.112e-06,
+   "c_P_mM": 0.6942,
+   "atp_mM": 0.05195,
+   "adp_mM": 1.44,
+   "pi_mM": 8.552,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -13.66,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 0.005552,
+   "K_ATP_mM": 0.06578,
+   "capacity_fmol_per_s": 0.4369,
+   "availability": 0.7102,
+   "V_NP_V": -0.02728,
+   "volume_N_pL": 1.352,
+   "volume_P_pL": 5.441
+  },
+  {
+   "tag": "random 12",
+   "temperature_K": 310.9,
+   "z": 2,
+   "n": 2,
+   "c_N_mM": 0.00604,
+   "c_P_mM": 1.954e-06,
+   "atp_mM": 0.1258,
+   "adp_mM": 0.1343,
+   "pi_mM": 0.161,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -16.81,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 3.694e-05,
+   "K_ATP_mM": 2.126,
+   "capacity_fmol_per_s": 0.0001357,
+   "availability": 0.9081,
+   "V_NP_V": -0.0287,
+   "volume_N_pL": 0.02062,
+   "volume_P_pL": 2.801
+  },
+  {
+   "tag": "random 13",
+   "temperature_K": 277.6,
+   "z": -1,
+   "n": 1,
+   "c_N_mM": 1.518e-05,
+   "c_P_mM": 0.1685,
+   "atp_mM": 0.5673,
+   "adp_mM": 0.002458,
+   "pi_mM": 0.6267,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -15.72,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 7.309,
+   "K_ATP_mM": 1.283,
+   "capacity_fmol_per_s": 0.0003045,
+   "availability": 0.6755,
+   "V_NP_V": -0.04169,
+   "volume_N_pL": 0.08715,
+   "volume_P_pL": 1.936
+  },
+  {
+   "tag": "random 14",
+   "temperature_K": 309.1,
+   "z": -1,
+   "n": 1,
+   "c_N_mM": 1.228,
+   "c_P_mM": 8.847e-06,
+   "atp_mM": 0.04859,
+   "adp_mM": 0.0161,
+   "pi_mM": 2.689,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -10.69,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 8.027e-05,
+   "K_ATP_mM": 1.549,
+   "capacity_fmol_per_s": 0.4169,
+   "availability": 0.6799,
+   "V_NP_V": 0.0547,
+   "volume_N_pL": 3.547,
+   "volume_P_pL": 0.8324
+  },
+  {
+   "tag": "random 15",
+   "temperature_K": 276.8,
+   "z": -1,
+   "n": 2,
+   "c_N_mM": 0.2841,
+   "c_P_mM": 0.653,
+   "atp_mM": 3.105,
+   "adp_mM": 0.01086,
+   "pi_mM": 0.2647,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -19.75,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 0.01892,
+   "K_ATP_mM": 0.1668,
+   "capacity_fmol_per_s": 0.01509,
+   "availability": 0.4291,
+   "V_NP_V": 0.06157,
+   "volume_N_pL": 5.505,
+   "volume_P_pL": 0.03043
+  },
+  {
+   "tag": "reversed by fuel",
+   "temperature_K": 303.65,
+   "z": 2,
+   "n": 1,
+   "c_N_mM": 0.01,
+   "c_P_mM": 0.9,
+   "atp_mM": 0.001,
+   "adp_mM": 8.0,
+   "pi_mM": 30.0,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -4.0,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 0.0007,
+   "K_ATP_mM": 0.37,
+   "capacity_fmol_per_s": 0.0045,
+   "availability": 1.0,
+   "V_NP_V": -0.02,
+   "volume_N_pL": 0.7,
+   "volume_P_pL": 0.05
+  },
+  {
+   "tag": "reversed by gradient and voltage",
+   "temperature_K": 303.65,
+   "z": 2,
+   "n": 4,
+   "c_N_mM": 0.0001,
+   "c_P_mM": 2.0,
+   "atp_mM": 2.3,
+   "adp_mM": 0.17,
+   "pi_mM": 0.8,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -9.0,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 0.0007,
+   "K_ATP_mM": 0.37,
+   "capacity_fmol_per_s": 0.0045,
+   "availability": 1.0,
+   "V_NP_V": -0.12,
+   "volume_N_pL": 0.7,
+   "volume_P_pL": 0.05
+  },
+  {
+   "tag": "far forward",
+   "temperature_K": 303.65,
+   "z": 2,
+   "n": 2,
+   "c_N_mM": 10.0,
+   "c_P_mM": 1e-09,
+   "atp_mM": 2.3,
+   "adp_mM": 0.17,
+   "pi_mM": 0.8,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -18.1,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 0.0007,
+   "K_ATP_mM": 0.37,
+   "capacity_fmol_per_s": 0.0045,
+   "availability": 1.0,
+   "V_NP_V": 0.04,
+   "volume_N_pL": 0.7,
+   "volume_P_pL": 0.05
+  },
+  {
+   "tag": "role far below K",
+   "temperature_K": 303.65,
+   "z": 2,
+   "n": 1,
+   "c_N_mM": 1e-12,
+   "c_P_mM": 0.001,
+   "atp_mM": 2.3,
+   "adp_mM": 0.17,
+   "pi_mM": 0.8,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -18.1,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 0.0007,
+   "K_ATP_mM": 0.37,
+   "capacity_fmol_per_s": 0.0045,
+   "availability": 1.0,
+   "V_NP_V": -0.02,
+   "volume_N_pL": 0.7,
+   "volume_P_pL": 0.05
+  },
+  {
+   "tag": "role far above K",
+   "temperature_K": 303.65,
+   "z": 2,
+   "n": 1,
+   "c_N_mM": 1000.0,
+   "c_P_mM": 1.0,
+   "atp_mM": 2.3,
+   "adp_mM": 0.17,
+   "pi_mM": 0.8,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -18.1,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 0.0007,
+   "K_ATP_mM": 0.37,
+   "capacity_fmol_per_s": 0.0045,
+   "availability": 1.0,
+   "V_NP_V": -0.02,
+   "volume_N_pL": 0.7,
+   "volume_P_pL": 0.05
+  },
+  {
+   "tag": "no ATP to speak of",
+   "temperature_K": 303.65,
+   "z": 2,
+   "n": 1,
+   "c_N_mM": 0.0007669,
+   "c_P_mM": 1.199,
+   "atp_mM": 1e-09,
+   "adp_mM": 1.0,
+   "pi_mM": 1.0,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -18.1,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 0.0007,
+   "K_ATP_mM": 0.37,
+   "capacity_fmol_per_s": 0.0045,
+   "availability": 1.0,
+   "V_NP_V": -0.02,
+   "volume_N_pL": 0.7,
+   "volume_P_pL": 0.05
+  },
+  {
+   "tag": "K small",
+   "temperature_K": 303.65,
+   "z": 2,
+   "n": 1,
+   "c_N_mM": 0.0005333,
+   "c_P_mM": 0.02524,
+   "atp_mM": 2.3,
+   "adp_mM": 0.17,
+   "pi_mM": 0.8,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -18.1,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 1e-09,
+   "K_ATP_mM": 0.37,
+   "capacity_fmol_per_s": 0.0045,
+   "availability": 1.0,
+   "V_NP_V": -0.02,
+   "volume_N_pL": 0.7,
+   "volume_P_pL": 0.05
+  },
+  {
+   "tag": "K large",
+   "temperature_K": 303.65,
+   "z": 2,
+   "n": 1,
+   "c_N_mM": 0.0006955,
+   "c_P_mM": 0.01122,
+   "atp_mM": 2.3,
+   "adp_mM": 0.17,
+   "pi_mM": 0.8,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -18.1,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 1000.0,
+   "K_ATP_mM": 0.37,
+   "capacity_fmol_per_s": 0.0045,
+   "availability": 1.0,
+   "V_NP_V": -0.02,
+   "volume_N_pL": 0.7,
+   "volume_P_pL": 0.05
+  },
+  {
+   "tag": "availability 0",
+   "temperature_K": 303.65,
+   "z": 2,
+   "n": 1,
+   "c_N_mM": 0.002291,
+   "c_P_mM": 0.3611,
+   "atp_mM": 2.3,
+   "adp_mM": 0.17,
+   "pi_mM": 0.8,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -18.1,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 0.0007,
+   "K_ATP_mM": 0.37,
+   "capacity_fmol_per_s": 0.0045,
+   "availability": 0.0,
+   "V_NP_V": -0.02,
+   "volume_N_pL": 0.7,
+   "volume_P_pL": 0.05
+  },
+  {
+   "tag": "availability tiny",
+   "temperature_K": 303.65,
+   "z": 2,
+   "n": 1,
+   "c_N_mM": 0.004942,
+   "c_P_mM": 0.01144,
+   "atp_mM": 2.3,
+   "adp_mM": 0.17,
+   "pi_mM": 0.8,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -18.1,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 0.0007,
+   "K_ATP_mM": 0.37,
+   "capacity_fmol_per_s": 0.0045,
+   "availability": 1e-10,
+   "V_NP_V": -0.02,
+   "volume_N_pL": 0.7,
+   "volume_P_pL": 0.05
+  },
+  {
+   "tag": "capacity 0",
+   "temperature_K": 303.65,
+   "z": 2,
+   "n": 1,
+   "c_N_mM": 0.001003,
+   "c_P_mM": 0.07002,
+   "atp_mM": 2.3,
+   "adp_mM": 0.17,
+   "pi_mM": 0.8,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -18.1,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 0.0007,
+   "K_ATP_mM": 0.37,
+   "capacity_fmol_per_s": 0.0,
+   "availability": 1.0,
+   "V_NP_V": -0.02,
+   "volume_N_pL": 0.7,
+   "volume_P_pL": 0.05
+  },
+  {
+   "tag": "zero voltage",
+   "temperature_K": 303.65,
+   "z": 2,
+   "n": 1,
+   "c_N_mM": 0.0005732,
+   "c_P_mM": 0.0403,
+   "atp_mM": 2.3,
+   "adp_mM": 0.17,
+   "pi_mM": 0.8,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -18.1,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 0.0007,
+   "K_ATP_mM": 0.37,
+   "capacity_fmol_per_s": 0.0045,
+   "availability": 1.0,
+   "V_NP_V": 0.0,
+   "volume_N_pL": 0.7,
+   "volume_P_pL": 0.05
+  },
+  {
+   "tag": "equal concentrations",
+   "temperature_K": 303.65,
+   "z": 2,
+   "n": 1,
+   "c_N_mM": 0.05,
+   "c_P_mM": 0.05,
+   "atp_mM": 2.3,
+   "adp_mM": 0.17,
+   "pi_mM": 0.8,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -18.1,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 0.0007,
+   "K_ATP_mM": 0.37,
+   "capacity_fmol_per_s": 0.0045,
+   "availability": 1.0,
+   "V_NP_V": -0.02,
+   "volume_N_pL": 0.7,
+   "volume_P_pL": 0.05
+  },
+  {
+   "tag": "beyond the domain, above",
+   "temperature_K": 303.65,
+   "z": 2,
+   "n": 4,
+   "c_N_mM": 1e-06,
+   "c_P_mM": 100.0,
+   "atp_mM": 2.3,
+   "adp_mM": 0.17,
+   "pi_mM": 0.8,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -9.0,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 0.0007,
+   "K_ATP_mM": 0.37,
+   "capacity_fmol_per_s": 0.0045,
+   "availability": 1.0,
+   "V_NP_V": -0.12,
+   "volume_N_pL": 0.7,
+   "volume_P_pL": 0.05
+  },
+  {
+   "tag": "beyond the domain, below",
+   "temperature_K": 303.65,
+   "z": 2,
+   "n": 4,
+   "c_N_mM": 100.0,
+   "c_P_mM": 1e-06,
+   "atp_mM": 2.3,
+   "adp_mM": 0.17,
+   "pi_mM": 0.8,
+   "mu_atp_RT": 0.0,
+   "mu_adp_RT": -18.1,
+   "mu_pi_RT": 0.0,
+   "K_role_mM": 0.0007,
+   "K_ATP_mM": 0.37,
+   "capacity_fmol_per_s": 0.0045,
+   "availability": 1.0,
+   "V_NP_V": 0.05,
+   "volume_N_pL": 0.7,
+   "volume_P_pL": 0.05
+  }
+ ],
+ "exchanger_states": [
+  {
+   "tag": "random 0",
+   "temperature_K": 310.4,
+   "Na_N_mM": 134.1,
+   "Na_P_mM": 0.1419,
+   "Ca_N_mM": 0.0002865,
+   "Ca_P_mM": 1.127,
+   "V_NP_V": -0.09065,
+   "capacity_fmol_per_s": 0.0535,
+   "availability": 0.7744,
+   "K_Na_mM": 4.508,
+   "K_Ca_mM": 0.0001342,
+   "volume_N_pL": 0.2001,
+   "volume_P_pL": 6.331
+  },
+  {
+   "tag": "random 1",
+   "temperature_K": 280.0,
+   "Na_N_mM": 29.44,
+   "Na_P_mM": 71.91,
+   "Ca_N_mM": 1.665,
+   "Ca_P_mM": 0.0837,
+   "V_NP_V": 0.04857,
+   "capacity_fmol_per_s": 0.001663,
+   "availability": 0.3265,
+   "K_Na_mM": 1.172,
+   "K_Ca_mM": 0.7351,
+   "volume_N_pL": 1.345,
+   "volume_P_pL": 0.5633
+  },
+  {
+   "tag": "random 2",
+   "temperature_K": 301.5,
+   "Na_N_mM": 0.6646,
+   "Na_P_mM": 0.9533,
+   "Ca_N_mM": 0.009823,
+   "Ca_P_mM": 1.076e-05,
+   "V_NP_V": 0.1002,
+   "capacity_fmol_per_s": 0.3506,
+   "availability": 0.814,
+   "K_Na_mM": 5.165,
+   "K_Ca_mM": 0.005841,
+   "volume_N_pL": 0.2639,
+   "volume_P_pL": 0.1742
+  },
+  {
+   "tag": "random 3",
+   "temperature_K": 276.3,
+   "Na_N_mM": 19.61,
+   "Na_P_mM": 1.525,
+   "Ca_N_mM": 4.92e-06,
+   "Ca_P_mM": 0.2348,
+   "V_NP_V": 0.0464,
+   "capacity_fmol_per_s": 6.053,
+   "availability": 0.7867,
+   "K_Na_mM": 91.15,
+   "K_Ca_mM": 0.009664,
+   "volume_N_pL": 0.4227,
+   "volume_P_pL": 0.1649
+  },
+  {
+   "tag": "random 4",
+   "temperature_K": 312.6,
+   "Na_N_mM": 4.129,
+   "Na_P_mM": 0.2994,
+   "Ca_N_mM": 0.0006719,
+   "Ca_P_mM": 6.55,
+   "V_NP_V": 0.04073,
+   "capacity_fmol_per_s": 0.02387,
+   "availability": 0.1711,
+   "K_Na_mM": 2.277,
+   "K_Ca_mM": 0.0001946,
+   "volume_N_pL": 7.326,
+   "volume_P_pL": 0.6797
+  },
+  {
+   "tag": "random 5",
+   "temperature_K": 309.4,
+   "Na_N_mM": 15.61,
+   "Na_P_mM": 0.1707,
+   "Ca_N_mM": 0.0703,
+   "Ca_P_mM": 0.008185,
+   "V_NP_V": 0.1099,
+   "capacity_fmol_per_s": 1.274,
+   "availability": 0.1417,
+   "K_Na_mM": 31.92,
+   "K_Ca_mM": 0.006542,
+   "volume_N_pL": 3.709,
+   "volume_P_pL": 0.2039
+  },
+  {
+   "tag": "random 6",
+   "temperature_K": 278.2,
+   "Na_N_mM": 0.2007,
+   "Na_P_mM": 1.631,
+   "Ca_N_mM": 1.68,
+   "Ca_P_mM": 0.0002168,
+   "V_NP_V": -0.0222,
+   "capacity_fmol_per_s": 0.002305,
+   "availability": 0.9368,
+   "K_Na_mM": 18.15,
+   "K_Ca_mM": 0.1252,
+   "volume_N_pL": 5.152,
+   "volume_P_pL": 5.6
+  },
+  {
+   "tag": "random 7",
+   "temperature_K": 292.9,
+   "Na_N_mM": 8.022,
+   "Na_P_mM": 0.1473,
+   "Ca_N_mM": 2.33e-05,
+   "Ca_P_mM": 1.194,
+   "V_NP_V": 0.01292,
+   "capacity_fmol_per_s": 0.0212,
+   "availability": 0.87,
+   "K_Na_mM": 1.13,
+   "K_Ca_mM": 0.002322,
+   "volume_N_pL": 0.9847,
+   "volume_P_pL": 3.363
+  },
+  {
+   "tag": "random 8",
+   "temperature_K": 314.2,
+   "Na_N_mM": 1.002,
+   "Na_P_mM": 180.7,
+   "Ca_N_mM": 3.215e-05,
+   "Ca_P_mM": 0.002458,
+   "V_NP_V": -0.01412,
+   "capacity_fmol_per_s": 1.561,
+   "availability": 0.2875,
+   "K_Na_mM": 81.05,
+   "K_Ca_mM": 0.02258,
+   "volume_N_pL": 8.483,
+   "volume_P_pL": 8.617
+  },
+  {
+   "tag": "random 9",
+   "temperature_K": 303.2,
+   "Na_N_mM": 158.8,
+   "Na_P_mM": 37.86,
+   "Ca_N_mM": 3.323e-06,
+   "Ca_P_mM": 0.01319,
+   "V_NP_V": -0.1173,
+   "capacity_fmol_per_s": 2.881,
+   "availability": 0.04951,
+   "K_Na_mM": 2.712,
+   "K_Ca_mM": 0.01014,
+   "volume_N_pL": 0.7846,
+   "volume_P_pL": 0.1611
+  },
+  {
+   "tag": "random 10",
+   "temperature_K": 298.9,
+   "Na_N_mM": 32.54,
+   "Na_P_mM": 35.67,
+   "Ca_N_mM": 0.002477,
+   "Ca_P_mM": 0.0002103,
+   "V_NP_V": -0.09475,
+   "capacity_fmol_per_s": 0.08343,
+   "availability": 0.6878,
+   "K_Na_mM": 2.744,
+   "K_Ca_mM": 0.01666,
+   "volume_N_pL": 0.9662,
+   "volume_P_pL": 0.1418
+  },
+  {
+   "tag": "random 11",
+   "temperature_K": 287.7,
+   "Na_N_mM": 30.33,
+   "Na_P_mM": 0.5151,
+   "Ca_N_mM": 1.387e-06,
+   "Ca_P_mM": 0.05091,
+   "V_NP_V": -0.0926,
+   "capacity_fmol_per_s": 0.002878,
+   "availability": 0.4052,
+   "K_Na_mM": 93.12,
+   "K_Ca_mM": 0.003517,
+   "volume_N_pL": 4.302,
+   "volume_P_pL": 0.2672
+  },
+  {
+   "tag": "random 12",
+   "temperature_K": 279.0,
+   "Na_N_mM": 0.1957,
+   "Na_P_mM": 0.2138,
+   "Ca_N_mM": 0.0002046,
+   "Ca_P_mM": 0.3569,
+   "V_NP_V": -0.008229,
+   "capacity_fmol_per_s": 7.183,
+   "availability": 0.7683,
+   "K_Na_mM": 1.944,
+   "K_Ca_mM": 0.03707,
+   "volume_N_pL": 2.311,
+   "volume_P_pL": 1.72
+  },
+  {
+   "tag": "random 13",
+   "temperature_K": 303.7,
+   "Na_N_mM": 46.2,
+   "Na_P_mM": 52.73,
+   "Ca_N_mM": 3.382e-05,
+   "Ca_P_mM": 4.558e-05,
+   "V_NP_V": -0.1015,
+   "capacity_fmol_per_s": 0.02033,
+   "availability": 0.2723,
+   "K_Na_mM": 81.48,
+   "K_Ca_mM": 0.02931,
+   "volume_N_pL": 0.4917,
+   "volume_P_pL": 4.507
+  },
+  {
+   "tag": "random 14",
+   "temperature_K": 314.8,
+   "Na_N_mM": 44.68,
+   "Na_P_mM": 0.3262,
+   "Ca_N_mM": 0.0001014,
+   "Ca_P_mM": 0.01856,
+   "V_NP_V": 0.06112,
+   "capacity_fmol_per_s": 0.2211,
+   "availability": 0.5711,
+   "K_Na_mM": 24.04,
+   "K_Ca_mM": 1.123,
+   "volume_N_pL": 0.9639,
+   "volume_P_pL": 1.737
+  },
+  {
+   "tag": "random 15",
+   "temperature_K": 293.5,
+   "Na_N_mM": 1.981,
+   "Na_P_mM": 3.946,
+   "Ca_N_mM": 0.0359,
+   "Ca_P_mM": 0.002902,
+   "V_NP_V": 0.0885,
+   "capacity_fmol_per_s": 2.186,
+   "availability": 0.4959,
+   "K_Na_mM": 65.11,
+   "K_Ca_mM": 0.000252,
+   "volume_N_pL": 2.355,
+   "volume_P_pL": 0.8804
+  },
+  {
+   "tag": "random 16",
+   "temperature_K": 305.1,
+   "Na_N_mM": 19.23,
+   "Na_P_mM": 0.9771,
+   "Ca_N_mM": 0.001023,
+   "Ca_P_mM": 0.3481,
+   "V_NP_V": -0.01679,
+   "capacity_fmol_per_s": 0.08108,
+   "availability": 0.3363,
+   "K_Na_mM": 53.28,
+   "K_Ca_mM": 0.003384,
+   "volume_N_pL": 4.593,
+   "volume_P_pL": 0.1303
+  },
+  {
+   "tag": "random 17",
+   "temperature_K": 278.3,
+   "Na_N_mM": 96.18,
+   "Na_P_mM": 15.67,
+   "Ca_N_mM": 0.003589,
+   "Ca_P_mM": 0.08327,
+   "V_NP_V": -0.1002,
+   "capacity_fmol_per_s": 0.05539,
+   "availability": 0.3773,
+   "K_Na_mM": 21.41,
+   "K_Ca_mM": 0.0003099,
+   "volume_N_pL": 4.743,
+   "volume_P_pL": 0.2931
+  },
+  {
+   "tag": "random 18",
+   "temperature_K": 292.5,
+   "Na_N_mM": 0.2069,
+   "Na_P_mM": 11.3,
+   "Ca_N_mM": 0.1798,
+   "Ca_P_mM": 0.2208,
+   "V_NP_V": 0.06144,
+   "capacity_fmol_per_s": 0.002849,
+   "availability": 0.4226,
+   "K_Na_mM": 91.08,
+   "K_Ca_mM": 0.002597,
+   "volume_N_pL": 0.1241,
+   "volume_P_pL": 4.246
+  },
+  {
+   "tag": "random 19",
+   "temperature_K": 310.3,
+   "Na_N_mM": 0.1546,
+   "Na_P_mM": 182.4,
+   "Ca_N_mM": 0.0976,
+   "Ca_P_mM": 0.0003649,
+   "V_NP_V": 0.04547,
+   "capacity_fmol_per_s": 0.0046,
+   "availability": 0.8637,
+   "K_Na_mM": 64.88,
+   "K_Ca_mM": 0.03562,
+   "volume_N_pL": 0.4307,
+   "volume_P_pL": 0.2176
+  },
+  {
+   "tag": "random 20",
+   "temperature_K": 312.8,
+   "Na_N_mM": 4.825,
+   "Na_P_mM": 2.519,
+   "Ca_N_mM": 0.001789,
+   "Ca_P_mM": 0.8808,
+   "V_NP_V": -0.1145,
+   "capacity_fmol_per_s": 5.033,
+   "availability": 0.4821,
+   "K_Na_mM": 1.04,
+   "K_Ca_mM": 7.154,
+   "volume_N_pL": 9.253,
+   "volume_P_pL": 9.108
+  },
+  {
+   "tag": "random 21",
+   "temperature_K": 291.4,
+   "Na_N_mM": 72.91,
+   "Na_P_mM": 90.15,
+   "Ca_N_mM": 6.746,
+   "Ca_P_mM": 6.73,
+   "V_NP_V": 0.06968,
+   "capacity_fmol_per_s": 0.02427,
+   "availability": 0.7136,
+   "K_Na_mM": 9.829,
+   "K_Ca_mM": 0.005677,
+   "volume_N_pL": 0.1516,
+   "volume_P_pL": 4.267
+  },
+  {
+   "tag": "random 22",
+   "temperature_K": 283.6,
+   "Na_N_mM": 130.7,
+   "Na_P_mM": 2.854,
+   "Ca_N_mM": 0.3763,
+   "Ca_P_mM": 0.0008785,
+   "V_NP_V": 0.007574,
+   "capacity_fmol_per_s": 0.08649,
+   "availability": 0.8934,
+   "K_Na_mM": 6.908,
+   "K_Ca_mM": 0.01996,
+   "volume_N_pL": 1.875,
+   "volume_P_pL": 4.354
+  },
+  {
+   "tag": "random 23",
+   "temperature_K": 290.3,
+   "Na_N_mM": 55.83,
+   "Na_P_mM": 6.057,
+   "Ca_N_mM": 9.816,
+   "Ca_P_mM": 1.473e-05,
+   "V_NP_V": 0.007197,
+   "capacity_fmol_per_s": 0.1252,
+   "availability": 0.23,
+   "K_Na_mM": 12.32,
+   "K_Ca_mM": 9.302,
+   "volume_N_pL": 1.306,
+   "volume_P_pL": 4.466
+  },
+  {
+   "tag": "typical, calcium out",
+   "temperature_K": 303.65,
+   "Na_N_mM": 12.4,
+   "Na_P_mM": 139.0,
+   "Ca_N_mM": 0.0009694,
+   "Ca_P_mM": 1.45,
+   "V_NP_V": -0.055,
+   "capacity_fmol_per_s": 2.2,
+   "availability": 1.0,
+   "K_Na_mM": 23.0,
+   "K_Ca_mM": 0.9,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "tag": "reverse mode",
+   "temperature_K": 303.65,
+   "Na_N_mM": 60.0,
+   "Na_P_mM": 139.0,
+   "Ca_N_mM": 0.0001,
+   "Ca_P_mM": 1.45,
+   "V_NP_V": 0.04,
+   "capacity_fmol_per_s": 2.2,
+   "availability": 1.0,
+   "K_Na_mM": 23.0,
+   "K_Ca_mM": 0.9,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "tag": "equal concentrations at zero voltage",
+   "temperature_K": 303.65,
+   "Na_N_mM": 40.0,
+   "Na_P_mM": 40.0,
+   "Ca_N_mM": 0.2,
+   "Ca_P_mM": 0.2,
+   "V_NP_V": 0.0,
+   "capacity_fmol_per_s": 2.2,
+   "availability": 1.0,
+   "K_Na_mM": 23.0,
+   "K_Ca_mM": 0.9,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "tag": "equal concentrations at a voltage",
+   "temperature_K": 303.65,
+   "Na_N_mM": 40.0,
+   "Na_P_mM": 40.0,
+   "Ca_N_mM": 0.2,
+   "Ca_P_mM": 0.2,
+   "V_NP_V": -0.05,
+   "capacity_fmol_per_s": 2.2,
+   "availability": 1.0,
+   "K_Na_mM": 23.0,
+   "K_Ca_mM": 0.9,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "tag": "far forward",
+   "temperature_K": 303.65,
+   "Na_N_mM": 0.001,
+   "Na_P_mM": 500.0,
+   "Ca_N_mM": 5.0,
+   "Ca_P_mM": 1e-09,
+   "V_NP_V": -0.15,
+   "capacity_fmol_per_s": 2.2,
+   "availability": 1.0,
+   "K_Na_mM": 23.0,
+   "K_Ca_mM": 0.9,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "tag": "reversed to x near 70",
+   "temperature_K": 303.65,
+   "Na_N_mM": 500.0,
+   "Na_P_mM": 0.0001,
+   "Ca_N_mM": 1e-08,
+   "Ca_P_mM": 10.0,
+   "V_NP_V": 0.1,
+   "capacity_fmol_per_s": 2.2,
+   "availability": 1.0,
+   "K_Na_mM": 23.0,
+   "K_Ca_mM": 0.9,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "tag": "no calcium inside",
+   "temperature_K": 303.65,
+   "Na_N_mM": 12.4,
+   "Na_P_mM": 139.0,
+   "Ca_N_mM": 1e-12,
+   "Ca_P_mM": 1.45,
+   "V_NP_V": -0.055,
+   "capacity_fmol_per_s": 2.2,
+   "availability": 1.0,
+   "K_Na_mM": 23.0,
+   "K_Ca_mM": 0.9,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "tag": "no calcium outside",
+   "temperature_K": 303.65,
+   "Na_N_mM": 12.4,
+   "Na_P_mM": 139.0,
+   "Ca_N_mM": 0.0002619,
+   "Ca_P_mM": 1e-12,
+   "V_NP_V": -0.055,
+   "capacity_fmol_per_s": 2.2,
+   "availability": 1.0,
+   "K_Na_mM": 23.0,
+   "K_Ca_mM": 0.9,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "tag": "sodium saturating outside",
+   "temperature_K": 303.65,
+   "Na_N_mM": 12.4,
+   "Na_P_mM": 10000.0,
+   "Ca_N_mM": 0.0005969,
+   "Ca_P_mM": 1.45,
+   "V_NP_V": -0.055,
+   "capacity_fmol_per_s": 2.2,
+   "availability": 1.0,
+   "K_Na_mM": 23.0,
+   "K_Ca_mM": 0.9,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "tag": "availability 0",
+   "temperature_K": 303.65,
+   "Na_N_mM": 12.4,
+   "Na_P_mM": 139.0,
+   "Ca_N_mM": 0.0002349,
+   "Ca_P_mM": 1.45,
+   "V_NP_V": -0.055,
+   "capacity_fmol_per_s": 2.2,
+   "availability": 0.0,
+   "K_Na_mM": 23.0,
+   "K_Ca_mM": 0.9,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "tag": "capacity 0",
+   "temperature_K": 303.65,
+   "Na_N_mM": 12.4,
+   "Na_P_mM": 139.0,
+   "Ca_N_mM": 0.001419,
+   "Ca_P_mM": 1.45,
+   "V_NP_V": -0.055,
+   "capacity_fmol_per_s": 0.0,
+   "availability": 1.0,
+   "K_Na_mM": 23.0,
+   "K_Ca_mM": 0.9,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "tag": "K_Ca tiny",
+   "temperature_K": 303.65,
+   "Na_N_mM": 12.4,
+   "Na_P_mM": 139.0,
+   "Ca_N_mM": 0.001137,
+   "Ca_P_mM": 1.45,
+   "V_NP_V": -0.055,
+   "capacity_fmol_per_s": 2.2,
+   "availability": 1.0,
+   "K_Na_mM": 23.0,
+   "K_Ca_mM": 1e-06,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "tag": "K_Na large",
+   "temperature_K": 303.65,
+   "Na_N_mM": 12.4,
+   "Na_P_mM": 139.0,
+   "Ca_N_mM": 0.001192,
+   "Ca_P_mM": 1.45,
+   "V_NP_V": -0.055,
+   "capacity_fmol_per_s": 2.2,
+   "availability": 1.0,
+   "K_Na_mM": 1000.0,
+   "K_Ca_mM": 0.9,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "tag": "beyond the domain",
+   "temperature_K": 303.65,
+   "Na_N_mM": 500.0,
+   "Na_P_mM": 1e-06,
+   "Ca_N_mM": 1e-06,
+   "Ca_P_mM": 100.0,
+   "V_NP_V": 0.12,
+   "capacity_fmol_per_s": 2.2,
+   "availability": 1.0,
+   "K_Na_mM": 23.0,
+   "K_Ca_mM": 0.9,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  }
+ ],
+ "symport_laws": {
+  "na_k_2anion": [
+   [
+    "Na",
+    1,
+    1
+   ],
+   [
+    "K",
+    1,
+    1
+   ],
+   [
+    "anion",
+    -1,
+    2
+   ]
+  ],
+  "salt_1_1": [
+   [
+    "cation",
+    1,
+    1
+   ],
+   [
+    "anion",
+    -1,
+    1
+   ]
+  ],
+  "salt_1_2": [
+   [
+    "cation",
+    2,
+    1
+   ],
+   [
+    "anion",
+    -1,
+    2
+   ]
+  ],
+  "salt_2_1": [
+   [
+    "cation",
+    1,
+    2
+   ],
+   [
+    "anion",
+    -2,
+    1
+   ]
+  ]
+ },
+ "symport_states": [
+  {
+   "law": "na_k_2anion",
+   "tag": "random 0",
+   "temperature_K": 291.6,
+   "c_N_mM": {
+    "Na": 0.08848,
+    "K": 3.75,
+    "anion": 12.46
+   },
+   "c_P_mM": {
+    "Na": 0.2989,
+    "K": 0.5923,
+    "anion": 5.068
+   },
+   "V_NP_V": -0.05972,
+   "capacity_fmol_per_s": 0.2168,
+   "availability": 0.4093,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "na_k_2anion",
+   "tag": "random 1",
+   "temperature_K": 301.7,
+   "c_N_mM": {
+    "Na": 0.9382,
+    "K": 1.264,
+    "anion": 0.04413
+   },
+   "c_P_mM": {
+    "Na": 0.08614,
+    "K": 0.1615,
+    "anion": 12.23
+   },
+   "V_NP_V": -0.09598,
+   "capacity_fmol_per_s": 1.726,
+   "availability": 0.5931,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "na_k_2anion",
+   "tag": "random 2",
+   "temperature_K": 290.9,
+   "c_N_mM": {
+    "Na": 0.4026,
+    "K": 0.0704,
+    "anion": 0.3671
+   },
+   "c_P_mM": {
+    "Na": 44.77,
+    "K": 15.68,
+    "anion": 161.0
+   },
+   "V_NP_V": 0.04144,
+   "capacity_fmol_per_s": 0.1059,
+   "availability": 0.7608,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "na_k_2anion",
+   "tag": "random 3",
+   "temperature_K": 295.0,
+   "c_N_mM": {
+    "Na": 6.384,
+    "K": 0.02674,
+    "anion": 50.25
+   },
+   "c_P_mM": {
+    "Na": 116.5,
+    "K": 0.6407,
+    "anion": 157.4
+   },
+   "V_NP_V": 0.01094,
+   "capacity_fmol_per_s": 0.01258,
+   "availability": 0.888,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "na_k_2anion",
+   "tag": "random 4",
+   "temperature_K": 300.6,
+   "c_N_mM": {
+    "Na": 8.298,
+    "K": 1.475,
+    "anion": 0.09207
+   },
+   "c_P_mM": {
+    "Na": 4.134,
+    "K": 175.6,
+    "anion": 0.03166
+   },
+   "V_NP_V": 0.02402,
+   "capacity_fmol_per_s": 0.001001,
+   "availability": 0.503,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "na_k_2anion",
+   "tag": "random 5",
+   "temperature_K": 284.5,
+   "c_N_mM": {
+    "Na": 0.04052,
+    "K": 0.03592,
+    "anion": 22.94
+   },
+   "c_P_mM": {
+    "Na": 18.63,
+    "K": 2.354,
+    "anion": 0.6052
+   },
+   "V_NP_V": 0.08869,
+   "capacity_fmol_per_s": 9.054,
+   "availability": 0.7232,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "na_k_2anion",
+   "tag": "random 6",
+   "temperature_K": 309.9,
+   "c_N_mM": {
+    "Na": 197.4,
+    "K": 30.39,
+    "anion": 14.02
+   },
+   "c_P_mM": {
+    "Na": 66.23,
+    "K": 63.12,
+    "anion": 9.58
+   },
+   "V_NP_V": -0.07993,
+   "capacity_fmol_per_s": 0.3723,
+   "availability": 0.3361,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "na_k_2anion",
+   "tag": "random 7",
+   "temperature_K": 302.3,
+   "c_N_mM": {
+    "Na": 8.099,
+    "K": 1.521,
+    "anion": 0.6188
+   },
+   "c_P_mM": {
+    "Na": 0.01428,
+    "K": 118.7,
+    "anion": 12.99
+   },
+   "V_NP_V": -0.03267,
+   "capacity_fmol_per_s": 0.001011,
+   "availability": 0.9884,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "na_k_2anion",
+   "tag": "typical",
+   "temperature_K": 303.65,
+   "c_N_mM": {
+    "Na": 12.4,
+    "K": 131.0,
+    "anion": 10.5
+   },
+   "c_P_mM": {
+    "Na": 139.0,
+    "K": 5.8,
+    "anion": 121.0
+   },
+   "V_NP_V": -0.055,
+   "capacity_fmol_per_s": 0.37,
+   "availability": 1.0,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "na_k_2anion",
+   "tag": "equal concentrations (x = 0)",
+   "temperature_K": 303.65,
+   "c_N_mM": {
+    "Na": 1.164,
+    "K": 26.85,
+    "anion": 66.91
+   },
+   "c_P_mM": {
+    "Na": 1.164,
+    "K": 26.85,
+    "anion": 66.91
+   },
+   "V_NP_V": -0.055,
+   "capacity_fmol_per_s": 0.37,
+   "availability": 1.0,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "na_k_2anion",
+   "tag": "near equilibrium",
+   "temperature_K": 303.65,
+   "c_N_mM": {
+    "Na": 1.164,
+    "K": 26.85,
+    "anion": 66.91
+   },
+   "c_P_mM": {
+    "Na": 1.165,
+    "K": 26.88,
+    "anion": 66.98
+   },
+   "V_NP_V": -0.055,
+   "capacity_fmol_per_s": 0.37,
+   "availability": 1.0,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "na_k_2anion",
+   "tag": "far, inward",
+   "temperature_K": 303.65,
+   "c_N_mM": {
+    "Na": 0.001,
+    "K": 0.001,
+    "anion": 0.001
+   },
+   "c_P_mM": {
+    "Na": 1000.0,
+    "K": 1000.0,
+    "anion": 1000.0
+   },
+   "V_NP_V": -0.055,
+   "capacity_fmol_per_s": 0.37,
+   "availability": 1.0,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "na_k_2anion",
+   "tag": "far, outward",
+   "temperature_K": 303.65,
+   "c_N_mM": {
+    "Na": 1000.0,
+    "K": 1000.0,
+    "anion": 1000.0
+   },
+   "c_P_mM": {
+    "Na": 0.001,
+    "K": 0.001,
+    "anion": 0.001
+   },
+   "V_NP_V": -0.055,
+   "capacity_fmol_per_s": 0.37,
+   "availability": 1.0,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "na_k_2anion",
+   "tag": "voltage changed only",
+   "temperature_K": 303.65,
+   "c_N_mM": {
+    "Na": 10.0,
+    "K": 10.0,
+    "anion": 10.0
+   },
+   "c_P_mM": {
+    "Na": 20.0,
+    "K": 20.0,
+    "anion": 20.0
+   },
+   "V_NP_V": 0.1,
+   "capacity_fmol_per_s": 0.37,
+   "availability": 1.0,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "na_k_2anion",
+   "tag": "voltage changed only, other sign",
+   "temperature_K": 303.65,
+   "c_N_mM": {
+    "Na": 10.0,
+    "K": 10.0,
+    "anion": 10.0
+   },
+   "c_P_mM": {
+    "Na": 20.0,
+    "K": 20.0,
+    "anion": 20.0
+   },
+   "V_NP_V": -0.1,
+   "capacity_fmol_per_s": 0.37,
+   "availability": 1.0,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "na_k_2anion",
+   "tag": "availability 0",
+   "temperature_K": 303.65,
+   "c_N_mM": {
+    "Na": 10.0,
+    "K": 10.0,
+    "anion": 10.0
+   },
+   "c_P_mM": {
+    "Na": 20.0,
+    "K": 20.0,
+    "anion": 20.0
+   },
+   "V_NP_V": -0.055,
+   "capacity_fmol_per_s": 0.37,
+   "availability": 0.0,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "na_k_2anion",
+   "tag": "beyond the domain",
+   "temperature_K": 303.65,
+   "c_N_mM": {
+    "Na": 100000000.0,
+    "K": 100000000.0,
+    "anion": 100000000.0
+   },
+   "c_P_mM": {
+    "Na": 1e-10,
+    "K": 1e-10,
+    "anion": 1e-10
+   },
+   "V_NP_V": -0.055,
+   "capacity_fmol_per_s": 0.37,
+   "availability": 1.0,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_1_1",
+   "tag": "random 0",
+   "temperature_K": 285.3,
+   "c_N_mM": {
+    "cation": 20.9,
+    "anion": 145.8
+   },
+   "c_P_mM": {
+    "cation": 0.3759,
+    "anion": 0.01263
+   },
+   "V_NP_V": 0.008645,
+   "capacity_fmol_per_s": 0.079,
+   "availability": 0.5953,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_1_1",
+   "tag": "random 1",
+   "temperature_K": 306.1,
+   "c_N_mM": {
+    "cation": 0.03914,
+    "anion": 51.04
+   },
+   "c_P_mM": {
+    "cation": 0.2692,
+    "anion": 13.94
+   },
+   "V_NP_V": 0.02819,
+   "capacity_fmol_per_s": 0.0123,
+   "availability": 0.9839,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_1_1",
+   "tag": "random 2",
+   "temperature_K": 282.5,
+   "c_N_mM": {
+    "cation": 4.406,
+    "anion": 0.3172
+   },
+   "c_P_mM": {
+    "cation": 4.91,
+    "anion": 0.0742
+   },
+   "V_NP_V": 0.06662,
+   "capacity_fmol_per_s": 0.01479,
+   "availability": 0.0236,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_1_1",
+   "tag": "random 3",
+   "temperature_K": 290.7,
+   "c_N_mM": {
+    "cation": 0.142,
+    "anion": 199.3
+   },
+   "c_P_mM": {
+    "cation": 0.01971,
+    "anion": 0.02858
+   },
+   "V_NP_V": -0.02924,
+   "capacity_fmol_per_s": 0.02766,
+   "availability": 0.9265,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_1_1",
+   "tag": "random 4",
+   "temperature_K": 295.3,
+   "c_N_mM": {
+    "cation": 0.02733,
+    "anion": 0.5716
+   },
+   "c_P_mM": {
+    "cation": 2.979,
+    "anion": 0.1378
+   },
+   "V_NP_V": -0.1143,
+   "capacity_fmol_per_s": 0.001483,
+   "availability": 0.613,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_1_1",
+   "tag": "random 5",
+   "temperature_K": 281.7,
+   "c_N_mM": {
+    "cation": 136.1,
+    "anion": 5.691
+   },
+   "c_P_mM": {
+    "cation": 0.2119,
+    "anion": 113.6
+   },
+   "V_NP_V": -0.1146,
+   "capacity_fmol_per_s": 0.8616,
+   "availability": 0.2089,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_1_1",
+   "tag": "random 6",
+   "temperature_K": 290.6,
+   "c_N_mM": {
+    "cation": 0.1102,
+    "anion": 0.6153
+   },
+   "c_P_mM": {
+    "cation": 0.06133,
+    "anion": 0.7631
+   },
+   "V_NP_V": 0.08587,
+   "capacity_fmol_per_s": 0.02646,
+   "availability": 0.5487,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_1_1",
+   "tag": "random 7",
+   "temperature_K": 292.8,
+   "c_N_mM": {
+    "cation": 3.919,
+    "anion": 0.03283
+   },
+   "c_P_mM": {
+    "cation": 0.01812,
+    "anion": 0.01798
+   },
+   "V_NP_V": 0.03697,
+   "capacity_fmol_per_s": 0.001233,
+   "availability": 0.3011,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_1_1",
+   "tag": "typical",
+   "temperature_K": 303.65,
+   "c_N_mM": {
+    "cation": 12.0,
+    "anion": 10.5
+   },
+   "c_P_mM": {
+    "cation": 1.5,
+    "anion": 121.0
+   },
+   "V_NP_V": -0.055,
+   "capacity_fmol_per_s": 0.37,
+   "availability": 1.0,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_1_1",
+   "tag": "equal concentrations (x = 0)",
+   "temperature_K": 303.65,
+   "c_N_mM": {
+    "cation": 2.956,
+    "anion": 1.921
+   },
+   "c_P_mM": {
+    "cation": 2.956,
+    "anion": 1.921
+   },
+   "V_NP_V": -0.055,
+   "capacity_fmol_per_s": 0.37,
+   "availability": 1.0,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_1_1",
+   "tag": "near equilibrium",
+   "temperature_K": 303.65,
+   "c_N_mM": {
+    "cation": 2.956,
+    "anion": 1.921
+   },
+   "c_P_mM": {
+    "cation": 2.959,
+    "anion": 1.923
+   },
+   "V_NP_V": -0.055,
+   "capacity_fmol_per_s": 0.37,
+   "availability": 1.0,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_1_1",
+   "tag": "far, inward",
+   "temperature_K": 303.65,
+   "c_N_mM": {
+    "cation": 0.001,
+    "anion": 0.001
+   },
+   "c_P_mM": {
+    "cation": 1000.0,
+    "anion": 1000.0
+   },
+   "V_NP_V": -0.055,
+   "capacity_fmol_per_s": 0.37,
+   "availability": 1.0,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_1_1",
+   "tag": "far, outward",
+   "temperature_K": 303.65,
+   "c_N_mM": {
+    "cation": 1000.0,
+    "anion": 1000.0
+   },
+   "c_P_mM": {
+    "cation": 0.001,
+    "anion": 0.001
+   },
+   "V_NP_V": -0.055,
+   "capacity_fmol_per_s": 0.37,
+   "availability": 1.0,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_1_1",
+   "tag": "voltage changed only",
+   "temperature_K": 303.65,
+   "c_N_mM": {
+    "cation": 10.0,
+    "anion": 10.0
+   },
+   "c_P_mM": {
+    "cation": 20.0,
+    "anion": 20.0
+   },
+   "V_NP_V": 0.1,
+   "capacity_fmol_per_s": 0.37,
+   "availability": 1.0,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_1_1",
+   "tag": "voltage changed only, other sign",
+   "temperature_K": 303.65,
+   "c_N_mM": {
+    "cation": 10.0,
+    "anion": 10.0
+   },
+   "c_P_mM": {
+    "cation": 20.0,
+    "anion": 20.0
+   },
+   "V_NP_V": -0.1,
+   "capacity_fmol_per_s": 0.37,
+   "availability": 1.0,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_1_1",
+   "tag": "availability 0",
+   "temperature_K": 303.65,
+   "c_N_mM": {
+    "cation": 10.0,
+    "anion": 10.0
+   },
+   "c_P_mM": {
+    "cation": 20.0,
+    "anion": 20.0
+   },
+   "V_NP_V": -0.055,
+   "capacity_fmol_per_s": 0.37,
+   "availability": 0.0,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_1_1",
+   "tag": "beyond the domain",
+   "temperature_K": 303.65,
+   "c_N_mM": {
+    "cation": 100000000.0,
+    "anion": 100000000.0
+   },
+   "c_P_mM": {
+    "cation": 1e-10,
+    "anion": 1e-10
+   },
+   "V_NP_V": -0.055,
+   "capacity_fmol_per_s": 0.37,
+   "availability": 1.0,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_1_2",
+   "tag": "random 0",
+   "temperature_K": 295.9,
+   "c_N_mM": {
+    "cation": 11.91,
+    "anion": 0.2052
+   },
+   "c_P_mM": {
+    "cation": 0.5427,
+    "anion": 0.4696
+   },
+   "V_NP_V": -0.02425,
+   "capacity_fmol_per_s": 0.04456,
+   "availability": 0.5574,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_1_2",
+   "tag": "random 1",
+   "temperature_K": 280.8,
+   "c_N_mM": {
+    "cation": 0.04411,
+    "anion": 142.9
+   },
+   "c_P_mM": {
+    "cation": 2.461,
+    "anion": 0.6926
+   },
+   "V_NP_V": -0.1084,
+   "capacity_fmol_per_s": 0.06885,
+   "availability": 0.0672,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_1_2",
+   "tag": "random 2",
+   "temperature_K": 312.6,
+   "c_N_mM": {
+    "cation": 0.7823,
+    "anion": 0.8555
+   },
+   "c_P_mM": {
+    "cation": 0.8139,
+    "anion": 139.7
+   },
+   "V_NP_V": -0.05595,
+   "capacity_fmol_per_s": 0.03438,
+   "availability": 0.3754,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_1_2",
+   "tag": "random 3",
+   "temperature_K": 309.6,
+   "c_N_mM": {
+    "cation": 0.2191,
+    "anion": 32.38
+   },
+   "c_P_mM": {
+    "cation": 142.8,
+    "anion": 51.41
+   },
+   "V_NP_V": 0.05423,
+   "capacity_fmol_per_s": 1.069,
+   "availability": 0.7699,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_1_2",
+   "tag": "random 4",
+   "temperature_K": 312.6,
+   "c_N_mM": {
+    "cation": 0.03903,
+    "anion": 0.03903
+   },
+   "c_P_mM": {
+    "cation": 0.05103,
+    "anion": 0.1765
+   },
+   "V_NP_V": -0.08091,
+   "capacity_fmol_per_s": 0.06398,
+   "availability": 0.4014,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_1_2",
+   "tag": "random 5",
+   "temperature_K": 284.4,
+   "c_N_mM": {
+    "cation": 0.01445,
+    "anion": 80.39
+   },
+   "c_P_mM": {
+    "cation": 0.4771,
+    "anion": 94.99
+   },
+   "V_NP_V": 0.08657,
+   "capacity_fmol_per_s": 0.07664,
+   "availability": 0.3259,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_1_2",
+   "tag": "random 6",
+   "temperature_K": 312.7,
+   "c_N_mM": {
+    "cation": 0.06859,
+    "anion": 0.183
+   },
+   "c_P_mM": {
+    "cation": 1.095,
+    "anion": 16.63
+   },
+   "V_NP_V": -0.0915,
+   "capacity_fmol_per_s": 0.003445,
+   "availability": 0.6223,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_1_2",
+   "tag": "random 7",
+   "temperature_K": 312.9,
+   "c_N_mM": {
+    "cation": 0.03021,
+    "anion": 0.6259
+   },
+   "c_P_mM": {
+    "cation": 12.29,
+    "anion": 0.1858
+   },
+   "V_NP_V": -0.103,
+   "capacity_fmol_per_s": 1.046,
+   "availability": 0.7265,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_1_2",
+   "tag": "typical",
+   "temperature_K": 303.65,
+   "c_N_mM": {
+    "cation": 12.0,
+    "anion": 10.5
+   },
+   "c_P_mM": {
+    "cation": 1.5,
+    "anion": 121.0
+   },
+   "V_NP_V": -0.055,
+   "capacity_fmol_per_s": 0.37,
+   "availability": 1.0,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_1_2",
+   "tag": "equal concentrations (x = 0)",
+   "temperature_K": 303.65,
+   "c_N_mM": {
+    "cation": 44.01,
+    "anion": 1.301
+   },
+   "c_P_mM": {
+    "cation": 44.01,
+    "anion": 1.301
+   },
+   "V_NP_V": -0.055,
+   "capacity_fmol_per_s": 0.37,
+   "availability": 1.0,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_1_2",
+   "tag": "near equilibrium",
+   "temperature_K": 303.65,
+   "c_N_mM": {
+    "cation": 44.01,
+    "anion": 1.301
+   },
+   "c_P_mM": {
+    "cation": 44.05,
+    "anion": 1.302
+   },
+   "V_NP_V": -0.055,
+   "capacity_fmol_per_s": 0.37,
+   "availability": 1.0,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_1_2",
+   "tag": "far, inward",
+   "temperature_K": 303.65,
+   "c_N_mM": {
+    "cation": 0.001,
+    "anion": 0.001
+   },
+   "c_P_mM": {
+    "cation": 1000.0,
+    "anion": 1000.0
+   },
+   "V_NP_V": -0.055,
+   "capacity_fmol_per_s": 0.37,
+   "availability": 1.0,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_1_2",
+   "tag": "far, outward",
+   "temperature_K": 303.65,
+   "c_N_mM": {
+    "cation": 1000.0,
+    "anion": 1000.0
+   },
+   "c_P_mM": {
+    "cation": 0.001,
+    "anion": 0.001
+   },
+   "V_NP_V": -0.055,
+   "capacity_fmol_per_s": 0.37,
+   "availability": 1.0,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_1_2",
+   "tag": "voltage changed only",
+   "temperature_K": 303.65,
+   "c_N_mM": {
+    "cation": 10.0,
+    "anion": 10.0
+   },
+   "c_P_mM": {
+    "cation": 20.0,
+    "anion": 20.0
+   },
+   "V_NP_V": 0.1,
+   "capacity_fmol_per_s": 0.37,
+   "availability": 1.0,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_1_2",
+   "tag": "voltage changed only, other sign",
+   "temperature_K": 303.65,
+   "c_N_mM": {
+    "cation": 10.0,
+    "anion": 10.0
+   },
+   "c_P_mM": {
+    "cation": 20.0,
+    "anion": 20.0
+   },
+   "V_NP_V": -0.1,
+   "capacity_fmol_per_s": 0.37,
+   "availability": 1.0,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_1_2",
+   "tag": "availability 0",
+   "temperature_K": 303.65,
+   "c_N_mM": {
+    "cation": 10.0,
+    "anion": 10.0
+   },
+   "c_P_mM": {
+    "cation": 20.0,
+    "anion": 20.0
+   },
+   "V_NP_V": -0.055,
+   "capacity_fmol_per_s": 0.37,
+   "availability": 0.0,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_1_2",
+   "tag": "beyond the domain",
+   "temperature_K": 303.65,
+   "c_N_mM": {
+    "cation": 100000000.0,
+    "anion": 100000000.0
+   },
+   "c_P_mM": {
+    "cation": 1e-10,
+    "anion": 1e-10
+   },
+   "V_NP_V": -0.055,
+   "capacity_fmol_per_s": 0.37,
+   "availability": 1.0,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_2_1",
+   "tag": "random 0",
+   "temperature_K": 290.4,
+   "c_N_mM": {
+    "cation": 64.45,
+    "anion": 0.2799
+   },
+   "c_P_mM": {
+    "cation": 0.06278,
+    "anion": 0.07026
+   },
+   "V_NP_V": 0.0384,
+   "capacity_fmol_per_s": 1.111,
+   "availability": 0.173,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_2_1",
+   "tag": "random 1",
+   "temperature_K": 285.0,
+   "c_N_mM": {
+    "cation": 0.02231,
+    "anion": 103.6
+   },
+   "c_P_mM": {
+    "cation": 6.252,
+    "anion": 9.258
+   },
+   "V_NP_V": -0.083,
+   "capacity_fmol_per_s": 3.183,
+   "availability": 0.04643,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_2_1",
+   "tag": "random 2",
+   "temperature_K": 307.9,
+   "c_N_mM": {
+    "cation": 66.4,
+    "anion": 0.05625
+   },
+   "c_P_mM": {
+    "cation": 1.072,
+    "anion": 150.4
+   },
+   "V_NP_V": -0.06834,
+   "capacity_fmol_per_s": 0.0385,
+   "availability": 0.4962,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_2_1",
+   "tag": "random 3",
+   "temperature_K": 286.0,
+   "c_N_mM": {
+    "cation": 0.08132,
+    "anion": 0.03204
+   },
+   "c_P_mM": {
+    "cation": 0.05539,
+    "anion": 0.03829
+   },
+   "V_NP_V": 0.1173,
+   "capacity_fmol_per_s": 0.01187,
+   "availability": 0.3313,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_2_1",
+   "tag": "random 4",
+   "temperature_K": 280.6,
+   "c_N_mM": {
+    "cation": 0.4812,
+    "anion": 0.2193
+   },
+   "c_P_mM": {
+    "cation": 0.09169,
+    "anion": 2.598
+   },
+   "V_NP_V": 0.112,
+   "capacity_fmol_per_s": 0.002891,
+   "availability": 0.5296,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_2_1",
+   "tag": "random 5",
+   "temperature_K": 276.4,
+   "c_N_mM": {
+    "cation": 0.0196,
+    "anion": 0.02523
+   },
+   "c_P_mM": {
+    "cation": 3.276,
+    "anion": 8.436
+   },
+   "V_NP_V": 0.07611,
+   "capacity_fmol_per_s": 1.121,
+   "availability": 0.8491,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_2_1",
+   "tag": "random 6",
+   "temperature_K": 300.0,
+   "c_N_mM": {
+    "cation": 0.8046,
+    "anion": 0.04077
+   },
+   "c_P_mM": {
+    "cation": 0.03687,
+    "anion": 0.1682
+   },
+   "V_NP_V": -0.00383,
+   "capacity_fmol_per_s": 0.11,
+   "availability": 0.7493,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_2_1",
+   "tag": "random 7",
+   "temperature_K": 290.8,
+   "c_N_mM": {
+    "cation": 8.897,
+    "anion": 0.24
+   },
+   "c_P_mM": {
+    "cation": 0.04989,
+    "anion": 16.17
+   },
+   "V_NP_V": 0.08263,
+   "capacity_fmol_per_s": 0.8598,
+   "availability": 0.5633,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_2_1",
+   "tag": "typical",
+   "temperature_K": 303.65,
+   "c_N_mM": {
+    "cation": 12.0,
+    "anion": 10.5
+   },
+   "c_P_mM": {
+    "cation": 1.5,
+    "anion": 121.0
+   },
+   "V_NP_V": -0.055,
+   "capacity_fmol_per_s": 0.37,
+   "availability": 1.0,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_2_1",
+   "tag": "equal concentrations (x = 0)",
+   "temperature_K": 303.65,
+   "c_N_mM": {
+    "cation": 16.84,
+    "anion": 14.13
+   },
+   "c_P_mM": {
+    "cation": 16.84,
+    "anion": 14.13
+   },
+   "V_NP_V": -0.055,
+   "capacity_fmol_per_s": 0.37,
+   "availability": 1.0,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_2_1",
+   "tag": "near equilibrium",
+   "temperature_K": 303.65,
+   "c_N_mM": {
+    "cation": 16.84,
+    "anion": 14.13
+   },
+   "c_P_mM": {
+    "cation": 16.86,
+    "anion": 14.14
+   },
+   "V_NP_V": -0.055,
+   "capacity_fmol_per_s": 0.37,
+   "availability": 1.0,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_2_1",
+   "tag": "far, inward",
+   "temperature_K": 303.65,
+   "c_N_mM": {
+    "cation": 0.001,
+    "anion": 0.001
+   },
+   "c_P_mM": {
+    "cation": 1000.0,
+    "anion": 1000.0
+   },
+   "V_NP_V": -0.055,
+   "capacity_fmol_per_s": 0.37,
+   "availability": 1.0,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_2_1",
+   "tag": "far, outward",
+   "temperature_K": 303.65,
+   "c_N_mM": {
+    "cation": 1000.0,
+    "anion": 1000.0
+   },
+   "c_P_mM": {
+    "cation": 0.001,
+    "anion": 0.001
+   },
+   "V_NP_V": -0.055,
+   "capacity_fmol_per_s": 0.37,
+   "availability": 1.0,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_2_1",
+   "tag": "voltage changed only",
+   "temperature_K": 303.65,
+   "c_N_mM": {
+    "cation": 10.0,
+    "anion": 10.0
+   },
+   "c_P_mM": {
+    "cation": 20.0,
+    "anion": 20.0
+   },
+   "V_NP_V": 0.1,
+   "capacity_fmol_per_s": 0.37,
+   "availability": 1.0,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_2_1",
+   "tag": "voltage changed only, other sign",
+   "temperature_K": 303.65,
+   "c_N_mM": {
+    "cation": 10.0,
+    "anion": 10.0
+   },
+   "c_P_mM": {
+    "cation": 20.0,
+    "anion": 20.0
+   },
+   "V_NP_V": -0.1,
+   "capacity_fmol_per_s": 0.37,
+   "availability": 1.0,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_2_1",
+   "tag": "availability 0",
+   "temperature_K": 303.65,
+   "c_N_mM": {
+    "cation": 10.0,
+    "anion": 10.0
+   },
+   "c_P_mM": {
+    "cation": 20.0,
+    "anion": 20.0
+   },
+   "V_NP_V": -0.055,
+   "capacity_fmol_per_s": 0.37,
+   "availability": 0.0,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  },
+  {
+   "law": "salt_2_1",
+   "tag": "beyond the domain",
+   "temperature_K": 303.65,
+   "c_N_mM": {
+    "cation": 100000000.0,
+    "anion": 100000000.0
+   },
+   "c_P_mM": {
+    "cation": 1e-10,
+    "anion": 1e-10
+   },
+   "V_NP_V": -0.055,
+   "capacity_fmol_per_s": 0.37,
+   "availability": 1.0,
+   "volume_N_pL": 0.85,
+   "volume_P_pL": 2.6
+  }
+ ]
+}

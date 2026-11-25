@@ -25,6 +25,14 @@ the code is right:
 
 Also as ruled: a driven world's pool declares its own seed, and its channels may sit on several cells.
 
+**The sink's side of 5.5, as built (added with the calcium note's step 8, 25 November 2026;**
+`docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md` §6.5). `routed_flux` returns `{control field: [species, slot]}` and
+not [M], since a kind's stage hooks see no declaration. `InnerStructure.loops` holds m as (position in `routes`,
+position in that slot's `routed_rows`) and p as (source kind ID, position among that kind's pairs). A sink with
+neither hook is refused by name where a loop would close, and an operator that opens, closes or retires slots is
+refused beside a loop. `patch_damage` reads no amount, so it closes no loop: of the two sources in 5.5's limit,
+only `ph_condition` can.
+
 **Marks.** (M) I ran it. (R) I read it in code or a document at 43b22d40. (S) my own derivation or arithmetic.
 (G) a guess. File references are to `src/cells/` at 43b22d40 unless another place is named. On
 `legacy-cleanup` (149f9df9) 54 files of `src/cells` differ, among them `execution/grid.py`,
@@ -1081,6 +1089,6 @@ default field solver and was stopped once its first step was refused.
 - No claim about the receptor, IP3's charge in water, IP3 metabolism, assembly energetics, or the real cage.
 - No claim that a composite's calcium run meets any band: only a prototype ran (section 4.1).
 - No GPU claim. No claim above a few hundred cells for the composed run. No timing.
-- The hooks and the composed run's inputs record are specified, not built. The second reader's M2 results are
-  its own.
+- The hooks and the composed run's inputs record are specified, not built. **Both are built since, 25 November
+  2026** (the block at the top). The second reader's M2 results are its own.
 - Nothing here is judged. Both parts come back to the user with their price before any build (D383).

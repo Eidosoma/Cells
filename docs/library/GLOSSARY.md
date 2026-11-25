@@ -284,6 +284,22 @@ or out. A held bath is not one.
 
 <!-- /generated -->
 
+### Floating node
+
+A finite space that is not a cell, such as a closed space inside one, whose potential nothing
+holds: it is no held bath, it is not the world's zero of potential, and no face names it. Its
+voltage follows the charge on its own patches, so a long step is refused at those patches.
+
+- **In other fields:** an organelle's inside, or any closed space (biology); a compartment with no
+  clamp (chemistry, physics); a free node of the capacitor network (computing).
+- **Cells' word;** see [the calcium note](../CALCIUM_STORE_AND_CHANNELS_DESIGN.md).
+
+<!-- generated: used-by floating-node -->
+
+- **Used by:** no page yet.
+
+<!-- /generated -->
+
 ### fmol
 
 The femtomole, $10^{-15}$ mol, about 600 million molecules: Cells' unit of amount. One fmol in one
@@ -905,6 +921,23 @@ two potassium ions in for each cycle of the sodium–potassium pump.
 <!-- generated: used-by stoichiometry -->
 
 - **Used by:** [`cells.transporter@1`](cells/kinds/transporter@1.md).
+
+<!-- /generated -->
+
+### Store
+
+A closed space inside a cell where calcium is kept far more concentrated than in the cell's fluid
+and from which it can be released, such as the endoplasmic reticulum. In Cells it is a finite space
+that one cell owns, behind one patch.
+
+- **In other fields:** the endoplasmic or sarcoplasmic reticulum (biology); a compartment with its
+  own volume and concentrations (chemistry); a capacitor node (physics); a node with one patch
+  (computing).
+- **Cells' word;** see [the closed-compartment design](../CLOSED_COMPARTMENT_DESIGN.md).
+
+<!-- generated: used-by store -->
+
+- **Used by:** [`cells.species_condition@1`](cells/kinds/species_condition@1.md), [`cells.atp_driven_transporter_mass_action_positive@2`](cells/laws/atp_driven_transporter_mass_action_positive@2.md), [`cells.electroneutral_symport_reversible_tanh@1`](cells/laws/electroneutral_symport_reversible_tanh@1.md), [`cells.hill_product_factor@1`](cells/laws/hill_product_factor@1.md) and [`cells.na_k_2anion_symport_reversible_tanh@1`](cells/laws/na_k_2anion_symport_reversible_tanh@1.md).
 
 <!-- /generated -->
 

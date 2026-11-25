@@ -1,5 +1,8 @@
 # Independent live-recording / saved-window review (D129)
 
+> **Legacy cleanup (25 November 2026, D386).** This folder's drivers are retired (D374), and their
+> code left the tree; the tag `pre-cleanup-2026-11-25` keeps it. This page stays as a record.
+
 Read-only qualification of the saved D126 native streams and successful D128
 output-layout packet. This is a separate reviewer, not another simulation.
 The full native/Cells matrix is reviewed once in a detached job.

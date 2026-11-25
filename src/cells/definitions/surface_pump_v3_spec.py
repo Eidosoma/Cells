@@ -501,6 +501,15 @@ def parse_block(raw, channel, species_ids):
         raise ConfigError(
             f"{name}: reference is {block_law.MEMBRANE_VOLTAGE!r} or {{{REVERSAL_OF!r}: ion}}"
         )
+    carried = [i.species_id for i in channel.permeant_ions if i.relative_permeability]
+    law = channel_laws()[channel.kinetic_law]
+    if reversal_of is not None and len(carried) > 1 and law.material_term is not None:
+        raise ConfigError(  # The stage's term through the reversal is the named ion's own flux's.
+            f"{name}: {law.law_id} carries {', '.join(carried)} and declares a material term, and "
+            f"the block reads the reversal of {reversal_of}: the material term bounds only "
+            f"{reversal_of}'s own flux through that reversal, so its other ions' have no bound "
+            "(the membrane voltage as the reference is admitted)"
+        )
     modes = raw["modes"]
     if type(modes) is not list or not modes:
         raise ConfigError(f"{name}: modes is a non-empty list")

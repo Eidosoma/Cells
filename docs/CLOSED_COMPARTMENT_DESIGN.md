@@ -609,6 +609,10 @@ routes.
   drift".
 - A face-free node has no face drift. Its charge relaxes through its patch alone, explicitly, with
   the fast mode's rate about G_b (1/C_b + 1/C_i) ≈ G_b / C_b for C_b ≪ C_i.
+- **Amended 25 November 2026** (CALCIUM_STORE_AND_CHANNELS_DESIGN §8.3): where a world has a
+  floating node, as every compartment is, a cell's row divides by the capacitance of its other
+  patches alone, and each patch that faces a floating node has its own row, with kinds or without. A
+  cell with a store read up to 1 + C_b/C_m times too low before.
 
 **The size of it (S; `arithmetic/`).** With the specific capacitance c_m, G_b/C_b = P F² c/(RT c_m),
 independent of the compartment's size. Here c is the larger of the two sides' concentrations, as
@@ -657,6 +661,9 @@ here, and the table's volume and area agree with a 0.68 µm sphere.
    max over free face-free finite nodes of Σ_m G_m / C_node in `explicit_rate_bound` and
    `membrane_rate`, statically gated, so a world with no such node carrying an ion route is
    unchanged.
+   **Amended 25 November 2026** (the same section): the term is one row per patch in place of the
+   node's sum (the same where one patch faces the node, as at a compartment), and the per-stage rule
+   holds it in kind-free worlds too.
    - It touches the same two functions as the queued D148 round for neutral species on membranes and
      junctions (finding 3, probe C4), so the two are one round (the lead's ruling).
    - It makes the steps honest, but the chloride route above would then need dt ≤ 1/(4.8 × 10³ s⁻¹),
@@ -686,6 +693,11 @@ each kind's slope at both ends of its patch (`stage_term` per node). Version 1 s
 ion route on a bounding patch, and it saw no kind at all, so a kind's route there passed unchecked:
 it failed open.
 
+**Amended 25 November 2026:** the per-stage rule holds the compartment's node with kinds or without
+(CALCIUM_STORE_AND_CHANNELS_DESIGN §8.3). So the reason below for admitting a permeability only
+beside kinds is weaker than it was (**S**, the calcium note's author's reading; not tried). The rule
+itself is unchanged, and widening it would need a ruling of its own.
+
 **The rule (refusal 4, version 1.1).** For each declared compartment's bounding patch:
 - **@3's own routes:** a Na/K or Ca pump, or a channel population, stays refused: the per-stage
   rule does not hold its slope at the compartment's node (a pump's slope is in no per-stage term,
@@ -707,6 +719,9 @@ it failed open.
     concentration. That is a material question, like finding 3's neutral-species term (the
     inner-model note's §13.6), not the charged door's, and it is recorded here as open. It needs a
     measurement or a bound term before a fast neutral population sits on a bounding patch.
+    **Since 25 November 2026:** version 2 of that law, `atp_driven_transporter_mass_action_positive@2`,
+    declares the kind's charge slope and its material rate, so refusal 4 (version 1.3) admits its
+    moves at a compartment's node. Version 1's neutral law declares neither and stays refused.
   - cells.rapid_proton_buffer@1 is a stage read and declares no route.
   - **Any other kind is refused** while a compartment is declared: the operator cannot know
     whether its routes cross the bounding patch (D180's external kinds), so it fails closed, as

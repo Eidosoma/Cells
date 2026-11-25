@@ -11,7 +11,9 @@ a world of their own (section 14). On the host, no compile.
   the term at one end only, and the term absent at the store's node. A step above the bound is
   refused, and a law that declares no term adds nothing; a law that names another kernel is refused.
 - A block that reads the ion's reversal potential joins its part of the slope, once, at the routed
-  availability (planted: the part left out, the block's own term counted beside it).
+  availability (planted: the part left out, the block's own term counted beside it). On a law with
+  several ions and a material term it is refused by name, since its other ions' fluxes would have no
+  such part (admitted: the membrane voltage as the reference, and a law without a term).
 - A slot whose own gate reads an ion it moves closes a loop at each of its ions' rows, at both ends
   (section 6.5; planted: the flux of a held gate).
 
@@ -264,16 +266,21 @@ def test_a_step_above_the_channel_s_material_bound_is_refused():
             assert impl.material_rate(state, control, p, xp=np, potentials=potentials) is None
 
 
+def block_of(reference):
+    """An outside block of valence 2 in one mode, under a reference."""
+    return dict(
+        law=open_channel_block.LAW_ID,
+        blocker=dict(id="blocker", valence=2, side="outside", concentration_mM=2.0),
+        reference=reference,
+        modes=[dict(weight=1.0, k0_mM=1.0, electrical_distance=0.8)],
+    )
+
+
 def test_a_block_that_reads_the_reversal_joins_its_part_once(monkeypatch):
     """A calcium population whose block reads V - E_Ca, at a voltage above E_Ca: the flux is outward
     there, so the direct part of each slope and the part through the reversal have one sign and
     |dJ/dn| is their sum."""
-    block = dict(
-        law=open_channel_block.LAW_ID,
-        blocker=dict(id="blocker", valence=2, side="outside", concentration_mM=2.0),
-        reference=dict(reversal_of="Ca"),
-        modes=[dict(weight=1.0, k0_mM=1.0, electrical_distance=0.8)],
-    )
+    block = block_of(dict(reversal_of="Ca"))
     own = population("ca_0", "contact_0", cav1p2_m2h.LAW, 3e-7, block=block, factors=["gate"])
     gate = condition("gate", fx.SPECIES, "cell_0", 3e-3)
     spec, impl, state, control, p = start(store_side([own], conditions=[gate]))
@@ -298,6 +305,34 @@ def test_a_block_that_reads_the_reversal_joins_its_part_once(monkeypatch):
         plant.setattr(tissue3, "material_term_slots", lambda p, structure, *, xp: xp.zeros(2, bool))
         beside = tissue3.block_material_rates(state, p, potentials, control=routed, **given)
         assert (found + beside)[0] > 1.5 * expected[0]
+
+
+MAJORS = (("K", 1, 1.0), ("Na", 1, 0.1))  # Two ions that need no material term.
+
+
+@pytest.mark.parametrize(
+    "law, reference, refused",
+    [
+        (two_ions(), dict(reversal_of="Ca"), "Ca"),
+        (two_ions(permeant=MAJORS), dict(reversal_of="K"), "K"),
+        (two_ions(), open_channel_block.MEMBRANE_VOLTAGE, None),
+        (two_ions(permeant=MAJORS, material_term=None), dict(reversal_of="K"), None),
+    ],
+    ids=("a scarce ion", "two major ions", "the membrane voltage", "a law without a term"),
+)
+def test_a_reversal_block_on_several_ions_and_a_term_is_refused_by_name(law, reference, refused):
+    """The rule's part through the reversal is the named ion's own flux's, so the law's other ions'
+    would have no bound: the definition is refused, with the law, its ions and the block's."""
+    with with_laws(law):
+        blocked = population("ca_0", "contact_0", law, 3e-7, block=block_of(reference))
+        raw = store_side([blocked])
+        if refused is None:
+            assert parse_spec(raw).model.channels[0].block is not None
+            return
+        ions = ", ".join(species for species, _, _ in law.permeant)
+        match = f"block: {law.law_id} carries {ions} and declares a material term, and the block "
+        with pytest.raises(ConfigError, match=match + f"reads the reversal of {refused}: "):
+            parse_spec(raw)
 
 
 @pytest.mark.parametrize("law", (cav1p2_m2h.LAW, two_ions()), ids=("calcium", "two ions"))

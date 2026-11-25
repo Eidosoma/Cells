@@ -211,6 +211,9 @@ counts under `explicit_only`. RK4 refuses kinds.
 - **@3's own routes:** an operator-written charged trace row stays refused there (under A);
   counter-ions covered by @3's bound are the exception. Any operator-written row with a channel
   route stays refused.
+  **Amended 25 November 2026** ([the calcium note](CALCIUM_STORE_AND_CHANNELS_DESIGN.md) §5.4):
+  `local_species_reactions@1` may write a row that a channel carries where the channel's law
+  declares its material term. Every other operator, and a law without the term, refuses it still.
 - **New in version 1:** the charged law on a junction that crosses a floating component, until A2.
 - **The charged law** on a closure-held row, on a neutral row, or beside its host's own
   permeability for its row; the neutral law at valence 0.
@@ -226,6 +229,10 @@ counts under `explicit_only`. RK4 refuses kinds.
   charged crossing rows. A trace charged row that a carrier moves (butyrate on the symporter)
   therefore has no material bound, and the charge rule does not hold it, for `check_counter_ion`'s
   reason. **S:** count a population's charged crossing rows in its material term, as P2's does.
+  **Built 25 November 2026, for the laws that declare it** (the calcium note §6.3): a population whose
+  law declares `material_term` bounds every row it moves, charged or neutral, by its whole rate. The
+  two sodium-anion symporters declare none, so butyrate on the symporter has no material bound
+  still.
 - **Adjacent, for the lead.** P2's patch material term is each end's own slope, D4's positivity
   form. On a patch facing a finite node of comparable volume, the mode is the two-end sum, up to
   twice that. It is unchanged here unless ruled; P2 is unqualified, and no registered world

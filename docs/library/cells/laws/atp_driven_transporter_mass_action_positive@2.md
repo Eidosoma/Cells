@@ -144,7 +144,7 @@ law.
 | `cells.proton_atp_mass_action_positive@1` (a proton) | FR-4's and FR-5's judged worlds | It folds into this law, with the form's pH band, when those worlds are judged again. Until then it stays: it has a band and a closure read that this law does not declare |
 | `cells.ca_atp_mass_action_positive@1` (the inner model's own) | the inner model's worlds | When the sodium-potassium and calcium pumps move onto the kind ([the roadmap](../../../CORE_LAWS_ROADMAP.md), family 2) |
 | `cells.nak_atp_mass_action_positive@1` (the inner model's own) | the inner model's worlds | With the same item, into a cycle law of its own: it moves two ions, so it is another mechanism |
-| the older family's two calcium pump kernels | that family | At its deletion |
+| the older family's two calcium pump laws | that family | At its deletion; the two rate functions they are built on stay, since the inner model's own calcium pump calls them |
 
 ## How it is checked
 
@@ -177,9 +177,9 @@ the voltage follows the charge, the heat grows, the work is the cycles times the
 every [ledger](../../GLOSSARY.md#ledger) closes. The stage's charge slope and the population's own
 material rate are the reference's at both ends, over the cargo's rows and not the held fuel's.
 Populations outside the law's counts, half-saturations, fuel or domain, on RK4, or beside a second
-law of the pathway are refused by name. At a store's node the law is admitted, and a copy of it
-without its terms is refused. Beside a calcium binder under a closure it reads the free calcium.
-Each has a planted error. No run was compared with a measurement.
+law of the pathway are refused by name. At a [store's](../../GLOSSARY.md#store) node the law is
+admitted, and a copy of it without its terms is refused. Beside a calcium binder under a closure it
+reads the free calcium. Each has a planted error. No run was compared with a measurement.
 
 ## Status
 

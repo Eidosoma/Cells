@@ -147,9 +147,9 @@ affinity, the transport and the heat are that reference's to the protocol's tole
 Other rows run closed worlds: amounts follow the cycles at each end, no charge crosses, the heat
 grows and every [ledger](../../GLOSSARY.md#ledger) closes, and a neutral corruption of the amounts
 is refused by its ledger. The population's own material rate is the reference's at both ends. Wrong
-species, valences and counts, RK4, and a population at a store's node are refused by name. Beside a
-potassium binder under a closure it reads the free potassium. Each has a planted error. No run was
-compared with a measurement.
+species, valences and counts, RK4, and a population at a [store's](../../GLOSSARY.md#store) node are
+refused by name. Beside a potassium binder under a closure it reads the free potassium. Each has a
+planted error. No run was compared with a measurement.
 
 ## Status
 

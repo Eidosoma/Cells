@@ -20,7 +20,8 @@ compile:
   pair, and for the division before the product, which is a NaN at a zero amount, a finite rate);
 - beside operators, at the definition: admitted beside a compartment, the wash and labels, and water
   (read at its current volume), refused by name under RK4, beside replacement, trafficking, a closer
-  and a retiring operator (planted hooks refused: bound_rate, moved_rows, rates);
+  and a retiring operator (planted hooks refused: bound_rate, moved_rows, rates); a loop is refused
+  beside any operator that changes slots, whatever its kinds declare;
 - a world that declares none keeps its definition, its structure and its program (D148).
 Compiled, the store world (a composite of this file's own numbers: the same release from a
 compartment, its ligand binding a buffer by local_species_reactions@1): ten steps in two windows, in
@@ -54,7 +55,7 @@ from cells.models import pump_composite
 from cells.models import pump_composite_adapter as adapter
 from cells.models import surface_pump_v3 as tissue3
 from cells.numerics import surface_imex as imex
-from cells.operators import OPERATORS
+from cells.operators import OPERATORS, membrane_state
 from cells.records.io import load_snapshot, write_snapshot
 from cells.registry import kind_registry
 from cells.registry.models import get_model
@@ -537,6 +538,44 @@ def test_the_kind_s_place_beside_operators_is_admitted_or_refused_by_name():
     assert reason == "roles" and set(fields) == set(
         species.LAYOUT_FIELDS
     )  # Why: no partition role.
+
+
+def test_an_operator_that_changes_slots_is_refused_beside_a_loop(monkeypatch):
+    """Every registered operator that opens, closes or retires slots, beside the store world whose
+    release closes a loop and beside the same world without one. Today its kinds refuse such an
+    operator too, for their roles; with those refusals planted away, as a kind that declares its
+    roles passes them, the loop's refusal is the one that is left beside a closer."""
+
+    def inner(*factors):
+        raw = store()
+        raw["model"]["passive_routes"][0]["factors"] = list(factors)
+        return get_model(parse_spec(raw).model).inner
+
+    loop, none = inner("ligand", "calcium"), inner("ligand")
+    assert loop.structure.loops and none.structure.loops == ()
+    masks, units = set(loop.MASK_FIELDS), OPERATORS[membrane_state.LAW_ID]
+    changers = {
+        name: op
+        for name, op in OPERATORS.items()
+        if op.CLOSES or op.RETIRES or masks & set(op.VIEW_FIELDS)
+    }
+    assert set(changers) == {
+        law for law in pump_composite.SLOT_WRITERS if not OPERATORS[law].FIXED_INNER_FIELDS
+    }  # The other slot writers build the inner fields in today's layout: refused beside any kind.
+    refusal = "opens, closes or retires slots, and a routed slot closes a loop on its own gate"
+
+    def errors(world, op):
+        return pump_composite.structure_errors(world, (units, op))
+
+    for op in changers.values():
+        assert any(refusal in e for e in errors(loop, op))
+    passed = lambda inner, kinds: dict.fromkeys(kinds, ())  # noqa: E731
+    monkeypatch.setattr(pump_composite, "_kinds_lifecycle", passed)
+    for name, op in changers.items():
+        left = errors(none, op)
+        (own,) = [e for e in errors(loop, op) if e not in left]
+        assert own.startswith(f"{name} {refusal}")
+        assert not left or not op.CLOSES  # Beside a closer it is the only wall.
 
 
 def test_beside_water_a_reading_takes_the_current_volume():
