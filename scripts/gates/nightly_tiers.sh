@@ -15,7 +15,8 @@
 #      map's entries are then not traced, so selection keeps D229's readers rule for them.
 #   4. Builds the scope map (scope.py build) and writes NIGHTLY/DATE/verdict.json, with what the
 #      trace found. An entry the trace shows to lack a file is incomplete, so its test always runs;
-#      that fails nothing here. The traces that found nothing are removed.
+#      that fails nothing here. The traces are removed (about 850 MB), but for one that found something
+#      no unrecorded child explains.
 #   5. A passing run's map replaces GATE_CACHE/scope-map.json, renamed into place whole. A failure (a
 #      file that changed against its row, a run or map that did not complete, or the lock never held)
 #      writes GATE_CACHE/selection-stopped, which turns selection off until the lead removes it with

@@ -1545,6 +1545,9 @@ def test_the_trace_marks_what_the_recorder_missed_and_only_a_traced_reader_is_re
         assert hole["why"] == ["the trace shows what the entry lacks: ['docs/a.md']"]
         assert "docs/a.md" in found["files"]["docs/a.md"] and "execve" in found["programs"][0]
         assert hole["children_unmapped"][0].startswith("(the trace) execve(")
+        scope.build(kinds_map["tmp"] / "run", kinds_map["snap"], sys.executable, prune=True)
+        kept = {p.name for p in (kinds_map["tmp"] / "run" / "trace").iterdir()}
+        assert kept == {H.replace("/", "__")}  # test_masks.py's finds only what its children explain.
     assert doc["files"][K]["reads_repository"] and doc["files"][K]["complete"], doc["files"][K]
     base = kinds_snapshot(tmp_path / "base", kinds_map["lib"])
     head = kinds_snapshot(tmp_path / "head", kinds_map["lib"], rev="h" * 40)

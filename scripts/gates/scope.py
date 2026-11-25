@@ -39,7 +39,8 @@ cells or JAX.
         not see leaves the file's children unmapped. An entry whose trace is missing or not whole is
         not traced.
       The map's verdict is the run's: passed when every file ran and matched its row. What the trace
-      found, per file, is the map's trace key; --prune-traces removes the traces that found nothing.
+      found, per file, is the map's trace key; --prune-traces removes the traces that found nothing,
+      or only what a child without a record explains.
   select HEAD BASE MAP OUT_DIR [--tiers REL] [--stopped FILE] [--python PY] [--max-age-hours H]
          [--always untraced|readers|scanners|none]
       The tier-1/2 files of HEAD's record that the landing can reach, as a tier subset for
@@ -194,6 +195,7 @@ def read_file_logs(folder):
     return logs
 
 
+TRACE_SAW = "(the trace)"  # Before a program that only strace saw, among a file's unmapped children.
 CLONES = ("clone", "clone3", "fork", "vfork")
 UNSEEN = ("open_by_handle_at", "io_uring_setup")  # They open files that no other traced call shows.
 CHILD = re.compile(r" = (\d+)$")
@@ -425,7 +427,7 @@ def entry(logs, tree, trace=None):
         if found.get("files") or found.get("listings"):
             why.append("the trace shows what the entry lacks: "
                        f"{sorted([*found.get('files', ()), *found.get('listings', ())])[:5]}")
-        unmapped += [f"(the trace) {line[:80]}" for line in found.get("programs", ())]
+        unmapped += [f"{TRACE_SAW} {line[:80]}" for line in found.get("programs", ())]
     data = sorted({path for path, by in reads
                    if by == "arg" or (path not in modules and tree.kind(path) == "f"
                                       and not (path.startswith("src/") and by.startswith("repo:src/")))})
@@ -494,7 +496,10 @@ def build(run_dir, snapshot, python, prune=False):
             traced += 1
             if e["found"]:
                 found[name] = e["found"]
-            elif prune:
+            # A child the recorder itself could not see is why the trace finds something, so the trace tells
+            # nothing new; any other finding keeps its trace.
+            expected = any(not u.startswith(TRACE_SAW) for u in e["unmapped"])
+            if prune and (expected or not e["found"]):
                 shutil.rmtree(Path(traces) / slug, ignore_errors=True)
         if row.get("timed_out") or row.get("exit_code") is None:
             e["why"].append("did not end within the cap")
