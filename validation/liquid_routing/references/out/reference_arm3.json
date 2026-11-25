@@ -1,0 +1,1901 @@
+{
+ "arm": 3,
+ "cases": {},
+ "checks": [
+  {
+   "bound": "1.00000E-100",
+   "name": "3 conservation: F1, the nodes' columns sum to zero",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-100",
+   "name": "3 conservation: F1, an inlet's column is its supply and each node's flows balance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: F1, amounts sum to the start plus the supplied (relative)",
+   "passes": true,
+   "residual": "4.61000E-107"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: F1, volumes sum to the start plus the supplied",
+   "passes": true,
+   "residual": "1.84400E-106"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: F1, e^(-Gt) e^(Gt) is the identity",
+   "passes": true,
+   "residual": "1.39500E-105"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: F1, P(h)^S = P(Sh) for every registered h, and two halves make a step",
+   "passes": true,
+   "residual": "1.15652E-109"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 second method: F1, every amount by uniformization (relative)",
+   "passes": true,
+   "residual": "6.02315E-107"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 second method: F1, every amount by Taylor continuation (relative)",
+   "passes": true,
+   "residual": "5.99630E-107"
+  },
+  {
+   "bound": "1.00000E-40",
+   "name": "8 heat: F1, H_tot by the integral of every holder's rate, at 5 outputs (over s_F)",
+   "passes": true,
+   "residual": "4.77243E-65"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "8 heat: F1, H_tot by finite portions at every registered step (over s_F)",
+   "passes": true,
+   "residual": "2.64177E-110"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F1, H_tot, the largest fraction of the bound",
+   "passes": true,
+   "residual": "1.33972E-4"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F1, amounts, the largest fraction of the bound",
+   "passes": true,
+   "residual": "3.81845E-2"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F1, sums, the largest fraction of the bound",
+   "passes": true,
+   "residual": "4.12824E-2"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F1, supplied, the largest fraction of the bound",
+   "passes": true,
+   "residual": "4.70023E-15"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F1, volume, the largest fraction of the bound",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-100",
+   "name": "3 conservation: F1L, the nodes' columns sum to zero",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-100",
+   "name": "3 conservation: F1L, an inlet's column is its supply and each node's flows balance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: F1L, amounts sum to the start plus the supplied (relative)",
+   "passes": true,
+   "residual": "4.61000E-107"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: F1L, volumes sum to the start plus the supplied",
+   "passes": true,
+   "residual": "1.84400E-106"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: F1L, e^(-Gt) e^(Gt) is the identity",
+   "passes": true,
+   "residual": "1.39500E-105"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: F1L, P(h)^S = P(Sh) for every registered h, and two halves make a step",
+   "passes": true,
+   "residual": "1.15652E-109"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 second method: F1L, every amount by uniformization (relative)",
+   "passes": true,
+   "residual": "6.02315E-107"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 second method: F1L, every amount by Taylor continuation (relative)",
+   "passes": true,
+   "residual": "5.99630E-107"
+  },
+  {
+   "bound": "1.00000E-40",
+   "name": "8 heat: F1L, H_tot by the integral of every holder's rate, at 5 outputs (over s_F)",
+   "passes": true,
+   "residual": "4.77243E-65"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "8 heat: F1L, H_tot by finite portions at every registered step (over s_F)",
+   "passes": true,
+   "residual": "2.64177E-110"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "9 labels: F1L, the labels of every holder sum to its species (relative)",
+   "passes": true,
+   "residual": "7.68048E-110"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F1L, H_tot, the largest fraction of the bound",
+   "passes": true,
+   "residual": "1.33972E-4"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F1L, amounts, the largest fraction of the bound",
+   "passes": true,
+   "residual": "3.81845E-2"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F1L, label sums, the largest fraction of the bound",
+   "passes": true,
+   "residual": "1.42312E-2"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F1L, labels, the largest fraction of the bound",
+   "passes": true,
+   "residual": "2.26069E-3"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F1L, sums, the largest fraction of the bound",
+   "passes": true,
+   "residual": "4.12824E-2"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F1L, supplied, the largest fraction of the bound",
+   "passes": true,
+   "residual": "4.70023E-15"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F1L, volume, the largest fraction of the bound",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-100",
+   "name": "3 conservation: F2, the nodes' columns sum to zero",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-100",
+   "name": "3 conservation: F2, an inlet's column is its supply and each node's flows balance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: F2, amounts sum to the start plus the supplied (relative)",
+   "passes": true,
+   "residual": "4.61167E-107"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: F2, volumes sum to the start plus the supplied",
+   "passes": true,
+   "residual": "1.84400E-106"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: F2, e^(-Gt) e^(Gt) is the identity",
+   "passes": true,
+   "residual": "1.39500E-105"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: F2, P(h)^S = P(Sh) for every registered h, and two halves make a step",
+   "passes": true,
+   "residual": "8.67388E-110"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 second method: F2, every amount by uniformization (relative)",
+   "passes": true,
+   "residual": "6.02315E-107"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 second method: F2, every amount by Taylor continuation (relative)",
+   "passes": true,
+   "residual": "5.99438E-107"
+  },
+  {
+   "bound": "1.00000E-40",
+   "name": "8 heat: F2, H_tot by the integral of every holder's rate, at 5 outputs (over s_F)",
+   "passes": true,
+   "residual": "2.86346E-65"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "8 heat: F2, H_tot by finite portions at every registered step (over s_F)",
+   "passes": true,
+   "residual": "2.37760E-110"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F2, H_tot, the largest fraction of the bound",
+   "passes": true,
+   "residual": "7.95683E-5"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F2, amounts, the largest fraction of the bound",
+   "passes": true,
+   "residual": "2.81698E-2"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F2, sums, the largest fraction of the bound",
+   "passes": true,
+   "residual": "2.90905E-2"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F2, supplied, the largest fraction of the bound",
+   "passes": true,
+   "residual": "4.70023E-15"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F2, volume, the largest fraction of the bound",
+   "passes": true,
+   "residual": "3.11333E-4"
+  },
+  {
+   "bound": "1.00000E-100",
+   "name": "3 conservation: F3, the nodes' columns sum to zero",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-100",
+   "name": "3 conservation: F3, an inlet's column is its supply and each node's flows balance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: F3, amounts sum to the start plus the supplied (relative)",
+   "passes": true,
+   "residual": "2.72667E-107"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: F3, volumes sum to the start plus the supplied",
+   "passes": true,
+   "residual": "2.77400E-106"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: F3, e^(-Gt) e^(Gt) is the identity",
+   "passes": true,
+   "residual": "1.39500E-105"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: F3, P(h)^S = P(Sh) for every registered h, and two halves make a step",
+   "passes": true,
+   "residual": "2.89129E-109"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 second method: F3, every amount by uniformization (relative)",
+   "passes": true,
+   "residual": "6.01356E-107"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 second method: F3, every amount by Taylor continuation (relative)",
+   "passes": true,
+   "residual": "5.99630E-107"
+  },
+  {
+   "bound": "1.00000E-40",
+   "name": "8 heat: F3, H_tot by the integral of every holder's rate, at 5 outputs (over s_F)",
+   "passes": true,
+   "residual": "4.77243E-65"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "8 heat: F3, H_tot by finite portions at every registered step (over s_F)",
+   "passes": true,
+   "residual": "2.96759E-109"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F3, H_tot, the largest fraction of the bound",
+   "passes": true,
+   "residual": "1.62796E-4"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F3, amounts, the largest fraction of the bound",
+   "passes": true,
+   "residual": "3.81845E-2"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F3, sums, the largest fraction of the bound",
+   "passes": true,
+   "residual": "4.03650E-2"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F3, supplied, the largest fraction of the bound",
+   "passes": true,
+   "residual": "4.70023E-15"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F3, volume, the largest fraction of the bound",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-100",
+   "name": "3 conservation: F4, the nodes' columns sum to zero",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-100",
+   "name": "3 conservation: F4, an inlet's column is its supply and each node's flows balance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: F4, amounts sum to the start plus the supplied (relative)",
+   "passes": true,
+   "residual": "2.82000E-107"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: F4, volumes sum to the start plus the supplied",
+   "passes": true,
+   "residual": "2.72700E-106"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: F4, e^(-Gt) e^(Gt) is the identity",
+   "passes": true,
+   "residual": "2.23300E-105"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: F4, P(h)^S = P(Sh) for every registered h, and two halves make a step",
+   "passes": true,
+   "residual": "1.27118E-109"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 second method: F4, every amount by uniformization (relative)",
+   "passes": true,
+   "residual": "5.99054E-107"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 second method: F4, every amount by Taylor continuation (relative)",
+   "passes": true,
+   "residual": "5.99054E-107"
+  },
+  {
+   "bound": "1.00000E-40",
+   "name": "8 heat: F4, H_tot by the integral of every holder's rate, at 5 outputs (over s_F)",
+   "passes": true,
+   "residual": "1.13709E-65"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "8 heat: F4, H_tot by finite portions at every registered step (over s_F)",
+   "passes": true,
+   "residual": "1.34730E-109"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F4, H_tot, the largest fraction of the bound",
+   "passes": true,
+   "residual": "1.19007E-4"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F4, amounts, the largest fraction of the bound",
+   "passes": true,
+   "residual": "2.64620E-2"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F4, sums, the largest fraction of the bound",
+   "passes": true,
+   "residual": "2.81817E-2"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F4, supplied, the largest fraction of the bound",
+   "passes": true,
+   "residual": "4.70023E-15"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F4, volume, the largest fraction of the bound",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-100",
+   "name": "3 conservation: F5, the nodes' columns sum to zero",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-100",
+   "name": "3 conservation: F5, an inlet's column is its supply and each node's flows balance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: F5, amounts sum to the start plus the supplied (relative)",
+   "passes": true,
+   "residual": "4.42000E-107"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: F5, volumes sum to the start plus the supplied",
+   "passes": true,
+   "residual": "2.56000E-106"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: F5, e^(-Gt) e^(Gt) is the identity",
+   "passes": true,
+   "residual": "2.04000E-103"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: F5, P(h)^S = P(Sh) for every registered h, and two halves make a step",
+   "passes": true,
+   "residual": "1.85167E-109"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 second method: F5, every amount by uniformization (relative)",
+   "passes": true,
+   "residual": "1.19878E-106"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 second method: F5, every amount by Taylor continuation (relative)",
+   "passes": true,
+   "residual": "1.19878E-106"
+  },
+  {
+   "bound": "1.00000E-40",
+   "name": "8 heat: F5, H_tot by the integral of every holder's rate, at 5 outputs (over s_F)",
+   "passes": true,
+   "residual": "1.29813E-64"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "8 heat: F5, H_tot by finite portions at every registered step (over s_F)",
+   "passes": true,
+   "residual": "4.13878E-109"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F5, H_tot, the largest fraction of the bound",
+   "passes": true,
+   "residual": "1.97694E-4"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F5, amounts, the largest fraction of the bound",
+   "passes": true,
+   "residual": "2.32909E-2"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F5, sums, the largest fraction of the bound",
+   "passes": true,
+   "residual": "2.75005E-2"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F5, supplied, the largest fraction of the bound",
+   "passes": true,
+   "residual": "8.61709E-15"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F5, volume, the largest fraction of the bound",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-100",
+   "name": "3 conservation: F6, the nodes' columns sum to zero",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-100",
+   "name": "3 conservation: F6, an inlet's column is its supply and each node's flows balance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: F6, amounts sum to the start plus the supplied (relative)",
+   "passes": true,
+   "residual": "5.21167E-107"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: F6, volumes sum to the start plus the supplied",
+   "passes": true,
+   "residual": "2.51200E-106"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: F6, e^(-Gt) e^(Gt) is the identity",
+   "passes": true,
+   "residual": "8.75360E-102"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: F6, P(h)^S = P(Sh) for every registered h, and two halves make a step",
+   "passes": true,
+   "residual": "4.77082E-109"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 second method: F6, every amount by uniformization (relative)",
+   "passes": true,
+   "residual": "8.36318E-107"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 second method: F6, every amount by Taylor continuation (relative)",
+   "passes": true,
+   "residual": "8.36198E-107"
+  },
+  {
+   "bound": "1.00000E-40",
+   "name": "8 heat: F6, H_tot by the integral of every holder's rate, at 5 outputs (over s_F)",
+   "passes": true,
+   "residual": "7.54552E-58"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "8 heat: F6, H_tot by finite portions at every registered step (over s_F)",
+   "passes": true,
+   "residual": "4.86086E-109"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F6, H_tot, the largest fraction of the bound",
+   "passes": true,
+   "residual": "1.64667E-4"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F6, amounts, the largest fraction of the bound",
+   "passes": true,
+   "residual": "1.49177E-2"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F6, sums, the largest fraction of the bound",
+   "passes": true,
+   "residual": "2.06916E-2"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F6, supplied, the largest fraction of the bound",
+   "passes": true,
+   "residual": "4.49587E-15"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F6, volume, the largest fraction of the bound",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-100",
+   "name": "3 conservation: F6L, the nodes' columns sum to zero",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-100",
+   "name": "3 conservation: F6L, an inlet's column is its supply and each node's flows balance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: F6L, amounts sum to the start plus the supplied (relative)",
+   "passes": true,
+   "residual": "5.21167E-107"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: F6L, volumes sum to the start plus the supplied",
+   "passes": true,
+   "residual": "2.51200E-106"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: F6L, e^(-Gt) e^(Gt) is the identity",
+   "passes": true,
+   "residual": "8.75360E-102"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: F6L, P(h)^S = P(Sh) for every registered h, and two halves make a step",
+   "passes": true,
+   "residual": "4.77082E-109"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 second method: F6L, every amount by uniformization (relative)",
+   "passes": true,
+   "residual": "8.36318E-107"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 second method: F6L, every amount by Taylor continuation (relative)",
+   "passes": true,
+   "residual": "8.36198E-107"
+  },
+  {
+   "bound": "1.00000E-40",
+   "name": "8 heat: F6L, H_tot by the integral of every holder's rate, at 5 outputs (over s_F)",
+   "passes": true,
+   "residual": "7.54552E-58"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "8 heat: F6L, H_tot by finite portions at every registered step (over s_F)",
+   "passes": true,
+   "residual": "4.86086E-109"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "9 labels: F6L, the labels of every holder sum to its species (relative)",
+   "passes": true,
+   "residual": "8.93515E-110"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F6L, H_tot, the largest fraction of the bound",
+   "passes": true,
+   "residual": "1.64667E-4"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F6L, amounts, the largest fraction of the bound",
+   "passes": true,
+   "residual": "1.49177E-2"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F6L, label sums, the largest fraction of the bound",
+   "passes": true,
+   "residual": "3.98064E-3"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F6L, labels, the largest fraction of the bound",
+   "passes": true,
+   "residual": "5.03967E-3"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F6L, sums, the largest fraction of the bound",
+   "passes": true,
+   "residual": "2.06916E-2"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F6L, supplied, the largest fraction of the bound",
+   "passes": true,
+   "residual": "4.49587E-15"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F6L, volume, the largest fraction of the bound",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-100",
+   "name": "3 conservation: F7, the nodes' columns sum to zero",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-100",
+   "name": "3 conservation: F7, an inlet's column is its supply and each node's flows balance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: F7, amounts sum to the start plus the supplied (relative)",
+   "passes": true,
+   "residual": "4.61000E-107"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: F7, volumes sum to the start plus the supplied",
+   "passes": true,
+   "residual": "1.84400E-106"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: F7, e^(-Gt) e^(Gt) is the identity",
+   "passes": true,
+   "residual": "1.39500E-105"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: F7, P(h)^S = P(Sh) for every registered h, and two halves make a step",
+   "passes": true,
+   "residual": "8.67388E-110"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 second method: F7, every amount by uniformization (relative)",
+   "passes": true,
+   "residual": "6.02315E-107"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 second method: F7, every amount by Taylor continuation (relative)",
+   "passes": true,
+   "residual": "5.99630E-107"
+  },
+  {
+   "bound": "1.00000E-40",
+   "name": "8 heat: F7, H_tot by the integral of every holder's rate, at 5 outputs (over s_F)",
+   "passes": true,
+   "residual": "4.77184E-65"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "8 heat: F7, H_tot by finite portions at every registered step (over s_F)",
+   "passes": true,
+   "residual": "2.64144E-110"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F7, H_tot, the largest fraction of the bound",
+   "passes": true,
+   "residual": "5.68233E-5"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F7, amounts, the largest fraction of the bound",
+   "passes": true,
+   "residual": "2.81698E-2"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F7, sums, the largest fraction of the bound",
+   "passes": true,
+   "residual": "2.85757E-2"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F7, supplied, the largest fraction of the bound",
+   "passes": true,
+   "residual": "9.72722E-12"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: F7, volume, the largest fraction of the bound",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "1 equal volumes: F1 forward, 1 - 2/e, by the propagator",
+   "passes": true,
+   "residual": "4.50000E-109"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "1 equal volumes: F1 forward, 1 - 2/e, by the closed form",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "1 equal volumes: F2 reversed, 1 - 1/e, by the propagator",
+   "passes": true,
+   "residual": "7.40000E-109"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "1 equal volumes: F2 reversed, 1 - 1/e, by the closed form",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "1 equal volumes: m = 1 to 8 equal chambers in series, by the propagator",
+   "passes": true,
+   "residual": "2.94000E-108"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "2 unequal volumes: closed form against the propagator, F1, every entry (relative)",
+   "passes": true,
+   "residual": "5.99438E-107"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "2 unequal volumes: closed form against the propagator, F2, every entry (relative)",
+   "passes": true,
+   "residual": "5.99438E-107"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "2 unequal volumes: closed form against the propagator, F3, every entry (relative)",
+   "passes": true,
+   "residual": "5.99054E-107"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "2 unequal volumes: closed form against the propagator, F4, every entry (relative)",
+   "passes": true,
+   "residual": "5.99054E-107"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "2 unequal volumes: E's gap over 2^-k tends to at/2 (k = 10 to 40), error over 2^-k (1 + at)^2",
+   "passes": true,
+   "residual": "9.25926E-2"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "2 unequal volumes: successive gaps fall by 2 (k = 10 to 40), error over 2^(1 - k)",
+   "passes": true,
+   "residual": "8.33333E-1"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "2 unequal volumes: the chain's amounts tend to the confluent form at first order, gap over 2^-k N",
+   "passes": true,
+   "residual": "2.70671E-1"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "P3's negative control: at equal volumes its amounts are the honest ones (fmol, the largest gap)",
+   "passes": true,
+   "residual": "1.82000E-106"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "domain: F6 h=4.0 refused, 1 over its throughput (a refusal needs it below 1)",
+   "passes": true,
+   "residual": "8.00000E-1"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "domain: arm 3, the largest throughput of any run meant to complete",
+   "passes": true,
+   "residual": "6.25000E-1"
+  }
+ ],
+ "constants": {
+  "N_A": "6.02214076e23",
+  "k_B": "1.380649e-23"
+ },
+ "events": {},
+ "inputs_sha256": "50cd5a03b1efd0a503bcc85a25ac6648336a790a14e4b0c2d2cb0b21be3574d4",
+ "kind": "liquid-routing reference, version 1",
+ "planted_series": {
+  "P11": {
+   "F1L|8.0": {
+    "label_T_tag_A": {
+     "times_s": [8.0, 16.0],
+     "value": ["3.678794411714423215955237701614608674458E+0", "1.353352832366126918939994949724844034076E+0"]
+    },
+    "label_T_tag_B": {
+     "times_s": [8.0, 16.0],
+     "value": ["3.678794411714423215955237701614608674458E+0", "2.706705664732253837879989899449688068153E+0"]
+    },
+    "label_T_tag_K": {
+     "times_s": [8.0, 16.0],
+     "value": ["1.740371072260359412701920027988481692490E+0", "5.037901398591075973000571124553542550811E+0"]
+    }
+   }
+  },
+  "P2": {
+   "F1": {
+    "n_T_A": {
+     "times_s": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0],
+     "value": ["8.824969025846424041038583050669594268835E+0", "7.788007830714933479319417050292429560723E+0", "6.872892787910972828336859502645796451287E+0", "6.065306597127908113399144816185733386326E+0", "5.352614285191761373852149119215247761709E+0", "4.723665527412257605169501450561677033709E+0", "4.168620196787416577774257789706666818742E+0", "3.678794411716951698190551932277370325215E+0", "3.246524673586198688101247975751197634865E+0", "2.865047968604754984061413506019673364483E+0", "2.528395958050453419726656012221897227738E+0", "2.231301601487405768692210988261890264198E+0", "1.969116752045152853912075404637161163735E+0", "1.737739434507756171033370806090514587859E+0", "1.533549668452671213088265068179494805511E+0", "1.353352832369585577807048498887702811573E+0"]
+    },
+    "n_T_B": {
+     "times_s": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0],
+     "value": ["3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12"]
+    },
+    "n_T_K": {
+     "times_s": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0],
+     "value": ["1.175030974154075958961416949320349054979E+0", "2.211992169286066520680582949687457086906E+0", "3.127107212090527171663140497324033520157E+0", "3.934693402874091886600855183774039908932E+0", "4.647385714810738626147850880734468857364E+0", "5.276334472590742394830498549377982909179E+0", "5.831379803216083422225742210222936447960E+0", "6.321205588287048301809448067642176265302E+0", "6.753475326418301311898752024158292279467E+0", "7.134952031400245015938586493879759873664E+0", "7.471604041955046580273343987667479334223E+0", "7.768698398518594231307789011617429621577E+0", "8.030883247961347146087924595232102045856E+0", "8.262260565499243828966629193768691945545E+0", "8.466450331554828786911734931669655051708E+0", "8.646647167638414422192951500951390369461E+0"]
+    }
+   },
+   "F3": {
+    "n_T_A": {
+     "times_s": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0],
+     "value": ["8.824969025846424041038583050669594268835E+0", "7.788007830714933479319417050292429560723E+0", "6.872892787910972828336859502645796451287E+0", "6.065306597127908113399144816185733386326E+0", "5.352614285191761373852149119215247761709E+0", "4.723665527412257605169501450561677033709E+0", "4.168620196787416577774257789706666818742E+0", "3.678794411716951698190551932277370325215E+0", "3.246524673586198688101247975751197634865E+0", "2.865047968604754984061413506019673364483E+0", "2.528395958050453419726656012221897227738E+0", "2.231301601487405768692210988261890264198E+0", "1.969116752045152853912075404637161163735E+0", "1.737739434507756171033370806090514587859E+0", "1.533549668452671213088265068179494805511E+0", "1.353352832369585577807048498887702811573E+0"]
+    },
+    "n_T_B": {
+     "times_s": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0],
+     "value": ["9.999999999999999394969692819398109301723E-12", "9.999999999999999394969692819398109301723E-12", "9.999999999999999394969692819398109301723E-12", "9.999999999999999394969692819398109301723E-12", "9.999999999999999394969692819398109301723E-12", "9.999999999999999394969692819398109301723E-12", "9.999999999999999394969692819398109301723E-12", "9.999999999999999394969692819398109301723E-12", "9.999999999999999394969692819398109301723E-12", "9.999999999999999394969692819398109301723E-12", "9.999999999999999394969692819398109301723E-12", "9.999999999999999394969692819398109301723E-12", "9.999999999999999394969692819398109301723E-12", "9.999999999999999394969692819398109301723E-12", "9.999999999999999394969692819398109301723E-12", "9.999999999999999394969692819398109301723E-12"]
+    },
+    "n_T_K": {
+     "times_s": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0],
+     "value": ["1.175030974154075958961416949320349054979E+0", "2.211992169286066520680582949687457086906E+0", "3.127107212090527171663140497324033520157E+0", "3.934693402874091886600855183774039908932E+0", "4.647385714810738626147850880734468857364E+0", "5.276334472590742394830498549377982909179E+0", "5.831379803216083422225742210222936447960E+0", "6.321205588287048301809448067642176265302E+0", "6.753475326418301311898752024158292279467E+0", "7.134952031400245015938586493879759873664E+0", "7.471604041955046580273343987667479334223E+0", "7.768698398518594231307789011617429621577E+0", "8.030883247961347146087924595232102045856E+0", "8.262260565499243828966629193768691945545E+0", "8.466450331554828786911734931669655051708E+0", "8.646647167638414422192951500951390369461E+0"]
+    }
+   }
+  },
+  "P3": {
+   "F1": {
+    "V_K": {
+     "times_s": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0],
+     "value": ["0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0"]
+    },
+    "n_T_A": {
+     "times_s": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0],
+     "value": ["8.824969025846424041038583050669594268835E+0", "7.788007830714933479319417050292429560723E+0", "6.872892787910972828336859502645796451287E+0", "6.065306597127908113399144816185733386326E+0", "5.352614285191761373852149119215247761709E+0", "4.723665527412257605169501450561677033709E+0", "4.168620196787416577774257789706666818742E+0", "3.678794411716951698190551932277370325215E+0", "3.246524673586198688101247975751197634865E+0", "2.865047968604754984061413506019673364483E+0", "2.528395958050453419726656012221897227738E+0", "2.231301601487405768692210988261890264198E+0", "1.969116752045152853912075404637161163735E+0", "1.737739434507756171033370806090514587859E+0", "1.533549668452671213088265068179494805511E+0", "1.353352832369585577807048498887702811573E+0"]
+    },
+    "n_T_B": {
+     "times_s": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0],
+     "value": ["1.103121128234303005129822881263302550307E+0", "1.947001957681733369829854262512767333069E+0", "2.577334795469114810626322313441890288306E+0", "3.032653298565954056699572408052639988422E+0", "3.345383928246350858657593199479359822512E+0", "3.542749145560193203877126087901144422911E+0", "3.647542672189489505552475565983276790214E+0", "3.678794411716951698190551932277370325215E+0", "3.652340257783973524113903972730154015408E+0", "3.581309960754943730076766882544705057974E+0", "3.476544442317873452124152016835278716696E+0", "3.346952402229108653038316482433062101039E+0", "3.199814722070873387607122532585670271996E+0", "3.041044010385573299308398910718740585866E+0", "2.875405628345258524540497002906949493631E+0", "2.706705664735171155614096997855859032629E+0"]
+    },
+    "n_T_K": {
+     "times_s": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0],
+     "value": ["7.190984592377295383159406797659309518960E-2", "2.649902116083331508507286870942363443548E-1", "5.497724166254123610368181838016898223684E-1", "9.020401043121378299012827756409465110279E-1", "1.302001786568387767490257681174655625368E+0", "1.733585327034549190953372461396385076785E+0", "2.183837131030593916673266644159206248263E+0", "2.642411176574096603618896135284352530603E+0", "3.101135068638327787784848051347684854576E+0", "3.553642070649301285861819611254601406207E+0", "3.995059599641173128149191970751747208044E+0", "4.421745996293485578269472529103914111056E+0", "4.831068525894473758480802062565978364377E+0", "5.221216555117670529658230282969497950196E+0", "5.591044703213570262371237928682252148595E+0", "5.939941502907243266578854503015077927349E+0"]
+    }
+   },
+   "F3": {
+    "V_K": {
+     "times_s": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0],
+     "value": ["0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0"]
+    },
+    "n_T_A": {
+     "times_s": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0],
+     "value": ["8.824969025846424041038583050669594268835E+0", "7.788007830714933479319417050292429560723E+0", "6.872892787910972828336859502645796451287E+0", "6.065306597127908113399144816185733386326E+0", "5.352614285191761373852149119215247761709E+0", "4.723665527412257605169501450561677033709E+0", "4.168620196787416577774257789706666818742E+0", "3.678794411716951698190551932277370325215E+0", "3.246524673586198688101247975751197634865E+0", "2.865047968604754984061413506019673364483E+0", "2.528395958050453419726656012221897227738E+0", "2.231301601487405768692210988261890264198E+0", "1.969116752045152853912075404637161163735E+0", "1.737739434507756171033370806090514587859E+0", "1.533549668452671213088265068179494805511E+0", "1.353352832369585577807048498887702811573E+0"]
+    },
+    "n_T_B": {
+     "times_s": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0],
+     "value": ["1.103121128239597986545330453217554415781E+0", "1.947001957686406174528282691313697455962E+0", "2.577334795473238546299068146272625424652E+0", "3.032653298569593240657848208276090813801E+0", "3.345383928249562427228707140650313777931E+0", "3.542749145563027403193572175896180121404E+0", "3.647542672191990677670546616180112388257E+0", "3.678794411719158974837580586013962411860E+0", "3.652340257785921438918054070938631240076E+0", "3.581309960756662758857928022996360573021E+0", "3.476544442319390489698980495569510830912E+0", "3.346952402230447433999207061289612856670E+0", "3.199814722072054857658347696782742691605E+0", "3.041044010386615942969101581387667093262E+0", "2.875405628346178654341566573606276407746E+0", "2.706705664735983167313516673936229266570E+0"]
+    },
+    "n_T_K": {
+     "times_s": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0],
+     "value": ["7.190984592447797241608649549776433201819E-2", "2.649902116096603461523002577687293237634E-1", "5.497724166272886253640723504463777883249E-1", "9.020401043144986459430069748929187879509E-1", "1.302001786571176198919143739479124772252E+0", "1.733585327037714991636926372876772480594E+0", "2.183837131034092744555195593437793752523E+0", "2.642411176577889326971867481023183546261E+0", "3.101135068642379872980697952614630732210E+0", "3.553642070653582257080658470278368993462E+0", "3.995059599645656090574363491492938196130E+0", "4.421745996298146797308581949722786457727E+0", "4.831068525899292288429576897844329047070E+0", "5.221216555122627885997527611775994545102E+0", "5.591044703218650132570168357458348336782E+0", "5.939941502912431254879434826410130795710E+0"]
+    }
+   }
+  },
+  "P4": {
+   "F1": {
+    "n_U_A": {
+     "times_s": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0],
+     "value": ["3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12"]
+    },
+    "n_U_B": {
+     "times_s": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0],
+     "value": ["5.294980784297107325856369767161210124106E+0", "4.672803584345990197756914731248226423337E+0", "4.123734197984548213514947657913527476276E+0", "3.639182222979651304758603289079241232333E+0", "3.211566656872332365814872971802024725686E+0", "2.834197289271601999812706610364257285491E+0", "2.501170030933595115216428397561372902828E+0", "2.207274542009138691569523700917418664563E+0", "1.947912714268061698401759427814299643598E+0", "1.719026731923218831405826430495506720288E+0", "1.517035585538085103899229977568115243276E+0", "1.338779045753529727009152019128487152224E+0", "1.181468220281124766740586901737250314311E+0", "1.042641920608087058829003128258045589884E+0", "9.201281557541301910266104978967010651396E-1", "8.120101506352071351272917684499920782351E-1"]
+    },
+    "n_U_K": {
+     "times_s": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0],
+     "value": ["7.050192157033926746204673910318581901182E-1", "1.327196415655009803196759585137910205111E+0", "1.876265802016951787915563816665677466396E+0", "2.360817777022348697148745343693032024562E+0", "2.788433343130167636569312819163316845433E+0", "3.165802710731398003048316338794152599852E+0", "3.498829969069904888121431709790105296739E+0", "3.792725457994861312245173564627127849227E+0", "4.052087285736438305889774995923315184417E+0", "4.280973268081781173362545151435176421951E+0", "4.482964414467414901345978762555636213186E+0", "4.661220954252470278712893879188332618462E+0", "4.818531779725375239458296154772637770599E+0", "4.957358079398912947846717086444910809249E+0", "5.079871844253369816125946874999323648218E+0", "5.187989849372792872502102762639100949346E+0"]
+    }
+   }
+  }
+ },
+ "plants": [
+  {
+   "check": "n_T_K",
+   "class": "R",
+   "distance": "3.678794411712951698190551932357823734698E+0",
+   "expected_tolerance": "4.396483177519137086619593901488968090351E-13",
+   "honest": "2.642411176574096603618896135284352530603E+0",
+   "margin": "8.367584415025180838226559658425488654394E+12",
+   "no_margin": false,
+   "plant": "P1",
+   "planted": "6.321205588287048301809448067642176265302E+0",
+   "step_s": 1.0,
+   "time_s": 8.0,
+   "world": "F1"
+  },
+  {
+   "check": "n_T_K",
+   "class": "R",
+   "distance": "3.678794411712951698190551932357823734698E+0",
+   "expected_tolerance": "4.396483177519137086619593901488968090351E-13",
+   "honest": "6.321205588287048301809448067642176265302E+0",
+   "margin": "8.367584415025180838226559658425488654394E+12",
+   "no_margin": false,
+   "plant": "P1",
+   "planted": "2.642411176574096603618896135284352530603E+0",
+   "step_s": 1.0,
+   "time_s": 8.0,
+   "world": "F2"
+  },
+  {
+   "check": "n_T_B",
+   "class": "R",
+   "distance": "1.947001957677733369829854262593220742551E+0",
+   "expected_tolerance": "1.465494392505939380555446405181824406844E-13",
+   "honest": "1.947001957681733369829854262512767333069E+0",
+   "margin": "1.328563225921618480187486798813823349446E+13",
+   "no_margin": false,
+   "plant": "P2",
+   "planted": "3.999999999999999919546590517022461469011E-12",
+   "step_s": 1.0,
+   "time_s": 2.0,
+   "world": "F1"
+  },
+  {
+   "check": "n_T_K",
+   "class": "R",
+   "distance": "1.947001957677733369829854262593220742551E+0",
+   "expected_tolerance": "1.465494392505939380555446405181824406844E-13",
+   "honest": "2.649902116083331508507286870942363443548E-1",
+   "margin": "1.328563225921618480187486798813823349446E+13",
+   "no_margin": false,
+   "plant": "P2",
+   "planted": "2.211992169286066520680582949687457086906E+0",
+   "step_s": 1.0,
+   "time_s": 2.0,
+   "world": "F1"
+  },
+  {
+   "check": "n_T_B",
+   "class": "R",
+   "distance": "2.890311627233604020079629852634861651430E+0",
+   "expected_tolerance": "1.953992523342522602547433052553543509811E-13",
+   "honest": "2.890311627243604020079629852029831344249E+0",
+   "margin": "1.479182541747602463183792856084915731390E+13",
+   "no_margin": false,
+   "plant": "P2",
+   "planted": "9.999999999999999394969692819398109301723E-12",
+   "step_s": 1.0,
+   "time_s": 3.0,
+   "world": "F3"
+  },
+  {
+   "check": "n_T_K",
+   "class": "R",
+   "distance": "2.890311627233604020079629852634861651430E+0",
+   "expected_tolerance": "1.953992523342522602547433052553543509811E-13",
+   "honest": "2.367955848569231515835106446891718687271E-1",
+   "margin": "1.479182541747602463183792856084915731390E+13",
+   "no_margin": false,
+   "plant": "P2",
+   "planted": "3.127107212090527171663140497324033520157E+0",
+   "step_s": 1.0,
+   "time_s": 3.0,
+   "world": "F3"
+  },
+  {
+   "check": "V_K",
+   "class": "R",
+   "distance": "8.000000000000000000000000000000000000000E+0",
+   "expected_tolerance": "6.643574579356936737895011901855468750000E-13",
+   "honest": "8.000000000000000000000000000000000000000E+0",
+   "margin": "1.204171023361095187165775401069518716578E+13",
+   "no_margin": false,
+   "plant": "P3",
+   "planted": "0",
+   "step_s": 1.0,
+   "time_s": 16.0,
+   "world": "F1"
+  },
+  {
+   "check": "n_T_B",
+   "class": "R",
+   "distance": "1.925292467284119067343555653627193560487E+0",
+   "expected_tolerance": "5.861977570029912598670307488226843631334E-13",
+   "honest": "5.401836909603509557042536149196704391399E+0",
+   "margin": "3.284373650843387058974117788363216377939E+12",
+   "no_margin": false,
+   "plant": "P3",
+   "planted": "3.476544442319390489698980495569510830912E+0",
+   "step_s": 1.0,
+   "time_s": 11.0,
+   "world": "F3"
+  },
+  {
+   "check": "n_T_K",
+   "class": "R",
+   "distance": "1.925292467284119067343555653627193560487E+0",
+   "expected_tolerance": "5.861977570029912598670307488226843631334E-13",
+   "honest": "2.069767132361537023230807837865744635643E+0",
+   "margin": "3.284373650843387058974117788363216377939E+12",
+   "no_margin": false,
+   "plant": "P3",
+   "planted": "3.995059599645656090574363491492938196130E+0",
+   "step_s": 1.0,
+   "time_s": 11.0,
+   "world": "F3"
+  },
+  {
+   "check": "V_K",
+   "class": "R",
+   "distance": "8.000000000000000000000000000000000000000E+0",
+   "expected_tolerance": "6.643574579356936737895011901855468750000E-13",
+   "honest": "8.000000000000000000000000000000000000000E+0",
+   "margin": "1.204171023361095187165775401069518716578E+13",
+   "no_margin": false,
+   "plant": "P3",
+   "planted": "0",
+   "step_s": 1.0,
+   "time_s": 16.0,
+   "world": "F3"
+  },
+  {
+   "check": "n_U_B",
+   "class": "R",
+   "distance": "1.114083323808581821251130920548199079877E-6",
+   "expected_tolerance": "8.792966355038567272117688844298712818440E-14",
+   "honest": "4.672804698429314006338735982379146971536E+0",
+   "margin": "1.267016475242381709685620797474098357498E+7",
+   "no_margin": false,
+   "plant": "P4",
+   "planted": "4.672803584345990197756914731248226423337E+0",
+   "step_s": 1.0,
+   "time_s": 2.0,
+   "world": "F1"
+  },
+  {
+   "check": "n_U_K",
+   "class": "R",
+   "distance": "1.114083323809535495567537170529017492304E-6",
+   "expected_tolerance": "8.792966355038567272117688844298712818440E-14",
+   "honest": "1.327195301571685993661264017600739676093E+0",
+   "margin": "1.267016475243466297386629994639300498660E+7",
+   "no_margin": false,
+   "plant": "P4",
+   "planted": "1.327196415655009803196759585137910205111E+0",
+   "step_s": 1.0,
+   "time_s": 2.0,
+   "world": "F1"
+  },
+  {
+   "check": "n_T_K",
+   "class": "R",
+   "distance": "3.297530326333146662959958367730725396745E+0",
+   "expected_tolerance": "4.396483177519137086619593901488968090351E-13",
+   "honest": "2.642411176574096603618896135284352530603E+0",
+   "margin": "7.500381994396458979671093301062018309686E+12",
+   "no_margin": false,
+   "plant": "P10",
+   "planted": "5.939941502907243266578854503015077927349E+0",
+   "step_s": 1.0,
+   "time_s": 8.0,
+   "world": "F1"
+  },
+  {
+   "check": "label_T_tag_K",
+   "class": "R",
+   "distance": "9.020401043107941553876045687823009585938E-1",
+   "expected_tolerance": "2.886579864027716268992662662593766928008E-13",
+   "honest": "2.642411176571153568089524596770782651084E+0",
+   "margin": "3.124944213572373814447702076218687693655E+12",
+   "no_margin": false,
+   "plant": "P11",
+   "planted": "1.740371072260359412701920027988481692490E+0",
+   "step_s": 8.0,
+   "time_s": 8.0,
+   "world": "F1L"
+  }
+ ],
+ "plants_reported": [
+  {
+   "H_missing": ["1.102070447856558797161964653562096543554E+1", "1.749709359241552312902527471561137000592E+1", "2.234667463942391175454751513621117415397E+1", "2.623005443598226259734967782389880049965E+1", "2.946089491394458845879577062204921112144E+1", "3.221942465756415639273827401802527088799E+1", "3.462025867035367852529833931066111411249E+1", "3.674126828129081582585399363766533559564E+1", "3.863798891511119349938266272265205998676E+1", "4.035157013785181103650644733720750648169E+1", "4.191347552101416131826501249208255201331E+1", "4.334840430405264828423781795051181680087E+1", "4.467617915858901452612863895799252385769E+1", "4.591300464896624765288960606143314983726E+1", "4.707232886175922258465588138665324872537E+1", "4.816544768651243688804049721424053467788E+1"],
+   "plant": "P8",
+   "run": "P8 flow",
+   "step_s": 1.0,
+   "times_s": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0],
+   "world": "F1"
+  }
+ ],
+ "provenance": {
+  "revision": "915ac820366f5eb0125af92dcd266f9b9ef75491",
+  "sha256_of_this_file_excluded": true
+ },
+ "reported": [],
+ "worlds": {
+  "F1": {
+   "series": {
+    "H_tot": {
+     "accuracy": ["0", "1.11E-38", "1.75E-38", "2.24E-38", "2.63E-38", "2.95E-38", "3.23E-38", "3.47E-38", "3.68E-38", "3.87E-38", "4.04E-38", "4.20E-38", "4.34E-38", "4.47E-38", "4.60E-38", "4.71E-38", "4.82E-38"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "1.102070447856558797161964653562096543554E+1", "1.749709359241552312902527471561137000592E+1", "2.234667463942391175454751513621117415397E+1", "2.623005443598226259734967782389880049965E+1", "2.946089491394458845879577062204921112144E+1", "3.221942465756415639273827401802527088799E+1", "3.462025867035367852529833931066111411249E+1", "3.674126828129081582585399363766533559564E+1", "3.863798891511119349938266272265205998676E+1", "4.035157013785181103650644733720750648169E+1", "4.191347552101416131826501249208255201331E+1", "4.334840430405264828423781795051181680087E+1", "4.467617915858901452612863895799252385769E+1", "4.591300464896624765288960606143314983726E+1", "4.707232886175922258465588138665324872537E+1", "4.816544768651243688804049721424053467788E+1"]
+    },
+    "V_K": {
+     "accuracy": ["0", "5.00E-40", "1.00E-39", "1.50E-39", "2.00E-39", "2.50E-39", "3.00E-39", "3.50E-39", "4.00E-39", "4.50E-39", "5.00E-39", "5.50E-39", "6.00E-39", "6.50E-39", "7.00E-39", "7.50E-39", "8.00E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "5.000000000000000000000000000000000000000E-1", "1.000000000000000000000000000000000000000E+0", "1.500000000000000000000000000000000000000E+0", "2.000000000000000000000000000000000000000E+0", "2.500000000000000000000000000000000000000E+0", "3.000000000000000000000000000000000000000E+0", "3.500000000000000000000000000000000000000E+0", "4.000000000000000000000000000000000000000E+0", "4.500000000000000000000000000000000000000E+0", "5.000000000000000000000000000000000000000E+0", "5.500000000000000000000000000000000000000E+0", "6.000000000000000000000000000000000000000E+0", "6.500000000000000000000000000000000000000E+0", "7.000000000000000000000000000000000000000E+0", "7.500000000000000000000000000000000000000E+0", "8.000000000000000000000000000000000000000E+0"]
+    },
+    "n_T_A": {
+     "accuracy": ["1.00E-38", "8.83E-39", "7.79E-39", "6.88E-39", "6.07E-39", "5.36E-39", "4.73E-39", "4.17E-39", "3.68E-39", "3.25E-39", "2.87E-39", "2.53E-39", "2.24E-39", "1.97E-39", "1.74E-39", "1.54E-39", "1.36E-39"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["1.000000000000000000000000000000000000000E+1", "8.824969025846424041038583050669594268835E+0", "7.788007830714933479319417050292429560723E+0", "6.872892787910972828336859502645796451287E+0", "6.065306597127908113399144816185733386326E+0", "5.352614285191761373852149119215247761709E+0", "4.723665527412257605169501450561677033709E+0", "4.168620196787416577774257789706666818742E+0", "3.678794411716951698190551932277370325215E+0", "3.246524673586198688101247975751197634865E+0", "2.865047968604754984061413506019673364483E+0", "2.528395958050453419726656012221897227738E+0", "2.231301601487405768692210988261890264198E+0", "1.969116752045152853912075404637161163735E+0", "1.737739434507756171033370806090514587859E+0", "1.533549668452671213088265068179494805511E+0", "1.353352832369585577807048498887702811573E+0"]
+    },
+    "n_T_B": {
+     "accuracy": ["4.00E-51", "1.11E-39", "1.95E-39", "2.58E-39", "3.04E-39", "3.35E-39", "3.55E-39", "3.65E-39", "3.68E-39", "3.66E-39", "3.59E-39", "3.48E-39", "3.35E-39", "3.20E-39", "3.05E-39", "2.88E-39", "2.71E-39"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["3.999999999999999919546590517022461469011E-12", "1.103121128234303005129822881263302550307E+0", "1.947001957681733369829854262512767333069E+0", "2.577334795469114810626322313441890288306E+0", "3.032653298565954056699572408052639988422E+0", "3.345383928246350858657593199479359822512E+0", "3.542749145560193203877126087901144422911E+0", "3.647542672189489505552475565983276790214E+0", "3.678794411716951698190551932277370325215E+0", "3.652340257783973524113903972730154015408E+0", "3.581309960754943730076766882544705057974E+0", "3.476544442317873452124152016835278716696E+0", "3.346952402229108653038316482433062101039E+0", "3.199814722070873387607122532585670271996E+0", "3.041044010385573299308398910718740585866E+0", "2.875405628345258524540497002906949493631E+0", "2.706705664735171155614096997855859032629E+0"]
+    },
+    "n_T_K": {
+     "accuracy": ["0", "7.20E-41", "2.65E-40", "5.50E-40", "9.03E-40", "1.31E-39", "1.74E-39", "2.19E-39", "2.65E-39", "3.11E-39", "3.56E-39", "4.00E-39", "4.43E-39", "4.84E-39", "5.23E-39", "5.60E-39", "5.94E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "7.190984592377295383159406797659309518960E-2", "2.649902116083331508507286870942363443548E-1", "5.497724166254123610368181838016898223684E-1", "9.020401043121378299012827756409465110279E-1", "1.302001786568387767490257681174655625368E+0", "1.733585327034549190953372461396385076785E+0", "2.183837131030593916673266644159206248263E+0", "2.642411176574096603618896135284352530603E+0", "3.101135068638327787784848051347684854576E+0", "3.553642070649301285861819611254601406207E+0", "3.995059599641173128149191970751747208044E+0", "4.421745996293485578269472529103914111056E+0", "4.831068525894473758480802062565978364377E+0", "5.221216555117670529658230282969497950196E+0", "5.591044703213570262371237928682252148595E+0", "5.939941502907243266578854503015077927349E+0"]
+    },
+    "n_U_A": {
+     "accuracy": ["4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12"]
+    },
+    "n_U_B": {
+     "accuracy": ["6.00E-39", "5.30E-39", "4.68E-39", "4.13E-39", "3.64E-39", "3.22E-39", "2.84E-39", "2.51E-39", "2.21E-39", "1.95E-39", "1.72E-39", "1.52E-39", "1.34E-39", "1.19E-39", "1.05E-39", "9.21E-40", "8.13E-40"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["6.000000000000000000000000000000000000000E+0", "5.294981415508042429579014477753391323947E+0", "4.672804698429314006338735982379146971536E+0", "4.123735672747084034156050146059742089548E+0", "3.639183958277374418983946676221011572558E+0", "3.211568571115800406025659087127062139975E+0", "2.834199316448198776617315246788605381828E+0", "2.501172118073382967433069060361097440267E+0", "2.207276647031182411808456851631526855432E+0", "1.947914804152799768912975425861309667264E+0", "1.719028781163994582761871799428322953310E+0", "1.517037574831467508482706012944596115864E+0", "1.338780960893686452959089105205840178829E+0", "1.181470051228376653666918532276354157953E+0", "1.042643660705975664310501771425030523801E+0", "9.201298010729573599060071553391777883258E-1", "8.120116994231348102310505189977651979427E-1"]
+    },
+    "n_U_K": {
+     "accuracy": ["0", "7.06E-40", "1.33E-39", "1.88E-39", "2.37E-39", "2.79E-39", "3.17E-39", "3.50E-39", "3.80E-39", "4.06E-39", "4.29E-39", "4.49E-39", "4.67E-39", "4.82E-39", "4.96E-39", "5.08E-39", "5.19E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "7.050185844924575704209855222365519998674E-1", "1.327195301571685993661264017600739676093E+0", "1.876264327254415965843949853910087881896E+0", "2.360816041724625581016053323738761722700E+0", "2.788431428886699593974340912822654479098E+0", "3.165800683554801223382684753151054561060E+0", "3.498827881930117032566930939568505826435E+0", "3.792723352972817588191543148288019735085E+0", "4.052085195851700231087024574048180247068E+0", "4.280971218841005417238128200471110284836E+0", "4.482962425174032491517293986944780446097E+0", "4.661219039112313547040910894673479706946E+0", "4.818529948778123346333081467592909051637E+0", "4.957356339301024335689498228434176009604E+0", "5.079870198934542640093992844509972068894E+0", "5.187988300584865189768949480841327983091E+0"]
+    },
+    "supplied_T": {
+     "accuracy": ["0", "5.00E-52", "1.00E-51", "1.50E-51", "2.00E-51", "2.50E-51", "3.00E-51", "3.50E-51", "4.00E-51", "4.50E-51", "5.00E-51", "5.50E-51", "6.00E-51", "6.50E-51", "7.00E-51", "7.50E-51", "8.00E-51"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "4.999999999999999899433238146278076836264E-13", "9.999999999999999798866476292556153672528E-13", "1.499999999999999969829971443883423050879E-12", "1.999999999999999959773295258511230734506E-12", "2.499999999999999949716619073139038418132E-12", "2.999999999999999939659942887766846101759E-12", "3.499999999999999929603266702394653785385E-12", "3.999999999999999919546590517022461469011E-12", "4.499999999999999909489914331650269152638E-12", "4.999999999999999899433238146278076836264E-12", "5.499999999999999889376561960905884519891E-12", "5.999999999999999879319885775533692203517E-12", "6.499999999999999869263209590161499887143E-12", "6.999999999999999859206533404789307570770E-12", "7.499999999999999849149857219417115254396E-12", "7.999999999999999839093181034044922938023E-12"]
+    },
+    "supplied_U": {
+     "accuracy": ["0", "5.00E-52", "1.00E-51", "1.50E-51", "2.00E-51", "2.50E-51", "3.00E-51", "3.50E-51", "4.00E-51", "4.50E-51", "5.00E-51", "5.50E-51", "6.00E-51", "6.50E-51", "7.00E-51", "7.50E-51", "8.00E-51"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "4.999999999999999899433238146278076836264E-13", "9.999999999999999798866476292556153672528E-13", "1.499999999999999969829971443883423050879E-12", "1.999999999999999959773295258511230734506E-12", "2.499999999999999949716619073139038418132E-12", "2.999999999999999939659942887766846101759E-12", "3.499999999999999929603266702394653785385E-12", "3.999999999999999919546590517022461469011E-12", "4.499999999999999909489914331650269152638E-12", "4.999999999999999899433238146278076836264E-12", "5.499999999999999889376561960905884519891E-12", "5.999999999999999879319885775533692203517E-12", "6.499999999999999869263209590161499887143E-12", "6.999999999999999859206533404789307570770E-12", "7.499999999999999849149857219417115254396E-12", "7.999999999999999839093181034044922938023E-12"]
+    }
+   },
+   "times_s": [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0]
+  },
+  "F1L": {
+   "series": {
+    "H_tot": {
+     "accuracy": ["0", "1.11E-38", "1.75E-38", "2.24E-38", "2.63E-38", "2.95E-38", "3.23E-38", "3.47E-38", "3.68E-38", "3.87E-38", "4.04E-38", "4.20E-38", "4.34E-38", "4.47E-38", "4.60E-38", "4.71E-38", "4.82E-38"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "1.102070447856558797161964653562096543554E+1", "1.749709359241552312902527471561137000592E+1", "2.234667463942391175454751513621117415397E+1", "2.623005443598226259734967782389880049965E+1", "2.946089491394458845879577062204921112144E+1", "3.221942465756415639273827401802527088799E+1", "3.462025867035367852529833931066111411249E+1", "3.674126828129081582585399363766533559564E+1", "3.863798891511119349938266272265205998676E+1", "4.035157013785181103650644733720750648169E+1", "4.191347552101416131826501249208255201331E+1", "4.334840430405264828423781795051181680087E+1", "4.467617915858901452612863895799252385769E+1", "4.591300464896624765288960606143314983726E+1", "4.707232886175922258465588138665324872537E+1", "4.816544768651243688804049721424053467788E+1"]
+    },
+    "V_K": {
+     "accuracy": ["0", "5.00E-40", "1.00E-39", "1.50E-39", "2.00E-39", "2.50E-39", "3.00E-39", "3.50E-39", "4.00E-39", "4.50E-39", "5.00E-39", "5.50E-39", "6.00E-39", "6.50E-39", "7.00E-39", "7.50E-39", "8.00E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "5.000000000000000000000000000000000000000E-1", "1.000000000000000000000000000000000000000E+0", "1.500000000000000000000000000000000000000E+0", "2.000000000000000000000000000000000000000E+0", "2.500000000000000000000000000000000000000E+0", "3.000000000000000000000000000000000000000E+0", "3.500000000000000000000000000000000000000E+0", "4.000000000000000000000000000000000000000E+0", "4.500000000000000000000000000000000000000E+0", "5.000000000000000000000000000000000000000E+0", "5.500000000000000000000000000000000000000E+0", "6.000000000000000000000000000000000000000E+0", "6.500000000000000000000000000000000000000E+0", "7.000000000000000000000000000000000000000E+0", "7.500000000000000000000000000000000000000E+0", "8.000000000000000000000000000000000000000E+0"]
+    },
+    "label_T_plain_A": {
+     "accuracy": ["0", "4.71E-52", "8.85E-52", "1.26E-51", "1.58E-51", "1.86E-51", "2.12E-51", "2.34E-51", "2.53E-51", "2.71E-51", "2.86E-51", "2.99E-51", "3.11E-51", "3.22E-51", "3.31E-51", "3.39E-51", "3.46E-51"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "4.700123896616183790869066152040513418618E-13", "8.847968677143805092230877552164761631776E-13", "1.250842884836111180660546940266803033661E-12", "1.573877361149466273928851906898744023095E-12", "1.858954285924038994783707374016109267105E-12", "2.110533789035941128997904006984752052747E-12", "2.332551921285966342743372554772969285051E-12", "2.528482235314230662761650757311613191601E-12", "2.701390130566601026477715863172883440562E-12", "2.853980812559239541297336551061282581883E-12", "2.988641616781014028644448052534958502721E-12", "3.107479359406280621765050776390392639126E-12", "3.212353299183223735143649281843753086313E-12", "3.304904226198219426804427712247421882372E-12", "3.386580132620286078702262548005618093351E-12", "3.458658867053549162858777496862470504933E-12"]
+    },
+    "label_T_plain_B": {
+     "accuracy": ["4.00E-51", "3.56E-51", "3.23E-51", "2.97E-51", "2.79E-51", "2.67E-51", "2.59E-51", "2.55E-51", "2.53E-51", "2.54E-51", "2.57E-51", "2.61E-51", "2.67E-51", "2.73E-51", "2.79E-51", "2.85E-51", "2.92E-51"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["3.999999999999999919546590517022461469011E-12", "3.558751548707702226989130029295160203118E-12", "3.221199216928595066965714826570965142553E-12", "2.969066081813541642464324175739089555755E-12", "2.786938680574733096737721211960602746053E-12", "2.661846428702524341569788552643491342820E-12", "2.582900341776955826635075634494179406813E-12", "2.540982931125220539843774800054155808046E-12", "2.528482235314230662761650757311613191601E-12", "2.539063896887426164844106531441686187005E-12", "2.567476015699049446735023059570987860101E-12", "2.609382223073894319556144628352144890362E-12", "2.661219039109420972874280906074358224183E-12", "2.720074111172738619891811009857060347126E-12", "2.783582395846884057247805608666142192393E-12", "2.849837748663036467963475575115880139647E-12", "2.917317734107098406170964476702479540855E-12"]
+    },
+    "label_T_plain_K": {
+     "accuracy": ["0", "4.72E-52", "8.95E-52", "1.29E-51", "1.64E-51", "1.98E-51", "2.31E-51", "2.63E-51", "2.95E-51", "3.26E-51", "3.58E-51", "3.91E-51", "4.24E-51", "4.57E-51", "4.92E-51", "5.27E-51", "5.63E-51"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "4.712360616306793034138776871510576076583E-13", "8.940039153570243232444355644906355305336E-13", "1.280091033350347066251690844899991930474E-12", "1.639183958275800508653312656674345434369E-12", "1.979199285373436532909713663501899277219E-12", "2.306565869187102903573553763310376111210E-12", "2.626465147588812966562709864589990161300E-12", "2.943035529371538513569879519421696554820E-12", "3.259545972545972637714682454058160994082E-12", "3.578543171741710830947469052668267863291E-12", "3.901976160145091460722559797041242595820E-12", "4.231301601484298204227144610091402809219E-12", "4.567572589644037433774339815483147922716E-12", "4.911513377954896294700890600898204965016E-12", "5.263582118716677222030709613318078490410E-12", "5.624023398839352189610029577502434361246E-12"]
+    },
+    "label_T_tag_A": {
+     "accuracy": ["1.00E-38", "8.83E-39", "7.79E-39", "6.88E-39", "6.07E-39", "5.36E-39", "4.73E-39", "4.17E-39", "3.68E-39", "3.25E-39", "2.87E-39", "2.53E-39", "2.24E-39", "1.97E-39", "1.74E-39", "1.54E-39", "1.36E-39"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["1.000000000000000000000000000000000000000E+1", "8.824969025845954028648921432290507362220E+0", "7.788007830714048682451702669783206472968E+0", "6.872892787909721985452023391465135904347E+0", "6.065306597126334236037995349911804534419E+0", "5.352614285189902419566225080220464054335E+0", "4.723665527410147071380465509432679129702E+0", "4.168620196785084025852971823363923446187E+0", "3.678794411714423215955237701614608674458E+0", "3.246524673583497297970681374724719919002E+0", "2.865047968601901003248854266478376027932E+0", "2.528395958047464778109874998193252779685E+0", "2.231301601484298289332804707640125213422E+0", "1.969116752041940500612892180902017514453E+0", "1.737739434504451266807172586663710160147E+0", "1.533549668449284632955644782100792542963E+0", "1.353352832366126918939994949724844034076E+0"]
+    },
+    "label_T_tag_B": {
+     "accuracy": ["0", "1.11E-39", "1.95E-39", "2.58E-39", "3.04E-39", "3.35E-39", "3.55E-39", "3.65E-39", "3.68E-39", "3.66E-39", "3.59E-39", "3.48E-39", "3.35E-39", "3.20E-39", "3.05E-39", "2.88E-39", "2.71E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "1.103121128230744253581115179036313420278E+0", "1.947001957678512170612925667445801618242E+0", "2.577334795466145744544508771799425964130E+0", "3.032653298563167118018997674955902267210E+0", "3.345383928243689012228890675137790033960E+0", "3.542749145557610303535349132074509347277E+0", "3.647542672186948522621350345443433015414E+0", "3.678794411714423215955237701614608674458E+0", "3.652340257781434460217016546565309908877E+0", "3.581309960752376254061067833097970034914E+0", "3.476544442315264069901078122515722572067E+0", "3.346952402226447433999207061460187820133E+0", "3.199814722068153313495949793965778460986E+0", "3.041044010382789716912552026661492780258E+0", "2.875405628342408686791833966438986018056E+0", "2.706705664732253837879989899449688068153E+0"]
+    },
+    "label_T_tag_K": {
+     "accuracy": ["0", "7.20E-41", "2.65E-40", "5.50E-40", "9.03E-40", "1.31E-39", "1.74E-39", "2.19E-39", "2.65E-39", "3.11E-39", "3.56E-39", "4.00E-39", "4.43E-39", "4.84E-39", "5.23E-39", "5.60E-39", "5.94E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "7.190984592330171776996338867317921750245E-2", "2.649902116074391469353716627709919087903E-1", "5.497724166241322700034678367354381315235E-1", "9.020401043104986459430069751322931983712E-1", "1.302001786566408568204884244641745911705E+0", "1.733585327032242625084185358492811523021E+0", "2.183837131027967451525677831192643538399E+0", "2.642411176571153568089524596770782651084E+0", "3.101135068635068241812302078709970172122E+0", "3.553642070645722742690077900423653937154E+0", "3.995059599637271151989046879291024648247E+0", "4.421745996289254276667988230899686966446E+0", "4.831068525889906185891158025132204024562E+0", "5.221216555112759016280275386674797059595E+0", "5.591044703208306680252521251460221438981E+0", "5.939941502901619243180015150825467897771E+0"]
+    },
+    "n_T_A": {
+     "accuracy": ["1.00E-38", "8.83E-39", "7.79E-39", "6.88E-39", "6.07E-39", "5.36E-39", "4.73E-39", "4.17E-39", "3.68E-39", "3.25E-39", "2.87E-39", "2.53E-39", "2.24E-39", "1.97E-39", "1.74E-39", "1.54E-39", "1.36E-39"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["1.000000000000000000000000000000000000000E+1", "8.824969025846424041038583050669594268835E+0", "7.788007830714933479319417050292429560723E+0", "6.872892787910972828336859502645796451287E+0", "6.065306597127908113399144816185733386326E+0", "5.352614285191761373852149119215247761709E+0", "4.723665527412257605169501450561677033709E+0", "4.168620196787416577774257789706666818742E+0", "3.678794411716951698190551932277370325215E+0", "3.246524673586198688101247975751197634865E+0", "2.865047968604754984061413506019673364483E+0", "2.528395958050453419726656012221897227738E+0", "2.231301601487405768692210988261890264198E+0", "1.969116752045152853912075404637161163735E+0", "1.737739434507756171033370806090514587859E+0", "1.533549668452671213088265068179494805511E+0", "1.353352832369585577807048498887702811573E+0"]
+    },
+    "n_T_B": {
+     "accuracy": ["4.00E-51", "1.11E-39", "1.95E-39", "2.58E-39", "3.04E-39", "3.35E-39", "3.55E-39", "3.65E-39", "3.68E-39", "3.66E-39", "3.59E-39", "3.48E-39", "3.35E-39", "3.20E-39", "3.05E-39", "2.88E-39", "2.71E-39"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["3.999999999999999919546590517022461469011E-12", "1.103121128234303005129822881263302550307E+0", "1.947001957681733369829854262512767333069E+0", "2.577334795469114810626322313441890288306E+0", "3.032653298565954056699572408052639988422E+0", "3.345383928246350858657593199479359822512E+0", "3.542749145560193203877126087901144422911E+0", "3.647542672189489505552475565983276790214E+0", "3.678794411716951698190551932277370325215E+0", "3.652340257783973524113903972730154015408E+0", "3.581309960754943730076766882544705057974E+0", "3.476544442317873452124152016835278716696E+0", "3.346952402229108653038316482433062101039E+0", "3.199814722070873387607122532585670271996E+0", "3.041044010385573299308398910718740585866E+0", "2.875405628345258524540497002906949493631E+0", "2.706705664735171155614096997855859032629E+0"]
+    },
+    "n_T_K": {
+     "accuracy": ["0", "7.20E-41", "2.65E-40", "5.50E-40", "9.03E-40", "1.31E-39", "1.74E-39", "2.19E-39", "2.65E-39", "3.11E-39", "3.56E-39", "4.00E-39", "4.43E-39", "4.84E-39", "5.23E-39", "5.60E-39", "5.94E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "7.190984592377295383159406797659309518960E-2", "2.649902116083331508507286870942363443548E-1", "5.497724166254123610368181838016898223684E-1", "9.020401043121378299012827756409465110279E-1", "1.302001786568387767490257681174655625368E+0", "1.733585327034549190953372461396385076785E+0", "2.183837131030593916673266644159206248263E+0", "2.642411176574096603618896135284352530603E+0", "3.101135068638327787784848051347684854576E+0", "3.553642070649301285861819611254601406207E+0", "3.995059599641173128149191970751747208044E+0", "4.421745996293485578269472529103914111056E+0", "4.831068525894473758480802062565978364377E+0", "5.221216555117670529658230282969497950196E+0", "5.591044703213570262371237928682252148595E+0", "5.939941502907243266578854503015077927349E+0"]
+    },
+    "n_U_A": {
+     "accuracy": ["4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12"]
+    },
+    "n_U_B": {
+     "accuracy": ["6.00E-39", "5.30E-39", "4.68E-39", "4.13E-39", "3.64E-39", "3.22E-39", "2.84E-39", "2.51E-39", "2.21E-39", "1.95E-39", "1.72E-39", "1.52E-39", "1.34E-39", "1.19E-39", "1.05E-39", "9.21E-40", "8.13E-40"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["6.000000000000000000000000000000000000000E+0", "5.294981415508042429579014477753391323947E+0", "4.672804698429314006338735982379146971536E+0", "4.123735672747084034156050146059742089548E+0", "3.639183958277374418983946676221011572558E+0", "3.211568571115800406025659087127062139975E+0", "2.834199316448198776617315246788605381828E+0", "2.501172118073382967433069060361097440267E+0", "2.207276647031182411808456851631526855432E+0", "1.947914804152799768912975425861309667264E+0", "1.719028781163994582761871799428322953310E+0", "1.517037574831467508482706012944596115864E+0", "1.338780960893686452959089105205840178829E+0", "1.181470051228376653666918532276354157953E+0", "1.042643660705975664310501771425030523801E+0", "9.201298010729573599060071553391777883258E-1", "8.120116994231348102310505189977651979427E-1"]
+    },
+    "n_U_K": {
+     "accuracy": ["0", "7.06E-40", "1.33E-39", "1.88E-39", "2.37E-39", "2.79E-39", "3.17E-39", "3.50E-39", "3.80E-39", "4.06E-39", "4.29E-39", "4.49E-39", "4.67E-39", "4.82E-39", "4.96E-39", "5.08E-39", "5.19E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "7.050185844924575704209855222365519998674E-1", "1.327195301571685993661264017600739676093E+0", "1.876264327254415965843949853910087881896E+0", "2.360816041724625581016053323738761722700E+0", "2.788431428886699593974340912822654479098E+0", "3.165800683554801223382684753151054561060E+0", "3.498827881930117032566930939568505826435E+0", "3.792723352972817588191543148288019735085E+0", "4.052085195851700231087024574048180247068E+0", "4.280971218841005417238128200471110284836E+0", "4.482962425174032491517293986944780446097E+0", "4.661219039112313547040910894673479706946E+0", "4.818529948778123346333081467592909051637E+0", "4.957356339301024335689498228434176009604E+0", "5.079870198934542640093992844509972068894E+0", "5.187988300584865189768949480841327983091E+0"]
+    },
+    "supplied_T": {
+     "accuracy": ["0", "5.00E-52", "1.00E-51", "1.50E-51", "2.00E-51", "2.50E-51", "3.00E-51", "3.50E-51", "4.00E-51", "4.50E-51", "5.00E-51", "5.50E-51", "6.00E-51", "6.50E-51", "7.00E-51", "7.50E-51", "8.00E-51"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "4.999999999999999899433238146278076836264E-13", "9.999999999999999798866476292556153672528E-13", "1.499999999999999969829971443883423050879E-12", "1.999999999999999959773295258511230734506E-12", "2.499999999999999949716619073139038418132E-12", "2.999999999999999939659942887766846101759E-12", "3.499999999999999929603266702394653785385E-12", "3.999999999999999919546590517022461469011E-12", "4.499999999999999909489914331650269152638E-12", "4.999999999999999899433238146278076836264E-12", "5.499999999999999889376561960905884519891E-12", "5.999999999999999879319885775533692203517E-12", "6.499999999999999869263209590161499887143E-12", "6.999999999999999859206533404789307570770E-12", "7.499999999999999849149857219417115254396E-12", "7.999999999999999839093181034044922938023E-12"]
+    },
+    "supplied_U": {
+     "accuracy": ["0", "5.00E-52", "1.00E-51", "1.50E-51", "2.00E-51", "2.50E-51", "3.00E-51", "3.50E-51", "4.00E-51", "4.50E-51", "5.00E-51", "5.50E-51", "6.00E-51", "6.50E-51", "7.00E-51", "7.50E-51", "8.00E-51"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "4.999999999999999899433238146278076836264E-13", "9.999999999999999798866476292556153672528E-13", "1.499999999999999969829971443883423050879E-12", "1.999999999999999959773295258511230734506E-12", "2.499999999999999949716619073139038418132E-12", "2.999999999999999939659942887766846101759E-12", "3.499999999999999929603266702394653785385E-12", "3.999999999999999919546590517022461469011E-12", "4.499999999999999909489914331650269152638E-12", "4.999999999999999899433238146278076836264E-12", "5.499999999999999889376561960905884519891E-12", "5.999999999999999879319885775533692203517E-12", "6.499999999999999869263209590161499887143E-12", "6.999999999999999859206533404789307570770E-12", "7.499999999999999849149857219417115254396E-12", "7.999999999999999839093181034044922938023E-12"]
+    }
+   },
+   "times_s": [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0]
+  },
+  "F2": {
+   "series": {
+    "H_tot": {
+     "accuracy": ["0", "8.48E-39", "1.41E-38", "1.84E-38", "2.21E-38", "2.52E-38", "2.79E-38", "3.04E-38", "3.25E-38", "3.45E-38", "3.63E-38", "3.79E-38", "3.95E-38", "4.09E-38", "4.23E-38", "4.35E-38", "4.47E-38"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "8.477860728908337569935072028110971262390E+0", "1.401677841896496657830545426976023304104E+1", "1.839823004970796592023169149450479759615E+1", "2.204517411395328195942556577721198903558E+1", "2.516861243843616454650723733844316498534E+1", "2.789620944450362791805907547314915412551E+1", "3.031342983746274361146612860604963103581E+1", "3.248124828537593549020204521050289820270E+1", "3.444513108645258235251981175701424453883E+1", "3.624009891564956620653064247700179895296E+1", "3.789380081437931180688952174146007165119E+1", "3.942848754320799892684009223336398683873E+1", "4.086233519364224109279302890536081940402E+1", "4.221036558875945827748710740190171941958E+1", "4.348510625554984878821232333076254304422E+1", "4.469707654294645730261318465665692728853E+1"]
+    },
+    "V_K": {
+     "accuracy": ["0", "5.00E-40", "1.00E-39", "1.50E-39", "2.00E-39", "2.50E-39", "3.00E-39", "3.50E-39", "4.00E-39", "4.50E-39", "5.00E-39", "5.50E-39", "6.00E-39", "6.50E-39", "7.00E-39", "7.50E-39", "8.00E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "5.000000000000000000000000000000000000000E-1", "1.000000000000000000000000000000000000000E+0", "1.500000000000000000000000000000000000000E+0", "2.000000000000000000000000000000000000000E+0", "2.500000000000000000000000000000000000000E+0", "3.000000000000000000000000000000000000000E+0", "3.500000000000000000000000000000000000000E+0", "4.000000000000000000000000000000000000000E+0", "4.500000000000000000000000000000000000000E+0", "5.000000000000000000000000000000000000000E+0", "5.500000000000000000000000000000000000000E+0", "6.000000000000000000000000000000000000000E+0", "6.500000000000000000000000000000000000000E+0", "7.000000000000000000000000000000000000000E+0", "7.500000000000000000000000000000000000000E+0", "8.000000000000000000000000000000000000000E+0"]
+    },
+    "n_T_A": {
+     "accuracy": ["1.00E-38", "8.83E-39", "7.79E-39", "6.88E-39", "6.07E-39", "5.36E-39", "4.73E-39", "4.17E-39", "3.68E-39", "3.25E-39", "2.87E-39", "2.53E-39", "2.24E-39", "1.97E-39", "1.74E-39", "1.54E-39", "1.36E-39"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["1.000000000000000000000000000000000000000E+1", "8.824969025846424041038583050669594268835E+0", "7.788007830714933479319417050292429560723E+0", "6.872892787910972828336859502645796451287E+0", "6.065306597127908113399144816185733386326E+0", "5.352614285191761373852149119215247761709E+0", "4.723665527412257605169501450561677033709E+0", "4.168620196787416577774257789706666818742E+0", "3.678794411716951698190551932277370325215E+0", "3.246524673586198688101247975751197634865E+0", "2.865047968604754984061413506019673364483E+0", "2.528395958050453419726656012221897227738E+0", "2.231301601487405768692210988261890264198E+0", "1.969116752045152853912075404637161163735E+0", "1.737739434507756171033370806090514587859E+0", "1.533549668452671213088265068179494805511E+0", "1.353352832369585577807048498887702811573E+0"]
+    },
+    "n_T_B": {
+     "accuracy": ["4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12"]
+    },
+    "n_T_K": {
+     "accuracy": ["0", "1.18E-39", "2.22E-39", "3.13E-39", "3.94E-39", "4.65E-39", "5.28E-39", "5.84E-39", "6.33E-39", "6.76E-39", "7.14E-39", "7.48E-39", "7.77E-39", "8.04E-39", "8.27E-39", "8.47E-39", "8.65E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "1.175030974154075958961416949320349054979E+0", "2.211992169286066520680582949687457086906E+0", "3.127107212090527171663140497324033520157E+0", "3.934693402874091886600855183774039908932E+0", "4.647385714810738626147850880734468857364E+0", "5.276334472590742394830498549377982909179E+0", "5.831379803216083422225742210222936447960E+0", "6.321205588287048301809448067642176265302E+0", "6.753475326418301311898752024158292279467E+0", "7.134952031400245015938586493879759873664E+0", "7.471604041955046580273343987667479334223E+0", "7.768698398518594231307789011617429621577E+0", "8.030883247961347146087924595232102045856E+0", "8.262260565499243828966629193768691945545E+0", "8.466450331554828786911734931669655051708E+0", "8.646647167638414422192951500951390369461E+0"]
+    },
+    "n_U_A": {
+     "accuracy": ["4.00E-51", "6.62E-40", "1.17E-39", "1.55E-39", "1.82E-39", "2.01E-39", "2.13E-39", "2.19E-39", "2.21E-39", "2.20E-39", "2.15E-39", "2.09E-39", "2.01E-39", "1.92E-39", "1.83E-39", "1.73E-39", "1.63E-39"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["3.999999999999999919546590517022461469011E-12", "6.618726769420053036973768096487771821958E-1", "1.168201174610328501584683995534446685772E+0", "1.546400877282656512808518804722119902654E+0", "1.819591979140687209491973338070279081538E+0", "2.007230356948875253766036929424243808928E+0", "2.125649487337149082462986435071340684000E+0", "2.188525603314710096503935427805903584048E+0", "2.207276647031182411808456851631526855432E+0", "2.191404154671399740027097354104030051858E+0", "2.148785976453993228452339749305517044008E+0", "2.085926665391767824163720767828989687869E+0", "2.008171441338529679438633657848986972986E+0", "1.919888833243612062208742614999358887601E+0", "1.824626406232457412543378100054143473763E+0", "1.725243377008295049823763416331355086409E+0", "1.624023398842269620462101038075983805368E+0"]
+    },
+    "n_U_B": {
+     "accuracy": ["6.00E-39", "5.30E-39", "4.68E-39", "4.13E-39", "3.64E-39", "3.22E-39", "2.84E-39", "2.51E-39", "2.21E-39", "1.95E-39", "1.72E-39", "1.52E-39", "1.34E-39", "1.19E-39", "1.05E-39", "9.21E-40", "8.13E-40"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["6.000000000000000000000000000000000000000E+0", "5.294981415508042429579014477753391323947E+0", "4.672804698429314006338735982379146971536E+0", "4.123735672747084034156050146059742089548E+0", "3.639183958277374418983946676221011572558E+0", "3.211568571115800406025659087127062139975E+0", "2.834199316448198776617315246788605381828E+0", "2.501172118073382967433069060361097440267E+0", "2.207276647031182411808456851631526855432E+0", "1.947914804152799768912975425861309667264E+0", "1.719028781163994582761871799428322953310E+0", "1.517037574831467508482706012944596115864E+0", "1.338780960893686452959089105205840178829E+0", "1.181470051228376653666918532276354157953E+0", "1.042643660705975664310501771425030523801E+0", "9.201298010729573599060071553391777883258E-1", "8.120116994231348102310505189977651979427E-1"]
+    },
+    "n_U_K": {
+     "accuracy": ["0", "4.32E-41", "1.59E-40", "3.30E-40", "5.42E-40", "7.82E-40", "1.05E-39", "1.32E-39", "1.59E-39", "1.87E-39", "2.14E-39", "2.40E-39", "2.66E-39", "2.90E-39", "3.14E-39", "3.36E-39", "3.57E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "4.314590755445226672360871250732140818862E-2", "1.589941269653574920765800219858395808387E-1", "3.298634499757594530354310491075145697590E-1", "5.412240625879383715240799855880292316794E-1", "7.812010719418243402083039833179572606864E-1", "1.040151196221652140919698317999260467576E+0", "1.310302278619406936062995511682148832904E+0", "1.585446705945635176383086296576039470170E+0", "1.860681041184300491059927219863696785727E+0", "2.132185242391012188785788451085139831345E+0", "2.397035759786264667353573219035337348745E+0", "2.653047597777783867602277236744039324478E+0", "2.898641115538511284124338852513096754552E+0", "3.132729933072566923146120128299579126358E+0", "3.354626821930247590270229428098163573002E+0", "3.563964901746595569306848442684890768240E+0"]
+    },
+    "supplied_T": {
+     "accuracy": ["0", "5.00E-52", "1.00E-51", "1.50E-51", "2.00E-51", "2.50E-51", "3.00E-51", "3.50E-51", "4.00E-51", "4.50E-51", "5.00E-51", "5.50E-51", "6.00E-51", "6.50E-51", "7.00E-51", "7.50E-51", "8.00E-51"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "4.999999999999999899433238146278076836264E-13", "9.999999999999999798866476292556153672528E-13", "1.499999999999999969829971443883423050879E-12", "1.999999999999999959773295258511230734506E-12", "2.499999999999999949716619073139038418132E-12", "2.999999999999999939659942887766846101759E-12", "3.499999999999999929603266702394653785385E-12", "3.999999999999999919546590517022461469011E-12", "4.499999999999999909489914331650269152638E-12", "4.999999999999999899433238146278076836264E-12", "5.499999999999999889376561960905884519891E-12", "5.999999999999999879319885775533692203517E-12", "6.499999999999999869263209590161499887143E-12", "6.999999999999999859206533404789307570770E-12", "7.499999999999999849149857219417115254396E-12", "7.999999999999999839093181034044922938023E-12"]
+    },
+    "supplied_U": {
+     "accuracy": ["0", "5.00E-52", "1.00E-51", "1.50E-51", "2.00E-51", "2.50E-51", "3.00E-51", "3.50E-51", "4.00E-51", "4.50E-51", "5.00E-51", "5.50E-51", "6.00E-51", "6.50E-51", "7.00E-51", "7.50E-51", "8.00E-51"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "4.999999999999999899433238146278076836264E-13", "9.999999999999999798866476292556153672528E-13", "1.499999999999999969829971443883423050879E-12", "1.999999999999999959773295258511230734506E-12", "2.499999999999999949716619073139038418132E-12", "2.999999999999999939659942887766846101759E-12", "3.499999999999999929603266702394653785385E-12", "3.999999999999999919546590517022461469011E-12", "4.499999999999999909489914331650269152638E-12", "4.999999999999999899433238146278076836264E-12", "5.499999999999999889376561960905884519891E-12", "5.999999999999999879319885775533692203517E-12", "6.499999999999999869263209590161499887143E-12", "6.999999999999999859206533404789307570770E-12", "7.499999999999999849149857219417115254396E-12", "7.999999999999999839093181034044922938023E-12"]
+    }
+   },
+   "times_s": [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0]
+  },
+  "F3": {
+   "series": {
+    "H_tot": {
+     "accuracy": ["0", "1.25E-38", "2.00E-38", "2.56E-38", "2.99E-38", "3.34E-38", "3.62E-38", "3.86E-38", "4.06E-38", "4.24E-38", "4.39E-38", "4.53E-38", "4.65E-38", "4.76E-38", "4.86E-38", "4.95E-38", "5.04E-38"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "1.248891209027783375304727072937644022996E+1", "1.999825523638639780638073506175603213414E+1", "2.554281207791321665231243269061036225835E+1", "2.986147280634502995691635990322187250248E+1", "3.333051801732888376914411199453191488470E+1", "3.617991969760873305434348743497456901188E+1", "3.856349465627842814658287356950487996079E+1", "4.058972233619442641235914742361191239580E+1", "4.233777446337965427213058701599258814987E+1", "4.386681185018177447693940006140523199324E+1", "4.522179923305963968445852596521244479842E+1", "4.643734698078572156396679472261095861894E+1", "4.754035528508713142236800642440486478873E+1", "4.855189199252812633136633169825357751640E+1", "4.948855906007833976276469783412987250956E+1", "5.036350616476186674908865879892588452414E+1"]
+    },
+    "V_K": {
+     "accuracy": ["0", "5.00E-40", "1.00E-39", "1.50E-39", "2.00E-39", "2.50E-39", "3.00E-39", "3.50E-39", "4.00E-39", "4.50E-39", "5.00E-39", "5.50E-39", "6.00E-39", "6.50E-39", "7.00E-39", "7.50E-39", "8.00E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "5.000000000000000000000000000000000000000E-1", "1.000000000000000000000000000000000000000E+0", "1.500000000000000000000000000000000000000E+0", "2.000000000000000000000000000000000000000E+0", "2.500000000000000000000000000000000000000E+0", "3.000000000000000000000000000000000000000E+0", "3.500000000000000000000000000000000000000E+0", "4.000000000000000000000000000000000000000E+0", "4.500000000000000000000000000000000000000E+0", "5.000000000000000000000000000000000000000E+0", "5.500000000000000000000000000000000000000E+0", "6.000000000000000000000000000000000000000E+0", "6.500000000000000000000000000000000000000E+0", "7.000000000000000000000000000000000000000E+0", "7.500000000000000000000000000000000000000E+0", "8.000000000000000000000000000000000000000E+0"]
+    },
+    "n_T_A": {
+     "accuracy": ["1.00E-38", "8.83E-39", "7.79E-39", "6.88E-39", "6.07E-39", "5.36E-39", "4.73E-39", "4.17E-39", "3.68E-39", "3.25E-39", "2.87E-39", "2.53E-39", "2.24E-39", "1.97E-39", "1.74E-39", "1.54E-39", "1.36E-39"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["1.000000000000000000000000000000000000000E+1", "8.824969025846424041038583050669594268835E+0", "7.788007830714933479319417050292429560723E+0", "6.872892787910972828336859502645796451287E+0", "6.065306597127908113399144816185733386326E+0", "5.352614285191761373852149119215247761709E+0", "4.723665527412257605169501450561677033709E+0", "4.168620196787416577774257789706666818742E+0", "3.678794411716951698190551932277370325215E+0", "3.246524673586198688101247975751197634865E+0", "2.865047968604754984061413506019673364483E+0", "2.528395958050453419726656012221897227738E+0", "2.231301601487405768692210988261890264198E+0", "1.969116752045152853912075404637161163735E+0", "1.737739434507756171033370806090514587859E+0", "1.533549668452671213088265068179494805511E+0", "1.353352832369585577807048498887702811573E+0"]
+    },
+    "n_T_B": {
+     "accuracy": ["1.00E-50", "1.15E-39", "2.11E-39", "2.90E-39", "3.54E-39", "4.06E-39", "4.48E-39", "4.80E-39", "5.05E-39", "5.22E-39", "5.34E-39", "5.41E-39", "5.43E-39", "5.42E-39", "5.39E-39", "5.32E-39", "5.24E-39"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["9.999999999999999394969692819398109301723E-12", "1.145542031944851886962778817892397767017E+0", "2.100610582751738171084882842552778054935E+0", "2.890311627243604020079629852029831344249E+0", "3.536668222764392583813163903727179402387E+0", "4.058989242548620175778779884612947676733E+0", "4.474194465686596304360849118051939271778E+0", "4.797101167344831689025123910915811440608E+0", "5.040676747744600048449391269480441009333E+0", "5.216261404398306217882832189823500823034E+0", "5.333764380881921882229552183163990730163E+0", "5.401836909603509557042536149196704391399E+0", "5.428024599101105518413336796738828240510E+0", "5.418901692621532403211603171623588536109E+0", "5.380189339023921057999107482574054602954E+0", "5.316859764942643986802060636911716192017E+0", "5.233228014684721701062510774380552912779E+0"]
+    },
+    "n_T_K": {
+     "accuracy": ["0", "2.95E-41", "1.12E-40", "2.37E-40", "3.99E-40", "5.89E-40", "8.03E-40", "1.04E-39", "1.29E-39", "1.54E-39", "1.81E-39", "2.07E-39", "2.35E-39", "2.62E-39", "2.89E-39", "3.15E-39", "3.42E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "2.948894221922407199863813082292098078185E-2", "1.113815865443283495957001065296487247905E-1", "2.367955848569231515835106446891718687271E-1", "3.980251801196993027876912794418301993646E-1", "5.883964722721184503690709955164908734503E-1", "8.021400069141460904696494307210133302202E-1", "1.034278635881251733200618298702094700172E+0", "1.280528840552448253360056797556704948788E+0", "1.537213922029995094015919833729761149252E+0", "1.801187650528323133709034310110738836320E+0", "2.069767132361537023230807837865744635643E+0", "2.340673799427488712894452214273571073887E+0", "2.611981555349814742876321423003483202566E+0", "2.882071226485322770967521710589607035411E+0", "3.149590566622184800109674294152908552511E+0", "3.413419152963692721130440725965807149502E+0"]
+    },
+    "n_U_A": {
+     "accuracy": ["4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12"]
+    },
+    "n_U_B": {
+     "accuracy": ["6.00E-39", "5.71E-39", "5.43E-39", "5.17E-39", "4.92E-39", "4.68E-39", "4.45E-39", "4.23E-39", "4.03E-39", "3.83E-39", "3.64E-39", "3.47E-39", "3.30E-39", "3.14E-39", "2.98E-39", "2.84E-39", "2.70E-39"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["6.000000000000000000000000000000000000000E+0", "5.707376547004771760303544778577189313041E+0", "5.429024508216709064805134760927836851138E+0", "5.164247858551739763609952009159541567974E+0", "4.912384518469703844488833233091077868692E+0", "4.672804698430641201640307553142981603169E+0", "4.444909324092899014194425497194102350745E+0", "4.228128538315233725231737059782325477009E+0", "4.021920276217132604006241157813202411534E+0", "3.825768909734263477346242896869014744697E+0", "3.639183958279735235025670875631904850419E+0", "3.461698862287150673812414922251154839237E+0", "3.292869816568670479409813238978373557333E+0", "3.132274660570875829600038662678043768564E+0", "2.979511822753491235190886465136872197577E+0", "2.834199316451364577300869158482102237839E+0", "2.695973784708836258939442094068317345904E+0"]
+    },
+    "n_U_K": {
+     "accuracy": ["0", "2.93E-40", "5.71E-40", "8.36E-40", "1.09E-39", "1.33E-39", "1.56E-39", "1.78E-39", "1.98E-39", "2.18E-39", "2.37E-39", "2.54E-39", "2.71E-39", "2.87E-39", "3.03E-39", "3.17E-39", "3.31E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "2.926234529957282396964552214127540107733E-1", "5.709754917842909351948652390520497964910E-1", "8.357521414497602363900479908102884034700E-1", "1.087615481532296155511166766868695426566E+0", "1.327195301571858798359692446806735015904E+0", "1.555090675910100985805574502745557592142E+0", "1.771871461688266274768262940147277789694E+0", "1.978079723786867395993758842106344178983E+0", "2.174231090270236522653757103040475169635E+0", "2.360816041725264764974329124267528387728E+0", "2.538301137718349326187585077638221722724E+0", "2.707130183437329520590186760900946328442E+0", "2.867725339435624170399961337191219441026E+0", "3.020488177253508764809113534722334335827E+0", "3.165800683556135422699130841367047619381E+0", "3.304026215299163741060557905770775835130E+0"]
+    },
+    "supplied_T": {
+     "accuracy": ["0", "5.00E-52", "1.00E-51", "1.50E-51", "2.00E-51", "2.50E-51", "3.00E-51", "3.50E-51", "4.00E-51", "4.50E-51", "5.00E-51", "5.50E-51", "6.00E-51", "6.50E-51", "7.00E-51", "7.50E-51", "8.00E-51"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "4.999999999999999899433238146278076836264E-13", "9.999999999999999798866476292556153672528E-13", "1.499999999999999969829971443883423050879E-12", "1.999999999999999959773295258511230734506E-12", "2.499999999999999949716619073139038418132E-12", "2.999999999999999939659942887766846101759E-12", "3.499999999999999929603266702394653785385E-12", "3.999999999999999919546590517022461469011E-12", "4.499999999999999909489914331650269152638E-12", "4.999999999999999899433238146278076836264E-12", "5.499999999999999889376561960905884519891E-12", "5.999999999999999879319885775533692203517E-12", "6.499999999999999869263209590161499887143E-12", "6.999999999999999859206533404789307570770E-12", "7.499999999999999849149857219417115254396E-12", "7.999999999999999839093181034044922938023E-12"]
+    },
+    "supplied_U": {
+     "accuracy": ["0", "5.00E-52", "1.00E-51", "1.50E-51", "2.00E-51", "2.50E-51", "3.00E-51", "3.50E-51", "4.00E-51", "4.50E-51", "5.00E-51", "5.50E-51", "6.00E-51", "6.50E-51", "7.00E-51", "7.50E-51", "8.00E-51"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "4.999999999999999899433238146278076836264E-13", "9.999999999999999798866476292556153672528E-13", "1.499999999999999969829971443883423050879E-12", "1.999999999999999959773295258511230734506E-12", "2.499999999999999949716619073139038418132E-12", "2.999999999999999939659942887766846101759E-12", "3.499999999999999929603266702394653785385E-12", "3.999999999999999919546590517022461469011E-12", "4.499999999999999909489914331650269152638E-12", "4.999999999999999899433238146278076836264E-12", "5.499999999999999889376561960905884519891E-12", "5.999999999999999879319885775533692203517E-12", "6.499999999999999869263209590161499887143E-12", "6.999999999999999859206533404789307570770E-12", "7.499999999999999849149857219417115254396E-12", "7.999999999999999839093181034044922938023E-12"]
+    }
+   },
+   "times_s": [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0]
+  },
+  "F4": {
+   "series": {
+    "H_tot": {
+     "accuracy": ["0", "5.23E-39", "9.16E-39", "1.26E-38", "1.55E-38", "1.81E-38", "2.05E-38", "2.26E-38", "2.46E-38", "2.64E-38", "2.81E-38", "2.97E-38", "3.12E-38", "3.26E-38", "3.39E-38", "3.52E-38", "3.64E-38"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "5.223014226287170513365026523561646645434E+0", "9.157193802341898567712276517235719028016E+0", "1.250208615470364694443628945985367850278E+1", "1.543320649775141898312246957637648965632E+1", "1.804573481502413784892363252445120044028E+1", "2.040238771670572273658481477245625150134E+1", "2.254856122160223987702623952218580144200E+1", "2.451890167608926202545651734094574661870E+1", "2.634072805482478174551151110686050214758E+1", "2.803604632820999426992230847506797820084E+1", "2.962284379180981973030024333813434075665E+1", "3.111597658469309890995535311436052395756E+1", "3.252780882215794392905023869351342236564E+1", "3.386869034839471683861053373636901808034E+1", "3.514732420494895495661851648897927123970E+1", "3.637105555272998762176532247292350454262E+1"]
+    },
+    "V_K": {
+     "accuracy": ["0", "5.00E-40", "1.00E-39", "1.50E-39", "2.00E-39", "2.50E-39", "3.00E-39", "3.50E-39", "4.00E-39", "4.50E-39", "5.00E-39", "5.50E-39", "6.00E-39", "6.50E-39", "7.00E-39", "7.50E-39", "8.00E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "5.000000000000000000000000000000000000000E-1", "1.000000000000000000000000000000000000000E+0", "1.500000000000000000000000000000000000000E+0", "2.000000000000000000000000000000000000000E+0", "2.500000000000000000000000000000000000000E+0", "3.000000000000000000000000000000000000000E+0", "3.500000000000000000000000000000000000000E+0", "4.000000000000000000000000000000000000000E+0", "4.500000000000000000000000000000000000000E+0", "5.000000000000000000000000000000000000000E+0", "5.500000000000000000000000000000000000000E+0", "6.000000000000000000000000000000000000000E+0", "6.500000000000000000000000000000000000000E+0", "7.000000000000000000000000000000000000000E+0", "7.500000000000000000000000000000000000000E+0", "8.000000000000000000000000000000000000000E+0"]
+    },
+    "n_T_A": {
+     "accuracy": ["1.00E-38", "8.83E-39", "7.79E-39", "6.88E-39", "6.07E-39", "5.36E-39", "4.73E-39", "4.17E-39", "3.68E-39", "3.25E-39", "2.87E-39", "2.53E-39", "2.24E-39", "1.97E-39", "1.74E-39", "1.54E-39", "1.36E-39"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["1.000000000000000000000000000000000000000E+1", "8.824969025846424041038583050651087039154E+0", "7.788007830714933479319417050258492366415E+0", "6.872892787910972828336859502599100948508E+0", "6.065306597127908113399144816128595429551E+0", "5.352614285191761373852149119149671253741E+0", "4.723665527412257605169501450489392523576E+0", "4.168620196787416577774257789629165469483E+0", "3.678794411716951698190551932195933800218E+0", "3.246524673586198688101247975666924386745E+0", "2.865047968604754984061413505933501753393E+0", "2.528395958050453419726656012134625845633E+0", "2.231301601487405768692210988174195797151E+0", "1.969116752045152853912075404549614085190E+0", "1.737739434507756171033370806003592941119E+0", "1.533549668452671213088265068093596303222E+0", "1.353352832369585577807048498803155453081E+0"]
+    },
+    "n_T_B": {
+     "accuracy": ["1.00E-50", "1.00E-50", "1.00E-50", "1.00E-50", "1.00E-50", "1.00E-50", "1.00E-50", "1.00E-50", "1.00E-50", "1.00E-50", "1.00E-50", "1.00E-50", "1.00E-50", "1.00E-50", "1.00E-50", "1.00E-50", "1.00E-50"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["9.999999999999999394969692819398109301723E-12", "9.999999999999999414667971391694529952745E-12", "9.999999999999999433405553581674800562012E-12", "9.999999999999999451229293104784561844054E-12", "9.999999999999999468183758593802890830766E-12", "9.999999999999999484311345043639012625248E-12", "9.999999999999999499652379820902140122472E-12", "9.999999999999999514245223503323584215030E-12", "9.999999999999999528126365801182214668711E-12", "9.999999999999999541330516800586798559325E-12", "9.999999999999999553890693756770948620114E-12", "9.999999999999999565838303654429127478996E-12", "9.999999999999999577203221741537551554736E-12", "9.999999999999999588013866233035453312242E-12", "9.999999999999999598297269371164816442443E-12", "9.999999999999999608079145020156446982667E-12", "9.999999999999999617383952964284304054906E-12"]
+    },
+    "n_T_K": {
+     "accuracy": ["0", "1.18E-39", "2.22E-39", "3.13E-39", "3.94E-39", "4.65E-39", "5.28E-39", "5.84E-39", "6.33E-39", "6.76E-39", "7.14E-39", "7.48E-39", "7.77E-39", "8.04E-39", "8.27E-39", "8.47E-39", "8.65E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "1.175030974154075958961416949319158006088E+0", "2.211992169286066520680582949682958420452E+0", "3.127107212090527171663140497314469422651E+0", "3.934693402874091886600855183757963799933E+0", "4.647385714810738626147850880710703713108E+0", "5.276334472590742394830498549345584732310E+0", "5.831379803216083422225742210181162266536E+0", "6.321205588287048301809448067590456117317E+0", "6.753475326418301311898752024096204703605E+0", "7.134952031400245015938586493807010483816E+0", "7.471604041955046580273343987583882105493E+0", "7.768698398518594231307789011522890559703E+0", "8.030883247961347146087924595126604950986E+0", "8.262260565499243828966629193652286015734E+0", "8.466450331554828786911734931542444101797E+0", "8.646647167638414422192951500813523467808E+0"]
+    },
+    "n_U_A": {
+     "accuracy": ["4.00E-51", "2.75E-40", "5.05E-40", "6.94E-40", "8.49E-40", "9.75E-40", "1.08E-39", "1.16E-39", "1.21E-39", "1.26E-39", "1.29E-39", "1.30E-39", "1.31E-39", "1.31E-39", "1.30E-39", "1.28E-39", "1.26E-39"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["3.999999999999999919546590517022461469011E-12", "2.749300876680162080933585820896583432979E-1", "5.041465398613785754432181384427834224967E-1", "6.936747905391863100844317974720856958605E-1", "8.488003734639790729754415715589952693659E-1", "9.741574182120349094571749382687091919386E-1", "1.073806671765022957929037559060879999121E+0", "1.151304280162901286611159366524288575790E+0", "1.209762419458771645896541973377901977161E+0", "1.251902737055607748824945046231538926276E+0", "1.280103451411639787363306811180637185372E+0", "1.296440858304800135269691592095274624713E+0", "1.302725903784215204941076475146137125410E+0", "1.300536406229120430656230196452196014976E+0", "1.291245441365705476360724909633969945323E+0", "1.276046343586218231463954382602793960978E+0", "1.255974723524342306938540834137055911661E+0"]
+    },
+    "n_U_B": {
+     "accuracy": ["6.00E-39", "5.71E-39", "5.43E-39", "5.17E-39", "4.92E-39", "4.68E-39", "4.45E-39", "4.23E-39", "4.03E-39", "3.83E-39", "3.64E-39", "3.47E-39", "3.30E-39", "3.14E-39", "2.98E-39", "2.84E-39", "2.70E-39"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["6.000000000000000000000000000000000000000E+0", "5.707376547004771760303544778577189313041E+0", "5.429024508216709064805134760927836851138E+0", "5.164247858551739763609952009159541567974E+0", "4.912384518469703844488833233091077868692E+0", "4.672804698430641201640307553142981603169E+0", "4.444909324092899014194425497194102350745E+0", "4.228128538315233725231737059782325477009E+0", "4.021920276217132604006241157813202411534E+0", "3.825768909734263477346242896869014744697E+0", "3.639183958279735235025670875631904850419E+0", "3.461698862287150673812414922251154839237E+0", "3.292869816568670479409813238978373557333E+0", "3.132274660570875829600038662678043768564E+0", "2.979511822753491235190886465136872197577E+0", "2.834199316451364577300869158482102237839E+0", "2.695973784708836258939442094068317345904E+0"]
+    },
+    "n_U_K": {
+     "accuracy": ["0", "1.77E-41", "6.69E-41", "1.43E-40", "2.39E-40", "3.54E-40", "4.82E-40", "6.21E-40", "7.69E-40", "9.23E-40", "1.09E-39", "1.25E-39", "1.41E-39", "1.57E-39", "1.73E-39", "1.89E-39", "2.05E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "1.769336533171203160309663924264225799246E-2", "6.682895192691235975164710052881296451130E-2", "1.420773509145739263056161932577492981265E-1", "2.388151080723170825357251952292467477175E-1", "3.530378833638238889025175084575724144829E-1", "4.812840041490780278765369436042241835381E-1", "6.205671815293649881571035735425358044211E-1", "7.683173043320957500972168686479887923394E-1", "9.223283532186287738288120567284828338762E-1", "1.080712590317624977611022313006437792873E+0", "1.241860279417549190917893485462493688528E+0", "1.404404279657114315649110285674355793549E+0", "1.567188933210503739743731140658570016567E+0", "1.729242735891803288448388625007910981022E+0", "1.889754339973917191235176458683800248920E+0", "2.048051491778821434122017071553266513985E+0"]
+    },
+    "supplied_T": {
+     "accuracy": ["0", "5.00E-52", "1.00E-51", "1.50E-51", "2.00E-51", "2.50E-51", "3.00E-51", "3.50E-51", "4.00E-51", "4.50E-51", "5.00E-51", "5.50E-51", "6.00E-51", "6.50E-51", "7.00E-51", "7.50E-51", "8.00E-51"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "4.999999999999999899433238146278076836264E-13", "9.999999999999999798866476292556153672528E-13", "1.499999999999999969829971443883423050879E-12", "1.999999999999999959773295258511230734506E-12", "2.499999999999999949716619073139038418132E-12", "2.999999999999999939659942887766846101759E-12", "3.499999999999999929603266702394653785385E-12", "3.999999999999999919546590517022461469011E-12", "4.499999999999999909489914331650269152638E-12", "4.999999999999999899433238146278076836264E-12", "5.499999999999999889376561960905884519891E-12", "5.999999999999999879319885775533692203517E-12", "6.499999999999999869263209590161499887143E-12", "6.999999999999999859206533404789307570770E-12", "7.499999999999999849149857219417115254396E-12", "7.999999999999999839093181034044922938023E-12"]
+    },
+    "supplied_U": {
+     "accuracy": ["0", "5.00E-52", "1.00E-51", "1.50E-51", "2.00E-51", "2.50E-51", "3.00E-51", "3.50E-51", "4.00E-51", "4.50E-51", "5.00E-51", "5.50E-51", "6.00E-51", "6.50E-51", "7.00E-51", "7.50E-51", "8.00E-51"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "4.999999999999999899433238146278076836264E-13", "9.999999999999999798866476292556153672528E-13", "1.499999999999999969829971443883423050879E-12", "1.999999999999999959773295258511230734506E-12", "2.499999999999999949716619073139038418132E-12", "2.999999999999999939659942887766846101759E-12", "3.499999999999999929603266702394653785385E-12", "3.999999999999999919546590517022461469011E-12", "4.499999999999999909489914331650269152638E-12", "4.999999999999999899433238146278076836264E-12", "5.499999999999999889376561960905884519891E-12", "5.999999999999999879319885775533692203517E-12", "6.499999999999999869263209590161499887143E-12", "6.999999999999999859206533404789307570770E-12", "7.499999999999999849149857219417115254396E-12", "7.999999999999999839093181034044922938023E-12"]
+    }
+   },
+   "times_s": [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0]
+  },
+  "F5": {
+   "series": {
+    "H_tot": {
+     "accuracy": ["0", "2.26E-38", "3.35E-38", "4.07E-38", "4.58E-38", "4.98E-38", "5.30E-38", "5.56E-38", "5.78E-38", "5.97E-38", "6.14E-38", "6.30E-38", "6.43E-38", "6.56E-38", "6.68E-38", "6.79E-38", "6.89E-38"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "2.256707772857762780767290083366205480758E+1", "3.346062915277525059435682099857447256117E+1", "4.061926519469849164730077862633906192992E+1", "4.578879693802970717203536696890977655634E+1", "4.975074098993463643867823827764732808938E+1", "5.292072755106555118809618898608425047417E+1", "5.554135726576495363058924754354803674248E+1", "5.776396964422131868633529638457971771744E+1", "5.968838565115540136068576368957580179860E+1", "6.138380660226784074023227893393252635449E+1", "6.290037399987395595720435443277898154509E+1", "6.427580358316646646573933215902783601151E+1", "6.553931470574281436898500757882514914561E+1", "6.671403367055606768852365507625543302099E+1", "6.781851864599046030690706764156650348816E+1", "6.886777017152613903249888604624126454335E+1"]
+    },
+    "V_K": {
+     "accuracy": ["0", "1.00E-39", "2.00E-39", "3.00E-39", "4.00E-39", "5.00E-39", "6.00E-39", "7.00E-39", "8.00E-39", "9.00E-39", "1.00E-38", "1.10E-38", "1.20E-38", "1.30E-38", "1.40E-38", "1.50E-38", "1.60E-38"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "1.000000000000000000000000000000000000000E+0", "2.000000000000000000000000000000000000000E+0", "3.000000000000000000000000000000000000000E+0", "4.000000000000000000000000000000000000000E+0", "5.000000000000000000000000000000000000000E+0", "6.000000000000000000000000000000000000000E+0", "7.000000000000000000000000000000000000000E+0", "8.000000000000000000000000000000000000000E+0", "9.000000000000000000000000000000000000000E+0", "1.000000000000000000000000000000000000000E+1", "1.100000000000000000000000000000000000000E+1", "1.200000000000000000000000000000000000000E+1", "1.300000000000000000000000000000000000000E+1", "1.400000000000000000000000000000000000000E+1", "1.500000000000000000000000000000000000000E+1", "1.600000000000000000000000000000000000000E+1"]
+    },
+    "n_T_A": {
+     "accuracy": ["1.00E-38", "7.79E-39", "6.07E-39", "4.73E-39", "3.68E-39", "2.87E-39", "2.24E-39", "1.74E-39", "1.36E-39", "1.06E-39", "8.21E-40", "6.40E-40", "4.98E-40", "3.88E-40", "3.02E-40", "2.36E-40", "1.84E-40"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["1.000000000000000000000000000000000000000E+1", "7.788007830714933479319417050292429560723E+0", "6.065306597127908113399144816185733386326E+0", "4.723665527412257605169501450561677033709E+0", "3.678794411716951698190551932277370325215E+0", "2.865047968604754984061413506019673364483E+0", "2.231301601487405768692210988261890264198E+0", "1.737739434507756171033370806090514587859E+0", "1.353352832369585577807048498887702811573E+0", "1.053992245622221770933929434987874419418E+0", "8.208499862426596117007911494170705722039E-1", "6.392786120708200155794734252133975778962E-1", "4.978706836824402815199527006522525265698E-1", "3.877420783210650020376714645590799409975E-1", "3.019738342270642178641736495552153785180E-1", "2.351774585639970113780878144928234633148E-1", "1.831563888912685403816252759322576961465E-1"]
+    },
+    "n_T_B": {
+     "accuracy": ["3.01E-51", "5.30E-40", "9.00E-40", "1.15E-39", "1.31E-39", "1.40E-39", "1.44E-39", "1.45E-39", "1.42E-39", "1.38E-39", "1.33E-39", "1.26E-39", "1.20E-39", "1.13E-39", "1.06E-39", "9.87E-40", "9.20E-40"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["3.000000000000000141608334624345868287161E-12", "5.296636183449820582326070865929879709718E-1", "8.998164944200675125564250221705861824790E-1", "1.149128363741503452806218349995969706142E+0", "1.307444510261278005308697705066331505080E+0", "1.397759375028392068487020810986057964581E+0", "1.437751873368188379265100185533589004954E+0", "1.440979508700930900644471448391781976671E+0", "1.417806884237355383413757022880198733697E+0", "1.376127480674263437838339505875229588883E+0", "1.321924537064394085154222013358204447531E+0", "1.259706724270520300126669705592115905206E+0", "1.192846398015941781251474711873371778877E+0", "1.123842064783876210066779059214180921136E+0", "1.054521901848625127751839827666480041377E+0", "9.862014412682842397562471343200878387764E-1", "9.198056221038542894460942274672226019101E-1"]
+    },
+    "n_T_C": {
+     "accuracy": ["5.00E-51", "1.54E-39", "2.52E-39", "3.10E-39", "3.40E-39", "3.49E-39", "3.44E-39", "3.31E-39", "3.11E-39", "2.89E-39", "2.65E-39", "2.41E-39", "2.17E-39", "1.95E-39", "1.73E-39", "1.54E-39", "1.36E-39"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["4.999999999999999697484846409699054650862E-12", "1.535759875385378301997288182039104873897E+0", "2.517891768174326139475373947576043282205E+0", "3.098654979017984025615210948568457980080E+0", "3.392478654802095090405614626566404642577E+0", "3.484907922769067414577664895820296452310E+0", "3.439490617356798259068816896753125217387E+0", "3.303071356141995546290324952716241804054E+0", "3.109854912671057397115772681404333619249E+0", "2.884519426579355644514024573667779310061E+0", "2.644596778588899044358912197688409383646E+0", "2.402288389017411738446546506106831912633E+0", "2.165846622261432323553515295083950492504E+0", "1.940622445406565537851604818100996589005E+0", "1.729857090579246984892415343861399983023E+0", "1.535277725739171424167203038306368576949E+0", "1.357543395017175540419261140089865598537E+0"]
+    },
+    "n_T_D": {
+     "accuracy": ["2.00E-51", "1.25E-40", "3.73E-40", "6.33E-40", "8.52E-40", "1.02E-39", "1.12E-39", "1.18E-39", "1.19E-39", "1.17E-39", "1.12E-39", "1.06E-39", "9.92E-40", "9.19E-40", "8.44E-40", "7.70E-40", "6.99E-40"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["1.999999999999999959773295258511230734506E-12", "1.242550692153776908749723798529511122824E-1", "3.726409592339123223518250536898091762746E-1", "6.320854912688917337047690476995675148034E-1", "8.516728817805317950931302485896087314534E-1", "1.013810305600043310211029385115102253325E+0", "1.117772012641106891647102771763145520430E+0", "1.170513545696041545933331754145684138338E+0", "1.181711946128092204402925356667375617036E+0", "1.161227260580520511060465181376306220418E+0", "1.117923049343897990247762456189340293884E+0", "1.059226606721722119202495491999745455617E+0", "9.910726575758243246338957833070112989372E-1", "9.180294631864222214592439784469074671679E-1", "8.434969852064367292740871532279551567979E-1", "7.699191423365368428086470357163025284698E-1", "6.989819247443266057840165074775151722205E-1"]
+    },
+    "n_T_K": {
+     "accuracy": ["0", "2.24E-41", "1.45E-40", "3.97E-40", "7.70E-40", "1.24E-39", "1.78E-39", "2.35E-39", "2.94E-39", "3.53E-39", "4.10E-39", "4.64E-39", "5.16E-39", "5.63E-39", "6.08E-39", "6.48E-39", "6.85E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "2.231360635032846957571530100127960604733E-2", "1.443441810557859122172311601364677442663E-1", "3.964656385723631827043002029128541844450E-1", "7.696095414531434110020054872186978624831E-1", "1.238474428012742222662871401757169679740E+0", "1.773683895162500701326769157366436355099E+0", "2.347696154970275836098501038313850502775E+0", "2.937273424611909437260496439798348875771E+0", "3.524133586562638635653241303710656766175E+0", "4.094705648780149268538312182944708255320E+0", "4.639499667940525826644814870665528748862E+0", "5.152363638486361289041161508640920150955E+0", "5.629763948325071028584700679216227977167E+0", "6.070150188162626940217484025206228983385E+0", "6.473424232117010481889814976661583783221E+0", "6.840512669269375023969002848510191769547E+0"]
+    },
+    "n_U_A": {
+     "accuracy": ["4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12"]
+    },
+    "n_U_B": {
+     "accuracy": ["3.01E-51", "3.01E-51", "3.01E-51", "3.01E-51", "3.01E-51", "3.01E-51", "3.01E-51", "3.01E-51", "3.01E-51", "3.01E-51", "3.01E-51", "3.01E-51", "3.01E-51", "3.01E-51", "3.01E-51", "3.00E-51", "3.00E-51"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["3.000000000000000141608334624345868287161E-12", "3.000000000000000125461432748380952727483E-12", "3.000000000000000110605565863831690574826E-12", "3.000000000000000096937508512225416625399E-12", "3.000000000000000084362288687046804105972E-12", "3.000000000000000072792527924155286921851E-12", "3.000000000000000062147834155659448627966E-12", "3.000000000000000052354243108515290168212E-12", "3.000000000000000043343704366426561998258E-12", "3.000000000000000035053608523966699446689E-12", "3.000000000000000027426352147369728845988E-12", "3.000000000000000020408937519135795960057E-12", "3.000000000000000013952604385291057157452E-12", "3.000000000000000008012491146510970341555E-12", "3.000000000000000002547323138905651935872E-12", "2.999999999999999997519125838497511939204E-12", "2.999999999999999992892960996602761358999E-12"]
+    },
+    "n_U_C": {
+     "accuracy": ["6.00E-39", "5.17E-39", "4.45E-39", "3.83E-39", "3.30E-39", "2.84E-39", "2.44E-39", "2.10E-39", "1.81E-39", "1.56E-39", "1.34E-39", "1.16E-39", "9.92E-40", "8.54E-40", "7.35E-40", "6.33E-40", "5.45E-40"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["6.000000000000000000000000000000000000000E+0", "5.164247858551043303492077298209694884560E+0", "4.444909324091603105297834086550501791919E+0", "3.825768909732451618104351763371176025267E+0", "3.292869816566414537590283371186890404664E+0", "2.834199316448726410064574232070854857830E+0", "2.439417958446561823002022442254659288098E+0", "2.099626494670182439285237464622160192841E+0", "1.807165271476706608810304631945833236519E+0", "1.555441563879052844127166206656924078748E+0", "1.338780960894463322798940675361281441524E+0", "1.152299451728564435888164976387545319870E+0", "9.917933293336927353397203898178570776234E-1", "8.536444295233700607489914852374749488590E-1", "7.347385695222791791706193467964127714856E-1", "6.323953473756590245764968136703053920271E-1", "5.443077197410214304845862578698293890209E-1"]
+    },
+    "n_U_D": {
+     "accuracy": ["2.00E-51", "6.54E-40", "9.59E-40", "1.07E-39", "1.07E-39", "1.01E-39", "9.18E-40", "8.23E-40", "7.28E-40", "6.39E-40", "5.57E-40", "4.84E-40", "4.19E-40", "3.62E-40", "3.13E-40", "2.70E-40", "2.33E-40"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["1.999999999999999959773295258511230734506E-12", "6.535988144048323207862185380096650574161E-1", "9.589854330276236741130922902305115406105E-1", "1.065851978075423555130890466272171474590E+0", "1.063224907348749312561058342082566406865E+0", "1.003581139159461741731652148269965308512E+0", "9.174409492454116144862031149100079232601E-1", "8.221895117726096093272705584275224766960E-1", "7.274020449188827593896172179683042236681E-1", "6.380518219925662357712851196500909940893E-1", "5.564371195284218042660513480875243870049E-1", "4.833337813274859147648153202819053742654E-1", "4.186803498314458479552854501711273306486E-1", "3.619816261565052042545681227764351555869E-1", "3.125431190265528462853264155315162899371E-1", "2.696043604947606236427438081459870352875E-1", "2.324121188456891586134846153024940733587E-1"]
+    },
+    "n_U_K": {
+     "accuracy": ["0", "1.83E-40", "5.97E-40", "1.11E-39", "1.65E-39", "2.17E-39", "2.65E-39", "3.08E-39", "3.47E-39", "3.81E-39", "4.11E-39", "4.37E-39", "4.59E-39", "4.79E-39", "4.96E-39", "5.10E-39", "5.23E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "1.821533270471243757217041637364469027881E-1", "5.961052428847732205890736231695360267477E-1", "1.108379112197124826764757770300756564402E+0", "1.643905276090836149848658286667109120184E+0", "2.162219544398811848203773619587202173763E+0", "2.643141092316026562511774442753886470144E+0", "3.078183993566207951387491976858551250642E+0", "3.465432683614410631800078149982993646363E+0", "3.806506614139380920101548673578292777185E+0", "4.104781919589114872935007976424015925500E+0", "4.364366766956949649347019703190275122150E+0", "4.589526320848861416704994159857084388777E+0", "4.784373944335124734996440391817985453471E+0", "4.952718311467167974544054237489318312131E+0", "5.098000292146580351780759377985869791169E+0", "5.223280161431289410901929126614351568575E+0"]
+    },
+    "supplied_T": {
+     "accuracy": ["0", "1.00E-51", "2.00E-51", "3.00E-51", "4.00E-51", "5.00E-51", "6.00E-51", "7.00E-51", "8.00E-51", "9.00E-51", "1.00E-50", "1.10E-50", "1.20E-50", "1.30E-50", "1.40E-50", "1.50E-50", "1.60E-50"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "9.999999999999999798866476292556153672528E-13", "1.999999999999999959773295258511230734506E-12", "2.999999999999999939659942887766846101759E-12", "3.999999999999999919546590517022461469011E-12", "4.999999999999999899433238146278076836264E-12", "5.999999999999999879319885775533692203517E-12", "6.999999999999999859206533404789307570770E-12", "7.999999999999999839093181034044922938023E-12", "8.999999999999999818979828663300538305276E-12", "9.999999999999999798866476292556153672528E-12", "1.099999999999999977875312392181176903978E-11", "1.199999999999999975863977155106738440703E-11", "1.299999999999999973852641918032299977429E-11", "1.399999999999999971841306680957861514154E-11", "1.499999999999999969829971443883423050879E-11", "1.599999999999999967818636206808984587605E-11"]
+    },
+    "supplied_U": {
+     "accuracy": ["0", "1.00E-51", "2.00E-51", "3.00E-51", "4.00E-51", "5.00E-51", "6.00E-51", "7.00E-51", "8.00E-51", "9.00E-51", "1.00E-50", "1.10E-50", "1.20E-50", "1.30E-50", "1.40E-50", "1.50E-50", "1.60E-50"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "9.999999999999999798866476292556153672528E-13", "1.999999999999999959773295258511230734506E-12", "2.999999999999999939659942887766846101759E-12", "3.999999999999999919546590517022461469011E-12", "4.999999999999999899433238146278076836264E-12", "5.999999999999999879319885775533692203517E-12", "6.999999999999999859206533404789307570770E-12", "7.999999999999999839093181034044922938023E-12", "8.999999999999999818979828663300538305276E-12", "9.999999999999999798866476292556153672528E-12", "1.099999999999999977875312392181176903978E-11", "1.199999999999999975863977155106738440703E-11", "1.299999999999999973852641918032299977429E-11", "1.399999999999999971841306680957861514154E-11", "1.499999999999999969829971443883423050879E-11", "1.599999999999999967818636206808984587605E-11"]
+    }
+   },
+   "times_s": [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0]
+  },
+  "F6": {
+   "series": {
+    "H_tot": {
+     "accuracy": ["0", "3.08E-38", "4.10E-38", "4.59E-38", "4.89E-38", "5.11E-38", "5.30E-38", "5.47E-38", "5.63E-38", "5.78E-38", "5.91E-38", "6.04E-38", "6.16E-38", "6.28E-38", "6.39E-38", "6.49E-38", "6.59E-38"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "3.076324827182221826040812292876201782311E+1", "4.094608766241992601315545713251881144251E+1", "4.583046951678194006550654869043912476512E+1", "4.881407459571396220550103163958118656487E+1", "5.106697330696664438682627298856221392454E+1", "5.298111819364387894408397642273044044400E+1", "5.469611286853703088697285243746063078240E+1", "5.626952304647529971664518403736601773513E+1", "5.772989769855364277923770473980311396744E+1", "5.909471752057246953130176289320761369780E+1", "6.037670402207068526926969085643641273221E+1", "6.158599584657510154936476729333810973518E+1", "6.273096875380977962522349116665151027212E+1", "6.381865762676654524822912142430793884705E+1", "6.485504982465012729560150162050713285925E+1", "6.584530900290131138401349063310588233502E+1"]
+    },
+    "V_K": {
+     "accuracy": ["0", "5.00E-40", "1.00E-39", "1.50E-39", "2.00E-39", "2.50E-39", "3.00E-39", "3.50E-39", "4.00E-39", "4.50E-39", "5.00E-39", "5.50E-39", "6.00E-39", "6.50E-39", "7.00E-39", "7.50E-39", "8.00E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "5.000000000000000000000000000000000000000E-1", "1.000000000000000000000000000000000000000E+0", "1.500000000000000000000000000000000000000E+0", "2.000000000000000000000000000000000000000E+0", "2.500000000000000000000000000000000000000E+0", "3.000000000000000000000000000000000000000E+0", "3.500000000000000000000000000000000000000E+0", "4.000000000000000000000000000000000000000E+0", "4.500000000000000000000000000000000000000E+0", "5.000000000000000000000000000000000000000E+0", "5.500000000000000000000000000000000000000E+0", "6.000000000000000000000000000000000000000E+0", "6.500000000000000000000000000000000000000E+0", "7.000000000000000000000000000000000000000E+0", "7.500000000000000000000000000000000000000E+0", "8.000000000000000000000000000000000000000E+0"]
+    },
+    "n_T_A": {
+     "accuracy": ["1.00E-38", "7.37E-39", "5.64E-39", "4.57E-39", "3.90E-39", "3.48E-39", "3.18E-39", "2.96E-39", "2.77E-39", "2.59E-39", "2.43E-39", "2.28E-39", "2.14E-39", "2.01E-39", "1.89E-39", "1.77E-39", "1.66E-39"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["1.000000000000000000000000000000000000000E+1", "7.369913336771057441370589679797408424479E+0", "5.638259215075191500956984212854525017022E+0", "4.561239185985999256549045543646847251863E+0", "3.898190482351834609039816774549280809947E+0", "3.474289623985949262491565318585641354192E+0", "3.179996482112737050017711714168643444593E+0", "2.953223611298236718820845713351408977377E+0", "2.761578612550504853105026892187566397265E+0", "2.589438121455493249270899038856035297836E+0", "2.429854818289502470647954611145115504807E+0", "2.279988136144527550187531521004178222059E+0", "2.138743139789378022730336647407720859823E+0", "2.005656846881800321075010255377156436141E+0", "1.880429346738813597832206312700281654830E+0", "1.762759019028210336563249508205944185607E+0", "1.652305633709777141706656813056706459380E+0"]
+    },
+    "n_T_B": {
+     "accuracy": ["2.00E-51", "1.97E-39", "2.53E-39", "2.52E-39", "2.32E-39", "2.09E-39", "1.89E-39", "1.72E-39", "1.59E-39", "1.47E-39", "1.37E-39", "1.28E-39", "1.20E-39", "1.12E-39", "1.05E-39", "9.84E-40", "9.22E-40"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["1.999999999999999959773295258511230734506E-12", "1.967569904995375834576860214123503933525E+0", "2.528587408368474479259099242704372581822E+0", "2.515492707734596777720406724426700280998E+0", "2.315335484027272095637625518425210070748E+0", "2.087457878919774380508721061146363763720E+0", "1.885171605213204319985950434583999503165E+0", "1.718015591579749330377399695873308139871E+0", "1.580774474034131829202188093187958443863E+0", "1.465477038626547031638328264196163587324E+0", "1.365454558639552723021847822594494562040E+0", "1.276111849637430009862454970751280236801E+0", "1.194583518263518645388359936897893987147E+0", "1.119175938211668190484588066120239704232E+0", "1.048901090646678674775620689605233138503E+0", "9.831617185524945019265029561817148028056E-1", "9.215631836670224809977484815426307490809E-1"]
+    },
+    "n_T_C": {
+     "accuracy": ["3.01E-51", "6.24E-40", "1.61E-39", "2.37E-39", "2.80E-39", "2.97E-39", "2.97E-39", "2.87E-39", "2.74E-39", "2.58E-39", "2.42E-39", "2.27E-39", "2.13E-39", "2.00E-39", "1.87E-39", "1.75E-39", "1.64E-39"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["3.000000000000000141608334624345868287161E-12", "6.236305938362545175405067606114404434508E-1", "1.607363220717619670943953326486029969280E+0", "2.362145102254661147753007139240130768644E+0", "2.791632877622508515172267739867346495658E+0", "2.961063780209015575998426319761739081603E+0", "2.962274893652800907730640612419111497156E+0", "2.869329216086762872734802211034798569658E+0", "2.731123311437752125494167604770630361253E+0", "2.576183802103657070182710729513012639878E+0", "2.419520554778157331654956794206833456515E+0", "2.268188406355948356756549538220470786282E+0", "2.124985237240961013428424890908341326577E+0", "1.990633882088276660181278750110796582971E+0", "1.864954515444466690576169455385434693144E+0", "1.747440683585061496348773408519882459218E+0", "1.637514436580343864667564296474684632749E+0"]
+    },
+    "n_T_K": {
+     "accuracy": ["0", "3.89E-41", "2.26E-40", "5.62E-40", "9.95E-40", "1.48E-39", "1.98E-39", "2.46E-39", "2.93E-39", "3.37E-39", "3.79E-39", "4.18E-39", "4.55E-39", "4.89E-39", "5.21E-39", "5.51E-39", "5.79E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "3.888616440281220651204334555897215224226E-2", "2.257901558447143488399632180363407093880E-1", "5.611230040312428179775405927575332998220E-1", "9.948411560053847801502899672193175487883E-1", "1.477188716892760781001287300557354049441E+0", "1.972557019029257722265697238869287127857E+0", "2.459431581043751078066952379771469209679E+0", "2.926523601986611192198617409874773018019E+0", "3.368901037823802648908061967445660019177E+0", "3.785170068302787474675240772054371344667E+0", "4.175711607872594083193463970014828946702E+0", "4.541688104717142318452878524766745342112E+0", "4.884533332829754828259122928362452116129E+0", "5.205715047182041036816003542269638676811E+0", "5.506638578846733665161474127042990039472E+0", "5.788616746055856512628030408866452969707E+0"]
+    },
+    "n_U_A": {
+     "accuracy": ["4.00E-51", "3.00E-40", "7.72E-40", "1.14E-39", "1.34E-39", "1.43E-39", "1.43E-39", "1.38E-39", "1.32E-39", "1.24E-39", "1.17E-39", "1.09E-39", "1.02E-39", "9.56E-40", "8.96E-40", "8.39E-40", "7.87E-40"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["3.999999999999999919546590517022461469011E-12", "2.993426850439821245984459171393678051608E-1", "7.715343459470688776761604850692436785255E-1", "1.133829649084872939564715510194256151654E+0", "1.339983781261453419534772375113566531824E+0", "1.421310614502982230520211263858214053569E+0", "1.421891948955999228507304325478808547172E+0", "1.377278023724297997447619778405930544043E+0", "1.310939189492768416183166397284575357918E+0", "1.236568225012397831569368404134454986881E+0", "1.161369866296152943852132097189262729213E+0", "1.088730435053487793272147101690400484001E+0", "1.019992913878289285973235589551546587471E+0", "9.555042634049964971712405543487702476437E-1", "8.951781674159636900210554893519934647388E-1", "8.387715281234454363492858843853184355482E-1", "7.860069295611774555024013582315905571044E-1"]
+    },
+    "n_U_B": {
+     "accuracy": ["6.00E-39", "3.25E-39", "1.87E-39", "1.23E-39", "9.50E-40", "8.33E-40", "7.77E-40", "7.42E-40", "7.09E-40", "6.75E-40", "6.39E-40", "6.03E-40", "5.67E-40", "5.32E-40", "4.99E-40", "4.68E-40", "4.39E-40"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["6.000000000000000000000000000000000000000E+0", "3.241406059066425057813508713072644794426E+0", "1.865803084024954599890999220498185857255E+0", "1.227447886951723317156313300343961946877E+0", "9.497129989956008222412476814879113612768E-1", "8.320990470405604024595091436394156724951E-1", "7.768949261405714310141326897704941783081E-1", "7.411248118319418413868562897398023918266E-1", "7.084824831106710465072438732076973554328E-1", "6.743766496982126890228555606217773688073E-1", "6.386401557908124245860500081439523488794E-1", "6.023257719050986792465061501080907604340E-1", "5.664957729163533927900469957797123268380E-1", "5.318885452029147375906000530147118061682E-1", "4.989169536561142149641949925495542284212E-1", "4.677583802862606846740668923121705681977E-1", "4.384454700264820261233466407770144838533E-1"]
+    },
+    "n_U_C": {
+     "accuracy": ["3.01E-51", "2.24E-39", "2.72E-39", "2.55E-39", "2.23E-39", "1.92E-39", "1.67E-39", "1.49E-39", "1.36E-39", "1.25E-39", "1.16E-39", "1.08E-39", "1.01E-39", "9.45E-40", "8.86E-40", "8.31E-40", "7.79E-40"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["3.000000000000000141608334624345868287161E-12", "2.236357767228549188501945991263170727703E+0", "2.712832245900026296405188288054823818931E+0", "2.546162228831953647862475294988662673730E+0", "2.220076005309572816797717561673665970370E+0", "1.912736698663253657190690735509650604037E+0", "1.669750947526596319166847342542600421889E+0", "1.487752866679645805430364335618565795055E+0", "1.350704706554697816924229000735924668152E+0", "1.243335685932407912975180425949875701309E+0", "1.154641359413108777385853394508084436252E+0", "1.077696538294998186919522214409984575239E+0", "1.008503174469297405325311388324379242150E+0", "9.448843494376094888352122576083187317523E-1", "8.856904056883801176425566481277184098869E-1", "8.303059255472364567704184999169917349102E-1", "7.783729330856100957926575098469175035707E-1"]
+    },
+    "n_U_K": {
+     "accuracy": ["0", "2.23E-40", "6.50E-40", "1.10E-39", "1.50E-39", "1.84E-39", "2.14E-39", "2.40E-39", "2.63E-39", "2.85E-39", "3.05E-39", "3.24E-39", "3.41E-39", "3.57E-39", "3.73E-39", "3.87E-39", "4.00E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "2.228934886685436290860993785759149216667E-1", "6.498303241359502260276520064187882180593E-1", "1.092560235139950095416495894504104124324E+0", "1.490227214442372941426262381745784356930E+0", "1.833853639802703709829588857003591214114E+0", "2.131462177386833021311715642208911720660E+0", "2.393844297774614355735159596226459460919E+0", "2.629873620852862720385360728752504134156E+0", "2.845719439368481566432595609264536782476E+0", "3.045348618511925854175964500119288648943E+0", "3.231247254758915340561824533742055667428E+0", "3.405008138749059915911406026284836654458E+0", "3.567722841967979276402947134958617349167E+0", "3.720214473253541977372192869891095355499E+0", "3.863164166057557422206228723295824043705E+0", "3.997174667341730422581594491044725561647E+0"]
+    },
+    "supplied_T": {
+     "accuracy": ["0", "5.00E-52", "1.00E-51", "1.50E-51", "2.00E-51", "2.50E-51", "3.00E-51", "3.50E-51", "4.00E-51", "4.50E-51", "5.00E-51", "5.50E-51", "6.00E-51", "6.50E-51", "7.00E-51", "7.50E-51", "8.00E-51"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "4.999999999999999899433238146278076836264E-13", "9.999999999999999798866476292556153672528E-13", "1.499999999999999969829971443883423050879E-12", "1.999999999999999959773295258511230734506E-12", "2.499999999999999949716619073139038418132E-12", "2.999999999999999939659942887766846101759E-12", "3.499999999999999929603266702394653785385E-12", "3.999999999999999919546590517022461469011E-12", "4.499999999999999909489914331650269152638E-12", "4.999999999999999899433238146278076836264E-12", "5.499999999999999889376561960905884519891E-12", "5.999999999999999879319885775533692203517E-12", "6.499999999999999869263209590161499887143E-12", "6.999999999999999859206533404789307570770E-12", "7.499999999999999849149857219417115254396E-12", "7.999999999999999839093181034044922938023E-12"]
+    },
+    "supplied_U": {
+     "accuracy": ["0", "5.00E-52", "1.00E-51", "1.50E-51", "2.00E-51", "2.50E-51", "3.00E-51", "3.50E-51", "4.00E-51", "4.50E-51", "5.00E-51", "5.50E-51", "6.00E-51", "6.50E-51", "7.00E-51", "7.50E-51", "8.00E-51"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "4.999999999999999899433238146278076836264E-13", "9.999999999999999798866476292556153672528E-13", "1.499999999999999969829971443883423050879E-12", "1.999999999999999959773295258511230734506E-12", "2.499999999999999949716619073139038418132E-12", "2.999999999999999939659942887766846101759E-12", "3.499999999999999929603266702394653785385E-12", "3.999999999999999919546590517022461469011E-12", "4.499999999999999909489914331650269152638E-12", "4.999999999999999899433238146278076836264E-12", "5.499999999999999889376561960905884519891E-12", "5.999999999999999879319885775533692203517E-12", "6.499999999999999869263209590161499887143E-12", "6.999999999999999859206533404789307570770E-12", "7.499999999999999849149857219417115254396E-12", "7.999999999999999839093181034044922938023E-12"]
+    }
+   },
+   "times_s": [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0]
+  },
+  "F6L": {
+   "series": {
+    "H_tot": {
+     "accuracy": ["0", "3.08E-38", "4.10E-38", "4.59E-38", "4.89E-38", "5.11E-38", "5.30E-38", "5.47E-38", "5.63E-38", "5.78E-38", "5.91E-38", "6.04E-38", "6.16E-38", "6.28E-38", "6.39E-38", "6.49E-38", "6.59E-38"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "3.076324827182221826040812292876201782311E+1", "4.094608766241992601315545713251881144251E+1", "4.583046951678194006550654869043912476512E+1", "4.881407459571396220550103163958118656487E+1", "5.106697330696664438682627298856221392454E+1", "5.298111819364387894408397642273044044400E+1", "5.469611286853703088697285243746063078240E+1", "5.626952304647529971664518403736601773513E+1", "5.772989769855364277923770473980311396744E+1", "5.909471752057246953130176289320761369780E+1", "6.037670402207068526926969085643641273221E+1", "6.158599584657510154936476729333810973518E+1", "6.273096875380977962522349116665151027212E+1", "6.381865762676654524822912142430793884705E+1", "6.485504982465012729560150162050713285925E+1", "6.584530900290131138401349063310588233502E+1"]
+    },
+    "V_K": {
+     "accuracy": ["0", "5.00E-40", "1.00E-39", "1.50E-39", "2.00E-39", "2.50E-39", "3.00E-39", "3.50E-39", "4.00E-39", "4.50E-39", "5.00E-39", "5.50E-39", "6.00E-39", "6.50E-39", "7.00E-39", "7.50E-39", "8.00E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "5.000000000000000000000000000000000000000E-1", "1.000000000000000000000000000000000000000E+0", "1.500000000000000000000000000000000000000E+0", "2.000000000000000000000000000000000000000E+0", "2.500000000000000000000000000000000000000E+0", "3.000000000000000000000000000000000000000E+0", "3.500000000000000000000000000000000000000E+0", "4.000000000000000000000000000000000000000E+0", "4.500000000000000000000000000000000000000E+0", "5.000000000000000000000000000000000000000E+0", "5.500000000000000000000000000000000000000E+0", "6.000000000000000000000000000000000000000E+0", "6.500000000000000000000000000000000000000E+0", "7.000000000000000000000000000000000000000E+0", "7.500000000000000000000000000000000000000E+0", "8.000000000000000000000000000000000000000E+0"]
+    },
+    "label_T_plain_A": {
+     "accuracy": ["0", "1.06E-51", "1.75E-51", "2.18E-51", "2.45E-51", "2.62E-51", "2.73E-51", "2.82E-51", "2.90E-51", "2.97E-51", "3.03E-51", "3.09E-51", "3.15E-51", "3.20E-51", "3.25E-51", "3.30E-51", "3.34E-51"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "1.052034665291997851304175112392096423058E-12", "1.744696313970621292558753455625486307227E-12", "2.175504325606470508714753277850683837307E-12", "2.440723807060242449255775467922384428773E-12", "2.610284150406664405832861037127571640720E-12", "2.728001407155996372095824732586902546934E-12", "2.818710555481832783208345884737301671890E-12", "2.895368554980956188191094931194192443701E-12", "2.964224751418988368121267552004583114050E-12", "3.028058072685410209155422401417971801381E-12", "3.088004745543424152544629403576893765396E-12", "3.144502744085506559502208142388375106654E-12", "3.197737261248558930958683087511623522965E-12", "3.247828261305773653836158327609384891377E-12", "3.294896392390033782954553894050944942533E-12", "3.339077746517424730963044012639217649808E-12"]
+    },
+    "label_T_plain_B": {
+     "accuracy": ["2.00E-51", "1.22E-51", "9.89E-52", "9.94E-52", "1.08E-51", "1.17E-51", "1.25E-51", "1.32E-51", "1.37E-51", "1.42E-51", "1.46E-51", "1.49E-51", "1.53E-51", "1.56E-51", "1.59E-51", "1.61E-51", "1.64E-51"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["1.999999999999999959773295258511230734506E-12", "1.212972038002334835625170650580093392757E-12", "9.885650366530056274118412759684826956040E-13", "9.938029169065588091711478568718005403515E-13", "1.073865806389520709019095036285261987249E-12", "1.165016848432556255022772937356522868450E-12", "1.245931357915216643417995507493464126178E-12", "1.312793763368625382127960841099812816952E-12", "1.367690210386894338956282800081225574297E-12", "1.413809184549946703392293385245482138676E-12", "1.453818176544760428365452899721069543232E-12", "1.489555260145623806521406470965957855975E-12", "1.522166592695201395031355104918952147235E-12", "1.552329624715953640513710858495754521589E-12", "1.580439563741960689192293264443032347786E-12", "1.606735312579644875153310595229124611024E-12", "1.631374726533843537906835697790443971471E-12"]
+    },
+    "label_T_plain_C": {
+     "accuracy": ["3.01E-51", "2.76E-51", "2.36E-51", "2.06E-51", "1.89E-51", "1.82E-51", "1.82E-51", "1.86E-51", "1.91E-51", "1.97E-51", "2.04E-51", "2.10E-51", "2.16E-51", "2.21E-51", "2.26E-51", "2.31E-51", "2.35E-51"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["3.000000000000000141608334624345868287161E-12", "2.750547762466598490955996254954224495937E-12", "2.357054711713894999334382556766555511198E-12", "2.055141959098957626226461628913306189241E-12", "1.883346848951749951663577965803604617155E-12", "1.815574487917120012345023170133885836056E-12", "1.815090042539605681299522937035653215568E-12", "1.852268313566035762612635265221776939898E-12", "1.907550675425662170705449729259995518829E-12", "1.969526479159324979552437229061209868486E-12", "2.032191778089549937624787264951082864391E-12", "2.092724637458457737424835825239567230189E-12", "2.150005905104475584128752406531532667256E-12", "2.203746447165570818684958323157923029552E-12", "2.254018193823114912440653848406911766209E-12", "2.301023726566895789729155489707995562187E-12", "2.344994225368800428147495229064360088660E-12"]
+    },
+    "label_T_plain_K": {
+     "accuracy": ["0", "4.85E-52", "9.10E-52", "1.28E-51", "1.61E-51", "1.91E-51", "2.22E-51", "2.52E-51", "2.83E-51", "3.16E-51", "3.49E-51", "3.83E-51", "4.19E-51", "4.55E-51", "4.92E-51", "5.30E-51", "5.69E-51"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "4.844455342390689134396116795584923935410E-13", "9.096839376624781619633002237521898748907E-13", "1.275550798388013127099238563104731505647E-12", "1.602063537598486951216476671357078722995E-12", "1.909124513243659377897591811378157094574E-12", "2.210977192389181344228229593507925234745E-12", "2.516227367583506103035954594192861378312E-12", "2.829390559206487323075392939344146953852E-12", "3.152439584871739959805546048196093053093E-12", "3.485931972680279425669205463045051648927E-12", "3.829715356852494294267320143980564689997E-12", "4.183324758114816442039200004551931304039E-12", "4.546186666869916580487487203853297834704E-12", "4.917713981129150705119057847187077587065E-12", "5.297344568463425502694467123286149160318E-12", "5.684553301579931243457435977408000249751E-12"]
+    },
+    "label_T_tag_A": {
+     "accuracy": ["1.00E-38", "7.37E-39", "5.64E-39", "4.57E-39", "3.90E-39", "3.48E-39", "3.18E-39", "2.96E-39", "2.77E-39", "2.59E-39", "2.43E-39", "2.28E-39", "2.14E-39", "2.01E-39", "1.89E-39", "1.77E-39", "1.66E-39"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["1.000000000000000000000000000000000000000E+1", "7.369913336770005406705297681946104249367E+0", "5.638259215073446804643013591561966263566E+0", "4.561239185983823752223439073138132498585E+0", "3.898190482349393885232756532100025034479E+0", "3.474289623983338978341158654179808493155E+0", "3.179996482110009048610555717796547619860E+0", "2.953223611295418008265363880568200631492E+0", "2.761578612547609484550045935999375302334E+0", "2.589438121452529024519480050487914030284E+0", "2.429854818286474412575269200935960082405E+0", "2.279988136141439545441988096851633592655E+0", "2.138743139786233519986251140848218651681E+0", "2.005656846878602583813761696446197753054E+0", "1.880429346735565769570900539046445496502E+0", "1.762759019024915440170859474422989631713E+0", "1.652305633706438063960139388325743415367E+0"]
+    },
+    "label_T_tag_B": {
+     "accuracy": ["0", "1.97E-39", "2.53E-39", "2.52E-39", "2.32E-39", "2.09E-39", "1.89E-39", "1.72E-39", "1.59E-39", "1.47E-39", "1.37E-39", "1.28E-39", "1.20E-39", "1.12E-39", "1.05E-39", "9.84E-40", "9.22E-40"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "1.967569904994162862538857879287878762875E+0", "2.528587408367485914222446237076960740546E+0", "2.515492707733602974803500165617529133141E+0", "2.315335484026198229831235997716190975712E+0", "2.087457878918609363660288504891340990782E+0", "1.885171605211958388628035217940581507657E+0", "1.718015591578436536614031070491180179029E+0", "1.580774474032764138991801198849002161063E+0", "1.465477038625133222453778317492771293939E+0", "1.365454558638098904845303062166129109140E+0", "1.276111849635940454602309346944758830330E+0", "1.194583518261996478795664735502862632042E+0", "1.119175938210115860859872112479725993373E+0", "1.048901090645098235211878728916040845239E+0", "9.831617185508877666139233113065614922104E-1", "9.215631836653911062712146380047239133831E-1"]
+    },
+    "label_T_tag_C": {
+     "accuracy": ["0", "6.24E-40", "1.61E-39", "2.37E-39", "2.80E-39", "2.97E-39", "2.97E-39", "2.87E-39", "2.74E-39", "2.58E-39", "2.42E-39", "2.27E-39", "2.13E-39", "2.00E-39", "1.87E-39", "1.75E-39", "1.64E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "6.236305938335039697780401621204844471959E-1", "1.607363220715262616232239431486695586723E+0", "2.362145102252606005793908181613904307016E+0", "2.791632877620625168323315989915682917692E+0", "2.961063780207200001510509199749394058433E+0", "2.962274893650985817688101006737811974219E+0", "2.869329216084910604421236175272185934393E+0", "2.731123311435844574818741942599924911524E+0", "2.576183802101687543703551404533460202649E+0", "2.419520554776125139876867244269208669250E+0", "2.268188406353855632119091080483045950457E+0", "2.124985237238811007523320415324212574170E+0", "1.990633882086072913734113179292111624648E+0", "1.864954515442212672382346340472994039295E+0", "1.747440683582760472622206512730153303728E+0", "1.637514436577998870442195496046537137520E+0"]
+    },
+    "label_T_tag_K": {
+     "accuracy": ["0", "3.89E-41", "2.26E-40", "5.62E-40", "9.95E-40", "1.48E-39", "1.98E-39", "2.46E-39", "2.93E-39", "3.37E-39", "3.79E-39", "4.18E-39", "4.55E-39", "4.89E-39", "5.21E-39", "5.51E-39", "5.79E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "3.888616440232776097780427664553254056270E-2", "2.257901558438046649023007398743774091643E-1", "5.611230040299672671791525796304340612589E-1", "9.948411560037827166126914802681010721169E-1", "1.477188716890851656488043641179456457630E+0", "1.972557019027046745073308057525058898263E+0", "2.459431581041234850699368873668433255085E+0", "2.926523601983781801639410922551697625079E+0", "3.368901037820650209323190227485854473129E+0", "3.785170068299301542702560492628702139204E+0", "4.175711607868764367836611475720561626558E+0", "4.541688104712958993694763708324706142107E+0", "4.884533332825208641592253011781964628925E+0", "5.205715047177123322834874391564519618963E+0", "5.506638578841436320593010701540295572349E+0", "5.788616746050171959326450477622995533729E+0"]
+    },
+    "n_T_A": {
+     "accuracy": ["1.00E-38", "7.37E-39", "5.64E-39", "4.57E-39", "3.90E-39", "3.48E-39", "3.18E-39", "2.96E-39", "2.77E-39", "2.59E-39", "2.43E-39", "2.28E-39", "2.14E-39", "2.01E-39", "1.89E-39", "1.77E-39", "1.66E-39"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["1.000000000000000000000000000000000000000E+1", "7.369913336771057441370589679797408424479E+0", "5.638259215075191500956984212854525017022E+0", "4.561239185985999256549045543646847251863E+0", "3.898190482351834609039816774549280809947E+0", "3.474289623985949262491565318585641354192E+0", "3.179996482112737050017711714168643444593E+0", "2.953223611298236718820845713351408977377E+0", "2.761578612550504853105026892187566397265E+0", "2.589438121455493249270899038856035297836E+0", "2.429854818289502470647954611145115504807E+0", "2.279988136144527550187531521004178222059E+0", "2.138743139789378022730336647407720859823E+0", "2.005656846881800321075010255377156436141E+0", "1.880429346738813597832206312700281654830E+0", "1.762759019028210336563249508205944185607E+0", "1.652305633709777141706656813056706459380E+0"]
+    },
+    "n_T_B": {
+     "accuracy": ["2.00E-51", "1.97E-39", "2.53E-39", "2.52E-39", "2.32E-39", "2.09E-39", "1.89E-39", "1.72E-39", "1.59E-39", "1.47E-39", "1.37E-39", "1.28E-39", "1.20E-39", "1.12E-39", "1.05E-39", "9.84E-40", "9.22E-40"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["1.999999999999999959773295258511230734506E-12", "1.967569904995375834576860214123503933525E+0", "2.528587408368474479259099242704372581822E+0", "2.515492707734596777720406724426700280998E+0", "2.315335484027272095637625518425210070748E+0", "2.087457878919774380508721061146363763720E+0", "1.885171605213204319985950434583999503165E+0", "1.718015591579749330377399695873308139871E+0", "1.580774474034131829202188093187958443863E+0", "1.465477038626547031638328264196163587324E+0", "1.365454558639552723021847822594494562040E+0", "1.276111849637430009862454970751280236801E+0", "1.194583518263518645388359936897893987147E+0", "1.119175938211668190484588066120239704232E+0", "1.048901090646678674775620689605233138503E+0", "9.831617185524945019265029561817148028056E-1", "9.215631836670224809977484815426307490809E-1"]
+    },
+    "n_T_C": {
+     "accuracy": ["3.01E-51", "6.24E-40", "1.61E-39", "2.37E-39", "2.80E-39", "2.97E-39", "2.97E-39", "2.87E-39", "2.74E-39", "2.58E-39", "2.42E-39", "2.27E-39", "2.13E-39", "2.00E-39", "1.87E-39", "1.75E-39", "1.64E-39"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["3.000000000000000141608334624345868287161E-12", "6.236305938362545175405067606114404434508E-1", "1.607363220717619670943953326486029969280E+0", "2.362145102254661147753007139240130768644E+0", "2.791632877622508515172267739867346495658E+0", "2.961063780209015575998426319761739081603E+0", "2.962274893652800907730640612419111497156E+0", "2.869329216086762872734802211034798569658E+0", "2.731123311437752125494167604770630361253E+0", "2.576183802103657070182710729513012639878E+0", "2.419520554778157331654956794206833456515E+0", "2.268188406355948356756549538220470786282E+0", "2.124985237240961013428424890908341326577E+0", "1.990633882088276660181278750110796582971E+0", "1.864954515444466690576169455385434693144E+0", "1.747440683585061496348773408519882459218E+0", "1.637514436580343864667564296474684632749E+0"]
+    },
+    "n_T_K": {
+     "accuracy": ["0", "3.89E-41", "2.26E-40", "5.62E-40", "9.95E-40", "1.48E-39", "1.98E-39", "2.46E-39", "2.93E-39", "3.37E-39", "3.79E-39", "4.18E-39", "4.55E-39", "4.89E-39", "5.21E-39", "5.51E-39", "5.79E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "3.888616440281220651204334555897215224226E-2", "2.257901558447143488399632180363407093880E-1", "5.611230040312428179775405927575332998220E-1", "9.948411560053847801502899672193175487883E-1", "1.477188716892760781001287300557354049441E+0", "1.972557019029257722265697238869287127857E+0", "2.459431581043751078066952379771469209679E+0", "2.926523601986611192198617409874773018019E+0", "3.368901037823802648908061967445660019177E+0", "3.785170068302787474675240772054371344667E+0", "4.175711607872594083193463970014828946702E+0", "4.541688104717142318452878524766745342112E+0", "4.884533332829754828259122928362452116129E+0", "5.205715047182041036816003542269638676811E+0", "5.506638578846733665161474127042990039472E+0", "5.788616746055856512628030408866452969707E+0"]
+    },
+    "n_U_A": {
+     "accuracy": ["4.00E-51", "3.00E-40", "7.72E-40", "1.14E-39", "1.34E-39", "1.43E-39", "1.43E-39", "1.38E-39", "1.32E-39", "1.24E-39", "1.17E-39", "1.09E-39", "1.02E-39", "9.56E-40", "8.96E-40", "8.39E-40", "7.87E-40"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["3.999999999999999919546590517022461469011E-12", "2.993426850439821245984459171393678051608E-1", "7.715343459470688776761604850692436785255E-1", "1.133829649084872939564715510194256151654E+0", "1.339983781261453419534772375113566531824E+0", "1.421310614502982230520211263858214053569E+0", "1.421891948955999228507304325478808547172E+0", "1.377278023724297997447619778405930544043E+0", "1.310939189492768416183166397284575357918E+0", "1.236568225012397831569368404134454986881E+0", "1.161369866296152943852132097189262729213E+0", "1.088730435053487793272147101690400484001E+0", "1.019992913878289285973235589551546587471E+0", "9.555042634049964971712405543487702476437E-1", "8.951781674159636900210554893519934647388E-1", "8.387715281234454363492858843853184355482E-1", "7.860069295611774555024013582315905571044E-1"]
+    },
+    "n_U_B": {
+     "accuracy": ["6.00E-39", "3.25E-39", "1.87E-39", "1.23E-39", "9.50E-40", "8.33E-40", "7.77E-40", "7.42E-40", "7.09E-40", "6.75E-40", "6.39E-40", "6.03E-40", "5.67E-40", "5.32E-40", "4.99E-40", "4.68E-40", "4.39E-40"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["6.000000000000000000000000000000000000000E+0", "3.241406059066425057813508713072644794426E+0", "1.865803084024954599890999220498185857255E+0", "1.227447886951723317156313300343961946877E+0", "9.497129989956008222412476814879113612768E-1", "8.320990470405604024595091436394156724951E-1", "7.768949261405714310141326897704941783081E-1", "7.411248118319418413868562897398023918266E-1", "7.084824831106710465072438732076973554328E-1", "6.743766496982126890228555606217773688073E-1", "6.386401557908124245860500081439523488794E-1", "6.023257719050986792465061501080907604340E-1", "5.664957729163533927900469957797123268380E-1", "5.318885452029147375906000530147118061682E-1", "4.989169536561142149641949925495542284212E-1", "4.677583802862606846740668923121705681977E-1", "4.384454700264820261233466407770144838533E-1"]
+    },
+    "n_U_C": {
+     "accuracy": ["3.01E-51", "2.24E-39", "2.72E-39", "2.55E-39", "2.23E-39", "1.92E-39", "1.67E-39", "1.49E-39", "1.36E-39", "1.25E-39", "1.16E-39", "1.08E-39", "1.01E-39", "9.45E-40", "8.86E-40", "8.31E-40", "7.79E-40"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["3.000000000000000141608334624345868287161E-12", "2.236357767228549188501945991263170727703E+0", "2.712832245900026296405188288054823818931E+0", "2.546162228831953647862475294988662673730E+0", "2.220076005309572816797717561673665970370E+0", "1.912736698663253657190690735509650604037E+0", "1.669750947526596319166847342542600421889E+0", "1.487752866679645805430364335618565795055E+0", "1.350704706554697816924229000735924668152E+0", "1.243335685932407912975180425949875701309E+0", "1.154641359413108777385853394508084436252E+0", "1.077696538294998186919522214409984575239E+0", "1.008503174469297405325311388324379242150E+0", "9.448843494376094888352122576083187317523E-1", "8.856904056883801176425566481277184098869E-1", "8.303059255472364567704184999169917349102E-1", "7.783729330856100957926575098469175035707E-1"]
+    },
+    "n_U_K": {
+     "accuracy": ["0", "2.23E-40", "6.50E-40", "1.10E-39", "1.50E-39", "1.84E-39", "2.14E-39", "2.40E-39", "2.63E-39", "2.85E-39", "3.05E-39", "3.24E-39", "3.41E-39", "3.57E-39", "3.73E-39", "3.87E-39", "4.00E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "2.228934886685436290860993785759149216667E-1", "6.498303241359502260276520064187882180593E-1", "1.092560235139950095416495894504104124324E+0", "1.490227214442372941426262381745784356930E+0", "1.833853639802703709829588857003591214114E+0", "2.131462177386833021311715642208911720660E+0", "2.393844297774614355735159596226459460919E+0", "2.629873620852862720385360728752504134156E+0", "2.845719439368481566432595609264536782476E+0", "3.045348618511925854175964500119288648943E+0", "3.231247254758915340561824533742055667428E+0", "3.405008138749059915911406026284836654458E+0", "3.567722841967979276402947134958617349167E+0", "3.720214473253541977372192869891095355499E+0", "3.863164166057557422206228723295824043705E+0", "3.997174667341730422581594491044725561647E+0"]
+    },
+    "supplied_T": {
+     "accuracy": ["0", "5.00E-52", "1.00E-51", "1.50E-51", "2.00E-51", "2.50E-51", "3.00E-51", "3.50E-51", "4.00E-51", "4.50E-51", "5.00E-51", "5.50E-51", "6.00E-51", "6.50E-51", "7.00E-51", "7.50E-51", "8.00E-51"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "4.999999999999999899433238146278076836264E-13", "9.999999999999999798866476292556153672528E-13", "1.499999999999999969829971443883423050879E-12", "1.999999999999999959773295258511230734506E-12", "2.499999999999999949716619073139038418132E-12", "2.999999999999999939659942887766846101759E-12", "3.499999999999999929603266702394653785385E-12", "3.999999999999999919546590517022461469011E-12", "4.499999999999999909489914331650269152638E-12", "4.999999999999999899433238146278076836264E-12", "5.499999999999999889376561960905884519891E-12", "5.999999999999999879319885775533692203517E-12", "6.499999999999999869263209590161499887143E-12", "6.999999999999999859206533404789307570770E-12", "7.499999999999999849149857219417115254396E-12", "7.999999999999999839093181034044922938023E-12"]
+    },
+    "supplied_U": {
+     "accuracy": ["0", "5.00E-52", "1.00E-51", "1.50E-51", "2.00E-51", "2.50E-51", "3.00E-51", "3.50E-51", "4.00E-51", "4.50E-51", "5.00E-51", "5.50E-51", "6.00E-51", "6.50E-51", "7.00E-51", "7.50E-51", "8.00E-51"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "4.999999999999999899433238146278076836264E-13", "9.999999999999999798866476292556153672528E-13", "1.499999999999999969829971443883423050879E-12", "1.999999999999999959773295258511230734506E-12", "2.499999999999999949716619073139038418132E-12", "2.999999999999999939659942887766846101759E-12", "3.499999999999999929603266702394653785385E-12", "3.999999999999999919546590517022461469011E-12", "4.499999999999999909489914331650269152638E-12", "4.999999999999999899433238146278076836264E-12", "5.499999999999999889376561960905884519891E-12", "5.999999999999999879319885775533692203517E-12", "6.499999999999999869263209590161499887143E-12", "6.999999999999999859206533404789307570770E-12", "7.499999999999999849149857219417115254396E-12", "7.999999999999999839093181034044922938023E-12"]
+    }
+   },
+   "times_s": [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0]
+  },
+  "F7": {
+   "series": {
+    "H_tot": {
+     "accuracy": ["0", "1.11E-38", "1.75E-38", "2.24E-38", "2.63E-38", "2.95E-38", "3.23E-38", "3.47E-38", "3.68E-38", "3.87E-38", "4.04E-38", "4.20E-38", "4.34E-38", "4.47E-38", "4.60E-38", "4.71E-38", "4.82E-38"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "1.102070447856558797161964653562096543554E+1", "1.749709359241552312902527471561137000592E+1", "2.234667463942391175454751513621117415397E+1", "2.623005443598226259734967782389880049965E+1", "2.946089491394458845879577062204921112144E+1", "3.221942465756415639273827401802527088799E+1", "3.462025867035367852529833931066111411249E+1", "3.674126828129081582585399363766533559564E+1", "3.863798891511119349938266272265205998676E+1", "4.035157013785181103650644733720750648169E+1", "4.191347552101416131826501249208255201331E+1", "4.334840430405264828423781795051181680087E+1", "4.467617915858901452612863895799252385769E+1", "4.591300464896624765288960606143314983726E+1", "4.707232886175922258465588138665324872537E+1", "4.816544768651243688804049721424053467788E+1"]
+    },
+    "V_K": {
+     "accuracy": ["0", "5.00E-40", "1.00E-39", "1.50E-39", "2.00E-39", "2.50E-39", "3.00E-39", "3.50E-39", "4.00E-39", "4.50E-39", "5.00E-39", "5.50E-39", "6.00E-39", "6.50E-39", "7.00E-39", "7.50E-39", "8.00E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "5.000000000000000000000000000000000000000E-1", "1.000000000000000000000000000000000000000E+0", "1.500000000000000000000000000000000000000E+0", "2.000000000000000000000000000000000000000E+0", "2.500000000000000000000000000000000000000E+0", "3.000000000000000000000000000000000000000E+0", "3.500000000000000000000000000000000000000E+0", "4.000000000000000000000000000000000000000E+0", "4.500000000000000000000000000000000000000E+0", "5.000000000000000000000000000000000000000E+0", "5.500000000000000000000000000000000000000E+0", "6.000000000000000000000000000000000000000E+0", "6.500000000000000000000000000000000000000E+0", "7.000000000000000000000000000000000000000E+0", "7.500000000000000000000000000000000000000E+0", "8.000000000000000000000000000000000000000E+0"]
+    },
+    "n_L_A": {
+     "accuracy": ["4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12"]
+    },
+    "n_L_B": {
+     "accuracy": ["4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12"]
+    },
+    "n_L_K": {
+     "accuracy": ["0", "5.00E-52", "1.00E-51", "1.50E-51", "2.00E-51", "2.50E-51", "3.00E-51", "3.50E-51", "4.00E-51", "4.50E-51", "5.00E-51", "5.50E-51", "6.00E-51", "6.50E-51", "7.00E-51", "7.50E-51", "8.00E-51"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "4.999999999999999899433238146278076836264E-13", "9.999999999999999798866476292556153672528E-13", "1.499999999999999969829971443883423050879E-12", "1.999999999999999959773295258511230734506E-12", "2.499999999999999949716619073139038418132E-12", "2.999999999999999939659942887766846101759E-12", "3.499999999999999929603266702394653785385E-12", "3.999999999999999919546590517022461469011E-12", "4.499999999999999909489914331650269152638E-12", "4.999999999999999899433238146278076836264E-12", "5.499999999999999889376561960905884519891E-12", "5.999999999999999879319885775533692203517E-12", "6.499999999999999869263209590161499887143E-12", "6.999999999999999859206533404789307570770E-12", "7.499999999999999849149857219417115254396E-12", "7.999999999999999839093181034044922938023E-12"]
+    },
+    "n_T_A": {
+     "accuracy": ["1.00E-38", "8.83E-39", "7.79E-39", "6.88E-39", "6.07E-39", "5.36E-39", "4.73E-39", "4.17E-39", "3.68E-39", "3.25E-39", "2.87E-39", "2.53E-39", "2.24E-39", "1.97E-39", "1.74E-39", "1.54E-39", "1.36E-39"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["1.000000000000000000000000000000000000000E+1", "8.824969025846424041038583050669594268835E+0", "7.788007830714933479319417050292429560723E+0", "6.872892787910972828336859502645796451287E+0", "6.065306597127908113399144816185733386326E+0", "5.352614285191761373852149119215247761709E+0", "4.723665527412257605169501450561677033709E+0", "4.168620196787416577774257789706666818742E+0", "3.678794411716951698190551932277370325215E+0", "3.246524673586198688101247975751197634865E+0", "2.865047968604754984061413506019673364483E+0", "2.528395958050453419726656012221897227738E+0", "2.231301601487405768692210988261890264198E+0", "1.969116752045152853912075404637161163735E+0", "1.737739434507756171033370806090514587859E+0", "1.533549668452671213088265068179494805511E+0", "1.353352832369585577807048498887702811573E+0"]
+    },
+    "n_T_B": {
+     "accuracy": ["4.00E-51", "1.11E-39", "1.95E-39", "2.58E-39", "3.04E-39", "3.35E-39", "3.55E-39", "3.65E-39", "3.68E-39", "3.66E-39", "3.59E-39", "3.48E-39", "3.35E-39", "3.20E-39", "3.05E-39", "2.88E-39", "2.71E-39"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["3.999999999999999919546590517022461469011E-12", "1.103121128234303005129822881263302550307E+0", "1.947001957681733369829854262512767333069E+0", "2.577334795469114810626322313441890288306E+0", "3.032653298565954056699572408052639988422E+0", "3.345383928246350858657593199479359822512E+0", "3.542749145560193203877126087901144422911E+0", "3.647542672189489505552475565983276790214E+0", "3.678794411716951698190551932277370325215E+0", "3.652340257783973524113903972730154015408E+0", "3.581309960754943730076766882544705057974E+0", "3.476544442317873452124152016835278716696E+0", "3.346952402229108653038316482433062101039E+0", "3.199814722070873387607122532585670271996E+0", "3.041044010385573299308398910718740585866E+0", "2.875405628345258524540497002906949493631E+0", "2.706705664735171155614096997855859032629E+0"]
+    },
+    "n_T_K": {
+     "accuracy": ["0", "7.20E-41", "2.65E-40", "5.50E-40", "9.03E-40", "1.31E-39", "1.74E-39", "2.19E-39", "2.65E-39", "3.11E-39", "3.56E-39", "4.00E-39", "4.43E-39", "4.84E-39", "5.23E-39", "5.60E-39", "5.94E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "7.190984592377295383159406797659309518960E-2", "2.649902116083331508507286870942363443548E-1", "5.497724166254123610368181838016898223684E-1", "9.020401043121378299012827756409465110279E-1", "1.302001786568387767490257681174655625368E+0", "1.733585327034549190953372461396385076785E+0", "2.183837131030593916673266644159206248263E+0", "2.642411176574096603618896135284352530603E+0", "3.101135068638327787784848051347684854576E+0", "3.553642070649301285861819611254601406207E+0", "3.995059599641173128149191970751747208044E+0", "4.421745996293485578269472529103914111056E+0", "4.831068525894473758480802062565978364377E+0", "5.221216555117670529658230282969497950196E+0", "5.591044703213570262371237928682252148595E+0", "5.939941502907243266578854503015077927349E+0"]
+    },
+    "n_T_S": {
+     "accuracy": ["1.00E-51", "1.00E-51", "1.00E-51", "1.00E-51", "1.00E-51", "1.00E-51", "1.00E-51", "1.00E-51", "1.00E-51", "1.00E-51", "1.00E-51", "1.00E-51", "1.00E-51", "1.00E-51", "1.00E-51", "1.00E-51", "1.00E-51"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["9.999999999999999798866476292556153672528E-13", "9.999999999999999798866476292556153672528E-13", "9.999999999999999798866476292556153672528E-13", "9.999999999999999798866476292556153672528E-13", "9.999999999999999798866476292556153672528E-13", "9.999999999999999798866476292556153672528E-13", "9.999999999999999798866476292556153672528E-13", "9.999999999999999798866476292556153672528E-13", "9.999999999999999798866476292556153672528E-13", "9.999999999999999798866476292556153672528E-13", "9.999999999999999798866476292556153672528E-13", "9.999999999999999798866476292556153672528E-13", "9.999999999999999798866476292556153672528E-13", "9.999999999999999798866476292556153672528E-13", "9.999999999999999798866476292556153672528E-13", "9.999999999999999798866476292556153672528E-13", "9.999999999999999798866476292556153672528E-13"]
+    },
+    "n_U_A": {
+     "accuracy": ["4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51", "4.00E-51"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12", "3.999999999999999919546590517022461469011E-12"]
+    },
+    "n_U_B": {
+     "accuracy": ["6.00E-39", "5.30E-39", "4.68E-39", "4.13E-39", "3.64E-39", "3.22E-39", "2.84E-39", "2.51E-39", "2.21E-39", "1.95E-39", "1.72E-39", "1.52E-39", "1.34E-39", "1.19E-39", "1.05E-39", "9.21E-40", "8.13E-40"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["6.000000000000000000000000000000000000000E+0", "5.294981415508042429579014477753391323947E+0", "4.672804698429314006338735982379146971536E+0", "4.123735672747084034156050146059742089548E+0", "3.639183958277374418983946676221011572558E+0", "3.211568571115800406025659087127062139975E+0", "2.834199316448198776617315246788605381828E+0", "2.501172118073382967433069060361097440267E+0", "2.207276647031182411808456851631526855432E+0", "1.947914804152799768912975425861309667264E+0", "1.719028781163994582761871799428322953310E+0", "1.517037574831467508482706012944596115864E+0", "1.338780960893686452959089105205840178829E+0", "1.181470051228376653666918532276354157953E+0", "1.042643660705975664310501771425030523801E+0", "9.201298010729573599060071553391777883258E-1", "8.120116994231348102310505189977651979427E-1"]
+    },
+    "n_U_K": {
+     "accuracy": ["0", "7.06E-40", "1.33E-39", "1.88E-39", "2.37E-39", "2.79E-39", "3.17E-39", "3.50E-39", "3.80E-39", "4.06E-39", "4.29E-39", "4.49E-39", "4.67E-39", "4.82E-39", "4.96E-39", "5.08E-39", "5.19E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "7.050185844924575704209855222365519998674E-1", "1.327195301571685993661264017600739676093E+0", "1.876264327254415965843949853910087881896E+0", "2.360816041724625581016053323738761722700E+0", "2.788431428886699593974340912822654479098E+0", "3.165800683554801223382684753151054561060E+0", "3.498827881930117032566930939568505826435E+0", "3.792723352972817588191543148288019735085E+0", "4.052085195851700231087024574048180247068E+0", "4.280971218841005417238128200471110284836E+0", "4.482962425174032491517293986944780446097E+0", "4.661219039112313547040910894673479706946E+0", "4.818529948778123346333081467592909051637E+0", "4.957356339301024335689498228434176009604E+0", "5.079870198934542640093992844509972068894E+0", "5.187988300584865189768949480841327983091E+0"]
+    },
+    "n_U_S": {
+     "accuracy": ["1.00E-51", "1.00E-51", "1.00E-51", "1.00E-51", "1.00E-51", "1.00E-51", "1.00E-51", "1.00E-51", "1.00E-51", "1.00E-51", "1.00E-51", "1.00E-51", "1.00E-51", "1.00E-51", "1.00E-51", "1.00E-51", "1.00E-51"],
+     "class": ["R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["9.999999999999999798866476292556153672528E-13", "9.999999999999999798866476292556153672528E-13", "9.999999999999999798866476292556153672528E-13", "9.999999999999999798866476292556153672528E-13", "9.999999999999999798866476292556153672528E-13", "9.999999999999999798866476292556153672528E-13", "9.999999999999999798866476292556153672528E-13", "9.999999999999999798866476292556153672528E-13", "9.999999999999999798866476292556153672528E-13", "9.999999999999999798866476292556153672528E-13", "9.999999999999999798866476292556153672528E-13", "9.999999999999999798866476292556153672528E-13", "9.999999999999999798866476292556153672528E-13", "9.999999999999999798866476292556153672528E-13", "9.999999999999999798866476292556153672528E-13", "9.999999999999999798866476292556153672528E-13", "9.999999999999999798866476292556153672528E-13"]
+    },
+    "supplied_L": {
+     "accuracy": ["0", "5.00E-52", "1.00E-51", "1.50E-51", "2.00E-51", "2.50E-51", "3.00E-51", "3.50E-51", "4.00E-51", "4.50E-51", "5.00E-51", "5.50E-51", "6.00E-51", "6.50E-51", "7.00E-51", "7.50E-51", "8.00E-51"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "4.999999999999999899433238146278076836264E-13", "9.999999999999999798866476292556153672528E-13", "1.499999999999999969829971443883423050879E-12", "1.999999999999999959773295258511230734506E-12", "2.499999999999999949716619073139038418132E-12", "2.999999999999999939659942887766846101759E-12", "3.499999999999999929603266702394653785385E-12", "3.999999999999999919546590517022461469011E-12", "4.499999999999999909489914331650269152638E-12", "4.999999999999999899433238146278076836264E-12", "5.499999999999999889376561960905884519891E-12", "5.999999999999999879319885775533692203517E-12", "6.499999999999999869263209590161499887143E-12", "6.999999999999999859206533404789307570770E-12", "7.499999999999999849149857219417115254396E-12", "7.999999999999999839093181034044922938023E-12"]
+    },
+    "supplied_T": {
+     "accuracy": ["0", "5.00E-52", "1.00E-51", "1.50E-51", "2.00E-51", "2.50E-51", "3.00E-51", "3.50E-51", "4.00E-51", "4.50E-51", "5.00E-51", "5.50E-51", "6.00E-51", "6.50E-51", "7.00E-51", "7.50E-51", "8.00E-51"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "4.999999999999999899433238146278076836264E-13", "9.999999999999999798866476292556153672528E-13", "1.499999999999999969829971443883423050879E-12", "1.999999999999999959773295258511230734506E-12", "2.499999999999999949716619073139038418132E-12", "2.999999999999999939659942887766846101759E-12", "3.499999999999999929603266702394653785385E-12", "3.999999999999999919546590517022461469011E-12", "4.499999999999999909489914331650269152638E-12", "4.999999999999999899433238146278076836264E-12", "5.499999999999999889376561960905884519891E-12", "5.999999999999999879319885775533692203517E-12", "6.499999999999999869263209590161499887143E-12", "6.999999999999999859206533404789307570770E-12", "7.499999999999999849149857219417115254396E-12", "7.999999999999999839093181034044922938023E-12"]
+    },
+    "supplied_U": {
+     "accuracy": ["0", "5.00E-52", "1.00E-51", "1.50E-51", "2.00E-51", "2.50E-51", "3.00E-51", "3.50E-51", "4.00E-51", "4.50E-51", "5.00E-51", "5.50E-51", "6.00E-51", "6.50E-51", "7.00E-51", "7.50E-51", "8.00E-51"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "4.999999999999999899433238146278076836264E-13", "9.999999999999999798866476292556153672528E-13", "1.499999999999999969829971443883423050879E-12", "1.999999999999999959773295258511230734506E-12", "2.499999999999999949716619073139038418132E-12", "2.999999999999999939659942887766846101759E-12", "3.499999999999999929603266702394653785385E-12", "3.999999999999999919546590517022461469011E-12", "4.499999999999999909489914331650269152638E-12", "4.999999999999999899433238146278076836264E-12", "5.499999999999999889376561960905884519891E-12", "5.999999999999999879319885775533692203517E-12", "6.499999999999999869263209590161499887143E-12", "6.999999999999999859206533404789307570770E-12", "7.499999999999999849149857219417115254396E-12", "7.999999999999999839093181034044922938023E-12"]
+    }
+   },
+   "times_s": [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0]
+  }
+ }
+}

@@ -1,0 +1,706 @@
+{
+ "arm": 4,
+ "cases": {},
+ "checks": [
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: G1, the collector holds what was supplied (fmol)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "8 heat: G1, the portions' losses sum to the state function (over s_F)",
+   "passes": true,
+   "residual": "9.61100E-111"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: G1, H_tot, the largest fraction of the bound",
+   "passes": true,
+   "residual": "5.02256E-4"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: G1, amounts, the largest fraction of the bound",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: G1, losses, the largest fraction of the bound",
+   "passes": true,
+   "residual": "5.02256E-4"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: G1, volume, the largest fraction of the bound",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "8 heat: G1, each portion's loss by both forms (over s_F)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: G2, the collector holds what was supplied (fmol)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "8 heat: G2, the portions' losses sum to the state function (over s_F)",
+   "passes": true,
+   "residual": "9.61100E-111"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: G2, H_tot, the largest fraction of the bound",
+   "passes": true,
+   "residual": "5.02256E-4"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: G2, amounts, the largest fraction of the bound",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: G2, losses, the largest fraction of the bound",
+   "passes": true,
+   "residual": "5.02256E-4"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: G2, volume, the largest fraction of the bound",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "8 heat: G2, each portion's loss by both forms (over s_F)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: G3, the collector holds what was supplied (fmol)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "8 heat: G3, the portions' losses sum to the state function (over s_F)",
+   "passes": true,
+   "residual": "1.37300E-110"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: G3, H_tot, the largest fraction of the bound",
+   "passes": true,
+   "residual": "5.02256E-4"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: G3, amounts, the largest fraction of the bound",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: G3, losses, the largest fraction of the bound",
+   "passes": true,
+   "residual": "5.02256E-4"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: G3, volume, the largest fraction of the bound",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "8 heat: G3, each portion's loss by both forms (over s_F)",
+   "passes": true,
+   "residual": "4.94280E-111"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: G4, the collector holds what was supplied (fmol)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "8 heat: G4, the portions' losses sum to the state function (over s_F)",
+   "passes": true,
+   "residual": "1.37300E-110"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: G4, H_tot, the largest fraction of the bound",
+   "passes": true,
+   "residual": "2.25026E-4"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: G4, amounts, the largest fraction of the bound",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: G4, losses, the largest fraction of the bound",
+   "passes": true,
+   "residual": "2.25026E-4"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: G4, volume, the largest fraction of the bound",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "8 heat: G4, each portion's loss by both forms (over s_F)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "8 heat: G5, the stream's loss and amount by the portion law against the state function and the propagator (over s_F, relative)",
+   "passes": true,
+   "residual": "9.61100E-111"
+  },
+  {
+   "bound": "1.00000E-100",
+   "name": "3 conservation: G5, the nodes' columns sum to zero",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-100",
+   "name": "3 conservation: G5, an inlet's column is its supply and each node's flows balance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: G5, amounts sum to the start plus the supplied (relative)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: G5, volumes sum to the start plus the supplied",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: G5, e^(-Gt) e^(Gt) is the identity",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: G5, P(h)^S = P(Sh) for every registered h, and two halves make a step",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 second method: G5, every amount by uniformization (relative)",
+   "passes": true,
+   "residual": "2.40000E-109"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 second method: G5, every amount by Taylor continuation (relative)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-40",
+   "name": "8 heat: G5, H_tot by the integral of every holder's rate, at 4 outputs (over s_F)",
+   "passes": true,
+   "residual": "4.20044E-41"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "8 heat: G5, H_tot by finite portions at every registered step (over s_F)",
+   "passes": true,
+   "residual": "9.61100E-111"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: G5, H_tot, the largest fraction of the bound",
+   "passes": true,
+   "residual": "5.89705E-4"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: G5, amounts, the largest fraction of the bound",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: G5, sums, the largest fraction of the bound",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: G5, supplied, the largest fraction of the bound",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "11 rounding counts: G5, volume, the largest fraction of the bound",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "8 heat: the second portion (1 mM then 3 mM, 1 pL each) loses RT (3 ln 3 - 4 ln 2) (relative)",
+   "passes": true,
+   "residual": "8.00000E-110"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "8 heat: the same loss by the first form (relative)",
+   "passes": true,
+   "residual": "8.00000E-110"
+  },
+  {
+   "bound": "0",
+   "name": "8 heat: the first portion loses 0",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "8 heat: the order of two portions leaves the second's loss unchanged (relative)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E+6",
+   "name": "P9: the planted first loss is not zero (1 over the distance, pJ, against 1e6)",
+   "passes": true,
+   "residual": "4.13279E+2"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "domain: arm 4, the largest throughput of any run meant to complete",
+   "passes": true,
+   "residual": "0"
+  }
+ ],
+ "constants": {
+  "N_A": "6.02214076e23",
+  "k_B": "1.380649e-23"
+ },
+ "events": {
+  "G1": [
+   {
+    "accuracy": {
+     "amount": "1.00E-39",
+     "arriving": "0",
+     "loss": "0",
+     "resident": "0",
+     "volume_pL": "1.00E-39"
+    },
+    "amount": "1.000000000000000000000000000000000000000E+0",
+    "arriving": "0",
+    "class": {
+     "amount": "R",
+     "loss": "E",
+     "volume_pL": "R"
+    },
+    "loss": "0",
+    "resident": "0",
+    "time_s": 2.0,
+    "volume_pL": "1.000000000000000000000000000000000000000E+0"
+   },
+   {
+    "accuracy": {
+     "amount": "3.00E-39",
+     "arriving": "5.37E-40",
+     "loss": "1.30E-39",
+     "resident": "7.61E-40",
+     "volume_pL": "1.00E-39"
+    },
+    "amount": "3.000000000000000000000000000000000000000E+0",
+    "arriving": "5.364347104072910004372760659560919450669E-1",
+    "class": {
+     "amount": "R",
+     "loss": "R",
+     "volume_pL": "R"
+    },
+    "loss": "1.297109664211527007637130965084747899205E+0",
+    "resident": "7.606749538042360071998548991286559541381E-1",
+    "time_s": 4.0,
+    "volume_pL": "1.000000000000000000000000000000000000000E+0"
+   }
+  ],
+  "G2": [
+   {
+    "accuracy": {
+     "amount": "3.00E-39",
+     "arriving": "0",
+     "loss": "0",
+     "resident": "0",
+     "volume_pL": "1.00E-39"
+    },
+    "amount": "3.000000000000000000000000000000000000000E+0",
+    "arriving": "0",
+    "class": {
+     "amount": "R",
+     "loss": "E",
+     "volume_pL": "R"
+    },
+    "loss": "0",
+    "resident": "0",
+    "time_s": 2.0,
+    "volume_pL": "1.000000000000000000000000000000000000000E+0"
+   },
+   {
+    "accuracy": {
+     "amount": "1.00E-39",
+     "arriving": "7.61E-40",
+     "loss": "1.30E-39",
+     "resident": "5.37E-40",
+     "volume_pL": "1.00E-39"
+    },
+    "amount": "1.000000000000000000000000000000000000000E+0",
+    "arriving": "7.606749538042360071998548991286559541381E-1",
+    "class": {
+     "amount": "R",
+     "loss": "R",
+     "volume_pL": "R"
+    },
+    "loss": "1.297109664211527007637130965084747899205E+0",
+    "resident": "5.364347104072910004372760659560919450669E-1",
+    "time_s": 4.0,
+    "volume_pL": "1.000000000000000000000000000000000000000E+0"
+   }
+  ],
+  "G3": [
+   {
+    "accuracy": {
+     "amount": "1.00E-39",
+     "arriving": "0",
+     "loss": "0",
+     "resident": "0",
+     "volume_pL": "1.00E-39"
+    },
+    "amount": "1.000000000000000000000000000000000000000E+0",
+    "arriving": "0",
+    "class": {
+     "amount": "R",
+     "loss": "E",
+     "volume_pL": "R"
+    },
+    "loss": "0",
+    "resident": "0",
+    "time_s": 2.0,
+    "volume_pL": "1.000000000000000000000000000000000000000E+0"
+   },
+   {
+    "accuracy": {
+     "amount": "3.00E-39",
+     "arriving": "5.37E-40",
+     "loss": "1.30E-39",
+     "resident": "7.61E-40",
+     "volume_pL": "1.00E-39"
+    },
+    "amount": "3.000000000000000000000000000000000000000E+0",
+    "arriving": "5.364347104072910004372760659560919450669E-1",
+    "class": {
+     "amount": "R",
+     "loss": "R",
+     "volume_pL": "R"
+    },
+    "loss": "1.297109664211527007637130965084747899205E+0",
+    "resident": "7.606749538042360071998548991286559541381E-1",
+    "time_s": 4.0,
+    "volume_pL": "1.000000000000000000000000000000000000000E+0"
+   },
+   {
+    "accuracy": {
+     "amount": "3.00E-39",
+     "arriving": "2.17E-40",
+     "loss": "3.41E-40",
+     "resident": "1.25E-40",
+     "volume_pL": "1.00E-39"
+    },
+    "amount": "3.000000000000000000000000000000000000000E+0",
+    "arriving": "2.163549861474466148769403552154082862373E-1",
+    "class": {
+     "amount": "R",
+     "loss": "R",
+     "volume_pL": "R"
+    },
+    "loss": "3.404613603792959739065661888499441293685E-1",
+    "resident": "1.241063742318493590296258336345358431312E-1",
+    "time_s": 6.0,
+    "volume_pL": "1.000000000000000000000000000000000000000E+0"
+   }
+  ],
+  "G4": [
+   {
+    "accuracy": {
+     "amount": "3.00E-39",
+     "arriving": "0",
+     "loss": "0",
+     "resident": "0",
+     "volume_pL": "1.00E-39"
+    },
+    "amount": "3.000000000000000000000000000000000000000E+0",
+    "arriving": "0",
+    "class": {
+     "amount": "R",
+     "loss": "E",
+     "volume_pL": "R"
+    },
+    "loss": "0",
+    "resident": "0",
+    "time_s": 2.0,
+    "volume_pL": "1.000000000000000000000000000000000000000E+0"
+   },
+   {
+    "accuracy": {
+     "amount": "3.00E-39",
+     "arriving": "0",
+     "loss": "0",
+     "resident": "0",
+     "volume_pL": "1.00E-39"
+    },
+    "amount": "3.000000000000000000000000000000000000000E+0",
+    "arriving": "0",
+    "class": {
+     "amount": "R",
+     "loss": "R",
+     "volume_pL": "R"
+    },
+    "loss": "0",
+    "resident": "0",
+    "time_s": 4.0,
+    "volume_pL": "1.000000000000000000000000000000000000000E+0"
+   },
+   {
+    "accuracy": {
+     "amount": "1.00E-39",
+     "arriving": "1.21E-39",
+     "loss": "1.64E-39",
+     "resident": "4.33E-40",
+     "volume_pL": "1.00E-39"
+    },
+    "amount": "1.000000000000000000000000000000000000000E+0",
+    "arriving": "1.204861052295929751789816443503875456099E+0",
+    "class": {
+     "amount": "R",
+     "loss": "R",
+     "volume_pL": "R"
+    },
+    "loss": "1.637571024590822981543697153934692028573E+0",
+    "resident": "4.327099722948932297538807104308165724747E-1",
+    "time_s": 6.0,
+    "volume_pL": "1.000000000000000000000000000000000000000E+0"
+   }
+  ]
+ },
+ "inputs_sha256": "50cd5a03b1efd0a503bcc85a25ac6648336a790a14e4b0c2d2cb0b21be3574d4",
+ "kind": "liquid-routing reference, version 1",
+ "planted_series": {
+  "P9": {
+   "G1": {
+    "loss": {
+     "times_s": [2.0],
+     "value": ["2.419675184332808102967914131654845148436E-3"]
+    }
+   }
+  }
+ },
+ "plants": [
+  {
+   "check": "loss",
+   "class": "E",
+   "distance": "2.419675184332808102967914131654845148436E-3",
+   "expected_tolerance": "0",
+   "honest": "0",
+   "margin": null,
+   "no_margin": true,
+   "plant": "P9",
+   "planted": "2.419675184332808102967914131654845148436E-3",
+   "step_s": 1.0,
+   "time_s": 2.0,
+   "world": "G1"
+  }
+ ],
+ "plants_reported": [],
+ "provenance": {
+  "revision": "915ac820366f5eb0125af92dcd266f9b9ef75491",
+  "sha256_of_this_file_excluded": true
+ },
+ "reported": [],
+ "worlds": {
+  "G1": {
+   "series": {
+    "H_K": {
+     "accuracy": ["0", "0", "0", "0", "0", "1.30E-39", "1.30E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "0", "0", "0", "0", "1.297109664211527007637130965084747899205E+0", "1.297109664211527007637130965084747899205E+0"]
+    },
+    "H_tot": {
+     "accuracy": ["0", "0", "0", "0", "0", "1.30E-39", "1.30E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "0", "0", "0", "0", "1.297109664211527007637130965084747899205E+0", "1.297109664211527007637130965084747899205E+0"]
+    },
+    "V_K": {
+     "accuracy": ["0", "0", "0", "1.00E-39", "1.00E-39", "2.00E-39", "2.00E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "0", "0", "1.000000000000000000000000000000000000000E+0", "1.000000000000000000000000000000000000000E+0", "2.000000000000000000000000000000000000000E+0", "2.000000000000000000000000000000000000000E+0"]
+    },
+    "n_T_K": {
+     "accuracy": ["0", "0", "0", "1.00E-39", "1.00E-39", "4.00E-39", "4.00E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "0", "0", "1.000000000000000000000000000000000000000E+0", "1.000000000000000000000000000000000000000E+0", "4.000000000000000000000000000000000000000E+0", "4.000000000000000000000000000000000000000E+0"]
+    },
+    "supplied_T": {
+     "accuracy": ["0", "0", "0", "1.00E-39", "1.00E-39", "4.00E-39", "4.00E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "0", "0", "1.000000000000000000000000000000000000000E+0", "1.000000000000000000000000000000000000000E+0", "4.000000000000000000000000000000000000000E+0", "4.000000000000000000000000000000000000000E+0"]
+    }
+   },
+   "times_s": [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0]
+  },
+  "G2": {
+   "series": {
+    "H_K": {
+     "accuracy": ["0", "0", "0", "0", "0", "1.30E-39", "1.30E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "0", "0", "0", "0", "1.297109664211527007637130965084747899205E+0", "1.297109664211527007637130965084747899205E+0"]
+    },
+    "H_tot": {
+     "accuracy": ["0", "0", "0", "0", "0", "1.30E-39", "1.30E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "0", "0", "0", "0", "1.297109664211527007637130965084747899205E+0", "1.297109664211527007637130965084747899205E+0"]
+    },
+    "V_K": {
+     "accuracy": ["0", "0", "0", "1.00E-39", "1.00E-39", "2.00E-39", "2.00E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "0", "0", "1.000000000000000000000000000000000000000E+0", "1.000000000000000000000000000000000000000E+0", "2.000000000000000000000000000000000000000E+0", "2.000000000000000000000000000000000000000E+0"]
+    },
+    "n_T_K": {
+     "accuracy": ["0", "0", "0", "3.00E-39", "3.00E-39", "4.00E-39", "4.00E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "0", "0", "3.000000000000000000000000000000000000000E+0", "3.000000000000000000000000000000000000000E+0", "4.000000000000000000000000000000000000000E+0", "4.000000000000000000000000000000000000000E+0"]
+    },
+    "supplied_T": {
+     "accuracy": ["0", "0", "0", "3.00E-39", "3.00E-39", "4.00E-39", "4.00E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "0", "0", "3.000000000000000000000000000000000000000E+0", "3.000000000000000000000000000000000000000E+0", "4.000000000000000000000000000000000000000E+0", "4.000000000000000000000000000000000000000E+0"]
+    }
+   },
+   "times_s": [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0]
+  },
+  "G3": {
+   "series": {
+    "H_K": {
+     "accuracy": ["0", "0", "0", "0", "0", "1.30E-39", "1.30E-39", "1.64E-39", "1.64E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "0", "0", "0", "0", "1.297109664211527007637130965084747899205E+0", "1.297109664211527007637130965084747899205E+0", "1.637571024590822981543697153934692028573E+0", "1.637571024590822981543697153934692028573E+0"]
+    },
+    "H_tot": {
+     "accuracy": ["0", "0", "0", "0", "0", "1.30E-39", "1.30E-39", "1.64E-39", "1.64E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "0", "0", "0", "0", "1.297109664211527007637130965084747899205E+0", "1.297109664211527007637130965084747899205E+0", "1.637571024590822981543697153934692028573E+0", "1.637571024590822981543697153934692028573E+0"]
+    },
+    "V_K": {
+     "accuracy": ["0", "0", "0", "1.00E-39", "1.00E-39", "2.00E-39", "2.00E-39", "3.00E-39", "3.00E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "0", "0", "1.000000000000000000000000000000000000000E+0", "1.000000000000000000000000000000000000000E+0", "2.000000000000000000000000000000000000000E+0", "2.000000000000000000000000000000000000000E+0", "3.000000000000000000000000000000000000000E+0", "3.000000000000000000000000000000000000000E+0"]
+    },
+    "n_T_K": {
+     "accuracy": ["0", "0", "0", "1.00E-39", "1.00E-39", "4.00E-39", "4.00E-39", "7.00E-39", "7.00E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "0", "0", "1.000000000000000000000000000000000000000E+0", "1.000000000000000000000000000000000000000E+0", "4.000000000000000000000000000000000000000E+0", "4.000000000000000000000000000000000000000E+0", "7.000000000000000000000000000000000000000E+0", "7.000000000000000000000000000000000000000E+0"]
+    },
+    "supplied_T": {
+     "accuracy": ["0", "0", "0", "1.00E-39", "1.00E-39", "4.00E-39", "4.00E-39", "7.00E-39", "7.00E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "0", "0", "1.000000000000000000000000000000000000000E+0", "1.000000000000000000000000000000000000000E+0", "4.000000000000000000000000000000000000000E+0", "4.000000000000000000000000000000000000000E+0", "7.000000000000000000000000000000000000000E+0", "7.000000000000000000000000000000000000000E+0"]
+    }
+   },
+   "times_s": [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0]
+  },
+  "G4": {
+   "series": {
+    "H_K": {
+     "accuracy": ["0", "0", "0", "0", "0", "0", "0", "1.64E-39", "1.64E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "0", "0", "0", "0", "0", "0", "1.637571024590822981543697153934692028573E+0", "1.637571024590822981543697153934692028573E+0"]
+    },
+    "H_tot": {
+     "accuracy": ["0", "0", "0", "0", "0", "0", "0", "1.64E-39", "1.64E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "0", "0", "0", "0", "0", "0", "1.637571024590822981543697153934692028573E+0", "1.637571024590822981543697153934692028573E+0"]
+    },
+    "V_K": {
+     "accuracy": ["0", "0", "0", "1.00E-39", "1.00E-39", "2.00E-39", "2.00E-39", "3.00E-39", "3.00E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "0", "0", "1.000000000000000000000000000000000000000E+0", "1.000000000000000000000000000000000000000E+0", "2.000000000000000000000000000000000000000E+0", "2.000000000000000000000000000000000000000E+0", "3.000000000000000000000000000000000000000E+0", "3.000000000000000000000000000000000000000E+0"]
+    },
+    "n_T_K": {
+     "accuracy": ["0", "0", "0", "3.00E-39", "3.00E-39", "6.00E-39", "6.00E-39", "7.00E-39", "7.00E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "0", "0", "3.000000000000000000000000000000000000000E+0", "3.000000000000000000000000000000000000000E+0", "6.000000000000000000000000000000000000000E+0", "6.000000000000000000000000000000000000000E+0", "7.000000000000000000000000000000000000000E+0", "7.000000000000000000000000000000000000000E+0"]
+    },
+    "supplied_T": {
+     "accuracy": ["0", "0", "0", "3.00E-39", "3.00E-39", "6.00E-39", "6.00E-39", "7.00E-39", "7.00E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "0", "0", "3.000000000000000000000000000000000000000E+0", "3.000000000000000000000000000000000000000E+0", "6.000000000000000000000000000000000000000E+0", "6.000000000000000000000000000000000000000E+0", "7.000000000000000000000000000000000000000E+0", "7.000000000000000000000000000000000000000E+0"]
+    }
+   },
+   "times_s": [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0]
+  },
+  "G5": {
+   "series": {
+    "H_K": {
+     "accuracy": ["0", "0", "0", "0", "0", "5.83E-40", "9.20E-40", "1.15E-39", "1.30E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "0", "0", "0", "0", "5.828841134341946971567744900095813295548E-1", "9.193320563627495967300759166441562638297E-1", "1.140320784399259588486209198779675688998E+0", "1.297109664211527007637130965084747899205E+0"]
+    },
+    "H_tot": {
+     "accuracy": ["0", "0", "0", "0", "0", "5.83E-40", "9.20E-40", "1.15E-39", "1.30E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "0", "0", "0", "0", "5.828841134341946971567744900095813295548E-1", "9.193320563627495967300759166441562638297E-1", "1.140320784399259588486209198779675688998E+0", "1.297109664211527007637130965084747899205E+0"]
+    },
+    "V_K": {
+     "accuracy": ["0", "2.50E-40", "5.00E-40", "7.50E-40", "1.00E-39", "1.25E-39", "1.50E-39", "1.75E-39", "2.00E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "2.500000000000000000000000000000000000000E-1", "5.000000000000000000000000000000000000000E-1", "7.500000000000000000000000000000000000000E-1", "1.000000000000000000000000000000000000000E+0", "1.250000000000000000000000000000000000000E+0", "1.500000000000000000000000000000000000000E+0", "1.750000000000000000000000000000000000000E+0", "2.000000000000000000000000000000000000000E+0"]
+    },
+    "n_T_K": {
+     "accuracy": ["0", "2.50E-40", "5.00E-40", "7.50E-40", "1.00E-39", "1.75E-39", "2.50E-39", "3.25E-39", "4.00E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "2.500000000000000000000000000000000000000E-1", "5.000000000000000000000000000000000000000E-1", "7.500000000000000000000000000000000000000E-1", "1.000000000000000000000000000000000000000E+0", "1.750000000000000000000000000000000000000E+0", "2.500000000000000000000000000000000000000E+0", "3.250000000000000000000000000000000000000E+0", "4.000000000000000000000000000000000000000E+0"]
+    },
+    "supplied_T": {
+     "accuracy": ["0", "2.50E-40", "5.00E-40", "7.50E-40", "1.00E-39", "1.75E-39", "2.50E-39", "3.25E-39", "4.00E-39"],
+     "class": ["E", "R", "R", "R", "R", "R", "R", "R", "R"],
+     "value": ["0", "2.500000000000000000000000000000000000000E-1", "5.000000000000000000000000000000000000000E-1", "7.500000000000000000000000000000000000000E-1", "1.000000000000000000000000000000000000000E+0", "1.750000000000000000000000000000000000000E+0", "2.500000000000000000000000000000000000000E+0", "3.250000000000000000000000000000000000000E+0", "4.000000000000000000000000000000000000000E+0"]
+    }
+   },
+   "times_s": [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0]
+  }
+ }
+}
