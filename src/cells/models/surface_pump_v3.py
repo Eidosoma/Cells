@@ -3707,10 +3707,11 @@ def membrane_rate(
     sit in the operator; the declared kinds' terms remain, and without kinds the rate is 0.
     Beside a floating node (surface_pump.floating_nodes) the rate is the largest of charge_rows,
     explicit_rate_bound's rows at the stage, with its limits. The choice is static: the structure's
-    floating_nodes, or with no structure a NumPy caller's layout (a compiled caller has a
-    structure: registry.get_model). Every other world keeps the sums below, with a limit of their
-    own: a cell's sum still counts a patch that a closer has closed, and one that faces a node
-    which floats only while a closer holds its faces closed.
+    floating_nodes, or with no structure a NumPy caller's layout (the engine's compiled callers
+    have a structure, registry.get_model's; one without keeps the sums below). Every other world
+    keeps the sums below, with a limit of their own: a cell's sum still counts a patch that a
+    closer has closed, and one that faces a node which floats only while a closer holds its faces
+    closed.
     """
     if _beside_floating(structure, p, xp=xp):  # Static.
         rows = charge_rows(
