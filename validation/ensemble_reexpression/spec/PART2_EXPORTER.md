@@ -141,7 +141,7 @@ One file per consumer: `table_<consumer>.json` for the eight names of §1, in th
 - **The children:** every 12.5 µs from 0 to 1 ms (81 rows), then every 100 µs from 1.1 to 20 ms (190 rows), 271 rows (`history_times`). The rows up to 1 ms resolve the store's fast modes. The potentials at `potential_times_s`.
 - **The clusters:** 0.02 s for every entry, and 2.5, 5, 10, 15 and 20 ms (`summary_times_s`) for `voltage`, `store_voltage`, `channel_K_summary` and the four free cytosolic ions (`cyt_Na_summary`, `cyt_K_summary`, `cyt_Cl_summary`, `cyt_Ca_summary`), where the captured summaries exist. A `_summary` entry's scale, reference and closure are its own series'. The row at 0.02 s is in both, so one difference there fails both entries.
 - **A family** is the three runs of one world (a child), or of one seed and world ID (a cluster), at h₁, h₂, h₃: one a child, eight a cluster.
-- **World IDs 0 and 1** of each of four seeds (`cluster_*`). Their pools are worlds 0 and 1 of `base`, bit for bit. So **the reference path of a cluster's world is `reference_paths.json`'s of `base`,** the same seed, cell and world. The 19 arrays and the exposure are the cluster's own captured checkpoint's (READOUTS §4 and §5, as `base`'s: `[world, cell, ...]`).
+- **World IDs 0 and 1** of each of four seeds (`cluster_*`). Their pools are worlds 0 and 1 of `base`, bit for bit (the 19 arrays of the four clusters, at every seed and captured step: 912 comparisons, all equal). So **the reference path of a cluster's world is `reference_paths.json`'s of `base`,** the same seed, cell and world. The 19 arrays and the exposure are the cluster's own captured checkpoint's (READOUTS §4 and §5, as `base`'s: `[world, cell, ...]`).
 
 ## 6. The readouts
 

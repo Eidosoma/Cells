@@ -171,7 +171,7 @@ One file per consumer: `table_<consumer>.json` for the eight names of §1, in th
 - **The children:** every 12.5 µs from 0 to 1 ms (81 rows), then every 100 µs from 1.1 to 20 ms (190 rows), 271 rows (`history_times`). The rows up to 1 ms resolve the store's fast modes. The potentials at `potential_times_s`.
 - **The clusters:** 0.02 s for every entry, and 2.5, 5, 10, 15 and 20 ms (`summary_times_s`) for `voltage`, `store_voltage`, `channel_K_summary` and the four free cytosolic ions (`cyt_Na_summary`, `cyt_K_summary`, `cyt_Cl_summary`, `cyt_Ca_summary`), where the captured summaries exist. A `_summary` entry's scale, reference and closure are its own series'. The row at 0.02 s is in both, so one difference there fails both entries.
 - **A family** is the three runs of one world (a child), or of one seed and world ID (a cluster), at h₁, h₂, h₃: one a child, eight a cluster.
-- **World IDs 0 and 1** of each of four seeds (`cluster_*`). Their pools are worlds 0 and 1 of `base`, bit for bit. So **the reference path of a cluster's world is `reference_paths.json`'s of `base`,** the same seed, cell and world. The 19 arrays and the exposure are the cluster's own captured checkpoint's (READOUTS §4 and §5, as `base`'s: `[world, cell, ...]`).
+- **World IDs 0 and 1** of each of four seeds (`cluster_*`). Their pools are worlds 0 and 1 of `base`, bit for bit (the 19 arrays of the four clusters, at every seed and captured step: 912 comparisons, all equal). So **the reference path of a cluster's world is `reference_paths.json`'s of `base`,** the same seed, cell and world. The 19 arrays and the exposure are the cluster's own captured checkpoint's (READOUTS §4 and §5, as `base`'s: `[world, cell, ...]`).
 
 ### 5.1 The two sets of a cluster
 
@@ -444,7 +444,7 @@ A series that a world lacks counts as zero in every sum that names it, and is no
 | `channel_K`, `ca_channel` | 6.9 × 10⁻¹¹, 8.9 × 10⁻¹¹ |
 | `heat_junction`, `heat_membrane`, `heat_ca_channel` (the largest of the heats) | 8.0, 7.2 and 9.2 × 10⁻¹¹ |
 
-The largest is 9.2 × 10⁻¹¹, and 10⁻¹⁰ is the power of ten above. A sum of routes is at most its largest route's share. The solve's own error of `voltage` and `store_voltage` is 8 × 10⁻¹³ s and 2 × 10⁻¹⁴ s. The reactions are advanced by an explicit scheme with no solve, so they have no closure of their own. **What a direct solve leaves is far below what the engine admits,** and the bound is on what is admitted.
+The largest is 9.2 × 10⁻¹¹, and 10⁻¹⁰ is the power of ten above. A sum of routes is at most its largest route's share. The solve's own error of `voltage` and `store_voltage` is 8 × 10⁻¹³ s and 2 × 10⁻¹⁴ s. The reactions are advanced by an explicit scheme with no solve, so they have no closure of their own. **`phi_out` is not a stage's potential.** It is solved again at an observed row, from that row's amounts, by the field solver of §4.1, whose acceptance is Part 1's. A stage's free-offset error enters the faces' transfers, and through them the regions' amounts, which move `phi_out` by at most 6 × 10⁻¹⁴ V. So its closure is Part 1's number, and not the stage's 1.4 × 10⁻¹² V. **What a direct solve leaves is far below what the engine admits,** and the bound is on what is admitted.
 
 ## 9. Conservation and the reported identities
 
@@ -530,6 +530,7 @@ the store, plasma-pump, channel and IP3 references of the live tests, with an ad
 
 **Excluded** means that rounding cannot explain the measured order: with q_lo = log₂((d₂ − 2 e)/(d₁ + 2 e)) and q_hi = log₂((d₂ + 2 e)/(d₁ − 2 e)), both at the retry's triple (q_lo is minus infinity where d₂ is at most 2 e, and q_hi plus infinity where d₁ is), the interval [q_lo, q_hi] does not meet [1.5, 4.5]. For an honest order-2 entry the interval always holds 2, since (d₂ ∓ 2 e)/(d₁ ± 2 e) brackets t/(t/4) = 4. So no honest entry is inconclusive by this rule for being mixed. **It still refuses:** an order-1 entry with d₁ = θ and d₂ = 2 θ (q_hi = log₂(22/8) = 1.46), and every entry with d₁ above θ and d₂ below it (q_hi is at most log₂(12/8) = 0.58).
 
+- **What e leaves out, and why.** e is rounding. The closure that the engine admits (§8) is about nine times e at the first triple, and it is in neither e nor θ, as in Part 1, since what a direct solve leaves is far below it. Where a solve left as much as it may, a difference would carry up to 18 e of noise, and an honest entry could be mixed, or outside its window, by noise alone (tried on random honest entries: one in five at the whole admitted closure, none at a hundredth of it). **Such an entry is inconclusive by `order`, and it never fails.** The rehearsal looks for it (§15).
 - **What passed is not turned.** An entry that passed at the first triple keeps its pass, and one that failed keeps its fail, whatever its class and its difference at the retry's (`CRITERIA.md` §7). The retry's run judges the owed entries of its family, and its own D.
 - **Why the first triple is not changed.** A mixed entry there is owed the retry, and an honest one is unresolved by it. So the first triple's "inconclusive by order" costs one run and no verdict.
 - **What a mixed or unresolved pass at the retry's says:** the candidate at 3.125 and 1.5625 µs differs by at most ten times its rounding bound, and it agrees with legacy within β. It does not show the order (§17).
@@ -580,12 +581,15 @@ the store, plasma-pump, channel and IP3 references of the live tests, with an ad
 - **one world whose amounts are as large against s as the registered ones:** `amount_refs`/`scales` at least 1.7 × 10⁴ for a cytosol's row, 4.4 for a store's, 22 for `n_out_x`, 7.7 × 10³ for `voltage` and 4.8 for `store_voltage` (the largest of `inputs_part2.json`). Its honest run must pass every entry;
 - one restart, one refusal of each kind, one run stopped by the engine's own check, one engine plant of each kind (EP3's and EP4's), and the faulty tables of JQ1 to JQ25 that a table can carry.
 
+**The noise of the solves is looked at there:** in the honest runs, the step-halving differences of the entries at rounding, against 2 e (§13). One above it says that the closure is real, and θ is then corrected by `CRITERIA.md` §10's route, before the registration tag.
+
 ## 16. Where Part 2 differs from Part 1, and why
 
 | What | Part 1 | Part 2 | Why |
 | --- | --- | --- | --- |
 | Integrator and order | RK4, p = 4 | IMEX with Strang halves, p = 2 for every S entry | The candidate is the composite (ruling 5) |
 | e_close | 4 × 10⁻¹² s | 10⁻¹⁰ s | The IMEX stage's charge tolerance, and every path of a potential error counted (§8) |
+| θ | 10 × (e_round + e_store), without the closure | the same | §13 says what follows, since the closure is larger here |
 | `amount_refs` | the declared amounts | 7/5 of them in a row that a reaction touches | Two more additions a step (§8) |
 | Balances, capacitors, energy | judged (R and S) | reported | The integrator (§9) |
 | A reaction's heat | none | per compartment, the captured ones summed by the judge | The engine books a node's reactions together (ruling 1) |
