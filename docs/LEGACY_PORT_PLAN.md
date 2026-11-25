@@ -333,7 +333,7 @@ not canonical moves to Feature or Drop, and the user is told.
 | # | Capability | Uses | Class | Canonical piece or gap |
 |---|---|---|---|---|
 | B1 | Cytosolic calcium with a plasma-membrane pump (`plasma_calcium_pump_positive@1`) | the calcium ensemble | Canonical | `cells.ca_atp_mass_action_positive@1` on @3: the same kernel at a 1 M standard state, Δg0 − RT ln 1000. Not bitwise |
-| B2 | NCX, 3 Na : 1 Ca (`ncx_3na_1ca_symmetric_barrier@1`, a live module, unregistered) | the calcium ensemble (plasma, gated, IP3) | Expressible | a cycle law in the transporter kind's version-1 layout. The population axis refuses a mode that moves charge (`kinds/transporter.py:1336–1339` at `c9da0fdb`). The builder confirms Ca rows |
+| B2 | NCX, 3 Na : 1 Ca (`ncx_3na_1ca_symmetric_barrier@1`, a live module, unregistered) | the calcium ensemble (plasma, gated, IP3) | Expressible | one cycle law module on the transporter kind's population axis, in its monomial form (§14.3). **Corrected 25 November:** this row said the axis refuses a mode that moves charge. It refuses a mode that creates charge, summed over both ends (`kinds/transporter.py:1336–1339`), which NCX does not |
 | B3 | ER store: a closed compartment with a capacitor, a GHK leak, a pump and calcium-gated release (`er_calcium@1` over `compartment_reactions@1`) | the calcium ensemble (all four calcium clusters) | Feature | G-4 |
 | B4 | Calcium buffering by mass action, in the cytosol and in the ER | as B3 | Feature (with B3) | `local_species_reactions@1` holds a species that @3 routes only as a covered counter-ion (`operators/species_common.py:16–17`). Inside the ER it waits for G-4 |
 | B5 | IP3-gated store release (`ip3_er_release@1`) | the calcium ensemble (IP3 cluster) | Feature | G-5 |
@@ -452,7 +452,7 @@ it is in `inventory_records_now.json`.
 | I5 | `finite_atp_er_1ca_positive@1` (U41, SERCA family) | the same file | fold into an owner's planned law | none (row C2) | Drop, lost until G-6. D211 folds it into the cardiac lane | U41 keeps `er_calcium_pump_positive@1`, re-expressed with G-4 |
 | I6 | `ip3_er_release@1` (U43, IP3R-like release) | `legacy/processes/ip3_release.py` | fold into an owner's planned law | the calcium ensemble's IP3 cluster (row B5) | Feature | G-5, coordinated with the cardiac lane's release law (D211) |
 | I7 | `kcc_reversible_tanh@1` (U44, KCC) | `legacy/processes/cotransport.py` | — | none | Canonical; Drop the legacy form | `k_anion_symport_mass_action@1` (`laws/routes/k_anion_symport.py`) |
-| I8 | `nkcc_reversible_tanh@1` (U45, NKCC) | the same file | port as is | D211's port programme | Expressible | an electroneutral cycle law on the transporter kind, whose population axis admits charge-neutral modes (`kinds/transporter.py:1336–1339` at `c9da0fdb`). U45 has no other record |
+| I8 | `nkcc_reversible_tanh@1` (U45, NKCC) | the same file | port as is | D211's port programme | Expressible | a cycle law on the transporter kind's population axis, which admits any mode that creates no charge (`kinds/transporter.py:1336–1339`; corrected 25 November, see B2). U45 has no other record |
 | I9 | `electroneutral_symport_reversible_tanh@1` (U46, a configured transporter) | the same file | port as is | D211's port programme | Expressible | as I8. The law is manufactured, with no outside source (`cotransport.py:1`) |
 | I10 | `cell_zone_transporter@1` (U46) | `legacy/processes/cell_zone_transport.py` | port as is | D211's port programme | Feature, or Drop. Not portable "as is": its equations are "those of the BETSE v1.5.0 transporter network", with that network's conventions (`cell_zone_transport.py:1–10`) | a neutral re-expression, the user's call beside D211 |
 | I11 | `mitochondrial_passive_continuous_si@1` (U47, inner-membrane permeability) | `legacy/processes/mitochondrial_passive.py` | not a port | none (row C4) | Drop | U47 is left with no law record. The nearest canonical pieces are the transporter kind's mitochondrial laws and the proton-leak routes |
@@ -950,8 +950,8 @@ such as `spatial_calcium`'s h·loss ≤ 0.25, still hold.
 - **Same equations:** the re-expression keeps the model's equations and changes only the code, the
   splitting or the integrator. A numerical band applies.
 - **Changed model:** the equations change. Examples are an ER store without its own voltage (the
-  pools-at-the-cell's-potential branch of G-4), the PMCA at another standard state (B1), and NCX written as a
-  transporter cycle if its rate form changes. No band applies. These rows are judged by the consumer's own
+  pools-at-the-cell's-potential branch of G-4). **Corrected 25 November:** the PMCA at its 1 M standard state (B1) and NCX in
+  the monomial form are the same equations, not changed models (§14.2, §14.3). No band applies. These rows are judged by the consumer's own
   registered criterion, such as the calcium ensemble's independent references at 3e-9 (`tests/unit/test_spatial_calcium.py:68–76`),
   or by an independent reference written for the purpose.
 
@@ -1327,6 +1327,219 @@ engineering.
   is the same case;
 - **the four core tests that error at collection** (§7.5): removed as dead, or kept in case their references are
   restored. One of them, `test_finite_extracellular_production.py`, covers `finite_extracellular@1`, which goes.
+
+## 14. The re-expression map (25 November 2026)
+
+**For whom.** The notes on G-1, G-4 and NCX (D), on G-5 and G-7 (E), and the criteria's author. It says what each used
+consumer becomes on today's pieces, what each feature must still supply, and what the captures hold.
+
+- **Basis:** read at `43b22d40`. `src/cells/legacy` there is the captures' `76a498ae` byte for byte (M: the `git diff` is
+  empty), so its line numbers hold for both. Legacy paths below start at `src/cells/legacy/`, live ones at `src/cells/`.
+- **Marks:** (M) measured on 25 November, (D) my own arithmetic or inference, not run. Everything else is read.
+- **Nothing on the branch needs the old core while this is written** (D). Main, the pre-cleanup tag and the captures hold
+  it, and no canonical world reads it.
+
+### 14.1 What the reading found
+
+1. **NCX needs no engine feature.** Rows B2 and I8 said that the transporter kind's population axis refuses a mode that
+   moves charge. That was wrong, and both are corrected. The check sums valence times count over the rows at both
+   ends (`kinds/transporter.py:1336–1339`), so it refuses a mode that creates charge. It gives 0 for 3 Na : 1 Ca, and 0
+   for the hosted `electrogenic_nucleotide_exchange@1`, which moves one charge per cycle (M).
+2. **The calcium-gated opening of the store blocks all four calcium clusters, not the IP3 one alone.** Legacy's release
+   reads cytosolic Ca at every stage (`models/er_calcium.py:178–191`), and the IP3 factor multiplies it
+   (`models/ip3_calcium.py:80–91`). They are one mechanism: a factor of cell rows, read at the stage, on one route. One
+   owner should take it. I suggest E for the factor source and D for the route it multiplies.
+3. **A trace Ca row cannot be buffered while @3's own routes carry it.** `local_species_reactions@1` refuses a species
+   with an @3 membrane, junction or channel permeability (`operators/species_common.py:167–200`), except a counter-ion
+   with a margin of 100 (`:204`). Cytosolic Ca's margin is about 3.7 on the plasma patch, 10.5 on the store's and
+   1.3 on the junction (D). So Ca's leaks and its junction route go to the passive-routes kind, and Cav1.2 as an @3
+   channel population would make Ca unbufferable. G-1 therefore owes more than a valence entry (14.3).
+4. **The worlds are closed:** one gauge, no held bath. Compartment refusal 6 wants a held bath in the owner's component
+   (`operators/compartments.py:513–519`). Here the gauge `local` is in the component and is the solver's
+   representative (`numerics/surface_field.py:302`), so a store is a free node. `docs/CLOSED_COMPARTMENT_DESIGN.md`
+   §3.5 names this door. Putting in a bath instead would change the model and void the global ion balance.
+5. **Four consumers need no new ionic piece:** the JUPITER world, the cluster base, the assembly cell and the
+   integrated ensemble's world. They are closed `resolved_pump_tissue@3` worlds, on RK4 at up to 25 µs, or on IMEX.
+6. **The calcium worlds keep their equations and change integrator.** Kinds, the reactions operator and routes at a
+   compartment all refuse RK4, so a monolithic fourth-order RK4 becomes IMEX with Strang halves, second order. The
+   bitwise check set can pin legacy only, never the re-expression.
+7. **G-7 is one-way.** The ionic side never reaches the pool. So the pool half is the live
+   `finite_bond_assembly@1` and is comparable bitwise, and an assembly world can be written today as a live pool run
+   whose availability path is the ionic world's `channel_controls` schedule (14.3).
+8. **One used world has no capture:** the integrated ensemble's `finite_extracellular@3`
+   (`configs/junction_finite_cluster.json`). It can be captured from the pre-cleanup tag. That is the lead's call.
+
+### 14.2 The consumers
+
+All nested worlds have Na, K and Cl; the calcium ones add Ca (z = 2) and the buffer species. "Faces" is
+`logmean_electrodiffusion@1`, the same law and the same closure (no net face current into any capacitor component).
+
+| Consumer | Canonical form | Needs | Equations | Integrator |
+|---|---|---|---|---|
+| JUPITER world: `spatial_extracellular@2`, `configs/spatial_kinetic_cluster.json`, both arms | `resolved_pump_tissue@3`: 2 cells, outside nodes `local` (gauge), `near`, `far`, 3 faces, 1 junction (`junction_voltage_relaxation@1`), the Na/K pump on maintained reservoirs, Kv1.5, constant-field leaks. GPU stands (`ionic_worlds@1` admits @3) | nothing | same | RK4 at ≤ 25 µs (Kv1.5's bound, `laws/channels/kv1p5_mh.py:37`; the check itself runs 25 µs), or IMEX at any of the captured steps |
+| The cluster base inside `assembly_regulated_cluster@1` | the same world | G-7 | same | as above |
+| `assembly_regulated_cell@1`: one cell, `finite_extracellular@2`, one Kv1.5 channel | @3 with one cell and one finite outside node as the gauge | G-7 | same | as above |
+| Integrated ensemble's world: `finite_extracellular@3`, 7 cells, 12 junctions, no pump, leak or channel | @3 with one finite outside node as the gauge | nothing; no capture (14.1) | same | RK4 at its 100 µs: no gated channel, and the junction rate is about 23 per second (D), far inside `GATE_STEP_BOUND` 0.125 |
+| `spatial_calcium@1` | `resolved_pump_composite@1` over @3: one store per cell as a `cell_owned_compartments@1` node; Ca's plasma leak, store leak and junction route as `passive_constant_field_permeation@1`; K's store leak as @3's own permeability; buffers in cytosol and store by `local_species_reactions@1`'s passive law, the same kernel | G-4; G-5's Ca factor | same | IMEX, Strang halves |
+| `spatial_calcium@2` | the above, with @3's calcium pump on the plasma patch (`ca_atp_mass_action_positive@1`, B1) and NCX | + an NCX law module | same. B1 is a re-parameterisation: ΔG0 = −37,000 + RT ln 1000 = −19,875.97 J/mol at 298.15 K (M) | IMEX |
+| `spatial_calcium@3` | + Cav1.2 | + G-1 | same | IMEX |
+| `spatial_calcium@4` | + free IP3 (z = −3), its neutral buffer and the bound form (z = −3), one more reaction | + G-5's IP3 factor | same | IMEX |
+| The four assembly-regulated calcium clusters | each of the above with two pools per world | G-7 | same | IMEX |
+| CPU command lines `assembly-cell`, `assembly-cluster` (`__main__.py:22–28`) | `cells run`, `cells windowed`, `cells batch` on the composite definitions, with G-7's operator or with schedules from the pool | G-7 | | |
+| Ensemble kinds `assembly_cell_ensemble@1`, `assembly_cluster_ensemble@1` (`ensemble/families.py:20–26`) | an `EnsembleAdapter` on the new family's row of the model table, which the protocol already allows (`families.py:29–80`). The two kind names are in `TODAY`, which an adapter may not take (`:70`), so one owner must remove them | G-7; parked on the GPU (`worker.py:95`) | | |
+| `ionic_ensemble@1` | stays. Its list of admitted simulations (`ensemble/ionic.py:144–264`) shrinks to `resolved_tissue@1`, `@2` and the live pump families | nothing | | |
+
+`assembly_ensemble@1` and `finite_bond_ensemble@1` are live code and stay as they are.
+
+### 14.3 What each feature must supply
+
+#### NCX: a law module, no engine change
+
+- **Legacy:** the kernel is live, `laws/reactions/plasma_calcium.py:34` (`exchange_rates`). Its use is legacy's
+  `models/plasma_calcium.py:124–152` (rates, the two selectors), 155–176 (rhs and heat), 179–196 (domain: |x| ≤ 80,
+  |V| ≤ 0.15 V), 199–228 (step bound).
+- **Equations:** per cycle 3 Na in and 1 Ca out. With u = FV/RT and V inside minus outside,
+  D = (1 + (Ni/Kn)³ + (No/Kn)³)(1 + Ci/Kc + Co/Kc), J = k a [(No/Kn)³(Ci/Kc)e^(−u/2) − (Ni/Kn)³(Co/Kc)e^(u/2)]/D in fmol
+  cycles/s. Kn 20 mM, Kc 0.001 mM, k 0.002 and 0.0028 fmol/s. Synthetic.
+- **Canonical:** J = k a S(1 − e^x) with S the forward term and x = 3 ln(Ni/No) + ln(Co/Ci) + u. The monomial form
+  carries S exactly: orders Na@P 3 and Ca@N 1, zeta −1/2, two factors of power 1, `Scaled` constants Kn^−3 and Kc^−1
+  (`laws/cycles/forms.py:222, 249`), activities against 1 M. A pure exchange has no standard part, so it needs no
+  registry potential (`kinds/transporter.py:1489–1498`). Its cycles are `plasma_exchange_cycles`.
+- **Known gap, not a blocker here:** the kind's material term does not bound a charged row that crosses
+  (`kinds/transporter.py:2240–2250`). This world's slope is about 4 per second (D).
+
+#### G-1: Cav1.2 on calcium
+
+- **Legacy:** `models/gated_calcium.py:72–86` (rates and flux), 93–113 (rhs), 116–134 (domain −0.120 to 0.060 V, gates in
+  [0, 1]), 137–146 and 155–165 (step bounds). The gate kernel is live, `laws/channels/calcium_gates.py:15, 35`.
+- **Equations:** m and h per membrane, from (0.2, 0.7); target and tau of V only, with the kernel's own −10 mV shift and
+  no temperature term; opening m²h; flux GHK at z = 2 with P = P_max × abundance × availability × opening. P_max 2e-6
+  m/s, abundance 0.5 and 0.6, area 3e-10 and 3.6e-10 m². State: two gates, transferred fmol and heat per membrane.
+- **Must supply:**
+  - (a) Ca in @3's channel valence table (`definitions/surface_pump_v3_spec.py:169`; refusal 327–329);
+  - (b) the law as a `ChannelLaw` module, two gates as every gated law has;
+  - (c) a per-stage material bound for a trace row through a channel, which @3 lacks (its channel term is the charge
+    slope, `models/surface_pump_v3.py:3644–3648`);
+  - (d) a way for a channel-carried Ca to be buffered (14.1, finding 3).
+- **Another form to weigh (D):** the gates as a factor source of the routing door on a `passive_constant_field_permeation@1`
+  Ca route. That law already has the charge and the material term, so (a), (c) and (d) fall away, and the gating becomes a
+  kind's state. The choice is D's.
+- The live module's text names BETSE and calls the shift native. It needs neutral words when it is registered.
+
+#### G-4: the store
+
+- **Legacy:** `models/er_calcium.py:115–117` (capacitance, fixed charge), 146–149 (voltage), 152–192 (potentials, leak, pump,
+  release), 195–210 (rhs and heat), 213–240 (domain), 243–291 (loss bound), 301–307 (steps ≤ 50 µs, h × loss ≤ 0.25),
+  310–326 (energy). `models/spatial_calcium.py:91–116` (initial charge), 145–155 (free cytosol), 164–189 (rhs: the ionic
+  influx enters the store's cytosol), 192–196 (ownership), 247–290 (energy). Chemistry:
+  `models/compartment_reactions.py:114–134`.
+- **State:** per store, amounts of 7 species (10 in the IP3 world) in cytosol and store, reaction extents and heat, and
+  passive, pump and release ledgers.
+- **Equations:** V_ER = V0 + (F/C) Σ z Δn_ER, store minus cytosol, V0 = 0, C 1e-11 and 1.4e-11 F (areas 1e-9 and 1.4e-9 m²
+  at 0.01 F/m²). GHK leak per species: P_Ca 1e-8 and P_K 1e-7 m/s, the rest 0. Pump: one Ca in per ATP, J = k × availability × Sat_Ca × Sat_ATP × (1 − e^x),
+  x = [ΔG + RT ln(Ca_ER/Ca_cyt) + 2F V_ER]/RT, k 0.003 and 0.0042 fmol/s, K_Ca 0.001 and K_ATP 0.5 mM, 1.5, 0.1 and 0.1 mM ATP, ADP and Pi, ΔG0 −37,000 J/mol as a
+  numeric-mM quotient. Release: GHK of Ca with P 1e-7 m/s × the factors (G-5). Volumes 0.05 and 0.07 pL. Buffers: Ca + B =
+  CaB (k_f 1000/s, Δμ° −6.9078 RT), Ca + CaB = Ca2B (100/s); B −2, CaB 0, Ca2B +2.
+- **What today's pieces give:** the node and its capacitor (V_b = φ_owner − φ_store = −V_ER; the sign flips), the K leak, the
+  Ca leak and the release as two routes of `passive_constant_field_permeation@1` on the bounding patch, whose law holds both
+  step terms (`laws/routes/constant_field_permeation.py:158–159`), so refusal 4 admits them; buffers by the same kernel
+  (`laws/reactions/mass_action.py:6`), each conserving charge.
+- **Must supply:**
+  - (a) refusal 6 for a component that holds the gauge (14.1, finding 4);
+  - (b) the pump on the bounding patch. @3's calcium pump is the same law with V = V_b
+    (`laws/reactions/plasma_calcium.py:29` calls `er_calcium.pump_rates` with −V), but refusal 4 refuses it there
+    (`operators/compartments.py:358–368`): its slope is in no per-stage term. A Ca-ATPase cycle law on the transporter
+    kind, with a `stage_term`, is the other form. No cycle law declares one today except the proton pump;
+  - (c) the release route's factor list, whose source is G-5's.
+- **Steps (D):** the K leak relaxes the store at about 5,260 per second, so dt × rate is 0.066 at 12.5 µs.
+
+#### G-5: the factors that open a route
+
+- **Legacy:** `laws/reactions/er_calcium.py:53` (live): f_Ca = 1/(1 + (Ka/Ca)^na) × 1/(1 + (Ca/Ki)^ni), Ka 0.001 and Ki 0.02
+  mM, na = ni = 2. `processes/ip3_release.py:8–13`: f_IP3 = 1/(1 + (K/[IP3])^n), K 0.00015 mM, n 2, 0 at zero ligand,
+  from the free IP3 amount over the cytosol volume (`models/ip3_calcium.py:73–77`). Both multiply the release
+  permeability, at the stage.
+- **No state, no flux of its own, no ledger.** The log-space expression is `laws/reactions/hill_factors.py`'s;
+  the exact zero at zero ligand is legacy's own.
+- **Must supply:** a factor source that reads cell rows at the stage, Ca (+2) and IP3 (−3) included. `kinds/ph_condition.py` is
+  the pattern: `factor_sources` and `factors(read, p)`. The sink exists: a passive route's `factors` list.
+- **What does not serve:** `species_regulated_availability@1` targets junctions and channels only
+  (`operators/species_regulated_availability.py:159, 553–556`) and refuses a charged instantaneous source (`:748–753`). A
+  held factor or a two-state fraction would change the model.
+- **For E to settle:** the capacitor sums are exact on the CPU for valence magnitudes 0, 1, 2, 4 and 8
+  (`models/surface_tissue.py:376–381`), and IP3 is −3. No world here has an electrode or a held node, so the electrode ledger
+  that note is about is zero (D).
+
+#### G-7: assembly sets a channel's availability
+
+- **Legacy:** `assembly_cell/kernel.py:23–26` (the law), 29–55 (the segment), `assembly_cluster/kernel.py:15–17, 20–81`, and
+  `assembly_cluster/controls.py:22–29`. Pool code: live, `assembly_pool/kernel.py:106–172`.
+- **Law:** a cell's channel availability is `active_availability` (1) if popcount(bonds) ≥ popcount(occupied), else
+  `inactive_availability` (0). It multiplies that cell's channel schedule (`controls.py:29`), so the Kv1.5 channels
+  only: the Cav1.2, calcium-pump and release controls are separate (`models/gated_calcium.py:93–95`).
+- **Pool:** 20-site graph, ring of 5 occupied at start, 50 free trimers, 5e-15 L, k_on 1e7 per M per s, k_off 300 (cluster) or
+  10 (cell) per s, k_close 1000 or 100 per s, dissolve 1 per s. Streams: threefry2x32 of (seed, world, event count), seed =
+  base + stream id, one stream per cell (`assembly/kernel.py:83–94`).
+- **Clock:** the ionic step is split at the union of every pool's event times and the schedule changes; each segment uses
+  the availability before its event (`assembly_cluster/kernel.py:44–60`). The pool never reads the ionic side.
+- **Written today, no operator (D):** run the live pool for each cell and world, read its event path, and give the ionic
+  world the same path as a `channel_controls` schedule per channel. An off-grid change splits the step there
+  (`execution/grid.py:3–6`), the same segmentation. A near-miss is refused (`:55`). It qualifies on RK4 for the cell and the base.
+- **As an operator it must keep:** the event times as they fall, not rounded to steps. The contract's operator times must lie
+  on the clock's grid (`models/pump_composite.py:2102`), so an event operator needs its own clock or a split, as
+  `integer_unit_population@1` does.
+- **Check for E:** the path of an operator against the live pool's, bitwise, on the captured seeds.
+
+### 14.4 What the science captures hold
+
+Set `science-76a498ae`, 90 jobs, all ok (M: EXIT 0). Ionic worlds at h, h/2, h/4, run by the windowed runner; a job is
+`runs/<world>-<step>/window-NNNN.npz`, 256 steps each, with `times`, `history.*` (one row per accepted step, so 257 in a full
+window), `observations.*`, `diagnostics.*`, `final.*`. Array names and shapes were read (M); no value was.
+
+| Captured world | Steps at h, h/2, h/4 | dt at h | Arrays |
+|---|---|---|---|
+| `{spatial,plasma,gated,ip3}_calcium` | 1600, 3200, 6400 | 12.5 µs | `amount_increment` [4 species, 3 cell slots], `chemical_amount_increment` [2 stores, 7 or 10 species, 3 compartment slots], gates, `calcium_gate` [2, 4] (gated, ip3), junction, faces, the transfer and heat ledgers, `plasma_*` (from plasma on), observation `er_voltage_V`, `plasma_voltage_V`, `cytosol_amount_fmol`, `extracellular_potential_V`, `ip3_*` |
+| `jupiter_baseline`, `jupiter_pump_release` | 200, 400, 800 | 100 µs | one window; the same ionic fields and the JUPITER check's observation fields (fluxes, affinities, currents, powers) |
+| `cluster_{spatial,plasma,gated,ip3}_calcium` × 4 seeds | 1600, 3200, 6400 ticks | 12.5 µs | 2 worlds; only `checkpoint/state.npz` at the end (`pool_*`, `ionic_*`, `tick`, `segments`, `availability_exposure_s`) and JSON summaries at 0, 2.5, 5, 10, 15 and 20 ms |
+| `cluster_base` × 4 seeds | 400, 800, 1600 | 50 µs | 8 worlds; the same, JSON at 0, 5, 10 and 20 ms |
+| `cell` × 4 seeds | 200, 400, 800 | 100 µs | 64 worlds; the final checkpoint only, no JSON |
+
+All end at 0.02 s. Ionic observation times are 0, 7.3e-5, 2.5, 5, 7.5, 10, 15 and 20 ms.
+
+**What the calcium arrays compare to:** `amount_increment` is the whole-cell exchange ledger, so it is not the free
+cytosol: take the cytosol and the store from `chemical_amount_increment` (compartment slots 0 and 1; slot 2 is padding) or
+`cytosol_amount_fmol`. Outside is `extracellular_amount_increment`. `er_voltage_V` is −V_b. Channel and cell slots past the
+declared ones are capacity padding.
+
+### 14.5 For the criteria
+
+- **Same equations, so the template of §8 can apply** to every consumer but the kinds' own plumbing: no re-expression above
+  is a changed model, if G-4 keeps the closed world, G-5 is per-stage and B1 keeps the standard state. §8's B1 and NCX
+  examples are corrected. A changed model would be a held bath, a held-through-the-step factor, or a store at the
+  cytosol's potential.
+- **The candidate's order is 2** for the calcium worlds and 4 for RK4 worlds. Its own h, h/2 and h/4 are its own steps.
+- **RK4 on @3 needs dt ≤ 25 µs with Kv1.5** (RK4 also needs ≤ 100 µs, `models/surface_tissue.py:520–522`). So of the
+  captured steps the JUPITER and cell worlds have one (25 µs, h/4), the base two (25 and 12.5 µs). IMEX takes all.
+- **Off-grid observations:** @3 refuses an observation off an accepted boundary, on RK4 and on IMEX
+  (`surface_tissue.py:525–532`). The 7.3e-5 s sample is a Hermite interpolant in legacy and has no canonical counterpart.
+  Compare on grid points, through `history.*`.
+- **Observations are spread over the windows:** a full window holds only the requested times inside it.
+- **Assembly jobs have no trajectory.** Compare the final ionic state and the JSON summaries, and the pool arrays bitwise at
+  every h (the pool clock does not depend on the ionic step). `segments` counts splits and depends on the step.
+- **Ledgers:** legacy's `dissipated_energy_pJ` lumps leak, pump and channel per membrane, and the transport heat lumps per
+  store. Compare sums. `pump_cycles`, `plasma_*_cycles`, transfers and faces compare one to one.
+- **Conservation** (species balance, charge, the energy ledger) is checked by its own bound, not by the band.
+
+### 14.6 What no planned feature re-expresses
+
+1. Bitwise identity with legacy for any of these worlds.
+2. The 100 µs and 50 µs RK4 steps of Kv1.5 worlds, and the sample at 7.3e-5 s (14.5).
+3. Running the cell and cluster kinds on a GPU: `ionic_worlds@1` does not admit the composite, and the worker is GPU only.
+   Their queue on a CPU is `cells batch`, not `cells ensemble run`, unless the runner changes.
+4. Legacy's observers: the derived readouts (`er_voltage_V`, `ip3_release_fraction`, and the JUPITER check's fluxes) exist as
+   formulas, not as legacy's cubic-interpolant proofs that every step stays in the domain.
+5. Old checkpoints of these worlds cannot be resumed. The pre-cleanup tag and the captures keep them.
+6. The assembly clusters' trajectories: not captured, so a difference between endpoints has no path to point at.
 
 ## Appendix A. The 11 families of D348: closures, physics, sources and targets
 
