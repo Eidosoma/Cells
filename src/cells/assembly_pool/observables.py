@@ -91,7 +91,7 @@ LAW = AssemblyObservable(
     ("false", "true"),
     cycle_index,
     host=HOST,
-    provenance="cited",
+    provenance="parity",  # The rule of an older family of assembly-regulated cells, under its ID.
     source=Citation(
         "The cycle rank of a connected graph, E - V + 1 (elementary graph theory), read from an "
         "assembly of finite_bond_assembly@1: a topology readout, no number",

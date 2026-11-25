@@ -34,7 +34,7 @@ law leaves out how many rings there are, which blocks make them, and any energy 
 | Piece | Law, interface `cells.assembly_observable@1` ([its fields](../../DECLARATIONS_FORMAT.md#family-interfaces)) |
 | ID | `cells.root_component_has_cycle@1`; definitions write `root_component_has_cycle@1` |
 | Runs in | `cells.finite_bond_assembly@1`, its host. No model's definitions can declare it |
-| Provenance | `cited`: taken from a cited source |
+| Provenance | `parity`: moved from an older family; moving is not calibrating |
 
 <!-- /generated -->
 
@@ -82,7 +82,7 @@ $$\text{true where } E \ge V, \qquad \text{false where } E < V .$$
 
 <!-- generated: provenance -->
 
-Provenance: `cited` (taken from a cited source).
+Provenance: `parity` (moved from an older family; moving is not calibrating).
 
 - **Source, as declared:** The cycle rank of a connected graph, E - V + 1 (elementary graph theory), read from an assembly of finite_bond_assembly@1: a topology readout, no number
 - **Place:** docs/CAPSID_ASSEMBLY.md, 'Driving ionic channels from pools', which states the rule; its use as a channel's control is a hypothesis with no literature source
@@ -97,8 +97,8 @@ Provenance: `cited` (taken from a cited source).
 | Elementary graph theory | The cycle rank of a connected graph, $E - V + 1$: a spanning tree has $V - 1$ bonds, and each bond beyond it closes one ring. No numbers | Der |
 | [Capsid assembly](../../../CAPSID_ASSEMBLY.md), "Driving ionic channels from pools" | The rule's statement, with the comparison of the two counts. No numbers | Der |
 
-No work is cited for the rule's use as a channel's control. It is a hypothesis of the composed file
-that declares it.
+The rule, under this ID, is that of an older family of assembly-regulated cells. No work is cited for
+its use as a channel's control. It is a hypothesis of the composed file that declares it.
 
 **Departures:** one component is assumed, since the pool keeps its assembly connected to its root.
 

@@ -385,6 +385,9 @@ def test_the_cycle_observable_is_the_cycle_rank_of_every_connected_assembly():
     law = observables.resolve("root_component_has_cycle@1")
     assert law is observables.LAW and law.errors() == []
     assert law_registry.active().module(law.law_id) == "cells.assembly_pool.observables"
+    # Moved, not calibrated; its Citation says that it is a readout with no number and no work.
+    assert law.provenance == "parity" and law.source.works == ()
+    assert "a topology readout, no number" in law.source.source
     assemblies = sorted(connected_assemblies(7)) + [(FULL, FULL_BONDS), (FULL, FULL_BONDS ^ 1)]
     occupied, bonds = np.array(assemblies, dtype=np.uint32).T
     expected = np.array([ring(*row) for row in assemblies])
