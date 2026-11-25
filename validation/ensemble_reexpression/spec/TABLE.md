@@ -36,15 +36,16 @@ Every entry holds all of these keys. A key that a kind of run does not use holds
 | `variant` | string or null: the registered run's |
 | `seed_index`, `world_id` | integers or null: the registered run's |
 | `step_s` | number, or null for a pool run |
-| `steps` | integer, or null for a pool run: the accepted steps of the run. For `jupiter` and `integrated` it equals end_s/step_s. For `cell` and `base` it is at least that and at most that plus the committed events of the world's two (or one) pool paths |
-| `t` | list of numbers: the times of `rows`, strictly increasing, the first 0. Every compared time is there. `[]` for a pool run, whose `rows` and `potentials` are `{}` and `potential_t` `[]` |
+| `steps` | integer, or null for a pool run: the accepted steps of the run. For `jupiter` and `integrated` it equals end_s/step_s (a larger number means a change split a step, and the run is refused with the reason `off_grid_change`). For `cell` and `base` it is at least that and at most that plus the committed events of the world's two (or one) pool paths. **For a restart** it counts the accepted steps after the checkpoint, (end_s − the checkpoint's time)/step_s, with the same addition for `cell` and `base` |
+| `t` | list of numbers: the times of `rows`, strictly increasing, the first 0, every compared time there. **For a restart** it continues its judged run's clock: the first is the checkpoint's time and not 0, and every compared time after the checkpoint is there. `[]` for a pool run, whose `rows` and `potentials` are `{}` and `potential_t` `[]` |
 | `rows` | object: READOUTS §2's name to an object, entity ID to a list as long as `t` |
-| `potential_t` | list of numbers: the times of `potentials` (for `jupiter` and `integrated` the block's `potential_times_s`, for `base` and `cell` the summary times that are in `t`) |
+| `potential_t` | list of numbers: the times of `potentials`, 0 first (for `jupiter` and `integrated` the block's `potential_times_s`, for `base` and `cell` 0 and then `summary_times_s`). The voltage at 0 is the run's own V₀ (`READOUTS.md` §5). For a restart, the ones after the checkpoint |
 | `potentials` | object: `voltage` and `phi_out` to entity ID to a list as long as `potential_t`. A world without one omits it |
-| `pool` | null, or for a pool run an object: cell ID to `{"arrays": {<19 names>: nested lists [world, ...]}, "seed": integer, "stream_id": integer}`. |
+| `pool` | null, or for a pool run an object: cell ID to `{"arrays": {<19 names>: nested lists [world, ...]}, "seed": integer, "stream_id": integer}` |
 | `path` | null, or for a pool run an object: cell ID to an object, world ID (as a string) to a list of `[time, availability]`, one per committed event, in order |
-| `inputs` | the world's block, read back from **the definition the engine parsed and ran**, never a copy of this folder. For an ionic run it is `inputs.json` `worlds.<w>.ionic`, with `controls.channel` the schedule the run declared. For an ionic run of `cell` or `base` it also holds `assembly` (below). For a pool run it is `worlds.<w>.pools.<cell>.pool` per cell, with `seed` |
-| `strings` | object: label to the exact string the run declared, for every label the strings note lists for that run (§5) |
+| `inputs` | the world's block, read back from **the definition the engine parsed and ran**, never a copy of this folder. For an ionic run it is `inputs.json` `worlds.<w>.ionic`, with `controls.channel` the schedule the run declared. For an ionic run of `cell` or `base` it also holds `assembly` (below). For a pool run it is, per cell, `channel`, `stream_id`, `seed` and `pool` (the block of `SPEC.md` §2.5), with `harness` recorded apart |
+| `strings` | object: label to the exact string the run declared, for every label the strings note lists for that run, **and no other label** (§5) |
+| `declared_strings` | list of strings, sorted: **every** registered string that the definition the engine parsed and ran declares (its model, laws, operators, kinds, solver, field solver and observable), one each. It equals the set of `strings`' values exactly, so an extra operator, kind or law is visible (§5) |
 | `definition` | the engine's own declaration, as run (recorded) |
 | `checks` | the engine's own ledgers and checks at the end (recorded) |
 | `restart` | null, or `{"time_s", "step_index", "through"}`: the checkpoint's time, its step index and how it was saved (through a file) |
@@ -59,7 +60,7 @@ Every entry holds all of these keys. A key that a kind of run does not use holds
   - `pool_seeds`: cell ID to integer, the seeds of the pool run the file was composed from (class E, `CRITERIA.md` §4.1);
   - `switch_list`: channel ID to a list of `[time, availability]`, the changes that the driver wrote, in order (class E).
 - **The record holds the run's own name** in its content. So no two records are alike, and worlds whose pools have no event, which are honestly the same ionic solution, do not share a hash.
-- **`rows` of an ionic assembly run:** for `base`, `t` = [0, 0.005, 0.01, 0.02]; for `cell`, [0, 0.02]. Extra rows are allowed. A row at a split (an event time) is an accepted row and is not needed.
+- **`rows` of an ionic assembly run:** `t` is 0, `summary_times_s` and `end_s`, once each, at least. Extra rows are allowed. A row at a split (an event time) is an accepted row and is not needed.
 - **A completed run's `refusal` is null and a refused run's is not.** A refused run keeps the rows it has.
 - **Numbers are JSON numbers.** A double is printed so that it reads back to the same double (`repr`). The bond and occupied masks are integers. `null` stands only where this table says so. There is no NaN, infinity or boolean in `rows`, `potentials` or `path`.
 - **A run's `t` values** match the registered times within 10⁻¹² s.
@@ -79,18 +80,18 @@ Every entry holds all of these keys. A key that a kind of run does not use holds
 
 ## 5. The strings note
 
-`validation/ensemble_reexpression/registered_strings.json`, the lead's, with its own commit and its own tag after the registration tag and after the ID move, and before any run. Its rehearsal counterpart exercises every match.
+`validation/ensemble_reexpression/registered_strings.json`, the lead's, with its own commit and its own tag **after the registration tag and before any run** (the protocol's §5). It holds **today's IDs**: the runs are made before the ID move, so the strings are those of the registered head, and the move's table maps them afterwards. Its rehearsal counterpart exercises every match.
 
 ```json
 {"kind": "ensemble-reexpression registered strings, version 1",
  "revision": "<40 hex>", "rehearsal_revision": null,
  "labels": {"inner_model": "", "rk4": "", "field_solver": "", "field_solver_floor": "", "closure": "", "constant_field": "", "kv15_mh": "",
             "nak_pump_positive": "", "maintained_fuel": "", "junction_relaxation": "", "logmean_face": "", "pool_model": "", "pool_topology": "", "assembly_observable": ""},
- "runs": {"<run name>": {"model": "<label>", "solver": "<label>", "field_solver": "<label>", "operators": [], "laws": ["<labels>"]}}}
+ "runs": {"<run name>": {"model": "<label>", "solver": "<label>", "field_solver": "<label>", "operators": [], "kinds": [], "laws": ["<labels>"], "pool": ["<labels>"], "observable": "<label or null>"}}}
 ```
 
 - **`labels`** maps each label of `inputs.json`'s blocks to the exact registered string. It is written by the lead from the declared worlds, never from a table, and checked by parse before its tag. A label that Part 2 needs is added by `PART2.md` §4's table.
-- **`runs`** gives, for every registered run (the retry's by the same rule as its family), which labels it declares. The judge reads a run's `strings` as `labels[...]` for them, exactly.
+- **`runs`** gives, for every registered run (the retry's by the same rule as its family), **the full set of labels it declares**, with an empty list where there is none. The judge reads a run's `strings` as `labels[...]` for them, exactly, and its `declared_strings` as the set of those strings, exactly: **a missing label, an extra label and an extra string each make the run a departing echo.**
 - **`revision`** is the registration tag's, which a file in the tagged commit cannot hold. `engine_revision` is compared with it (and in the rehearsal with `rehearsal_revision`).
 - A typo in a note is corrected by a dated second note with its own tag, before any table is hashed, and never after.
 

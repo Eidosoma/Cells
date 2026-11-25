@@ -316,6 +316,20 @@
     "voltage": 0.417093756508962,
     "phi_out": 0.025692579121085843,
     "energy_identity": 3005.1116590721604
+   },
+   "p": 4,
+   "stores": {
+    "n_cell_Na": 10.5,
+    "n_out_Na": 450.0,
+    "n_cell_K": 91.0,
+    "n_out_K": 9.0,
+    "n_cell_Cl": 7.0,
+    "n_out_Cl": 345.0,
+    "voltage": 2907.9607042719826,
+    "energy_identity": 32376.62611038908
+   },
+   "closure_terms_V": {
+    "phi_out": 5.159999999999999e-13
    }
   },
   "jupiter_pump_release": {
@@ -643,6 +657,20 @@
     "voltage": 0.417093756508962,
     "phi_out": 0.025692579121085843,
     "energy_identity": 3005.1116590721604
+   },
+   "p": 4,
+   "stores": {
+    "n_cell_Na": 10.5,
+    "n_out_Na": 450.0,
+    "n_cell_K": 91.0,
+    "n_out_K": 9.0,
+    "n_cell_Cl": 7.0,
+    "n_out_Cl": 345.0,
+    "voltage": 2907.9607042719826,
+    "energy_identity": 32376.62611038908
+   },
+   "closure_terms_V": {
+    "phi_out": 5.159999999999999e-13
    }
   },
   "integrated": {
@@ -1348,7 +1376,19 @@
     "heat_junction": 0.012362721392304167,
     "voltage": 0.15642821853490035,
     "energy_identity": 0.9142366620396931
-   }
+   },
+   "p": 4,
+   "stores": {
+    "n_cell_Na": 13.689275504043644,
+    "n_out_Na": 978.75,
+    "n_cell_K": 113.9503456438611,
+    "n_out_K": 27.0,
+    "n_cell_Cl": 10.291684011825442,
+    "n_out_Cl": 810.0,
+    "voltage": 3850.9625924387137,
+    "energy_identity": 43161.03984320014
+   },
+   "closure_terms_V": {}
   },
   "cell": {
    "consumer": "cell",
@@ -1468,13 +1508,21 @@
      "channel": "channel_0",
      "stream_id": 0,
      "pool": {
-      "model": "finite_bond_pool",
+      "model": "pool_model",
+      "topology": "pool_topology",
       "initial_nodes": [
        10,
        12,
        14,
        16,
        18
+      ],
+      "initial_bond_indices": [
+       20,
+       21,
+       24,
+       26,
+       28
       ],
       "root_node": 10,
       "initial_free_trimers": 50,
@@ -1483,10 +1531,16 @@
       "k_close_s_inv": 100.0,
       "k_off_s_inv": 10.0,
       "k_fragment_dissolve_s_inv": 1.0,
-      "worlds": 64,
       "world_id_start": 0,
+      "worlds": 64,
       "end_time_s": 0.02,
       "max_events_per_world": 100000
+     },
+     "harness": {
+      "event_chunk_size": 128,
+      "recording": "summary",
+      "max_output_bytes": 268435456,
+      "max_wall_seconds": 600.0
      },
      "seeds": [
       20260920,
@@ -1518,7 +1572,19 @@
     "heat_membrane": 4.82891837939909,
     "voltage": 2.07918679524999,
     "energy_identity": 52.51133054513651
-   }
+   },
+   "p": 4,
+   "stores": {
+    "n_cell_Na": 12.0,
+    "n_out_Na": 140.0,
+    "n_cell_K": 140.0,
+    "n_out_K": 4.0,
+    "n_cell_Cl": 10.0,
+    "n_out_Cl": 120.0,
+    "voltage": 1563.0623803976223,
+    "energy_identity": 38553.96012183705
+   },
+   "closure_terms_V": {}
   },
   "base": {
    "consumer": "base",
@@ -1786,13 +1852,21 @@
      "channel": "channel_0",
      "stream_id": 0,
      "pool": {
-      "model": "finite_bond_pool",
+      "model": "pool_model",
+      "topology": "pool_topology",
       "initial_nodes": [
        10,
        12,
        14,
        16,
        18
+      ],
+      "initial_bond_indices": [
+       20,
+       21,
+       24,
+       26,
+       28
       ],
       "root_node": 10,
       "initial_free_trimers": 50,
@@ -1801,10 +1875,16 @@
       "k_close_s_inv": 1000.0,
       "k_off_s_inv": 300.0,
       "k_fragment_dissolve_s_inv": 1.0,
-      "worlds": 8,
       "world_id_start": 0,
+      "worlds": 8,
       "end_time_s": 0.02,
       "max_events_per_world": 100000
+     },
+     "harness": {
+      "event_chunk_size": 128,
+      "recording": "summary",
+      "max_output_bytes": 268435456,
+      "max_wall_seconds": 600.0
      },
      "seeds": [
       20260925,
@@ -1817,13 +1897,21 @@
      "channel": "channel_1",
      "stream_id": 1,
      "pool": {
-      "model": "finite_bond_pool",
+      "model": "pool_model",
+      "topology": "pool_topology",
       "initial_nodes": [
        10,
        12,
        14,
        16,
        18
+      ],
+      "initial_bond_indices": [
+       20,
+       21,
+       24,
+       26,
+       28
       ],
       "root_node": 10,
       "initial_free_trimers": 50,
@@ -1832,10 +1920,16 @@
       "k_close_s_inv": 1000.0,
       "k_off_s_inv": 300.0,
       "k_fragment_dissolve_s_inv": 1.0,
-      "worlds": 8,
       "world_id_start": 0,
+      "worlds": 8,
       "end_time_s": 0.02,
       "max_events_per_world": 100000
+     },
+     "harness": {
+      "event_chunk_size": 128,
+      "recording": "summary",
+      "max_output_bytes": 268435456,
+      "max_wall_seconds": 600.0
      },
      "seeds": [
       20260926,
@@ -1876,7 +1970,19 @@
     "heat_membrane": 0.39546790337543763,
     "voltage": 0.417093756508962,
     "energy_identity": 3005.1116590721604
-   }
+   },
+   "p": 4,
+   "stores": {
+    "n_cell_Na": 10.5,
+    "n_out_Na": 450.0,
+    "n_cell_K": 91.0,
+    "n_out_K": 9.0,
+    "n_cell_Cl": 7.0,
+    "n_out_Cl": 345.0,
+    "voltage": 2907.9607042719826,
+    "energy_identity": 32376.62611038908
+   },
+   "closure_terms_V": {}
   }
  },
  "runs": [

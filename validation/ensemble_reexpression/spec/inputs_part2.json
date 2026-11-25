@@ -656,7 +656,8 @@
     "cyt_Na": 0.006108195226198562,
     "cyt_Cl": 0.0004046546824700911,
     "store_voltage": 16.017628876546414
-   }
+   },
+   "p": 2
   },
   "plasma_calcium": {
    "consumer": "plasma_calcium",
@@ -1355,7 +1356,8 @@
     "cyt_Na": 0.007844073283350244,
     "cyt_Cl": 0.0004046546824700911,
     "store_voltage": 16.017628876546414
-   }
+   },
+   "p": 2
   },
   "gated_calcium": {
    "consumer": "gated_calcium",
@@ -2082,7 +2084,8 @@
     "cyt_Na": 0.007844073283350244,
     "cyt_Cl": 0.0004046546824700911,
     "store_voltage": 16.017628876546414
-   }
+   },
+   "p": 2
   },
   "ip3_calcium": {
    "consumer": "ip3_calcium",
@@ -2894,7 +2897,8 @@
     "cyt_IP3_buffer": 0.00011088000000000001,
     "cyt_IP3_bound": 0.00011088000000000001,
     "store_voltage": 16.017628876546414
-   }
+   },
+   "p": 2
   },
   "cluster_spatial_calcium": {
    "consumer": "cluster_spatial_calcium",
@@ -2913,13 +2917,21 @@
      "channel": "channel_0",
      "stream_id": 0,
      "pool": {
-      "model": "finite_bond_pool",
+      "model": "pool_model",
+      "topology": "pool_topology",
       "initial_nodes": [
        10,
        12,
        14,
        16,
        18
+      ],
+      "initial_bond_indices": [
+       20,
+       21,
+       24,
+       26,
+       28
       ],
       "root_node": 10,
       "initial_free_trimers": 50,
@@ -2928,10 +2940,16 @@
       "k_close_s_inv": 1000.0,
       "k_off_s_inv": 300.0,
       "k_fragment_dissolve_s_inv": 1.0,
-      "worlds": 2,
       "world_id_start": 0,
+      "worlds": 2,
       "end_time_s": 0.02,
       "max_events_per_world": 100000
+     },
+     "harness": {
+      "event_chunk_size": 128,
+      "recording": "summary",
+      "max_output_bytes": 536870912,
+      "max_wall_seconds": 600.0
      },
      "seeds": [
       20260925,
@@ -2944,13 +2962,21 @@
      "channel": "channel_1",
      "stream_id": 1,
      "pool": {
-      "model": "finite_bond_pool",
+      "model": "pool_model",
+      "topology": "pool_topology",
       "initial_nodes": [
        10,
        12,
        14,
        16,
        18
+      ],
+      "initial_bond_indices": [
+       20,
+       21,
+       24,
+       26,
+       28
       ],
       "root_node": 10,
       "initial_free_trimers": 50,
@@ -2959,10 +2985,16 @@
       "k_close_s_inv": 1000.0,
       "k_off_s_inv": 300.0,
       "k_fragment_dissolve_s_inv": 1.0,
-      "worlds": 2,
       "world_id_start": 0,
+      "worlds": 2,
       "end_time_s": 0.02,
       "max_events_per_world": 100000
+     },
+     "harness": {
+      "event_chunk_size": 128,
+      "recording": "summary",
+      "max_output_bytes": 536870912,
+      "max_wall_seconds": 600.0
      },
      "seeds": [
       20260926,
@@ -2995,13 +3027,21 @@
      "channel": "channel_0",
      "stream_id": 0,
      "pool": {
-      "model": "finite_bond_pool",
+      "model": "pool_model",
+      "topology": "pool_topology",
       "initial_nodes": [
        10,
        12,
        14,
        16,
        18
+      ],
+      "initial_bond_indices": [
+       20,
+       21,
+       24,
+       26,
+       28
       ],
       "root_node": 10,
       "initial_free_trimers": 50,
@@ -3010,10 +3050,16 @@
       "k_close_s_inv": 1000.0,
       "k_off_s_inv": 300.0,
       "k_fragment_dissolve_s_inv": 1.0,
-      "worlds": 2,
       "world_id_start": 0,
+      "worlds": 2,
       "end_time_s": 0.02,
       "max_events_per_world": 100000
+     },
+     "harness": {
+      "event_chunk_size": 128,
+      "recording": "summary",
+      "max_output_bytes": 536870912,
+      "max_wall_seconds": 600.0
      },
      "seeds": [
       20260925,
@@ -3026,13 +3072,21 @@
      "channel": "channel_1",
      "stream_id": 1,
      "pool": {
-      "model": "finite_bond_pool",
+      "model": "pool_model",
+      "topology": "pool_topology",
       "initial_nodes": [
        10,
        12,
        14,
        16,
        18
+      ],
+      "initial_bond_indices": [
+       20,
+       21,
+       24,
+       26,
+       28
       ],
       "root_node": 10,
       "initial_free_trimers": 50,
@@ -3041,10 +3095,16 @@
       "k_close_s_inv": 1000.0,
       "k_off_s_inv": 300.0,
       "k_fragment_dissolve_s_inv": 1.0,
-      "worlds": 2,
       "world_id_start": 0,
+      "worlds": 2,
       "end_time_s": 0.02,
       "max_events_per_world": 100000
+     },
+     "harness": {
+      "event_chunk_size": 128,
+      "recording": "summary",
+      "max_output_bytes": 536870912,
+      "max_wall_seconds": 600.0
      },
      "seeds": [
       20260926,
@@ -3077,13 +3137,21 @@
      "channel": "channel_0",
      "stream_id": 0,
      "pool": {
-      "model": "finite_bond_pool",
+      "model": "pool_model",
+      "topology": "pool_topology",
       "initial_nodes": [
        10,
        12,
        14,
        16,
        18
+      ],
+      "initial_bond_indices": [
+       20,
+       21,
+       24,
+       26,
+       28
       ],
       "root_node": 10,
       "initial_free_trimers": 50,
@@ -3092,10 +3160,16 @@
       "k_close_s_inv": 1000.0,
       "k_off_s_inv": 300.0,
       "k_fragment_dissolve_s_inv": 1.0,
-      "worlds": 2,
       "world_id_start": 0,
+      "worlds": 2,
       "end_time_s": 0.02,
       "max_events_per_world": 100000
+     },
+     "harness": {
+      "event_chunk_size": 128,
+      "recording": "summary",
+      "max_output_bytes": 536870912,
+      "max_wall_seconds": 600.0
      },
      "seeds": [
       20260925,
@@ -3108,13 +3182,21 @@
      "channel": "channel_1",
      "stream_id": 1,
      "pool": {
-      "model": "finite_bond_pool",
+      "model": "pool_model",
+      "topology": "pool_topology",
       "initial_nodes": [
        10,
        12,
        14,
        16,
        18
+      ],
+      "initial_bond_indices": [
+       20,
+       21,
+       24,
+       26,
+       28
       ],
       "root_node": 10,
       "initial_free_trimers": 50,
@@ -3123,10 +3205,16 @@
       "k_close_s_inv": 1000.0,
       "k_off_s_inv": 300.0,
       "k_fragment_dissolve_s_inv": 1.0,
-      "worlds": 2,
       "world_id_start": 0,
+      "worlds": 2,
       "end_time_s": 0.02,
       "max_events_per_world": 100000
+     },
+     "harness": {
+      "event_chunk_size": 128,
+      "recording": "summary",
+      "max_output_bytes": 536870912,
+      "max_wall_seconds": 600.0
      },
      "seeds": [
       20260926,
@@ -3159,13 +3247,21 @@
      "channel": "channel_0",
      "stream_id": 0,
      "pool": {
-      "model": "finite_bond_pool",
+      "model": "pool_model",
+      "topology": "pool_topology",
       "initial_nodes": [
        10,
        12,
        14,
        16,
        18
+      ],
+      "initial_bond_indices": [
+       20,
+       21,
+       24,
+       26,
+       28
       ],
       "root_node": 10,
       "initial_free_trimers": 50,
@@ -3174,10 +3270,16 @@
       "k_close_s_inv": 1000.0,
       "k_off_s_inv": 300.0,
       "k_fragment_dissolve_s_inv": 1.0,
-      "worlds": 2,
       "world_id_start": 0,
+      "worlds": 2,
       "end_time_s": 0.02,
       "max_events_per_world": 100000
+     },
+     "harness": {
+      "event_chunk_size": 128,
+      "recording": "summary",
+      "max_output_bytes": 536870912,
+      "max_wall_seconds": 600.0
      },
      "seeds": [
       20260925,
@@ -3190,13 +3292,21 @@
      "channel": "channel_1",
      "stream_id": 1,
      "pool": {
-      "model": "finite_bond_pool",
+      "model": "pool_model",
+      "topology": "pool_topology",
       "initial_nodes": [
        10,
        12,
        14,
        16,
        18
+      ],
+      "initial_bond_indices": [
+       20,
+       21,
+       24,
+       26,
+       28
       ],
       "root_node": 10,
       "initial_free_trimers": 50,
@@ -3205,10 +3315,16 @@
       "k_close_s_inv": 1000.0,
       "k_off_s_inv": 300.0,
       "k_fragment_dissolve_s_inv": 1.0,
-      "worlds": 2,
       "world_id_start": 0,
+      "worlds": 2,
       "end_time_s": 0.02,
       "max_events_per_world": 100000
+     },
+     "harness": {
+      "event_chunk_size": 128,
+      "recording": "summary",
+      "max_output_bytes": 536870912,
+      "max_wall_seconds": 600.0
      },
      "seeds": [
       20260926,

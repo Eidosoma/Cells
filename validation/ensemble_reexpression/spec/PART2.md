@@ -27,6 +27,7 @@ ruling of 25 November 2026 fix it. `inputs_part2.json` governs the numbers.
 | The assembly coupling of the four clusters: the decided form (`SPEC.md` §3.3) is the driver that writes the live pool's switch path into the ionic world's channel controls. On the composite, what is open is whether an off-grid change splits its IMEX step | note E | §4.1, and the runs' `strings` and `steps`. The four clusters record the same items (`TABLE.md` §3 `inputs.assembly`) |
 | The strings note's labels for the pieces that do not exist yet | notes D and E | §4.3 |
 | Restarts and engine plants | the build | §11 |
+| `stores` and `closure_terms_V` of Part 2's entries, by Part 1's rules (`SPEC.md` §5 and §6), with the margins re-formed | the Part 2 tag | §8, `margins_part2.json` |
 
 **What does not wait:** the captured worlds, values, scales, arrays, signs and lumps; the classes; the plants, their homes and their margins from the legacy side; the references' own classes.
 

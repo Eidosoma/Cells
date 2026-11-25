@@ -2,7 +2,7 @@
  "schema": "ensemble-reexpression margins, version 1",
  "part": 1,
  "date": "2026-11-25",
- "bands": "CRITERIA.md section 4.3 with U_c = 0 (the legacy side's own U_l, e_round and e_close)",
+ "bands": "CRITERIA.md section 4.3 with U_c = 0 (the legacy side's own U_l, e_round, e_close, phi_out's own e_close, and e_store of the candidate's S_c)",
  "rule": "distance: the largest difference between a planted run and the honest control of the frozen snapshot at the same captured step, over the entry's entities and compared times. ratio: distance over the largest magnitude of the readout in the control (assembly: the smallest over the worlds of seed 0). margin: distance over the band at U_c = 0.",
  "worlds": {
   "jupiter_baseline": {
@@ -13,8 +13,8 @@
      "home": false,
      "ratio": 0.01005,
      "ratio_from": "pump",
-     "margin": 436600000.0,
-     "band_at_U_c_0": 6.786e-14,
+     "margin": 1582000.0,
+     "band_at_U_c_0": 1.873e-11,
      "largest": 0.002948,
      "home_plants": {}
     },
@@ -22,8 +22,8 @@
      "home": false,
      "ratio": 0.009823,
      "ratio_from": "face",
-     "margin": 22960000.0,
-     "band_at_U_c_0": 2.268e-10,
+     "margin": 5073000.0,
+     "band_at_U_c_0": 1.026e-09,
      "largest": 0.5301,
      "home_plants": {}
     },
@@ -73,8 +73,8 @@
      "home": false,
      "ratio": 0.01059,
      "ratio_from": "pump",
-     "margin": 266800000.0,
-     "band_at_U_c_0": 7.566e-14,
+     "margin": 124800.0,
+     "band_at_U_c_0": 1.618e-10,
      "largest": 0.001906,
      "home_plants": {}
     },
@@ -82,8 +82,8 @@
      "home": false,
      "ratio": 0.009802,
      "ratio_from": "face",
-     "margin": 87800000.0,
-     "band_at_U_c_0": 1.713e-11,
+     "margin": 45420000.0,
+     "band_at_U_c_0": 3.313e-11,
      "largest": 0.1535,
      "home_plants": {}
     },
@@ -133,8 +133,8 @@
      "home": false,
      "ratio": 0.01443,
      "ratio_from": "pump",
-     "margin": 19920000.0,
-     "band_at_U_c_0": 4.495e-15,
+     "margin": 7196.0,
+     "band_at_U_c_0": 1.244e-11,
      "largest": 6.206e-06,
      "home_plants": {}
     },
@@ -142,8 +142,8 @@
      "home": false,
      "ratio": 0.009831,
      "ratio_from": "face",
-     "margin": 12780000.0,
-     "band_at_U_c_0": 2.898e-10,
+     "margin": 4101000.0,
+     "band_at_U_c_0": 9.028e-10,
      "largest": 0.3766,
      "home_plants": {}
     },
@@ -296,13 +296,13 @@
      "home": true,
      "ratio": 0.003526,
      "ratio_from": "pump",
-     "margin": 54060000.0,
-     "band_at_U_c_0": 4.633e-12,
+     "margin": 48440.0,
+     "band_at_U_c_0": 5.172e-09,
      "largest": 0.07105,
      "home_plants": {
       "pump": {
        "ratio": 0.003526,
-       "margin": 54060000.0
+       "margin": 48440.0
       }
      }
     },
@@ -310,13 +310,13 @@
      "home": true,
      "ratio": 0.009207,
      "ratio_from": "faceK",
-     "margin": 16420000.0,
-     "band_at_U_c_0": 2.854e-13,
+     "margin": 6707000.0,
+     "band_at_U_c_0": 6.986e-13,
      "largest": 0.0005089,
      "home_plants": {
       "faceK": {
        "ratio": 0.009207,
-       "margin": 16420000.0
+       "margin": 6707000.0
       }
      }
     }
@@ -331,15 +331,15 @@
      "run": "ST1 pump direction, own ledgers off",
      "n_cell_Na": {
       "distance": 0.005927,
-      "margin": 87350000000.0
+      "margin": 316500000.0
      },
      "n_cell_K": {
       "distance": 0.004052,
-      "margin": 53550000000.0
+      "margin": 25050000.0
      },
      "voltage": {
       "distance": 0.04968,
-      "margin": 10720000000.0
+      "margin": 9606000.0
      }
     },
     "ST2 leak valence of Cl": {
@@ -501,13 +501,13 @@
      "voltage": {
       "pump": {
        "ratio": 0.003526,
-       "margin": 54060000.0
+       "margin": 48440.0
       }
      },
      "phi_out": {
       "faceK": {
        "ratio": 0.009207,
-       "margin": 16420000.0
+       "margin": 6707000.0
       }
      }
     }
@@ -521,8 +521,8 @@
      "home": false,
      "ratio": 0.01007,
      "ratio_from": "pump",
-     "margin": 327500000.0,
-     "band_at_U_c_0": 6.786e-14,
+     "margin": 1187000.0,
+     "band_at_U_c_0": 1.873e-11,
      "largest": 0.002207,
      "home_plants": {}
     },
@@ -530,8 +530,8 @@
      "home": false,
      "ratio": 0.009823,
      "ratio_from": "face",
-     "margin": 22960000.0,
-     "band_at_U_c_0": 2.268e-10,
+     "margin": 5073000.0,
+     "band_at_U_c_0": 1.026e-09,
      "largest": 0.5301,
      "home_plants": {}
     },
@@ -581,8 +581,8 @@
      "home": false,
      "ratio": 0.01082,
      "ratio_from": "pump",
-     "margin": 200000000.0,
-     "band_at_U_c_0": 7.566e-14,
+     "margin": 93520.0,
+     "band_at_U_c_0": 1.618e-10,
      "largest": 0.001398,
      "home_plants": {}
     },
@@ -590,8 +590,8 @@
      "home": false,
      "ratio": 0.009802,
      "ratio_from": "face",
-     "margin": 87800000.0,
-     "band_at_U_c_0": 1.713e-11,
+     "margin": 45420000.0,
+     "band_at_U_c_0": 3.313e-11,
      "largest": 0.1535,
      "home_plants": {}
     },
@@ -641,8 +641,8 @@
      "home": false,
      "ratio": 0.00811,
      "ratio_from": "leak",
-     "margin": 15520000.0,
-     "band_at_U_c_0": 4.495e-15,
+     "margin": 5608.0,
+     "band_at_U_c_0": 1.244e-11,
      "largest": 8.605e-06,
      "home_plants": {}
     },
@@ -650,8 +650,8 @@
      "home": false,
      "ratio": 0.009831,
      "ratio_from": "face",
-     "margin": 12780000.0,
-     "band_at_U_c_0": 2.898e-10,
+     "margin": 4101000.0,
+     "band_at_U_c_0": 9.028e-10,
      "largest": 0.3766,
      "home_plants": {}
     },
@@ -798,13 +798,13 @@
      "home": true,
      "ratio": 0.002774,
      "ratio_from": "pump",
-     "margin": 40660000.0,
-     "band_at_U_c_0": 4.633e-12,
+     "margin": 36430.0,
+     "band_at_U_c_0": 5.172e-09,
      "largest": 0.06793,
      "home_plants": {
       "pump": {
        "ratio": 0.002774,
-       "margin": 40660000.0
+       "margin": 36430.0
       }
      }
     },
@@ -812,13 +812,13 @@
      "home": true,
      "ratio": 0.009207,
      "ratio_from": "faceK",
-     "margin": 16420000.0,
-     "band_at_U_c_0": 2.854e-13,
+     "margin": 6707000.0,
+     "band_at_U_c_0": 6.986e-13,
      "largest": 0.0005089,
      "home_plants": {
       "faceK": {
        "ratio": 0.009207,
-       "margin": 16420000.0
+       "margin": 6707000.0
       }
      }
     }
@@ -938,13 +938,13 @@
      "voltage": {
       "pump": {
        "ratio": 0.002774,
-       "margin": 40660000.0
+       "margin": 36430.0
       }
      },
      "phi_out": {
       "faceK": {
        "ratio": 0.009207,
-       "margin": 16420000.0
+       "margin": 6707000.0
       }
      }
     }
@@ -958,8 +958,8 @@
      "home": false,
      "ratio": 0.0089,
      "ratio_from": "junction",
-     "margin": 67890000.0,
-     "band_at_U_c_0": 2.18e-15,
+     "margin": 24310.0,
+     "band_at_U_c_0": 6.089e-12,
      "largest": 1.663e-05,
      "home_plants": {}
     },
@@ -981,8 +981,8 @@
      "home": false,
      "ratio": 0.008306,
      "ratio_from": "junction",
-     "margin": 44560000.0,
-     "band_at_U_c_0": 2.863e-14,
+     "margin": 25170.0,
+     "band_at_U_c_0": 5.07e-11,
      "largest": 0.0001536,
      "home_plants": {}
     },
@@ -1004,8 +1004,8 @@
      "home": false,
      "ratio": 0.007752,
      "ratio_from": "junction",
-     "margin": 29390000.0,
-     "band_at_U_c_0": 2.502e-15,
+     "margin": 16060.0,
+     "band_at_U_c_0": 4.579e-12,
      "largest": 9.486e-06,
      "home_plants": {}
     },
@@ -1050,13 +1050,13 @@
      "home": true,
      "ratio": 0.002032,
      "ratio_from": "junction",
-     "margin": 39040000.0,
-     "band_at_U_c_0": 1.071e-12,
+     "margin": 24400.0,
+     "band_at_U_c_0": 1.713e-09,
      "largest": 0.02057,
      "home_plants": {
       "junction": {
        "ratio": 0.002032,
-       "margin": 39040000.0
+       "margin": 24400.0
       }
      }
     }
@@ -1116,7 +1116,7 @@
      "voltage": {
       "junction": {
        "ratio": 0.002032,
-       "margin": 39040000.0
+       "margin": 24400.0
       }
      }
     }
@@ -1130,8 +1130,8 @@
      "home": false,
      "ratio": 0.01005,
      "ratio_from": "pump",
-     "margin": 387100000.0,
-     "band_at_U_c_0": 7.654e-14,
+     "margin": 1581000.0,
+     "band_at_U_c_0": 1.873e-11,
      "largest": 0.002948,
      "home_plants": {}
     },
@@ -1139,8 +1139,8 @@
      "home": false,
      "ratio": 0.009823,
      "ratio_from": "face",
-     "margin": 20360000.0,
-     "band_at_U_c_0": 2.558e-10,
+     "margin": 4934000.0,
+     "band_at_U_c_0": 1.055e-09,
      "largest": 0.5301,
      "home_plants": {}
     },
@@ -1190,8 +1190,8 @@
      "home": false,
      "ratio": 0.01057,
      "ratio_from": "pump",
-     "margin": 236500000.0,
-     "band_at_U_c_0": 8.534e-14,
+     "margin": 124700.0,
+     "band_at_U_c_0": 1.618e-10,
      "largest": 0.001908,
      "home_plants": {}
     },
@@ -1199,8 +1199,8 @@
      "home": false,
      "ratio": 0.009802,
      "ratio_from": "face",
-     "margin": 77850000.0,
-     "band_at_U_c_0": 1.933e-11,
+     "margin": 42600000.0,
+     "band_at_U_c_0": 3.532e-11,
      "largest": 0.1535,
      "home_plants": {}
     },
@@ -1250,8 +1250,8 @@
      "home": false,
      "ratio": 0.01559,
      "ratio_from": "pump",
-     "margin": 17680000.0,
-     "band_at_U_c_0": 5.07e-15,
+     "margin": 7206.0,
+     "band_at_U_c_0": 1.244e-11,
      "largest": 5.737e-06,
      "home_plants": {}
     },
@@ -1259,8 +1259,8 @@
      "home": false,
      "ratio": 0.009831,
      "ratio_from": "face",
-     "margin": 11330000.0,
-     "band_at_U_c_0": 3.268e-10,
+     "margin": 3939000.0,
+     "band_at_U_c_0": 9.399e-10,
      "largest": 0.3766,
      "home_plants": {}
     },
@@ -1413,13 +1413,13 @@
      "home": true,
      "ratio": 0.003531,
      "ratio_from": "pump",
-     "margin": 47980000.0,
-     "band_at_U_c_0": 5.226e-12,
+     "margin": 48470.0,
+     "band_at_U_c_0": 5.172e-09,
      "largest": 0.071,
      "home_plants": {
       "pump": {
        "ratio": 0.003531,
-       "margin": 47980000.0
+       "margin": 48470.0
       }
      }
     },
@@ -1591,7 +1591,7 @@
      "voltage": {
       "pump": {
        "ratio": 0.003531,
-       "margin": 47980000.0
+       "margin": 48470.0
       }
      }
     }
@@ -1605,8 +1605,8 @@
      "home": false,
      "ratio": 0.01962,
      "ratio_from": "leak",
-     "margin": 212700000.0,
-     "band_at_U_c_0": 1.549e-13,
+     "margin": 1533000.0,
+     "band_at_U_c_0": 2.148e-11,
      "largest": 0.001669,
      "home_plants": {}
     },
@@ -1614,8 +1614,8 @@
      "home": false,
      "ratio": 0.01962,
      "ratio_from": "leak",
-     "margin": 212700000.0,
-     "band_at_U_c_0": 1.549e-13,
+     "margin": 132300.0,
+     "band_at_U_c_0": 2.489e-10,
      "largest": 0.001669,
      "home_plants": {}
     },
@@ -1637,8 +1637,8 @@
      "home": false,
      "ratio": 0.0208,
      "ratio_from": "pump",
-     "margin": 7524000.0,
-     "band_at_U_c_0": 2.126e-12,
+     "margin": 63750.0,
+     "band_at_U_c_0": 2.509e-10,
      "largest": 0.0005694,
      "home_plants": {}
     },
@@ -1646,8 +1646,8 @@
      "home": false,
      "ratio": 0.0208,
      "ratio_from": "pump",
-     "margin": 7524000.0,
-     "band_at_U_c_0": 2.126e-12,
+     "margin": 1732000.0,
+     "band_at_U_c_0": 9.233e-12,
      "largest": 0.0005694,
      "home_plants": {}
     },
@@ -1669,8 +1669,8 @@
      "home": false,
      "ratio": 0.02835,
      "ratio_from": "leak",
-     "margin": 13230000.0,
-     "band_at_U_c_0": 2.117e-14,
+     "margin": 15740.0,
+     "band_at_U_c_0": 1.779e-11,
      "largest": 7.755e-06,
      "home_plants": {}
     },
@@ -1678,8 +1678,8 @@
      "home": false,
      "ratio": 0.02835,
      "ratio_from": "leak",
-     "margin": 13230000.0,
-     "band_at_U_c_0": 2.117e-14,
+     "margin": 1313.0,
+     "band_at_U_c_0": 2.133e-10,
      "largest": 7.755e-06,
      "home_plants": {}
     },
@@ -1766,13 +1766,13 @@
      "home": true,
      "ratio": 0.003408,
      "ratio_from": "leak",
-     "margin": 8557000.0,
-     "band_at_U_c_0": 2.31e-11,
+     "margin": 70570.0,
+     "band_at_U_c_0": 2.801e-09,
      "largest": 0.0564,
      "home_plants": {
       "leak": {
        "ratio": 0.003408,
-       "margin": 8557000.0
+       "margin": 70570.0
       }
      }
     }
@@ -1876,7 +1876,7 @@
      "voltage": {
       "leak": {
        "ratio": 0.003408,
-       "margin": 8557000.0
+       "margin": 70570.0
       }
      }
     }

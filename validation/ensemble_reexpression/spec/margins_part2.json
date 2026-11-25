@@ -2,7 +2,7 @@
  "schema": "ensemble-reexpression margins, version 1",
  "part": 2,
  "date": "2026-11-25",
- "bands": "CRITERIA.md section 4.3 with U_c = 0 (the legacy side's own U_l, e_round and e_close)",
+ "bands": "CRITERIA.md section 4.3 with U_c = 0 (the legacy side's own U_l, e_round and e_close; e_store and phi_out's own e_close are added at the Part 2 tag)",
  "rule": "distance: the largest difference between a planted run and the honest control of the frozen snapshot at the same captured step, over the entry's entities and compared times. ratio: distance over the largest magnitude of the readout in the control (assembly: the smallest over the worlds of seed 0). margin: distance over the band at U_c = 0.",
  "worlds": {
   "spatial_calcium": {

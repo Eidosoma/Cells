@@ -31,13 +31,12 @@ runs, taken on 25 November 2026 from frozen snapshots of the engine. It holds do
 | `AMENDMENT-<n>-<date>.md` | Dated changes, the latest first. None exists at the criteria tag | Over every file above |
 
 **Files outside this folder that the registration uses,** all in `validation/ensemble_reexpression/`: the lead's
-`registered_strings.json` (the strings note, §"No registered ID here"), and the rehearsal's `inputs_rehearsal.json` and
-`registered_strings_rehearsal.json`. In `table-retry/`, the judge's `retry_owed.json`. In the judge's record, `power.json`.
+`registered_strings.json` (the strings note, §"No registered ID here"), and the rehearsal's files, which `SPEC.md` §8 lists with their makers and readers. In `table-retry/`, the judge's `retry_owed.json`. In the judge's record, `power.json`.
 
 ## Rules for every reader
 
 - **Who may read what** is the protocol's §3. Two lines matter most here.
-  - The builders' exporter is written from `TABLE.md` and `READOUTS.md` alone. The judge's reader is written from this folder alone.
+  - **The exporter's builder receives `TABLE.md`, `READOUTS.md`, `SPEC.md` and `inputs.json`.** The judge's reader is written from this folder alone.
     Neither reads the other's code.
   - The judge reads the captures, the planted legacy arrays and this folder. It reads no engine source and no builder's code.
 - **Value-silent about the candidate.** This folder holds legacy numbers (scales from the inputs, the legacy runs' own refinement,
@@ -50,22 +49,24 @@ runs, taken on 25 November 2026 from frozen snapshots of the engine. It holds do
 ## No registered ID here
 
 - **Every model, law, operator, solver and kind is named by a label** (for example `kv15_mh`, `junction_relaxation`). No file of this
-  folder holds a registered ID. The ID move comes last on the cleanup branch, and these files are hashed before it.
-- **The strings note** maps every label to the exact string that a run declares. The lead writes it after the move, with its own tag
-  (`TABLE.md` §5). It is the one file through which a string enters the judgement.
-- **This folder is frozen for the ID move,** because it holds nothing for the move to rewrite. A match in it is a fault of the move.
+  folder holds a registered ID.
+- **The strings note** maps every label to the exact string that a run declares. The lead writes it after the registration tag, with its own tag
+  (`TABLE.md` §5), and it holds **today's IDs**. It is the one file through which a string enters the judgement.
+- **The runs are made before the deletion and the ID move** (the protocol's §5). So the registered strings are today's IDs, and after the move one run per consumer on the final head must equal its registered table bit for bit: values by value, the IDs through the move's table. **This folder is frozen for the move,** because it holds nothing for the move to rewrite. A match in it is a fault of the move.
+
+**The order of work** is the protocol's §5. In short: the spec auditor, Part 1's criteria tag, the judge and its plants, the rehearsal, the registration tag, the strings tag, the floor guard with constants on the registered head's frozen snapshot, the campaign, the checker and the record, then what the user sees, then the deletion, the ID move and the full gate. Part 2's tag does not hold Part 1's.
 
 ## For the independent auditor: what to look at first
 
 The auditor reads this folder alone, and the captured arrays listed below. It comes before Part 1's criteria tag, and it asks its questions through the lead. It does not read the protocol, the engine or any other code.
 
 1. **`CRITERIA.md` §4.3 (the order table) and §4.5 (power).** Part 2's rule for a home with several plants and its two replaced homes (`PART2.md` §7.1 and §7.4) came after the planted runs had been read. That document says so, and so does the protocol's §11, which is not in this folder and which the auditor does not need.
-2. **`SPEC.md` §5 and §6:** the scales from the inputs alone, the rounding count 8 ε (S + 1) s, and the closure term, which is on the potentials (a floor solver's cap is not small as a current residual).
+2. **`SPEC.md` §4 to §6:** the grid rule and its tolerance, the scales and `stores` from the inputs alone, the rounding count 8 ε (S + 1) s, the term e_store that admits a state that stores amounts, and the closure term, which is on the potentials (a floor solver's cap is not small as a current residual) and has its own number for `phi_out`.
 3. **`READOUTS.md` §5 and `CRITERIA.md` §4.2 to §4.4:** the judged balances and energy identity of Part 1, restored from an uncommitted draft. Check the signs against the arrays.
-4. **`CRITERIA.md` §8 (the two sets of `base`) and §5 (faults, owners, the copy guard, who may hide a fail).**
+4. **`CRITERIA.md` §5 (where a partial run is judged, the copy guard, the owners, the counts), and §8 (the two sets of `base` and their members).**
 5. **The signs of `READOUTS.md` §2 and `PART2.md` §6:** the leak's and the channel's flip, `store_voltage` = −V_b, the sorted chemical axis, the lumped heats, the calcium channel's minus.
 6. **`TABLE.md` §3 `inputs.assembly`, and what is echo and what is class E** (`SPEC.md` §2.4).
-7. **`inputs.json` against the captured definitions:** amounts, charges, volumes, controls, the event path (`reference_paths.json`), the seeds.
+7. **`inputs.json` and the literal blocks (`SPEC.md` §2.5) against the captured definitions:** amounts, charges, volumes, controls, the event path (`reference_paths.json`), the seeds, the defaults.
 8. **The plants:** `margins.json` `mechanisms` against `PLANTS.md` §2, the structural plants' named entries, and the retry rule (`CRITERIA.md` §7).
 
 **Try to find:** an entry that an honest run would miss; a pass with nothing judged; a refusal, a stop or a missing run that hides a fail; a support run that owns a failing entry; a literal a rehearsal cannot meet; a number here that differs between two files.
@@ -90,3 +91,5 @@ Say these before anyone reads a pass as more than it is. The full list is the pr
 - Any form of the assembly coupling but the decided one (`SPEC.md` §3.3).
 - How a lumped heat divides among its parts.
 - A difference below a band.
+- **The time order and the step.** Part 1 does not show them: its S and identity entries sit at rounding, so the steps and the solver string are declared, and the order is the engine's own tests' claim (`CRITERIA.md` §1).
+- **The floor guard of the field solver.** It is made on the registered head's frozen snapshot before the first registered run, and this folder assumes nothing of its result.

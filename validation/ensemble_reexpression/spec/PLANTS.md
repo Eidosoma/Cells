@@ -7,7 +7,7 @@ moves because of a margin.
 
 - **A plant's distance** at an entry is the largest difference, over the compared times and entities, between a planted legacy run and the honest legacy run of the same world and the same
   captured step. Both are runs of the frozen snapshot. The **honest run is the control,** and the control equals the captured array bit for bit (§8).
-- **The band it is sized against** is the entry's β at U_c = 0: 2 U_l + e_round(S_c) + e_round(S_l) + e_close, with S_c the candidate's steps at h₃.
+- **The band it is sized against** is the entry's β at U_c = 0: 2 U_l + e_round(S_c) + e_round(S_l) + e_close + e_store(S_c), with S_c the candidate's steps at h₃ (and `phi_out`'s own e_close).
 - **The margin** is the distance over that band. The rule is **10 at the best entry.** A plant below it is enlarged or replaced by a dated line before the tag, stated, and no number of `CRITERIA.md` changes.
 - **The ratio** ρ(y) is the distance over the largest magnitude of the readout in the honest run. `margins.json` holds it. Power reads D(y) = ρ(y) × max |L₃| of the family.
 - **Observability.** A mechanism whose plant has no effect above its band in 20 ms is **not observable here**. It is then "not tested" in advance (`CRITERIA.md` §4.5), it is no home of any mechanism, and it is stated with the number.
@@ -19,13 +19,13 @@ moves because of a margin.
 | Mechanism | Home entries | Consumers that hold it |
 | --- | --- | --- |
 | Leak permeability | `leak_Na`, `leak_K`, `leak_Cl` | jupiter, cell, base |
-| Channel permeability | `channel_K` | jupiter, cell, base |
+| Channel permeability | `channel_K`, and `channel_K_summary` in base | jupiter, cell, base |
 | Channel kinetics | `gate_m`, `gate_h` | jupiter, cell, base |
 | Na/K pump | `pump` | jupiter, cell, base |
 | Junction permeability | `junction_Na`, `junction_K`, `junction_Cl` | jupiter, base, integrated |
 | Junction gate | `junction_gate` | jupiter, base, integrated |
 | Faces | `face_Na`, `face_K`, `face_Cl` | jupiter, base |
-| Electrical closure | `voltage`, and `phi_out` in jupiter | all, except where `phi_out` is absent |
+| Electrical closure | `voltage` (its plant is the one that moves it most: `PW-pump` in jupiter and base, `PW-leak` in cell, `PW-junction` in integrated), and `phi_out` in jupiter (`PW-faceK`) | all, except where `phi_out` is absent |
 
 - **Every mechanism must be tested in every consumer that holds it** (`CRITERIA.md` §8), except where §8 here states it is not observable. The judge reads them from `margins.json` (`mechanisms`), with the homes and each plant's ratio.
 - **The other entries** (`n_cell_x`, `n_out_x`, the heats) take the ratio of the plant that moves them most. They are not homes.
@@ -44,7 +44,7 @@ Each is a legacy run of the captured definition with that one change, on the leg
 | PW-leak | Every species' leak permeability of both membranes × 1.01 | `leak_x` |
 | PW-channel | Both channels' maximal permeability × 1.01 | `channel_K` |
 | PW-kinetics | Both gates' time constants × 1.01 (patch) | `gate_m`, `gate_h` |
-| PW-pump | Both pumps' capacity × 1.01 | `pump`, and the largest effect on `voltage` |
+| PW-pump | Both pumps' capacity × 1.01 | `pump` |
 | PW-junction | Every species' junction permeability × 1.01 | `junction_x` |
 | PW-jgate | The junction gate's threshold voltage × 1.01 | `junction_gate` |
 | PW-face | Every species' face diffusivity × 1.01, on every face | `face_x` |
@@ -88,30 +88,37 @@ A plant's block differs from its honest run's only by its change. Any other diff
 
 ## 6. The judge's plants (JP): altered copies of honest tables
 
-Formed by the judge from the honest tables, before the judge's tag and again on the registered tables. They cost no run.
+Each is an altered copy of an **honest table that the judge invents for its self-tests** (recorded as fabricated, from no engine run and no capture, the split of a heat among leak, pump and channel included; it is not a copy of a capture, since the copy guard would refuse that), and again of the registered tables. They cost no run.
+The author tried the plants that a JUPITER arm can carry, with a throwaway program, on fabricated tables made from the captured arrays at h, h/2 and h/4 with an invented heat split. Each scored as this table says.
 
-| Plant | Alteration | Must be |
+**How each is written.** A plant names the run it alters. It alters **rows only**, or the one leaf it names, and everything else of the table (echo, strings, `t`, `steps`, record, source) stays honest. "The path" is the reference path (`SPEC.md` §3.2), and the run's own path is named where it is meant. **A plant that the echo refuses is not a fail plant,** and its "must be" says refused. Where a plant says "in all three rungs" it alters h₁, h₂ and h₃ alike.
+
+| Plant | The run altered, and what | Must be |
 | --- | --- | --- |
-| JP1 | `leak_K` with the opposite sign | a fail of `leak_K` (S) |
-| JP2 | `heat_membrane` formed without `heat_pump` | a fail of `heat_membrane` (S) |
-| JP3 | `jupiter_baseline` read as `jupiter_pump_release` | a fail of `pump` |
-| JP4 | One value of one pool array moved by one unit (an integer by 1, a time by one unit in the last place) | a fail of class E |
-| JP5 | h₃'s rows copied from h₂'s | both runs refused (the copy guard), and the readouts judged |
-| JP6 | One run of a family refused, and a balance (R) of another run altered to fail | the fail stands |
-| JP7 | `heat_junction` set to zero | a fail of `heat_junction` (S) and of `energy_identity` (jupiter) |
-| JP8 | One event deleted from a path | a fail of class E, and of the schedule |
-| JP9 | An echo with one number off by 10⁻⁹ | refused, and nothing of the run judged |
-| JP10 | An echo with its maps in another order, a 4 for a 4.0, and a schedule with a repeated value | not refused |
-| JP11 | A judged run's `status` a `check` refusal | a stop, and a fail |
-| JP12 | A support run missing | the consumer at best inconclusive |
-| JP13 | A `record_sha256` shared by two runs | both refused, readouts judged |
-| JP14 | One S series of h₁ shifted by the size of a rounding, and the other two honest | the entry's class is by the rule, and no fail is invented |
-| JP15 | One `channel_K` of `base s0 w0` altered so that it fails, every blind family honest | `base` fails, and the record shows that its 30 blind families pass |
-| JP16 | `base s0 w0` refused, every blind family honest | `base` inconclusive, and the record shows that its 30 blind families pass |
-| JP17 | An ionic run of `base` whose `switch_list` and `controls.channel` differ by one entry | a fail of class E at the one that departs from the path, and the other entry passes |
-| JP18 | An ionic run of `base` whose `assembly_observable` string differs by one character from the strings note's | refused, and nothing of the run is judged |
-| JP19 | One `junction_K` of `jupiter_baseline` raised by 10⁻⁶ of its largest value, the rest honest | a fail of `junction_K` (S), and of the two cells' balances (R) |
-| JP20 | One `work_pump` scaled by 1.01 | a fail of `energy_identity`, and of no S entry against a capture |
+| JP1 | `jupiter_baseline`, all three rungs: the rows `leak_K` negated | a fail of `leak_K` (S), and of the balances of both cells and of the region they face (R) |
+| JP2 | `jupiter_baseline`, all three rungs: the rows `heat_pump` set to zero | a fail of `heat_membrane` (S), and of `energy_identity` |
+| JP3 | `jupiter_pump_release`, all three rungs: the rows and potentials replaced by `jupiter_baseline`'s of the same step, the echo and the strings left honest | a fail of `pump` (S), and not refused |
+| JP4 | One pool run (`base s1 pool`): one value of one array moved by one unit (an integer by 1, a time by one unit in the last place) | a fail of class E of that array, for that run |
+| JP5 | `jupiter_baseline`, h₃: its class S rows replaced by h₂'s class S rows, the potentials and the identities' other rows left as they are | both runs refused by the copy guard (a), their readouts judged, for the checker to settle |
+| JP6 | `jupiter_baseline`: h₁ refused (kind `harness`, no row), and one `n_cell_K` of h₃ raised by 10⁻⁶ of its largest value | the fail of h₃'s balances stands, and `jupiter` fails |
+| JP7 | `jupiter_baseline`, all three rungs: the rows `heat_junction` set to zero | a fail of `heat_junction` (S) and of `energy_identity` |
+| JP8 | `base s0 pool`: one event deleted from the run's own path of world 2, `cell_0` | a fail of class E of the run's own path for that run. The schedule entries of the ionic runs, which compare with the reference path, are not touched |
+| JP9 | `jupiter_baseline`, h₁: one number of `inputs` moved by 10⁻⁹ of itself | refused, and nothing of the run judged. Not a fail plant |
+| JP10 | `jupiter_baseline`, h₁: an echo with its maps in another order, a 4 for a 4.0, a default omitted, and a schedule with a repeated value | not refused |
+| JP11 | `jupiter_baseline`, h₁: `status` `"refused"`, kind `check` | a stop, and a fail (D). The rows it holds are judged |
+| JP12 | The support run `jupiter_baseline h=2.5e-05 restart` missing | the consumer at best inconclusive |
+| JP13 | `integrated`, h₁ and h₂: the same `record_sha256` | both refused, readouts judged |
+| JP14 | `jupiter_baseline`, h₁: one series `leak_K` shifted by 2⁻⁵² of its largest value, the other two rungs honest | the entry's class is by the rule, and no fail is invented |
+| JP15 | `base s0 w0`, all three rungs: the rows `channel_K` multiplied by 1.01, every blind family honest | `base` fails, and the record shows that its 30 blind families pass |
+| JP16 | `base s0 w0`, h₁, refused (kind `domain`), every blind family honest | `base` inconclusive, and the record shows that its 30 blind families pass |
+| JP17 | `base s1 w0`, h₃: one change deleted from `switch_list` alone | a fail of class E of the switch list. The channel schedule's entry passes |
+| JP18 | `base s1 w0`, h₃: one character of the `assembly_observable` string changed, and the label kept | refused, and nothing of the run judged. Not a fail plant |
+| JP19 | `jupiter_baseline`, all three rungs: one `junction_K` (the last time) raised by 10⁻⁴ of its largest value | a fail of `junction_K` (S), and of the balances of the two cells (R) |
+| JP20 | `jupiter_baseline`, all three rungs: the rows `work_pump` multiplied by 1.01 | a fail of `energy_identity`, and of no S entry against a capture |
+| JP21 | `jupiter_baseline`, h₂: its class S rows replaced by the captured rows of `jupiter_baseline-h2` | refused by the copy guard (b), its readouts judged |
+| JP22 | EP1's rows made equal to its honest run's (`jupiter_baseline`, h₃) | EP1 is not caught, and `jupiter` fails |
+| JP23 | `integrated`, h₃: an extra string in `declared_strings` | refused, and nothing of the run judged. Not a fail plant |
+| JP24 | `jupiter_baseline`, h₃: `steps` one more than end_s/step_s | refused (the reason `off_grid_change`), its readouts judged |
 
 **A judge's plant that the code scores otherwise stops the judge's tag.**
 
@@ -147,9 +154,9 @@ sha256, and `margins.json` the numbers below, entry by entry. No band, class or 
 | junction permeability | 8.6e-03 to 9.3e-03, 2e+07 | 8.4e-03 to 9.3e-03, 2e+07 | 8.7e-03 to 9.4e-03, 6e+07 | 7.8e-03 to 9.3e-03, 1e+07 |  |
 | junction gate | 5.6e-04, 3e+07 | 5.7e-04, 3e+07 | 9.8e-04, 1e+08 | 5.6e-04, 3e+07 |  |
 | faces | 9.8e-03 to 9.9e-03, 2e+07 | 9.8e-03 to 9.9e-03, 2e+07 |  | 9.8e-03 to 9.9e-03, 1e+07 |  |
-| electrical closure | 3.5e-03 to 9.2e-03, 2e+07 | 2.8e-03 to 9.2e-03, 2e+07 | 2.0e-03, 4e+07 | 3.5e-03, 5e+07 | 3.4e-03, 9e+06 |
+| electrical closure | 3.5e-03 to 9.2e-03, 5e+04 | 2.8e-03 to 9.2e-03, 4e+04 | 2.0e-03, 2e+04 | 3.5e-03, 5e+04 | 3.4e-03, 7e+04 |
 
-- **Every mechanism of every consumer is observable.** The smallest margin of any entry (home or not) is 1.1 × 10⁵, against the rule of 10. The weakest homes are `channel_K` in `base` and `cell` (the band is set by the gross throughput, and the channel's net amount is small) and the gate h (a ratio of 2 × 10⁻⁵ to 3 × 10⁻⁵, because it moves little in 20 ms), for which `gate_m` is the other home.
+- **Every mechanism of every consumer is observable.** The smallest margin of any entry (home or not) is 1.3 × 10³ (`n_out_Cl` of `cell`), against the rule of 10, and the smallest of any home is 2 × 10⁴ (`voltage` of `integrated`). The entries that read an amount carry e_store (`SPEC.md` §6), which makes their margins 10² to 10⁴ times smaller than a band without it, and leaves them above 10³. Otherwise the weakest homes are `channel_K` in `base` and `cell` (the band is set by the gross throughput, and the channel's net amount is small) and the gate h (a ratio of 2 × 10⁻⁵ to 3 × 10⁻⁵, because it moves little in 20 ms), for which `gate_m` is the other home.
 - **`voltage`** is a home of the electrical closure, which has no constant of its own. Its plant is the one that moves it most (`PW-pump`, `PW-leak` or `PW-junction`).
 - **An assembly's plant (PW-pool).** The snapshot's own pool, run alone, with one rate × 1.01: the four arrays `last_event_time_s`, `pending_time_s`, `dwell_completed_s` and `first_passage_s` change for every rate in both pools of `base`, and for the on, off and close rates in `cell` (the last event's time moves in 37, 37 and 23 of its 64 worlds). In `cell` the dissolve rate moves one array (`pending_time_s`) and no event time. No rate changes an event count in 20 ms. So every rate is observable in class E, which has no margin. The runs and their sha256 are in `plants_manifest.json` (`pool_plants`).
 
@@ -157,7 +164,7 @@ sha256, and `margins.json` the numbers below, entry by entry. No band, class or 
 
 | Plant | Named entry: distance, margin |
 | --- | --- |
-| ST1 pump direction (`jupiter_baseline`) | `n_cell_Na`: 5.9e-03, 9e+10; `n_cell_K`: 4.1e-03, 5e+10; `voltage`: 5.0e-02, 1e+10 |
+| ST1 pump direction (`jupiter_baseline`) | `n_cell_Na`: 5.9e-03, 3e+08; `n_cell_K`: 4.1e-03, 3e+07; `voltage`: 5.0e-02, 1e+07 |
 | ST2 leak valence of Cl (`jupiter_baseline`) | `leak_Cl`: 1.5e-04, 4e+10 |
 | ST3 inactivation gate left out (`jupiter_baseline`) | `channel_K`: 1.3e-06, 1e+08 |
 | ST4 junction voltage sign (`jupiter_baseline`) | `junction_Na`: 4.7e-06, 8e+09; `junction_K`: 7.9e-05, 9e+09; `junction_Cl`: 4.2e-06, 8e+09 |

@@ -11,9 +11,10 @@
 
 - ε = 2⁻⁵². s is a readout's scale (`inputs.json` `scales`; `SPEC.md` §5).
 - S_c = end_s/h₃, the candidate's steps to the end at its finest judged step. S_l = end_s/(the captured h/4). **Both from the registered grids,** never from a table.
-- p is the declared order of the candidate: 4 for an RK4 family, 2 for an IMEX family. Legacy's is 4.
-- e_round(S) = 8 ε (S + 1) s. e_close = 4 × 10⁻¹² s. (`SPEC.md` §6 derives both.)
+- p is the declared order of the candidate (`inputs.json` `worlds.<w>.p`: 4 for an RK4 family, 2 for an IMEX family). Legacy's is 4.
+- e_round(S) = 8 ε (S + 1) s. e_close = 4 × 10⁻¹² s, but for a readout that `inputs.json` `closure_terms_V` names (`phi_out`), where it is that number. e_store(S) = 2.5 ε (S + 1) × the entry's `stores`, and 0 where it has none. (`SPEC.md` §6 derives all three.)
 - **An entry** is one readout of one family, over all of its entities and compared times, or one equality, identity or completion.
+- **The time order and the step of a Part 1 run are not shown by its values.** Its S and identity entries sit at rounding, so the steps and the solver string are declared, and the order is the engine's own tests' claim. This is a limit, and README's and the protocol's "cannot show" lists say it.
 
 ## 2. Rungs and families
 
@@ -35,15 +36,14 @@ No ruling assigns a class to a run's entry after a run. Two of the lead's ruling
 
 ### 4.1 E, equal
 
-Every value equals the named value.
+Every value equals the named value. "The path" is the reference path (`SPEC.md` §3.2).
 - **The pool's 19 arrays** of every pool run equal the captured ones (READOUTS §4), over all its worlds.
-- **The event path** of every world and cell equals `reference_paths.json`'s, event by event: the same number, the same times, the same availabilities.
-- **The switch list and the channel schedule.** Both the `switch_list` that an ionic run of `cell` or `base` records and the schedule its definition was parsed with (`controls.channel`), with the entries that repeat the value before them removed, equal the path's changes of that
-  world and that cell. Their times are the path's doubles. Each is an entry of its own.
-- **The seeds:** the echoed `pools.<cell>.seed` of a pool run, and the `pool_seeds` that an ionic run of `cell` or `base` records, equal `inputs.json`'s for their seed index.
+- **The event path** of every world and cell, the run's own, equals the reference path, event by event: the same number, the same times, the same availabilities.
+- **The switch list and the channel schedule.** Both the `switch_list` that an ionic run of `cell` or `base` records and the schedule its definition was parsed with (`controls.channel`) equal the changes of that world's and that cell's path, as `SPEC.md` §3.2 compares them (the initial entry [0, 1] set apart, the repeats removed). Their times are the path's doubles. Each is an entry of its own.
+- **The seeds:** a pool run's recorded `seed`, and the `pool_seeds` that an ionic run of `cell` or `base` records, equal `inputs.json`'s for their seed index. The seed is class E, not echo (`SPEC.md` §2.4).
 - **Structural zeros:** `n_out_x` of `integrated`, every row.
 - **Restarts** (support runs), over every class S readout and the potentials, at every compared time after the restart's time, and at that time if the resumed run holds a row there:
-  equal to the uninterrupted run of the same step. The pool restart: the 19 arrays at 0.02 s, and the path after the restart's time.
+  equal to the uninterrupted run of the same step. The pool restart: the 19 arrays at `end_s`, and the run's own path after the restart's time. **The table row alone does not decide it.** The checker confirms from the run's own record that it reloaded a written checkpoint. Without that, the entry is inconclusive.
 - **An integer array is compared as integers, a double as doubles.** A JSON 4 equals 4.0, and a value printed in two ways that read to one double is equal.
 
 ### 4.2 R, rounded
@@ -51,7 +51,7 @@ Every value equals the named value.
 |value − expected| ≤ the bound READOUTS §5 gives, at every compared time and every entity, in **every judged run that ran** (a retry's too), whatever its step. A support run's and a plant run's are reported, a miss is flagged to the checker, and they own no entry.
 - The step count S in the bound is the run's own grid's, end_s over its step.
 - The balances use the run's own rows. The exposure uses the run's own event path, over every world and cell of the pool run.
-- **The balances are Part 1's.** In Part 2 they are reported and not judged (`PART2.md` §9).
+- **The balances are Part 1's.** In Part 2 they are reported and not judged.
 
 ### 4.3 S, stepped
 
@@ -61,7 +61,7 @@ For a family and an entry, over its compared times and entities, with Y₁, Y₂
 
     d₂ˡ = max |L₂ − L₁|,  d₁ˡ = max |L₃ − L₂|,  U_l = max( d₁ˡ/15,  d₂ˡ/240 ),                 L* = L₃ + (L₃ − L₂)/15
 
-    β = 2 (U_l + U_c) + e_round(S_c) + e_round(S_l) + e_close
+    β = 2 (U_l + U_c) + e_round(S_c) + e_round(S_l) + e_close + e_store(S_c)
 
 **Pass:** max |Y* − L*| ≤ β.
 
@@ -69,7 +69,8 @@ For a family and an entry, over its compared times and entities, with Y₁, Y₂
   - **the floor of 64 ulp × max|X| is replaced** by e_round and e_close. Legacy's own runs refute that floor: between its own h/2 and h/4, arrays at rounding differ by up to about 3000 ulp of their
     largest entry. The two terms come from a count and from two declared acceptance constants (`SPEC.md` §6), and they are kept apart from the truncation term;
   - the error estimates take the **larger of the two step-halving pairs** (D271, D334).
-- **`energy_identity`** (Part 1): L* = 0, U_l = 0, and β = 2 U_c + 8 ε (S_c + 1) s + 4 × 10⁻¹² s.
+- **`energy_identity`** (Part 1): L* = 0, U_l = 0, and β = 2 U_c + 8 ε (S_c + 1) s + 4 × 10⁻¹² s + e_store(S_c).
+- **The state form.** An entry that reads an amount has a band with e_store and a band without it. The judge forms both. **Only the band with e_store decides.** A statistic inside it and outside the other is flagged to the checker as `state form`: the engine stores otherwise than its documentation says. In the rehearsal (`SPEC.md` §8) that flag is a finding to settle before the registration tag.
 - Every compared time needs one row in each run the entry needs (within 10⁻¹² s). Where one is missing, or there are two, the entry is not formed (§5), and no time is dropped from it.
 
 **The order rule.** Let θ = 10 × 8 ε (S_c + 1) s.
@@ -80,6 +81,8 @@ For a family and an entry, over its compared times and entities, with Y₁, Y₂
 | exactly one ≤ θ | **mixed** | at most β: **inconclusive by order**. Above β: it fails |
 | both > θ, and q = log₂(d₂/d₁) lies in [p − ½, 4½] | **resolved** | β alone |
 | both > θ, and q outside that window | **resolved outside its window** | **inconclusive by order, whatever its error.** Never a pass |
+
+- **What the order rule cannot say in Part 1.** Its S and identity entries sit at rounding at every registered step, so every one is unresolved, and the order of the candidate is not shown by them (§1).
 
 - **Why 4½.** The low edge is D271's (p less its half). The high edge comes from the schemes. For RK4 it is p plus the half. A symmetric composition of order 2 has an error expansion in even powers,
   so the only higher order that can appear is 4, and FR-25's and FR-38's orders of 3.7 to 3.9 are of this kind. The cap of 3½ made them inconclusive, and here a looser cap costs
@@ -99,8 +102,8 @@ allowance, and stops at the first that fails. That rule is a criterion. No absol
 
 ### 4.5 P, power, judged first (D366)
 
-**Stage 1 of the judgement.** From the runs' own rows and the captures' own refinement, and before any difference between a run and a capture is formed, the judge forms every entry's U_c and β, and its class under §4.3's table. It
-writes `power.json` and the lead records its sha256. Stage 2 forms the differences.
+**Stage 1 of the judgement. Stage 1 reads the tables' own rows to form scales, and forms no difference between a candidate and a capture; `power.json` is hashed before the first difference.** The scales it forms are the run's own step-halving estimates (U_c) and, from them and `inputs.json`'s scales and `stores`, every entry's β and its class under §4.3's table. The captures' own refinement (U_l) is already in `legacy_part1.json`. It
+writes `power.json`, and the lead records its sha256. Stage 2 forms the differences.
 
 - **The planted distance D(y)** of an entry is the size of the effect that a 1 % change in one rate constant has on it, on the legacy side alone. `margins.json` gives a ratio ρ(y) (a planted change's
   effect over the readout's own magnitude, from planted legacy runs or by arithmetic; `PLANTS.md`), and D(y) = ρ(y) × max |L₃| of that entry's family. No run enters it.
@@ -114,31 +117,38 @@ writes `power.json` and the lead records its sha256. Stage 2 forms the differenc
 
 ## 5. Faults and refusals
 
-**Nothing hides a fail.** Every entry that can be formed is judged. If any judged entry fails, its run fails, whatever else of that run or of its support is refused, stopped or missing.
+**A refusal never hides a fail.** Every entry that can be formed is judged. If any judged entry fails, its run fails, whatever else of that run or of its support is refused, stopped or missing.
 
 | Fault | What follows |
 | --- | --- |
-| The echo (`inputs`, but the items that `SPEC.md` §2.4 gives to class E; `strings`, `world`, `seed_index`, `world_id`, `step_s`) departs from the registered run (`SPEC.md` §2.4; the strings note exactly) | The run is **refused, and nothing of it is judged.** It is not the registered one |
-| Provenance: `source` incomplete, `checkout_dirty` true, a missing `record_sha256` or snapshot, an `engine_revision` that is not the strings note's, a `snapshot_patch_sha256` other than an empty file's, a non-null `host_patch`, a `t` that does not strictly increase, `steps` outside its range (`TABLE.md` §3), a status that disagrees with `refusal`, a shared `record_sha256` | The run is **refused,** its readouts are judged and a fail stands |
+| The echo (`inputs`, but the items that `SPEC.md` §2.4 gives to class E; `strings`, `world`, `seed_index`, `world_id`, `step_s`) departs from the registered run (`SPEC.md` §2.4; the strings note exactly, `TABLE.md` §5) | The run is **refused, and nothing of it is judged.** It is not the registered one |
+| Provenance: `source` incomplete, `checkout_dirty` true, a missing `record_sha256` or snapshot, an `engine_revision` that is not the strings note's, a `snapshot_patch_sha256` other than an empty file's, a non-null `host_patch`, a `t` that does not strictly increase, `steps` outside its range (`TABLE.md` §3; a step list that splits at an off-grid change is refused with the reason `off_grid_change`), a status that disagrees with `refusal`, a shared `record_sha256` | The run is **refused,** its readouts are judged and a fail stands |
 | A judged leaf missing, mistyped or non-finite, or a registered time with no row, or with two | That **entry is not formed**. The rest of the run is judged |
 | A recorded-only leaf missing, mistyped or non-finite | Flagged to the checker |
-| Two runs of one family whose class S series and potentials are **bit-identical at every compared time** | Both are **refused** (a copy). Their readouts are judged |
-| A refused entry of kind `domain`, `definition` or `harness` | **Refused** |
-| A refused entry of kind `check` | A **stop:** it fails if the run is judged (§4.4) |
+| **The copy guard** (below) | The run, or both runs, are **refused** for the checker to settle. Their readouts are judged |
+| A refused entry of kind `domain`, `definition` or `harness` | **Refused** (below) |
+| A refused entry of kind `check` | A **stop:** it fails if the run is judged (§4.4), and its rows are judged |
 | A run in `missing`, or in neither list, across all of a consumer's tables | **Refused** |
 | A run name that `inputs.json` does not list, and the retry's rule does not register | Ignored, recorded and flagged |
 | A duplicated key anywhere in a file | The file is refused, and every run of it |
 
-- **A refused run cannot pass.** With no failing entry its consumer is at best inconclusive, and so is every S entry that needs it. The entry cannot be formed and is neither passed nor failed.
+- **The copy guard** is a harness check, not a fraud check. It reads class S rows alone (not the potentials, not the identities), at every compared time. It compares: (a) two rungs of one family, and (b) a run and its capture (the captured rows of its own world at each captured step). An **exact equality** of all of a run's class S rows is a refusal of that run (both runs in (a)), for the checker to settle: it reads the run's own record and reruns that run. If the rerun says the run is genuine, the lead's dated note lifts the refusal.
+  It does not compare families with each other: honest duplicates exist, where families share one constant schedule. It does not compare a plant with the run it was planted in: **a plant that equals the run it was planted in is not caught,** and not unscorable.
+- **Where a partial run is judged, by name.** A run that is refused, or whose rows are partial, is judged on what it holds, so that no refusal hides a fail:
+  - **a departing echo:** nothing of the run is judged, and its family's S entries are not formed. Such a run is not the registered world, and the checker sees the departure and its cause;
+  - **missing or doubled rows or leaves:** the entries that need them are not formed, and the rest of the run is judged;
+  - **a refused run of kind `definition`, `domain` or `harness`:** its readouts are judged on the rows it holds. Every class R and E entry that can be formed is judged, and a fail stands. An S entry that needs rows it does not hold is not formed. It is inconclusive and is counted below. D is not judged, since a refusal is not a stop;
+  - **a stop (kind `check`):** the run fails by D, and its rows are judged for R and E;
+  - **a refused run of provenance or of the copy guard:** the same, with its D judged.
+- **A fail can go unseen in two places only:** a departing echo (nothing of the run is judged) and a missing or doubled row or leaf (the entry that needs it is not formed). Both leave the consumer at best inconclusive, and the checker sees both.
+- **A refused run cannot pass.** With no failing entry its consumer is at best inconclusive.
 - **A refused or missing support run** leaves its consumer at best inconclusive. It does not refuse the run it supports.
-- **The one place a fail can go unseen** is a departing echo. It leaves nothing of that run judged, and its family's S entries are not formed. It is kept: such a run is not the registered
-  world. The checker sees the departure and its cause.
-- **The owner of an entry.** An S entry and its `energy_identity` belong to the run at h₃. A D entry belongs to its own run, and so do a judged run's balances (class R). The exposure belongs to its pool run. A restart's E entry belongs to the judged run it resumes, never to the support run. The exposure, the path and the pool's arrays belong to the pool run. The switch list's, the channel schedule's and the recorded seeds' E entries belong to the ionic run that records them, and a pool run's seeds to the pool run.
-- **Nothing passes empty.** A consumer's S entries that were formed are counted. If they are fewer than READOUTS §3 lists, the consumer is at best inconclusive. A plant whose named entry is not formed is unscorable, never caught.
+- **The owner of an entry.** An S entry and its `energy_identity` belong to the run at h₃. A D entry belongs to its own run, and so do a judged run's balances (class R). The exposure belongs to its pool run. A restart's E entry belongs to the judged run it resumes, never to the support run. The exposure, the path and the pool's arrays belong to the pool run. The switch list's, the channel schedule's and the recorded seeds' E entries belong to the ionic run that records them, and a pool run's seed to the pool run.
+- **Nothing passes empty.** A consumer's entries that were formed are counted, by class: S and `energy_identity` against the number READOUTS §3 lists, R against READOUTS §3's count per judged run, and E against the number `inputs.json` implies (READOUTS §4 and §3). If any is fewer, the consumer is at best inconclusive. A plant whose named entry is not formed is unscorable, never caught.
 
-**C0, before any table is read:** the judge reads `inputs.json`, `legacy_part1.json`, `reference_paths.json`, `margins.json` and the manifest, and the captures they name. It checks every sha256, every key, the scales
-against the rule, the legacy side's classes against the rule (§4.3), and that every mechanism has a home entry with a ratio. A fault is named and refused. The order of reading is the lead's: the
-tables' hashes are recorded, then C0, then stage 1, then the tables are opened for stage 2.
+**C0, before any table is read:** the judge reads `inputs.json`, `legacy_part1.json`, `reference_paths.json`, `margins.json` and the manifest, and the captures they name. It checks every sha256, every key, the scales and `stores`
+against their rules, the legacy side's classes against the rule (§4.3), that every mechanism has a home entry with a ratio, and the power check with U_c = 0 (every margin of `margins.json` re-formed from the planted runs it names). A fault is named and refused. The order of reading is the lead's: the
+tables' hashes are recorded, then C0, then stage 1, then the tables are opened for stage 2. **Stage 1 reads the tables' own rows to form scales, and forms no difference between a candidate and a capture; `power.json` is hashed before the first difference.**
 
 ## 6. The plants
 
@@ -148,8 +158,8 @@ tables' hashes are recorded, then C0, then stage 1, then the tables are opened f
 | --- | --- | --- |
 | **Power plant** (PW) | A planted legacy run with one rate constant × 1.01, or a stated kinetic constant. It gives ρ(y) | Before any run. No candidate run |
 | **Structural plant** (ST) | A planted legacy run with one wrong factor (a factor missing, a sign, a valence, an exponent, a wrong owner) | The **honest** candidate's Y* against the planted legacy run P (at the captured finest step in Part 1, at 12.5 µs in Part 2), over the entry's compared times, at every named entry |
-| **Engine plant** (EP) | A run of the candidate with one declared change | Its Y₃ (finest step, not extrapolated) against L*, with the **honest** family's β, at every named entry |
-| **Judge's plant** (JP) | An altered copy of an honest table (a sign, a lump, a copied run, a moved value) | Caught when the judge's rules score it as the text says |
+| **Engine plant** (EP) | A run of the candidate with one declared change | Its Y₃ (finest step, not extrapolated) against L*, with the **honest** family's β, at every named entry. If its class S rows equal the run it was planted in, it is **not caught** |
+| **Judge's plant** (JP) | An altered copy of an honest table. It names the run it alters, and alters rows only (or the one leaf it names) | Caught when the judge's rules score it as the text says: refused, failed or inconclusive |
 
 - **A plant is scored with the honest family's β,** never its own. The **registered distance** of a structural or engine plant at a named entry is the legacy side's (`margins.json`).
   - Where the registered distance is at most 2 β, the comparison cannot see that plant there, and the plant is **unscorable**. It is never called caught or not caught, and it leaves its consumer at best inconclusive.
@@ -180,8 +190,8 @@ tables' hashes are recorded, then C0, then stage 1, then the tables are opened f
 - **`base` is reported in two sets.** A design author ran world IDs 0 and 1 in composed form against legacy, at the configuration's own pool seeds, before this folder's tag (the protocol's §11). Those seeds (20260925 for cell 0's stream and 20260926 for cell 1's) are the captured seed index 0's. So `base s0 w0` and `base s0 w1` are **not blind**, and the other 30 families are.
   - **The verdict of `base` is the worse of its two sets' verdicts,** each formed by this section from its own families. A fail in either fails it, and an inconclusive in either leaves it inconclusive.
   - **The 30 must pass by themselves,** with every mechanism tested by a home entry of one of them. The two add nothing to a pass.
-  - **The pool run `base s0 pool`** holds both worlds among its 8. Its entries are marked in the record and are judged as any other.
-  - The record gives both sets' verdicts side by side, with their counts. No plant of `base` is scored on the two (ST6, ST10 and EP2 use world 2).
+  - **Members of both sets, by name:** the pool runs `base s0 pool`, `base s1 pool`, `base s2 pool` and `base s3 pool`, the support run `base s0 pool restart`, the plant `base plant swapped`, and the plants ST6 and ST10 of `base`. Their entries count in both sets' verdicts. `base s0 pool` holds the two worlds among its 8, and its entries are marked in the record.
+  - The record gives both sets' verdicts side by side, with their counts and their members. No plant of `base` is scored on the two worlds (ST6, ST10 and EP2 use world 2).
   - **`jupiter_baseline` is the same ionic world as `base`,** value for value, with the channels open throughout. What a prototype showed on `base` bears on it, and the record says so beside its verdict. No entry of `jupiter` was run.
 - **An inconclusive verdict is not a fail.** The retry is the only answer to it.
 - **The record** lists, for every entry: consumer, family, run, readout, class, statistic, band, their ratio, d₁, d₂, q, the order's class, U_c, the planted distance and whether it is tested, and the verdict. Then every refusal, stop and flag with its cause, every plant's margin and score, and the count of judged entries
@@ -196,7 +206,7 @@ tables' hashes are recorded, then C0, then stage 1, then the tables are opened f
   - The largest ratio and the entities it lies at go to a labelled, non-blind diagnosis, by someone other than the author, the builders, the judge and the checker. It names the equation or the bound.
   - **A bound that the count left out is corrected only at the rehearsal** (§10), never after a registered run. A miss that a registered run shows is recorded as a miss.
 - **A miss in class R on a balance, or of `energy_identity`** (READOUTS §5, Part 1), with the engine's own checks passing, says that the exporter's rows and the engine's ledgers disagree, or that the engine's allowance is looser than the count. It fails its run, and a labelled, non-blind diagnosis follows. In Part 2 a reported identity that a run misses is a question for the checker, and decides nothing by itself.
-- **A miss in class R on the capacitor** says that the voltage's solve and the charge it was made from disagree beyond the closure term. It fails its run.
+- **A miss in class R on the capacitor** says that the voltage's solve and the charge it was made from disagree beyond the closure term, or that the engine stores otherwise than its documentation says (the `state form` flag, §4.3). It fails its run.
 - **A consumer that fails, or is inconclusive after the retry, is reported to the user before any landing,** and the landing of the deletion waits for the user's decision on it (the lead's ruling of 25 November). The pre-cleanup tag keeps its legacy code in either case, and its capture and its snapshot hold it.
 - A miss is never dropped, rescaled or re-run at another step. Any new run is a new registration, with this one's record beside it.
 
@@ -205,7 +215,7 @@ tables' hashes are recorded, then C0, then stage 1, then the tables are opened f
 **The rehearsal** is the judge's whole scoring path, run on the invented worlds of `inputs_rehearsal.json` through the registered exporter, with the frozen legacy snapshot's runs on the same definitions as the reference side. It comes after
 the criteria tags and the judge's tag, and before the registration tag. It must: pass every honest entry, catch every plant that can be formed, take every refusal and stop as this file says, and flag every fault of §5 (planted
 copies of the table included).
-- **No final fail can rest on a bound that the rehearsal has not met.** The counts of `SPEC.md` §6 are derived without the engine's arithmetic. A bound that an honest invented run misses is a defect (of the exporter, the judge, the engine or the reference side), found and fixed, or a bound to correct as below.
+- **No final fail can rest on a bound that the rehearsal has not met.** The counts of `SPEC.md` §6 are derived without the engine's arithmetic. A bound that an honest invented run misses is a defect (of the exporter, the judge, the engine or the reference side), found and fixed, or a bound to correct as below. **A `state form` flag at the rehearsal is a finding** (§4.3): the engine stores otherwise than its documentation says, and it is settled before the registration tag.
 - **A route to correct a bound.** Before the registration tag, and only when an honest invented run at the rehearsal misses it, a count or a constant is corrected by a dated amendment that re-derives it from a stated reason (a path of operations the count left out), shows the derivation, is disclosed with the
   run that showed it, and re-tags this folder and the judge. It never fits a run, never sets a bound to an observed value times a margin, and changes no class and no window. After a registered run no bound moves for any reason.
 - A rehearsal is evidence for the harness and the bounds. It is none for or against a consumer.
