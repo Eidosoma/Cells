@@ -37,7 +37,7 @@ def _parser() -> argparse.ArgumentParser:
         "stationary", help="opt-in stationary states, stability and continuation (read-only)"
     )
     commands.add_parser(
-        "declarations", help="write the declarations manifest (cells.declarations@1)"
+        "declarations", help="write the declarations manifest (cells.declarations@3)"
     )
     validate = commands.add_parser("validate", help="validate a definition and its resource bounds")
     validate.add_argument("config", type=Path)

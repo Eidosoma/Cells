@@ -1,4 +1,4 @@
-# The declarations manifest's format (`cells.declarations@2`)
+# The declarations manifest's format (`cells.declarations@3`)
 
 The declarations manifest lists every piece the engine has registered, every law, kind and
 operator, and every active model, as one JSON file. It is the engine's own record of what it
@@ -26,14 +26,13 @@ PYTHONPATH=src JAX_ENABLE_X64=1 JAX_PLATFORMS=cpu python -m cells declarations -
 
 | Key | What it holds |
 | --- | --- |
-| `kind` | `cells.declarations@2`. A reader checks it first and refuses another major |
+| `kind` | `cells.declarations@3`. A reader checks it first and refuses another major |
 | `revision` | The Git revision of the checkout or source snapshot the file was written from, or null where neither is found |
 | `dirty` | Whether that tree had changes beyond its revision, or null |
 | `origin` | Where the revision was read: a Git checkout or a source snapshot, or null |
 | `pieces` | Every registered law, kind and operator, one object each (below) |
 | `models` | Every active model of the static model table, in its order (below) |
 | `not_extracted` | The (interface, key) pairs whose contract has no field for the key yet (below) |
-| `legacy` | The older model families, by model ID only (below) |
 
 ## The ID rule
 
@@ -343,20 +342,6 @@ for yet. Each such key is null on every piece of that interface. Today:
 | `interface` | An interface the pieces use |
 | `key` | A piece key its contract has no field for yet |
 
-## The legacy list
-
-`legacy` lists the older model families by model ID only, read from the legacy registration's
-model dispatch (`src/cells/legacy/registration.py`) without importing it (D188, D196). They are
-legacy code, to be dropped, and get no page.
-
-### Legacy keys
-
-| Key | What it holds |
-| --- | --- |
-| `id` | The model ID, as definitions write it |
-| `legacy` | Always true |
-| `piece` | Always `model` |
-
 ## Pages: `doc`
 
 Every piece declared in the `cells` package, and every model with declared structure, gets one
@@ -369,6 +354,11 @@ that is not null always names a file.
 ## The version rule
 
 Any change to the keys, or to what a key means, takes a new major of `kind`. A reader checks
-`kind` and refuses a major it does not know. `cells.declarations@1` (seam F, 17 November 2026) had
-no `doc`, `module_path`, `line`, `declared_host`, `models` or `not_extracted`. It gave each read as
-a bare name, each kernel as a bare `module.qualname`, and citations without `works`.
+`kind` and refuses a major it does not know.
+- `cells.declarations@3` (25 November 2026) has every key of `@2` but `legacy`, a list of model IDs
+  that the static model table did not hold. It covers the ID move too (D345, D371): the move
+  amends how the ID rule spells an ID, and no key changes its meaning. So a reader compares whole
+  IDs, by the ID rule, and takes neither an ID's number of parts nor its spelling as fixed.
+- `cells.declarations@2` (17 November 2026) added `doc`, `module_path`, `line`, `declared_host`,
+  `models` and `not_extracted`. `cells.declarations@1` (seam F, the same day) gave each read as a
+  bare name, each kernel as a bare `module.qualname`, and citations without `works`.

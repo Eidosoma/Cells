@@ -13,7 +13,7 @@ Run with the engine on the path (PYTHONPATH=src JAX_ENABLE_X64=1 JAX_PLATFORMS=c
 directory: the library is this checkout's docs/library/.
 
 **One source for each fact.** What the code declares is rendered from the declarations manifest
-(cells.declarations@2, registry/declarations.py, written fresh from the active registries) into
+(cells.declarations@3, registry/declarations.py, written fresh from the active registries) into
 blocks between `<!-- generated: NAME -->` and `<!-- /generated -->`. The words are written by
 hand on the page, never in a .py file: a docstring's wording fix would change a source hash and
 strand checkpoints (D203). Code and test paths appear only in generated blocks, so a file move
@@ -958,7 +958,6 @@ def format_tables(module=None):
         "Citation keys": d.CITATION_KEYS,
         "Work keys": d.WORK_KEYS,
         "Not-extracted keys": d.NOT_EXTRACTED_KEYS,
-        "Legacy keys": d.LEGACY_KEYS,
     }
 
 
