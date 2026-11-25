@@ -6,7 +6,7 @@
 **In one sentence.** All of `src/cells/legacy` goes in one deletion, with everything that only served it. What you use comes back in the engine's own forms. The old code, its runs and its captures stay at the tag
 `pre-cleanup-2026-11-25` and in `/mnt/workspaces/Cells/legacy-captures-20261125`.
 
-**What you have approved (25 November, D386 and after):** the losses in section 6, the two things that your earlier decisions held, and the optional batch. **One question is left.**
+**What you have approved (25 November, D386 and after):** the losses in section 6, the two things that your earlier decisions held, and the optional batch. **One question is left.** The campaign's Part 1 passes (its judge and the independent checker agree), and Part 2 is run and sealed, by your decision. The deletion and the second commit are prepared on branches, and nothing is merged.
 
 ## 1. The question: may these test rows retire?
 
@@ -33,7 +33,7 @@ Each test function was read against what stays. A reader who had not seen that w
 | GPU only | 2 | No gate runs a GPU, and their tolerances are the older model's |
 | Others | 7 | A tool's own row (the tool goes), one on the older kernel's two code paths, a reduction between two families that both go, three cubic proofs of the older observers, and a reference's own sampling |
 
-**How they would go.** In a second commit, right after the deletion's own. Both wait for the campaign's verdicts, and for your word on any consumer that fails or stays inconclusive. The reference's sampling row is the only one of a reference that the judge may use beside a miss, so its file stays until Part 2 is judged. If a consumer of the campaign fails or stays inconclusive, its rows come to you with it.
+**How they would go.** In a second commit, right after the deletion's own, after your word. Part 1 of the campaign passes. Part 2 is run and sealed, by your decision, and no verdict of it is formed: the reference's sampling row is the only one of a reference that its judge may use beside a miss, so that row's file retires after Part 2 is judged. If a consumer of the campaign fails or stays inconclusive, its rows come to you with it.
 With them go 11 files: `test_assembly_cell.py`, `test_assembly_cluster.py`, `test_assembly_controls.py`, the four calcium tests (`er`, `gated`, `ip3`, `spatial`), one GPU test file, and three drivers (`integrated_matrix.py`, `spatial_matrix.py`, `cluster_reference.py`).
 No data file loses its last reader, and no module of the engine is reached by them alone (m).
 
@@ -77,19 +77,19 @@ Two rows stay after the reader's report: `test_integrated_ensemble.py`'s checkpo
 | Tests, and their helpers | 302 of 894 files (101,495 lines), and 77 files (18,717) (m) |
 | Validation drivers and references | 758 of 1,720 files, 212,182 lines (m) |
 | Scripts; configurations; examples; test data | 98 of 123; 116 of 157; all 15; 7 (m) |
-| Test IDs | **11,531 of 21,927 no longer collect:** 10,956 in files that go, 261 rows of files that stay, 138 of the two files that the pump and symports work rewrote, and 176 in the eight files that fail to import. 616 are new, so 11,012 collect (m) |
+| Test IDs | **11,531 of 21,927 no longer collect:** 10,956 in files that go, 261 rows of files that stay, 138 of the two files that the pump and symports work rewrote, and 176 in the eight files that fail to import. 744 are new, so 11,140 collect (m) |
 
 The optional batch is in these counts (165 files, 49,055 lines, 1,933 IDs). The deletion saves 2,766 of 13,784 test-seconds in tiers 1 and 2 (m), about 8.6 minutes of wall per full gate (e), and 142 of 222 tier-3 files.
 
-| Measured on two staged trees, at abd78068 | The deletion alone | With the second commit |
+| Measured on the prepared branches, from 61ebb75f | The deletion alone (`legacy-deletion`) | With the second commit (`legacy-open-retirements`) |
 |---|---|---|
 | Files removed, and edited | 1,693, and 42 | 1,704, and 48 |
-| Tests that collect | 11,012 | 11,003 |
+| Tests that collect | 11,140 | 11,131 |
 | Files that fail to import | 8 | 0 |
-| Staged tree | eaa1bb65 | c5f61ed0 |
+| Commit | 3747bb3e | 34e2e8c1 |
 
-On the first tree, five rows of three staying files fail when they run, since they read what left. The second commit takes them out, with the prepared rows of `legacy-open-retirements`, right after the first; no gate runs between the two. On the second, the rows of the six files that the prepared retirements change and the four rows of section 3 pass (50), and two GPU rows skip (m). The guard whose list the script edits passes its 17 rows on both, and the 15 library pages pass their check (m). 129 definitions leave the gate's fingerprints, of 194. 302 rows of the tier record leave with the deletion, and 8 more with the second commit, since the gate refuses a row without a file.
-Nothing that stays imports or loads what goes, `lean/` and `visualizer/` included, but for one script of the campaign's rehearsal, which runs the frozen legacy snapshot (m).
+On the first tree, five rows of three staying files fail when they run, since they read what left. The second commit takes them out, with the prepared rows of `legacy-open-retirements`, right after the first; no gate runs between the two. On the second, the rows of the six files that the prepared retirements change and the guard pass (59), and two GPU rows skip (m). On the first, the rows that read the law modules the deletion edits pass (236, m). The guard of saved states flags three new readers of the campaign's captures there; they are listed now (`legacy-guard-list`, merged between the two commits), and with them it passes all 17 rows (m). The 15 library pages pass their check (m). 129 definitions leave the gate's fingerprints, of 194. 302 rows of the tier record leave with the deletion, and 8 more with the second commit, since the gate refuses a row without a file.
+Nothing that stays imports or loads what goes, `lean/` and `visualizer/` included, but for two scripts of the campaign's rehearsals, which run the frozen legacy snapshot (m). Nothing that the campaign added since is touched by either commit or reached only by retiring files (m).
 
 ## 5. What comes back
 
@@ -125,8 +125,8 @@ Nothing in use is lost in the oldest families, the baths and clusters, mitochond
 ## 7. What is open
 
 - **Yours:** section 1; the JUPITER check's model part (section 5); and leave to remove the throwaway trees named at the end.
-- **Before the deletion:** the campaign's verdicts (Part 1's criteria and Part 2's are tagged), your word on any consumer that fails or stays inconclusive, and the rename's tool, table and note. The deletion and the second commit are made from the list by a script, whose messages name the head and the list's revision; the ID move and the one full gate come after both. Nothing is merged before you have seen this page.
+- **Before the deletion:** your word on section 1, and the rename's tool, table and note. The deletion (`legacy-deletion`, one commit made from the list by a script whose message names the head and the list's revision), the guard's list (`legacy-guard-list`) and the second commit (`legacy-open-retirements`) are prepared on branches from 61ebb75f, in that order. Nothing is merged before your word; the ID move and the one full gate come after both commits.
 - **After the landing:** what a pool's checkpoint does with another backend; the two rows for the test review; five dead names in live laws.
 - **Records stay:** 59 protocol, data and record files, the results, the notes and the decisions. 57 documents say what left, and 31 more get their note in the deletion's commit. 463 relative links into removed files break, most of them under such a note (m, at 5429a49b).
 - **Not run:** no gate and no suite. The full test of the cleanup branch is the test of it.
-- **Throwaway trees:** `tree-t1`, `tree-t2`, `tree-t8-1` and `tree-t8-2` (about 195 MB each: the measured trees of two heads, with commits of the measurement on no branch), `tree-retarget` and `tree-plants3` (222 MB each: where the plants run), a shared clone of 252 KB, and the scratch folders `work6` and `work7`, all under `/mnt/workspaces/Cells/legacy-removal-list-20261125`. They wait for your word with these counts. All are measurement or planting copies, and nothing else uses them.
+- **Throwaway trees:** `tree-t1`, `tree-t2`, `tree-t8-1`, `tree-t8-2`, `tree-t61-1` and `tree-t61-2` (about 195 MB each: the measured trees of three heads, with commits of the measurement on no branch), `tree-retarget` and `tree-plants3` (222 MB each: where the plants run), a shared clone of 252 KB, and the scratch folders `work6` and `work7`, all under `/mnt/workspaces/Cells/legacy-removal-list-20261125`. They wait for your word with these counts. All are measurement or planting copies, and nothing else uses them.
