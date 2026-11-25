@@ -35,7 +35,7 @@ on 25 November 2026. `--without-optional` leaves it out.
 
 It needs the user's yes on the rows of `open_rows.tsv`. Part 1 of the campaign passes. Part 2 is run and sealed by the user's
 decision and not judged (its Amendment 1), so this commit retires Part 2's rows, and L67's (the only row of a reference that a
-judge of Part 2 may use beside a miss), before any verdict of Part 2, unless the user has it wait for a later scoring. After the deletion's commit:
+judge of Part 2 may use beside a miss), without a verdict of Part 2, by the user's run-and-seal decision (its item 3; the independent reference code stays). After the deletion's commit:
 
 0. The user's word sets the rows' states: each `retires` row, and each row that says `open, before the second commit`, then says
    `approved by the user` with the date (the script reads only that), and the second state is no longer `open, ...`.
