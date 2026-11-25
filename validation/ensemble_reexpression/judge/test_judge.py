@@ -546,6 +546,22 @@ def test_a_restart_equals_the_uninterrupted_run(benches):
 
     assert bench.score(without_the_optional_row).verdict("jupiter") == PASS
 
+    def partial(runs, wrong, whole=False):
+        entry = runs[H[0] if whole else RESTART]
+        refuse(entry, "domain")
+        entry["t"] = entry["t"][:150] if whole else entry["t"][:50]
+        for table in entry["rows"].values():
+            for entity in table:
+                table[entity] = table[entity][: len(entry["t"])]
+        if wrong:
+            entry["rows"]["pump"]["membrane_0"][120 if whole else 20] *= 1 + 1e-3
+
+    for whole in (False, True):  # a refusal of either run never hides a difference
+        for wrong in (False, True):
+            q = bench.score(lambda runs, w=wrong, all_=whole: partial(runs, w, all_))
+            assert q.outcome(run=H[0], readout="restart pump") == (FAIL if wrong else UNFORMED)
+            assert q.verdict("jupiter") == (FAIL if wrong else OPEN)
+
 
 POOLS = {
     "path, an event's time": (
@@ -853,23 +869,24 @@ def test_exposure_and_changes():
 
 
 def test_the_state_form_is_flagged_and_decides_nothing(benches):
-    """A statistic inside the band with e_store and outside the one without."""
+    """A statistic inside the band with e_store and outside the one without, in class S and R."""
     bench = benches("integrated")
     world = bench.reg.worlds["integrated"]
-    shift = 0.5 * world.by_name["n_cell_K"].e_store(800)
+    entry = world.by_name["n_cell_K"]
 
     def alter(runs):
         for name in J:
-            runs[name]["rows"]["n_cell_K"]["cell_2"] = [
-                v + shift for v in runs[name]["rows"]["n_cell_K"]["cell_2"]
-            ]
+            shift = 0.5 * entry.e_store(world.steps(runs[name]["step_s"]))
+            values = runs[name]["rows"]["n_cell_K"]
+            values["cell_2"] = [v + shift for v in values["cell_2"]]
 
     q = bench.score(alter)
     item = q.S("integrated", "n_cell_K")[0]
-    assert (
-        item["state_form"] and item["outcome"] == PASS and q.verdict("integrated") in (PASS, FAIL)
-    )
-    assert any(f["what"] == "state form" for f in q.record["flags"])
+    assert item["state_form"] and item["outcome"] == PASS
+    flagged = [f["detail"] for f in q.record["flags"] if f["what"] == "state form"]
+    assert any(text.startswith("integrated n_cell_K") for text in flagged)
+    assert sum(text.startswith("balance of cells, K") for text in flagged) == 3
+    assert q.outcome(run=J[2], readout="balance of cells, K") == PASS
 
 
 def test_an_order_two_world_reports_its_identities(benches):
@@ -1421,6 +1438,9 @@ def test_structure_only(benches, tmp_path):
         put("source", "blas_threads", value="1"),
         put("restart", value={}),
         put("inputs", "cells", "cell_0", value={}),
+        drop("rows", "n_cell_Na"),  # sound in shape, and the registered reader cannot read it
+        drop("rows", "heat_junction", "junction_11"),
+        put("t", 0, value=math.nan),
     ):
         broken, out = copy.deepcopy(entry), structure.Faults()
         alter(broken)
