@@ -11,6 +11,12 @@ how to write one, the [glossary](GLOSSARY.md) defines the words, and
 
 ## Laws
 
+### `cells.assembly_observable@1`
+
+| Page | In one sentence | Status |
+| --- | --- | --- |
+| [`cells.root_component_has_cycle@1`](cells/laws/root_component_has_cycle@1.md) | It says whether a molecular assembly has a closed ring of bonds, by comparing how many bonds it has with how many building blocks are joined in it. | Not stated |
+
 ### `cells.channel_block_law@1`
 
 | Page | In one sentence | Status |

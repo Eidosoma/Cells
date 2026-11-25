@@ -51,7 +51,7 @@ availability schedule.
 
 <!-- generated: used-by availability -->
 
-- **Used by:** [`cells.ideal_osmosis_linear_compliance_water@1`](cells/operators/ideal_osmosis_linear_compliance_water@1.md).
+- **Used by:** [`cells.root_component_has_cycle@1`](cells/laws/root_component_has_cycle@1.md) and [`cells.ideal_osmosis_linear_compliance_water@1`](cells/operators/ideal_osmosis_linear_compliance_water@1.md).
 
 <!-- /generated -->
 
@@ -112,7 +112,7 @@ electrochemical gradient. Its gates decide when it is open.
 
 <!-- generated: used-by channel -->
 
-- **Used by:** [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md) and [`cells.open_channel_block_weighted_modes@1`](cells/laws/open_channel_block_weighted_modes@1.md).
+- **Used by:** [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md), [`cells.open_channel_block_weighted_modes@1`](cells/laws/open_channel_block_weighted_modes@1.md) and [`cells.root_component_has_cycle@1`](cells/laws/root_component_has_cycle@1.md).
 
 <!-- /generated -->
 
@@ -782,7 +782,7 @@ A group of identical channels or pumps on one patch, sharing a law, its gates an
 
 <!-- generated: used-by population -->
 
-- **Used by:** [`cells.open_channel_block_weighted_modes@1`](cells/laws/open_channel_block_weighted_modes@1.md).
+- **Used by:** [`cells.open_channel_block_weighted_modes@1`](cells/laws/open_channel_block_weighted_modes@1.md) and [`cells.root_component_has_cycle@1`](cells/laws/root_component_has_cycle@1.md).
 
 <!-- /generated -->
 
