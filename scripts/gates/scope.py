@@ -615,7 +615,8 @@ def select(head, base, doc, tiers_rel, always="untraced"):
     out = {"kind": "cells.test_tiers@1", "fast_seconds": record.get("fast_seconds"),
            "cap_seconds": record.get("cap_seconds"), "tiers": subset,
            "note": "a scope selection of tiers 1+2 (scripts/gates/scope.py select)"}
-    report = {"map": {"revision": doc["revision"], "built": doc["built"]}, "always": always,
+    report = {"map": {"revision": doc["revision"], "built": doc["built"],
+                      "traced": doc.get("trace", {}).get("traced")}, "always": always,
               "selected": len(reasons), "of": sum(len(record["tiers"].get(t, [])) for t in ("1", "2")),
               "seconds_selected": round(seconds["selected"], 1), "seconds_all": round(seconds["all"], 1),
               "readers_rule": {**old, "seconds_selected": round(old["seconds_selected"], 1)},
