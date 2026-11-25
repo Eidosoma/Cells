@@ -1241,15 +1241,19 @@ def test_a_planted_read_of_a_repository_file_pulls_its_test_in(scope_map, tmp_pa
     assert after[P] == ["touched paths changed since the map: ['docs/b.md']"]
 
 
-def planted_map(tmp_path, rows):
-    """The map of the tiny snapshot with test_plain.py's record planted: ROWS of its one process."""
+def planted_map(tmp_path, rows, child=()):
+    """The map of the tiny snapshot with test_plain.py's record planted: ROWS of its test process, and
+    CHILD's of another process (its number is 11)."""
     snap = scope_snapshot(tmp_path / "nightly")
     run, record = tmp_path / "run", json.loads((snap / "tests/test_tiers.json").read_text())
     logs = run / "scope" / "tests__unit__test_plain.py"
     logs.mkdir(parents=True)
     (logs / "10-a.jsonl").write_text("".join(json.dumps(r) + "\n" for r in [
-        {"process": 10, "parent": 1, "forked": False, "argv": ["python", "-m", "pytest"]}, *rows,
-        {"exit": True, "modules": ["tests/unit/test_plain.py"]}]))
+        {"process": 10, "parent": 1, "forked": False, "argv": ["python", "-m", "pytest"], "root": "/t"},
+        *rows, {"exit": True, "modules": ["tests/unit/test_plain.py"]}]))
+    if child:
+        (logs / "11-b.jsonl").write_text("".join(json.dumps(r) + "\n" for r in [
+            {"process": 11, "parent": 10, "forked": False, "argv": ["python", "x"], "root": "/t"}, *child]))
     (run / "run.json").write_text(json.dumps({"scope_map": str(run / "scope"), "files": [
         dict(r, timed_out=False) for r in record["tiers"]["1"]]}))
     (run / "summary.json").write_text(json.dumps({"changed_vs_record": []}))
@@ -1292,6 +1296,28 @@ def test_each_class_of_a_listing_counts_by_what_it_can_use(tmp_path, rows, chose
     """A new docs/c.md, after a listing of docs (or a question about the file) of each class (D358)."""
     snap, doc = planted_map(tmp_path, rows)
     assert bool(chosen_for(tmp_path, snap, doc, {"docs/c.md": "new\n"})) is chosen
+
+
+CHILD = {"child": 11, "argv": ["python", "x"], "cwd": "/t", "program": "/usr/bin/python", "git": False}
+
+
+@pytest.mark.parametrize("rows, child, complete, mapped", [
+    ([], (), True, True),
+    ([{"link": "docs"}], (), False, True),  # What is read through a link carries no path of the tree.
+    ([{"fault": "open: OSError"}], (), False, True),
+    ([CHILD], [{"open": "docs/a.md", "by": "stdlib"}, {"exit": True, "modules": []}], True, True),
+    ([CHILD], [{"open": "docs/a.md", "by": "stdlib"}], False, True),  # Killed after it read the tree.
+    ([CHILD], [{"list": "src", "by": "import"}], True, True),  # Killed, and it touched nothing.
+    ([CHILD], (), True, False),  # No record of it.
+    ([dict(CHILD, argv=["bash", "x"])], [{"exit": True, "modules": []}], True, False),  # It became Python.
+    ([{"child": None, "argv": ["sh", "-c", "true"], "cwd": "/t"}], (), True, False),  # os.system
+])
+def test_a_missed_recording_keeps_the_file_running(tmp_path, rows, child, complete, mapped):
+    """Incomplete or unmapped, the file is selected whatever changed, under every rule (D358)."""
+    snap, doc = planted_map(tmp_path, rows, child)
+    e = doc["files"][P]
+    assert e["complete"] is complete and bool(e["children_unmapped"]) is not mapped, e
+    assert bool(chosen_for(tmp_path, snap, doc, {})) is not (complete and mapped)
 
 
 def test_a_folder_opened_by_descriptor_is_a_listing(tmp_path):
