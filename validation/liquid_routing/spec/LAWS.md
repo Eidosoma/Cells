@@ -95,8 +95,9 @@ with constant G between switches. Then y(t) = e^(Gt) y(0).
   than are published.
 - **Equal rates need no special case here.** The closed forms below are the independent check.
 - **The operator's domain.** A flow is admitted for a step of h only where every node's throughput, its
-  outflow times h/2 over its volume, is at most 1. Above it the operator refuses by name. Inside it the
-  propagator's entries are declared within 8 ε and its columns within 4 ε of exact (the dt study).
+  outflow times h/2 over its volume, is at most 1 (the definition: SPEC.md §1). Above it the operator refuses
+  by name, at parse. Inside it the propagator's entries are declared within 8 ε and its columns within 4 ε of
+  exact (the dt study).
 
 **A chain I → A → B → K,** with a = Q/V_A, b = Q/V_B, u_A = n_A(0) − V_A x and u_B = n_B(0) − V_B x:
 

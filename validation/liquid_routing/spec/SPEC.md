@@ -28,7 +28,7 @@ side confirms that, and the references never see it.
 | --- | --- | --- |
 | Volumes and PA | `eq`: 2 and 2 pL, PA = 0.125. `r4`: 5 and 20 pL, PA = 0.5, with the higher level in the 5 pL well | k = 1/8 s⁻¹ in both, so kh is dyadic. 4:1 separates a rate from V₁ alone |
 | Background | `lo` 0.015625, `mid` 1, `hi` 16 mM in well 2; well 1 is 3 mM above | Δc is fixed, so the transfer does not change with the background and the heat does |
-| `tr` | 4 and 10⁻¹² mM, `eq` only | An empty well: the onset limit |
+| `tr` | 4 and 10⁻¹² mM, `eq` only (2 × 10⁻¹² fmol in well 2, a trace, never a zero amount) | An empty well: the onset limit |
 | Steps | Exact heat: 2, 1, 1/2, 1/4 s (kh = 1/4 to 1/32). Default heat: 8 z_def/2^j, j = 0 … 3, with z_def = 1/64 (kh = 1/64 to 1/512; §6) | Four halvings show the local order |
 
 `eq-mid` holds 8 and 2 fmol, the request's amounts.
@@ -58,8 +58,9 @@ U starts in B (`F1` to `F4`, `F6`), or in C (`F5`). The inlet carries every spec
 horizon is 16 s. Steps are 8, 1 and 1/8 s in `F1` to `F4` (one, eight and 64 to a residence time), and 2, 1
 and 1/8 s in `F5` and `F6`.
 
-**The operator's domain, declared.** A flow is admitted for a step of h only where every node's throughput,
-its outflow × (h/2) / its volume, is at most 1; above it the operator refuses by name. Every registered
+**The operator's domain, declared** *(wording pending: to be the study agent's definition, word for word)*. A flow
+is admitted for a step of h only where every node's throughput, its outflow × (h/2) / its volume, is at most 1;
+above it the operator refuses by name, at parse. Every registered
 world is inside: `F1` at 8 s has 0.5, `F5` at 2 s has 0.5 (at D) and `F6` at 2 s has 0.625 (at B). **The refusal
 case** is `F6` at 4 s, whose throughput at B is 1.25 (run `F6 h=4.0 refused`).
 
@@ -79,13 +80,21 @@ every flow off.
 
 **Arm 7** has no reference: both sides are engine runs (CRITERIA.md §3.8).
 
+**Admissions.** Two constructs are refused by default and admitted only by a declaration in the world,
+`admission` in `inputs.json`, whose sole effect is that admission: `exchange_at_faced_node` (an exchange at a
+well a face touches: arm 2's `N-buffered` and `N-clean`) and `flow_beside_face` (a flow at a node a face
+touches: arm 6's `J1` and `J0`, the flow off included). No other world declares one. Two registered runs
+have their admission off (`N-clean exact j=0 no admission`, `J1 h=0.25 no admission`), and must be refused
+(CRITERIA.md §3.7). So arm 6 is run by what its world declares, from the same snapshot as the rest, and the
+default stays refused.
+
 ## 2. The runs
 
 `inputs.json` lists every registered run: its name, arm, world, heat, step, role and variant. `judged`
 runs are compared, `support` runs are twins and restarts, `recorded` runs report an outcome, the
 `expected stop` is meant to stop, the `expected refusal` is meant to be refused (CRITERIA.md §3.7), and `plant`
-runs carry a declared change. The retry (CRITERIA.md §7)
-adds runs by rule. A run's outputs are its world's times that its step divides, and t = 0.
+runs carry a declared change. A run's `expects` is the outcome it is meant to have: null, or a `refused` status with a kind (CRITERIA.md
+§3.7). The retry (CRITERIA.md §7) adds runs by rule. A run's outputs are its world's times that its step divides, and t = 0.
 
 ## 3. What to compute
 
@@ -154,7 +163,10 @@ swapped the (4, 1) edges move).
   in a step of kh = 1/64 is C₂ z² = 1.7 × 10⁻⁴. The measured starts stop where C₂ z² is about 1.9 to 2.0 × 10⁻³
   (the author's arithmetic from the table and the law), so the start lies well inside. Placement only.
 - **Arm 7's pairs** (W7): FR-27's review well, FR-44's twins (labelled True and False), and FR-37's three draws
-  (unmixed, mixed, port).
+  (unmixed, mixed, port). Both sides run from the registration tag's snapshot, where the wash still exists.
+- **Every registered default-heat run** (start and step) is run by the study agent on today's engine before the
+  criteria tag. One that stops moves to a smaller step, in the same dated commit. (Pending: the study agent's
+  answer, D-rule, CRITERIA.md §3.7.)
 
 ## 7. The file
 
@@ -162,7 +174,7 @@ One JSON file per arm, `reference_arm1.json` to `reference_arm6.json`, bytes fix
 keys, fixed separators, no timestamps):
 
 ```json
-{"kind": "cells.liquid_routing.reference@1", "arm": 3,
+{"kind": "liquid-routing reference, version 1", "arm": 3,
  "inputs_sha256": "...", "constants": {"N_A": "6.02214076e23", "k_B": "1.380649e-23"},
  "worlds": {"F1": {"times_s": [0.0, 1.0],
    "series": {"n_T_A": {"class": ["R", "R"], "value": ["0", "0"], "accuracy": ["0", "0"]}}}},
@@ -191,6 +203,12 @@ keys, fixed separators, no timestamps):
 a chain with a label, a portion-fed collector, a flow beside a face) with your own volumes, flows,
 times and concentrations, none of this folder's. It carries one `E` entry of each kind, one plant of
 each kind and a `cases` block.
+
+**`inputs_invented.json`** states the same worlds and runs in `inputs.json`'s schema. The builder runs exactly
+those worlds with the registered exporter (labelled development runs), for the rehearsal of CRITERIA.md §10. So
+the invented worlds cover every class of CRITERIA.md (E with a twin, a restart and a first portion; R; B; L; S
+at p = 1 and 2; U; N; M and D; an expected stop and refusal), keep every node's throughput at most 1, and keep
+kh of the default heat at most 1/64.
 
 ## 9. The checks to pass before the tag
 

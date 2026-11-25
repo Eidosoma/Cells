@@ -32,8 +32,7 @@ and 2); FR-57's two targets, its "only a flow passes" rows, its free-energy chec
 (arms 3, 4 and 5). The request's refusals and restarts mid-flow live in tier rows (§8).
 
 **Arm 7's worlds** are, by the design note, FR-27's review well, FR-44's twins and FR-37's three draws, with
-the pairs of `SPEC.md` §6. Both sides run on the router's landing head, where the wash still
-exists. FR-45's W2 and W7 and FR-49's B and C1 are not among them: their judged runs stay on the wash, or
+the pairs of `SPEC.md` §6. Both sides run from the registration tag's snapshot, where the wash still exists. FR-45's W2 and W7 and FR-49's B and C1 are not among them: their judged runs stay on the wash, or
 are pinned to a snapshot from before its retirement (D364).
 
 **The claim.** A pass says the engine's passive diffusion between two finite regions, its partial exchange
@@ -91,7 +90,8 @@ dated change, before the registration tag and never after a run.
 1. **The dt study** ran on today's engine (25 November) and reported its placements, the default heat's law,
    the propagator's bounds and arm 7's worlds. Its record stays with the lead.
 2. **This document and the spec folder,** with the placements (§6 of SPEC.md). The criteria tag:
-   **`liquid-routing-criteria-2026-11-2x`**. The bands are fixed from here.
+   **`liquid-routing-criteria-2026-11-2x`**. The bands, counts and classes are fixed from here, with one route to
+   correct a bound (`CRITERIA.md` §10).
 3. **The references agent** writes the references, its checks (`SPEC.md` §9) and its plant sizes. If a
    margin is below 10, the author changes the plant first. Tag: **`liquid-routing-references-2026-11-2x`**.
    The build may begin at this tag (it waits for the ID rename).
@@ -101,16 +101,24 @@ dated change, before the registration tag and never after a run.
 5. **The judge's reader** parses `reference_invented.json`, then C0 on the references, then the format
    sample (`TABLE.md` §4), and passes its self-tests (`CRITERIA.md` §6.3). Tag:
    **`liquid-routing-judge-2026-11-2x`.** A registration names a reader that exists (D308).
-6. **The registration tag `liquid-routing-registered-2026-11-2x`,** at the head that merges main, the spec,
+6. **The rehearsal** (`CRITERIA.md` §10): the builder runs the invented worlds of `inputs_invented.json` through
+   the registered exporter (labelled development runs), and the judge scores its table end to end, every class,
+   honest and planted, against `reference_invented.json`. An honest miss is a defect to fix, or a bound to
+   correct by §10's route (re-derived, dated, disclosed), before any registered run.
+7. **The registration tag `liquid-routing-registered-2026-11-2x`,** at the head that merges main, the spec,
    the references, the build and the judge, before any registered run. At that head the lead re-runs the
    builder's checks, the judge's tests and C0, regenerates the sample, and makes a trial merge.
-7. **Phase 1:** arms 1, 2, 3, 4, 5 and 7, from a clean frozen snapshot of the registration tag
+8. **Phase 1:** arms 1, 2, 3, 4, 5 and 7, from a clean frozen snapshot of the registration tag
    (`scripts/gates/freeze_snapshot.py --scope full --require-clean`), detached, one thread each, cold (no
    compilation cache), on CPUs the lead allots, on one machine. The exporter's table is hashed before any
    reference value is read. **Arms 1 and 2 are judged first.**
-8. **Phase 2:** arm 6, from the same snapshot, **only if FR-54 passes** (Q8). Its table is hashed first too.
-9. **The retry,** if any entry is owed one, from the same snapshot, its table hashed the same way.
-10. **The checker,** then the record and the decision entry.
+9. **Phase 2:** arm 6, from the same snapshot, **only if FR-54 passes** (Q8). Its table is hashed first too.
+   Arm 6 is admitted by the snapshot's own rule, not by a change after FR-54: its worlds declare an admission
+   (`flow_beside_face`), and the engine refuses the construct without one (`SPEC.md` §1; two registered runs
+   with the admission off must be refused). FR-54's verdict decides whether phase 2 runs, not whether the
+   construct exists.
+10. **The retry,** if any entry is owed one, from the same snapshot, its table hashed the same way.
+11. **The checker,** then the record and the decision entry.
 
 ## 6. The verdicts, and what they decide
 
@@ -161,35 +169,41 @@ formed is judged, and a refused or missing support run only makes its arm inconc
 | References: closed forms and integrals in decimal, the checks, the plant sizes, the invented file | 0.75–1 |
 | Builder: worlds, exporter, sample and map, smokes on invented worlds | 0.75–1 |
 | Judge: reader, C0, sample parse, scoring | 0.75–1 |
+| The rehearsal: the invented-world runs (builder), and scoring them (judge) | 0.25–0.5 |
 | Checker | 0.25–0.5 |
 | This folder's later dated commits | 0.25 |
-| **Total** | **2.75–3.75** |
+| **Total** | **3–4.25** |
 
 The design note's line for the registered protocol is 1.5 to 2 (its §10). The difference is the references'
-two quadratures and the six registered networks, the pre-tag format sample, and the checker.
+two quadratures and the six registered networks, the pre-tag format sample, the rehearsal, and the checker.
 
-**CPU:** 122 registered runs (arm 1: 47; arm 2: 21; arm 3: 28; arm 4: 8; arm 5: 13; arm 6: 5), about 12 for
+**CPU:** 124 registered runs (arm 1: 47; arm 2: 22; arm 3: 28; arm 4: 8; arm 5: 13; arm 6: 6), about 12 for
 arm 7, and at most about 25 for a retry. Each is seconds after a compile of 30 to 45 s: about 2 CPU-hours,
 one thread each. The references and their regenerations are minutes.
 
-## 10. Open questions for the lead
+## 10. Questions ruled by the lead (25 November 2026)
 
-1. **FR-57 while arm 6 is not run.** §6 reports it inconclusive as a whole, on three lines. Recommendation:
-   keep it, so a pass of flow alone is never read as a pass of the request.
-2. **A stop of an honest run fails it** (§7). Recommendation: adopt, stated before any run.
+All seven were ruled as recommended, with the changes noted. Items 2 and 7 wait on the study's answers in
+§11.
+
+
+1. **FR-57 while arm 6 is not run** is inconclusive as a whole, reported on three lines, so a pass of flow alone
+   is never read as a pass of the request. Accepted.
+2. **A stop of an honest run fails it** (§7). Adopted, after the study runs every registered default-heat
+   (start, step) and the author moves any that stops (§11).
 3. **The order window** is [p − ½, 2.5] for each class, the scheme's order 2 plus D271's half, narrower than
-   D271's. An out-of-window order is inconclusive, as D271 has it. Recommendation: adopt.
+   D271's. A resolved order outside it is inconclusive, as D271 has it; an unresolved one is reported, not judged
+   (`CRITERIA.md` §3.5). Adopted.
 4. **The default heat's law** (LAWS.md §2) is declared from the study agent's reading of the engine at main
-   0e563668, checked here for its algebra and its Taylor bound only. T4 tests it through the composite, which
-   the study did not run. Recommendation: keep that a criterion, not an assumption.
-5. **The default-heat starts are the study's starts** (§11). Recommendation: accept, since the study reports
-   only edges, the law and its constant.
-6. **Arm 7's failing** fails FR-57, as the note's §8.2 reads. Recommendation: accept, and say that it bears on
-   the takeover line only.
+   0e563668, checked here for its algebra and its Taylor bound only. T4 tests it through the composite. Its class
+   R is a scheme check whose pass is expected, since the law was transcribed from the engine; its class B is the
+   claim. Kept.
+5. **The default-heat starts are the study's starts** (§11). Accepted.
+6. **Arm 7's failing** fails FR-57, as the note's §8.2 reads, on the takeover line. Accepted.
 7. **The propagator's domain** (throughput at most 1 per half-step) is the lead's ruling. The study measured
    4.0 of the 8 ε on entries and 0.84 of the 4 ε on columns inside it, and failures at 5. The registered worlds
-   stay inside it, `F6 h=4.0` must be refused, and `LAWS.md` §9 uses the 8 ε. Recommendation: adopt, and if a
-   64-node network is to be claimed, a separate qualification.
+   stay inside it, `F6 h=4.0` must be refused, and `LAWS.md` §9 uses the 8 ε. A 64-node network is not claimed
+   without a separate qualification. Adopted, after the study's definition is taken word for word (§11).
 
 ## 11. Disclosures (25 November 2026)
 
@@ -222,6 +236,11 @@ and CRITERIA on `fr45-protocol`.
   (the law within 2.1 ε, 25 ε at (19, 16)) are not used: the R bound comes from the operation count. Edges
   place cases and set no band. z_def = 1/64 (4.5 times below the smallest completing edge) is a placement, and
   so is this author's estimate for arm 2's start.
+
+**Waiting on the study agent's answers,** to be filled before the criteria tag, each marked in the files:
+which (start, step) runs complete (item 1 above, for `SPEC.md` §6); the throughput definition word for word
+(item 7; `SPEC.md` §1 and `LAWS.md` §4); whether the failing energy ledger's residual is cumulative or per
+row, and its unit (M2, `CRITERIA.md` §3.7); and what amounts the parse refuses at a node.
 
 **Seen and not used:** D362's and D364's desk figures for the default heat's domain (kh at most 0.2 and 0.05)
 and the note author's propagator probe (at most 1.0 ε an entry). z_def is a formula of the measured edges.

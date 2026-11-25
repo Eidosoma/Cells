@@ -53,4 +53,4 @@ The classes are:
 - **S, stepped:** compared by step-halving, with an order window. Never held to rounding.
 - **L, local orders:** the one-step orders of T2 and T4 at halved steps (§3.4 of CRITERIA.md).
 - **U, uniform:** at most the bound of CRITERIA.md §3.6. **N:** never falls. **M:** a stopped run's
-  message. **D:** completes.
+  message. **D:** completes. **X:** expected refusals and stops, as each run's `expects` says.

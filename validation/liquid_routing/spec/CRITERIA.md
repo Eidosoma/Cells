@@ -75,8 +75,9 @@ n_T_2(0). The bound is LAWS.md §2's Taylor remainder for the published scheme, 
 
 ### 3.4 L, the local orders, and the default heat (T4)
 
-- **T2's order:** with e_j = |m_j − m*(h_j)| on the exact runs' steps j = 0 … 3, q_j = log₂(e_j/e_{j+1})
-  ∈ [2.5, 3.5] where e_j and e_{j+1} both exceed 10 e_round. Otherwise inconclusive.
+- **T2's order:** with e_j = |m_j − m*(h_j)| on the exact runs' steps j = 0 … 3, a pair is **resolved** where e_j
+  and e_{j+1} both exceed 10 e_round. A resolved pair's q_j = log₂(e_j/e_{j+1}) must lie in [2.5, 3.5], and
+  one outside it makes the entry **inconclusive**. An unresolved pair's order is reported, not judged.
 - **T4, the default heat (the subject),** at every judged default run:
   - by class R, |H_face(h) − H_def(h)| ≤ e_round, H_def the declared law's closed form (LAWS.md §2);
   - by class B, |H_face(h) − D(own levels)| ≤ B_def(h) + e_round, the law's Taylor remainder;
@@ -94,8 +95,10 @@ For readout y in world w with steps h₁ > h₂ > h₃ (each half the last), ove
 
 - **Pass:** max_t |y_{h₃} − y_ref| ≤ τ. **p** is 2 for arms 2 and 6 (the scheme's and Strang's order) and
   1 for arm 5 (how a step's heat splits among holders).
-- **Order:** q = log₂(d₂/d₁), judged where d₁ and d₂ exceed 10 e_round, must lie in **[p − ½, 2.5]**.
-  Otherwise the entry is inconclusive, never a pass (D271).
+- **Order:** the entry is **resolved** where d₁ and d₂ both exceed 10 e_round. Then q = log₂(d₂/d₁) must lie in
+  **[p − ½, 2.5]**, and one outside it makes the entry **inconclusive**, never a pass (D271). Where either is
+  at most 10 e_round the order is **unresolved**: it is reported, not judged, and the entry passes or fails
+  by τ alone.
 - **The cap is the scheme's:** the integrator and the split are second order, so the cap is 2 plus D271's
   half (its 3.5 was a third-order integrator plus the same half). A holder whose heat is better than first
   order is then not punished. The tolerance is at most 3(2^q − 1)/(2^p − 1) times the actual error: 4.7
@@ -115,24 +118,32 @@ For readout y in world w with steps h₁ > h₂ > h₃ (each half the last), ove
 - **A stop** is an entry whose status is `refused` with kind `check` (TABLE.md): the engine's own energy,
   material or charge check failed a completed row.
 - **M1, on every stop** (a recorded run's too): the message holds the word `residual` and then a number, and
-  the word `tolerance` and then a number, both in pJ, finite, with |residual| > tolerance > 0.
-- **M2, on P8's stops:** | |residual| − H_missing | ≤ tolerance + (half a unit in the residual's last
-  printed digit) + e_round. H_missing is H_ev of the run's own before-row for `P8 event`, and the
-  reference's H_tot at the stop row for `P8 flow`.
+  the word `tolerance` and then a number, each with the unit of the ledger that failed, which the message
+  names (a stop may be the energy, the material or the charge check). Both are finite, in the same unit, with
+  |residual| > tolerance > 0.
+- **M2, on P8's stops** (the energy ledger, in pJ): | |residual| − H_missing | ≤ tolerance + (half a unit in the
+  residual's last printed digit) + e_round. H_missing is what the ledger's residual spans: for `P8 event`, H_ev
+  of the run's own row at 16 s; for `P8 flow`, *(pending the study)*, the reference's H_tot to the stop row if
+  the residual is cumulative from t = 0, or the missing heat of the step that ended there if it is that row's
+  alone. If neither fits, `P8 flow` is scored on the stop and M1 alone, by a dated change before the tag.
 - **D, on every run of role `judged`:** it completes. One that the engine's own check stops **fails**: the
   check's residual above its tolerance is the evidence the comparison would have formed. This departs from
   FR-38's amendment 6, where a refused run is at best inconclusive, and is stated here before any run.
 - **The expected stops** (`eq-tr default stop` and `eq-mid default stop`) must stop. If one completes, M1
   is not formed on it and arm 2 is at best inconclusive. They never count against the heat. A stopped
   support run is a refused one.
-- **The expected refusal** (`F6 h=4.0 refused`, a throughput of 1.25 at B) must be a `refused` entry of kind
-  `domain` (its message is recorded). If it completes, the operator admitted a flow outside its declared
-  domain and arm 3 fails. If it is refused another way, arm 3 is at
-  best inconclusive.
+- **The expected refusals,** each as its run's `expects` says. The message is recorded.
+  - `F6 h=4.0 refused` (a throughput of 1.25 at B, above SPEC.md §1's domain) must be `refused` with kind
+    `domain`, at parse.
+  - `N-clean exact j=0 no admission` (arm 2) and `J1 h=0.25 no admission` (arm 6) declare no admission (SPEC.md
+    §1) and must be `refused` with kind `domain`, so the construct is refused unless admitted.
+  - If one completes, its arm fails: the operator admitted what its domain or admission rule refuses. If it
+    is refused another way, its arm is at best inconclusive.
 
 ### 3.8 Arm 7: the takeover
 
-Both sides of each pair run on one engine revision, the router's landing head. The table carries, for
+Both sides of each pair run on one engine revision, the registration tag's snapshot, where the wash still
+exists. The table carries, for
 each side, the digest of every array the run saves, and the operators it declares. Criterion E:
 - every array of the run's state, observation rows, ledgers and diagnostics that the two sides both
   save under one name has equal digests;
@@ -264,12 +275,37 @@ inconclusive after it stays so. No tolerance, window or class changes.
   scheme's. It fails arm 1, and T2's bound is not read as evidence for or against the physics.
 - **T2 with T1 passing** cannot fail except by rounding, since the scheme's remainder is bounded.
 - **T3** is the control. A miss there points at the harness, not at the heat law.
-- **T4** is the subject. Its class R checks the declared law's arithmetic through the composite, as T1 does the
-  transfer's. Its class B is the claim: a miss says the default heat is off by more than the law's own local
-  error.
+- **T4** is the subject. Its class R is a scheme check, as T1's is: the law was transcribed from the engine, so
+  its pass is expected and it shows the compiled composite follows the law. Its class B is the claim: a miss
+  says the default heat is off by more than the law's own local error.
 - **An `R` miss in arms 3 to 5** says the flow's trajectory, its books, or a heat's total is wrong at
   rounding. **An `S` miss** says how a step's heat is split among holders, or flow beside diffusion,
   does not follow its scheme's order.
 - **A stop** inside the registered domain fails its run (§3.7). It is followed by a labelled, non-blind
   diagnosis by someone other than the author, the judge and the checker.
 - A miss is never dropped, rescaled or re-run at another step.
+
+## 10. The rehearsal, and correcting a bound
+
+**The rehearsal** (the protocol's §5) is the judge's whole scoring path, run on **invented** worlds through the
+registered exporter, before the registration tag. The judge scores the builder's table of
+`inputs_invented.json`'s worlds against `reference_invented.json`, every class exercised, honest and planted,
+with the faults of §4 planted too. It must: pass every honest entry, catch every plant, take every stop and
+refusal as expected, and flag every fault as §4 says.
+
+- **No final fail can rest on a rounding bound that the rehearsal has not met,** since the counts of LAWS.md §9
+  are derived without the engine's arithmetic. A bound an honest invented run misses is a defect (of the
+  exporter, the judge, the engine or the references, found and fixed) or a bound to correct, as below.
+- A rehearsal is evidence for the harness and the bounds. It is none for or against the request.
+
+**A route to correct a bound.** Before the registration tag, and only when an honest invented run at the
+rehearsal misses it, a bound or a count is corrected by a dated change to this folder that:
+- **re-derives** it from a stated reason (a path of operations the count left out, or a case it did not
+  cover), and shows the derivation;
+- never fits it to a run, never sets it to an observed value times a margin, and changes no class and no
+  window;
+- is disclosed with the run that showed it, and re-tags the criteria, the references where their checks
+  depend on it, and the judge, which re-parses its sample.
+
+After a registered run no bound is corrected for any reason. A bound that cannot be re-derived stays, and the
+rehearsal's miss is recorded.

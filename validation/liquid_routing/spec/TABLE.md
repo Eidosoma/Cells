@@ -19,7 +19,7 @@ code. Extra keys are allowed and ignored.
 
 | Key | Type |
 | --- | --- |
-| `kind` | the string `cells.liquid_routing.engine_table@1` |
+| `kind` | the string `liquid-routing engine table, version 1` |
 | `arm` | integer 1 to 7 |
 | `runs` | object: run name to entry (`inputs.json`'s names; the retry's add ` retry`) |
 | `missing` | list of run names for which no record was found |
@@ -42,26 +42,40 @@ has (`t` and `series` may be short or empty).
 | `t` | list of numbers: the rows' times, the first 0 |
 | `series` | object: READOUTS.md's names to lists, each as long as `t` |
 | `events` | list, in time order; [] where the world has none. Arm 2: `{"kind": "exchange", "time_s", "node", "before", "sample", "supplied", "heat"}`, the four being `{species: number}` except `heat` (number). Arm 4: `{"kind": "delivery", "time_s", "volume", "amount", "loss", "resident", "arriving"}`, `amount` by species, the rest numbers |
-| `inputs` | the world's block in `inputs.json`, without `outputs_s` and `compare_s`, read back from **the definition the engine parsed and ran**, with `step_s` added and `end_s` a number (a world whose `end_s` is `one step` is echoed with the step). Not a copy of this folder's numbers |
+| `inputs` | the world's block in `inputs.json`, without `outputs_s` and `compare_s`, with its `admission`, read back from **the definition the engine parsed and ran**, with `step_s` added and `end_s` a number (a world whose `end_s` is `one step` is echoed with the step). Not a copy of this folder's numbers |
 | `definition` | the engine's own declaration, as run (recorded) |
 | `checks` | the engine's own ledgers and checks at the end (recorded) |
 | `restart` | null, or `{"time_s", "step_index", "through"}` (the checkpoint's time, and how it was saved) |
 | `digests` | arm 7: `{name: sha256}` of every saved array's bytes, dtype and shape; `{}` elsewhere |
 | `host_patch` | null, or `{"id", "change"}` on a plant's run |
 | `largest_ion_change_fmol` | number: the largest change of any ion's amount at any node or cell (recorded) |
-| `refusal` | null, or `{"kind", "message", "time_s"}`: `check`, `domain`, `definition` or `harness`; the message as the engine raised it; the time of the row it failed (a number for `check`, null otherwise) |
+| `refusal` | null, or `{"kind", "message", "time_s"}`: the message as the engine raised it, `time_s` the time of the row that failed (a number for `check`, null otherwise), and `kind` as below |
 | `source` | `engine_revision`, `checkout_dirty` (boolean), `snapshot`, `snapshot_patch_sha256`, `python`, `numpy`, `scipy`, `jax`, `blas_threads` (integer), `machine`, all strings but those marked |
 | `record`, `record_sha256` | the run's own record file, and 64 hex digits |
 
 - A number is a JSON number. `null` stands only where this table says so. NaN and infinity do not occur.
 - **An expected refusal is an entry like any other,** `refused` with kind `domain`.
-- **Every series a run carries** has READOUTS.md's name, and each listed readout of its arm and world is
-  present. A series with a short `t` belongs to a refused run.
+- **Every series a completed run carries** has READOUTS.md's name, and each listed readout of its arm and world
+  is present. A series with a short `t` belongs to a refused run.
 - **Arm 1 and arm 2:** `n_T_1`, `n_T_2`, `H_face`, `transfer_T`. **Arms 3 to 6:** `n_<x>_<i>`, `V_K`,
   `supplied_<x>`, `H_<i>`, the labels in `F1L` and `F6L`, `n_L_S`, `free_sites_S` and `bound_L_S` in
   `F7`, `H_face` in arm 6. **Arm 7:** `digests` and `operators` (`series` may be empty), the runs named
   `<pair> wash` and `<pair> router`. A resumed run's `t` holds the rows it recorded.
-- **`refusal.message`** for kind `check` states the residual and the tolerance in pJ, by those two words.
+- **`refusal.message`** for kind `check` states the residual and the tolerance by those two words, each with
+  its unit, and names the ledger that failed.
+
+**The kinds of refusal,** set by the exporter from what the engine raised (its README lists the mapping, and the
+checker confirms it):
+
+| Kind | What produced it |
+| --- | --- |
+| `domain` | The engine refused, by name, a value outside a declared domain, at parse or at run time: a throughput above its bound, a default-heat exchange outside its domain, a construct that needs an admission and has none |
+| `definition` | A declaration the engine could not read or does not support, at parse: a missing or malformed key, an unbalanced node, an unsupported combination |
+| `check` | The engine's own energy, material or charge check failed a completed row |
+| `harness` | Anything the engine did not raise: the exporter, the driver, memory, a crash |
+
+A refusal at parse has no rows: `t` is [], `series` is {} and `time_s` is null. Otherwise a refused run is an
+ordinary entry.
 
 **Every refused, restarted, plant, twin and no-router run uses this one shape.** There are no special
 tables and no key that appears only for one kind.
