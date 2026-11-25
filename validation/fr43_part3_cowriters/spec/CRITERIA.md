@@ -111,8 +111,8 @@ its arm fails, whatever else of that run or family is refused, stopped or missin
 | A retry run present though not owed | Recorded, flagged, and not judged |
 | A support run refused or missing | Leaves its arm at best inconclusive. The run it supports is judged without it |
 
-- **A refused run cannot pass.** With no failing entry it leaves its family's readouts not formed, and its arm at
-  best inconclusive.
+- **A run that did not complete, or whose echo departs, cannot pass.** It leaves its family's S entries not formed
+  (§3.3), and with no failing entry its arm is at best inconclusive.
 - **A refusal of provenance or of a shared record hash forms the entry.** The S entries are formed from every run
   that completed and whose echo matches; such a refused run caps its family's and its arm's result at inconclusive,
   and a fail (an E or R entry, or an S size miss with the order in its window or unresolved) that any of its entries
