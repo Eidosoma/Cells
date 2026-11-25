@@ -174,9 +174,9 @@ declared trace (`background`), as FR-4's worlds do. It is inert there: no route,
 **Recommended: A.** C is the map's other form, and it is real: it needs no core edit and it reads concentrations for
 free. But it gives voltage-gated channels a second home, chosen by whether an ion is scarce. The same law could not
 be hosted in both. Nothing that acts on channel populations would act on it, G-7's assembly factor included. D211's
-22 calcium and HCN laws, which carry Ca with Na and K, would leave the channel interface. **C stays the fallback**
-if the lead wants no core edit in this cleanup. Its equations are the same, so it can be replaced by A later without
-a changed model.
+22 calcium and HCN laws, some of which carry Na and K as well, would leave the channel interface. **C stays the
+fallback** if the lead wants no core edit in this cleanup. Its equations are the same, so it can be replaced by A
+later without a changed model.
 
 **The driving force: constant field, unchanged.** Calcium currents are strongly rectifying because the two
 concentrations differ by thousands; the constant-field flux carries that and a linear form does not. The cardiac
@@ -361,7 +361,8 @@ IDs and their judged worlds. @2 refuses a neutral role, naming @1, so no two law
 - **Why a new major, not a calcium name:** the mechanism is ATP-driven transport of one species. Nothing in it is
   calcium's.
 - **Its potentials:** the three fuel rows' are the species registry's, at its c0. D152's standard concentration is
-  checked against it (`check_potentials`), and both are 1 mM here, so the drive is the ensemble's numeric-mM quotient.
+  checked against it (`check_potentials`), and both are 1 mM here, so the drive is the ensemble's numeric-mM
+  quotient.
 - **Finite fuel under a charged role** waits for a consumer (G-6).
 - **Its declared step terms:** `stage_term` and `material_term`, so refusal 4 admits it at a compartment's node. The
   kind supplies both.
@@ -397,8 +398,8 @@ its fields and programs. The neutral rows are as today.
 
 ### 6.5 The release: the route, and what it asks of its source
 
-**The route is mine, the source is E's.** The release is one more `passive_constant_field_permeation@1` route for Ca
-on the bounding patch:
+**The route is this stream's, the source is E's.** The release is one more `passive_constant_field_permeation@1`
+route for Ca on the bounding patch:
 
 ```text
 m = (the patch's availability) x f_Ca(c_cytosol) x f_IP3(c_IP3, cytosol)     the product of the sources in its `factors` list
@@ -423,10 +424,11 @@ moves at the same node:
 loop rate at that node  =  |J_r| x sum over its sources of |d ln f / dn|     1/s, added to the stage's material rate
 ```
 
-- **At binding** the core pairs a sink's `moved_rows` with its sources' `factor_rows`, so the pairs are static. A
+- **At binding** the core pairs a slot's `routed_rows` with its sources' `factor_rows`, so the pairs are static. A
   world with none has no term, and its programs are today's.
-- **A sink gains** `routed_flux(read, potentials, control, p)`, its slots' |J|: the passive routes, and @3's channel
-  populations, which the same rule then covers for an inactivation factor.
+- **A sink gains** two hooks: `routed_rows(declaration)`, the rows each routed slot moves (host), and
+  `routed_flux(read, potentials, control, p)`, its slots' |J|. The passive routes have both, and @3's channel
+  populations too, so the same rule covers an inactivation factor on a calcium channel.
 - **Its size in the ensemble (S):** J_r 0.0157 fmol/s, d ln f/d ln c = 0.38, 0.001 fmol free: 6 per second, 7.5e-5
   per 12.5 µs step. Nothing there binds.
 - **Its limit, stated:** loops through two routes (one moves X and gates on Y, another moves Y and gates on X) are
@@ -437,9 +439,9 @@ loop rate at that node  =  |J_r| x sum over its sources of |d ln f / dn|     1/s
   lead to place (§16).
 
 **Integrator, heat, restart.** Explicit at each stage, at the stage's own calcium, as legacy's. A route books heat
-only. The factor books nothing. No state of its own. **Refused by name:** an unknown source, a source outside [0, 1],
-a factor held through the step (a changed model). **Provenance:** the flux is the constant-field form; the factor's is
-E's. **Same equations:** yes, with the factor at each stage.
+only. The factor books nothing. No state of its own. **Refused by name:** an unknown source, a source outside [0,
+1], a factor held through the step (a changed model). **Provenance:** the flux is the constant-field form; the
+factor's is E's. **Same equations:** yes, with the factor at each stage.
 
 **Not claimed:** that IP3 multiplies the release by an activation factor. One patch-clamp study fitted Po against
 calcium with a biphasic Hill curve and found IP3 moving only the inhibition constant (Mak, McBride and Foskett 1998
@@ -476,6 +478,12 @@ dependence itself has two independent reports here (Bezprozvanny, Watras and Ehr
 | Buffers | reaction extents, heat, standard term | none created; stoichiometry | zero per reaction | heat >= 0; standard term stored |
 | Store node | none | its rows | q_store = C_b (phi_store - phi_cytosol) | 1/2 C_b V_b² in the capacitor term |
 | Factor (E) | none | none | none | none |
+
+**Heat near a reversal.** A route whose power falls by more than 59% within a step books a negative increment under
+the tableau (ARS(2,2,2)'s weights), and the dissipation check refuses beyond 1e-12 pJ. Channels, @3's patches and
+the transporter admit the trapezoid, which cannot be negative; the K leak can take it as a patch. The passive routes
+do not (§16, L9). In these worlds the calcium routes stay far from reversal, and the K leak's power near its own
+zero is below the tolerance (S).
 
 **Closure measured:** energy-rate balance -1.4e-16 of 0.85 pJ/s; the largest relative ledger over 80 host steps at
 12.5 µs is 1.6e-7, and it falls by four per halving (1.6e-7, 4.1e-8, 1.0e-8); the composite's, with buffers, after 5
@@ -589,8 +597,8 @@ kinds, so it inherits their rules. (R) from `operators/compartments.py:154-171` 
   host only. The channel material term exists only where a declared channel law declares it; the transporter's,
   where a population's law does; the feedback, where a routed source reads a row its sink moves. Each is a static
   choice by shape or structure, as K3b, FR-51 and B1 are. Every world of today's keeps its programs, layouts and
-Every world of today's keeps its programs, layouts and
-  fingerprints. Proof: the cleanup's one gate, with crossrev's sets, G1's 113 worlds and FR's set.
+  Every world of today's keeps its programs, layouts and fingerprints. Proof: the cleanup's one gate, with
+  crossrev's sets, G1's 113 worlds and FR's set.
 - **CPU:** everything here runs there. The probe's composite world took 26 s to parse, compile and step five steps
   (M).
 - **GPU:** nothing in these laws blocks one (no host callback, no data-dependent loop). What blocks is the
@@ -638,7 +646,8 @@ a family that exists.
 
 - **No new interface** here. `ChannelLaw` gains one defaulted field, `material_term` (D191's precedent for
   `JunctionLaw`); the declarations manifest shows it.
-- **Two `Kind` hooks** (§6.5), optional: `factor_rows`, `factor_log_slopes`; a sink hook, `routed_flux`.
+- **Four optional `Kind` hooks** (§6.5): a source's `factor_rows` and `factor_log_slopes`; a sink's `routed_rows`
+  and `routed_flux`.
 - **Model table:** three new homes on @3's row, each an inert module.
 - **Library pages:** one for each of the three laws, with their independent reference, plant and stated limits.
   `transporter@1`'s generated blocks, the index and the glossary follow `library_pages.py --write`. The glossary
@@ -725,20 +734,23 @@ into that lane. Options:
 
 ## 17. What is wrong in the plan and the docstrings
 
-Corrected already by the map (a1db6ab9): B2 and I8 (the population axis does not refuse electrogenic modes), §8's
-"changed model" for B1 and NCX. Not corrected:
-1. **B1, "Not bitwise"** (plan §3): true of a trajectory, not of the kernel. It is bit for bit with the converted
+Plan lines are those of `docs/LEGACY_PORT_PLAN.md` at a1db6ab9. The map there has already corrected B2 and I8 (the
+population axis does not refuse electrogenic modes) and §8's "changed model" for B1 and NCX. Not corrected:
+
+1. **B1, "Not bitwise" (line 335):** true of a trajectory, not of the kernel. It is bit for bit with the converted
    constant on 2,000 states (M).
-2. **§8, "Conservation ledgers keep their own absolute bounds, for example 1e-9 pJ":** not established for a
-   second-order candidate (§12).
-3. **B4** (plan §3) says the reactions hold a species that @3 routes only as a covered counter-ion. That is one
-   admission. The other is that a species whose movers are kinds has no @3 route, and the probe ran it (M). So the
-   store's buffers are not blocked by G-4.
-4. **The price of G-4 (5 to 8 days):** the store's entity, its leaks, its buffers and its charged door exist. §15
-   replaces it.
-5. `laws/reactions/er_calcium.py:1` and `plasma_calcium.py:3-5` name the external source in their first lines, and
-   `laws/channels/calcium_gates.py:1-5` says "native". Live code should read neutrally (§13).
-6. **The cardiac note's §1 and §6** (16 November) list as missing five prerequisites that exist now (§2.2).
+2. **§8, "Conservation ledgers keep their own absolute bounds, for example 1e-9 pJ on energy" (line 975):** not
+   established for a second-order candidate (§12).
+3. **B4 (line 338)** says the reactions hold a species that @3 routes only as a covered counter-ion, and that inside
+   the ER it waits for G-4. That is one admission. The other is that a species whose movers are all kinds has no @3
+   route, and the probe ran it (M), in the cytosol and in the store.
+4. **The price of G-4, 5 to 8 days (line 498):** the store's entity, its leaks, its buffers and its charged door
+   exist. §15 replaces it.
+5. `laws/reactions/er_calcium.py:1` and `laws/reactions/plasma_calcium.py:3` name BETSE in their docstrings, and
+   `laws/channels/calcium_gates.py:1` too; its line 3 says "native". Live code should read neutrally (§13).
+6. **The cardiac note's §1 and §6** (16 November) list as missing prerequisites that exist now (§2.2).
+7. `docs/SPATIAL_CALCIUM.md:49` and `docs/ER_CALCIUM.md:68` state 1e-9 pJ as the residual limit. That is true of the
+   RK4 models and is not the engine's bound for their re-expression (§12). They are the legacy models' records.
 
 ## 18. Sources
 
@@ -808,4 +820,48 @@ The four worlds' numbers map onto today's blocks (legacy's on the left):
 | `plasma_transport.exchanger` | a population of `sodium_calcium_exchange_symmetric_barrier@1`: capacity, `km_na_mM`, `km_ca_mM` |
 | `calcium_channels[]` | a channel population of `cav1p2_m2h@1`: permeability, abundance, gates, permeant ion Ca |
 | `reactions[]` | `local_species_reactions@1` at the cell and the store, c0 = 1 mM, each passive, `forward_rate_per_s` as listed |
+| `store_controls`, `plasma_controls`, `calcium_channel_controls` (all constant 1) | `reaction_controls`, `transporter_controls`, `membrane_controls`, `channel_controls`; none per passive route |
 | `ionic` | @3's cells, outside nodes, patches, junctions and faces; calcium's permeability out of the patches and junctions and into routes |
+
+## Appendix C. The two cycle forms, as the probes planted them
+
+Data only. Each becomes an inert module on the pattern of `laws/cycles/electrogenic_nucleotide_exchange.py`, with
+its page, citation and test.
+
+```python
+EXCHANGE = CycleForm(
+    kinetics="monomial",
+    roles=(("Na", 1), ("Ca", 2)),
+    rows=(("Na", "N"), ("Na", "P"), ("Ca", "N"), ("Ca", "P")),
+    modes=(("exchange", (3, -3, -1, 1)),),
+    parameters=(Parameter("km_na_mM", "mM", positive=True), Parameter("km_ca_mM", "mM", positive=True)),
+    monomial=MonomialForm(
+        (MonomialRate(
+            orders=((Reference("Na", "P"), 3.0), (Reference("Ca", "N"), 1.0)),
+            zeta=-0.5,
+            factors=(
+                MonomialFactor(1.0, (
+                    MonomialTerm(Scaled("km_na_mM", 1.0, -3), ((Reference("Na", "N"), 3.0),)),
+                    MonomialTerm(Scaled("km_na_mM", 1.0, -3), ((Reference("Na", "P"), 3.0),)))),
+                MonomialFactor(1.0, (
+                    MonomialTerm(Scaled("km_ca_mM", 1.0, -1), ((Reference("Ca", "N"), 1.0),)),
+                    MonomialTerm(Scaled("km_ca_mM", 1.0, -1), ((Reference("Ca", "P"), 1.0),))))),
+            constants=(Scaled("km_na_mM", 1.0, -3), Scaled("km_ca_mM", 1.0, -1))),),
+        standard_state_mM=1.0))
+
+TRANSPORT = CycleForm(
+    kinetics="factored",
+    roles=(("role", None), ("ATP", 0), ("ADP", 0), ("Pi", 0)),
+    rows=(("role", "N"), ("role", "P"), ("ATP", "N"), ("ADP", "N"), ("Pi", "N")),
+    modes=(("cycle", ("-stoichiometry", "stoichiometry", -1, 1, 1)),),
+    parameters=(
+        Parameter("stoichiometry", "1", low=1, high=4, integer=True, positive=True),
+        Parameter("km_role_mM", "mM", positive=True), Parameter("km_atp_mM", "mM", positive=True)),
+    fuel_roles=("ATP", "ADP", "Pi"),
+    saturation=((Saturation(("role", "N"), "km_role_mM", "stoichiometry"),
+                 Saturation(("ATP", "N"), "km_atp_mM", 1)),))
+```
+
+Both laws declare `host="cells.transporter@1"`, `stage_term` and `material_term`. The exchanger also declares
+`forms="base"` and `reads=("rapid_binding@1",)`. The transport law declares `maintained_held_rows@1` as its one fuel
+kind.
