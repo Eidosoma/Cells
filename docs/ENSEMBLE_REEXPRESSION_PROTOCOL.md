@@ -79,6 +79,8 @@ This order is the lead's of 25 November (the audit's item 15). It replaces an ea
 12. **The user sees the result and the final removal counts,** and decides on every consumer that failed or is inconclusive (§8).
 13. **The deletion, the ID move and the full gate** with tier 3 (D383). The spec folder holds no ID and is frozen for the move. After the move, **one run per consumer on the final head must equal its registered table bit for bit** (values value by value, the IDs through the move's table): `jupiter_baseline h=6.25e-06`, `integrated h=2.5e-05`, `cell s1 w0 h=6.25e-06` with `cell s1 pool`, and `base s1 w0 h=6.25e-06` with `base s1 pool`. Part 2's are named in its tag. `registered_strings.json` and the rehearsal's files are frozen for the move; a mismatch of a repeated run stops the landing and goes to the user.
 
+**Part 2, by the user's decision of 25 November 2026 ("run and seal"):** its order is `spec/PART2-AMENDMENT-1-2026-11-25.md`'s. Its runs are made once after its registration tag and sealed, and it is not judged now.
+
 ## 6. The campaign
 
 **One campaign,** as the user decided: one full test of it all. It runs after the build, the rehearsal and the registration, and before the deletion and the ID move (§5). The runs are made from one clean frozen snapshot of the registration tag, Part 2 in the same batch only if it is tagged, and judged consumer by consumer.
@@ -89,6 +91,7 @@ This order is the lead's of 25 November (the audit's item 15). It replaces an ea
 - **Order of judgement:** the lead hashes the tables, the judge runs C0 on the captures and the spec, then stage 1, then stage 2, then the verdicts. Stage 1 (power) writes `power.json`. **Stage 1 reads the tables' own rows to form scales, and forms no difference between a candidate and a capture; `power.json` is hashed before the first difference.**
 - **The retry:** once, for what `retry_owed.json` names (a finer triple), from the same snapshot. Its tables are hashed the same way. Part 2's retry runs are made in the batch and kept unread until then (`spec/PART2.md` §13).
 - **After it:** the checker's own recomputation and the record; then the user sees the result and the final removal counts, and a consumer that fails, or is inconclusive after the retry, is reported to the user before any landing (§8); then the deletion, the ID move, the full gate with tier 3, and the one run per consumer on the final head (§5, steps 12 and 13).
+- **Part 2 is run and sealed,** by the user's decision of 25 November 2026: made once from a clean frozen snapshot of its registration tag, and not judged now (`spec/PART2-AMENDMENT-1-2026-11-25.md`).
 
 ## 7. What it costs
 
