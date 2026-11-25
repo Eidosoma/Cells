@@ -97,15 +97,14 @@ allowance, and stops at the first that fails. That rule is the criterion. No abs
 **Stage 1 of the judgement.** From the runs' own rows and the captures' own refinement, and before any difference between a run and a capture is formed, the judge forms every entry's U_c and β, and its class under §4.3's table. It
 writes `power.json` and the lead records its sha256. Stage 2 forms the differences.
 
-- **The planted distance D(y)** is the size of the effect that a 1 % change in one rate constant has on an entry, on the legacy side alone. `margins.json` gives, for every entry and plant that has it as a home, a ratio ρ (the planted change's effect over the readout's own magnitude, from planted legacy runs or by arithmetic;
-  `PLANTS.md`), and D = ρ × max |L₃| of that entry's family. No run enters it.
-- **An entry is tested** when **β ≤ D/10** for its ratio: the largest of its home plants' ratios, or, for an entry that is no home, that of the plant that moves it most. Otherwise it is **not tested:** its
+- **The planted distance D(y)** of an entry is the size of the effect that a 1 % change in one rate constant has on it, on the legacy side alone. `margins.json` gives a ratio ρ(y) (a planted change's
+  effect over the readout's own magnitude, from planted legacy runs or by arithmetic; `PLANTS.md`), and D(y) = ρ(y) × max |L₃| of that entry's family. No run enters it.
+- **An entry is tested** when **β ≤ D(y)/10**, with the ratio that `margins.json` gives its readout (a home's is its own plant's, and any other readout's is the plant's that moves it most). Otherwise it is **not tested:** its
   comparison is reported, a comparison above β still fails, and one within β is neither a pass nor counted.
-- **A plant is tested** at a home entry when β ≤ ρ × max |L₃|/10 with **that plant's own ratio.** **A mechanism is tested** when one of its plants is tested at one of its home entries (`margins.json` `mechanisms`, `PLANTS.md` §2, `PART2.md` §7.1). A plant that is not tested is listed and, where its mechanism is tested by another, costs nothing more.
-- **A consumer with an untested mechanism is at best inconclusive.** A home entry of an untested mechanism is owed the retry (§7) where 2 U_c is the larger part of its β, since a finer step lowers U_c. Where it is not, the retry cannot help and the mechanism stays untested.
+- **A mechanism is tested** when at least one of its home entries (`PLANTS.md` §2) is tested. **A consumer with an untested mechanism is at best inconclusive.** A home entry that is
+  not tested is owed the retry (§7) where 2 U_c is the larger part of β, since a finer step lowers U_c. Where it is not, the retry cannot help and the entry stays not tested.
 - **An observable that a mechanism cannot reach** in 20 ms is declared so in `PLANTS.md`, with the number, before any run. It is "not tested" in advance, and is not made a
   home. A plant of such a mechanism is enlarged or replaced by a dated line before the tag, never after.
-- **A home is the entry where its plant is largest,** chosen from the legacy side alone and before any run. Where the first choice was a worse one, the dated line says so (`PLANTS.md` §4, `PART2.md` §7.4).
 - The R and E entries have no power entry. Their own plants are §6's. Class D has none.
 
 ## 5. Faults and refusals
@@ -114,7 +113,7 @@ writes `power.json` and the lead records its sha256. Stage 2 forms the differenc
 
 | Fault | What follows |
 | --- | --- |
-| The echo (`inputs`, `strings`, `world`, `seed_index`, `world_id`, `step_s`) departs from the registered run (`SPEC.md` §2.4; the strings note exactly) | The run is **refused, and nothing of it is judged.** It is not the registered one |
+| The echo (`inputs`, but the items that `SPEC.md` §2.4 gives to class E; `strings`, `world`, `seed_index`, `world_id`, `step_s`) departs from the registered run (`SPEC.md` §2.4; the strings note exactly) | The run is **refused, and nothing of it is judged.** It is not the registered one |
 | Provenance: `source` incomplete, `checkout_dirty` true, a missing `record_sha256` or snapshot, an `engine_revision` that is not the strings note's, a `snapshot_patch_sha256` other than an empty file's, a non-null `host_patch`, a `t` that does not strictly increase, `steps` outside its range (`TABLE.md` §3), a status that disagrees with `refusal`, a shared `record_sha256` | The run is **refused,** its readouts are judged and a fail stands |
 | A judged leaf missing, mistyped or non-finite, or a registered time with no row, or with two | That **entry is not formed**. The rest of the run is judged |
 | A recorded-only leaf missing, mistyped or non-finite | Flagged to the checker |
@@ -129,7 +128,7 @@ writes `power.json` and the lead records its sha256. Stage 2 forms the differenc
 - **A refused or missing support run** leaves its consumer at best inconclusive. It does not refuse the run it supports.
 - **The one place a fail can go unseen** is a departing echo. It leaves nothing of that run judged, and its family's S entries are not formed. It is kept: such a run is not the registered
   world. The checker sees the departure and its cause.
-- **The owner of an entry.** An S entry belongs to the run at h₃. A D entry belongs to its own run, and the exposure to its pool run. A restart's E entry belongs to the judged run it resumes, never to the support run. The exposure, the path and the pool's arrays belong to the pool run.
+- **The owner of an entry.** An S entry belongs to the run at h₃. A D entry belongs to its own run, and the exposure to its pool run. A restart's E entry belongs to the judged run it resumes, never to the support run. The exposure, the path and the pool's arrays belong to the pool run. The switch list's, the channel schedule's and the recorded seeds' E entries belong to the ionic run that records them, and a pool run's seeds to the pool run.
 - **Nothing passes empty.** A consumer's S entries that were formed are counted. If they are fewer than READOUTS §3 lists, the consumer is at best inconclusive. A plant whose named entry is not formed is unscorable, never caught.
 
 **C0, before any table is read:** the judge reads `inputs.json`, `legacy_part1.json`, `reference_paths.json`, `margins.json` and the manifest, and the captures they name. It checks every sha256, every key, the scales
@@ -150,14 +149,14 @@ tables' hashes are recorded, then C0, then stage 1, then the tables are opened f
 - **A plant is scored with the honest family's β,** never its own. The **registered distance** of a structural or engine plant at a named entry is the legacy side's (`margins.json`).
   - Where the registered distance is at most 2 β, the comparison cannot see that plant there, and the plant is **unscorable**. It is never called caught or not caught, and it leaves its consumer at best inconclusive.
   - Where it is above 2 β, the plant is caught when the candidate and the planted capture differ by more than β at that entry. A candidate whose honest S entry passes always differs by more than β, so a plant not caught says that the candidate resembles the plant, and its consumer **fails**.
-  - A plant that reads an honest run that is refused, or whose named entry is not formed, is **unscorable**.
+  - A plant that reads an honest run that is refused, or whose named entry is not formed, is **unscorable**. An engine plant whose own declared change is not what `PLANTS.md` §5 says (EP2's switch list and schedule are class E against the **swapped** paths) is unscorable too.
 - **A plant is caught** when every entry it names is caught. One unscorable entry makes it unscorable, and any not caught makes it not caught.
 - **A power plant decides no verdict.**
 - **Margins are stated before any run** from the legacy side alone, against the band at U_c = 0. The sizing rule is 10 at the best entry. Below it, a plant is enlarged or replaced by a dated line before the tag, stated, and **no band, class or window moves because of a margin**.
 
 ## 7. The retry
 
-**Once, for the entries that are owed it:** an entry inconclusive by order, or a home entry of an untested mechanism whose 2 U_c is the larger part of β. The judge's first pass writes `retry_owed.json` (`TABLE.md` §6). The lead records its sha256, and the builders run exactly those.
+**Once, for the entries that are owed it:** an entry inconclusive by order, or a home entry not tested whose 2 U_c is the larger part of β. The judge's first pass writes `retry_owed.json` (`TABLE.md` §6). The lead records its sha256, and the builders run exactly those.
 - **The run:** one more halving, h₃/2, of every family that holds an owed entry, named `<family> h=<step> retry`, with its own support runs only if owed. The triple becomes (h₂, h₃, h₃/2), and S_c is its finest.
 - **Entries that passed or failed keep their score.** An owed entry is judged again by §4.3 and §4.5 on the new triple. The retry run's own D entry is judged, and a fail there counts.
 - **An entry still inconclusive, or still not tested, stays so.** A wrong coarse run that the retry drops is forgiven (the protocol's §9 says so), and the verdict states the steps that its pass covers.
@@ -171,7 +170,7 @@ tables' hashes are recorded, then C0, then stage 1, then the tables are opened f
   - **fails** if any of its judged runs fails, or a structural or engine plant of it is not caught;
   - otherwise is **inconclusive** if any of its judged entries is inconclusive or not formed, any judged or support run is refused, missing or stopped, a mechanism is untested, or a plant is unscorable;
   - otherwise **passes.**
-- **An entry not tested (§4.5)** counts for neither side, and is listed. What can leave a consumer inconclusive is an untested mechanism, not an untested entry.
+- **An entry not tested (§4.5)** that is not a home entry counts for neither side. It is listed.
 - **Part 1 passes** when its four consumers pass. A part decides nothing about another part.
 - **`base` is reported in two sets.** A design author ran world IDs 0 and 1 in composed form against legacy, at the configuration's own pool seeds, before this folder's tag (the protocol's §11). Those seeds (20260925 for cell 0's stream and 20260926 for cell 1's) are the captured seed index 0's. So `base s0 w0` and `base s0 w1` are **not blind**, and the other 30 families are.
   - **The verdict of `base` is the worse of its two sets' verdicts,** each formed by this section from its own families. A fail in either fails it, and an inconclusive in either leaves it inconclusive.

@@ -1885,65 +1885,134 @@
  },
  "pool_plants": {
   "what": "PW-pool: the snapshot's own pool alone, on the captured definitions with one rate x 1.01. Class E has no margin: the distance is whether anything changes",
-  "cell cell_0 k_off_s_inv": {
-   "arrays_changed": 4,
+  "cell cell_0 k_on_M_inv_s": {
+   "arrays_changed": [
+    "last_event_time_s",
+    "pending_time_s",
+    "dwell_completed_s",
+    "first_passage_s"
+   ],
    "worlds_whose_event_count_differs": 0,
-   "worlds_whose_last_event_differs": 37
+   "worlds_whose_last_event_time_differs": 37,
+   "worlds": 64
+  },
+  "cell cell_0 k_off_s_inv": {
+   "arrays_changed": [
+    "last_event_time_s",
+    "pending_time_s",
+    "dwell_completed_s",
+    "first_passage_s"
+   ],
+   "worlds_whose_event_count_differs": 0,
+   "worlds_whose_last_event_time_differs": 37,
+   "worlds": 64
   },
   "cell cell_0 k_close_s_inv": {
-   "arrays_changed": 4,
+   "arrays_changed": [
+    "last_event_time_s",
+    "pending_time_s",
+    "dwell_completed_s",
+    "first_passage_s"
+   ],
    "worlds_whose_event_count_differs": 0,
-   "worlds_whose_last_event_differs": 23
-  },
-  "cell cell_0 k_on_M_inv_s": {
-   "arrays_changed": 4,
-   "worlds_whose_event_count_differs": 0,
-   "worlds_whose_last_event_differs": 37
+   "worlds_whose_last_event_time_differs": 23,
+   "worlds": 64
   },
   "cell cell_0 k_fragment_dissolve_s_inv": {
-   "arrays_changed": 1,
+   "arrays_changed": [
+    "pending_time_s"
+   ],
    "worlds_whose_event_count_differs": 0,
-   "worlds_whose_last_event_differs": 0
-  },
-  "base cell_0 k_off_s_inv": {
-   "arrays_changed": 4,
-   "worlds_whose_event_count_differs": 0,
-   "worlds_whose_last_event_differs": 8
-  },
-  "base cell_1 k_off_s_inv": {
-   "arrays_changed": 4,
-   "worlds_whose_event_count_differs": 0,
-   "worlds_whose_last_event_differs": 8
-  },
-  "base cell_0 k_close_s_inv": {
-   "arrays_changed": 4,
-   "worlds_whose_event_count_differs": 0,
-   "worlds_whose_last_event_differs": 8
-  },
-  "base cell_1 k_close_s_inv": {
-   "arrays_changed": 4,
-   "worlds_whose_event_count_differs": 0,
-   "worlds_whose_last_event_differs": 8
+   "worlds_whose_last_event_time_differs": 0,
+   "worlds": 64
   },
   "base cell_0 k_on_M_inv_s": {
-   "arrays_changed": 4,
+   "arrays_changed": [
+    "last_event_time_s",
+    "pending_time_s",
+    "dwell_completed_s",
+    "first_passage_s"
+   ],
    "worlds_whose_event_count_differs": 0,
-   "worlds_whose_last_event_differs": 8
+   "worlds_whose_last_event_time_differs": 8,
+   "worlds": 8
   },
   "base cell_1 k_on_M_inv_s": {
-   "arrays_changed": 4,
+   "arrays_changed": [
+    "last_event_time_s",
+    "pending_time_s",
+    "dwell_completed_s",
+    "first_passage_s"
+   ],
    "worlds_whose_event_count_differs": 0,
-   "worlds_whose_last_event_differs": 8
+   "worlds_whose_last_event_time_differs": 8,
+   "worlds": 8
+  },
+  "base cell_0 k_off_s_inv": {
+   "arrays_changed": [
+    "last_event_time_s",
+    "pending_time_s",
+    "dwell_completed_s",
+    "first_passage_s"
+   ],
+   "worlds_whose_event_count_differs": 0,
+   "worlds_whose_last_event_time_differs": 8,
+   "worlds": 8
+  },
+  "base cell_1 k_off_s_inv": {
+   "arrays_changed": [
+    "last_event_time_s",
+    "pending_time_s",
+    "dwell_completed_s",
+    "first_passage_s"
+   ],
+   "worlds_whose_event_count_differs": 0,
+   "worlds_whose_last_event_time_differs": 8,
+   "worlds": 8
+  },
+  "base cell_0 k_close_s_inv": {
+   "arrays_changed": [
+    "last_event_time_s",
+    "pending_time_s",
+    "dwell_completed_s",
+    "first_passage_s"
+   ],
+   "worlds_whose_event_count_differs": 0,
+   "worlds_whose_last_event_time_differs": 8,
+   "worlds": 8
+  },
+  "base cell_1 k_close_s_inv": {
+   "arrays_changed": [
+    "last_event_time_s",
+    "pending_time_s",
+    "dwell_completed_s",
+    "first_passage_s"
+   ],
+   "worlds_whose_event_count_differs": 0,
+   "worlds_whose_last_event_time_differs": 8,
+   "worlds": 8
   },
   "base cell_0 k_fragment_dissolve_s_inv": {
-   "arrays_changed": 4,
+   "arrays_changed": [
+    "last_event_time_s",
+    "pending_time_s",
+    "dwell_completed_s",
+    "first_passage_s"
+   ],
    "worlds_whose_event_count_differs": 0,
-   "worlds_whose_last_event_differs": 4
+   "worlds_whose_last_event_time_differs": 4,
+   "worlds": 8
   },
   "base cell_1 k_fragment_dissolve_s_inv": {
-   "arrays_changed": 4,
+   "arrays_changed": [
+    "last_event_time_s",
+    "pending_time_s",
+    "dwell_completed_s",
+    "first_passage_s"
+   ],
    "worlds_whose_event_count_differs": 0,
-   "worlds_whose_last_event_differs": 6
+   "worlds_whose_last_event_time_differs": 6,
+   "worlds": 8
   }
  },
  "refused": {

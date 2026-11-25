@@ -123,6 +123,7 @@ each event from that event's time on. An entry that repeats the value before it 
   from a grid point, at any step down to 1.5625 µs, so the clock's near-miss rule cannot refuse one (measured on the snapshot's own pool code).
 - **The availability multiplies the channel only.** It touches no gate, pump, leak, junction or face.
 - **The pool never reads the ionic side.**
+- **`inputs.json`'s `coupling` block** (the label `assembly_observable` and the two levels, 1 and 0) states the rule above. It is informational. No echo compares it: the pool runs' arrays, the path and the schedule are class E, and the label is checked as `inputs.assembly.assembly_observable` (`TABLE.md` §3).
 
 **The ionic worlds judged.** World IDs 0 to 7 of each of the four seeds, for `cell` and for `base`: 32 ionic families each. For
 `cell` the pools are judged on all 64 worlds a seed, and the ionic side on 8 of them. Nothing is said of the ionic side of IDs 8 to 63.
@@ -193,10 +194,13 @@ A transfer y after S steps is the sum of S increments, each a step times a rate.
 
 So **e_round(S) = 8 ε (S + 1) s**, FR-38's form (`8 ε S s`), with this derivation.
 
-**The closure bound.** Both codes accept a field solve whose relative charge and current residuals are at most 2 × 10⁻¹²: the live model's
-declared `CHARGE_RTOL` and `CURRENT_RTOL`, and legacy's own normalised residual at most 1 with the same constant. A potential in error by that
-share moves a flux by at most that share of |z| F V*/(R T_K) of its gross one-way rate, which the scale already holds in χ.
-So **e_close = 4 × 10⁻¹² s**, two codes at 2 × 10⁻¹² each. The floor variant, which `jupiter` and `base` declare (§3.1), also accepts a residual within 10³ ulps of its potentials (2.2 × 10⁻¹³ of the incident conductance sum), which is smaller than that share and is inside it.
+**The closure bound** is on the potentials that a field solver leaves in error, and not on its current residual.
+- **A node's charge.** The live model accepts a node whose relative charge residual is at most 2 × 10⁻¹² (its declared `CHARGE_RTOL`). That is a potential error of at most 2 × 10⁻¹² of the potential, so at most 2 × 10⁻¹² V*. Legacy forms a membrane's voltage from its charges directly, with no solve to leave an error.
+- **A free offset** (the `near` and `far` regions). A current residual R_k at a component is a potential error δ_k ≤ |R_k|/ΣG_k, with ΣG_k the conductances of the faces and junctions incident to it. Legacy accepts |R_k| at most 2 × 10⁻¹² of the largest diffusion or drift current of any route (its own rule, with a negligible absolute 10⁻²³ A), and the live default solver at most
+  0.01 × 2 × 10⁻¹² of the largest net route current. A route's diffusion or drift current is at most its own conductance times a driving force, which is a diffusion potential (R T_K/F) |ln (concentration ratio)| or a voltage, and both are below V*. No conductance anywhere exceeds the smallest ΣG_k (it is 0.53 of it at most, from the declared values of the JUPITER cluster). So δ_k ≤ 2 × 10⁻¹² V*.
+- **The floor variant** (`jupiter`, `base`) also accepts |R_k| ≤ 10³ ε Σ G (|φ_s| + |φ_r|) over the routes incident to k. So δ_k ≤ 10³ ε × 2 max|φ| = 4.4 × 10⁻¹³ max|φ| ≤ 4.4 × 10⁻¹³ V*, below the share above.
+  **The cap is not a small current residual:** in the JUPITER cluster, at the declared initial values, it is 15 to 29 times 2 × 10⁻¹² of the largest current (1,550 to 2,930 times the default solver's target, and D147 measured 8 to 2,200 on another tissue). The route currents there nearly cancel, so the same cap is a potential error of 1.1 × 10⁻¹⁶ V. A bound on the current residual would not hold for the floor variant, and this one does.
+- **What it does to a readout.** A potential error δ moves a flux by at most |z| F δ/(R T_K) of its gross one-way rate, which is a share δ/V* × (χ − 1)/χ of the scale s, since s holds χ. So at δ ≤ 2 × 10⁻¹² V* it is at most 2 × 10⁻¹² s. **e_close = 4 × 10⁻¹² s** is two codes at that share.
 
 ## 7. The references
 
@@ -224,7 +228,7 @@ snapshot's byte for byte (the lead's and the plan's statement, and the author's 
 
 `inputs_rehearsal.json` has `inputs.json`'s schema, with its own worlds and runs, named `inv_<name>`, and none of this folder's volumes, amounts, permeabilities,
 rates, seeds, times or steps. It holds, at least:
-- a two-cell cluster with a pump schedule (class S, R, D, the potentials), a one-cell assembly world and a two-pool assembly world (class E on the pool, the path and a restart), and a
+- a two-cell cluster with a pump schedule **and free field offsets** (class S, R, D, the potentials; it is the one that exercises the floor variant of the solver), a one-cell assembly world and a two-pool assembly world (class E on the pool, the path and a restart), and a
   small cluster of gated junctions with a schedule;
 - one family on the engine's IMEX integrator (declared order 2), at steps where its order is resolved. No RK4 family can be resolved at an admissible step, and the resolved branch of class S must be exercised;
 - one restart, one refusal of each kind (`TABLE.md` §4), and one run stopped by the engine's own check;

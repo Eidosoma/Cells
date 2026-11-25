@@ -2558,5 +2558,57 @@
    },
    "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part1/control jupiter_pump_release h4 again"
   }
+ ],
+ "pool_plants": [
+  {
+   "name": "pool_plant",
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/pool_plant.py"
+   ],
+   "cpu": "23, niced, through run_detached.sh",
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "script_sha256": "f4c5b3ef3d147c4b56c0adebf5717a9b568967f5973efcde653948ebaf5debd1",
+   "outputs_sha256": {
+    "pool_plants.json": "fe59ed4db16a0ba7117b1dfddb43b5cb570d3ce21d4f74a3fe2a481b9269b222"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125",
+   "runs": "12 (three pools of the captured definitions, four rates x 1.01)"
+  },
+  {
+   "name": "pool_plant2",
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/pool_plant2.py"
+   ],
+   "cpu": "23, niced, through run_detached.sh",
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "script_sha256": "e8df99d64ab0baf071a965eedae1f489b2dbcd7b43d3eb712c5218565238ae2c",
+   "outputs_sha256": {
+    "pool_plants2.json": "93351cba5ac67d09e8181ef7570be9bc51cfccb93976df4e4feca318d25eaaba"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125",
+   "runs": "12 (three pools of the captured definitions, four rates x 1.01)"
+  }
  ]
 }

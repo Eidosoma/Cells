@@ -84,7 +84,7 @@ changes the gate's state at a schedule change, and a schedule that is not applie
 | EP1 | `jupiter_baseline plant channel`, at h₃ | Both channels' maximal permeability × 1.01 | `channel_K` |
 | EP2 | `base plant swapped`, seed 0, world 2, at h₃ | Each channel's schedule is the other cell's path | `channel_K` |
 
-A plant's block differs from its honest run's only by its change. Any other difference is a departing echo. **Their registered distances** are the legacy side's: EP1's is `PW-channel`'s (its ratio times the largest `channel_K` of the honest control of `jupiter_baseline`), and EP2's is ST6's at world 2 (`margins.json`).
+A plant's block differs from its honest run's only by its change. Any other difference is a departing echo. **EP2's change is in its channel schedule, which no echo checks** (`SPEC.md` §2.4). So its `switch_list` and its `controls.channel` are class E against the **swapped** paths (the other cell's, same seed and world), and the plant is unscorable if either departs. **Their registered distances** are the legacy side's: EP1's is `PW-channel`'s (its ratio times the largest `channel_K` of the honest control of `jupiter_baseline`), and EP2's is ST6's at world 2 (`margins.json`).
 
 ## 6. The judge's plants (JP): altered copies of honest tables
 
@@ -149,7 +149,7 @@ sha256, and `margins.json` the numbers below, entry by entry. No band, class or 
 
 - **Every mechanism of every consumer is observable.** The smallest margin of any entry (home or not) is 1.1 × 10⁵, against the rule of 10. The weakest homes are `channel_K` in `base` and `cell` (the band is set by the gross throughput, and the channel's net amount is small) and the gate h (a ratio of 2 × 10⁻⁵ to 3 × 10⁻⁵, because it moves little in 20 ms), for which `gate_m` is the other home.
 - **`voltage`** is a home of the electrical closure, which has no constant of its own. Its plant is the one that moves it most (`PW-pump`, `PW-leak` or `PW-junction`).
-- **An assembly's plant.** With each of the pool's four rates × 1.01, the snapshot's own pool, run alone, changes between 1 and 4 of the 19 arrays of every captured pool. The event counts of 20 ms do not change, and the times of the events do. So every rate is observable in class E, which has no margin (`margins.json` `pool_plants`).
+- **An assembly's plant (PW-pool).** The snapshot's own pool, run alone, with one rate × 1.01: the four arrays `last_event_time_s`, `pending_time_s`, `dwell_completed_s` and `first_passage_s` change for every rate in both pools of `base`, and for the on, off and close rates in `cell` (the last event's time moves in 37, 37 and 23 of its 64 worlds). In `cell` the dissolve rate moves one array (`pending_time_s`) and no event time. No rate changes an event count in 20 ms. So every rate is observable in class E, which has no margin. The runs and their sha256 are in `plants_manifest.json` (`pool_plants`).
 
 **The structural plants.** All are above 10 times the band by a wide margin, so each is scorable:
 

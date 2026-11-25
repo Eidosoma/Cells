@@ -174,6 +174,8 @@ As Part 1 §2.3. The captured release, pump and passive multipliers are 1 throug
 | IP3 binding | `extent_ip3_binding` | ip3 and its cluster |
 
 - **Part 1's mechanisms** (leak of Na, K, Cl, K channel, its kinetics, the pump, the junction, its gate, the faces, the closure) are in every one of the eight, and their homes are Part 1's. **Their ratios come from their own planted runs** in each of the four ionic children (§7.2), and not from Part 1's.
+- **Where a home entry has several plants** (the calcium factor's two constants, the exchanger's two, and the IP3 factor's, all on one entry), each plant is tested at it with its own ratio, the entry takes the largest, and the mechanism is tested when one of its plants is. **This rule waits for the lead's ruling:** it goes beyond `CRITERIA.md` §4.5, which gives a home entry one plant. The literal alternative
+  is that every plant of a mechanism must be tested. The choice changes nothing of Part 1, where no home has two plants.
 - **The four clusters** take their ionic child's ratio, formed at 0.02 s alone (the summary entries at the summary times), **halved**. That is a declared lower bound. The availability changes the channel's current, not its relative response to a 1 % change in it. No cluster was run with a power plant.
 - **A mechanism whose plant has no effect above its band** is declared not observable in §7.4, and is not a home.
 
@@ -205,7 +207,7 @@ As Part 1 §2.3. The captured release, pump and passive multipliers are 1 throug
 
 ### 7.4 Observability and margins (from the legacy side alone, 25 November 2026)
 
-**103 power runs, 14 structural runs that completed or were refused (SC3), and nine controls** of the frozen snapshot at the captured 12.5 µs, under the lead's conditions of 25 November, after the first commit of this branch. `plants_manifest_part2.json` holds each run, its patch text and its sha256, and `margins_part2.json` the numbers below, entry by entry.
+**103 power runs, 15 structural runs (SC3 stopped by legacy's domain check, and the refused stoichiometry of SC6 among them), and nine controls, 127 runs in the manifest,** of the frozen snapshot at the captured 12.5 µs, under the lead's conditions of 25 November, after the first commit of this branch. `plants_manifest_part2.json` holds each run, its patch text and its sha256, and `margins_part2.json` the numbers below, entry by entry.
 **The controls are bit-identical to their captures:** `spatial_calcium` 371 arrays, `plasma_calcium` 413, `gated_calcium` 455, `ip3_calcium` 469 (each twice, before and after its batch), and `cluster_gated_calcium` seed 0, 48.
 
 **Every mechanism of every consumer is observable** at U_c = 0. Each row holds the planted ratio and the smallest margin over the children that hold the mechanism, and for the clusters (at 0.02 s, with the ratio halved, §7.1) the ratio used and the smallest margin:
@@ -251,10 +253,10 @@ As Part 1 §2.3. The captured release, pump and passive multipliers are 1 throug
 | IP3 factor | `store_release` (P-ip3activation) | 1.3e-02, 9e+06 | 6.4e-03, 9e+06 |
 | IP3 binding | `extent_ip3_binding` (P-ip3binding) | 7.8e-03, 6e+07 | 3.9e-03, 6e+07 |
 
-- **Mechanisms with several plants** (the calcium factor, the exchanger) are tested by the largest of them (`CRITERIA.md` §4.5). The inhibition constant and the exchanger's Na constant are weak plants (a ratio of 10⁻⁴ or less), and their mechanisms are tested by the activation constant and the capacity.
+- **Mechanisms with several plants** (the calcium factor, the exchanger) are tested by the largest of them (§7.1, waiting for the ruling). The inhibition constant and the exchanger's Na constant are weak plants (a ratio of 10⁻⁴ or less), and their mechanisms are tested by the activation constant and the capacity.
 - **The store's capacitor** is the weakest mechanism: its 1 % plant moves `store_K` by 1.4 × 10⁻⁴ to 1.7 × 10⁻⁴ of itself in the children and by 5.8 × 10⁻⁵ to 7.8 × 10⁻⁵ at the clusters' end. A candidate whose error estimate on `store_K` is above about 10⁻⁵ of its largest value cannot test it, and the consumer is then inconclusive. The candidate's step decides, and no band is widened for it.
 
-**Homes moved on 25 November, before any candidate run of these worlds, from the legacy side's own planted runs (dated line):**
+**Homes moved on 25 November, after the planted runs had been read, and before any candidate run (dated line). They wait for the lead's ruling,** because the lead's condition of 25 November is that a plant under 10 is enlarged or replaced, and moving the home is neither (the protocol's §10). The literal alternative is to keep both homes as first written, and to declare the two mechanisms untested or to enlarge their plants.
 - **Store K leak:** from `store_leak_K` to `store_voltage`. The K leak is so fast that K's own transfer follows calcium's, and its 1 % plant moves `store_leak_K` by 1.4 × 10⁻⁴, while the store's voltage is set by the leak and moves by 1 %.
 - **Store capacitor:** from `store_voltage` to `store_K`. At the potential times the store's voltage is quasi-steady and does not know its capacitance (a margin of 8 to 13, under 10 in `ip3_calcium`). `store_K` holds the early charging, and its margin is 680 to 1,600.
 
@@ -316,7 +318,7 @@ the store, plasma-pump, channel and IP3 references of the live tests, with an ad
 
 **What it is used for.**
 - **Corroborating the reference side, before any run.** It is run on the captured definitions, and must agree with the captured h/4 rows at the compared times within its own registered criterion, 3 × 10⁻⁹ relative and 3 × 10⁻¹² absolute, readout by readout. A disagreement is a C0 fault of the
-  references, found before a table is opened. **The author ran it on 25 November** on the four children and on both JUPITER arms: every field agrees at every compared time, with the worst entry at 5.5 × 10⁻⁴ of that criterion. The largest difference relative to a field's largest value is 3.3 × 10⁻¹² (the store's K leak) in the children, and 2.5 × 10⁻¹⁴ in the JUPITER arms (the protocol's §11).
+  references, found before a table is opened. **The author ran it on 25 November** on the four children and on both JUPITER arms: every **state** field agrees at every compared time (the potentials were not compared), with the worst entry at 5.5 × 10⁻⁴ of that criterion. The largest difference relative to a field's largest value is 3.3 × 10⁻¹² (the store's K leak) in the children, and 2.5 × 10⁻¹⁴ in the JUPITER arms (the protocol's §11).
 - **Reporting beside a miss.** Where the candidate misses an S entry, the judge reports its distance to the independent reference too. It decides nothing by itself.
 - **A changed model** (§3), if one is found, has it as its registered criterion, at 3 × 10⁻⁹ against the independent equations **as they are written there**, which must first be changed to the changed model's.
 

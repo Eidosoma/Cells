@@ -6920,5 +6920,37 @@
    },
    "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part2/control spatial_calcium h again"
   }
+ ],
+ "independent_references": [
+  {
+   "script": "ref_jupiter.py",
+   "script_sha256": "d17d52611083917e59c1ea18baa30c6dbe2be40d6e51488a936e587adecf0cdf",
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/ref_jupiter.py"
+   ],
+   "cpu": "23, niced, through run_detached.sh",
+   "code": "validation/betse/spatial_cluster/reference.py and tests/reference_*_calcium.py at 49529e71 (no engine import)",
+   "outputs_sha256": {
+    "ref_jupiter.json": "8b2c699e810a720e2b6e3a4fd2473c3c3d644e4e477e8a3dfe7abcb52545bf67"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125"
+  },
+  {
+   "script": "ref_calcium.py",
+   "script_sha256": "0b51f966b2aba380a2e680340ada87b8c88404c395ea422d7e3add591bf10017",
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/ref_calcium.py"
+   ],
+   "cpu": "23, niced, through run_detached.sh",
+   "code": "validation/betse/spatial_cluster/reference.py and tests/reference_*_calcium.py at 49529e71 (no engine import)",
+   "outputs_sha256": {
+    "ref_calcium.json": "927216254453a7f0d060e8584ab8bbe3a7edd50aa4869d3e35c7d12d44df5a34"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125"
+  }
  ]
 }

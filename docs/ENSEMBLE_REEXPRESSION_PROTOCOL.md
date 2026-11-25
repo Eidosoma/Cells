@@ -137,8 +137,10 @@ In words, so that a pass is read as no more than it is.
 17. **Old checkpoints** of these worlds. They cannot be resumed on a canonical form. The pre-cleanup tag and the captures keep them.
 18. **That legacy was right.** Agreement with legacy says the equations were kept. It is not a validation of the physics, and the parameters are synthetic.
 19. **A blind test of `base` s0 w0 and s0 w1,** which a prototype had run, nor, through the shared ionic world, a wholly blind one of `jupiter_baseline` (§11).
-20. **That the floor variant of the field solver is fit for a run of record.** D147's guard with constants is a step before the campaign, and its result is not assumed.
-21. **Class E on another machine.** The pools' events were reproduced on the captures' machine. A logarithm's last bit may differ elsewhere.
+20. **The reported identities** (`spec/READOUTS.md` §5). The balances, the charge and the energy are printed beside their bounds and are not judged.
+21. **The clusters' own planted ratios.** The four assembly calcium clusters use half of their ionic child's, which is assumed and not measured.
+22. **That the floor variant of the field solver is fit for a run of record.** D147's guard with constants is a step before the campaign, and its result is not assumed.
+23. **Class E on another machine.** The pools' events were reproduced on the captures' machine. A logarithm's last bit may differ elsewhere.
 
 ## 10. Questions for the lead
 
@@ -158,6 +160,8 @@ Each has the default the files already follow.
 11. **The ratios of the four assembly calcium clusters** (`PART2.md` §7) are half their ionic child's, a declared lower bound. Planted runs of each would cost about a CPU-hour. Default: as written.
 12. **The store's capacitor in the four clusters** rests on a planted ratio of about 3 × 10⁻⁵ (after halving), since a cluster's captures hold one end state and not the early rows where the capacitor shows. A candidate whose error estimate on `store_K` is above about 3 × 10⁻⁶ of its largest value cannot test it there, and the cluster is then
    inconclusive. The alternative is to require that mechanism in the four children alone. Default: required in all eight.
+13. **Two things of Part 2 need your ruling before its tag** (`PART2.md` §7.1 and §7.4), and neither moves a Part 1 file. (a) Where a home entry has several plants, each plant is tested apart and the mechanism is tested when one of its plants is. The literal alternative is that every plant of a mechanism must be tested.
+   (b) Two homes were moved (the store's K leak from `store_leak_K` to `store_voltage`, and its capacitor from `store_voltage` to `store_K`) after the planted runs were read, because the first choices gave a ratio of 1.4 × 10⁻⁴ and a margin of 8 to 13. Your condition says that a plant under 10 is enlarged or replaced, and that an insensitive ledger is not tested rather than tuned. The literal alternative is to keep the homes as first written, and to declare the two mechanisms not tested or to enlarge their plants. Default: Part 2's files as written, until the ruling.
 
 ## 11. Disclosures: what this author has seen and done
 
@@ -196,9 +200,30 @@ rule instead. The draft's bounds are printed beside the reported identities with
 **Dated note, 25 November 2026 (the lead's, from the user).** The user decided G-7's form: a driver writes the live pool's switch path into the ionic world's channel controls. The ionic world stays the inner model, version 3, on RK4, and the operator is not built now. No run informed it. Also decided: the assembly observable is a registered law with an ID and a page, of the family
 `assembly_observable` (the user's word), and a candidate's definition records it, the composed file's fingerprint, the pool's seeds and the switch list in the run's inputs (`spec/TABLE.md` §3, `spec/CRITERIA.md` §4.1).
 
-**What changed after the first commit (5b56f92c),** none of it a band, class or window, and none of it because of a number: the integrated world's capture folded in; the field-solver row (D147's rule); a second declared form of the assembly coupling, registered at 5f550674 as reported only and removed after the user's decision; the recorded assembly inputs; `base` reported in two sets; ST5, ST9, ST6, ST10 and EP2 as `PLANTS.md` §4 dates them; the reported identities' flags; the plants' margins. The first
-commit's message says that no re-expressed run existed. That was this author's belief, and this section corrects it.
+**What changed after the first commit (5b56f92c), hunk by hunk.** No band, class, window or scale changed, in either part (the two input files' scales equal the first commit's, checked by program, and their only other changes are the coupling's label and EP2's world). Planted numbers were first on screen at 11:40 UTC (Part 1) and 11:50 UTC (Part 2), and outcomes (completed or refused) from 11:32. The letter says what was on screen: **(a)** none, **(b)** Part 1's, **(c)** Part 1's and Part 2's. **"because of a number"** is said where it is so.
+
+| File | What changed | When |
+| --- | --- | --- |
+| `CRITERIA.md` head, §8 | Who is not blind, and `base` in two sets (the lead's statement) | (a) to (b) |
+| `CRITERIA.md` §8 | `integrated` no longer pending: its capture exists | (a) |
+| `CRITERIA.md` §4.1, §5 | The switch list and the seeds of an ionic run, and who owns them (the user's decision on the coupling) | (c) |
+| `CRITERIA.md` §4.3 | A compared time with no row, or with two, leaves the entry not formed. The first wording dropped the time, which would have let a missing row go unjudged | (c), a hole closed, not because of a number |
+| `CRITERIA.md` §6 | EP2's own change is class E, since no echo checks it | (c) |
+| `SPEC.md` §2.4, §3.1, §3.2, §3.3, §5, §6, §7, §8 | The echo's items, the field solver by D147's rule, the coupling's block and its decided form, the scale of a `_summary` entry, the closure term's derivation (its number unchanged), the captures of `integrated`, and a rehearsal world with free offsets | (a) to (c) |
+| `READOUTS.md` §2, §3, §5 | `integrated`'s potential times, `channel_K_summary`'s times, and the printed bounds of the reported identities | (a) to (c) |
+| `TABLE.md` §3, §5 | `inputs.assembly`, its label, and the `inputs` row | (c) |
+| `PLANTS.md` §4 | ST5 and ST9 replaced before their runs, since the legacy side cannot run the first choices | (a) |
+| `PLANTS.md` §4, §5 | ST6 and EP2 moved to a blind world, and ST10 added | (b). ST6's margin at world 1 had been printed |
+| `PLANTS.md` §3 | PW-pool made four rates instead of one | (b). Its first output had been printed |
+| `PLANTS.md` §6 | The judge's plants JP15 to JP18 | (b) to (c) |
+| `PART2.md` §7.1, §7.4 | Two homes moved, **because of a number** (margins of 8 to 13, and a ratio of 1.4 × 10⁻⁴), and the rule for a home with several plants, **because the smallest ratio would have let an insensitive constant decide**. Both wait for a ruling (§10, question 13) | (c) |
+| `PART2.md` §7.3, §7.4 | SC3 replaced by SC3b, because legacy's own domain check stopped it. SC13 added to the text (it was in the run plan of 11:28, before any run of Part 2). SC6's first choice refused by legacy | (b) to (c) |
+| `PART2.md` §0, §3, §4, §9, §12 | The decided forms, the field solver, the clusters' decided coupling, the identities' flags, the reference's run | (a) to (c) |
+| `CRITERIA.md` §4.5, §7, §8 | A wider wording (a home with several plants, the retry owed to an untested mechanism) was committed at 5f550674 and at 879d60ef, **because of a number**, and is reverted here to the first commit's words. Part 2's rule is in `PART2.md` §7.1 alone, so a ruling on it moves no file under Part 1's tag | (c) |
+| Whole folder | A second form of the assembly coupling, registered as reported only at 5f550674 and removed after the user's decision (commit 879d60ef) | (c) |
+
+The first commit's message says that no re-expressed run existed. That was this author's belief, and this section corrects it.
 
 **Not read:** any candidate, any re-expressed run, the two design notes' folders (notes D and E) and any file of the builders' branches. The builders' live code was read at main 49529e71, and nothing of `legacy-cleanup`.
 
-**Seen and not used:** the timings of the capture jobs, and the JSON summaries' values.
+**Seen and not used:** the timings of the capture jobs, and the JSON summaries' values. Decision entries D384 and D385 were not read beyond their titles.
