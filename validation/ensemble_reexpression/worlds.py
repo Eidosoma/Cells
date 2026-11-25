@@ -329,12 +329,14 @@ _CONTROLS = ("leak", "pump", "channel", "junction")
 
 
 def _groups(schedules, names, key, rename=lambda name: name):
-    """One control group for each name, its schedule or 1 throughout; a schedule of any other name
-    is written too, for the engine to refuse."""
+    """One control group for each name, its schedule or 1 throughout. A schedule of any other name
+    is the default written out where it is 1 throughout, and says nothing (SPEC §2.4); any other is
+    written too, for the engine to refuse."""
     given = schedules if isinstance(schedules, dict) else {}
+    others = [n for n in given if n not in names and given[n] != ONES]
     return [
         {key: rename(name), "schedule": _schedule(given.get(name, ONES))}
-        for name in (*names, *(n for n in given if n not in names))
+        for name in (*names, *others)
     ]
 
 
@@ -476,7 +478,7 @@ def _with_defaults(block):
         given = controls.get(key)
         if isinstance(given, str):
             continue
-        held = dict(entities(given))
+        held = {n: s for n, s in entities(given) if n in names or s != ONES}
         controls[key] = {n: held.get(n, ONES) for n in names} | held
     return out
 

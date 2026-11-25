@@ -219,6 +219,18 @@ def test_the_echo_reads_defaults_by_the_spec_and_hides_no_field(registered):
         charged = copy.deepcopy(block)
         charged["outside"]["outside"]["initial_charge_C"] += moved
         assert bool(worlds.departures(charged, block)) is departs
+    # A default written out for an entity that is not there (the rehearsal's pump schedules of
+    # membranes without a pump) says nothing; any other schedule of one is the engine's to refuse.
+    told = copy.deepcopy(block)
+    told["controls"]["pump"] = {m: [[0.0, 1.0]] for m in told["membranes"]}
+    told["controls"]["channel"] = {"no_channel": [[0.0, 1.0]]}
+    asked = dict(step=1e-4, observation_times=[0.0], solver="rk4", field_solver="none")
+    assert worlds.write(told, **asked) == worlds.write(block, **asked)
+    assert worlds.departures(told, block) == [] == worlds.departures(block, told)
+    told["controls"]["pump"]["membrane_3"] = [[0.0, 1.0], [0.005, 0.0]]
+    (group,) = worlds.write(told, **asked)["experiment"]["pump_controls"]
+    assert group["pump_id"] == "pump_membrane_3" and len(group["schedule"]) == 2
+    assert worlds.departures(block, told) != []
     raw = definitions.ionic(registered.worlds["cell"], 2.5e-05)
     raw["model"]["extracellular"][0]["reservoir"] = True
     assert worlds.read(raw)["outside"]["outside"]["reservoir"] is True
@@ -813,6 +825,25 @@ RELAXATION = labels.LABELS["junction_relaxation"]
 def test_what_the_engine_raised_is_mapped_to_a_kind(error, stage, gates, kind):
     found = refusals.refusal(error, stage=stage, gates=gates)
     assert found == {"kind": kind, "message": str(error), "time_s": None}
+
+
+def test_a_declared_changes_gate_law_is_what_its_refusal_is_read_with(invented):
+    """The one message that names a law and a range together: a run whose declared change names a
+    law that the engine does not have is refused as `definition`, as the rehearsal's is."""
+    honest = invented.run("inv_sample_sheet h=4e-05")
+    change = [{"path": ["junctions", "j_bc", "gate", "law"], "value": "no_such_law"}]
+    message = ConfigError(THRESHOLD.format(law=RELAXATION))
+    for run, kind in (
+        (honest, "domain"),
+        (dataclasses.replace(honest, declared_change=change), "definition"),
+        (dataclasses.replace(honest, declared_change=[]), "domain"),
+    ):
+        worker = object.__new__(driver.Worker)
+        worker.inputs, worker.run = invented, run
+        assert refusals.kind_of(message, stage="parse", gates=worker.gates()) == kind
+    lone = invented.run("inv_sample_lone s1 w2 h=2e-05")
+    worker.run = lone
+    assert worker.gates() == ()
 
 
 def test_the_rows_before_a_refusal_and_the_row_that_failed(invented, monkeypatch):
