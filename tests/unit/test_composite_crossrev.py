@@ -6,6 +6,9 @@ records each closed-over constant's dtype, shape and SHA-256 beside the text, at
 (jit, scan, cond), and the model's device-check constants among the bindings. compare
 reports a difference in either, and says when an output recorded no constants (outputs
 written before 13 November 2026).
+
+The floor guard (validation/tissue/field_floor_guard.py) compares field solver version 3's program
+and constants with version 2's; its row here is on a solve in miniature (traced only).
 """
 
 from collections import namedtuple
@@ -16,6 +19,7 @@ import numpy as np
 import pytest
 
 from validation.tissue import composite_crossrev as crossrev
+from validation.tissue import field_floor_guard as floor_guard
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -125,3 +129,44 @@ def test_compare_names_outputs_without_constants(tmp_path, capsys):
     assert "verdict identical (texts and bindings; constants not recorded)" in out
     assert not crossrev.compare(old, new) and not crossrev.compare(new, old)
     assert "w.checked_step.consts.json DIFFERS (one side)" in capsys.readouterr().out
+
+
+def solve(leaf, target=0.01, accept=0.01, atol=1e-3, rtol=2e-3, table=(1.0, 2.0, 3.0)):
+    """A field solve in miniature: a loop to its target, the solve's own convergence and, with the
+    floor leaf, version 3's acceptance test."""
+    table = np.asarray(table)
+
+    def f(x, *floor):
+        scale = x * jnp.asarray(table)
+        norm = lambda r: jnp.max(jnp.abs(r)) / (atol + rtol * jnp.max(scale))  # noqa: E731
+        unsolved = lambda c: norm(c[1]) > target  # noqa: E731
+        ok, r = jax.lax.while_loop(unsolved, lambda c: (c[0], 0.5 * c[1]), (x[0] < 9.0, scale))
+        rooted = ok & (norm(r) <= accept)
+        if floor:
+            rooted |= jnp.all(jnp.abs(r) <= floor[0] * np.finfo(float).eps * jnp.abs(scale))
+        return jnp.where(rooted, r, x), rooted
+
+    return jax.make_jaxpr(f)(jnp.ones(3), *([np.asarray(1e3)] if leaf else []))
+
+
+@pytest.mark.parametrize(
+    ("plant", "named"),
+    [
+        ({}, None),
+        (dict(target=np.nextafter(0.01, 1.0)), "0.010000000000000002"),  # In the loop only.
+        (dict(accept=np.nextafter(0.01, 1.0)), "0.010000000000000002"),  # After it only.
+        (dict(atol=2e-3, rtol=1e-3), "0.002"),  # Exchanged: the counts are equal.
+        (dict(table=(1.0, 2.0, np.nextafter(3.0, 4.0))), "closed-over array 0"),
+    ],
+)
+def test_the_floor_guard_compares_constants_where_they_sit(plant, named):
+    two, three = solve(False), solve(True, **plant)
+    program, constants, tests = floor_guard.compare_programs(two, three, [1], 0.01, gates=(1,))
+    assert program["accounted"] and len(tests) == 1
+    assert constants["ok"] == (named is None or "atol" in plant)
+    if named is None:
+        assert program["result"] == "equal" and program["slice"]["equal"]
+        assert constants["literals_added"] == {f"float64 {floor_guard.EPS!r}": 1}
+    else:
+        assert program["result"] == "differs"
+        assert any(named in d["what"] for d in program["differences"])
