@@ -19,10 +19,10 @@ from cells.laws.cycles.forms import (
     Scaled,
 )
 from cells.laws.cycles.mitochondria_source import citation
-from cells.modules import CycleLaw
+from cells.modules import CycleLaw, qualified
 
 LAW_ID = "phosphate_proton_symport@1"
-DECLARED_ID = f"cells.{LAW_ID}"  # As definitions write it; a module-level name, for the manifest.
+DECLARED_ID = qualified(LAW_ID)  # As definitions write it; a module-level name, for the manifest.
 CYCLE = CycleForm(
     kinetics="monomial",
     roles=(("Pi", -2), ("H", 1)),

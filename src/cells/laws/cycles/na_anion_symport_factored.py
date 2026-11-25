@@ -32,7 +32,7 @@ A compartment consumer needs declared step terms first; no current consumer puts
 """
 
 from cells.laws.cycles.forms import CycleForm, Parameter, Saturation
-from cells.modules import Citation, CitedWork, CycleLaw
+from cells.modules import Citation, CitedWork, CycleLaw, qualified
 
 LAW_ID = "na_anion_symport_factored@1"
 STOICHIOMETRY_RANGE = (1, 4)  # n_Na: Na+ per cycle, an integer.
@@ -69,7 +69,7 @@ CYCLE = CycleForm(
 # Its declaration on the law template (registry/laws.py): form-carried, so no version-1 moves or
 # kernels; registered by the law registry's loader as one of the model table's law homes, hosted
 # by the transporter kind's general layout.
-DECLARED_ID = f"cells.{LAW_ID}"  # As definitions write it; a module-level name, for the manifest.
+DECLARED_ID = qualified(LAW_ID)  # As definitions write it; a module-level name, for the manifest.
 LAW = CycleLaw(
     DECLARED_ID,
     cycle=CYCLE,

@@ -7,6 +7,9 @@
   compares digest values, not types: two records that differ only in a fingerprint's digest differ
   here, although the harness's value_key gives ["object", "builtins.str"] for both. A control
   array's bytes, a key on one side only, and a row that the map does not explain each differ too.
+- Through a table of renamed IDs (--outputs, D345) a result is read before it is serialized,
+  digested or cut, so an old tree's is a new tree's; a record read through one is compared only with
+  another such. A world differs only where it is declared.
 - identity checks a tree's files against a Git revision, blob by blob.
 No tree is recorded here: the record step's rehearsal on move 2's landing-gate inputs is recorded
 in the hand-back.
@@ -66,9 +69,47 @@ def test_the_harness_normalizes_texts_and_exceptions(fp, tmp_path):
     assert frame[1] == "test_the_harness_normalizes_texts_and_exceptions"
 
 
-def write(d, worlds, arrays):
+def test_results_are_read_through_the_table_before_they_are_digested_or_cut(fp, tmp_path):
+    table = tmp_path / "table.json"
+    old, new = "cells.zeta@1", "cells.alpha_family.zeta@1"  # It sorts before cells.beta, not after.
+    table.write_text(json.dumps({old: new}))
+    gives = fp.reader(table)
+    assert fp.reader(None) is None and gives({"a": [old, (old,)]}) == {"a": [new, (new,)]}
+
+    class Spec:
+        fingerprint = "f" * 64
+
+        def __init__(self, law):
+            self.law = law
+
+        def to_dict(self):
+            return {"rows": {self.law: 1, "cells.beta@1": 2}}
+
+    def canonical(value):
+        return json.dumps(value, sort_keys=True)
+
+    assert fp.fingerprint_value(Spec(old), canonical) == "f" * 64
+    read = [fp.fingerprint_value(Spec(x), canonical, gives) for x in (old, new)]
+    assert read[0] == read[1] != fp.fingerprint_value(Spec(old), canonical, lambda value: value)
+    h = fp.Harness(gives)
+    try:
+        raise ValueError("x" * 390 + f" {old} is refused")  # Cut at 400, after the table.
+    except ValueError as error:
+        _, _, text, frame = h.exc_key(error)
+    assert text == ("x" * 390 + f" {new} is refused")[:400] and len(frame) == 2  # No line number.
+
+
+def test_a_record_read_through_a_table_is_compared_only_with_another(fp, tmp_path):
+    key = "<tree>/configs/x.json"
+    code, _ = compare(fp, tmp_path / "both", {key: world()}, {key: world()}, through=(True, True))
+    assert code == 0
+    with pytest.raises(SystemExit, match="one record's results are read through a table"):
+        compare(fp, tmp_path / "one", {key: world()}, {key: world()}, through=(False, True))
+
+
+def write(d, worlds, arrays, through=False):
     d.mkdir(parents=True)
-    (d / "record.json").write_text(json.dumps(dict(worlds=worlds)))
+    (d / "record.json").write_text(json.dumps(dict(worlds=worlds, outputs_through=through)))
     np.savez(d / "arrays.npz", **arrays)
     return d
 
@@ -81,14 +122,15 @@ def world(digest="d" * 64, module="cells.definitions.specs"):
                 control_shapes={"a": ["float64", [2]]})
 
 
-def compare(fp, tmp_path, old_worlds, new_worlds, old_arrays=None, new_arrays=None):
+def compare(fp, tmp_path, old_worlds, new_worlds, old_arrays=None, new_arrays=None,
+            through=(False, False), declared=()):
     arrays = {"<tree>/configs/x.json::a": np.array([1.0, 2.0])}
-    old = write(tmp_path / "old", old_worlds, old_arrays or arrays)
-    new = write(tmp_path / "new", new_worlds, new_arrays or arrays)
+    old = write(tmp_path / "old", old_worlds, old_arrays or arrays, through[0])
+    new = write(tmp_path / "new", new_worlds, new_arrays or arrays, through[1])
     r1 = tmp_path / "r1.json"
     r1.write_text(json.dumps(dict(worlds={"/somewhere/d188-r1/configs/x.json": {}})))
     out = tmp_path / "compare.json"
-    code = fp.compare(old, new, MAP, out, r1_record=r1)
+    code = fp.compare(old, new, MAP, out, r1_record=r1, declared=declared)
     return code, json.loads(out.read_text())
 
 
@@ -105,6 +147,18 @@ def test_a_digest_that_differs_is_caught_where_its_type_is_the_same(fp, tmp_path
     assert code == 1 and report["verdict"] == "DIFFERS"
     assert report["fingerprints"]["differ"] == 1
     assert world()["fingerprint"] == world(digest="e" * 64)["fingerprint"]  # The type alone.
+
+
+def test_a_world_differs_only_where_it_is_declared_and_a_declared_one_must(fp, tmp_path):
+    key, other = "<tree>/configs/x.json", "<tree>/configs/y.json"
+    old, new = {key: world(), other: world()}, {key: world(digest="e" * 64), other: world()}
+    arrays = {f"{key}::a": np.array([1.0]), f"{other}::a": np.array([2.0])}
+    changed = arrays | {f"{key}::a": np.array([3.0])}
+    for declared, ok in (((), False), ((key,), True), ((key, other), False)):
+        folder = tmp_path / str(len(declared))
+        code, report = compare(fp, folder, old, new, arrays, changed, declared=declared)
+        assert (code == 0) == ok, report["declared"]
+        assert report["declared"]["worlds"] == ([key] if declared else [])
 
 
 @pytest.mark.parametrize("plant", ["array", "key", "row"])

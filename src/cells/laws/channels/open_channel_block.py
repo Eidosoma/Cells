@@ -51,11 +51,19 @@ domain_valid refuses one that is not, since compiled CPU code flushes subnormals
   the block has no kinetics; and binding is trace, with no count.
 """
 
+import math
+from collections.abc import Callable
+from dataclasses import dataclass
+from types import MappingProxyType
+from typing import ClassVar
+
 import numpy as np
 
 from cells.laws.electrochemistry import F, R
+from cells.modules import Citation, CitedWork, Law
 
 LAW_ID = "open_channel_block_weighted_modes@1"
+CHANNEL_BLOCK_LAW = "cells.channel_block_law@1"  # The interface, declared in @3's model-table row.
 MAX_MODES = 4  # The mode axis is static, and its sums are unrolled.
 MAX_STEEPNESS = 8.0  # m_k's limit: |a_k V_ref| <= 147 over the admitted domain.
 K0_RANGE_MM = (1e-15, 1e15)
@@ -117,3 +125,111 @@ def domain_valid(blocker_mM, dissociation_mM, *, xp=np):
         & xp.isfinite(total)
         & (total >= NORMAL)
     )
+
+
+def _interval(value):
+    return (
+        isinstance(value, tuple)
+        and len(value) == 2
+        and all(isinstance(v, float) and math.isfinite(v) for v in value)
+        and value[0] < value[1]
+    )
+
+
+BLOCK_KERNELS = ("dissociation", "fractions", "unblocked_fraction", "slope", "domain_valid")
+
+
+@dataclass(frozen=True)
+class ChannelBlockLaw(Law):
+    """cells.channel_block_law@1: an instantaneous block of one channel population by a held
+    blocker (FR-51). Its host multiplies the population's flux by the unblocked fraction u at the
+    reference voltage V_ref and takes u's part of the per-stage terms from `slope`. Its kernels are
+    pure functions in the xp style of [mode, ...] arrays."""
+
+    max_modes: int  # The mode axis's largest length: it is static, and its sums are unrolled.
+    max_steepness: float  # m_k's limit (dimensionless).
+    k0_range_mM: tuple[float, float]  # The admitted K_k(0).
+    blocker_range_mM: tuple[float, float]  # The admitted c_B.
+    sides: tuple[tuple[str, int], ...]  # (side, s)
+    dissociation: Callable  # (k0_mM, steepness, v_ref, temperature, *, xp) -> K_k (mM)
+    fractions: Callable  # (blocker_mM, K_k) -> (theta_k, 1 - theta_k)
+    unblocked_fraction: Callable  # (weight, 1 - theta_k) -> u [...]
+    slope: Callable  # (weight, steepness, temperature, theta, free, *, xp) -> |du/dV_ref|'s bound
+    domain_valid: Callable  # (blocker_mM, K_k, *, xp) -> [mode, ...] bool
+
+    interface: ClassVar[str] = CHANNEL_BLOCK_LAW
+    UNITS: ClassVar = MappingProxyType(
+        {"max_steepness": "1", "k0_range_mM": "mM", "blocker_range_mM": "mM"}
+    )
+    SIGNS: ClassVar = MappingProxyType(
+        {"sides": "s in a_k = s sgn(z_B) m_k F/(R T); K_k grows with V_ref where a_k is positive"}
+    )
+
+    def errors(self):
+        out = super().errors()
+        out += [
+            f"its {name} is callable" for name in BLOCK_KERNELS if not callable(getattr(self, name))
+        ]
+        if type(self.max_modes) is not int or self.max_modes < 1:
+            out.append("its largest mode count is a positive integer")
+        if not (isinstance(self.max_steepness, float) and 0 < self.max_steepness < math.inf):
+            out.append("its largest steepness is positive")
+        for name in ("k0_range_mM", "blocker_range_mM"):
+            if not _interval(getattr(self, name)):
+                out.append(f"its {name} is a (low, high) interval")
+        if not (
+            isinstance(self.sides, tuple)
+            and self.sides
+            and all(
+                isinstance(side, tuple)
+                and len(side) == 2
+                and isinstance(side[0], str)
+                and side[0]
+                and side[1] in (1, -1)
+                for side in self.sides
+            )
+        ):
+            out.append("its sides are (side, s) pairs, s +1 or -1")
+        return out
+
+
+# The law's declaration (CORE_SEAMS §8.2): inert, registered by the law registry's loader through
+# @3's model table.
+LAW = ChannelBlockLaw(
+    LAW_ID,
+    MAX_MODES,
+    MAX_STEEPNESS,
+    K0_RANGE_MM,
+    BLOCKER_RANGE_MM,
+    tuple(SIDES.items()),
+    dissociation,
+    fractions,
+    unblocked_fraction,
+    slope,
+    domain_valid,
+    host="cells.resolved_pump_tissue@3",
+    provenance="cited",
+    source=Citation(
+        "Woodhull's single-site block (A. M. Woodhull, 1973, J. Gen. Physiol. 61:687-708, PMID "
+        "4541078), applied in up to four weighted modes of one channel population",
+        "the single-site block's voltage dependence; the weighted form and the admitted domain are "
+        "fr51-channel-block-v1's (validation/fr51/REGISTRATION.md §1)",
+        "no numbers taken: the law is a form, its blocker and its modes a definition's values",
+        (
+            "up to four modes of one population, each with its own K(0) and steepness",
+            "a mode's steepness may be an effective valence in place of the charge times the "
+            "electrical distance, and may exceed the blocker's charge",
+            "at equilibrium at every voltage: no binding or unbinding rates",
+        ),
+        (
+            CitedWork(
+                ("Woodhull AM",),
+                1973,
+                "Ionic blockage of sodium channels in nerve",
+                doi="10.1085/jgp.61.6.687",
+            ),
+        ),
+    ),
+    test="tests/unit/test_surface_pump_v3_populations.py"
+    "::test_each_registered_plant_fails_its_criterion",
+)

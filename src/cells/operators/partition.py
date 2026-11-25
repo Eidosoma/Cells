@@ -138,8 +138,8 @@ LEDGER_DIAGNOSTICS = (
 )
 LEDGER_MESSAGE = "Partition accounting failed: "
 READOUT_COLUMNS = ("partition_slot_phase",)  # Per cell: 0 pending, 1 live, 2 retired.
-REFUSED_LAWS = {
-    "scheduled_cell_replacement": "replacement books at the declared layout",
+REFUSED_LAWS = {  # By the start of an ID: replacement in every version, the others in version 1.
+    "scheduled_cell_replacement@1".partition("@")[0]: "replacement books at the declared layout",
     "scheduled_membrane_insertion@1": "insertion@1 provides the masks and computes at its own view",
     "restricted_cleft_lumen@1": "lumen@1 follows one patch; use restricted_cleft_lumen@2",
 }

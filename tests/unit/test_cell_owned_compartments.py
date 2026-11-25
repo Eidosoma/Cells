@@ -23,6 +23,7 @@ docs/CLOSED_COMPARTMENT_DESIGN.md §1.4 to §1.6 and §4, in NumPy (no compile),
 
 import copy
 import dataclasses
+import re
 from dataclasses import dataclass
 from types import SimpleNamespace
 from typing import ClassVar
@@ -689,7 +690,8 @@ def test_refusal_4_admits_routes_beside_a_compartment_only_with_an_imex_tableau(
     assert spec.execution.solver != comp.RK4_SOLVER
     with pytest.raises(ConfigError, match="IMEX step exceeds the explicit-rate stability bound"):
         get_model(spec.model).bind_step_checks(spec)(np.full(STIFF_STEPS, STIFF_DT))
-    with pytest.raises(ConfigError, match=r"cells\.transporter@1\) require an IMEX solver"):
+    refusal = re.escape("cells.transporter@1) require an IMEX solver")
+    with pytest.raises(ConfigError, match=refusal):
         parse_spec(stiff_fr4(comp.RK4_SOLVER))  # @3's refusal, ahead of the operator's.
     # The operator's own rule, on @3's parsed base under each solver.
     base = parse_spec(stiff_fr4(operator=False))
@@ -1026,7 +1028,7 @@ def test_a_hook_its_entry_does_not_have_holds_no_move():
 
 
 def planted_kind(kind_id, **hooks):
-    return kind_registry.Kind(kind_id=kind_id, model_key=kind_id.split(".")[1], **hooks)
+    return kind_registry.Kind(kind_id=kind_id, model_key=kind_id.rsplit(".", 1)[1], **hooks)
 
 
 def hook(*args, **kwargs):

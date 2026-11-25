@@ -111,7 +111,8 @@ def test_a_stored_field_is_a_level_in_neither_tuple():
 
 
 def planted(name, **attributes):
-    return type(name, (ScheduledMembraneInsertionV2,), {"LAW_ID": f"tests.{name}@1", **attributes})
+    law_id = "tests.planted_operator@1".replace("planted_operator", name)
+    return type(name, (ScheduledMembraneInsertionV2,), {"LAW_ID": law_id, **attributes})
 
 
 REFUSED = {

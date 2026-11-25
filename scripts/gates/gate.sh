@@ -34,7 +34,8 @@
 #      of step 2a, cap 300 s;
 #   5. G1 (unless CHECKS drops it): the 113 worlds as eight one-CPU shards, planned from the last passing G1's world seconds
 #      (GATE_CACHE/g1-seconds.json, else the baseline's), merged and compared bitwise with c1's
-#      merged save.
+#      merged save. The baseline's definitions and c1's refusals are read through the head's own
+#      table of renamed IDs, where it has one (D345).
 # FR's bitwise set and R1 stay their own units (fr_landing_set.sh; fingerprints_landing.sh, which
 # caches R1's base record per main revision in the same GATE_CACHE).
 # Cold (D321 R2): every process the gate starts runs with JAX's persistent compilation cache
@@ -89,6 +90,9 @@ log() { echo "$(date -u +%FT%TZ) $*" >> "$OUT/gate.log"; }
 finish() { log "done status $1"; echo "$1" > "$OUT/done"; exit "$1"; }
 steps() { "$HOSTPY" -I "$STEPS" "$@"; }
 short() { tr -d '\n' < "$1" | cut -c1-400; }
+# A tree's own table of renamed IDs (D345), where it has one: what was saved under an old spelling is
+# read through it (validation/id_table.py), so a tree before the rename is asked for nothing.
+id_map() { local t=$1/src/cells/registry/renamed_ids.py; [ ! -f "$t" ] || printf '%s\n' --map "$t"; }
 cold_check() {  # STAGE DIR: refused when a JAX compilation cache entry appeared under DIR (D321 R2).
   local why
   if why=$(steps jax-entries "$2" 2>&1); then log "cold check after $1: $why"; return 0; fi
@@ -270,6 +274,8 @@ G1=$OUT/g1; mkdir -p "$G1/parts"
 steps g1-plan "$BASELINE" "${#CPU[@]}" "$G1/plan.json" ${GATE_CACHE:+--seconds "$GATE_CACHE/g1-seconds.json"} \
   >> "$G1/g1.log" 2>&1 || { log "G1 plan failed"; done_locked 1; }
 log "G1 plan: $(tail -n 1 "$G1/g1.log")"
+mapfile -t IDS < <(id_map "$S")
+log "G1 reads the saved definitions through ${IDS[1]:-no table of renamed IDs}"
 shard() {  # K CPU: the shard's groups in turn, one process each, on one CPU.
   local k=$1 code=0 j=0 set worlds
   echo "$(date -u +%FT%TZ) shard $k cpus $(nproc) affinity $(taskset -pc $BASHPID | sed 's/.*: //')" >> "$G1/g1.log"
@@ -277,7 +283,7 @@ shard() {  # K CPU: the shard's groups in turn, one process each, on one CPU.
   while IFS=$'\t' read -r set worlds; do
     # shellcheck disable=SC2086
     (cd "$S" && PYTHONPATH="$S/src:$S" "$PY" -B validation/results_baseline.py save "$G1/parts/part-$k-$j" \
-      --sets "$set" --worlds $worlds --from "$BASELINE") < /dev/null >> "$G1/shard-$k.log" 2>&1 || code=1
+      --sets "$set" --worlds $worlds --from "$BASELINE" "${IDS[@]}") < /dev/null >> "$G1/shard-$k.log" 2>&1 || code=1
     echo "$(date -u +%FT%TZ) shard $k group $j $set exit $code" >> "$G1/g1.log"
     j=$((j + 1))
   done < <(steps g1-groups "$G1/plan.json" "$k")
@@ -290,7 +296,7 @@ counts=$(cat "$G1"/shard-*.cpus 2>/dev/null | sort -u | tr "\n" " ")
 if [ "$counts" != "1 " ]; then log "G1 not compared: shard CPU counts '$counts' (c1: 1)"; done_locked 1; fi
 steps g1-merge "$G1/parts" "$G1/merged" >> "$G1/g1.log" 2>&1 || { log "G1 merge failed"; done_locked 1; }
 (cd "$S" && PYTHONPATH="$S/src:$S" taskset -c "$I0" "$PY" -B validation/results_baseline.py compare \
-  "$C1" "$G1/merged" --output "$G1/compare-vs-c1.json" > "$G1/compare-vs-c1.log" 2>&1)
+  "$C1" "$G1/merged" "${IDS[@]}" --output "$G1/compare-vs-c1.json" > "$G1/compare-vs-c1.log" 2>&1)
 rc=$?
 log "G1 compare exit $rc seconds $(( $(date +%s) - start )): $(tail -n 1 "$G1/compare-vs-c1.log")"
 [ $rc -eq 0 ] || { log "stopped at G1"; done_locked 1; }

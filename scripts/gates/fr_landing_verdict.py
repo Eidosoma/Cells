@@ -36,6 +36,7 @@ snapshot, landing, before, out = (Path(a) for a in sys.argv[1:5])
 if out.exists():
     sys.exit(f"refused: {out} exists")
 sys.path[:0] = [str(snapshot / "src"), str(snapshot)]
+from validation import id_table  # noqa: E402
 from validation.tissue.compartment_ph_judge import without_run_times  # noqa: E402
 from validation.tissue.regulated_availability_judge import differences  # noqa: E402
 
@@ -111,7 +112,7 @@ for arm in ("T", "R"):
     if not new_path.exists():
         unexpected["windowed:" + arm] = "no record"
         continue
-    new, old = json.loads(new_path.read_text()), json.loads(old_path.read_text())
+    new, old = id_table.load(new_path), id_table.load(old_path)  # The baseline keeps its IDs.
     meta = differences(
         without_run_times(without_estimate({k: v for k, v in old.items() if k != "records"})),
         without_run_times(without_estimate({k: v for k, v in new.items() if k != "records"})))

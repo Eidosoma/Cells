@@ -7,10 +7,10 @@ Eq. 21 is used as printed, J = S (1 - e^x), with S = X [K+]_P h_N."""
 
 from cells.laws.cycles.forms import CycleForm, MonomialForm, MonomialRate, Reference
 from cells.laws.cycles.mitochondria_source import citation
-from cells.modules import CycleLaw
+from cells.modules import CycleLaw, qualified
 
 LAW_ID = "potassium_proton_exchange@1"
-DECLARED_ID = f"cells.{LAW_ID}"  # As definitions write it; a module-level name, for the manifest.
+DECLARED_ID = qualified(LAW_ID)  # As definitions write it; a module-level name, for the manifest.
 CYCLE = CycleForm(
     kinetics="monomial",
     roles=(("K", 1), ("H", 1)),

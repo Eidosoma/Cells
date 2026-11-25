@@ -31,7 +31,9 @@ Each claim is checked once, with a planted error it must catch (D187):
   of rows, a row that is not a mapping, one without its mode, one with an extra key, an unnamed
   role, a fractional and a bool count, an unnamed mode, and a form without changes(); a form whose
   own errors() report is never asked for rows, a route law is not read, and version 1's moves
-  refuse a fractional count).
+  refuse a fractional count);
+- the ID grammar (registry/ids.py): a piece's ID, an interface's, and what is neither (planted: a
+  family outside the cells list, an interface's noun for its word, and each malformed shape).
 """
 
 import dataclasses
@@ -68,7 +70,7 @@ from cells.laws.junctions import junction_series_gates
 from cells.laws.routes import passive_permeation
 from cells.laws.transport import proton_leak, proton_leak_v2
 from cells.models import inner_laws, surface_pump_v3
-from cells.registry import declarations, laws
+from cells.registry import declarations, ids, laws
 from tests.unit.test_passive_routes_kind import closed_pair, route
 from tests.unit.test_transporter_kind import held_world, population
 from validation.tissue import composite_crossrev as crossrev
@@ -179,6 +181,17 @@ def test_the_template_refuses_a_malformed_declaration():
         "its reads are a tuple of stage-read IDs": dataclasses.replace(route_law, reads=("",)),
     }
     assert route_law.reads == () and not route_law.errors()
+    # A third part, the family's, is admitted in a law's and a host's ID, a fourth is not, and an
+    # interface keeps its two (D345).
+    three = dict(law_id="tests.binding.planted@1", host="tests.kind.planted@1")
+    assert dataclasses.replace(binding, **three).errors() == []
+    for name, value in three.items():
+        four = {**three, name: value.replace("tests.", "tests.a.")}
+        assert len(dataclasses.replace(binding, **four).errors()) == 1, name
+    interface = type("ThreePart", (laws.Law,), {"interface": "tests.binding.planted_law@1"})
+    assert interface(**three).errors() == [
+        "its type declares a namespaced interface ID with its major"
+    ]
     for reason, law in cases.items():
         with pytest.raises(ValueError, match=reason):
             registry.register(law)
@@ -248,6 +261,43 @@ def test_cycle_and_route_laws_name_their_step_terms():
         (passive_routes.CHARGED_LAW_ID, "material_term"): "material_slope_per_s",
         (transporter.PROTON.law_id, "stage_term"): "electrogenic_conductance_S",  # The kind's.
     }
+
+
+# ------------------------------------------------------------------ the ID grammar
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),  # A piece's parts, "interface", or None: neither.
+    [
+        ("cells.channel.a_law@1", ("cells", "channel", "a_law", 1)),
+        ("cells.operator.an_operator@12", ("cells", "operator", "an_operator", 12)),
+        ("acme.any_word.a_law@1", ("acme", "any_word", "a_law", 1)),  # Its families are its own.
+        ("cells.channel.a_mM_law@1", ("cells", "channel", "a_mM_law", 1)),  # A name's, as written.
+        ("cells.Channel.a_law@1", None),
+        ("cells.any_word.a_law@1", None),  # The cells families are a closed list.
+        ("cells.channel_law.a_law@1", None),  # An interface's noun is not its word.
+        ("cells.a_law@1", "interface"),
+        ("acme.a_law@1", "interface"),
+        ("a_law@1", None),
+        ("cells.channel.a_law@0", None),
+        ("cells.channel.a_law@01", None),
+        ("cells.channel.a_law", None),
+        ("cells.channel.A_law@1", None),
+        ("cells.channel.1_law@1", None),
+        ("cells.channel.a.law@1", None),
+        ("cells.channel.a_law@1\n", None),
+        (None, None),
+    ],
+)
+def test_the_id_grammar(value, expected):
+    assert ids.interface(value) is (expected == "interface")
+    assert ids.piece(value) is isinstance(expected, tuple)
+    if isinstance(expected, tuple):
+        assert ids.parts(value) == expected and ids.piece(value, family=expected[1])
+        assert not ids.piece(value, family="kind")
+    else:
+        with pytest.raises(ValueError, match="is not namespace.family.name@major"):
+            ids.parts(value)
 
 
 # ------------------------------------------------------------------ the registry (§8.3)

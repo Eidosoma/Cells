@@ -144,7 +144,7 @@ def test_contract_refusals_at_the_definition():
     blocks = water["model"]["operators"]
     with pytest.raises(ConfigError, match="registered law"):
         parse_spec(composite(water, [dict(blocks[0], law="ideal_osmosis@0"), blocks[1]]))
-    with pytest.raises(ConfigError, match="requires ideal_osmosis"):
+    with pytest.raises(ConfigError, match=r"requires \S*ideal_osmosis"):
         raw = composite(water, [blocks[1]])
         del raw["experiment"]["water_controls"]
         parse_spec(raw)

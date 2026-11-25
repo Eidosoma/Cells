@@ -61,6 +61,7 @@ import math
 import sys
 from pathlib import Path
 
+from validation import id_table
 from validation.morphogenesis.mg0a_gradient import evaluate
 from validation.tissue import compartment_ph_judge as base
 from validation.tissue import judge_harness as harness
@@ -650,8 +651,9 @@ def main(argv):
     if len(argv) < 4 or argv[0] not in ("dev", "judged"):
         raise SystemExit(__doc__)
     mode, protocol_path, out_dir, paths = argv[0], argv[1], Path(argv[2]), argv[3:]
-    protocol = json.loads(Path(protocol_path).read_text())
-    results_list = [(p, json.loads(Path(p).read_text())) for p in paths]
+    # Both hold engine IDs (derivation.engine_ids, the parts' ids): both are read through the table.
+    protocol = id_table.load(protocol_path)
+    results_list = [(p, id_table.load(p)) for p in paths]
     if mode == "judged":
         why = base.refusal(protocol, results_list, out_dir)
         if why:

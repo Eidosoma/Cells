@@ -44,6 +44,7 @@ from cells.laws.cycles import forms
 from cells.laws.electrochemistry import R
 from cells.registry import laws as law_registry
 from cells.registry import species_registry
+from cells.registry.kind_registry import qualified
 from cells.registry.models import get_model
 from tests.unit import test_cycle_kind as ck
 from tests.unit import test_transporter_kind as tk
@@ -118,7 +119,7 @@ def host_p_world(laws=None):
     read["k_on_per_mM_s"] = {"ADP": {"Mg": 1e5}, "ATP": {"Mg": 1e5}, "Pi": {"H": 1e7},
                              "B_c": {"H": 1e7}, "B_L": {"H": 1e7}}  # fmt: skip
     m[transporter.MODEL_KEY] = [
-        dict(id=pid, host="bounding_0", law=f"cells.{law}", orientation={"N": "a"},
+        dict(id=pid, host="bounding_0", law=qualified(law), orientation={"N": "a"},
              capacity_fmol_s=1e-15, roles=roles, parameters=parameters,
              held_rows=HELD.get(pid, []))
         for pid, (law, roles, parameters) in (laws or ALL).items()
@@ -166,7 +167,7 @@ def free_molar(spec, p, read):
 
 def test_the_seven_laws_register_as_monomial_forms_of_the_kind_in_base_forms():
     for law, _, _ in LAWS.values():
-        found = law_registry.active().lookup(f"cells.{law}")
+        found = law_registry.active().lookup(qualified(law))
         assert found.host == transporter.KIND_ID and found.cycle.kinetics == "monomial", law
         assert found.reads == ("rapid_binding@1",) and found.forms == "base", law
 
@@ -175,7 +176,7 @@ def test_the_supply_runs_on_its_held_pair_only():
     """The supply registers as the others do, on held fuel only, its pair its fuel roles. Planted:
     a host-P world that moves the pair, or holds one of it, is refused at the parse."""
     (law, _, _) = SUPPLY["dh"]
-    found = law_registry.active().lookup(f"cells.{law}")
+    found = law_registry.active().lookup(qualified(law))
     assert found.host == transporter.KIND_ID and found.cycle.kinetics == "monomial"
     assert found.reads == ("rapid_binding@1",) and found.forms == "base"
     assert found.fuel_kinds == (transporter.HELD,)
@@ -226,11 +227,11 @@ def test_a_host_p_world_admits_every_law_and_books_its_entries_and_steps():
     entries = transporter.standard_free_energies(dict(spec.model.kinds)[transporter.KIND_ID])
     x0 = {e.law_id: e.dG_kJ_mol * 1000 / (R * T_K) + e.dG_RT_offset for e in entries}
     expected = {"c1": -44.1016, "c3": 19.1137, "c4": -163.6593, "ak": 0.9443}  # §9's entries
-    assert sorted(x0) == sorted(f"cells.{ALL[pid][0]}" for pid in expected)
+    assert sorted(x0) == sorted(qualified(ALL[pid][0]) for pid in expected)
     for pid, value in expected.items():
-        assert round(x0[f"cells.{ALL[pid][0]}"], 4) == value, pid
+        assert round(x0[qualified(ALL[pid][0])], 4) == value, pid
     # The synthase's rate-only constant: x is the registry's, whatever the constant.
-    base = law_registry.active().lookup(f"cells.{LAWS['f1'][0]}")
+    base = law_registry.active().lookup(qualified(LAWS["f1"][0]))
     rate = base.cycle.monomial.rates[0]
     shifted = dataclasses.replace(
         base,
@@ -238,10 +239,8 @@ def test_a_host_p_world_admits_every_law_and_books_its_entries_and_steps():
         cycle=base.cycle._replace(monomial=base.cycle.monomial._replace(
             rates=(rate._replace(log_k=rate.log_k._replace(dg_kj_mol=40.0)),))),
     )  # fmt: skip
-    laws = dict(ALL, f1=("synthase_shifted@1",) + LAWS["f1"][1:])
+    laws = dict(ALL, f1=("seamtest.synthase_shifted@1",) + LAWS["f1"][1:])
     raw = host_p_world(laws)
-    for entry in raw["model"][transporter.MODEL_KEY]:
-        entry["law"] = entry["law"].replace("cells.synthase_shifted", "seamtest.synthase_shifted")
     with mito_scoped(shifted):
         _, impl2, state2, p2, control2 = start(raw)
         _, _, e2 = evaluation(impl2, state2, p2, control2)
@@ -283,10 +282,10 @@ def test_the_harness_adapter_evaluates_each_law_as_the_kind_does():
     )
     for j, (pid, (law, roles, parameters)) in enumerate(ALL.items()):
         spec_j = cc.EngineSpec(
-            f"cells.{law}", capacity="unit", parameters=tuple(parameters.items()),
+            qualified(law), capacity="unit", parameters=tuple(parameters.items()),
             roles=tuple(roles.items()), potential_set=SET,
         )  # fmt: skip
-        found = law_registry.active().lookup(f"cells.{law}")
+        found = law_registry.active().lookup(qualified(law))
         got = cc.MonomialAdapter(found.cycle, spec_j, inputs).evaluate(values, free)
         k = float(p.cycle_capacity_fmol_s[j])
         assert got["x"] == pytest.approx(float(e.x[0, j]), abs=1e-9), pid

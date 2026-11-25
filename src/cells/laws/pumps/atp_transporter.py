@@ -26,7 +26,7 @@ import jax.numpy as jnp
 
 from cells.laws.cycles.forms import CycleForm, Parameter, Saturation
 from cells.laws.electrochemistry import R
-from cells.modules import Citation, CycleLaw
+from cells.modules import Citation, CycleLaw, qualified
 
 LAW_ID = "atp_driven_transporter_mass_action_positive@1"
 MAX_ABS_AFFINITY_OVER_RT = 80.0
@@ -161,7 +161,7 @@ CYCLE = CycleForm(
 
 # Its declaration on the law template (registry/laws.py): inert, registered by the law registry's
 # loader as one of the model table's law homes, hosted by the transporter kind.
-DECLARED_ID = f"cells.{LAW_ID}"  # As definitions write it; a module-level name, for the manifest.
+DECLARED_ID = qualified(LAW_ID)  # As definitions write it; a module-level name, for the manifest.
 LAW = CycleLaw(
     DECLARED_ID,
     (("role", "-stoichiometry"),),  # The role leaves the inside: -n per cycle, inward-positive.

@@ -4,10 +4,10 @@ Manufactured transient examples, not fitted biology or slow-gate equilibrium.
 The full catalog is read as raw data; no production Python is imported.
 """
 
-import json
 from copy import deepcopy
 from pathlib import Path
 
+from validation import id_table
 from validation.tissue import surface_excision_fixtures as passive
 
 DT = 1.25e-6
@@ -36,8 +36,8 @@ def definition(arm="open", *, catalog="compact", backend="cpu", padded=False):
     if arm not in ARMS or catalog not in ("compact", "full"):
         raise ValueError((arm, catalog))
     raw = passive.definition(arm if arm in passive.ARMS else "open", backend=backend, padded=padded)
-    source = json.loads(
-        (Path(__file__).resolve().parents[2] / "configs/resolved_hcn_extra_ionic.json").read_text()
+    source = id_table.load(
+        Path(__file__).resolve().parents[2] / "configs/resolved_hcn_extra_ionic.json"
     )
     m, e, x = raw["model"], raw["experiment"], raw["execution"]
     m["id"], m["temperature_K"] = "resolved_tissue@12", 298.15

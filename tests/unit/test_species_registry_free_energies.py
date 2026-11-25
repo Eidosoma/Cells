@@ -85,7 +85,9 @@ PUMP = kl.PUMP
 HYDROLYSIS = (("ATP", -1), ("ADP", 1), ("Pi", 1))  # Its one mode's net change: H only moves.
 VALENCE = dict(tf.PUMP_ROLES)
 POTENTIAL = {role: tf.PUMP_MU[(role, "N")] for role in VALENCE}  # The world's, at its 1000 mM.
-KIND = r"Kind cells\.transporter@1's standard_free_energies, entry 0"
+PUMP_ID = re.escape(PUMP.law_id)
+TRANSPORTER_ID = re.escape(transporter.KIND_ID)
+KIND = rf"Kind {TRANSPORTER_ID}'s standard_free_energies, entry 0"
 
 
 def residual(value):
@@ -583,7 +585,7 @@ TABLE = {  # name: (definition and scope, None (admitted) or the refusal's patte
     ),
     "an energy just outside the form band": (
         just_outside,
-        rf"{KIND} \(seamtest\.diagram_pump@1's cycle, mode pump\): .* beyond its law's form's band",
+        rf"{KIND} \({PUMP_ID}'s cycle, mode pump\): .* beyond its law's form's band",
     ),
     "a law whose form gives no band": (
         bandless,
@@ -592,11 +594,11 @@ TABLE = {  # name: (definition and scope, None (admitted) or the refusal's patte
     ),
     "a law the kind does not host": (
         unhosted,
-        rf"{KIND}: 'seamtest\.nowhere@1' is not a cycle law it hosts",
+        rf"{KIND}: '{re.escape('seamtest.nowhere@1')}' is not a cycle law it hosts",
     ),
     "a mode the form lacks": (
         modeless,
-        rf"{KIND}: seamtest\.diagram_pump@1's form has no mode 'unpumped'",
+        rf"{KIND}: {PUMP_ID}'s form has no mode 'unpumped'",
     ),
     "an honest operator entry converted by sum nu": (
         reactions((FreeEnergyEntry(BINDING, DG, 1.0),)),
@@ -612,7 +614,7 @@ TABLE = {  # name: (definition and scope, None (admitted) or the refusal's patte
     ),
     "an operator entry naming a law": (
         reactions((FreeEnergyEntry(BINDING, DG, 1.0, PUMP.law_id, "pump"),)),
-        rf"{OPERATOR}: 'seamtest\.diagram_pump@1' is not a cycle law it hosts",
+        rf"{OPERATOR}: '{PUMP_ID}' is not a cycle law it hosts",
     ),
     "a species with no registry potential": (
         reactions((FreeEnergyEntry(BINDING, DG + 1.0, 1.0),), declared=("S", "E", "P")),
@@ -620,7 +622,7 @@ TABLE = {  # name: (definition and scope, None (admitted) or the refusal's patte
     ),
     "an entry naming a species that is not a row": (
         an_entry_naming_water,
-        rf"{KIND} \(seamtest\.diagram_pump@1's cycle, mode pump\): it names 'H2O', which is not "
+        rf"{KIND} \({PUMP_ID}'s cycle, mode pump\): it names 'H2O', which is not "
         "a species of the model",
     ),
     "a named set applied whole": (a_named_set, None),
@@ -668,13 +670,14 @@ TABLE = {  # name: (definition and scope, None (admitted) or the refusal's patte
     "a fuel mode that conserves every moiety": (a_balanced_fuel_mode, None),
     "a fuel mode with Pi off by one": (
         a_fuel_mode_off_by_one,
-        r"Kind cells\.transporter@1's move under seamtest\.atp_pi_off_by_one@1, mode cycle: it "
+        rf"Kind {TRANSPORTER_ID}'s move under {re.escape('seamtest.atp_pi_off_by_one@1')}, "
+        r"mode cycle: it "
         r"changes moiety phosphorus by \+1 per turnover",
     ),
     "an entry in kJ/mol at the world's temperature": (a_kJ_entry, None),
     "an entry in kJ/mol at another temperature": (
         a_kJ_entry_at_another_temperature,
-        rf"{KIND} \(seamtest\.diagram_pump@1's cycle, mode pump\): dG° .* kJ/mol \(dG°/RT .* at "
+        rf"{KIND} \({PUMP_ID}'s cycle, mode pump\): dG° .* kJ/mol \(dG°/RT .* at "
         r"313\.0 K\) .* beyond its law's form's band",
     ),
     "Table 2's reactions beside the set at 310.15 K": (entries_beside_the_set(310.15), None),

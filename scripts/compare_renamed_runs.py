@@ -2,7 +2,7 @@
 
 Usage:
   python scripts/compare_renamed_runs.py BEFORE AFTER --map OLD=NEW [--map OLD=NEW ...]
-      [--changed-source PATH ...] [--out REPORT.json]
+      [--table TABLE] [--changed-source PATH ...] [--out REPORT.json]
 
 BEFORE and AFTER are directories of run outputs (fresh, resumed, branched, windowed
 and batch runs), written by the same commands from two source trees. The check is:
@@ -15,8 +15,10 @@ and batch runs), written by the same commands from two source trees. The check i
   source (DERIVED), which are checked separately: digests of array files must still
   agree, and engine source hashes may differ only for the --changed-source files.
 
-Substitutions apply in the given order, so list longer names first. No reference
-digests are embedded; everything is compared between the two trees.
+Substitutions apply in the given order, so list longer names first. --table TABLE (the
+engine's renamed_ids.py, or a JSON object {old: new}) maps whole tokens instead, before
+them (validation/id_table.py): the form for IDs, whose old spelling may be part of the
+new one. No reference digests are embedded; everything is compared between the two trees.
 """
 
 import argparse
@@ -26,6 +28,10 @@ import sys
 from pathlib import Path
 
 import numpy as np
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from validation import id_table  # noqa: E402
 
 VOLATILE = {"created_utc", "timings", "utc"}
 # Digests of JSON text that contains the renamed strings, or of engine source.
@@ -155,12 +161,14 @@ def main(argv=None):
     parser.add_argument("before", type=Path)
     parser.add_argument("after", type=Path)
     parser.add_argument("--map", action="append", default=[], metavar="OLD=NEW")
+    parser.add_argument("--table", type=Path, help="renamed IDs, mapped by whole tokens")
     parser.add_argument("--changed-source", action="append", default=[], metavar="PATH")
     parser.add_argument("--out", type=Path)
     args = parser.parse_args(argv)
     mapping = [tuple(item.split("=", 1)) for item in args.map]
     if any(len(pair) != 2 or not pair[0] for pair in mapping):
         parser.error("--map needs OLD=NEW")
+    table = id_table.read_table(args.table) if args.table else {}
     files = {
         side: sorted(str(p.relative_to(root)) for p in root.rglob("*") if p.is_file())
         for side, root in (("before", args.before), ("after", args.after))
@@ -170,6 +178,7 @@ def main(argv=None):
         "before": str(args.before.resolve()),
         "after": str(args.after.resolve()),
         "mapping": [list(pair) for pair in mapping],
+        "table": str(args.table) if args.table else None,
         "changed_source": sorted(args.changed_source),
         "only_before": sorted(set(files["before"]) - set(files["after"])),
         "only_after": sorted(set(files["after"]) - set(files["before"])),
@@ -190,12 +199,12 @@ def main(argv=None):
         else:
             first, second = load_json_document(a), load_json_document(b)
             if first is None or second is None:
-                text = substitute(a.read_text(), mapping)
+                text = substitute(id_table.translate(a.read_text(), table), mapping)
                 ok = text == b.read_text()
                 row = {"text": True}
                 totals["text"] += 1
             else:
-                mapped = substitute(first, mapping)
+                mapped = substitute(id_table.translate(first, table), mapping)
                 for old in occurrences:
                     occurrences[old] += a.read_text().count(old)
                 differences, derived = [], []

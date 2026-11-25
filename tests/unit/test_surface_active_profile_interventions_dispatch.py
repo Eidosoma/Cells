@@ -35,6 +35,7 @@ from cells.records.io import load_snapshot, write_snapshot
 from cells.registry.models import get_model
 from tests.integration.test_cli import cli
 from tests.unit.test_surface_catalog import evidence
+from validation import id_table
 from validation.topology import surface_active_profile_interventions_fixtures as fixtures
 
 
@@ -281,7 +282,7 @@ FAMILY_MODELS = {
     ],
 )
 def test_active_profile_registration_preserves_parent_and_composed_dispatch(filename, module):
-    raw = json.loads((Path(__file__).resolve().parents[2] / "configs" / filename).read_text())
+    raw = id_table.load(Path(__file__).resolve().parents[2] / "configs" / filename)
     spec = parse_spec(raw)
     assert get_model(spec.model) is importlib.import_module(FAMILY_MODELS[module])
     assert parse_spec(spec.to_dict()) == spec

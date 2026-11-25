@@ -123,9 +123,9 @@ def _paths():
 
 
 def _load(name):
-    import json
+    from validation import id_table
 
-    return json.loads(_paths()[name].read_text())
+    return id_table.load(_paths()[name])
 
 
 def pair_specs(raw):

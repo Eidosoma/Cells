@@ -41,13 +41,13 @@ The synthetic labels are the references' (D217). Development, not judged.
 """
 
 import copy
-import json
 import math
 from pathlib import Path
 
 from cells.definitions import pump_composite_spec as cs
 from cells.laws.electrochemistry import F
 from cells.registry.inventory_species import add_inventory_species
+from validation import id_table
 from validation.fr7 import unit_turnover_fixtures as fx
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -66,7 +66,7 @@ CHARGE_PER_FMOL = F * 1e-15
 
 def inputs(path=None):
     """The registered inputs (interface/inputs.json, or the given copy of it)."""
-    return json.loads(Path(path or INTERFACE / "inputs.json").read_text())
+    return id_table.load(path or INTERFACE / "inputs.json")
 
 
 def _identity(name):

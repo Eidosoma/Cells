@@ -27,11 +27,14 @@ import numpy as np
 import pytest
 
 from cells.operators.templated_polymerisation import COPY_FMOL
+from validation import id_table
 from validation.gene_regulation import release_check
 from validation.gene_regulation.fr38_v2 import campaign, worlds
 
 
-def test_every_registered_world_and_plant_parses():
+def test_every_registered_world_and_plant_parses(monkeypatch):
+    parse = worlds._parse  # The registered builder keeps its IDs (D345): read through the table.
+    monkeypatch.setattr(worlds, "_parse", lambda raw: parse(id_table.translate(raw)))
     verdicts = worlds.check()
     assert len(verdicts) == 3 * sum(len(worlds.runs(f)) for f in worlds.LABELLED) + len(
         worlds.PLANTS
@@ -55,8 +58,8 @@ def _net_record(family, row, departure, every=60.0):
     readouts = {f"n_{row}": n, f"int_Q_tx_release_{fate}": [q * s for s in t],
                 f"int_D_{row}": [start + q * s - x for s, x in zip(t, n, strict=True)],
                 "n_M": [f.m0_mM] * len(t)}  # fmt: skip
-    return dict(definition=worlds.hold(family, "p_sched returned", dt=2.0), cell="cell_0", t=t,
-                readouts=readouts)  # fmt: skip
+    definition = id_table.translate(worlds.hold(family, "p_sched returned", dt=2.0))
+    return dict(definition=definition, cell="cell_0", t=t, readouts=readouts)
 
 
 SCOPE = [
@@ -94,7 +97,8 @@ TINY = worlds.Hold(
 
 
 def test_the_store_and_water_exports_enter_g():
-    record = campaign.one(worlds.hold("made up", "p_sched returned", dt=0.5, f=TINY))
+    raw = id_table.translate(worlds.hold("made up", "p_sched returned", dt=0.5, f=TINY))
+    record = campaign.one(raw)
     assert not record["refused"], record.get("refusal")
     x = record["readouts"]
     for name in ("n_Mx", "H_store", "V", "H_water", "W_bath", "n_K", "n_Y"):

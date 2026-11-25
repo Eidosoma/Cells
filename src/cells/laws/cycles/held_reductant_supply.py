@@ -35,10 +35,10 @@ from cells.laws.cycles.forms import (
     Scaled,
 )
 from cells.laws.cycles.mitochondria_source import citation
-from cells.modules import CycleLaw
+from cells.modules import CycleLaw, qualified
 
 LAW_ID = "held_reductant_supply@1"
-DECLARED_ID = f"cells.{LAW_ID}"  # As definitions write it; a module-level name, for the manifest.
+DECLARED_ID = qualified(LAW_ID)  # As definitions write it; a module-level name, for the manifest.
 PI_TOTAL = Reference("Pi", "N", "total")  # The total matrix phosphate, read and never moved.
 CYCLE = CycleForm(
     kinetics="monomial",

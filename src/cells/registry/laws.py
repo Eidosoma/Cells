@@ -129,14 +129,15 @@ ROUTE_LAW = "cells.route_law@1"
 BINDING_LAW = "cells.binding_law@1"
 JUNCTION_LAW = "cells.junction_law@1"
 PROVENANCES = ("parity", "cited", "calibrated")
-_ID = re.compile(r"(?:[a-z][a-z0-9_]*\.)?[a-z][a-z0-9_]*@[1-9][0-9]*")
+_ID = re.compile(r"(?:[a-z][a-z0-9_]*\.){0,2}[a-z][a-z0-9_]*@[1-9][0-9]*")
 
 
 def _is_id(value, *, namespaced=False):
-    """A law, host or interface ID: [namespace.]name@major."""
+    """A law or host ID, [namespace.[family.]]name@major; namespaced: an interface's, exactly
+    namespace.name@major."""
     if not isinstance(value, str) or _ID.fullmatch(value) is None:
         return False
-    return not namespaced or "." in value.split("@", 1)[0]
+    return not namespaced or value.split("@", 1)[0].count(".") == 1
 
 
 def _named(value):

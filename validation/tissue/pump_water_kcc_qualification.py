@@ -27,6 +27,7 @@ jax.config.update("jax_enable_x64", True)
 import numpy as np  # noqa: E402
 
 from cells.definitions.specs import parse_spec  # noqa: E402
+from validation import id_table  # noqa: E402
 from validation.tissue import pump_water_fixtures as fixtures  # noqa: E402
 from validation.tissue import pump_water_qualification as w1  # noqa: E402
 
@@ -141,7 +142,7 @@ def main():
     args = parser.parse_args()
     out = Path(args.output)
     out.mkdir(parents=True, exist_ok=True)
-    predictions = json.loads(Path(args.predictions).read_text())
+    predictions = id_table.load(args.predictions)
     # A judged run takes the registered protocol or a registered backend variant of it; any
     # other file is marked a dry run (composite_l4_agreement.judged_protocol).
     from validation.tissue import composite_l4_agreement as agreement

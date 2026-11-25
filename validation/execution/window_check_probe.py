@@ -588,13 +588,15 @@ def main(argv=None):
     args = parser.parse_args(argv)
     import jax
 
+    from validation import id_table
+
     jax.config.update("jax_enable_x64", True)
     args.out.mkdir(parents=True, exist_ok=True)
     worlds = []
     for key in args.worlds:
         set_name, name = key.split("/", 1)
         path = args.baseline / set_name / (name.replace("/", "__") + ".json")
-        worlds.append((key, json.loads(path.read_text())["definition"]))
+        worlds.append((key, id_table.load(path)["definition"]))
     for item in args.definition:
         name, path = item.split("=", 1)
         worlds.append((name, json.loads(Path(path).read_text())))

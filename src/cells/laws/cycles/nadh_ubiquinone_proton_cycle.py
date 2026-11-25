@@ -11,10 +11,10 @@ S = X e^(-x°) [NADH] [Q] [QH2]^-1 h_N^5 h_P^-4 e^(-4u).
 
 from cells.laws.cycles.forms import CitedConstant, CycleForm, MonomialForm, MonomialRate, Reference
 from cells.laws.cycles.mitochondria_source import citation
-from cells.modules import CycleLaw
+from cells.modules import CycleLaw, qualified
 
 LAW_ID = "nadh_ubiquinone_proton_cycle@1"
-DECLARED_ID = f"cells.{LAW_ID}"  # As definitions write it; a module-level name, for the manifest.
+DECLARED_ID = qualified(LAW_ID)  # As definitions write it; a module-level name, for the manifest.
 CYCLE = CycleForm(
     kinetics="monomial",
     roles=(("NADH", -2), ("Q", 0), ("NAD", -1), ("QH2", 0), ("H", 1)),
