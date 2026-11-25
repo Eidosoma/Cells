@@ -803,7 +803,9 @@
    },
    "closure_share": 1e-10,
    "closure_terms_V": {
-    "phi_out": 5.159999999999999e-13
+    "phi_out": 5.159999999999999e-13,
+    "voltage": 9e-12,
+    "store_voltage": 2.9e-11
    }
   },
   "plasma_calcium": {
@@ -1672,7 +1674,9 @@
    },
    "closure_share": 1e-10,
    "closure_terms_V": {
-    "phi_out": 5.159999999999999e-13
+    "phi_out": 5.159999999999999e-13,
+    "voltage": 9e-12,
+    "store_voltage": 2.9e-11
    }
   },
   "gated_calcium": {
@@ -2583,7 +2587,9 @@
    },
    "closure_share": 1e-10,
    "closure_terms_V": {
-    "phi_out": 5.159999999999999e-13
+    "phi_out": 5.159999999999999e-13,
+    "voltage": 9e-12,
+    "store_voltage": 2.9e-11
    }
   },
   "ip3_calcium": {
@@ -3591,7 +3597,9 @@
    },
    "closure_share": 1e-10,
    "closure_terms_V": {
-    "phi_out": 5.159999999999999e-13
+    "phi_out": 5.159999999999999e-13,
+    "voltage": 9e-12,
+    "store_voltage": 2.9e-11
    }
   },
   "cluster_spatial_calcium": {
@@ -3791,7 +3799,10 @@
     "cyt_Ca_summary": 0.00196
    },
    "closure_share": 1e-10,
-   "closure_terms_V": {}
+   "closure_terms_V": {
+    "voltage": 9e-12,
+    "store_voltage": 2.9e-11
+   }
   },
   "cluster_plasma_calcium": {
    "consumer": "cluster_plasma_calcium",
@@ -3994,7 +4005,10 @@
     "cyt_Ca_summary": 0.00196
    },
    "closure_share": 1e-10,
-   "closure_terms_V": {}
+   "closure_terms_V": {
+    "voltage": 9e-12,
+    "store_voltage": 2.9e-11
+   }
   },
   "cluster_gated_calcium": {
    "consumer": "cluster_gated_calcium",
@@ -4201,7 +4215,10 @@
     "cyt_Ca_summary": 0.00196
    },
    "closure_share": 1e-10,
-   "closure_terms_V": {}
+   "closure_terms_V": {
+    "voltage": 9e-12,
+    "store_voltage": 2.9e-11
+   }
   },
   "cluster_ip3_calcium": {
    "consumer": "cluster_ip3_calcium",
@@ -4415,7 +4432,10 @@
     "cyt_Ca_summary": 0.00196
    },
    "closure_share": 1e-10,
-   "closure_terms_V": {}
+   "closure_terms_V": {
+    "voltage": 9e-12,
+    "store_voltage": 2.9e-11
+   }
   }
  },
  "runs": [
