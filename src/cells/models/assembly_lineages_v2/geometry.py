@@ -32,6 +32,12 @@ Data, per world (`geometry`): {"law": "cells.bilayer_geometry@1", "area_quantum_
 "vesicle_floor": {"quanta": W_floor, "provenance": "unsourced"},
 "closure_cost_kT": {"value": C, "provenance": "unsourced"}}. σ_max enters with the osmotic lumen
 (lumen_volume: osmotic), which this version refuses.
+
+**Scope (D340).** A footprint is declared for one temperature: each membrane species' area per
+molecule is a declaration, and the engine does not vary it with temperature. Two independent
+methods find fluid POPC expanding on warming (scattering +4.7% over 30 to 50 °C, solid-state NMR
++16.7% over 28 to 48 °C), and they disagree on the expansion's size. So a world compared across
+temperatures declares the footprint measured at each temperature.
 """
 
 import math
