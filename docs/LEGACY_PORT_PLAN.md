@@ -1379,8 +1379,8 @@ consumer becomes on today's pieces, what each feature must still supply, and wha
 7. **G-7 is one-way.** The ionic side never reaches the pool. So the pool half is the live
    `finite_bond_assembly@1` and is comparable bitwise, and an assembly world can be written today as a live pool run
    whose availability path is the ionic world's `channel_controls` schedule (14.3).
-8. **One used world has no capture:** the integrated ensemble's `finite_extracellular@3`
-   (`configs/junction_finite_cluster.json`). It can be captured from the pre-cleanup tag. That is the lead's call.
+8. **One used world had no capture, and has one now:** the integrated ensemble's `finite_extracellular@3`
+   (`configs/junction_finite_cluster.json`), captured at the pre-cleanup tag as the second set (14.4).
 
 ### 14.2 The consumers
 
@@ -1392,7 +1392,7 @@ All nested worlds have Na, K and Cl; the calcium ones add Ca (z = 2) and the buf
 | JUPITER world: `spatial_extracellular@2`, `configs/spatial_kinetic_cluster.json`, both arms | `resolved_pump_tissue@3`: 2 cells, outside nodes `local` (gauge), `near`, `far`, 3 faces, 1 junction (`junction_voltage_relaxation@1`), the Na/K pump on maintained reservoirs, Kv1.5, constant-field leaks. GPU stands (`ionic_worlds@1` admits @3) | nothing | same | RK4 at ≤ 25 µs (Kv1.5's bound, `laws/channels/kv1p5_mh.py:37`; the check itself runs 25 µs), or IMEX at any of the captured steps |
 | The cluster base inside `assembly_regulated_cluster@1` | the same world | G-7 | same | as above |
 | `assembly_regulated_cell@1`: one cell, `finite_extracellular@2`, one Kv1.5 channel | @3 with one cell and one finite outside node as the gauge | G-7 | same | as above |
-| Integrated ensemble's world: `finite_extracellular@3`, 7 cells, 12 junctions, no pump, leak or channel | @3 with one finite outside node as the gauge | nothing; no capture (14.1) | same | RK4 at its 100 µs: no gated channel, and the junction rate is about 23 per second (D), far inside `GATE_STEP_BOUND` 0.125 |
+| Integrated ensemble's world: `finite_extracellular@3`, 7 cells, 12 junctions, no pump, leak or channel | @3 with one finite outside node as the gauge; its junction availability schedule is @3's own | nothing; captured at the pre-cleanup tag (14.4) | same | RK4 at its 100 µs: no gated channel, and the junction rate is about 23 per second (D), far inside `GATE_STEP_BOUND` 0.125 |
 | `spatial_calcium@1` | `resolved_pump_composite@1` over @3: one store per cell as a `cell_owned_compartments@1` node; Ca's plasma leak, store leak and junction route as `passive_constant_field_permeation@1`; K's store leak as @3's own permeability; buffers in cytosol and store by `local_species_reactions@1`'s passive law, the same kernel | G-4; G-5's Ca factor | same | IMEX, Strang halves |
 | `spatial_calcium@2` | the above, with @3's calcium pump on the plasma patch (`ca_atp_mass_action_positive@1`, B1) and NCX | + an NCX law module | same. B1 is a re-parameterisation: ΔG0 = −37,000 + RT ln 1000 = −19,875.97 J/mol at 298.15 K (M) | IMEX |
 | `spatial_calcium@3` | + Cav1.2 | + G-1 | same | IMEX |
@@ -1518,6 +1518,14 @@ window), `observations.*`, `diagnostics.*`, `final.*`. Array names and shapes we
 | `cell` × 4 seeds | 200, 400, 800 | 100 µs | 64 worlds; the final checkpoint only, no JSON |
 
 All end at 0.02 s. Ionic observation times are 0, 7.3e-5, 2.5, 5, 7.5, 10, 15 and 20 ms.
+
+**The second set** is `extra-49529e71` (M: EXIT 0, 3 jobs ok at 11:21:34 UTC on 25 November; the tool `be6136e3`, clean). It was
+captured at `49529e71`, the pre-cleanup tag, where `src/cells/legacy` equals `76a498ae`'s (M: an empty `git diff`). It holds
+`finite_junction_cluster` at 200, 400 and 800 steps of 100, 50 and 25 µs to 0.02 s, one, two and four windows. The arrays (M): `amount_increment`
+[3 species, 7 cells], `extracellular_amount_increment` [3, 1], `junction_gate` [12], `junction_transferred` [3, 12],
+`junction_dissipated_energy_pJ` [12], the zero-size gate and channel arrays, and the same observation fields as `finite_extracellular@3` gives.
+Its observation times are 0, 3.713 ms, 5, 10, 15 and 20 ms, and 3.713 ms is off the 100 µs grid, so @3 refuses it there (14.5). The config's
+own schedule opens and closes the junctions (availability 1, 0.5 from 5 ms, 0 from 10 ms, 1 from 15 ms).
 
 **What the calcium arrays compare to:** `amount_increment` is the whole-cell exchange ledger, so it is not the free
 cytosol: take the cytosol and the store from `chemical_amount_increment` (compartment slots 0 and 1; slot 2 is padding) or
