@@ -214,3 +214,4 @@ laws and the condition's law namespaced and the others bare. The held fuel's kin
 27. **A `declared_change`'s path** begins in the world's blocks (`ionic`, `stores`, ...). In Part 1 it stays inside `ionic`.
 28. **`definition`** also holds `species_rows` (every row declared), `release_conditions`, and `trace_mM` (each row's concentration at each node that the block does not name it at).
 29. **EP3** multiplies both stores' release permeability by 1.01 (the double product), and **EP4** exchanges the two pools' channels, as EP2.
+30. **A cluster's `switch_list`** is over the K channels alone, since no pool touches a calcium channel (the lead, 25 November).
