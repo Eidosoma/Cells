@@ -271,13 +271,16 @@ fixes the record so that opening changes none of its meaning or bits.
     - The throughput of a node over a step of h is its outflow × (h/2) / its volume. Its outflow is the sum
       of the declared rates, in the segment of the schedule in force, of the flow links that leave it, to
       another node or to a collector. A link that leaves an inlet is not a node's outflow, and a link that
-      enters a node is not counted. The throughput ρ of a flow is the largest over its nodes. A flow is
-      admitted for a step of h only where ρ is at most 1; above it the operator refuses by name.
+      enters a node is not counted. The throughput ρ of a flow is the largest over its nodes, and 0 where it
+      has none (an inlet into a collector). A flow is admitted for a step of h only where ρ is at most 1.
+      Above it the operator refuses by name, at parse for every declared segment and at run time where a
+      schedule changes Q.
+    - The registered protocol's SPEC is to hold this paragraph word for word. That a flow with no node has
+      ρ = 0 is this note's reading (S).
     - It is a ratio per half-step. §3.4's ρ = Qh/V is a whole step's, so it is twice this one at a node.
     - So a step is at most two residence times (V/Q_out) at its fastest node. One step per residence time is
       ρ = 0.5, and stays.
-    - The refusal names the node and its ρ. It comes at parse for every declared segment, and at run time,
-      as a segment's P is computed, where the schedule changes Q.
+    - The refusal names the node and its ρ. At run time it comes as the segment's P is computed.
     - The 4 and 8 eps thresholds then hold as measured, in the families below.
     - **The later widening,** not built: a propagator in sub-steps, each at ρ ≤ 1, with a bound of 8 eps
       per sub-step.
@@ -320,7 +323,8 @@ fixes the record so that opening changes none of its meaning or bits.
         more, to rounding (S: a reading of these numbers, not of scipy's source).
       - The inlet's column was the dimensionless Q_in h/V_fed, bounded by ρ. A column in fmol would not be
         bounded by ρ, so the engine's call must use this form (S: a condition of the measured basis that
-        the ruling does not state).
+        the ruling does not state). An inlet into a collector feeds no node, so it has no V_fed, and it was
+        not swept.
       - These families were measured and not proved. Another balanced network (Q4) has the host's column
         check at its own segment, which fails closed, and no entry check but the protocol's.
     - The registration re-measures both on the engine's own call before the tag.
