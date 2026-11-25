@@ -38,7 +38,8 @@ Each claim with its plant (D187); every world is this file's own (no seam-A refe
   reversal, its stoichiometry and charge at both ends, detailed balance with a heat that is never
   negative, its slopes and its one-sided domain against 60-digit decimals; each of 14 plants misses
   exactly its criteria; a closed world's steps close every ledger both ways; its charge slope holds
-  the step; its refusals; a closure's free calcium; a restart from the checkpoint file;
+  the step; its refusals; a closure's free calcium; a restart from the checkpoint file (its worlds
+  are stepped in NumPy, and one evaluation is jitted: no world compiles);
 - M2 (amendment 2): log, exp, expm1 and log1p within 1, 2, 4 and 2 ulp under jit on this device and
   in NumPy, against 60-digit decimals.
 """
