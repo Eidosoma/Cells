@@ -43,7 +43,7 @@ read. Entities are matched by their ID.
 - `cell` has no junction and no face, so no `junction_*`, `face_*`, `heat_junction`, `heat_face`, `junction_gate`, `phi_out`.
 - `base` has no captured `phi_out`.
 - `integrated` has no pump, leak or channel, so it has neither their series nor `heat_membrane`. Its outside region is touched by no
-  route (**`n_out_x` is zero**, class E).
+  route (**`n_out_x` is zero**, class E). Its potentials are at 0, 5, 10, 15 and 20 ms (its block's `potential_times_s`).
 
 ## 3. What is judged, and over which times
 
@@ -53,7 +53,7 @@ read. Entities are matched by their ID.
 | --- | --- | --- | --- |
 | `jupiter` (a family: one arm) | `n_cell_x` (3), `n_out_x` (3), `leak_x` (3), `channel_K`, `junction_x` (3), `face_x` (3), `pump`, `gate_m`, `gate_h`, `junction_gate`, `heat_membrane`, `heat_junction`, `heat_face`. 23 | `voltage`, `phi_out`. 2 | E (restart), D |
 | `cell` (a family: one seed, one world ID) | `n_cell_x` (3), `n_out_x` (3), `leak_x` (3), `channel_K`, `pump`, `gate_m`, `gate_h`, `heat_membrane`. 14 | `voltage` at 0.02 s. 1 | E on the pool and the schedule (§4), R (exposure), D |
-| `base` (a family: one seed, one world ID) | the `jupiter` 23 at 0.02 s. 23 | `voltage` at 0.005, 0.01 and 0.02 s, and `channel_K` at 0.005 and 0.01 s (`channel_K_summary`). 2 | E on the pool and the schedule, R, D |
+| `base` (a family: one seed, one world ID) | the `jupiter` 23 at 0.02 s. 23 | `voltage` at 0.005, 0.01 and 0.02 s, and `channel_K` at 0.005, 0.01 and 0.02 s (`channel_K_summary`, whose scale is `channel_K`'s). 2 | E on the pool and the schedule, R, D |
 | `integrated` | `n_cell_x` (3), `junction_x` (3), `junction_gate`, `heat_junction`. 8 | `voltage`. 1 | E: `n_out_x` zero. D |
 
 - **`jupiter`** has two families, so 50 S entries. **`cell`:** 32 families, 15 each, 480. **`base`:** 32 families, 25 each, 800. **`integrated`:** 1 family, 9.
@@ -79,8 +79,9 @@ A pool run (`cell s<k> pool`, `base s<k> pool`) exports, per cell, the 19 final 
 | `heat_membrane` (per membrane) | `heat_leak` + `heat_pump` + Σ `heat_channel` of that membrane's channels, against the captured `dissipated_energy_pJ[membrane]` | S. **Legacy lumps the three**, so only the sum is compared |
 | Exposure of a pool | Σ of the intervals of the event path during which the availability is 1, against the captured `availability_exposure_s` of that world and cell at h/4 | R: 2 ε × 0.02 s × (2 + the captured job's `segments` of that world) |
 
-**Conservation is not judged from the table's rows.** It is the engine's own rule, checked by the engine at every accepted step (`CRITERIA.md` §4.4). Legacy's own ledgers are its own side's evidence. The judge
-also forms these and **reports them, with nothing decided by them**; a miss is flagged to the checker:
+**Conservation is not judged from the table's rows.** It is the engine's own rule, checked by the engine at every accepted step (`CRITERIA.md` §4.4). Legacy's own ledgers are its own side's evidence. The judge also forms the identities
+below and **reports them, with nothing decided by them**. Beside each it prints the bound of the author's draft, which the lead's ruling replaced before the first commit (the protocol's §11): for an amount's balance, the closed world and the capacitor 8 ε (S + 1) s, with s the scale of the identity's own readout and S the run's steps; for the energy
+2 U_c + 8 ε (S_c + 1) s + 4 × 10⁻¹² s, with s the sum of the scales of the heats and works it reads. A residual above its printed bound is **flagged to the checker**:
 - **balance of a cell:** `n_cell_x` = Σ over its membranes (`leak_x` + `channel_x` + ν_x `pump`) ± Σ over its junctions, with ν = −3 for Na, +2 for K, 0 for Cl, a junction's amount minus at its sender and plus at its receiver;
 - **balance of a region:** `n_out_x` = −Σ over the membranes that face it (`leak_x` + `channel_x` + ν_x `pump`) ± Σ over its faces;
 - **closed world:** Σ over cells `n_cell_x` + Σ over regions `n_out_x` = 0;

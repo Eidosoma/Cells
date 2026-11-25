@@ -18,7 +18,7 @@
 | `jupiter` | The JUPITER readiness check's two arms: two cells, one junction, three outside regions joined by three faces, one Na/K pump and one Kv1.5-type channel per cell | `jupiter_baseline`, `jupiter_pump_release` (both pumps off from 5 to 10 ms) | Same |
 | `cell` | The assembly-regulated cell: one cell, one finite outside region, one pump, one channel, whose availability is set by one assembly pool. 64 worlds a seed | `cell` | Same, and the pool is live code |
 | `base` | The assembly-regulated cluster's base: the JUPITER cluster with two pools, one per cell. 8 worlds a seed | `base` | Same, and the pool is live code |
-| `integrated` | The integrated ensemble's world: seven cells, twelve gated junctions, one finite outside region, no pump, leak or channel | `integrated` | Same. **Its capture is pending** (§7) |
+| `integrated` | The integrated ensemble's world: seven cells, twelve gated junctions, one finite outside region, no pump, leak or channel. The junctions' availability follows a schedule: 1, 0.5 from 5 ms, 0 from 10 ms, 1 from 15 ms | `integrated` | Same |
 
 **"Same equations"** means that the re-expression keeps the model's equations and changes only the code and the way it is
 declared. A band applies. No consumer of Part 1 is a changed model.
@@ -94,12 +94,15 @@ A candidate's block is compared with `inputs.json`'s block (`CRITERIA.md` §5):
 | Steps h₁, h₂, h₃ | 25, 12.5 and 6.25 µs | 100, 50 and 25 µs |
 | Retry step | 3.125 µs | 12.5 µs |
 | Why these steps | The channel law's own bound for RK4 is 25 µs, so legacy's 100 and 50 µs are refused by the model | No gated channel, so the model admits 100 µs |
-| Field solver | The factored capacitor reduction (label `field_solver`) | The same |
+| Field solver | By D147's rule (below). `jupiter` and `base` have free field offsets (their `near` and `far` regions), so they declare **the floor variant** of the factored capacitor reduction (label `field_solver_floor`). `cell` has none and declares the factored capacitor reduction itself (label `field_solver`) | No free field offset: the factored capacitor reduction (label `field_solver`) |
 | Heat | Integrated by RK4 with the other states. No heat booking is declared | The same |
 | Observation times | On the grid. They include every time of `potential_times_s` (§4) | The same |
 | Backend | The CPU, double precision | The same |
 | Rows | Every accepted row is recorded | The same |
 
+- **The field solver is not part of the equations compared.** It solves the same algebraic field. Which variant a world declares is the standing rule of D147 (D156 for a composite, which follows its inner model): a definition with at least one free field
+  offset declares the floor variant, and one with none keeps its own. The builders apply it with `validation/tissue/field_solver_choice.py`'s `declare()`, and never by hand. D147 also asks for its floor guard to be **rerun with constants before the floor variant serves a run of record**, and no rerun is recorded.
+  It is a step before the campaign (the protocol's §5). This folder assumes nothing of its outcome.
 - **The candidate's own step** need not be legacy's. The two are compared at the same times (§4).
 - **A step that an event splits** is one accepted step for each part. The run then has more accepted rows than its grid (`TABLE.md` §3).
 
@@ -107,7 +110,7 @@ A candidate's block is compared with `inputs.json`'s block (`CRITERIA.md` §5):
 
 **The pool run.** For each seed and each cell's pool, the live assembly pool runs the block's definition to 0.02 s. The worlds are
 IDs 0 to 63 (`cell`) or 0 to 7 (`base`), the seeds are `pools.<cell>.seeds`, and the initial state is the block's. Each pool
-run is recorded as `TABLE.md` §4 says: its 19 final arrays and its event path.
+run is recorded as `TABLE.md` §3 says: its 19 final arrays and its event path.
 
 **The event path** of a world and a cell is the list of its committed events, in order: `[time, availability after it]`. The availability is
 1 if the number of set bits of the bond mask is at least the number of set bits of the occupied mask, and 0 otherwise. It is 1
@@ -120,11 +123,25 @@ each event from that event's time on. An entry that repeats the value before it 
 - **The availability multiplies the channel only.** It touches no gate, pump, leak, junction or face.
 - **The pool never reads the ionic side.**
 
-**Where the schedule is made.** The builder's driver makes it, from the pool run of the same seed. If an operator of the composite
-makes it instead (Part 2), that form is judged in Part 2. Part 1 registers the schedule form and nothing else.
-
 **The ionic worlds judged.** World IDs 0 to 7 of each of the four seeds, for `cell` and for `base`: 32 ionic families each. For
 `cell` the pools are judged on all 64 worlds a seed, and the ionic side on 8 of them. Nothing is said of the ionic side of IDs 8 to 63.
+
+### 3.3 The two declared forms of the assembly coupling
+
+How an assembly pool sets a channel's availability is an open question for the user (the plan's G-7). **Both forms are registered, and exactly one is run.** The lead names it in `assembly_form.json`
+(`TABLE.md` §8), from the user's answer and never from a run, before the registration tag.
+
+| | Form A, `schedule` | Form B, `operator` |
+| --- | --- | --- |
+| What it is | A driver runs the live pool and writes its event path into the ionic world's channel schedule (§3.2). The ionic world is the inner model, version 3, on RK4 | An operator on the composite advances the pool and gives the ionic step one availability, held over the step |
+| When an event acts | At its own time. The step is split there | At the next hold point. The value at a declared point of the step (its start, middle or end) holds for all of it |
+| Equations | **Same** | **Changed model.** The plan's section 14.5 names a factor held through a step as one. The error it makes is not smooth in the step, so three steps have no order |
+| Steps and order | 25, 12.5, 6.25 µs, declared order 4 | The same three steps. No declared order is used |
+| Field solver | As §3.1 | As §3.1 for the inner model it holds |
+| What is judged | Everything of `CRITERIA.md` §4 | The pool, the applied availability, conservation and completion. The ionic side is **reported, not judged** (`CRITERIA.md` §4.6) |
+
+- **A form A run** and **a form B run** of one world have the same name. A run of the form that was not named departs from its strings note and is refused.
+- **In both forms** the pool's event times are its own doubles, its streams and seeds are the block's, and the pool never reads the ionic side.
 
 ## 4. The runs and the compared times
 
@@ -163,6 +180,7 @@ initial concentrations of the species on the two sides (mM).
 | `heat_junction`, `heat_face` | max over junctions, over faces |
 | `voltage` | max |V₀| + max over membranes of (F 10⁻¹⁵/C) Σ_x |z| × the cell's sum of route scales |
 | `phi_out` | R T_K/F |
+| An entry named `<readout>_summary` | The scale of `<readout>` |
 
 **Why this scale.** It is the gross one-way throughput that a readout is formed from, so a rounding or a solver residual relative to it is
 the one the arithmetic makes. It comes from the declared values alone. It is at least the magnitude of the captured ledger in every
@@ -183,7 +201,7 @@ So **e_round(S) = 8 ε (S + 1) s**, FR-38's form (`8 ε S s`), with this derivat
 **The closure bound.** Both codes accept a field solve whose relative charge and current residuals are at most 2 × 10⁻¹²: the live model's
 declared `CHARGE_RTOL` and `CURRENT_RTOL`, and legacy's own normalised residual at most 1 with the same constant. A potential in error by that
 share moves a flux by at most that share of |z| F V*/(R T_K) of its gross one-way rate, which the scale already holds in χ.
-So **e_close = 4 × 10⁻¹² s**, two codes at 2 × 10⁻¹² each.
+So **e_close = 4 × 10⁻¹² s**, two codes at 2 × 10⁻¹² each. The floor variant, which `jupiter` and `base` declare (§3.1), also accepts a residual within 10³ ulps of its potentials (2.2 × 10⁻¹³ of the incident conductance sum), which is smaller than that share and is inside it.
 
 ## 7. The references
 
@@ -196,11 +214,11 @@ the science set's `MANIFEST.json`, the origin's manifest and the snapshot's. Eve
 - **The pools:** the same checkpoints, and `reference_paths.json`.
 
 **The legacy side's own classes** are in `legacy_part1.json`, by the rule of `CRITERIA.md` §4.3 with `inputs.json`'s scales. Every one of the
-entries of `jupiter`, `cell` and `base` is **unresolved**: both of its step-halving differences are below the threshold. The largest observed differences are
+entries of `jupiter`, `cell`, `base` and `integrated` is **unresolved**: both of its step-halving differences are below the threshold. The largest observed differences are
 about one part in 10¹² of the gross scale. So the reference side has no order to judge. Its error estimate U_l still enters the band.
 
-**`integrated` is pending.** Its capture is being taken (the lead, 25 November 2026), at h, h/2 and h/4 of 100 µs. When it exists, the same rule gives its
-classes, in a dated file `legacy_integrated.json` with its own tag, before the registration. Until then the consumer is not judged, and not passed.
+**`integrated`:** `extra-49529e71/runs/finite_junction_cluster-{h,h2,h4}` (`legacy_part1.json` `integrated_capture` pins its manifest and its origin's), at h, h/2 and h/4 of 100 µs. It was captured at the pre-cleanup revision, where legacy's source equals the
+snapshot's byte for byte (the lead's and the plan's statement, and the author's `git diff`). Its definition is the configuration, unchanged.
 
 **The captures' machine** is `legacy_part1.json`'s `cpu_model`. Class E holds on that machine.
 

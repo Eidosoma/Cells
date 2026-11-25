@@ -882,7 +882,100 @@
     5e-05,
     2.5e-05
    ],
-   "status": "pending: the capture is being taken (the lead, 25 November 2026); its classes follow by the same rule in a dated file"
+   "captured_step_counts": [
+    200,
+    400,
+    800
+   ],
+   "entries": {
+    "n_cell_Na": {
+     "class": "unresolved",
+     "observed_order": 3.98,
+     "d2": 9.06e-18,
+     "d1": 5.73e-19,
+     "threshold": 4.53e-15,
+     "largest": 1.66e-05
+    },
+    "junction_Na": {
+     "class": "unresolved",
+     "observed_order": 4.05,
+     "d2": 3.16e-18,
+     "d1": 1.91e-19,
+     "threshold": 7.7e-16,
+     "largest": 4.84e-06
+    },
+    "n_cell_K": {
+     "class": "unresolved",
+     "observed_order": 4.03,
+     "d2": 1.17e-16,
+     "d1": 7.16e-18,
+     "threshold": 5.95e-14,
+     "largest": 0.000154
+    },
+    "junction_K": {
+     "class": "unresolved",
+     "observed_order": 4.01,
+     "d2": 4.29e-17,
+     "d1": 2.67e-18,
+     "threshold": 1.05e-14,
+     "largest": 5.07e-05
+    },
+    "n_cell_Cl": {
+     "class": "unresolved",
+     "observed_order": 3.95,
+     "d2": 9.51e-18,
+     "d1": 6.13e-19,
+     "threshold": 5.2e-15,
+     "largest": 9.49e-06
+    },
+    "junction_Cl": {
+     "class": "unresolved",
+     "observed_order": 4.01,
+     "d2": 3.49e-18,
+     "d1": 2.17e-19,
+     "threshold": 8.83e-16,
+     "largest": 2.77e-06
+    },
+    "junction_gate": {
+     "class": "unresolved",
+     "observed_order": 3.65,
+     "d2": 5.28e-14,
+     "d1": 4.22e-15,
+     "threshold": 1.42e-11,
+     "largest": 0.961
+    },
+    "heat_junction": {
+     "class": "unresolved",
+     "observed_order": 4.02,
+     "d2": 1.09e-16,
+     "d1": 6.75e-18,
+     "threshold": 1.76e-13,
+     "largest": 0.000166
+    },
+    "voltage": {
+     "class": "unresolved",
+     "observed_order": 4.01,
+     "d2": 3.78e-15,
+     "d1": 2.34e-16,
+     "threshold": 2.23e-12,
+     "largest": 0.0206
+    }
+   },
+   "zero_entries": [
+    "n_out_Na",
+    "n_out_K",
+    "n_out_Cl"
+   ]
   }
+ },
+ "integrated_capture": {
+  "root": "/mnt/workspaces/Cells/legacy-captures-20261125",
+  "science": "extra-49529e71",
+  "science_manifest_sha256": "ef3fd17e221ad35cd61aa930038d63b8d188e9c88557150e21de27c4ae1b75d4",
+  "origin": "origin-extra-49529e71",
+  "origin_manifest_sha256": "a7aa82ced7fe5411725a231c1fd6954396796ec82622f5301b4b9bc901a76646",
+  "snapshot_revision": "49529e7103788554e1a925a202d4a8227b8ddeea",
+  "snapshot_manifest_sha256": "d7c23d4e494d20a97b875803df16f7136348221c6cb4c2164a2daaf7ff86d57b",
+  "legacy_source_equal_to": "76a498ae"
  }
 }

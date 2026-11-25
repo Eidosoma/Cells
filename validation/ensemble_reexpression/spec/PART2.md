@@ -24,7 +24,7 @@ ruling of 25 November 2026 fix it. `inputs_part2.json` governs the numbers.
 | The step ladder: whether the composite admits 12.5 µs, and where its order is in its window | notes D and E, their prototypes on **invented** worlds | §4.1's ladder, only before the Part 2 tag |
 | The ledger and field names that the exporter reads for the store, its pump, the release, the exchanger and the reactions, and how a compartment's amounts are booked | note D | §6's canonical column, by name. The signs and the lumps are fixed here |
 | The factor source's form, and whether its inputs are the cytosol's free amounts over its volume at the stage | note E | §3's condition 3 |
-| The assembly form: schedule (`SPEC.md` §3.2) or operator. An operator's event times must be the pool's doubles | note E | §4.1 and the runs' `strings` |
+| The assembly form of the four clusters: schedule (form A) or operator with a held availability (form B), `SPEC.md` §3.3. On the composite a schedule's off-grid changes must split the step as they do in form A on RK4 | the user's answer on G-7, and note E | §4.1, `assembly_form.json`'s `clusters`, and the runs' `strings`. In form B the four clusters' ionic entries are reported, not judged (`CRITERIA.md` §4.6) |
 | The strings note's labels for the pieces that do not exist yet | notes D and E | §4.3 |
 | Restarts and engine plants | the build | §11 |
 
@@ -97,7 +97,8 @@ As Part 1 §2.3. The captured release, pump and passive multipliers are 1 throug
 | Steps | h₁, h₂, h₃ = 12.5, 6.25, 3.125 µs. Retry 1.5625 µs. The captured h, h/2, h/4 are the same 12.5, 6.25 and 3.125 µs |
 | Gauge | `local`, 0 V, closed |
 | Observations | On the grid, at the block's `potential_times_s` at least |
-| Assembly clusters | The live pool's seeds and world IDs (worlds 0 and 1 of each of four seeds), the event path as the channel's schedule (`SPEC.md` §3.2) or as note E's operator, with the event times as the pool's doubles |
+| Field solver | **The floor variant** of the factored capacitor reduction (label `field_solver_floor`). Every world of this part has free field offsets (`near` and `far`), and a composite follows its inner model (D147, D156; `SPEC.md` §3.1). The same step before the campaign applies |
+| Assembly clusters | The live pool's seeds and world IDs (worlds 0 and 1 of each of four seeds). Form A: the event path as the channel's schedule (`SPEC.md` §3.2). Form B: note E's operator. In both the event times are the pool's doubles |
 
 ### 4.2 The declared order
 
@@ -108,13 +109,13 @@ As Part 1 §2.3. The captured release, pump and passive multipliers are 1 throug
 
 ### 4.3 Strings labels added to the note
 
-`composite_model`, `imex`, `passive_routes_kind`, `local_reactions`, `mass_action_passive`, `store_node`, `calcium_pump_positive`, `exchanger_3na_1ca`, `cav12_m2h`, `store_calcium_release`, `ip3_release_factor`, `calcium_release_factor`, and note E's operator's. `delta_g0_at_1M_J_per_mol` carries no ID.
+`composite_model`, `field_solver_floor`, `imex`, `passive_routes_kind`, `local_reactions`, `mass_action_passive`, `store_node`, `calcium_pump_positive`, `exchanger_3na_1ca`, `cav12_m2h`, `store_calcium_release`, `ip3_release_factor`, `calcium_release_factor`, and note E's operator's. `delta_g0_at_1M_J_per_mol` carries no ID.
 
 ## 5. Compared times and worlds
 
 - **The ionic children:** every 12.5 µs from 0 to 1 ms (81 rows), then every 100 µs from 1.1 to 20 ms (190 rows), 271 rows (`history_times`). The rows up to 1 ms resolve the store's fast modes.
 - **The assembly-regulated clusters:** 0.02 s for every entry, and 2.5, 5, 10 and 15 ms and 20 ms for `voltage`, `channel_K`, `store_voltage` and the four free cytosolic ions, where the summaries exist (`summary_times_s`).
-- **World IDs 0 and 1** of each of four seeds (`cluster_*`). Their pools are worlds 0 and 1 of `base`, bit for bit.
+- **World IDs 0 and 1** of each of four seeds (`cluster_*`). Their pools are worlds 0 and 1 of `base`, bit for bit. So at seed index 0 the pools' E entries are those of the two worlds that a prototype had run (`CRITERIA.md` §8). They are marked and add no blind evidence. The ionic entries of the clusters are not affected: no calcium world was run by a design author (the protocol's §11).
 
 ## 6. The readouts
 
@@ -156,13 +157,15 @@ As Part 1 §2.3. The captured release, pump and passive multipliers are 1 throug
 | Ca junction route | `junction_Ca` | all eight |
 | Ca faces | `face_Ca` | all eight |
 | Store Ca leak | `store_leak_Ca` | all eight |
-| Store K leak | `store_leak_K` | all eight, **if observable** (below) |
+| Store K leak | `store_voltage` | all eight |
 | Store pump | `store_pump` | all eight |
 | Release permeability | `store_release` | all eight |
 | Release's calcium factor | `store_release` | all eight |
-| Cytosolic buffers | `extent_bind_0_first`, `extent_bind_0_second` | all eight |
-| Store buffers | `extent_bind_1_first`, `extent_bind_1_second` | all eight |
-| Store capacitor | `store_voltage` | all eight |
+| Cytosolic buffer, first site | `extent_bind_0_first` | all eight |
+| Cytosolic buffer, second site | `extent_bind_0_second` | all eight |
+| Store buffer, first site | `extent_bind_1_first` | all eight |
+| Store buffer, second site | `extent_bind_1_second` | all eight |
+| Store capacitor | `store_K` | all eight |
 | Plasma calcium pump | `ca_pump` | plasma, gated, ip3, and their clusters |
 | Exchanger | `exchanger` | plasma, gated, ip3, and their clusters |
 | Ca channel permeability | `ca_channel` | gated, ip3, and their clusters |
@@ -170,13 +173,16 @@ As Part 1 §2.3. The captured release, pump and passive multipliers are 1 throug
 | IP3 factor | `store_release` | ip3 and its cluster |
 | IP3 binding | `extent_ip3_binding` | ip3 and its cluster |
 
-- **Part 1's mechanisms** (leak of Na, K, Cl, K channel, its kinetics, the pump, the junction, its gate, the faces, the closure) are in every one of the eight. Their homes are Part 1's, and the ratio is Part 1's `jupiter_baseline` ratio halved, a declared lower bound, for the ionic part that Part 2 shares with it.
+- **Part 1's mechanisms** (leak of Na, K, Cl, K channel, its kinetics, the pump, the junction, its gate, the faces, the closure) are in every one of the eight, and their homes are Part 1's. **Their ratios come from their own planted runs** in each of the four ionic children (§7.2), and not from Part 1's.
+- **The four clusters** take their ionic child's ratio, formed at 0.02 s alone (the summary entries at the summary times), **halved**. That is a declared lower bound. The availability changes the channel's current, not its relative response to a 1 % change in it. No cluster was run with a power plant.
 - **A mechanism whose plant has no effect above its band** is declared not observable in §7.4, and is not a home.
 
 ### 7.2 Power plants, Part 2 (each a legacy run of the captured definition with one constant × 1.01, at the captured 12.5 µs step)
 
-`PC-leakCa` (plasma Ca leak permeability), `PC-junctionCa`, `PC-faceCa`, `PC-storeleakCa`, `PC-storeleakK`, `PC-storepump` (capacity), `PC-release` (permeability), `PC-activation`, `PC-inhibition` (the two factor constants), `PC-bind0a`, `PC-bind0b`, `PC-bind1a`,
-`PC-bind1b` (the four forward rates), `PC-storecap` (store specific capacitance, its initial voltage 0), `PC-pmca` (capacity), `PC-ncx` (capacity), `PC-ncxkm` (Na constant), `PC-cav` (maximal permeability), `PC-cavkinetics` (both time constants, patch), `PC-ip3activation`, `PC-ip3binding` (forward rate). Each in every consumer that holds it.
+**Part 1's set,** run again in each of the four ionic children: `P-leak`, `P-channel`, `P-pump`, `P-junction`, `P-jgate`, `P-face`, `P-faceK`, `P-kinetics` (the K channel's two time constants, patch).
+
+**The calcium set:** `P-leakCa` (plasma Ca leak permeability), `P-junctionCa`, `P-faceCa`, `P-storeleakCa`, `P-storeleakK`, `P-storepump` (capacity), `P-release` (permeability), `P-activation`, `P-inhibition` (the two constants of the calcium factor), `P-bind0a`, `P-bind0b`, `P-bind1a`,
+`P-bind1b` (the four forward rates), `P-storecap` (store specific capacitance, its initial voltage 0), `P-pmca` (capacity), `P-ncx` (capacity), `P-ncxkm` (Na constant), `P-cav` (maximal permeability), `P-cavkinetics` (both time constants, patch), `P-ip3activation`, `P-ip3binding` (forward rate). Each is run in every child that holds it. 103 power runs in all, with nine controls (eight of the children, two each, and one of `cluster_gated_calcium`).
 
 ### 7.3 Structural plants, Part 2
 
@@ -184,20 +190,94 @@ As Part 1 §2.3. The captured release, pump and passive multipliers are 1 throug
 | --- | --- | --- | --- |
 | SC1 | spatial | The release's calcium factor left out (it is 1) | `store_release`, `store_Ca` |
 | SC2 | ip3 | The IP3 factor left out (it is 1) | `store_release` |
-| SC3 | spatial | The store voltage's sign reversed in its leak, release and pump | `store_leak_K`, `store_voltage` (the run may leave its domain: that is a catch, §7.4) |
+| SC3 | spatial | The store voltage's sign reversed in its leak, release and pump | **not scored:** legacy's own domain check stops the run (§7.4) |
+| SC3b | spatial | The store voltage's sign reversed in the calcium leak and release alone, the K leak honest (replaces SC3) | `store_leak_Ca`, `store_release` |
 | SC4 | spatial | The store pump's direction reversed | `store_pump`, `store_Ca` |
 | SC5 | spatial | Ca's valence taken as 1 in the store's leak and release | `store_leak_Ca`, `store_release` |
-| SC6 | spatial | The first buffer binds two calcium (2 Ca + B = CaB) | `extent_bind_0_first`, `cyt_Ca` |
+| SC6 | spatial | The first buffer's forward rate is second order in calcium | `extent_bind_0_first`, `cyt_Ca` |
 | SC7 | plasma | The exchanger's sodium terms squared and not cubed, with 3 Na moved | `exchanger` |
 | SC8 | plasma | The plasma calcium pump's direction reversed | `ca_pump`, `cyt_Ca` |
 | SC9 | gated | The channel's inactivation gate left out | `ca_channel` |
 | SC10 | gated | The channel's m² taken as m | `ca_channel` |
 | SC11 | cluster_gated_calcium | The pool's availability acts on the calcium channel as well as the K channel | `ca_channel` |
 | SC12 | plasma | The pump's standard free energy left at the numeric-mM one under the 1 M quotient | `heat_ca_pump` |
+| SC13 | spatial | The store pump's standard free energy left at the numeric-mM one under the 1 M quotient | `heat_store_pump` |
 
-### 7.4 Observability
+### 7.4 Observability and margins (from the legacy side alone, 25 November 2026)
 
-Filled with the margins (`PLANTS.md` §8): for every mechanism above, whether its 1 % plant moves its home above the band at U_c = 0, and, where it does not, that it is **not tested** and no home.
+**103 power runs, 14 structural runs and nine controls** of the frozen snapshot at the captured 12.5 µs, under the lead's conditions of 25 November, after the first commit of this branch. `plants_manifest_part2.json` holds each run, its patch text and its sha256, and `margins_part2.json` the numbers below, entry by entry.
+**The controls are bit-identical to their captures:** `spatial_calcium` 371 arrays, `plasma_calcium` 413, `gated_calcium` 455, `ip3_calcium` 469 (each twice, before and after its batch), and `cluster_gated_calcium` seed 0, 48.
+
+**Every mechanism of every consumer is observable** at U_c = 0. Each row holds the planted ratio and the smallest margin over the children that hold the mechanism, and for the clusters (at 0.02 s, with the ratio halved, §7.1) the ratio used and the smallest margin:
+
+| Mechanism | Home (plant) | Children: ratio, smallest margin | Clusters at 0.02 s: ratio halved, smallest margin |
+| --- | --- | --- | --- |
+| leak permeability | `leak_Na` (P-leak) | 1.0e-02, 2e+08 | 5.0e-03, 2e+08 |
+| leak permeability | `leak_K` (P-leak) | 9.9e-03, 1e+07 | 5.0e-03, 1e+07 |
+| leak permeability | `leak_Cl` (P-leak) | 9.8e-03, 5e+06 | 4.9e-03, 5e+06 |
+| channel permeability | `channel_K` (P-channel) | 1.0e-02, 1e+06 | 5.0e-03, 1e+06 |
+| channel kinetics | `gate_m` (P-kinetics) | 3.7e-03, 3e+07 | 6.3e-03, 3e+07 |
+| channel kinetics | `gate_h` (P-kinetics) | 3.4e-05, 9e+05 | 1.7e-05, 9e+05 |
+| Na/K pump | `pump` (P-pump) | 1.0e-02, 2e+08 | 5.0e-03, 2e+08 |
+| junction permeability | `junction_Na` (P-junction) | 9.3e-03, 2e+07 | 4.7e-03, 2e+07 |
+| junction permeability | `junction_K` (P-junction) | 8.8e-03, 1e+07 | 4.4e-03, 1e+07 |
+| junction permeability | `junction_Cl` (P-junction) | 8.6e-03 to 8.7e-03, 6e+06 | 3.9e-03, 5e+06 |
+| junction gate | `junction_gate` (P-jgate) | 5.6e-04, 1e+07 | 2.8e-04, 1e+07 |
+| faces | `face_Na` (P-face) | 9.8e-03, 1e+07 | 4.9e-03, 1e+07 |
+| faces | `face_K` (P-face) | 9.8e-03, 4e+07 | 4.9e-03, 4e+07 |
+| faces | `face_Cl` (P-face) | 9.9e-03, 7e+06 | 4.9e-03, 7e+06 |
+| electrical closure | `voltage` (P-pump) | 3.5e-03, 2e+07 | 1.7e-03 to 1.8e-03, 2e+07 |
+| electrical closure | `phi_out` (P-faceK) | 9.2e-03, 7e+06 |  |
+| plasma Ca leak | `leak_Ca` (P-leakCa) | 9.9e-03, 2e+08 | 5.0e-03, 2e+08 |
+| Ca junction route | `junction_Ca` (P-junctionCa) | 1.0e-02, 1e+07 | 5.0e-03, 1e+07 |
+| Ca faces | `face_Ca` (P-faceCa) | 9.9e-03, 2e+07 | 5.0e-03, 2e+07 |
+| store Ca leak | `store_leak_Ca` (P-storeleakCa) | 1.0e-02, 3e+07 | 5.0e-03, 3e+07 |
+| store K leak | `store_voltage` (P-storeleakK) | 9.9e-03 to 1.0e-02, 6e+02 | 5.0e-03, 6e+02 |
+| store pump | `store_pump` (P-storepump) | 9.9e-03, 2e+08 | 5.0e-03, 2e+08 |
+| release permeability | `store_release` (P-release) | 1.0e-02 to 1.1e-02, 7e+06 | 5.1e-03 to 5.3e-03, 7e+06 |
+| release's calcium factor | `store_release` (P-activation) | 6.3e-03 to 6.6e-03, 4e+06 | 3.1e-03 to 3.3e-03, 4e+06 |
+| release's calcium factor | `store_release` (P-inhibition) | 1.2e-04 to 1.3e-04, 8e+04 | 5.9e-05 to 6.6e-05, 8e+04 |
+| cytosolic buffer, first site | `extent_bind_0_first` (P-bind0a) | 5.7e-03, 1e+07 | 2.9e-03, 1e+07 |
+| cytosolic buffer, second site | `extent_bind_0_second` (P-bind0b) | 9.7e-03 to 9.8e-03, 9e+06 | 4.9e-03, 9e+06 |
+| store buffer, first site | `extent_bind_1_first` (P-bind1a) | 3.5e-03, 2e+07 | 6.3e-04 to 6.4e-04, 9e+06 |
+| store buffer, second site | `extent_bind_1_second` (P-bind1b) | 8.3e-03, 1e+08 | 4.1e-03, 1e+08 |
+| store capacitor | `store_K` (P-storecap) | 1.4e-04 to 1.7e-04, 7e+02 | 2.9e-05 to 3.9e-05, 2e+02 |
+| plasma calcium pump | `ca_pump` (P-pmca) | 1.0e-02, 2e+08 | 5.0e-03, 2e+08 |
+| exchanger | `exchanger` (P-ncx) | 9.9e-03, 1e+07 | 4.9e-03, 1e+07 |
+| exchanger | `exchanger` (P-ncxkm) | 8.7e-05, 1e+05 | 4.3e-05, 1e+05 |
+| Ca channel permeability | `ca_channel` (P-cav) | 1.0e-02, 2e+06 | 5.0e-03, 2e+06 |
+| Ca channel kinetics | `ca_gate_m` (P-cavkinetics) | 3.6e-03, 3e+07 | 3.8e-03, 3e+07 |
+| Ca channel kinetics | `ca_gate_h` (P-cavkinetics) | 1.7e-03, 5e+07 | 9.9e-04, 5e+07 |
+| IP3 factor | `store_release` (P-ip3activation) | 1.3e-02, 9e+06 | 6.4e-03, 9e+06 |
+| IP3 binding | `extent_ip3_binding` (P-ip3binding) | 7.8e-03, 6e+07 | 3.9e-03, 6e+07 |
+
+- **Mechanisms with several plants** (the calcium factor, the exchanger) are tested by the largest of them (`CRITERIA.md` §4.5). The inhibition constant and the exchanger's Na constant are weak plants (a ratio of 10⁻⁴ or less), and their mechanisms are tested by the activation constant and the capacity.
+- **The store's capacitor** is the weakest mechanism: its 1 % plant moves `store_K` by 1.4 × 10⁻⁴ to 1.7 × 10⁻⁴ of itself in the children and by 5.8 × 10⁻⁵ to 7.8 × 10⁻⁵ at the clusters' end. A candidate whose error estimate on `store_K` is above about 10⁻⁵ of its largest value cannot test it, and the consumer is then inconclusive. The candidate's step decides, and no band is widened for it.
+
+**Homes moved on 25 November, before any candidate run of these worlds, from the legacy side's own planted runs (dated line):**
+- **Store K leak:** from `store_leak_K` to `store_voltage`. The K leak is so fast that K's own transfer follows calcium's, and its 1 % plant moves `store_leak_K` by 1.4 × 10⁻⁴, while the store's voltage is set by the leak and moves by 1 %.
+- **Store capacitor:** from `store_voltage` to `store_K`. At the potential times the store's voltage is quasi-steady and does not know its capacitance (a margin of 8 to 13, under 10 in `ip3_calcium`). `store_K` holds the early charging, and its margin is 680 to 1,600.
+
+**The structural plants:**
+
+| Plant | Named entry: distance, margin |
+| --- | --- |
+| SC1 (`spatial_calcium`) | `store_release`: 1.3e-04, 8e+08; `store_Ca`: 1.2e-04, 2e+08 |
+| SC3b (`spatial_calcium`) | `store_leak_Ca`: 1.5e-07, 1e+07; `store_release`: 1.1e-06, 7e+06 |
+| SC4 (`spatial_calcium`) | `store_pump`: 1.0e-04, 4e+10; `store_Ca`: 9.9e-05, 1e+08 |
+| SC5 (`spatial_calcium`) | `store_leak_Ca`: 3.7e-08, 2e+06; `store_release`: 2.9e-07, 2e+06 |
+| SC6 (`spatial_calcium`) | `extent_bind_0_first`: 1.0e-03, 3e+09; `cyt_Ca`: 1.1e-03, 2e+09 |
+| SC13 (`spatial_calcium`) | `heat_store_pump`: 6.5e-04, 3e+09 |
+| SC7 (`plasma_calcium`) | `exchanger`: 6.0e-07, 4e+07 |
+| SC8 (`plasma_calcium`) | `ca_pump`: 6.2e-05, 4e+10; `cyt_Ca`: 4.2e-05, 8e+07 |
+| SC12 (`plasma_calcium`) | `heat_ca_pump`: 4.3e-04, 4e+09 |
+| SC9 (`gated_calcium`) | `ca_channel`: 2.2e-06, 1e+08 |
+| SC10 (`gated_calcium`) | `ca_channel`: 2.1e-05, 1e+09 |
+| SC2 (`ip3_calcium`) | `store_release`: 1.9e-04, 1e+09 |
+| SC11 (`cluster_gated_calcium`, seed 0) | `ca_channel`: world 0 3.4e-06, 2e+08; world 1 3.6e-06, 2e+08 |
+
+- **SC3 is replaced by SC3b (dated line, 25 November).** With the store voltage's sign reversed in the K leak the store runs away, and legacy's own domain check stops the run at 1.4875 ms. There is no planted array, so nothing can be scored, and a candidate with that error is stopped by its own check or leaves its domain. SC3b reverses the sign in the calcium leak and release alone, and is scored.
+- **Which ran with legacy's own host-side ledgers off:** SC3, SC3b, SC4, SC5, SC6, SC7 and SC8, since those errors break them by construction. Their domain checks stayed on. The power plants, the controls and SC1, SC2 and SC9 to SC13 ran with all checks on.
 
 ## 8. Scales
 
@@ -212,7 +292,7 @@ Filled with the margins (`PLANTS.md` §8): for every mechanism above, whether it
 
 ## 9. Conservation and the reported identities
 
-**Conservation is the engine's own rule at every accepted step** (`CRITERIA.md` §4.4). No identity below is judged. The judge forms and reports them:
+**Conservation is the engine's own rule at every accepted step** (`CRITERIA.md` §4.4). No identity below is judged. The judge forms and reports them, each beside READOUTS §5's printed bounds, and flags a residual above its bound to the checker:
 - the balances of each cell, region, store row and cytosol row, and the closed world;
 - **the moieties** in each compartment: B + CaB + Ca2B (cytosol and store apart), IP3 + IP3_bound and IP3_buffer + IP3_bound (cytosol), and calcium's total: cytosol (Ca + CaB + 2 Ca2B) + store (the same) = `exchange_Ca`;
 - **the capacitors:** `voltage` − V₀ = (F 10⁻¹⁵/C_m) Σ_x z_x `exchange_x`, and `store_voltage` = (F 10⁻¹⁵/C_s) Σ_c z_c `store_c`;
@@ -231,14 +311,14 @@ Filled with the margins (`PLANTS.md` §8): for every mechanism above, whether it
 ## 12. The independent reference
 
 **What it is.** A scalar ODE reference of these worlds' equations, with its own code and no engine import: `validation/betse/spatial_cluster/reference.py` for the cluster (leak, pump, K channel, junction, faces and the Kirchhoff solve), and
-the store, plasma-pump, channel and IP3 references of the live tests, with an adaptive integrator at a relative tolerance of 2 × 10⁻¹³. It stays through the deletion and moves under this folder later, before the Part 2 tag.
+the store, plasma-pump, channel and IP3 references of the live tests, with an adaptive integrator at a relative tolerance of 2 × 10⁻¹³. It stays through the deletion and moves under this folder later (the lead's ruling of 25 November).
 
 **What it is used for.**
 - **Corroborating the reference side, before any run.** It is run on the captured definitions, and must agree with the captured h/4 rows at the compared times within its own registered criterion, 3 × 10⁻⁹ relative and 3 × 10⁻¹² absolute, readout by readout. A disagreement is a C0 fault of the
-  references, found before a table is opened. The author's first run of it on the Part 1 cluster is in the protocol's §8.
+  references, found before a table is opened. **The author ran it on 25 November** on the four children and on both JUPITER arms: every field agrees at every compared time, with the worst entry at 5.5 × 10⁻⁴ of that criterion. The largest difference relative to a field's largest value is 3.3 × 10⁻¹² (the store's K leak) in the children, and 2.5 × 10⁻¹⁴ in the JUPITER arms (the protocol's §11).
 - **Reporting beside a miss.** Where the candidate misses an S entry, the judge reports its distance to the independent reference too. It decides nothing by itself.
 - **A changed model** (§3), if one is found, has it as its registered criterion, at 3 × 10⁻⁹ against the independent equations **as they are written there**, which must first be changed to the changed model's.
 
-**What it covers.** The four ionic clusters and the JUPITER cluster, with a prescribed channel availability (so, the assembly clusters' ionic sides too, given their paths). Amounts, transfers, cycles, gates, potentials, reaction extents and heats.
+**What it covers.** The four ionic clusters and the JUPITER cluster, with a prescribed channel availability (so, the assembly clusters' ionic sides too, given their paths; the author did not run those). Amounts, transfers, cycles, gates, potentials, reaction extents and heats.
 
 **What it does not cover.** The assembly pools, their events and seeds. The energy balance as an integral law. Legacy's interpolants and domain proofs. It is written from the same model description, so it shares any reading of it. It is a check of the arithmetic and of the book-keeping, not of the physics.

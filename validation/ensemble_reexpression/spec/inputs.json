@@ -4221,10 +4221,10 @@
   {
    "name": "base plant swapped",
    "consumer": "base",
-   "family": "base s0 w1",
+   "family": "base s0 w2",
    "world": "base",
    "seed_index": 0,
-   "world_id": 1,
+   "world_id": 2,
    "step_s": 6.25e-06,
    "role": "plant",
    "variant": "EP2"

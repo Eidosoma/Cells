@@ -52,7 +52,7 @@ Each is a legacy run of the captured definition with that one change, on the leg
 | PW-pool | The pool's off-rate × 1.01 | the pool's arrays (class E: a distance that is non-zero, no margin) |
 
 **Run in** `jupiter_baseline` and `jupiter_pump_release` (all but PW-pool), in `base` and `cell` at seed 0 (the plants that the consumer holds; its end state alone is captured), and in
-`integrated` (PW-junction, PW-jgate), where it is marked as not tied to a capture until one exists.
+`integrated` (PW-junction, PW-jgate), with its own control.
 
 ## 4. The structural plants (ST), Part 1
 
@@ -62,18 +62,27 @@ Each is a legacy run of the captured definition with that one change, on the leg
 | ST2 | jupiter_baseline | The leak flux takes Cl as valence +1 (patch) | `leak_Cl` |
 | ST3 | jupiter_baseline | The channel's inactivation gate is left out of its open fraction (patch) | `channel_K` |
 | ST4 | jupiter_baseline | The junction's flux takes the voltage difference with the opposite sign (patch) | `junction_Na`, `junction_K`, `junction_Cl` |
-| ST5 | jupiter_baseline | The faces' drift is left out: no outside potential (patch) | `face_Na`, `face_K`, `face_Cl` |
-| ST6 | base, seed 0 | Each pool's availability acts on the other cell's channel (patch) | `channel_K` in world 1 |
+| ST5 | jupiter_baseline | Na's and K's face diffusivities exchanged (definition) | `face_Na`, `face_K` |
+| ST6 | base, seed 0 | Each pool's availability acts on the other cell's channel (patch) | `channel_K` in world 2 |
 | ST7 | cell, seed 0 | The availability is inverted: closed when the assembly has a cycle (patch) | `channel_K` in world 1 |
 | ST8 | jupiter_pump_release | The pump is released on one membrane only (definition) | `pump` |
-| ST9 | integrated | The availability multiplies the stored junction gate rather than the flux (patch) | `junction_K` |
+| ST9 | integrated | The junctions' schedule is not applied: open fraction 1 throughout (definition) | `junction_Na`, `junction_K`, `junction_Cl` |
+| ST10 | base and cell, seed 0 | The availability is held over each step at its value at the step's start, so an event acts at the next step (patch) | `channel_K` in world 2 (`base`) and in world 1 (`cell`) |
+
+**Two plants replaced before any run, 25 November 2026 (dated line).** ST5 was the faces' drift left out, and ST9 the availability acting on the stored junction gate. The legacy side cannot run the first: its own charge and field checks stop an unbalanced face current. The second needs a patch that
+changes the gate's state at a schedule change, and a schedule that is not applied is the same class of error and can be run exactly. Neither was run.
+
+**Three changes before their runs were read, 25 November 2026 (dated line).**
+- ST6 and EP2 moved from world 1 to world 2 at seed 0. Worlds 0 and 1 there are not blind (`CRITERIA.md` §8). World 2 is the first blind world at that seed whose two paths differ. No margin chose it: ST6's planted run holds all 8 worlds.
+- ST10 was added. It is the error that form B would make by its declaration (`SPEC.md` §3.3), so it is a structural plant of form A, and its distance is the held distance that form B is reported beside. It was run after this line.
+- ST1 and ST4 were refused by legacy's own ledgers at their first attempts, which is what an error of their kind does, and were run again with those ledgers off (§8). Both attempts are in the manifest.
 
 ## 5. The engine plants (EP): runs of the candidate, Part 1
 
 | Plant | Run | Change | Named entries |
 | --- | --- | --- | --- |
 | EP1 | `jupiter_baseline plant channel`, at h₃ | Both channels' maximal permeability × 1.01 | `channel_K` |
-| EP2 | `base plant swapped`, seed 0, world 1, at h₃ | Each channel's schedule is the other cell's path | `channel_K` |
+| EP2 | `base plant swapped`, seed 0, world 2, at h₃ | Each channel's schedule is the other cell's path | `channel_K` |
 
 A plant's block differs from its honest run's only by its change. Any other difference is a departing echo.
 
@@ -97,6 +106,10 @@ Formed by the judge from the honest tables, before the judge's tag and again on 
 | JP12 | A support run missing | the consumer at best inconclusive |
 | JP13 | A `record_sha256` shared by two runs | both refused, readouts judged |
 | JP14 | One S series of h₁ shifted by the size of a rounding, and the other two honest | the entry's class is by the rule, and no fail is invented |
+| JP15 | One `channel_K` of `base s0 w0` altered so that it fails, every blind family honest | `base` fails, and the record shows that its 30 blind families pass |
+| JP16 | `base s0 w0` refused, every blind family honest | `base` inconclusive, and the record shows that its 30 blind families pass |
+| JP17 | A table of one form, read with a form note that names the other | every ionic run of the consumer departs from its strings and is refused. Nothing of it is judged |
+| JP18 | The form note absent | `cell` and `base` inconclusive, with their runs recorded |
 
 **A judge's plant that the code scores otherwise stops the judge's tag.**
 
@@ -104,8 +117,57 @@ Formed by the judge from the honest tables, before the judge's tag and again on 
 
 `PART2.md` §7.
 
-## 8. The margins (from the legacy side alone)
+## 8. The margins (from the legacy side alone), 25 November 2026
 
-**The control.** Filled by the author after the bands were committed, and before the Part 1 tag: each world's unpatched control run of the snapshot, and its comparison with the capture, array by array. The numbers are in `margins.json`, the runs in `plants_manifest.json`.
+Every run here is a run of the frozen snapshot, with one declared change of a definition or one host-side patch of an imported module, made after the first commit of this branch (5b56f92c, 11:23:02 UTC). The first control began at 11:24:59 UTC. `plants_manifest.json` holds each run's command, patch text, definition, output folder and
+sha256, and `margins.json` the numbers below, entry by entry. No band, class or window moved because of one.
 
-**Margins:** to be filled, with the date of the runs. `margins.json` holds, per plant, world and entry, the distance, the band at U_c = 0, the margin and the ratio. `plants_manifest.json` holds each run's command, patch text, output folder and sha256. Part 2's are `margins_part2.json` and `plants_manifest_part2.json`.
+**The controls.** An unpatched run of the snapshot equals the captured arrays **bit for bit**, every array, in every world:
+
+| World, captured step | Arrays compared | Runs |
+| --- | --- | --- |
+| `jupiter_baseline`, 25 µs | 364 | twice (alone, and after the patched runs of its process) |
+| `jupiter_pump_release`, 25 µs | 364 | twice |
+| `integrated`, 25 µs | 288 | twice |
+| `base` seed 0, 12.5 µs | 35 | once |
+| `cell` seed 0, 25 µs | 33 | once |
+
+**Where several patch-free runs shared a process,** the batch ended with a second control that equals the captured array too. So nothing of a plant leaked into another run.
+
+**The power plants, per mechanism.** A cell of the table holds the ratio of its home entries' plants (smallest to largest) and the **smallest margin** over them, at U_c = 0. Assembly worlds: the smallest over the eight worlds of seed 0.
+
+| Mechanism | `jupiter_baseline` | `jupiter_pump_release` | `integrated` | `base` | `cell` |
+| --- | --- | --- | --- | --- | --- |
+| leak permeability | 9.6e-03 to 1.0e-02, 1e+07 | 9.5e-03 to 1.0e-02, 2e+07 |  | 9.4e-03 to 1.0e-02, 1e+07 | 8.4e-03 to 2.8e-02, 1e+07 |
+| channel permeability | 1.0e-02, 3e+06 | 1.0e-02, 3e+06 |  | 1.0e-02, 1e+05 | 9.5e-03, 4e+05 |
+| channel kinetics | 3.4e-05 to 3.7e-03, 2e+06 | 3.5e-05 to 3.7e-03, 2e+06 |  | 3.4e-05 to 1.2e-02, 2e+06 | 1.8e-05 to 1.2e-02, 1e+06 |
+| Na/K pump | 1.0e-02, 4e+08 | 1.0e-02, 3e+08 |  | 1.0e-02, 4e+08 | 1.0e-02, 3e+08 |
+| junction permeability | 8.6e-03 to 9.3e-03, 2e+07 | 8.4e-03 to 9.3e-03, 2e+07 | 8.7e-03 to 9.4e-03, 6e+07 | 7.8e-03 to 9.3e-03, 1e+07 |  |
+| junction gate | 5.6e-04, 3e+07 | 5.7e-04, 3e+07 | 9.8e-04, 1e+08 | 5.6e-04, 3e+07 |  |
+| faces | 9.8e-03 to 9.9e-03, 2e+07 | 9.8e-03 to 9.9e-03, 2e+07 |  | 9.8e-03 to 9.9e-03, 1e+07 |  |
+| electrical closure | 3.5e-03 to 9.2e-03, 2e+07 | 2.8e-03 to 9.2e-03, 2e+07 | 2.0e-03, 4e+07 | 3.5e-03, 5e+07 | 3.4e-03, 9e+06 |
+
+- **Every mechanism of every consumer is observable.** The smallest margin of any entry (home or not) is 1.1 × 10⁵, against the rule of 10. The weakest homes are `channel_K` in `base` and `cell` (the band is set by the gross throughput, and the channel's net amount is small) and the gate h (a ratio of 2 × 10⁻⁵ to 3 × 10⁻⁵, because it moves little in 20 ms), for which `gate_m` is the other home.
+- **`voltage`** is a home of the electrical closure, which has no constant of its own. Its plant is the one that moves it most (`PW-pump`, `PW-leak` or `PW-junction`).
+- **An assembly's plant.** With each of the pool's four rates × 1.01, the snapshot's own pool, run alone, changes between 1 and 4 of the 19 arrays of every captured pool. The event counts of 20 ms do not change, and the times of the events do. So every rate is observable in class E, which has no margin (`margins.json` `pool_plants`).
+
+**The structural plants.** All are above 10 times the band by a wide margin, so each is scorable:
+
+| Plant | Named entry: distance, margin |
+| --- | --- |
+| ST1 pump direction (`jupiter_baseline`) | `n_cell_Na`: 5.9e-03, 9e+10; `n_cell_K`: 4.1e-03, 5e+10; `voltage`: 5.0e-02, 1e+10 |
+| ST2 leak valence of Cl (`jupiter_baseline`) | `leak_Cl`: 1.5e-04, 4e+10 |
+| ST3 inactivation gate left out (`jupiter_baseline`) | `channel_K`: 1.3e-06, 1e+08 |
+| ST4 junction voltage sign (`jupiter_baseline`) | `junction_Na`: 4.7e-06, 8e+09; `junction_K`: 7.9e-05, 9e+09; `junction_Cl`: 4.2e-06, 8e+09 |
+| ST5 Na and K face diffusivities exchanged (`jupiter_baseline`) | `face_Na`: 5.3e-02, 5e+08; `face_K`: 2.3e-02, 3e+09 |
+| ST8 pump released on one membrane (`jupiter_pump_release`) | `pump`: 2.5e-04, 1e+10 |
+| ST9 the schedule is not applied (`integrated`) | `junction_Na`: 2.7e-06, 7e+09; `junction_K`: 2.8e-05, 6e+09; `junction_Cl`: 1.5e-06, 3e+09 |
+| ST6 availability on the other cell's channel (`base`, world 2) | `channel_K`: 2.9e-07, 2e+07 |
+| ST10 availability held over the step (`base`, world 2) | `channel_K`: 1.4e-09, 1e+05 |
+| ST7 availability inverted (`cell`, world 1) | `channel_K`: 6.8e-06, 4e+06 |
+| ST10 availability held over the step (`cell`, world 1) | `channel_K`: 2.5e-07, 1e+05 |
+
+- **ST1 and ST4** were refused by legacy's own ledgers at their first attempts ("Finite local/outside/global material, charge or resolved-energy accounting failed" and "Membrane/junction diagnostic dissipation must not decrease"). That is evidence that legacy's own checks see these errors, and it left no planted array. They were run again with those two ledgers off and the domain checks on.
+- **ST10, the held factor.** What holding the availability at the start of each step does to legacy's own end state, at the captured h/4 (12.5 µs in `base`, 25 µs in `cell`): `channel_K` at 0.02 s moves by 0.2 % to 2.7 % of itself in the eight worlds of `base` (seed 0) and by 0.0 % to 0.5 % in the first eight of `cell`. It depends on where each event falls in its step, so it has no order. It is the same size as a 1 % change of a rate constant or larger, in some worlds. That is why form B has no band (`CRITERIA.md` §4.6), and the design authors' own holding study (the protocol's §11) was not read.
+
+**Where a margin is not evidence.** A margin compares legacy with legacy. It says what the band can see of a change of that size, and nothing about a candidate's own step, whose U_c is added to the band (`CRITERIA.md` §4.5).

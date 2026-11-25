@@ -1,6 +1,6 @@
 # Criteria, classes, bands, power, faults, plants and verdicts
 
-**Fixed on 25 November 2026, before any re-expressed run exists.** Every number here is a formula's constant. None comes from a run of either side.
+**Fixed on 25 November 2026, before any run of the registered campaign.** Its author had seen no re-expressed run. Others had (the protocol's §11 says who and what), and §8 says what the verdict does with that. Every number here is a formula's constant. None comes from a run of either side.
 - "The run" is a run of the candidate, read from its table (`TABLE.md`). "The capture" is the legacy run's array (`SPEC.md` §7).
 - The judged set is READOUTS §3's and §4's. The run names are `inputs.json`'s.
 - **Three kinds of tolerance, never mixed** (D370): a **rounding** bound, a **closure** bound and a **truncation** estimate. Each has its own term in a band, and a readout of
@@ -66,7 +66,7 @@ For a family and an entry, over its compared times and entities, with Y₁, Y₂
   - **the floor of 64 ulp × max|X| is replaced** by e_round and e_close. Legacy's own runs refute that floor: between its own h/2 and h/4, arrays at rounding differ by up to about 3000 ulp of their
     largest entry. The two terms come from a count and from two declared acceptance constants (`SPEC.md` §6), and they are kept apart from the truncation term;
   - the error estimates take the **larger of the two step-halving pairs** (D271, D334).
-- A compared time is compared only where every run the entry needs has a row there (within 10⁻¹² s).
+- Every compared time needs one row in each run the entry needs (within 10⁻¹² s). Where one is missing, or there are two, the entry is not formed (§5), and no time is dropped from it.
 
 **The order rule.** Let θ = 10 × 8 ε (S_c + 1) s.
 
@@ -97,15 +97,43 @@ allowance, and stops at the first that fails. That rule is the criterion. No abs
 **Stage 1 of the judgement.** From the runs' own rows and the captures' own refinement, and before any difference between a run and a capture is formed, the judge forms every entry's U_c and β, and its class under §4.3's table. It
 writes `power.json` and the lead records its sha256. Stage 2 forms the differences.
 
-- **The planted distance D(y)** of an entry is the size of the effect that a 1 % change in one rate constant has on it, on the legacy side alone. `margins.json` gives a ratio ρ(y) (a planted change's
-  effect over the readout's own magnitude, from planted legacy runs or by arithmetic; `PLANTS.md`), and D(y) = ρ(y) × max |L₃| of that entry's family. No run enters it.
-- **An entry is tested** when **β ≤ D(y)/10**, with the ratio that `margins.json` gives its readout (a home's is its own plant's, and any other readout's is the plant's that moves it most). Otherwise it is **not tested:** its
+- **The planted distance D(y)** is the size of the effect that a 1 % change in one rate constant has on an entry, on the legacy side alone. `margins.json` gives, for every entry and plant that has it as a home, a ratio ρ (the planted change's effect over the readout's own magnitude, from planted legacy runs or by arithmetic;
+  `PLANTS.md`), and D = ρ × max |L₃| of that entry's family. No run enters it.
+- **An entry is tested** when **β ≤ D/10** for its ratio: the largest of its home plants' ratios, or, for an entry that is no home, that of the plant that moves it most. Otherwise it is **not tested:** its
   comparison is reported, a comparison above β still fails, and one within β is neither a pass nor counted.
-- **A mechanism is tested** when at least one of its home entries (`PLANTS.md` §2) is tested. **A consumer with an untested mechanism is at best inconclusive.** A home entry that is
-  not tested is owed the retry (§7) where 2 U_c is the larger part of β, since a finer step lowers U_c. Where it is not, the retry cannot help and the entry stays not tested.
+- **A plant is tested** at a home entry when β ≤ ρ × max |L₃|/10 with **that plant's own ratio.** **A mechanism is tested** when one of its plants is tested at one of its home entries (`margins.json` `mechanisms`, `PLANTS.md` §2, `PART2.md` §7.1). A plant that is not tested is listed and, where its mechanism is tested by another, costs nothing more.
+- **A consumer with an untested mechanism is at best inconclusive.** A home entry of an untested mechanism is owed the retry (§7) where 2 U_c is the larger part of its β, since a finer step lowers U_c. Where it is not, the retry cannot help and the mechanism stays untested.
 - **An observable that a mechanism cannot reach** in 20 ms is declared so in `PLANTS.md`, with the number, before any run. It is "not tested" in advance, and is not made a
   home. A plant of such a mechanism is enlarged or replaced by a dated line before the tag, never after.
+- **A home is the entry where its plant is largest,** chosen from the legacy side alone and before any run. Where the first choice was a worse one, the dated line says so (`PLANTS.md` §4, `PART2.md` §7.4).
 - The R and E entries have no power entry. Their own plants are §6's. Class D has none.
+
+### 4.6 The assembly consumers, by form
+
+`cell` and `base` are run in one of the two forms of `SPEC.md` §3.3, which `assembly_form.json` names. The class of each entry, per form:
+
+| Entry | Form A (`schedule`) | Form B (`operator`) |
+| --- | --- | --- |
+| The pool's 19 arrays, the event path and the seeds of the pool runs | E | E |
+| The channel schedule the ionic run declares | E | none: there is no schedule |
+| The availability applied in each accepted step (`applied`) | none | **E:** equal to the path's availability at the step's hold point, for every step, with step n starting at n × `step_s` within 10⁻¹² s and no step left out |
+| The pool's arrays and path inside the ionic run, of its own world | none | **E:** equal to the captured arrays of that world and cell, and to its path |
+| The exposure (pool runs) | R | R |
+| Every entry READOUTS §3 lists under class S | S | **no band** (below) |
+| Completes, with the engine's own ledgers | D | D |
+| Power | P | none |
+| The structural and engine plants of `cell` and `base` | §6 | not scored |
+
+- **Form A is the same equations,** and every rule of this file holds for it.
+- **Form B has no band for its ionic entries.** A factor held through a step is a changed model (the plan's section 14.5). An event then acts up to a step away from its own time, and by how much is an accident of where it falls, so the error has no order and no three steps can extrapolate it.
+  - The judge **reports** max |Y₃ − L₃| for every such readout, and beside it the **held distance:** what holding the availability at the start of each step does to that readout, on the legacy side alone (`PLANTS.md` ST10, `margins.json`). Nothing is decided by either.
+  - A consumer in form B **can fail** (class E, R or D). It cannot pass: with none failing it is **inconclusive by form**.
+- **What an amendment needs to give form B a criterion,** before the registration tag and only if the user chooses it:
+  1. The hold point, named in the form note.
+  2. **Held references:** the frozen snapshot's runs with the availability held as the candidate holds it, for every judged family and every candidate step, each at two halvings of a legacy step that divides that step (`ST10`'s patch is the pattern). They are the reference side's. The lead approves them.
+  3. The comparison: E_i = Y_i − (the extrapolated held reference at h_i), and §4.3's template on E₁, E₂, E₃ with the form's own declared order, since E_i is smooth in h_i where Y_i is not.
+  4. A restated claim: the held equations are solved as legacy's solver would, and they depart from legacy's own result by the held distance.
+  - **Its cost is about 1.5 CPU-hours of snapshot runs and half an agent-day** (a guess).
 
 ## 5. Faults and refusals
 
@@ -120,6 +148,7 @@ writes `power.json` and the lead records its sha256. Stage 2 forms the differenc
 | Two runs of one family whose class S series and potentials are **bit-identical at every compared time** | Both are **refused** (a copy). Their readouts are judged |
 | A refused entry of kind `domain`, `definition` or `harness` | **Refused** |
 | A refused entry of kind `check` | A **stop:** it fails if the run is judged (§4.4) |
+| `assembly_form.json` absent, or with no form for an assembly consumer | That consumer is **not judged:** inconclusive, its runs recorded |
 | A run in `missing`, or in neither list, across all of a consumer's tables | **Refused** |
 | A run name that `inputs.json` does not list, and the retry's rule does not register | Ignored, recorded and flagged |
 | A duplicated key anywhere in a file | The file is refused, and every run of it |
@@ -156,7 +185,7 @@ tables' hashes are recorded, then C0, then stage 1, then the tables are opened f
 
 ## 7. The retry
 
-**Once, for the entries that are owed it:** an entry inconclusive by order, or a home entry not tested whose 2 U_c is the larger part of β. The judge's first pass writes `retry_owed.json` (`TABLE.md` §6). The lead records its sha256, and the builders run exactly those.
+**Once, for the entries that are owed it:** an entry inconclusive by order, or a home entry of an untested mechanism whose 2 U_c is the larger part of β. The judge's first pass writes `retry_owed.json` (`TABLE.md` §6). The lead records its sha256, and the builders run exactly those.
 - **The run:** one more halving, h₃/2, of every family that holds an owed entry, named `<family> h=<step> retry`, with its own support runs only if owed. The triple becomes (h₂, h₃, h₃/2), and S_c is its finest.
 - **Entries that passed or failed keep their score.** An owed entry is judged again by §4.3 and §4.5 on the new triple. The retry run's own D entry is judged, and a fail there counts.
 - **An entry still inconclusive, or still not tested, stays so.** A wrong coarse run that the retry drops is forgiven (the protocol's §9 says so), and the verdict states the steps that its pass covers.
@@ -168,11 +197,16 @@ tables' hashes are recorded, then C0, then stage 1, then the tables are opened f
 - **A run** fails if any entry it owns fails, or if D fails. Otherwise it is inconclusive if any entry it owns is inconclusive, not formed or refused, or if it is refused. Otherwise it passes.
 - **A consumer:**
   - **fails** if any of its judged runs fails, or a structural or engine plant of it is not caught;
-  - otherwise is **inconclusive** if any of its judged entries is inconclusive or not formed, any judged or support run is refused, missing or stopped, a mechanism is untested, a plant is unscorable, or its references are not registered
-    (`integrated`, until `legacy_integrated.json` exists);
+  - otherwise is **inconclusive** if any of its judged entries is inconclusive or not formed, any judged or support run is refused, missing or stopped, a mechanism is untested, or a plant is unscorable;
   - otherwise **passes.**
-- **An entry not tested (§4.5)** that is not a home entry counts for neither side. It is listed.
+- **An entry not tested (§4.5)** counts for neither side, and is listed. What can leave a consumer inconclusive is an untested mechanism, not an untested entry.
 - **Part 1 passes** when its four consumers pass. A part decides nothing about another part.
+- **`base` is reported in two sets.** A design author ran world IDs 0 and 1 in composed form against legacy, at the configuration's own pool seeds, before this folder's tag (the protocol's §11). Those seeds (20260925 for cell 0's stream and 20260926 for cell 1's) are the captured seed index 0's. So `base s0 w0` and `base s0 w1` are **not blind**, and the other 30 families are.
+  - **The verdict of `base` is the worse of its two sets' verdicts,** each formed by this section from its own families. A fail in either fails it, and an inconclusive in either leaves it inconclusive.
+  - **The 30 must pass by themselves,** with every mechanism tested by a home entry of one of them. The two add nothing to a pass.
+  - **The pool run `base s0 pool`** holds both worlds among its 8. Its entries are marked in the record and are judged as any other.
+  - The record gives both sets' verdicts side by side, with their counts. No plant of `base` is scored on the two (ST6, ST10 and EP2 use world 2).
+  - **`jupiter_baseline` is the same ionic world as `base`,** value for value, with the channels open throughout. What a prototype showed on `base` bears on it, and the record says so beside its verdict. No entry of `jupiter` was run.
 - **An inconclusive verdict is not a fail.** The retry is the only answer to it.
 - **The record** lists, for every entry: consumer, family, run, readout, class, statistic, band, their ratio, d₁, d₂, q, the order's class, U_c, the planted distance and whether it is tested, and the verdict. Then every refusal, stop and flag with its cause, every plant's margin and score, and the count of judged entries
   per consumer beside the count READOUTS §3 lists.

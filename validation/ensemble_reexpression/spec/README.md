@@ -4,7 +4,7 @@
 
 **What this folder is.** The registered criteria for one comparison. The calcium ensemble and its neighbours leave legacy
 and are written in the engine's canonical forms. Each re-expressed consumer is judged against captures of the legacy
-runs, which were taken before any re-expressed run existed. It holds docs and data only: no engine code, no candidate, no judge.
+runs, taken on 25 November 2026 from frozen snapshots of the engine. It holds docs and data only: no engine code, no candidate, no judge.
 
 **Two parts, with their own tags.**
 - **Part 1:** the four consumers that need no new ionic piece. `SPEC.md`, `READOUTS.md`, `CRITERIA.md`, `TABLE.md`, `PLANTS.md`, `inputs.json`,
@@ -25,13 +25,13 @@ runs, which were taken before any re-expressed run existed. It holds docs and da
 | `PLANTS.md` | The plants, their homes, and their margins from the legacy side alone | The plants |
 | `legacy_part1.json` | The captures' identity and the legacy side's own classes, entry by entry | The reference side |
 | `reference_paths.json` | Every committed event of the captured assembly pools | Class E on the event path |
-| `plants_manifest.json` | Every planted legacy run: command, patch text, output folder, sha256 | The plants' provenance |
-| `margins.json` | The plants' distances, from the legacy side alone | Power |
+| `plants_manifest.json` | Every planted legacy run of Part 1: command, patch text, output folder, sha256 | The plants' provenance |
+| `margins.json` | Part 1: the plants' distances, ratios and margins, the mechanisms and their home entries, from the legacy side alone | Power |
 | `PART2.md`, `inputs_part2.json`, `legacy_part2.json`, `margins_part2.json`, `plants_manifest_part2.json` | Part 2, the same files by part | Part 2 |
 | `AMENDMENT-<n>-<date>.md` | Dated changes, the latest first. None exists at the criteria tag | Over every file above |
 
 **Files outside this folder that the registration uses,** all in `validation/ensemble_reexpression/`: the lead's
-`registered_strings.json` (the strings note, §"No registered ID here"), and the rehearsal's `inputs_rehearsal.json` and
+`registered_strings.json` (the strings note, §"No registered ID here") and `assembly_form.json` (the form note, `TABLE.md` §8), and the rehearsal's `inputs_rehearsal.json` and
 `registered_strings_rehearsal.json`. In `table-retry/`, the judge's `retry_owed.json`. In the judge's record, `power.json`.
 
 ## Rules for every reader
@@ -41,7 +41,7 @@ runs, which were taken before any re-expressed run existed. It holds docs and da
     Neither reads the other's code.
   - The judge reads the captures, the planted legacy arrays and this folder. It reads no engine source and no builder's code.
 - **Value-silent about the candidate.** This folder holds legacy numbers (scales from the inputs, the legacy runs' own refinement,
-  planted distances). It holds no number from any re-expressed run. None exists.
+  planted distances). It holds no number from any re-expressed run, and its author had seen none. Others had, and the protocol's §11 says who and what. `CRITERIA.md` §8 reports the two worlds of `base` that a prototype ran apart from the rest.
 - **Nothing is fitted.** No band, class, window, count or scale comes from a run of either side. The legacy side's refinement and the
   plants' distances are reported beside the bands. A margin never changes a band.
 - **Questions** go to the lead in writing. An answer that changes an input, a class or a definition becomes a dated amendment here,
@@ -60,5 +60,6 @@ runs, which were taken before any re-expressed run existed. It holds docs and da
 Say these before anyone reads a pass as more than it is. The full list is the protocol's §9.
 - Bitwise identity with legacy, anything on a GPU, and legacy's own proofs that a step stays inside its domain.
 - The assembly consumers' trajectories. Their captures hold one end state, and a few summaries for the clusters.
+- The ionic side of the assembly consumers in form B (`CRITERIA.md` §4.6).
 - How a lumped heat divides among its parts.
 - A difference below a band.
