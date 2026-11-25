@@ -826,6 +826,7 @@ def test_honest_invented_engine_passes(honest):
     }
     assert not bad, bad
     assert not v["c0"]["engine"]["refused_records"], v["c0"]["engine"]["refused_records"][:2]
+    assert v["c0"]["engine"]["flags_for_the_checker"] == []
     for p in ("P1", "P1′", "P1″", "P2", "P3a", "P3b", "P4", "P5", "P6", "P7"):
         assert plant_status(v, p) == "caught", (p, v["plants"][p]["must_catch"])
     assert v["comparison"]["invented"] == "pass"
