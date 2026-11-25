@@ -127,7 +127,6 @@ def function(frozen, table=None):
 
 def _code(code, table):
     constants = [
-        _code(c, table) if isinstance(c, CodeType) else _translate(c, table)
-        for c in code.co_consts
+        _code(c, table) if isinstance(c, CodeType) else _translate(c, table) for c in code.co_consts
     ]
     return code.replace(co_consts=tuple(constants))

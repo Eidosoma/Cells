@@ -113,7 +113,7 @@ def test_refusals_must_match_exactly(tmp_path, message, equal):
 def test_a_table_of_renamed_ids_translates_the_saved_side(tmp_path, monkeypatch):
     """--map (D345): compare reads the base's refusal through the table, and save --from runs the
     origin's definitions translated, an empty table changing nothing. Planted: without the table
-    the refusals differ; a mapping whose keys become one, and a spelling given twice, are refused."""
+    the refusals differ; a mapping whose keys become one and a spelling given twice are refused."""
     old, new = ({"type": "ConfigError", "message": f"{i}: refused"} for i in list(TABLE.items())[0])
     base, other = saved(tmp_path / "a", {}, refusal=old), saved(tmp_path / "b", {}, refusal=new)
     assert rb.compare(base, other, {}, table=TABLE)["rows"][0]["equal"]

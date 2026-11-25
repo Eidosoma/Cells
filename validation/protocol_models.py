@@ -41,9 +41,7 @@ def status_of(data):
 
 def engine_model_ids():
     """Model IDs the engine declares (MODEL_ID / *_MODEL_ID string constants in src/cells)."""
-    declared = re.compile(
-        r"\b[A-Z_]*MODEL_ID\s*=\s*\"(?:cells\.model\.)?([a-z][a-z0-9_]*@\d+)\""
-    )
+    declared = re.compile(r"\b[A-Z_]*MODEL_ID\s*=\s*\"(?:cells\.model\.)?([a-z][a-z0-9_]*@\d+)\"")
     out = set()
     for path in (ROOT / "src" / "cells").rglob("*.py"):
         out.update(declared.findall(path.read_text()))
