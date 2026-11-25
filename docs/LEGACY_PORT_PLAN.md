@@ -1567,18 +1567,21 @@ declared ones are capacity padding.
 
 ### 14.7 The final removal list, and what D211 keeps (D386)
 
-**The list** (`validation/legacy_port/removal_list.tsv`, branch `legacy-removal-list`): 1,901 rows, of which 1,535 files go, 201 are edited,
-16 tests are retargeted and 149 are kept by name. Every `goes_or_cut` row has a verdict: a reader read 462 files, and the 35 it asked about are resolved here.
+**The list** (`validation/legacy_port/removal_list.tsv`, branch `legacy-removal-list`): 1,535 files go, 190 are edited, 16 tests are retargeted,
+161 files are kept by name, and 166 are an optional batch (the old families' own references, for the user's yes or no); 17 more rows are names, of which
+four are dead after the core edits. Every `goes_or_cut` row has a verdict: a reader read 462 files, and the 35 it asked about are resolved here.
+- **The deletion is one commit,** made from the list by a script on one branch that takes the place of 9b0debe6. Its dry runs on `legacy-cleanup`
+  f38f6789 and c368c9f2 removed 1,529 files (six of the 1,535 are gone already), found every path, and stopped no import but the retargeted tests'.
 - **The three live parity files keep their BETSE runs.** They now import `validation/betse/native_hooks.py`, and 19 REF-era modules go
   (the lead's choice (C)). Measured on the tree without what goes, on the light CPUs: 16, 38 and 25 rows pass, each with one skip, and all 64 native
   captures equal the saved ones bit for bit (395 million array scalars).
 - **Four parity files could not start their run,** at the tag or before it: three stop in the check of the source they are bound to, which changed on
   11 October 2026, and one is skipped (D131). 70 rows that could only error leave; the 55 that pass stay.
-- **The fixed point:** on the head tree without what goes, the only remaining files with an import that does not resolve are 10 of the 16
-  retargeted tests, and the only other mentions of a going path are the rename's tool and tables, one guard's exemption list (which must change in the
+- **The fixed point** (measured at 903f821e, and again at c368c9f2 by the dry run): on the head tree without what goes, the only remaining files with
+  an import that does not resolve are 10 of the 16 retargeted tests, and the only other mentions of a going path are the rename's tool and tables, one guard's exemption list (which must change in the
   deletion's own commit) and documents. Run-time imports and path loads were read one by one (75 sites).
-- **Test IDs,** by collecting that tree: 12,452 collect, and 10 files fail to. Of 21,927, 9,023 go with their files, 260 leave files that
-  stay, 314 wait for their builders, and 122 are new.
+- **Test IDs,** by collecting that tree at c368c9f2: 12,488 collect, and 10 files fail to. Of 21,927, 9,023 go with their files, 260 leave files that
+  stay, 314 wait for their builders, and 158 are new (12,452 and 122 at 903f821e). The deletion's own collection gives the final ones.
 
 **D211.** 44 of its 47 "port as is" laws keep their kernel, its reference and a kernel-level test:
 

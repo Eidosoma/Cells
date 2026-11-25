@@ -1,6 +1,6 @@
 # The legacy cleanup: what goes, and what you approved
 
-25 November 2026. Five minutes to read. Basis of each number: **(m)** measured, **(r)** read in the code, **(e)** estimated.
+25 November 2026. Six minutes to read. Basis of each number: **(m)** measured, **(r)** read in the code, **(e)** estimated.
 The list behind this page is `validation/legacy_port/removal_list.tsv` on branch `legacy-removal-list`: one row per file, with its
 owner, reason, basis and state.
 
@@ -27,13 +27,23 @@ ones. The deletion (9b0debe6) is merged only after you have seen them.**
 | Test data | 7 files | 1,200 | (m) |
 | Test IDs | **9,283 of 21,927**: 9,023 in files that go, 260 rows in files that stay | | (m), collection of the final tree |
 | Test IDs that come back | 314, in 10 files their builders are rewriting | | (m); those 10 files do not import until then |
-| Written or rewritten by an owner | 201 files edited (75 of them documents), 16 tests retargeted | | (r); 115 of the 126 code edits are done |
+| Written or rewritten by an owner | 190 files edited (63 of them documents), 16 tests retargeted | | (r); 178 of the 190 edits are done |
+| **Optional, your yes or no:** the old families' own references and the last REF-era folders | 166 files: 40 helpers, 37 tests, 69 scripts, 20 REF-era files | 49,279 | (m); 1,933 more test IDs, 192 more test-seconds in tiers 1 and 2 |
 
-On the tree without all of this, **12,452 tests collect and only the 10 files above fail to** (m). Apart from the 16 retargeted tests, no
+On the tree without all of this, **12,488 tests collect and only the 10 files above fail to** (m). Apart from the 16 retargeted tests, no
 remaining file imports or loads anything that goes, by any way of importing (m); the rename's tool and one guard still name some of it. The
 deletion saves 2,574 of 13,784 test-seconds in tiers 1 and 2 (m), about 8 minutes of wall per full
 gate (e: 0.186 s of wall per test-second, measured 24 November). 142 of 222 tier-3 files go (m). The gate's fingerprints lose 127
 definitions in 123 files, of 274 (m); G1's 113 worlds are unaffected (r).
+**Measured where:** files and lines at 49529e71, the tag's commit; seconds in the tier record; IDs, imports and the dry run at `legacy-cleanup` c368c9f2;
+the parity runs at 63c181fc, on a tree without 1,472 of the files (the other 63 are outside their import chain).
+
+**The optional batch** imports nothing that goes, so the deletion does not need it. It is what the oldest families were checked with: independent
+references, trajectories, audits and their tests (the EMT pair and graph, the bioelectric cell and pair, the multispecies, voltage-gated, ionic-graph,
+finite and spatial extracellular families), and the REF-era pump and gate contacts. Nothing that stays uses it (m, import graph); the
+re-expression's criteria and design notes do not name it, and no kept law's reference is in it. Kept out because something does use them:
+`tests/reference_er_calcium.py` and its four sisters, `spatial_cluster/reference.py`, `pump_contact/pump_reference.py` and
+`voltage_gate_audit/gate_independent.py`. Its frozen panels (JSON) stay as records either way. **The lead recommends that it goes.**
 
 ## 2. What comes back
 
@@ -44,9 +54,8 @@ definitions in 123 files, of 274 (m); G1's 113 worlds are unaffected (r).
 | The assembly command lines and ensemble kinds | CPU batch runs; the GPU path is **parked** | the assembly coupling |
 | NKCC and the generic symport | law modules on the transporter kind | a check of their tanh form against the cycle forms |
 
-- **The plasma calcium pump and the Na/Ca exchanger need no engine feature.** The pump is @3's own at another standard state; the
-  exchanger is one law module.
-- **Not smaller than priced:** calcium through a channel. The engine refuses a buffered trace ion that a channel carries.
+The plasma calcium pump and the Na/Ca exchanger need no engine feature: the pump is @3's own at another standard state, and the exchanger is one
+law module, now built. Calcium through a channel is not smaller than priced: the engine refuses a buffered trace ion that a channel carries.
 
 ## 3. What is lost, what stays, and what waits
 
@@ -61,8 +70,8 @@ old tissue that hosted them goes.
 | Instantaneous Morris-Lecar | 7 | G-2, a law without a gate |
 | Calcium-activated K | 1 | G-3, which the cardiac plan's H1 already holds |
 
-D211's programme is recorded as open, continuing after the cleanup, in `docs/CORE_LAWS_ROADMAP.md`. Three further HCN laws would have had no
-test of their kernel; one is written (10 rows, with the kernel rows of three tissue tests that go, on `legacy-parity-hooks`).
+D211's programme is recorded as open, continuing after the cleanup, in `docs/CORE_LAWS_ROADMAP.md`. Three of the HCN laws would have had no test of
+their kernel; `test_channel_law_kernels.py` gives them one, and keeps the kernel rows of three tissue tests that go.
 
 | Lost, or not carried over | In one sentence |
 |---|---|
@@ -90,7 +99,7 @@ and the 64 native captures equal the saved ones bit for bit (m)): they now take 
 | `tissue-phase`, `tissue-geometry`, `tissue-profiles`, `excise` | Removed. |
 | `assembly-cell`, `assembly-cluster`, and their two ensemble kinds | Refused by name, saying they are parked and where they are re-expressed. |
 | Ten example inputs and five guides | Removed; they serve those commands. |
-| 28 build and audit scripts of September and October, and two records of old moves | Removed with the builds they checked. |
+| 28 build and audit scripts, and two records of old moves | Removed with the builds they checked. |
 | GPU coverage of `test_gpu_execution`, `test_batch_identity` and two GPU integration files | Moves to @3 if that is cheap, and is lost until the GPU path returns if it is not. |
 
 ## 5. Tests
@@ -103,6 +112,12 @@ parity rows above, and 3 followed the old registry (2 new).
 ## 6. Records, and what is open
 
 - **Records stay:** 53 protocol and data files, the other results, the design notes and the decisions.
-- **Open:** the builders' 16 tests and three scripts; the documents' commit (75 files, with four run guides whose commands name
-  configurations that go); the rename tool's and the tier records' edits; and one guard whose list must change in the deletion's own commit.
+- **Open:** the builders' 16 tests, three files of laws and three validation scripts; the rename's tool, table and design note; the tier records; and one
+  guard whose list changes in the deletion's own commit. The documents are done (`legacy-cleanup-docs`): 48 carry a note of what left, and the run
+  guides name live worlds, each command run once.
+- **The deletion is one commit,** made by a script from the list, on one branch that takes the place of 9b0debe6. Its dry run on `legacy-cleanup`
+  f38f6789 and on c368c9f2 removed 1,529 files, found every path, left nothing under `src/cells/legacy`, and broke no import but the 10 tests' (m).
+- **On commit 63c181fc:** its message says that the drivers load eight files where they loaded 24. Measured: six Python files (eight with two JSON
+  protocols) where they loaded 24 Python files.
+- **Four names in live laws and numerics** that nothing calls any more are listed for their files' owners, after the core edits.
 - **Not run:** no gate and no suite. The full test of the cleanup branch is the test of it.
