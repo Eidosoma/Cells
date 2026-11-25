@@ -43,6 +43,64 @@ ENERGY_CHECK_FAULTS = {
         r"runs only with \S*imex_ars222",
     ),
 }
+# A number out of its range, and a control that is no schedule, each refused by its own words: (edit
+# of the model and the experiment, message). Channel 2 is NaV1.2.
+VALUE_FAULTS = {
+    "negative_permeability": (
+        lambda m, e: m["channels"][2].update(max_permeability_m_per_s=-1e-9),
+        "^channel permeability must be finite and nonnegative",
+    ),
+    "negative_abundance": (
+        lambda m, e: m["channels"][2].update(abundance=-1.0),
+        "^channel abundance must be finite and nonnegative",
+    ),
+    "nan_gate": (
+        lambda m, e: m["channels"][2].update(initial_gate=[float("nan"), 0.5]),
+        "^initial channel gate must be finite and nonnegative",
+    ),
+    "gate_above_one": (
+        lambda m, e: m["channels"][2].update(initial_gate=[1.5, 0.5]),
+        r"^initial channel gate must lie in \[0, 1\]",
+    ),
+    "bool_gate": (
+        lambda m, e: m["channels"][2].update(initial_gate=[True, 0.5]),
+        "^initial channel gate must be a finite number",
+    ),
+    "late_start": (
+        lambda m, e: e["channel_controls"][2]["schedule"][0].update(time=1e-4),
+        "^Controls must start at zero and increase within the horizon",
+    ),
+    "repeated_time": (
+        lambda m, e: e["channel_controls"][2]["schedule"].append(dict(time=0.0, availability=0.5)),
+        "^Controls must start at zero and increase within the horizon",
+    ),
+    "change_beyond_the_end": (
+        lambda m, e: e["channel_controls"][2]["schedule"].append(
+            dict(time=2 * e["end_time"], availability=0.5)
+        ),
+        "^Controls must start at zero and increase within the horizon",
+    ),
+    "availability_above_one": (
+        lambda m, e: e["channel_controls"][2]["schedule"][0].update(availability=1.5),
+        r"^availability must lie in \[0, 1\]",
+    ),
+    "duplicate_control": (
+        lambda m, e: e["channel_controls"].append(dict(e["channel_controls"][2])),
+        "^Each route needs one nonempty control schedule",
+    ),
+    "zero_area": (
+        lambda m, e: m["membranes"][2].update(area_m2=0.0),
+        "^route area must be finite and positive",
+    ),
+    "zero_capacitance": (
+        lambda m, e: m["membranes"][2].update(capacitance_F=0.0),
+        "^capacitance must be finite and positive",
+    ),
+    "negative_membrane_permeability": (
+        lambda m, e: m["membranes"][2]["permeability_m_per_s"].update(Na=-1e-9),
+        "^permeability must be finite and nonnegative",
+    ),
+}
 CHANNEL_OBSERVATIONS = (
     *CHANNEL_FIELDS,
     "channel_flux_fmol_s",
@@ -122,6 +180,7 @@ def test_explicit_stage_guard_refuses_open_sodium_channels():
         "sparse_field_rk4",
         "sparse_field_n2",
         *ENERGY_CHECK_FAULTS,
+        *VALUE_FAULTS,
     ],
 )
 def test_definition_errors_reject(fault):
@@ -131,6 +190,8 @@ def test_definition_errors_reject(fault):
     if fault in ENERGY_CHECK_FAULTS:  # FR-18's X2 (D224): its block, then its own edit.
         x["energy_check"] = dict(check="step_doubled_energy@1", integration_error_cap=1e-2)
         ENERGY_CHECK_FAULTS[fault][0](x)
+    elif fault in VALUE_FAULTS:
+        VALUE_FAULTS[fault][0](m, e)
     elif fault == "retired_law_id":  # Renamed to nav1p2_m3h_regularized@1 (stage B).
         channel["kinetic_law"] = "betse_nav1p2_m3h_regularized@1"
     elif fault == "unknown_law":
@@ -160,5 +221,6 @@ def test_definition_errors_reject(fault):
         x["solver"] = "rk4" if fault.endswith("rk4") else imex.IMPLICIT_CONDUCTANCES_ID
     else:
         m["temperature_K"] = 400.5
-    with pytest.raises(ConfigError, match=ENERGY_CHECK_FAULTS.get(fault, (None, None))[1]):
+    message = (ENERGY_CHECK_FAULTS | VALUE_FAULTS).get(fault, (None, None))[1]
+    with pytest.raises(ConfigError, match=message):
         parse_spec(raw)

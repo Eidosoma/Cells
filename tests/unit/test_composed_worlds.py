@@ -14,12 +14,14 @@ Host side, on two held-bath cells, with planted errors that must fail each row (
   schedule object shared by two controls, and records without the seeds);
 - the refusals of a composed file, each by its name, and a pool's fault by its world and event cap.
 
-Compiled, in one row of 18 to 27 s on shared CPUs (D224): it is the only place a driven world runs.
+Compiled, in one row of 21 to 30 s on shared CPUs (D224): it is the only place a driven world runs.
 It is on IMEX, since the RK4 program of its world compiles for 40. A two-cell world with a near and
 a far outside node (two free field offsets, so the floor solver, D147), run by the command line with
 its inputs, conducts exactly where its pools' levels say, and is bit for bit the run of a definition
 whose schedules were written by hand from the kernel's walk (planted: the other pool's path, a path
-read one event early or late, switches moved to the steps, and the base schedule alone).
+read one event early or late, switches moved to the steps, and the base schedule alone). Three more
+runs of that program say what reaches a neighbour: cell 0's pool moves cell 1's voltage by the
+charge that their junction carried, and not with the junction closed by its control.
 """
 
 import copy
@@ -43,7 +45,7 @@ from cells.definitions.specs import ConfigError, load_spec, parse_spec, read_jso
 from cells.execution.batch import load_batch, parse_batch, plan_batch
 from cells.execution.grid import EventGrid
 from cells.execution.runner import run
-from cells.laws.electrochemistry import CHARGE_PER_FMOL
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
 from tests import partition_fixtures
 from tests.unit.test_assembly_pool import DRIVING, LEVELS, SEEDS, direct_path, walked
 from validation.tissue import cell_replacement_fixtures as replacement
@@ -804,6 +806,21 @@ def test_a_definition_with_free_field_offsets_declares_the_floor_solver():
     assert resolve.parse_composed(near_far_file(floor)).raw == floor  # Taken as declared.
 
 
+def written(declared, paths, *, junction=1.0):
+    """The world's definition with its schedules written by hand, from paths of its pools and from
+    the junction's availability."""
+    raw = copy.deepcopy(declared)
+    for control in raw["experiment"]["channel_controls"]:
+        for channels, path in zip(NEAR_FAR_CHANNELS, paths, strict=True):
+            if control["channel_id"] in channels:
+                control["schedule"] = [
+                    {"time": t, "availability": a} for t, a in product([(0.0, AVAILABLE)], path)
+                ]
+    (control,) = raw["experiment"]["junction_controls"]
+    control["schedule"][0]["availability"] = junction
+    return raw
+
+
 def test_a_composed_world_conducts_exactly_on_its_pools_paths(outputs):
     declared = field_solver_choice.declare(near_far())
     data = near_far_file(declared)
@@ -832,14 +849,7 @@ def test_a_composed_world_conducts_exactly_on_its_pools_paths(outputs):
     assert len(times) - 1 == nominal + len(switches) and switches <= set(times.tolist())
 
     # The same world, its schedules written by hand from the kernel's walk: the same bits.
-    by_hand = copy.deepcopy(declared)
-    for control in by_hand["experiment"]["channel_controls"]:
-        for channels, path in zip(NEAR_FAR_CHANNELS, paths, strict=True):
-            if control["channel_id"] in channels:
-                control["schedule"] = [
-                    {"time": t, "availability": a} for t, a in product([(0.0, AVAILABLE)], path)
-                ]
-    result = run(parse_spec(by_hand))
+    result = run(parse_spec(written(declared, paths)))
     assert np.array_equal(result.times, times)
     for name, value in result.history._asdict().items():
         assert np.array_equal(np.asarray(value), trajectory[name]), name
@@ -860,3 +870,27 @@ def test_a_composed_world_conducts_exactly_on_its_pools_paths(outputs):
             assert conducts(times, moved[channel], lambda t, p=path: held(p, t))
             for wrong in (other, early, late, on_grid, [(0.0, AVAILABLE)]):
                 assert not conducts(times, moved[channel], lambda t, p=wrong: held(p, t))
+
+    # A neighbour's answer: cell 0's level follows its pool, or stays at its first value with the
+    # same points on the clock; the junction is open, or closed by its control.
+    constant = [[(t, paths[0][0][1]) for t, *_ in paths[0]], paths[1]]
+    still = run(parse_spec(written(declared, constant)))
+    closed = [run(parse_spec(written(declared, p, junction=0.0))) for p in (paths, constant)]
+    answer, alone = (
+        np.subtract(*(r.observations.membrane_voltage_V[-1, 1] for r in pair))
+        for pair in ((result, still), closed)
+    )
+    assert not any(np.any(r.history.junction_transferred) for r in closed)
+    assert abs(alone) < 1e-3 * abs(answer)
+    # Open, cell 1's patch keeps between exp(-G T / C) and all of what the junction gave it, G the
+    # patch's largest conductance: all its permeabilities at once, at the largest concentration.
+    given = [np.asarray(r.history.junction_transferred)[-1, :, 0] for r in (result, still)]
+    charge = CHARGE_PER_FMOL * (np.subtract(*given) @ list(VALENCE.values()))
+    patch, channels = declared["model"]["membranes"][1], declared["model"]["channels"]
+    permeability = math.fsum(patch["permeability_m_per_s"].values()) + math.fsum(
+        c["max_permeability_m_per_s"] for c in channels if c["membrane_id"] == patch["id"]
+    )
+    conductance = patch["area_m2"] * permeability * max(*INSIDE.values(), *OUTSIDE.values())
+    conductance *= F**2 / (R * declared["model"]["temperature_K"])
+    left = math.exp(-conductance * NEAR_FAR_END / patch["capacitance_F"])
+    assert 0.05 < left < answer / (charge / patch["capacitance_F"]) < 1.0

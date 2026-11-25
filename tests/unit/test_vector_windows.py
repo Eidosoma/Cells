@@ -9,6 +9,8 @@ failures stop both paths at the same step, and restart, the ensemble option and
 pause/resume keep their guarantees.
 """
 
+import json
+
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -278,3 +280,10 @@ def test_ionic_vmap_pause_and_resume_is_bitwise(tmp_path):
         assert checkpoint.step_index == complete[identity].step_index
         for a, b in zip(checkpoint.state, complete[identity].state, strict=True):
             np.testing.assert_array_equal(np.asarray(a), np.asarray(b))
+    # The same checkpoint, written on another kind of device, is refused.
+    manifest = tmp_path / "paused/manifest.json"
+    record = json.loads(manifest.read_text())
+    record["execution"]["device_kind"] = f"another than {kind}"
+    manifest.write_text(json.dumps(record))
+    with pytest.raises(ValueError, match="device kind changed"):
+        ionic.load_checkpoint(tmp_path / "paused", backend="cpu")

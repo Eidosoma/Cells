@@ -12,6 +12,8 @@ import pytest
 from cells.ensemble.cli import aggregate
 from cells.ensemble.families import bind_definition, parse_definition, population
 from cells.ensemble.plan import balance, plan
+from cells.numerics import surface_imex as imex
+from validation.tissue import surface_pump_fixtures
 
 ROOT = Path(__file__).resolve().parents[2]
 BACKEND = os.environ.get("CELLS_COUPLED_TEST_BACKEND", "cpu")
@@ -35,9 +37,9 @@ def parity_evidence(name, values):
 
 
 def experiment(family, *, backend="cpu", worlds=2, width=1, end=0.0004):
-    coupled = json.loads((ROOT / "configs/assembly_regulated_cell.json").read_text())
+    """One arm; "ionic" is the pump tissue at rest, each control held at its first value."""
     if family == "assembly_cell":
-        raw = coupled
+        raw = json.loads((ROOT / "configs/assembly_regulated_cell.json").read_text())
         for key in ("worlds", "seed", "world_id_start"):
             raw["pool"].pop(key, None)
         raw["pool"].update(end_time_s=end, k_off_s_inv=3000, k_close_s_inv=1000)
@@ -45,14 +47,14 @@ def experiment(family, *, backend="cpu", worlds=2, width=1, end=0.0004):
         raw["ionic"]["execution"]["backend"] = backend
         raw["window_ticks"] = 2
     else:
-        simulation = json.loads((ROOT / "configs/junction_finite_cluster.json").read_text())
+        simulation = surface_pump_fixtures.definition(
+            "closed", backend=backend, solver=imex.ARS222_ID
+        )
         simulation["experiment"].update(end_time=end, observation_times=[0.0, end])
-        for controls in ("membrane_controls", "channel_controls", "junction_controls"):
-            for control in simulation["experiment"][controls]:
-                for key, values in control.items():
-                    if isinstance(values, list):
-                        control[key] = [values[0]]
-        simulation["execution"]["backend"] = backend
+        for name, controls in simulation["experiment"].items():
+            if name.endswith("_controls"):
+                for control in controls:
+                    control["schedule"] = control["schedule"][:1]
         raw = {"model": "ionic_worlds@1", "simulation": simulation, "window_steps": 2}
     return {
         "kind": family + "_ensemble@1",

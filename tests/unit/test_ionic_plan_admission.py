@@ -17,7 +17,7 @@ def inputs(*, width=3, worlds=8):
     second = deepcopy(raw["arms"][0])
     second["id"] = "second"
     rows = second["definition"]["simulation"]["experiment"]["membrane_controls"]
-    rows[0]["leak"][0]["multipliers"]["Na"] = 0.75
+    rows[0]["schedule"][0]["availability"] = 0.75
     raw["arms"].append(second)
     raw["execution"]["max_output_bytes"] = 4 * 1024**3
     return raw

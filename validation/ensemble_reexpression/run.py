@@ -515,7 +515,12 @@ class Worker:
         except (ConfigError, NumericalError) as error:
             refusal = refusals.refusal(error, stage="run", gates=self.gates())
             if isinstance(error, NumericalError):
-                self.kept(spec, checkpoint, refusal)
+                try:
+                    self.kept(spec, checkpoint, refusal)
+                except Exception as fault:  # The engine's own refusal stands, whatever this did.
+                    self.facts["second_pass"] = {"fault": f"{type(fault).__name__}: {fault}"}
+                    if refusal["kind"] == refusals.CHECK:
+                        refusal["time_s"] = spec.experiment.end_time
             raise Refused(refusal) from error
         write_run(
             self.output,

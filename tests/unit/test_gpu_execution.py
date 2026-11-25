@@ -13,12 +13,22 @@ from cells.execution.batch import BatchSpec, WorldSpec, parse_batch, run_batch
 from cells.execution.devices import execution_device
 from cells.execution.runner import run
 from cells.execution.windows import WindowPolicy, iter_windows
+from cells.numerics import surface_imex as imex
 from cells.records.io import load_snapshot, write_snapshot
+from validation.tissue import surface_pump_fixtures
 
 ROOT = Path(__file__).parents[2]
 
 
 def definition(backend="cpu"):
+    """The clamped pump tissue, which admits a GPU."""
+    data = surface_pump_fixtures.definition("clamped", backend=backend, solver=imex.ARS222_ID)
+    data["experiment"].update(end_time=0.0004, observation_times=[0.0, 0.0002, 0.0004])
+    return data
+
+
+def older(backend="cpu"):
+    """The older family's cell, for the two GPU-only rows and its own refusal of no jit."""
     data = json.loads((ROOT / "configs/kinetic_finite_cell.json").read_text())
     data["execution"]["backend"] = backend
     data["experiment"]["end_time"] = 0.0004
@@ -39,9 +49,10 @@ def test_gpu_definition_roundtrip_and_mixed_batch_refusal():
     "field,value", [("backend", "tpu"), ("precision", "float32"), ("jit", False)]
 )
 def test_gpu_keeps_explicit_precision_and_solver_contract(field, value):
-    data = definition("gpu")
+    live = field != "jit"  # The live tissue admits a run without jit.
+    data = (definition if live else older)("gpu")
     data["execution"][field] = value
-    with pytest.raises(ConfigError):
+    with pytest.raises(ConfigError, match="requires float64 CPU/GPU" if live else None):
         parse_spec(data)
 
 
@@ -56,8 +67,8 @@ def test_missing_gpu_does_not_fall_back(monkeypatch):
 
 @pytest.mark.skipif(os.environ.get("CELLS_TEST_GPU") != "1", reason="explicit CUDA test")
 def test_public_gpu_cpu_history_windows_and_saved_restart(tmp_path):
-    cpu = run(parse_spec(definition("cpu")))
-    spec = parse_spec(definition("gpu"))
+    cpu = run(parse_spec(older("cpu")))
+    spec = parse_spec(older("gpu"))
     gpu = run(spec)  # CPU initialization must not disable a later explicit GPU.
     assert all(x.device.platform in ("cuda", "gpu") for x in gpu.final.state)
     for expected, actual in zip(cpu.history, gpu.history, strict=True):
@@ -86,7 +97,7 @@ def test_public_gpu_cpu_history_windows_and_saved_restart(tmp_path):
 
 @pytest.mark.skipif(os.environ.get("CELLS_TEST_GPU") != "1", reason="explicit CUDA test")
 def test_guarded_gpu_batch_matches_separate_worlds():
-    definitions = [definition("gpu"), definition("gpu")]
+    definitions = [older("gpu"), older("gpu")]
     definitions[1]["experiment"]["membrane_controls"][0]["pump"][0]["multiplier"] = 0.0
     specs = [parse_spec(d) for d in definitions]
     batch = BatchSpec(tuple(WorldSpec(i + 1, s) for i, s in enumerate(specs)), 2, 100, 2**29)
