@@ -1,5 +1,9 @@
 # R0 closeout and R1-S0 reference-only scoping (D130)
 
+> **Legacy cleanup (25 November 2026, D386).** This folder's drivers are retired (D374), and their
+> code left the tree; the tag `pre-cleanup-2026-11-25` keeps it. This page and `scope.json` stay
+> as records.
+
 Close the independently reviewed 1 ms recording/window milestone, then prepare
 the 10 ms pump–leak numerical extension. Do not edit frozen D119–D129 sources.
 

@@ -1,5 +1,9 @@
 # D076 / REF-003e0: independent saved-pilot audit
 
+> **Legacy cleanup (25 November 2026, D386).** The drivers that this record names under
+> `validation/betse/` are retired (D374), and their code left the tree; the tag
+> `pre-cleanup-2026-11-25` keeps it. The record, its protocols and its reports stay.
+
 2026-09-12. The [D075 pilot](BETSE_FULL_LOOP_BRIDGE.md) completed all 12 native
 runs / 240 observed steps in **26.139 seconds**, with its predeclared capture
 controls passing. Its capture receipt still correctly says pending independent

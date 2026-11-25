@@ -13143,3 +13143,22 @@ of old references are still to be shown before the deletion is merged.
 
 **Slips.** The lead ran sparse-checkout on an old worktree by mistake and restored it at once, whole and clean. Several times typed into private notes were guesses, and are corrected. Agents' privacy scans had been run against the main checkout's HEAD and so tested nothing:
 they were rerun by branch name on every branch, all zero, and the rule is corrected.
+
+**Correction to this entry (17:23 UTC).** The removal list is not final and its script's dry run removes 1,528 files, not 1,529. The check of D196 was rebuilt under one standard and has 134 rows (71 registered laws, 44 kernels of the
+catalogues and 19 that live models import), not 133: 44 of the 71 declare a test, and all 44 are collected after the deletion. Four, not three, lost their only direct check: three are closed and one is open (the flux of the standalone
+reaction-transport model). The list's open rows and their owners are being settled.
+
+## D388: GJ-N1 is judged: the "neither" threshold passes on the line and on the 2D field
+
+2026-11-25, about 17:34 UTC. Registered verdict of `docs/GJ_NEITHER_REGISTRATION.md` (tag `gj-neither-registered-2026-11-23`, amendments 1 and 2). It agrees with a code-blind integration of one preprint's model, on the 1 x 1 x 25 line and the
+1 x 25 x 25 field. It is an indication for that model, on those geometries, and no more.
+
+- **The field's search** ended at 17:23 UTC, from the frozen snapshot of 750076a7 on a gate lane: exit 0, 48 points, none refused, monotone, converged, and the two half-step reruns keep their outcomes. Its tables were hashed
+  (`field-01/SHA256SUMS`) before any reference was read. The line's were hashed on 23 November.
+- **The verdict:** passed on both geometries (R, C and A true for each). The line's interval is [7.1696e-15, 7.1798e-15] and the field's [1.8870e-15, 1.8876e-15] (D, in m²/s); each overlaps the code-blind reference's bracket, and the ratio of thresholds is 1.0 for both.
+- **BITSEY is reported, never judged:** its historical log and the pinned run at b2cb370 give brackets that overlap Cells' on both geometries.
+- **How it was judged:** from a clean execution snapshot of a local merge of main 322c91f6 with the tagged references (`gj-neither-references-2026-11-23`), the commit 575af4cc, kept as tag `gj-n1-judged-2026-11-25`. The judge, its rule and its log reader are unchanged since
+  amendment 2's tag, the hash of the interface file equals the references' tag, and the script rechecks the tables' hashes. Verdict: `/mnt/workspaces/Cells/gap-junction-20261123/judged/neither-01-verdict/verdict.json` (sha256 9dcab368...).
+- **What it does not show:** the 3D field was not run; a model of one preprint; the agreement of numbers at the registered tolerance, not the biology. The references land with the next landing.
+- **Disclosed.** The lead read the run's raw points, and so its values, while estimating when it would end, before the judge ran. Nothing was changed after that. The judge ran from a local merge and not from a landed main, as the references were to stay out of main until
+  both tables were hashed.

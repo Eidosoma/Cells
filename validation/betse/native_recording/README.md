@@ -1,5 +1,8 @@
 # Lossless native evidence recording — R0, first implementation
 
+> **Legacy cleanup (25 November 2026, D386).** This folder's drivers are retired (D374), and their
+> code left the tree; the tag `pre-cleanup-2026-11-25` keeps it. This page stays as a record.
+
 2026-09-17, D123. This is a **validation-side storage layer**, not a change to
 Cells, BETSE, numerical tolerances or the accepted 1 ms pilot. It implements the
 first stage of the [longer-duration plan](../../../docs/BETSE_PUMP_RELAXATION_PLAN.md).
