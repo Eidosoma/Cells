@@ -16,7 +16,7 @@ planted error it must catch (D187):
   with others, an aggregate writing the controller's own timing keys, and one dropping an arm;
 - today's three ensemble kinds keep their models and their chains: MODELS ends with them, and each
   of today's models finds no adapter (their plan-and-run tests are tests/unit/test_ensemble*.py); a
-  parked kind is refused by its name, and an adapter may take it.
+  parked kind is refused by its name, as its command line is, and an adapter may take it.
 """
 
 import json
@@ -32,6 +32,7 @@ from types import MappingProxyType
 import pytest
 
 import cells
+from cells.__main__ import main
 from cells.ensemble import cli, families
 from cells.ensemble.plan import plan
 from cells.registry import model_table
@@ -340,7 +341,7 @@ def test_the_summary_refuses_an_adapter_family_mixed_with_others(planted, monkey
             cli.aggregate([ours])
 
 
-def test_today_s_three_keep_their_models_and_their_chains():
+def test_today_s_three_keep_their_models_and_their_chains(capsys):
     assert dict(families.MODELS) == families.TODAY  # No row names an adapter today.
     assert list(families.TODAY) == [
         "assembly_ensemble@1",
@@ -355,3 +356,6 @@ def test_today_s_three_keep_their_models_and_their_chains():
     for kind in ("assembly_cell_ensemble@1", "assembly_cluster_ensemble@1"):
         with pytest.raises(ValueError, match=f"^{kind} is parked: .* resolved_pump_composite@1"):
             plan(dict(plan_data(), kind=kind), 1)
+    for command in ("assembly-cell", "assembly-cluster"):  # And so are their two command lines.
+        assert main([command]) == 2
+        assert capsys.readouterr().err.startswith(f"cells: {command} is parked: ")

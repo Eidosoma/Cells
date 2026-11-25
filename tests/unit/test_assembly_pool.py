@@ -150,7 +150,8 @@ def test_pending_checkpoint_partition_and_chunk_replay(tmp_path):
     assert_same(part, restored)
     resumed, _ = run(saved, backend=BACKEND, state=restored)
     assert_same(whole, resumed)
-    rechunked, _ = run(replace(spec, event_chunk_size=19), backend=BACKEND)
+    rechunked, report = run(replace(spec, event_chunk_size=3), backend=BACKEND)
+    assert report["chunks"] > 1  # The whole run is one: at most 11 events a world.
     assert_same(whole, rechunked)
     halves = [run(replace(spec, worlds=4, world_id_start=i), backend=BACKEND)[0] for i in (0, 4)]
     combined = type(whole)(*(np.concatenate((a, b)) for a, b in zip(*halves, strict=True)))
@@ -470,15 +471,16 @@ def test_a_path_s_final_state_and_exposure_are_the_pool_s_own(driven):
                 tuple(getattr(trace, k)[i, world] for k in ("time_s", "occupied", "bonds", "free"))
                 for i in committed
             ]
-            path = driver_path(pool, trace, world)
-            points = direct_path(pool, world)
-            ends = [p[0] for p in points[1:]] + [pool.end_time_s]
-            exact = sum(
-                Fraction(level * (end - time))
-                for (time, level, _), end in zip(points, ends, strict=True)
-            )
-            assert path.exposure() == float(exact)
-            assert path.at(path.end) == path.levels[-1]
+            for levels in (LEVELS, {"false": 0.25, "true": 0.5}):  # Then every interval weighs.
+                path = driver_path(pool, trace, world, levels=levels)
+                points = direct_path(pool, world, levels)
+                ends = [p[0] for p in points[1:]] + [pool.end_time_s]
+                exact = sum(
+                    Fraction(level * (end - time))
+                    for (time, level, _), end in zip(points, ends, strict=True)
+                )
+                assert path.exposure() == float(exact)
+                assert path.at(path.end) == path.levels[-1]
 
 
 def test_a_ring_that_only_breaks_switches_once_at_the_closed_form_time():
