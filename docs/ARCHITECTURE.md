@@ -109,8 +109,8 @@ Where older sections of this document differ, this section applies.
       (§5.1, §5.2). Moving the host-side window checks into device windows has begun:
       `WindowPolicy(row_checks="device")` checks scalar windows' rows on the device and hands a
       window back to the host checks on any failure or margin above 1/2
-      ([design](WINDOW_DEVICE_CHECKS_DESIGN.md)). It is refused on a GPU until a GPU measurement
-      exists.
+      ([design](WINDOW_DEVICE_CHECKS_DESIGN.md)). It is refused on a GPU: the one
+      GPU measurement, on the composite, failed its qualification (D330, D336).
   - **Adding a mechanism adds no per-cell Python dispatch and no CPU solver to the production loop.
     Target.**
   - **Compile time, host and device memory, and end-to-end time are measured on representative
