@@ -894,6 +894,11 @@ declared topology (host; exported through `cells.modules`). It is read by:
 | `operators/species_common.py:207-247` (`counter_ion_margin`) | the same capacitance, since it states the bound's own term. It was too strict, never unsafe |
 | `models/inner_laws.py:314` and `models/surface_pump_v3.py:5041` | `floating_nodes: bool = False` on the structure, and its value |
 
+**Settled at the build (25 November 2026):** the table's third row and D148 were inconsistent. Today's rule calls
+`free_outside_nodes` in every world with a kind, floating node or not, so its fixed-node expression is in those
+programs. The exclusion leaves the function's meaning, and a static argument keeps the old expression, in its order
+of operations, on the branch of a world with no floating node. The trace shows those worlds' texts unchanged.
+
 `explicit_rate_bound(spec)` and `face_free_node_rate(spec, p, gm)` keep their names and arguments, since a
 validation tool and tests call them (`validation/long_duration/m1_bound_terms.py:106`,
 `tests/unit/test_surface_pump_step_checks.py`). The four operators that call the bound on their own projections

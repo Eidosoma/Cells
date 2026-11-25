@@ -167,8 +167,10 @@ def test_a_pump_past_its_head_is_refused_at_the_face_free_lumens_row():
     B7's per-stage refusal holds FR-4's face-free lumen, whose node carries the bounding patch's
     capacitance alone, as well as the cell, which carries the plasma patch's too. Driven past its
     static head until dt G / C_b = 1.5 at the declared 1 ms, the stage is refused at the lumen's
-    row, where the cell's row alone (the same slope counted at the cell only) passes. No run:
-    membrane_rate at the development world's start, at potentials past the head."""
+    row, where the same slope counted at the cell only passes: it relaxes the lumen patch's voltage
+    and not the cell's (docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md §8.3), so no row holds it there,
+    and what is left is the lumen patch's row of the K+ route and the leak. No run: membrane_rate
+    at the development world's start, at potentials past the head."""
     import dataclasses
     import math
 
@@ -229,5 +231,15 @@ def test_a_pump_past_its_head_is_refused_at_the_face_free_lumens_row():
         planted.registry(dataclasses.replace(transporter.TRANSPORTER, stage_term=cells_only))
     ):
         cell_row = rate()
-    assert dt * cell_row <= bound  # The cell's row alone would pass.
-    assert dt * cell_row == pytest.approx(1.5 * c_b / c_cell, abs=0.05)
+    assert dt * cell_row <= bound  # The slope at the cell alone would pass.
+    # F^2/RT P A max(c) of the K+ route and of the leak (at the read's free h), over C_b.
+    membrane, k = spec.model.membranes[b], spec.model.species_ids.index("K")
+    largest_k = max(
+        p.amount_reference[k, cell] / p.volume[cell],
+        p.extracellular_amount_reference[k, j] / p.extracellular_volume[j],
+    )
+    (leak,) = dict(spec.model.kinds)["cells.passive_routes@1"]
+    permeance = membrane.permeability_m_per_s[k] * largest_k
+    permeance += leak.permeability * max(float(c_in[b]), float(c_out[b]))
+    slope = F * F / (R * spec.model.temperature_K) * membrane.area_m2 * permeance
+    assert cell_row == pytest.approx(slope / c_b, rel=1e-9, abs=0)

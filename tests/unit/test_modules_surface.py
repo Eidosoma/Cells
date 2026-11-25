@@ -74,7 +74,7 @@ HOMES = {  # Each name's own module: where it is defined.
     ),
     "cells.definitions.specs": ("ConfigError", "require_fields", "finite_number", "bounded_integer"),  # noqa: E501
     "cells.laws.electrochemistry": ("R", "F", "CHARGE_PER_FMOL"),
-    "cells.models.surface_pump": ("EXPLICIT_STEP_BOUND",),
+    "cells.models.surface_pump": ("EXPLICIT_STEP_BOUND", "floating_nodes"),
     "cells.numerics.extracellular_field": ("scatter",),
     "cells.numerics.species_sums": ("species_sum", "entity_sum"),
     "cells.numerics.one_way_split": ("step_one_way_amounts", "close_one_way"),

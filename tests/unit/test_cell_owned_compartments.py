@@ -1115,9 +1115,9 @@ def test_refusal_4s_premise_the_stage_rule_holds_a_permeability_at_the_compartme
     per-stage rule (surface_pump_v3.membrane_rate) counts @3's own constant-field permeability at
     the compartment's free node, so an IMEX step at dt G_b / C_b > 1 is refused there. FR-4's world
     with its K+ permeability scaled k, at its own 1 ms: at k = 60 the lumen's row from the K+ route
-    alone is about 1.5 / dt while the owner's whole row stays under 1 / dt (the cells-only rate
-    would have passed the step), and the step is refused by the stage bound; at k = 20 (about 0.5)
-    it is accepted. The declared world (with the operator) is admitted at both."""
+    alone is about 1.5 / dt while the same slope over all the owner's patches stays under 1 / dt
+    (that row would have passed the step), and the step is refused by the stage bound; at k = 20
+    (about 0.5) it is accepted. The declared world (with the operator) is admitted at both."""
     import numpy as np
 
     from cells.definitions.surface_pump_v3_spec import control_values
@@ -1148,8 +1148,8 @@ def test_refusal_4s_premise_the_stage_rule_holds_a_permeability_at_the_compartme
         node_rate = g_k / p.membrane_capacitance[b]  # The K+ route alone, at the lumen (1/s).
         assert (dt * node_rate > 1.0) == (not accepted), (k, dt * node_rate)
         rate = float(impl.membrane_rate(state, control, p, xp=np))
-        cells_only = float(surface_pump_v3.membrane_rate(state, control, p, xp=np))
-        assert rate >= node_rate and dt * cells_only < 1.0, (k, rate, cells_only)
+        owner = float(p.membrane_capacitance[p.membrane_active & (p.membrane_cell == cell)].sum())
+        assert rate >= node_rate and dt * g_k / owner < 1.0, (k, rate, g_k / owner)
         _, valid = impl.imex_step(state, dt, control, p, xp=np)
         assert bool(valid) == accepted, (k, dt * rate)
         if not accepted:  # The stage bound is what refuses it.
