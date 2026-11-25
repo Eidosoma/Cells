@@ -393,6 +393,8 @@ was. Its date is the landing's:
 - **The scope string** (`operators/compartments.py:698-707`) becomes "refusal 4 version 1.3, refusal 5 version 1.2,
   refusal 6 version 1.1: a node that its capacitor component does not take as its representative, at a fixed volume;
   on a bounding patch ..." and on as today.
+- **Correction (25 November 2026):** FR-1's `CHECKS` holds one row per label (`tests/unit/test_fr1_qualification.py:420-425`),
+  so the old phrase moves to a second table that `classify()` also reads.
 - **Pinned places:** the unit row at `tests/unit/test_cell_owned_compartments.py:510` is replaced by one that still
   refuses (the compartment's node is its component's representative) and one that is now admitted (a closed world
   with the gauge in the component); the scope row at 1510-1516 reads the new start; the driver's phrase is at
