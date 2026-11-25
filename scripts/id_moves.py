@@ -65,6 +65,10 @@ Usage (PYTHONPATH=src:. with the venv's Python, from a checkout):
   python scripts/id_moves.py selftest
 All but ids and selftest take --tree DIR, the checkout to work on (default: this one); --choices,
 --map and --frozen name other data files. Exit status: 0 ok, 1 a check failed, 2 refused.
+
+The order at the base: `frozen --out`, `table`, `frozen --lists` for the owners; commit the list and
+the map; `scan`; `apply --stage`, a commit that holds nothing else; `verify`; `ids` on the collected
+test IDs of both; `rewrap`, its own commit; `rewrapped`.
 """
 
 import argparse
@@ -1507,6 +1511,9 @@ def frozen_both_ways(tree, base, frozen, mp):
 def cmd_frozen(args):
     choices_path, map_path, _ = data_paths(args)
     choices = load_choices(choices_path)
+    if args.lists and not Path(map_path).exists():
+        raise Refused(f"--lists reads the map for both directions, and {map_path} is not there: "
+                      "write the list with --out, then the table, then --lists")  # fmt: skip
     rules = frozen_rules(args.tree, args.base)
     settings = choices["frozen"]
     live = {r["path"]: r["reason"] for r in settings["live"]}
@@ -1882,6 +1889,8 @@ ORDER = re.compile(
 # A word after other text, at a literal's end or before a pattern's next mark: where an expected
 # message holds the start of an ID, the move's longer ID no longer follows the text before it.
 STARTS = re.compile(r"(?<=[\s\"'(\[:=,])([A-Za-z][A-Za-z0-9_]{4,})(?=$|[.\\(\[*+?])")
+# An ID's start up to its @, without the major.
+NO_MAJOR = re.compile(rf"(?<![A-Za-z0-9_.@-])((?:{WORD}\.)*{WORD})@(?![A-Za-z0-9_])")
 WIDTH = re.compile(r"[<>=|]?[US]([0-9]+)")
 FILE_NAME = re.compile(r"\.(md|json|py|npz|npy|csv|tsv|txt|png|svg|log|toml|sh)\b")
 
@@ -1911,11 +1920,165 @@ def template(node):
     return None
 
 
+CONTAINERS = {"tuple", "list", "set", "frozenset", "dict", "sorted", "reversed", "enumerate", "zip",
+              "iter", "items", "keys", "values", "union", "copy", "fromkeys", "param"}  # fmt: skip
+CONSTANT = re.compile(r"_*[A-Z][A-Z0-9_]*")
+CALLED = re.compile(rb"\b([A-Za-z_]\w*)\(")
+ASSIGNED = re.compile(rb"(?m)^[ ]{0,8}((?:[A-Za-z_]\w*, )*[A-Za-z_]\w*)[ ]*(?::[^=\n]+)?=(?!=)")
+# A value of these names is an ID: a cut of one at `_`, or a slice, is a hazard.
+LAWLIKE = re.compile(
+    r"(\w+_)?(law|law_id|kind_id|model_id|operator_id|solver_id|inner_model|interface|identifier)",
+    re.IGNORECASE,
+)
+
+
+def called(node):
+    """The last name of an expression: a variable, an attribute, or a subscript's text."""
+    if isinstance(node, ast.Call):
+        return called(node.args[0]) if getattr(node.func, "id", "") == "str" and node.args else ""
+    if isinstance(node, ast.Subscript):
+        node = node.slice
+    if isinstance(node, ast.Constant):
+        return str(node.value)
+    return getattr(node, "attr", getattr(node, "id", ""))
+
+
+class Names:
+    """The strings that a Python file's names may hold: constants, the members and the keys of
+    literal containers, loops over them, parameters' defaults and the arguments passed for them. A
+    name is one set for its whole file, whatever its scope: more than it holds, and never less of
+    these. A name that starts with `.` is another file's constant."""
+
+    def __init__(self, tree):
+        self.strings, self.names = defaultdict(set), defaultdict(set)
+        self.functions, calls = defaultdict(list), []
+        for n in ast.walk(tree):
+            if isinstance(n, ast.Assign):
+                for target in n.targets:
+                    self.bind(target, n.value)
+            elif isinstance(n, (ast.AnnAssign, ast.AugAssign, ast.NamedExpr)):
+                self.bind(n.target, n.value)
+            elif isinstance(n, (ast.For, ast.AsyncFor, ast.comprehension)):
+                self.bind(n.target, n.iter)
+            elif isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)):
+                args = [*n.args.posonlyargs, *n.args.args]
+                for a, default in zip(reversed(args), reversed(n.args.defaults), strict=False):
+                    self.hold(a.arg, default)
+                for a, default in zip(n.args.kwonlyargs, n.args.kw_defaults, strict=True):
+                    self.hold(a.arg, default)
+                names = [a.arg for a in args]
+                self.functions[getattr(n, "name", "")].append(
+                    names[1:] if names[:1] in (["self"], ["cls"]) else names
+                )
+            elif isinstance(n, ast.Call):
+                calls.append(n)
+            elif isinstance(n, ast.ImportFrom):
+                for x in n.names:
+                    self.names[x.asname or x.name].add("." + x.name)
+        self.given = defaultdict(list)  # {function: [the parts of a call's arguments]}.
+        for n in calls:
+            name = n.func.attr if isinstance(n.func, ast.Attribute) else getattr(n.func, "id", "")
+            if name == "parametrize" and len(n.args) > 1:
+                for x in self.parts(n.args[0])[0]:
+                    for one in re.findall(r"\w+", x):
+                        self.hold(one, n.args[1])
+            args = [(i, self.parts(a)) for i, a in enumerate(n.args)]
+            args += [(k.arg, self.parts(k.value)) for k in n.keywords if k.arg]
+            if name and any(strings or names for _, (strings, names) in args):
+                self.given[name].append(args)
+        for name in list(self.functions):
+            for strings, names, param in self.passed(name, self.functions[name]):
+                self.strings[param] |= strings
+                self.names[param] |= names - {param}
+
+    def passed(self, function, signatures):
+        """[(strings, names, parameter)]: what this file's calls of a function pass."""
+        for args in self.given.get(function, ()):
+            for at, (strings, names) in args:
+                for params in signatures:
+                    if at in params or isinstance(at, int) and at < len(params):
+                        yield strings, names, at if at in params else params[at]
+
+    def hold(self, name, value):
+        strings, names = self.parts(value)
+        self.strings[name] |= strings
+        self.names[name] |= names - {name}
+
+    def bind(self, target, value):
+        if isinstance(target, (ast.Tuple, ast.List)):
+            same = isinstance(value, (ast.Tuple, ast.List)) and len(value.elts) == len(target.elts)
+            for i, one in enumerate(target.elts):
+                self.bind(one, value.elts[i] if same else value)
+        elif isinstance(target, ast.Starred):
+            self.bind(target.value, value)
+        elif isinstance(target, ast.Name):
+            self.hold(target.id, value)
+        elif isinstance(target, ast.Attribute):
+            self.hold(target.attr, value)
+
+    def parts(self, node):
+        """(the strings an expression may hold, the names it may take them from)."""
+        strings, names, todo = set(), set(), [node]
+        while todo:
+            n = todo.pop()
+            if isinstance(n, ast.Constant):
+                strings |= {n.value} if isinstance(n.value, str) else set()
+            elif isinstance(n, (ast.Tuple, ast.List, ast.Set)):
+                todo += n.elts
+            elif isinstance(n, ast.Dict):
+                todo += [*filter(None, n.keys), *n.values]
+            elif isinstance(n, (ast.Starred, ast.Subscript, ast.NamedExpr)):
+                todo.append(n.value)
+            elif isinstance(n, ast.IfExp):
+                todo += [n.body, n.orelse]
+            elif isinstance(n, ast.BoolOp):
+                todo += n.values
+            elif isinstance(n, ast.BinOp):
+                built = template(n)
+                if built is None:
+                    todo += [n.left, n.right]  # Containers, or what cannot be seen.
+                elif HOLE not in built:
+                    strings.add(built)
+            elif isinstance(n, (ast.ListComp, ast.SetComp, ast.GeneratorExp)):
+                todo.append(n.elt)
+            elif isinstance(n, ast.Name):
+                names.add(n.id)
+            elif isinstance(n, ast.Attribute):
+                names |= {n.attr} | ({"." + n.attr} if CONSTANT.fullmatch(n.attr) else set())
+            elif isinstance(n, ast.Call):
+                f = n.func
+                if (f.attr if isinstance(f, ast.Attribute) else getattr(f, "id", "")) in CONTAINERS:
+                    todo += [*n.args, *(k.value for k in n.keywords)]
+                    strings |= {k.arg for k in n.keywords if k.arg}
+                    todo += [f.value] if isinstance(f, ast.Attribute) else []
+        return strings, names
+
+    def resolved(self, parts, others):
+        """The strings an expression's parts may hold, with the other files' constants (a function
+        of a constant's name), and every name on the way."""
+        out, names = set(parts[0]), parts[1]
+        seen, todo = set(), list(names)
+        while todo:
+            name = todo.pop()
+            if name in seen:
+                continue
+            seen.add(name)
+            if name.startswith("."):
+                if CONSTANT.fullmatch(name[1:]):
+                    out |= others(name[1:])
+            else:
+                out |= self.strings.get(name, set())
+                todo += self.names.get(name, ())
+        return out, seen
+
+
 class Scanner:
     """The hazards of one map on one tree's files."""
 
     def __init__(self, files, mp, types=None):
         self.files, self.mp = files, mp
+        # The constants of a name, the names of a file and the functions looked up, by need.
+        self.held_by, self.file_names, self.looked_up, self.indexed = {}, {}, set(), None
         self.pairs = sorted(mp.new.items())
         self.short = {o.rsplit(".", 1)[-1].split("@")[0] for o in mp.new}  # Names alone.
         self.longest = max(map(len, mp.new.values()), default=0)
@@ -1923,11 +2086,96 @@ class Scanner:
         self.found = []
         self.known = {}  # What a literal, a pattern or a template was already found to do.
         self.inside = []  # (path, line, ID): IDs inside longer strings, which the rule rewrites.
+        self.outside = []  # (path, line, text): what Python in scope names outside the tree.
+        self.read_by = []  # (left file, reader, line): a live reader of a file the move leaves.
+        self.frozen_code = []  # What frozen Python does with part of an ID, as hazards.
+        self.left, self.bases, self.modules = {}, Counter(), {}
+
+    def leave(self, left):
+        """The files that the move leaves and that hold old spellings, whose readers are listed."""
+        self.left = left
+        self.bases = Counter(Path(p).name for p in self.files)
+        self.modules = {
+            p[:-3].replace("/", ".").removesuffix(".__init__"): p
+            for p in self.files
+            if p.endswith(".py") and p.startswith(("tests/", "validation/", "scripts/"))
+        }
+        self.named_left = defaultdict(list)
+        for path in left:
+            if not path.endswith(".py"):
+                self.named_left[Path(path).name].append(path)
+
+    def names_left(self, path, node):
+        """A string that names a left data file: its name alone where no other file has it, or from
+        a folder above it, or with a folder of its path."""
+        said = node.value
+        for target in self.named_left.get(said.rsplit("/", 1)[-1], ()) if self.left else ():
+            folder = str(Path(path).parent)
+            if (
+                self.bases[Path(target).name] == 1
+                or ("/" in said and target.endswith("/" + said.lstrip("./")))
+                or f"{Path(target).parent}/".startswith(f"{folder}/")
+            ):
+                self.read_by.append((target, path, node.lineno))
 
     def add(self, cls, path, line, text, what):
         self.found.append(
             dict(cls=cls, path=path, line=line, text=" ".join(str(text).split())[:200], what=what)
         )
+
+    def index(self):
+        """({function: [the files that call it]}, {constant: [the files that assign it]}) of the
+        Python files in scope."""
+        if self.indexed is None:
+            calls, constants = defaultdict(list), defaultdict(list)
+            for path, (_, data) in self.files.items():
+                if path.endswith(".py") and path.startswith(tuple(self.mp.scope["dirs"])):
+                    for name in set(CALLED.findall(data)):
+                        calls[name.decode()].append(path)
+                    assigned = {x for m in ASSIGNED.findall(data) for x in m.split(b", ")}
+                    for name in assigned:
+                        constants[name.decode()].append(path)
+            self.indexed = calls, constants
+        return self.indexed
+
+    def names_of(self, path, tree=None):
+        if path not in self.file_names:
+            try:
+                self.file_names[path] = Names(tree or ast.parse(self.files[path][1]))
+            except (SyntaxError, ValueError):
+                self.file_names[path] = None
+        return self.file_names[path]
+
+    def others(self, name):
+        """The strings of every constant of this name, in any Python file in scope."""
+        if name not in self.held_by:
+            self.held_by[name] = found = set()  # One that needs itself ends here.
+            for path in self.index()[1].get(name, ()):
+                names = self.names_of(path)
+                if names is not None:
+                    found |= names.resolved((set(), {name}), self.others)[0]
+        return self.held_by[name]
+
+    def through(self, path, tree, node):
+        """The strings that an argument which is no literal may hold: the names it takes them from,
+        and for a parameter what the calls of its function in other files pass."""
+        names = self.names_of(path, tree)
+        if names is None:
+            return set()
+        _, seen = names.resolved(names.parts(node), self.others)
+        for function, signatures in names.functions.items():
+            if function and (path, function) not in self.looked_up:
+                if any(p in seen for params in signatures for p in params):
+                    self.looked_up.add((path, function))
+                    module = Path(path).stem.encode()  # A caller elsewhere names the module.
+                    for q in self.index()[0].get(function, ()):
+                        calls = q != path and module in self.files[q][1]
+                        other = self.names_of(q) if calls else None
+                        if other is not None:
+                            for strings, taken, param in other.passed(function, signatures):
+                                given = other.resolved((strings, taken), self.others)[0]
+                                names.strings[param] |= given
+        return names.resolved(names.parts(node), self.others)[0]
 
     def changes(self, name, lit):
         """The old spellings for which a test of part of an ID answers otherwise after the move."""
@@ -1940,7 +2188,10 @@ class Scanner:
 
     def scan(self):
         for path, (_, data) in sorted(self.files.items()):
-            if self.mp.excluded(path) is not None:
+            why = self.mp.excluded(path)
+            if path.endswith(".py") and (why == "frozen" or path in self.mp.left):
+                self.frozen(path, text_of(data))
+            if why is not None:
                 continue
             text = text_of(data)
             if text is None:
@@ -1956,6 +2207,16 @@ class Scanner:
                 self.values(path, text, after)
                 self.sorted_json(path, text, after)
         return self.found
+
+    def frozen(self, path, text):
+        """What frozen code does with part of an ID: no edit can help it, so its readers must."""
+        kept = self.found, self.inside, self.outside, self.read_by
+        self.found, self.inside, self.outside, self.read_by = [], [], [], []
+        if text is not None:
+            self.python(path, text, text)
+        parts = {"partial", "cut", "regex", "name", "computed"}
+        self.frozen_code += [h for h in self.found if h["cls"] in parts]
+        self.found, self.inside, self.outside, self.read_by = kept
 
     def text(self, path, text, after):
         for line, kind, word in self.mp.left_over(path, after):
@@ -2046,6 +2307,7 @@ class Scanner:
         def around(node):
             return "\n".join(lines[max(0, node.lineno - 5) : node.end_lineno + 2])
 
+        self.tree = tree
         inside = set()  # The operands of a chain of +, which the chain's own template covers.
         prose = set()  # Docstrings and bare strings.
         strange = []
@@ -2062,6 +2324,9 @@ class Scanner:
                 self.call(path, n, source, around)
             elif isinstance(n, ast.Compare):
                 self.membership(path, n, source)
+            elif isinstance(n, ast.Subscript) and isinstance(n.slice, ast.Slice):
+                if LAWLIKE.fullmatch(called(n.value)) and (n.slice.lower or n.slice.upper):
+                    self.add("cut", path, n.lineno, source(n), "a slice of an ID")
             elif isinstance(n, (ast.Dict, ast.Set)) and after != text:
                 keys = n.keys if isinstance(n, ast.Dict) else n.elts
                 self.one_key(path, n.lineno, [getattr(k, "value", None) for k in keys])
@@ -2073,12 +2338,19 @@ class Scanner:
                              f"a text width below the longest new ID's {self.longest}")  # fmt: skip
                 if id(n) not in prose:
                     self.message(path, n, source)
+                    self.without_major(path, n, source)
+                    self.names_left(path, n)
+                    if n.value.startswith("/mnt/"):
+                        self.outside.append((path, n.lineno, n.value))
                     if "@" in n.value and ID.fullmatch(n.value) is None:
                         self.inside += self.held(path, n.lineno, n.value)
                 if "@" in n.value and after == text:
                     strange += [
                         n for x in lines_of(n.value) if self.mp.line(x, None, TOKEN, path) != x
                     ]
+        if self.left:
+            for target in python_imports(path, tree, self.modules) & set(self.left):
+                self.read_by.append((target, path, 0))
         if after != text:
             self.values(path, text, after)
         elif strange and not kept_lines(text, True):  # A decoded ID that no text rule rewrote.
@@ -2102,6 +2374,12 @@ class Scanner:
             if self.known[word]:
                 what = f"{word!r} is the start of {self.known[word]}, after other text"
                 self.add("message", path, node.lineno, source(node), what)
+                return
+
+    def without_major(self, path, node, source):
+        for m in NO_MAJOR.finditer(node.value):
+            if m[1].removeprefix(NAMESPACE + ".") in self.short:
+                self.add("partial", path, node.lineno, source(node), f"{m[0]!r} without its major")
                 return
 
     def computed(self, path, node, source):
@@ -2159,8 +2437,13 @@ class Scanner:
             e.value for a in n.args if isinstance(a, (ast.Tuple, ast.List)) for e in a.elts
             if isinstance(e, ast.Constant) and isinstance(e.value, str)
         ]  # fmt: skip
+        if name in (*TESTS, "match", "search", "fullmatch", "compile") and self.by_name(n, name):
+            self.named(path, n, name, source)
         if not literals:
             return
+        if name in CUTS and literals[0] == "_" and isinstance(f, ast.Attribute):
+            if LAWLIKE.fullmatch(called(f.value)):
+                self.add("cut", path, n.lineno, source(n), "cuts an ID at '_'")
         if name in CUTS and literals[0] in ("@", ".", "cells.", "@1"):
             if literals[0] != "." or not MODULES.search(around(n)):
                 self.add("cut", path, n.lineno, source(n), f"cuts a text at {literals[0]!r}")
@@ -2190,6 +2473,33 @@ class Scanner:
             and isinstance(n.args[0], ast.Constant)
         ):
             self.regex(path, n, literals[0], source)
+
+    @staticmethod
+    def by_name(n, name):
+        """Whether a test's argument, or a pattern, is no literal: a name that may hold one."""
+        args = n.args[1:] if name.startswith("fnmatch") else n.args[:1]
+        return args and not isinstance(args[0], (ast.Constant, ast.JoinedStr, ast.Tuple, ast.List))
+
+    def named(self, path, n, name, source):
+        """A test of part of an ID, or a pattern, that reads it through a name."""
+        is_test = name in TESTS
+        if name in ("find", "rfind", "index", "rindex"):
+            return  # A list's index, or a place in other text.
+        if not is_test and not (
+            isinstance(n.func, ast.Attribute) and getattr(n.func.value, "id", "") == "re"
+        ):
+            return
+        arg = n.args[1] if name.startswith("fnmatch") else n.args[0]
+        found = []
+        for lit in sorted(self.through(path, self.tree, arg)):
+            if is_test and lit not in self.mp.new and re.search(r"[_0-9@.]", lit):
+                hits = self.changes(name, lit)  # Not a plain word: a name holds those at large.
+                found += [f"{lit!r}: not so for {hits[0]} (of {len(hits)})"] if hits else []
+            elif not is_test and len(lit) < 400:
+                self.regex(path, n, lit, source)
+        if found:
+            what = f"{name}, by name, {found[0]}; strings that answer otherwise: {len(found)}"
+            self.add("partial", path, n.lineno, source(n), what)
 
     def regex(self, path, n, pattern, source):
         if ("regex", pattern) not in self.known:
@@ -2362,6 +2672,7 @@ def run_scan(files, mp, choices):
     _, report = transform(files, mp, renamed=False)
     changed = set(report["files"])
     scanner = Scanner(files, mp)
+    scanner.leave(report["left"])
     hazards = scanner.scan()
     pins, words = hash_pins(files, mp, changed)  # Only the files the move changes.
     listed = {r["path"]: r for r in (*choices["pinned"], *choices["artifacts"])}
@@ -2405,7 +2716,28 @@ def run_scan(files, mp, choices):
             h["reviewed"] = f"the choice is made: {h['choice']}"
     stale = [r for i, r in enumerate(choices["reviewed"]) if not used[i]]
     report["inside"] = scanner.inside
+    report["outside"] = scanner.outside
+    report["frozen_code"] = scanner.frozen_code
+    report["left_readers"] = left_readers(files, report["left"], scanner.read_by)
     return hazards, report, stale
+
+
+def left_readers(files, left, reads):
+    """One row for each live reader of a file that the move leaves with old spellings, and whether
+    it names the table of renamed IDs. A reader that builds the file's name is not seen."""
+    first = {}
+    for target, reader, line in reads:
+        first.setdefault((target, reader), line)
+    return [
+        dict(
+            left=target,
+            why=left[target][0],
+            reader=reader,
+            line=line,
+            through_the_table=b"id_table" in files[reader][1],
+        )
+        for (target, reader), line in sorted(first.items())
+    ]
 
 
 # ------------------------------------------------------------------ actions: check and table
@@ -2420,9 +2752,31 @@ def data_paths(args):
 
 
 def revision_of(tree):
+    """The head, and whether a tracked file other than the tool's own data is changed."""
     head = git("rev-parse", "HEAD", cwd=tree).decode().strip()
-    dirty = git("status", "--porcelain", "--untracked-files=no", cwd=tree).strip()
-    return dict(head=head, dirty=bool(dirty))
+    status = git("status", "--porcelain", "--untracked-files=no", cwd=tree).decode()
+    return dict(head=head, dirty=any(not x[3:].startswith(SELF) for x in status.splitlines()))
+
+
+def stale_map(mp, tree, rev):
+    """Why a map is not of a tree that the move has not reached: an ID that came since has no row.
+    None where it is, and after the move (a branch in flight merges main and is rewritten with
+    main's map)."""
+    renamed = git("ls-tree", "-r", "--name-only", rev, "--", RENAMED, cwd=tree).strip()
+    if renamed and A_MAJOR.search(git("cat-file", "blob", f"{rev}:{RENAMED}", cwd=tree)):
+        return None
+    revision = mp.doc["revision"]
+    if revision["dirty"]:
+        return "the map is of a tree with uncommitted changes"
+    try:
+        names = git("diff", "--name-only", "-z", revision["head"], rev, cwd=tree).decode()
+    except Refused:
+        return f"the map's revision {revision['head']} is not in this repository"
+    since = [p for p in names.split("\0") if in_scope(p, mp.scope) and not p.startswith(SELF)]
+    if since:
+        said = f"{len(since)} files in scope changed since the map's revision"
+        return f"{said} {revision['head'][:8]}: write the table again (first: {since[0]})"
+    return None
 
 
 def key_seeds(choices):
@@ -2546,7 +2900,7 @@ def cmd_table(args):
     return 0
 
 
-def by_hand_found(path, hazards, mp):
+def by_hand_found(path, hazards, files, mp):
     """The rows of a by-hand list (site, class, needed, fails, what) against the hazards: for each
     row the hazards at its site, or what the tool does there instead; and the hazards that no row
     names."""
@@ -2564,7 +2918,11 @@ def by_hand_found(path, hazards, mp):
         done = None
         if name in mp.test_ids:
             done = "its test IDs are mapped by the ids rule"
-        elif name in mp.plants:
+        elif name in mp.plants and any(
+            mp.line(x, None, TOKEN, name) != x
+            for i, x in enumerate(lines_of(text_of(files[name][1])), 1)
+            if i in wanted
+        ):
             done = "its plants are renamed by the map"
         elif not in_scope(name, mp.scope):
             done = "outside the scope"
@@ -2615,10 +2973,19 @@ def cmd_scan(args):
         hazards=dict(Counter(h["cls"] for h in hazards)),
         standing=dict(Counter(h["cls"] for h in standing)),
         inside_longer_strings=dict(Counter(scope_of(p) for p, _, _ in report["inside"])),
+        readers_of_files_left=dict(
+            Counter(
+                ("through the table" if r["through_the_table"] else "not through the table")
+                + f", {r['why']}"
+                for r in report["left_readers"]
+            )
+        ),
+        frozen_code_that_reads_part_of_an_id=len(report["frozen_code"]),
+        names_paths_outside_the_tree=len({p for p, _, _ in report["outside"]}),
         stale_reviews=len(stale),
     )
     if args.by_hand:
-        rows, beyond = by_hand_found(args.by_hand, hazards, mp)
+        rows, beyond = by_hand_found(args.by_hand, hazards, files, mp)
         summary["by_hand"] = dict(
             rows=len(rows),
             found=sum(bool(r["found"]) for r in rows),
@@ -2653,6 +3020,9 @@ def cmd_apply(args):
         raise Refused(f"{tree} has uncommitted changes: apply works on a clean head")
     if not mp.final and not args.rehearsal:
         raise Refused("the map is a rehearsal's, not final (--rehearsal for a scratch copy)")
+    stale = stale_map(mp, tree, "HEAD")
+    if stale and not args.paths and not args.rehearsal:
+        raise Refused(stale)
     files = worktree_files(tree)
     mp.frozen = frozen_list(tree, frozen_path, choices, "HEAD")
     if args.paths:  # A lane's own files: the token rule alone, wherever they are.
@@ -2677,6 +3047,7 @@ def cmd_apply(args):
                 renamed_ids=RENAMED,
                 left=dict(Counter(why for why, _ in report["left"].values())),
                 frozen_beyond_the_list=sorted(set(mp.frozen) - set(read_frozen(frozen_path))),
+                stale_map=stale,
                 hazards_standing=len(standing),
             ),
             indent=1,
@@ -2725,7 +3096,12 @@ def cmd_verify(args):
     choices = load_choices(choices_path)
     mp = load_map(map_path, frozen_list(args.tree, frozen_path, choices, args.base))
     result = verify(mp, args.base, args.head, cwd=args.tree)
+    stale = stale_map(mp, args.tree, args.base)
+    if stale and mp.final:
+        result["problems"].append(dict(path="*", why=stale))
+        result["verdict"] = "refused"
     result |= dict(
+        stale_map=stale,
         base=git("rev-parse", args.base, cwd=args.tree).decode().strip(),
         head=git("rev-parse", args.head, cwd=args.tree).decode().strip(),
         frozen_beyond_the_list=sorted(set(mp.frozen) - set(read_frozen(frozen_path))),
@@ -3443,6 +3819,17 @@ def _selftest_scan(checks, mp):
         "cut": b'X = law.split("@")[0]\n',
         "partial": b'X = law.startswith("wave")\n',
         "partial, in": b'X = "kind" in law\n',
+        "partial, without its major": b'FAMILY = ("wave_mh@", "tide@")\n',
+        "partial, by a constant": b'FAMILY = "wave_m"\nX = law.startswith(FAMILY)\n',
+        "partial, by a loop over keys": b'NO = {"wave_m": "not it"}\n'
+        b"for p, why in NO.items():\n    if law.startswith(p):\n        raise E(why)\n",
+        "partial, by a member": b'A = ("wave_m",)\nX = any(law.startswith(p) for p in A)\n',
+        "partial, by a parameter": b"def of(law, start):\n    return law.startswith(start)\n\n\n"
+        b'X = of(law, "wave_m")\n',
+        "partial, by a default": b'def of(law, p="wave_m"):\n    return law.startswith(p)\n',
+        "regex, by a constant": b'import re\nP = r"^[a-z_]+@\\d+$"\nX = re.compile(P)\n',
+        "cut, at _": b'X = law.split("_")[0]\n',
+        "cut, a slice": b"X = spec.law_id[:4]\n",
         "regex": b'import re\nX = re.compile(r"^[a-z_]+@\\d+$")\n',
         "name": b'X = family == "wave_mh"\n',
         "escaped dot": b'X = r"cells\\.wave_mh@1 x"\n',
@@ -3470,13 +3857,54 @@ def _selftest_scan(checks, mp):
         "an unrelated name": b'X = family == "wash_basin"\n',
         "the start of an ID alone, or in a path": b'X = "wave_m"\nY = "runs/wave_m"\n',
         "a module of an ID's name": b'X = "the wave_mh.rate function"\n',
+        "a module's name, by name": b'P = "cells"\nX = name.startswith(P + ".")\n',
+        "a plain word, by name": b'P = "wave"\nX = name.startswith(P)\n',
+        "another value's cut": b'X = cell.split("_")[0]\nY = cell[:4]\n',
+        "a list's index, by name": b'ID = "wave_m"\nX = names.index(ID)\n',
     }
     for name, text in quiet.items():
         found = Scanner({"tests/p.py": ("100644", text)}, mp).scan()
         checks[f"scan: {name} is no hazard"] = found == []
+    others = {
+        "validation/family.py": ("100644", b'FAMILY = ("wave_m",)\n'),
+        "tests/p.py": ("100644", b"import family\n\nX = law.startswith(family.FAMILY)\n"),
+    }
+    starts = b"def of(law, start):\n    return law.startswith(start)\n"
+    passed = {
+        "tests/helper.py": ("100644", starts),
+        "tests/p.py": ("100644", b'import helper\n\nX = helper.of(law, "wave_m")\n'),
+        "tests/q.py": ("100644", b'X = of(law, "tide_x")\n'),
+    }
+    for name, files in (("constant", others), ("argument", passed)):
+        found = Scanner(files, mp).scan()
+        checks[f"scan: a start of an ID, by another file's {name}"] = [h["cls"] for h in found] == [
+            "partial"
+        ]
     frozen = Map(mp.doc, {"tests/p.py": [["tag", "t", "o"]]})
     checks["scan: a frozen file's hazards are not the move's"] = (
         Scanner({"tests/p.py": ("100644", lines["cut"])}, frozen).scan() == []
+    )
+    left = {
+        "validation/ref/spec.json": ("100644", b'{"law": "wave_mh@1"}'),
+        "validation/ref/judge.py": ("100644", b'LAW = "wave_mh@1"\nX = law.startswith("wave_m")\n'),
+        "validation/run.py": ("100644", b'DATA = HERE / "ref/spec.json"\n'),
+        "validation/table.py": ("100644", b'import id_table\n\nX = id_table.load("spec.json")\n'),
+        "tests/test_j.py": ("100644", b'from validation.ref import judge\nP = "/mnt/saved/run"\n'),
+        "tests/test_k.py": ("100644", b'X = "other.json"\n'),
+    }
+    frozen = Map(mp.doc, {p: [["tag", "t", "o"]] for p in left if p.startswith("validation/ref/")})
+    hazards, found, _ = run_scan(left, frozen, _plant_choices())
+    rows = {(r["left"], r["reader"], r["through_the_table"]) for r in found["left_readers"]}
+    checks["scan: readers of what the move leaves, and what frozen code tests, are listed"] = (
+        hazards == []
+        and rows
+        == {
+            ("validation/ref/spec.json", "validation/run.py", False),
+            ("validation/ref/spec.json", "validation/table.py", True),
+            ("validation/ref/judge.py", "tests/test_j.py", False),
+        }
+        and [h["path"] for h in found["frozen_code"]] == ["validation/ref/judge.py"]
+        and found["outside"] == [("tests/test_j.py", 2, "/mnt/saved/run")]
     )
     files = {"tests/p.py": ("100644", lines["cut"])}
     reviewed = _plant_choices(
@@ -3729,7 +4157,8 @@ def _planted_repository(folder, files):
                GIT_COMMITTER_EMAIL="p@p", GIT_CONFIG_GLOBAL="/dev/null")  # fmt: skip
 
     def run(*words):
-        subprocess.run(["git", *words], cwd=tree, env=env, check=True, capture_output=True)
+        words = ["git", *words]
+        return subprocess.run(words, cwd=tree, env=env, check=True, capture_output=True).stdout
 
     for name, (mode, data) in files.items():
         (tree / name).parent.mkdir(parents=True, exist_ok=True)
@@ -3784,7 +4213,20 @@ def _selftest_end_to_end(checks):
             "validation/frozen/judge.py",
         } <= set(frozen) and "validation/live.py" not in frozen
         checks["apply: a map that is not final is refused"] = call("apply")[0] == 2
-        code, _ = call("apply", "--rehearsal", "--allow-hazards", "--stage")
+        before, head = (run("rev-parse", r).decode().strip() for r in ("HEAD~1", "HEAD"))
+
+        def dated(head, dirty=False):
+            return dict(mp.doc, plants=[], final=True, revision=dict(head=head, dirty=dirty))
+
+        refused = []
+        for doc in (dated(before), dated(head, dirty=True), dated("0" * 40)):
+            paths["map"].write_text(json.dumps(doc))
+            refused.append(call("apply", "--allow-hazards")[0] == 2)
+        checks["apply: a map of another tree, or of a changed one, is refused before the move"] = (
+            all(refused) and stale_map(Map(dated(head)), tree, "HEAD") is None
+        )
+        paths["map"].write_text(json.dumps(dated(head)))
+        code, _ = call("apply", "--allow-hazards", "--stage")
         run("commit", "-q", "-m", "the move")
         checks["apply: rewrites the tree, renames the page, leaves the frozen files"] = (
             code == 0
@@ -3798,6 +4240,12 @@ def _selftest_end_to_end(checks):
         checks["verify: the applied move holds"] = (
             call("verify", "--base", "HEAD~1", "--head", "HEAD")[0] == 0
         )
+        paths["map"].write_text(json.dumps(dated(before)))
+        checks["verify: a map that is not its base's is refused; after the move none is stale"] = (
+            call("verify", "--base", "HEAD~1", "--head", "HEAD")[0] == 1
+            and stale_map(Map(dated(before)), tree, "HEAD") is None
+        )
+        paths["map"].write_text(json.dumps(dated(head)))
         (tree / "tests/late.py").write_text('LAW = "wave_mh@1"\n')
         dirty = call("apply", "--rehearsal", "--allow-hazards")[0] == 2
         run("checkout", "-q", "--", "tests/late.py")

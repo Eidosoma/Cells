@@ -1921,14 +1921,6 @@
   },
   {
    "cls": [
-    "regex"
-   ],
-   "path": "src/cells/registry/*.py",
-   "text": "\\(\\?:",
-   "reason": "H1a: the patterns admit a third part; H1b replaces them by the grammar"
-  },
-  {
-   "cls": [
     "page path"
    ],
    "path": "tests/unit/test_library_pages.py",
@@ -2046,6 +2038,63 @@
    "path": "tests/unit/test_j2_bright_line.py",
    "text": "isopotential_",
    "reason": "split on purpose, so that the guard holds no source of its own; it looks for the text inside longer strings, which hold the new ID's tail too (ids_kept)"
+  },
+  {
+   "cls": [
+    "partial"
+   ],
+   "path": "scripts/source_moves.py",
+   "text": "path\\.startswith\\(p\\)",
+   "reason": "a file path of the code move, not an ID"
+  },
+  {
+   "cls": [
+    "cut"
+   ],
+   "path": "tests/unit/test_cotransport.py",
+   "text": "law\\.split\\(\"_\"\\)",
+   "reason": "the name of an optional evidence file, which nothing reads"
+  },
+  {
+   "cls": [
+    "cut"
+   ],
+   "path": "tests/unit/test_kind_lifecycle_roles.py",
+   "text": "planted_law\\[",
+   "reason": "an array of codes"
+  },
+  {
+   "cls": [
+    "cut"
+   ],
+   "path": "src/cells/operators/partition.py",
+   "text": "scheduled_cell_replacement@1\"\\.partition",
+   "reason": "the start of a whole ID, which the move re-spells, tested against whole IDs"
+  },
+  {
+   "cls": [
+    "cut"
+   ],
+   "path": "src/cells/operators/templated_polymerisation.py",
+   "text": "REPLACEMENT_LAW\\.partition",
+   "reason": "the start of a whole ID, which the move re-spells, tested against whole IDs"
+  },
+  {
+   "cls": [
+    "cut",
+    "partial"
+   ],
+   "path": "validation/tissue/field_solver_choice.py",
+   "text": "model_id\\.index\\(\"@\"\\)",
+   "reason": "the start of a whole ID, which the move re-spells, tested against whole IDs"
+  },
+  {
+   "cls": [
+    "cut"
+   ],
+   "path": "tests/reference_multispecies.py",
+   "text": "text\\.replace\\(first",
+   "reason": "the pinned panels' first spelling, kept by its marker, put in today's"
   }
  ],
  "plants": {
