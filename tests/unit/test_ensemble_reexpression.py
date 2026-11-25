@@ -951,6 +951,9 @@ def test_a_registered_run_is_made_from_a_clean_snapshot_of_the_named_tag_alone(
     tags = {"refs/tags/the-tag^{commit}": b"a" * 40, "refs/tags/other^{commit}": b"b" * 40}
     monkeypatch.setattr(driver, "_git", lambda root, *args: tags[args[-1]] + b"\n")
     driver.guard(inputs, run, "the-tag", tmp_path)
+    second = own.with_name("inputs_part2.json")  # Part 2's inputs are a registered file too.
+    second.write_bytes(REGISTERED.read_bytes())
+    driver.guard(Inputs(second), run, "the-tag", tmp_path)
     for tag, text in ((None, "name the registration tag"), ("other", "is not the tag")):
         with pytest.raises(driver.Guarded, match=text):
             driver.guard(inputs, run, tag, tmp_path)

@@ -162,8 +162,10 @@ The exporter and the generator read `inputs_rehearsal.json` with the code that r
 
 - **The retry's runs, up front.** `--retries` makes `<family> h=1.5625e-06 retry` of every family in the same batch, after the judged runs and the plants. Their records stand in `RUNS2/retries/`, which nothing reads but the exporter, and only with the sha256 of the judge's note: without `--owed-sha256`, or with another hash, `export` refuses by name and
   writes nothing. `--owed` alone makes and exports runs that are made after the note, in `RUNS2/runs/`, as in Part 1.
-- **What a run costs** (measured on an invented world with every mechanism, on four shared threads that others filled, so CPU seconds): 82 to 88 s to compile (every run compiles), 6.3 to 6.5 ms for an accepted step, of which 5.0 ms are the engine's own row checks, about 10 s for the rest, 6.7 kB of record for a step, 1.2 GB at the peak. A driven run also resolves its two pools
-  (15 s). **An estimate:** 105, 115, 135 and 180 s for the four steps, 6 CPU hours for the batch with the retry's runs.
+- **What a run costs** (measured on invented worlds, on four shared threads that others filled): 46 to 88 s to compile, by what else runs (every run compiles), 6.3 to 6.5 ms of CPU for an accepted step, of which 5.0 ms are the engine's own row checks, about 10 s for the rest, 6.7 kB of record for a step, 1.2 GB at the peak. A driven run also resolves its two pools
+  (8 to 15 s). **An estimate** for busy threads: 105, 115, 135 and 180 s for the four steps, 6 CPU hours for the batch with the retry's runs.
+- **What was measured on the invented worlds** (`sample_part2.py`, 11 runs, from a frozen snapshot of the branch; the builder's own check of signs and sources, and no judgement): every balance of a cell, a region, the buffers' reactions and a store closes at rounding, the two capacitors within 1.4 × 10⁻¹³ of their scale. The energy of the closed world, with every heat and work of PART2 §6.1, closes to 7.8 × 10⁻⁷,
+  1.9 × 10⁻⁷ and 4.7 × 10⁻⁸ of its gross at 20, 10 and 5 µs, which is second order. The restart is its judged run's, bit for bit (456 values). `store_Na`, `store_Cl` and the IP3 rows of the stores are exactly 0. The release plant's block differs from its honest run's by the two permeabilities alone. A composed file over a store world resolves, and each pool event inside a step is an accepted row of its own.
 
 ### The definitions
 
@@ -194,8 +196,7 @@ Read in the engine's code at the branch's head, and not compared with any captur
 | 5, the exchanger | `laws/cycles/sodium_calcium_exchange_symmetric_barrier.py`: J = k v [b³ c e^(−ψ/2) − a³ d e^(ψ/2)] / [(1 + a³ + b³)(1 + c + d)], no standard part |
 | 6, the reactions | `operators/species_reactions.py`: J = m V c° k_f [Π a^α − exp(Σ ν μ°/RT) Π a^β], a = c/c°, the passive mass-action law |
 | 7, the calcium channel | `laws/channels/cav1p2_m2h.py`: m² h, gates at V − 10 mV, no temperature term; the host's constant-field flux at valence 2 with P_max × abundance × availability |
-| 8, calcium's junction route | `kinds/passive_routes.py` `_opening`: `control.junction * state.junction_gate` at the stage's own state, times no factor. It is the gate and the availability that the model's own junction routes read. **Measured on the engine's kernel at a parsed invented world:** the flux of calcium's junction route is proportional to gate × availability within 10⁻¹⁴, 0 at a closed gate, and no other route's depends on
-  them (row `test_calciums_junction_route_is_opened_by_the_gate_and_the_availability`) |
+| 8, calcium's junction route | `kinds/passive_routes.py` `_opening`: `control.junction * state.junction_gate` at the stage's own state, times no factor. It is the gate and the availability that the model's own junction routes read. **Measured on the engine's kernel at a parsed invented world:** the flux of calcium's junction route is proportional to gate × availability within 10⁻¹⁴, 0 at a closed gate, and no other route's depends on them (row `test_calciums_junction_route_is_opened_by_the_gate_and_the_availability`) |
 | 9, the splitting | `models/pump_composite.py`: P(dt/2) ∘ I(dt) ∘ P(dt/2), P the reactions' half-step, I the inner IMEX step, which starts from the state after the first half |
 
 ### The strings

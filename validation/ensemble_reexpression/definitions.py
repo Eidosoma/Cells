@@ -533,11 +533,16 @@ def check(inputs, *, runs=None):
 def run_strings(inputs, run):
     """Every registered string that a run's definition declares, as its table entry lists them: an
     ionic definition's, with its pools' observable where pools drive it; a pool run's pools' and
-    their observable (Amendment 1, item 8)."""
-    parsed = definition(inputs, run)
+    their observable (Amendment 1, item 8). A declaration that the engine refuses to parse declares
+    what it submits (spec/TABLE.md §4)."""
+    raw = definition(inputs, run)
     if run.kind == IONIC:
-        return declared_strings(parse_spec(parsed).to_dict())
-    parsed = parse_composed(parsed)
+        try:
+            raw = parse_spec(raw).to_dict()
+        except ConfigError:
+            pass
+        return declared_strings(raw)
+    parsed = parse_composed(raw)
     if run.kind == POOL:
         found = declared_strings(*(d.pool.to_dict() for d in parsed.drives))
     else:
