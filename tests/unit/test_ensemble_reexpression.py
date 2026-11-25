@@ -215,6 +215,10 @@ def test_the_echo_reads_defaults_by_the_spec_and_hides_no_field(registered):
     assert worlds.departures(short, block) == [] == worlds.departures(block, short)
     assert worlds.departures(block | {"end_s": 0.02 * (1 + 2e-12)}, block) != []
     assert worlds.departures(block | {"end_s": 0.02 * (1 + 5e-13)}, block) == []
+    for moved, departs in ((1e-25, False), (1e-24, True)):  # 1e-12 of the charges that face it.
+        charged = copy.deepcopy(block)
+        charged["outside"]["outside"]["initial_charge_C"] += moved
+        assert bool(worlds.departures(charged, block)) is departs
     raw = definitions.ionic(registered.worlds["cell"], 2.5e-05)
     raw["model"]["extracellular"][0]["reservoir"] = True
     assert worlds.read(raw)["outside"]["outside"]["reservoir"] is True
@@ -250,6 +254,9 @@ def test_the_declared_changes_and_the_integrators_are_the_leads(registered, inve
     for pool, other in zip(honest["pools"], swapped["pools"], strict=True):
         assert pool | {"channels": None} == other | {"channels": None}
     assert swapped["ionic"] == honest["ionic"]
+    assert [p["levels"] for p in honest["pools"]] == [{"true": 1.0, "false": 0.0}] * 2
+    assert [p["pool"]["seed"] for p in honest["pools"]] == [20260925, 20260926]
+    assert definitions.first_step(registered, registered.run("base s3 pool")) == 2.5e-05
     assert definitions.declared_change(registered, registered.run("base s0 w2 h=6.25e-06")) == []
     entry = invented.run("inv_sample_cluster plant channel")
     found = definitions.definition(invented, entry)
@@ -786,6 +793,25 @@ def test_the_rows_before_a_refusal_and_the_row_that_failed(invented, monkeypatch
         assert found[name].ravel().tolist() == [j, 10.0 + j, 20.0 + j]
     assert found["observation_times"].tolist() == [0.0, 1.0]
     assert found["observed_voltage"].ravel().tolist() == [0.0, 2.0]
+
+
+def test_a_judged_run_writes_the_checkpoint_that_its_restart_resumes(invented, tmp_path):
+    worker = object.__new__(driver.Worker)
+    worker.inputs = invented
+    worker.run = invented.run("inv_sample_cluster h=2e-05")
+    times = [k * 2e-05 for k in range(11)]
+    assert worker.checkpoints(times) == (times[6],) and times[6] != 0.00012
+    with pytest.raises(RuntimeError, match="No accepted row at 0.00012 s"):
+        worker.checkpoints(times[:6])
+    worker.run = invented.run("inv_sample_sheet h=4e-05")
+    assert worker.checkpoints(times) == ()
+    for k in (2, 6):
+        folder = tmp_path / f"output/snapshots/step-{k:06}"
+        folder.mkdir(parents=True)
+        driver.write_json(folder / "manifest.json", {"clock": {"time": times[k]}})
+    assert driver.checkpoint_folder(tmp_path, 0.00012).name == "step-000006"
+    with pytest.raises(RuntimeError, match="no checkpoint at 0.0001 s"):
+        driver.checkpoint_folder(tmp_path, 0.0001)
 
 
 def test_a_registered_run_is_made_from_a_clean_snapshot_of_the_named_tag_alone(
