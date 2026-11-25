@@ -238,6 +238,9 @@ Three questions are marked for the user.
   - its `valid` is each law's domain.
 - **`stage_term` and `material_term`** (cf 0a00ba6e): the electrogenic conductance
   n_q F |∂J/∂V| at both host ends, and, per node, the largest |ν ∂J/∂n| of a row moved there.
+  **Amended 25 November 2026** (CALCIUM_STORE_AND_CHANNELS_DESIGN §6.3): a population whose law
+  declares `material_term` gives its own rate, the sum of |ν ∂J/∂n| over its modes and its moved rows
+  at both ends, charged ones included, to every row it moves. Any other keeps the rule it had.
   - **Who supplies them (**S**).** By default the kind takes the derivatives of the law's J by
     forward-mode differentiation (`jax.jvp`) at the stage's inputs, so a voltage- or
     state-dependent S is handled exactly.
@@ -388,6 +391,11 @@ Refusal 4 checks each move, not each kind (**S**).
 `ROUTE_KINDS`, `READ_KINDS` and `FACTOR_KINDS` (`compartments.py`:73–81) then go. The
 transporter's neutral law is admitted once it declares D4's term (§7.2), which closes
 CLOSED_COMPARTMENT_DESIGN §3.4.1's open item.
+
+**As of 25 November 2026** version 2 of the ATP-driven law,
+`atp_driven_transporter_mass_action_positive@2`, moves a role of any valence, a neutral one
+included, and declares both terms, so its moves are admitted at a compartment's node. The neutral
+law's version 1 declares none and is refused there, so the open item holds for it alone.
 
 Version 1.2 admits that law beside a compartment today with no term. So before the change, main
 is searched for any world the per-move check would newly refuse, as was done for D3's check
@@ -667,6 +675,9 @@ same mechanism, and the closure is its rapid limit. Both take K from the registr
     door.
   - The IMEX step refuses any explicit stage where dt × its largest value, over active cells and
     non-held outside nodes, exceeds `EXPLICIT_STEP_BOUND`.
+  - **Amended 25 November 2026** (CALCIUM_STORE_AND_CHANNELS_DESIGN §8.2): the same sum also holds the
+    blocked populations' part, the channel populations' whose law declares a term, and the loops
+    that routed slots close on their own gates.
   - It is gated statically: the kinds, base and division crossrev sets matched, 12/12, 48/48 and
     36/36 programs (its message).
 - **Notes (**S**):**

@@ -153,7 +153,7 @@ Other rows run closed worlds: amounts follow the cycles at each end, no charge c
 grows and every [ledger](../../GLOSSARY.md#ledger) closes, and a neutral corruption of the amounts
 is refused by its ledger. A salt whose counts move charge is refused by name, and admitted for a
 copy of the law that does not declare itself electroneutral. Counts above two, wrong species and a
-population at a store's node are refused. The population's own material rate is the reference's at
+population at a [store's](../../GLOSSARY.md#store) node are refused. The population's own material rate is the reference's at
 both ends. Beside a calcium binder under a closure it reads the free calcium. Each has a planted
 error. No run was compared with a measurement.
 

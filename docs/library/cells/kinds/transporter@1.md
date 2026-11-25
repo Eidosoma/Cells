@@ -1,29 +1,31 @@
-# ATP-driven transporters (`cells.transporter@1`)
+# Membrane transporters (`cells.transporter@1`)
 
-**In one sentence:** Membrane pumps that each spend one ATP molecule per cycle to move a fixed number of one kind of molecule or ion across a membrane, even against its gradient.
+**In one sentence:** Membrane machines that move a fixed number of ions or molecules across a membrane in each cycle, some of them paid for by ATP, even against a gradient.
 
 ## In plain words
 
-Cells push many molecules "uphill", from where they are scarce to where they are plentiful, and
-pay for it with ATP, the cell's energy currency. This [kind](../../GLOSSARY.md#kind) is the
-machinery Cells uses to run such [pumps](../../GLOSSARY.md#pump) in the tissue model. Each pump
-population sits on one membrane patch. In every cycle it splits one ATP into ADP and phosphate on
-the cell's side, and moves a fixed number of its cargo to the other side. A pump runs forward only
-while the energy freed by ATP exceeds the energy its cargo needs to move; otherwise it stalls or
-runs backward. The kind keeps the books, counting cycles, heat and the work drawn from the fuel, so
-that matter and energy add up at every step. It hosts seventeen laws today: seven pumps and
-cotransporters, one exchanger, and nine of the mitochondrion's, from respiration to ATP synthase.
+Cells push many molecules "uphill", from where they are scarce to where they are plentiful. They
+pay for it with ATP, the cell's energy currency, or with other ions that run downhill. This
+[kind](../../GLOSSARY.md#kind) is the machinery Cells uses to run such
+[pumps](../../GLOSSARY.md#pump), carriers and exchangers in the tissue model. Each population sits
+on one membrane patch and moves a fixed number of its cargoes in every cycle. A pump also splits one
+ATP into ADP and phosphate. It runs forward only while what runs downhill frees more energy than its
+cargo needs; otherwise it stalls or runs backward. The kind keeps the books, counting cycles, heat
+and the work drawn from the fuel, so that matter and energy add up at every step. It hosts seventeen
+laws today: seven pumps and cotransporters, one exchanger, and nine of the mitochondrion's, from
+respiration to ATP synthase.
 
 ## Seen from each field
 
 - **Biology:** primary active transport, such as the proton pump that acidifies a compartment
-  (FR-4).
-- **Chemistry:** ATP hydrolysis coupled to transport in one cycle. The cycle's free energy sets its
-  direction, and saturation in the cargo and in ATP sets its speed.
+  (FR-4), and secondary active transport by exchangers and cotransporters.
+- **Chemistry:** ATP hydrolysis, or one ion's gradient, coupled to transport in one cycle. The
+  cycle's free energy sets its direction, and saturation in what it binds sets its speed.
 - **Physics:** an energy converter whose heat is the cycle rate times minus the cycle's free
   energy.
 - **Computing:** a module that registers fields and hook functions, which the inner model calls at
-  fixed points of each step. Its laws are pure kernels that it finds in the law registry.
+  fixed points of each step. Its laws are pure kernels, or data that one program runs, and it finds
+  them in the law registry.
 
 ## At a glance
 
@@ -72,6 +74,7 @@ None declared by the kind; each law it hosts declares its own.
 
 <!-- /generated -->
 
+**Version 1's layout** (the neutral and the proton pump laws): one ATP-driven population per patch.
 For one population with [stoichiometry](../../GLOSSARY.md#stoichiometry) $n$ (1 to 4), one cycle
 turns ATP into ADP and phosphate at the patch's inside cell, and moves $n$ of its cargo from the
 inside of the patch to its outside. For an uncharged cargo the
@@ -93,7 +96,22 @@ hosted law gives the cycle rate $J$; for each population the kind books:
 - **Domain:** a population is refused at a stage where $|\Delta G_\text{cyc}/RT| > 80$, where an
   input is not positive, or, under the proton law, where the inside pH leaves its declared band.
 - **Version 1:** one population per patch; the fuel at the patch's inside cell; finite fuel
-  refused.
+  refused; no material bound on the rows it moves.
+
+**The population axis** (every other definition): any number of populations, each on its own patch
+host, each running one law's general form, with every free energy from the species registry. A law
+may spend no fuel, move several species, and change a species at one end alone. The heat is minus
+the cycle rate times the cycle free energy, and the work is the held fuel's part of it.
+- **Step rules:** the kind bounds a charged population's charge slope at both its ends. Where a law
+  declares a material term, its population adds its own rate, $\sum_k |\nu_k\, \partial J/\partial n_k|$
+  over its modes and the rows it moves at both ends (1/s; $\nu_k$ the row's count, $n_k$ its amount
+  in fmol), to every one of those rows. The populations add at a row, and a node takes its largest
+  row. Held rows and a held bath's rows are left out. A row that a binding closure holds takes its
+  slope through the closure's derivative; one that version 1's proton buffer holds is refused to
+  such a law.
+- **Refused by name:** two laws that move one species by ATP on one patch (version 2 of the
+  ATP-driven law is the one for a new definition), and a law that declares itself electroneutral
+  with species and counts that move charge.
 - **Not here:** the rate laws, which are the hosted laws'.
 
 ## Sources
@@ -108,8 +126,8 @@ Provenance: not yet extracted; the kind contract has no provenance field yet.
   ([the inner-model design](../../../INNER_MODEL_V4_DESIGN.md), §7.4 (g) 2 and (k)) and FR-4's
   pump ([the compartment pH design](../../../COMPARTMENT_PH_TRANSFER_DESIGN.md), §5–6), as its
   module states. Relayed; not read again here.
-- **Each hosted law declares its own citation.** Both cite the sodium–potassium pump law's
-  mass-action form in Cells' own documents, and take no numbers.
+- **Each hosted law declares its own citation.** Version 1's two laws cite the sodium–potassium pump
+  law's mass-action form in Cells' own documents, and take no numbers.
 - **The standard potentials** come from the species registry's records, which carry their own
   sources.
 
@@ -126,7 +144,12 @@ held fuel rows never change, the maintenance's record follows the cycles, and al
 [ledgers](../../GLOSSARY.md#ledger) close with the kind's terms. A planted flip of the cargo's
 direction must fail the material ledger. Other tests check that a malformed declaration is refused
 with its reason, that a change of values reuses the built implementation, and that the law's domain
-and the pH band refuse at the stage.
+and the pH band refuse at the stage. On the population axis, the material rate of six populations of
+four laws that share rows is compared with an independent reference at 24 random states, and no rate
+of the block of all their rows is above it. Planted, each told apart at some state: a row's own slope
+in place of the population's rate, the largest population in place of the sum, the far end left out,
+and the rows that the pump holds counted. A population without the term keeps its rows, and a row
+that version 1's proton buffer holds is refused. Each hosted law's page says how that law is checked.
 
 ## Status
 
