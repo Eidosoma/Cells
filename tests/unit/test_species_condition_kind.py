@@ -17,13 +17,14 @@ compile:
 - the feedback hooks feed the core's rule (section 5.5), stubbed here as the core builder's: its
   rate is the finite difference of the routed flux through the factor (planted: the held control,
   the division before the product, a pair the route does not move);
-- beside operators: admitted beside a compartment, water (at its current volume), the wash and
-  labels, refused by name under RK4, beside replacement and beside a closer (planted hooks refused:
-  bound_rate, moved_rows, rates);
+- beside operators, at the definition: admitted beside a compartment, the wash and labels, and water
+  (read at its current volume), refused by name under RK4, beside replacement, trafficking, a closer
+  and a retiring operator (planted hooks refused: bound_rate, moved_rows, rates);
 - a world that declares none keeps its definition, its structure and its program (D148).
-Compiled, the store world (a composite: the same release from a compartment, its ligand binding a
-buffer by local_species_reactions@1): ten steps in which the route's heat never falls, its factor
-the closed form's, and a restart that is the run bit for bit (planted: a changed half-saturation is
+Compiled, the store world (a composite of this file's own numbers: the same release from a
+compartment, its ligand binding a buffer by local_species_reactions@1): ten steps in two windows, in
+which the route's heat never falls and its factor is the closed form's, and a restart from a written
+checkpoint that repeats the second window bit for bit (planted: a changed half-saturation is
 refused).
 
 Seconds: about 30 on a busy CPU, of which 16 are one compile (a window, which the resume reuses) and
@@ -48,9 +49,11 @@ from cells.kinds import passive_routes
 from cells.kinds import species_condition as species
 from cells.laws.electrochemistry import F, R
 from cells.laws.reactions import hill_product_factor as law
+from cells.models import pump_composite
 from cells.models import pump_composite_adapter as adapter
 from cells.models import surface_pump_v3 as tissue3
 from cells.numerics import surface_imex as imex
+from cells.operators import OPERATORS
 from cells.records.io import load_snapshot, write_snapshot
 from cells.registry import kind_registry
 from cells.registry.models import get_model
@@ -507,8 +510,21 @@ def test_the_kind_s_place_beside_operators_is_admitted_or_refused_by_name():
     replaced["model"]["species_conditions"] = [dict(tracer, node="cell_0")]
     with pytest.raises(ConfigError, match=f"not run beside declared kinds .{species.KIND_ID}"):
         parse_spec(replaced)
+    # A closer, a retiring operator, and the three that build the inner fields in today's layout:
+    # the structure check on the store's inner model refuses each, naming the kind.
+    inner = get_model(parse_spec(stored).model).inner
+    for changer, match in (
+        ("isopotential_partition@1", "opens, closes or retires slots"),
+        ("scheduled_membrane_insertion@2", "opens, closes or retires slots"),
+        ("scheduled_cell_replacement@2", "today's fixed fields"),
+        ("scheduled_membrane_trafficking@1", "today's fixed fields"),
+    ):
+        errors = pump_composite.structure_errors(inner, (OPERATORS[changer],))
+        assert any(match in e and species.KIND_ID in e for e in errors), (changer, errors)
     reason, fields = adapter.kind_lifecycle_errors(species.SPECIES_CONDITION)
-    assert reason == "roles" and set(fields) == set(species.LAYOUT_FIELDS)  # No partition roles.
+    assert reason == "roles" and set(fields) == set(
+        species.LAYOUT_FIELDS
+    )  # Why: no partition role.
 
 
 def test_beside_water_a_reading_takes_the_current_volume():
@@ -624,7 +640,7 @@ def test_the_store_world_runs_in_a_composite_and_restarts_bit_for_bit(tmp_path):
     factors = observed("species_condition_factor")
     np.testing.assert_allclose(factors, expected, rtol=1e-12, atol=0)
     assert abs(factors[-1, 0] / factors[0, 0] - 1.0) > 1e-2  # The binding moves the ligand's.
-    # A restart from a written checkpoint is the uninterrupted run, bit for bit: no state.
+    # A restart from a written checkpoint repeats the second window, bit for bit: no state.
     write_snapshot(tmp_path / "checkpoint", spec, windows[0].final)
     loaded = load_snapshot(tmp_path / "checkpoint")
     (resumed,) = iter_windows(loaded.spec, policy, loaded.checkpoint)
