@@ -1,26 +1,26 @@
 {
  "to the end of arm 1": {
-  "cpu_s": 5.67,
-  "wall_s": 34.64
+  "cpu_s": 6.23,
+  "wall_s": 47.37
  },
  "to the end of arm 2": {
-  "cpu_s": 9.62,
-  "wall_s": 59.71
+  "cpu_s": 10.09,
+  "wall_s": 60.64
  },
  "to the end of arm 3": {
-  "cpu_s": 62.68,
-  "wall_s": 211.3
+  "cpu_s": 68.01,
+  "wall_s": 296.16
  },
  "to the end of arm 4": {
-  "cpu_s": 62.8,
-  "wall_s": 211.42
+  "cpu_s": 68.14,
+  "wall_s": 296.73
  },
  "to the end of arm 5": {
-  "cpu_s": 81.75,
-  "wall_s": 230.37
+  "cpu_s": 89.5,
+  "wall_s": 383.1
  },
  "to the end of arm 6": {
-  "cpu_s": 95.92,
-  "wall_s": 244.54
+  "cpu_s": 105.87,
+  "wall_s": 449.52
  }
 }

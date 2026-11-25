@@ -1,5 +1,5 @@
 {
- "passed": 569,
+ "passed": 585,
  "rows": [
   {
    "bound": "0",
@@ -27,7 +27,7 @@
   },
   {
    "bound": "0",
-   "name": "reference_invented.json: every check passes (296)",
+   "name": "reference_invented.json: every check passes (321)",
    "passes": true,
    "residual": "0"
   },
@@ -867,37 +867,19 @@
   },
   {
    "bound": "0",
-   "name": "invented: case inv-eq-mid|1.25 keys",
+   "name": "invented: the cases of inv-eq-mid are its runs' steps and the retry's",
    "passes": true,
    "residual": "0"
   },
   {
    "bound": "0",
-   "name": "invented: case inv-eq-mid|0.625 keys",
+   "name": "invented: case inv-eq-mid|0.0048828125 keys",
    "passes": true,
    "residual": "0"
   },
   {
    "bound": "0",
-   "name": "invented: case inv-eq-mid|0.3125 keys",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "invented: case inv-eq-mid|0.15625 keys",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "invented: case inv-eq-mid|0.078125 keys",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "invented: case inv-eq-mid|0.0390625 keys",
+   "name": "invented: case inv-eq-mid|0.009765625 keys",
    "passes": true,
    "residual": "0"
   },
@@ -909,15 +891,51 @@
   },
   {
    "bound": "0",
-   "name": "invented: case inv-eq-mid|0.009765625 keys",
+   "name": "invented: case inv-eq-mid|0.0390625 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: case inv-eq-mid|0.078125 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: case inv-eq-mid|0.15625 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: case inv-eq-mid|0.3125 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: case inv-eq-mid|0.625 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: case inv-eq-mid|1.25 keys",
    "passes": true,
    "residual": "0"
   },
   {
    "bound": "1.000E+0",
-   "name": "invented: inv-eq-mid, cases: 91 values, the largest gap over accuracy plus the method's allowance",
+   "name": "invented: inv-eq-mid, cases: 102 values, the largest gap over accuracy plus the method's allowance",
    "passes": true,
    "residual": "3.875738E-1"
+  },
+  {
+   "bound": "0",
+   "name": "invented: the cases of inv-eq-tr are its runs' steps and the retry's",
+   "passes": true,
+   "residual": "0"
   },
   {
    "bound": "0",
@@ -933,13 +951,19 @@
   },
   {
    "bound": "0",
-   "name": "invented: case inv-r4-mid|1.25 keys",
+   "name": "invented: the cases of inv-r4-mid are its runs' steps and the retry's",
    "passes": true,
    "residual": "0"
   },
   {
    "bound": "0",
-   "name": "invented: case inv-r4-mid|0.625 keys",
+   "name": "invented: case inv-r4-mid|0.078125 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: case inv-r4-mid|0.15625 keys",
    "passes": true,
    "residual": "0"
   },
@@ -951,13 +975,19 @@
   },
   {
    "bound": "0",
-   "name": "invented: case inv-r4-mid|0.15625 keys",
+   "name": "invented: case inv-r4-mid|0.625 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: case inv-r4-mid|1.25 keys",
    "passes": true,
    "residual": "0"
   },
   {
    "bound": "1.000E+0",
-   "name": "invented: inv-r4-mid, cases: 47 values, the largest gap over accuracy plus the method's allowance",
+   "name": "invented: inv-r4-mid, cases: 58 values, the largest gap over accuracy plus the method's allowance",
    "passes": true,
    "residual": "3.914436E-1"
   },
@@ -1305,7 +1335,7 @@
   },
   {
    "bound": "0",
-   "name": "reference_arm1.json: every check passes (88)",
+   "name": "reference_arm1.json: every check passes (116)",
    "passes": true,
    "residual": "0"
   },
@@ -1689,37 +1719,19 @@
   },
   {
    "bound": "0",
-   "name": "arm1: case eq-hi|2.0 keys",
+   "name": "arm1: the cases of eq-hi are its runs' steps and the retry's",
    "passes": true,
    "residual": "0"
   },
   {
    "bound": "0",
-   "name": "arm1: case eq-hi|1.0 keys",
+   "name": "arm1: case eq-hi|0.0078125 keys",
    "passes": true,
    "residual": "0"
   },
   {
    "bound": "0",
-   "name": "arm1: case eq-hi|0.5 keys",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "arm1: case eq-hi|0.25 keys",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "arm1: case eq-hi|0.125 keys",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "arm1: case eq-hi|0.0625 keys",
+   "name": "arm1: case eq-hi|0.015625 keys",
    "passes": true,
    "residual": "0"
   },
@@ -1731,31 +1743,55 @@
   },
   {
    "bound": "0",
-   "name": "arm1: case eq-hi|0.015625 keys",
+   "name": "arm1: case eq-hi|0.0625 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-hi|0.125 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-hi|0.25 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-hi|0.5 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-hi|1.0 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-hi|2.0 keys",
    "passes": true,
    "residual": "0"
   },
   {
    "bound": "1.000E+0",
-   "name": "arm1: eq-hi, cases: 91 values, the largest gap over accuracy plus the method's allowance",
+   "name": "arm1: eq-hi, cases: 102 values, the largest gap over accuracy plus the method's allowance",
    "passes": true,
-   "residual": "2.728819E-1"
+   "residual": "3.094633E-1"
   },
   {
    "bound": "0",
-   "name": "arm1: case eq-lo|2.0 keys",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "arm1: case eq-lo|1.0 keys",
+   "name": "arm1: the cases of eq-lo are its runs' steps and the retry's",
    "passes": true,
    "residual": "0"
   },
   {
    "bound": "0",
-   "name": "arm1: case eq-lo|0.5 keys",
+   "name": "arm1: case eq-lo|0.125 keys",
    "passes": true,
    "residual": "0"
   },
@@ -1767,7 +1803,19 @@
   },
   {
    "bound": "0",
-   "name": "arm1: case eq-lo|0.125 keys",
+   "name": "arm1: case eq-lo|0.5 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-lo|1.0 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-lo|2.0 keys",
    "passes": true,
    "residual": "0"
   },
@@ -1779,37 +1827,19 @@
   },
   {
    "bound": "0",
-   "name": "arm1: case eq-mid|2.0 keys",
+   "name": "arm1: the cases of eq-mid are its runs' steps and the retry's",
    "passes": true,
    "residual": "0"
   },
   {
    "bound": "0",
-   "name": "arm1: case eq-mid|1.0 keys",
+   "name": "arm1: case eq-mid|0.0078125 keys",
    "passes": true,
    "residual": "0"
   },
   {
    "bound": "0",
-   "name": "arm1: case eq-mid|0.5 keys",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "arm1: case eq-mid|0.25 keys",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "arm1: case eq-mid|0.125 keys",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "arm1: case eq-mid|0.0625 keys",
+   "name": "arm1: case eq-mid|0.015625 keys",
    "passes": true,
    "residual": "0"
   },
@@ -1821,31 +1851,55 @@
   },
   {
    "bound": "0",
-   "name": "arm1: case eq-mid|0.015625 keys",
+   "name": "arm1: case eq-mid|0.0625 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-mid|0.125 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-mid|0.25 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-mid|0.5 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-mid|1.0 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-mid|2.0 keys",
    "passes": true,
    "residual": "0"
   },
   {
    "bound": "1.000E+0",
-   "name": "arm1: eq-mid, cases: 91 values, the largest gap over accuracy plus the method's allowance",
+   "name": "arm1: eq-mid, cases: 102 values, the largest gap over accuracy plus the method's allowance",
    "passes": true,
-   "residual": "3.413848E-1"
+   "residual": "4.296541E-1"
   },
   {
    "bound": "0",
-   "name": "arm1: case eq-tr|2.0 keys",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "arm1: case eq-tr|1.0 keys",
+   "name": "arm1: the cases of eq-tr are its runs' steps and the retry's",
    "passes": true,
    "residual": "0"
   },
   {
    "bound": "0",
-   "name": "arm1: case eq-tr|0.5 keys",
+   "name": "arm1: case eq-tr|0.125 keys",
    "passes": true,
    "residual": "0"
   },
@@ -1857,7 +1911,19 @@
   },
   {
    "bound": "0",
-   "name": "arm1: case eq-tr|0.125 keys",
+   "name": "arm1: case eq-tr|0.5 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-tr|1.0 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-tr|2.0 keys",
    "passes": true,
    "residual": "0"
   },
@@ -1869,37 +1935,19 @@
   },
   {
    "bound": "0",
-   "name": "arm1: case r4-hi|2.0 keys",
+   "name": "arm1: the cases of r4-hi are its runs' steps and the retry's",
    "passes": true,
    "residual": "0"
   },
   {
    "bound": "0",
-   "name": "arm1: case r4-hi|1.0 keys",
+   "name": "arm1: case r4-hi|0.0078125 keys",
    "passes": true,
    "residual": "0"
   },
   {
    "bound": "0",
-   "name": "arm1: case r4-hi|0.5 keys",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "arm1: case r4-hi|0.25 keys",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "arm1: case r4-hi|0.125 keys",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "arm1: case r4-hi|0.0625 keys",
+   "name": "arm1: case r4-hi|0.015625 keys",
    "passes": true,
    "residual": "0"
   },
@@ -1911,31 +1959,55 @@
   },
   {
    "bound": "0",
-   "name": "arm1: case r4-hi|0.015625 keys",
+   "name": "arm1: case r4-hi|0.0625 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case r4-hi|0.125 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case r4-hi|0.25 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case r4-hi|0.5 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case r4-hi|1.0 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case r4-hi|2.0 keys",
    "passes": true,
    "residual": "0"
   },
   {
    "bound": "1.000E+0",
-   "name": "arm1: r4-hi, cases: 91 values, the largest gap over accuracy plus the method's allowance",
+   "name": "arm1: r4-hi, cases: 102 values, the largest gap over accuracy plus the method's allowance",
    "passes": true,
-   "residual": "3.446911E-1"
+   "residual": "4.211307E-1"
   },
   {
    "bound": "0",
-   "name": "arm1: case r4-lo|2.0 keys",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "arm1: case r4-lo|1.0 keys",
+   "name": "arm1: the cases of r4-lo are its runs' steps and the retry's",
    "passes": true,
    "residual": "0"
   },
   {
    "bound": "0",
-   "name": "arm1: case r4-lo|0.5 keys",
+   "name": "arm1: case r4-lo|0.125 keys",
    "passes": true,
    "residual": "0"
   },
@@ -1947,7 +2019,19 @@
   },
   {
    "bound": "0",
-   "name": "arm1: case r4-lo|0.125 keys",
+   "name": "arm1: case r4-lo|0.5 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case r4-lo|1.0 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case r4-lo|2.0 keys",
    "passes": true,
    "residual": "0"
   },
@@ -1959,37 +2043,19 @@
   },
   {
    "bound": "0",
-   "name": "arm1: case r4-mid|2.0 keys",
+   "name": "arm1: the cases of r4-mid are its runs' steps and the retry's",
    "passes": true,
    "residual": "0"
   },
   {
    "bound": "0",
-   "name": "arm1: case r4-mid|1.0 keys",
+   "name": "arm1: case r4-mid|0.0078125 keys",
    "passes": true,
    "residual": "0"
   },
   {
    "bound": "0",
-   "name": "arm1: case r4-mid|0.5 keys",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "arm1: case r4-mid|0.25 keys",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "arm1: case r4-mid|0.125 keys",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "arm1: case r4-mid|0.0625 keys",
+   "name": "arm1: case r4-mid|0.015625 keys",
    "passes": true,
    "residual": "0"
   },
@@ -2001,15 +2067,45 @@
   },
   {
    "bound": "0",
-   "name": "arm1: case r4-mid|0.015625 keys",
+   "name": "arm1: case r4-mid|0.0625 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case r4-mid|0.125 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case r4-mid|0.25 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case r4-mid|0.5 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case r4-mid|1.0 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case r4-mid|2.0 keys",
    "passes": true,
    "residual": "0"
   },
   {
    "bound": "1.000E+0",
-   "name": "arm1: r4-mid, cases: 91 values, the largest gap over accuracy plus the method's allowance",
+   "name": "arm1: r4-mid, cases: 102 values, the largest gap over accuracy plus the method's allowance",
    "passes": true,
-   "residual": "2.942331E-1"
+   "residual": "4.211307E-1"
   },
   {
    "bound": "0",
@@ -2169,7 +2265,7 @@
   },
   {
    "bound": "0",
-   "name": "reference_arm2.json: every check passes (52)",
+   "name": "reference_arm2.json: every check passes (75)",
    "passes": true,
    "residual": "0"
   },
@@ -3416,5 +3512,5 @@
    "residual": "0"
   }
  ],
- "total": 569
+ "total": 585
 }

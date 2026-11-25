@@ -1,6 +1,28 @@
 {
  "arm": 1,
  "cases": {
+  "eq-hi|0.0078125": {
+   "A0": "4.260094024473184230001562759831444174464E-1",
+   "B_def": "2.996194210858344157869390423141917247878E-10",
+   "D_R": "1.246853195410291270752275624440269386468E-3",
+   "D_star": "1.246853393543418166311477766617709371494E-3",
+   "H_def": "1.246852895791240869055967560048564222148E-3",
+   "accuracy": {
+    "A0": "4.27E-40",
+    "B_def": "3.00E-49",
+    "D_R": "1.25E-42",
+    "D_star": "1.25E-42",
+    "H_def": "1.25E-42",
+    "levels_exact": ["3.80E-38", "3.21E-38"],
+    "levels_scheme": ["3.80E-38", "3.21E-38"],
+    "m_R": "2.93E-42",
+    "m_star": "2.93E-42"
+   },
+   "levels_exact": ["3.799707174254592698670413536883098829096E+1", "3.200292825745407301329586463116901170904E+1"],
+   "levels_scheme": ["3.799707174301147460937500000000000000000E+1", "3.200292825698852539062500000000000000000E+1"],
+   "m_R": "2.928256988525390625000000000000000000000E-3",
+   "m_star": "2.928257454073013295864631169011709042394E-3"
+  },
   "eq-hi|0.015625": {
    "A0": "4.260094024473184230001562759831444174464E-1",
    "B_def": "2.395761419196911103621479078937603487804E-9",
@@ -286,6 +308,28 @@
    "levels_scheme": ["5.375000000000000000000000000000000000000E+0", "6.875000000000000000000000000000000000000E-1"],
    "m_R": "6.562500000000000000000000000000000000000E-1",
    "m_star": "6.635976507857853952644891990650380581097E-1"
+  },
+  "eq-mid|0.0078125": {
+   "A0": "3.436564151596304843590951233341714585859E+0",
+   "B_def": "3.851106256623479798179664377481948320882E-9",
+   "D_R": "1.005650283366760621878214008562508083322E-2",
+   "D_star": "1.005650443144089728882803065029362923706E-2",
+   "H_def": "1.005649898352477836048786246654735209256E-2",
+   "accuracy": {
+    "A0": "3.44E-39",
+    "B_def": "3.86E-48",
+    "D_R": "1.01E-41",
+    "D_star": "1.01E-41",
+    "H_def": "1.01E-41",
+    "levels_exact": ["8.00E-39", "2.01E-39"],
+    "levels_scheme": ["8.00E-39", "2.01E-39"],
+    "m_R": "2.93E-42",
+    "m_star": "2.93E-42"
+   },
+   "levels_exact": ["7.997071742545926986704135368830988290958E+0", "2.002928257454073013295864631169011709042E+0"],
+   "levels_scheme": ["7.997071743011474609375000000000000000000E+0", "2.002928256988525390625000000000000000000E+0"],
+   "m_R": "2.928256988525390625000000000000000000000E-3",
+   "m_star": "2.928257454073013295864631169011709042394E-3"
   },
   "eq-mid|0.015625": {
    "A0": "3.436564151596304843590951233341714585859E+0",
@@ -573,6 +617,28 @@
    "m_R": "8.749999999997812500000000000043997958311E-1",
    "m_star": "8.847968677141593278023903369594116388741E-1"
   },
+  "r4-hi|0.0078125": {
+   "A0": "4.260094024473184230001562759831444174464E-1",
+   "B_def": "1.150879223205114828260056665203519544038E-9",
+   "D_R": "4.987538562355976372409797135308504855190E-3",
+   "D_star": "4.987539354928465799281462597097861118117E-3",
+   "H_def": "4.987537445024958058600646047796401917040E-3",
+   "accuracy": {
+    "A0": "4.27E-40",
+    "B_def": "1.16E-48",
+    "D_R": "4.99E-42",
+    "D_star": "4.99E-42",
+    "H_def": "4.99E-42",
+    "levels_exact": ["9.50E-38", "3.21E-37"],
+    "levels_scheme": ["9.50E-38", "3.21E-37"],
+    "m_R": "1.18E-41",
+    "m_star": "1.18E-41"
+   },
+   "levels_exact": ["9.498828697018370794681654147532395316383E+1", "3.200117130298162920531834585246760468362E+2"],
+   "levels_scheme": ["9.498828697204589843750000000000000000000E+1", "3.200117130279541015625000000000000000000E+2"],
+   "m_R": "1.171302795410156250000000000000000000000E-2",
+   "m_star": "1.171302981629205318345852467604683616958E-2"
+  },
   "r4-hi|0.015625": {
    "A0": "4.260094024473184230001562759831444174464E-1",
    "B_def": "9.202835437422059333009760835173107877816E-9",
@@ -859,6 +925,28 @@
    "m_R": "2.625000000000000000000000000000000000000E+0",
    "m_star": "2.654390603143141581057956796260152232439E+0"
   },
+  "r4-mid|0.0078125": {
+   "A0": "3.436564151596304843590951233341714585859E+0",
+   "B_def": "8.308265637723676502054946009407126288884E-9",
+   "D_R": "4.023556694429833966432097260290231522003E-2",
+   "D_star": "4.023557333842834871833995444042315906083E-2",
+   "H_def": "4.023555863749083136549928171568060991758E-2",
+   "accuracy": {
+    "A0": "3.44E-39",
+    "B_def": "8.31E-48",
+    "D_R": "4.03E-41",
+    "D_star": "4.03E-41",
+    "H_def": "4.03E-41",
+    "levels_exact": ["2.00E-38", "2.01E-38"],
+    "levels_scheme": ["2.00E-38", "2.01E-38"],
+    "m_R": "1.18E-41",
+    "m_star": "1.18E-41"
+   },
+   "levels_exact": ["1.998828697018370794681654147532395316383E+1", "2.001171302981629205318345852467604683617E+1"],
+   "levels_scheme": ["1.998828697204589843750000000000000000000E+1", "2.001171302795410156250000000000000000000E+1"],
+   "m_R": "1.171302795410156250000000000000000000000E-2",
+   "m_star": "1.171302981629205318345852467604683616958E-2"
+  },
   "r4-mid|0.015625": {
    "A0": "3.436564151596304843590951233341714585859E+0",
    "B_def": "6.644142233909489944903931276772250595760E-8",
@@ -1053,13 +1141,37 @@
    "bound": "1.00000E-40",
    "name": "6 two wells: eq-hi, D(m) is the integral of the affinity, by graded Gauss (relative)",
    "passes": true,
-   "residual": "1.49177E-105"
+   "residual": "5.13295E-105"
   },
   {
    "bound": "1.00000E-60",
    "name": "6 two wells: eq-hi, D'(0) = A(0) (relative)",
    "passes": true,
    "residual": "2.82085E-91"
+  },
+  {
+   "bound": "1.00000E-100",
+   "name": "3 conservation: eq-hi, the two wells' columns sum to zero",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: eq-hi, the two wells' amounts sum to the start (relative)",
+   "passes": true,
+   "residual": "1.14286E-109"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: eq-hi, e^(-Gt) e^(Gt) is the identity",
+   "passes": true,
+   "residual": "3.24000E-108"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: eq-hi, P(h)^S = P(Sh) for every registered h, and two halves make a step",
+   "passes": true,
+   "residual": "7.67000E-108"
   },
   {
    "bound": "1.00000E-50",
@@ -1086,6 +1198,30 @@
    "residual": "3.16686E-92"
   },
   {
+   "bound": "1.00000E-100",
+   "name": "3 conservation: eq-lo, the two wells' columns sum to zero",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: eq-lo, the two wells' amounts sum to the start (relative)",
+   "passes": true,
+   "residual": "1.15464E-109"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: eq-lo, e^(-Gt) e^(Gt) is the identity",
+   "passes": true,
+   "residual": "3.24000E-108"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: eq-lo, P(h)^S = P(Sh) for every registered h, and two halves make a step",
+   "passes": true,
+   "residual": "5.00000E-110"
+  },
+  {
    "bound": "1.00000E-50",
    "name": "6 two wells: eq-mid, the closed form against the propagator, and one scheme step by its stages (relative)",
    "passes": true,
@@ -1101,13 +1237,37 @@
    "bound": "1.00000E-40",
    "name": "6 two wells: eq-mid, D(m) is the integral of the affinity, by graded Gauss (relative)",
    "passes": true,
-   "residual": "4.52751E-107"
+   "residual": "1.79445E-106"
   },
   {
    "bound": "1.00000E-60",
    "name": "6 two wells: eq-mid, D'(0) = A(0) (relative)",
    "passes": true,
    "residual": "1.12711E-91"
+  },
+  {
+   "bound": "1.00000E-100",
+   "name": "3 conservation: eq-mid, the two wells' columns sum to zero",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: eq-mid, the two wells' amounts sum to the start (relative)",
+   "passes": true,
+   "residual": "1.00000E-109"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: eq-mid, e^(-Gt) e^(Gt) is the identity",
+   "passes": true,
+   "residual": "3.24000E-108"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: eq-mid, P(h)^S = P(Sh) for every registered h, and two halves make a step",
+   "passes": true,
+   "residual": "7.67000E-108"
   },
   {
    "bound": "1.00000E-50",
@@ -1134,6 +1294,30 @@
    "residual": "5.74370E-93"
   },
   {
+   "bound": "1.00000E-100",
+   "name": "3 conservation: eq-tr, the two wells' columns sum to zero",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: eq-tr, the two wells' amounts sum to the start (relative)",
+   "passes": true,
+   "residual": "1.25000E-109"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: eq-tr, e^(-Gt) e^(Gt) is the identity",
+   "passes": true,
+   "residual": "3.24000E-108"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: eq-tr, P(h)^S = P(Sh) for every registered h, and two halves make a step",
+   "passes": true,
+   "residual": "5.00000E-110"
+  },
+  {
    "bound": "1.00000E-50",
    "name": "6 two wells: r4-hi, the closed form against the propagator, and one scheme step by its stages (relative)",
    "passes": true,
@@ -1149,13 +1333,37 @@
    "bound": "1.00000E-40",
    "name": "6 two wells: r4-hi, D(m) is the integral of the affinity, by graded Gauss (relative)",
    "passes": true,
-   "residual": "5.72614E-105"
+   "residual": "1.76551E-104"
   },
   {
    "bound": "1.00000E-60",
    "name": "6 two wells: r4-hi, D'(0) = A(0) (relative)",
    "passes": true,
    "residual": "8.84360E-91"
+  },
+  {
+   "bound": "1.00000E-100",
+   "name": "3 conservation: r4-hi, the two wells' columns sum to zero",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: r4-hi, the two wells' amounts sum to the start (relative)",
+   "passes": true,
+   "residual": "1.06024E-108"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: r4-hi, e^(-Gt) e^(Gt) is the identity",
+   "passes": true,
+   "residual": "3.43000E-107"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: r4-hi, P(h)^S = P(Sh) for every registered h, and two halves make a step",
+   "passes": true,
+   "residual": "4.87000E-108"
   },
   {
    "bound": "1.00000E-50",
@@ -1182,6 +1390,30 @@
    "residual": "3.16559E-92"
   },
   {
+   "bound": "1.00000E-100",
+   "name": "3 conservation: r4-lo, the two wells' columns sum to zero",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: r4-lo, the two wells' amounts sum to the start (relative)",
+   "passes": true,
+   "residual": "3.89848E-109"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: r4-lo, e^(-Gt) e^(Gt) is the identity",
+   "passes": true,
+   "residual": "3.43000E-107"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: r4-lo, P(h)^S = P(Sh) for every registered h, and two halves make a step",
+   "passes": true,
+   "residual": "6.00000E-110"
+  },
+  {
    "bound": "1.00000E-50",
    "name": "6 two wells: r4-mid, the closed form against the propagator, and one scheme step by its stages (relative)",
    "passes": true,
@@ -1197,13 +1429,37 @@
    "bound": "1.00000E-40",
    "name": "6 two wells: r4-mid, D(m) is the integral of the affinity, by graded Gauss (relative)",
    "passes": true,
-   "residual": "5.56503E-107"
+   "residual": "1.06209E-106"
   },
   {
    "bound": "1.00000E-60",
    "name": "6 two wells: r4-mid, D'(0) = A(0) (relative)",
    "passes": true,
    "residual": "0"
+  },
+  {
+   "bound": "1.00000E-100",
+   "name": "3 conservation: r4-mid, the two wells' columns sum to zero",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: r4-mid, the two wells' amounts sum to the start (relative)",
+   "passes": true,
+   "residual": "5.00000E-109"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: r4-mid, e^(-Gt) e^(Gt) is the identity",
+   "passes": true,
+   "residual": "3.43000E-107"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: r4-mid, P(h)^S = P(Sh) for every registered h, and two halves make a step",
+   "passes": true,
+   "residual": "4.87000E-108"
   },
   {
    "bound": "0",

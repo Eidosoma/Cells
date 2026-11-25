@@ -88,18 +88,21 @@ relative accuracy, and every squaring is of a non-negative matrix (a compartment
 16. SPEC §9 check 11: the fractions are measured against LAWS §9's bounds with the registered steps; arm 6's crossing species are
     measured against the decimal Strang map (their truncation error is not a rounding error), and its energy identity on its own rows.
 17. `provenance.revision` is the commit of the Amendment 1 tag, the last spec I read.
+18. CRITERIA §2 ("the next halving … arm 1: j = 1 … 4"): arm 1's `cases` also hold the step a retry would add, so that its law is there
+    if it is needed: the exact retry's step, 0.125 s, is a case already; the default retry's, 0.0078125 s (`eq-mid`, `eq-hi`, `r4-mid`,
+    `r4-hi`), adds four. No plant, check, class or verdict depends on them, and they carry no run.
 
 **Adopted by the lead for Amendment 2 (both concern the judge, and nothing here):**
 
-18. CRITERIA §3.2 and READOUTS §3's arm 2 "the sums": after the exchange n_T_1 + n_T_2 − supplied is not the start, because the sample has
+19. CRITERIA §3.2 and READOUTS §3's arm 2 "the sums": after the exchange n_T_1 + n_T_2 − supplied is not the start, because the sample has
     left; the sum is n_T_1 + n_T_2 + sample − supplied, over the exchanges before the row, with the run's own event numbers.
-19. READOUTS §2: a portion's or an exchange's own supplied amount counts in the scale of its `amount`, `loss` and `heat` (a literal "to
+20. READOUTS §2: a portion's or an exchange's own supplied amount counts in the scale of its `amount`, `loss` and `heat` (a literal "to
     that time" gives a first portion a scale of 0).
 
 ## 5. Checks
 
-The bound and residual of each are in each file's `checks`. Every check of SPEC §9 passes in every file. Families, with the
-largest residual over all files, are tabulated in §10. Two kinds of bound: agreement of two decimal methods, 1e-50 of the
+The bound and residual of each are in each file's `checks`. Every check of SPEC §9 passes in every file; checks 3 and 4 cover the two
+wells' generators of arms 1 and 2 as well as every flow network. Families, with the largest residual over all files, are tabulated in §10. Two kinds of bound: agreement of two decimal methods, 1e-50 of the
 quantity's scale; an integral's, 1e-40 of s_F (SPEC §3 asks for 1e-12).
 
 The rounding emulation of check 11 (`lrrefs/emulation.py`) is binary64, written from LAWS alone, and is used for nothing else.
@@ -161,6 +164,9 @@ heats by Clenshaw-Curtis with hyperbolic-function levels, and every plant with t
   relative error of 1e-88. A component test found it; the rule is now entrywise. No published value moved.
 - My first singularity test used one Gauss piece on [2, 16] s and missed its bound by 1e-28 of its scale for every trace alike; the fault
   was the piece (it more than doubles its distance from the singular end), not the laws. `by_gauss` now splits any such interval.
+- `G5`'s Gauss route to H_tot lay within a factor of three of its bound (4.2e-41 of s_F against 1e-40): one plain piece after the switch,
+  with the integrand's nearest singularity 1.33 s before it. Pieces are now halved. It is a check alone (the published heat is the
+  portion law's).
 - A cache of propagated states was keyed by an object's address, which Python may reuse after the invented inputs are freed. Each world
   now holds its own cache, and each arm reads its inputs afresh.
 - Sets are never iterated in their own order.
@@ -177,52 +183,77 @@ platform, the Python and libmpdec versions, and the spec files' hashes are in `o
 
 ## 10. Numbers
 
-**Checks.** 771 rows over the seven files, all passing (the invented file 296; arms 1 to 6: 88, 52, 156, 50, 90, 39). Largest residual against its bound, by SPEC §9's item, over every file:
+**Checks.** 847 rows over the seven files, all passing (the invented file 321; arms 1 to 6: 116, 75, 156, 50, 90, 39). Largest residual against its bound, by SPEC §9's item, over every file:
 
 | Item | What | Largest residual | Bound |
 | --- | --- | --- | --- |
-| 1 | 1 − 2/e and 1 − 1/e, by both methods; m = 1 to 8 equal chambers | 2.9e-108 | 1e-50 |
-| 2 | closed form against the propagator, every entry, relative | 6.0e-107 | 1e-50 |
-| 2 | the gap to the confluent form: E's slope; successive ratio; the chain's amounts (each scaled so that 1 is the bound) | 0.093; 0.83; 0.27 | 1 |
-| 3 | node columns; amounts; volumes (the last two against the start plus the supplied) | 5e-111; 7.4e-107; 4.5e-106 | 1e-100; 1e-50 |
-| 4 | e^(−Gt) e^(Gt); P(h)^S = P(Sh) at every registered h | 8.7e-102; 7.2e-109 | 1e-50 |
-| 4 | every amount by uniformization and by Taylor continuation, relative | 1.2e-106 | 1e-50 |
-| 5 | the remainder falls by 4 (last halving: 4 ± 3.3e-4); its leading term (error over f 0.34) | 3.3e-4; 0.34 | 2⁻⁴; 1 |
-| 6 | closed form against the propagator; D against ∫A dm by two quadratures; D′(0) = A(0) | 8.8e-108; 1.1e-53; 8.8e-91 | 1e-50; 1e-40; 1e-60 |
-| 6 | `N-buffered` and `N-clean` hold 8 and 2 fmol at 16 s | 6.3e-16 | 8.9e-16, the two starts' half-ulps carried through the relaxation |
-| 7 | R(z) − e^(−z) ≥ 0, and over z³/6 | 0; 0.99954 | 0; 1 |
-| 8 | Σ H_holder (and H_face) = H_tot, tanh-sinh and Gauss (over s_F); the two quadratures agree | 1.7e-58; 2.5e-65; 1.7e-58 | 1e-40 |
-| 8 | `H_A` by the dilogarithm; H_tot by finite portions at every registered step; H_tot by the holders' rates | 3.1e-64; 2.1e-108; 4.2e-41 | 1e-40; 1e-50; 1e-40 |
-| 8 | a uniform stream; the second portion's loss RT (3 ln 3 − 4 ln 2), both forms, either order; the first portion | 1.6e-105; 8e-110; 0 | 1e-60; 1e-50; 0 |
-| 9 | labels sum to their species; arm 6 at Q = 0 is two wells, its face heat D(m*) | 8.9e-110; 1.7e-107; 7.9e-65 | 1e-50; 1e-50; 1e-40 |
-| 10 | J̄²/W against the two-well form; \|H_def − D\| ≤ B_def (largest ratio 0.9999975, `eq-hi` at 1/64 s); third clause over 8z (arm 1's judged starts, and the invented) | 1.2e-108; 1; 0.067 | 1e-50; 1; 1 |
-| 11 | the largest fraction of LAWS §9's bound over every network, run, quantity and output (`F1`, the amounts' sum) | 0.0413 | 1 |
+| 1 | 1 − 2/e and 1 − 1/e by both methods; m = 1 to 8 equal chambers | 2.9e-108 | 1e-50 |
+| 2 | the closed form against the propagator, every entry, relative | 6.0e-107 | 1e-50 |
+| 2 | the limit V_B → V_A (k = 10 to 40): E's slope; successive ratios; the chain's amounts (each scaled so that 1 is the bound) | 0.093; 0.83; 0.27 | 1 |
+| 3 | columns of every generator (the two wells' too); amounts (across an exchange: with the sample); volumes | 5.0e-111; 7.4e-107; 4.5e-106 | 1e-100; 1e-50; 1e-50 |
+| 3 | an inlet's column is its supply and each node's flows balance | 0 | 1e-100 |
+| 4 | e^(−Gt) e^(Gt) is the identity; P(h)^S = P(Sh) at every registered h, two halves make a step (flows and two wells) | 8.8e-102; 7.7e-108 | 1e-50 |
+| 4 | every amount by uniformization and by Taylor continuation, relative | 1.2e-106; 1.2e-106 | 1e-50 |
+| 5 | the remainder falls by 4 (last halving: off by); its leading term (error over f); the two forms of H_ev | 3.3e-4; 0.34; 3.1e-106 | 2⁻⁴; 1; 1e-50 |
+| 6 | closed form against the propagator; D against ∫A dm by tanh-sinh and by Gauss; D′(0) = A(0) | 8.8e-108; 1.1e-53; 3.4e-64; 8.8e-91 | 1e-50; 1e-40; 1e-40; 1e-60 |
+| 6 | `N-buffered`, `N-clean` and `N-none` hold 8 and 2 fmol at 16 s | 6.3e-16 | 8.9e-16 (the starts' half-ulps carried through the relaxation) |
+| 6 | arm 2's face heat over both intervals against its time integral, relative | 8.3e-65 | 1e-40 |
+| 7 | R(z) − e^(−z) is not negative; over z³/6, the largest | 0; 0.999542 | 0; 1 |
+| 8 | Σ H_holder (and H_face) = H_tot by tanh-sinh; by Gauss; the two quadratures agree on every holder (over s_F) | 1.7e-58; 1.2e-65; 1.7e-58 | 1e-40 |
+| 8 | `H_A` in closed form by the dilogarithm; H_tot by finite portions at every registered step; H_tot by the integral of the holders' rates (over s_F) | 3.1e-64; 2.1e-108; 5.2e-55 | 1e-40; 1e-50; 1e-40 |
+| 8 | a uniform stream (pJ); the second portion's loss RT (3 ln 3 − 4 ln 2), both forms; the first portion; the order | 1.6e-105; 8.0e-110; 0; 0 | 1e-60; 1e-50; 0; 1e-50 |
+| 8 | arm 4: the portions' losses sum to the state function; the stream by the portion law; each loss by both forms (over s_F) | 1.4e-110; 9.6e-111; 6.3e-111 | 1e-50 |
+| 9 | labels sum to their species; arm 6 at Q = 0 is the two wells; its face's heat is D(m*); arm 6 by its eigenvalues | 8.9e-110; 1.7e-107; 7.9e-65; 4.3e-107 | 1e-50; 1e-50; 1e-40; 1e-50 |
+| 10 | the J̄²/W form against the two-well form; \|H_def − D\| over B_def, the largest; the third clause over 8z (arm 1's judged starts and the invented) | 1.2e-108; 0.9999975 (`eq-hi`, 1/64 s; the rows' six digits show both as equal); 0.0669 | 1e-50; 1; 1 |
+| 11 | the largest fraction of LAWS §9's bound, over every network, run, quantity and output | 0.04128 (F1, sums) | 1 |
 
-Check 8's Gauss route to `G5` (4.2e-41 of s_F) is the one row within a factor of three of its bound: it is the integral of a collector's
-rate after the switch, where the integrand's nearest singularity lies at 2.67 s, 1.33 s before the piece, and is not used for any
-published value (`G5`'s heat is the portion law). The bound was set before it was computed.
+**Plant margins** (distance over the expected honest tolerance; each must be at least 10). No margin falls below 10; the smallest is P15 on `eq-hi` at 0.25 s (13.18).
 
-**Plant margins** (distance over the expected honest tolerance; each must be at least 10). No margin falls below 10; the smallest are
-P15 on `eq-hi` (13.2) and P14 at the coarsest step (15.8).
+| Plant | Check (class) | World | Step (s) | Time (s) | Margin |
+| --- | --- | --- | --- | --- | --- |
+| P14 | `n_T_1` (B) | `r4-mid` | 2.0 | 2.0 | 15.82 |
+| P14 | `n_T_2` (B) | `r4-mid` | 2.0 | 2.0 | 15.82 |
+| P14 | `n_T_1` (B) | `r4-mid` | 1.0 | 1.0 | 69.13 |
+| P14 | `n_T_2` (B) | `r4-mid` | 1.0 | 1.0 | 69.13 |
+| P14 | `n_T_1` (B) | `r4-mid` | 0.5 | 0.5 | 290.9 |
+| P14 | `n_T_2` (B) | `r4-mid` | 0.5 | 0.5 | 290.9 |
+| P14 | `n_T_1` (B) | `r4-mid` | 0.25 | 0.25 | 1195 |
+| P14 | `n_T_2` (B) | `r4-mid` | 0.25 | 0.25 | 1195 |
+| P15 | `n_T_1` (B) | `eq-lo` | 0.25 | 0.25 | 3838 |
+| P15 | `n_T_2` (B) | `eq-lo` | 0.25 | 0.25 | 3838 |
+| P15 | `n_T_1` (B) | `eq-mid` | 0.25 | 0.25 | 876.6 |
+| P15 | `n_T_2` (B) | `eq-mid` | 0.25 | 0.25 | 876.6 |
+| P15 | `n_T_1` (B) | `eq-hi` | 0.25 | 0.25 | 13.18 |
+| P15 | `n_T_2` (B) | `eq-hi` | 0.25 | 0.25 | 13.18 |
+| P16 | `H_face` (B, default) | `eq-mid` | 0.125 | 0.125 | 107.4 |
+| P16 | `H_face` (B, default) | `eq-mid` | 0.0625 | 0.0625 | 215.2 |
+| P16 | `H_face` (B, default) | `eq-mid` | 0.03125 | 0.03125 | 430.7 |
+| P16 | `H_face` (B, default) | `eq-mid` | 0.015625 | 0.015625 | 861.9 |
+| P16 | `H_face` (R, exact) | `eq-mid` | 2.0 | 2.0 | 3.692e+11 |
+| P17 | `sample` (R) | `N-buffered` | 0.25 | 16.0 | 6.584e+11 |
+| P1 | `n_T_K` (R) | `F1` | 1.0 | 8.0 | 8.368e+12 |
+| P1 | `n_T_K` (R) | `F2` | 1.0 | 8.0 | 8.368e+12 |
+| P2 | `n_T_B` (R) | `F1` | 1.0 | 2.0 | 1.329e+13 |
+| P2 | `n_T_K` (R) | `F1` | 1.0 | 2.0 | 1.329e+13 |
+| P2 | `n_T_B` (R) | `F3` | 1.0 | 3.0 | 1.479e+13 |
+| P2 | `n_T_K` (R) | `F3` | 1.0 | 3.0 | 1.479e+13 |
+| P3 | `V_K` (R) | `F1` | 1.0 | 16.0 | 1.204e+13 |
+| P3 | `n_T_B` (R) | `F3` | 1.0 | 11.0 | 3.284e+12 |
+| P3 | `n_T_K` (R) | `F3` | 1.0 | 11.0 | 3.284e+12 |
+| P3 | `V_K` (R) | `F3` | 1.0 | 16.0 | 1.204e+13 |
+| P4 | `n_U_B` (R) | `F1` | 1.0 | 2.0 | 1.267e+07 |
+| P4 | `n_U_K` (R) | `F1` | 1.0 | 2.0 | 1.267e+07 |
+| P10 | `n_T_K` (R) | `F1` | 1.0 | 8.0 | 7.5e+12 |
+| P11 | `label_T_tag_K` (R) | `F1L` | 8.0 | 8.0 | 3.125e+12 |
+| P9 | `loss` (E) | `G1` | 1.0 | 2.0 | none (distance 0.00242 pJ) |
+| P5 | `H_A` (S) | `H1` | 0.0625 | 16.0 | 129.3 |
+| P7 | `H_tot` (R) | `H2` | 0.0625 | 2.0 | 2.051e+10 |
+| P7 | `H_tot` (R) | `H3` | 0.0625 | 2.0 | 2.168e+10 |
+| P7 | `H_tot` (R) | `H4` | 0.0625 | 2.0 | 2.24e+10 |
+| P19 | `n_T_A` (S) | `J1` | 0.125 | 8.0 | 123.3 |
 
-| Plant | Check (class) | World | Margin |
-| --- | --- | --- | --- |
-| P1 | `n_T_K` at 8 s (R) | `F1` and `F2` | 8.4e12 each |
-| P2 | `n_T_B`, `n_T_K` (R) | `F1`; `F3` | 1.3e13; 1.5e13 |
-| P3 | `n_T_B`, `n_T_K` (R); `V_K` (R) | `F3`; `F1` and `F3` | 3.3e12; 1.2e13 each |
-| P4 | `n_U_B`, `n_U_K` (R) | `F1` | 1.3e7 each |
-| P5 | `H_A` (S) | `H1` | 129 |
-| P7 | `H_tot` (R) | `H2`, `H3`, `H4` | 2.1e10, 2.2e10, 2.2e10 |
-| P8 | no margin: H_missing in `plants_reported` | `N-buffered`, `F1` | – |
-| P9 | the first loss (E) | `G1` | none (distance 2.4e-3 pJ) |
-| P10 | `n_T_K` at 8 s (R) | `F1` | 7.5e12 |
-| P11 | `label_T_tag_K` (R) | `F1L` at h = 8 | 3.1e12 |
-| P14 | `n_T_1`, `n_T_2` (B) | `r4-mid`, h = 2, 1, 0.5, 0.25 | 15.8, 69.1, 291, 1195 |
-| P15 | `n_T_1`, `n_T_2` (B) | `eq-lo`, `eq-mid`, `eq-hi` at h = 0.25 | 3838, 877, 13.2 |
-| P16 | `H_face` (B, default, the four steps; R, exact j = 0) | `eq-mid` | 107, 215, 431, 862; 3.7e11 |
-| P17 | `sample` (R) | `N-buffered` exact j = 2 | 6.6e11 |
-| P19 | `n_T_A` (S), order 0.997 against a limit of 1.25 | `J1` | 123 |
+P8 has no margin (its missing heat is in `plants_reported`) and P18 no size. P19's planted order is 0.9973, against a limit of 1.25.
 
 In the invented file the same plants have margins of at least 15.2.
 
-**Programs.** `component_tests.py`: 83 of 83 tests pass. `self_check.py`: 569 of 569 rows over the seven files. `mutation_tests.py`: each of 40 deliberate changes is flagged and the unchanged file is clean. The residuals are in `out/`.
+**Programs.** `component_tests.py`: 83 of 83 tests pass. `self_check.py`: 585 of 585 rows over the seven files. `mutation_tests.py`: each of 42 deliberate changes is flagged and the unchanged file is clean. The residuals are in `out/`.

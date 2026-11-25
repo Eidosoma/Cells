@@ -5,7 +5,7 @@ the invented ones. Steps and times are the JSON floats of the inputs files.
 REGISTERED = {
     "equal_volumes": ("F1", "F2"),                  # the equal-volume chain and its reverse (check 1)
     "chains": ("F1", "F2", "F3", "F4"),             # every chain of arm 3 (check 2)
-    "request_state": {"N-buffered": (8, 2), "N-clean": (8, 2)},
+    "request_state": {"N-buffered": (16.0, (8, 2)), "N-clean": (16.0, (8, 2)), "N-none": (16.0, (8, 2))},
     "P1": {"worlds": ("F1", "F2"), "step": 1.0, "time": 8.0},
     "P2": {"worlds": ("F1", "F3"), "step": 1.0},
     "P3": {"equal": "F1", "unequal": "F3", "step": 1.0},

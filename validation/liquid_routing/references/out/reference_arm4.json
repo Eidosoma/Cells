@@ -228,7 +228,7 @@
    "bound": "1.00000E-40",
    "name": "8 heat: G5, H_tot by the integral of every holder's rate, at 4 outputs (over s_F)",
    "passes": true,
-   "residual": "4.20044E-41"
+   "residual": "5.21944E-55"
   },
   {
    "bound": "1.00000E-50",

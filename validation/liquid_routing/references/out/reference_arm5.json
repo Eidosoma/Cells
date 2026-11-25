@@ -12,7 +12,7 @@
    "bound": "1.00000E-40",
    "name": "8 heat: H1, the holders' (and the face's) heats sum to H_tot, graded Gauss (over s_F)",
    "passes": true,
-   "residual": "2.89231E-91"
+   "residual": "2.39247E-106"
   },
   {
    "bound": "1.00000E-40",
@@ -120,13 +120,13 @@
    "bound": "1.00000E-40",
    "name": "8 heat: H2, the holders' (and the face's) heats sum to H_tot, graded Gauss (over s_F)",
    "passes": true,
-   "residual": "2.49328E-65"
+   "residual": "1.24477E-65"
   },
   {
    "bound": "1.00000E-40",
    "name": "8 heat: H2, the two quadratures agree on every holder (over s_F)",
    "passes": true,
-   "residual": "9.95448E-64"
+   "residual": "9.95460E-64"
   },
   {
    "bound": "1.00000E-40",
@@ -228,13 +228,13 @@
    "bound": "1.00000E-40",
    "name": "8 heat: H3, the holders' (and the face's) heats sum to H_tot, graded Gauss (over s_F)",
    "passes": true,
-   "residual": "1.89173E-65"
+   "residual": "9.44449E-66"
   },
   {
    "bound": "1.00000E-40",
    "name": "8 heat: H3, the two quadratures agree on every holder (over s_F)",
    "passes": true,
-   "residual": "9.66050E-64"
+   "residual": "9.66059E-64"
   },
   {
    "bound": "1.00000E-40",
@@ -336,7 +336,7 @@
    "bound": "1.00000E-40",
    "name": "8 heat: H4, the holders' (and the face's) heats sum to H_tot, graded Gauss (over s_F)",
    "passes": true,
-   "residual": "1.52403E-65"
+   "residual": "7.60874E-66"
   },
   {
    "bound": "1.00000E-40",
@@ -444,7 +444,7 @@
    "bound": "1.00000E-60",
    "name": "8 heat: H5, a uniform stream loses nothing, by the other quadrature (the largest |H|, pJ)",
    "passes": true,
-   "residual": "6.42349E-120"
+   "residual": "6.77921E-120"
   },
   {
    "bound": "1.00000E-100",

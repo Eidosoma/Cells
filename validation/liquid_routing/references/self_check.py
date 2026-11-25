@@ -538,11 +538,17 @@ def check_values(document, worlds, arm_of, label, runs):
             compare(*series["n_T_1"][0], n1, tiny)
             compare(*series["n_T_2"][0], n2, tiny)
             compare(*series["H_face"][0], D(0), D(0))
-            for run in runs:
-                if run["world"] != name or run["arm"] != 1:
-                    continue
-                h = D(run["step"]["s"])
-                case = document["cases"][f"{name}|{run['step']['s']!r}"]
+            own = [r for r in runs if r["world"] == name and r["arm"] == 1]
+            wanted = {r["step"]["s"] for r in own}
+            for heat in ("exact", "default"):
+                judged = [r["step"]["s"] for r in own if r["heat"] == heat and r["role"] == "judged"]
+                if judged:
+                    wanted.add(min(judged) / 2)               # the retry's next halving (CRITERIA section 2)
+            fault(f"{label}: the cases of {name} are its runs' steps and the retry's", {k for k in document["cases"]
+                  if k.split("|")[0] == name} == {f"{name}|{v!r}" for v in wanted})
+            for step in sorted(wanted):
+                h = D(step)
+                case = document["cases"][f"{name}|{step!r}"]
                 n1, n2, v1, v2, pa = wells(w)
                 e1, e2 = relax(n1, n2, v1, v2, pa, h)
                 m_r, _, _ = scheme_moved(n1, n2, v1, v2, pa, h)
@@ -555,7 +561,7 @@ def check_values(document, worlds, arm_of, label, runs):
                     for published, accuracy, value in zip(case[k], case["accuracy"][k], pair):
                         compare(published, accuracy, value, abs(value) * tiny)
                 want = {"m_star", "m_R", "levels_exact", "levels_scheme", "D_star", "D_R", "A0", "H_def", "B_def", "accuracy"}
-                fault(f"{label}: case {name}|{run['step']['s']!r} keys", set(case) == want)
+                fault(f"{label}: case {name}|{step!r} keys", set(case) == want)
             compare.done(f"{label}: {name}, cases")
             continue
         if arm == 2:

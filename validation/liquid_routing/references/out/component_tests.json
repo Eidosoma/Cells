@@ -149,7 +149,7 @@
    "bound": "1.00000E-45",
    "name": "singularity: B and the inlet at 0 mM, the holders' heats sum to H_tot, graded Gauss (over RT N)",
    "passes": true,
-   "residual": "2.18623E-63"
+   "residual": "2.70405E-64"
   },
   {
    "bound": "1.00000E-45",
@@ -167,7 +167,7 @@
    "bound": "1.00000E-45",
    "name": "singularity: B and the inlet at 1e-60 mM, the holders' heats sum to H_tot, graded Gauss (over RT N)",
    "passes": true,
-   "residual": "2.18623E-63"
+   "residual": "2.70405E-64"
   },
   {
    "bound": "1.00000E-45",
@@ -185,7 +185,7 @@
    "bound": "1.00000E-45",
    "name": "singularity: B and the inlet at 1e-30 mM, the holders' heats sum to H_tot, graded Gauss (over RT N)",
    "passes": true,
-   "residual": "2.18623E-63"
+   "residual": "2.70405E-64"
   },
   {
    "bound": "1.00000E-45",
@@ -203,7 +203,7 @@
    "bound": "1.00000E-45",
    "name": "singularity: B and the inlet at 1e-15 mM, the holders' heats sum to H_tot, graded Gauss (over RT N)",
    "passes": true,
-   "residual": "2.18623E-63"
+   "residual": "2.70405E-64"
   },
   {
    "bound": "1.00000E-45",
@@ -221,7 +221,7 @@
    "bound": "1.00000E-45",
    "name": "singularity: B and the inlet at 1e-9 mM, the holders' heats sum to H_tot, graded Gauss (over RT N)",
    "passes": true,
-   "residual": "2.18623E-63"
+   "residual": "2.70405E-64"
   },
   {
    "bound": "1.00000E-45",

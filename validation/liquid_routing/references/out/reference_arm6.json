@@ -120,7 +120,7 @@
    "bound": "1.00000E-40",
    "name": "8 heat: J1, the holders' (and the face's) heats sum to H_tot, graded Gauss (over s_F)",
    "passes": true,
-   "residual": "1.04874E-89"
+   "residual": "2.78214E-104"
   },
   {
    "bound": "1.00000E-40",

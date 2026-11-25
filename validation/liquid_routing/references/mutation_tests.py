@@ -159,6 +159,16 @@ def _(d):
     case["B_def"] = bump(case["B_def"], 37)
 
 
+@mutation("the retry's case missing")
+def _(d):
+    del d["cases"]["inv-eq-mid|0.0048828125"]
+
+
+@mutation("a case too many")
+def _(d):
+    d["cases"]["inv-eq-mid|0.5"] = d["cases"]["inv-eq-mid|1.25"]
+
+
 @mutation("the scheme's transfer given as the exact one")
 def _(d):
     case = d["cases"]["inv-eq-mid|1.25"]

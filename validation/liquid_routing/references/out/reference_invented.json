@@ -1,6 +1,28 @@
 {
  "arm": 0,
  "cases": {
+  "inv-eq-mid|0.0048828125": {
+   "A0": "3.033686708874340760067255298656093803282E+0",
+   "B_def": "4.420736250531113806434213795619687281668E-9",
+   "D_R": "1.456633628099305784589643409800487396324E-2",
+   "D_star": "1.456633831517092099354534036028645676730E-2",
+   "H_def": "1.456633186093040869618185151931949592869E-2",
+   "accuracy": {
+    "A0": "3.04E-39",
+    "B_def": "4.43E-48",
+    "D_R": "1.46E-41",
+    "D_star": "1.46E-41",
+    "H_def": "1.46E-41",
+    "levels_exact": ["1.49E-38", "4.38E-39"],
+    "levels_scheme": ["1.49E-38", "4.38E-39"],
+    "m_R": "4.81E-42",
+    "m_star": "4.81E-42"
+   },
+   "levels_exact": ["1.487019568102358580129625723575619746892E+1", "4.379804318976414198703742764243802531079E+0"],
+   "levels_scheme": ["1.487019568169489502906799316406250000000E+1", "4.379804318305104970932006835937500000000E+0"],
+   "m_R": "4.804318305104970932006835937500000000000E-3",
+   "m_star": "4.804318976414198703742764243802531079280E-3"
+  },
   "inv-eq-mid|0.009765625": {
    "A0": "3.033686708874340760067255298656093803282E+0",
    "B_def": "3.533371254268446489493056436608956500149E-8",
@@ -199,6 +221,28 @@
    "m_R": "5.427438765757851228117942809708070277828E-2",
    "m_star": "5.427487380150940170291969615029166287963E-2"
   },
+  "inv-r4-mid|0.078125": {
+   "A0": "2.723412655801378898273011143922725690307E+0",
+   "B_def": "9.117793954866853057316610021084117251399E-6",
+   "D_R": "2.009425450237808383001814857205654261969E-1",
+   "D_star": "2.009497151012578829921997261356550722168E-1",
+   "H_def": "2.009340825257796863318089393943856210203E-1",
+   "accuracy": {
+    "A0": "2.73E-39",
+    "B_def": "9.12E-45",
+    "D_R": "2.01E-40",
+    "D_star": "2.01E-40",
+    "H_def": "2.01E-40",
+    "levels_exact": ["9.12E-39", "1.54E-38"],
+    "levels_scheme": ["9.12E-39", "1.54E-38"],
+    "m_R": "7.43E-41",
+    "m_star": "7.43E-41"
+   },
+   "levels_exact": ["9.113276887116749669406777890256304681439E+0", "1.538672311288325033059322210974369531856E+1"],
+   "levels_scheme": ["9.113279551267623901367187500000000000000E+0", "1.538672044873237609863281250000000000000E+1"],
+   "m_R": "7.422044873237609863281250000000000000000E-2",
+   "m_star": "7.422311288325033059322210974369531856119E-2"
+  },
   "inv-r4-mid|0.15625": {
    "A0": "2.723412655801378898273011143922725690307E+0",
    "B_def": "7.255946069697949254934703793869069569482E-5",
@@ -314,6 +358,30 @@
    "residual": "1.24409E-91"
   },
   {
+   "bound": "1.00000E-100",
+   "name": "3 conservation: inv-eq-mid, the two wells' columns sum to zero",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: inv-eq-mid, the two wells' amounts sum to the start (relative)",
+   "passes": true,
+   "residual": "1.09091E-108"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: inv-eq-mid, e^(-Gt) e^(Gt) is the identity",
+   "passes": true,
+   "residual": "4.80000E-109"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: inv-eq-mid, P(h)^S = P(Sh) for every registered h, and two halves make a step",
+   "passes": true,
+   "residual": "2.84000E-108"
+  },
+  {
    "bound": "1.00000E-50",
    "name": "6 two wells: inv-eq-tr, the closed form against the propagator, and one scheme step by its stages (relative)",
    "passes": true,
@@ -338,6 +406,30 @@
    "residual": "6.06756E-93"
   },
   {
+   "bound": "1.00000E-100",
+   "name": "3 conservation: inv-eq-tr, the two wells' columns sum to zero",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: inv-eq-tr, the two wells' amounts sum to the start (relative)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: inv-eq-tr, e^(-Gt) e^(Gt) is the identity",
+   "passes": true,
+   "residual": "6.00000E-110"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: inv-eq-tr, P(h)^S = P(Sh) for every registered h, and two halves make a step",
+   "passes": true,
+   "residual": "0"
+  },
+  {
    "bound": "1.00000E-50",
    "name": "6 two wells: inv-r4-mid, the closed form against the propagator, and one scheme step by its stages (relative)",
    "passes": true,
@@ -347,19 +439,43 @@
    "bound": "1.00000E-40",
    "name": "6 two wells: inv-r4-mid, D(m) is the integral of the affinity, by tanh-sinh (relative)",
    "passes": true,
-   "residual": "2.34337E-66"
+   "residual": "2.34339E-66"
   },
   {
    "bound": "1.00000E-40",
    "name": "6 two wells: inv-r4-mid, D(m) is the integral of the affinity, by graded Gauss (relative)",
    "passes": true,
-   "residual": "2.64480E-108"
+   "residual": "1.14646E-107"
   },
   {
    "bound": "1.00000E-60",
    "name": "6 two wells: inv-r4-mid, D'(0) = A(0) (relative)",
    "passes": true,
    "residual": "9.70922E-92"
+  },
+  {
+   "bound": "1.00000E-100",
+   "name": "3 conservation: inv-r4-mid, the two wells' columns sum to zero",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: inv-r4-mid, the two wells' amounts sum to the start (relative)",
+   "passes": true,
+   "residual": "2.53061E-108"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: inv-r4-mid, e^(-Gt) e^(Gt) is the identity",
+   "passes": true,
+   "residual": "1.28000E-107"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: inv-r4-mid, P(h)^S = P(Sh) for every registered h, and two halves make a step",
+   "passes": true,
+   "residual": "1.00000E-110"
   },
   {
    "bound": "0",
@@ -524,6 +640,36 @@
    "residual": "8.26831E-92"
   },
   {
+   "bound": "1.00000E-100",
+   "name": "3 conservation: inv-N-buffered, the two wells' columns sum to zero",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: inv-N-buffered, the two wells' amounts sum to the start (relative)",
+   "passes": true,
+   "residual": "7.61905E-109"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: inv-N-buffered, e^(-Gt) e^(Gt) is the identity",
+   "passes": true,
+   "residual": "3.28700E-107"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: inv-N-buffered, P(h)^S = P(Sh) for every registered h, and two halves make a step",
+   "passes": true,
+   "residual": "1.21000E-108"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: inv-N-buffered, after the exchange the wells hold the start less the sample plus the supplied (relative)",
+   "passes": true,
+   "residual": "4.76190E-110"
+  },
+  {
    "bound": "1.00000E-50",
    "name": "6 two wells: inv-N-buffered, after the exchange, the closed form against the propagator (relative)",
    "passes": true,
@@ -558,6 +704,54 @@
    "name": "6 two wells: inv-N-none, D'(0) = A(0) (relative)",
    "passes": true,
    "residual": "8.26831E-92"
+  },
+  {
+   "bound": "1.00000E-100",
+   "name": "3 conservation: inv-N-none, the two wells' columns sum to zero",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: inv-N-none, the two wells' amounts sum to the start (relative)",
+   "passes": true,
+   "residual": "7.61905E-109"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: inv-N-none, e^(-Gt) e^(Gt) is the identity",
+   "passes": true,
+   "residual": "3.28700E-107"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: inv-N-none, P(h)^S = P(Sh) for every registered h, and two halves make a step",
+   "passes": true,
+   "residual": "1.21000E-108"
+  },
+  {
+   "bound": "1.00000E-100",
+   "name": "3 conservation: inv-eq-tr, the two wells' columns sum to zero",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: inv-eq-tr, the two wells' amounts sum to the start (relative)",
+   "passes": true,
+   "residual": "6.72269E-110"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: inv-eq-tr, e^(-Gt) e^(Gt) is the identity",
+   "passes": true,
+   "residual": "8.00000E-110"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: inv-eq-tr, P(h)^S = P(Sh) for every registered h, and two halves make a step",
+   "passes": true,
+   "residual": "0"
   },
   {
    "bound": "0",
@@ -743,7 +937,7 @@
    "bound": "1.00000E-40",
    "name": "8 heat: inv-F1, H_tot by the integral of every holder's rate, at 5 outputs (over s_F)",
    "passes": true,
-   "residual": "4.84064E-65"
+   "residual": "2.99027E-66"
   },
   {
    "bound": "1.00000E-50",
@@ -833,7 +1027,7 @@
    "bound": "1.00000E-40",
    "name": "8 heat: inv-F1L, H_tot by the integral of every holder's rate, at 5 outputs (over s_F)",
    "passes": true,
-   "residual": "4.84064E-65"
+   "residual": "2.99027E-66"
   },
   {
    "bound": "1.00000E-50",
@@ -941,7 +1135,7 @@
    "bound": "1.00000E-40",
    "name": "8 heat: inv-F2, H_tot by the integral of every holder's rate, at 5 outputs (over s_F)",
    "passes": true,
-   "residual": "3.35121E-65"
+   "residual": "2.07019E-66"
   },
   {
    "bound": "1.00000E-50",
@@ -1031,7 +1225,7 @@
    "bound": "1.00000E-40",
    "name": "8 heat: inv-F3, H_tot by the integral of every holder's rate, at 5 outputs (over s_F)",
    "passes": true,
-   "residual": "4.84064E-65"
+   "residual": "2.99027E-66"
   },
   {
    "bound": "1.00000E-50",
@@ -1121,7 +1315,7 @@
    "bound": "1.00000E-40",
    "name": "8 heat: inv-F6, H_tot by the integral of every holder's rate, at 5 outputs (over s_F)",
    "passes": true,
-   "residual": "1.83808E-57"
+   "residual": "9.16351E-66"
   },
   {
    "bound": "1.00000E-50",
@@ -1211,7 +1405,7 @@
    "bound": "1.00000E-40",
    "name": "8 heat: inv-F7, H_tot by the integral of every holder's rate, at 5 outputs (over s_F)",
    "passes": true,
-   "residual": "4.83981E-65"
+   "residual": "2.98976E-66"
   },
   {
    "bound": "1.00000E-50",
@@ -1433,7 +1627,7 @@
    "bound": "1.00000E-40",
    "name": "8 heat: inv-G5, H_tot by the integral of every holder's rate, at 4 outputs (over s_F)",
    "passes": true,
-   "residual": "9.41447E-49"
+   "residual": "1.59804E-64"
   },
   {
    "bound": "1.00000E-50",
@@ -1517,7 +1711,7 @@
    "bound": "1.00000E-40",
    "name": "8 heat: inv-H1, the holders' (and the face's) heats sum to H_tot, graded Gauss (over s_F)",
    "passes": true,
-   "residual": "9.35654E-100"
+   "residual": "4.68361E-108"
   },
   {
    "bound": "1.00000E-40",
@@ -1625,13 +1819,13 @@
    "bound": "1.00000E-40",
    "name": "8 heat: inv-H2, the holders' (and the face's) heats sum to H_tot, graded Gauss (over s_F)",
    "passes": true,
-   "residual": "2.39407E-65"
+   "residual": "1.19518E-65"
   },
   {
    "bound": "1.00000E-40",
    "name": "8 heat: inv-H2, the two quadratures agree on every holder (over s_F)",
    "passes": true,
-   "residual": "1.03281E-63"
+   "residual": "1.03282E-63"
   },
   {
    "bound": "1.00000E-40",
@@ -1733,7 +1927,7 @@
    "bound": "1.00000E-60",
    "name": "8 heat: inv-H5, a uniform stream loses nothing, by the other quadrature (the largest |H|, pJ)",
    "passes": true,
-   "residual": "2.97300E-120"
+   "residual": "4.34597E-120"
   },
   {
    "bound": "1.00000E-100",
@@ -1949,7 +2143,7 @@
    "bound": "1.00000E-40",
    "name": "8 heat: inv-J1, the holders' (and the face's) heats sum to H_tot, graded Gauss (over s_F)",
    "passes": true,
-   "residual": "1.93708E-91"
+   "residual": "1.41852E-106"
   },
   {
    "bound": "1.00000E-40",

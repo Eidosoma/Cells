@@ -186,12 +186,18 @@ class TaylorTrajectory:
 
 
 def doubling_pieces(a, b):
-    """[a, b] cut so that no piece more than doubles the distance from t = 0, where the integrands may be singular."""
+    """[a, b] cut so that no piece more than doubles the distance from t = 0, where the integrands may be singular, and
+    each piece halved (after an inlet's switch the nearest singularity is not at t = 0 but nearer the piece).
+    """
     edges = [a]
     while edges[-1] * 2 < b:
         edges.append(edges[-1] * 2)
     edges.append(b)
-    return list(zip(edges, edges[1:]))
+    pieces = []
+    for left, right in zip(edges, edges[1:]):
+        middle = (left + right) / 2
+        pieces += [(left, middle), (middle, right)]
+    return pieces
 
 
 def by_gauss(world, outputs, depth=None, order=40, digits=QUAD_DIGITS):

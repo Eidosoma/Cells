@@ -71,6 +71,19 @@ def with_accuracy(table):
 
 # ---- arm 1 ----------------------------------------------------------------------------------------------------------
 
+def case_steps(inputs, name):
+    """The steps of a world's arm 1 runs, and the next halving of each judged set (CRITERIA section 2's retry, j = 4).
+
+    The exact retry's step is a default step already (or a recorded one), so only the default retry adds cases.
+    """
+    steps = {inputs.step(run) for run in inputs.runs_of(arm=1, world=name)}
+    for heat in ("exact", "default"):
+        judged = [inputs.step(run) for run in inputs.runs_of(arm=1, world=name, role="judged", heat=heat)]
+        if judged:
+            steps.add(min(judged) / 2)
+    return sorted(steps)
+
+
 def arm1(inputs, plan, label="arm 1 (explicit stages)"):
     blocks = Blocks()
     worlds = inputs.worlds_of(1)
@@ -82,7 +95,7 @@ def arm1(inputs, plan, label="arm 1 (explicit stages)"):
         table["n_T_2"].add("R", wells.n2)
         table["H_face"].add("E", ZERO)
         blocks.worlds[name] = publish_world([ZERO], table)
-        steps = sorted({inputs.step(run) for run in inputs.runs_of(arm=1, world=name)})
+        steps = case_steps(inputs, name)
         for h in steps:
             moved, by_scheme = wells.moved(h), wells.moved_by_scheme(h)
             blocks.cases[key(name, h)] = with_accuracy({
@@ -90,6 +103,7 @@ def arm1(inputs, plan, label="arm 1 (explicit stages)"):
                 "levels_scheme": wells.levels(by_scheme), "D_star": wells.lost(moved), "D_R": wells.lost(by_scheme),
                 "A0": wells.affinity(ZERO), "H_def": wells.default_heat(h), "B_def": wells.default_bound(h)})
         blocks.checks += checks.two_well_checks(inputs, world, steps, steps)
+        blocks.checks += checks.two_well_network(world, steps, max(steps))
     rows, series, reported = plants.arm1(inputs, plan)
     blocks.plants += rows
     blocks.planted_series.update(series)
@@ -153,14 +167,19 @@ def arm2(inputs, plan, label="arm 2 (explicit stages)"):
             blocks.events[name] = block
             heat_of[name] = solution.heat
             blocks.checks += checks.f_ladder(world)
-            request = plan.get("request_state", {}).get(name)
-            if request is not None:
-                blocks.checks += checks.request_state(world, solution.time, [exact(v) for v in request])
+        request = plan.get("request_state", {}).get(name)
+        if request is not None:
+            at, levels = request
+            blocks.checks += checks.request_state(world, exact(at), [exact(v) for v in levels])
         blocks.checks += checks.two_well_checks(inputs, world, times[1:])
+        blocks.checks += checks.two_well_network(world, sorted({inputs.step(run) for run in inputs.runs_of(arm=2, world=name)}),
+                                                 exact(world.end))
+        blocks.checks += checks.exchange_conservation(solution, times)
         blocks.checks += _second_interval(solution, times)
         zs.update(two_wells(world).k * inputs.step(run) for run in inputs.runs_of(arm=2, world=name))
     for run in inputs.runs_of(arm=2, role="expected stop"):
         zs.add(two_wells(inputs.worlds[run["world"]]).k * inputs.step(run))
+        blocks.checks += checks.two_well_network(inputs.worlds[run["world"]], [inputs.step(run)], inputs.step(run))
     rows, series, reported = plants.arm2(inputs, plan, heat_of)
     blocks.plants += rows
     blocks.planted_series.update(series)

@@ -193,6 +193,57 @@ def reversal(inputs, world):
     return rows
 
 
+def wells_generator(world):
+    """The two wells' generator, columns summing to zero."""
+    wells = two_wells(world)
+    return [[-wells.pa / wells.v1, wells.pa / wells.v2], [wells.pa / wells.v1, -wells.pa / wells.v2]]
+
+
+def two_well_network(world, steps, horizon):
+    """Checks 3 and 4 for a two-well world: its generator's columns, its amounts, the reversal, and the composition.
+
+    `steps` are the registered steps, `horizon` the time that P(h)^S must reach.
+    """
+    wells = two_wells(world)
+    g = wells_generator(world)
+    start = [wells.n1, wells.n2]
+    total = wells.n1 + wells.n2
+    worst_column = max(abs(g[0][j] + g[1][j]) for j in range(2))
+    worst_back, worst_steps, worst_amount = ZERO, ZERO, ZERO
+    whole = pr.expm(g, horizon)
+    for t in sorted(set(steps) | {horizon}):
+        product = pr.matmul(pr.expm(g, -t), pr.expm(g, t))
+        worst_back = max(worst_back, max(abs(product[i][j] - (ONE if i == j else ZERO)) for i in range(2) for j in range(2)))
+        worst_amount = max(worst_amount, abs(sum(pr.matvec(pr.expm(g, t), start), ZERO) - total) / total)
+    for h in steps:
+        one = pr.expm(g, h)
+        half = pr.expm(g, h / 2)
+        halves = pr.matmul(half, half)
+        worst_steps = max(worst_steps, max(abs(one[i][j] - halves[i][j]) for i in range(2) for j in range(2)))
+        count = horizon / h
+        if count == count.to_integral_value():
+            power = pr.identity(2)
+            for _ in range(int(count)):
+                power = pr.matmul(power, one)
+            worst_steps = max(worst_steps, max(abs(whole[i][j] - power[i][j]) for i in range(2) for j in range(2)))
+    return [row(f"3 conservation: {world.name}, the two wells' columns sum to zero", worst_column, Decimal(10) ** -100),
+            row(f"3 conservation: {world.name}, the two wells' amounts sum to the start (relative)", worst_amount, DIGITS_50),
+            row(f"4 time reversal: {world.name}, e^(-Gt) e^(Gt) is the identity", worst_back, DIGITS_50),
+            row(f"4 time reversal: {world.name}, P(h)^S = P(Sh) for every registered h, and two halves make a step", worst_steps,
+                DIGITS_50)]
+
+
+def exchange_conservation(solution, times):
+    """Check 3 across an exchange: n_1 + n_2 + sample - supplied is the start, after it (Amendment 2's reading of arm 2's sum)."""
+    if solution.event is None:
+        return []
+    total = solution.first.n1 + solution.first.n2
+    worst = max(abs(sum(solution.at(t)[:2], ZERO) + solution.sample - solution.supplied - total) / total
+                for t in times if t > solution.time)
+    return [row(f"3 conservation: {solution.world.name}, after the exchange the wells hold the start less the sample plus the "
+                "supplied (relative)", worst, DIGITS_50)]
+
+
 def second_propagator(world):
     """Every published amount by uniformization and by Taylor continuation, against scaling and squaring."""
     worst_uniform, worst_taylor = ZERO, ZERO

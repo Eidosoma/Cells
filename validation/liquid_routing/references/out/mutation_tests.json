@@ -1,6 +1,6 @@
 {
  "all_changes_flagged": true,
- "changes": 40,
+ "changes": 42,
  "rows": [
   {
    "change": "none",
@@ -143,14 +143,28 @@
   {
    "change": "B_def changed in its 37th digit",
    "first": [
-    "invented: inv-eq-mid, cases: 91 values, the largest gap over accuracy plus the method's allowance"
+    "invented: inv-eq-mid, cases: 102 values, the largest gap over accuracy plus the method's allowance"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "the retry's case missing",
+   "first": [
+    "exception KeyError"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "a case too many",
+   "first": [
+    "invented: the cases of inv-eq-mid are its runs' steps and the retry's"
    ],
    "flagged": true
   },
   {
    "change": "the scheme's transfer given as the exact one",
    "first": [
-    "invented: inv-eq-mid, cases: 91 values, the largest gap over accuracy plus the method's allowance"
+    "invented: inv-eq-mid, cases: 102 values, the largest gap over accuracy plus the method's allowance"
    ],
    "flagged": true
   },

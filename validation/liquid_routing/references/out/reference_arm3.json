@@ -54,7 +54,7 @@
    "bound": "1.00000E-40",
    "name": "8 heat: F1, H_tot by the integral of every holder's rate, at 5 outputs (over s_F)",
    "passes": true,
-   "residual": "4.77243E-65"
+   "residual": "2.94919E-66"
   },
   {
    "bound": "1.00000E-50",
@@ -144,7 +144,7 @@
    "bound": "1.00000E-40",
    "name": "8 heat: F1L, H_tot by the integral of every holder's rate, at 5 outputs (over s_F)",
    "passes": true,
-   "residual": "4.77243E-65"
+   "residual": "2.94919E-66"
   },
   {
    "bound": "1.00000E-50",
@@ -252,7 +252,7 @@
    "bound": "1.00000E-40",
    "name": "8 heat: F2, H_tot by the integral of every holder's rate, at 5 outputs (over s_F)",
    "passes": true,
-   "residual": "2.86346E-65"
+   "residual": "1.76952E-66"
   },
   {
    "bound": "1.00000E-50",
@@ -342,7 +342,7 @@
    "bound": "1.00000E-40",
    "name": "8 heat: F3, H_tot by the integral of every holder's rate, at 5 outputs (over s_F)",
    "passes": true,
-   "residual": "4.77243E-65"
+   "residual": "2.94919E-66"
   },
   {
    "bound": "1.00000E-50",
@@ -432,7 +432,7 @@
    "bound": "1.00000E-40",
    "name": "8 heat: F4, H_tot by the integral of every holder's rate, at 5 outputs (over s_F)",
    "passes": true,
-   "residual": "1.13709E-65"
+   "residual": "7.07489E-67"
   },
   {
    "bound": "1.00000E-50",
@@ -522,7 +522,7 @@
    "bound": "1.00000E-40",
    "name": "8 heat: F5, H_tot by the integral of every holder's rate, at 5 outputs (over s_F)",
    "passes": true,
-   "residual": "1.29813E-64"
+   "residual": "8.02183E-66"
   },
   {
    "bound": "1.00000E-50",
@@ -612,7 +612,7 @@
    "bound": "1.00000E-40",
    "name": "8 heat: F6, H_tot by the integral of every holder's rate, at 5 outputs (over s_F)",
    "passes": true,
-   "residual": "7.54552E-58"
+   "residual": "1.62142E-65"
   },
   {
    "bound": "1.00000E-50",
@@ -702,7 +702,7 @@
    "bound": "1.00000E-40",
    "name": "8 heat: F6L, H_tot by the integral of every holder's rate, at 5 outputs (over s_F)",
    "passes": true,
-   "residual": "7.54552E-58"
+   "residual": "1.62142E-65"
   },
   {
    "bound": "1.00000E-50",
@@ -810,7 +810,7 @@
    "bound": "1.00000E-40",
    "name": "8 heat: F7, H_tot by the integral of every holder's rate, at 5 outputs (over s_F)",
    "passes": true,
-   "residual": "4.77184E-65"
+   "residual": "2.94883E-66"
   },
   {
    "bound": "1.00000E-50",

@@ -51,6 +51,36 @@
    "residual": "8.02194E-92"
   },
   {
+   "bound": "1.00000E-100",
+   "name": "3 conservation: N-buffered, the two wells' columns sum to zero",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: N-buffered, the two wells' amounts sum to the start (relative)",
+   "passes": true,
+   "residual": "3.51000E-108"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: N-buffered, e^(-Gt) e^(Gt) is the identity",
+   "passes": true,
+   "residual": "5.97300E-107"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: N-buffered, P(h)^S = P(Sh) for every registered h, and two halves make a step",
+   "passes": true,
+   "residual": "2.97000E-108"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: N-buffered, after the exchange the wells hold the start less the sample plus the supplied (relative)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
    "bound": "1.00000E-50",
    "name": "6 two wells: N-buffered, after the exchange, the closed form against the propagator (relative)",
    "passes": true,
@@ -111,6 +141,36 @@
    "residual": "8.02194E-92"
   },
   {
+   "bound": "1.00000E-100",
+   "name": "3 conservation: N-clean, the two wells' columns sum to zero",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: N-clean, the two wells' amounts sum to the start (relative)",
+   "passes": true,
+   "residual": "3.51000E-108"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: N-clean, e^(-Gt) e^(Gt) is the identity",
+   "passes": true,
+   "residual": "5.97300E-107"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: N-clean, P(h)^S = P(Sh) for every registered h, and two halves make a step",
+   "passes": true,
+   "residual": "2.97000E-108"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: N-clean, after the exchange the wells hold the start less the sample plus the supplied (relative)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
    "bound": "1.00000E-50",
    "name": "6 two wells: N-clean, after the exchange, the closed form against the propagator (relative)",
    "passes": true,
@@ -121,6 +181,12 @@
    "name": "6 two wells: N-clean, the face's heat over both intervals against its time integral (relative)",
    "passes": true,
    "residual": "8.34792E-65"
+  },
+  {
+   "bound": "8.88690E-16",
+   "name": "6 two wells: N-none holds 8 and 2 fmol at 16 s, to the declared doubles' rounding",
+   "passes": true,
+   "residual": "6.29082E-16"
   },
   {
    "bound": "1.00000E-50",
@@ -145,6 +211,78 @@
    "name": "6 two wells: N-none, D'(0) = A(0) (relative)",
    "passes": true,
    "residual": "8.02194E-92"
+  },
+  {
+   "bound": "1.00000E-100",
+   "name": "3 conservation: N-none, the two wells' columns sum to zero",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: N-none, the two wells' amounts sum to the start (relative)",
+   "passes": true,
+   "residual": "3.51000E-108"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: N-none, e^(-Gt) e^(Gt) is the identity",
+   "passes": true,
+   "residual": "5.97300E-107"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: N-none, P(h)^S = P(Sh) for every registered h, and two halves make a step",
+   "passes": true,
+   "residual": "2.97000E-108"
+  },
+  {
+   "bound": "1.00000E-100",
+   "name": "3 conservation: eq-tr, the two wells' columns sum to zero",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: eq-tr, the two wells' amounts sum to the start (relative)",
+   "passes": true,
+   "residual": "1.62500E-109"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: eq-tr, e^(-Gt) e^(Gt) is the identity",
+   "passes": true,
+   "residual": "1.79000E-108"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: eq-tr, P(h)^S = P(Sh) for every registered h, and two halves make a step",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-100",
+   "name": "3 conservation: eq-mid, the two wells' columns sum to zero",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "3 conservation: eq-mid, the two wells' amounts sum to the start (relative)",
+   "passes": true,
+   "residual": "3.30000E-109"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: eq-mid, e^(-Gt) e^(Gt) is the identity",
+   "passes": true,
+   "residual": "3.54000E-108"
+  },
+  {
+   "bound": "1.00000E-50",
+   "name": "4 time reversal: eq-mid, P(h)^S = P(Sh) for every registered h, and two halves make a step",
+   "passes": true,
+   "residual": "0"
   },
   {
    "bound": "0",
