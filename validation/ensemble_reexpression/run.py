@@ -730,17 +730,14 @@ def command_of(run, args):
 
 def campaign(inputs, args):
     """Every run of the campaign that has no record yet, in stages, `--workers` at a time, each in
-    its own process on one CPU of this one's."""
+    its own process on this one's CPUs."""
     runs = ordered(inputs, consumers=args.consumer, owed=args.owed)
-    cpus = sorted(os.sched_getaffinity(0))
     folders = Folders(args.runs)
 
-    def make(item):
-        index, run = item
+    def make(run):
         if folders.record(run) is None:
-            cpu = cpus[index % len(cpus)]
             subprocess.run(
-                ["taskset", "-c", str(cpu), *command_of(run, args)],
+                command_of(run, args),
                 cwd=ROOT,
                 env=worker_environment(),
                 stdout=subprocess.DEVNULL,
@@ -755,7 +752,7 @@ def campaign(inputs, args):
     with ThreadPoolExecutor(args.workers) as pool:
         for restarts in (False, True):
             stage = [r for r in runs if (r.restart_time is not None) is restarts]
-            found |= dict(pool.map(make, enumerate(stage)))
+            found |= dict(pool.map(make, stage))
     print(json.dumps(status(inputs, args)))
     return 0 if set(found.values()) <= {"completed"} else 1
 
