@@ -1,0 +1,292 @@
+{
+ "all_changes_flagged": true,
+ "changes": 40,
+ "rows": [
+  {
+   "change": "none",
+   "first": [],
+   "flagged": false
+  },
+  {
+   "change": "an amount changed in its 38th digit",
+   "first": [
+    "invented: inv-F1, amounts, volumes, supplied, labels, H_tot: 169 values, the largest gap over accuracy plus the method's allowance"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "an amount of the loop changed in its 30th digit",
+   "first": [
+    "invented: inv-F6, amounts, volumes, supplied, labels, H_tot: 203 values, the largest gap over accuracy plus the method's allowance"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "a class E at t = 0 made R",
+   "first": [
+    "invented: series names, times and classes re-derived: [('inv-F1', [], ['H_tot'])]"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "a series missing",
+   "first": [
+    "exception KeyError"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "the two directions' collectors swapped",
+   "first": [
+    "invented: inv-F1, amounts, volumes, supplied, labels, H_tot: 169 values, the largest gap over accuracy plus the method's allowance"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "a holder's heat changed in its 22nd digit",
+   "first": [
+    "invented: inv-H1, holder and face heats by Clenshaw-Curtis, H_tot by logarithms (over s_F)"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "two holders' heats swapped",
+   "first": [
+    "invented: inv-H1, holder and face heats by Clenshaw-Curtis, H_tot by logarithms (over s_F)"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "a plant's margin changed",
+   "first": [
+    "reference_invented.json: P14 n_T_1 inv-r4-mid margin is distance over tolerance"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "a planted value changed in its 20th digit",
+   "first": [
+    "reference_invented.json: P11 label_T_tag_K inv-F1L distance is |planted - honest|"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "a planted series changed (P2)",
+   "first": [
+    "invented: P2 planted series inv-F3 B"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "a planted series changed (P4)",
+   "first": [
+    "invented: P4 planted series K"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "a planted series changed (P7)",
+   "first": [
+    "invented: P7 planted series inv-H2"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "a planted series changed (P15)",
+   "first": [
+    "invented: P15 planted series inv-eq-mid"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "a planted series changed (P19, the middle step)",
+   "first": [
+    "invented: P19 planted series at h = 0.2578125"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "the planted series of a step-keyed plant keyed by world alone",
+   "first": [
+    "exception KeyError"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "an accuracy of zero on a value that is not zero",
+   "first": [
+    "reference_invented.json: lists parallel, classes among the six, 40 digits, E entries zero with accuracy 0"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "an E entry that is not zero",
+   "first": [
+    "reference_invented.json: lists parallel, classes among the six, 40 digits, E entries zero with accuracy 0"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "an exchange's heat changed in its 37th digit",
+   "first": [
+    "invented: inv-P8 event's missing heat is the file's own event heat or H_tot"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "an exchange's sample taken after the refill",
+   "first": [
+    "invented: inv-N-buffered, series and event: 34 values, the largest gap over accuracy plus the method's allowance"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "B_def changed in its 37th digit",
+   "first": [
+    "invented: inv-eq-mid, cases: 91 values, the largest gap over accuracy plus the method's allowance"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "the scheme's transfer given as the exact one",
+   "first": [
+    "invented: inv-eq-mid, cases: 91 values, the largest gap over accuracy plus the method's allowance"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "tag and plain swapped in B",
+   "first": [
+    "invented: series names, times and classes re-derived: [('inv-F1L', [], ['label_T_plain_B', 'label_T_tag_B'])]"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "the output times shifted",
+   "first": [
+    "invented: series names, times and classes re-derived: [('inv-G1', [], [])]"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "the state after a portion at the portion's own row",
+   "first": [
+    "reference_invented.json: lists parallel, classes among the six, 40 digits, E entries zero with accuracy 0"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "the exchange world's face heat in its twin after the exchange",
+   "first": [
+    "invented: inv-N-none, series and event: 30 values, the largest gap over accuracy plus the method's allowance"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "the inputs' hash",
+   "first": [
+    "reference_invented.json: inputs_sha256"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "a check that fails",
+   "first": [
+    "reference_invented.json: check fails: 6 two wells: inv-eq-mid, D'(0) = A(0) (relative)"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "the still face's total changed in its 22nd digit",
+   "first": [
+    "invented: inv-J0, holder and face heats by Clenshaw-Curtis, H_tot by logarithms (over s_F)"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "the face beside the flow: its heat left out of the total",
+   "first": [
+    "invented: inv-J1, holder and face heats by Clenshaw-Curtis, H_tot by logarithms (over s_F)"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "a portion's loss changed in its 30th digit",
+   "first": [
+    "invented: inv-G1, series and portions: 45 values, the largest gap over accuracy plus the method's allowance"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "an engine plant's missing heat dropped",
+   "first": [
+    "invented: plants_reported holds ['P8 event', 'P8 flow']"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "an engine plant's missing heat changed",
+   "first": [
+    "invented: inv-P8 flow's missing heat is the file's own event heat or H_tot"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "the E plant's distance zero",
+   "first": [
+    "reference_invented.json: P9 has no margin: tolerance \"0\", margin null, distance not zero"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "the E plant given a margin of 1",
+   "first": [
+    "exception DivisionByZero"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "a plant margin of 9",
+   "first": [
+    "reference_invented.json: P15 n_T_1 inv-eq-mid margin is distance over tolerance"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "a uniform stream's class made S",
+   "first": [
+    "invented: series names, times and classes re-derived: [('inv-H5', [], ['H_A'])]"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "a class outside the six",
+   "first": [
+    "reference_invented.json: lists parallel, classes among the six, 40 digits, E entries zero with accuracy 0"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "a world without the prefix",
+   "first": [
+    "exception KeyError"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "an extra world",
+   "first": [
+    "invented: series names, times and classes re-derived: all"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "a value with fewer digits",
+   "first": [
+    "reference_invented.json: lists parallel, classes among the six, 40 digits, E entries zero with accuracy 0"
+   ],
+   "flagged": true
+  }
+ ],
+ "unchanged_file_clean": true
+}

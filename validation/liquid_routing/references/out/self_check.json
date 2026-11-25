@@ -1,0 +1,3420 @@
+{
+ "passed": 569,
+ "rows": [
+  {
+   "bound": "0",
+   "name": "reference_invented.json: top-level keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: kind, arm, constants, provenance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: inputs_sha256",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: lists parallel, classes among the six, 40 digits, E entries zero with accuracy 0",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: every check passes (296)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P14 n_T_1 inv-r4-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P14 n_T_1 inv-r4-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P14 n_T_1 inv-r4-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P14 n_T_2 inv-r4-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P14 n_T_2 inv-r4-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P14 n_T_2 inv-r4-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P14 n_T_1 inv-r4-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P14 n_T_1 inv-r4-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P14 n_T_1 inv-r4-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P14 n_T_2 inv-r4-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P14 n_T_2 inv-r4-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P14 n_T_2 inv-r4-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P14 n_T_1 inv-r4-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P14 n_T_1 inv-r4-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P14 n_T_1 inv-r4-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P14 n_T_2 inv-r4-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P14 n_T_2 inv-r4-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P14 n_T_2 inv-r4-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P14 n_T_1 inv-r4-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P14 n_T_1 inv-r4-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P14 n_T_1 inv-r4-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P14 n_T_2 inv-r4-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P14 n_T_2 inv-r4-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P14 n_T_2 inv-r4-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P15 n_T_1 inv-eq-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P15 n_T_1 inv-eq-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P15 n_T_1 inv-eq-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P15 n_T_2 inv-eq-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P15 n_T_2 inv-eq-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P15 n_T_2 inv-eq-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P16 H_face inv-eq-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P16 H_face inv-eq-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P16 H_face inv-eq-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P16 H_face inv-eq-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P16 H_face inv-eq-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P16 H_face inv-eq-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P16 H_face inv-eq-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P16 H_face inv-eq-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P16 H_face inv-eq-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P16 H_face inv-eq-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P16 H_face inv-eq-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P16 H_face inv-eq-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P16 H_face inv-eq-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P16 H_face inv-eq-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P16 H_face inv-eq-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P17 sample inv-N-buffered",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P17 sample inv-N-buffered margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P17 sample inv-N-buffered distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P1 n_T_K inv-F1",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P1 n_T_K inv-F1 margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P1 n_T_K inv-F1 distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P1 n_T_K inv-F2",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P1 n_T_K inv-F2 margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P1 n_T_K inv-F2 distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P2 n_T_B inv-F1",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P2 n_T_B inv-F1 margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P2 n_T_B inv-F1 distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P2 n_T_K inv-F1",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P2 n_T_K inv-F1 margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P2 n_T_K inv-F1 distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P2 n_T_B inv-F3",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P2 n_T_B inv-F3 margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P2 n_T_B inv-F3 distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P2 n_T_K inv-F3",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P2 n_T_K inv-F3 margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P2 n_T_K inv-F3 distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P3 V_K inv-F1",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P3 V_K inv-F1 margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P3 V_K inv-F1 distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P3 n_T_B inv-F3",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P3 n_T_B inv-F3 margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P3 n_T_B inv-F3 distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P3 n_T_K inv-F3",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P3 n_T_K inv-F3 margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P3 n_T_K inv-F3 distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P3 V_K inv-F3",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P3 V_K inv-F3 margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P3 V_K inv-F3 distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P4 n_U_B inv-F1",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P4 n_U_B inv-F1 margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P4 n_U_B inv-F1 distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P4 n_U_K inv-F1",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P4 n_U_K inv-F1 margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P4 n_U_K inv-F1 distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P10 n_T_K inv-F1",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P10 n_T_K inv-F1 margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P10 n_T_K inv-F1 distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P11 label_T_tag_K inv-F1L",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P11 label_T_tag_K inv-F1L margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P11 label_T_tag_K inv-F1L distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P9 loss inv-G1",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P9 has no margin: tolerance \"0\", margin null, distance not zero",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P5 H_A inv-H1",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P5 H_A inv-H1 margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P5 H_A inv-H1 distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P7 H_tot inv-H2",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P7 H_tot inv-H2 margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P7 H_tot inv-H2 distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P19 n_T_A inv-J1",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P19 n_T_A inv-J1 margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P19 n_T_A inv-J1 distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: every plant margin is at least 10 (34 plants): all",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: every world and run name has the prefix inv-",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: every world of a run exists",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: classes used ['E', 'R', 'S', 'U']",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: series names, times and classes re-derived: all",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: the plants are exactly ['P1', 'P10', 'P11', 'P14', 'P15', 'P16', 'P17', 'P19', 'P2', 'P3', 'P4', 'P5', 'P7', 'P9']",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: planted series are exactly ['P11', 'P14', 'P15', 'P19', 'P2', 'P3', 'P4', 'P5', 'P7', 'P9']",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: planted series keyed by step exactly where Amendment 1 says",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: plants_reported holds ['P8 event', 'P8 flow']",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: inv-P8 event lists a missing heat at every time",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: inv-P8 event's missing heat is the file's own event heat or H_tot",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: inv-P8 flow lists a missing heat at every time",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: inv-P8 flow's missing heat is the file's own event heat or H_tot",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "invented: inv-F1, amounts, volumes, supplied, labels, H_tot: 169 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "4.324502E-1"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "invented: inv-F1L, amounts, volumes, supplied, labels, H_tot: 271 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "4.324502E-1"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "invented: inv-F2, amounts, volumes, supplied, labels, H_tot: 169 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "4.324502E-1"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "invented: inv-F3, amounts, volumes, supplied, labels, H_tot: 169 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "4.324502E-1"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "invented: inv-F6, amounts, volumes, supplied, labels, H_tot: 203 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "4.451027E-1"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "invented: inv-F7, amounts, volumes, supplied, labels, H_tot: 271 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "4.706497E-1"
+  },
+  {
+   "bound": "0",
+   "name": "invented: inv-G1 has one event block a portion",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: inv-G1 portion 0 time and class",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: inv-G1 portion 1 time and class",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "invented: inv-G1, series and portions: 45 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "1.162282E-1"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "invented: inv-G5, series and portions: 45 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "4.207501E-1"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "invented: inv-H1, amounts, volumes, supplied, labels: 45 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "2.179996E-1"
+  },
+  {
+   "bound": "1.000E-24",
+   "name": "invented: inv-H1, holder and face heats by Clenshaw-Curtis, H_tot by logarithms (over s_F)",
+   "passes": true,
+   "residual": "5.535806E-42"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "invented: inv-H2, amounts, volumes, supplied, labels: 45 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "2.340560E-1"
+  },
+  {
+   "bound": "1.000E-24",
+   "name": "invented: inv-H2, holder and face heats by Clenshaw-Curtis, H_tot by logarithms (over s_F)",
+   "passes": true,
+   "residual": "8.813812E-42"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "invented: inv-H5, amounts, volumes, supplied, labels: 81 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "8.860759E-60"
+  },
+  {
+   "bound": "1.000E-24",
+   "name": "invented: inv-H5, holder and face heats by Clenshaw-Curtis, H_tot by logarithms (over s_F)",
+   "passes": true,
+   "residual": "1.422791E-101"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "invented: inv-J0, amounts, volumes, supplied, labels: 81 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "5.940048E-2"
+  },
+  {
+   "bound": "1.000E-24",
+   "name": "invented: inv-J0, holder and face heats by Clenshaw-Curtis, H_tot by logarithms (over s_F)",
+   "passes": true,
+   "residual": "2.433353E-42"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "invented: inv-J1, amounts, volumes, supplied, labels: 81 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "3.608578E-1"
+  },
+  {
+   "bound": "1.000E-24",
+   "name": "invented: inv-J1, holder and face heats by Clenshaw-Curtis, H_tot by logarithms (over s_F)",
+   "passes": true,
+   "residual": "3.474040E-41"
+  },
+  {
+   "bound": "0",
+   "name": "invented: event inv-N-buffered time and classes",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "invented: inv-N-buffered, series and event: 34 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "4.266548E-1"
+  },
+  {
+   "bound": "0",
+   "name": "invented: no event for inv-N-none",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "invented: inv-N-none, series and event: 30 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "2.976779E-1"
+  },
+  {
+   "bound": "0",
+   "name": "invented: case inv-eq-mid|1.25 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: case inv-eq-mid|0.625 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: case inv-eq-mid|0.3125 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: case inv-eq-mid|0.15625 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: case inv-eq-mid|0.078125 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: case inv-eq-mid|0.0390625 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: case inv-eq-mid|0.01953125 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: case inv-eq-mid|0.009765625 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "invented: inv-eq-mid, cases: 91 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "3.875738E-1"
+  },
+  {
+   "bound": "0",
+   "name": "invented: case inv-eq-tr|0.0390625 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "invented: inv-eq-tr, cases: 14 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "1.152145E-1"
+  },
+  {
+   "bound": "0",
+   "name": "invented: case inv-r4-mid|1.25 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: case inv-r4-mid|0.625 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: case inv-r4-mid|0.3125 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: case inv-r4-mid|0.15625 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "invented: inv-r4-mid, cases: 47 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "3.914436E-1"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P14 inv-r4-mid h=1.25 recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P14 planted series inv-r4-mid|1.25",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P14 inv-r4-mid h=0.625 recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P14 planted series inv-r4-mid|0.625",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P14 inv-r4-mid h=0.3125 recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P14 planted series inv-r4-mid|0.3125",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P14 inv-r4-mid h=0.15625 recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P14 planted series inv-r4-mid|0.15625",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P15 inv-eq-mid recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P15 inv-eq-mid (well 2) recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P15 planted series inv-eq-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P16 default h=0.078125 recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P16 default h=0.0390625 recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P16 default h=0.01953125 recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P16 default h=0.009765625 recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P16 exact j=0 recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P17 recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P1 inv-F1 recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P1 inv-F2 recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P10 recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P2 inv-F1 B recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P2 planted series inv-F1 B",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P2 inv-F1 K recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P2 planted series inv-F1 K",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P2 inv-F3 B recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P2 planted series inv-F3 B",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P2 inv-F3 K recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P2 planted series inv-F3 K",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E-80",
+   "name": "invented: P3's amounts are the honest ones at equal volumes, inv-F1 (fmol)",
+   "passes": true,
+   "residual": "1.000000E-98"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P3 inv-F1 V_K recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P3 planted series inv-F1",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P3 inv-F3 B recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P3 inv-F3 K recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P3 inv-F3 V_K recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P3 planted series inv-F3",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P4 B recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P4 planted series B",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P4 K recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P4 planted series K",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P11 recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P11 planted series",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P9 recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P9 planted series",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E-24",
+   "name": "invented: P5 honest, planted and tolerance recomputed (relative)",
+   "passes": true,
+   "residual": "3.515199E-40"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P5 is class S at its largest gap",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P5 planted series",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E-30",
+   "name": "invented: P7 inv-H2 recomputed (relative)",
+   "passes": true,
+   "residual": "2.487037E-40"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P7 inv-H2 at its best entry",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P7 planted series inv-H2",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P19 recomputed (honest, planted, tolerance, order at most 1.25)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P19 planted series at h = 0.515625",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P19 planted series at h = 0.2578125",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "invented: P19 planted series at h = 0.12890625",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: top-level keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: kind, arm, constants, provenance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: inputs_sha256",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: lists parallel, classes among the six, 40 digits, E entries zero with accuracy 0",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: every check passes (88)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: plant keys P14 n_T_1 r4-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P14 n_T_1 r4-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P14 n_T_1 r4-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: plant keys P14 n_T_2 r4-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P14 n_T_2 r4-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P14 n_T_2 r4-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: plant keys P14 n_T_1 r4-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P14 n_T_1 r4-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P14 n_T_1 r4-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: plant keys P14 n_T_2 r4-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P14 n_T_2 r4-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P14 n_T_2 r4-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: plant keys P14 n_T_1 r4-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P14 n_T_1 r4-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P14 n_T_1 r4-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: plant keys P14 n_T_2 r4-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P14 n_T_2 r4-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P14 n_T_2 r4-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: plant keys P14 n_T_1 r4-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P14 n_T_1 r4-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P14 n_T_1 r4-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: plant keys P14 n_T_2 r4-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P14 n_T_2 r4-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P14 n_T_2 r4-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: plant keys P15 n_T_1 eq-lo",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P15 n_T_1 eq-lo margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P15 n_T_1 eq-lo distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: plant keys P15 n_T_2 eq-lo",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P15 n_T_2 eq-lo margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P15 n_T_2 eq-lo distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: plant keys P15 n_T_1 eq-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P15 n_T_1 eq-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P15 n_T_1 eq-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: plant keys P15 n_T_2 eq-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P15 n_T_2 eq-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P15 n_T_2 eq-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: plant keys P15 n_T_1 eq-hi",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P15 n_T_1 eq-hi margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P15 n_T_1 eq-hi distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: plant keys P15 n_T_2 eq-hi",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P15 n_T_2 eq-hi margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P15 n_T_2 eq-hi distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: plant keys P16 H_face eq-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P16 H_face eq-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P16 H_face eq-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: plant keys P16 H_face eq-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P16 H_face eq-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P16 H_face eq-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: plant keys P16 H_face eq-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P16 H_face eq-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P16 H_face eq-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: plant keys P16 H_face eq-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P16 H_face eq-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P16 H_face eq-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: plant keys P16 H_face eq-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P16 H_face eq-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P16 H_face eq-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: every plant margin is at least 10 (19 plants): all",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: series names, times and classes re-derived: all",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: the plants are exactly ['P14', 'P15', 'P16']",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: planted series are exactly ['P14', 'P15']",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: planted series keyed by step exactly where Amendment 1 says",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: plants_reported holds []",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-hi|2.0 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-hi|1.0 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-hi|0.5 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-hi|0.25 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-hi|0.125 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-hi|0.0625 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-hi|0.03125 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-hi|0.015625 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "arm1: eq-hi, cases: 91 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "2.728819E-1"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-lo|2.0 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-lo|1.0 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-lo|0.5 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-lo|0.25 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-lo|0.125 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "arm1: eq-lo, cases: 58 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "3.245249E-1"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-mid|2.0 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-mid|1.0 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-mid|0.5 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-mid|0.25 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-mid|0.125 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-mid|0.0625 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-mid|0.03125 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-mid|0.015625 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "arm1: eq-mid, cases: 91 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "3.413848E-1"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-tr|2.0 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-tr|1.0 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-tr|0.5 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-tr|0.25 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case eq-tr|0.125 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "arm1: eq-tr, cases: 58 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "3.910039E-1"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case r4-hi|2.0 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case r4-hi|1.0 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case r4-hi|0.5 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case r4-hi|0.25 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case r4-hi|0.125 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case r4-hi|0.0625 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case r4-hi|0.03125 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case r4-hi|0.015625 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "arm1: r4-hi, cases: 91 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "3.446911E-1"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case r4-lo|2.0 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case r4-lo|1.0 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case r4-lo|0.5 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case r4-lo|0.25 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case r4-lo|0.125 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "arm1: r4-lo, cases: 58 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "3.002356E-1"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case r4-mid|2.0 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case r4-mid|1.0 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case r4-mid|0.5 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case r4-mid|0.25 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case r4-mid|0.125 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case r4-mid|0.0625 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case r4-mid|0.03125 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: case r4-mid|0.015625 keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "arm1: r4-mid, cases: 91 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "2.942331E-1"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: P14 r4-mid h=2.0 recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: P14 planted series r4-mid|2.0",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: P14 r4-mid h=1.0 recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: P14 planted series r4-mid|1.0",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: P14 r4-mid h=0.5 recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: P14 planted series r4-mid|0.5",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: P14 r4-mid h=0.25 recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: P14 planted series r4-mid|0.25",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: P15 eq-lo recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: P15 eq-lo (well 2) recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: P15 planted series eq-lo",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: P15 eq-mid recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: P15 eq-mid (well 2) recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: P15 planted series eq-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: P15 eq-hi recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: P15 eq-hi (well 2) recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: P15 planted series eq-hi",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: P16 default h=0.125 recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: P16 default h=0.0625 recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: P16 default h=0.03125 recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: P16 default h=0.015625 recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: P16 exact j=0 recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm2.json: top-level keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm2.json: kind, arm, constants, provenance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm2.json: inputs_sha256",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm2.json: lists parallel, classes among the six, 40 digits, E entries zero with accuracy 0",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm2.json: every check passes (52)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm2.json: plant keys P17 sample N-buffered",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm2.json: P17 sample N-buffered margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm2.json: P17 sample N-buffered distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm2.json: every plant margin is at least 10 (1 plants): all",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm2: series names, times and classes re-derived: all",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm2: the plants are exactly ['P17']",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm2: planted series are exactly []",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm2: planted series keyed by step exactly where Amendment 1 says",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm2: plants_reported holds ['P8 event']",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm2: P8 event lists a missing heat at every time",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm2: P8 event's missing heat is the file's own event heat or H_tot",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm2: event N-buffered time and classes",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "arm2: N-buffered, series and event: 79 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "3.181784E-1"
+  },
+  {
+   "bound": "0",
+   "name": "arm2: event N-clean time and classes",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "arm2: N-clean, series and event: 79 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "3.181784E-1"
+  },
+  {
+   "bound": "0",
+   "name": "arm2: no event for N-none",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "arm2: N-none, series and event: 75 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "3.181784E-1"
+  },
+  {
+   "bound": "0",
+   "name": "arm2: P17 recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: top-level keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: kind, arm, constants, provenance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: inputs_sha256",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: lists parallel, classes among the six, 40 digits, E entries zero with accuracy 0",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: every check passes (156)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: plant keys P1 n_T_K F1",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: P1 n_T_K F1 margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: P1 n_T_K F1 distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: plant keys P1 n_T_K F2",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: P1 n_T_K F2 margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: P1 n_T_K F2 distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: plant keys P2 n_T_B F1",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: P2 n_T_B F1 margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: P2 n_T_B F1 distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: plant keys P2 n_T_K F1",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: P2 n_T_K F1 margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: P2 n_T_K F1 distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: plant keys P2 n_T_B F3",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: P2 n_T_B F3 margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: P2 n_T_B F3 distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: plant keys P2 n_T_K F3",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: P2 n_T_K F3 margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: P2 n_T_K F3 distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: plant keys P3 V_K F1",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: P3 V_K F1 margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: P3 V_K F1 distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: plant keys P3 n_T_B F3",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: P3 n_T_B F3 margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: P3 n_T_B F3 distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: plant keys P3 n_T_K F3",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: P3 n_T_K F3 margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: P3 n_T_K F3 distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: plant keys P3 V_K F3",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: P3 V_K F3 margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: P3 V_K F3 distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: plant keys P4 n_U_B F1",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: P4 n_U_B F1 margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: P4 n_U_B F1 distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: plant keys P4 n_U_K F1",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: P4 n_U_K F1 margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: P4 n_U_K F1 distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: plant keys P10 n_T_K F1",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: P10 n_T_K F1 margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: P10 n_T_K F1 distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: plant keys P11 label_T_tag_K F1L",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: P11 label_T_tag_K F1L margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: P11 label_T_tag_K F1L distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: every plant margin is at least 10 (14 plants): all",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm3: series names, times and classes re-derived: all",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm3: the plants are exactly ['P1', 'P10', 'P11', 'P2', 'P3', 'P4']",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm3: planted series are exactly ['P11', 'P2', 'P3', 'P4']",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm3: planted series keyed by step exactly where Amendment 1 says",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm3: plants_reported holds ['P8 flow']",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm3: P8 flow lists a missing heat at every time",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm3: P8 flow's missing heat is the file's own event heat or H_tot",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "arm3: F1, amounts, volumes, supplied, labels, H_tot: 169 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "4.466058E-1"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "arm3: F1L, amounts, volumes, supplied, labels, H_tot: 271 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "4.466058E-1"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "arm3: F2, amounts, volumes, supplied, labels, H_tot: 169 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "4.071029E-1"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "arm3: F3, amounts, volumes, supplied, labels, H_tot: 169 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "4.100317E-1"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "arm3: F4, amounts, volumes, supplied, labels, H_tot: 169 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "3.878900E-1"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "arm3: F5, amounts, volumes, supplied, labels, H_tot: 237 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "3.954577E-1"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "arm3: F6, amounts, volumes, supplied, labels, H_tot: 203 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "3.530174E-1"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "arm3: F6L, amounts, volumes, supplied, labels, H_tot: 339 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "4.276781E-1"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "arm3: F7, amounts, volumes, supplied, labels, H_tot: 271 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "4.466058E-1"
+  },
+  {
+   "bound": "0",
+   "name": "arm3: P1 F1 recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm3: P1 F2 recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm3: P10 recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm3: P2 F1 B recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm3: P2 planted series F1 B",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm3: P2 F1 K recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm3: P2 planted series F1 K",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm3: P2 F3 B recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm3: P2 planted series F3 B",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm3: P2 F3 K recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm3: P2 planted series F3 K",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E-80",
+   "name": "arm3: P3's amounts are the honest ones at equal volumes, F1 (fmol)",
+   "passes": true,
+   "residual": "6.000000E-99"
+  },
+  {
+   "bound": "0",
+   "name": "arm3: P3 F1 V_K recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm3: P3 planted series F1",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm3: P3 F3 B recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm3: P3 F3 K recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm3: P3 F3 V_K recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm3: P3 planted series F3",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm3: P4 B recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm3: P4 planted series B",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm3: P4 K recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm3: P4 planted series K",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm3: P11 recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm3: P11 planted series",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm4.json: top-level keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm4.json: kind, arm, constants, provenance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm4.json: inputs_sha256",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm4.json: lists parallel, classes among the six, 40 digits, E entries zero with accuracy 0",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm4.json: every check passes (50)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm4.json: plant keys P9 loss G1",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm4.json: P9 has no margin: tolerance \"0\", margin null, distance not zero",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm4.json: every plant margin is at least 10 (1 plants): all",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm4: series names, times and classes re-derived: all",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm4: the plants are exactly ['P9']",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm4: planted series are exactly ['P9']",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm4: planted series keyed by step exactly where Amendment 1 says",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm4: plants_reported holds []",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm4: G1 has one event block a portion",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm4: G1 portion 0 time and class",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm4: G1 portion 1 time and class",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "arm4: G1, series and portions: 45 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "5.173480E-2"
+  },
+  {
+   "bound": "0",
+   "name": "arm4: G2 has one event block a portion",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm4: G2 portion 0 time and class",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm4: G2 portion 1 time and class",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "arm4: G2, series and portions: 45 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "5.173480E-2"
+  },
+  {
+   "bound": "0",
+   "name": "arm4: G3 has one event block a portion",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm4: G3 portion 0 time and class",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm4: G3 portion 1 time and class",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm4: G3 portion 2 time and class",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "arm4: G3, series and portions: 60 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "3.657920E-1"
+  },
+  {
+   "bound": "0",
+   "name": "arm4: G4 has one event block a portion",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm4: G4 portion 0 time and class",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm4: G4 portion 1 time and class",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm4: G4 portion 2 time and class",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "arm4: G4, series and portions: 60 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "2.692655E-1"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "arm4: G5, series and portions: 45 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "6.963829E-2"
+  },
+  {
+   "bound": "0",
+   "name": "arm4: P9 recomputed (honest, planted, tolerance)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm4: P9 planted series",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm5.json: top-level keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm5.json: kind, arm, constants, provenance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm5.json: inputs_sha256",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm5.json: lists parallel, classes among the six, 40 digits, E entries zero with accuracy 0",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm5.json: every check passes (90)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm5.json: plant keys P5 H_A H1",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm5.json: P5 H_A H1 margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm5.json: P5 H_A H1 distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm5.json: plant keys P7 H_tot H2",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm5.json: P7 H_tot H2 margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm5.json: P7 H_tot H2 distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm5.json: plant keys P7 H_tot H3",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm5.json: P7 H_tot H3 margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm5.json: P7 H_tot H3 distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm5.json: plant keys P7 H_tot H4",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm5.json: P7 H_tot H4 margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm5.json: P7 H_tot H4 distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm5.json: every plant margin is at least 10 (4 plants): all",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm5: series names, times and classes re-derived: all",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm5: the plants are exactly ['P5', 'P7']",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm5: planted series are exactly ['P5', 'P7']",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm5: planted series keyed by step exactly where Amendment 1 says",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm5: plants_reported holds []",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "arm5: H1, amounts, volumes, supplied, labels: 45 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "2.305906E-1"
+  },
+  {
+   "bound": "1.000E-24",
+   "name": "arm5: H1, holder and face heats by Clenshaw-Curtis, H_tot by logarithms (over s_F)",
+   "passes": true,
+   "residual": "6.872757E-42"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "arm5: H2, amounts, volumes, supplied, labels: 45 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "2.032056E-1"
+  },
+  {
+   "bound": "1.000E-24",
+   "name": "arm5: H2, holder and face heats by Clenshaw-Curtis, H_tot by logarithms (over s_F)",
+   "passes": true,
+   "residual": "8.472818E-42"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "arm5: H3, amounts, volumes, supplied, labels: 45 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "2.620433E-1"
+  },
+  {
+   "bound": "1.000E-24",
+   "name": "arm5: H3, holder and face heats by Clenshaw-Curtis, H_tot by logarithms (over s_F)",
+   "passes": true,
+   "residual": "6.974037E-42"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "arm5: H4, amounts, volumes, supplied, labels: 45 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "2.867758E-1"
+  },
+  {
+   "bound": "1.000E-24",
+   "name": "arm5: H4, holder and face heats by Clenshaw-Curtis, H_tot by logarithms (over s_F)",
+   "passes": true,
+   "residual": "4.722446E-42"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "arm5: H5, amounts, volumes, supplied, labels: 81 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "1.677019E-59"
+  },
+  {
+   "bound": "1.000E-24",
+   "name": "arm5: H5, holder and face heats by Clenshaw-Curtis, H_tot by logarithms (over s_F)",
+   "passes": true,
+   "residual": "2.448311E-101"
+  },
+  {
+   "bound": "1.000E-24",
+   "name": "arm5: P5 honest, planted and tolerance recomputed (relative)",
+   "passes": true,
+   "residual": "2.274546E-40"
+  },
+  {
+   "bound": "0",
+   "name": "arm5: P5 is class S at its largest gap",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm5: P5 planted series",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E-30",
+   "name": "arm5: P7 H2 recomputed (relative)",
+   "passes": true,
+   "residual": "2.910611E-40"
+  },
+  {
+   "bound": "0",
+   "name": "arm5: P7 H2 at its best entry",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm5: P7 planted series H2",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E-30",
+   "name": "arm5: P7 H3 recomputed (relative)",
+   "passes": true,
+   "residual": "1.359560E-40"
+  },
+  {
+   "bound": "0",
+   "name": "arm5: P7 H3 at its best entry",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm5: P7 planted series H3",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E-30",
+   "name": "arm5: P7 H4 recomputed (relative)",
+   "passes": true,
+   "residual": "1.718229E-40"
+  },
+  {
+   "bound": "0",
+   "name": "arm5: P7 H4 at its best entry",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm5: P7 planted series H4",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm6.json: top-level keys",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm6.json: kind, arm, constants, provenance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm6.json: inputs_sha256",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm6.json: lists parallel, classes among the six, 40 digits, E entries zero with accuracy 0",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm6.json: every check passes (39)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm6.json: plant keys P19 n_T_A J1",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm6.json: P19 n_T_A J1 margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm6.json: P19 n_T_A J1 distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm6.json: every plant margin is at least 10 (1 plants): all",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm6: series names, times and classes re-derived: all",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm6: the plants are exactly ['P19']",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm6: planted series are exactly ['P19']",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm6: planted series keyed by step exactly where Amendment 1 says",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm6: plants_reported holds []",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "arm6: J0, amounts, volumes, supplied, labels: 81 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "6.139223E-2"
+  },
+  {
+   "bound": "1.000E-24",
+   "name": "arm6: J0, holder and face heats by Clenshaw-Curtis, H_tot by logarithms (over s_F)",
+   "passes": true,
+   "residual": "2.702189E-42"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "arm6: J1, amounts, volumes, supplied, labels: 81 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "2.450966E-1"
+  },
+  {
+   "bound": "1.000E-24",
+   "name": "arm6: J1, holder and face heats by Clenshaw-Curtis, H_tot by logarithms (over s_F)",
+   "passes": true,
+   "residual": "2.642238E-41"
+  },
+  {
+   "bound": "0",
+   "name": "arm6: P19 recomputed (honest, planted, tolerance, order at most 1.25)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm6: P19 planted series at h = 0.5",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm6: P19 planted series at h = 0.25",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "arm6: P19 planted series at h = 0.125",
+   "passes": true,
+   "residual": "0"
+  }
+ ],
+ "total": 569
+}

@@ -1,0 +1,63 @@
+{
+ "byte_identical_under_other_seeds": {
+  "1": true,
+  "271828": true
+ },
+ "command": "python -B -P write_references.py --out DIR --revision REV (PYTHONPATH empty)",
+ "decimal_rounding": "ROUND_HALF_EVEN",
+ "hash_seeds": {
+  "others": [
+   "1",
+   "271828"
+  ],
+  "own": "0"
+ },
+ "implementation": "CPython",
+ "kind": "liquid-routing references provenance, version 1",
+ "libmpdec": "2.5.1",
+ "libraries": "the standard library only",
+ "machine": "x86_64",
+ "platform": "Linux-6.12.117+deb13-cloud-amd64-x86_64-with-glibc2.41",
+ "published_digits": 40,
+ "python": "3.13.5",
+ "source_files_sha256": {
+  "component_tests.py": "6c5bc6d24f5d11dbbf1f547394da85fe0a18473156479d0d8c68a049414ad84e",
+  "lrrefs/__init__.py": "cc3d60a64e890751eba17b92c2d47a42e719e59de8b1925ce0cce4d03ff39ed5",
+  "lrrefs/arith.py": "d5ad9c83af8528cab066812eeef723b1c56393ed945332aa75037ca30cf5d5d5",
+  "lrrefs/arms.py": "001fea324b995ffbac4bd58d590fb283eafb8246db47128c9f60a1b3c6cecc40",
+  "lrrefs/checks.py": "660ade60518f642cf32a1599480107eabe3481a61720e88c884ef3ad2b5c8e71",
+  "lrrefs/emulation.py": "e2eeb422e3c33926ef563330207ebbe5b5642bd5a488acb08fa5785010080f7d",
+  "lrrefs/flow.py": "20bdf287a430fe070281aea8d1d842f53e63c60f485a0f02c0d2f492f5d3d3f1",
+  "lrrefs/heats.py": "23d27dcdc9a501ef92f7659c551c18df807ac259830e067f97f2b6ba67ecb2b7",
+  "lrrefs/invented.py": "54f63f075eb806bd0079ee938a6845f5d53750745dcdb37aea93def187cdb889",
+  "lrrefs/laws.py": "ccbd091866edd9978ab84b86b9a4607328e376cc4d363cbae0159a6b129e5e16",
+  "lrrefs/plans.py": "ed141376251839dc9adef3242ce30e5ad08144d03f2da5e4d97d0ce294f73ba9",
+  "lrrefs/plants.py": "5713dfb9a2ebe9729e5687987ca9f42c359c879ddfbb0eaf81a59bc44a0ef6dd",
+  "lrrefs/propagator.py": "03d311621d744ef3a63eb014253f4794ebe66b79f2460c2584805b9fa813965d",
+  "lrrefs/quadrature.py": "5bf9fe9a8c47ed46afc2bf9fdf5218b5c689bbe41bf08526bed499ec685011a3",
+  "lrrefs/scales.py": "49e22a2fa2e4988c909becd5a4cfa7df2d376b040cd0e7c3ffd50c587725af9e",
+  "lrrefs/splitting.py": "a2543ab3213758c3066a8251ec850ae876e3fff565bd60eb945a46c175c4fdbe",
+  "lrrefs/world.py": "2ea73d27dcee083ddb3740550fc5c2bd0e756619e668f1d7861f5eee6f5c6ef9",
+  "lrrefs/writer.py": "b3e76f8515ab5d657913519d47b77ec1b7f000468fef67bf37b56dcf9615ad93",
+  "mutation_tests.py": "4b57180e6de7b8689a2d76c5df30134ab97c8b11711cf7617acfb2d3253ef707",
+  "regenerate.py": "1c2136224b45f89c2b5426b836b758a75808b18a3408b9ec17920eceee2a7181",
+  "self_check.py": "9b87cb7a55d7241dbcd5d8bd1790b52c52dc63a36a698b0d8a3135cd41733972",
+  "write_references.py": "fd28906cbef3a0f56c2646f5621cc0349fb355b17f57623c28318a70c3bb8f61"
+ },
+ "spec_files_sha256": {
+  "AMENDMENT-1-2026-11-25.md": "94afc4ce9fb07647bae1627f2735e509290bbc080f2d1e14de543fdc8a61095b",
+  "CRITERIA.md": "ef4c2245d8e4d73468f698cae3729abe66b8311c8b92e7413942a9becf54b741",
+  "LAWS.md": "8ab78bed70073743ff394250f166b4b8f868df47533ce8d779b3c9c95e0381d1",
+  "README.md": "bd298a1ff36299966a1ef49e5cbf71232fb9aa086bce92d236eae923a48ccfd9",
+  "READOUTS.md": "8afa32ddb13b3aaff988426a40aba78e2120edf7d09eef8024bf4c56458a295b",
+  "SPEC.md": "01a6357f8c3579007dcb7ead75b3983f8f6f1fc599c658281e0f876b287d76f3",
+  "TABLE.md": "eafc946eea18f2eda1e628476b437be4d5de6d619347b7109e5cdc716b147beb",
+  "inputs.json": "50cd5a03b1efd0a503bcc85a25ac6648336a790a14e4b0c2d2cb0b21be3574d4"
+ },
+ "spec_revision": "915ac820366f5eb0125af92dcd266f9b9ef75491",
+ "working_digits": {
+  "a centred difference": 260,
+  "propagators and closed forms": 110,
+  "quadratures": 120
+ }
+}

@@ -49,6 +49,8 @@ def main():
         identical[seed] = not differing[seed]
         print(f"seed {seed}: {'identical' if identical[seed] else 'DIFFERS ' + str(differing[seed])}", flush=True)
     spec = os.path.join(HERE, os.pardir, "spec")
+    sources = sorted(name for name in os.listdir(HERE) if name.endswith(".py"))
+    sources += sorted(os.path.join("lrrefs", name) for name in os.listdir(os.path.join(HERE, "lrrefs")) if name.endswith(".py"))
     provenance = {
         "kind": "liquid-routing references provenance, version 1",
         "command": "python -B -P write_references.py --out DIR --revision REV (PYTHONPATH empty)",
@@ -62,6 +64,7 @@ def main():
         "byte_identical_under_other_seeds": identical,
         "spec_revision": arguments.revision,
         "spec_files_sha256": {name: sha(os.path.join(spec, name)) for name in sorted(os.listdir(spec))},
+        "source_files_sha256": {name: sha(os.path.join(HERE, name)) for name in sources},
         "working_digits": {"propagators and closed forms": 110, "quadratures": 120, "a centred difference": 260},
         "published_digits": 40,
         "decimal_rounding": "ROUND_HALF_EVEN",

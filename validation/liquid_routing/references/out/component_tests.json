@@ -1,0 +1,504 @@
+{
+ "passed": 83,
+ "tests": [
+  {
+   "bound": "1.00000E-90",
+   "name": "propagator: a Jordan block of six equal rates at at = 0.000001 (relative, every entry)",
+   "passes": true,
+   "residual": "1.80000E-109"
+  },
+  {
+   "bound": "1.00000E-90",
+   "name": "propagator: a Jordan block of six equal rates at at = 1 (relative, every entry)",
+   "passes": true,
+   "residual": "1.66000E-108"
+  },
+  {
+   "bound": "1.00000E-90",
+   "name": "propagator: a Jordan block of six equal rates at at = 30 (relative, every entry)",
+   "passes": true,
+   "residual": "1.70200E-106"
+  },
+  {
+   "bound": "1.00000E-90",
+   "name": "propagator: a Jordan block of six equal rates at at = 300 (relative, every entry)",
+   "passes": true,
+   "residual": "1.58900E-105"
+  },
+  {
+   "bound": "1.00000E-98",
+   "name": "propagator: a rotation by 0.3 (complex rates) against the series of sin and cos",
+   "passes": true,
+   "residual": "9.30000E-109"
+  },
+  {
+   "bound": "1.00000E-98",
+   "name": "propagator: a rotation by 7 (complex rates) against the series of sin and cos",
+   "passes": true,
+   "residual": "7.71000E-108"
+  },
+  {
+   "bound": "1.00000E-98",
+   "name": "propagator: a rotation by 200 (complex rates) against the series of sin and cos",
+   "passes": true,
+   "residual": "2.67420E-106"
+  },
+  {
+   "bound": "1.00000E-90",
+   "name": "propagator: a stiff exchange 1000, 0.000001 in closed form (relative)",
+   "passes": true,
+   "residual": "2.14552E-104"
+  },
+  {
+   "bound": "1.00000E-90",
+   "name": "propagator: a stiff exchange 3.7, 0.02 in closed form (relative)",
+   "passes": true,
+   "residual": "7.28900E-107"
+  },
+  {
+   "bound": "1.00000E-100",
+   "name": "propagator: a dense matrix of both signs against itself at 220 digits",
+   "passes": true,
+   "residual": "2.27248E-107"
+  },
+  {
+   "bound": "1.00000E-90",
+   "name": "propagator: e^(G(s+t)) = e^(Gs) e^(Gt), dense, incommensurate times",
+   "passes": true,
+   "residual": "5.69475E-107"
+  },
+  {
+   "bound": "0",
+   "name": "propagator: a zero generator is exactly the identity",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-90",
+   "name": "propagator: uniformization agrees with scaling and squaring (relative, every entry)",
+   "passes": true,
+   "residual": "4.31000E-107"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "equal rates: the propagator at V_B = V_A (1 + 2^-10) is within 2^-10 at of the confluent form (relative)",
+   "passes": true,
+   "residual": "4.99736E-1"
+  },
+  {
+   "bound": "1.00000E-94",
+   "name": "equal rates: the closed form with a != b at V_B = V_A (1 + 2^-10) against the propagator (relative)",
+   "passes": true,
+   "residual": "1.82000E-107"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "equal rates: the propagator at V_B = V_A (1 + 2^-60) is within 2^-60 at of the confluent form (relative)",
+   "passes": true,
+   "residual": "5.00000E-1"
+  },
+  {
+   "bound": "1.00000E-79",
+   "name": "equal rates: the closed form with a != b at V_B = V_A (1 + 2^-60) against the propagator (relative)",
+   "passes": true,
+   "residual": "6.08158E-92"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "equal rates: the propagator at V_B = V_A (1 + 2^-120) is within 2^-120 at of the confluent form (relative)",
+   "passes": true,
+   "residual": "5.00000E-1"
+  },
+  {
+   "bound": "1.00000E-60",
+   "name": "equal rates: the closed form with a != b at V_B = V_A (1 + 2^-120) against the propagator (relative)",
+   "passes": true,
+   "residual": "2.73804E-74"
+  },
+  {
+   "bound": "1.00000E+0",
+   "name": "equal rates: the propagator at V_B = V_A (1 + 2^-200) is within 2^-200 at of the confluent form (relative)",
+   "passes": true,
+   "residual": "5.00000E-1"
+  },
+  {
+   "bound": "1.00000E-90",
+   "name": "equal rates: the confluent chain against the propagator at t = 1E-20 (largest of A and B, relative)",
+   "passes": true,
+   "residual": "1.00000E-109"
+  },
+  {
+   "bound": "1.00000E-90",
+   "name": "equal rates: the confluent chain against the propagator at t = 0.5 (largest of A and B, relative)",
+   "passes": true,
+   "residual": "2.00000E-109"
+  },
+  {
+   "bound": "1.00000E-90",
+   "name": "equal rates: the confluent chain against the propagator at t = 8 (largest of A and B, relative)",
+   "passes": true,
+   "residual": "1.40000E-108"
+  },
+  {
+   "bound": "1.00000E-90",
+   "name": "equal rates: the confluent chain against the propagator at t = 160 (largest of A and B, relative)",
+   "passes": true,
+   "residual": "6.81700E-107"
+  },
+  {
+   "bound": "1.00000E-45",
+   "name": "singularity: B and the inlet at 0 mM, the holders' heats sum to H_tot, graded Gauss (over RT N)",
+   "passes": true,
+   "residual": "2.18623E-63"
+  },
+  {
+   "bound": "1.00000E-45",
+   "name": "singularity: B and the inlet at 0 mM, the holders' heats sum to H_tot, tanh-sinh (over RT N)",
+   "passes": true,
+   "residual": "1.21921E-54"
+  },
+  {
+   "bound": "1.00000E-45",
+   "name": "singularity: B and the inlet at 0 mM, the two quadratures on every holder (over RT N)",
+   "passes": true,
+   "residual": "1.21921E-54"
+  },
+  {
+   "bound": "1.00000E-45",
+   "name": "singularity: B and the inlet at 1e-60 mM, the holders' heats sum to H_tot, graded Gauss (over RT N)",
+   "passes": true,
+   "residual": "2.18623E-63"
+  },
+  {
+   "bound": "1.00000E-45",
+   "name": "singularity: B and the inlet at 1e-60 mM, the holders' heats sum to H_tot, tanh-sinh (over RT N)",
+   "passes": true,
+   "residual": "1.21921E-54"
+  },
+  {
+   "bound": "1.00000E-45",
+   "name": "singularity: B and the inlet at 1e-60 mM, the two quadratures on every holder (over RT N)",
+   "passes": true,
+   "residual": "1.21921E-54"
+  },
+  {
+   "bound": "1.00000E-45",
+   "name": "singularity: B and the inlet at 1e-30 mM, the holders' heats sum to H_tot, graded Gauss (over RT N)",
+   "passes": true,
+   "residual": "2.18623E-63"
+  },
+  {
+   "bound": "1.00000E-45",
+   "name": "singularity: B and the inlet at 1e-30 mM, the holders' heats sum to H_tot, tanh-sinh (over RT N)",
+   "passes": true,
+   "residual": "1.21921E-54"
+  },
+  {
+   "bound": "1.00000E-45",
+   "name": "singularity: B and the inlet at 1e-30 mM, the two quadratures on every holder (over RT N)",
+   "passes": true,
+   "residual": "1.21921E-54"
+  },
+  {
+   "bound": "1.00000E-45",
+   "name": "singularity: B and the inlet at 1e-15 mM, the holders' heats sum to H_tot, graded Gauss (over RT N)",
+   "passes": true,
+   "residual": "2.18623E-63"
+  },
+  {
+   "bound": "1.00000E-45",
+   "name": "singularity: B and the inlet at 1e-15 mM, the holders' heats sum to H_tot, tanh-sinh (over RT N)",
+   "passes": true,
+   "residual": "1.21921E-54"
+  },
+  {
+   "bound": "1.00000E-45",
+   "name": "singularity: B and the inlet at 1e-15 mM, the two quadratures on every holder (over RT N)",
+   "passes": true,
+   "residual": "1.21921E-54"
+  },
+  {
+   "bound": "1.00000E-45",
+   "name": "singularity: B and the inlet at 1e-9 mM, the holders' heats sum to H_tot, graded Gauss (over RT N)",
+   "passes": true,
+   "residual": "2.18623E-63"
+  },
+  {
+   "bound": "1.00000E-45",
+   "name": "singularity: B and the inlet at 1e-9 mM, the holders' heats sum to H_tot, tanh-sinh (over RT N)",
+   "passes": true,
+   "residual": "1.21921E-54"
+  },
+  {
+   "bound": "1.00000E-45",
+   "name": "singularity: B and the inlet at 1e-9 mM, the two quadratures on every holder (over RT N)",
+   "passes": true,
+   "residual": "1.21921E-54"
+  },
+  {
+   "bound": "4.00000E+0",
+   "name": "singularity: H_B at 1e-9 mM tends to the limit of a zero trace, gap over RT N eps |ln eps|",
+   "passes": true,
+   "residual": "4.08589E-1"
+  },
+  {
+   "bound": "4.00000E+0",
+   "name": "singularity: H_B at 1e-15 mM tends to the limit of a zero trace, gap over RT N eps |ln eps|",
+   "passes": true,
+   "residual": "4.05153E-1"
+  },
+  {
+   "bound": "4.00000E+0",
+   "name": "singularity: H_B at 1e-30 mM tends to the limit of a zero trace, gap over RT N eps |ln eps|",
+   "passes": true,
+   "residual": "4.02577E-1"
+  },
+  {
+   "bound": "1.00000E-24",
+   "name": "singularity: H_B of the first 1e-25 s at a zero trace, against RT Q c t ln(V/(Q t)) (relative)",
+   "passes": true,
+   "residual": "6.09282E-27"
+  },
+  {
+   "bound": "1.00000E-55",
+   "name": "singularity: the double-exponential rule on the integral of ln s over (0, 1), which is -1",
+   "passes": true,
+   "residual": "1.65422E-61"
+  },
+  {
+   "bound": "1.00000E-45",
+   "name": "singularity: the double-exponential rule on ln(s + 1e-15), in closed form",
+   "passes": true,
+   "residual": "2.08515E-61"
+  },
+  {
+   "bound": "1.00000E-55",
+   "name": "singularity: graded Gauss on ln(s + 1e-15), in closed form",
+   "passes": true,
+   "residual": "1.08000E-63"
+  },
+  {
+   "bound": "1.00000E-100",
+   "name": "singularity: the Gauss rule integrates the monomials to degree 79",
+   "passes": true,
+   "residual": "1.00000E-110"
+  },
+  {
+   "bound": "0",
+   "name": "singularity: and misses degree 81 (a rule too good would hide a mistake: 1 minus the fraction is 0 if it did)",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-70",
+   "name": "arm 6: PA 0.25, Q 0.5: eigenvalues against the propagator (relative)",
+   "passes": true,
+   "residual": "7.85900E-107"
+  },
+  {
+   "bound": "1.00000E-90",
+   "name": "arm 6: PA 0.25, Q 0.5: uniformization against the propagator (relative)",
+   "passes": true,
+   "residual": "1.89000E-107"
+  },
+  {
+   "bound": "1.00000E-90",
+   "name": "arm 6: PA 0.25, Q 0.5: amounts conserved (fmol)",
+   "passes": true,
+   "residual": "2.46000E-106"
+  },
+  {
+   "bound": "1.00000E-70",
+   "name": "arm 6: PA 40, Q 0.003: eigenvalues against the propagator (relative)",
+   "passes": true,
+   "residual": "1.01753E-105"
+  },
+  {
+   "bound": "1.00000E-90",
+   "name": "arm 6: PA 40, Q 0.003: uniformization against the propagator (relative)",
+   "passes": true,
+   "residual": "1.01807E-105"
+  },
+  {
+   "bound": "1.00000E-90",
+   "name": "arm 6: PA 40, Q 0.003: amounts conserved (fmol)",
+   "passes": true,
+   "residual": "1.61210E-104"
+  },
+  {
+   "bound": "1.00000E-70",
+   "name": "arm 6: PA 1E-9, Q 3: eigenvalues against the propagator (relative)",
+   "passes": true,
+   "residual": "5.11800E-107"
+  },
+  {
+   "bound": "1.00000E-90",
+   "name": "arm 6: PA 1E-9, Q 3: uniformization against the propagator (relative)",
+   "passes": true,
+   "residual": "5.11800E-107"
+  },
+  {
+   "bound": "1.00000E-90",
+   "name": "arm 6: PA 1E-9, Q 3: amounts conserved (fmol)",
+   "passes": true,
+   "residual": "1.26500E-105"
+  },
+  {
+   "bound": "1.00000E-70",
+   "name": "arm 6: PA 0.25, Q 0: eigenvalues against the propagator (relative)",
+   "passes": true,
+   "residual": "2.50000E-108"
+  },
+  {
+   "bound": "1.00000E-90",
+   "name": "arm 6: PA 0.25, Q 0: uniformization against the propagator (relative)",
+   "passes": true,
+   "residual": "2.50000E-108"
+  },
+  {
+   "bound": "1.00000E-90",
+   "name": "arm 6: PA 0.25, Q 0: amounts conserved (fmol)",
+   "passes": true,
+   "residual": "2.60000E-107"
+  },
+  {
+   "bound": "1.00000E-70",
+   "name": "arm 6: PA 7.5, Q 7.5: eigenvalues against the propagator (relative)",
+   "passes": true,
+   "residual": "1.25000E-107"
+  },
+  {
+   "bound": "1.00000E-90",
+   "name": "arm 6: PA 7.5, Q 7.5: uniformization against the propagator (relative)",
+   "passes": true,
+   "residual": "1.26000E-107"
+  },
+  {
+   "bound": "1.00000E-90",
+   "name": "arm 6: PA 7.5, Q 7.5: amounts conserved (fmol)",
+   "passes": true,
+   "residual": "4.24000E-106"
+  },
+  {
+   "bound": "4.00000E+1",
+   "name": "arm 6: PA to 0 is the chain (relative to PA)",
+   "passes": true,
+   "residual": "4.20070E-1"
+  },
+  {
+   "bound": "1.00000E+2",
+   "name": "arm 6: PA to infinity is one well of V_A + V_B (relative, times PA)",
+   "passes": true,
+   "residual": "1.26570E-1"
+  },
+  {
+   "bound": "1.20000E-1",
+   "name": "arm 6: the strang split's error falls by 4 a halving (last pair, h = 2^-7, 2^-8)",
+   "passes": true,
+   "residual": "1.96243E-4"
+  },
+  {
+   "bound": "6.00000E-2",
+   "name": "arm 6: the lie split's error falls by 2 a halving (last pair, h = 2^-7, 2^-8)",
+   "passes": true,
+   "residual": "2.51755E-5"
+  },
+  {
+   "bound": "1.00000E-9",
+   "name": "rate law: H_A of a chain as the limit of finite portions (relative)",
+   "passes": true,
+   "residual": "2.02221E-25"
+  },
+  {
+   "bound": "1.00000E-9",
+   "name": "rate law: H_B of a chain as the limit of finite portions (relative)",
+   "passes": true,
+   "residual": "4.96946E-19"
+  },
+  {
+   "bound": "1.00000E-9",
+   "name": "rate law: H_K of a chain as the limit of finite portions (relative)",
+   "passes": true,
+   "residual": "7.70631E-17"
+  },
+  {
+   "bound": "1.00000E-6",
+   "name": "rate law: arm 6, A as the limit of split finite portions (relative)",
+   "passes": true,
+   "residual": "3.41113E-19"
+  },
+  {
+   "bound": "1.00000E-6",
+   "name": "rate law: arm 6, B as the limit of split finite portions (relative)",
+   "passes": true,
+   "residual": "2.57419E-15"
+  },
+  {
+   "bound": "1.00000E-6",
+   "name": "rate law: arm 6, K as the limit of split finite portions (relative)",
+   "passes": true,
+   "residual": "6.85603E-14"
+  },
+  {
+   "bound": "1.00000E-6",
+   "name": "rate law: arm 6, face as the limit of split finite portions (relative)",
+   "passes": true,
+   "residual": "2.39875E-15"
+  },
+  {
+   "bound": "1.00000E-100",
+   "name": "pi against its digits",
+   "passes": true,
+   "residual": "1.00000E-110"
+  },
+  {
+   "bound": "1.00000E-100",
+   "name": "the dilogarithm: Li2(-1) = -pi^2/12",
+   "passes": true,
+   "residual": "6.00000E-110"
+  },
+  {
+   "bound": "1.00000E-100",
+   "name": "the dilogarithm: the inversion relation at 2.7",
+   "passes": true,
+   "residual": "2.00000E-110"
+  },
+  {
+   "bound": "1.00000E-100",
+   "name": "the dilogarithm: d/dx Li2(-x) = -ln(1 + x)/x",
+   "passes": true,
+   "residual": "3.81036E-122"
+  },
+  {
+   "bound": "1.00000E-100",
+   "name": "ARS(2,2,2): (1 - delta) gamma = 1/2",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "phi(1) = 0 exactly",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "phi(0) = 1 exactly",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "0.1 is read as the exact value of its double",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.00000E-12",
+   "name": "the emulation's phi against decimal, near and away from 1 (relative)",
+   "passes": true,
+   "residual": "4.37276E-14"
+  }
+ ],
+ "total": 83
+}

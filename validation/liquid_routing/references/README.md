@@ -32,7 +32,8 @@ SPEC §7's keys are all present in every file, with these additions (the judge i
   beside `volume_pL`, `loss`, `resident` and `arriving`.
 - `plants`: each row has `class` (the check's class), and the S rows say which step-error model sized them. A row of class E has
   `expected_tolerance` "0", `margin` null, `no_margin` true (Amendment 1, item 2).
-- `plants_reported`: P8's `H_missing`, one entry per engine plant, at each row where a stop could fall.
+- `plants_reported`: P8's `H_missing`, one entry per engine plant: the exchange's heat for `P8 event`, and `H_tot` at every output for
+  `P8 flow` (the stop row is the run's to show).
 - `reported`: check 10's three clauses at the four default starts outside the expansion's domain (Amendment 1, item 1).
 - `worlds` of arm 1 hold t = 0 alone (the two levels, class R, and `H_face`, class E): a value at h belongs to a `case`.
 - `accuracy` is an absolute bound to three digits, rounded up. A published amount's or closed form's is 1e-39 of the value:
@@ -87,6 +88,13 @@ relative accuracy, and every squaring is of a non-negative matrix (a compartment
 16. SPEC §9 check 11: the fractions are measured against LAWS §9's bounds with the registered steps; arm 6's crossing species are
     measured against the decimal Strang map (their truncation error is not a rounding error), and its energy identity on its own rows.
 17. `provenance.revision` is the commit of the Amendment 1 tag, the last spec I read.
+
+**Adopted by the lead for Amendment 2 (both concern the judge, and nothing here):**
+
+18. CRITERIA §3.2 and READOUTS §3's arm 2 "the sums": after the exchange n_T_1 + n_T_2 − supplied is not the start, because the sample has
+    left; the sum is n_T_1 + n_T_2 + sample − supplied, over the exchanges before the row, with the run's own event numbers.
+19. READOUTS §2: a portion's or an exchange's own supplied amount counts in the scale of its `amount`, `loss` and `heat` (a literal "to
+    that time" gives a first portion a scale of 0).
 
 ## 5. Checks
 
@@ -147,14 +155,17 @@ heats by Clenshaw-Curtis with hyperbolic-function levels, and every plant with t
 **Faults found in my own work, and how:**
 
 - The tanh-sinh rule's positions already included the left end of the interval, and I added it again, so only the first interval of a
-  series was right. The two-quadrature check found it (8.7e-3 of s_F against 1e-64 for the other), before any file was written.
+  series was right. The two-quadrature check found it (a gap of 8.7e-3 of s_F, where Gauss closed the sum identity to 1e-91), before any file
+  was written.
 - `expm` first stopped its Taylor series on the matrix's largest entry, which left small entries (a fifth power of a short time) with a
-  relative error of 1e-88. A component test found it; the rule is now entrywise.
+  relative error of 1e-88. A component test found it; the rule is now entrywise. No published value moved.
+- My first singularity test used one Gauss piece on [2, 16] s and missed its bound by 1e-28 of its scale for every trace alike; the fault
+  was the piece (it more than doubles its distance from the singular end), not the laws. `by_gauss` now splits any such interval.
 - A cache of propagated states was keyed by an object's address, which Python may reuse after the invented inputs are freed. Each world
   now holds its own cache, and each arm reads its inputs afresh.
 - Sets are never iterated in their own order.
 
-**What I could not check:** whether the engine admits the invented worlds (a trace beside 14.9 fmol, a 1.2 pL portion, 62 runs), whether
+**What I could not check:** whether the engine admits the invented worlds (a trace beside 14.9 fmol, a 1.25 pL portion, 62 runs), whether
 LAWS §9's counts cover the engine's operation path (only the rehearsal can), the engine's own sign of zero, the retry's rows, and the
 judge's reading of these files. Nothing here bears on `n_L_S`, `free_sites_S` and `bound_L_S`.
 
@@ -166,4 +177,52 @@ platform, the Python and libmpdec versions, and the spec files' hashes are in `o
 
 ## 10. Numbers
 
-(Tables written by the final run; see below.)
+**Checks.** 771 rows over the seven files, all passing (the invented file 296; arms 1 to 6: 88, 52, 156, 50, 90, 39). Largest residual against its bound, by SPEC §9's item, over every file:
+
+| Item | What | Largest residual | Bound |
+| --- | --- | --- | --- |
+| 1 | 1 − 2/e and 1 − 1/e, by both methods; m = 1 to 8 equal chambers | 2.9e-108 | 1e-50 |
+| 2 | closed form against the propagator, every entry, relative | 6.0e-107 | 1e-50 |
+| 2 | the gap to the confluent form: E's slope; successive ratio; the chain's amounts (each scaled so that 1 is the bound) | 0.093; 0.83; 0.27 | 1 |
+| 3 | node columns; amounts; volumes (the last two against the start plus the supplied) | 5e-111; 7.4e-107; 4.5e-106 | 1e-100; 1e-50 |
+| 4 | e^(−Gt) e^(Gt); P(h)^S = P(Sh) at every registered h | 8.7e-102; 7.2e-109 | 1e-50 |
+| 4 | every amount by uniformization and by Taylor continuation, relative | 1.2e-106 | 1e-50 |
+| 5 | the remainder falls by 4 (last halving: 4 ± 3.3e-4); its leading term (error over f 0.34) | 3.3e-4; 0.34 | 2⁻⁴; 1 |
+| 6 | closed form against the propagator; D against ∫A dm by two quadratures; D′(0) = A(0) | 8.8e-108; 1.1e-53; 8.8e-91 | 1e-50; 1e-40; 1e-60 |
+| 6 | `N-buffered` and `N-clean` hold 8 and 2 fmol at 16 s | 6.3e-16 | 8.9e-16, the two starts' half-ulps carried through the relaxation |
+| 7 | R(z) − e^(−z) ≥ 0, and over z³/6 | 0; 0.99954 | 0; 1 |
+| 8 | Σ H_holder (and H_face) = H_tot, tanh-sinh and Gauss (over s_F); the two quadratures agree | 1.7e-58; 2.5e-65; 1.7e-58 | 1e-40 |
+| 8 | `H_A` by the dilogarithm; H_tot by finite portions at every registered step; H_tot by the holders' rates | 3.1e-64; 2.1e-108; 4.2e-41 | 1e-40; 1e-50; 1e-40 |
+| 8 | a uniform stream; the second portion's loss RT (3 ln 3 − 4 ln 2), both forms, either order; the first portion | 1.6e-105; 8e-110; 0 | 1e-60; 1e-50; 0 |
+| 9 | labels sum to their species; arm 6 at Q = 0 is two wells, its face heat D(m*) | 8.9e-110; 1.7e-107; 7.9e-65 | 1e-50; 1e-50; 1e-40 |
+| 10 | J̄²/W against the two-well form; \|H_def − D\| ≤ B_def (largest ratio 0.9999975, `eq-hi` at 1/64 s); third clause over 8z (arm 1's judged starts, and the invented) | 1.2e-108; 1; 0.067 | 1e-50; 1; 1 |
+| 11 | the largest fraction of LAWS §9's bound over every network, run, quantity and output (`F1`, the amounts' sum) | 0.0413 | 1 |
+
+Check 8's Gauss route to `G5` (4.2e-41 of s_F) is the one row within a factor of three of its bound: it is the integral of a collector's
+rate after the switch, where the integrand's nearest singularity lies at 2.67 s, 1.33 s before the piece, and is not used for any
+published value (`G5`'s heat is the portion law). The bound was set before it was computed.
+
+**Plant margins** (distance over the expected honest tolerance; each must be at least 10). No margin falls below 10; the smallest are
+P15 on `eq-hi` (13.2) and P14 at the coarsest step (15.8).
+
+| Plant | Check (class) | World | Margin |
+| --- | --- | --- | --- |
+| P1 | `n_T_K` at 8 s (R) | `F1` and `F2` | 8.4e12 each |
+| P2 | `n_T_B`, `n_T_K` (R) | `F1`; `F3` | 1.3e13; 1.5e13 |
+| P3 | `n_T_B`, `n_T_K` (R); `V_K` (R) | `F3`; `F1` and `F3` | 3.3e12; 1.2e13 each |
+| P4 | `n_U_B`, `n_U_K` (R) | `F1` | 1.3e7 each |
+| P5 | `H_A` (S) | `H1` | 129 |
+| P7 | `H_tot` (R) | `H2`, `H3`, `H4` | 2.1e10, 2.2e10, 2.2e10 |
+| P8 | no margin: H_missing in `plants_reported` | `N-buffered`, `F1` | – |
+| P9 | the first loss (E) | `G1` | none (distance 2.4e-3 pJ) |
+| P10 | `n_T_K` at 8 s (R) | `F1` | 7.5e12 |
+| P11 | `label_T_tag_K` (R) | `F1L` at h = 8 | 3.1e12 |
+| P14 | `n_T_1`, `n_T_2` (B) | `r4-mid`, h = 2, 1, 0.5, 0.25 | 15.8, 69.1, 291, 1195 |
+| P15 | `n_T_1`, `n_T_2` (B) | `eq-lo`, `eq-mid`, `eq-hi` at h = 0.25 | 3838, 877, 13.2 |
+| P16 | `H_face` (B, default, the four steps; R, exact j = 0) | `eq-mid` | 107, 215, 431, 862; 3.7e11 |
+| P17 | `sample` (R) | `N-buffered` exact j = 2 | 6.6e11 |
+| P19 | `n_T_A` (S), order 0.997 against a limit of 1.25 | `J1` | 123 |
+
+In the invented file the same plants have margins of at least 15.2.
+
+**Programs.** `component_tests.py`: 83 of 83 tests pass. `self_check.py`: 569 of 569 rows over the seven files. `mutation_tests.py`: each of 40 deliberate changes is flagged and the unchanged file is clean. The residuals are in `out/`.
