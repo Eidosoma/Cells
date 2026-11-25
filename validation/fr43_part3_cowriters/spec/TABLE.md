@@ -12,7 +12,7 @@ ignored.
   `table_W6-retry.json`, only the families that are owed). A table that has no registered run is absent, not empty.
 - A table whose sha256 is missing from its folder's `SHA256SUMS`, or departs from it, is refused: every run in it is
   refused. An absent `SHA256SUMS` is recorded and flagged and refuses nothing by itself.
-- The lead records each file's sha256 before any reference value is read (the protocol's §6).
+- The lead records each file's sha256 before the judge opens a table (the protocol's §5, step 8).
 - The exporter writes **nothing that needs a second run:** no difference, ratio, estimate or error against a
   reference. The judge forms those.
 - **The order of entries and keys is not a contract.** Runs are matched by name. Floats are JSON numbers (shortest
@@ -34,7 +34,8 @@ tables.
 ## 3. A run's entry: one shape for every run
 
 Every entry holds all of these keys. A completed run's `refusal` is null. A refused run keeps the rows and events it
-has (any list may be short, and the series and `events` lists may be empty).
+has (any list may be short, and the series and `events` lists may be empty; `t`, `series` and `events` of a run
+refused at parse are empty).
 
 | Key | Type and meaning |
 | --- | --- |
@@ -51,7 +52,7 @@ has (any list may be short, and the series and `events` lists may be empty).
 | `integer_ledger` | list of integers, one per sample: Σ_k w_k n_k, and the total after each event is not listed (the judge forms it from `counts_after`) |
 | `samples_echo` | the list of the registered sample times the engine was asked to observe |
 | `operators` | list of strings: the composite's declared operator IDs, **in declared order** (the strings note's) |
-| `inputs` | the world's block in `inputs.json` with exactly the keys of `inputs.json`'s `echo` (below), numbers as the engine parsed and ran them, plus the run's `seed`, `step_s`, `first` and `copy`, read back from **the definition the engine parsed and ran**, never a copy of this folder's numbers |
+| `inputs` | the world's block in `inputs.json` with exactly the keys of `inputs.json`'s `echo`, numbers as the engine parsed and ran them, plus the run's `seed`, `step_s`, `first` and `copy`, read back from **the definition the engine parsed and ran**, never a copy of this folder's numbers. A run refused before its definition was parsed holds null here and in `definition`, and an empty list in `operators` (only such a run; a null in a completed run is a fault) |
 | `definition` | the engine's own declaration, as run (recorded, never judged) |
 | `checks` | the engine's own ledgers and checks at the end (recorded) |
 | `pools_at_event` | the engine's own rows at the events, where it records them, else null (recorded, never judged) |

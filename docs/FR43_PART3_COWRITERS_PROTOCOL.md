@@ -66,7 +66,7 @@ runs are listed in `inputs.json`.
 | References | A code-blind agent | `validation/fr43_part3_cowriters/references/`, the invented pair first | The spec folder and the sheet sections LAWS.md §3 names. Nothing else |
 | Spec auditor | An agent who wrote none of this text, and builds nothing else | A reader skeleton and a fabricated honest table, its report (§6, step 2) | The spec folder only |
 | Builder | The FR-43 part 3 build lane (after the legacy cleanup lands) | `validation/fr43_part3_cowriters/` engine side: the world builders, the exporter (TABLE.md), the Lie patch, the format sample | The spec folder, its own code |
-| Judge | A new agent, blind to the references' values until the registration tag and to the engine's development results | The reader and the scorer, `retry_owed.json`, the verdict | The spec folder, the reference files after the table is hashed, the engine tables, the strings note |
+| Judge | A new agent, blind to any engine output and to the engine's development results | The reader and the scorer, `retry_owed.json`, the verdict | The spec folder, the reference files (C0, before any engine run exists), and, once their hashes are recorded, the engine tables and the strings note |
 | Checker | An independent agent | Its own recomputation of the verdict | The hashed table, the reference files, the judge's record |
 | Lead | The lead | Tags, hashes, the strings note, the record, the decision | Everything |
 
@@ -86,9 +86,9 @@ runs are listed in `inputs.json`.
 7. **The registration tag** `fr43-part3-cowriters-registered-2026-11-2x`, at the head the runs will be made from:
    the criteria, references, builder, judge, and the runs' frozen snapshot. The **strings note** (the lead's, its
    own commit and tag) follows it, and names the registered operator IDs per family.
-8. The runs from the snapshot, then the table. The lead records the table's hashes **before any reference value is
-   read**. Then the judge's first pass, `retry_owed.json` and its hash, the retry runs if any are owed, the second
-   pass.
+8. The runs from the snapshot, then the table. The lead records the table's hashes **before the judge opens any
+   table** (C0 has read the references before the runs exist). Then the judge's first pass, `retry_owed.json` and
+   its hash, the retry runs if any are owed, and the second pass.
 9. The checker, then the record and the lead's decision.
 
 ## 6. The order of work, and the rehearsal
@@ -106,7 +106,7 @@ runs are listed in `inputs.json`.
 5. **The runs:** about 218 registered runs plus a retry of 8 at each owed family (§7), each on one copy of its
    world, from a clean frozen snapshot of the registration tag, each run's process cold and one-threaded, on CPUs
    the lead allots, detached. The plants' runs are included.
-6. **The table** is built from the runs' records alone, and is hashed before any reference value is read.
+6. **The table** is built from the runs' records alone, and is hashed by the lead before the judge opens it.
 7. **The judge** runs C0, the first pass, and (if owed) the retry pass, in an environment built from a clean
    snapshot of the registration tag, and writes the verdict with the record of CRITERIA.md §8. Then the checker.
 
@@ -175,19 +175,16 @@ The comparison tests the laws and the two writers it runs, and only at the sizes
   in the tissue's inner step (identity).
 - **Sizing emulations for this registration** (`/mnt/workspaces/Cells/fr43-part3-spec-20261125/`, host NumPy, no
   engine): an emulation of the declared split on invented worlds of the W5 and W6 kinds (numbers, seeds and horizons
-  of their own, not the registered ones). What they were used for, and what they gave:
-  - the number of copies and the pooled statistic. One site's fitted order over five steps scatters: the standard
-    deviation
-    of the pooled fit was about 0.16 for 4 copies and 0.06 for 16 (4-subunit world). Neighbouring-step ratios scatter by 0.15 to
-    0.35 even at 16;
-  - at the registered design (8 copies, 2 subunits), the fitted orders of the event times over 12 seeds and both
-    declared
-    orders were 1.77 to 2.13 in the W5 kind (S_c: 1.91 to 2.04) and 1.79 to 2.13 in the W6 kind over 3 seeds each. The
-    honest error at the finest step over the size tolerance was 0.17 to 0.46 (events) and 0.21 to 0.42 (S_c);
-  - with 4 subunits per site, a channel choice differed from the reference's at the coarsest steps in some runs,
-    which would
-    fail the class E trace of an honest run. That is why a site has 2 subunits here (the note's original choice).
-  No registered number was used, and no registered world was run on any engine or emulation.
+  of their own, not the registered ones). What they were used for, and what they gave: (i) the number of copies and
+  the pooled statistic: the standard deviation of the fitted order of the event times was about 0.16 for 4 copies
+  and 0.06 for 16 pooled (a 4-subunit world), and neighbouring-step ratios scattered by 0.15 to 0.35 even at 16.
+  (ii) The registered design (8 copies, 2 subunits): in 6 seeds of each declared order of a W5-like world, the
+  fitted orders of the event times were 1.77 to 2.13 (S_c: 1.91 to 2.06), and in 3 seeds of each order of a W6-like
+  world 1.80 to 2.13. The honest error at the finest step over the size tolerance was 0.17 to 0.46 (W5-like events),
+  0.21 to 0.42 (S_c) and 0.24 to 0.33 (W6-like events). (iii) The choice of 2 subunits per site over 4: with 4, a
+  channel choice differed from the reference's at the coarsest steps in some runs, which would fail the class E
+  trace of an honest run (the note's original choice was 2). No registered number was used, and no registered world
+  was run on any engine or emulation.
 - **A premise check:** `make_draws.py`'s table was compared with the engine's own stream function
   (`cells.numerics.counter_streams`) at all 24 copies × 160 pairs: no differences.
 - **The exemplars,** read in full or in the parts that matter: FR-38's second registration (its protocol, spec
