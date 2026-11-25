@@ -19,7 +19,10 @@
 #   2a. with SELECT (a landing with no src/ change; D229 rule 3): the tier-1/2 files the change can
 #      reach, from the nightly's scope map (scripts/gates/scope.py select; SELECT=auto reads
 #      GATE_CACHE/scope-map.json, else SELECT names a map). A refused selection (a src/ change, a
-#      stale or missing map, or GATE_CACHE/selection-stopped present) runs the full tiers instead.
+#      change to a tool that every file runs through, a stale or missing map, or
+#      GATE_CACHE/selection-stopped present) runs the full tiers instead.
+#      SELECT_ALWAYS names another always-run rule than scope.py's default (D358): readers is D229's,
+#      the fallback.
 # Under the lane's lock (flock's command form: a flock killed while it waits runs nothing), the
 # cheapest stage first, stopping at the first failure:
 #   3. crossrev (unless CHECKS drops it): the head's sets against the base's, set by set on the
@@ -46,7 +49,7 @@
 # TIERS, ADDITIONS_FROM, REMOVED_OK_FILE, CROSSREV_EXPECTED, CROSSREV_SETS (default every set),
 # PRELOCK, PRELOCK_CPU, PRELOCK_NICE, PRELOCK_TEST_SECONDS, PRELOCK_ONLY (1: stop after the pre-lock steps, for an owner's
 # check before queueing), GATE_CACHE (default /mnt/workspaces/Cells/gate-cache; empty turns the
-# cache off), SELECT, SELECTION_STOPPED (default GATE_CACHE/selection-stopped), CHECKS (default
+# cache off), SELECT, SELECT_ALWAYS, SELECTION_STOPPED (default GATE_CACHE/selection-stopped), CHECKS (default
 # "crossrev tiers g1": D223 lets a landing with no src/ change drop crossrev or G1 when no changed
 # file is in its harness's import closure; preflight refuses a dropped check when src/ changed),
 # PY and HOSTPY. OUT/config.env records the resolved lane and paths (stack.sh reads it).
@@ -153,7 +156,8 @@ prelock() {  # Steps 0-2; returns 1 at the first refusal.
     [ "$map" != auto ] || map=$GATE_CACHE/scope-map.json
     mkdir -p "$P/selection"
     light "$HOSTPY" -I "$G/scope.py" select "$S" "$B" "$map" "$P/selection" --tiers "$TIERS" \
-      --stopped "${SELECTION_STOPPED:-$GATE_CACHE/selection-stopped}" --python "$PY" > "$P/selection/select.log" 2>&1
+      --stopped "${SELECTION_STOPPED:-$GATE_CACHE/selection-stopped}" --python "$PY" \
+      ${SELECT_ALWAYS:+--always "$SELECT_ALWAYS"} > "$P/selection/select.log" 2>&1
     rc=$?
     if [ $rc -eq 0 ]; then
       echo "$P/selection/subset.json" > "$OUT/tiers-run"; log "selection: $(short "$P/selection/select.log")"
