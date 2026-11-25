@@ -12,6 +12,7 @@ import numpy as np
 import pytest
 
 from cells.definitions.specs import parse_spec
+from validation import id_table
 from validation.betse.physiology import native_noise as perturb
 from validation.betse.physiology.core import physiology_perturbation_step as step
 from validation.betse.physiology.core import physiology_random_streams as streams
@@ -27,7 +28,7 @@ def definition(kind="passive", *, padded=True, uniform=True, reorder=False):
         raw = passive.definition("closed", padded=padded)
     else:
         name = dict(ionic="ionic", calcium="calcium", fuel="energy")[kind]
-        raw = json.loads((ROOT / ("configs/resolved_hcn_extra_" + name + ".json")).read_text())
+        raw = id_table.load(ROOT / ("configs/resolved_hcn_extra_" + name + ".json"))
     model = raw["model"].get("ionic", raw["model"])
     if uniform:
         for row in model["extracellular"]:

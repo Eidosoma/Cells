@@ -230,7 +230,7 @@ def test_structure_refuses_unknown_or_unordered_laws():
         junction_heat_booking=spec3.DEFAULT_JUNCTION_HEAT,
     )
     with pytest.raises(ValueError, match="Undeclared"):
-        inner_laws.InnerStructure(declared_channel_laws=("unregistered@1",), **base)
+        inner_laws.InnerStructure(declared_channel_laws=("tests.channel.unregistered@1",), **base)
     with pytest.raises(ValueError, match="code order"):
         inner_laws.InnerStructure(
             declared_channel_laws=(spec3.NAV1P2_LAW_ID, spec3.KIR2P1_LAW_ID), **base
