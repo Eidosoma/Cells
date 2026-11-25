@@ -62,7 +62,8 @@ def admit(spec):
 
     Two cases are refused because they are not yet qualified (the lead's rulings of 16 November
     2026, D187: no claim without teeth):
-    - a GPU backend: the GPU's host-against-device spread is unmeasured;
+    - a GPU backend: the one host-against-device spread measured on a GPU (D330, the composite)
+      failed its qualification (D336), and no other model's is measured;
     - a composition with a live retiring operator: its device checks read adjusted rows, and
       that branch's refusals have no planted test yet.
     """

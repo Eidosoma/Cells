@@ -819,6 +819,15 @@ def refresh_field(q, bound, *, xp=jnp):
     return q._replace(**values)
 
 
+def refuse_sparse_field_inputs():
+    """The one refusal of a field-input provider under the sparse field (FR-17 stage 1)."""
+    raise ConfigError(
+        f"An operator that changes capacitances or activity masks is refused under "
+        f"{field.SPARSE_SOLVER_ID} (FR-17 stage 1): its field refresh rebuilds the dense "
+        "field arrays, which the sparse field does not bind"
+    )
+
+
 def check_field_inputs(p, nodes):
     """Refuse a field-input provider above the node cap or with floating capacitor components.
 
@@ -827,11 +836,7 @@ def check_field_inputs(p, nodes):
     the dense field arrays, and the sparse layout has none (FR-17 stage 1).
     """
     if hasattr(p, "field_capacitor_values"):
-        raise ConfigError(
-            f"An operator that changes capacitances or activity masks is refused under "
-            f"{field.SPARSE_SOLVER_ID} (FR-17 stage 1): its field refresh rebuilds the dense "
-            "field arrays, which the sparse field does not bind"
-        )
+        refuse_sparse_field_inputs()
     if nodes > FIELD_INPUT_NODE_CAP:
         raise ConfigError(
             f"An operator that changes capacitances or activity masks refactorises the field "

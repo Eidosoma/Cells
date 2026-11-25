@@ -39,6 +39,20 @@ its c_o dependence and its rectification must be sourced before a claim rests on
 mV), V_h well above the working range of u, or both, keep q near 1 over that range, so the route
 is nearly ohmic about E. As V_h grows without bound the route becomes the ohmic g_ref
 (c_o/K_ref)^(1/2) u, and as s grows q tends to 1/2. A strong rectifier is a small s with V_h near 0.
+
+**Scope.**
+- **The square root in c_o is scoped to its preparation (D340).** One preparation supports the
+  exponent: rat Kir4.1 in HEK293T, 0.51 over 15 to 153 mM. Another departs from it: human Kir4.1
+  reaches about 19 pS at 40 mM, against 13.9 pS from a square root anchored at its 110 mM value of
+  23 pS. One dataset is an indication, so the form stays, and a calibration carries only within its
+  preparation.
+- **The law is silent on external Na (D351).** In Na-poor solutions two inward-rectifier
+  preparations depart from the square root in the same direction; with Na, the exponent comes close
+  to it (about 0.40). These are indications, kept separate from the Kir4.1 line above.
+- **The reference u = V - E is supported for changes of external K only (D352, D355).** The evidence
+  is the block law's, its half-conductance shift in two labs' external-K series, and not this law's
+  current. For changes of internal K, one lab's series is an indication against a V - E reference;
+  the numbers are in the block law's scope (laws/channels/open_channel_block.py).
 """
 
 import jax.numpy as jnp

@@ -458,9 +458,10 @@ def anchor_rounding_C(anchor_C, fixed_fmol, terms, charge_C):
 
     The floor alone is finer than float64 at large inventories: from 2^19 fmol the background's
     and the ionic sum's half spacings reach 1.12e-20 C, and XC0's balanced nodes of 1e6 to 1e10
-    fmol were refused (D332's C6). The budget is that of an independent exact-rational check of
-    24 November 2026. Its 17 controls, 15 balanced nodes and two backgrounds four spacings off,
-    are rows of tests/unit/test_component_net_charge.py.
+    fmol were refused (D332's C6). The budget is the independent Lean project's
+    (lean/claims/xc0-charge-anchor.md, merged at 29d69f1d), an exact-rational check of 24 November
+    2026. Its 17 controls, 15 balanced nodes and two backgrounds four spacings off, are rows of
+    tests/unit/test_component_net_charge.py.
     """
     stages_fmol = (
         anchor_C / CHARGE_PER_FMOL,

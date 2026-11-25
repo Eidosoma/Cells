@@ -62,6 +62,7 @@ from cells.models.surface_pump import DOMAIN_MESSAGE
 from cells.models.surface_pump_checks import row_checks
 from cells.numerics.clock_instants import ON_THE_GRID, on_grid  # D283's one predicate.
 from cells.numerics.fixed_step import rk4_checked_step
+from cells.numerics.surface_field import SPARSE_SOLVER_ID
 from cells.operators.contract import (
     COMMUTING,
     HEAT_SUFFIX,
@@ -2103,6 +2104,8 @@ class Composition:
                 raise ConfigError(
                     f"{op.LAW_ID} event times must lie inside the horizon and {ON_THE_GRID}"
                 )
+        if self.field_inputs and spec.execution.field_solver == SPARSE_SOLVER_ID:
+            self.inner.refuse_sparse_field_inputs()  # Before any binding refreshes the view.
         small = compact(spec)
         state, p = self.initial_values(small)
         exact = exact_row_errors(pairs, spec, p) if writing else []

@@ -14,6 +14,10 @@ markers START and END by `python -m validation.tissue.composition_matrix --write
    second wall. A data-level rule is a condition on routes, onsets, slots, schedules or the
    solver, and marks nothing. Each rule cites its check and the test that asserts it.
 
+From the rules that read the solver (their `solver` key) the block also gives the view per solver
+(D349 item 3; solver_cells): each operator, with its requirements, under each solver and
+field-solver pair a composite admits, with the rule that decides a cell that is not a tick.
+
 Every refusal carries a tag (TAGS, RULES):
 * **nominal**: in no admissible definition can the other operator change a slot the reader reads
   or acts on, so a finer declaration would admit the pair without new physics (slot-scoped
@@ -31,9 +35,15 @@ import ast
 import re
 from collections import defaultdict
 from pathlib import Path
+from types import SimpleNamespace
+from typing import NamedTuple
 
-from cells.models import pump_composite
+from cells.definitions import surface_pump_spec, surface_pump_v3_spec
+from cells.definitions.specs import ConfigError
+from cells.models import pump_composite, pump_composite_adapter
+from cells.numerics import surface_field, surface_imex
 from cells.operators import OPERATORS
+from cells.operators import bath_schedule as bath_operator
 from cells.operators import compartments as compartments_operator
 from cells.operators import membrane_trafficking as trafficking_operator
 from cells.operators import partition as partition_operator
@@ -1005,6 +1015,112 @@ _LABEL_PAIRS = tuple(
     for pair in ((LABELS, law), (law, LABELS))
 )
 
+# What a rule refuses per solver (its `solver` key, a tuple of SolverRefusals; D349 item 3). The
+# pairs a composite admits at all are its inner model's: @3's parse takes the base families' solvers
+# and the implicit-conductance ones, with the factored field or its floor variant, and the sparse
+# field under the plain IMEX tableaux alone.
+RK4, SPARSE = compartments_operator.RK4_SOLVER, surface_field.SPARSE_SOLVER_ID
+SOLVER_PAIRS = tuple(
+    (solver, field)
+    for solver in (*surface_pump_spec.SOLVERS, *surface_imex.IMPLICIT_CONDUCTANCE_IDS)
+    for field in (surface_field.FACTORED_SOLVER_ID, surface_field.FLOOR_SOLVER_ID, SPARSE)
+    if field != SPARSE or solver in surface_pump_v3_spec.SPARSE_FIELD_SOLVERS
+)
+SPARSE_PAIRS = tuple(pair for pair in SOLVER_PAIRS if pair[1] == SPARSE)
+
+
+def under(*solvers):
+    """The solver pairs of these solvers."""
+    return tuple(pair for pair in SOLVER_PAIRS if pair[0] in solvers)
+
+
+class SolverRefusal(NamedTuple):
+    """One refusal: a composition that holds one of `laws` under one of the solver pairs `pairs`.
+    Whatever the definition, unless `beside` gives the laws it is refused beside, or `when` the
+    definitions refused. `test`: the test that asserts it, where that is not the rule's own (None:
+    no test does)."""
+
+    laws: tuple
+    pairs: tuple
+    beside: tuple = ()
+    when: str = ""
+    test: str | None = ""
+
+
+class _PastTheSolver(Exception):
+    """A check read more of the definition than its solver."""
+
+
+class _SolverOnly:
+    """A definition that gives its solver, RK4, and nothing else."""
+
+    execution = SimpleNamespace(solver=RK4)
+
+    def __getattr__(self, name):
+        raise _PastTheSolver(name)
+
+
+def _rk4_refuses(laws):
+    """Whether the composite's own RK4 rule refuses this composition. The rule comes first in
+    Composition.check_definition and reads the solver and the operators' declarations only, so no
+    definition is needed."""
+    try:
+        pump_composite.implementation(INNER, laws).check_definition(_SolverOnly())
+    except ConfigError:
+        return True
+    except _PastTheSolver:
+        return False
+
+
+def _rk4_rule():
+    """The RK4 rule's refusals: the laws it refuses with their requirements alone, then the others
+    by the laws beside which it refuses them, in an order the declarations admit."""
+    # The rule needs a coupled operator, so only compositions with one are asked.
+    coupled = {law for law in LAWS if pump_composite.implementation(INNER, sequence(law)).coupled}
+    alone = tuple(law for law in LAWS if law in coupled and _rk4_refuses(sequence(law)))
+    rest, beside = [law for law in LAWS if law not in alone], defaultdict(list)
+    for law in rest:
+        others = tuple(
+            other
+            for other in rest
+            if other != law
+            and coupled & {law, other}
+            and any(
+                not errors(laws) and _rk4_refuses(laws)
+                for laws in (sequence(law, other), sequence(other, law))
+            )
+        )
+        if others:
+            beside[others].append(law)
+    return (
+        SolverRefusal(alone, under(RK4)),
+        *(SolverRefusal(tuple(laws), under(RK4), others) for others, laws in beside.items()),
+    )
+
+
+def _bath_rule():
+    """The bath schedule's refusals of a dose step: at any step size under a solver no step was
+    measured under, and above the measured step size under the others."""
+    step = "where an event changes a scheduled bath's composition (a dose step)"
+    measured = bath_operator.MEASURED_DT
+    unmeasured = under(*(solver for solver, _ in SOLVER_PAIRS if solver not in measured))
+    return (
+        SolverRefusal((BATH,), unmeasured, when=step, test=None),
+        *(
+            SolverRefusal((BATH,), under(s), when=f"{step}, at a step size above {1e3 * dt:g} ms")
+            for s, dt in measured.items()
+        ),
+    )
+
+
+# The operators that change an input of the field arrays (pump_composite.Composition.field_inputs).
+_FIELD_INPUT_LAWS = tuple(
+    law
+    for law in LAWS
+    if {*OPERATORS[law].VIEW_FIELDS, *OPERATORS[law].CLOSES}
+    & set(pump_composite_adapter.FIELD_INPUTS)
+)
+
 RULES = (
     dict(
         rule="insertion@2 precedes every retiring operator",
@@ -1065,6 +1181,36 @@ RULES = (
         tag=REAL,
         why="RK4 integrates the coupled right-hand side unsplit (water@1's coupled split part, "
         "the symport's in-step process); replacement@2's events and integer state cannot join it",
+        solver=_rk4_rule(),
+    ),
+    dict(
+        rule="no operator that changes capacitances or activity masks under the sparse field "
+        "solver",
+        laws=_FIELD_INPUT_LAWS,
+        level="data",
+        check="src/cells/models/pump_composite_adapter.py::check_field_inputs",
+        test=TESTS + "test_pump_composite_adapter.py::"
+        "test_a_field_input_provider_is_refused_above_the_node_cap",
+        tag=REAL,
+        why="The view's refresh of the derived field arrays (refresh_field) rebuilds the dense "
+        "ones, which the sparse field does not bind (FR-17 stage 1). The test calls the check "
+        "directly, not through a parse; a world with a live provider is refused at the parse "
+        "before any binding, by the same message",
+        solver=(SolverRefusal(_FIELD_INPUT_LAWS, SPARSE_PAIRS),),
+    ),
+    dict(
+        rule="no blocked channel population (open_channel_block_weighted_modes@1) beside an "
+        "operator that rewrites channel slots",
+        laws=pump_composite.SLOT_WRITERS,
+        level="data",
+        check="src/cells/models/pump_composite.py::block_slot_errors",
+        test=TESTS + "test_surface_pump_v3_populations.py::"
+        "test_a_block_beside_an_operator_that_rewrites_channel_slots_is_refused",
+        tag=REAL,
+        why="They rewrite a slot's law, permeability, patch or activity, never the block's "
+        "per-slot fields, so a slot they rewrite would keep its old block: refused until a world "
+        "qualifies the pair (FR-51's follow-up, D360). Without a declared block each composes as "
+        "before",
     ),
     dict(
         rule="an onset node's volume is its declared anchor: its provider must declare "
@@ -1309,6 +1455,20 @@ RULES = (
         "bath-schedule design §3.1, door W)",
     ),
     dict(
+        rule="a dose step runs only under a solver it was measured under, at a step size no "
+        "larger than measured",
+        laws=(BATH,),
+        level="data",
+        check=OPS + "bath_schedule.py::refuse_unmeasured_steps",
+        test=TESTS + "test_bath_schedule_steps.py::"
+        "test_steps_outside_the_measured_region_are_refused_with_the_reason",
+        tag=REAL,
+        why="A step is admitted only inside the measured region (the bath-schedule design §8.1), "
+        "and a schedule without one under any solver. The test asserts the step sizes; no test "
+        "asserts that the solvers never measured are refused",
+        solver=_bath_rule(),
+    ),
+    dict(
         rule="cell_owned_compartments@1 composes only with its admitted list, which fails closed",
         laws=(COMPARTMENTS,),
         level="law",
@@ -1447,6 +1607,18 @@ RULES = (
         tag=REAL,
         why="Version 1's bookings are exact and checked at rounding under IMEX; D150's RK4 "
         "worlds stay the transport's sharp reference, and no consumer needs it (D152 §4.6)",
+        solver=(SolverRefusal((REACTIONS,), under(RK4)),),
+    ),
+    dict(
+        rule=f"{SITES} refuses RK4",
+        laws=(SITES,),
+        level="data",
+        check=OPS + "site_occupancy.py::check_definition",
+        test=TESTS + "test_site_occupancy.py::test_definition_refusals",
+        tag=REAL,
+        why="As D152's: its bookings are exact and checked at rounding in the face-free world "
+        "under IMEX, and no consumer needs it (the site-occupancy design §4.6)",
+        solver=(SolverRefusal((SITES,), under(RK4)),),
     ),
     dict(
         rule="integer_unit_population@1 refuses replacement, the mask changers that do not divide "
@@ -1529,6 +1701,16 @@ RULES = (
         "followed mover. Each kind refuses what it cannot carry (its label_refusals), a kind "
         "with a rates hook and none is refused while any row is labelled, and a row a closure "
         "holds (a kind's stage read) is refused",
+        solver=(
+            SolverRefusal(
+                (LABELS,),
+                under(RK4),
+                when="where a followed mover (an uncharged face, a membrane or junction route) "
+                "moves a labelled species in the step",
+                test=TESTS + "test_neutral_labels_transport.py::"
+                "test_labels_moved_in_the_step_are_refused_under_rk4",
+            ),
+        ),
     ),
 )
 
@@ -1540,6 +1722,34 @@ def marked():
         for pair in rule.get("marks", ()):
             out[pair] = rule
     return out
+
+
+def solver_rows():
+    """[(rule, its SolverRefusal)] in RULES' order: the numbers of the view per solver's marks."""
+    return [(rule, refusal) for rule in RULES for refusal in rule.get("solver", ())]
+
+
+def solver_cells():
+    """{(law, solver pair): (refused, conditional)}: the numbers (solver_rows, from 1) of the rules
+    that refuse the law, with its requirements, under the pair whatever the definition, and of
+    those that refuse it under a condition (none listed where it is refused in any case)."""
+    rows = solver_rows()
+    for rule, refusal in rows:
+        known = {*refusal.laws, *refusal.beside} <= set(LAWS)
+        if not (known and refusal.laws and refusal.pairs and {*refusal.pairs} <= {*SOLVER_PAIRS}):
+            raise ValueError(f"{rule['rule']}: {refusal} names an unknown law or solver pair")
+        if refusal.beside and refusal.when or refusal.test and not defines(refusal.test):
+            raise ValueError(f"{rule['rule']}: {refusal} has two conditions or no such test")
+    cells = {}
+    for law in LAWS:
+        for pair in SOLVER_PAIRS:
+            marks = {True: [], False: []}  # Conditional or not.
+            for k, (_, refusal) in enumerate(rows, 1):
+                if pair in refusal.pairs and set(closure(law)) & set(refusal.laws):
+                    marks[bool(refusal.beside or refusal.when)].append(k)
+            refused = tuple(marks[False])
+            cells[(law, pair)] = (refused, () if refused else tuple(marks[True]))
+    return cells
 
 
 def defines(cite):
@@ -1668,8 +1878,58 @@ def render(cells=None):
             f"| {rule['rule']} | {laws} | {level} | `{rule['check']}` | `{rule['test']}` | "
             f"{rule['tag']} | {rule['why']} |"
         )
-    lines += ["", END]
+    lines += ["", *render_solvers(), "", END]
     return "\n".join(lines)
+
+
+def render_solvers():
+    """The view per solver: the pairs, the cells and the refusals their marks name."""
+    cells, columns = solver_cells(), [chr(ord("A") + k) for k in range(len(SOLVER_PAIRS))]
+    lines = [
+        "**Per solver** (D349): each operator, with its requirements, under each solver and "
+        "field-solver pair a composite admits, from the rules above that read the solver. ✓ none "
+        "of them refuses it; R refused whatever the definition; c conditional, refused under the "
+        "condition given. The number names the refusal, listed below the table with its check and "
+        "the test that asserts it (none: no test does). A ✓ is no qualification (D143).",
+        "",
+        "Not in the table: the rules above that hold under every solver (the species cap among "
+        "them); what @3 itself refuses per solver whatever the operators (declared kinds and the "
+        "heat booking options under RK4, a blocked channel population under the "
+        "implicit-conductance solver); and the step checks, which bound the step size and let the "
+        "implicit-conductance solver run only with `execution.energy_check`. An operator that the "
+        "declarations refuse beside every coupled one (the matrix above) keeps its ✓ under RK4.",
+        "",
+        "| Column | Solver | Field solver |",
+        "| --- | --- | --- |",
+    ]
+    lines += [f"| {c} | `{s}` | `{f}` |" for c, (s, f) in zip(columns, SOLVER_PAIRS, strict=True)]
+    lines += [
+        "",
+        "| # | Operator law | " + " | ".join(columns) + " |",
+        "| --- | --- |" + " --- |" * len(columns),
+    ]
+    for law in LAWS:
+        row = []
+        for pair in SOLVER_PAIRS:
+            refused, conditional = cells[(law, pair)]
+            marks = [f"R{k}" for k in refused] + [f"c{k}" for k in conditional]
+            row.append(" ".join(marks) or "✓")
+        lines.append(f"| {number(law)} | `{law}` | " + " | ".join(row) + " |")
+    lines += [
+        "",
+        "| Refusal | Operators | Refused | Rule | Check | Test |",
+        "| --- | --- | --- | --- | --- | --- |",
+    ]
+    for k, (rule, refusal) in enumerate(solver_rows(), 1):
+        mark = "c" if refusal.beside or refusal.when else "R"
+        where = refusal.when or "whatever the definition"
+        if refusal.beside:
+            where = "beside " + " or ".join(named(law) for law in refusal.beside)
+        laws = ", ".join(str(number(law)) for law in refusal.laws)
+        test = "none" if refusal.test is None else f"`{refusal.test or rule['test']}`"
+        cites = f"`{rule['check']}` | {test}"
+        lines.append(f"| {mark}{k} | {laws} | {where} | {rule['rule']} | {cites} |")
+    return lines
 
 
 def document_block(text):

@@ -96,6 +96,10 @@ that would not stay positive.
 
 Idle: no route, statically idle; no positive flux in a half-step, the start state is selected,
 so zero rates are bitwise idle and @3's other rows are untouched.
+
+Guidance (D344): the operator declares one removal rate per population, so a mixture of lifetimes
+is two declared populations, the fast and the slow cohort. Two studies of receptor turnover confirm
+such a mixture, with a fast fraction of 13 to 20%.
 """
 
 import math

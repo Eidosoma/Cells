@@ -127,6 +127,11 @@ population per endpoint: later), and a range outside the quantity's; at binding:
 site_occupancy@1, an unknown population, and a population outside the element's cell. Its law
 codes are a Hill kind plus SITE_OFFSET and SITE_FRACTION or SITE_COMPLEMENT, so @1's kernels and
 the population kernel give it exactly f = 1 (padding); only the site kernel evaluates it.
+
+**Scope, both versions (D337, D338, D351).** A state's off_rate_per_s is one declared closing rate,
+the same at every dose. Reusing one closing rate across doses is provisional, as an indication and
+with no change of law: two labs' SK2 recordings contradict one fixed closing rate in opposite
+directions. A rise and a washout measured on the same low-dose patch would settle it.
 """
 
 from contextlib import contextmanager

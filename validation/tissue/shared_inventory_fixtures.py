@@ -219,7 +219,8 @@ MOLECULES_PER_UNIT = 4  # nu: P molecules per unit.
 K_ASSEMBLY, K_REMOVAL = 1e-3, 1e-3  # 1/s: the producer's assembly and removal rates.
 
 
-def unit_pair(*, n_R=10, dt=0.5, end=None, every=None, k_a=K_ASSEMBLY, k_r=K_REMOVAL):
+def unit_pair(*, n_R=10, dt=0.5, end=None, every=None, k_a=K_ASSEMBLY, k_r=K_REMOVAL,
+              gene_off=(), assembly_off=()):  # fmt: skip
     """2A's second pair (FR-43 / D315): the gene unit's ribosome-limited world
     (validation/gene_regulation/worlds.ribosome_limited: translation makes the neutral protein P
     from the held mRNA, drawing A and ATP; P's degradation returns A) beside the unit producer
@@ -227,7 +228,11 @@ def unit_pair(*, n_R=10, dt=0.5, end=None, every=None, k_a=K_ASSEMBLY, k_r=K_REM
     population on the cell's patch (kleak_always_open@1 at zero permeability: its units carry no
     current, so the membrane stays inert at the gene world's 0.5 s step whatever R5's largest
     units are), every unit removed at k_r. The gene unit adds P and the
-    producer consumes it; P's registry potential is the shared row's one authority."""
+    producer consumes it; P's registry potential is the shared row's one authority.
+    gene_off, assembly_off: the times (s) at which each source's declared schedule switches it, off
+    first, then on and off in turn (D349's restart row): tl's initiation rate, which makes P, and
+    the route's assembly rate, which makes the units. P's degradation and the units' removal stay.
+    """
     raw = gw.ribosome_limited(n_R, dt=dt)
     m, e, x = raw["model"], raw["experiment"], raw["execution"]
     m["channels"] = [
@@ -273,4 +278,14 @@ def unit_pair(*, n_R=10, dt=0.5, end=None, every=None, k_a=K_ASSEMBLY, k_r=K_REM
             schedule=[dict(time=0.0, assembly_rate_per_s=k_a, removal_rate_per_s=k_r)],
         )
     ]
+    (initiation,) = (c for c in e["polymerisation_controls"] if c["route_id"] == "tl")
+    (assembly,) = e["unit_turnover_controls"]
+    for control, rate, times in (
+        (initiation, "value", gene_off),
+        (assembly, "assembly_rate_per_s", assembly_off),
+    ):
+        on = control["schedule"][0]
+        control["schedule"] += [
+            {**on, "time": float(t), rate: on[rate] if i % 2 else 0.0} for i, t in enumerate(times)
+        ]
     return _horizon(raw, end, every)
