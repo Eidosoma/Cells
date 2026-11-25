@@ -44,6 +44,7 @@ Host only: no world runs here.
   - a crossrev refusal stops before tiers and G1;
   - a declared program change goes on;
   - a passing gate takes crossrev, then tiers, then G1, and its second run reuses the cached base;
+  - G1 reads what was saved through the head's own table of renamed IDs, where it has one (D345);
   - PRELOCK_ONLY stops after the pre-lock steps, without queueing;
   - a used OUT is refused, so a stale verdict is never reported again;
   - a flock killed while it waits runs nothing.
@@ -626,6 +627,10 @@ args, cwd = sys.argv[1:], Path.cwd()
 def note(text):
     with open(os.environ["STUB_LOG"], "a") as f:
         f.write(text + "\n")
+def through(a):  # The table of renamed IDs a G1 call is given, in its tree.
+    if "--map" not in a:
+        return ""
+    return " through " + a[a.index("--map") + 1].removeprefix(str(cwd) + "/")
 if args[:2] == ["-I", "-c"]:  # The interpreter's identity.
     print("0.0.1 0.0.1 0.0.1"); sys.exit(0)
 a = [x for x in args if x not in ("-B", "-u")]
@@ -680,7 +685,7 @@ if a[:1] == ["-m"]:  # A crossrev action: MODULE ACTION TARGET [SET].
 if a[:2] == ["validation/results_baseline.py", "save"]:
     part, set_name = Path(a[2]), a[a.index("--sets") + 1]
     worlds = a[a.index("--worlds") + 1:a.index("--from")]
-    note("save " + set_name + " " + cwd.name)
+    note("save " + set_name + " " + cwd.name + through(a))
     (part / set_name).mkdir(parents=True, exist_ok=True)
     if PLANT == "save":  # Beside the parts: a part's own folders are its sets, which G1 merges.
         plant(part.parent.parent / ("jax-" + part.name))
@@ -692,7 +697,7 @@ if a[:2] == ["validation/results_baseline.py", "save"]:
         manifest["worlds"][set_name + "/" + w] = {"seconds": 2.5, "digests": {"x": digest}}
     (part / "manifest.json").write_text(json.dumps(manifest)); sys.exit(0)
 if a[:2] == ["validation/results_baseline.py", "compare"]:
-    note("g1 compare")
+    note("g1 compare" + through(a))
     x = json.loads((Path(a[2]) / "manifest.json").read_text())["worlds"]
     y = json.loads((Path(a[3]) / "manifest.json").read_text())["worlds"]
     rows = [{"world": k, "equal": k in y and x[k]["digests"] == y[k]["digests"]} for k in sorted(x)]
@@ -746,6 +751,17 @@ def test_a_passing_gate_takes_crossrev_then_tiers_then_g1_and_reuses_the_cached_
     assert "collect base" not in calls and not any(c.endswith(" base") for c in calls
                                                    if c.startswith("crossrev"))
     assert "worlds timed by the last passing G1 2" in log  # Its plan read the first run's seconds.
+
+
+def test_g1_reads_the_saved_through_the_heads_own_table_of_renamed_ids(gate):
+    table = gate["head"] / "src/cells/registry/renamed_ids.py"
+    table.parent.mkdir(parents=True, exist_ok=True)
+    table.write_text("RENAMED = {}\n")
+    code, calls, log = run_gate(gate, gate["tmp"] / "out")
+    assert code == 0, log
+    through = f" through {table.relative_to(gate['head'])}"
+    saves = [c for c in calls if c.startswith("save")]
+    assert saves and all(c.endswith(through) for c in saves) and "g1 compare" + through in calls
 
 
 def test_prelock_only_stops_before_queueing(gate):
@@ -977,7 +993,7 @@ ONLY = {  # What a bisect's rerun leaves in a tree's folder: the failing check's
 @pytest.mark.parametrize("stage, plant", [
     ("tiers", {"fail.txt": "tests/unit/test_other.py\n"}),
     ("crossrev", {"program.txt": "p2\n"}),
-    ("g1", {"g1.txt": "protocol-w1/w2\n"}),
+    ("g1", {"g1.txt": "protocol-w1/w2\n", "src/cells/registry/renamed_ids.py": "RENAMED = {}\n"}),
 ])
 def test_a_planted_failure_bisects_to_its_head_rerunning_only_the_failing_check(
         stack, stage, plant):
@@ -1008,6 +1024,11 @@ def test_a_planted_failure_bisects_to_its_head_rerunning_only_the_failing_check(
     if stage == "g1":
         rows = json.loads((out / "bisect" / "m2" / "compare.json").read_text())["rows"]
         assert [r["world"] for r in rows] == items == ["protocol-w1/w2"]
+        saves = {k: [c for c in calls if c.startswith("save ") and f" snap-m{k}" in c]
+                 for k in (2, 1)}
+        # Each tree's own table of renamed IDs (D345), and none for a tree before it.
+        assert saves[2] and all(c.endswith("registry/renamed_ids.py") for c in saves[2]), calls
+        assert saves[1] and not any("through" in c for c in saves[1]), calls
 
 
 def test_a_conflicting_merge_refuses_the_stack_with_its_paths(stack):

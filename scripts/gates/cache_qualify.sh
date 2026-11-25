@@ -211,18 +211,22 @@ freeze() {  # RUN RECORD LISTING: OFF's record of a run, from the IDs collected 
   "$PY" -B "$TT" freeze --run "$1" --collected "$3" --out "$2" > "$2.log" 2>&1
   log "OFF's record $2: $(tail -n 1 "$2.log" | cut -c1-200)"
 }
+# A tree's own table of renamed IDs (D345), where it has one: what was saved under an old spelling is
+# read through it (validation/id_table.py), so a tree before the rename is asked for nothing.
+id_map() { local t=$1/src/cells/registry/renamed_ids.py; [ ! -f "$t" ] || printf '%s\n' --map "$t"; }
 g1() {  # TREE DIR REF [FROM]: G1's worlds by the shared plan, one shard per CPU, each group's peak
         # RSS; merged and compared bit for bit with REF
   local tree=$1 d=$2 ref=$3 from=${4:-$BASELINE} k=0 cpu
-  local -a pids=()
+  local -a pids=() ids=()
   mkdir -p "$d/parts"
+  mapfile -t ids < <(id_map "$tree")
   for cpu in "${CPU[@]}"; do
     (taskset -cp "$cpu" $BASHPID > /dev/null; nproc > "$d/shard-$k.cpus"; j=0
      while IFS=$'\t' read -r set worlds; do
        # shellcheck disable=SC2086
        (cd "$tree" && env -u JAX_COMPILATION_CACHE_DIR PYTHONPATH="$tree/src:$tree" "${E[@]}" /usr/bin/time \
          -f '%M %e' -o "$d/rss-$k-$j.txt" "$PY" -B validation/results_baseline.py save "$d/parts/part-$k-$j" \
-         --sets "$set" --worlds $worlds --from "$from") < /dev/null >> "$d/shard-$k.log" 2>&1
+         --sets "$set" --worlds $worlds --from "$from" "${ids[@]}") < /dev/null >> "$d/shard-$k.log" 2>&1
        echo "$(date -u +%FT%TZ) shard $k group $j $set exit $?" >> "$d/g1.log"
        j=$((j + 1))
      done < <(steps g1-groups "$OUT/g1-plan.json" "$k")) &
@@ -231,17 +235,20 @@ g1() {  # TREE DIR REF [FROM]: G1's worlds by the shared plan, one shard per CPU
   wait "${pids[@]}"
   steps g1-merge "$d/parts" "$d/merged" >> "$d/g1.log" 2>&1
   (cd "$tree" && PYTHONPATH="$tree/src:$tree" taskset -c "$I0" "$PY" -B validation/results_baseline.py compare \
-    "$ref" "$d/merged" --output "$d/compare.json" > "$d/compare.log" 2>&1)
+    "$ref" "$d/merged" "${ids[@]}" --output "$d/compare.json" > "$d/compare.log" 2>&1)
   log "G1 $d: compare exit $?: $(tail -n 1 "$d/compare.log" | cut -c1-160)"
 }
 c2prime() {  # G3's C2' (crossrev-base/symport from its planted definitions) by the unplanted tree, one CPU
   local d=$OUT/negative/c2prime
+  local -a ids=()
   mkdir -p "$d"
+  mapfile -t ids < <(id_map "$UNPLANTED_S")
   (cd "$UNPLANTED_S" && env -u JAX_COMPILATION_CACHE_DIR PYTHONPATH="$UNPLANTED_S/src:$UNPLANTED_S" "${E[@]}" \
     taskset -c "$I0" /usr/bin/time -f '%M %e' -o "$d/rss-c2prime.txt" "$PY" -B validation/results_baseline.py \
-    save "$d/part" --sets crossrev-base --worlds symport --from "$C2P_ORIGIN") > "$d/save.log" 2>&1
+    save "$d/part" --sets crossrev-base --worlds symport --from "$C2P_ORIGIN" "${ids[@]}") > "$d/save.log" 2>&1
   (cd "$UNPLANTED_S" && PYTHONPATH="$UNPLANTED_S/src:$UNPLANTED_S" taskset -c "$I0" "$PY" -B \
-    validation/results_baseline.py compare "$C2P_REF" "$d/part" --output "$d/compare.json" > "$d/compare.log" 2>&1)
+    validation/results_baseline.py compare "$C2P_REF" "$d/part" "${ids[@]}" --output "$d/compare.json" \
+    > "$d/compare.log" 2>&1)
   log "C2' $d: compare exit $?: $(tail -n 1 "$d/compare.log" | cut -c1-160)"
 }
 fr() {  # TREE DIR: FR's four queues (fr_landing_holder.sh's task lists) on the lane's cores, each

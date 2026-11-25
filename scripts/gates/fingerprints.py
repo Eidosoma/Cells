@@ -28,17 +28,29 @@ keys name the same files.
       every file of TREE's src/, configs/, examples/ and validation/ against `git ls-tree REV`
       (git blob ids, computed here): the same paths and the same bytes, or exit 1.
   record TREE OUT --layout premove|moved --map MAP --defs PATH... --g1 MERGED
+         [--inputs TABLE] [--outputs TABLE]
       OUT/record.json and OUT/arrays.npz (every control array). MAP's folder's parent holds the
       move tool (scripts/source_moves.py of the same tree).
-  compare OLD NEW MAP OUT_JSON [--r1-record RECORD]
+      Across the ID rename (D345) the IDs are read through a table of renamed IDs
+      (validation/id_table.py of these tools' checkout; a renamed_ids.py or a JSON {old: new}).
+      --inputs: the definitions, before TREE parses them, so that one saved or frozen under an old
+      spelling parses on a tree that refuses it. --outputs: what TREE gives, before anything is
+      serialized, sorted, digested or cut, so that an old tree's results are a new tree's. With it
+      the fingerprint's value is the digest of the read to_dict (a tree's own digest is of its own
+      spellings), and an exception's frame keeps no line number, which the rename's rewrap moves.
+      Both sides of a comparison name the same --outputs, or neither does.
+  compare OLD NEW MAP OUT_JSON [--r1-record RECORD] [--declared FILE]
       the same keys on both sides; per world the fingerprint value, the harness's rows (parse,
       to_dict, fingerprint, get_model, control values and shapes) equal, with the old side's
       module names and paths read through the map; every control array bitwise; and the keys
-      against R1's own record (R1's 274; --r1-record, by default R1's frozen one).
+      against R1's own record (R1's 274; --r1-record, by default R1's frozen one). A world may
+      differ only where FILE declares it, one key on a line: an exact list, so a declared world
+      that does not differ refuses the comparison too.
 """
 
 import hashlib
 import importlib
+import importlib.util
 import json
 import linecache
 import re
@@ -72,10 +84,12 @@ class Harness:
         "cells/core/legacy_entry.py",
     )
 
-    def __init__(self):
+    def __init__(self, gives=None):
         self.ROOT = None  # the tree's src folder, set by record
         self.DISPATCH_FILES = Harness.DISPATCH_FILES
         self.value_key = None
+        self.gives = gives or (lambda value: value)  # What reads a result through --outputs.
+        self.lines = gives is None
 
     def norm(self, text):
         text = str(text)
@@ -91,10 +105,11 @@ class Harness:
         if inner is not None:
             rel = self.norm(inner.filename).removeprefix("<src>/")
             if rel in self.DISPATCH_FILES:
-                frame = ["<dispatch>", linecache.getline(inner.filename, inner.lineno).strip()]
+                line = linecache.getline(inner.filename, inner.lineno).strip()
+                frame = ["<dispatch>", self.gives(line)]
             else:
-                frame = [rel, inner.name, inner.lineno]
-        return ["raise", type(error).__name__, self.norm(error)[:400], frame]
+                frame = [rel, inner.name, *([inner.lineno] if self.lines else [])]
+        return ["raise", type(error).__name__, self.norm(self.gives(str(error)))[:400], frame]
 
     def call(self, f, *args):
         try:
@@ -147,6 +162,26 @@ def tree_relative(key):
     return "<tree>" + key[min(found):] if found else key
 
 
+def reader(table):
+    """What reads JSON-like data through a table of renamed IDs; None without one."""
+    if table is None:
+        return None
+    path = Path(__file__).resolve().parents[2] / "validation" / "id_table.py"
+    spec = importlib.util.spec_from_file_location("id_table", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    renamed = module.read_table(table)
+    return lambda value: module.translate(value, renamed)
+
+
+def fingerprint_value(spec, canonical_json, gives=None):
+    """The tree's own fingerprint; read through --outputs, the digest of the read to_dict."""
+    value = spec.fingerprint
+    if gives is None:
+        return value
+    return hashlib.sha256(canonical_json(gives(spec.to_dict())).encode()).hexdigest()
+
+
 def move_map(path):
     sys.path.insert(0, str(Path(path).resolve().parent.parent))
     import source_moves as sm
@@ -175,13 +210,14 @@ def identity(tree, rev, repo):
     return 0 if not differ and want else 1
 
 
-def record(tree, out, layout, map_path, defs, g1):
+def record(tree, out, layout, map_path, defs, g1, inputs=None, outputs=None):
     tree = Path(tree).resolve()
     sys.path.insert(0, str(tree / "src"))
     import jax
 
     jax.config.update("jax_enable_x64", True)
-    h = Harness()
+    given, gives = reader(inputs) or (lambda value: value), reader(outputs)
+    h = Harness(gives)
     h.ROOT = tree / "src"
     sm, mp = move_map(map_path)
     names = OLD if layout == "premove" else tuple(mp.resolve(n) or n for n in OLD)
@@ -201,9 +237,9 @@ def record(tree, out, layout, map_path, defs, g1):
             return ["module", value.__name__]
         if isinstance(value, dict):
             try:
-                return ["dict", canonical_json(value)]
+                return ["dict", canonical_json(h.gives(value))]
             except Exception as error:  # noqa: BLE001
-                return ["dict-unserializable", repr(error)[:200]]
+                return ["dict-unserializable", h.gives(repr(error))[:200]]
         t = type(value)
         return ["object", f"{t.__module__}.{t.__qualname__}"]
 
@@ -215,16 +251,18 @@ def record(tree, out, layout, map_path, defs, g1):
     for name, d in h.definitions(defs, g1).items():  # The harness's worlds probe.
         row = {}
         try:
-            spec = parse_spec(json.loads(json.dumps(d)))
+            spec = parse_spec(json.loads(json.dumps(given(d))))
         except Exception as error:  # noqa: BLE001
             row["parse"] = h.exc_key(error)
             rows[name] = row
             continue
-        row["parse"] = ["spec", type(spec.model).__qualname__, h.norm(repr(spec))[:200000]]
+        row["parse"] = [
+            "spec", type(spec.model).__qualname__, h.norm(h.gives(repr(spec)))[:200000]
+        ]  # fmt: skip
         row["to_dict"] = h.call(lambda s: s.to_dict(), spec)
         row["fingerprint"] = h.call(lambda s: s.fingerprint, spec)
         try:
-            row["fingerprint_value"] = ["digest", spec.fingerprint]
+            row["fingerprint_value"] = ["digest", fingerprint_value(spec, canonical_json, gives)]
         except Exception as error:  # noqa: BLE001
             row["fingerprint_value"] = h.exc_key(error)
         row["get_model"] = h.call(get_model, spec.model)
@@ -249,7 +287,8 @@ def record(tree, out, layout, map_path, defs, g1):
     out = Path(out)
     out.mkdir(parents=True, exist_ok=True)
     result = dict(tree=str(tree), layout=layout, imports=list(names),
-                  dispatch_files=list(h.DISPATCH_FILES), worlds=rows)
+                  dispatch_files=list(h.DISPATCH_FILES), inputs_through=bool(inputs),
+                  outputs_through=bool(outputs), worlds=rows)
     text = json.dumps(result, indent=1, default=str).replace(str(tree) + "/", "<tree>/")
     (out / "record.json").write_text(text + "\n")
     np.savez(out / "arrays.npz",
@@ -260,23 +299,28 @@ def record(tree, out, layout, map_path, defs, g1):
 
 
 def compare(old_dir, new_dir, map_path, out,
-            r1_record=R1_RECORD):
+            r1_record=R1_RECORD, declared=()):
     sm, mp = move_map(map_path)
     top = sm.map_top(mp)
-    old = json.loads((Path(old_dir) / "record.json").read_text())["worlds"]
-    new = json.loads((Path(new_dir) / "record.json").read_text())["worlds"]
+    records = [json.loads((Path(d) / "record.json").read_text()) for d in (old_dir, new_dir)]
+    if len({bool(r.get("outputs_through")) for r in records}) > 1:
+        raise SystemExit("refused: one record's results are read through a table of renamed IDs, "
+                         "and the other's are not")
+    old, new = (r["worlds"] for r in records)
 
     def through(v):  # Module names and dispatch paths of the tree before the move, moved.
         return json.loads(sm.rewrite_text(json.dumps(v), mp, top))
 
-    differ = {part: [] for part in PARTS}
+    differ, as_declared = {part: [] for part in PARTS}, set()
     for name in sorted(set(old) | set(new)):
         a, b = old.get(name, {}), new.get(name, {})
         for part in PARTS:
             x, y = a.get(part), b.get(part)
             if x != y and x is not None and through(x) == y:
                 continue
-            if x != y:
+            if x != y and name in declared:
+                as_declared.add(name)
+            elif x != y:
                 differ[part].append([name, x, y])
     r1 = {tree_relative(k) for k in json.loads(Path(r1_record).read_text())["worlds"]}
     digests = [r["fingerprint_value"] for r in old.values() if "fingerprint_value" in r]
@@ -297,11 +341,16 @@ def compare(old_dir, new_dir, map_path, out,
     bad = [k for k in keys if k not in oa.files or k not in na.files
            or oa[k].dtype != na[k].dtype or oa[k].shape != na[k].shape
            or oa[k].tobytes() != na[k].tobytes()]
+    as_declared |= {k.split("::")[0] for k in bad} & set(declared)
+    bad = [k for k in bad if k.split("::")[0] not in declared]
     report["control_arrays"] = dict(arrays=len(keys), differ=len(bad), examples=bad[:5])
-    ok = report["same_keys"] and not any(differ.values()) and not bad
-    n = len(old)
+    report["declared"] = dict(worlds=sorted(as_declared), equal=sorted(set(declared) - as_declared))
+    ok = (report["same_keys"] and not any(differ.values()) and not bad
+          and not report["declared"]["equal"])
+    n = len(old) - len(as_declared)
+    said = f", but for {len(as_declared)} worlds as declared" if as_declared else ""
     report["verdict"] = (f"all {n} fingerprints equal, and every other row of the harness (through "
-                         f"the map) and every control array" if ok else "DIFFERS")
+                         f"the map) and every control array{said}" if ok else "DIFFERS")
     Path(out).write_text(json.dumps(report, indent=1) + "\n")
     print(json.dumps(report, indent=1)[:5000])
     return 0 if ok else 1
@@ -320,15 +369,20 @@ def main(argv):
         p.add_argument("--map", required=True)
         p.add_argument("--defs", nargs="*", default=[])
         p.add_argument("--g1")
+        p.add_argument("--inputs")
+        p.add_argument("--outputs")
         a = p.parse_args(argv[2:])
-        return record(a.tree, a.out, a.layout, a.map, a.defs, a.g1)
+        return record(a.tree, a.out, a.layout, a.map, a.defs, a.g1, a.inputs, a.outputs)
     if len(argv) > 1 and argv[1] == "compare":
         rest = argv[2:]
-        r1 = R1_RECORD
+        r1, declared = R1_RECORD, ()
         if "--r1-record" in rest:
             at = rest.index("--r1-record")
             r1, rest = rest[at + 1], rest[:at] + rest[at + 2:]
-        return compare(*rest[:4], r1_record=r1)
+        if "--declared" in rest:
+            at = rest.index("--declared")
+            declared, rest = Path(rest[at + 1]).read_text().splitlines(), rest[:at] + rest[at + 2:]
+        return compare(*rest[:4], r1_record=r1, declared=[x for x in declared if x.strip()])
     raise SystemExit(__doc__)
 
 
