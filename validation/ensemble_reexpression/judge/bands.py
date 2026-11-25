@@ -27,12 +27,19 @@ def extrapolate(second, third, order: int):
 
 
 def observed_order(d2: float, d1: float):
-    """q = log2(d2 / d1), or None where a difference is zero."""
-    return math.log2(d2 / d1) if d1 > 0 and d2 > 0 else None
+    """q = log2(d2 / d1), or None where a difference is zero or not finite."""
+    if not (d1 > 0 and d2 > 0 and math.isfinite(d1) and math.isfinite(d2)):
+        return None
+    ratio = d2 / d1
+    return math.log2(ratio) if 0 < ratio < math.inf else math.log2(d2) - math.log2(d1)
 
 
 def classify(d2: float, d1: float, theta: float, order: int) -> str:
-    """The order rule's class: unresolved, mixed, resolved, or resolved outside its window."""
+    """The order rule's class: unresolved, mixed, resolved, or resolved outside its window ("not
+    finite" where the rows overflow).
+    """
+    if not (math.isfinite(d1) and math.isfinite(d2)):
+        return "not finite"
     below = (d1 <= theta, d2 <= theta)
     if all(below):
         return "unresolved"
@@ -43,7 +50,9 @@ def classify(d2: float, d1: float, theta: float, order: int) -> str:
 
 
 def band(entry, U_c: float, U_l: float, steps_c: int, steps_l: int | None) -> dict:
-    """The parts of beta, and beta with and without e_store. `steps_l` None: an identity, which has no captured side."""
+    """The parts of beta, and beta with and without e_store. `steps_l` None: an identity, which has
+    no captured side.
+    """
     round_c = entry.e_round(steps_c)
     round_l = 0.0 if steps_l is None else entry.e_round(steps_l)
     close = entry.e_close()
@@ -63,7 +72,9 @@ def band(entry, U_c: float, U_l: float, steps_c: int, steps_l: int | None) -> di
 
 
 def legacy_threshold(entry, steps_l: int) -> float:
-    """The legacy side's threshold: e_store is 0, since legacy stores increments (CRITERIA section 4.3)."""
+    """The legacy side's threshold: e_store is 0, since legacy stores increments (CRITERIA section
+    4.3).
+    """
     return c.THRESHOLD * entry.e_round(steps_l)
 
 
@@ -71,6 +82,6 @@ def score(statistic: float, beta: float, order_class: str) -> str:
     """The outcome of a class S entry (CRITERIA section 4.3)."""
     if order_class == "resolved outside its window":
         return c.INCONCLUSIVE
-    if statistic > beta or not math.isfinite(statistic):
+    if order_class == "not finite" or not math.isfinite(statistic) or statistic > beta:
         return c.FAIL
     return c.INCONCLUSIVE if order_class == "mixed" else c.PASS

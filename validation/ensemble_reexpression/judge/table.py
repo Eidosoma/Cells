@@ -1,7 +1,8 @@
 """The engine tables as the judge reads them (`spec/TABLE.md`, with `AMENDMENT-1-2026-11-25.md`).
 
-This module parses a folder of tables and says what each run is: present, refused and why, stopped, or a departing echo. It opens no
-capture. What a run's rows hold is read through `RunRows`, which raises `NotFormed` where a judged leaf is missing, mistyped or not finite.
+This module parses a folder of tables and says what each run is: present, refused and why, stopped,
+or a departing echo. It opens no capture. What a run's rows hold is read through `RunRows`, which
+raises `NotFormed` where a judged leaf is missing, mistyped or not finite.
 """
 
 from __future__ import annotations
@@ -63,7 +64,11 @@ def contract_faults(data, consumer: str, part: int) -> list:
     """What makes a parsed file not this consumer's table: its top-level keys (TABLE section 2)."""
     if not isinstance(data, dict):
         return ["the file is not an object"]
-    out = [f"the top-level key {key} is missing" for key in ("kind", "part", "consumer", "runs", "missing", "units") if key not in data]
+    out = [
+        f"the top-level key {key} is missing"
+        for key in ("kind", "part", "consumer", "runs", "missing", "units")
+        if key not in data
+    ]
     if out:
         return out
     if data["kind"] != c.TABLE_KIND:
@@ -76,7 +81,9 @@ def contract_faults(data, consumer: str, part: int) -> list:
         out.append("units are not the contract's")
     if not isinstance(data["runs"], dict):
         out.append("runs is not an object")
-    if not isinstance(data["missing"], list) or not all(isinstance(name, str) for name in data["missing"]):
+    if not isinstance(data["missing"], list) or not all(
+        isinstance(name, str) for name in data["missing"]
+    ):
         out.append("missing is not a list of names")
     return out
 
@@ -100,12 +107,19 @@ class TableSet:
 
     @classmethod
     def read(cls, folder, consumers, part: int = c.PART, retry: bool = False):
-        """Read `table_<consumer>.json` of a folder. A file refused whole keeps its reasons and no content."""
+        """Read `table_<consumer>.json` of a folder. A file refused whole keeps its reasons and no
+        content.
+        """
         folder = Path(folder)
         sums, faults = read_sums(folder)
         flags = [["SHA256SUMS", fault] for fault in faults]
         if sums is None:
-            flags.append(["SHA256SUMS", "absent from the folder (recorded and flagged, it refuses nothing by itself)"])
+            flags.append(
+                [
+                    "SHA256SUMS",
+                    "absent from the folder (recorded and flagged, it refuses nothing by itself)",
+                ]
+            )
         for path in sorted(folder.glob("table_*.json")):
             if path.name[len("table_") : -len(".json")] not in consumers:
                 flags.append(["a file of no consumer", f"{path.name}: not read"])
@@ -147,10 +161,17 @@ class TableSet:
 
 
 def hash_folder(folder) -> dict:
-    """The sha256 of every table of a folder, and of its SHA256SUMS, from the bytes alone (nothing is parsed)."""
+    """The sha256 of every table of a folder, and of its SHA256SUMS, from the bytes alone (nothing
+    is parsed).
+    """
     folder = Path(folder)
-    names = sorted(p.name for p in folder.glob("table_*.json")) + (["SHA256SUMS"] if (folder / "SHA256SUMS").is_file() else [])
-    return {"kind": c.HASHES_KIND, "files": {name: sha256((folder / name).read_bytes()) for name in names}}
+    names = sorted(p.name for p in folder.glob("table_*.json")) + (
+        ["SHA256SUMS"] if (folder / "SHA256SUMS").is_file() else []
+    )
+    return {
+        "kind": c.HASHES_KIND,
+        "files": {name: sha256((folder / name).read_bytes()) for name in names},
+    }
 
 
 # ----- the echo -----
@@ -173,7 +194,9 @@ POOL_DEFAULTS = {"root_node": 10, "world_id_start": 0}
 
 
 def close(expected, got, tolerance=None) -> bool:
-    """SPEC section 2.4: a number to 1e-12 of its own value, a declared zero exactly, an integer exactly."""
+    """SPEC section 2.4: a number to 1e-12 of its own value, a declared zero exactly, an integer
+    exactly.
+    """
     if not is_finite(got):
         return False
     if tolerance is not None:
@@ -205,12 +228,14 @@ def compare(expected, got, path: str, out: Echo):
         if not isinstance(got, list) or len(got) != len(expected):
             out.depart(path, "not the same list")
             return
-        for i, (a, b) in enumerate(zip(expected, got)):
+        for i, (a, b) in enumerate(zip(expected, got, strict=True)):
             compare(a, b, f"{path}/{i}", out)
 
 
 def parse_schedule(value):
-    """A schedule or a path as a list of [time, value] of finite numbers, or None where it is not one."""
+    """A schedule or a path as a list of [time, value] of finite numbers, or None where it is not
+    one.
+    """
     if not isinstance(value, list):
         return None
     for item in value:
@@ -222,7 +247,9 @@ def parse_schedule(value):
 def same_schedule(expected, got) -> bool:
     """Two schedules by their changes (SPEC section 3.2), times and values to 1e-12 relative."""
     a, b = changes(expected), changes(got)
-    return len(a) == len(b) and all(close(float(x[0]), y[0]) and close(float(x[1]), y[1]) for x, y in zip(a, b))
+    return len(a) == len(b) and all(
+        close(float(x[0]), y[0]) and close(float(x[1]), y[1]) for x, y in zip(a, b, strict=True)
+    )
 
 
 def as_map(value):
@@ -288,15 +315,22 @@ def compare_set(key, expected, got, world: World, out: Echo):
             rest = {k: v for k, v in value.items() if k != "initial_charge_C"}
             compare(rest, {k: v for k, v in entity.items() if k != "initial_charge_C"}, path, out)
             charge = value.get("initial_charge_C")
-            if charge is not None and not close(charge, entity.get("initial_charge_C"), c.ECHO_RTOL * sum(charges)):
-                out.depart(f"{path}/initial_charge_C", f"{entity.get('initial_charge_C')!r} and not {charge!r}")
+            if charge is not None and not close(
+                charge, entity.get("initial_charge_C"), c.ECHO_RTOL * sum(charges)
+            ):
+                out.depart(
+                    f"{path}/initial_charge_C",
+                    f"{entity.get('initial_charge_C')!r} and not {charge!r}",
+                )
             continue
         compare(value, entity, path, out)
     extra_entities(f"inputs/{key}", found, wanted, out)
 
 
 def extra_entities(path, found, wanted, out: Echo):
-    """An entity that the registered block does not have is a departing echo (the lead's ruling, Amendment 2)."""
+    """An entity that the registered block does not have is a departing echo (the lead's ruling,
+    Amendment 2).
+    """
     for name in found:
         if name not in wanted:
             out.extras = [extra for extra in out.extras if extra != f"{path}/{name}"]
@@ -304,7 +338,9 @@ def extra_entities(path, found, wanted, out: Echo):
 
 
 def compare_controls(expected, got, world: World, out: Echo):
-    """The schedules, by their changes. `controls.channel` of an assembly world is class E and no echo."""
+    """The schedules, by their changes. `controls.channel` of an assembly world is class E and no
+    echo.
+    """
     if not isinstance(got, dict):
         out.depart("inputs/controls", "not an object")
         return
@@ -316,7 +352,12 @@ def compare_controls(expected, got, world: World, out: Echo):
         if found is None:
             out.depart(path, "not a map")
             continue
-        known = {"leak": world.membranes, "pump": world.membranes, "channel": world.channels, "junction": world.junctions}[group]
+        known = {
+            "leak": world.membranes,
+            "pump": world.membranes,
+            "channel": world.channels,
+            "junction": world.junctions,
+        }[group]
         extra_entities(path, found, known, out)
         for name in [*wanted, *(n for n in found if n not in wanted and n in known)]:
             a = wanted.get(name, [[0.0, 1.0]])
@@ -353,12 +394,16 @@ def compare_pools(world: World, got, out: Echo):
             wanted.pop("initial_bond_indices", None)
             found.pop("initial_bond_indices", None)
         compare(wanted, found, f"{path}/pool", out)
-        out.extras += [f"{path}/{key}" for key in mine if key not in ("channel", "stream_id", "seed", "pool")]
+        out.extras += [
+            f"{path}/{key}" for key in mine if key not in ("channel", "stream_id", "seed", "pool")
+        ]
     extra_entities("inputs", got, world.pools, out)
 
 
 def echo(registration: Registration, note: StringsNote, run: dict, entry: dict) -> Echo:
-    """A run's whole echo: world, seed_index, world_id, step_s, inputs, strings and declared_strings (CRITERIA section 5)."""
+    """A run's whole echo: world, seed_index, world_id, step_s, inputs, strings and declared_strings
+    (CRITERIA section 5).
+    """
     out = Echo()
     world = registration.worlds[run["world"]]
     for key in ("world", "seed_index", "world_id"):
@@ -377,8 +422,15 @@ def echo(registration: Registration, note: StringsNote, run: dict, entry: dict) 
             if not isinstance(assembly, dict):
                 out.depart("inputs/assembly", "missing or not an object")
             else:
-                compare(world.data["coupling"]["law"], assembly.get("assembly_observable"), "inputs/assembly/assembly_observable", out)
-                out.extras += [f"inputs/assembly/{key}" for key in assembly if key not in c.ASSEMBLY_KEYS]
+                compare(
+                    world.data["coupling"]["law"],
+                    assembly.get("assembly_observable"),
+                    "inputs/assembly/assembly_observable",
+                    out,
+                )
+                out.extras += [
+                    f"inputs/assembly/{key}" for key in assembly if key not in c.ASSEMBLY_KEYS
+                ]
                 for key, known in (("pool_seeds", world.pools), ("switch_list", world.channels)):
                     if isinstance(assembly.get(key), dict):
                         extra_entities(f"inputs/assembly/{key}", assembly[key], known, out)
@@ -433,7 +485,9 @@ class RunState:
 
     @property
     def judgable(self) -> bool:
-        """True where its readouts are judged: it is there, its file stands and its echo is the registered run's."""
+        """True where its readouts are judged: it is there, its file stands and its echo is the
+        registered run's.
+        """
         return self.entry is not None and not self.file_refused and not self.echo
 
     @property
@@ -445,12 +499,18 @@ class RunState:
     def refused(self) -> bool:
         """True where it is refused or missing, whatever the cause."""
         kind = self.refusal_kind in ("definition", "domain", "harness")
-        return bool(self.missing or self.file_refused or self.echo or self.provenance or self.guard or kind)
+        return bool(
+            self.missing or self.file_refused or self.echo or self.provenance or self.guard or kind
+        )
 
     @property
     def partial(self) -> bool:
-        """True for a refused or stopped run whose echo stands: it is judged on the rows that it holds (CRITERIA section 5)."""
-        return self.judgable and bool(self.refusal_kind is not None or self.provenance or self.guard)
+        """True for a refused or stopped run whose echo stands: it is judged on the rows that it
+        holds (CRITERIA section 5).
+        """
+        return self.judgable and bool(
+            self.refusal_kind is not None or self.provenance or self.guard
+        )
 
     def causes(self) -> list:
         """Every cause of its refusal, stop or absence."""
@@ -483,7 +543,9 @@ class RunState:
         }
 
 
-def provenance(registration: Registration, note: StringsNote, run: dict, entry: dict, shared: set) -> list:
+def provenance(
+    registration: Registration, note: StringsNote, run: dict, entry: dict, shared: set
+) -> list:
     """The provenance faults of CRITERIA section 5's table, as [reason, detail]."""
     out = []
     world = registration.worlds[run["world"]]
@@ -494,31 +556,45 @@ def provenance(registration: Registration, note: StringsNote, run: dict, entry: 
     else:
         for key in c.SOURCE_STRINGS:
             if not isinstance(source.get(key), str) or not source[key]:
-                out.append(["source incomplete" if key != "snapshot" else "a missing snapshot", key])
+                out.append(
+                    ["source incomplete" if key != "snapshot" else "a missing snapshot", key]
+                )
         if not isinstance(source.get("checkout_dirty"), bool):
             out.append(["source incomplete", "checkout_dirty"])
         elif source["checkout_dirty"]:
             out.append(["checkout_dirty", "true"])
         if not is_integer(source.get("blas_threads")):
             out.append(["source incomplete", "blas_threads"])
-        if isinstance(source.get("engine_revision"), str) and source["engine_revision"] != note.revision:
+        if (
+            isinstance(source.get("engine_revision"), str)
+            and source["engine_revision"] != note.revision
+        ):
             out.append(["engine_revision", "not the strings note's"])
-        if isinstance(source.get("snapshot_patch_sha256"), str) and source["snapshot_patch_sha256"] != c.EMPTY_SHA256:
+        if (
+            isinstance(source.get("snapshot_patch_sha256"), str)
+            and source["snapshot_patch_sha256"] != c.EMPTY_SHA256
+        ):
             out.append(["snapshot_patch_sha256", "not an empty file's"])
     digest = entry.get("record_sha256")
-    if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
+    if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-fA-F]{64}", digest):
         out.append(["a missing record_sha256", repr(digest)])
     elif digest in shared:
         out.append(["a shared record_sha256", digest])
     if entry.get("host_patch") is not None:
         out.append(["host_patch", "not null"])
     t = entry.get("t")
-    if isinstance(t, list) and all(is_finite(v) for v in t) and any(b <= a for a, b in zip(t, t[1:])):
+    if (
+        isinstance(t, list)
+        and all(is_finite(v) for v in t)
+        and any(b <= a for a, b in zip(t, t[1:], strict=False))
+    ):
         out.append(["t", "does not strictly increase"])
     status, refusal = entry.get("status"), entry.get("refusal")
     if status not in ("completed", "refused") or (status == "completed") != (refusal is None):
         out.append(["status", f"{status!r} disagrees with refusal"])
-    elif refusal is not None and (not isinstance(refusal, dict) or refusal.get("kind") not in c.REFUSAL_KINDS):
+    elif refusal is not None and (
+        not isinstance(refusal, dict) or refusal.get("kind") not in c.REFUSAL_KINDS
+    ):
         out.append(["status", "a refusal that has no kind of the contract"])
     if not pool and status == "completed":
         out += steps_faults(registration, run, entry, world)
@@ -527,7 +603,13 @@ def provenance(registration: Registration, note: StringsNote, run: dict, entry: 
         for cell in world.pools:
             mine = inputs.get(cell) if isinstance(inputs, dict) else None
             other = pools.get(cell) if isinstance(pools, dict) else None
-            if isinstance(mine, dict) and isinstance(other, dict) and "seed" in mine and "seed" in other and mine["seed"] != other["seed"]:
+            if (
+                isinstance(mine, dict)
+                and isinstance(other, dict)
+                and "seed" in mine
+                and "seed" in other
+                and mine["seed"] != other["seed"]
+            ):
                 out.append(["pool seed", f"pool.{cell}.seed differs from inputs.{cell}.seed"])
     return out
 
@@ -541,7 +623,12 @@ def steps_faults(registration: Registration, run: dict, entry: dict, world: Worl
     if not is_integer(steps):
         return [["steps", f"{steps!r} is no integer"]]
     if steps > most:
-        return [["off_grid_change" if not world.assembly else "steps", f"{steps} accepted steps, and at most {most}"]]
+        return [
+            [
+                "off_grid_change" if not world.assembly else "steps",
+                f"{steps} accepted steps, and at most {most}",
+            ]
+        ]
     if steps < least:
         return [["steps", f"{steps} accepted steps, and at least {least}"]]
     return []
@@ -555,7 +642,17 @@ def recorded_flags(registration: Registration, run: dict, entry: dict) -> list:
     out += [["a key is absent", key] for key in c.RUN_KEYS if key not in entry]
     extra = [key for key in entry if key not in c.RUN_KEYS and key != "off_grid"]
     if extra:
-        out.append(["extra keys", {key: entry[key] if isinstance(entry[key], (bool, int, float, str)) else "recorded" for key in extra}])
+        out.append(
+            [
+                "extra keys",
+                {
+                    key: entry[key]
+                    if isinstance(entry[key], (bool, int, float, str))
+                    else "recorded"
+                    for key in extra
+                },
+            ]
+        )
     if entry.get("variant") != run["variant"]:
         out.append(["variant", f"{entry.get('variant')!r} and not {run['variant']!r}"])
     for key in ("definition", "checks"):
@@ -575,10 +672,17 @@ def recorded_flags(registration: Registration, run: dict, entry: dict) -> list:
         if (refusal.get("kind") == "check") != is_finite(refusal.get("time_s")):
             out.append(["refusal", "time_s is a number for `check` and null otherwise"])
     source = entry.get("source")
-    if isinstance(source, dict) and source.get("cpu_model") != registration.legacy["captures"]["cpu_model"]:
+    if (
+        isinstance(source, dict)
+        and source.get("cpu_model") != registration.legacy["captures"]["cpu_model"]
+    ):
         out.append(["cpu_model", "not the captures' machine, on which class E holds"])
     declared = entry.get("declared_strings")
-    if isinstance(declared, list) and all(isinstance(s, str) for s in declared) and declared != sorted(set(declared)):
+    if (
+        isinstance(declared, list)
+        and all(isinstance(s, str) for s in declared)
+        and declared != sorted(set(declared))
+    ):
         out.append(["declared_strings", "not sorted, or a string stands twice"])
     if pool:
         if entry.get("steps") is not None:
@@ -590,7 +694,11 @@ def recorded_flags(registration: Registration, run: dict, entry: dict) -> list:
         for cell in world.pools:
             mine = pools.get(cell) if isinstance(pools, dict) else None
             if isinstance(mine, dict):
-                out += [["recorded leaf", f"pool.{cell}.{key} is missing or mistyped"] for key in ("seed", "stream_id") if not is_integer(mine.get(key))]
+                out += [
+                    ["recorded leaf", f"pool.{cell}.{key} is missing or mistyped"]
+                    for key in ("seed", "stream_id")
+                    if not is_integer(mine.get(key))
+                ]
         return out
     t = entry.get("t")
     start = registration.restart_time(run)
@@ -603,12 +711,30 @@ def recorded_flags(registration: Registration, run: dict, entry: dict) -> list:
     if world.assembly and isinstance(inputs, dict) and isinstance(inputs.get("assembly"), dict):
         fingerprint = inputs["assembly"].get("composed_file_fingerprint")
         if not isinstance(fingerprint, str) or not fingerprint:
-            out.append(["recorded leaf", "inputs.assembly.composed_file_fingerprint is missing or mistyped"])
-    out += [["recorded leaf", f"{key} is not null in an ionic run"] for key in ("pool", "path") if entry.get(key) is not None]
+            out.append(
+                [
+                    "recorded leaf",
+                    "inputs.assembly.composed_file_fingerprint is missing or mistyped",
+                ]
+            )
+    out += [
+        ["recorded leaf", f"{key} is not null in an ionic run"]
+        for key in ("pool", "path")
+        if entry.get(key) is not None
+    ]
     held = entry.get("potential_t")
-    if start is None and isinstance(held, list) and held and is_finite(held[0]) and abs(held[0]) > c.TIME_TOL_S:
+    if (
+        start is None
+        and isinstance(held, list)
+        and held
+        and is_finite(held[0])
+        and abs(held[0]) > c.TIME_TOL_S
+    ):
         out.append(["potential_t", "its first time is not 0"])
-    for key, times, known in (("rows", t, set(world.row_series())), ("potentials", held, {"voltage", "phi_out"})):
+    for key, times, known in (
+        ("rows", t, set(world.row_series())),
+        ("potentials", held, {"voltage", "phi_out"}),
+    ):
         values = entry.get(key)
         if not isinstance(values, dict):
             continue
@@ -621,15 +747,27 @@ def recorded_flags(registration: Registration, run: dict, entry: dict) -> list:
         for series, table in values.items():
             if isinstance(table, dict):
                 for entity, listed in table.items():
-                    if not isinstance(listed, list) or len(listed) != len(times) or not np.all(np.isfinite(column(listed))):
+                    if (
+                        not isinstance(listed, list)
+                        or len(listed) != len(times)
+                        or not np.all(np.isfinite(column(listed)))
+                    ):
                         bad.append(f"{series}/{entity}")
         if bad:
-            out.append([key, f"a list of another length, or a value that is missing, mistyped or not finite: {bad[:5]} ({len(bad)})"])
+            out.append(
+                [
+                    key,
+                    f"a list of another length, or a value that is missing, mistyped or not "
+                    f"finite: {bad[:5]} ({len(bad)})",
+                ]
+            )
     return out
 
 
 def column(values: list) -> np.ndarray:
-    """A list of JSON values as doubles. What is no finite number (a boolean, a string, null, NaN, infinity) is NaN."""
+    """A list of JSON values as doubles. What is no finite number (a boolean, a string, null, NaN,
+    infinity) is NaN.
+    """
     if set(map(type, values)) <= {float, int}:
         try:
             return np.array(values, dtype=float)
@@ -654,12 +792,26 @@ def all_finite(value) -> bool:
     return not is_number(value) or is_finite(value)
 
 
-def assess(registration: Registration, note: StringsNote, tables: TableSet, retry: TableSet | None = None, owed=()) -> tuple:
-    """Every registered run's state, and what else the tables hold. A retry's runs are read from `retry`, when they are owed."""
+def assess(
+    registration: Registration,
+    note: StringsNote,
+    tables: TableSet,
+    retry: TableSet | None = None,
+    owed=(),
+) -> tuple:
+    """Every registered run's state, and what else the tables hold. A retry's runs are read from
+    `retry`, when they are owed.
+    """
     states, ignored = {}, []
     for consumer, names in tables.missing.items():
         for name in sorted(names - set(registration.runs)):
-            ignored.append({"consumer": consumer, "run": name, "what": "a name in `missing` that the inputs do not list"})
+            ignored.append(
+                {
+                    "consumer": consumer,
+                    "run": name,
+                    "what": "a name in `missing` that the inputs do not list",
+                }
+            )
     sets = [tables] + ([retry] if retry is not None else [])
     digests = {}
     for table in sets:
@@ -678,10 +830,24 @@ def assess(registration: Registration, note: StringsNote, tables: TableSet, retr
             known = runs.get(name) or retried.get(name)
             if known is None:
                 rule = registration.retry_run(name)
-                what = "a retry run that is not owed" if rule else "a run that the inputs do not list"
-                ignored.append({"consumer": consumer, "run": name, "what": f"{what}: ignored, recorded and flagged"})
+                what = (
+                    "a retry run that is not owed" if rule else "a run that the inputs do not list"
+                )
+                ignored.append(
+                    {
+                        "consumer": consumer,
+                        "run": name,
+                        "what": f"{what}: ignored, recorded and flagged",
+                    }
+                )
             elif known["consumer"] != consumer:
-                ignored.append({"consumer": consumer, "run": name, "what": f"a run of {known['consumer']}, in another consumer's table: ignored"})
+                ignored.append(
+                    {
+                        "consumer": consumer,
+                        "run": name,
+                        "what": f"a run of {known['consumer']}, in another's table: ignored",
+                    }
+                )
 
     for name, run in [*runs.items(), *retried.items()]:
         consumer = run["consumer"]
@@ -718,7 +884,10 @@ def assess(registration: Registration, note: StringsNote, tables: TableSet, retr
         switch = entry.get("off_grid")
         if switch is True and name not in registration.profile.get("off_grid_runs", ()):
             if state.refusal_kind != "check":
-                state.refusal_kind, state.refusal_message = "harness", "the off-grid switch is on (Amendment 1, item 6)"
+                state.refusal_kind, state.refusal_message = (
+                    "harness",
+                    "the off-grid switch is on (Amendment 1, item 6)",
+                )
             state.flags.append(["off_grid", "the switch is on"])
         elif switch not in (None, False, True):
             state.flags.append(["off_grid", f"{switch!r} is no boolean"])
@@ -783,7 +952,9 @@ class RunRows:
         for i, entity in enumerate(entities):
             values = table.get(entity)
             if not isinstance(values, list) or len(values) != length:
-                raise NotFormed(f"{key}.{series}.{entity} is missing, mistyped or not as long as {times_key}")
+                raise NotFormed(
+                    f"{key}.{series}.{entity} is missing, mistyped or not as long as {times_key}"
+                )
             where_ = (key, series, entity)
             if where_ not in self._columns:
                 self._columns[where_] = column(values)
@@ -794,10 +965,14 @@ class RunRows:
         return out
 
     def get(self, series: str, times) -> np.ndarray:
-        """A series at given times, [time, entity]. `heat_membrane` is formed (READOUTS section 5)."""
+        """A series at given times, [time, entity]. `heat_membrane` is formed (READOUTS
+        section 5).
+        """
         if series == "heat_membrane":
             return self._heat_membrane(times)
-        return self._table(self.rows, "rows", series, self.world.entities(series), self.index(times), "t")
+        return self._table(
+            self.rows, "rows", series, self.world.entities(series), self.index(times), "t"
+        )
 
     def _heat_membrane(self, times):
         world = self.world
@@ -811,13 +986,17 @@ class RunRows:
         if world.channels:
             values = self.get("heat_channel", times)
             for i, channel in enumerate(world.channels):
-                out[:, world.membranes.index(world.block["channels"][channel]["membrane_id"])] += values[:, i]
+                out[:, world.membranes.index(world.block["channels"][channel]["membrane_id"])] += (
+                    values[:, i]
+                )
         return out
 
     def potential(self, name: str, times) -> np.ndarray:
         """A potential at given times, [time, entity]."""
         rows = self.index(times, "potential_t")
-        return self._table(self.potentials, "potentials", name, self.world.entities(name), rows, "potential_t")
+        return self._table(
+            self.potentials, "potentials", name, self.world.entities(name), rows, "potential_t"
+        )
 
     def entry(self, entry) -> np.ndarray:
         """An entry's array, [compared time, entity]."""

@@ -47,12 +47,13 @@ It was written from the spec folder, the protocol, the captures and the planted 
 | 11 | `J plants` with stage 1's options, `--out O/plants.json` (any time after 5) | The tables, the captures and the planted runs | `plants.json`: JP1 to JP24 on altered copies of the registered tables |
 
 **Before the campaign:** `J selftest --out O/selftest.json` (C0, the fabricated tables, JP1 to JP24; about a minute), `J structure --tables <sample>/table --retry-tables <sample>/table-retry` (the format sample, TABLE section 7), and the tests:
-`PYTHONPATH=src:. JAX_ENABLE_X64=1 /mnt/workspaces/Cells/venv-cpu/bin/python -m pytest -q -p no:cacheprovider validation/ensemble_reexpression/judge/test_judge.py` (129 rows, about 25 s on one core; they read the captures, compile nothing, and skip where no capture is).
+`PYTHONPATH=src:. JAX_ENABLE_X64=1 /mnt/workspaces/Cells/venv-cpu/bin/python -m pytest -q -p no:cacheprovider validation/ensemble_reexpression/judge/test_judge.py` (147 rows, about 25 to 30 s on one core; they read the captures, compile nothing, and skip where no capture is).
 
 `J fabricate --out O/fab` writes the honest tables of the judge's own with their `SHA256SUMS` and a strings note. They are marked as fabricated and no engine ran.
 
 **What the record holds** (for the checker): every file's sha256 (tables, note, `c0.json`, `power.json`, the spec, every capture and planted file opened), every run's state with every cause and flag, every entry (consumer, family, run that owns it, readout, class, statistic, band, ratio, where it lies, d₁, d₂, q, the order's class, U_c, the planted distance, tested or not, the outcome), every plant (its registered distance, its band, its margin, its score),
-the counts formed beside the expected and the published ones, the mechanisms and the first home that tests each, what the retry is owed, and the verdicts with every reason. `base` has its two sets with their members. The entries of `base s0 pool` are marked.
+the counts formed beside the expected and the published ones, the mechanisms and the first home that tests each, what the retry is owed, the steps that a pass covers, the four places where nothing is judged with what lies in each, and the verdicts with every reason. `base` has its two sets with their members. The entries of `base s0 pool` are marked.
+A first pass's verdict is marked as not final where a retry is owed.
 
 ## 4. The readings
 

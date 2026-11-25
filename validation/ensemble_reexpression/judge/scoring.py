@@ -1,7 +1,9 @@
-"""Stage 1 (power) and stage 2 (scores and verdicts), in the spec's order (CRITERIA sections 4 to 8).
+"""Stage 1 (power) and stage 2 (scores and verdicts), in the spec's order (CRITERIA sections 4 to
+8).
 
-Stage 1 reads the tables' own rows, the inputs' scales and C0's numbers of the captures. It opens no capture and forms no difference
-between a candidate and a capture. Stage 2 forms those, and it needs `power.json` and its recorded sha256.
+Stage 1 reads the tables' own rows, the inputs' scales and C0's numbers of the captures. It opens no
+capture and forms no difference between a candidate and a capture. Stage 2 forms those, and it needs
+`power.json` and its recorded sha256.
 """
 
 from __future__ import annotations
@@ -16,14 +18,18 @@ from .table import NotFormed, RunRows, TableSet, assess, parse_schedule
 
 
 class OrderFault(Exception):
-    """A step of the judgement that is out of the spec's order, or whose inputs are not the recorded ones."""
+    """A step of the judgement that is out of the spec's order, or whose inputs are not the recorded
+    ones.
+    """
 
 
 # ----- counts (READOUTS sections 3 and 4) -----
 
 
 def expected_counts(registration: Registration, consumer: str, families=None) -> dict:
-    """The entries of a consumer by class. `families` restricts the families; the pool and support runs stay (CRITERIA section 8)."""
+    """The entries of a consumer by class. `families` restricts the families; the pool and support
+    runs stay (CRITERIA section 8).
+    """
     chosen = registration.by_consumer[consumer] if families is None else families
     names = {family.name for family in chosen}
     out = {"S": 0, "energy": 0, "R": 0, "E": 0, "D": 0}
@@ -31,7 +37,9 @@ def expected_counts(registration: Registration, consumer: str, families=None) ->
         out["S"] += len(family.world.entries)
         out["energy"] += int(family.world.identities_judged)
     for run in registration.runs.values():
-        if run["consumer"] != consumer or (run["family"] is not None and run["family"] not in names):
+        if run["consumer"] != consumer or (
+            run["family"] is not None and run["family"] not in names
+        ):
             continue
         world = registration.worlds[run["world"]]
         pool = registration.is_pool(run)
@@ -49,12 +57,16 @@ def expected_counts(registration: Registration, consumer: str, families=None) ->
 
 
 def ionic_R(world) -> int:
-    """The class R entries of an ionic judged run: three balances of each species, and the capacitor."""
+    """The class R entries of an ionic judged run: three balances of each species, and the
+    capacitor.
+    """
     return 3 * len(world.species) + 1 if world.identities_judged else 0
 
 
 def ionic_E(world) -> int:
-    """The class E entries of an ionic judged run: its structural zeros and, in an assembly world, the switch list, the schedule and the seeds."""
+    """The class E entries of an ionic judged run: its structural zeros and, in an assembly world,
+    the switch list, the schedule and the seeds.
+    """
     return len(world.zeros) + (3 if world.assembly else 0)
 
 
@@ -62,9 +74,18 @@ def ionic_E(world) -> int:
 
 
 class Tables:
-    """The tables with every registered run's state, its rows on demand, and the copy guard's first comparison."""
+    """The tables with every registered run's state, its rows on demand, and the copy guard's first
+    comparison.
+    """
 
-    def __init__(self, registration: Registration, note: StringsNote, tables: TableSet, retry: TableSet | None = None, owed=()):
+    def __init__(
+        self,
+        registration: Registration,
+        note: StringsNote,
+        tables: TableSet,
+        retry: TableSet | None = None,
+        owed=(),
+    ):
         faults = note.faults(registration)
         if faults:
             raise OrderFault(f"the strings note: {'; '.join(faults[:5])}")
@@ -90,7 +111,9 @@ class Tables:
             try:
                 self._arrays[key] = self.rows(name).entry(entry)
             except NotFormed as error:
-                self._arrays[key] = NotFormed(str(error) if str(error).startswith(name) else f"{name}: {error}")
+                self._arrays[key] = NotFormed(
+                    str(error) if str(error).startswith(name) else f"{name}: {error}"
+                )
         if isinstance(self._arrays[key], NotFormed):
             raise NotFormed(str(self._arrays[key]))
         return self._arrays[key]
@@ -101,7 +124,9 @@ class Tables:
         return family.runs + retry
 
     def guard_rows(self, name: str):
-        """Every class S row of a run at every compared time, or None where one of them is not there."""
+        """Every class S row of a run at every compared time, or None where one of them is not
+        there.
+        """
         world = self.reg.worlds[self.states[name].run["world"]]
         try:
             return [self.entry(name, entry) for entry in world.guard_entries()]
@@ -109,7 +134,9 @@ class Tables:
             return None
 
     def _guard_a(self) -> list:
-        """Comparison (a): two rungs of one family whose class S rows are all exactly equal. Both are refused (CRITERIA section 5)."""
+        """Comparison (a): two rungs of one family whose class S rows are all exactly equal. Both
+        are refused (CRITERIA section 5).
+        """
         out = []
         for family in self.reg.families.values():
             names = [n for n in self.rungs(family) if self.states[n].judgable]
@@ -118,7 +145,9 @@ class Tables:
                 for second in names[i + 1 :]:
                     if held[first] is None or held[second] is None:
                         continue
-                    if all(np.array_equal(a, b) for a, b in zip(held[first], held[second])):
+                    if all(
+                        np.array_equal(a, b) for a, b in zip(held[first], held[second], strict=True)
+                    ):
                         out.append([family.name, first, second])
                         self.states[first].guard.append(["a", f"its class S rows equal {second}'s"])
                         self.states[second].guard.append(["a", f"its class S rows equal {first}'s"])
@@ -126,7 +155,9 @@ class Tables:
 
 
 def estimates(tables: Tables, family, names, steps_s, c0: dict) -> dict:
-    """Every S entry and the energy identity of a triple: the run's own differences, U_c, the order's class, beta and power."""
+    """Every S entry and the energy identity of a triple: the run's own differences, U_c, the
+    order's class, beta and power.
+    """
     registration, world = tables.reg, family.world
     steps_c = world.steps(steps_s[2])
     legacy = c0["legacy"][family.name]
@@ -158,7 +189,9 @@ def estimates(tables: Tables, family, names, steps_s, c0: dict) -> dict:
 
 
 def mechanisms(registration: Registration, families, table: dict) -> dict:
-    """Mechanism to whether a home entry of one of the families tests it, and which do (CRITERIA section 4.5)."""
+    """Mechanism to whether a home entry of one of the families tests it, and which do (CRITERIA
+    section 4.5).
+    """
     out = {}
     for family in families:
         for mechanism, homes in registration.mechanisms(family.world.name).items():
@@ -185,7 +218,9 @@ def sets_of(registration: Registration, consumer: str) -> dict:
 
 
 def stage1(tables: Tables, c0: dict, hashes: dict, first: dict | None = None) -> dict:
-    """Stage 1: power. With `first` (the first pass's record), only what it owes the retry, on the new triples."""
+    """Stage 1: power. With `first` (the first pass's record), only what it owes the retry, on the
+    new triples.
+    """
     registration = tables.reg
     if c0.get("kind") != c.C0_KIND or c0.get("status") != "pass":
         raise OrderFault("C0 did not pass, so no table is judged")
@@ -209,12 +244,18 @@ def stage1(tables: Tables, c0: dict, hashes: dict, first: dict | None = None) ->
         "pass": 1 if first is None else 2,
         "hashes": hashes,
         "guard_a": tables.guard_a,
-        "runs": {name: {"judged": s.judgable, "refused": s.refused, "stopped": s.stopped} for name, s in tables.states.items()},
+        "runs": {
+            name: {"judged": s.judgable, "refused": s.refused, "stopped": s.stopped}
+            for name, s in tables.states.items()
+        },
         "families": table,
     }
     if first is None:
         out["mechanisms"] = {
-            consumer: {which: mechanisms(registration, families, table) for which, families in sets_of(registration, consumer).items()}
+            consumer: {
+                which: mechanisms(registration, families, table)
+                for which, families in sets_of(registration, consumer).items()
+            }
             for consumer in registration.consumers
         }
     return strictjson.plain(out)
@@ -226,7 +267,16 @@ def stage1(tables: Tables, c0: dict, hashes: dict, first: dict | None = None) ->
 class Stage2:
     """The scores: every entry, every plant, every verdict."""
 
-    def __init__(self, tables: Tables, c0: dict, power: dict, captures: Captures, planted: Planted, power2: dict | None = None, first: dict | None = None):
+    def __init__(
+        self,
+        tables: Tables,
+        c0: dict,
+        power: dict,
+        captures: Captures,
+        planted: Planted,
+        power2: dict | None = None,
+        first: dict | None = None,
+    ):
         self.tables, self.c0, self.power = tables, c0, power
         self.captures, self.planted = captures, planted
         self.reg = tables.reg
@@ -256,7 +306,9 @@ class Stage2:
 
     def star(self, family, entry):
         """L*."""
-        return bands.extrapolate(self.capture(family, "h2", entry), self.capture(family, "h4", entry), c.LEGACY_ORDER)
+        return bands.extrapolate(
+            self.capture(family, "h2", entry), self.capture(family, "h4", entry), c.LEGACY_ORDER
+        )
 
     @staticmethod
     def place(array, entry):
@@ -287,7 +339,7 @@ class Stage2:
             self.class_D(name, state)
         plants = self.plants()
         owed = self.retry_owed()
-        verdicts = self.verdicts(plants)
+        verdicts = self.verdicts(plants, owed)
         return strictjson.plain(
             {
                 "kind": c.RECORD_KIND,
@@ -298,28 +350,62 @@ class Stage2:
                     **self.power["hashes"],
                     **({} if self.power2 is None else {"retry": self.power2["hashes"]}),
                 },
-                "runs": {name: dict(state.record(), verdict=verdicts["runs"].get(name)) for name, state in self.tables.states.items()},
+                "runs": {
+                    name: dict(state.record(), verdict=verdicts["runs"].get(name))
+                    for name, state in self.tables.states.items()
+                },
                 "ignored": self.tables.ignored,
                 "files": {
-                    consumer: {"sha256": f.sha256, "refused": f.refusals, "flags": f.flags, "absent": f.absent}
+                    consumer: {
+                        "sha256": f.sha256,
+                        "refused": f.refusals,
+                        "flags": f.flags,
+                        "absent": f.absent,
+                    }
                     for consumer, f in self.tables.tables.files.items()
                 },
-                "file_flags": self.tables.tables.flags + (self.tables.retry.flags if self.tables.retry else []),
+                "file_flags": self.tables.tables.flags
+                + (self.tables.retry.flags if self.tables.retry else []),
                 "entries": self.entries,
                 "plants": plants,
                 "flags": self.flags,
                 "retry_owed": owed,
+                "where_nothing_is_judged": self.unseen(),
                 "consumers": verdicts["consumers"],
                 "part_1": verdicts["part"],
                 "reference_files_opened": {**self.captures.opened, **self.planted.opened},
             }
         )
 
+    def unseen(self) -> dict:
+        """The four places where a fail can go unseen, by name (CRITERIA section 5)."""
+        states = self.tables.states
+        lost = {n for n, s in states.items() if not s.judgable}
+        return {
+            "a departing echo": [n for n, s in states.items() if s.echo],
+            "in `missing` or in neither list": [n for n, s in states.items() if s.missing],
+            "a file refused whole": {
+                k: f.refusals for k, f in self.tables.tables.files.items() if f.refusals
+            },
+            "a missing or doubled row or leaf": [
+                [e["run"], e["readout"], e.get("why")]
+                for e in self.entries
+                if e["judged"] and e["outcome"] == c.NOT_FORMED and e["run"] not in lost
+            ],
+        }
+
     def guard_b(self):
-        """Comparison (b): a run whose class S rows all equal the captured rows of its own world at a captured step."""
+        """Comparison (b): a run whose class S rows all equal the captured rows of its own world at
+        a captured step.
+        """
         for name, state in self.tables.states.items():
             run = state.run
-            if not state.judgable or self.reg.is_pool(run) or run["role"] == "support" or run["family"] not in self.reg.families:
+            if (
+                not state.judgable
+                or self.reg.is_pool(run)
+                or run["role"] == "support"
+                or run["family"] not in self.reg.families
+            ):
                 continue
             rows = self.tables.guard_rows(name)
             if rows is None:
@@ -327,13 +413,18 @@ class Stage2:
             family = self.reg.families[run["family"]]
             for step in STEPS:
                 entries = family.world.guard_entries()
-                if all(np.array_equal(mine, self.capture(family, step, entry)) for mine, entry in zip(rows, entries)):
+                if all(
+                    np.array_equal(mine, self.capture(family, step, entry))
+                    for mine, entry in zip(rows, entries, strict=True)
+                ):
                     state.guard.append(["b", f"its class S rows equal the captured rows at {step}"])
 
     # ----- class S -----
 
     def class_S(self, family):
-        """The S entries and the energy identity of a family, on the triple that each is judged on."""
+        """The S entries and the energy identity of a family, on the triple that each is
+        judged on.
+        """
         world = family.world
         first = self.power["families"][family.name]
         second = (self.power2 or {}).get("families", {}).get(family.name, {})
@@ -343,7 +434,9 @@ class Stage2:
 
     def _class_S(self, family, entry, est, again):
         identity = entry.where == "identity"
-        judged = not identity or family.world.identities_judged  # an order-2 world's identities are reported (SPEC section 8)
+        judged = (
+            not identity or family.world.identities_judged
+        )  # an order-2 world's identities are reported (SPEC section 8)
         record = {
             "consumer": family.consumer,
             "family": family.name,
@@ -354,7 +447,12 @@ class Stage2:
             "pass_of_the_judgement": 2 if again else 1,
         }
         if not est["formed"]:
-            self.add(**record, outcome=c.NOT_FORMED if judged else c.REPORTED, why=est["why"], home=est["home"])
+            self.add(
+                **record,
+                outcome=c.NOT_FORMED if judged else c.REPORTED,
+                why=est["why"],
+                home=est["home"],
+            )
             return
         names = est["runs"]
         Y2, Y3 = (self.tables.entry(name, entry) for name in names[1:])
@@ -369,7 +467,12 @@ class Stage2:
             outcome, why = c.NOT_TESTED, "beta is above a tenth of the planted distance"
         state_form = est["e_store"] > 0 and est["beta_without_store"] < statistic <= est["beta"]
         if state_form:
-            self.flag(record["run"], "state form", f"{family.name} {entry.name}: inside the band with e_store and outside the one without")
+            self.flag(
+                record["run"],
+                "state form",
+                f"{family.name} {entry.name}: inside the band with e_store and outside the one "
+                f"without",
+            )
         self.add(
             **record,
             outcome=outcome if judged else c.REPORTED,
@@ -397,7 +500,9 @@ class Stage2:
     # ----- class R -----
 
     def class_R(self, name, state):
-        """The balances and the capacitor of an ionic run, against its own grid's steps (CRITERIA section 4.2)."""
+        """The balances and the capacitor of an ionic run, against its own grid's steps (CRITERIA
+        section 4.2).
+        """
         run = state.run
         world = self.reg.worlds[run["world"]]
         judged = run["role"] in ("judged", "retry") and world.identities_judged
@@ -411,9 +516,25 @@ class Stage2:
                 ("closed world", identities.closed_residual, ("world",)),
             ):
                 bound = identities.balance_bound(world, kind, species, steps)
-                items.append((f"balance of {kind}, {species}", lambda rows, at, r=residual, x=species: r(world, rows, x, at), times, bound, entities))
+                items.append(
+                    (
+                        f"balance of {kind}, {species}",
+                        lambda rows, at, r=residual, x=species: r(world, rows, x, at),
+                        times,
+                        bound,
+                        entities,
+                    )
+                )
         bound = identities.capacitor_bound(world, steps)
-        items.append(("capacitor", lambda rows, at: identities.capacitor_residual(world, rows, at), world.potential_times, bound, world.membranes))
+        items.append(
+            (
+                "capacitor",
+                lambda rows, at: identities.capacitor_residual(world, rows, at),
+                world.potential_times,
+                bound,
+                world.membranes,
+            )
+        )
         start = self.reg.restart_time(run)
         for readout, residual, at, (limit, without), entities in items:
             if start is not None:
@@ -445,9 +566,17 @@ class Stage2:
             if good and partial is not None:
                 outcome = c.NOT_FORMED
             if good and limit > without and statistic > without:
-                self.flag(name, "state form", f"{readout}: inside the band with e_store and outside the one without")
+                self.flag(
+                    name,
+                    "state form",
+                    f"{readout}: inside the band with e_store and outside the one without",
+                )
             if not judged and outcome == c.FAIL:
-                self.flag(name, "a miss of an identity that is reported and not judged", f"{readout}: {statistic!r} against {limit!r}")
+                self.flag(
+                    name,
+                    "a miss of an identity that is reported and not judged",
+                    f"{readout}: {statistic!r} against {limit!r}",
+                )
             self.add(
                 **record,
                 outcome=outcome if judged else c.REPORTED,
@@ -462,7 +591,9 @@ class Stage2:
             )
 
     def _partial(self, state, residual, times):
-        """A residual on the rows that a refused or stopped run holds, or None (CRITERIA section 5: a refusal never hides a fail)."""
+        """A residual on the rows that a refused or stopped run holds, or None (CRITERIA section 5:
+        a refusal never hides a fail).
+        """
         if not state.partial:
             return None
         rows = self.tables.rows(state.name)
@@ -479,19 +610,37 @@ class Stage2:
     # ----- class E -----
 
     def class_E(self, name, state):
-        """The structural zeros, the switch list, the channel schedule and the recorded seeds of an ionic run."""
+        """The structural zeros, the switch list, the channel schedule and the recorded seeds of an
+        ionic run.
+        """
         run = state.run
         world = self.reg.worlds[run["world"]]
-        judged = run["role"] in ("judged", "retry")  # a retry's class E entries are judged (the lead's ruling, Amendment 2)
+        judged = run["role"] in (
+            "judged",
+            "retry",
+        )  # a retry's class E entries are judged (the lead's ruling, Amendment 2)
         for entry in world.zeros:
-            record = {"consumer": run["consumer"], "family": run["family"], "run": name, "readout": f"{entry.name} is zero", "class": "E", "judged": judged}
+            record = {
+                "consumer": run["consumer"],
+                "family": run["family"],
+                "run": name,
+                "readout": f"{entry.name} is zero",
+                "class": "E",
+                "judged": judged,
+            }
             if run["role"] == "support":
                 continue
             self._zero(record, name, state, entry)
         if not world.assembly or run["role"] == "support":
             return
         paths = self.reg.expected_paths(run)
-        record = {"consumer": run["consumer"], "family": run["family"], "run": name, "class": "E", "judged": judged}
+        record = {
+            "consumer": run["consumer"],
+            "family": run["family"],
+            "run": name,
+            "class": "E",
+            "judged": judged,
+        }
         inputs = state.entry.get("inputs") if state.judgable else None
         assembly = inputs.get("assembly") if isinstance(inputs, dict) else None
         controls = inputs.get("controls") if isinstance(inputs, dict) else None
@@ -500,14 +649,22 @@ class Stage2:
             listed = assembly.get("switch_list") if isinstance(assembly, dict) else None
             if not isinstance(listed, dict):
                 raise NotFormed("inputs.assembly.switch_list is missing or mistyped")
-            return {channel: self._schedule(listed.get(channel), f"switch_list.{channel}") for channel in paths}
+            return {
+                channel: self._schedule(listed.get(channel), f"switch_list.{channel}")
+                for channel in paths
+            }
 
         def schedules():
             declared = controls.get("channel", {}) if isinstance(controls, dict) else {}
             declared = {} if declared == [] else declared
             if not isinstance(declared, dict):
                 raise NotFormed("inputs.controls.channel is mistyped")
-            return {channel: self._schedule(declared.get(channel, [[0.0, 1.0]]), f"controls.channel.{channel}") for channel in paths}
+            return {
+                channel: self._schedule(
+                    declared.get(channel, [[0.0, 1.0]]), f"controls.channel.{channel}"
+                )
+                for channel in paths
+            }
 
         def seeds():
             held = assembly.get("pool_seeds") if isinstance(assembly, dict) else None
@@ -521,7 +678,9 @@ class Stage2:
             return out
 
         wanted = {channel: changes(path) for channel, path in paths.items()}
-        wanted_seeds = {cell: pool["seeds"][run["seed_index"]] for cell, pool in world.pools.items()}
+        wanted_seeds = {
+            cell: pool["seeds"][run["seed_index"]] for cell, pool in world.pools.items()
+        }
         for readout, read, expected in (
             ("switch list", switches, wanted),
             ("channel schedule", schedules, wanted),
@@ -540,19 +699,36 @@ class Stage2:
         """One class E entry of leaves: equal as numbers, or not formed."""
         judged = record["judged"]
         if not state.judgable:
-            self.add(**record, readout=readout, outcome=c.NOT_FORMED if judged else c.REPORTED, why="; ".join(state.causes()))
+            self.add(
+                **record,
+                readout=readout,
+                outcome=c.NOT_FORMED if judged else c.REPORTED,
+                why="; ".join(state.causes()),
+            )
             return
         try:
             held = read()
         except NotFormed as error:
-            self.add(**record, readout=readout, outcome=c.NOT_FORMED if judged else c.REPORTED, reported=None if judged else c.NOT_FORMED, why=str(error))
+            self.add(
+                **record,
+                readout=readout,
+                outcome=c.NOT_FORMED if judged else c.REPORTED,
+                reported=None if judged else c.NOT_FORMED,
+                why=str(error),
+            )
             return
         good = held == expected
         outcome = c.PASS if good else c.FAIL
         why = None if good else f"held {held!r}, expected {expected!r}"[:400]
         if not judged and not good:
             self.flag(record["run"], "a class E entry of a run that owns none", readout)
-        self.add(**record, readout=readout, outcome=outcome if judged else c.REPORTED, reported=None if judged else outcome, why=why)
+        self.add(
+            **record,
+            readout=readout,
+            outcome=outcome if judged else c.REPORTED,
+            reported=None if judged else outcome,
+            why=why,
+        )
 
     def _zero(self, record, name, state, entry):
         """A structural zero, every row of the run."""
@@ -560,13 +736,22 @@ class Stage2:
         try:
             rows = self.tables.rows(name)
             rows.index(entry.times)
-            every = rows._table(rows.rows, "rows", entry.series, entry.entities, range(len(rows._times("t"))), "t")
+            every = rows._table(
+                rows.rows, "rows", entry.series, entry.entities, range(len(rows._times("t"))), "t"
+            )
         except NotFormed as error:
             every = None
             if state.partial:
                 try:
                     rows = self.tables.rows(name)
-                    every = rows._table(rows.rows, "rows", entry.series, entry.entities, range(len(rows._times("t"))), "t")
+                    every = rows._table(
+                        rows.rows,
+                        "rows",
+                        entry.series,
+                        entry.entities,
+                        range(len(rows._times("t"))),
+                        "t",
+                    )
                 except NotFormed:
                     every = None
             if every is None or not np.any(every):
@@ -574,10 +759,18 @@ class Stage2:
                 return
         good = not np.any(every)
         outcome = c.PASS if good else c.FAIL
-        self.add(**record, outcome=outcome if judged else c.REPORTED, reported=None if judged else outcome, statistic=bands.largest(every), band=0.0)
+        self.add(
+            **record,
+            outcome=outcome if judged else c.REPORTED,
+            reported=None if judged else outcome,
+            statistic=bands.largest(every),
+            band=0.0,
+        )
 
     def restart(self, name, state):
-        """A restart's E entries: equal to the uninterrupted run of the same step, after its time (CRITERIA section 4.1)."""
+        """A restart's E entries: equal to the uninterrupted run of the same step, after its time
+        (CRITERIA section 4.1).
+        """
         run = state.run
         start = self.reg.restart_time(run)
         if start is None:
@@ -590,13 +783,22 @@ class Stage2:
         at_fault = None
         if state.judgable:
             held = state.entry.get("restart")
-            good = isinstance(held, dict) and strictjson.is_finite(held.get("time_s")) and abs(held["time_s"] - start) <= c.TIME_TOL_S
+            good = (
+                isinstance(held, dict)
+                and strictjson.is_finite(held.get("time_s"))
+                and abs(held["time_s"] - start) <= c.TIME_TOL_S
+            )
             at_fault = None if good else "its `restart` does not hold the registered time"
             if good and not isinstance(held.get("through"), str):
                 self.flag(name, "restart", "`through` is missing or mistyped")
             if good and not strictjson.is_integer(held.get("step_index")):
                 self.flag(name, "restart", "`step_index` is missing or mistyped")
-            self.flag(name, "restart to confirm", "the checker confirms from the run's own record that it reloaded a written checkpoint")
+            self.flag(
+                name,
+                "restart to confirm",
+                "the checker confirms from the run's own record that it reloaded a written "
+                "checkpoint",
+            )
         for entry in world.entries:
             record = {
                 "consumer": run["consumer"],
@@ -624,7 +826,13 @@ class Stage2:
                 self.add(**record, outcome=c.FAIL if missed else c.NOT_FORMED, why=str(error))
                 continue
             good = np.array_equal(mine, whole)
-            self.add(**record, outcome=c.PASS if good else c.FAIL, why=None, statistic=bands.largest(mine - whole), band=0.0)
+            self.add(
+                **record,
+                outcome=c.PASS if good else c.FAIL,
+                why=None,
+                statistic=bands.largest(mine - whole),
+                band=0.0,
+            )
 
     def _at(self, name, entry, times):
         rows = self.tables.rows(name)
@@ -633,14 +841,18 @@ class Stage2:
         return rows.get(entry.series, times)
 
     def _partial_restart(self, state, owner, entry, times, key) -> bool:
-        """True where one of the two runs is refused or stopped, and the rows that both hold already differ."""
+        """True where one of the two runs is refused or stopped, and the rows that both hold already
+        differ.
+        """
         whole = self.tables.states[owner]
         if not (state.judgable and whole.judgable and (state.partial or whole.partial)):
             return False
         mine = self.tables.rows(state.name)
         held = [t for t in mine.held(times, key) if t in self.tables.rows(owner).held(times, key)]
         try:
-            return bool(held) and not np.array_equal(self._at(state.name, entry, held), self._at(owner, entry, held))
+            return bool(held) and not np.array_equal(
+                self._at(state.name, entry, held), self._at(owner, entry, held)
+            )
         except NotFormed:
             return False
 
@@ -649,7 +861,11 @@ class Stage2:
     @staticmethod
     def _array(entry, cell, name, shape):
         pool = entry.get("pool")
-        arrays = pool.get(cell, {}).get("arrays") if isinstance(pool, dict) and isinstance(pool.get(cell), dict) else None
+        arrays = (
+            pool.get(cell, {}).get("arrays")
+            if isinstance(pool, dict) and isinstance(pool.get(cell), dict)
+            else None
+        )
         value = arrays.get(name) if isinstance(arrays, dict) else None
         out = []
 
@@ -663,7 +879,9 @@ class Stage2:
                     raise NotFormed(f"pool.{cell}.arrays.{name} holds {item!r}")
                 return
             if not isinstance(item, list) or len(item) != shape[depth]:
-                raise NotFormed(f"pool.{cell}.arrays.{name} is missing, or not of shape {list(shape)}")
+                raise NotFormed(
+                    f"pool.{cell}.arrays.{name} is missing, or not of shape {list(shape)}"
+                )
             for part in item:
                 walk(part, depth + 1)
 
@@ -691,7 +909,13 @@ class Stage2:
         seed = run["seed_index"]
         marked = name in self.reg.profile.get("not_blind_pool_runs", [])
         for cell, pool in world.pools.items():
-            base = {"consumer": run["consumer"], "family": None, "run": name, "judged": True, "cell": cell}
+            base = {
+                "consumer": run["consumer"],
+                "family": None,
+                "run": name,
+                "judged": True,
+                "cell": cell,
+            }
             if marked:
                 base["holds_worlds_that_are_not_blind"] = True
             ids = [str(pool["pool"]["world_id_start"] + i) for i in range(pool["pool"]["worlds"])]
@@ -705,19 +929,38 @@ class Stage2:
                     self.add(**record, outcome=c.NOT_FORMED, why=str(error))
                     continue
                 theirs = captured[array].ravel().tolist()
-                wrong = [i for i, (a, b) in enumerate(zip(mine, theirs)) if a != b]
-                self.add(**record, outcome=c.FAIL if wrong else c.PASS, why=None, unequal=len(wrong), of=len(theirs), at=wrong[:1] or None)
+                wrong = [i for i, (a, b) in enumerate(zip(mine, theirs, strict=True)) if a != b]
+                self.add(
+                    **record,
+                    outcome=c.FAIL if wrong else c.PASS,
+                    why=None,
+                    unequal=len(wrong),
+                    of=len(theirs),
+                    at=wrong[:1] or None,
+                )
             record = {**base, "readout": f"{cell} path", "class": "E"}
             path = None
             try:
                 self.tables.rows(name)
                 path = self._path(state.entry, cell, ids)
-                reference = {wid: self.reg.reference_path(run["world"], seed, cell, wid) for wid in ids}
+                reference = {
+                    wid: self.reg.reference_path(run["world"], seed, cell, wid) for wid in ids
+                }
                 wrong = [wid for wid in ids if path[wid] != reference[wid]]
-                if wrong and state.partial and all(path[wid] == reference[wid][: len(path[wid])] for wid in ids):
+                if (
+                    wrong
+                    and state.partial
+                    and all(path[wid] == reference[wid][: len(path[wid])] for wid in ids)
+                ):
                     path = None
-                    raise NotFormed("a refused run's path, which is a beginning of the reference path")
-                self.add(**record, outcome=c.FAIL if wrong else c.PASS, why=f"worlds {wrong}" if wrong else None)
+                    raise NotFormed(
+                        "a refused run's path, which is a beginning of the reference path"
+                    )
+                self.add(
+                    **record,
+                    outcome=c.FAIL if wrong else c.PASS,
+                    why=f"worlds {wrong}" if wrong else None,
+                )
             except NotFormed as error:
                 self.add(**record, outcome=c.NOT_FORMED, why=str(error))
             record = {**base, "readout": f"{cell} seed", "class": "E"}
@@ -726,7 +969,9 @@ class Stage2:
                 held = state.entry["inputs"][cell].get("seed")
                 if not strictjson.is_integer(held):
                     raise NotFormed(f"inputs.{cell}.seed is missing or mistyped")
-                self.add(**record, outcome=c.PASS if held == pool["seeds"][seed] else c.FAIL, why=None)
+                self.add(
+                    **record, outcome=c.PASS if held == pool["seeds"][seed] else c.FAIL, why=None
+                )
             except NotFormed as error:
                 self.add(**record, outcome=c.NOT_FORMED, why=str(error))
             record = {**base, "readout": f"{cell} exposure", "class": "R"}
@@ -744,12 +989,19 @@ class Stage2:
                 if worst is None or gap / bound > ratio:
                     worst, ratio = [gap, bound, wid], gap / bound
             self.add(
-                **record, outcome=c.FAIL if missed else c.PASS, why=f"worlds {missed}" if missed else None,
-                statistic=worst[0], band=worst[1], ratio=ratio, at=worst[2],
+                **record,
+                outcome=c.FAIL if missed else c.PASS,
+                why=f"worlds {missed}" if missed else None,
+                statistic=worst[0],
+                band=worst[1],
+                ratio=ratio,
+                at=worst[2],
             )
 
     def pool_restart(self, name, state):
-        """A pool restart's arrays, and its path after the restart's time, equal to the uninterrupted run's (class E)."""
+        """A pool restart's arrays, and its path after the restart's time, equal to the
+        uninterrupted run's (class E).
+        """
         run = state.run
         start = self.reg.restart_time(run)
         if start is None:
@@ -763,22 +1015,46 @@ class Stage2:
         fault = None
         if state.judgable:
             held = state.entry.get("restart")
-            good = isinstance(held, dict) and strictjson.is_finite(held.get("time_s")) and abs(held["time_s"] - start) <= c.TIME_TOL_S
+            good = (
+                isinstance(held, dict)
+                and strictjson.is_finite(held.get("time_s"))
+                and abs(held["time_s"] - start) <= c.TIME_TOL_S
+            )
             fault = None if good else "its `restart` does not hold the registered time"
             if good and not isinstance(held.get("through"), str):
                 self.flag(name, "restart", "`through` is missing or mistyped")
             if good and held.get("step_index") is not None:
-                self.flag(name, "restart", "`step_index` is not null in a pool restart (Amendment 1, item 2)")
-            self.flag(name, "restart to confirm", "the checker confirms from the run's own record that it reloaded a written checkpoint")
+                self.flag(
+                    name,
+                    "restart",
+                    "`step_index` is not null in a pool restart (Amendment 1, item 2)",
+                )
+            self.flag(
+                name,
+                "restart to confirm",
+                "the checker confirms from the run's own record that it reloaded a written "
+                "checkpoint",
+            )
             for cell, pool in world.pools.items():
                 if state.entry["inputs"][cell].get("seed") != pool["seeds"][run["seed_index"]]:
                     self.flag(name, "seed", f"inputs.{cell}.seed is not the registered seed")
         for cell, pool in world.pools.items():
             ids = [str(pool["pool"]["world_id_start"] + i) for i in range(pool["pool"]["worlds"])]
-            base = {"consumer": run["consumer"], "family": None, "run": owner, "support": name, "judged": True, "class": "E", "cell": cell}
+            base = {
+                "consumer": run["consumer"],
+                "family": None,
+                "run": owner,
+                "support": name,
+                "judged": True,
+                "class": "E",
+                "cell": cell,
+            }
             if owner in self.reg.profile.get("not_blind_pool_runs", []):
                 base["holds_worlds_that_are_not_blind"] = True
-            shapes = {array: self.captures.pool_arrays(run["world"], run["seed_index"], cell)[array].shape for array in c.POOL_ARRAYS}
+            shapes = {
+                array: self.captures.pool_arrays(run["world"], run["seed_index"], cell)[array].shape
+                for array in c.POOL_ARRAYS
+            }
             for array in c.POOL_ARRAYS:
                 record = {**base, "readout": f"restart {cell} {array}"}
                 try:
@@ -797,20 +1073,41 @@ class Stage2:
                     raise NotFormed(fault)
                 self.tables.rows(name)
                 self.tables.rows(owner)
-                mine, theirs = self._path(state.entry, cell, ids), self._path(whole.entry, cell, ids)
-                wrong = [w for w in ids if [e for e in mine[w] if e[0] > start] != [e for e in theirs[w] if e[0] > start]]
-                self.add(**record, outcome=c.FAIL if wrong else c.PASS, why=f"worlds {wrong}" if wrong else None)
+                mine, theirs = (
+                    self._path(state.entry, cell, ids),
+                    self._path(whole.entry, cell, ids),
+                )
+                wrong = [
+                    w
+                    for w in ids
+                    if [e for e in mine[w] if e[0] > start]
+                    != [e for e in theirs[w] if e[0] > start]
+                ]
+                self.add(
+                    **record,
+                    outcome=c.FAIL if wrong else c.PASS,
+                    why=f"worlds {wrong}" if wrong else None,
+                )
             except NotFormed as error:
                 self.add(**record, outcome=c.NOT_FORMED, why=str(error))
 
     # ----- class D -----
 
     def class_D(self, name, state):
-        """Completion (CRITERIA section 4.4). A stop fails; a refusal is not a stop, and D is not judged there."""
+        """Completion (CRITERIA section 4.4). A stop fails; a refusal is not a stop, and D is not
+        judged there.
+        """
         run = state.run
         if run["role"] not in ("judged", "retry"):
             return
-        record = {"consumer": run["consumer"], "family": run["family"], "run": name, "readout": "completes", "class": "D", "judged": True}
+        record = {
+            "consumer": run["consumer"],
+            "family": run["family"],
+            "run": name,
+            "readout": "completes",
+            "class": "D",
+            "judged": True,
+        }
         if not state.judgable:
             self.add(**record, outcome=c.NOT_FORMED, why="; ".join(state.causes()))
         elif state.stopped:
@@ -824,8 +1121,12 @@ class Stage2:
 
     def _honest(self, family, entry_name):
         """What a plant needs of its honest family: its estimates, or why it is unscorable."""
-        est = (self.power2 or {}).get("families", {}).get(family.name, {}).get(entry_name) or self.power["families"][family.name][entry_name]
-        bad = [n for n in est["runs"] if self.tables.states[n].refused or self.tables.states[n].stopped]
+        est = (self.power2 or {}).get("families", {}).get(family.name, {}).get(
+            entry_name
+        ) or self.power["families"][family.name][entry_name]
+        bad = [
+            n for n in est["runs"] if self.tables.states[n].refused or self.tables.states[n].stopped
+        ]
         if bad:
             return None, f"the honest run {bad[0]} is refused or stopped"
         if not est["formed"]:
@@ -845,10 +1146,25 @@ class Stage2:
                 if est is None:
                     named.append({**item, "score": "unscorable", "why": why})
                     continue
-                star = bands.extrapolate(*(self.tables.entry(n, entry) for n in est["runs"][1:]), world.p)
-                statistic = bands.largest(star - self.planted.run(plant["run"], family, step_s).entry(entry))
-                named.append({**item, **self._plant_score(item["distance"], est["beta"], statistic)})
-            out.append({"plant": name, "kind": "structural", "consumer": consumer, "family": family.name, "entries": named, "score": overall(named)})
+                star = bands.extrapolate(
+                    *(self.tables.entry(n, entry) for n in est["runs"][1:]), world.p
+                )
+                statistic = bands.largest(
+                    star - self.planted.run(plant["run"], family, step_s).entry(entry)
+                )
+                named.append(
+                    {**item, **self._plant_score(item["distance"], est["beta"], statistic)}
+                )
+            out.append(
+                {
+                    "plant": name,
+                    "kind": "structural",
+                    "consumer": consumer,
+                    "family": family.name,
+                    "entries": named,
+                    "score": overall(named),
+                }
+            )
         for consumer, run, name, plant, distances in self.reg.engine():
             out.append(self._engine(consumer, run, name, plant, distances))
         return {"plants": out}
@@ -857,31 +1173,62 @@ class Stage2:
     def _plant_score(distance, beta, statistic):
         out = {"band": beta, "statistic": statistic, "margin": distance / beta}
         if distance <= 2 * beta:
-            return {**out, "score": "unscorable", "why": "its registered distance is at most 2 beta"}
+            return {
+                **out,
+                "score": "unscorable",
+                "why": "its registered distance is at most 2 beta",
+            }
         return {**out, "score": "caught" if statistic > beta else "not caught", "why": None}
 
     def _engine(self, consumer, run, name, plant, distances):
         family = self.reg.families[run["family"]]
         world, state = family.world, self.tables.states[run["name"]]
-        out = {"plant": name, "kind": "engine", "consumer": consumer, "family": family.name, "run": run["name"], "causes": state.causes()}
+        out = {
+            "plant": name,
+            "kind": "engine",
+            "consumer": consumer,
+            "family": family.name,
+            "run": run["name"],
+            "causes": state.causes(),
+        }
 
         def unscorable(why):
-            return {**out, "entries": [{"entry": k, "score": "unscorable", "why": why} for k in plant["named"]], "score": "unscorable"}
+            return {
+                **out,
+                "entries": [
+                    {"entry": k, "score": "unscorable", "why": why} for k in plant["named"]
+                ],
+                "score": "unscorable",
+            }
 
         if not state.judgable:
             return unscorable("; ".join(state.causes()))
         if world.assembly:
-            held = {e["readout"]: e for e in self.entries if e["run"] == run["name"] and e["class"] == "E"}
+            held = {
+                e["readout"]: e
+                for e in self.entries
+                if e["run"] == run["name"] and e["class"] == "E"
+            }
             for readout in ("switch list", "channel schedule", "pool seeds"):
                 if held[readout].get("reported") != c.PASS:
                     return unscorable(f"its {readout} departs from what the plant declares")
         rows, honest = self.tables.guard_rows(run["name"]), None
         if self.tables.states[family.finest].judgable:
             honest = self.tables.guard_rows(family.finest)
-        equal = rows is not None and honest is not None and all(np.array_equal(a, b) for a, b in zip(rows, honest))
+        equal = (
+            rows is not None
+            and honest is not None
+            and all(np.array_equal(a, b) for a, b in zip(rows, honest, strict=True))
+        )
         if equal:
             why = "its class S rows equal the run it was planted in"
-            return {**out, "entries": [{"entry": k, "score": "not caught", "why": why} for k in plant["named"]], "score": "not caught"}
+            return {
+                **out,
+                "entries": [
+                    {"entry": k, "score": "not caught", "why": why} for k in plant["named"]
+                ],
+                "score": "not caught",
+            }
         named = []
         for key in plant["named"]:
             entry = world.by_name[key]
@@ -893,13 +1240,24 @@ class Stage2:
             try:
                 mine = self.tables.entry(run["name"], entry)
             except NotFormed as error:
-                named.append({**item, "score": "unscorable", "why": f"the named entry is not formed: {error}"})
+                named.append(
+                    {
+                        **item,
+                        "score": "unscorable",
+                        "why": f"the named entry is not formed: {error}",
+                    }
+                )
                 continue
             statistic = bands.largest(mine - self.star(family, entry))
             named.append({**item, **self._plant_score(distances[key], est["beta"], statistic)})
         score = overall(named)
         if score == "caught" and (state.refused or state.stopped):
-            return {**out, "entries": named, "score": "unscorable", "why": "the plant's own run is refused"}
+            return {
+                **out,
+                "entries": named,
+                "score": "unscorable",
+                "why": "the plant's own run is refused",
+            }
         return {**out, "entries": named, "score": score}
 
     # ----- the retry -----
@@ -909,7 +1267,10 @@ class Stage2:
         runs, why = [], {}
         if self.power2 is None:
             for family in self.reg.families.values():
-                if any(self.tables.states[n].refused or self.tables.states[n].stopped for n in family.runs):
+                if any(
+                    self.tables.states[n].refused or self.tables.states[n].stopped
+                    for n in family.runs
+                ):
                     continue
                 reasons = []
                 for item in self.entries:
@@ -918,12 +1279,23 @@ class Stage2:
                     est = self.power["families"][family.name][item["readout"]]
                     if item["outcome"] == c.INCONCLUSIVE:
                         reasons.append(f"{item['readout']}: order")
-                    elif est.get("formed") and est["home"] and est["tested"] is False and item["outcome"] != c.FAIL and est["truncation_is_larger"]:
+                    elif (
+                        est.get("formed")
+                        and est["home"]
+                        and est["tested"] is False
+                        and item["outcome"] != c.FAIL
+                        and est["truncation_is_larger"]
+                    ):
                         reasons.append(f"{item['readout']}: power")
                 if reasons:
                     why[family.name] = sorted(reasons)
                     runs.append(family.retry_name)
-        return {"kind": c.RETRY_KIND, "part": c.PART, "runs": sorted(runs), "why": dict(sorted(why.items()))}
+        return {
+            "kind": c.RETRY_KIND,
+            "part": c.PART,
+            "runs": sorted(runs),
+            "why": dict(sorted(why.items())),
+        }
 
     # ----- verdicts -----
 
@@ -936,8 +1308,10 @@ class Stage2:
             return c.INCONCLUSIVE
         return c.PASS
 
-    def verdicts(self, plants) -> dict:
-        """Every run's verdict, every consumer's (in its sets), and the part's (CRITERIA section 8)."""
+    def verdicts(self, plants, owed) -> dict:
+        """Every run's verdict, every consumer's (in its sets), and the part's (CRITERIA
+        section 8).
+        """
         owned = {}
         for item in self.entries:
             if item["judged"]:
@@ -949,7 +1323,10 @@ class Stage2:
         consumers = {}
         for consumer in self.reg.consumers:
             sets = sets_of(self.reg, consumer)
-            table = {which: self._set_verdict(consumer, families, runs, plants) for which, families in sets.items()}
+            table = {
+                which: self._set_verdict(consumer, families, runs, plants)
+                for which, families in sets.items()
+            }
             order = (c.FAIL, c.INCONCLUSIVE, c.PASS)
             verdict = min((t["verdict"] for t in table.values()), key=order.index)
             judged = [e for e in self.entries if e["consumer"] == consumer and e["judged"]]
@@ -957,7 +1334,16 @@ class Stage2:
             published = self.reg.profile.get("counts", {}).get(consumer, {})
             for key, numbers in counts.items():
                 numbers["published"] = published.get(key)
-            consumers[consumer] = {"verdict": verdict, "sets": table, "counts": counts}
+            families = self.reg.by_consumer[consumer]
+            waiting = [f.retry_name for f in families if f.retry_name in owed["runs"]]
+            consumers[consumer] = {
+                "verdict": verdict,
+                "final": not waiting,  # an owed retry leaves the first pass's verdict open
+                "retry_owed": waiting,
+                "steps_covered": self._steps_covered(families),
+                "sets": table,
+                "counts": counts,
+            }
             note = self.reg.profile.get("notes", {}).get(consumer)
             if note:
                 consumers[consumer]["note"] = note
@@ -965,12 +1351,43 @@ class Stage2:
         whole["passes"] = all(v == c.PASS for v in whole["consumers"].values())
         return {"runs": runs, "consumers": consumers, "part": whole}
 
+    def _steps_covered(self, families) -> dict:
+        """The steps that a pass covers (CRITERIA section 7): the families' three, and the triple of
+        every entry judged again.
+        """
+        again = {}
+        for item in self.entries:
+            if (
+                item["class"] == "S"
+                and item.get("pass_of_the_judgement") == 2
+                and item["family"] in {f.name for f in families}
+            ):
+                family = self.reg.families[item["family"]]
+                again.setdefault(
+                    family.name,
+                    {"steps_s": [*family.steps_s[1:], family.retry_step], "entries": []},
+                )["entries"].append(item["readout"])
+        return {
+            "steps_s": sorted({f.steps_s for f in families}, reverse=True),
+            "judged_again": again,
+        }
+
     def _set_verdict(self, consumer, families, runs, plants):
         names = {f.name for f in families}
-        shared = [r for r in self.reg.runs.values() if r["consumer"] == consumer and r["family"] is None]
-        members = [n for f in families for n in self.tables.rungs(f)] + [r["name"] for r in shared if r["role"] == "judged"]
+        shared = [
+            r for r in self.reg.runs.values() if r["consumer"] == consumer and r["family"] is None
+        ]
+        members = [n for f in families for n in self.tables.rungs(f)] + [
+            r["name"] for r in shared if r["role"] == "judged"
+        ]
         support = [r["name"] for r in shared if r["role"] == "support"]
-        entries = [e for e in self.entries if e["consumer"] == consumer and e["judged"] and (e["family"] in names or e["family"] is None)]
+        entries = [
+            e
+            for e in self.entries
+            if e["consumer"] == consumer
+            and e["judged"]
+            and (e["family"] in names or e["family"] is None)
+        ]
         its_plants = [p for p in plants["plants"] if p["consumer"] == consumer]
         reasons, fails = [], []
         for name in members:
@@ -982,12 +1399,18 @@ class Stage2:
         for name in members + support:
             state = self.tables.states[name]
             if state.refused or state.stopped:
-                reasons.append(f"the run {name} is refused, missing or stopped: {'; '.join(state.causes())}")
+                reasons.append(
+                    f"the run {name} is refused, missing or stopped: {'; '.join(state.causes())}"
+                )
         waiting = [e for e in entries if e["outcome"] in (c.INCONCLUSIVE, c.NOT_FORMED)]
         for item in waiting[:20]:
-            reasons.append(f"{item['run']}, {item['readout']}: {item['outcome']} ({item.get('why')})")
+            reasons.append(
+                f"{item['run']}, {item['readout']}: {item['outcome']} ({item.get('why')})"
+            )
         if len(waiting) > 20:
-            reasons.append(f"and {len(waiting) - 20} more entries that are inconclusive or not formed")
+            reasons.append(
+                f"and {len(waiting) - 20} more entries that are inconclusive or not formed"
+            )
         found = self._mechanisms(families)
         for mechanism, record in found.items():
             if not record["tested"]:
@@ -998,7 +1421,10 @@ class Stage2:
         counts = self._counts(consumer, families, entries)
         for name, numbers in counts.items():
             if numbers["formed"] < numbers["expected"]:
-                reasons.append(f"{numbers['formed']} entries of class {name} were formed, and {numbers['expected']} are listed")
+                reasons.append(
+                    f"{numbers['formed']} entries of class {name} were formed, and "
+                    f"{numbers['expected']} are listed"
+                )
         verdict = c.FAIL if fails else c.INCONCLUSIVE if reasons else c.PASS
         return {
             "verdict": verdict,
@@ -1015,8 +1441,12 @@ class Stage2:
             "counts": counts,
             "outcomes": self._outcomes(entries),
             "mechanisms": found,
-            "not_tested": [[e["family"], e["readout"]] for e in entries if e["outcome"] == c.NOT_TESTED],
-            "failing_entries": [[e["run"], e["readout"], e["class"]] for e in entries if e["outcome"] == c.FAIL],
+            "not_tested": [
+                [e["family"], e["readout"]] for e in entries if e["outcome"] == c.NOT_TESTED
+            ],
+            "failing_entries": [
+                [e["run"], e["readout"], e["class"]] for e in entries if e["outcome"] == c.FAIL
+            ],
         }
 
     def _mechanisms(self, families):
@@ -1057,8 +1487,18 @@ class Stage2:
             table = outcomes.setdefault(item["class"], {})
             table[item["outcome"]] = table.get(item["outcome"], 0) + 1
         flat = {e["outcome"] for e in mine}
-        verdict = c.FAIL if c.FAIL in flat else c.INCONCLUSIVE if flat & {c.INCONCLUSIVE, c.NOT_FORMED} else c.PASS
-        worst = max((e for e in mine if e["class"] == "S" and e.get("ratio") is not None), key=lambda e: e["ratio"], default=None)
+        verdict = (
+            c.FAIL
+            if c.FAIL in flat
+            else c.INCONCLUSIVE
+            if flat & {c.INCONCLUSIVE, c.NOT_FORMED}
+            else c.PASS
+        )
+        worst = max(
+            (e for e in mine if e["class"] == "S" and e.get("ratio") is not None),
+            key=lambda e: e["ratio"],
+            default=None,
+        )
         return {
             "verdict_of_its_entries": verdict,
             "outcomes": outcomes,
@@ -1067,7 +1507,9 @@ class Stage2:
 
 
 def overall(named) -> str:
-    """A plant's score from its named entries: any not caught, then any unscorable, then caught (CRITERIA section 6)."""
+    """A plant's score from its named entries: any not caught, then any unscorable, then caught
+    (CRITERIA section 6).
+    """
     scores = {item["score"] for item in named}
     if "not caught" in scores:
         return "not caught"
@@ -1075,7 +1517,9 @@ def overall(named) -> str:
 
 
 def check_power(tables: Tables, c0: dict, power: dict, hashes: dict, first: dict | None = None):
-    """Stage 2 begins only where `power.json` is what stage 1 makes of these tables, and of the recorded hashes."""
+    """Stage 2 begins only where `power.json` is what stage 1 makes of these tables, and of the
+    recorded hashes.
+    """
     if power.get("kind") != c.POWER_KIND:
         raise OrderFault("power.json is not a power record")
     if power["hashes"] != hashes:

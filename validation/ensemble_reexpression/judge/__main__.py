@@ -1,6 +1,7 @@
-"""The judge's commands, in the order of the campaign. `README.md` says which command opens which file.
+"""The judge's commands, in the order of the campaign. `README.md` says which command opens which
+file.
 
-    python -m validation.ensemble_reexpression.judge <command> ...
+python -m validation.ensemble_reexpression.judge <command> ...
 """
 
 from __future__ import annotations
@@ -9,8 +10,8 @@ import argparse
 import sys
 from pathlib import Path
 
-from . import fabricate, plants, scoring, strictjson, structure
 from . import constants as c
+from . import fabricate, plants, scoring, strictjson, structure
 from .c0 import C0
 from .legacy import Captures, Fault, Planted
 from .registration import SPEC, Registration, StringsNote, load_profile
@@ -21,12 +22,16 @@ from .table import TableSet, hash_folder
 def registration(args) -> Registration:
     """The registered inputs, or a rehearsal's by its profile."""
     if args.profile:
-        return Registration(folder=Path(args.spec), profile=load_profile(args.profile), rehearsal=True)
+        return Registration(
+            folder=Path(args.spec), profile=load_profile(args.profile), rehearsal=True
+        )
     return Registration(folder=Path(args.spec))
 
 
 def recorded(folder, record_file) -> dict:
-    """The recorded hashes of a folder of tables. Refuses where the folder is not the recorded one."""
+    """The recorded hashes of a folder of tables. Refuses where the folder is not the
+    recorded one.
+    """
     record, digest = strictjson.read(Path(record_file))
     if record.get("kind") != c.HASHES_KIND:
         raise OrderFault(f"{record_file} is no record of table hashes")
@@ -36,11 +41,18 @@ def recorded(folder, record_file) -> dict:
 
 
 def first_inputs(args, reg):
-    """What stage 1 and stage 2 both read: the tables (which must be the recorded ones), the note, C0's record, and their hashes."""
+    """What stage 1 and stage 2 both read: the tables (which must be the recorded ones), the note,
+    C0's record, and their hashes.
+    """
     held = recorded(args.tables, args.tables_record)
     note = StringsNote.read(args.strings, reg.rehearsal)
     c0, c0_digest = strictjson.read(Path(args.c0))
-    hashes = {"spec": reg.files, "tables": held, "strings_sha256": note.sha256, "c0_sha256": c0_digest}
+    hashes = {
+        "spec": reg.files,
+        "tables": held,
+        "strings_sha256": note.sha256,
+        "c0_sha256": c0_digest,
+    }
     return TableSet.read(args.tables, reg.consumers), note, c0, hashes
 
 
@@ -66,7 +78,10 @@ def cmd_c0(args):
         record["tables_record_sha256"] = strictjson.sha256(Path(args.tables_record).read_bytes())
     digest = strictjson.dump(args.out, record)
     for clause in record["clauses"]:
-        print(f"{clause['status']:5s} {clause['checked']:6d} {clause['clause']}" + (f"  {clause['faults'][:3]}" if clause["faults"] else ""))
+        print(
+            f"{clause['status']:5s} {clause['checked']:6d} {clause['clause']}"
+            + (f"  {clause['faults'][:3]}" if clause["faults"] else "")
+        )
     print("C0", record["status"], digest, args.out)
     return record["status"] == "pass"
 
@@ -112,14 +127,22 @@ def cmd_retry_stage2(args):
 
 
 def retry_inputs(args, reg):
-    """What both stages of the retry read: the first pass's files by their recorded sha256, and the retry's tables."""
+    """What both stages of the retry read: the first pass's files by their recorded sha256, and the
+    retry's tables.
+    """
     tables, note, c0, hashes = first_inputs(args, reg)
     power = file_with_digest(args.power, args.power_sha256)
     scoring.check_power(scoring.Tables(reg, note, tables), c0, power, hashes)
     owed = file_with_digest(args.owed, args.owed_sha256)
     first, first_digest = strictjson.read(Path(args.record))
-    if first["kind"] != c.RECORD_KIND or first["retry_owed"] != owed or first["hashes"].get("power_sha256") != args.power_sha256:
-        raise OrderFault("the first pass's record, its power.json and its retry_owed.json do not belong together")
+    if (
+        first["kind"] != c.RECORD_KIND
+        or first["retry_owed"] != owed
+        or first["hashes"].get("power_sha256") != args.power_sha256
+    ):
+        raise OrderFault(
+            "the first pass's record, its power.json and its retry_owed.json do not belong together"
+        )
     if not owed["runs"]:
         raise OrderFault("no retry is owed")
     hashes = {
@@ -138,7 +161,10 @@ def write(folder, record, owed: bool):
     folder = Path(folder)
     print(strictjson.dump(folder / "record.json", record), folder / "record.json")
     if owed:
-        print(strictjson.dump(folder / "retry_owed.json", record["retry_owed"]), folder / "retry_owed.json")
+        print(
+            strictjson.dump(folder / "retry_owed.json", record["retry_owed"]),
+            folder / "retry_owed.json",
+        )
     print(strictjson.dump(folder / "verdict.json", verdict(record)), folder / "verdict.json")
     for consumer, block in record["consumers"].items():
         print(f"{consumer}: {block['verdict']}")
@@ -154,11 +180,19 @@ def verdict(record) -> dict:
         "hashes": record["hashes"],
         "consumers": record["consumers"],
         "part_1": record["part_1"],
-        "plants": [{k: p.get(k) for k in ("plant", "kind", "consumer", "family", "score", "why", "entries")} for p in record["plants"]["plants"]],
+        "plants": [
+            {
+                k: p.get(k)
+                for k in ("plant", "kind", "consumer", "family", "score", "why", "entries")
+            }
+            for p in record["plants"]["plants"]
+        ],
         "refusals": {n: s["causes"] for n, s in record["runs"].items() if s["causes"]},
         "refused_files": {k: f["refused"] for k, f in record["files"].items() if f["refused"]},
         "ignored_runs": record["ignored"],
-        "flags_to_the_checker": len(record["flags"]) + sum(len(s["flags"]) for s in record["runs"].values()),
+        "where_nothing_is_judged": record["where_nothing_is_judged"],
+        "flags_to_the_checker": len(record["flags"])
+        + sum(len(s["flags"]) for s in record["runs"].values()),
         "retry_owed": record["retry_owed"]["runs"],
     }
 
@@ -180,12 +214,17 @@ def cmd_structure(args):
 
 
 def cmd_fabricate(args):
-    """The judge's own honest tables, with their SHA256SUMS and a strings note. They are fabricated."""
+    """The judge's own honest tables, with their SHA256SUMS and a strings note. They are
+    fabricated.
+    """
     reg = registration(args)
     made, note = fabricate.Fabricator(reg, Captures(reg), Planted(reg)).tables()
     folder = Path(args.out)
     write_tables(folder / "table", made)
-    print(strictjson.dump(folder / "registered_strings.json", note), folder / "registered_strings.json")
+    print(
+        strictjson.dump(folder / "registered_strings.json", note),
+        folder / "registered_strings.json",
+    )
 
 
 def write_tables(folder: Path, tables: dict):
@@ -205,8 +244,14 @@ def cmd_selftest(args):
     tables, note_data = fabricate.Fabricator(reg, made.captures, made.planted).tables()
     note = StringsNote(note_data, "fabricated", reg.rehearsal)
     record = plants.run_plants(reg, note, tables, c0, made.captures, made.planted)
-    record = {"kind": "ensemble-reexpression judge self-test, version 1", "c0": c0["status"], **record}
-    record["fabricated_tables_sha256"] = {k: strictjson.sha256(repr(strictjson.plain(t)).encode()) for k, t in tables.items()}
+    record = {
+        "kind": "ensemble-reexpression judge self-test, version 1",
+        "c0": c0["status"],
+        **record,
+    }
+    record["fabricated_tables_sha256"] = {
+        k: strictjson.sha256(repr(strictjson.plain(t)).encode()) for k, t in tables.items()
+    }
     return report_plants(args, record) and c0["status"] == "pass"
 
 
@@ -219,7 +264,14 @@ def cmd_plants(args):
         raise OrderFault(f"a table is refused or absent, so no plant is formed: {refused}")
     data = {consumer: file.data for consumer, file in tables.files.items()}
     record = plants.run_plants(reg, note, data, c0, Captures(reg), Planted(reg))
-    return report_plants(args, {"kind": "ensemble-reexpression judge's plants on the registered tables, version 1", "hashes": hashes, **record})
+    return report_plants(
+        args,
+        {
+            "kind": "ensemble-reexpression judge's plants on the registered tables, version 1",
+            "hashes": hashes,
+            **record,
+        },
+    )
 
 
 def report_plants(args, record) -> bool:
@@ -228,14 +280,19 @@ def report_plants(args, record) -> bool:
     print("baseline:", record["baseline"])
     for plant in record["plants"]:
         wrong = [what for what, good in plant.get("checks", []) if good is False]
-        print(f"{plant['plant']:14s} {'as stated' if plant['scores_as_stated'] else 'NOT as stated'} {wrong or plant.get('cannot_be_formed') or ''}")
+        print(
+            f"{plant['plant']:14s} {'as stated' if plant['scores_as_stated'] else 'NOT as stated'} "
+            f"{wrong or plant.get('cannot_be_formed') or ''}"
+        )
     print("all as stated:", record["all_as_stated"], digest, args.out)
     return record["all_as_stated"]
 
 
 def parser() -> argparse.ArgumentParser:
     """The command line."""
-    top = argparse.ArgumentParser(prog="validation.ensemble_reexpression.judge", description=__doc__)
+    top = argparse.ArgumentParser(
+        prog="validation.ensemble_reexpression.judge", description=__doc__
+    )
     sub = top.add_subparsers(dest="command", required=True)
 
     def add(name, run, *options):
@@ -247,13 +304,29 @@ def parser() -> argparse.ArgumentParser:
         p.set_defaults(run=run)
 
     first = ("--tables", "--tables-record", "--strings", "--c0")
-    again = ("--power", "--power-sha256", "--record", "--owed", "--owed-sha256", "--retry-tables", "--retry-record")
+    again = (
+        "--power",
+        "--power-sha256",
+        "--record",
+        "--owed",
+        "--owed-sha256",
+        "--retry-tables",
+        "--retry-record",
+    )
     add("hash", cmd_hash, "--tables", "--out")
     add("c0", cmd_c0, "--out", "--tables-record?")
     add("stage1", cmd_stage1, *first, "--out")
     add("stage2", cmd_stage2, *first, "--power", "--power-sha256", "--out")
     add("retry-stage1", cmd_retry_stage1, *first, *again, "--out")
-    add("retry-stage2", cmd_retry_stage2, *first, *again, "--power-retry", "--power-retry-sha256", "--out")
+    add(
+        "retry-stage2",
+        cmd_retry_stage2,
+        *first,
+        *again,
+        "--power-retry",
+        "--power-retry-sha256",
+        "--out",
+    )
     add("structure", cmd_structure, "--tables", "--retry-tables?", "--out?")
     add("fabricate", cmd_fabricate, "--out")
     add("selftest", cmd_selftest, "--out")

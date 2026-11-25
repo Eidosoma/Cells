@@ -1,7 +1,8 @@
-"""What the judge forms from a run's own rows (READOUTS section 5): the balances, the capacitor, the energy identity, the exposure.
+"""What the judge forms from a run's own rows (READOUTS section 5): the balances, the capacitor, the
+energy identity, the exposure.
 
-`Rows` is any reader with `get(series, times)`, which gives [time, entity] or None for a series that the world does not have, and
-`voltage(times)` and `initial_voltage()`, by membrane.
+`Rows` is any reader with `get(series, times)`, which gives [time, entity] or None for a series that
+the world does not have, and `voltage(times)` and `initial_voltage()`, by membrane.
 """
 
 from __future__ import annotations
@@ -21,7 +22,9 @@ def stoichiometry(world: World, membrane: str, species: str) -> int:
 
 
 def membrane_flow(world: World, rows, species: str, times) -> np.ndarray:
-    """leak + channel + nu pump of every membrane, into its cell, [time, membrane]. An absent series counts as zero."""
+    """leak + channel + nu pump of every membrane, into its cell, [time, membrane]. An absent series
+    counts as zero.
+    """
     out = np.zeros((len(times), len(world.membranes)))
     if not world.zero_routes:
         out += rows.get(f"leak_{species}", times)
@@ -34,7 +37,9 @@ def membrane_flow(world: World, rows, species: str, times) -> np.ndarray:
     if world.pumps:
         values = rows.get("pump", times)
         for i, membrane in enumerate(world.pumps):
-            out[:, world.membranes.index(membrane)] += stoichiometry(world, membrane, species) * values[:, i]
+            out[:, world.membranes.index(membrane)] += (
+                stoichiometry(world, membrane, species) * values[:, i]
+            )
     return out
 
 
@@ -58,7 +63,9 @@ def region_residual(world: World, rows, species: str, times) -> np.ndarray:
     flow = membrane_flow(world, rows, species, times)
     expected = np.zeros((len(times), len(world.regions)))
     for i, membrane in enumerate(world.membranes):
-        expected[:, world.regions.index(world.block["membranes"][membrane]["outside"])] -= flow[:, i]
+        expected[:, world.regions.index(world.block["membranes"][membrane]["outside"])] -= flow[
+            :, i
+        ]
     if world.faces:
         values = rows.get(f"face_{species}", times)
         for i, face in enumerate(world.faces):
@@ -95,17 +102,28 @@ def energy(world: World, rows, times) -> np.ndarray:
     """The energy identity's E, [time, 1]."""
     R, T = world.constants["R_J_per_mol_K"], world.block["temperature_K"]
     total = np.zeros(len(times))
-    for group, prefix, order in (("cells", "n_cell_", world.cells), ("outside", "n_out_", world.regions)):
+    for group, prefix, order in (
+        ("cells", "n_cell_", world.cells),
+        ("outside", "n_out_", world.regions),
+    ):
         for x in world.species:
             d = rows.get(f"{prefix}{x}", times)
             for i, compartment in enumerate(order):
                 block = world.block[group][compartment]
                 n0, volume = block["initial_amount_fmol"][x], block["volume_pL"]
-                part = d[:, i] * (math.log(n0 / volume) - 1) + (n0 + d[:, i]) * np.log1p(d[:, i] / n0)
+                part = d[:, i] * (math.log(n0 / volume) - 1) + (n0 + d[:, i]) * np.log1p(
+                    d[:, i] / n0
+                )
                 total += 1e-3 * R * T * part
     dV, V0 = charge_voltage(world, rows, times), rows.initial_voltage()
     for i, membrane in enumerate(world.membranes):
-        total += 0.5 * 1e12 * world.block["membranes"][membrane]["capacitance_F"] * dV[:, i] * (2 * V0[i] + dV[:, i])
+        total += (
+            0.5
+            * 1e12
+            * world.block["membranes"][membrane]["capacitance_F"]
+            * dV[:, i]
+            * (2 * V0[i] + dV[:, i])
+        )
     for series in rows.heats():
         values = rows.get(series, times)
         if values is not None:
@@ -135,11 +153,16 @@ def fuel_energy(world: World, membrane: str) -> float:
     """The work of one fmol of a membrane's pump cycles on maintained fuel, in pJ."""
     fuel = world.block["membranes"][membrane]["pump"]["metabolism"]
     R, T = world.constants["R_J_per_mol_K"], world.block["temperature_K"]
-    return -1e-3 * (fuel["delta_g0_J_per_mol"] + R * T * math.log(fuel["adp_mM"] * fuel["pi_mM"] / (1000 * fuel["atp_mM"])))
+    return -1e-3 * (
+        fuel["delta_g0_J_per_mol"]
+        + R * T * math.log(fuel["adp_mM"] * fuel["pi_mM"] / (1000 * fuel["atp_mM"]))
+    )
 
 
 def balance_bound(world: World, kind: str, species: str, steps: int):
-    """(bound with e_store, bound without) of a class R balance. (0, 0) where the identity has zero scale (a class E zero)."""
+    """(bound with e_store, bound without) of a class R balance. (0, 0) where the identity has zero
+    scale (a class E zero).
+    """
     scales, refs = world.data["scales"], world.data["amount_refs"]
 
     def part(name):
@@ -151,9 +174,15 @@ def balance_bound(world: World, kind: str, species: str, steps: int):
     cell_round, cell_store = part(f"n_cell_{species}")
     out_round, out_store = part(f"n_out_{species}")
     if kind == "cells":
-        return (0.0, 0.0) if scales[f"n_cell_{species}"] == 0.0 else (cell_round + cell_store, cell_round)
+        return (
+            (0.0, 0.0)
+            if scales[f"n_cell_{species}"] == 0.0
+            else (cell_round + cell_store, cell_round)
+        )
     if kind == "regions":
-        return (0.0, 0.0) if scales[f"n_out_{species}"] == 0.0 else (out_round + out_store, out_round)
+        return (
+            (0.0, 0.0) if scales[f"n_out_{species}"] == 0.0 else (out_round + out_store, out_round)
+        )
     if scales[f"n_cell_{species}"] == 0.0 and scales[f"n_out_{species}"] == 0.0:
         return 0.0, 0.0
     cells, regions = len(world.cells), len(world.regions)
@@ -165,7 +194,9 @@ def capacitor_bound(world: World, steps: int):
     """(bound with e_store, bound without) of the capacitor."""
     scale = world.data["scales"]["voltage"]
     without = (c.ROUND_COUNT * c.EPS * (steps + 1) + c.CLOSE_SHARE) * scale
-    return without + c.STORE_COUNT * c.EPS * (steps + 1) * world.data["amount_refs"].get("voltage", 0.0), without
+    return without + c.STORE_COUNT * c.EPS * (steps + 1) * world.data["amount_refs"].get(
+        "voltage", 0.0
+    ), without
 
 
 def exposure(path: list, end_s: float) -> float:

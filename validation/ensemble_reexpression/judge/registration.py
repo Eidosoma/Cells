@@ -1,7 +1,8 @@
-"""The registered inputs as the judge reads them: worlds, entries, families, runs, reference paths, plants.
+"""The registered inputs as the judge reads them: worlds, entries, families, runs, reference paths,
+plants.
 
-Everything comes from the spec folder's data files. A world's entries follow from its `scales` (READOUTS section 3), so the same code
-reads the registered worlds and the rehearsal's.
+Everything comes from the spec folder's data files. A world's entries follow from its `scales`
+(READOUTS section 3), so the same code reads the registered worlds and the rehearsal's.
 """
 
 from __future__ import annotations
@@ -17,7 +18,8 @@ from . import strictjson
 
 SPEC = Path(__file__).resolve().parent.parent / "spec"
 
-# What a set of inputs does not say in its data files. The rehearsal gives its own as a JSON file (README).
+# What a set of inputs does not say in its data files. The rehearsal gives its own as a JSON file
+# (README).
 PART1 = {
     "names": {
         "inputs": "inputs.json",
@@ -26,8 +28,10 @@ PART1 = {
         "margins": "margins.json",
         "manifest": "plants_manifest.json",
     },
-    # SPEC section 7: where each world's captured runs are. "windows": history and observations in window-*.npz.
-    # "assembly": checkpoint/state.npz, with the summaries in result.json or in observations/tick-*.json.
+    # SPEC section 7: where each world's captured runs are. "windows": history and observations in
+    # window-*.npz.
+    # "assembly": checkpoint/state.npz, with the summaries in result.json or in
+    # observations/tick-*.json.
     "captures": {
         "jupiter_baseline": {
             "set": "captures",
@@ -66,21 +70,31 @@ PART1 = {
     "not_blind": {"base": ["base s0 w0", "base s0 w1"]},
     "not_blind_pool_runs": ["base s0 pool"],
     "notes": {
-        "jupiter": "jupiter_baseline is the same ionic world as base, value for value, with the channels open throughout. What a prototype "
-        "showed on base bears on it. No entry of jupiter was run (CRITERIA section 8)."
+        "jupiter": "jupiter_baseline is the same ionic world as base, value for value, with the "
+        "channels open throughout. What a prototype showed on base bears on it. No entry of "
+        "jupiter was run (CRITERIA section 8)."
     },
-    # PLANTS section 5: the engine plants, their changes, their named entries and where their registered distance is.
+    # PLANTS section 5: the engine plants, their changes, their named entries and where their
+    # registered distance is.
     "engine_plants": {
         "EP1": {
             "change": [{"path": ["channels", "*", "max_permeability_m_per_s"], "multiply": 1.01}],
             "named": ["channel_K"],
-            "distance": {"world": "jupiter_baseline", "entry": "channel_K", "power_plant": "channel"},
+            "distance": {
+                "world": "jupiter_baseline",
+                "entry": "channel_K",
+                "power_plant": "channel",
+            },
             "planted_run": "PW-channel jupiter_baseline",
         },
         "EP2": {
             "change": [{"exchange_channels": ["cell_0", "cell_1"]}],
             "named": ["channel_K"],
-            "distance": {"world": "base", "entry": "channel_K", "structural": "ST6 availability on the other cell's channel"},
+            "distance": {
+                "world": "base",
+                "entry": "channel_K",
+                "structural": "ST6 availability on the other cell's channel",
+            },
             "planted_run": "ST6 availability on the other cell's channel",
         },
     },
@@ -91,7 +105,8 @@ PART1 = {
         "integrated": {"S": 9, "energy": 1, "R": 30, "E": 9},
     },
     "runs": 214,
-    # Amendment 1, item 6: the runs that may be made with the off-grid switch on. None is registered.
+    # Amendment 1, item 6: the runs that may be made with the off-grid switch on. None is
+    # registered.
     "off_grid_runs": [],
     # PLANTS section 6: what the judge's plants name.
     "plant_targets": {
@@ -126,7 +141,9 @@ class Entry:
         return c.ROUND_COUNT * c.EPS * (steps + 1) * self.scale
 
     def e_store(self, steps: int) -> float:
-        """What a state that stores amounts may round by (SPEC section 6). 0 for an entry that reads no amount."""
+        """What a state that stores amounts may round by (SPEC section 6). 0 for an entry that reads
+        no amount.
+        """
         return c.STORE_COUNT * c.EPS * (steps + 1) * self.amount_ref
 
     def e_close(self) -> float:
@@ -135,12 +152,16 @@ class Entry:
 
 
 def ids(block) -> tuple:
-    """The IDs of a set of entities, in the order of the block. An empty set may be printed as a list."""
+    """The IDs of a set of entities, in the order of the block. An empty set may be printed as a
+    list.
+    """
     return tuple(block) if isinstance(block, dict) else ()
 
 
 def changes(schedule) -> list:
-    """A schedule's or a path's changes: the entries whose value differs from the value before, beginning with 1 (SPEC section 3.2)."""
+    """A schedule's or a path's changes: the entries whose value differs from the value before,
+    beginning with 1 (SPEC section 3.2).
+    """
     out, level = [], 1
     for time, value in schedule:
         if value != level:
@@ -221,16 +242,29 @@ class World:
                 return entities
         if series.startswith("channel_") and series[len("channel_") :] in self.species:
             species = series[len("channel_") :]
-            return tuple(k for k in self.channels if self.block["channels"][k]["species_id"] == species)
+            return tuple(
+                k for k in self.channels if self.block["channels"][k]["species_id"] == species
+            )
         raise KeyError(series)
 
     def _entries(self):
-        scales, refs, close = self.data["scales"], self.data["amount_refs"], self.data["closure_terms_V"]
+        scales, refs, close = (
+            self.data["scales"],
+            self.data["amount_refs"],
+            self.data["closure_terms_V"],
+        )
         entries, zeros = [], []
 
         def add(name, series, where, times):
             entry = Entry(
-                name, series, where, tuple(times), self.entities(series), scales[series], refs.get(series, 0.0), close.get(series)
+                name,
+                series,
+                where,
+                tuple(times),
+                self.entities(series),
+                scales[series],
+                refs.get(series, 0.0),
+                close.get(series),
             )
             (zeros if entry.scale == 0.0 else entries).append(entry)
 
@@ -243,13 +277,19 @@ class World:
                 add(series, series, "formed", self.row_times)
             else:
                 add(series, series, "rows", self.row_times)
-                if self.assembly and series.startswith("channel_") and len(self.potential_times) > 1:
+                if (
+                    self.assembly
+                    and series.startswith("channel_")
+                    and len(self.potential_times) > 1
+                ):
                     add(f"{series}_summary", series, "rows", self.potential_times)
         return entries, zeros
 
     # What an ionic run's rows hold (READOUTS section 2), by what the world has.
     def row_series(self) -> tuple:
-        """Every series of READOUTS section 2 that a run of this world has rows of, but the potentials."""
+        """Every series of READOUTS section 2 that a run of this world has rows of, but the
+        potentials.
+        """
         out = []
         for x in self.species:
             out += [f"n_cell_{x}", f"n_out_{x}"]
@@ -271,16 +311,26 @@ class World:
 
     @property
     def zero_routes(self) -> bool:
-        """True where no membrane has a passive permeability, so that the world has no leak series."""
-        return all(p == 0.0 for m in self.membranes for p in self.block["membranes"][m]["passive"]["permeability_m_per_s"].values())
+        """True where no membrane has a passive permeability, so that the world has no leak
+        series.
+        """
+        return all(
+            p == 0.0
+            for m in self.membranes
+            for p in self.block["membranes"][m]["passive"]["permeability_m_per_s"].values()
+        )
 
     def guard_entries(self) -> list:
-        """The entries whose rows the copy guard compares: class S rows of the table (CRITERIA section 5)."""
+        """The entries whose rows the copy guard compares: class S rows of the table (CRITERIA
+        section 5).
+        """
         return [e for e in self.entries if e.where == "rows"]
 
     @property
     def identities_judged(self) -> bool:
-        """True for an order-4 world. An order-2 world's identities are reported (SPEC section 8, READOUTS section 5)."""
+        """True for an order-4 world. An order-2 world's identities are reported (SPEC section 8,
+        READOUTS section 5).
+        """
         return self.p == 4
 
     def membranes_of(self, cell: str) -> list:
@@ -331,7 +381,9 @@ class Registration:
     folder: Path = SPEC
     profile: dict = field(default_factory=lambda: PART1)
     rehearsal: bool = False
-    only: object = None  # a predicate on a run, for the small tests: the registered runs that are kept
+    only: object = (
+        None  # a predicate on a run, for the small tests: the registered runs that are kept
+    )
 
     def __post_init__(self):
         self.folder = Path(self.folder)
@@ -343,7 +395,9 @@ class Registration:
         self.margins = self._read(names["margins"])
         self.manifest = self._read(names["manifest"])
         self.constants = self.inputs["constants"]
-        self.worlds = {name: World(name, data, self.constants) for name, data in self.inputs["worlds"].items()}
+        self.worlds = {
+            name: World(name, data, self.constants) for name, data in self.inputs["worlds"].items()
+        }
         self.runs = {}
         for run in self.inputs["runs"]:
             if run["name"] in self.runs:
@@ -351,9 +405,13 @@ class Registration:
             if self.only is None or self.only(run):
                 self.runs[run["name"]] = run
         kept = {run["consumer"] for run in self.runs.values()}
-        self.consumers = tuple(dict.fromkeys(w.consumer for w in self.worlds.values() if w.consumer in kept))
+        self.consumers = tuple(
+            dict.fromkeys(w.consumer for w in self.worlds.values() if w.consumer in kept)
+        )
         self.families = self._families()
-        self.by_consumer = {k: [f for f in self.families.values() if f.consumer == k] for k in self.consumers}
+        self.by_consumer = {
+            k: [f for f in self.families.values() if f.consumer == k] for k in self.consumers
+        }
 
     def _read(self, name):
         value, digest = strictjson.read(self.folder / name)
@@ -383,9 +441,15 @@ class Registration:
         return out
 
     def family(self, world: str, seed_index, world_id):
-        """The family of a world, a seed index and a world ID. A missing one is an error, but in a test's subset."""
+        """The family of a world, a seed index and a world ID. A missing one is an error, but in a
+        test's subset.
+        """
         for family in self.families.values():
-            if (family.world.name, family.seed_index, family.world_id) == (world, seed_index, world_id):
+            if (family.world.name, family.seed_index, family.world_id) == (
+                world,
+                seed_index,
+                world_id,
+            ):
                 return family
         if self.only is None:
             raise KeyError((world, seed_index, world_id))
@@ -410,7 +474,9 @@ class Registration:
         """What a plant or a rehearsal's run declares that its world's block does not hold."""
         if run.get("declared_change"):
             return run["declared_change"]
-        plant = self.profile["engine_plants"].get(run["variant"]) if run["role"] == "plant" else None
+        plant = (
+            self.profile["engine_plants"].get(run["variant"]) if run["role"] == "plant" else None
+        )
         return plant["change"] if plant else []
 
     def expected_block(self, run: dict) -> dict:
@@ -425,7 +491,9 @@ class Registration:
         return block
 
     def expected_paths(self, run: dict) -> dict:
-        """Channel ID to the reference path (the list of events) that a run's schedule must follow."""
+        """Channel ID to the reference path (the list of events) that a run's schedule must
+        follow.
+        """
         world = self.worlds[run["world"]]
         cells = list(world.pools)
         source = {cell: cell for cell in cells}
@@ -434,18 +502,25 @@ class Registration:
                 a, b = change["exchange_channels"]
                 source[a], source[b] = source[b], source[a]
         table = self.paths["worlds"][world.name][f"s{run['seed_index']}"]
-        return {world.pools[cell]["channel"]: table[source[cell]][str(run["world_id"])] for cell in cells}
+        return {
+            world.pools[cell]["channel"]: table[source[cell]][str(run["world_id"])]
+            for cell in cells
+        }
 
     def reference_path(self, world: str, seed_index: int, cell: str, world_id) -> list:
         """The committed events of one pool world (reference_paths.json)."""
         return self.paths["worlds"][world][f"s{seed_index}"][cell][str(world_id)]
 
     def events(self, run: dict) -> int:
-        """The committed events of a world's pools, the most splits that its step list can hold (TABLE section 3)."""
+        """The committed events of a world's pools, the most splits that its step list can hold
+        (TABLE section 3).
+        """
         return sum(len(path) for path in self.expected_paths(run).values())
 
     def restart_time(self, run: dict):
-        """The checkpoint's time of a support run, from its registered variant, or None where it is none."""
+        """The checkpoint's time of a support run, from its registered variant, or None where it is
+        none.
+        """
         found = re.search(r"restart at ([0-9.eE+-]+)", run["variant"] or "")
         return float(found.group(1)) if found and run["role"] == "support" else None
 
@@ -475,7 +550,9 @@ class Registration:
         return out
 
     def engine(self) -> list:
-        """The engine plants: (consumer, run, plant name, its description, its registered distances by named entry)."""
+        """The engine plants: (consumer, run, plant name, its description, its registered distances
+        by named entry).
+        """
         out = []
         for run in self.runs.values():
             if run["role"] != "plant" or run["variant"] not in self.profile["engine_plants"]:
@@ -488,12 +565,22 @@ class Registration:
             else:
                 entry = block["entries"][where["entry"]]
                 distance = entry["home_plants"][where["power_plant"]]["ratio"] * entry["largest"]
-            out.append((run["consumer"], run, run["variant"], plant, {name: distance for name in plant["named"]}))
+            out.append(
+                (
+                    run["consumer"],
+                    run,
+                    run["variant"],
+                    plant,
+                    {name: distance for name in plant["named"]},
+                )
+            )
         return out
 
     def mechanisms(self, world: str) -> dict:
         """Mechanism to its home entries in a world (margins.json)."""
-        return {name: list(homes) for name, homes in self.margins["worlds"][world]["mechanisms"].items()}
+        return {
+            name: list(homes) for name, homes in self.margins["worlds"][world]["mechanisms"].items()
+        }
 
     def ratio(self, world: str, entry: str) -> float:
         """The ratio that power reads (CRITERIA section 4.5)."""
@@ -539,7 +626,9 @@ class StringsNote:
         return cls(data, digest, rehearsal)
 
     def faults(self, registration: Registration) -> list:
-        """What makes the note unusable: a wrong kind, no revision, an empty string, a run without labels, an unknown label."""
+        """What makes the note unusable: a wrong kind, no revision, an empty string, a run without
+        labels, an unknown label.
+        """
         out = []
         if self.data.get("kind") != c.STRINGS_KIND:
             out.append("the note's kind is not the contract's")
@@ -554,14 +643,23 @@ class StringsNote:
                 continue
             for label in self.labels_of(name):
                 if label not in self.labels:
-                    out.append(f"the run {name} names the label {label}, which the note does not hold")
+                    out.append(
+                        f"the run {name} names the label {label}, which the note does not hold"
+                    )
         return out
 
     def labels_of(self, name: str) -> list:
         """The full set of labels of a run."""
         run = self.runs[name]
-        single = [run.get("model"), run.get("solver"), run.get("field_solver"), run.get("observable")]
-        several = [label for key in ("operators", "kinds", "laws", "pool") for label in run.get(key, [])]
+        single = [
+            run.get("model"),
+            run.get("solver"),
+            run.get("field_solver"),
+            run.get("observable"),
+        ]
+        several = [
+            label for key in ("operators", "kinds", "laws", "pool") for label in run.get(key, [])
+        ]
         return sorted({label for label in single + several if label is not None})
 
     def expected(self, name: str) -> dict:

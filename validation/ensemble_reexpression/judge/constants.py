@@ -1,4 +1,6 @@
-"""Names and numbers of the contract (`spec/CRITERIA.md`, `spec/READOUTS.md`, `spec/TABLE.md`). Nothing here is fitted."""
+"""Names and numbers of the contract (`spec/CRITERIA.md`, `spec/READOUTS.md`, `spec/TABLE.md`).
+Nothing here is fitted.
+"""
 
 from __future__ import annotations
 
@@ -96,7 +98,8 @@ SOURCE_STRINGS = (
 REFUSAL_KINDS = ("definition", "domain", "check", "harness")
 ASSEMBLY_KEYS = ("assembly_observable", "composed_file_fingerprint", "pool_seeds", "switch_list")
 
-# The labels that TABLE section 5 lists, and the one that Amendment 1 (item 5) adds for the rehearsal.
+# The labels that TABLE section 5 lists, and the one that Amendment 1 (item 5) adds for the
+# rehearsal.
 LABELS = (
     "inner_model",
     "rk4",

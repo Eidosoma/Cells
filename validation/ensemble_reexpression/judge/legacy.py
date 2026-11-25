@@ -1,6 +1,7 @@
 """The legacy side: the captures and the planted legacy runs, read by what the spec folder pins.
 
-Every file is checked against the sha256 that a pinned manifest gives it, before its content is used. Nothing here reads an engine table.
+Every file is checked against the sha256 that a pinned manifest gives it, before its content is
+used. Nothing here reads an engine table.
 """
 
 from __future__ import annotations
@@ -19,14 +20,18 @@ STEPS = ("h", "h2", "h4")
 
 
 class Fault(Exception):
-    """A fault of the reference side (a C0 fault): a missing file, a hash or a shape that is not the pinned one."""
+    """A fault of the reference side (a C0 fault): a missing file, a hash or a shape that is not the
+    pinned one.
+    """
 
 
 # ----- the captured index of each series (READOUTS section 2) -----
 
 
 def pick(raw: dict, series: str, world: World) -> np.ndarray:
-    """A series of a legacy state, [lead, entity]. `raw` holds the state's arrays with one leading axis (rows, or worlds)."""
+    """A series of a legacy state, [lead, entity]. `raw` holds the state's arrays with one leading
+    axis (rows, or worlds).
+    """
     entities = world.entities(series)
 
     def at(name, *index, order=()):
@@ -78,19 +83,26 @@ def match(times: np.ndarray, wanted, what: str) -> list:
 
 
 def join_windows(windows: list, what: str) -> dict:
-    """The history and the observations of a run's windows, in order. The earlier window owns the row that two share."""
+    """The history and the observations of a run's windows, in order. The earlier window owns the
+    row that two share.
+    """
     times, history, observed = [], {}, {}
     for i, window in enumerate(windows):
         start = 0
         if i:
             if window["times"][0] != times[-1][-1]:
-                raise Fault(f"{what}: window {i} does not begin at the time that the window before it ends at")
+                raise Fault(
+                    f"{what}: window {i} does not begin at the time that the window before it ends "
+                    f"at"
+                )
             start = 1
         times.append(window["times"][start:])
         for name, array in window.items():
             if name.startswith("history."):
                 if i and not np.array_equal(array[0], history[name[8:]][-1][-1]):
-                    raise Fault(f"{what}: the row that windows {i - 1} and {i} share differs in {name}")
+                    raise Fault(
+                        f"{what}: the row that windows {i - 1} and {i} share differs in {name}"
+                    )
                 history.setdefault(name[8:], []).append(array[start:])
             elif name.startswith("observations."):
                 observed.setdefault(name[13:], []).append(array)
@@ -101,7 +113,9 @@ def join_windows(windows: list, what: str) -> dict:
 
 
 class LegacyRun:
-    """One legacy run of an ionic world: its series at any of its rows, and its potentials at its observations."""
+    """One legacy run of an ionic world: its series at any of its rows, and its potentials at its
+    observations.
+    """
 
     def __init__(self, world: World, raw: dict, what: str):
         self.world, self.raw, self.what = world, raw, what
@@ -136,7 +150,13 @@ class LegacyAssembly:
     """One legacy run of an assembly world, at one world ID: the end state and the summaries."""
 
     def __init__(self, world: World, state: dict, summaries: dict, world_id: int, what: str):
-        self.world, self.state, self.summaries, self.world_id, self.what = world, state, summaries, world_id, what
+        self.world, self.state, self.summaries, self.world_id, self.what = (
+            world,
+            state,
+            summaries,
+            world_id,
+            what,
+        )
         self.raw = {name[6:]: array for name, array in state.items() if name.startswith("ionic_")}
 
     def entry(self, entry) -> np.ndarray:
@@ -171,18 +191,23 @@ class LegacyAssembly:
     def transfer(self, time: float) -> np.ndarray:
         """`channel_transferred_fmol` of a summary, by channel."""
         summary = self._summary(time)
-        values = np.atleast_1d(np.asarray(summary["channel_transferred_fmol"][self.world_id], dtype=float))
+        values = np.atleast_1d(
+            np.asarray(summary["channel_transferred_fmol"][self.world_id], dtype=float)
+        )
         channels = summary.get("channel_ids", list(self.world.channels))
         return np.array([values[channels.index(channel)] for channel in self.world.channels])
 
     def initial_voltage(self) -> np.ndarray:
-        """The voltage at time 0: the summary's where one is captured, and otherwise the declared one."""
+        """The voltage at time 0: the summary's where one is captured, and otherwise the declared
+        one.
+        """
         if any(abs(known) <= c.TIME_TOL_S for known in self.summaries):
             return self.voltage(0.0)
         block = self.world.block
         return np.array(
             [
-                block["cells"][block["membranes"][m]["inside"]]["initial_charge_C"] / block["membranes"][m]["capacitance_F"]
+                block["cells"][block["membranes"][m]["inside"]]["initial_charge_C"]
+                / block["membranes"][m]["capacitance_F"]
                 for m in self.world.membranes
             ]
         )
@@ -256,7 +281,9 @@ class Captures:
         if key not in self._manifests:
             block = self.reg.legacy[key]
             path = Path(block["root"]) / block["science"] / "MANIFEST.json"
-            self._manifests[key] = strictjson.loads(self._pinned(path, block["science_manifest_sha256"], key))
+            self._manifests[key] = strictjson.loads(
+                self._pinned(path, block["science_manifest_sha256"], key)
+            )
         return self._manifests[key]
 
     def origin(self, key: str) -> dict:
@@ -265,7 +292,9 @@ class Captures:
         if name not in self._manifests:
             block = self.reg.legacy[key]
             path = Path(block["root"]) / block["origin"] / "manifest.json"
-            self._manifests[name] = strictjson.loads(self._pinned(path, block["origin_manifest_sha256"], name))
+            self._manifests[name] = strictjson.loads(
+                self._pinned(path, block["origin_manifest_sha256"], name)
+            )
         return self._manifests[name]
 
     def read(self, key: str, relative: str) -> bytes:
@@ -274,7 +303,9 @@ class Captures:
         files = self.manifest(key)["files"]
         if relative not in files:
             raise Fault(f"{key}: {relative} is not in the manifest")
-        return self._pinned(Path(block["root"]) / block["science"] / relative, files[relative]["sha256"], key)
+        return self._pinned(
+            Path(block["root"]) / block["science"] / relative, files[relative]["sha256"], key
+        )
 
     def definition(self, world: str, step: str, seed=None) -> dict:
         """A captured definition."""
@@ -306,7 +337,9 @@ class Captures:
         if (world, step) not in self._runs:
             where = self.reg.profile["captures"][world]
             folder = where["folder"].format(step=step)
-            self._runs[world, step] = self._source(where["set"]).ionic(self.reg.worlds[world], folder)
+            self._runs[world, step] = self._source(where["set"]).ionic(
+                self.reg.worlds[world], folder
+            )
         return self._runs[world, step]
 
     def state(self, world: str, step: str, seed: int) -> dict:
@@ -382,7 +415,9 @@ class Planted:
         return data
 
     def _source(self, name: str) -> _Source:
-        return _Source(lambda relative: self.read(name, relative), list(self.runs[name]["outputs_sha256"]))
+        return _Source(
+            lambda relative: self.read(name, relative), list(self.runs[name]["outputs_sha256"])
+        )
 
     def ionic(self, name: str, world: World) -> LegacyRun:
         """A planted run of an ionic world."""
