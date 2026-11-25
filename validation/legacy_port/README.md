@@ -7,7 +7,8 @@ that leaves.
 | File | What it holds |
 | --- | --- |
 | `removal_list.tsv` | One row per file (or per name of a file that stays): its action, owner, reason, basis and state |
-| `open_rows.tsv` | The rows that were open on 25 November, one line per test function: what it claims, what carries it, the proposal |
+| `open_rows.tsv` | The rows that were open on 25 November, one line per test function: what it claims, the proposal, what carries it, the plant that shows it, and what no live row holds |
+| `carrier_plants.py`, `.json`, `.tsv` | Faults planted in the engine, in a scratch worktree, and the staying rows that must fail on each. A row carries a claim of a retiring row only where a plant of that claim makes it fail |
 | `law_reference_checks.tsv` | Every live law and kernel: its declared test and the reference rows that check it after the deletion (D196) |
 | `removal_test_ids.txt`, `retargeted_test_ids.txt`, `new_test_ids.txt`, `removed_rows.tsv` | The test IDs that leave, that are rewritten and that are new, and why each row of a file that stays left |
 | `removed_definitions.txt` | The definitions that leave the gate's fingerprints (`fingerprints.py compare --removed`) |
@@ -29,7 +30,8 @@ on 25 November 2026. `--without-optional` leaves it out.
 4. The same with `--branch NAME`. The commit takes the message that the script wrote, which names
    the head and the list's own revision.
 
-`--branch` refuses before it makes anything while a row is open before the deletion, while a row on
+`--branch` refuses before it makes anything while a row is open before the deletion (the rows whose
+retirement waits for the user, and the JUPITER check's model part, are such rows), while a row on
 which the user was asked is not approved, and while the list is not a committed file. The batch
 without its edits is refused too.
 
@@ -40,10 +42,12 @@ without its edits is refused too.
   file, and the batch without its edits.
 - A prepared text that no longer stood in its page stopped `make_edits.py` (a page rewritten at
   8d82e435).
-- At 62d5da58, with the optional batch and without it: the library pages pass their check on the
-  staged tree, and the definitions that leave are the 129 of `removed_definitions.txt`. The staged
-  tree equals the one that the scratch copy of this script made from the same list (ad34ed59).
-- On that tree 16 of the 17 rows of `tests/unit/test_continuity_bypass.py` pass. The seventeenth
-  names one file that stays, `validation/gap_junction_tissue/references/neither_reference.py`: it
-  defines `start_state`, legacy-cleanup has it since 75c4a9a0, and the guard's list has no line for
-  it. At 5429a49b, before that file, all 17 passed.
+- At 62d5da58 this script and the scratch copy it came from stage one tree from one list (ad34ed59).
+- At a6432f98 (branch `legacy-counts`: legacy-cleanup 94805c08 with the documents and the open rows, a
+  merge for the measurement): 1,693 files removed and 42 edited (staged tree d090ffd8). The library
+  pages pass their check, all 17 rows of `tests/unit/test_continuity_bypass.py` pass, the definitions
+  that leave are the 129 of `removed_definitions.txt`, 11,008 tests collect, and 8 files fail to: all
+  of them wait for the user.
+- With the proposal of `open_rows.tsv` (407bc106, with `legacy-open-retirements`): 1,706 files removed
+  (staged tree bc40533b), 10,995 tests collect with no error, the same 17 rows pass, and the one import
+  that resolves to nothing is the rehearsal driver's, which is of the frozen snapshot.

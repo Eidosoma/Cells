@@ -1,5 +1,5 @@
 base ID	class	group	now, or why	settled by
-tests/integration/test_assembly_cluster_gpu.py::test_two_workers_complete_cluster_worlds	a retargeted file, open	waits for its builder		E
+tests/integration/test_assembly_cluster_gpu.py::test_two_workers_complete_cluster_worlds	a retargeted file, open	retire: parked	waits for the user (open_rows.tsv, page section 7)	A, proposed
 tests/integration/test_cli.py::test_cli_contact_run_resume_release_and_refusal	a row of a file that stays	moved to a live world, or dropped with its legacy world	the file's new IDs are in new_test_ids.txt	C
 tests/integration/test_cli.py::test_cli_physical_cell_fresh_resume_branch_and_failed_trial	a row of a file that stays	moved to a live world, or dropped with its legacy world	the file's new IDs are in new_test_ids.txt	C
 tests/integration/test_cli.py::test_cli_physical_pair_complete_replay_branch_and_gate_failure	a row of a file that stays	moved to a live world, or dropped with its legacy world	the file's new IDs are in new_test_ids.txt	C
@@ -9,42 +9,42 @@ tests/integration/test_replay.py::test_branch_refuses_incompatible_changes[lost_
 tests/integration/test_replay.py::test_branch_refuses_incompatible_changes[model]	a row of a file that stays	moved to a live world, or dropped with its legacy world	the file's new IDs are in new_test_ids.txt	C
 tests/integration/test_replay.py::test_branch_refuses_incompatible_changes[short_horizon]	a row of a file that stays	moved to a live world, or dropped with its legacy world	the file's new IDs are in new_test_ids.txt	C
 tests/integration/test_replay.py::test_branch_refuses_incompatible_changes[solver]	a row of a file that stays	moved to a live world, or dropped with its legacy world	the file's new IDs are in new_test_ids.txt	C
-tests/unit/test_assembly_cell.py::test_checkpoint_window_and_world_partition_replay	a retargeted file, open	waits for its builder		E
-tests/unit/test_assembly_cell.py::test_cpu_gpu_composition_agreement	a retargeted file, open	waits for its builder		E
-tests/unit/test_assembly_cell.py::test_event_order_and_independent_ionic_reference	a retargeted file, open	waits for its builder		E
-tests/unit/test_assembly_cell.py::test_invalid_common_clock_and_corruption	a retargeted file, open	waits for its builder		E
-tests/unit/test_assembly_cell.py::test_organization_controls_availability_and_disable_is_effective	a retargeted file, open	waits for its builder		E
-tests/unit/test_assembly_cell.py::test_public_cli_complete_world	a retargeted file, open	waits for its builder		E
-tests/unit/test_assembly_cluster.py::test_complete_restart_windows_world_partition_and_pool_independence	a retargeted file, open	waits for its builder		E
-tests/unit/test_assembly_cluster.py::test_corrupt_state_and_cross_cell_material_transfer_rejected[clock]	a retargeted file, open	waits for its builder		E
-tests/unit/test_assembly_cluster.py::test_corrupt_state_and_cross_cell_material_transfer_rejected[exposure]	a retargeted file, open	waits for its builder		E
-tests/unit/test_assembly_cluster.py::test_corrupt_state_and_cross_cell_material_transfer_rejected[ionic]	a retargeted file, open	waits for its builder		E
-tests/unit/test_assembly_cluster.py::test_corrupt_state_and_cross_cell_material_transfer_rejected[shape]	a retargeted file, open	waits for its builder		E
-tests/unit/test_assembly_cluster.py::test_corrupt_state_and_cross_cell_material_transfer_rejected[transfer_between_cells]	a retargeted file, open	waits for its builder		E
-tests/unit/test_assembly_cluster.py::test_cpu_gpu_cluster_agreement	a retargeted file, open	waits for its builder		E
-tests/unit/test_assembly_cluster.py::test_definition_owner_order_and_separate_streams	a retargeted file, open	waits for its builder		E
-tests/unit/test_assembly_cluster.py::test_detached_cli_selects_correct_module	a retargeted file, open	waits for its builder		E
-tests/unit/test_assembly_cluster.py::test_ensemble_identities_survive_balance_and_sixteen_gpu_planning	a retargeted file, open	waits for its builder		E
-tests/unit/test_assembly_cluster.py::test_event_budget_fault_is_retained	a retargeted file, open	waits for its builder		E
-tests/unit/test_assembly_cluster.py::test_invalid_definitions[bad_availability]	a retargeted file, open	waits for its builder		E
-tests/unit/test_assembly_cluster.py::test_invalid_definitions[bad_seed]	a retargeted file, open	waits for its builder		E
-tests/unit/test_assembly_cluster.py::test_invalid_definitions[different_clock]	a retargeted file, open	waits for its builder		E
-tests/unit/test_assembly_cluster.py::test_invalid_definitions[different_worlds]	a retargeted file, open	waits for its builder		E
-tests/unit/test_assembly_cluster.py::test_invalid_definitions[duplicate_owner]	a retargeted file, open	waits for its builder		E
-tests/unit/test_assembly_cluster.py::test_invalid_definitions[duplicate_stream]	a retargeted file, open	waits for its builder		E
-tests/unit/test_assembly_cluster.py::test_invalid_definitions[external_change_outside_horizon]	a retargeted file, open	waits for its builder		E
-tests/unit/test_assembly_cluster.py::test_invalid_definitions[missing_owner]	a retargeted file, open	waits for its builder		E
-tests/unit/test_assembly_cluster.py::test_invalid_definitions[off_grid]	a retargeted file, open	waits for its builder		E
-tests/unit/test_assembly_cluster.py::test_invalid_definitions[wrong_ionic_family]	a retargeted file, open	waits for its builder		E
-tests/unit/test_assembly_cluster.py::test_one_cell_no_spatial_faces_reduces_to_previous_composition	a retargeted file, open	waits for its builder		E
-tests/unit/test_assembly_cluster.py::test_organization_neighbour_response_and_disconnected_controls	a retargeted file, open	waits for its builder		E
-tests/unit/test_assembly_cluster.py::test_partition_evidence_counts_all_changed_fields_and_last_bits	a retargeted file, open	waits for its builder		E
-tests/unit/test_assembly_cluster.py::test_public_cli_observations_and_complete_resume	a retargeted file, open	waits for its builder		E
-tests/unit/test_assembly_cluster.py::test_scheduler_adapter_and_per_cell_aggregation	a retargeted file, open	waits for its builder		E
-tests/unit/test_assembly_cluster.py::test_simultaneous_events_at_grid_boundary_use_preceding_assembly	a retargeted file, open	waits for its builder		E
-tests/unit/test_assembly_cluster.py::test_union_clock_independent_references_and_refinement	a retargeted file, open	waits for its builder		E
-tests/unit/test_assembly_controls.py::test_constant_input_retains_original_clock_and_arithmetic	a retargeted file, open	waits for its builder		E
-tests/unit/test_assembly_controls.py::test_union_clock_ties_apply_preceding_inputs_then_commit_events	a retargeted file, open	waits for its builder		E
+tests/unit/test_assembly_cell.py::test_checkpoint_window_and_world_partition_replay	a retargeted file, open	retire: carried	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_assembly_cell.py::test_cpu_gpu_composition_agreement	a retargeted file, open	retire: parked	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_assembly_cell.py::test_event_order_and_independent_ionic_reference	a retargeted file, open	retire, conditional: with the deletion, after the verdict of its consumer	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_assembly_cell.py::test_invalid_common_clock_and_corruption	a retargeted file, open	retire: carried	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_assembly_cell.py::test_organization_controls_availability_and_disable_is_effective	a retargeted file, open	retire: carried	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_assembly_cell.py::test_public_cli_complete_world	a retargeted file, open	retire: parked	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_assembly_cluster.py::test_complete_restart_windows_world_partition_and_pool_independence	a retargeted file, open	retire: carried	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_assembly_cluster.py::test_corrupt_state_and_cross_cell_material_transfer_rejected[clock]	a retargeted file, open	retire: carried	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_assembly_cluster.py::test_corrupt_state_and_cross_cell_material_transfer_rejected[exposure]	a retargeted file, open	retire: carried	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_assembly_cluster.py::test_corrupt_state_and_cross_cell_material_transfer_rejected[ionic]	a retargeted file, open	retire: carried	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_assembly_cluster.py::test_corrupt_state_and_cross_cell_material_transfer_rejected[shape]	a retargeted file, open	retire: carried	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_assembly_cluster.py::test_corrupt_state_and_cross_cell_material_transfer_rejected[transfer_between_cells]	a retargeted file, open	retire: carried	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_assembly_cluster.py::test_cpu_gpu_cluster_agreement	a retargeted file, open	retire: parked	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_assembly_cluster.py::test_definition_owner_order_and_separate_streams	a retargeted file, open	retire: carried	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_assembly_cluster.py::test_detached_cli_selects_correct_module	a retargeted file, open	retire: parked	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_assembly_cluster.py::test_ensemble_identities_survive_balance_and_sixteen_gpu_planning	a retargeted file, open	retire: parked kind; planning carried	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_assembly_cluster.py::test_event_budget_fault_is_retained	a retargeted file, open	retire: carried	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_assembly_cluster.py::test_invalid_definitions[bad_availability]	a retargeted file, open	retire: carried	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_assembly_cluster.py::test_invalid_definitions[bad_seed]	a retargeted file, open	retire: carried	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_assembly_cluster.py::test_invalid_definitions[different_clock]	a retargeted file, open	retire: carried	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_assembly_cluster.py::test_invalid_definitions[different_worlds]	a retargeted file, open	retire: carried	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_assembly_cluster.py::test_invalid_definitions[duplicate_owner]	a retargeted file, open	retire: carried	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_assembly_cluster.py::test_invalid_definitions[duplicate_stream]	a retargeted file, open	retire: carried	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_assembly_cluster.py::test_invalid_definitions[external_change_outside_horizon]	a retargeted file, open	retire: carried	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_assembly_cluster.py::test_invalid_definitions[missing_owner]	a retargeted file, open	retire: carried	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_assembly_cluster.py::test_invalid_definitions[off_grid]	a retargeted file, open	retire: carried	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_assembly_cluster.py::test_invalid_definitions[wrong_ionic_family]	a retargeted file, open	retire: carried	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_assembly_cluster.py::test_one_cell_no_spatial_faces_reduces_to_previous_composition	a retargeted file, open	retire: both sides go	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_assembly_cluster.py::test_organization_neighbour_response_and_disconnected_controls	a retargeted file, open	retire: carried	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_assembly_cluster.py::test_partition_evidence_counts_all_changed_fields_and_last_bits	a retargeted file, open	retire: with its tool	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_assembly_cluster.py::test_public_cli_observations_and_complete_resume	a retargeted file, open	retire: parked	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_assembly_cluster.py::test_scheduler_adapter_and_per_cell_aggregation	a retargeted file, open	retire: parked, statistics lost	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_assembly_cluster.py::test_simultaneous_events_at_grid_boundary_use_preceding_assembly	a retargeted file, open	retire: carried	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_assembly_cluster.py::test_union_clock_independent_references_and_refinement	a retargeted file, open	retire, conditional: with the deletion, after the verdict of its consumer	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_assembly_controls.py::test_constant_input_retains_original_clock_and_arithmetic	a retargeted file, open	retire: the older kernel's own	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_assembly_controls.py::test_union_clock_ties_apply_preceding_inputs_then_commit_events	a retargeted file, open	retire: carried	waits for the user (open_rows.tsv, page section 7)	A, proposed
 tests/unit/test_batch.py::test_all_families_match_scalar_with_independent_clocks[bioelectric_baseline]	a row of a file that stays	moved to a live world, or dropped with its legacy world	the file's new IDs are in new_test_ids.txt	C
 tests/unit/test_batch.py::test_all_families_match_scalar_with_independent_clocks[bioelectric_pair_baseline]	a row of a file that stays	moved to a live world, or dropped with its legacy world	the file's new IDs are in new_test_ids.txt	C
 tests/unit/test_batch.py::test_all_families_match_scalar_with_independent_clocks[emt_isolated_e]	a row of a file that stays	moved to a live world, or dropped with its legacy world	the file's new IDs are in new_test_ids.txt	C
@@ -283,132 +283,132 @@ tests/unit/test_cotransport.py::test_wrong_concentration_axes_and_nonreal_types_
 tests/unit/test_declarations.py::test_older_families_are_listed_by_model_id_only	a row of a file that stays	replaced or dropped	the file's new IDs are in new_test_ids.txt	B
 tests/unit/test_declarations.py::test_version_2_joins_a_real_definition_and_states_lines_reads_and_units	a row of a file that stays	replaced or dropped	the file's new IDs are in new_test_ids.txt	B
 tests/unit/test_ensemble_adapters.py::test_today_s_five_keep_their_models_and_their_chains	a row of a file that stays	replaced or dropped	the file's new IDs are in new_test_ids.txt	B
-tests/unit/test_er_calcium.py::test_canonical_schema_padding_and_public_artifacts	a retargeted file, open	waits for its builder		D
-tests/unit/test_er_calcium.py::test_complete_restart_windows_partitions_and_future_branch	a retargeted file, open	waits for its builder		D
-tests/unit/test_er_calcium.py::test_cpu_gpu_agreement	a retargeted file, open	waits for its builder		D
-tests/unit/test_er_calcium.py::test_domain_ledgers_and_checkpoint_corruption	a retargeted file, open	waits for its builder		D
-tests/unit/test_er_calcium.py::test_independent_full_state_references_and_refinement	a retargeted file, open	waits for its builder		D
-tests/unit/test_er_calcium.py::test_invalid_physical_definitions[path0-er]	a retargeted file, open	waits for its builder		D
-tests/unit/test_er_calcium.py::test_invalid_physical_definitions[path1-absent]	a retargeted file, open	waits for its builder		D
-tests/unit/test_er_calcium.py::test_invalid_physical_definitions[path10-0]	a retargeted file, open	waits for its builder		D
-tests/unit/test_er_calcium.py::test_invalid_physical_definitions[path11-1.5]	a retargeted file, open	waits for its builder		D
-tests/unit/test_er_calcium.py::test_invalid_physical_definitions[path12-0]	a retargeted file, open	waits for its builder		D
-tests/unit/test_er_calcium.py::test_invalid_physical_definitions[path13-1.1]	a retargeted file, open	waits for its builder		D
-tests/unit/test_er_calcium.py::test_invalid_physical_definitions[path14-True]	a retargeted file, open	waits for its builder		D
-tests/unit/test_er_calcium.py::test_invalid_physical_definitions[path15--1]	a retargeted file, open	waits for its builder		D
-tests/unit/test_er_calcium.py::test_invalid_physical_definitions[path2-K]	a retargeted file, open	waits for its builder		D
-tests/unit/test_er_calcium.py::test_invalid_physical_definitions[path3-0]	a retargeted file, open	waits for its builder		D
-tests/unit/test_er_calcium.py::test_invalid_physical_definitions[path4-0]	a retargeted file, open	waits for its builder		D
-tests/unit/test_er_calcium.py::test_invalid_physical_definitions[path5-0.2]	a retargeted file, open	waits for its builder		D
-tests/unit/test_er_calcium.py::test_invalid_physical_definitions[path6--1]	a retargeted file, open	waits for its builder		D
-tests/unit/test_er_calcium.py::test_invalid_physical_definitions[path7-serca_two_ca]	a retargeted file, open	waits for its builder		D
-tests/unit/test_er_calcium.py::test_invalid_physical_definitions[path8-finite_atp]	a retargeted file, open	waits for its builder		D
-tests/unit/test_er_calcium.py::test_invalid_physical_definitions[path9-0]	a retargeted file, open	waits for its builder		D
-tests/unit/test_er_calcium.py::test_native_pump_and_calcium_release_functions	a retargeted file, open	waits for its builder		D
-tests/unit/test_er_calcium.py::test_public_cli_and_selected_backend	a retargeted file, open	waits for its builder		D
-tests/unit/test_er_calcium.py::test_route_interventions_and_chemistry_reduction[passive_only]	a retargeted file, open	waits for its builder		D
-tests/unit/test_er_calcium.py::test_route_interventions_and_chemistry_reduction[pump_off]	a retargeted file, open	waits for its builder		D
-tests/unit/test_er_calcium.py::test_route_interventions_and_chemistry_reduction[reaction_only]	a retargeted file, open	waits for its builder		D
-tests/unit/test_er_calcium.py::test_route_interventions_and_chemistry_reduction[release_event]	a retargeted file, open	waits for its builder		D
-tests/unit/test_er_calcium.py::test_route_interventions_and_chemistry_reduction[release_off]	a retargeted file, open	waits for its builder		D
-tests/unit/test_er_calcium.py::test_stage_ownership_charge_and_resolved_energy	a retargeted file, open	waits for its builder		D
-tests/unit/test_er_calcium.py::test_stall_and_no_reaction_electrochemical_equilibrium	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_assembly_independent_event_reference	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_assembly_restart_partition_and_transport_effect	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_canonical_schema_and_complete_artifacts	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_channel_interventions_and_previous_model_reduction[blocked]	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_channel_interventions_and_previous_model_reduction[switch]	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_channel_interventions_and_previous_model_reduction[zero_abundance]	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_channel_interventions_and_previous_model_reduction[zero_permeability]	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_complete_restart_windows_partitions_and_future_controls	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_corrupt_checkpoint_rejected[energy]	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_corrupt_checkpoint_rejected[gate]	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_corrupt_checkpoint_rejected[nan_gate]	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_corrupt_checkpoint_rejected[negative_energy]	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_corrupt_checkpoint_rejected[padding]	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_corrupt_checkpoint_rejected[transfer]	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_cpu_gpu_agreement	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_cubic_enclosure_rejects_interior_excursions[calcium_channel_dissipated_energy_pJ]	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_cubic_enclosure_rejects_interior_excursions[calcium_gate]	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_ensemble_aggregation	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_ensemble_planning_preserves_model_and_world_identity	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_independent_references_and_timestep_refinement	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[availability]	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[bad_gate]	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[bool_gate]	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[duplicate_control]	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[duplicate_id]	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[duplicate_owner]	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[id_collision]	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[late_start]	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[law]	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[loss_bound]	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[missing_channel]	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[missing_control]	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[nan_gate]	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[negative_abundance]	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[negative_permeability]	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[old_identity]	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[repeat_time]	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[species]	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[unknown_control]	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[unknown_owner]	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_native_cav1p2_units_shift_powers_and_held_voltage	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_public_cli	a retargeted file, open	waits for its builder		D
-tests/unit/test_gated_calcium.py::test_stage_ownership_charge_energy_and_calcium_reversal	a retargeted file, open	waits for its builder		D
-tests/unit/test_ip3_calcium.py::test_assembly_independent_event_reference	a retargeted file, open	waits for its builder		E
-tests/unit/test_ip3_calcium.py::test_assembly_restart_partition_and_ip3_response	a retargeted file, open	waits for its builder		E
-tests/unit/test_ip3_calcium.py::test_canonical_schema_observations_and_complete_artifacts	a retargeted file, open	waits for its builder		E
-tests/unit/test_ip3_calcium.py::test_complete_restart_windows_partitions_and_future_controls	a retargeted file, open	waits for its builder		E
-tests/unit/test_ip3_calcium.py::test_corrupt_ip3_checkpoint_rejected[cross_cell]	a retargeted file, open	waits for its builder		E
-tests/unit/test_ip3_calcium.py::test_corrupt_ip3_checkpoint_rejected[moiety]	a retargeted file, open	waits for its builder		E
-tests/unit/test_ip3_calcium.py::test_corrupt_ip3_checkpoint_rejected[negative]	a retargeted file, open	waits for its builder		E
-tests/unit/test_ip3_calcium.py::test_corrupt_ip3_checkpoint_rejected[parameter]	a retargeted file, open	waits for its builder		E
-tests/unit/test_ip3_calcium.py::test_cpu_gpu_agreement	a retargeted file, open	waits for its builder		E
-tests/unit/test_ip3_calcium.py::test_ensemble_aggregation	a retargeted file, open	waits for its builder		E
-tests/unit/test_ip3_calcium.py::test_ensemble_planning_preserves_model_and_world_identity	a retargeted file, open	waits for its builder		E
-tests/unit/test_ip3_calcium.py::test_independent_references_and_timestep_refinement	a retargeted file, open	waits for its builder		E
-tests/unit/test_ip3_calcium.py::test_invalid_ip3_definitions[bool_km]	a retargeted file, open	waits for its builder		E
-tests/unit/test_ip3_calcium.py::test_invalid_ip3_definitions[bool_power]	a retargeted file, open	waits for its builder		E
-tests/unit/test_ip3_calcium.py::test_invalid_ip3_definitions[duplicate]	a retargeted file, open	waits for its builder		E
-tests/unit/test_ip3_calcium.py::test_invalid_ip3_definitions[fractional_power]	a retargeted file, open	waits for its builder		E
-tests/unit/test_ip3_calcium.py::test_invalid_ip3_definitions[large_power]	a retargeted file, open	waits for its builder		E
-tests/unit/test_ip3_calcium.py::test_invalid_ip3_definitions[law]	a retargeted file, open	waits for its builder		E
-tests/unit/test_ip3_calcium.py::test_invalid_ip3_definitions[missing]	a retargeted file, open	waits for its builder		E
-tests/unit/test_ip3_calcium.py::test_invalid_ip3_definitions[nan_km]	a retargeted file, open	waits for its builder		E
-tests/unit/test_ip3_calcium.py::test_invalid_ip3_definitions[negative_km]	a retargeted file, open	waits for its builder		E
-tests/unit/test_ip3_calcium.py::test_invalid_ip3_definitions[no_release]	a retargeted file, open	waits for its builder		E
-tests/unit/test_ip3_calcium.py::test_invalid_ip3_definitions[not_free]	a retargeted file, open	waits for its builder		E
-tests/unit/test_ip3_calcium.py::test_invalid_ip3_definitions[old_identity]	a retargeted file, open	waits for its builder		E
-tests/unit/test_ip3_calcium.py::test_invalid_ip3_definitions[species]	a retargeted file, open	waits for its builder		E
-tests/unit/test_ip3_calcium.py::test_invalid_ip3_definitions[unknown_owner]	a retargeted file, open	waits for its builder		E
-tests/unit/test_ip3_calcium.py::test_invalid_ip3_definitions[zero_km]	a retargeted file, open	waits for its builder		E
-tests/unit/test_ip3_calcium.py::test_invalid_ip3_definitions[zero_power]	a retargeted file, open	waits for its builder		E
-tests/unit/test_ip3_calcium.py::test_ip3_cubic_rejects_interior_negative_inventory	a retargeted file, open	waits for its builder		E
-tests/unit/test_ip3_calcium.py::test_native_ip3_network_branches_units_powers_and_device	a retargeted file, open	waits for its builder		E
-tests/unit/test_ip3_calcium.py::test_public_cli	a retargeted file, open	waits for its builder		E
-tests/unit/test_ip3_calcium.py::test_release_and_ligand_interventions[binding_off]	a retargeted file, open	waits for its builder		E
-tests/unit/test_ip3_calcium.py::test_release_and_ligand_interventions[blocked]	a retargeted file, open	waits for its builder		E
-tests/unit/test_ip3_calcium.py::test_release_and_ligand_interventions[switch]	a retargeted file, open	waits for its builder		E
-tests/unit/test_ip3_calcium.py::test_stage_owned_ip3_independent_derivative_and_energy	a retargeted file, open	waits for its builder		E
+tests/unit/test_er_calcium.py::test_canonical_schema_padding_and_public_artifacts	a retargeted file, open	retire: general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_er_calcium.py::test_complete_restart_windows_partitions_and_future_branch	a retargeted file, open	retire: carried, batch windows by the general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_er_calcium.py::test_cpu_gpu_agreement	a retargeted file, open	retire: parked	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_er_calcium.py::test_domain_ledgers_and_checkpoint_corruption	a retargeted file, open	retire: general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_er_calcium.py::test_independent_full_state_references_and_refinement	a retargeted file, open	retire: carried	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_er_calcium.py::test_invalid_physical_definitions[path0-er]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_er_calcium.py::test_invalid_physical_definitions[path1-absent]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_er_calcium.py::test_invalid_physical_definitions[path10-0]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_er_calcium.py::test_invalid_physical_definitions[path11-1.5]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_er_calcium.py::test_invalid_physical_definitions[path12-0]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_er_calcium.py::test_invalid_physical_definitions[path13-1.1]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_er_calcium.py::test_invalid_physical_definitions[path14-True]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_er_calcium.py::test_invalid_physical_definitions[path15--1]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_er_calcium.py::test_invalid_physical_definitions[path2-K]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_er_calcium.py::test_invalid_physical_definitions[path3-0]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_er_calcium.py::test_invalid_physical_definitions[path4-0]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_er_calcium.py::test_invalid_physical_definitions[path5-0.2]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_er_calcium.py::test_invalid_physical_definitions[path6--1]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_er_calcium.py::test_invalid_physical_definitions[path7-serca_two_ca]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_er_calcium.py::test_invalid_physical_definitions[path8-finite_atp]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_er_calcium.py::test_invalid_physical_definitions[path9-0]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_er_calcium.py::test_native_pump_and_calcium_release_functions	a retargeted file, open	retire: carried	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_er_calcium.py::test_public_cli_and_selected_backend	a retargeted file, open	retire: general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_er_calcium.py::test_route_interventions_and_chemistry_reduction[passive_only]	a retargeted file, open	retire: general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_er_calcium.py::test_route_interventions_and_chemistry_reduction[pump_off]	a retargeted file, open	retire: general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_er_calcium.py::test_route_interventions_and_chemistry_reduction[reaction_only]	a retargeted file, open	retire: general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_er_calcium.py::test_route_interventions_and_chemistry_reduction[release_event]	a retargeted file, open	retire: general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_er_calcium.py::test_route_interventions_and_chemistry_reduction[release_off]	a retargeted file, open	retire: general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_er_calcium.py::test_stage_ownership_charge_and_resolved_energy	a retargeted file, open	retire: carried	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_er_calcium.py::test_stall_and_no_reaction_electrochemical_equilibrium	a retargeted file, open	retire: carried	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_assembly_independent_event_reference	a retargeted file, open	retire, conditional: with the deletion, after the verdict of its consumer	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_assembly_restart_partition_and_transport_effect	a retargeted file, open	retire, conditional: with the deletion, after the verdict of its consumer	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_canonical_schema_and_complete_artifacts	a retargeted file, open	retire: general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_channel_interventions_and_previous_model_reduction[blocked]	a retargeted file, open	retire: general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_channel_interventions_and_previous_model_reduction[switch]	a retargeted file, open	retire: general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_channel_interventions_and_previous_model_reduction[zero_abundance]	a retargeted file, open	retire: general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_channel_interventions_and_previous_model_reduction[zero_permeability]	a retargeted file, open	retire: general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_complete_restart_windows_partitions_and_future_controls	a retargeted file, open	retire: carried, batch windows by the general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_corrupt_checkpoint_rejected[energy]	a retargeted file, open	retire: general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_corrupt_checkpoint_rejected[gate]	a retargeted file, open	retire: general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_corrupt_checkpoint_rejected[nan_gate]	a retargeted file, open	retire: general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_corrupt_checkpoint_rejected[negative_energy]	a retargeted file, open	retire: general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_corrupt_checkpoint_rejected[padding]	a retargeted file, open	retire: general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_corrupt_checkpoint_rejected[transfer]	a retargeted file, open	retire: general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_cpu_gpu_agreement	a retargeted file, open	retire: parked	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_cubic_enclosure_rejects_interior_excursions[calcium_channel_dissipated_energy_pJ]	a retargeted file, open	retire: lost by design	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_cubic_enclosure_rejects_interior_excursions[calcium_gate]	a retargeted file, open	retire: lost by design	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_ensemble_aggregation	a retargeted file, open	retire: parked, statistics lost	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_ensemble_planning_preserves_model_and_world_identity	a retargeted file, open	retire: parked kind; planning carried	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_independent_references_and_timestep_refinement	a retargeted file, open	retire, conditional: with the deletion, after the verdict of its consumer	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[availability]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[bad_gate]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[bool_gate]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[duplicate_control]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[duplicate_id]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[duplicate_owner]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[id_collision]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[late_start]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[law]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[loss_bound]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[missing_channel]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[missing_control]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[nan_gate]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[negative_abundance]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[negative_permeability]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[old_identity]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[repeat_time]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[species]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[unknown_control]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_invalid_channel_definitions[unknown_owner]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_native_cav1p2_units_shift_powers_and_held_voltage	a retargeted file, open	retire: carried	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_public_cli	a retargeted file, open	retire: general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_gated_calcium.py::test_stage_ownership_charge_energy_and_calcium_reversal	a retargeted file, open	retire: carried	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_ip3_calcium.py::test_assembly_independent_event_reference	a retargeted file, open	retire, conditional: with the deletion, after the verdict of its consumer	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_ip3_calcium.py::test_assembly_restart_partition_and_ip3_response	a retargeted file, open	retire, conditional: with the deletion, after the verdict of its consumer	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_ip3_calcium.py::test_canonical_schema_observations_and_complete_artifacts	a retargeted file, open	retire: general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_ip3_calcium.py::test_complete_restart_windows_partitions_and_future_controls	a retargeted file, open	retire: carried, batch windows by the general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_ip3_calcium.py::test_corrupt_ip3_checkpoint_rejected[cross_cell]	a retargeted file, open	retire: general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_ip3_calcium.py::test_corrupt_ip3_checkpoint_rejected[moiety]	a retargeted file, open	retire: general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_ip3_calcium.py::test_corrupt_ip3_checkpoint_rejected[negative]	a retargeted file, open	retire: general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_ip3_calcium.py::test_corrupt_ip3_checkpoint_rejected[parameter]	a retargeted file, open	retire: general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_ip3_calcium.py::test_cpu_gpu_agreement	a retargeted file, open	retire: parked	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_ip3_calcium.py::test_ensemble_aggregation	a retargeted file, open	retire: parked, statistics lost	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_ip3_calcium.py::test_ensemble_planning_preserves_model_and_world_identity	a retargeted file, open	retire: parked kind; planning carried	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_ip3_calcium.py::test_independent_references_and_timestep_refinement	a retargeted file, open	retire, conditional: with the deletion, after the verdict of its consumer	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_ip3_calcium.py::test_invalid_ip3_definitions[bool_km]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_ip3_calcium.py::test_invalid_ip3_definitions[bool_power]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_ip3_calcium.py::test_invalid_ip3_definitions[duplicate]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_ip3_calcium.py::test_invalid_ip3_definitions[fractional_power]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_ip3_calcium.py::test_invalid_ip3_definitions[large_power]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_ip3_calcium.py::test_invalid_ip3_definitions[law]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_ip3_calcium.py::test_invalid_ip3_definitions[missing]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_ip3_calcium.py::test_invalid_ip3_definitions[nan_km]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_ip3_calcium.py::test_invalid_ip3_definitions[negative_km]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_ip3_calcium.py::test_invalid_ip3_definitions[no_release]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_ip3_calcium.py::test_invalid_ip3_definitions[not_free]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_ip3_calcium.py::test_invalid_ip3_definitions[old_identity]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_ip3_calcium.py::test_invalid_ip3_definitions[species]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_ip3_calcium.py::test_invalid_ip3_definitions[unknown_owner]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_ip3_calcium.py::test_invalid_ip3_definitions[zero_km]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_ip3_calcium.py::test_invalid_ip3_definitions[zero_power]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_ip3_calcium.py::test_ip3_cubic_rejects_interior_negative_inventory	a retargeted file, open	retire: lost by design	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_ip3_calcium.py::test_native_ip3_network_branches_units_powers_and_device	a retargeted file, open	retire: carried, the native comparison is not	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_ip3_calcium.py::test_public_cli	a retargeted file, open	retire: general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_ip3_calcium.py::test_release_and_ligand_interventions[binding_off]	a retargeted file, open	retire: general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_ip3_calcium.py::test_release_and_ligand_interventions[blocked]	a retargeted file, open	retire: general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_ip3_calcium.py::test_release_and_ligand_interventions[switch]	a retargeted file, open	retire: general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_ip3_calcium.py::test_stage_owned_ip3_independent_derivative_and_energy	a retargeted file, open	retire: carried	waits for the user (open_rows.tsv, page section 7)	A, proposed
 tests/unit/test_numerics.py::test_constant_input_cases[0-0-1]	a row of a file that stays	moved to a live world, or dropped with its legacy world	the file's new IDs are in new_test_ids.txt	C
 tests/unit/test_numerics.py::test_constant_input_cases[0-0.4-1]	a row of a file that stays	moved to a live world, or dropped with its legacy world	the file's new IDs are in new_test_ids.txt	C
 tests/unit/test_numerics.py::test_constant_input_cases[1-0-0]	a row of a file that stays	moved to a live world, or dropped with its legacy world	the file's new IDs are in new_test_ids.txt	C
 tests/unit/test_numerics.py::test_constant_input_cases[1-0.4-0]	a row of a file that stays	moved to a live world, or dropped with its legacy world	the file's new IDs are in new_test_ids.txt	C
 tests/unit/test_numerics.py::test_nonfinite_derived_state_is_refused_even_without_sampling	a row of a file that stays	moved to a live world, or dropped with its legacy world	the file's new IDs are in new_test_ids.txt	C
-tests/unit/test_plasma_calcium.py::test_assembly_independent_event_reference	a retargeted file, open	left to the re-expression		D and E
-tests/unit/test_plasma_calcium.py::test_assembly_restart_partition_and_transport_effect	a retargeted file, open	left to the re-expression		D and E
-tests/unit/test_plasma_calcium.py::test_canonical_schema_and_complete_artifacts	a retargeted file, open	left to the re-expression		D and E
-tests/unit/test_plasma_calcium.py::test_complete_restart_windows_partitions_and_future_controls	a retargeted file, open	left to the re-expression	its batch windows and partitions; its restart half is of the dropped kind	D and E
+tests/unit/test_plasma_calcium.py::test_assembly_independent_event_reference	a retargeted file, open	retire, conditional: with the deletion, after the verdict of its consumer	out of the file since 3dfe4250; waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_plasma_calcium.py::test_assembly_restart_partition_and_transport_effect	a retargeted file, open	retire, conditional: with the deletion, after the verdict of its consumer	out of the file since 3dfe4250; waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_plasma_calcium.py::test_canonical_schema_and_complete_artifacts	a retargeted file, open	retire: general rows	out of the file since 3dfe4250; waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_plasma_calcium.py::test_complete_restart_windows_partitions_and_future_controls	a retargeted file, open	retire: carried, batch windows by the general rows	out of the file since 3dfe4250; waits for the user (open_rows.tsv, page section 7)	A, proposed
 tests/unit/test_plasma_calcium.py::test_corrupt_complete_checkpoint_is_rejected[dissipation]	a retargeted file, settled	dropped: the engine's general tests hold it (the lead, ruling 3)		pump-and-symports-build
 tests/unit/test_plasma_calcium.py::test_corrupt_complete_checkpoint_is_rejected[exchanger_cycles]	a retargeted file, settled	dropped: the engine's general tests hold it (the lead, ruling 3)		pump-and-symports-build
 tests/unit/test_plasma_calcium.py::test_corrupt_complete_checkpoint_is_rejected[negative_dissipation]	a retargeted file, settled	dropped: the engine's general tests hold it (the lead, ruling 3)		pump-and-symports-build
 tests/unit/test_plasma_calcium.py::test_corrupt_complete_checkpoint_is_rejected[padding]	a retargeted file, settled	dropped: the engine's general tests hold it (the lead, ruling 3)		pump-and-symports-build
 tests/unit/test_plasma_calcium.py::test_corrupt_complete_checkpoint_is_rejected[pump_cycles]	a retargeted file, settled	dropped: the engine's general tests hold it (the lead, ruling 3)		pump-and-symports-build
-tests/unit/test_plasma_calcium.py::test_cpu_gpu_agreement	a retargeted file, open	left to the re-expression		D and E
+tests/unit/test_plasma_calcium.py::test_cpu_gpu_agreement	a retargeted file, open	retire: parked	out of the file since 3dfe4250; waits for the user (open_rows.tsv, page section 7)	A, proposed
 tests/unit/test_plasma_calcium.py::test_cubic_dissipation_enclosure_rejects_interior_excursion	a retargeted file, settled	gone with the older definition (neither of the ruling's groups names it)	no counterpart: kinds refuse RK4	pump-and-symports-build
-tests/unit/test_plasma_calcium.py::test_ensemble_aggregation	a retargeted file, open	left to the re-expression		D and E
-tests/unit/test_plasma_calcium.py::test_ensemble_planning_preserves_model_and_world_identity	a retargeted file, open	left to the re-expression		D and E
+tests/unit/test_plasma_calcium.py::test_ensemble_aggregation	a retargeted file, open	retire: parked, statistics lost	out of the file since 3dfe4250; waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_plasma_calcium.py::test_ensemble_planning_preserves_model_and_world_identity	a retargeted file, open	retire: parked kind; planning carried	out of the file since 3dfe4250; waits for the user (open_rows.tsv, page section 7)	A, proposed
 tests/unit/test_plasma_calcium.py::test_independent_references_and_timestep_refinement	a retargeted file, settled	retargeted	test_the_closed_run_converges_to_the_independent_ode_at_second_order	pump-and-symports-build
 tests/unit/test_plasma_calcium.py::test_interventions_and_previous_model_reduction[absent]	a retargeted file, settled	dropped: the engine's general tests hold it (the lead, ruling 3)		pump-and-symports-build
 tests/unit/test_plasma_calcium.py::test_interventions_and_previous_model_reduction[both_off]	a retargeted file, settled	dropped: the engine's general tests hold it (the lead, ruling 3)		pump-and-symports-build
@@ -438,7 +438,7 @@ tests/unit/test_plasma_calcium.py::test_invalid_transport_definitions[unknown_ow
 tests/unit/test_plasma_calcium.py::test_invalid_transport_definitions[zero_km]	a retargeted file, settled	gone with the older definition (neither of the ruling's groups names it)	test_cycle_kind: 'K of zero', 'K_ATP of zero', 'a half-saturation of zero'	pump-and-symports-build
 tests/unit/test_plasma_calcium.py::test_native_pmca_positive_domain_and_explicit_blocker	a retargeted file, settled	retargeted	test_the_pump_is_the_pinned_sources_positive_law_and_an_independent_scalar_form	pump-and-symports-build
 tests/unit/test_plasma_calcium.py::test_ncx_reference_reversal_stoichiometry_and_stall_gradient	a retargeted file, settled	retargeted	test_the_exchange_meets_the_direct_products_at_its_reversal_and_on_both_sides	pump-and-symports-build
-tests/unit/test_plasma_calcium.py::test_public_cli	a retargeted file, open	left to the re-expression		D and E
+tests/unit/test_plasma_calcium.py::test_public_cli	a retargeted file, open	retire: general rows	out of the file since 3dfe4250; waits for the user (open_rows.tsv, page section 7)	A, proposed
 tests/unit/test_plasma_calcium.py::test_stage_stoichiometry_owned_scatter_and_energy	a retargeted file, settled	retargeted	test_a_stage_moves_each_laws_counts_where_they_belong_and_its_energy_balances	pump-and-symports-build
 tests/unit/test_projective.py::test_unsupported_model_rejects	a row of a file that stays	moved to a live world, or dropped with its legacy world	the file's new IDs are in new_test_ids.txt	C
 tests/unit/test_scalar_tail_reuse.py::test_short_tail_reuses_one_executable_with_exact_complete_history[bioelectric_baseline]	a row of a file that stays	moved to a live world, or dropped with its legacy world	the file's new IDs are in new_test_ids.txt	C
@@ -448,37 +448,37 @@ tests/unit/test_scalar_tail_reuse.py::test_short_tail_reuses_one_executable_with
 tests/unit/test_scalar_tail_reuse.py::test_short_tail_reuses_one_executable_with_exact_complete_history[reaction_transport_chain]	a row of a file that stays	moved to a live world, or dropped with its legacy world	the file's new IDs are in new_test_ids.txt	C
 tests/unit/test_scalar_tail_reuse.py::test_short_tail_reuses_one_executable_with_exact_complete_history[single_cell_pulse]	a row of a file that stays	moved to a live world, or dropped with its legacy world	the file's new IDs are in new_test_ids.txt	C
 tests/unit/test_scalar_tail_reuse.py::test_short_tail_reuses_one_executable_with_exact_complete_history[source_pair_controls]	a row of a file that stays	moved to a live world, or dropped with its legacy world	the file's new IDs are in new_test_ids.txt	C
-tests/unit/test_spatial_calcium.py::test_assembly_complete_restart_partition_and_channel_effect	a retargeted file, open	waits for its builder		D and E
-tests/unit/test_spatial_calcium.py::test_assembly_ensemble_calcium_aggregation	a retargeted file, open	waits for its builder		D and E
-tests/unit/test_spatial_calcium.py::test_assembly_independent_event_reference	a retargeted file, open	waits for its builder		D and E
-tests/unit/test_spatial_calcium.py::test_canonical_schema_and_complete_public_artifacts	a retargeted file, open	waits for its builder		D and E
-tests/unit/test_spatial_calcium.py::test_complete_restart_windows_partitions_and_future_branch	a retargeted file, open	waits for its builder		D and E
-tests/unit/test_spatial_calcium.py::test_corrupt_ownership_energy_and_complete_checkpoint	a retargeted file, open	waits for its builder		D and E
-tests/unit/test_spatial_calcium.py::test_cpu_gpu_agreement	a retargeted file, open	waits for its builder		D and E
-tests/unit/test_spatial_calcium.py::test_ensemble_planning_preserves_calcium_and_world_identity	a retargeted file, open	waits for its builder		D and E
-tests/unit/test_spatial_calcium.py::test_independent_full_state_references_and_refinement	a retargeted file, open	waits for its builder		D and E
-tests/unit/test_spatial_calcium.py::test_interventions_and_component_reductions[external_off]	a retargeted file, open	waits for its builder		D and E
-tests/unit/test_spatial_calcium.py::test_interventions_and_component_reductions[internal_off]	a retargeted file, open	waits for its builder		D and E
-tests/unit/test_spatial_calcium.py::test_interventions_and_component_reductions[plasma_ca_off]	a retargeted file, open	waits for its builder		D and E
-tests/unit/test_spatial_calcium.py::test_interventions_and_component_reductions[release_switch]	a retargeted file, open	waits for its builder		D and E
-tests/unit/test_spatial_calcium.py::test_invalid_ownership_and_chemical_identity[chemical_capacity]	a retargeted file, open	waits for its builder		D and E
-tests/unit/test_spatial_calcium.py::test_invalid_ownership_and_chemical_identity[duplicate_control]	a retargeted file, open	waits for its builder		D and E
-tests/unit/test_spatial_calcium.py::test_invalid_ownership_and_chemical_identity[duplicate_store]	a retargeted file, open	waits for its builder		D and E
-tests/unit/test_spatial_calcium.py::test_invalid_ownership_and_chemical_identity[initial_amount]	a retargeted file, open	waits for its builder		D and E
-tests/unit/test_spatial_calcium.py::test_invalid_ownership_and_chemical_identity[ion_moiety]	a retargeted file, open	waits for its builder		D and E
-tests/unit/test_spatial_calcium.py::test_invalid_ownership_and_chemical_identity[ionic_species]	a retargeted file, open	waits for its builder		D and E
-tests/unit/test_spatial_calcium.py::test_invalid_ownership_and_chemical_identity[missing_control]	a retargeted file, open	waits for its builder		D and E
-tests/unit/test_spatial_calcium.py::test_invalid_ownership_and_chemical_identity[missing_store]	a retargeted file, open	waits for its builder		D and E
-tests/unit/test_spatial_calcium.py::test_invalid_ownership_and_chemical_identity[model_identity]	a retargeted file, open	waits for its builder		D and E
-tests/unit/test_spatial_calcium.py::test_invalid_ownership_and_chemical_identity[reaction_capacity]	a retargeted file, open	waits for its builder		D and E
-tests/unit/test_spatial_calcium.py::test_invalid_ownership_and_chemical_identity[species_table]	a retargeted file, open	waits for its builder		D and E
-tests/unit/test_spatial_calcium.py::test_invalid_ownership_and_chemical_identity[standard_state]	a retargeted file, open	waits for its builder		D and E
-tests/unit/test_spatial_calcium.py::test_invalid_ownership_and_chemical_identity[temperature]	a retargeted file, open	waits for its builder		D and E
-tests/unit/test_spatial_calcium.py::test_invalid_ownership_and_chemical_identity[volume]	a retargeted file, open	waits for its builder		D and E
-tests/unit/test_spatial_calcium.py::test_invalid_ownership_and_chemical_identity[wrong_owner]	a retargeted file, open	waits for its builder		D and E
-tests/unit/test_spatial_calcium.py::test_public_cli	a retargeted file, open	waits for its builder		D and E
-tests/unit/test_spatial_calcium.py::test_reference_sampling_skips_unobserved_event_intervals	a retargeted file, open	waits for its builder		D and E
-tests/unit/test_spatial_calcium.py::test_stage_ownership_nested_capacitors_and_energy	a retargeted file, open	waits for its builder		D and E
+tests/unit/test_spatial_calcium.py::test_assembly_complete_restart_partition_and_channel_effect	a retargeted file, open	retire, conditional: with the deletion, after the verdict of its consumer	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_spatial_calcium.py::test_assembly_ensemble_calcium_aggregation	a retargeted file, open	retire: parked, statistics lost	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_spatial_calcium.py::test_assembly_independent_event_reference	a retargeted file, open	retire, conditional: with the deletion, after the verdict of its consumer	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_spatial_calcium.py::test_canonical_schema_and_complete_public_artifacts	a retargeted file, open	retire: general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_spatial_calcium.py::test_complete_restart_windows_partitions_and_future_branch	a retargeted file, open	retire: carried, batch windows by the general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_spatial_calcium.py::test_corrupt_ownership_energy_and_complete_checkpoint	a retargeted file, open	retire: general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_spatial_calcium.py::test_cpu_gpu_agreement	a retargeted file, open	retire: parked	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_spatial_calcium.py::test_ensemble_planning_preserves_calcium_and_world_identity	a retargeted file, open	retire: parked kind; planning carried	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_spatial_calcium.py::test_independent_full_state_references_and_refinement	a retargeted file, open	retire, conditional: with the deletion, after the verdict of its consumer	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_spatial_calcium.py::test_interventions_and_component_reductions[external_off]	a retargeted file, open	retire: general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_spatial_calcium.py::test_interventions_and_component_reductions[internal_off]	a retargeted file, open	retire: general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_spatial_calcium.py::test_interventions_and_component_reductions[plasma_ca_off]	a retargeted file, open	retire: general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_spatial_calcium.py::test_interventions_and_component_reductions[release_switch]	a retargeted file, open	retire: general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_spatial_calcium.py::test_invalid_ownership_and_chemical_identity[chemical_capacity]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_spatial_calcium.py::test_invalid_ownership_and_chemical_identity[duplicate_control]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_spatial_calcium.py::test_invalid_ownership_and_chemical_identity[duplicate_store]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_spatial_calcium.py::test_invalid_ownership_and_chemical_identity[initial_amount]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_spatial_calcium.py::test_invalid_ownership_and_chemical_identity[ion_moiety]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_spatial_calcium.py::test_invalid_ownership_and_chemical_identity[ionic_species]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_spatial_calcium.py::test_invalid_ownership_and_chemical_identity[missing_control]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_spatial_calcium.py::test_invalid_ownership_and_chemical_identity[missing_store]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_spatial_calcium.py::test_invalid_ownership_and_chemical_identity[model_identity]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_spatial_calcium.py::test_invalid_ownership_and_chemical_identity[reaction_capacity]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_spatial_calcium.py::test_invalid_ownership_and_chemical_identity[species_table]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_spatial_calcium.py::test_invalid_ownership_and_chemical_identity[standard_state]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_spatial_calcium.py::test_invalid_ownership_and_chemical_identity[temperature]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_spatial_calcium.py::test_invalid_ownership_and_chemical_identity[volume]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_spatial_calcium.py::test_invalid_ownership_and_chemical_identity[wrong_owner]	a retargeted file, open	retire: the older definition's own, counterparts named	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_spatial_calcium.py::test_public_cli	a retargeted file, open	retire: general rows	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_spatial_calcium.py::test_reference_sampling_skips_unobserved_event_intervals	a retargeted file, open	retire: the reference's own	waits for the user (open_rows.tsv, page section 7)	A, proposed
+tests/unit/test_spatial_calcium.py::test_stage_ownership_nested_capacitors_and_energy	a retargeted file, open	retire: carried	waits for the user (open_rows.tsv, page section 7)	A, proposed
 tests/unit/test_specs.py::test_invalid_definitions[path10-10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000]	a row of a file that stays	moved to a live world, or dropped with its legacy world	the file's new IDs are in new_test_ids.txt	C
 tests/unit/test_specs.py::test_invalid_definitions[path11-inf]	a row of a file that stays	moved to a live world, or dropped with its legacy world	the file's new IDs are in new_test_ids.txt	C
 tests/unit/test_specs.py::test_invalid_definitions[path12-0.4]	a row of a file that stays	moved to a live world, or dropped with its legacy world	the file's new IDs are in new_test_ids.txt	C
