@@ -135,5 +135,6 @@ def test_a_live_field_input_provider_is_refused_at_the_parse_under_the_sparse_fi
     raw = copy.deepcopy(build())
     raw["execution"]["solver"] = solver
     raw["execution"]["field_solver"] = "sparse_capacitive_reduction_gauged_damped_newton@1"
-    with pytest.raises(ConfigError, match="refused under sparse_capacitive.*which the sparse field does not bind"):
+    words = r"refused under \S*sparse_capacitive.*which the sparse field does not bind"
+    with pytest.raises(ConfigError, match=words):
         parse_spec(raw)
