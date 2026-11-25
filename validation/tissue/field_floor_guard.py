@@ -45,15 +45,18 @@ candidate: runs --candidate ID pairs version 2 with ID (here the sparse field so
 version 3, every part alike.
 
 Before a campaign declares version 3 in a run of record, both guard 1 commands run on its frozen
-snapshot S, with its own definitions (registered inputs or manifests, as the runs read them):
+snapshot S, with its own definitions, one per world or structure it runs (parsed definitions, batch
+definitions or snapshot manifests; an ensemble's request is not read, its worlds' definitions are):
   export PYTHONPATH=S/src:S JAX_ENABLE_X64=1 JAX_PLATFORMS=cpu PYTHONDONTWRITEBYTECODE=1
   python -P -m validation.tissue.field_floor_guard jaxprs jaxprs.json files DEFINITION.json ...
   python -P -m validation.tissue.field_floor_guard bindings bindings.json files DEFINITION.json ...
 with the runs' own python (they trace and bind; no step runs). Each record must say verdict "pass"
-and hold every definition. In the jaxprs record, source.cells is S's, each definition's declared is
-version 3's ID, each function's program.result is "equal" and its constants.ok true, checked_step's
-acceptance_tests is at least 1, and version_2 is there only for a definition that version 2 refuses.
-An earlier run does not replace this one: the programs compared are the snapshot's.
+and hold every definition. In the jaxprs record, source's paths are S's, each definition's declared
+is version 3's ID, each function's program.result is "equal" and its constants.ok true,
+checked_step's acceptance_tests is at least 1, and version_2 is there only for a definition that
+version 2 refuses. An earlier run does not replace this one: the programs compared are the
+snapshot's. Not compared: host code (parse's start check, observations, check_values: NumPy), the
+rollouts around the step, and what vmap makes of it.
 
 Usage (PYTHONPATH at the revision under test):
   python -m validation.tissue.field_floor_guard jaxprs OUT.json [SET [DEFINITION.json ...]]
@@ -114,7 +117,8 @@ def version_specs(raw):
 
 
 def guard_worlds(world_set, paths=()):
-    """base, qualification, or files: definitions (or snapshot manifests) at paths."""
+    """base, qualification, or files: definitions at paths, or snapshot manifests (a batch's, or a
+    batch's definition, holds one per world: PATH#WORLD_ID)."""
     from validation.tissue import composite_crossrev as crossrev
     from validation.tissue import surface_pump_v3_study as study
 
@@ -125,8 +129,12 @@ def guard_worlds(world_set, paths=()):
         for path in paths:
             raw = json.loads(Path(path).read_text())
             raw = raw.get("spec", raw)
+            if raw.get("kind") == "independent_worlds":
+                out.update({f"{path}#{w['world_id']}": w["simulation"] for w in raw["worlds"]})
+            else:
+                out[str(path)] = raw
+        for raw in out.values():
             raw["execution"]["backend"] = "cpu"
-            out[str(path)] = raw
         return out
     if world_set != "qualification":
         raise SystemExit(f"Unknown world set {world_set!r} (base, qualification or files)")
@@ -834,10 +842,12 @@ def jaxprs(out, world_set="base", paths=()):
     from cells.definitions.specs import parse_spec
     from cells.execution.state import initialise
     from cells.numerics import surface_field as field
+    from validation.tissue import composite_crossrev as crossrev
 
+    modules = dict(cells=cells.__file__, composite_crossrev=crossrev.__file__, tool=__file__)
     record = dict(
         world_set=world_set,
-        source=dict(cells=str(Path(cells.__file__).parent), tool=str(Path(__file__).resolve())),
+        source={k: str(Path(v).resolve()) for k, v in modules.items()},
         acceptance_tests={},
         worlds={},
     )
