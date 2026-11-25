@@ -194,7 +194,7 @@ misses is re-derived or it is a defect.
 With no read, the events' times are a function of the draws alone, so the engine's equal the decimal sums of §4 to
 e_round at every step and in either declared order, whatever the co-writer and the transfer do. That is the claim of
 exactness. The co-writer and the transfer must run in that world for the claim to mean anything: CRITERIA.md §3.2's
-running check (E1) says when.
+running check says when.
 
 ## 9. The planted changes
 

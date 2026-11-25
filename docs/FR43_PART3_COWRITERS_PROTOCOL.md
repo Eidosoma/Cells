@@ -166,13 +166,15 @@ to the protocol:
   in the tissue's inner step (identity).
 - **Emulations of the declared split, for sizing** (`/mnt/workspaces/Cells/fr43-part3-spec-20261125/`, host NumPy,
   no engine). **They are close to the registered worlds, in part by coincidence:**
-  - *W5's kind:* T = 20 s, the rungs and the sample grid are the registered ones (the design fixed them). The rates
-    and amounts differ by 3 to 26% from the registered (W5-exact's `assemble` rate by 3%), except the W row's trace.
+  - *W5's kind:* T = 20 s, the first rung and the sample grid are the registered ones (the design note's probes used
+    them, and the emulations ran on them), and the number of rungs was set by the sizing (below). The rates and
+    amounts differ by 3 to 26% from the registered (W5-exact's `assemble` rate by 3%), except the W row's trace.
   - *W6's kind, before the audit:* T = 600 s, the rungs, 15 machines, 6 stages, conductance 0.012, a 1.0 pL cell,
     and rates within 0.4 to 18% of the registered values of 736f0565 (which the author found and reported after that
     head). **Those registered values have since been moved off them** (§11): the present W6 differs from each
     emulation by at least 11% in every physical value but two potentials (the monomer's, 0.9% and 3.3% off; the
-    residue's, 6% and 7%). The horizon, the rungs and the sample grid are the same, by the ladder's design.
+    residue's, 6% and 7%). The horizon, the first rung and the sample grid are the emulations' own (they were set
+    for the sizing and were not moved), and the number of rungs, six, was set by the sizing (below).
   - *A new-regime gene-unit chain and a full W6-kind emulation* (the factor 1 − e^x, the saturation, the monomers,
     the pools as the present inputs' kind), with their own numbers, listed in the scratch record; used for the
     third-order totals' resolution and the pooled orders in this regime.
@@ -191,14 +193,16 @@ to the protocol:
     original choice was 2).
   - In the new W6 regime (invented numbers, none of the registered ones): the orders of `n_R_c`, `n_R_o`, `lost`,
     `moved` and the event times over six rungs and the errors over the size tolerance: in 3 seeds of each order
-    (24.9 to 31.0 events per copy) the fitted orders were 1.98 to 2.18 for the event times, 1.86 to 2.07 for
-    `n_R_c`, 1.87 to 2.07 for `n_R_o` and `moved` and 1.85 to 2.04 for `lost`; the error at the finest step over the
-    size tolerance was 0.20 to 0.49 (event times) and 0.16 to 0.39 (rows and books). With the counted rounding
-    bounds, 4 or 5 of the 5 step differences were resolved for every judged readout (3 are needed), the third by at
-    least 35 times its threshold (2 seeds of each order). In the W5 kind (invented numbers, 3 seeds of each order,
-    every judged readout, `xi_2` among them): 4 or 5 of 5 resolved, the third by at least 14 times its threshold,
-    orders 1.87 to 2.16, errors over the tolerance 0.15 to 0.33.
-  - The gene unit's chain alone (invented numbers, its own sample grid, the registered ladder): the first step
+    (24.9 to 31.0 events per copy) the fitted orders over all five step differences were 1.98 to 2.18 for the event
+    times, 1.86 to 2.07 for `n_R_c`, 1.87 to 2.07 for `n_R_o` and `moved` and 1.85 to 2.04 for `lost`; the error at
+    the finest step over the size tolerance was 0.20 to 0.49 (event times) and 0.16 to 0.39 (rows and books). With
+    the counted rounding bounds and the criteria's own fit (the used differences alone), 4 or 5 of the 5 step
+    differences were resolved for every judged readout (3 are needed), the third by at least 35 times its threshold,
+    and the orders were 1.97 to 2.18 (`n_R_c` 2.05 to 2.18) and the errors over the tolerance 0.20 to 0.48 (2 seeds
+    of each order). In the W5 kind, the criteria's own fit (invented numbers, 3 seeds of each order, every judged
+    readout, `xi_2` among them): 4 or 5 of 5 resolved, the third by at least 14 times its threshold, orders 1.87 to
+    2.16, errors over the tolerance 0.15 to 0.33.
+  - The gene unit's chain alone (invented numbers; the registered horizon, sample grid and ladder): the first step
     difference of `made` and of `exits` was half the counted bound's resolution threshold, so none of the five was
     resolved. The differences fall 8-fold per halving and the threshold doubles, so three resolved ones need a first
     difference above 256 times its threshold. W6 therefore judges them by size alone (`at_rounding`). The registered
@@ -207,9 +211,11 @@ to the protocol:
   - No registered number was used, and no registered world was run on any engine or emulation. The registered W6
     values were chosen by hand from the laws (closed forms, steady-state estimates and the domain checks, no time
     stepping).
-- **`minimum_events` and the 160 draws per copy** were chosen knowing the emulations' event counts (25 to 38 per
-  copy in the W6 kinds and 33 to 38 in the W5 kind, in the runs whose counts are in the scratch record; the minima
-  of 736f0565, unchanged, are 12 and 10 per copy); the references' counts are judged at C0.
+- **`minimum_events` and the 160 draws per copy** were chosen knowing the emulations' event counts (per copy or
+  site: W5 kind, 21 to 33 in the design note's probes, 33 to 38 in the emulations with 2 subunits and 55 with 4; W6
+  kind, 71 in the design note's probe, 25 to 38 in the emulations with 2 subunits and 142 to 149 with 4). The minima
+  of 736f0565 (W5 12 per copy and 160 in all, W6 10 and 120) are unchanged, and the references' counts are judged at
+  C0.
 - **A premise check:** `make_draws.py`'s table was compared with the engine's own stream function
   (`cells.numerics.counter_streams`) at all 24 copies × 160 pairs: no differences. The seeds are the registered ones
   and unchanged.
@@ -226,7 +232,7 @@ to the protocol:
 - **The audit:** the lead's rulings on the auditor's findings, in words
   (`/mnt/workspaces/Cells/d172-restructure-20261115-01/fr43-spec-audit-rulings.md`). The auditor's folder and report
   were not read, as ordered. The advisor reviewed the plan and the draft (two rounds, applied); a third round timed
-  out, and the audit followed.
+  out, and the audit followed; a fourth round, on the revision after the rulings, was applied.
 - **The registered worlds have been run by no engine or emulation.** Their inputs are declared values. Their draws
   were generated by the stated rule (`draws.json`), without running any of the worlds.
 
@@ -250,16 +256,18 @@ and the design note's §5.3 are the basis. A later amendment in this folder gove
    separate runs.
 
 **The lead's rulings on the audit** (V1 to V12, E1 to E9, W, the readings decided) are in this revision; what each
-became is in the author's report of the revised head. Two are narrower than their words, and the report says so
-first: E3 leaves out the gene unit's `made` and `exits`, which are the same in both orders by construction, and uses
-two recorded rows in W5-exact, which has no S entry; E1's multiple is of the carrying identity's bound (a book's own
-bound is proportional to the book, so every non-zero book would exceed any multiple of it).
+became is in the author's report of the revised head. Three are read so that they can be executed, and the report
+says so first: E3 leaves out the gene unit's `made` and `exits`, which are the same in both orders by construction,
+and uses two recorded rows in W5-exact, which has no S entry; E1's multiple is of the carrying identity's bound (a
+book's own bound is proportional to the book, so every non-zero book would exceed any multiple of it); V10's "after
+a retry its score stands as first" is read entry by entry (a plant's entry whose honest entry was inconclusive at
+the first pass is scored after the retry if it then passed), since read of the whole plant it would leave every
+plant that names the retried entry unscorable, and that arm could never pass.
 
 **Added by the author beyond the rulings' words,** each to keep an honest run from being inconclusive, or a fail
 from being hidden: C0 checks the name of an at-rounding entry (fewer than three used differences), the pair's
 expected ratio to its threshold and W5-exact's running check, from the references' side; the resumed run's
-`events_total` is compared with the uninterrupted run's; a refused run's E and R entries are judged on what it
-holds; a plant's entry that was inconclusive at the first pass is scored after the retry if it then passed (its
-first and only score).
+`events_total` is compared with the uninterrupted run's; a refused run's E and R entries are judged on what it holds
+(the two exceptions of §4 of CRITERIA.md apart).
 
 **Questions to the lead before the criteria tag** are in the author's report to the lead, not here.

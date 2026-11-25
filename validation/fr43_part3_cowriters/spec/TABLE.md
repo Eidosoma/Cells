@@ -1,20 +1,21 @@
 # The engine table: the contract
 
 This is the contract between the builder, whose exporter writes the table, and the judge, whose reader parses it.
-**Both read only this folder, with three exceptions** (E9): the strings note (the protocol's §5: the operators'
-IDs), the protocol's hashes and tags (the record of what was hashed), and the registration tag's revision (compared
-with `source.engine_revision`). The contract is what this file says. A key the judge needs that is not here is asked
-for through the lead and added by a dated change, never taken from the other side's code. Extra keys are allowed and
+**Both read only this folder, with three exceptions:** the strings note (the protocol's §5: the operators' IDs), the
+protocol's hashes and tags (the record of what was hashed), and the registration tag's revision (compared with
+`source.engine_revision`). The contract is what this file says. A key the judge needs that is not here is asked for
+through the lead and added by a dated change, never taken from the other side's code. Extra keys are allowed and
 ignored.
 
 ## 1. Files
 
 - `table/table_W5.json`, `table/table_W5-exact.json`, `table/table_W6.json` and `table/SHA256SUMS` (one line per
   file: the sha256, two spaces, the name). The retry's go in `table-retry/` (`table_W5-retry.json`,
-  `table_W6-retry.json`, only for owed families). A table that has no registered run is absent, not empty.
-- A table whose sha256 departs from its line in `SHA256SUMS`, has no line in that file, or departs from the lead's
-  record is refused: every run in it is refused and nothing of it is judged (CRITERIA.md §4). An absent `SHA256SUMS`
-  is recorded and flagged, and refuses nothing by itself.
+  `table_W6-retry.json`, only for owed families, with a `SHA256SUMS` of its own). A table that has no registered run
+  is absent, not empty.
+- A table whose sha256 departs from its line in its folder's `SHA256SUMS`, has no line in that file, departs from
+  the lead's record, or is one of the format sample's (§5) is refused: every run in it is refused and nothing of it
+  is judged (CRITERIA.md §4). An absent `SHA256SUMS` is recorded and flagged, and refuses nothing by itself.
 - The lead records each file's sha256 before the judge opens a table (the protocol's §5, step 8).
 - The exporter writes **nothing that needs a second run:** no difference, ratio, estimate or error against a
   reference. The judge forms those.
@@ -75,8 +76,8 @@ of `events` are empty).
   from its own accumulator, as READOUTS.md §1 defines and signs it: not a row's difference. `engaged` and `transit`
   are the sums of READOUTS.md §1 over the engine's own stage complexes at the sample, and `free` is its free
   machines.
-- **The restart (E2).** A resumed run's `restart.time_s` is the registered checkpoint time (10⁻¹² relative), and its
-  `t` lists every registered sample at and after the checkpoint. Its `events` list holds every event after it, and
+- **The restart.** A resumed run's `restart.time_s` is the registered checkpoint time (10⁻¹² relative), and its `t`
+  lists every registered sample at and after the checkpoint. Its `events` list holds every event after it, and
   `first_index` is the number of events before it. One that does not is refused.
 
 **The kinds of refusal,** set by the exporter from what the engine raised (its README lists the mapping, and the
@@ -95,7 +96,7 @@ only for one kind.
   `second_halves_declared_order`. It has no restart.
 - **A restart run** echoes the interrupted world's `inputs`, and `restart` names the checkpoint's time, its step
   index and how the state was saved. It has no t = 0 row: its identities use the uninterrupted run's t = 0 row
-  (CRITERIA.md §3.1), and it has no `start` entry.
+  (CRITERIA.md §3.6), and it has no `start` entry.
 
 ## 5. The format sample
 

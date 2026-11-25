@@ -25,7 +25,7 @@ and `start`).
 - **Why copies.** A site's event times carry the split error of earlier events, and the order of one path scatters.
   Pooled over the copies, whose paths are independent, the fitted order is smooth (LAWS.md §5). Their number was
   sized by the author before any run, on emulations of the split (numbers and seeds of their own, and what coincides
-  is in the protocol's §10); the references size it again for the registered numbers (§5), before the tag.
+  is in the protocol's §10); the references size it again for the registered numbers (§5), before their tag.
 - **Both declared orders.** Every judged world runs with the co-writer declared first and with the population
   declared first. Each is a family with its own runs. W6's `made` and `exits` do not depend on the order.
 - **Structure of a copy:** one cell, one finite outside node, one patch between them with one site of 2 subunits.
@@ -75,7 +75,7 @@ For each copy of each world, the exact coupled process (LAWS.md §4), to the acc
 
 - **The reference is the exact process.** Its step-free solution carries `accuracy`, an absolute bound: event times
   10⁻¹¹ T, every row and book 10⁻¹¹ × its scale (READOUTS.md §2). It is checked by a second, different integration
-  (another method, at least 10 times tighter), and by a closed form where one exists (LAWS.md §8's decimal sums for
+  (another method, at least 10 times tighter), and by a closed form where one exists (LAWS.md §4's decimal sums for
   W5-exact, where the accuracy is at most 10⁻¹⁵ T). T is the world's `end_s`.
 - **W5-exact's rows and books are published, and no judgement compares them with the engine's** (they enter the
   run's own identities only).
@@ -155,8 +155,8 @@ the values (sorted keys, fixed separators, no timestamps, floats as JSON numbers
   differences, the fitted `q`, `E` (E_n), `est` and `tau`; `mutant` (P3) with its three rungs' `E` and its `q` (the
   slope of ln E against ln h); and `pair` per readout of `orders_differ` (its threshold is 10 e_round(h_1)).
 - A `plants` entry names its plant, its family (null for a record plant) and the check it is measured at.
-- `reported` is defined: values this folder asks for that C0 and no verdict read. It lists K_all per copy, the
-  pairwise orders and the coarse-rung errors of the sizing, and the number of draws used per copy, each by name.
+- `reported` is defined: values this folder asks for that neither C0 nor a verdict reads. It lists K_all per copy,
+  the pairwise orders and the coarse-rung errors of the sizing, and the number of draws used per copy, each by name.
 
 **The draws.** `draws_check` records the comparison of LAWS.md §6's premise check: `identical` true, and the number
 of entries compared. A false one stops the references' tag.
@@ -168,9 +168,9 @@ of entries compared. A false one stops the references' tag.
   in the kinds of §1 (a reactions world with a read, one with constant rates, and a gene world), with 4 copies each,
   your own numbers, and a full set of runs (judged, restart, Lie plant, refused, stopped, retry).
 - **No number of it equals a registered number of the same kind** (a volume, a rate, an amount, a conductance, a
-  seed, a horizon, a rung, a sample time, a count of copies of a template or of machines; structural integers, such
-  as the subunits of a unit state, are not of a kind). The check is mechanical: a file of the registered numbers is
-  compared, and an equality is a fault.
+  seed, a horizon, a rung, a sample time, a count of copies of a template or of machines; a zero, `c0_mM`, and
+  structural integers such as the subunits of a unit state are not of a kind). The check is mechanical: a file of
+  the registered numbers is compared, and an equality is a fault.
 - **Entries at rounding are named** in its `at_rounding` (per world), as the registered set's are, where the sizing
   shows fewer than three used differences. Every other S entry must be resolved, or the seed or the number is
   redrawn before the invented set is used.
@@ -187,8 +187,8 @@ pass:
 
 1. **Draws:** the table regenerated from LAWS.md §6's rule equals `draws.json` bit for bit, for every copy of every
    world.
-2. **Closed-form relaxation:** the transfer alone between two pools is LAWS.md §1's relaxation to 10⁻³⁰ relative in
-   decimal.
+2. **Closed-form relaxation:** the transfer alone between two pools (LAWS.md §1's equations) equals its exponential
+   relaxation to 10⁻³⁰ relative in decimal.
 3. **W5-exact:** the events' times equal the decimal sums of LAWS.md §4 to 10⁻¹⁵ T.
 4. **Conservation:** the identities of READOUTS.md §4 on your own rows and books, to the accuracy of §4, in every
    world.

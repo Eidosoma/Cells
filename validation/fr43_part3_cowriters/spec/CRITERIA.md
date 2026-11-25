@@ -6,16 +6,17 @@ reference, an engine run or a probe of the registered worlds.
   (TABLE.md).
 - A **family** is a (world, declared order) with its copies and its rungs (`inputs.json`'s `families`). The judged
   set is `inputs.json`'s `judged`, restated in READOUTS.md §3 and §4; the run names are `inputs.json`'s.
-- **Two kinds of tolerance, never mixed** (D370): a **rounding** bound from an operation count (LAWS.md §7), and a
-  **truncation** tolerance built from step halving with a declared order. A readout of one kind is never judged by
-  the other.
+- **Two kinds of tolerance** (D370): a **rounding** bound from an operation count (LAWS.md §7), which alone judges
+  class R; and a **truncation** tolerance built from step halving with a declared order, which judges class S, with
+  the rounding bound and the reference's accuracy as its floor. A readout of one class is never judged by the
+  other's.
 
 ## 1. Symbols
 
 | Symbol | Meaning |
 | --- | --- |
 | T | the world's `end_s` (s) |
-| h_1 > h_2 > … > h_n | the family's rungs, each half the last (`rungs_s`); n their number (6 in W5 and W6, 2 in W5-exact) |
+| h_1 > h_2 > … > h_n | the family's rungs (`rungs_s`), each half the last in W5 and W6 (n = 6), h_1 and h_1/4 in W5-exact (n = 2) |
 | S_j = T/h_j | the number of steps of a run at rung j; S = t/h the number to a sample time t, both from the registered grid |
 | K_c | the number of judged events of copy c: the reference's (SPEC.md §3), never the engine's |
 | m, s | the operation count and the scale of LAWS.md §7 and READOUTS.md §2; m = 4 and s = T for an event's time, m = 16 for a row or book |
@@ -41,8 +42,9 @@ are those of the run it resumes, §3.6.)
 **Refused.** The faults of §4 say which runs are refused. A refused run cannot pass, and it hides no fail:
 - Where the echo departs, or the table's hash does (§4's first two rows), **nothing of the run is judged**, in any
   class.
-- By any other refusal, the E and R entries that what the run holds can form are judged, and a fail stands. A run
-  that did not complete is judged on the events and samples it lists, and their number is not asked of it.
+- By any other refusal, the E and R entries that can be formed from what the run holds are judged, and a fail
+  stands. A run that did not complete is judged on the events and samples it lists, and their number is not asked of
+  it.
 - The S entries (and §3.5's pair) of a refused run are unformed, **but not by a provenance refusal or a shared
   record hash:** there they are formed, a miss stands, and the run cannot pass.
 
@@ -50,9 +52,9 @@ are those of the run it resumes, §3.6.)
 rung of the family; for the pair, every copy of both families at h_1):
 - the run is missing, or did not complete (§4);
 - nothing of it is judged: its echo departs, or its table's hash does;
-- it is refused by a key of its table or of its entry (missing, or of another type), by its `host_patch` or by its
-  `restart`;
-- its sample times are not the registered ones (one missing, one extra, or one that departs);
+- it is refused by **any other row of §4, but provenance and a shared record hash**: a key of its table or of its
+  entry (missing, or of another type), its `host_patch` or its `restart`, its sample times, a name listed twice or
+  in `missing` and `runs`, a JSON fault;
 - a leaf the entry reads is missing, mistyped or non-finite, or is not as long as `t`;
 - for `t_events`: its record contradicts itself or lists fewer than K_c events (its trace then fails E too, §3.1).
 
@@ -97,9 +99,9 @@ Bit for bit, the sign of zero included:
   absolute values of the identity's terms at that sample (S = t/h). The identities name every holder of their amount
   (LAWS.md §2 and §3).
 - **W5-exact's event times:** within e_round (m = 4) plus the reference's accuracy, at each rung, for k < K_c.
-- **W5-exact's running check (E1).** An identity of zero against zero proves nothing. So in W5-exact the identities
-  are formed only where ξ_1, ξ_2 and |moved| at the last sample each exceed 10⁴ times the bound (16 (S + 1) u s_id,
-  at the last sample) of the identity that carries it: `X` for ξ_1, `Y` for ξ_2 and `S node` for moved. The 10⁴ is
+- **W5-exact's running check.** An identity of zero against zero proves nothing. So in W5-exact the identities are
+  formed only where ξ_1, ξ_2 and |moved| at the last sample each exceed 10⁴ times the bound (16 (S + 1) u s_id, at
+  the last sample) of the identity that carries it: `X` for ξ_1, `Y` for ξ_2 and `S node` for moved. The 10⁴ is
   derived: a plant that raises a book by 10⁻³ must fail its identity by a margin of 10, so a book below 10⁴ times
   its identity's bound cannot be told from rounding. In a run in which one is not exceeded, an identity inside its
   bound is not formed (it passes nothing, so the family is inconclusive) and one outside it fails all the same
@@ -120,16 +122,18 @@ the entries of READOUTS.md §5:
   q is the least-squares slope of ln d_j against ln h_j over them, and the window is [p − ½, p + ½] (D271's half
   window).
 - **An order that cannot be formed** (fewer than three used differences) makes the entry **inconclusive**, unless
-  the entry is named in `inputs.json`'s `judged[world].at_rounding` (an entry whose truncation is at rounding by
-  construction at every rung: W6's `made` and `exits`, READOUTS.md §5). A named entry is judged by its size alone.
+  the entry is named in `inputs.json`'s `judged[world].at_rounding` (an entry whose truncation is below what the
+  rounding bound resolves, by construction: W6's `made` and `exits`, READOUTS.md §5, and C0 checks the name). A
+  named entry is judged by its size alone.
 - **The size:** E_n ≤ τ. A wrong law converges at its order to the wrong value, so it misses its size; a split of
   the wrong order leaves its window.
-- **Score.** An entry **passes** where the size is inside τ and the order is inside the window (or the entry is
-  named in `at_rounding`). It **fails** where the size misses and the order is inside the window (or the entry is
-  named). It is **inconclusive** where the order is resolved and outside the window, whatever the size (the window
-  is what lets τ be trusted: FR-25 and FR-38's precedent), where the order cannot be formed, or where it is not
-  formed. An entry inconclusive because its order is outside the window owes the retry (§7); one that cannot be
-  formed, or is not formed, owes none.
+- **Score.** An entry that is not formed (§3.0) is inconclusive. Of the formed ones:
+  - **an entry named in `at_rounding`** passes where its size is inside τ and fails where it is not, whatever its
+    order;
+  - **any other entry** passes where its size is inside τ and its order is inside the window, and fails where its
+    size misses and its order is inside the window. Where its order is formed and outside the window it is
+    inconclusive, whatever the size (the window is what lets τ be trusted: FR-25 and FR-38's precedent), and it owes
+    the retry (§7). Where its order cannot be formed it is inconclusive and owes none.
 - **The pooled root mean square is the one statistic:** order, estimate and size use it. The errors against the
   reference at the coarser rungs, the pairwise orders and the finest triple are reported and judge nothing.
 
@@ -140,7 +144,7 @@ failed) **fails**: the check's failure is the evidence the comparison would have
 same on a plant or support run counts against that run's own use only (the plant is unscorable, the restart is not
 formed).
 
-### 3.5 The pair: the two declared orders differ (E3)
+### 3.5 The pair: the two declared orders differ
 
 The two declared orders of a world are two runs of the coupled process, and at the coarsest rung they differ by the
 split error in every readout that the declared order can change. So for each readout of `inputs.json`'s
@@ -183,7 +187,7 @@ fails, its arm fails, whatever else of that run or family is refused, stopped or
 | A run in `missing` (and not in `runs`), or in neither list | It is missing: refused |
 | A run in `missing` and in `runs`, or a run name listed twice (in two tables, or twice in one `runs`) | The run is refused. Each entry under its name is judged (E, R, D) and a fail in any stands |
 | A run name that neither `inputs.json` nor the retry's rule (§7) lists | Ignored and recorded. A retry's name (§7) is listed where a retry is owed |
-| An unowed retry run, or an entry the judge does not read | Recorded, flagged, and not judged |
+| An unowed retry run | Recorded, flagged, and not judged |
 | A support run missing or refused | Leaves its judged run's restart entry unformed, and nothing else |
 | A leaf inside a recorded-only key (`definition`, `checks`, `pools_at_event`, `samples_echo`, `steps`) is missing, mistyped, non-finite, or another than the grid's | Flagged to the checker. Refuses nothing |
 | A JSON object with a duplicate key, a NaN or an infinity | In a reference file: that file is refused. In a table's entry: that run is refused, and the entries that read the leaf unform. Elsewhere in a table (a name twice in `runs` is above): its runs are refused |
@@ -310,14 +314,15 @@ run with a declared change of the driver. The plants of a world's families are i
 
 ## 7. The retry
 
-- **Owed** by an S entry whose order is resolved and outside the window (§3.3), only from the judge's **first
-  pass**. The judge writes `retry_owed.json`, `{"kind": "fr43 part 3 co-writers retry, version 2", "families":
-  [...], "runs": [sorted names]}`, and the lead records its hash.
+- **Owed** by an S entry whose order is formed and outside the window (§3.3; never by a named entry), only from the
+  judge's **first pass**. The judge writes `retry_owed.json`, `{"kind": "fr43 part 3 co-writers retry, version 2",
+  "families": [...], "runs": [sorted names]}`, and the lead records its hash.
 - **What is run:** for each owed family, the runs at `retry_rung_s`, one per copy, named `{world} {first}-first
   h={step!r} c{copy} retry`, role `judged`. A retry's name counts as registered where a retry is owed.
-- **Then:** the S entries of the family that owed the retry are re-scored over the finest n rungs. Every other entry
-  keeps its score. The retry runs' own E, R and D entries are judged as any judged run's. An entry still outside the
-  window stays inconclusive. The pair (§3.5) is read at the first pass and is not read again.
+- **Then:** only the S entries that owed the retry are re-scored, over the finest n rungs. Every other entry keeps
+  its first score: one that passed, failed or could not be formed is not scored again. The retry runs' own E, R and
+  D entries are judged as any judged run's. An entry still outside the window stays inconclusive. The pair (§3.5) is
+  read at the first pass and is not read again.
 - **Only once.** A retry run present though not owed is recorded, flagged and not judged. A missing owed retry run
   leaves its entries inconclusive. A refused or stopped run takes no retry.
 
@@ -342,7 +347,7 @@ run with a declared change of the driver. The plants of a world's families are i
 
 - **An S miss** (an event time, a shared amount or a gene-unit total off by more than three times its step-halving
   estimate, the order inside its window) says the law of the run is not the declared one, or its book is not what
-  moved its row. **A resolved order outside the window** says the two writers are not split at the declared order (a
+  moved its row. **A formed order outside the window** says the two writers are not split at the declared order (a
   missing half, or a clock or a transfer that reads the wrong state), or that a world is too stiff for it.
 - **An R miss** in W5-exact says the engine's event times depend on a co-writer's rows or the declared order when no
   rate reads them (or that a rounding count is too small: §10). An identity's miss says a writer's book is not what
@@ -355,9 +360,9 @@ run with a declared change of the driver. The plants of a world's families are i
 ## 10. The rehearsal, and correcting a bound
 
 **The rehearsal** is the judge's whole scoring path, run on **invented** worlds through the registered exporter
-(TABLE.md §5), before the registration tag: the invented runs, references, plants, restart, retry and every fault of
-§4 planted. It must pass every honest entry that its sizing says will pass, catch every plant, and flag every fault
-as §4 says. The `engine_revision` check of §4 is not applied to it, since no registration tag exists yet.
+(TABLE.md), before the registration tag: the invented runs, references, plants, restart, retry and every fault of §4
+planted. It must pass every honest entry that its sizing says will pass, catch every plant, and flag every fault as
+§4 says. The `engine_revision` check of §4 is not applied to it, since no registration tag exists yet.
 
 - **No final fail can rest on a bound the rehearsal has not met.** The event-time count of LAWS.md §7 was written
   with the engine's own clock and hazard sum in view (the author read the source; the protocol's §10), the count of
@@ -385,11 +390,11 @@ as §4 says. The `engine_revision` check of §4 is not applied to it, since no r
   another order and still inside the size.
 - **An equal error in W6's `inits`, `engaged` and `free`.** The identities tie them to each other and to `made`, and
   no reference judges them, so an error the three share passes.
-- **The two declared orders' labels.** The results of W5 and W6's two families differ (E3), and nothing in a run
+- **The two declared orders' labels.** The results of W5 and W6's two families differ (§3.5), and nothing in a run
   says which is which but the echo of its operators.
 - **The finest step alone is measured against the reference;** coarser steps enter the order only through the
   engine's own differences. A pass says nothing of an engine's error at a step above the ladder, or at λ dt of order
-  one (SPEC.md §2).
+  one.
 - **W5-exact judges event times and identities only.** Its amounts, published by the references, are not judged
   against them.
 - **A wrong engine in the two places where a fail of a run's own goes unseen:** a run whose echo departs, or a table
