@@ -1897,6 +1897,10 @@ ORDER = re.compile(
 # A word after other text, at a literal's end or before a pattern's next mark: where an expected
 # message holds the start of an ID, the move's longer ID no longer follows the text before it.
 STARTS = re.compile(r"(?<=[\s\"'(\[:=,])([A-Za-z][A-Za-z0-9_]{4,})(?=$|[.\\(\[*+?])")
+# The start of a namespaced ID, wherever it stands: the family now comes between the two.
+SPACED = re.compile(
+    rf"(?<![A-Za-z0-9_.@/-])({NAMESPACE}\.([A-Za-z][A-Za-z0-9_]*))(?![A-Za-z0-9_@]|\.\w)"
+)
 # An ID's start up to its @, without the major.
 NO_MAJOR = re.compile(rf"(?<![A-Za-z0-9_.@-])((?:{WORD}\.)*{WORD})@(?![A-Za-z0-9_])")
 WIDTH = re.compile(r"[<>=|]?[US]([0-9]+)")
@@ -2090,6 +2094,7 @@ class Scanner:
         self.pairs = sorted(mp.new.items())
         self.short = {o.rsplit(".", 1)[-1].split("@")[0] for o in mp.new}  # Names alone.
         self.longest = max(map(len, mp.new.values()), default=0)
+        self.whole = {*mp.new, *mp.news}  # A tree may hold either: a branch, after the move.
         self.types = types or {}
         self.found = []
         self.known = {}  # What a literal, a pattern or a template was already found to do.
@@ -2370,6 +2375,15 @@ class Scanner:
                     self.add("order", path, i, line.strip(), "a sort over declared spellings")
 
     def message(self, path, node, source):
+        for m in SPACED.finditer(node.value):
+            if not re.search(r"[_0-9]", m[2]) and m[2] not in self.short:
+                continue  # A plain word: a module's name, or a file's.
+            if m[1] not in self.known:
+                self.known[m[1]] = next((o for o in self.mp.new if o.startswith(m[1])), None)
+            if self.known[m[1]]:
+                what = f"{m[1]!r} is the start of {self.known[m[1]]}, and not of its new ID"
+                self.add("message", path, node.lineno, source(node), what)
+                return
         for m in STARTS.finditer(node.value):
             word = m[1]
             if not re.search(r"[_0-9]", word):
@@ -2456,14 +2470,14 @@ class Scanner:
             if literals[0] != "." or not MODULES.search(around(n)):
                 self.add("cut", path, n.lineno, source(n), f"cuts a text at {literals[0]!r}")
         elif name == "replace" and ("@" in literals[0] or literals[0].startswith("cells.")):
-            if literals[0] not in self.mp.new:
+            if literals[0] not in self.whole:
                 self.add("cut", path, n.lineno, source(n), f"replaces {literals[0]!r} in a text")
         if name in TESTS:
             for lit in literals:
                 if name in ("find", "rfind", "index", "rindex") and lit not in ("@", "."):
                     continue  # A list's index, or a place in other text.
                 hits = self.changes(name, lit) if len(lit) > 1 or lit == "@" else []
-                if hits and lit not in self.mp.new:
+                if hits and lit not in self.whole:
                     if lit in ("cells", "cells.") and MODULES.search(around(n)):
                         continue  # It tests module names.
                     self.add(
@@ -2500,7 +2514,7 @@ class Scanner:
         arg = n.args[1] if name.startswith("fnmatch") else n.args[0]
         found = []
         for lit in sorted(self.through(path, self.tree, arg)):
-            if is_test and lit not in self.mp.new and re.search(r"[_0-9@.]", lit):
+            if is_test and lit not in self.whole and re.search(r"[_0-9@.]", lit):
                 hits = self.changes(name, lit)  # Not a plain word: a name holds those at large.
                 found += [f"{lit!r}: not so for {hits[0]} (of {len(hits)})"] if hits else []
             elif not is_test and len(lit) < 400:
@@ -2554,7 +2568,7 @@ class Scanner:
                 isinstance(left, ast.Constant)
                 and isinstance(left.value, str)
                 and len(left.value) > 2
-                and left.value not in self.mp.new
+                and left.value not in self.whole
                 and isinstance(right, (ast.Name, ast.Attribute, ast.Subscript, ast.Call))
             ):
                 hits = self.changes("in", left.value)
@@ -3845,6 +3859,8 @@ def _selftest_scan(checks, mp):
         "message": b'with raises(E, match="requires wave_m"):\n    f()\n',
         "message, a whole name at its end": b'assert "is not wave_mh" in str(e)\n',
         "message, a pattern": b'with raises(E, match=r"requires imex_t\\S* first"):\n    f()\n',
+        "message, a namespaced start": b'with raises(E, match="which cells.wave_m"):\n    f()\n',
+        "message, one that starts it": b'assert "cells.wave_m" in str(e)\n',
         "path": b'X = "runs/wave_mh@1/out"\n',
         "page path": b'X = "docs/library/cells/laws/wave_mh@1.md"\n',
         "file name": b'X = "wave_mh@1.json"\n',
@@ -3865,6 +3881,7 @@ def _selftest_scan(checks, mp):
         "an unrelated name": b'X = family == "wash_basin"\n',
         "the start of an ID alone, or in a path": b'X = "wave_m"\nY = "runs/wave_m"\n',
         "a module of an ID's name": b'X = "the wave_mh.rate function"\n',
+        "a module, or a file, of the package": b'X = "cells.wave"\nY = "cells.wave_mh.rate"\n',
         "a module's name, by name": b'P = "cells"\nX = name.startswith(P + ".")\n',
         "a plain word, by name": b'P = "wave"\nX = name.startswith(P)\n',
         "another value's cut": b'X = cell.split("_")[0]\nY = cell[:4]\n',
