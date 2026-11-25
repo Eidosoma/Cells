@@ -13143,3 +13143,7 @@ of old references are still to be shown before the deletion is merged.
 
 **Slips.** The lead ran sparse-checkout on an old worktree by mistake and restored it at once, whole and clean. Several times typed into private notes were guesses, and are corrected. Agents' privacy scans had been run against the main checkout's HEAD and so tested nothing:
 they were rerun by branch name on every branch, all zero, and the rule is corrected.
+
+**Correction to this entry (17:23 UTC).** The removal list is not final and its script's dry run removes 1,528 files, not 1,529. The check of D196 was rebuilt under one standard and has 134 rows (71 registered laws, 44 kernels of the
+catalogues and 19 that live models import), not 133: 44 of the 71 declare a test, and all 44 are collected after the deletion. Four, not three, lost their only direct check: three are closed and one is open (the flux of the standalone
+reaction-transport model). The list's open rows and their owners are being settled.
