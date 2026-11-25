@@ -268,6 +268,24 @@ def test_cycle_and_route_laws_name_their_step_terms():
         (passive_routes.CHARGED_LAW_ID, "stage_term"): "conductance_S",  # FR-15 P2.
         (passive_routes.CHARGED_LAW_ID, "material_term"): "material_slope_per_s",
         (transporter.PROTON.law_id, "stage_term"): "electrogenic_conductance_S",  # The kind's.
+        # The population axis's two hooks, by name (calcium step 5).
+        **{(m.DECLARED_ID, "stage_term"): "stage_term" for m in (exchange, atp_transporter_v2)},
+        **{
+            (m.DECLARED_ID, "material_term"): "material_term"
+            for m in (
+                exchange,
+                atp_transporter_v2,
+                nkcc,
+                salt,
+                nadh_ubiquinone_proton_cycle,
+                ubiquinol_cytochrome_c_proton_cycle,
+                cytochrome_c_oxygen_proton_cycle,
+                proton_coupled_atp_synthesis_cycle,
+                electrogenic_nucleotide_exchange,
+                phosphate_proton_symport,
+                potassium_proton_exchange,
+            )
+        },
     }
 
 

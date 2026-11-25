@@ -16,8 +16,9 @@ docs/CLOSED_COMPARTMENT_DESIGN.md §1.4 to §1.6 and §4, in NumPy (no compile),
   compartment), at the definition, and FR-1's judged class still holds its prefixed message.
   Refusal 6 version 1.1 refuses its component's representative alone, the node that bind fixes, so
   a closed world with a charged store is admitted (planted: the last outside node, version 1's
-  rule), and FR-1's judged class holds both versions' messages. Refusal 4 admits a pump at a store's
-  node by its law's step terms (a planted law; planted: none of them, its material slope alone);
+  rule), and FR-1's judged class holds both versions' messages. Refusal 4 admits a pump and an
+  exchange at a store's node by their laws' step terms (planted: none of them, a material slope
+  alone), and refuses an electroneutral symport there;
 * the composite's structure check refuses the providers and closers of what the declaration reads
   as declared, in either order, and admits the operators of its list; the list fails closed. The
   areas and capacitances are reference reads, so membrane state passes the structure check, and the
@@ -39,8 +40,11 @@ import pytest
 from cells.definitions import pump_composite_spec as cs
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.execution.schedule import control_values
-from cells.laws.cycles.forms import CycleForm, Parameter, Saturation
+from cells.laws.cycles import electroneutral_symport_reversible_tanh as salt
+from cells.laws.cycles import na_k_2anion_symport_reversible_tanh as nkcc
+from cells.laws.cycles import sodium_calcium_exchange_symmetric_barrier as exchange
 from cells.laws.electrochemistry import CHARGE_PER_FMOL
+from cells.laws.pumps import atp_transporter_v2
 from cells.models import pump_composite, surface_tissue
 from cells.models import pump_composite_adapter as adapter
 from cells.numerics import surface_field
@@ -859,24 +863,25 @@ def test_the_built_in_kinds_hold_the_step_terms_their_laws_declare():
         # Declares no step term: refused at a compartment's node (fail-closed).
         "cells.na_anion_symport_factored@1": (),
         "cells.na2_anion_symport_diagram@1": (),  # Version 2: likewise, no step term.
-        "cells.sodium_calcium_exchange_symmetric_barrier@1": (),  # Likewise: refused there.
-        "cells.atp_driven_transporter_mass_action_positive@2": (),  # Likewise: none yet.
-        "cells.na_k_2anion_symport_reversible_tanh@1": (),  # Likewise, and no charge to slope.
-        "cells.electroneutral_symport_reversible_tanh@1": (),  # Likewise.
-        # The mitochondrion's inner-membrane laws: likewise.
+        "cells.held_reductant_supply@1": (),  # The matrix's NADH supply: likewise.
+        "cells.adenylate_kinase@1": (),  # The intermembrane space's kinase: likewise.
+        # The population axis's two terms (calcium step 5): admitted at a compartment's node.
+        "cells.sodium_calcium_exchange_symmetric_barrier@1": ("stage_term", "material_term"),
+        "cells.atp_driven_transporter_mass_action_positive@2": ("stage_term", "material_term"),
+        # Its material term alone, which holds no charged row: refused at a compartment's node.
         **dict.fromkeys(
             (
-                "cells.nadh_ubiquinone_proton_cycle@1",
+                "cells.na_k_2anion_symport_reversible_tanh@1",
+                "cells.electroneutral_symport_reversible_tanh@1",
+                "cells.nadh_ubiquinone_proton_cycle@1",  # The mitochondrion's inner membrane's.
                 "cells.ubiquinol_cytochrome_c_proton_cycle@1",
                 "cells.cytochrome_c_oxygen_proton_cycle@1",
                 "cells.proton_coupled_atp_synthesis_cycle@1",
                 "cells.electrogenic_nucleotide_exchange@1",
                 "cells.phosphate_proton_symport@1",
                 "cells.potassium_proton_exchange@1",
-                "cells.held_reductant_supply@1",  # The matrix's NADH supply: likewise.
-                "cells.adenylate_kinase@1",  # The intermembrane space's kinase: likewise.
             ),
-            (),
+            ("material_term",),
         ),
     }
     assert comp.held_terms(pump, NEUTRAL_PUMP)[1] == "declares no step term"
@@ -1044,34 +1049,22 @@ def moves_at_planted(spec, kind, node):
     }
 
 
-STORE_PUMP = "tests.store_pump@1"
-STORE_PUMP_FORM = CycleForm(  # One ion of any valence moved from N to P per ATP, held fuel.
-    kinetics="factored",
-    roles=(("role", None), ("ATP", 0), ("ADP", 0), ("Pi", 0)),
-    rows=(("role", "N"), ("role", "P"), ("ATP", "N"), ("ADP", "N"), ("Pi", "N")),
-    modes=(("cycle", ("-stoichiometry", "stoichiometry", -1, 1, 1)),),
-    parameters=(
-        Parameter("stoichiometry", "1", low=1, high=4, integer=True, positive=True),
-        Parameter("km_role_mM", "mM", positive=True),
-        Parameter("km_atp_mM", "mM", positive=True),
-    ),
-    fuel_roles=("ATP", "ADP", "Pi"),
-    saturation=(
-        (
-            Saturation(("role", "N"), "km_role_mM", "stoichiometry"),
-            Saturation(("ATP", "N"), "km_atp_mM", 1),
-        ),
-    ),
+STORE_FUEL = dict(ATP=(1.5, 0.0), ADP=(0.1, -14.0), Pi=(0.1, 0.0))  # mM in the cell, mu/RT.
+PUMP = atp_transporter_v2.LAW
+TERMLESS = dataclasses.replace(
+    atp_transporter_v2.LAW, law_id="tests.termless_pump@1", stage_term=None, material_term=None
+)
+UNSLOPED = dataclasses.replace(
+    atp_transporter_v2.LAW, law_id="tests.unsloped_pump@1", stage_term=None
 )
 
 
-def pumped_store():
-    """closed_store with a planted pump on the store's patch, which moves calcium from the cytosol
-    into the store on the cytosol's held ATP, ADP and Pi (synthetic)."""
+def store_with(law, roles, parameters, held=()):
+    """closed_store with one population of `law` on the store's patch, its N the cytosol, beside the
+    fuel's rows with the registry's potentials (synthetic)."""
     raw = closed_store(5e-3 * fx.CONTACT_C_F)
     compartments = raw["model"]["operators"].pop()
-    fuel = dict(ATP=(1.5, 0.0), ADP=(0.1, -14.0), Pi=(0.1, 0.0))  # mM in the cell, mu/RT.
-    for name, (cell_mM, _) in fuel.items():
+    for name, (cell_mM, _) in STORE_FUEL.items():
         raw = add_inventory_species(
             raw,
             name,
@@ -1082,56 +1075,66 @@ def pumped_store():
         )
     m = raw["model"]
     for species in m["species"]:
-        if species["id"] in fuel:
-            species["standard_mu_RT"] = fuel[species["id"]][1]
+        if species["id"] in STORE_FUEL:
+            species["standard_mu_RT"] = STORE_FUEL[species["id"]][1]
     m["standard_concentration_mM"] = 1.0
     m["transporters"] = [
         dict(
-            id="pump_0",
+            id="population_0",
             host="contact_0",
-            law=STORE_PUMP,
+            law=law.law_id,
             orientation={"N": "a"},
             capacity_fmol_s=1e-3,
-            roles=dict(role="Ca", **{name: name for name in fuel}),
-            parameters=dict(stoichiometry=1, km_role_mM=1e-3, km_atp_mM=0.5),
-            held_rows=[[name, "N"] for name in fuel],
+            roles=roles,
+            parameters=parameters,
+            held_rows=[[name, "N"] for name in held],
         )
     ]
     m["operators"].append(compartments)
     return raw
 
 
-@pytest.mark.parametrize(
-    "terms, refusal",
-    [
-        (dict(stage_term="slope", material_term="slope"), None),
-        ({}, "declares no step term"),
-        (dict(material_term="slope"), "declares material_term, .* a charge slope"),
-    ],
-    ids=["both terms", "no term", "its material slope alone"],
+PUMPED = (
+    dict(role="Ca", **{name: name for name in STORE_FUEL}),
+    dict(stoichiometry=1, km_role_mM=1e-3, km_atp_mM=0.5),
+    tuple(STORE_FUEL),
 )
-def test_a_pump_at_a_stores_node_is_admitted_by_its_step_terms(terms, refusal):
-    """Refusal 4, version 1.3, at a store's node in a closed world, on the real transporter kind: a
-    planted ATP-driven law that pumps calcium into the store is admitted where it declares its step
-    terms, and refused by name where it declares none, or its material slope alone (a charge slope
-    alone is admitted: PLANTED_MOVES). The law is planted: no registered pump of an ion of any
-    valence declares them."""
-    law = law_registry.CycleLaw(
-        STORE_PUMP,
-        (),
-        ("maintained_held_rows@1",),
-        cycle=STORE_PUMP_FORM,
-        host="cells.transporter@1",
-        **terms,
-    )
-    with law_registry.scope(law_registry.BUILTIN.extended(law)):
+EXCHANGED = dict(Na="Na", Ca="Ca"), dict(km_na_mM=20.0, km_ca_mM=1e-3)
+NKCC = dict(Na="Na", K="K", anion="Cl"), {}
+SALT = dict(cation="K", anion="Cl"), dict(n_cation=1, n_anion=1)
+# name: (the law, its population, the rows it moves at the store, the refusal or None). The refused
+# are the admitted ones' planted errors, and the symports, which have no charge to slope.
+STORE_MOVES = {
+    "the pump": (PUMP, PUMPED, ("Ca",), None),
+    "the exchange": (exchange.LAW, EXCHANGED, ("Na", "Ca"), None),
+    "a pump that declares no term": (TERMLESS, PUMPED, ("Ca",), "declares no step term"),
+    "a pump with its material term alone": (
+        UNSLOPED, PUMPED, ("Ca",), "declares material_term, .* a charge slope"
+    ),
+    "the symport of two anions": (
+        nkcc.LAW, NKCC, ("Na", "K", "Cl"), "declares material_term, .* a charge slope"
+    ),
+    "the salt": (salt.LAW, SALT, ("K", "Cl"), "declares material_term, .* a charge slope"),
+}  # fmt: skip
+
+
+@pytest.mark.parametrize("name", STORE_MOVES)
+def test_a_population_at_a_stores_node_is_admitted_by_its_laws_step_terms(name):
+    """Refusal 4, version 1.3, at a store's node in a closed world, on the real transporter kind:
+    the ATP-driven pump of calcium into the store and the sodium-calcium exchange across its patch
+    are admitted by the two terms their laws declare; a copy of the pump that declares none, or its
+    material term alone, is refused by name (a charge slope alone is admitted: PLANTED_MOVES), and
+    so are the electroneutral symports, whose material term bounds rows but holds no charge."""
+    law, population, rows, refusal = STORE_MOVES[name]
+    with law_registry.scope(law_registry.BUILTIN.extended(TERMLESS, UNSLOPED)):
         if refusal is None:
-            moves = moves_at(parse_spec(pumped_store()), cfx.NODE)
-            assert ("cells.transporter@1", "Ca", STORE_PUMP, tuple(terms)) in moves
+            moves = moves_at(parse_spec(store_with(law, *population)), cfx.NODE)
+            terms = ("stage_term", "material_term")
+            assert {("cells.transporter@1", row, law.law_id, terms) for row in rows} <= moves
             return
-        under = rf"moves the charged row Ca at its node under {STORE_PUMP}, which {refusal}"
-        with pytest.raises(ConfigError, match=under):
-            parse_spec(pumped_store())
+        under = rf"moves the charged row ({'|'.join(rows)}) at its node under {law.law_id}, which "
+        with pytest.raises(ConfigError, match=under + refusal):
+            parse_spec(store_with(law, *population))
 
 
 def test_refusal_4_judges_the_moves_at_the_compartments_node_and_names_no_kind():

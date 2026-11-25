@@ -61,6 +61,7 @@ Energy role: not yet extracted; the law template has no energy role yet.
 
 | Declared | Value | Unit |
 | --- | --- | --- |
+| Stage term | `stage_term` |  |
 | Fuel kinds | `maintained_held_rows@1` |  |
 
 <!-- /generated -->
@@ -95,14 +96,17 @@ $$J = k v S\,(1 - e^x), \qquad S = \frac{1}{1 + (K/c_N)^n}\cdot\frac{1}{1 + K_\t
   mechanism of any pump protein, no counter-transport and no kinetic constant.
 - **Domain:** $|x| \le 80$; positive concentrations and half-saturations. A state outside it is
   refused, never clipped.
-- **Step rules:** the kind bounds a charged cargo's charge slope, at both ends, and a neutral
-  cargo's material slope. A charged cargo's material slope is not bounded: the kind's material term
-  counts no charged row that crosses, so a world with a scarce charged cargo must choose a step
-  small enough for it. The law declares no step term, so its moves at a closed compartment's node
-  are refused ([refusal 4](../../../CLOSED_COMPARTMENT_DESIGN.md)). RK4 runs are refused, as for
-  every kind.
+- **Step rules:** the kind bounds a charged cargo's charge slope, at both ends, and the population's
+  own material rate, the cargo charged or neutral: over its two rows, the sum of
+  $|\nu_k\, \partial J/\partial n_k|$ (1/s; $\nu_k$ the row's count and $n_k$ its amount in fmol),
+  given to each of them. Held fuel and a held bath's rows are left out. The law declares both terms,
+  so its moves at a closed compartment's node are admitted
+  ([refusal 4](../../../CLOSED_COMPARTMENT_DESIGN.md)). A cargo that version 1's proton buffer holds
+  is refused by name: its read has no derivative for the rate. RK4 runs are refused, as for every
+  kind.
 - **At a binding closure:** it declares the read `rapid_binding@1` and base forms, so where a
-  closure holds the cargo it reads the free amount and moves the total.
+  closure holds the cargo it reads the free amount and moves the total, and the material rate runs
+  through the closure's derivative.
 - **One law per pathway:** beside this law, for the same species on the same patch, the kind refuses
   the inner model's own calcium pump and version 1's neutral and proton laws. Several populations of
   this law are admitted.
@@ -169,10 +173,12 @@ calcium pump's kernel, to 3e-12. A small closed world with the sodium-calcium ex
 second order to an independent ODE of its cycles, heat, work, amounts and voltage. Other rows run
 closed worlds forward and backward, under both heat bookings: each end's amounts follow the cycles,
 the voltage follows the charge, the heat grows, the work is the cycles times the fuel's drive and
-every [ledger](../../GLOSSARY.md#ledger) closes. Populations outside the law's counts,
-half-saturations, fuel or domain, on RK4, or beside a second law of the pathway are refused by name.
-Beside a calcium binder under a closure it reads the free calcium. Each has a planted error. No run
-was compared with a measurement.
+every [ledger](../../GLOSSARY.md#ledger) closes. The stage's charge slope and the population's own
+material rate are the reference's at both ends, over the cargo's rows and not the held fuel's.
+Populations outside the law's counts, half-saturations, fuel or domain, on RK4, or beside a second
+law of the pathway are refused by name. At a store's node the law is admitted, and a copy of it
+without its terms is refused. Beside a calcium binder under a closure it reads the free calcium.
+Each has a planted error. No run was compared with a measurement.
 
 ## Status
 

@@ -73,6 +73,7 @@ LAW = CycleLaw(
     DECLARED_ID,
     reads=("rapid_binding@1",),  # Its rows at a closure node are read free (§5.2's admission).
     forms="base",  # Frame B: every move in base forms, every proton counted (D236).
+    material_term="material_term",  # The kind's: its rate over all the rows it moves.
     cycle=CYCLE,
     host="cells.transporter@1",
     provenance="cited",
