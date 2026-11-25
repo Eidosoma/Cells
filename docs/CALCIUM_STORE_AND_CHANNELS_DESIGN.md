@@ -4,7 +4,8 @@
 `calcium-store-design` from 43b22d40. Main is at f839a8a0 (D386), and no ID has changed. The second reader's table
 (`REVIEW.md`) and the lead's rulings on it (`LEAD-RULINGS.md`) are in the lead's working folder; rows 1 to 9, 13, 14
 and 16 are this note's. D385 ruled L1 to L9 as recommended. D386 gave the user's answer to U1 and asked for two
-symport laws (§7.2). The advisor timed out every time it was asked.
+symport laws (§7.2). The advisor timed out every time it was asked. The lead's rulings on this revision (L10 to L13:
+all as recommended) and on the two laws' step terms (none until step 5) are in D387.
 
 **What it answers.** Candidates G-1 (calcium-permeant channels) and G-4 (a calcium store) and row B2 (the 3 Na : 1
 Ca exchanger) of the legacy port plan, with the corrections of its re-expression map (`legacy-port-plan` at
@@ -441,8 +442,9 @@ valence free (`CycleForm` roles `("role", None)`), held fuel only in this build.
   checked against it (`check_potentials`), and both are 1 mM here, so the drive is the ensemble's numeric-mM
   quotient.
 - **Finite fuel under a charged role** waits for a consumer (G-6).
-- **Its declared step terms:** `stage_term` and `material_term`, so refusal 4 admits it at a compartment's node. The
-  kind supplies both. It declares `forms="base"` and `reads=("rapid_binding@1",)`, as the exchanger does, so the
+- **Its declared step terms:** none until step 5 (the lead, 25 November 2026, as for the exchanger); step 5 declares
+  `stage_term` and `material_term` on it in one commit, with its docstring, and refusal 4 then admits it at a
+  compartment's node. Until then it is refused there. The kind supplies both. It declares `forms="base"` and `reads=("rapid_binding@1",)`, as the exchanger does, so the
   cardiac plan's closure may hold its ion (S).
 
 **What retires, and when (row 13; D210; pre-alpha, no backwards compatibility).** After @2 there are four laws for
@@ -703,7 +705,7 @@ x = 3 ln(Na_in/Na_out) + ln(Ca_out/Ca_in) + u;  J = k v S (1 - e^x);  S = b^3 c 
 | Two factors, power 1 | 1 + Kn^-3 Na@N^3 + Kn^-3 Na@P^3, and 1 + Kc^-1 Ca@N + Kc^-1 Ca@P |
 | Constants | Kn^-3, Kc^-1 |
 | Parameters | `km_na_mM`, `km_ca_mM`, positive; capacity and availability are the kind's |
-| Declared | `stage_term`; `forms="base"`, `reads=("rapid_binding@1",)` (a pure exchange of ions: its rows are base forms, so a closure may hold them). `material_term` joins with §6.3's bound (step 5), so that nothing declares a term its kind does not yet hold |
+| Declared | `forms="base"`, `reads=("rapid_binding@1",)` (a pure exchange of ions: its rows are base forms, so a closure may hold them). No step term until step 5, which declares `stage_term` and `material_term` on it in one commit, with its docstring (the lead, 25 November 2026): before §6.3's bound exists, a compartment's node refuses it |
 
 - **Checked (M):** the planted module parses in the store world and gives the legacy kernel's rate to 1.9e-15
   relative; the second reader finds 1.4e-14 of the one-way rate at random states (M2). Its free energy needs no
@@ -1105,7 +1107,7 @@ and keeps it. So the world is built with version 3 declared, and `declare` confi
 | 2 | the channel material term and the reactions door | `models/surface_pump_v3.py`, `registry/laws.py`, `operators/species_common.py` | 1 to 1.25 |
 | 3 | refusal 6, version 1.1, with its section, the R6 pair and the rows | `operators/compartments.py`, `numerics/surface_field.py`, the design note | 0.5 |
 | 4 | the exchanger; the pump @2; with their references | `laws/cycles/`, `laws/pumps/` | 1 |
-| 5 | the transporter's material bound (sum, closure branch, proton rows), declared on the exchanger, the pump @2, the symports and the mitochondria's seven | `kinds/transporter.py`, `laws/cycles/` | 0.75 to 1 |
+| 5 | the transporter's material bound (sum, closure branch, proton rows), declared on the exchanger and the pump @2 (both terms, with their docstrings), the symports and the mitochondria's seven | `kinds/transporter.py`, `laws/cycles/` | 0.75 to 1 |
 | 6 | the feedback bound (with E's hooks), `loop_term`'s removal | `models/surface_pump_v3.py`, `models/inner_laws.py`, `registry/kind_registry.py`, `registry/laws.py`, `kinds/passive_routes.py` | 1 to 1.5 |
 | 7 | the store worlds: references, rows 12 to 14 | `tests/unit/` | 1 to 1.5 |
 | 8 | pages, notes, the roadmap | `docs/` | 0.5 to 0.75 |

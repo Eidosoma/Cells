@@ -51,7 +51,7 @@ availability schedule.
 
 <!-- generated: used-by availability -->
 
-- **Used by:** [`cells.root_component_has_cycle@1`](cells/laws/root_component_has_cycle@1.md) and [`cells.ideal_osmosis_linear_compliance_water@1`](cells/operators/ideal_osmosis_linear_compliance_water@1.md).
+- **Used by:** [`cells.root_component_has_cycle@1`](cells/laws/root_component_has_cycle@1.md), [`cells.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md) and [`cells.ideal_osmosis_linear_compliance_water@1`](cells/operators/ideal_osmosis_linear_compliance_water@1.md).
 
 <!-- /generated -->
 
@@ -205,7 +205,7 @@ is negative.
 
 <!-- generated: used-by cycle-free-energy -->
 
-- **Used by:** [`cells.transporter@1`](cells/kinds/transporter@1.md).
+- **Used by:** [`cells.transporter@1`](cells/kinds/transporter@1.md) and [`cells.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md).
 
 <!-- /generated -->
 
@@ -323,7 +323,7 @@ piece's heat, so that the energy ledger closes.
 
 <!-- generated: used-by heat -->
 
-- **Used by:** [`cells.transporter@1`](cells/kinds/transporter@1.md).
+- **Used by:** [`cells.transporter@1`](cells/kinds/transporter@1.md) and [`cells.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md).
 
 <!-- /generated -->
 
@@ -430,7 +430,7 @@ moves it in the inventory.
 
 <!-- generated: used-by inventory -->
 
-- **Used by:** [`cells.transporter@1`](cells/kinds/transporter@1.md).
+- **Used by:** [`cells.transporter@1`](cells/kinds/transporter@1.md) and [`cells.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md).
 
 <!-- /generated -->
 
@@ -527,7 +527,7 @@ from the bookings at every step and held to a rounding bound.
 
 <!-- generated: used-by ledger -->
 
-- **Used by:** [`cells.transporter@1`](cells/kinds/transporter@1.md).
+- **Used by:** [`cells.transporter@1`](cells/kinds/transporter@1.md) and [`cells.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md).
 
 <!-- /generated -->
 
@@ -543,7 +543,7 @@ millivolts.
 
 <!-- generated: used-by membrane-voltage -->
 
-- **Used by:** [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md) and [`cells.open_channel_block_weighted_modes@1`](cells/laws/open_channel_block_weighted_modes@1.md).
+- **Used by:** [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md), [`cells.open_channel_block_weighted_modes@1`](cells/laws/open_channel_block_weighted_modes@1.md) and [`cells.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md).
 
 <!-- /generated -->
 
@@ -677,7 +677,7 @@ sit.
 
 <!-- generated: used-by patch -->
 
-- **Used by:** no page yet.
+- **Used by:** [`cells.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md).
 
 <!-- /generated -->
 
@@ -782,7 +782,7 @@ A group of identical channels or pumps on one patch, sharing a law, its gates an
 
 <!-- generated: used-by population -->
 
-- **Used by:** [`cells.open_channel_block_weighted_modes@1`](cells/laws/open_channel_block_weighted_modes@1.md) and [`cells.root_component_has_cycle@1`](cells/laws/root_component_has_cycle@1.md).
+- **Used by:** [`cells.open_channel_block_weighted_modes@1`](cells/laws/open_channel_block_weighted_modes@1.md), [`cells.root_component_has_cycle@1`](cells/laws/root_component_has_cycle@1.md) and [`cells.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md).
 
 <!-- /generated -->
 
@@ -835,7 +835,7 @@ One species at one node: an entry of the inventory.
 
 <!-- generated: used-by species-row -->
 
-- **Used by:** [`cells.open_channel_block_weighted_modes@1`](cells/laws/open_channel_block_weighted_modes@1.md) and [`cells.neutral_arrival_labels@1`](cells/operators/neutral_arrival_labels@1.md).
+- **Used by:** [`cells.open_channel_block_weighted_modes@1`](cells/laws/open_channel_block_weighted_modes@1.md), [`cells.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md) and [`cells.neutral_arrival_labels@1`](cells/operators/neutral_arrival_labels@1.md).
 
 <!-- /generated -->
 
@@ -863,7 +863,7 @@ One evaluation of the rates within a step. A step method combines several stages
 
 <!-- generated: used-by stage -->
 
-- **Used by:** no page yet.
+- **Used by:** [`cells.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md).
 
 <!-- /generated -->
 
