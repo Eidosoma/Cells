@@ -36,6 +36,8 @@ on 25 November 2026. `--without-optional` leaves it out.
 It needs the user's yes on the rows of `open_rows.tsv`, and the campaign's results (L67: one of the rows is the only one
 of a reference that Part 2's judge may use). After the deletion's commit:
 
+0. The user's word sets the rows' states: each `retires` row, and each row that says `open, before the second commit`, then says
+   `approved by the user` with the date (the script reads only that), and the second state is no longer `open, ...`.
 1. Merge `legacy-open-retirements` (the rows of six files that stay).
 2. `python validation/legacy_port/make_deletion.py REPO HEAD validation/legacy_port/removal_list.tsv WORKTREE
    --retirements --out DIR`, with `--branch NAME` at the end. It removes the eleven files whose row says `retires`, their
@@ -61,6 +63,9 @@ list is not a committed file. The batch without its edits is refused too, and so
 - At 936274d6 (legacy-cleanup f429ea4b with `legacy-retiring-rows`), the list at be44ec63: 1,693 files removed and 42 edited (staged tree abafa43b). The library pages pass their check, all 17
   rows of `tests/unit/test_continuity_bypass.py` pass, the definitions that leave are the 129 of `removed_definitions.txt`, 11,011 tests collect, and 8 files fail to, all of
   which would retire.
+- Test IDs, of 21,927 at the base: after the deletion 11,531 no longer collect (10,956 in files that go, 261 rows of files that stay, 138 of the two
+  files that the pump and symports work rewrote, 176 in the eight files that fail to import) and 615 are new, so 11,011 collect. After the second
+  commit 11,545 and 620, so 11,002 (`second_commit_test_ids.tsv`: 14 leave, and 5 are new, the same rows without the parked family's parameter).
 - On that commit with `legacy-open-retirements` 830ae93b merged (a detached commit, for the measurement), `--retirements`: 11 more files removed and 2 edited (staged tree 78167cf2), 11,002 tests collect with 0 errors, the same 17 rows
   pass, and the one import that resolves to nothing is the rehearsal driver's, which is of the frozen snapshot.
-- `carrier_plants.py` at 936274d6: all 33 plants fail their rows (32 pass with nothing planted): 22 by an assertion, 7 by a raise of the engine's while the row ran, and 4 by such a raise in a fixture. None is unseen, and none counts an import or collection error. The fresh reader's 166 plants, run on its own copies of the tree after the deletion: 115 fail a row by an assertion (one of them also by a raise), 5 by a raise of the engine's, 5 in a fixture, and 41 fail no row that it ran (`carrier_plants_reader.tsv`; what they mean is in `open_rows.tsv`).
+- `carrier_plants.py` at 936274d6: all 33 plants fail their rows (32 pass with nothing planted): 22 by an assertion, 7 by a raise of the engine's while the row ran, and 4 by such a raise in a fixture. None is unseen, and none counts an import or collection error. The fresh reader's 168 plants (its file as it stood at 21:09:48 UTC), run on its own copies of the tree after the deletion: 116 fail a row by an assertion (one of them also by a raise), 5 by a raise of the engine's, 5 in a fixture, and 42 fail no row that it ran (`carrier_plants_reader.tsv`; what they mean is in `open_rows.tsv`). Its plants of the lead's item 1 (a closed patch, a closed junction, abundance 0) are provisional while that item is open.
