@@ -1,0 +1,3935 @@
+{
+ "about": "The engine tables' shapes: amendment 5 (tag fr38-v2-amendment-5-2026-11-25), and the format sample's README, registered there by hash, read by shapes.schema_from_readme. No table of the sample enters it.",
+ "checkpoint": {
+  "keys": {
+   "event_index": "integer",
+   "step_index": "integer",
+   "through": "string",
+   "time_s": "float"
+  },
+  "t": "object"
+ },
+ "definition": {
+  "B": {
+   "keys": {
+    "execution": {
+     "keys": {
+      "backend": "string",
+      "capacity": "integer",
+      "channel_capacity": "integer",
+      "dt": "float",
+      "edge_capacity": "integer",
+      "extracellular_capacity": "integer",
+      "face_capacity": "integer",
+      "field_solver": "string",
+      "jit": "boolean",
+      "material_balance_atol_fmol": {
+       "keys": {
+        "A": "float",
+        "ADP": "float",
+        "ATP": "float",
+        "K": "float",
+        "M": "float",
+        "N": "float",
+        "P": "float",
+        "Pi": "float",
+        "R": "float",
+        "R_s": "float",
+        "X": "float",
+        "Y": "float"
+       },
+       "t": "object"
+      },
+      "max_steps": "integer",
+      "max_trace_bytes": "integer",
+      "membrane_capacity": "integer",
+      "precision": "string",
+      "solver": "string"
+     },
+     "t": "object"
+    },
+    "experiment": {
+     "keys": {
+      "calcium_pump_controls": {
+       "of": "any",
+       "t": "list"
+      },
+      "channel_controls": {
+       "of": "any",
+       "t": "list"
+      },
+      "coupling_controls": {
+       "of": {
+        "keys": {
+         "coupling_id": "string",
+         "schedule": {
+          "of": {
+           "keys": {
+            "enabled": "integer",
+            "time": "float"
+           },
+           "t": "object"
+          },
+          "t": "list"
+         }
+        },
+        "t": "object"
+       },
+       "t": "list"
+      },
+      "end_time": "float",
+      "junction_controls": {
+       "of": "any",
+       "t": "list"
+      },
+      "label_arrivals": {
+       "of": {
+        "keys": {
+         "schedule": {
+          "of": {
+           "keys": {
+            "label": "string",
+            "time": "float"
+           },
+           "t": "object"
+          },
+          "t": "list"
+         },
+         "source": "string",
+         "species": "string"
+        },
+        "optional": [
+         "source"
+        ],
+        "t": "object"
+       },
+       "t": "list"
+      },
+      "membrane_controls": {
+       "by": "membrane_id",
+       "names": {
+        "patch_0": {
+         "keys": {
+          "membrane_id": "string",
+          "schedule": {
+           "of": {
+            "keys": {
+             "availability": "float",
+             "time": "float"
+            },
+            "t": "object"
+           },
+           "t": "list"
+          }
+         },
+         "t": "object"
+        }
+       },
+       "t": "named"
+      },
+      "observation_times": {
+       "of": "float",
+       "t": "list"
+      },
+      "polymerisation_controls": {
+       "by": "route_id",
+       "names": {
+        "deg_P": {
+         "keys": {
+          "route_id": "string",
+          "schedule": {
+           "of": {
+            "keys": {
+             "time": "float",
+             "value": "float"
+            },
+            "t": "object"
+           },
+           "t": "list"
+          }
+         },
+         "t": "object"
+        },
+        "deg_R": {
+         "keys": {
+          "route_id": "string",
+          "schedule": {
+           "of": {
+            "keys": {
+             "time": "float",
+             "value": "float"
+            },
+            "t": "object"
+           },
+           "t": "list"
+          }
+         },
+         "t": "object"
+        },
+        "deg_R_s": {
+         "keys": {
+          "route_id": "string",
+          "schedule": {
+           "of": {
+            "keys": {
+             "time": "float",
+             "value": "float"
+            },
+            "t": "object"
+           },
+           "t": "list"
+          }
+         },
+         "t": "object"
+        },
+        "recharge": {
+         "keys": {
+          "route_id": "string",
+          "schedule": {
+           "of": {
+            "keys": {
+             "time": "float",
+             "value": "float"
+            },
+            "t": "object"
+           },
+           "t": "list"
+          }
+         },
+         "t": "object"
+        },
+        "tl": {
+         "keys": {
+          "route_id": "string",
+          "schedule": {
+           "of": {
+            "keys": {
+             "time": "float",
+             "value": "float"
+            },
+            "t": "object"
+           },
+           "t": "list"
+          }
+         },
+         "t": "object"
+        },
+        "tl_s": {
+         "keys": {
+          "route_id": "string",
+          "schedule": {
+           "of": {
+            "keys": {
+             "time": "float",
+             "value": "float"
+            },
+            "t": "object"
+           },
+           "t": "list"
+          }
+         },
+         "t": "object"
+        },
+        "tx": {
+         "keys": {
+          "route_id": "string",
+          "schedule": {
+           "of": {
+            "keys": {
+             "time": "float",
+             "value": "float"
+            },
+            "t": "object"
+           },
+           "t": "list"
+          }
+         },
+         "t": "object"
+        }
+       },
+       "optional": [
+        "tx_release"
+       ],
+       "t": "named"
+      },
+      "pump_controls": {
+       "of": "any",
+       "t": "list"
+      },
+      "regulatory_writes": {
+       "of": "any",
+       "t": "list"
+      },
+      "turnover_controls": {
+       "by": "route_id",
+       "names": {
+        "x_clearance": {
+         "keys": {
+          "carrier_id": "string",
+          "route_id": "string",
+          "schedule": {
+           "of": {
+            "keys": {
+             "rate": "float",
+             "time": "float"
+            },
+            "t": "object"
+           },
+           "t": "list"
+          }
+         },
+         "t": "object"
+        },
+        "x_production": {
+         "keys": {
+          "carrier_id": "string",
+          "route_id": "string",
+          "schedule": {
+           "of": {
+            "keys": {
+             "rate": "float",
+             "time": "float"
+            },
+            "t": "object"
+           },
+           "t": "list"
+          }
+         },
+         "t": "object"
+        }
+       },
+       "t": "named"
+      }
+     },
+     "t": "object"
+    },
+    "model": {
+     "keys": {
+      "cells": {
+       "by": "id",
+       "names": {
+        "cell_0": {
+         "keys": {
+          "fixed_charge_equivalent_fmol": "float",
+          "id": "string",
+          "initial_amount_fmol": {
+           "keys": {
+            "A": "float",
+            "ADP": "float",
+            "ATP": "float",
+            "K": "float",
+            "M": "float",
+            "N": "float",
+            "P": "float",
+            "Pi": "float",
+            "R": "float",
+            "R_s": "float",
+            "X": "float",
+            "Y": "float"
+           },
+           "t": "object"
+          },
+          "initial_charge_C": "float",
+          "volume_pL": "float"
+         },
+         "t": "object"
+        }
+       },
+       "t": "named"
+      },
+      "channels": {
+       "of": "any",
+       "t": "list"
+      },
+      "closure": {
+       "keys": {
+        "gauge_reference": "null",
+        "law": "string"
+       },
+       "t": "object"
+      },
+      "extracellular": {
+       "by": "id",
+       "names": {
+        "bath_0": {
+         "keys": {
+          "boundary_potential_V": "float",
+          "fixed_charge_equivalent_fmol": "float",
+          "id": "string",
+          "initial_amount_fmol": {
+           "keys": {
+            "A": "float",
+            "ADP": "float",
+            "ATP": "float",
+            "K": "float",
+            "M": "float",
+            "N": "float",
+            "P": "float",
+            "Pi": "float",
+            "R": "float",
+            "R_s": "float",
+            "X": "float",
+            "Y": "float"
+           },
+           "t": "object"
+          },
+          "initial_charge_C": "float",
+          "reservoir": "boolean",
+          "volume_pL": "float"
+         },
+         "t": "object"
+        }
+       },
+       "t": "named"
+      },
+      "faces": {
+       "of": "any",
+       "t": "list"
+      },
+      "id": "string",
+      "inner_model": "string",
+      "junctions": {
+       "of": "any",
+       "t": "list"
+      },
+      "membranes": {
+       "by": "id",
+       "names": {
+        "patch_0": {
+         "keys": {
+          "area_m2": "float",
+          "calcium_pump": "null",
+          "capacitance_F": "float",
+          "id": "string",
+          "inside": "string",
+          "law": "string",
+          "outside": "string",
+          "permeability_m_per_s": {
+           "keys": {
+            "A": "float",
+            "ADP": "float",
+            "ATP": "float",
+            "K": "float",
+            "M": "float",
+            "N": "float",
+            "P": "float",
+            "Pi": "float",
+            "R": "float",
+            "R_s": "float",
+            "X": "float",
+            "Y": "float"
+           },
+           "t": "object"
+          },
+          "pump": "null"
+         },
+         "t": "object"
+        }
+       },
+       "t": "named"
+      },
+      "moieties": {
+       "by": "id",
+       "names": {
+        "adenine": {
+         "keys": {
+          "id": "string",
+          "weights": {
+           "keys": {
+            "ADP": "integer",
+            "ATP": "integer"
+           },
+           "t": "object"
+          }
+         },
+         "t": "object"
+        },
+        "amino_acid": {
+         "keys": {
+          "id": "string",
+          "weights": {
+           "keys": {
+            "A": "integer",
+            "P": "integer"
+           },
+           "t": "object"
+          }
+         },
+         "t": "object"
+        },
+        "nucleoside": {
+         "keys": {
+          "id": "string",
+          "weights": {
+           "keys": {
+            "M": "integer",
+            "N": "integer",
+            "R": "integer",
+            "R_s": "integer"
+           },
+           "t": "object"
+          }
+         },
+         "t": "object"
+        },
+        "phosphorus": {
+         "keys": {
+          "id": "string",
+          "weights": {
+           "keys": {
+            "ADP": "integer",
+            "ATP": "integer",
+            "M": "integer",
+            "N": "integer",
+            "Pi": "integer",
+            "R": "integer",
+            "R_s": "integer"
+           },
+           "t": "object"
+          }
+         },
+         "t": "object"
+        }
+       },
+       "t": "named"
+      },
+      "operators": {
+       "by": "law",
+       "names": {
+        "neutral_arrival_labels@1": {
+         "keys": {
+          "law": "string",
+          "species": {
+           "by": "id",
+           "names": {
+            "R": {
+             "keys": {
+              "id": "string",
+              "initial": {
+               "of": {
+                "keys": {
+                 "node": "string",
+                 "shares": {
+                  "keys": {
+                   "pool0": "float"
+                  },
+                  "t": "object"
+                 }
+                },
+                "t": "object"
+               },
+               "t": "list"
+              },
+              "labels": {
+               "of": "string",
+               "t": "list"
+              }
+             },
+             "t": "object"
+            },
+            "R_s": {
+             "keys": {
+              "id": "string",
+              "initial": {
+               "of": {
+                "keys": {
+                 "node": "string",
+                 "shares": {
+                  "keys": {
+                   "pool0": "float"
+                  },
+                  "t": "object"
+                 }
+                },
+                "t": "object"
+               },
+               "t": "list"
+              },
+              "labels": {
+               "of": "string",
+               "t": "list"
+              }
+             },
+             "t": "object"
+            }
+           },
+           "t": "named"
+          }
+         },
+         "t": "object"
+        },
+        "scheduled_species_turnover@1": {
+         "keys": {
+          "law": "string",
+          "routes": {
+           "by": "id",
+           "names": {
+            "x_clearance": {
+             "keys": {
+              "id": "string",
+              "kind": "string",
+              "node": "string",
+              "species": "string"
+             },
+             "t": "object"
+            },
+            "x_production": {
+             "keys": {
+              "id": "string",
+              "kind": "string",
+              "node": "string",
+              "species": "string"
+             },
+             "t": "object"
+            }
+           },
+           "t": "named"
+          },
+          "species": {
+           "by": "id",
+           "names": {
+            "X": {
+             "keys": {
+              "catalogue": "null",
+              "evidence": "null",
+              "id": "string"
+             },
+             "t": "object"
+            }
+           },
+           "t": "named"
+          },
+          "templates": {
+           "of": "any",
+           "t": "list"
+          }
+         },
+         "t": "object"
+        },
+        "species_regulated_availability@2": {
+         "keys": {
+          "couplings": {
+           "by": "id",
+           "names": {
+            "c_regulator": {
+             "keys": {
+              "basal": "float",
+              "half_saturation_mM": "float",
+              "hill_coefficient": "float",
+              "id": "string",
+              "law": "string",
+              "source": {
+               "keys": {
+                "species": "string"
+               },
+               "t": "object"
+              },
+              "target": {
+               "keys": {
+                "control": "string",
+                "evaluation": "string",
+                "ids": {
+                 "of": "string",
+                 "t": "list"
+                },
+                "operating_range": {
+                 "of": "float",
+                 "t": "list"
+                },
+                "operator": "string"
+               },
+               "t": "object"
+              }
+             },
+             "t": "object"
+            }
+           },
+           "t": "named"
+          },
+          "law": "string",
+          "species": {
+           "by": "id",
+           "names": {
+            "X": {
+             "keys": {
+              "catalogue": "null",
+              "evidence": "null",
+              "id": "string"
+             },
+             "t": "object"
+            }
+           },
+           "t": "named"
+          },
+          "states": {
+           "of": "any",
+           "t": "list"
+          }
+         },
+         "t": "object"
+        },
+        "templated_polymerisation@1": {
+         "keys": {
+          "chains": {
+           "by": "id",
+           "names": {
+            "tl": {
+             "keys": {
+              "draws": {
+               "keys": {
+                "A": "integer",
+                "ATP": "integer"
+               },
+               "t": "object"
+              },
+              "id": "string",
+              "pool": "string",
+              "product": "string",
+              "releases": {
+               "keys": {
+                "ADP": "integer",
+                "Pi": "integer"
+               },
+               "t": "object"
+              },
+              "residues": "integer",
+              "saturation_mM": {
+               "keys": {
+                "A": "float",
+                "ATP": "float"
+               },
+               "t": "object"
+              },
+              "speed_per_s": "float",
+              "stages": "integer",
+              "template": {
+               "keys": {
+                "species": "string"
+               },
+               "t": "object"
+              }
+             },
+             "t": "object"
+            },
+            "tl_s": {
+             "keys": {
+              "draws": {
+               "keys": {
+                "A": "integer",
+                "ATP": "integer"
+               },
+               "t": "object"
+              },
+              "id": "string",
+              "pool": "string",
+              "product": "string",
+              "releases": {
+               "keys": {
+                "ADP": "integer",
+                "Pi": "integer"
+               },
+               "t": "object"
+              },
+              "residues": "integer",
+              "saturation_mM": {
+               "keys": {
+                "A": "float",
+                "ATP": "float"
+               },
+               "t": "object"
+              },
+              "speed_per_s": "float",
+              "stages": "integer",
+              "template": {
+               "keys": {
+                "species": "string"
+               },
+               "t": "object"
+              }
+             },
+             "t": "object"
+            },
+            "tx": {
+             "keys": {
+              "draws": {
+               "keys": {
+                "N": "integer"
+               },
+               "t": "object"
+              },
+              "id": "string",
+              "pool": "string",
+              "product": "string",
+              "release": {
+               "keys": {
+                "durable_fraction": "float|string",
+                "dwell_s": "float",
+                "fates": {
+                 "of": {
+                  "keys": {
+                   "durable": "string",
+                   "short_lived": "string"
+                  },
+                  "t": "object"
+                 },
+                 "t": "list"
+                },
+                "id": "string",
+                "initial_copies": {
+                 "of": "float",
+                 "t": "list"
+                },
+                "label": {
+                 "keys": {
+                  "at": "string"
+                 },
+                 "t": "object"
+                },
+                "machine": "string"
+               },
+               "t": "object"
+              },
+              "releases": {
+               "keys": {
+                "Pi": "integer"
+               },
+               "t": "object"
+              },
+              "residues": "integer",
+              "saturation_mM": {
+               "keys": {
+                "N": "float"
+               },
+               "t": "object"
+              },
+              "speed_per_s": "float",
+              "stages": "integer",
+              "template": {
+               "keys": {
+                "copies": "integer"
+               },
+               "t": "object"
+              }
+             },
+             "t": "object"
+            }
+           },
+           "t": "named"
+          },
+          "degradations": {
+           "by": "id",
+           "names": {
+            "deg_P": {
+             "keys": {
+              "cell": "string",
+              "id": "string",
+              "monomers": {
+               "keys": {
+                "A": "integer"
+               },
+               "t": "object"
+              },
+              "polymer": "string",
+              "residues": "integer",
+              "standard_free_energy": {
+               "keys": {
+                "basis": "string",
+                "dG_RT_offset": "float",
+                "dG_kJ_mol": "float"
+               },
+               "t": "object"
+              }
+             },
+             "t": "object"
+            },
+            "deg_R": {
+             "keys": {
+              "cell": "string",
+              "id": "string",
+              "monomers": {
+               "keys": {
+                "M": "integer"
+               },
+               "t": "object"
+              },
+              "polymer": "string",
+              "residues": "integer",
+              "standard_free_energy": {
+               "keys": {
+                "basis": "string",
+                "dG_RT_offset": "float",
+                "dG_kJ_mol": "float"
+               },
+               "t": "object"
+              }
+             },
+             "t": "object"
+            },
+            "deg_R_s": {
+             "keys": {
+              "cell": "string",
+              "id": "string",
+              "monomers": {
+               "keys": {
+                "M": "integer"
+               },
+               "t": "object"
+              },
+              "polymer": "string",
+              "residues": "integer",
+              "standard_free_energy": {
+               "keys": {
+                "basis": "string",
+                "dG_RT_offset": "float",
+                "dG_kJ_mol": "float"
+               },
+               "t": "object"
+              }
+             },
+             "t": "object"
+            }
+           },
+           "t": "named"
+          },
+          "law": "string",
+          "pools": {
+           "by": "id",
+           "names": {
+            "pol": {
+             "keys": {
+              "cell": "string",
+              "id": "string",
+              "machines": "float"
+             },
+             "t": "object"
+            },
+            "rib": {
+             "keys": {
+              "cell": "string",
+              "id": "string",
+              "machines": "float"
+             },
+             "t": "object"
+            }
+           },
+           "t": "named"
+          },
+          "species": {
+           "by": "id",
+           "names": {
+            "A": {
+             "keys": {
+              "catalogue": "null",
+              "evidence": "null",
+              "id": "string",
+              "standard_mu_RT": "float"
+             },
+             "t": "object"
+            },
+            "ADP": {
+             "keys": {
+              "catalogue": "null",
+              "evidence": "null",
+              "id": "string",
+              "standard_mu_RT": "float"
+             },
+             "t": "object"
+            },
+            "ATP": {
+             "keys": {
+              "catalogue": "null",
+              "evidence": "null",
+              "id": "string",
+              "standard_mu_RT": "float"
+             },
+             "t": "object"
+            },
+            "M": {
+             "keys": {
+              "catalogue": "null",
+              "evidence": "null",
+              "id": "string",
+              "standard_mu_RT": "float"
+             },
+             "t": "object"
+            },
+            "N": {
+             "keys": {
+              "catalogue": "null",
+              "evidence": "null",
+              "id": "string",
+              "standard_mu_RT": "float"
+             },
+             "t": "object"
+            },
+            "P": {
+             "keys": {
+              "catalogue": "null",
+              "evidence": "null",
+              "id": "string",
+              "standard_mu_RT": "float"
+             },
+             "t": "object"
+            },
+            "Pi": {
+             "keys": {
+              "catalogue": "null",
+              "evidence": "null",
+              "id": "string",
+              "standard_mu_RT": "float"
+             },
+             "t": "object"
+            },
+            "R": {
+             "keys": {
+              "catalogue": "null",
+              "evidence": "null",
+              "id": "string",
+              "standard_mu_RT": "float"
+             },
+             "t": "object"
+            },
+            "R_s": {
+             "keys": {
+              "catalogue": "null",
+              "evidence": "null",
+              "id": "string",
+              "standard_mu_RT": "float"
+             },
+             "t": "object"
+            }
+           },
+           "t": "named"
+          },
+          "standard_concentration_mM": "float",
+          "transfers": {
+           "by": "id",
+           "names": {
+            "recharge": {
+             "keys": {
+              "cell": "string",
+              "id": "string",
+              "saturation_mM": {
+               "keys": {
+                "ATP": "float",
+                "M": "float"
+               },
+               "t": "object"
+              },
+              "share": "integer",
+              "standard_free_energy": {
+               "keys": {
+                "dG_RT": "float"
+               },
+               "t": "object"
+              },
+              "stoichiometry": {
+               "keys": {
+                "ADP": "integer",
+                "ATP": "integer",
+                "M": "integer",
+                "N": "integer"
+               },
+               "t": "object"
+              }
+             },
+             "t": "object"
+            }
+           },
+           "t": "named"
+          }
+         },
+         "t": "object"
+        }
+       },
+       "strict": true,
+       "t": "named"
+      },
+      "species": {
+       "by": "id",
+       "names": {
+        "A": {
+         "keys": {
+          "id": "string",
+          "standard_mu_RT": "float",
+          "valence": "integer"
+         },
+         "t": "object"
+        },
+        "ADP": {
+         "keys": {
+          "id": "string",
+          "standard_mu_RT": "float",
+          "valence": "integer"
+         },
+         "t": "object"
+        },
+        "ATP": {
+         "keys": {
+          "id": "string",
+          "standard_mu_RT": "float",
+          "valence": "integer"
+         },
+         "t": "object"
+        },
+        "K": {
+         "keys": {
+          "id": "string",
+          "valence": "integer"
+         },
+         "t": "object"
+        },
+        "M": {
+         "keys": {
+          "id": "string",
+          "standard_mu_RT": "float",
+          "valence": "integer"
+         },
+         "t": "object"
+        },
+        "N": {
+         "keys": {
+          "id": "string",
+          "standard_mu_RT": "float",
+          "valence": "integer"
+         },
+         "t": "object"
+        },
+        "P": {
+         "keys": {
+          "id": "string",
+          "standard_mu_RT": "float",
+          "valence": "integer"
+         },
+         "t": "object"
+        },
+        "Pi": {
+         "keys": {
+          "id": "string",
+          "standard_mu_RT": "float",
+          "valence": "integer"
+         },
+         "t": "object"
+        },
+        "R": {
+         "keys": {
+          "id": "string",
+          "standard_mu_RT": "float",
+          "valence": "integer"
+         },
+         "t": "object"
+        },
+        "R_s": {
+         "keys": {
+          "id": "string",
+          "standard_mu_RT": "float",
+          "valence": "integer"
+         },
+         "t": "object"
+        },
+        "X": {
+         "keys": {
+          "id": "string",
+          "valence": "integer"
+         },
+         "t": "object"
+        },
+        "Y": {
+         "keys": {
+          "id": "string",
+          "valence": "integer"
+         },
+         "t": "object"
+        }
+       },
+       "t": "named"
+      },
+      "standard_concentration_mM": "float",
+      "temperature_K": "float"
+     },
+     "t": "object"
+    },
+    "schema_version": "integer"
+   },
+   "t": "object"
+  },
+  "C": {
+   "keys": {
+    "execution": {
+     "keys": {
+      "backend": "string",
+      "capacity": "integer",
+      "channel_capacity": "integer",
+      "dt": "float",
+      "edge_capacity": "integer",
+      "extracellular_capacity": "integer",
+      "face_capacity": "integer",
+      "field_solver": "string",
+      "jit": "boolean",
+      "material_balance_atol_fmol": {
+       "keys": {
+        "K": "float",
+        "M": "float",
+        "Mx": "float",
+        "N": "float",
+        "Pi": "float",
+        "R": "float",
+        "R_s": "float",
+        "Y": "float"
+       },
+       "t": "object"
+      },
+      "max_steps": "integer",
+      "max_trace_bytes": "integer",
+      "membrane_capacity": "integer",
+      "precision": "string",
+      "solver": "string"
+     },
+     "t": "object"
+    },
+    "experiment": {
+     "keys": {
+      "calcium_pump_controls": {
+       "of": "any",
+       "t": "list"
+      },
+      "channel_controls": {
+       "of": "any",
+       "t": "list"
+      },
+      "end_time": "float",
+      "junction_controls": {
+       "of": "any",
+       "t": "list"
+      },
+      "label_arrivals": {
+       "of": {
+        "keys": {
+         "schedule": {
+          "of": {
+           "keys": {
+            "label": "string",
+            "time": "float"
+           },
+           "t": "object"
+          },
+          "t": "list"
+         },
+         "source": "string",
+         "species": "string"
+        },
+        "optional": [
+         "source"
+        ],
+        "t": "object"
+       },
+       "t": "list"
+      },
+      "membrane_controls": {
+       "by": "membrane_id",
+       "names": {
+        "patch_0": {
+         "keys": {
+          "membrane_id": "string",
+          "schedule": {
+           "of": {
+            "keys": {
+             "availability": "float",
+             "time": "float"
+            },
+            "t": "object"
+           },
+           "t": "list"
+          }
+         },
+         "t": "object"
+        }
+       },
+       "t": "named"
+      },
+      "observation_times": {
+       "of": "float",
+       "t": "list"
+      },
+      "polymerisation_controls": {
+       "by": "route_id",
+       "names": {
+        "deg_R": {
+         "keys": {
+          "route_id": "string",
+          "schedule": {
+           "of": {
+            "keys": {
+             "time": "float",
+             "value": "float"
+            },
+            "t": "object"
+           },
+           "t": "list"
+          }
+         },
+         "t": "object"
+        },
+        "deg_R_s": {
+         "keys": {
+          "route_id": "string",
+          "schedule": {
+           "of": {
+            "keys": {
+             "time": "float",
+             "value": "float"
+            },
+            "t": "object"
+           },
+           "t": "list"
+          }
+         },
+         "t": "object"
+        },
+        "tx": {
+         "keys": {
+          "route_id": "string",
+          "schedule": {
+           "of": {
+            "keys": {
+             "time": "float",
+             "value": "float"
+            },
+            "t": "object"
+           },
+           "t": "list"
+          }
+         },
+         "t": "object"
+        },
+        "tx_release": {
+         "keys": {
+          "route_id": "string",
+          "schedule": {
+           "of": {
+            "keys": {
+             "time": "float",
+             "value": "float"
+            },
+            "t": "object"
+           },
+           "t": "list"
+          }
+         },
+         "t": "object"
+        }
+       },
+       "optional": [
+        "tx_release"
+       ],
+       "t": "named"
+      },
+      "pump_controls": {
+       "of": "any",
+       "t": "list"
+      },
+      "reaction_controls": {
+       "by": "reaction_id",
+       "names": {
+        "store_M": {
+         "keys": {
+          "reaction_id": "string",
+          "schedule": {
+           "of": {
+            "keys": {
+             "multiplier": "float",
+             "time": "float"
+            },
+            "t": "object"
+           },
+           "t": "list"
+          },
+          "site": "null"
+         },
+         "t": "object"
+        }
+       },
+       "t": "named"
+      }
+     },
+     "t": "object"
+    },
+    "model": {
+     "keys": {
+      "cells": {
+       "by": "id",
+       "names": {
+        "cell_0": {
+         "keys": {
+          "fixed_charge_equivalent_fmol": "float",
+          "id": "string",
+          "initial_amount_fmol": {
+           "keys": {
+            "K": "float",
+            "M": "float",
+            "Mx": "float",
+            "N": "float",
+            "Pi": "float",
+            "R": "float",
+            "R_s": "float",
+            "Y": "float"
+           },
+           "t": "object"
+          },
+          "initial_charge_C": "float",
+          "volume_pL": "float"
+         },
+         "t": "object"
+        }
+       },
+       "t": "named"
+      },
+      "channels": {
+       "of": "any",
+       "t": "list"
+      },
+      "closure": {
+       "keys": {
+        "gauge_reference": "null",
+        "law": "string"
+       },
+       "t": "object"
+      },
+      "extracellular": {
+       "by": "id",
+       "names": {
+        "bath_0": {
+         "keys": {
+          "boundary_potential_V": "float",
+          "fixed_charge_equivalent_fmol": "float",
+          "id": "string",
+          "initial_amount_fmol": {
+           "keys": {
+            "K": "float",
+            "M": "float",
+            "Mx": "float",
+            "N": "float",
+            "Pi": "float",
+            "R": "float",
+            "R_s": "float",
+            "Y": "float"
+           },
+           "t": "object"
+          },
+          "initial_charge_C": "float",
+          "reservoir": "boolean",
+          "volume_pL": "float"
+         },
+         "t": "object"
+        }
+       },
+       "t": "named"
+      },
+      "faces": {
+       "of": "any",
+       "t": "list"
+      },
+      "id": "string",
+      "inner_model": "string",
+      "junctions": {
+       "of": "any",
+       "t": "list"
+      },
+      "membranes": {
+       "by": "id",
+       "names": {
+        "patch_0": {
+         "keys": {
+          "area_m2": "float",
+          "calcium_pump": "null",
+          "capacitance_F": "float",
+          "id": "string",
+          "inside": "string",
+          "law": "string",
+          "outside": "string",
+          "permeability_m_per_s": {
+           "keys": {
+            "K": "float",
+            "M": "float",
+            "Mx": "float",
+            "N": "float",
+            "Pi": "float",
+            "R": "float",
+            "R_s": "float",
+            "Y": "float"
+           },
+           "t": "object"
+          },
+          "pump": "null"
+         },
+         "t": "object"
+        }
+       },
+       "t": "named"
+      },
+      "moieties": {
+       "by": "id",
+       "names": {
+        "nucleoside": {
+         "keys": {
+          "id": "string",
+          "weights": {
+           "keys": {
+            "M": "integer",
+            "Mx": "integer",
+            "N": "integer",
+            "R": "integer",
+            "R_s": "integer"
+           },
+           "t": "object"
+          }
+         },
+         "t": "object"
+        },
+        "phosphorus": {
+         "keys": {
+          "id": "string",
+          "weights": {
+           "keys": {
+            "M": "integer",
+            "Mx": "integer",
+            "N": "integer",
+            "Pi": "integer",
+            "R": "integer",
+            "R_s": "integer"
+           },
+           "t": "object"
+          }
+         },
+         "t": "object"
+        }
+       },
+       "t": "named"
+      },
+      "operators": {
+       "by": "law",
+       "names": {
+        "local_species_reactions@1": {
+         "keys": {
+          "law": "string",
+          "reactions": {
+           "by": "id",
+           "names": {
+            "store_M": {
+             "keys": {
+              "factors": {
+               "of": "any",
+               "t": "list"
+              },
+              "forward_rate_per_s": "float",
+              "id": "string",
+              "law": "string",
+              "products": {
+               "keys": {
+                "Mx": "integer"
+               },
+               "t": "object"
+              },
+              "reactants": {
+               "keys": {
+                "M": "integer"
+               },
+               "t": "object"
+              },
+              "sites": {
+               "keys": {
+                "cells": {
+                 "of": "string",
+                 "t": "list"
+                }
+               },
+               "t": "object"
+              }
+             },
+             "t": "object"
+            }
+           },
+           "t": "named"
+          },
+          "species": {
+           "by": "id",
+           "names": {
+            "M": {
+             "keys": {
+              "catalogue": "null",
+              "evidence": "null",
+              "id": "string",
+              "moieties": {
+               "keys": {
+                "nucleoside": "integer",
+                "phosphorus": "integer"
+               },
+               "t": "object"
+              },
+              "standard_mu_RT": "float"
+             },
+             "t": "object"
+            },
+            "Mx": {
+             "keys": {
+              "catalogue": "null",
+              "evidence": "null",
+              "id": "string",
+              "moieties": {
+               "keys": {
+                "nucleoside": "integer",
+                "phosphorus": "integer"
+               },
+               "t": "object"
+              },
+              "standard_mu_RT": "float"
+             },
+             "t": "object"
+            }
+           },
+           "t": "named"
+          },
+          "standard_concentration_mM": "float"
+         },
+         "t": "object"
+        },
+        "neutral_arrival_labels@1": {
+         "keys": {
+          "law": "string",
+          "species": {
+           "by": "id",
+           "names": {
+            "R": {
+             "keys": {
+              "id": "string",
+              "initial": {
+               "of": {
+                "keys": {
+                 "node": "string",
+                 "shares": {
+                  "keys": {
+                   "pool0": "float"
+                  },
+                  "t": "object"
+                 }
+                },
+                "t": "object"
+               },
+               "t": "list"
+              },
+              "labels": {
+               "of": "string",
+               "t": "list"
+              }
+             },
+             "t": "object"
+            },
+            "R_s": {
+             "keys": {
+              "id": "string",
+              "initial": {
+               "of": {
+                "keys": {
+                 "node": "string",
+                 "shares": {
+                  "keys": {
+                   "pool0": "float"
+                  },
+                  "t": "object"
+                 }
+                },
+                "t": "object"
+               },
+               "t": "list"
+              },
+              "labels": {
+               "of": "string",
+               "t": "list"
+              }
+             },
+             "t": "object"
+            }
+           },
+           "t": "named"
+          }
+         },
+         "t": "object"
+        },
+        "templated_polymerisation@1": {
+         "keys": {
+          "chains": {
+           "by": "id",
+           "names": {
+            "tx": {
+             "keys": {
+              "draws": {
+               "keys": {
+                "N": "integer"
+               },
+               "t": "object"
+              },
+              "id": "string",
+              "pool": "string",
+              "product": "string",
+              "release": {
+               "keys": {
+                "durable_fraction": "float|string",
+                "dwell_s": "float",
+                "fates": {
+                 "of": {
+                  "keys": {
+                   "durable": "string",
+                   "short_lived": "string"
+                  },
+                  "t": "object"
+                 },
+                 "t": "list"
+                },
+                "id": "string",
+                "initial_copies": {
+                 "of": "float",
+                 "t": "list"
+                },
+                "label": {
+                 "keys": {
+                  "at": "string"
+                 },
+                 "t": "object"
+                },
+                "machine": "string"
+               },
+               "t": "object"
+              },
+              "releases": {
+               "keys": {
+                "Pi": "integer"
+               },
+               "t": "object"
+              },
+              "residues": "integer",
+              "saturation_mM": {
+               "keys": {
+                "N": "float"
+               },
+               "t": "object"
+              },
+              "speed_per_s": "float",
+              "stages": "integer",
+              "template": {
+               "keys": {
+                "copies": "integer"
+               },
+               "t": "object"
+              }
+             },
+             "t": "object"
+            }
+           },
+           "t": "named"
+          },
+          "degradations": {
+           "by": "id",
+           "names": {
+            "deg_R": {
+             "keys": {
+              "cell": "string",
+              "id": "string",
+              "monomers": {
+               "keys": {
+                "M": "integer"
+               },
+               "t": "object"
+              },
+              "polymer": "string",
+              "residues": "integer",
+              "standard_free_energy": {
+               "keys": {
+                "dG_RT": "float"
+               },
+               "t": "object"
+              }
+             },
+             "t": "object"
+            },
+            "deg_R_s": {
+             "keys": {
+              "cell": "string",
+              "id": "string",
+              "monomers": {
+               "keys": {
+                "M": "integer"
+               },
+               "t": "object"
+              },
+              "polymer": "string",
+              "residues": "integer",
+              "standard_free_energy": {
+               "keys": {
+                "dG_RT": "float"
+               },
+               "t": "object"
+              }
+             },
+             "t": "object"
+            }
+           },
+           "t": "named"
+          },
+          "law": "string",
+          "pools": {
+           "by": "id",
+           "names": {
+            "pol": {
+             "keys": {
+              "cell": "string",
+              "id": "string",
+              "machines": "float"
+             },
+             "t": "object"
+            }
+           },
+           "t": "named"
+          },
+          "species": {
+           "by": "id",
+           "names": {
+            "M": {
+             "keys": {
+              "catalogue": "null",
+              "evidence": "null",
+              "id": "string",
+              "standard_mu_RT": "float"
+             },
+             "t": "object"
+            },
+            "N": {
+             "keys": {
+              "catalogue": "null",
+              "evidence": "null",
+              "id": "string",
+              "standard_mu_RT": "float"
+             },
+             "t": "object"
+            },
+            "Pi": {
+             "keys": {
+              "catalogue": "null",
+              "evidence": "null",
+              "id": "string",
+              "standard_mu_RT": "float"
+             },
+             "t": "object"
+            },
+            "R": {
+             "keys": {
+              "catalogue": "null",
+              "evidence": "null",
+              "id": "string",
+              "standard_mu_RT": "float"
+             },
+             "t": "object"
+            },
+            "R_s": {
+             "keys": {
+              "catalogue": "null",
+              "evidence": "null",
+              "id": "string",
+              "standard_mu_RT": "float"
+             },
+             "t": "object"
+            }
+           },
+           "t": "named"
+          },
+          "standard_concentration_mM": "float",
+          "transfers": {
+           "of": "any",
+           "t": "list"
+          }
+         },
+         "t": "object"
+        }
+       },
+       "strict": true,
+       "t": "named"
+      },
+      "species": {
+       "by": "id",
+       "names": {
+        "K": {
+         "keys": {
+          "id": "string",
+          "valence": "integer"
+         },
+         "t": "object"
+        },
+        "M": {
+         "keys": {
+          "id": "string",
+          "standard_mu_RT": "float",
+          "valence": "integer"
+         },
+         "t": "object"
+        },
+        "Mx": {
+         "keys": {
+          "id": "string",
+          "standard_mu_RT": "float",
+          "valence": "integer"
+         },
+         "t": "object"
+        },
+        "N": {
+         "keys": {
+          "id": "string",
+          "standard_mu_RT": "float",
+          "valence": "integer"
+         },
+         "t": "object"
+        },
+        "Pi": {
+         "keys": {
+          "id": "string",
+          "standard_mu_RT": "float",
+          "valence": "integer"
+         },
+         "t": "object"
+        },
+        "R": {
+         "keys": {
+          "id": "string",
+          "standard_mu_RT": "float",
+          "valence": "integer"
+         },
+         "t": "object"
+        },
+        "R_s": {
+         "keys": {
+          "id": "string",
+          "standard_mu_RT": "float",
+          "valence": "integer"
+         },
+         "t": "object"
+        },
+        "Y": {
+         "keys": {
+          "id": "string",
+          "valence": "integer"
+         },
+         "t": "object"
+        }
+       },
+       "t": "named"
+      },
+      "standard_concentration_mM": "float",
+      "temperature_K": "float"
+     },
+     "t": "object"
+    },
+    "schema_version": "integer"
+   },
+   "t": "object"
+  },
+  "D": {
+   "keys": {
+    "execution": {
+     "keys": {
+      "backend": "string",
+      "capacity": "integer",
+      "channel_capacity": "integer",
+      "dt": "float",
+      "edge_capacity": "integer",
+      "extracellular_capacity": "integer",
+      "face_capacity": "integer",
+      "field_solver": "string",
+      "jit": "boolean",
+      "material_balance_atol_fmol": {
+       "keys": {
+        "K": "float",
+        "M": "float",
+        "N": "float",
+        "Pi": "float",
+        "R": "float",
+        "R_s": "float",
+        "Y": "float"
+       },
+       "t": "object"
+      },
+      "max_steps": "integer",
+      "max_trace_bytes": "integer",
+      "membrane_capacity": "integer",
+      "precision": "string",
+      "solver": "string"
+     },
+     "t": "object"
+    },
+    "experiment": {
+     "keys": {
+      "calcium_pump_controls": {
+       "of": "any",
+       "t": "list"
+      },
+      "channel_controls": {
+       "of": "any",
+       "t": "list"
+      },
+      "end_time": "float",
+      "junction_controls": {
+       "of": "any",
+       "t": "list"
+      },
+      "label_arrivals": {
+       "of": {
+        "keys": {
+         "schedule": {
+          "of": {
+           "keys": {
+            "label": "string",
+            "time": "float"
+           },
+           "t": "object"
+          },
+          "t": "list"
+         },
+         "source": "string",
+         "species": "string"
+        },
+        "optional": [
+         "source"
+        ],
+        "t": "object"
+       },
+       "t": "list"
+      },
+      "membrane_controls": {
+       "by": "membrane_id",
+       "names": {
+        "patch_0": {
+         "keys": {
+          "membrane_id": "string",
+          "schedule": {
+           "of": {
+            "keys": {
+             "availability": "float",
+             "time": "float"
+            },
+            "t": "object"
+           },
+           "t": "list"
+          }
+         },
+         "t": "object"
+        }
+       },
+       "t": "named"
+      },
+      "observation_times": {
+       "of": "float",
+       "t": "list"
+      },
+      "polymerisation_controls": {
+       "by": "route_id",
+       "names": {
+        "deg_R": {
+         "keys": {
+          "route_id": "string",
+          "schedule": {
+           "of": {
+            "keys": {
+             "time": "float",
+             "value": "float"
+            },
+            "t": "object"
+           },
+           "t": "list"
+          }
+         },
+         "t": "object"
+        },
+        "deg_R_s": {
+         "keys": {
+          "route_id": "string",
+          "schedule": {
+           "of": {
+            "keys": {
+             "time": "float",
+             "value": "float"
+            },
+            "t": "object"
+           },
+           "t": "list"
+          }
+         },
+         "t": "object"
+        },
+        "tx": {
+         "keys": {
+          "route_id": "string",
+          "schedule": {
+           "of": {
+            "keys": {
+             "time": "float",
+             "value": "float"
+            },
+            "t": "object"
+           },
+           "t": "list"
+          }
+         },
+         "t": "object"
+        },
+        "tx_release": {
+         "keys": {
+          "route_id": "string",
+          "schedule": {
+           "of": {
+            "keys": {
+             "time": "float",
+             "value": "float"
+            },
+            "t": "object"
+           },
+           "t": "list"
+          }
+         },
+         "t": "object"
+        }
+       },
+       "optional": [
+        "tx_release"
+       ],
+       "t": "named"
+      },
+      "pump_controls": {
+       "of": "any",
+       "t": "list"
+      },
+      "water_controls": {
+       "by": "membrane_id",
+       "names": {
+        "patch_0": {
+         "keys": {
+          "membrane_id": "string",
+          "schedule": {
+           "of": {
+            "keys": {
+             "availability": "float",
+             "time": "float"
+            },
+            "t": "object"
+           },
+           "t": "list"
+          }
+         },
+         "t": "object"
+        }
+       },
+       "t": "named"
+      }
+     },
+     "t": "object"
+    },
+    "model": {
+     "keys": {
+      "cells": {
+       "by": "id",
+       "names": {
+        "cell_0": {
+         "keys": {
+          "fixed_charge_equivalent_fmol": "float",
+          "id": "string",
+          "initial_amount_fmol": {
+           "keys": {
+            "K": "float",
+            "M": "float",
+            "N": "float",
+            "Pi": "float",
+            "R": "float",
+            "R_s": "float",
+            "Y": "float"
+           },
+           "t": "object"
+          },
+          "initial_charge_C": "float",
+          "volume_pL": "float"
+         },
+         "t": "object"
+        }
+       },
+       "t": "named"
+      },
+      "channels": {
+       "of": "any",
+       "t": "list"
+      },
+      "closure": {
+       "keys": {
+        "gauge_reference": "null",
+        "law": "string"
+       },
+       "t": "object"
+      },
+      "extracellular": {
+       "by": "id",
+       "names": {
+        "bath_0": {
+         "keys": {
+          "boundary_potential_V": "float",
+          "fixed_charge_equivalent_fmol": "float",
+          "id": "string",
+          "initial_amount_fmol": {
+           "keys": {
+            "K": "float",
+            "M": "float",
+            "N": "float",
+            "Pi": "float",
+            "R": "float",
+            "R_s": "float",
+            "Y": "float"
+           },
+           "t": "object"
+          },
+          "initial_charge_C": "float",
+          "reservoir": "boolean",
+          "volume_pL": "float"
+         },
+         "t": "object"
+        }
+       },
+       "t": "named"
+      },
+      "faces": {
+       "of": "any",
+       "t": "list"
+      },
+      "id": "string",
+      "inner_model": "string",
+      "junctions": {
+       "of": "any",
+       "t": "list"
+      },
+      "membranes": {
+       "by": "id",
+       "names": {
+        "patch_0": {
+         "keys": {
+          "area_m2": "float",
+          "calcium_pump": "null",
+          "capacitance_F": "float",
+          "id": "string",
+          "inside": "string",
+          "law": "string",
+          "outside": "string",
+          "permeability_m_per_s": {
+           "keys": {
+            "K": "float",
+            "M": "float",
+            "N": "float",
+            "Pi": "float",
+            "R": "float",
+            "R_s": "float",
+            "Y": "float"
+           },
+           "t": "object"
+          },
+          "pump": "null"
+         },
+         "t": "object"
+        }
+       },
+       "t": "named"
+      },
+      "moieties": {
+       "by": "id",
+       "names": {
+        "nucleoside": {
+         "keys": {
+          "id": "string",
+          "weights": {
+           "keys": {
+            "M": "integer",
+            "N": "integer",
+            "R": "integer",
+            "R_s": "integer"
+           },
+           "t": "object"
+          }
+         },
+         "t": "object"
+        },
+        "phosphorus": {
+         "keys": {
+          "id": "string",
+          "weights": {
+           "keys": {
+            "M": "integer",
+            "N": "integer",
+            "Pi": "integer",
+            "R": "integer",
+            "R_s": "integer"
+           },
+           "t": "object"
+          }
+         },
+         "t": "object"
+        }
+       },
+       "t": "named"
+      },
+      "operators": {
+       "by": "law",
+       "names": {
+        "ideal_osmosis_linear_compliance_water@1": {
+         "keys": {
+          "baths": {
+           "by": "compartment_id",
+           "names": {
+            "bath_0": {
+             "keys": {
+              "compartment_id": "string",
+              "hydrostatic_pressure_Pa": "float"
+             },
+             "t": "object"
+            }
+           },
+           "t": "named"
+          },
+          "compartments": {
+           "by": "compartment_id",
+           "names": {
+            "cell_0": {
+             "keys": {
+              "bulk_modulus_Pa": "float",
+              "compartment_id": "string",
+              "impermeant_amount_fmol": "float",
+              "maximum_volume_pL": "float",
+              "minimum_volume_pL": "float",
+              "pressure_offset_Pa": "float",
+              "reference_volume_pL": "float"
+             },
+             "t": "object"
+            }
+           },
+           "t": "named"
+          },
+          "law": "string",
+          "membranes": {
+           "by": "membrane_id",
+           "names": {
+            "patch_0": {
+             "keys": {
+              "hydraulic_permeability_m_per_Pa_s": "float",
+              "membrane_id": "string"
+             },
+             "t": "object"
+            }
+           },
+           "t": "named"
+          }
+         },
+         "t": "object"
+        },
+        "neutral_arrival_labels@1": {
+         "keys": {
+          "law": "string",
+          "species": {
+           "by": "id",
+           "names": {
+            "R": {
+             "keys": {
+              "id": "string",
+              "initial": {
+               "of": {
+                "keys": {
+                 "node": "string",
+                 "shares": {
+                  "keys": {
+                   "pool0": "float"
+                  },
+                  "t": "object"
+                 }
+                },
+                "t": "object"
+               },
+               "t": "list"
+              },
+              "labels": {
+               "of": "string",
+               "t": "list"
+              }
+             },
+             "t": "object"
+            },
+            "R_s": {
+             "keys": {
+              "id": "string",
+              "initial": {
+               "of": {
+                "keys": {
+                 "node": "string",
+                 "shares": {
+                  "keys": {
+                   "pool0": "float"
+                  },
+                  "t": "object"
+                 }
+                },
+                "t": "object"
+               },
+               "t": "list"
+              },
+              "labels": {
+               "of": "string",
+               "t": "list"
+              }
+             },
+             "t": "object"
+            }
+           },
+           "t": "named"
+          }
+         },
+         "t": "object"
+        },
+        "templated_polymerisation@1": {
+         "keys": {
+          "chains": {
+           "by": "id",
+           "names": {
+            "tx": {
+             "keys": {
+              "draws": {
+               "keys": {
+                "N": "integer"
+               },
+               "t": "object"
+              },
+              "id": "string",
+              "pool": "string",
+              "product": "string",
+              "release": {
+               "keys": {
+                "durable_fraction": "float|string",
+                "dwell_s": "float",
+                "fates": {
+                 "of": {
+                  "keys": {
+                   "durable": "string",
+                   "short_lived": "string"
+                  },
+                  "t": "object"
+                 },
+                 "t": "list"
+                },
+                "id": "string",
+                "initial_copies": {
+                 "of": "float",
+                 "t": "list"
+                },
+                "label": {
+                 "keys": {
+                  "at": "string"
+                 },
+                 "t": "object"
+                },
+                "machine": "string"
+               },
+               "t": "object"
+              },
+              "releases": {
+               "keys": {
+                "Pi": "integer"
+               },
+               "t": "object"
+              },
+              "residues": "integer",
+              "saturation_mM": {
+               "keys": {
+                "N": "float"
+               },
+               "t": "object"
+              },
+              "speed_per_s": "float",
+              "stages": "integer",
+              "template": {
+               "keys": {
+                "copies": "integer"
+               },
+               "t": "object"
+              }
+             },
+             "t": "object"
+            }
+           },
+           "t": "named"
+          },
+          "degradations": {
+           "by": "id",
+           "names": {
+            "deg_R": {
+             "keys": {
+              "cell": "string",
+              "id": "string",
+              "monomers": {
+               "keys": {
+                "M": "integer"
+               },
+               "t": "object"
+              },
+              "polymer": "string",
+              "residues": "integer",
+              "standard_free_energy": {
+               "keys": {
+                "dG_RT": "float"
+               },
+               "t": "object"
+              }
+             },
+             "t": "object"
+            },
+            "deg_R_s": {
+             "keys": {
+              "cell": "string",
+              "id": "string",
+              "monomers": {
+               "keys": {
+                "M": "integer"
+               },
+               "t": "object"
+              },
+              "polymer": "string",
+              "residues": "integer",
+              "standard_free_energy": {
+               "keys": {
+                "dG_RT": "float"
+               },
+               "t": "object"
+              }
+             },
+             "t": "object"
+            }
+           },
+           "t": "named"
+          },
+          "law": "string",
+          "pools": {
+           "by": "id",
+           "names": {
+            "pol": {
+             "keys": {
+              "cell": "string",
+              "id": "string",
+              "machines": "float"
+             },
+             "t": "object"
+            }
+           },
+           "t": "named"
+          },
+          "species": {
+           "by": "id",
+           "names": {
+            "M": {
+             "keys": {
+              "catalogue": "null",
+              "evidence": "null",
+              "id": "string",
+              "standard_mu_RT": "float"
+             },
+             "t": "object"
+            },
+            "N": {
+             "keys": {
+              "catalogue": "null",
+              "evidence": "null",
+              "id": "string",
+              "standard_mu_RT": "float"
+             },
+             "t": "object"
+            },
+            "Pi": {
+             "keys": {
+              "catalogue": "null",
+              "evidence": "null",
+              "id": "string",
+              "standard_mu_RT": "float"
+             },
+             "t": "object"
+            },
+            "R": {
+             "keys": {
+              "catalogue": "null",
+              "evidence": "null",
+              "id": "string",
+              "standard_mu_RT": "float"
+             },
+             "t": "object"
+            },
+            "R_s": {
+             "keys": {
+              "catalogue": "null",
+              "evidence": "null",
+              "id": "string",
+              "standard_mu_RT": "float"
+             },
+             "t": "object"
+            }
+           },
+           "t": "named"
+          },
+          "standard_concentration_mM": "float",
+          "transfers": {
+           "of": "any",
+           "t": "list"
+          }
+         },
+         "t": "object"
+        }
+       },
+       "strict": true,
+       "t": "named"
+      },
+      "species": {
+       "by": "id",
+       "names": {
+        "K": {
+         "keys": {
+          "id": "string",
+          "valence": "integer"
+         },
+         "t": "object"
+        },
+        "M": {
+         "keys": {
+          "id": "string",
+          "standard_mu_RT": "float",
+          "valence": "integer"
+         },
+         "t": "object"
+        },
+        "N": {
+         "keys": {
+          "id": "string",
+          "standard_mu_RT": "float",
+          "valence": "integer"
+         },
+         "t": "object"
+        },
+        "Pi": {
+         "keys": {
+          "id": "string",
+          "standard_mu_RT": "float",
+          "valence": "integer"
+         },
+         "t": "object"
+        },
+        "R": {
+         "keys": {
+          "id": "string",
+          "standard_mu_RT": "float",
+          "valence": "integer"
+         },
+         "t": "object"
+        },
+        "R_s": {
+         "keys": {
+          "id": "string",
+          "standard_mu_RT": "float",
+          "valence": "integer"
+         },
+         "t": "object"
+        },
+        "Y": {
+         "keys": {
+          "id": "string",
+          "valence": "integer"
+         },
+         "t": "object"
+        }
+       },
+       "t": "named"
+      },
+      "standard_concentration_mM": "float",
+      "temperature_K": "float"
+     },
+     "t": "object"
+    },
+    "schema_version": "integer"
+   },
+   "t": "object"
+  },
+  "hold": {
+   "keys": {
+    "execution": {
+     "keys": {
+      "backend": "string",
+      "capacity": "integer",
+      "channel_capacity": "integer",
+      "dt": "float",
+      "edge_capacity": "integer",
+      "extracellular_capacity": "integer",
+      "face_capacity": "integer",
+      "field_solver": "string",
+      "jit": "boolean",
+      "material_balance_atol_fmol": {
+       "keys": {
+        "K": "float",
+        "M": "float",
+        "N": "float",
+        "Pi": "float",
+        "R": "float",
+        "R_s": "float",
+        "Y": "float"
+       },
+       "t": "object"
+      },
+      "max_steps": "integer",
+      "max_trace_bytes": "integer",
+      "membrane_capacity": "integer",
+      "precision": "string",
+      "solver": "string"
+     },
+     "t": "object"
+    },
+    "experiment": {
+     "keys": {
+      "calcium_pump_controls": {
+       "of": "any",
+       "t": "list"
+      },
+      "channel_controls": {
+       "of": "any",
+       "t": "list"
+      },
+      "end_time": "float",
+      "junction_controls": {
+       "of": "any",
+       "t": "list"
+      },
+      "label_arrivals": {
+       "of": {
+        "keys": {
+         "schedule": {
+          "of": {
+           "keys": {
+            "label": "string",
+            "time": "float"
+           },
+           "t": "object"
+          },
+          "t": "list"
+         },
+         "source": "string",
+         "species": "string"
+        },
+        "optional": [
+         "source"
+        ],
+        "t": "object"
+       },
+       "t": "list"
+      },
+      "membrane_controls": {
+       "by": "membrane_id",
+       "names": {
+        "patch_0": {
+         "keys": {
+          "membrane_id": "string",
+          "schedule": {
+           "of": {
+            "keys": {
+             "availability": "float",
+             "time": "float"
+            },
+            "t": "object"
+           },
+           "t": "list"
+          }
+         },
+         "t": "object"
+        }
+       },
+       "t": "named"
+      },
+      "observation_times": {
+       "of": "float",
+       "t": "list"
+      },
+      "polymerisation_controls": {
+       "by": "route_id",
+       "names": {
+        "deg_R": {
+         "keys": {
+          "route_id": "string",
+          "schedule": {
+           "of": {
+            "keys": {
+             "time": "float",
+             "value": "float"
+            },
+            "t": "object"
+           },
+           "t": "list"
+          }
+         },
+         "t": "object"
+        },
+        "deg_R_s": {
+         "keys": {
+          "route_id": "string",
+          "schedule": {
+           "of": {
+            "keys": {
+             "time": "float",
+             "value": "float"
+            },
+            "t": "object"
+           },
+           "t": "list"
+          }
+         },
+         "t": "object"
+        },
+        "tx": {
+         "keys": {
+          "route_id": "string",
+          "schedule": {
+           "of": {
+            "keys": {
+             "time": "float",
+             "value": "float"
+            },
+            "t": "object"
+           },
+           "t": "list"
+          }
+         },
+         "t": "object"
+        },
+        "tx_release": {
+         "keys": {
+          "route_id": "string",
+          "schedule": {
+           "of": {
+            "keys": {
+             "time": "float",
+             "value": "float"
+            },
+            "t": "object"
+           },
+           "t": "list"
+          }
+         },
+         "t": "object"
+        }
+       },
+       "optional": [
+        "tx_release"
+       ],
+       "t": "named"
+      },
+      "pump_controls": {
+       "of": "any",
+       "t": "list"
+      }
+     },
+     "t": "object"
+    },
+    "model": {
+     "keys": {
+      "cells": {
+       "by": "id",
+       "names": {
+        "cell_0": {
+         "keys": {
+          "fixed_charge_equivalent_fmol": "float",
+          "id": "string",
+          "initial_amount_fmol": {
+           "keys": {
+            "K": "float",
+            "M": "float",
+            "N": "float",
+            "Pi": "float",
+            "R": "float",
+            "R_s": "float",
+            "Y": "float"
+           },
+           "t": "object"
+          },
+          "initial_charge_C": "float",
+          "volume_pL": "float"
+         },
+         "t": "object"
+        }
+       },
+       "t": "named"
+      },
+      "channels": {
+       "of": "any",
+       "t": "list"
+      },
+      "closure": {
+       "keys": {
+        "gauge_reference": "null",
+        "law": "string"
+       },
+       "t": "object"
+      },
+      "extracellular": {
+       "by": "id",
+       "names": {
+        "bath_0": {
+         "keys": {
+          "boundary_potential_V": "float",
+          "fixed_charge_equivalent_fmol": "float",
+          "id": "string",
+          "initial_amount_fmol": {
+           "keys": {
+            "K": "float",
+            "M": "float",
+            "N": "float",
+            "Pi": "float",
+            "R": "float",
+            "R_s": "float",
+            "Y": "float"
+           },
+           "t": "object"
+          },
+          "initial_charge_C": "float",
+          "reservoir": "boolean",
+          "volume_pL": "float"
+         },
+         "t": "object"
+        }
+       },
+       "t": "named"
+      },
+      "faces": {
+       "of": "any",
+       "t": "list"
+      },
+      "id": "string",
+      "inner_model": "string",
+      "junctions": {
+       "of": "any",
+       "t": "list"
+      },
+      "membranes": {
+       "by": "id",
+       "names": {
+        "patch_0": {
+         "keys": {
+          "area_m2": "float",
+          "calcium_pump": "null",
+          "capacitance_F": "float",
+          "id": "string",
+          "inside": "string",
+          "law": "string",
+          "outside": "string",
+          "permeability_m_per_s": {
+           "keys": {
+            "K": "float",
+            "M": "float",
+            "N": "float",
+            "Pi": "float",
+            "R": "float",
+            "R_s": "float",
+            "Y": "float"
+           },
+           "t": "object"
+          },
+          "pump": "null"
+         },
+         "t": "object"
+        }
+       },
+       "t": "named"
+      },
+      "moieties": {
+       "by": "id",
+       "names": {
+        "nucleoside": {
+         "keys": {
+          "id": "string",
+          "weights": {
+           "keys": {
+            "M": "integer",
+            "N": "integer",
+            "R": "integer",
+            "R_s": "integer"
+           },
+           "t": "object"
+          }
+         },
+         "t": "object"
+        },
+        "phosphorus": {
+         "keys": {
+          "id": "string",
+          "weights": {
+           "keys": {
+            "M": "integer",
+            "N": "integer",
+            "Pi": "integer",
+            "R": "integer",
+            "R_s": "integer"
+           },
+           "t": "object"
+          }
+         },
+         "t": "object"
+        }
+       },
+       "t": "named"
+      },
+      "operators": {
+       "by": "law",
+       "names": {
+        "neutral_arrival_labels@1": {
+         "keys": {
+          "law": "string",
+          "species": {
+           "by": "id",
+           "names": {
+            "R": {
+             "keys": {
+              "id": "string",
+              "initial": {
+               "of": {
+                "keys": {
+                 "node": "string",
+                 "shares": {
+                  "keys": {
+                   "pool0": "float"
+                  },
+                  "t": "object"
+                 }
+                },
+                "t": "object"
+               },
+               "t": "list"
+              },
+              "labels": {
+               "of": "string",
+               "t": "list"
+              }
+             },
+             "t": "object"
+            },
+            "R_s": {
+             "keys": {
+              "id": "string",
+              "initial": {
+               "of": {
+                "keys": {
+                 "node": "string",
+                 "shares": {
+                  "keys": {
+                   "pool0": "float"
+                  },
+                  "t": "object"
+                 }
+                },
+                "t": "object"
+               },
+               "t": "list"
+              },
+              "labels": {
+               "of": "string",
+               "t": "list"
+              }
+             },
+             "t": "object"
+            }
+           },
+           "t": "named"
+          }
+         },
+         "t": "object"
+        },
+        "templated_polymerisation@1": {
+         "keys": {
+          "chains": {
+           "by": "id",
+           "names": {
+            "tx": {
+             "keys": {
+              "draws": {
+               "keys": {
+                "N": "integer"
+               },
+               "t": "object"
+              },
+              "id": "string",
+              "pool": "string",
+              "product": "string",
+              "release": {
+               "keys": {
+                "durable_fraction": "float|string",
+                "dwell_s": "float",
+                "fates": {
+                 "of": {
+                  "keys": {
+                   "durable": "string",
+                   "short_lived": "string"
+                  },
+                  "t": "object"
+                 },
+                 "t": "list"
+                },
+                "id": "string",
+                "initial_copies": {
+                 "of": "float",
+                 "t": "list"
+                },
+                "label": {
+                 "keys": {
+                  "at": "string"
+                 },
+                 "t": "object"
+                },
+                "machine": "string"
+               },
+               "t": "object"
+              },
+              "releases": {
+               "keys": {
+                "Pi": "integer"
+               },
+               "t": "object"
+              },
+              "residues": "integer",
+              "saturation_mM": {
+               "keys": {
+                "N": "float"
+               },
+               "t": "object"
+              },
+              "speed_per_s": "float",
+              "stages": "integer",
+              "template": {
+               "keys": {
+                "copies": "integer"
+               },
+               "t": "object"
+              }
+             },
+             "t": "object"
+            }
+           },
+           "t": "named"
+          },
+          "degradations": {
+           "by": "id",
+           "names": {
+            "deg_R": {
+             "keys": {
+              "cell": "string",
+              "id": "string",
+              "monomers": {
+               "keys": {
+                "M": "integer"
+               },
+               "t": "object"
+              },
+              "polymer": "string",
+              "residues": "integer",
+              "standard_free_energy": {
+               "keys": {
+                "dG_RT": "float"
+               },
+               "t": "object"
+              }
+             },
+             "t": "object"
+            },
+            "deg_R_s": {
+             "keys": {
+              "cell": "string",
+              "id": "string",
+              "monomers": {
+               "keys": {
+                "M": "integer"
+               },
+               "t": "object"
+              },
+              "polymer": "string",
+              "residues": "integer",
+              "standard_free_energy": {
+               "keys": {
+                "dG_RT": "float"
+               },
+               "t": "object"
+              }
+             },
+             "t": "object"
+            }
+           },
+           "t": "named"
+          },
+          "law": "string",
+          "pools": {
+           "by": "id",
+           "names": {
+            "pol": {
+             "keys": {
+              "cell": "string",
+              "id": "string",
+              "machines": "float"
+             },
+             "t": "object"
+            }
+           },
+           "t": "named"
+          },
+          "species": {
+           "by": "id",
+           "names": {
+            "M": {
+             "keys": {
+              "catalogue": "null",
+              "evidence": "null",
+              "id": "string",
+              "standard_mu_RT": "float"
+             },
+             "t": "object"
+            },
+            "N": {
+             "keys": {
+              "catalogue": "null",
+              "evidence": "null",
+              "id": "string",
+              "standard_mu_RT": "float"
+             },
+             "t": "object"
+            },
+            "Pi": {
+             "keys": {
+              "catalogue": "null",
+              "evidence": "null",
+              "id": "string",
+              "standard_mu_RT": "float"
+             },
+             "t": "object"
+            },
+            "R": {
+             "keys": {
+              "catalogue": "null",
+              "evidence": "null",
+              "id": "string",
+              "standard_mu_RT": "float"
+             },
+             "t": "object"
+            },
+            "R_s": {
+             "keys": {
+              "catalogue": "null",
+              "evidence": "null",
+              "id": "string",
+              "standard_mu_RT": "float"
+             },
+             "t": "object"
+            }
+           },
+           "t": "named"
+          },
+          "standard_concentration_mM": "float",
+          "transfers": {
+           "of": "any",
+           "t": "list"
+          }
+         },
+         "t": "object"
+        }
+       },
+       "strict": true,
+       "t": "named"
+      },
+      "species": {
+       "by": "id",
+       "names": {
+        "K": {
+         "keys": {
+          "id": "string",
+          "valence": "integer"
+         },
+         "t": "object"
+        },
+        "M": {
+         "keys": {
+          "id": "string",
+          "standard_mu_RT": "float",
+          "valence": "integer"
+         },
+         "t": "object"
+        },
+        "N": {
+         "keys": {
+          "id": "string",
+          "standard_mu_RT": "float",
+          "valence": "integer"
+         },
+         "t": "object"
+        },
+        "Pi": {
+         "keys": {
+          "id": "string",
+          "standard_mu_RT": "float",
+          "valence": "integer"
+         },
+         "t": "object"
+        },
+        "R": {
+         "keys": {
+          "id": "string",
+          "standard_mu_RT": "float",
+          "valence": "integer"
+         },
+         "t": "object"
+        },
+        "R_s": {
+         "keys": {
+          "id": "string",
+          "standard_mu_RT": "float",
+          "valence": "integer"
+         },
+         "t": "object"
+        },
+        "Y": {
+         "keys": {
+          "id": "string",
+          "valence": "integer"
+         },
+         "t": "object"
+        }
+       },
+       "t": "named"
+      },
+      "standard_concentration_mM": "float",
+      "temperature_K": "float"
+     },
+     "t": "object"
+    },
+    "schema_version": "integer"
+   },
+   "t": "object"
+  }
+ },
+ "entry": {
+  "keys": {
+   "blank": "string",
+   "checks": {
+    "keys": {
+     "G_identity_largest_pJ": "float",
+     "G_identity_over_sum_H_at_end": "float",
+     "H_total_at_end_pJ": "float",
+     "energy_magnitude_at_end_pJ": "float",
+     "exported_cell": "string",
+     "routes_minus_total_largest_pJ": "float",
+     "routes_minus_total_over_magnitude": "float",
+     "smallest_class_increment": {
+      "of": "float",
+      "t": "map"
+     }
+    },
+    "t": "object"
+   },
+   "definition": {
+    "t": "definition"
+   },
+   "dt_s": "float",
+   "excess_over_blank": {
+    "keys": {
+     "durable": {
+      "of": "float",
+      "t": "list"
+     },
+     "short_lived": {
+      "of": "float",
+      "t": "list"
+     }
+    },
+    "t": "object"
+   },
+   "own_ledgers_at_end": {
+    "keys": {
+     "poly_machines": {
+      "of": "float",
+      "t": "list"
+     },
+     "poly_residues": {
+      "of": "float",
+      "t": "list"
+     }
+    },
+    "t": "object"
+   },
+   "readouts": {
+    "of": {
+     "of": "float",
+     "t": "list"
+    },
+    "t": "map"
+   },
+   "record": "string",
+   "record_sha256": "string",
+   "route2": {
+    "of": {
+     "keys": {
+      "fate": "string",
+      "grid_error": "float",
+      "k_per_s": "float",
+      "ts_s": "float",
+      "value": "float"
+     },
+     "t": "object"
+    },
+    "t": "list"
+   },
+   "source": {
+    "keys": {
+     "checkout_dirty": "boolean",
+     "engine_revision": "string",
+     "snapshot": "string",
+     "snapshot_patch_sha256": "string"
+    },
+    "t": "object"
+   },
+   "steps": "integer",
+   "survival": {
+    "of": {
+     "keys": {
+      "alive_t2": "float",
+      "alive_ts": "float",
+      "fate": "string",
+      "ratio": "number|null",
+      "t2_s": "float",
+      "ts_s": "float"
+     },
+     "t": "object"
+    },
+    "t": "list"
+   },
+   "t": {
+    "of": "float",
+    "t": "list"
+   }
+  },
+  "t": "object"
+ },
+ "host_patch": {
+  "keys": {
+   "change": "string",
+   "code": "string",
+   "id": "string",
+   "operator": "string"
+  },
+  "t": "object"
+ },
+ "kind": "cells.fr38_v2.table_shapes@1",
+ "kinds": {
+  "B run": [
+   "blank",
+   "checks",
+   "definition",
+   "dt_s",
+   "own_ledgers_at_end",
+   "readouts",
+   "record",
+   "record_sha256",
+   "route2",
+   "source",
+   "steps",
+   "survival",
+   "t"
+  ],
+  "B twin": [
+   "blank",
+   "checks",
+   "definition",
+   "dt_s",
+   "own_ledgers_at_end",
+   "readouts",
+   "record",
+   "record_sha256",
+   "route2",
+   "source",
+   "steps",
+   "t"
+  ],
+  "P8": [
+   "blank",
+   "checks",
+   "definition",
+   "dt_s",
+   "excess_over_blank",
+   "host_patch",
+   "judged_as",
+   "own_ledgers_at_end",
+   "readouts",
+   "record",
+   "record_sha256",
+   "route2",
+   "source",
+   "steps",
+   "survival",
+   "t"
+  ],
+  "P8 blank": [
+   "blank",
+   "checks",
+   "definition",
+   "dt_s",
+   "host_patch",
+   "judged_as",
+   "own_ledgers_at_end",
+   "readouts",
+   "record",
+   "record_sha256",
+   "route2",
+   "source",
+   "steps",
+   "survival",
+   "t"
+  ],
+  "blank": [
+   "blank",
+   "checks",
+   "definition",
+   "dt_s",
+   "own_ledgers_at_end",
+   "readouts",
+   "record",
+   "record_sha256",
+   "route2",
+   "source",
+   "steps",
+   "survival",
+   "t"
+  ],
+  "labelled": [
+   "blank",
+   "checks",
+   "definition",
+   "dt_s",
+   "excess_over_blank",
+   "own_ledgers_at_end",
+   "readouts",
+   "record",
+   "record_sha256",
+   "route2",
+   "source",
+   "steps",
+   "survival",
+   "t"
+  ],
+  "plant": [
+   "blank",
+   "checks",
+   "definition",
+   "dt_s",
+   "host_patch",
+   "judged_as",
+   "own_ledgers_at_end",
+   "readouts",
+   "record",
+   "record_sha256",
+   "route2",
+   "source",
+   "steps",
+   "survival",
+   "t"
+  ],
+  "refused": [
+   "definition",
+   "record",
+   "refusal",
+   "refused"
+  ],
+  "restart": [
+   "blank",
+   "checkpoint",
+   "checks",
+   "definition",
+   "dt_s",
+   "excess_over_blank",
+   "own_ledgers_at_end",
+   "readouts",
+   "record",
+   "record_sha256",
+   "route2",
+   "source",
+   "steps",
+   "survival",
+   "t"
+  ],
+  "twin": [
+   "blank",
+   "checks",
+   "definition",
+   "dt_s",
+   "excess_over_blank",
+   "own_ledgers_at_end",
+   "readouts",
+   "record",
+   "record_sha256",
+   "route2",
+   "source",
+   "steps",
+   "t"
+  ]
+ },
+ "readouts": {
+  "AF": [
+   "C_tx_1",
+   "C_tx_2",
+   "C_tx_3",
+   "C_tx_4",
+   "C_tx_5",
+   "C_tx_6",
+   "C_tx_7",
+   "C_tx_8",
+   "E_tx",
+   "F_pol",
+   "G_minus_G0",
+   "H_deg_R",
+   "H_deg_R_s",
+   "H_rel_tx_release_durable",
+   "H_rel_tx_release_short_lived",
+   "H_route_deg_R",
+   "H_route_deg_R_s",
+   "H_route_tx",
+   "H_routes_sum",
+   "H_total",
+   "H_tx",
+   "H_tx_release",
+   "W_tx",
+   "int_D_R",
+   "int_D_R_s",
+   "int_D_route_deg_R",
+   "int_D_route_deg_R_s",
+   "int_J_I_tx",
+   "int_Q_tx",
+   "int_Q_tx_release_durable",
+   "int_Q_tx_release_short_lived",
+   "int_S_tx",
+   "label_H_tx_release_pool0",
+   "label_H_tx_release_post",
+   "label_H_tx_release_pre",
+   "label_H_tx_release_resyn",
+   "label_H_tx_release_win",
+   "label_R_pool0",
+   "label_R_post",
+   "label_R_pre",
+   "label_R_resyn",
+   "label_R_s_pool0",
+   "label_R_s_post",
+   "label_R_s_pre",
+   "label_R_s_resyn",
+   "label_R_s_win",
+   "label_R_win",
+   "n_M",
+   "n_N",
+   "n_Pi",
+   "n_R",
+   "n_R_s",
+   "n_tx_release_durable",
+   "n_tx_release_short_lived",
+   "released_present_gross_durable",
+   "released_present_gross_short_lived"
+  ],
+  "AN": [
+   "C_tx_1",
+   "C_tx_2",
+   "C_tx_3",
+   "C_tx_4",
+   "C_tx_5",
+   "C_tx_6",
+   "C_tx_7",
+   "C_tx_8",
+   "E_tx",
+   "F_pol",
+   "G_minus_G0",
+   "H_deg_R",
+   "H_deg_R_s",
+   "H_rel_tx_release_durable",
+   "H_rel_tx_release_short_lived",
+   "H_route_deg_R",
+   "H_route_deg_R_s",
+   "H_route_tx",
+   "H_routes_sum",
+   "H_total",
+   "H_tx",
+   "H_tx_release",
+   "W_tx",
+   "int_D_R",
+   "int_D_R_s",
+   "int_D_route_deg_R",
+   "int_D_route_deg_R_s",
+   "int_J_I_tx",
+   "int_Q_tx",
+   "int_Q_tx_release_durable",
+   "int_Q_tx_release_short_lived",
+   "int_S_tx",
+   "label_H_tx_release_pool0",
+   "label_H_tx_release_post",
+   "label_H_tx_release_pre",
+   "label_H_tx_release_resyn",
+   "label_H_tx_release_win",
+   "label_R_pool0",
+   "label_R_post",
+   "label_R_pre",
+   "label_R_resyn",
+   "label_R_s_pool0",
+   "label_R_s_post",
+   "label_R_s_pre",
+   "label_R_s_resyn",
+   "label_R_s_win",
+   "label_R_win",
+   "n_M",
+   "n_N",
+   "n_Pi",
+   "n_R",
+   "n_R_s",
+   "n_tx_release_durable",
+   "n_tx_release_short_lived",
+   "released_present_gross_durable",
+   "released_present_gross_short_lived"
+  ],
+  "B": [
+   "C_tl_1",
+   "C_tl_2",
+   "C_tl_3",
+   "C_tl_4",
+   "C_tl_5",
+   "C_tl_6",
+   "C_tl_7",
+   "C_tl_8",
+   "C_tl_s_1",
+   "C_tl_s_2",
+   "C_tl_s_3",
+   "C_tl_s_4",
+   "C_tl_s_5",
+   "C_tl_s_6",
+   "C_tl_s_7",
+   "C_tl_s_8",
+   "C_tx_1",
+   "C_tx_2",
+   "C_tx_3",
+   "C_tx_4",
+   "C_tx_5",
+   "C_tx_6",
+   "C_tx_7",
+   "C_tx_8",
+   "E_tl",
+   "E_tl_s",
+   "E_tx",
+   "F_pol",
+   "F_rib",
+   "G_minus_G0",
+   "H_deg_P",
+   "H_deg_R",
+   "H_deg_R_s",
+   "H_rc",
+   "H_rel_tx_release_durable",
+   "H_rel_tx_release_short_lived",
+   "H_route_deg_P",
+   "H_route_deg_R",
+   "H_route_deg_R_s",
+   "H_route_recharge",
+   "H_route_tl",
+   "H_route_tl_s",
+   "H_route_tx",
+   "H_routes_sum",
+   "H_tl",
+   "H_total",
+   "H_tx",
+   "H_tx_release",
+   "W_tl",
+   "W_tl_s",
+   "W_tx",
+   "int_D_P",
+   "int_D_R",
+   "int_D_R_s",
+   "int_D_route_deg_P",
+   "int_D_route_deg_R",
+   "int_D_route_deg_R_s",
+   "int_J_C",
+   "int_J_I_tl",
+   "int_J_I_tl_s",
+   "int_J_I_tx",
+   "int_Q_tl",
+   "int_Q_tl_s",
+   "int_Q_tx",
+   "int_Q_tx_release_durable",
+   "int_Q_tx_release_short_lived",
+   "int_S_tl",
+   "int_S_tl_s",
+   "int_S_tx",
+   "label_H_tx_release_pool0",
+   "label_H_tx_release_post",
+   "label_H_tx_release_pre",
+   "label_H_tx_release_resyn",
+   "label_H_tx_release_win",
+   "label_R_pool0",
+   "label_R_post",
+   "label_R_pre",
+   "label_R_resyn",
+   "label_R_s_pool0",
+   "label_R_s_post",
+   "label_R_s_pre",
+   "label_R_s_resyn",
+   "label_R_s_win",
+   "label_R_win",
+   "n_A",
+   "n_ADP",
+   "n_ATP",
+   "n_M",
+   "n_N",
+   "n_P",
+   "n_Pi",
+   "n_R",
+   "n_R_s",
+   "n_X",
+   "n_tx_release_durable",
+   "n_tx_release_short_lived",
+   "released_present_gross_durable",
+   "released_present_gross_short_lived"
+  ],
+  "C": [
+   "C_tx_1",
+   "C_tx_2",
+   "C_tx_3",
+   "C_tx_4",
+   "C_tx_5",
+   "C_tx_6",
+   "C_tx_7",
+   "C_tx_8",
+   "E_tx",
+   "F_pol",
+   "G_minus_G0",
+   "H_deg_R",
+   "H_deg_R_s",
+   "H_rel_tx_release_durable",
+   "H_rel_tx_release_short_lived",
+   "H_route_deg_R",
+   "H_route_deg_R_s",
+   "H_route_tx",
+   "H_routes_sum",
+   "H_store",
+   "H_total",
+   "H_tx",
+   "H_tx_release",
+   "W_network",
+   "W_tx",
+   "int_D_R",
+   "int_D_R_s",
+   "int_D_route_deg_R",
+   "int_D_route_deg_R_s",
+   "int_J_I_tx",
+   "int_Q_tx",
+   "int_Q_tx_release_durable",
+   "int_Q_tx_release_short_lived",
+   "int_S_tx",
+   "label_H_tx_release_pool0",
+   "label_H_tx_release_post",
+   "label_H_tx_release_pre",
+   "label_H_tx_release_resyn",
+   "label_H_tx_release_win",
+   "label_R_pool0",
+   "label_R_post",
+   "label_R_pre",
+   "label_R_resyn",
+   "label_R_s_pool0",
+   "label_R_s_post",
+   "label_R_s_pre",
+   "label_R_s_resyn",
+   "label_R_s_win",
+   "label_R_win",
+   "n_M",
+   "n_Mx",
+   "n_N",
+   "n_Pi",
+   "n_R",
+   "n_R_s",
+   "n_tx_release_durable",
+   "n_tx_release_short_lived",
+   "released_present_gross_durable",
+   "released_present_gross_short_lived"
+  ],
+  "D": [
+   "C_tx_1",
+   "C_tx_2",
+   "C_tx_3",
+   "C_tx_4",
+   "C_tx_5",
+   "C_tx_6",
+   "C_tx_7",
+   "C_tx_8",
+   "E_tx",
+   "F_pol",
+   "G_minus_G0",
+   "H_deg_R",
+   "H_deg_R_s",
+   "H_rel_tx_release_durable",
+   "H_rel_tx_release_short_lived",
+   "H_route_deg_R",
+   "H_route_deg_R_s",
+   "H_route_tx",
+   "H_routes_sum",
+   "H_total",
+   "H_tx",
+   "H_tx_release",
+   "H_water",
+   "V",
+   "W_bath",
+   "W_tx",
+   "int_D_R",
+   "int_D_R_s",
+   "int_D_route_deg_R",
+   "int_D_route_deg_R_s",
+   "int_J_I_tx",
+   "int_Q_tx",
+   "int_Q_tx_release_durable",
+   "int_Q_tx_release_short_lived",
+   "int_S_tx",
+   "label_H_tx_release_pool0",
+   "label_H_tx_release_post",
+   "label_H_tx_release_pre",
+   "label_H_tx_release_resyn",
+   "label_H_tx_release_win",
+   "label_R_pool0",
+   "label_R_post",
+   "label_R_pre",
+   "label_R_resyn",
+   "label_R_s_pool0",
+   "label_R_s_post",
+   "label_R_s_pre",
+   "label_R_s_resyn",
+   "label_R_s_win",
+   "label_R_win",
+   "n_K",
+   "n_M",
+   "n_N",
+   "n_Pi",
+   "n_R",
+   "n_R_s",
+   "n_Y",
+   "n_tx_release_durable",
+   "n_tx_release_short_lived",
+   "released_present_gross_durable",
+   "released_present_gross_short_lived"
+  ]
+ },
+ "sample_sha256": {
+  "README.md": "be9c14966af025cc675236c2fe8cd9d11cca48e7b6a47ee27872698f877add25",
+  "table-retry/SHA256SUMS": "ef8c3ddc625258a7e2ab483835982c37f9db0961ad094218ffa0b3564c6c58ac",
+  "table-retry/table_C.json": "26ec203bf60b46a4069f11e10e477cf870d1f23c7559e2036d9d0d0ff7c703a2",
+  "table/SHA256SUMS": "22c821681030d4abe5bf042c2010443f137295b0ac92a26162081df63c501e26",
+  "table/table_AF.json": "d5edc789a54847366ca1fff38cc2262de84030ac6c229ebcedfaf172874679b5",
+  "table/table_AN.json": "4fdd65e2786bd194208285318c053d15464106869e5474f938e613c2e1db0c5c",
+  "table/table_B.json": "c23d2ece5d180fe02a880c9eee90b0828866edf059a11e6328dbc6f31da7f5c4",
+  "table/table_C.json": "c6ec2ab0c836eb831f7be3daa055719b07f5b9ee48ee71d4080d5ba34642b978",
+  "table/table_D.json": "87a61206af13207f6c044c618667377d31ee630ad1dfd85bd7254c4ace91e200"
+ }
+}
