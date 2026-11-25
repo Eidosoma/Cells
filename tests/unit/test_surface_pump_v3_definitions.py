@@ -40,7 +40,7 @@ ENERGY_CHECK_FAULTS = {
     ),
     "energy_check_euler": (
         lambda x: x.update(solver=imex.EULER_ID),
-        "runs only with imex_ars222",
+        r"runs only with \S*imex_ars222",
     ),
 }
 CHANNEL_OBSERVATIONS = (
