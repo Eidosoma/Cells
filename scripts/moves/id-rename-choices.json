@@ -1114,14 +1114,209 @@
     "owner": "fr18"
    },
    {
+    "path": "validation/ensemble_reexpression/registered_strings.json",
+    "reason": "the re-expression's registered strings, Part 1, in the IDs they were registered in (the protocol, section 5: the strings notes are frozen for the move)",
+    "owner": "the lead"
+   },
+   {
+    "path": "validation/ensemble_reexpression/registered_strings_part2.json",
+    "reason": "the re-expression's registered strings, Part 2, in the IDs they were registered in (the protocol, section 5: the strings notes are frozen for the move)",
+    "owner": "the lead"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/README.md",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/checks.py",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/closure.py",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/estimate.py",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/exclusions.py",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/inputs_rehearsal.json",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/legacy_arrays.py",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/legacy_rehearsal.json",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
     "path": "validation/ensemble_reexpression/rehearsal/make_inputs.py",
     "reason": "the rehearsal's maker: it writes legacy definitions for the frozen snapshot, in the IDs that the snapshot spells, and verify.py compares the captured definitions with what it writes; the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/make_profile.py",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/margins_rehearsal.json",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/parse_check.py",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/plant_driver.py",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/plants_manifest_rehearsal.json",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/pool_paths.py",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/profile_rehearsal.json",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/reference.py",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/reference_paths_rehearsal.json",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
     "owner": "ensemble"
    },
    {
     "path": "validation/ensemble_reexpression/rehearsal/registered_strings_rehearsal.json",
     "reason": "the rehearsal's registered strings, in the IDs they were declared with (the protocol, section 5: the strings notes and the rehearsal's files are frozen for the move)",
     "owner": "the lead"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/rules.py",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/verify.py",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/README.md",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/checks2.py",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/estimate2.py",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/exclusions2.py",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/inputs_rehearsal_part2.json",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/legacy_arrays2.py",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/legacy_rehearsal_part2.json",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/make_inputs2.py",
+    "reason": "Part 2's rehearsal maker: it writes legacy definitions for the frozen snapshot, in the IDs that the snapshot spells, and verify2.py compares the captured definitions with what it writes; the protocol freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/make_profile2.py",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/margins_rehearsal_part2.json",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/plant_driver2.py",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/plants_manifest_rehearsal_part2.json",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/pool_paths2.py",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/profile_rehearsal_part2.json",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/reference2.py",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/reference_paths_rehearsal_part2.json",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/rules2.py",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/verify2.py",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
    },
    {
     "path": "validation/fr1/references/reference_inputs.json",
