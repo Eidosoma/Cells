@@ -81,6 +81,7 @@ A candidate's block is compared with `inputs.json`'s block (`CRITERIA.md` §5):
 - a number in a schedule or a time, to 10⁻¹² relative. Integers, strings and booleans, exactly;
 - **maps by key, never by order.** A JSON 4 equals 4.0. A schedule is compared after every entry that repeats the value before it is
   removed;
+- **`controls.channel` of `cell` and `base`** is not part of the echo. `inputs.json` holds a sentence in its place, and the schedule is class E (`CRITERIA.md` §4.1). So are `inputs.assembly`'s `pool_seeds` and `switch_list`. Its `assembly_observable` is an echo of a label, and its `composed_file_fingerprint` is recorded;
 - a key that `inputs.json` does not hold is recorded, and refuses nothing.
 
 ## 3. What a candidate declares, for the comparison to be lawful
@@ -126,22 +127,16 @@ each event from that event's time on. An entry that repeats the value before it 
 **The ionic worlds judged.** World IDs 0 to 7 of each of the four seeds, for `cell` and for `base`: 32 ionic families each. For
 `cell` the pools are judged on all 64 worlds a seed, and the ionic side on 8 of them. Nothing is said of the ionic side of IDs 8 to 63.
 
-### 3.3 The two declared forms of the assembly coupling
+### 3.3 The assembly coupling, as decided
 
-How an assembly pool sets a channel's availability is an open question for the user (the plan's G-7). **Both forms are registered, and exactly one is run.** The lead names it in `assembly_form.json`
-(`TABLE.md` §8), from the user's answer and never from a run, before the registration tag.
+**Dated line, 25 November 2026 (the lead's note).** The user decided the form of the coupling (the plan's G-7): a driver runs the live pool and writes its switch path into the ionic world's channel controls. The ionic world stays the inner model, version 3, on RK4. No run informed the decision. An operator on the composite is not built now, and this registration
+holds no form of it. A run of one departs from its strings note and is refused. (An earlier draft of this folder, commit 5f550674, registered a second form, with a held availability, as reported only. It is removed, as the simpler thing to judge.)
 
-| | Form A, `schedule` | Form B, `operator` |
-| --- | --- | --- |
-| What it is | A driver runs the live pool and writes its event path into the ionic world's channel schedule (§3.2). The ionic world is the inner model, version 3, on RK4 | An operator on the composite advances the pool and gives the ionic step one availability, held over the step |
-| When an event acts | At its own time. The step is split there | At the next hold point. The value at a declared point of the step (its start, middle or end) holds for all of it |
-| Equations | **Same** | **Changed model.** The plan's section 14.5 names a factor held through a step as one. The error it makes is not smooth in the step, so three steps have no order |
-| Steps and order | 25, 12.5, 6.25 µs, declared order 4 | The same three steps. No declared order is used |
-| Field solver | As §3.1 | As §3.1 for the inner model it holds |
-| What is judged | Everything of `CRITERIA.md` §4 | The pool, the applied availability, conservation and completion. The ionic side is **reported, not judged** (`CRITERIA.md` §4.6) |
-
-- **A form A run** and **a form B run** of one world have the same name. A run of the form that was not named departs from its strings note and is refused.
-- **In both forms** the pool's event times are its own doubles, its streams and seeds are the block's, and the pool never reads the ionic side.
+**The driver is the builder's.** It makes the schedule from the pool run of the same seed, world and cell. What it made is recorded by the ionic run's definition in the run's inputs, by name (`TABLE.md` §3):
+- **the assembly observable,** the law that turns a pool's topology into an availability. It is a registered law with an ID and a page, of the family `assembly_observable` (the user's word). Label `assembly_observable`;
+- **the composed file's fingerprint;**
+- **the pool's seeds;**
+- **the switch list,** the changes of availability that the driver wrote, per channel.
 
 ## 4. The runs and the compared times
 

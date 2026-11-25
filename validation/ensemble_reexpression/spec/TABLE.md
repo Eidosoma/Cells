@@ -36,15 +36,14 @@ Every entry holds all of these keys. A key that a kind of run does not use holds
 | `variant` | string or null: the registered run's |
 | `seed_index`, `world_id` | integers or null: the registered run's |
 | `step_s` | number, or null for a pool run |
-| `steps` | integer, or null for a pool run: the accepted steps of the run. For `jupiter` and `integrated` it equals end_s/step_s. For `cell` and `base` it is at least that and at most that plus the committed events of the world's two (or one) pool paths in form A, and equals end_s/step_s in form B (`SPEC.md` §3.3) |
+| `steps` | integer, or null for a pool run: the accepted steps of the run. For `jupiter` and `integrated` it equals end_s/step_s. For `cell` and `base` it is at least that and at most that plus the committed events of the world's two (or one) pool paths |
 | `t` | list of numbers: the times of `rows`, strictly increasing, the first 0. Every compared time is there. `[]` for a pool run, whose `rows` and `potentials` are `{}` and `potential_t` `[]` |
 | `rows` | object: READOUTS §2's name to an object, entity ID to a list as long as `t` |
 | `potential_t` | list of numbers: the times of `potentials` (for `jupiter` and `integrated` the block's `potential_times_s`, for `base` and `cell` the summary times that are in `t`) |
 | `potentials` | object: `voltage` and `phi_out` to entity ID to a list as long as `potential_t`. A world without one omits it |
-| `pool` | null, or for a pool run an object: cell ID to `{"arrays": {<19 names>: nested lists [world, ...]}, "seed": integer, "stream_id": integer}`. In form B an ionic run of `cell` or `base` holds its own world's, with a world axis of length 1 |
-| `path` | null, or for a pool run an object: cell ID to an object, world ID (as a string) to a list of `[time, availability]`, one per committed event, in order. In form B an ionic run of `cell` or `base` holds its own world's |
-| `applied` | null, or in form B for an ionic run of `cell` or `base` an object: channel ID to a list of `[start of the step, availability applied in it]`, one per accepted step, in order |
-| `inputs` | the world's block, read back from **the definition the engine parsed and ran**, never a copy of this folder. For an ionic run it is `inputs.json` `worlds.<w>.ionic`, with `controls.channel` the schedule the run declared (in form B `[[0.0, 1.0]]` for every channel). For a pool run it is `worlds.<w>.pools.<cell>.pool` per cell, with `seed`. An ionic run in form B holds both, the pool blocks under the key `pools` |
+| `pool` | null, or for a pool run an object: cell ID to `{"arrays": {<19 names>: nested lists [world, ...]}, "seed": integer, "stream_id": integer}`. |
+| `path` | null, or for a pool run an object: cell ID to an object, world ID (as a string) to a list of `[time, availability]`, one per committed event, in order |
+| `inputs` | the world's block, read back from **the definition the engine parsed and ran**, never a copy of this folder. For an ionic run it is `inputs.json` `worlds.<w>.ionic`, with `controls.channel` the schedule the run declared. For an ionic run of `cell` or `base` it also holds `assembly` (below). For a pool run it is `worlds.<w>.pools.<cell>.pool` per cell, with `seed` |
 | `strings` | object: label to the exact string the run declared, for every label the strings note lists for that run (§5) |
 | `definition` | the engine's own declaration, as run (recorded) |
 | `checks` | the engine's own ledgers and checks at the end (recorded) |
@@ -54,6 +53,11 @@ Every entry holds all of these keys. A key that a kind of run does not use holds
 | `source` | `engine_revision`, `checkout_dirty` (boolean), `snapshot`, `snapshot_patch_sha256`, `python`, `numpy`, `jax`, `jaxlib`, `cpu_model`, `blas_threads` (integer), all strings but those marked |
 | `record`, `record_sha256` | the run's own record file, and its 64 hex digits |
 
+- **`inputs.assembly`** of an ionic run of `cell` or `base` (`SPEC.md` §3.3) holds exactly these keys, and nothing of it is optional:
+  - `assembly_observable`: the label of the registered law, as the definition records it, which the strings note maps to the exact string (a departure is an echo's, `CRITERIA.md` §5);
+  - `composed_file_fingerprint`: the string that the definition records for the composed file. It is recorded, and nothing is compared with it. The checker recomputes it from the composed file;
+  - `pool_seeds`: cell ID to integer, the seeds of the pool run the file was composed from (class E, `CRITERIA.md` §4.1);
+  - `switch_list`: channel ID to a list of `[time, availability]`, the changes that the driver wrote, in order (class E).
 - **The record holds the run's own name** in its content. So no two records are alike, and worlds whose pools have no event, which are honestly the same ionic solution, do not share a hash.
 - **`rows` of an ionic assembly run:** for `base`, `t` = [0, 0.005, 0.01, 0.02]; for `cell`, [0, 0.02]. Extra rows are allowed. A row at a split (an event time) is an accepted row and is not needed.
 - **A completed run's `refusal` is null and a refused run's is not.** A refused run keeps the rows it has.
@@ -81,11 +85,10 @@ Every entry holds all of these keys. A key that a kind of run does not use holds
 {"kind": "ensemble-reexpression registered strings, version 1",
  "revision": "<40 hex>", "rehearsal_revision": null,
  "labels": {"inner_model": "", "rk4": "", "field_solver": "", "field_solver_floor": "", "closure": "", "constant_field": "", "kv15_mh": "",
-            "nak_pump_positive": "", "maintained_fuel": "", "junction_relaxation": "", "logmean_face": "", "pool_model": "", "pool_topology": ""},
+            "nak_pump_positive": "", "maintained_fuel": "", "junction_relaxation": "", "logmean_face": "", "pool_model": "", "pool_topology": "", "assembly_observable": ""},
  "runs": {"<run name>": {"model": "<label>", "solver": "<label>", "field_solver": "<label>", "operators": [], "laws": ["<labels>"]}}}
 ```
 
-- **In form B** the runs of `cell` and `base` also declare `composite_model` and `assembly_operator`, which the lead adds to `labels` when the form note names that form.
 - **`labels`** maps each label of `inputs.json`'s blocks to the exact registered string. It is written by the lead from the declared worlds, never from a table, and checked by parse before its tag. A label that Part 2 needs is added by `PART2.md` §4's table.
 - **`runs`** gives, for every registered run (the retry's by the same rule as its family), which labels it declares. The judge reads a run's `strings` as `labels[...]` for them, exactly.
 - **`revision`** is the registration tag's, which a file in the tagged commit cannot hold. `engine_revision` is compared with it (and in the rehearsal with `rehearsal_revision`).
@@ -101,19 +104,3 @@ Every entry holds all of these keys. A key that a kind of run does not use holds
 - The builders list every key and type, to the leaf, in a README beside it. The lead records each file's sha256 in a dated note before the judge's tag.
 - The judge's reader parses it with the code that will read the registered tables, in a structure-only mode, and finds no fault. A departure is the builders' to fix. A change of the contract is a dated change to this file.
 - **What may never be taken from it:** a number, a length, an order of keys or entries, an equality between its numbers.
-
-## 8. The form note
-
-`validation/ensemble_reexpression/assembly_form.json`, the lead's, with its own commit before the registration tag and its sha256 recorded with it. It names which of `SPEC.md` §3.3's two forms the assembly consumers are run in, and where a held factor is read.
-
-```json
-{"kind": "ensemble-reexpression assembly form, version 1",
- "forms": {"cell": "schedule", "base": "schedule", "clusters": null},
- "hold_point": null,
- "why": "<the decision entry that holds the user's answer>"}
-```
-
-- **`forms`** takes `"schedule"` or `"operator"`, one for `cell` and one for `base`. `clusters` is Part 2's four assembly-regulated calcium clusters, null until Part 2's tag.
-- **`hold_point`** is `"start"`, `"middle"` or `"end"` when any form is `"operator"`, and null otherwise.
-- **A consumer whose form is null, or whose note is absent,** is not judged: it is inconclusive, and its runs are recorded.
-- A typo in the note is corrected by a dated second note with its own tag, before any table is hashed.

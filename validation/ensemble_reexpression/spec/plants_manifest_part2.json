@@ -6280,6 +6280,55 @@
    "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part2/SC6 first buffer second order in calcium"
   },
   {
+   "name": "SC6-stoichiometry the first buffer binds two calcium",
+   "kind": "ionic",
+   "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/ionic/spatial_calcium/h.json",
+   "base_sha256": "9352bef12f1435b1316a41f1f3809d1953e27529e85822a87611e6ff67bfdcfa",
+   "modify": [
+    {
+     "path": "/model/stores/*/model/reactions/0/reactants/Ca",
+     "set": 2
+    }
+   ],
+   "modified_leaves": [
+    2
+   ],
+   "patch": null,
+   "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plant_driver.py",
+    "plan2c.json",
+    "0",
+    "plants/part2"
+   ],
+   "environment": {
+    "PYTHONPATH": "/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae/src:/mnt/workspaces/Cells/legacy-captures-20261125/snapshot-76a498ae",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": null,
+    "MKL_NUM_THREADS": null
+   },
+   "affinity": [
+    6
+   ],
+   "started": "2026-11-25T12:07:28+00:00",
+   "finished": "2026-11-25T12:07:44+00:00",
+   "seconds": 16.155983439995907,
+   "outcome": "refused: ConfigError: Each reaction must conserve every declared moiety and charge",
+   "definition_sha256": "11c5d0e294fdc046fb076745d0d19d6e51a31522765f5fe1b4a041ff582d2eab",
+   "driver_sha256": "ff353b1397b1a5821258b16950b72894eb28d90255f7cb1fd148b97fa76a58bf",
+   "capture_tool_sha256": "1ad4c59343e1a92b49854e18e5d975a03fa6c9bbc501c86d4fea58f00334cf4e",
+   "outputs_sha256": {
+    "definition.json": "11c5d0e294fdc046fb076745d0d19d6e51a31522765f5fe1b4a041ff582d2eab",
+    "run/run.json": "64c76fae67607f6e07e6f9f12f28e70f3c31d66681d4fdc79dfb028b7cc62ccc"
+   },
+   "output_folder": "/mnt/workspaces/Cells/ensemble-reexpression-criteria-20261125/plants/part2/SC6-stoichiometry the first buffer binds two calcium"
+  },
+  {
    "name": "SC7 exchanger sodium terms squared",
    "kind": "ionic",
    "base": "/mnt/workspaces/Cells/legacy-captures-20261125/origin-76a498ae/science/ionic/plasma_calcium/h.json",

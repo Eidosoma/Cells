@@ -16,8 +16,8 @@ The user's decision (D369, D374, D383): everything Cells uses leaves legacy in c
 | Part | Consumer | What it was in legacy | Canonical form | Equations |
 | --- | --- | --- | --- | --- |
 | 1 | `jupiter` | The world of the JUPITER readiness check, both arms | A closed world of the inner tissue model | Same |
-| 1 | `cell` | The assembly-regulated cell | Form A: the same model, with the live pool's path as the channel's schedule. Form B: an operator on the composite, with the availability held over the step | Form A same, form B changed (`spec/SPEC.md` §3.3) |
-| 1 | `base` | The assembly-regulated cluster's base | The same, with two pools | As `cell` |
+| 1 | `cell` | The assembly-regulated cell | The same model, with the live pool's switch path as the channel's schedule, written by a driver | Same |
+| 1 | `base` | The assembly-regulated cluster's base | The same, with two pools | Same |
 | 1 | `integrated` | The integrated ensemble's world | The same model | Same |
 | 2 | Four calcium clusters | The four buffered stores over the JUPITER cluster | The composite over the inner model, with compartments, a cycle law, a factor source and channels that carry calcium | Same, under conditions |
 | 2 | Four assembly-regulated calcium clusters | Those, with two pools each | The same, with the pools' paths | Same, under conditions |
@@ -31,7 +31,7 @@ bit for bit, and every accepted step of the candidate kept the engine's own ledg
 
 ## 2. The engine models it runs
 
-- **Part 1:** the inner tissue model, version 3, on RK4, with its Na/K pump on maintained fuel, its Kv1.5-type channel law, its one-gate junction law and the logarithmic-mean face law, and the live assembly pool. The field solver is the one D147's rule gives each world: the floor variant for `jupiter` and `base`, the factored reduction itself for `cell` and `integrated`. No kind, operator or species registry, except in form B, where `cell` and `base` run on the composite with an assembly operator.
+- **Part 1:** the inner tissue model, version 3, on RK4, with its Na/K pump on maintained fuel, its Kv1.5-type channel law, its one-gate junction law and the logarithmic-mean face law, and the live assembly pool. The field solver is the one D147's rule gives each world: the floor variant for `jupiter` and `base`, the factored reduction itself for `cell` and `integrated`. No kind, operator or species registry. The assembly observable is a registered law that the driver's definition records (`spec/SPEC.md` §3.3).
 - **Part 2:** the composite over that model, on the IMEX integrator, with the notes' compartment, cycle law, exchanger law, passive routes with a factor source, local reactions and calcium-carrying channels, and the live pool.
 - **No registered ID is written here or in the spec folder.** The exact strings are in the strings note, written after the ID move (`spec/TABLE.md` §5).
 
@@ -47,7 +47,7 @@ Each is a different agent, and its work goes through the lead.
 | Checker | Its own recomputation, the run records | The hashed tables, the captures, the planted arrays, the run records, the judge's record | the judge's code until its own is written |
 | Rehearsal runner | `inputs_rehearsal.json`, and the legacy snapshot's runs on it | The spec folder, the snapshot | the builders' and the judge's code |
 | Spec auditor | A reader skeleton, fabricated honest tables, its report | The spec folder only | everything else |
-| Lead | The tags, the freezes, the launches, the hashes, the strings notes, the form note, the decision entries | everything | nothing is barred, and **it is not blind** (§11) |
+| Lead | The tags, the freezes, the launches, the hashes, the strings notes, the decision entries | everything | nothing is barred, and **it is not blind** (§11) |
 
 - **No builder runs a registered world before the registration tag.** Parse checks, unit rows and invented worlds only.
 - The judge's reader is written from the spec folder alone, and so is the exporter. Neither reads the other's code. The references are the captures, so there is no references agent.
@@ -63,21 +63,20 @@ Each is a different agent, and its work goes through the lead.
 
 ## 5. The order of work, and the tags
 
-1. **Part 1's criteria tag,** on this branch: **`ensemble-reexpression-criteria-part1-2026-11-2x`.** Bands, classes and windows are fixed from here. A bound is corrected only by the route of `CRITERIA.md` §10. It waits for nothing: G-7's form is open, and both forms are registered (`spec/SPEC.md` §3.3). The lead accepted that on 25 November.
+1. **Part 1's criteria tag,** on this branch: **`ensemble-reexpression-criteria-part1-2026-11-2x`.** Bands, classes and windows are fixed from here. A bound is corrected only by the route of `CRITERIA.md` §10. It waits for nothing. The user decided G-7's form on 25 November (the dated note in §11).
 2. **The integrated ensemble's capture** exists (25 November, `extra-49529e71`) and is in Part 1's files.
-3. **The form note** (`TABLE.md` §8), the lead's, from the user's answer on G-7 and never from a run, before the registration tag. If the user chooses form B, the amendment of `CRITERIA.md` §4.6 gives its ionic entries a criterion, or the two assembly consumers stay inconclusive by form.
-4. **Part 2 is completed** when notes D and E are answered, with the orders, the steps and the names, and its restarts and engine plants. Tag: `ensemble-reexpression-criteria-part2-2026-1x-xx`. **No Part 1 file moves.**
-5. **The spec auditor** reads the spec folder alone, makes honest tables, and reports what is refused, what passes with nothing judged, and what an honest run would fail. A finding changes the text by a dated amendment, before the judge's tag. It re-runs on an amended head.
-6. **The builders** write the definitions, the driver and the exporter from `TABLE.md` and `READOUTS.md`, in parallel with the four features. They run only their rows and invented worlds.
-7. **The judge's reader** is written from the spec, parses `inputs.json` and the legacy side, runs C0 on the captures, and passes the judge's plants. Tag: `ensemble-reexpression-judge-2026-1x-xx`.
-8. **The format sample** (`TABLE.md` §7), parsed by the judge before its tag.
-9. **The rehearsal** (`CRITERIA.md` §10): the rehearsal runner's invented worlds, the frozen legacy snapshot's runs of them, the builders' table, and the judge's scoring. It is run on invented worlds only, before the registration tag. No builder runs a registered world before then, except for what the design authors' prototypes had already run (§11).
-10. **The ID move,** last on the cleanup branch. This folder holds no ID, and is frozen for it.
-11. **The floor guard, rerun with constants** (D147's condition). The floor variant of the field solver may serve a run of record only after D147's floor guard is rerun with constants, and no rerun is recorded. The builder makes it, one short run, and records it, before the registration tag. Nothing in this
+3. **Part 2 is completed** when notes D and E are answered, with the orders, the steps and the names, and its restarts and engine plants. Tag: `ensemble-reexpression-criteria-part2-2026-1x-xx`. **No Part 1 file moves.**
+4. **The spec auditor** reads the spec folder alone, makes honest tables, and reports what is refused, what passes with nothing judged, and what an honest run would fail. A finding changes the text by a dated amendment, before the judge's tag. It re-runs on an amended head.
+5. **The builders** write the definitions, the driver and the exporter from `TABLE.md` and `READOUTS.md`, in parallel with the four features. They run only their rows and invented worlds.
+6. **The judge's reader** is written from the spec, parses `inputs.json` and the legacy side, runs C0 on the captures, and passes the judge's plants. Tag: `ensemble-reexpression-judge-2026-1x-xx`.
+7. **The format sample** (`TABLE.md` §7), parsed by the judge before its tag.
+8. **The rehearsal** (`CRITERIA.md` §10): the rehearsal runner's invented worlds, the frozen legacy snapshot's runs of them, the builders' table, and the judge's scoring. It is run on invented worlds only, before the registration tag. No builder runs a registered world before then, except for what the design authors' prototypes had already run (§11).
+9. **The ID move,** last on the cleanup branch. This folder holds no ID, and is frozen for it.
+10. **The floor guard, rerun with constants** (D147's condition). The floor variant of the field solver may serve a run of record only after D147's floor guard is rerun with constants, and no rerun is recorded. The builder makes it, one short run, and records it, before the registration tag. Nothing in this
    registration assumes its result. If it is not clean, the consumers that declare the floor variant (`jupiter`, `base` and Part 2's) wait, and `cell` and `integrated` do not.
-12. **The registration tag,** `ensemble-reexpression-registered-2026-1x-xx`, at the head of the cleanup branch that merges main, the spec, the build and the judge, before any registered run. At that head the lead re-runs the judge's C0 on the references, its self-tests and the format sample, and makes a trial merge.
-13. **The strings tag,** `ensemble-reexpression-strings-2026-1x-xx`, on the next commit, which holds only `registered_strings.json`. The lead checks the note by parse against the declared worlds, with no run.
-14. **The campaign** (§6), then the judge, the retry if owed, the checker, the record and the decision entry.
+11. **The registration tag,** `ensemble-reexpression-registered-2026-1x-xx`, at the head of the cleanup branch that merges main, the spec, the build and the judge, before any registered run. At that head the lead re-runs the judge's C0 on the references, its self-tests and the format sample, and makes a trial merge.
+12. **The strings tag,** `ensemble-reexpression-strings-2026-1x-xx`, on the next commit, which holds only `registered_strings.json`. The lead checks the note by parse against the declared worlds, with no run.
+13. **The campaign** (§6), then the judge, the retry if owed, the checker, the record and the decision entry.
 
 ## 6. The campaign
 
@@ -110,7 +109,6 @@ The retries add at most about 1 CPU-hour. These are estimates from the captures'
 ## 8. The verdicts, and what they decide
 
 - **Per consumer:** pass, fail or inconclusive, by `CRITERIA.md` §8. **Part 1 passes when its four consumers pass.** `base` is reported in two sets, one that a prototype had run and one that it had not, and must pass on the second by itself.
-- **In form B** `cell` and `base` cannot pass (`CRITERIA.md` §4.6): they are inconclusive by form unless an amendment gives them a criterion.
 - **A pass** says the consumer left legacy in canonical form at the steps run. It moves the consumer onto the removal list that the user approves. It lifts no refusal, and it does not make the candidate's physics right (§9).
 - **A fail** keeps the consumer in legacy's hands: the pre-cleanup tag, the snapshot and the captures. The cleanup branch does not remove what a failed consumer still needs. What it means by class is in `CRITERIA.md` §9.
 - **An inconclusive** verdict is not a fail. The retry is the only answer to it in this registration.
@@ -131,7 +129,7 @@ In words, so that a pass is read as no more than it is.
 9. **Which step an RK4 run took,** as far as its values show. Its values sit at rounding at every registered step. The rows, the record and the checker say so.
 10. **That a restart was a restart** (the checker confirms it from the record), and **what a digest hashes.**
 11. **A wrong coarse run** that a retry drops.
-12. **The ionic side of form B.** It is reported and not judged, and a consumer in that form cannot pass.
+12. **An operator form of the assembly coupling.** None is built, and none is registered (`spec/SPEC.md` §3.3).
 13. **Availability levels other than 0 and 1,** and any feedback of the ions on the pool. There is none.
 14. **The statistics of the ensemble.** Four seeds are captured.
 15. **The observers.** Rates, affinities, currents and powers at the rows are not compared, and their integrals are.
@@ -157,9 +155,8 @@ Each has the default the files already follow.
 8. **The spec folder is frozen for the ID move.** It holds no ID. Default: yes.
 9. **Class E is judged on the captures' machine.** If the campaign must run elsewhere, the pool's events should be replayed there with the snapshot first. Default: the captures' machine.
 10. **What a failed consumer does to the cleanup.** The text says it keeps its legacy code, through the pre-cleanup tag. Default: as written, and the user's approval of the removal list stands.
-11. **Form B's criterion.** It has none, and `CRITERIA.md` §4.6 says what an amendment would need. Default: none is written until the user chooses that form.
-12. **The ratios of the four assembly calcium clusters** (`PART2.md` §7) are half their ionic child's, a declared lower bound. Planted runs of each would cost about a CPU-hour. Default: as written.
-13. **The store's capacitor in the four clusters** rests on a planted ratio of about 3 × 10⁻⁵ (after halving), since a cluster's captures hold one end state and not the early rows where the capacitor shows. A candidate whose error estimate on `store_K` is above about 3 × 10⁻⁶ of its largest value cannot test it there, and the cluster is then
+11. **The ratios of the four assembly calcium clusters** (`PART2.md` §7) are half their ionic child's, a declared lower bound. Planted runs of each would cost about a CPU-hour. Default: as written.
+12. **The store's capacitor in the four clusters** rests on a planted ratio of about 3 × 10⁻⁵ (after halving), since a cluster's captures hold one end state and not the early rows where the capacitor shows. A candidate whose error estimate on `store_K` is above about 3 × 10⁻⁶ of its largest value cannot test it there, and the cluster is then
    inconclusive. The alternative is to require that mechanism in the four children alone. Default: required in all eight.
 
 ## 11. Disclosures: what this author has seen and done
@@ -175,14 +172,14 @@ Each has the default the files already follow.
 3. **Capture values read while reading:** one JSON summary of `cluster_base` at h, seed 0, and one of the IP3 cluster, the `cell` job's `result.json`, and the definitions of the captured worlds.
 4. **The captured definitions' charge anchors,** by arithmetic (the largest disagreement is 5.1 × 10⁻²⁴ C).
 5. **The planted legacy runs** (`PLANTS.md` §8, `PART2.md` §7.4), under the lead's conditions of 25 November, with the snapshot read-only and each change in the driver. **Part 1:** one control before the rest, and a batch of 45 runs (29 power plants, nine structural ones, seven controls), then two repeated with legacy's own ledgers off and two of ST10. **Part 2:** 125 runs (103 power plants, 13 structural ones,
-   nine controls) and one replacement (SC3b). **PW-pool:** the snapshot's own pool, 12 short runs with one rate × 1.01. Every run's command, patch text, output folder and sha256 is in `plants_manifest.json` and `plants_manifest_part2.json`, the refused ones included. They ran on CPUs 7 and 23 under `nice`, two at a time, 4 GB each, through `run_detached.sh`.
+   nine controls), one replacement (SC3b), and one stoichiometry that legacy refuses at parse (SC6). **PW-pool:** the snapshot's own pool, 12 short runs with one rate × 1.01. Every run's command, patch text, output folder and sha256 is in `plants_manifest.json` and `plants_manifest_part2.json`, the refused ones included. They ran on CPUs 7 and 23 under `nice`, two at a time, 4 GB each, through `run_detached.sh`.
    **Order of events:** the bands, classes and windows above were committed (5b56f92c, 11:23:02 UTC) before the first control (11:24:59 UTC), so no margin could move them. **What the runs printed** is the planted distances, margins and ratios, which are in `margins.json` and `margins_part2.json`. The plant texts that a run changed are dated in `PLANTS.md` §4 and `PART2.md` §7.4.
    **A lapse:** between the first two batches a third unit was started by mistake while two ran. It was stopped after about ten seconds, and its two partial folders were removed.
 6. **The independent scalar references** (`validation/betse/spatial_cluster/reference.py` and the live tests' `reference_*_calcium.py`, which import nothing of the engine) were run on the six captured ionic worlds (both JUPITER arms and the four calcium children), on CPU 23, for two minutes in all. Every field agrees with the captured h/4 rows at the compared times, entry by entry, within 3 × 10⁻⁹ relative and 3 × 10⁻¹² absolute
    (worst 5.5 × 10⁻⁴ of that bound). Relative to each field's largest value, the largest difference is 2.5 × 10⁻¹⁴ in the JUPITER arms and 3.3 × 10⁻¹² in the calcium children (the store's K leak). It corroborates the captures and decides nothing (`PART2.md` §12).
 
 **Who is not blind, by the lead's statements of 25 November 2026** (names only; no number was given to this author).
-- **One design author** ran the cluster base's ionic world in composed form (form B), world IDs 0 and 1, at the configuration's own pool seeds, against legacy at three steps. The configuration's seeds are the captured seed index 0's, so those are `base s0 w0` and `base s0 w1`. `spec/CRITERIA.md` §8 reports them apart.
+- **One design author** ran the cluster base's ionic world in composed form, world IDs 0 and 1, at the configuration's own pool seeds, against legacy at three steps. The configuration's seeds are the captured seed index 0's, so those are `base s0 w0` and `base s0 w1`. `spec/CRITERIA.md` §8 reports them apart.
   - The same author tried the base's ionic world on the engine for its first steps, as the inner model, version 3, with the default and with the floor field solver, and inside a composite.
   - Nothing else of the registered set was run on the engine by either design author: no JUPITER arm, no assembly cell, no integrated-ensemble world, no calcium world. **But `jupiter_baseline` is `base`'s ionic world, value for value, with the channels open throughout** (this author's comparison of the two blocks). What was seen on `base` bears on it.
 - **The other design author** ran only worlds of their own making (a one-cell store world, kernels).
@@ -196,7 +193,10 @@ rule instead. The draft's bounds are printed beside the reported identities with
 **What this author has been told of any prototype.** That the runs above exist. Also, in the first wording of the field-solver ruling, that the default solver refuses some of the base world's first steps. That wording is not used: the requirement is now D147's standing rule, and its guard's rerun is a step before the campaign (§5). No step, order, margin or residual was told.
 **The author has seen no result of any prototype and has opened neither design note nor its scratch folder. No band, class, window, scale or margin of this folder rests on them.**
 
-**What changed after the first commit (5b56f92c),** none of it a band, class or window, and none of it because of a number: the integrated world's capture folded in; the field-solver row; the two declared forms of the assembly coupling, with their classes; `base` reported in two sets; ST5, ST9, ST6, ST10 and EP2 as `PLANTS.md` §4 dates them; the reported identities' flags; the plants' margins. The first
+**Dated note, 25 November 2026 (the lead's, from the user).** The user decided G-7's form: a driver writes the live pool's switch path into the ionic world's channel controls. The ionic world stays the inner model, version 3, on RK4, and the operator is not built now. No run informed it. Also decided: the assembly observable is a registered law with an ID and a page, of the family
+`assembly_observable` (the user's word), and a candidate's definition records it, the composed file's fingerprint, the pool's seeds and the switch list in the run's inputs (`spec/TABLE.md` §3, `spec/CRITERIA.md` §4.1).
+
+**What changed after the first commit (5b56f92c),** none of it a band, class or window, and none of it because of a number: the integrated world's capture folded in; the field-solver row (D147's rule); a second declared form of the assembly coupling, registered at 5f550674 as reported only and removed after the user's decision; the recorded assembly inputs; `base` reported in two sets; ST5, ST9, ST6, ST10 and EP2 as `PLANTS.md` §4 dates them; the reported identities' flags; the plants' margins. The first
 commit's message says that no re-expressed run existed. That was this author's belief, and this section corrects it.
 
 **Not read:** any candidate, any re-expressed run, the two design notes' folders (notes D and E) and any file of the builders' branches. The builders' live code was read at main 49529e71, and nothing of `legacy-cleanup`.

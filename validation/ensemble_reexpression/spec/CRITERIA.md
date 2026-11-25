@@ -38,9 +38,9 @@ No ruling assigns a class, and none changes after a run.
 Every value equals the named value.
 - **The pool's 19 arrays** of every pool run equal the captured ones (READOUTS §4), over all its worlds.
 - **The event path** of every world and cell equals `reference_paths.json`'s, event by event: the same number, the same times, the same availabilities.
-- **The channel schedule** that an ionic run of `cell` or `base` declares, with the entries that repeat the value before them removed, equals the path's changes of that
-  world and that cell. Its times are the path's doubles.
-- **The seeds:** the echoed `pools.<cell>.seed` of a pool run equals `inputs.json`'s for its seed index.
+- **The switch list and the channel schedule.** Both the `switch_list` that an ionic run of `cell` or `base` records and the schedule its definition was parsed with (`controls.channel`), with the entries that repeat the value before them removed, equal the path's changes of that
+  world and that cell. Their times are the path's doubles. Each is an entry of its own.
+- **The seeds:** the echoed `pools.<cell>.seed` of a pool run, and the `pool_seeds` that an ionic run of `cell` or `base` records, equal `inputs.json`'s for their seed index.
 - **Structural zeros:** `n_out_x` of `integrated`, every row.
 - **Restarts** (support runs), over every class S readout and the potentials, at every compared time after the restart's time, and at that time if the resumed run holds a row there:
   equal to the uninterrupted run of the same step. The pool restart: the 19 arrays at 0.02 s, and the path after the restart's time.
@@ -108,33 +108,6 @@ writes `power.json` and the lead records its sha256. Stage 2 forms the differenc
 - **A home is the entry where its plant is largest,** chosen from the legacy side alone and before any run. Where the first choice was a worse one, the dated line says so (`PLANTS.md` §4, `PART2.md` §7.4).
 - The R and E entries have no power entry. Their own plants are §6's. Class D has none.
 
-### 4.6 The assembly consumers, by form
-
-`cell` and `base` are run in one of the two forms of `SPEC.md` §3.3, which `assembly_form.json` names. The class of each entry, per form:
-
-| Entry | Form A (`schedule`) | Form B (`operator`) |
-| --- | --- | --- |
-| The pool's 19 arrays, the event path and the seeds of the pool runs | E | E |
-| The channel schedule the ionic run declares | E | none: there is no schedule |
-| The availability applied in each accepted step (`applied`) | none | **E:** equal to the path's availability at the step's hold point, for every step, with step n starting at n × `step_s` within 10⁻¹² s and no step left out |
-| The pool's arrays and path inside the ionic run, of its own world | none | **E:** equal to the captured arrays of that world and cell, and to its path |
-| The exposure (pool runs) | R | R |
-| Every entry READOUTS §3 lists under class S | S | **no band** (below) |
-| Completes, with the engine's own ledgers | D | D |
-| Power | P | none |
-| The structural and engine plants of `cell` and `base` | §6 | not scored |
-
-- **Form A is the same equations,** and every rule of this file holds for it.
-- **Form B has no band for its ionic entries.** A factor held through a step is a changed model (the plan's section 14.5). An event then acts up to a step away from its own time, and by how much is an accident of where it falls, so the error has no order and no three steps can extrapolate it.
-  - The judge **reports** max |Y₃ − L₃| for every such readout, and beside it the **held distance:** what holding the availability at the start of each step does to that readout, on the legacy side alone (`PLANTS.md` ST10, `margins.json`). Nothing is decided by either.
-  - A consumer in form B **can fail** (class E, R or D). It cannot pass: with none failing it is **inconclusive by form**.
-- **What an amendment needs to give form B a criterion,** before the registration tag and only if the user chooses it:
-  1. The hold point, named in the form note.
-  2. **Held references:** the frozen snapshot's runs with the availability held as the candidate holds it, for every judged family and every candidate step, each at two halvings of a legacy step that divides that step (`ST10`'s patch is the pattern). They are the reference side's. The lead approves them.
-  3. The comparison: E_i = Y_i − (the extrapolated held reference at h_i), and §4.3's template on E₁, E₂, E₃ with the form's own declared order, since E_i is smooth in h_i where Y_i is not.
-  4. A restated claim: the held equations are solved as legacy's solver would, and they depart from legacy's own result by the held distance.
-  - **Its cost is about 1.5 CPU-hours of snapshot runs and half an agent-day** (a guess).
-
 ## 5. Faults and refusals
 
 **Nothing hides a fail.** Every entry that can be formed is judged. If any judged entry fails, its run fails, whatever else of that run or of its support is refused, stopped or missing.
@@ -148,7 +121,6 @@ writes `power.json` and the lead records its sha256. Stage 2 forms the differenc
 | Two runs of one family whose class S series and potentials are **bit-identical at every compared time** | Both are **refused** (a copy). Their readouts are judged |
 | A refused entry of kind `domain`, `definition` or `harness` | **Refused** |
 | A refused entry of kind `check` | A **stop:** it fails if the run is judged (§4.4) |
-| `assembly_form.json` absent, or with no form for an assembly consumer | That consumer is **not judged:** inconclusive, its runs recorded |
 | A run in `missing`, or in neither list, across all of a consumer's tables | **Refused** |
 | A run name that `inputs.json` does not list, and the retry's rule does not register | Ignored, recorded and flagged |
 | A duplicated key anywhere in a file | The file is refused, and every run of it |

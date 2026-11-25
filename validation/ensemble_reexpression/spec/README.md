@@ -31,7 +31,7 @@ runs, taken on 25 November 2026 from frozen snapshots of the engine. It holds do
 | `AMENDMENT-<n>-<date>.md` | Dated changes, the latest first. None exists at the criteria tag | Over every file above |
 
 **Files outside this folder that the registration uses,** all in `validation/ensemble_reexpression/`: the lead's
-`registered_strings.json` (the strings note, §"No registered ID here") and `assembly_form.json` (the form note, `TABLE.md` §8), and the rehearsal's `inputs_rehearsal.json` and
+`registered_strings.json` (the strings note, §"No registered ID here"), and the rehearsal's `inputs_rehearsal.json` and
 `registered_strings_rehearsal.json`. In `table-retry/`, the judge's `retry_owed.json`. In the judge's record, `power.json`.
 
 ## Rules for every reader
@@ -60,6 +60,6 @@ runs, taken on 25 November 2026 from frozen snapshots of the engine. It holds do
 Say these before anyone reads a pass as more than it is. The full list is the protocol's §9.
 - Bitwise identity with legacy, anything on a GPU, and legacy's own proofs that a step stays inside its domain.
 - The assembly consumers' trajectories. Their captures hold one end state, and a few summaries for the clusters.
-- The ionic side of the assembly consumers in form B (`CRITERIA.md` §4.6).
+- Any form of the assembly coupling but the decided one (`SPEC.md` §3.3).
 - How a lumped heat divides among its parts.
 - A difference below a band.

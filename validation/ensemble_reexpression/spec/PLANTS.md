@@ -10,7 +10,7 @@ moves because of a margin.
 - **The band it is sized against** is the entry's β at U_c = 0: 2 U_l + e_round(S_c) + e_round(S_l) + e_close, with S_c the candidate's steps at h₃.
 - **The margin** is the distance over that band. The rule is **10 at the best entry.** A plant below it is enlarged or replaced by a dated line before the tag, stated, and no number of `CRITERIA.md` changes.
 - **The ratio** ρ(y) is the distance over the largest magnitude of the readout in the honest run. `margins.json` holds it. Power reads D(y) = ρ(y) × max |L₃| of the family.
-- **Observability.** A mechanism whose plant has no effect above its band in 20 ms is **not observable here**. It is then an entry "not tested" in advance (`CRITERIA.md` §4.5), and no mechanism is made a home for it. It is stated with the number.
+- **Observability.** A mechanism whose plant has no effect above its band in 20 ms is **not observable here**. It is then "not tested" in advance (`CRITERIA.md` §4.5), it is no home of any mechanism, and it is stated with the number.
 
 ## 2. Mechanisms and their homes
 
@@ -27,7 +27,7 @@ moves because of a margin.
 | Faces | `face_Na`, `face_K`, `face_Cl` | jupiter, base |
 | Electrical closure | `voltage`, and `phi_out` in jupiter | all, except where `phi_out` is absent |
 
-- **Every mechanism must be tested in every consumer that holds it** (`CRITERIA.md` §8), except where §8 here states it is not observable.
+- **Every mechanism must be tested in every consumer that holds it** (`CRITERIA.md` §8), except where §8 here states it is not observable. The judge reads them from `margins.json` (`mechanisms`), with the homes and each plant's ratio.
 - **The other entries** (`n_cell_x`, `n_out_x`, the heats) take the ratio of the plant that moves them most. They are not homes.
 - **The assembly mechanisms** are class E and have their own plants (§4).
 
@@ -49,7 +49,7 @@ Each is a legacy run of the captured definition with that one change, on the leg
 | PW-jgate | The junction gate's threshold voltage × 1.01 | `junction_gate` |
 | PW-face | Every species' face diffusivity × 1.01, on every face | `face_x` |
 | PW-faceK | K's face diffusivity × 1.01 | `phi_out` |
-| PW-pool | The pool's off-rate × 1.01 | the pool's arrays (class E: a distance that is non-zero, no margin) |
+| PW-pool | Each of the pool's four rates (on, off, close, dissolve) × 1.01, one at a time, on the snapshot's pool run alone | the pool's arrays (class E: a distance that is non-zero, no margin) |
 
 **Run in** `jupiter_baseline` and `jupiter_pump_release` (all but PW-pool), in `base` and `cell` at seed 0 (the plants that the consumer holds; its end state alone is captured), and in
 `integrated` (PW-junction, PW-jgate), with its own control.
@@ -72,9 +72,9 @@ Each is a legacy run of the captured definition with that one change, on the leg
 **Two plants replaced before any run, 25 November 2026 (dated line).** ST5 was the faces' drift left out, and ST9 the availability acting on the stored junction gate. The legacy side cannot run the first: its own charge and field checks stop an unbalanced face current. The second needs a patch that
 changes the gate's state at a schedule change, and a schedule that is not applied is the same class of error and can be run exactly. Neither was run.
 
-**Three changes before their runs were read, 25 November 2026 (dated line).**
-- ST6 and EP2 moved from world 1 to world 2 at seed 0. Worlds 0 and 1 there are not blind (`CRITERIA.md` §8). World 2 is the first blind world at that seed whose two paths differ. No margin chose it: ST6's planted run holds all 8 worlds.
-- ST10 was added. It is the error that form B would make by its declaration (`SPEC.md` §3.3), so it is a structural plant of form A, and its distance is the held distance that form B is reported beside. It was run after this line.
+**Three changes, 25 November 2026 (dated line).**
+- ST6 and EP2 moved from world 1 to world 2 at seed 0. Worlds 0 and 1 there are not blind (`CRITERIA.md` §8), and the lead said so after ST6's run had been made. World 2 is the first blind world by ID, at that seed, whose two paths differ. ST6's planted run holds all 8 worlds, and its margin at world 1 had been printed before the move.
+- ST10 was added: a driver or an engine that lets an event act at the next step instead of at its own time. It was run after this line. (The form with a held availability that an earlier draft registered is gone, `SPEC.md` §3.3, and this is the error it would have made.)
 - ST1 and ST4 were refused by legacy's own ledgers at their first attempts, which is what an error of their kind does, and were run again with those ledgers off (§8). Both attempts are in the manifest.
 
 ## 5. The engine plants (EP): runs of the candidate, Part 1
@@ -84,7 +84,7 @@ changes the gate's state at a schedule change, and a schedule that is not applie
 | EP1 | `jupiter_baseline plant channel`, at h₃ | Both channels' maximal permeability × 1.01 | `channel_K` |
 | EP2 | `base plant swapped`, seed 0, world 2, at h₃ | Each channel's schedule is the other cell's path | `channel_K` |
 
-A plant's block differs from its honest run's only by its change. Any other difference is a departing echo.
+A plant's block differs from its honest run's only by its change. Any other difference is a departing echo. **Their registered distances** are the legacy side's: EP1's is `PW-channel`'s (its ratio times the largest `channel_K` of the honest control of `jupiter_baseline`), and EP2's is ST6's at world 2 (`margins.json`).
 
 ## 6. The judge's plants (JP): altered copies of honest tables
 
@@ -108,8 +108,8 @@ Formed by the judge from the honest tables, before the judge's tag and again on 
 | JP14 | One S series of h₁ shifted by the size of a rounding, and the other two honest | the entry's class is by the rule, and no fail is invented |
 | JP15 | One `channel_K` of `base s0 w0` altered so that it fails, every blind family honest | `base` fails, and the record shows that its 30 blind families pass |
 | JP16 | `base s0 w0` refused, every blind family honest | `base` inconclusive, and the record shows that its 30 blind families pass |
-| JP17 | A table of one form, read with a form note that names the other | every ionic run of the consumer departs from its strings and is refused. Nothing of it is judged |
-| JP18 | The form note absent | `cell` and `base` inconclusive, with their runs recorded |
+| JP17 | An ionic run of `base` whose `switch_list` and `controls.channel` differ by one entry | a fail of class E at the one that departs from the path, and the other entry passes |
+| JP18 | An ionic run of `base` whose `assembly_observable` string differs by one character from the strings note's | refused, and nothing of the run is judged |
 
 **A judge's plant that the code scores otherwise stops the judge's tag.**
 
@@ -168,6 +168,6 @@ sha256, and `margins.json` the numbers below, entry by entry. No band, class or 
 | ST10 availability held over the step (`cell`, world 1) | `channel_K`: 2.5e-07, 1e+05 |
 
 - **ST1 and ST4** were refused by legacy's own ledgers at their first attempts ("Finite local/outside/global material, charge or resolved-energy accounting failed" and "Membrane/junction diagnostic dissipation must not decrease"). That is evidence that legacy's own checks see these errors, and it left no planted array. They were run again with those two ledgers off and the domain checks on.
-- **ST10, the held factor.** What holding the availability at the start of each step does to legacy's own end state, at the captured h/4 (12.5 µs in `base`, 25 µs in `cell`): `channel_K` at 0.02 s moves by 0.2 % to 2.7 % of itself in the eight worlds of `base` (seed 0) and by 0.0 % to 0.5 % in the first eight of `cell`. It depends on where each event falls in its step, so it has no order. It is the same size as a 1 % change of a rate constant or larger, in some worlds. That is why form B has no band (`CRITERIA.md` §4.6), and the design authors' own holding study (the protocol's §11) was not read.
+- **ST10, the held factor.** What holding the availability at the start of each step does to legacy's own end state, at the captured h/4 (12.5 µs in `base`, 25 µs in `cell`): `channel_K` at 0.02 s moves by 0.2 % to 2.7 % of itself in the eight worlds of `base` (seed 0) and by 0.0 % to 0.5 % in the first eight of `cell`. It depends on where each event falls in its step, so it has no order. In some worlds it is as large as a 1 % change of a rate constant, or larger. ST10's named entries are far above their bands (a margin of 10⁵), so a driver or an engine that rounds events to its steps is caught. The design authors' own holding study (the protocol's §11) was not read.
 
 **Where a margin is not evidence.** A margin compares legacy with legacy. It says what the band can see of a change of that size, and nothing about a candidate's own step, whose U_c is added to the band (`CRITERIA.md` §4.5).

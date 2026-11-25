@@ -1494,7 +1494,7 @@
     }
    },
    "coupling": {
-    "law": "ring_cycle_availability",
+    "law": "assembly_observable",
     "active": 1.0,
     "inactive": 0.0
    },
@@ -1842,7 +1842,7 @@
     }
    },
    "coupling": {
-    "law": "ring_cycle_availability",
+    "law": "assembly_observable",
     "active": 1.0,
     "inactive": 0.0
    },

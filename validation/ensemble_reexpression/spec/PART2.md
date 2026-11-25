@@ -24,7 +24,7 @@ ruling of 25 November 2026 fix it. `inputs_part2.json` governs the numbers.
 | The step ladder: whether the composite admits 12.5 µs, and where its order is in its window | notes D and E, their prototypes on **invented** worlds | §4.1's ladder, only before the Part 2 tag |
 | The ledger and field names that the exporter reads for the store, its pump, the release, the exchanger and the reactions, and how a compartment's amounts are booked | note D | §6's canonical column, by name. The signs and the lumps are fixed here |
 | The factor source's form, and whether its inputs are the cytosol's free amounts over its volume at the stage | note E | §3's condition 3 |
-| The assembly form of the four clusters: schedule (form A) or operator with a held availability (form B), `SPEC.md` §3.3. On the composite a schedule's off-grid changes must split the step as they do in form A on RK4 | the user's answer on G-7, and note E | §4.1, `assembly_form.json`'s `clusters`, and the runs' `strings`. In form B the four clusters' ionic entries are reported, not judged (`CRITERIA.md` §4.6) |
+| The assembly coupling of the four clusters: the decided form (`SPEC.md` §3.3) is the driver that writes the live pool's switch path into the ionic world's channel controls. On the composite, what is open is whether an off-grid change splits its IMEX step | note E | §4.1, and the runs' `strings` and `steps`. The four clusters record the same items (`TABLE.md` §3 `inputs.assembly`) |
 | The strings note's labels for the pieces that do not exist yet | notes D and E | §4.3 |
 | Restarts and engine plants | the build | §11 |
 
@@ -98,7 +98,7 @@ As Part 1 §2.3. The captured release, pump and passive multipliers are 1 throug
 | Gauge | `local`, 0 V, closed |
 | Observations | On the grid, at the block's `potential_times_s` at least |
 | Field solver | **The floor variant** of the factored capacitor reduction (label `field_solver_floor`). Every world of this part has free field offsets (`near` and `far`), and a composite follows its inner model (D147, D156; `SPEC.md` §3.1). The same step before the campaign applies |
-| Assembly clusters | The live pool's seeds and world IDs (worlds 0 and 1 of each of four seeds). Form A: the event path as the channel's schedule (`SPEC.md` §3.2). Form B: note E's operator. In both the event times are the pool's doubles |
+| Assembly clusters | The live pool's seeds and world IDs (worlds 0 and 1 of each of four seeds). The event path as the inner world's channel schedule, written by the driver (`SPEC.md` §3.3). The event times are the pool's doubles |
 
 ### 4.2 The declared order
 
@@ -109,7 +109,7 @@ As Part 1 §2.3. The captured release, pump and passive multipliers are 1 throug
 
 ### 4.3 Strings labels added to the note
 
-`composite_model`, `field_solver_floor`, `imex`, `passive_routes_kind`, `local_reactions`, `mass_action_passive`, `store_node`, `calcium_pump_positive`, `exchanger_3na_1ca`, `cav12_m2h`, `store_calcium_release`, `ip3_release_factor`, `calcium_release_factor`, and note E's operator's. `delta_g0_at_1M_J_per_mol` carries no ID.
+`composite_model`, `field_solver_floor`, `imex`, `passive_routes_kind`, `local_reactions`, `mass_action_passive`, `store_node`, `calcium_pump_positive`, `exchanger_3na_1ca`, `cav12_m2h`, `store_calcium_release`, `ip3_release_factor`, `calcium_release_factor` and `assembly_observable`. `delta_g0_at_1M_J_per_mol` carries no ID.
 
 ## 5. Compared times and worlds
 
@@ -205,7 +205,7 @@ As Part 1 §2.3. The captured release, pump and passive multipliers are 1 throug
 
 ### 7.4 Observability and margins (from the legacy side alone, 25 November 2026)
 
-**103 power runs, 14 structural runs and nine controls** of the frozen snapshot at the captured 12.5 µs, under the lead's conditions of 25 November, after the first commit of this branch. `plants_manifest_part2.json` holds each run, its patch text and its sha256, and `margins_part2.json` the numbers below, entry by entry.
+**103 power runs, 14 structural runs that completed or were refused (SC3), and nine controls** of the frozen snapshot at the captured 12.5 µs, under the lead's conditions of 25 November, after the first commit of this branch. `plants_manifest_part2.json` holds each run, its patch text and its sha256, and `margins_part2.json` the numbers below, entry by entry.
 **The controls are bit-identical to their captures:** `spatial_calcium` 371 arrays, `plasma_calcium` 413, `gated_calcium` 455, `ip3_calcium` 469 (each twice, before and after its batch), and `cluster_gated_calcium` seed 0, 48.
 
 **Every mechanism of every consumer is observable** at U_c = 0. Each row holds the planted ratio and the smallest margin over the children that hold the mechanism, and for the clusters (at 0.02 s, with the ratio halved, §7.1) the ratio used and the smallest margin:
@@ -277,6 +277,7 @@ As Part 1 §2.3. The captured release, pump and passive multipliers are 1 throug
 | SC11 (`cluster_gated_calcium`, seed 0) | `ca_channel`: world 0 3.4e-06, 2e+08; world 1 3.6e-06, 2e+08 |
 
 - **SC3 is replaced by SC3b (dated line, 25 November).** With the store voltage's sign reversed in the K leak the store runs away, and legacy's own domain check stops the run at 1.4875 ms. There is no planted array, so nothing can be scored, and a candidate with that error is stopped by its own check or leaves its domain. SC3b reverses the sign in the calcium leak and release alone, and is scored.
+- **SC6 is the runnable stand-in for a wrong stoichiometry.** The captured first buffer with two calcium bound (2 Ca + B = CaB) was tried too, and legacy refuses it at parse ("Each reaction must conserve every declared moiety and charge"). So SC6 changes the kinetic order and not the stoichiometry. The refused run is in the manifest.
 - **Which ran with legacy's own host-side ledgers off:** SC3, SC3b, SC4, SC5, SC6, SC7 and SC8, since those errors break them by construction. Their domain checks stayed on. The power plants, the controls and SC1, SC2 and SC9 to SC13 ran with all checks on.
 
 ## 8. Scales
