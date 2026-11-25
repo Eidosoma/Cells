@@ -13,7 +13,11 @@ docs/CLOSED_COMPARTMENT_DESIGN.md §1.4 to §1.6 and §4, in NumPy (no compile),
 * the declaration parses and round-trips, its refusals 1 to 7 fire with their reasons, and the
   summary carries the identity block. A label or reference changes no binding. Refusal 5 version
   1.2 admits an anchor where an admitted operator's routes charge the compartment (planted per
-  compartment), at the definition, and FR-1's judged class still holds its prefixed message;
+  compartment), at the definition, and FR-1's judged class still holds its prefixed message.
+  Refusal 6 version 1.1 refuses its component's representative alone, the node that bind fixes, so
+  a closed world with a charged store is admitted (planted: the last outside node, version 1's
+  rule), and FR-1's judged class holds both versions' messages. Refusal 4 admits a pump at a store's
+  node by its law's step terms (a planted law; planted: none of them, its material slope alone);
 * the composite's structure check refuses the providers and closers of what the declaration reads
   as declared, in either order, and admits the operators of its list; the list fails closed. The
   areas and capacitances are reference reads, so membrane state passes the structure check, and the
