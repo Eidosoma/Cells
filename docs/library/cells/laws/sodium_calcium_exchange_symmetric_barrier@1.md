@@ -36,7 +36,7 @@ any exchanger protein.
 | Piece | Law, interface `cells.cycle_law@1` ([its fields](../../DECLARATIONS_FORMAT.md#cycle-laws)) |
 | ID | `cells.sodium_calcium_exchange_symmetric_barrier@1`; definitions write `cells.sodium_calcium_exchange_symmetric_barrier@1` |
 | Runs in | `cells.transporter@1`, its host, in `cells.resolved_pump_tissue@3`. Definitions of `cells.resolved_pump_composite@1` and `cells.resolved_pump_tissue@3` can declare it |
-| Provenance | `cited`: taken from a cited source |
+| Provenance | `parity`: moved from an older family; moving is not calibrating |
 
 <!-- /generated -->
 
@@ -111,7 +111,7 @@ with $S = b^3 c\, e^{-\psi/2} / [(1 + a^3 + b^3)(1 + c + d)]$.
 
 <!-- generated: provenance -->
 
-Provenance: `cited` (taken from a cited source).
+Provenance: `parity` (moved from an older family; moving is not calibrating).
 
 - **Source, as declared:** only the 3:1 coupling, so the reversal, is supported: measured reversals of the sodium-calcium exchange current of guinea-pig ventricular cells, in giant patches (1992) and in whole cells (2002). The denominator, the equal voltage split and every number are synthetic: no source gives them
 - **Place:** the abstracts of the works below (1992, item e; 2002, the conclusion); none was read in full

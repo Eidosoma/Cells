@@ -1826,7 +1826,7 @@ def test_p_at_a_finite_outside_node_books_and_bounds_with_and_without_a_closure(
 # D's rows with calcium, closed, its bath finite and the gauge, with no pump, channel or
 # permeability, so nothing moves but the exchanger. Its reference is the rate equation and the two
 # ions' electrochemical potentials, as the module writes them, in 60-digit decimals from the SI
-# constants: never through the forms.
+# constants: independent of the forms, not code-blind.
 
 SI_F = Decimal("6.02214076e23") * Decimal("1.602176634e-19")  # C/mol
 SI_R = Decimal("6.02214076e23") * Decimal("1.380649e-23")  # J/(mol K)
@@ -2126,13 +2126,14 @@ def na_ca_judged():
     return out
 
 
-def test_the_exchange_is_registered_as_a_cited_coupling_with_a_synthetic_rate():
-    """Its declaration: hosted by the kind, its Citation saying that only the coupling is supported
-    and that the denominator, the split and every number are synthetic, with the works for and
-    against it; a population's parameters its only numbers; and no step term of its own."""
+def test_the_exchange_is_registered_as_a_moved_form_with_a_synthetic_rate():
+    """Its declaration: hosted by the kind, moved from an older family and never calibrated, its
+    Citation saying that only the coupling is supported and that the denominator, the split and
+    every number are synthetic, with the works for and against it; a population's parameters its
+    only numbers; and no step term of its own."""
     law = law_registry.active().lookup(na_ca.LAW_ID)
     assert law is na_ca.LAW and law.host == transporter.KIND_ID and law.cycle.errors() == []
-    assert law.provenance == "cited" and law.source.source.startswith("only the 3:1 coupling")
+    assert law.provenance == "parity" and law.source.source.startswith("only the 3:1 coupling")
     assert (
         "every number are synthetic" in law.source.source
         and "no number taken" in law.source.licence
@@ -2154,7 +2155,8 @@ def test_the_exchange_meets_its_rate_equation_and_each_plant_misses_its_criteria
 ):
     """The registered law, in NumPy and under jit, meets every criterion of na_ca_misses against the
     60-digit reference, at 24 random states and at 12 of its domain's edges, for six parameter sets;
-    each plant misses exactly the criteria it is planted against."""
+    each plant misses exactly the criteria it is planted against. The reference is independent of
+    the forms, not code-blind."""
     expected = {None: set()} | NA_CA_RUN_MISSES | {name: c for name, (_, c) in NA_CA_PLANTS.items()}
     assert na_ca_judged[plant] == expected[plant]
 

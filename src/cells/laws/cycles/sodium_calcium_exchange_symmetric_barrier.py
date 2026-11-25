@@ -106,7 +106,7 @@ LAW = CycleLaw(
     forms="base",  # Two ions exchanged: each move is a base row.
     cycle=CYCLE,
     host="cells.transporter@1",
-    provenance="cited",
+    provenance="parity",
     source=Citation(
         "only the 3:1 coupling, so the reversal, is supported: measured reversals of the "
         "sodium-calcium exchange current of guinea-pig ventricular cells, in giant patches (1992) "
