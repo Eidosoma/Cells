@@ -3,7 +3,8 @@
     python -m validation.ensemble_reexpression.run list [--inputs FILE]
     python -m validation.ensemble_reexpression.run snapshot DESTINATION
     python -m validation.ensemble_reexpression.run one NAME --runs DIR [--tag TAG] [...]
-    python -m validation.ensemble_reexpression.run all --runs DIR [--tag TAG] [--workers N] [...]
+    python -m validation.ensemble_reexpression.run all --runs DIR [--tag TAG] [--workers N]
+        [--retries] [...]
     python -m validation.ensemble_reexpression.run commands --runs DIR [--tag TAG] [...]
     python -m validation.ensemble_reexpression.run status --runs DIR [--inputs FILE]
 
@@ -18,6 +19,10 @@ the old record). A run that stopped with no record starts a new attempt beside t
 is registered: it is made from a clean, complete frozen snapshot (`snapshot`), and the caller names
 the registration tag, which must be the snapshot's revision. A declared time off its grid is refused
 by name before any run; `--off-grid` makes that one run all the same, and the record says so.
+
+**The retry's runs** are made when the judge's note owes them (`--owed`), or every family's with the
+batch (`--retries`). Those stand apart, in `retries/`, and the exporter opens them by the sha256 of
+the judge's note alone (table.py).
 """
 
 import argparse
@@ -40,6 +45,7 @@ from validation.ensemble_reexpression.inputs import (
     IONIC,
     MATCH_S,
     REGISTERED,
+    REGISTERED_PART2,
     ROOT,
     Inputs,
     InputsError,
@@ -54,16 +60,20 @@ SNAPSHOT = "SNAPSHOT.json"
 NO_SNAPSHOT = "none"  # `source.snapshot` of a run made from a checkout.
 EMPTY = hashlib.sha256(b"").hexdigest()
 # What a frozen snapshot of this registration holds beside the engine: this folder's modules, the
-# two files of the spec that they read, the tools they use and the script that starts a unit.
+# files of the spec that they read, the tools they use and the script that starts a unit.
 MODULES = (
     "__init__",
+    "blocks",
     "definitions",
     "inputs",
     "labels",
+    "pieces",
     "readouts",
     "refusals",
     "run",
     "sample",
+    "sample_part2",
+    "stores",
     "table",
     "worlds",
 )
@@ -74,6 +84,11 @@ DRIVERS = (
     "validation/tissue/field_solver_choice.py",
     "validation/source_snapshot.py",
     "scripts/run_detached.sh",
+)
+# Part 2's files of the spec, which a snapshot holds once its tag has them.
+PART2 = (
+    "validation/ensemble_reexpression/spec/PART2_BLOCKS.md",
+    "validation/ensemble_reexpression/spec/inputs_part2.json",
 )
 WORKER_ENVIRONMENT = {
     "JAX_ENABLE_X64": "1",
@@ -169,7 +184,8 @@ def guard(inputs, run, tag, root=ROOT):
         return
     if not (Path(root) / SNAPSHOT).is_file():
         raise Guarded(f"{run.name!r} is registered: it is made from a frozen snapshot, not here")
-    if inputs.path.resolve() != (Path(root) / REGISTERED.relative_to(ROOT)).resolve():
+    own = [(Path(root) / p.relative_to(ROOT)).resolve() for p in (REGISTERED, REGISTERED_PART2)]
+    if inputs.path.resolve() not in own:
         raise Guarded(f"{run.name!r} is registered: {inputs.path} is not the snapshot's own inputs")
     from validation import source_snapshot
 
@@ -221,7 +237,8 @@ def freeze(destination):
     """A frozen snapshot of the engine and of what this driver needs (source_snapshot.freeze)."""
     from validation import source_snapshot
 
-    names = _git(ROOT, "ls-files", "-z", "--", "src/cells", *DRIVERS).decode().split("\0")
+    selected = ("src/cells", *DRIVERS, *PART2)
+    names = _git(ROOT, "ls-files", "-z", "--", *selected).decode().split("\0")
     return source_snapshot.freeze(ROOT, destination, {name: name for name in names if name})
 
 
@@ -229,15 +246,20 @@ def freeze(destination):
 
 
 class Folders:
-    """Where the records of one campaign stand: a folder outside the tree they are made from."""
+    """Where the records of one campaign stand: a folder outside the tree they are made from. The
+    retry's runs stand apart where they were made up front (`held`)."""
 
-    def __init__(self, runs):
-        self.root = Path(runs).resolve()
+    def __init__(self, runs, *, held=False):
+        self.root, self.held = Path(runs).resolve(), held
         if self.root.is_relative_to(ROOT):
             raise Guarded(f"Records are kept outside the tree they are made from: {self.root}")
 
     def run(self, run):
-        return self.root / "runs" / run.slug
+        return self.root / ("retries" if self.held and run.retry else "runs") / run.slug
+
+    def made_early(self, run):
+        """Whether a retry's run has a folder among those made up front."""
+        return (self.root / "retries" / run.slug).exists()
 
     def record(self, run):
         path = self.run(run) / RECORD
@@ -277,7 +299,7 @@ class Worker:
         self.job = read_json(self.attempt / "job.json")
         self.inputs = Inputs(self.job["inputs"])
         self.run = self.inputs.run(self.job["run"])
-        self.folders = Folders(self.job["runs"])
+        self.folders = Folders(self.job["runs"], held=self.job.get("held", False))
         self.facts = {"definition": {}, "resolution": None, "restart": None, "timings": {}}
 
     @property
@@ -288,8 +310,8 @@ class Worker:
 
     def declaration(self, definitions):
         """What the generator makes for this run; its own refusals are no engine's (`harness`)."""
+        from validation.ensemble_reexpression.blocks import NoSection
         from validation.ensemble_reexpression.labels import UnknownOrder
-        from validation.ensemble_reexpression.worlds import NoSection
 
         try:
             return definitions.definition(self.inputs, self.run)
@@ -597,10 +619,10 @@ def worker_environment():
     return environment
 
 
-def one(inputs, run, runs, *, tag=None, off_grid=False, max_seconds=None, again=False):
-    """Make one run and write its record; its record."""
+def one(inputs, run, runs, *, tag=None, off_grid=False, max_seconds=None, again=False, held=False):
+    """Make one run and write its record; its record. held: a retry's run is made up front."""
     guard(inputs, run, tag)
-    folders = Folders(runs)
+    folders = Folders(runs, held=held)
     folder = folders.run(run)
     with locked(folder.with_name(folder.name + ".lock")):
         previous = folders.record(run)
@@ -618,6 +640,7 @@ def one(inputs, run, runs, *, tag=None, off_grid=False, max_seconds=None, again=
                 "off_grid": off_grid,
                 "max_seconds": max_seconds,
                 "tag": tag,
+                "held": held,
                 "started_utc": utc(),
             },
         )
@@ -706,14 +729,23 @@ def earlier(attempt):
 # ------------------------------------------------------------------ the campaign
 
 
-def ordered(inputs, *, consumers=None, owed=None):
+def ordered(inputs, *, consumers=None, owed=None, retries=False):
     """The runs in an order that makes each after what it needs: the judged ones, then plants, then
-    the restarts. With `owed`, the retry's runs alone."""
+    the retry's of every family (`retries`), then the restarts. With `owed`, the retry's runs that
+    the note lists, alone."""
+    if owed is not None and retries:
+        raise InputsError("the retry's runs are made by a note, or up front, and not both")
     runs = list(inputs.runs.values()) if owed is None else list(inputs.owed(owed))
+    runs += inputs.retries() if retries else ()
     if consumers:
         runs = [r for r in runs if r.consumer in consumers]
     place = {"judged": 0, "plant": 1, "support": 2}
-    return sorted(runs, key=lambda r: (r.restart_time is not None, place.get(r.role, 3)))
+    return sorted(runs, key=lambda r: (r.restart_time is not None, r.retry, place.get(r.role, 3)))
+
+
+def selected(inputs, args):
+    """The runs that a campaign's options select."""
+    return ordered(inputs, consumers=args.consumer, owed=args.owed, retries=args.retries)
 
 
 def options(args):
@@ -723,7 +755,7 @@ def options(args):
         value = getattr(args, name)
         if value is not None:
             out += ["--" + name.replace("_", "-"), str(value)]
-    return out
+    return out + (["--retries"] if args.retries else [])
 
 
 def command_of(run, args):
@@ -733,8 +765,8 @@ def command_of(run, args):
 def campaign(inputs, args):
     """Every run of the campaign that has no record yet, in stages, `--workers` at a time, each in
     its own process on this one's CPUs."""
-    runs = ordered(inputs, consumers=args.consumer, owed=args.owed)
-    folders = Folders(args.runs)
+    runs = selected(inputs, args)
+    folders = Folders(args.runs, held=args.retries)
 
     def make(run):
         if folders.record(run) is None:
@@ -768,8 +800,8 @@ def ended(record):
 
 def status(inputs, args):
     """{consumer: {how a run ended: how many}} of a campaign's records."""
-    folders, out = Folders(args.runs), {}
-    for run in ordered(inputs, consumers=args.consumer, owed=args.owed):
+    folders, out = Folders(args.runs, held=args.retries), {}
+    for run in selected(inputs, args):
         counts = out.setdefault(run.consumer, {})
         word = ended(folders.record(run))
         counts[word] = counts.get(word, 0) + 1
@@ -817,6 +849,8 @@ def _parser():
     for command in (every, shown, counted):
         command.add_argument("--consumer", action="append")
         command.add_argument("--owed", type=Path, help="the judge's retry_owed.json")
+    for command in (single, every, shown, counted):
+        command.add_argument("--retries", action="store_true", help="the retry's runs, up front")
     every.add_argument("--workers", type=int, default=1)
     shown.add_argument("--memory", default="4G")
     shown.add_argument("--cpus", default="")
@@ -837,14 +871,14 @@ def main(argv=None):
         for run in inputs.runs.values():
             print(json.dumps({"run": run.name, "kind": run.kind, "role": run.role}))
         return 0
-    if args.command == "commands":
-        for run in ordered(inputs, consumers=args.consumer, owed=args.owed):
-            print(shlex.join(detached(run, args)))
-        return 0
-    if args.command == "status":
-        print(json.dumps(status(inputs, args)))
-        return 0
     try:
+        if args.command == "commands":
+            for run in selected(inputs, args):
+                print(shlex.join(detached(run, args)))
+            return 0
+        if args.command == "status":
+            print(json.dumps(status(inputs, args)))
+            return 0
         if args.command == "all":
             return campaign(inputs, args)
         record = one(
@@ -855,6 +889,7 @@ def main(argv=None):
             off_grid=args.off_grid,
             max_seconds=args.max_seconds,
             again=args.again,
+            held=args.retries,
         )
     except (Guarded, InputsError) as error:
         print(f"refused: {error}", file=sys.stderr)

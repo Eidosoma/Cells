@@ -26,7 +26,7 @@ from cells.execution.errors import NumericalError
 from cells.models.surface_pump import DISSIPATION_MESSAGE, LEDGER_MESSAGE
 from cells.models.surface_pump_v3 import STATE_AXES
 from cells.registry.models import get_model
-from validation.ensemble_reexpression import definitions, labels, refusals, sample, worlds
+from validation.ensemble_reexpression import blocks, definitions, labels, refusals, sample, worlds
 from validation.ensemble_reexpression import run as driver
 from validation.ensemble_reexpression import table as exporter
 from validation.ensemble_reexpression.inputs import (
@@ -222,13 +222,13 @@ def test_the_echo_reads_defaults_by_the_spec_and_hides_no_field(registered):
     raw = definitions.ionic(registered.worlds["cell"], 2.5e-05)
     raw["model"]["extracellular"][0]["reservoir"] = True
     assert worlds.read(raw)["outside"]["outside"]["reservoir"] is True
-    for path in (("stores",), ("cells", "cell_0", "colour")):
+    for path in (("no_such",), ("cells", "cell_0", "colour")):
         wider = copy.deepcopy(block)
         target = wider
         for key in path[:-1]:
             target = target[key]
         target[path[-1]] = 1
-        with pytest.raises(worlds.NoSection, match=path[-1]):
+        with pytest.raises(blocks.NoSection, match=path[-1]):
             worlds.write(
                 wider, step=1e-4, observation_times=[0.0], solver="rk4", field_solver="none"
             )

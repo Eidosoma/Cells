@@ -29,10 +29,14 @@ CHECKS = (LEDGER_MESSAGE, DISSIPATION_MESSAGE, ENERGY_MESSAGE)
 POOL_CHECKS = ("Finite material conservation failed", "Material transfer counters disagree")
 # A declared value that left a range the message states. The engine's words: "domain" (the laws' and
 # the field's), "RK4 steps" and "step exceeds" (the laws' and the solvers' step bounds), "must lie
-# in", "cannot exceed", "must be finite and positive" and "nonnegative", "exceeds".
+# in", "cannot exceed", "must be finite and positive" and "nonnegative", "exceeds"; and of Part 2's
+# pieces "must be >" a number, "finite positive number", "is finite and >= 0", a parameter that "is
+# positive", "at least" or "at most", "is a normal float".
 OUT_OF_RANGE = re.compile(
     r"\bdomain\b|RK4 steps|\bstep exceeds\b|must lie in|must be in \[|cannot exceed|"
-    r"must be finite and (?:positive|nonnegative)|exceeds positive finite|reached its event cap"
+    r"must be finite and (?:positive|nonnegative)|exceeds positive finite|reached its event cap|"
+    r"must be >=? |must be a finite positive number|is finite and >= 0|"
+    r"parameter \S+ is (?:positive|at least|at most)|is a normal float"
 )
 # One refusal of the engine's names a law and a range together. Its law is today's in every block
 # that reaches it with the label's string, so what left its place is the range.
