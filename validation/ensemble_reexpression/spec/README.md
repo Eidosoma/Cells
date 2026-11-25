@@ -29,6 +29,7 @@ runs, taken on 25 November 2026 from frozen snapshots of the engine. It holds do
 | `margins.json` | Part 1: the plants' distances, ratios and margins, the mechanisms and their home entries, from the legacy side alone | Power |
 | `PART2.md`, `inputs_part2.json`, `legacy_part2.json`, `margins_part2.json`, `plants_manifest_part2.json` | Part 2, the same files by part | Part 2 |
 | `AMENDMENT-<n>-<date>.md` | Dated changes, the latest first. None exists at the criteria tag | Over every file above |
+| `AMENDMENT-1-2026-11-25.md` | Eight clarifications of the contract, after the Part 1 criteria tag: a pool restart, `restart.step_index`, a pool's `stream_id`, `declared_change`, the rehearsal's `p` and its off-grid run, EP2's `pool_seeds`, what a pool run submits | Over every file above |
 
 **Files outside this folder that the registration uses,** all in `validation/ensemble_reexpression/` but the rehearsal's `runs/` and `table-rehearsal/`: the lead's
 `registered_strings.json` (the strings note, §"No registered ID here"), and the rehearsal's files, which `SPEC.md` §8 lists with their makers and readers. In `table-retry/`, the judge's `retry_owed.json`. In the judge's record, `power.json`.
