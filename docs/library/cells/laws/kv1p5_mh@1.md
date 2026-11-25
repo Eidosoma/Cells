@@ -86,6 +86,9 @@ $$\frac{dm}{dt} = \frac{m_\infty - m}{\tau_m}, \qquad \frac{dh}{dt} = \frac{h_\i
 - **Integration:** the host advances each gate by its exponential stage update. The reference RK4
   step is at most 25 µs.
 - **Left out:** gating charge, conformational energy and protein turnover.
+- **Scope (D351):** the law has no pH input. Three labs agree in sign, not in size, that
+  acidifying the outside shifts Kv1.5's activation (+11.7, +17.3 and +7.8 mV). Its potassium–pH
+  interaction is an indication, from different readouts. The law carries neither.
 
 ## Sources
 
