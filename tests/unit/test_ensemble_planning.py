@@ -1,10 +1,10 @@
 """Offline placement of an ensemble's worlds, through the sixteen-GPU plans, on live worlds.
 
-One file holds the planning rules that a copy per older family repeated (docs/LEGACY_PORT_PLAN.md,
-V2): an experiment of several arms is planned for one GPU, for a four-GPU node and for four nodes,
-and every plan keeps the tasks, each arm's physics and world count, the experiment's seed and the
-world IDs. Two kinds of arms: ionic worlds of the three pump tissues, and finite-pool assemblies.
-No device, runtime or remote execution claim.
+One file holds the planning rules that a copy per older family repeated: an experiment of several
+arms is planned for one GPU, for a four-GPU node and for four nodes, and every plan keeps the tasks,
+each arm's physics and world count, the experiment's seed and the world IDs. Two kinds of arms:
+ionic worlds of the three pump tissues, and finite-pool assemblies. No device, runtime or remote
+execution claim.
 """
 
 from collections import Counter
