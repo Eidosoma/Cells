@@ -34,13 +34,13 @@ def test_windowed_cli_run_resume_branch_validate_and_refusals(tmp_path):
         "windowed", "resume", cp, "--output", resumed, "--window-steps", 3, "--recording", "full"
     )
     assert result.returncode == 0, result.stderr
-    for field in ("amount", "supplied", "degraded"):
+    for field in ("amount", "transferred", "converted"):
         with (
             np.load(root / "checkpoint_final/state.npz") as a,
             np.load(resumed / "checkpoint_final/state.npz") as b,
         ):
             np.testing.assert_array_equal(a[field], b[field])
-    data["experiment"]["source"]["schedule"].append({"time": 0.5, "rate": 4.0})
+    data["experiment"]["contact"]["schedule"].append({"time": 0.5, "open_fractions": [0]})
     changed = tmp_path / "changed.json"
     changed.write_text(json.dumps(data))
     branch = cli(
@@ -56,10 +56,10 @@ def test_windowed_cli_run_resume_branch_validate_and_refusals(tmp_path):
         7,
     )
     assert branch.returncode == 0, branch.stderr
-    assert (
-        json.loads(branch.stdout)["final_amount_fmol"]
-        > json.loads(fresh.stdout)["final_amount_fmol"]
-    )
+    final = json.loads(branch.stdout)["final_signed_transferred_fmol"]
+    with np.load(cp / "state.npz") as saved:  # Closed from its checkpoint, it moves nothing.
+        np.testing.assert_array_equal(final, saved["transferred"])
+    assert json.loads(fresh.stdout)["final_signed_transferred_fmol"] != final
     duplicate = cli("windowed", "run", config, "--output", root)
     assert duplicate.returncode == 2 and "already exists" in duplicate.stderr
     invalid = cli("windowed", "run", config, "--output", tmp_path / "bad", "--window-steps", 0)

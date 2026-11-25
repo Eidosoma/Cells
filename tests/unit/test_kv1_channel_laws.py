@@ -1,7 +1,7 @@
 """The Kv1 port pilot's five laws (D211, D213; seam F's step 2, docs/CORE_SEAMS_DESIGN.md §8.2 and
 §8.6 as amended, the lead's ruling (B) of 18 November 2026), each claim with a planted error it
-must catch (D187). Legacy-free: the reference checks of tests/unit/test_surface_calcium_kv1.py,
-moved beside the laws (D196's safeguard), which keeps its own family's tests.
+must catch (D187). Legacy-free: an older family's reference checks, moved beside the laws (D196's
+safeguard).
 
 - Each law's kernels match both references: BETSE v1.5.0's unchanged Kv1 classes, run out of
   process in their own environment (validation/betse/kv1_native.py) against the source the Kv1

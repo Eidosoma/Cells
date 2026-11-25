@@ -26,11 +26,11 @@ from cells.records.batch_io import write_batch_run  # noqa: E402
 from cells.records.io import runtime_identity, source_hashes, write_run  # noqa: E402
 from tests.batch_fixtures import definition, short_spec  # noqa: E402
 
+WORKLOADS = ("graph32",)
+
 
 def workload(name, count):
-    if name == "source_pair":
-        spec = short_spec("source_pair_controls", 1)
-    elif name == "graph32":
+    if name == "graph32":
         data = short_spec("reaction_transport_chain", 1).to_dict()
         n = 32
         model = data["model"]
@@ -182,7 +182,7 @@ def profile(output):
     output.mkdir(parents=True, exist_ok=False)
     initial = source_hashes()
     records, comparison = {}, {}
-    for name in ("graph32", "source_pair"):
+    for name in WORKLOADS:
         for count in (1, 4, 16):
             pair = {}
             for mode in ("scalar", "batch"):
@@ -264,7 +264,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--worker", action="store_true")
-    parser.add_argument("--workload", choices=("graph32", "source_pair"))
+    parser.add_argument("--workload", choices=WORKLOADS)
     parser.add_argument("--worlds", type=int, choices=(1, 4, 16))
     parser.add_argument("--mode", choices=("scalar", "batch"))
     arguments = parser.parse_args()

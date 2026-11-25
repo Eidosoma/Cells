@@ -4,7 +4,7 @@ The recorder's own rules, with no engine: each phase's start record at its compl
 level; one failure record for an Exception leaving the path, for the innermost open phase (with
 its enclosing phase) or after the last phase that ended; GeneratorExit and other BaseExceptions
 are not failures; the exception propagates unchanged; nothing is formatted or written without a
-handler; the module imports no jax. Then each path's own refusal on the small source-decay pair
+handler; the module imports no jax. Then each path's own refusal on the small shared pair of worlds
 (an rhs that goes non-finite in world 11): the runner's host check after its execute phase, the
 batch's refusal after its execute record, the windowed batch's after its first window, and the
 vectorized plan's admission before any phase; and the records change no result.
@@ -15,7 +15,6 @@ import io
 import logging
 
 import jax
-import jax.numpy as jnp
 import numpy as np
 import pytest
 
@@ -27,8 +26,8 @@ from cells.execution.errors import NumericalError
 from cells.execution.runner import run
 from cells.execution.vector_windows import plan_vector_windows
 from cells.execution.windows import WindowPolicy
-from cells.legacy.models import source_decay
-from tests.batch_fixtures import synthetic_pair
+from cells.models import reaction_transport
+from tests.batch_fixtures import failing_second_world, synthetic_pair
 
 POLICY = WindowPolicy(2, "checkpoints")
 
@@ -156,13 +155,8 @@ def test_the_records_import_no_jax():
 @pytest.fixture
 def refusing(monkeypatch):
     """World 11's rhs goes non-finite (tests/unit/test_batch.py's injected failure)."""
-    original = source_decay.rhs
-
-    def bad_rhs(state, control, parameters, active):
-        result = original(state, control, parameters, active)
-        return result._replace(amount=jnp.where(parameters > 0.5, jnp.inf, result.amount))
-
-    monkeypatch.setattr(source_decay, "rhs", bad_rhs)
+    bad_rhs = failing_second_world(reaction_transport.rhs)
+    monkeypatch.setattr(reaction_transport, "rhs", bad_rhs)
 
 
 def ran(collected, call):

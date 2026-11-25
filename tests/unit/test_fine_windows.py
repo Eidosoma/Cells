@@ -194,21 +194,30 @@ def _windows(*pairs):
     return _set(("execution", "fine_windows", "windows"), block(1.0, *pairs)["windows"])
 
 
-def _source_decay():
-    """A model the block does not admit (source_decay@1, configs/single_cell_pulse.json's)."""
+def _reaction_transport():
+    """A model the block does not admit (reaction_transport@1, one cell without a contact)."""
     return dict(
         schema_version=1,
         model=dict(
-            id="source_decay@1",
+            id="reaction_transport@1",
             units=dict(amount="fmol", volume="pL", time="s"),
-            population=dict(count=1, cell_id=1),
-            initial_state=dict(amount=0.2, volume=2.0),
-            parameters=dict(decay_rate=0.4),
+            species=["A", "B"],
+            population=dict(count=1, cell_ids=[101]),
+            initial_state=dict(amount=[[8.0], [0.0]], volume=[1.0]),
+            parameters=dict(
+                reaction=dict(
+                    from_species="A", to_species="B", forward_rate=[0.2], reverse_rate=[0.05]
+                ),
+                contacts=[],
+            ),
         ),
         experiment=dict(
             end_time=12.0,
-            source=dict(
-                kind="prescribed_external_amount_rate", schedule=[dict(time=0.0, rate=0.0)]
+            source=dict(kind="none"),
+            contact=dict(
+                kind="prescribed_contact_open_fractions",
+                contact_ids=[],
+                schedule=[dict(time=0.0, open_fractions=[])],
             ),
             observation_times=[0.0, 12.0],
         ),
@@ -218,6 +227,7 @@ def _source_decay():
             solver="rk4",
             dt=0.05,
             capacity=1,
+            edge_capacity=0,
             jit=True,
             max_steps=100000,
             max_trace_bytes=2**26,
@@ -293,7 +303,10 @@ REFUSALS = {
         ),
         f"misses the coarse point {90010 * 0.02!r}",
     ),
-    "a model it does not admit": (_source_decay, "fine_windows admits"),
+    "a model it does not admit": (
+        _reaction_transport,
+        "fine_windows admits .*; ReactionTransportSpec is refused",
+    ),
     "an operator that counts steps": (
         _counting_operator,
         "species_regulated_availability@1 is refused: its crossing record counts steps",

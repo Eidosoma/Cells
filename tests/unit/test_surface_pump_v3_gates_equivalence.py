@@ -16,8 +16,7 @@ from cells.definitions.specs import parse_spec
 from cells.definitions.surface_pump_v3_spec import control_values
 from cells.execution.runner import run
 from cells.laws.channels import sodium_channels
-from cells.legacy.models import surface_catalog
-from cells.models import surface_pump_v2, surface_pump_v3
+from cells.models import surface_kinetic, surface_pump_v2, surface_pump_v3
 from cells.numerics import exponential_gates as gates
 from cells.numerics import surface_imex as imex
 from cells.registry.models import get_model
@@ -163,7 +162,8 @@ def test_rk4_law_reproduces_the_resolved_tissue_8_catalog():
         definition["execution"].update(dt=dt, max_steps=1024)
         definition["experiment"].update(end_time=5e-4, observation_times=[0.0, 200 * dt, 5e-4])
     a, b = run(parse_spec(raw)), run(parse_spec(reference))
-    assert get_model(b.spec.model) is surface_catalog
+    assert get_model(b.spec.model).MODEL_ID == "resolved_tissue@8"
+    assert type(b.final.layout) is surface_kinetic.CATALOG_LAYOUT_TYPE
     gated = [i for i, row in enumerate(fixtures.CHANNELS) if row[-1]]
     for key in surface_pump_v3.STATE_TYPE._fields:
         if key.startswith("calcium"):

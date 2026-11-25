@@ -3,24 +3,32 @@
 import json
 from dataclasses import replace
 
-import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.definitions.specs import ConfigError, InputChange, parse_spec
-from cells.execution import batch_windows, runner
+from cells.definitions.specs import ConfigError, GraphContactChange, parse_spec
+from cells.execution import batch, batch_windows, runner, windows
 from cells.execution.batch import branch_batch_checkpoints, run_batch
 from cells.execution.batch_windows import iter_batch_windows, plan_batch_windows, run_batch_windowed
 from cells.execution.errors import NumericalError
 from cells.execution.resources import trace_bytes
 from cells.execution.runner import run, timeline
-from cells.execution.windows import WindowPolicy, iter_windows, merge_diagnostics
+from cells.execution.windows import WindowPolicy, iter_windows, merge_diagnostics, run_windowed
 from cells.records import batch_window_io
 from cells.records.batch_io import load_batch_snapshot, write_batch_snapshot
 from cells.records.batch_window_io import write_windowed_batch
 from cells.records.io import _sha256
 from cells.registry.models import get_model
-from tests.batch_fixtures import MODELS, definition, short_spec, synthetic_pair
+from tests.batch_fixtures import (
+    ROUTES,
+    WIDTHS,
+    definition,
+    failing_second_world,
+    in_domain,
+    short_spec,
+    step_route,
+    synthetic_pair,
+)
 from tests.unit.test_windows import assert_windows
 
 
@@ -28,10 +36,9 @@ def local_parts(rounds, identity):
     return [r.worlds[identity] for r in rounds if identity in r.worlds]
 
 
-@pytest.mark.parametrize("name", MODELS)
-@pytest.mark.parametrize("width", [1, 7, 1000])
-def test_all_models_exact_scalar_batch_window_parity(name, width):
-    spec = definition([short_spec(name, 0.073), short_spec(name, 0.041)])
+@pytest.mark.parametrize("short_world,width", WIDTHS, indirect=["short_world"])
+def test_exact_scalar_batch_window_parity(short_world, width):
+    spec = definition([short_world(0.5), short_world(0.3)])  # Ten steps and six.
     full = run_batch(spec)
     rounds = list(iter_batch_windows(spec, WindowPolicy(width)))
     assert len(rounds) == max(
@@ -70,20 +77,20 @@ def test_all_models_exact_scalar_batch_window_parity(name, width):
     )
 
 
-@pytest.mark.parametrize("name", MODELS)
-def test_eager_complete_cohorts(name):
-    spec = definition([short_spec(name, 0.0037, jit=False), short_spec(name, 0.0021, jit=False)])
+@pytest.mark.parametrize("short_world", ROUTES, indirect=True)
+def test_eager_complete_cohorts(short_world):
+    spec = definition([short_world(0.0037, jit=False), short_world(0.0021, jit=False)])
     rounds = list(iter_batch_windows(spec, WindowPolicy(1)))
     for world in spec.worlds:
         assert_windows(local_parts(rounds, world.world_id), run(world.simulation))
     assert all(r.resources["compiled_executables"] == 0 for r in rounds)
 
 
-@pytest.mark.parametrize("name", MODELS)
-def test_independent_restart_clocks_finished_worlds_and_new_policy(name, tmp_path):
-    spec = definition([short_spec(name, 0.073), short_spec(name, 0.041)])
+@pytest.mark.parametrize("short_world", ROUTES, indirect=True)
+def test_independent_restart_clocks_finished_worlds_and_new_policy(short_world, tmp_path):
+    spec = definition([short_world(0.5), short_world(0.3)])
     full = run_batch(spec)
-    starts = full.checkpoint_at({10: float(full.worlds[10].times[2]), 11: 0.041})
+    starts = full.checkpoint_at({10: float(full.worlds[10].times[2]), 11: 0.3})
     write_batch_snapshot(tmp_path / "start", spec, starts)
     saved = load_batch_snapshot(tmp_path / "start")
     root = tmp_path / "resumed"
@@ -93,7 +100,7 @@ def test_independent_restart_clocks_finished_worlds_and_new_policy(name, tmp_pat
     parts = list(iter_batch_windows(spec, WindowPolicy(3), saved.checkpoints))
     assert len(local_parts(parts, 11)) == 1
     for round_ in parts:
-        assert round_.checkpoints[11].time == 0.041
+        assert round_.checkpoints[11].time == 0.3
         assert round_.checkpoints[11].step_index == full.worlds[11].final.step_index
     for world in spec.worlds:
         assert_windows(
@@ -117,6 +124,28 @@ def test_independent_restart_clocks_finished_worlds_and_new_policy(name, tmp_pat
                 np.testing.assert_array_equal(a, b)
 
 
+@pytest.mark.parametrize("route", ["checked_rk4", "own_step"])
+def test_every_run_path_takes_the_route_and_refuses_a_step_outside_its_domain(route, monkeypatch):
+    """The planted routes are the ones taken: a domain the first cell leaves in its second step (it
+    converts 1.6 fmol/s) refuses the run, its windows, the batch and the batch's windows."""
+
+    def narrow(state, parameters, active):
+        return in_domain(state, parameters, active) & (state.converted[0] < 0.05)
+
+    step_route(monkeypatch, route, narrow)
+    spec = short_spec("reaction_transport_single", 0.073)
+    cohort = definition([spec, spec])
+    second = rf"\[{timeline(spec)[1]}, {timeline(spec)[2]}\]"
+    for path in (
+        lambda: run(spec),
+        lambda: run_windowed(spec, WindowPolicy(2)),
+        lambda: run_batch(cohort),
+        lambda: run_batch_windowed(cohort, WindowPolicy(2)),
+    ):
+        with pytest.raises(NumericalError, match=f"failure on {second}"):
+            path()
+
+
 def test_ids_order_parameters_events_and_future_branch():
     spec = synthetic_pair()
     full = run_batch(spec)
@@ -125,7 +154,7 @@ def test_ids_order_parameters_events_and_future_branch():
     changed = replace(
         first,
         experiment=replace(
-            first.experiment, source=first.experiment.source + (InputChange(0.5, 0),)
+            first.experiment, contact=(*first.experiment.contact, GraphContactChange(0.5, (0,)))
         ),
     )
     branch = replace(spec, worlds=(spec.worlds[1], replace(spec.worlds[0], simulation=changed)))
@@ -149,7 +178,9 @@ def test_ids_order_parameters_events_and_future_branch():
         worlds=(
             replace(
                 spec.worlds[0],
-                simulation=replace(first, model=replace(first.model, initial_amount=20)),
+                simulation=replace(
+                    first, model=replace(first.model, initial_amounts=((20, 0), (0, 2)))
+                ),
             ),
             spec.worlds[1],
         ),
@@ -159,20 +190,15 @@ def test_ids_order_parameters_events_and_future_branch():
     )
 
 
-@pytest.mark.parametrize("name", MODELS)
-def test_independent_dt_and_inactive_capacity_padding(name):
-    original = short_spec(name, 0.014)
+@pytest.mark.parametrize("short_world", ROUTES, indirect=True)
+def test_independent_dt_and_inactive_capacity_padding(short_world):
+    original = short_world(0.014)
     padded = replace(
         original,
         execution=replace(
             original.execution,
             capacity=original.execution.capacity + 2,
-            edge_capacity=original.execution.edge_capacity + 2
-            if original.execution.edge_capacity
-            else 0,
-            membrane_capacity=original.execution.membrane_capacity + 2
-            if original.execution.membrane_capacity
-            else 0,
+            edge_capacity=original.execution.edge_capacity + 2,
         ),
     )
     shorter_step = replace(padded, execution=replace(padded.execution, dt=padded.execution.dt / 2))
@@ -186,13 +212,20 @@ def test_independent_dt_and_inactive_capacity_padding(name):
 def test_prepared_parameters_and_compiled_widths_are_reused(monkeypatch):
     spec = synthetic_pair()
     model = get_model(spec.worlds[0].simulation.model)
-    original = model.parameters
     calls, widths = [], []
 
-    def parameters(*args):
-        calls.append(args[0].fingerprint)
-        return original(*args)
+    class Counted:
+        """The model as the run paths see it, counting the parameter sets they prepare (the model's
+        own checks and observers read its parameters too)."""
 
+        def __getattr__(self, name):
+            return getattr(model, name)
+
+        def parameters(self, *args):
+            calls.append(args[0].fingerprint)
+            return model.parameters(*args)
+
+    counted = Counted()
     compiled = batch_windows._compiled_batch
 
     class CountCompilations:
@@ -200,7 +233,8 @@ def test_prepared_parameters_and_compiled_widths_are_reused(monkeypatch):
             widths.append(inputs[1].shape[1])
             return compiled.lower(inputs, rhs, domain, checked_step)
 
-    monkeypatch.setattr(model, "parameters", parameters)
+    for module in (batch, batch_windows, runner, windows):
+        monkeypatch.setattr(module, "get_model", lambda _: counted)
     monkeypatch.setattr(batch_windows, "_compiled_batch", CountCompilations())
     result = run_batch_windowed(spec, WindowPolicy(2))
     assert calls == [w.simulation.fingerprint for w in spec.worlds]
@@ -238,13 +272,7 @@ def test_finished_world_never_evaluates_its_rhs(monkeypatch):
     full = run_batch(spec)
     starts = full.checkpoint_at({10: 0.5, 11: 0.7})
     model = get_model(spec.worlds[0].simulation.model)
-    original = model.rhs
-
-    def fail_finished(state, control, parameters, active):
-        value = original(state, control, parameters, active)
-        return value._replace(amount=jnp.where(parameters > 0.5, jnp.inf, value.amount))
-
-    monkeypatch.setattr(model, "rhs", fail_finished)
+    monkeypatch.setattr(model, "rhs", failing_second_world(model.rhs))
     rounds = list(iter_batch_windows(spec, WindowPolicy(2), starts))
     assert_windows(local_parts(rounds, 10), run(spec.worlds[0].simulation, starts[10]))
     assert len(local_parts(rounds, 11)) == 1
@@ -253,9 +281,8 @@ def test_finished_world_never_evaluates_its_rhs(monkeypatch):
             np.testing.assert_array_equal(a, b)
 
 
-@pytest.mark.parametrize("name", ["source_pair_controls", "bioelectric_pair_baseline"])
-def test_sampled_state_accounting_continuity_crosses_rounds(name, monkeypatch):
-    spec = short_spec(name, 0.004)
+def test_sampled_state_accounting_continuity_crosses_rounds(monkeypatch):
+    spec = short_spec("reaction_transport_chain", 0.004)
     spec = replace(
         spec,
         execution=replace(spec.execution, dt=0.001),
@@ -368,7 +395,7 @@ def test_resource_refusal_precedes_control_and_capacity_allocation(setting, monk
     if setting == "aggregate":
         spec = replace(spec, max_working_bytes=1)
     elif setting == "padded_aggregate":
-        tiny = short_spec("single_cell_pulse", 0.0001)
+        tiny = short_spec("reaction_transport_pair", 0.0001)
         spec = definition([spec.worlds[0].simulation, tiny])
         plan = plan_batch_windows(spec, policy)
         unpadded = sum(p.estimated_working_bytes for p in plan.worlds)
@@ -378,10 +405,12 @@ def test_resource_refusal_precedes_control_and_capacity_allocation(setting, monk
         spec = replace(spec, max_padded_steps=1)
     else:
         data = spec.worlds[0].simulation.to_dict()
+        data["execution"]["max_trace_bytes"] = 16000
+        fits = parse_spec(data)
+        plan_batch_windows(definition([fits, fits]), policy)  # The control, without the setting.
         if setting == "capacity":
-            data["execution"].update(capacity=1000000, max_trace_bytes=10000)
+            data["execution"]["capacity"] = 1000000
         elif setting == "observations":
-            data["execution"]["max_trace_bytes"] = 10000
             data["experiment"]["observation_times"] = np.linspace(0, 0.01, 200).tolist()
         else:
             data["execution"]["max_steps"] = 1
@@ -402,10 +431,10 @@ def test_resource_refusal_precedes_control_and_capacity_allocation(setting, monk
 def test_small_budget_full_refused_window_restart_and_branch_succeed(monkeypatch, tmp_path):
     specs = []
     for end in (1.0, 0.7):
-        data = short_spec("single_cell_pulse", end).to_dict()
-        data["execution"].update(dt=0.001, max_trace_bytes=10000)
+        data = short_spec("reaction_transport_pair", end).to_dict()
+        data["execution"].update(dt=0.001, max_trace_bytes=16000)
         specs.append(parse_spec(data))
-    spec = replace(definition(specs), max_working_bytes=20000)
+    spec = replace(definition(specs), max_working_bytes=32000)
     with pytest.raises(ConfigError, match="max_working_bytes|max_trace_bytes"):
         run_batch(spec)
 
@@ -431,7 +460,7 @@ def test_small_budget_full_refused_window_restart_and_branch_succeed(monkeypatch
                     w.simulation,
                     experiment=replace(
                         w.simulation.experiment,
-                        source=w.simulation.experiment.source + (InputChange(0.4, 4),),
+                        contact=(*w.simulation.experiment.contact, GraphContactChange(0.4, (0,))),
                     ),
                 ),
             )
@@ -440,26 +469,30 @@ def test_small_budget_full_refused_window_restart_and_branch_succeed(monkeypatch
     )
     carry = branch_batch_checkpoints(spec, saved.checkpoints, changed)
     future = run_batch_windowed(changed, WindowPolicy(8), carry)
-    assert future.checkpoints[10].state.amount[0] > resumed.checkpoints[10].state.amount[0]
+    for identity, cp in saved.checkpoints.items():  # Closed from 0.4, a contact moves nothing.
+        ending = future.checkpoints[identity].state.transferred
+        np.testing.assert_array_equal(ending, cp.state.transferred)
+        assert not np.array_equal(ending, resumed.checkpoints[identity].state.transferred)
     with pytest.raises(ConfigError, match="max_padded_steps"):
         plan_batch_windows(replace(spec, max_padded_steps=1), WindowPolicy(8), final.checkpoints)
 
 
-@pytest.mark.parametrize("name", ["source_pair_controls", "bioelectric_pair_baseline"])
 @pytest.mark.parametrize("recording", ["full", "observations", "checkpoints"])
-def test_every_unobserved_cubic_interval_is_checked(name, recording, monkeypatch, tmp_path):
-    spec = short_spec(name, 0.041)
+def test_observers_see_every_unobserved_interval(recording, monkeypatch, tmp_path):
+    """Each round hands the model's observers each world's accepted rows, whatever is recorded."""
+    spec = short_spec("reaction_transport_chain", 0.041)
     spec = replace(spec, experiment=replace(spec.experiment, observation_times=(0.0,)))
     cohort = definition([spec, spec])
     model = get_model(spec.model)
-    original = model.check_interpolants
+    original = model.observe_history
     intervals = []
 
-    def checked(times, *args):
+    def checked(times, history, *args):
+        assert all(len(values) == len(times) for values in history)
         intervals.extend(zip(times[:-1], times[1:], strict=True))
-        return original(times, *args)
+        return original(times, history, *args)
 
-    monkeypatch.setattr(model, "check_interpolants", checked)
+    monkeypatch.setattr(model, "observe_history", checked)
     write_windowed_batch(tmp_path / "run", cohort, WindowPolicy(2, recording))
     grid = timeline(spec)
     expected = list(zip(grid[:-1], grid[1:], strict=True)) * 2
@@ -473,7 +506,7 @@ def test_whole_round_failure_does_not_publish_any_world(recording, monkeypatch, 
     original = model.observe_history
 
     def fail(times, history, layout, requested, spec):
-        if spec.model.decay_rate > 0.5 and times[0] > 0:
+        if spec.model.forward_rate[0] > 0.5 and times[0] > 0:
             raise NumericalError("injected late second-world observer failure")
         return original(times, history, layout, requested, spec)
 
@@ -492,14 +525,8 @@ def test_whole_round_failure_does_not_publish_any_world(recording, monkeypatch, 
 def test_numerical_failure_names_world_and_sink_io_failure_not_complete(monkeypatch, tmp_path):
     cohort = synthetic_pair()
     model = get_model(cohort.worlds[0].simulation.model)
-    original = model.rhs
-
-    def fail(state, control, parameters, active):
-        value = original(state, control, parameters, active)
-        return value._replace(amount=jnp.where(parameters > 0.5, jnp.inf, value.amount))
-
     with monkeypatch.context() as patch:
-        patch.setattr(model, "rhs", fail)
+        patch.setattr(model, "rhs", failing_second_world(model.rhs))
         with pytest.raises(NumericalError, match="World 11.*batch refused"):
             run_batch_windowed(
                 cohort, WindowPolicy(2), sink=lambda r: pytest.fail("Partial round escaped")
@@ -539,7 +566,7 @@ def test_invalid_policy_checkpoint_map_and_sink():
 
 
 def test_working_estimate_horizon_independent_and_includes_observation_and_padding():
-    a = short_spec("single_cell_pulse", 1)
+    a = short_spec("reaction_transport_pair", 1)
     b = replace(a, experiment=replace(a.experiment, end_time=100, observation_times=(0.0, 100.0)))
     a = replace(a, experiment=replace(a.experiment, observation_times=(0.0, 1.0)))
     small = plan_batch_windows(definition([a, a]), WindowPolicy(3))
