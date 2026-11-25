@@ -271,6 +271,7 @@ def test_cycle_and_route_laws_name_their_step_terms():
     [
         ("cells.channel.a_law@1", ("cells", "channel", "a_law", 1)),
         ("cells.operator.an_operator@12", ("cells", "operator", "an_operator", 12)),
+        ("cells.potential_set.a_set@2", ("cells", "potential_set", "a_set", 2)),  # A sub-law's.
         ("acme.any_word.a_law@1", ("acme", "any_word", "a_law", 1)),  # Its families are its own.
         ("cells.channel.a_mM_law@1", ("cells", "channel", "a_mM_law", 1)),  # A name's, as written.
         ("cells.Channel.a_law@1", None),
