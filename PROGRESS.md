@@ -11,7 +11,7 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
 ## Open FR and core work (25 November 2026, night)
 
-Sources: [Decisions](docs/DECISIONS.md) D318 to D380, the [feature index](docs/FEATURE_REQUESTS.md) and the tags of 22 to
+Sources: [Decisions](docs/DECISIONS.md) D318 to D381, the [feature index](docs/FEATURE_REQUESTS.md) and the tags of 22 to
 25 November.
 
 - **Scheduled, from the morning of 25 November:**
@@ -54,9 +54,8 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D380, the [feature index](docs/F
   - **FR-51's two-potassium registration** (D353, D355, D356, D361, D378, D379) is tagged
     (`fr51-two-potassium-registered-2026-11-25`), pinned to FR-51's landing (955765ef). It is non-blind, and Panama's 10
     and 20 mM levels are holdouts. Its engine check passes. Two readers wait on one question about the panel's label.
-  - **FR-38's second comparison** (D334, D339, D354, D367): the protocol, references and five amendments are tagged
-    (amendment 5, D378); the judge on branch `fr38-v2-judge` is conforming to amendment 5 and is not yet tagged; the judged
-    run waits for its tag and the lead's go. The three uncovered readout controls go to a later
+  - **FR-38's second comparison has passed** (D381; tag `fr38-v2-registered-2026-11-25`), judged and independently
+    checked, beside D313's failed verdict. Its branch lands next. The three uncovered readout controls go to a later
     registration, FR-38 v3 (D354).
   - **FR-45's judge** (D375, D376): written after the rename; W2 and W7 stay on the wash or are pinned.
   - **FR-49's World B and combination checks C1 and C2** (D331): after the site pairing and the wash narrowing;
@@ -69,8 +68,7 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D380, the [feature index](docs/F
     power check and multistart bind any later registered fit. The Revilla diagnostic lands by merge in the next no-src stack.
   - **Follow-ups:** the docstring-only batch (scope lines of D337, D340, D344, D351, D355, D356); FR-43 part 3's
     open items and the factor-width term (D328); FR-43's gaps 3 and 4 (D347: no registered criterion for part 1;
-    turnover in a swelling cell is FR-65); the restart row at a source's switch-off and a per-solver support view
-    (D349). The composite on a GPU through the plain `runner.run` is admitted with host checks; whether to require XLA's
+    turnover in a swelling cell is FR-65); D349's restart row and per-solver support view are landed (260a9138).  The composite on a GPU through the plain `runner.run` is admitted with host checks; whether to require XLA's
     deterministic flag, refuse it, or state the caveat is the user's (D380).
   - **Lean's rebuilt tip is merged** at 18198688 (D378); `lean-ready.sh` runs before every Lean merge.
 - **Open, unscheduled:** FR-1, FR-2, FR-3, FR-6, FR-11, FR-13, FR-14, FR-15, FR-16, FR-8's rung 2, F1 (after an
@@ -144,6 +142,9 @@ Each line gives the merge or tag commit, the tag, the decision and where the evi
 Passes are as recorded; the failures stay on record beside any later pass.
 
 - **Passed:**
+  - FR-38's second comparison (D381): AF, AN, B, C and D, all twelve plants caught, an independent checker agreeing.
+    [Verdict](/mnt/workspaces/Cells/fr38-v2-campaign-20261125/judge/verdict.json),
+    [checker](/mnt/workspaces/Cells/fr38-v2-checker-20261125/out/verdict_checker.json). Its first comparison's fail stands below.
   - OL6 Protocol G, both scopes (D322): 1,280 of 1,280 seeds at tier 1, 540 statistics at tier 2, plants caught.
     [Verdict](/mnt/workspaces/Cells/ol6-checker-20261123/verdict_protocol_g_both_scopes.json).
   - FR-43 part 3 (D319,

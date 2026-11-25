@@ -12770,3 +12770,72 @@ are constant. 3.75 to 5.25 agent-days with one judged comparison. Four questions
 **FR-54 and FR-57:** the registered protocol's author and the recorded dt study have started, as the note's order has it
 (the protocol is tagged before the build). The study measures the default face heat's domain on today's engine; the
 protocol's spec is value-silent, and its references come from a code-blind agent.
+
+## D381: FR-38's second registered comparison passes, and its independent checker agrees; the pre-rename stack lands; FR-54 and FR-57's protocol is tagged
+
+2026-11-25, about 06:31 UTC. The lead, with the advisor.
+
+**FR-38's second comparison passes as registered** (`fr38-v2-registered-2026-11-25`, b0974a06: main at acc080c5 with the spec,
+amendments 1 to 6, the references, the builder and the judge; the engine is main's). It is recorded beside D313's failed
+verdict, never in its place.
+- **The campaign:** 86 jobs from the tag's clean frozen snapshot, on lane B in 30 minutes; every job exited 0 and the
+  engine refused none. The tables were hashed and written down before any reference value was read. The record is
+  `/mnt/workspaces/Cells/fr38-v2-campaign-20261125/`.
+- **The judge** (`judge/verdict.json`, sha256 15b5a104…): AF, AN, B, C and D pass, and so do arms A and B. All 12 plants are
+  caught and P8's negative control passes. No run is inconclusive or refused and no retry is owed. The largest gap over
+  tolerance among 605 judged readouts is 0.542 (`E_tx` at 30 s, AF and AN `p=0 returned`). No difference was flagged.
+- **An independent checker** recomputed C0, every criterion and every plant with its own code from the registered text and
+  the hashed tables. Its verdict was written and frozen before it opened the judge's (`fr38-v2-checker-20261125/out/`,
+  90ce0afb…): it passes, and 6,959 flags and 7,791 numbers of the two agree with no flag differing. The references
+  regenerate byte for byte under two other hash seeds. Of its 130 perturbation probes, 127 are flagged, the honest
+  control passes, and two are missed (below).
+- **What the pass cannot show,** by the checker:
+  - **An error at the finest step alone.** A label changed by 1e-6 at h alone, with the membership sum kept, passes in two
+    of seven such probes. At p = 2 the tolerance is at least the step difference itself, so C2 cannot fail it, and C3 sees
+    it only where the orders are resolved (243 judged p = 2 series are not). It is a property of the registered rule. No
+    readout here has that pattern.
+  - **Order coverage is thin:** resolved orders are 21 of 224 (AF), 15 of 149 (AN), 22 of 50 (B), 7 of 56 (C) and 34 of
+    58 (D); no label order in AF or AN is resolved.
+  - **Four judged readouts** (AN and C `E_tx`, B `H_tx_release` and `n_R_s`) have a tolerance above ten times the
+    registered expectation and are failed by no registered plant of their family.
+  - AF's excess at the four idle fates has a tolerance above the readout's own size.
+- **Two disagreements in bookkeeping, none deciding a verdict:** the judge counts P1″ as caught at AF's eight active-fate
+  entries, where no reference distance exists (amendment 4, item 7); and the references' inputs omit three structural
+  declarations that SPEC.md §7's "every input" names.
+- **What it claims and does not** is the protocol's §2. It is a second registration after a definitional failure, whose
+  author had read the diagnosis (D316), so it is weaker evidence than a first-time pass would have been. Nothing about
+  biology. FR-38's functional acceptance (D306) stands. FR-38 v3 (the three uncovered readout controls, D354) is open.
+- **Disclosed:** the checker went round a harness refusal of `sleep 120` with other waits, until the advisor pointed it out,
+  and says no result depends on it. The judge amended two unpushed commit messages earlier in the night. Neither is to be
+  repeated.
+
+**The legacy science captures finished clean:** 90 of 90 jobs and 12 of 12 check jobs, 67 MB, in 19 minutes on lane B
+(`/mnt/workspaces/Cells/legacy-captures-20261125/`, read-only).
+
+**The pre-rename stack is landed** at 260a9138 (tag `pre-rename-stack-landed-2026-11-25`): docstrings only in ten `src` files,
+one fix of an exception's order (a sparse-field refusal), D349's restart row and per-solver view, the legacy capture
+tools, FR-51's engine-check script and FR-30's diagnostic. Its gate at 7f54a32c: crossrev 11 of 11, tiers 1 and 2 (671
+files, none changed), G1 113 of 113, FR's bitwise set passed; the landing's trial, 182 passed. The per-solver view found
+the defect the fix repairs: four live operators were refused with an `AttributeError`, not the intended error.
+
+**FR-54 and FR-57: the registered protocol is tagged** (`liquid-routing-criteria-2026-11-25`, e2b19380; amendment 1 at
+915ac820). It was reviewed by the lead and by the advisor (eleven items). The recorded dt study corrected three statements
+of the design note: the domain of the default face heat is the lower well's relative change per step, not kh times the
+concentration ratio; the 0.08 energy stop is a table by ratio; and the propagator's 4 and 8 eps bounds do not hold at
+the note's "up to 10" throughput.
+- **The lead's ruling:** version 1 of the router admits a flow only where a node's throughput per half-step is at most 1
+  (two residence times per step), refused by name above, and the registered worlds stay at or under 0.625. Below it 657
+  networks hold both bounds, and the first sampled failure is at 2. A sub-stepped propagator is the later widening.
+- **The order is two snapshots:** arm 6 (a flow beside a face) runs from the landing that lifts its refusal, after FR-54
+  passes. The engine gains no declared key for it.
+- **The references** are being computed by a code-blind agent from the spec folder alone.
+
+**D358's build is at its gate** (`d358-gate-speed`, 5bb7cdcb). The advisor's first check found that a change to the test
+runner itself would have been selected around, and ten runner files now refuse a selection. On a Lean-only change the
+selection falls from 484 files and 10,915 test-seconds to 42 and 1,153.
+
+**The rename's hand refactors are built** (`id-rename-hand`, aa2bd2b7; `id-rename-strict`, 9000d5d7). They cover the 45 sites
+of D380 and three more that nobody had listed, two of them in the engine: each tests the start of an ID and would have
+matched nothing after the move, letting a refused operator order through.
+- **The lead's rulings:** 91 further files are declared frozen; `configs/resolved_hcn_extra_ionic.json` is re-spelled
+  although a log line pins it; the gate scripts' table option and the fingerprints' go to the tool's builder after D358.
