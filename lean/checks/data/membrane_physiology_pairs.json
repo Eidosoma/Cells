@@ -78,7 +78,7 @@
   "desplantez2011_cx43_kinetics@1": {
     "doi": "10.1007/s00232-011-9352-z",
     "locator": "Results on current deactivation and Table 3, wt-Cx43/wt-Cx43 row",
-    "preparation": "Homotypic untagged Cx43 in paired HeLa cells, dual whole-cell clamp at 22–25 °C. The fast and slow contributions are fractions of the initial decaying component.",
+    "preparation": "Homotypic untagged Cx43 in paired cells from a human cell line, dual whole-cell clamp at 22–25 °C. The fast and slow contributions are fractions of the initial decaying component.",
     "voltage_mV": 110,
     "slow_detected_from_abs_voltage_mV": 90,
     "fast_percent": 80,

@@ -49,7 +49,7 @@ Proof sources [Cells inner-cycle charge columns specialized to arbitrary signed 
 
 ### abrantes2026_outer_voltage
 
-In intact HeLa cells, compartment-targeted measurements gave mean bulk IMS pH 7.96 and mean cytosolic pH 7.41. The authors inferred +33 ± 11 mV, positive on the IMS side. Figure 1E, equation 1 and accompanying Results. [Abrantes et al. (2026), Mitochondrion 102218](https://doi.org/10.1016/j.mito.2026.102218)
+In intact cells from a human cell line, compartment-targeted measurements gave mean bulk IMS pH 7.96 and mean cytosolic pH 7.41. The authors inferred +33 ± 11 mV, positive on the IMS side. Figure 1E, equation 1 and accompanying Results. [Abrantes et al. (2026), Mitochondrion 102218](https://doi.org/10.1016/j.mito.2026.102218)
 
 - **Evidence role** descriptive
 

@@ -1,0 +1,110 @@
+{
+  "study": "Panama and Lopatin (2006), Fig. 3E",
+  "doi": "10.1113/jphysiol.2005.097741",
+  "calibration_evidence_revision": "48fb7e0f4f001521be841903c78fe0f855026bcb",
+  "calibration_driver_revision": "369431f74ae5108c8be47f3a0afc80623de7f028",
+  "calibration_engine_revision": "7ca7c9c15f7f02983aeb103b989c5d0a739e9d31",
+  "calibration_result": "kir-replay.json, panama.fit_* for the exploratory mode parameters and fit RMS",
+  "prospective_engine_revision": "955765efaed76601c182c2df26b1c7c5278d80f5",
+  "temperature_K": 300.0,
+  "internal_K_mM": 145.0,
+  "nominal_total_spermine_mM": 0.03,
+  "estimated_free_spermine_mM": 0.007,
+  "calibration": {
+    "fit_external_K_mM": 5.4,
+    "fit_measured_reversal_mV": -70.5,
+    "fit_cells_reversal_mV": -85.06173425866054,
+    "fit_half_voltage_mV": -74.04761904761905,
+    "fit_half_bracket_mV": [
+      -75,
+      -70
+    ],
+    "fit_parameters_weight_mid1_mid2_z1_z2": [
+      0.8309770802607913,
+      -75.66904056398175,
+      -47.900768721084674,
+      6.363639622555873,
+      2.928436346998458
+    ],
+    "fit_rms_absolute_fraction": 0.004409224809116126
+  },
+  "half_crossing_readout": {
+    "source": "https://cdn.ncbi.nlm.nih.gov/pmc/blobs/c153/1796793/3fc730d2ddd6/tjp0571-0287-f3.jpg",
+    "panel": "Fig. 3E, leftmost Kir2.1 trace, 5.4 mM extracellular potassium",
+    "method": "Two readers independently read the half-crossing region at 5 mV intervals on the original logarithmic ordinate. Rows are rounded to two decimal places in relative current. The scorer interpolates linearly between those currents.",
+    "raster_size_px": [
+      654,
+      408
+    ],
+    "pixel_origin": "upper left",
+    "x_ticks_mV_px": [
+      [
+        -100,
+        238.4
+      ],
+      [
+        -80,
+        265.7
+      ],
+      [
+        -60,
+        293.3
+      ],
+      [
+        -40,
+        320.7
+      ],
+      [
+        -20,
+        347.9
+      ],
+      [
+        0,
+        375.3
+      ],
+      [
+        20,
+        402.8
+      ]
+    ],
+    "y_ticks_relative_current_px": [
+      [
+        1,
+        249.1
+      ],
+      [
+        0.1,
+        321.3
+      ],
+      [
+        0.01,
+        393.5
+      ]
+    ],
+    "grid_mV_relative_current": [
+      [
+        -80,
+        0.76
+      ],
+      [
+        -75,
+        0.54
+      ],
+      [
+        -70,
+        0.33
+      ],
+      [
+        -65,
+        0.21
+      ]
+    ],
+    "estimated_reading_allowance_relative_current": [
+      0.04,
+      0.04,
+      0.03,
+      0.02
+    ],
+    "uncertainty": "Reading allowances describe line width and image resolution. The registered comparison uses 1 mV per crossing for graph-reading sensitivity. Patch-level errors for these points were unavailable."
+  }
+}

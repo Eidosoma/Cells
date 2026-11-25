@@ -49,14 +49,21 @@ Proof sources [Cells constant-field definitions](../CellsProofs/Transport/Consta
 
 [Tested engine 0455ce787fd8](https://github.com/Eidosoma/Cells/commit/0455ce787fd8c36ec2eb51389e4f5a5a5012f253) · [Evidence checkpoint 34e1f9dfc162](https://github.com/Eidosoma/Cells/commit/34e1f9dfc1628af1f81e66cf8166d5c6f4207407)
 
+**Engine** `resolved_pump_tissue@3`, `cells.proton_atp_mass_action_positive@1`, `cells.proton_constant_field_leak@1`, `cells.inward_rectifier_linear_driving_force@1`, `cells.kir2p1_mh2@1`, `cells.rapid_binding@1`
+
+[Tight-coupled proton pump](https://github.com/Eidosoma/Cells/blob/153449799f4d301a34f2be58172becc4dc562806/src/cells/laws/pumps/proton_pump.py#L91) · [Proton flux](https://github.com/Eidosoma/Cells/blob/153449799f4d301a34f2be58172becc4dc562806/src/cells/laws/transport/proton_leak.py#L31) · [Kir slope conductance](https://github.com/Eidosoma/Cells/blob/153449799f4d301a34f2be58172becc4dc562806/src/cells/laws/routes/inward_rectifier_linear_driving_force.py#L127) · [Two binding forms](https://github.com/Eidosoma/Cells/blob/153449799f4d301a34f2be58172becc4dc562806/src/cells/laws/reactions/rapid_binding.py#L340) · [Tissue channel current](https://github.com/Eidosoma/Cells/blob/153449799f4d301a34f2be58172becc4dc562806/src/cells/models/surface_pump_v3.py#L621) · [Thermodynamic constants](https://github.com/Eidosoma/Cells/blob/153449799f4d301a34f2be58172becc4dc562806/src/cells/laws/electrochemistry.py#L10) · [Preparation records](https://github.com/Eidosoma/Cells/blob/01edbd968e182f91c0bd281fe776f5609a78e645/lean/checks/data/paired_preparation_controls.json) · [Kir slopes and controls](https://github.com/Eidosoma/Cells/blob/01edbd968e182f91c0bd281fe776f5609a78e645/lean/checks/data/paired_replay_measurements.json) · [Fixed-drive Kir evaluation](https://github.com/Eidosoma/Cells/blob/01edbd968e182f91c0bd281fe776f5609a78e645/lean/checks/paired_law_replays.py) · [Native proton roots](https://github.com/Eidosoma/Cells/blob/01edbd968e182f91c0bd281fe776f5609a78e645/lean/checks/paired_membrane_physiology.py) · [Tissue clamp specimen](https://github.com/Eidosoma/Cells/blob/01edbd968e182f91c0bd281fe776f5609a78e645/lean/checks/clamped_channel_current.py) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/01edbd968e182f91c0bd281fe776f5609a78e645/lean/checks/paired_preparation_controls.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/01edbd968e182f91c0bd281fe776f5609a78e645/lean/PROGRESS.md#preparation-evidence-review)
+
+[Tested engine 153449799f4d](https://github.com/Eidosoma/Cells/commit/153449799f4d301a34f2be58172becc4dc562806) · [Evidence checkpoint 01edbd968e18](https://github.com/Eidosoma/Cells/commit/01edbd968e182f91c0bd281fe776f5609a78e645)
+
 ## Biological evidence
 
 **Open.** Reversal voltage of an open H⁺ path across measured pH gradients at known temperature. Predicting the signed flux magnitude also requires permeability, area and opening.
 
 - [An increased bath-minus-intracellular pH difference moves the open proton-current reversal to more negative intracellular voltages.](../WET_LAB_EVIDENCE.md#pair-proton-gradient-tail-reversal) · Supported by both studies
 - [In brown-fat and skeletal-muscle mitochondrial inner membranes, a one-unit bath-minus-matrix pH difference produces a proton-current reversal near −59 mV at 24 °C.](../WET_LAB_EVIDENCE.md#pair-mitoplast-proton-reversal-independence) · Independent replication unconfirmed
+- [A one-unit increase in bath minus pipette pH shifts plasma-membrane proton-current reversal negatively, by roughly 50–60 mV in these buffered whole-cell preparations.](../WET_LAB_EVIDENCE.md#pair-plasma-proton-reversal-slope) · Supported by both studies
 
-In Jurkat T cells the proton-current reversal shifted −47 mV per pH unit, versus an ideal −58 mV per pH unit. The fitted slope uncertainty and intracellular pH limit a quantitative verdict. Independent macrophage and microglia tail currents also show the sign of the pH response, with the largest departures when nominal pipette and bath pH are furthest apart. Two inner-membrane measurements share a laboratory. [Schilling et al., Fig. 2E](https://doi.org/10.1113/jphysiol.2002.028878)
+In Jurkat T cells the proton-current reversal shifted −47 mV per pH unit, versus an ideal −58 mV per pH unit. The fitted slope uncertainty and intracellular pH limit a quantitative verdict. Independent macrophage and microglia tail currents also show the sign of the pH response, with the largest departures when nominal pipette and bath pH are furthest apart. Two inner-membrane measurements share a laboratory. [Schilling et al., Fig. 2E](https://doi.org/10.1113/jphysiol.2002.028878) Sasaki’s independent expression study also reported tail reversal near proton equilibrium. A three-lab comparison with measured pH at both membrane faces remains open. [Sasaki et al.](https://doi.org/10.1126/science.1122352)
 
 **Unit** mV at reversal, fmol/s for signed proton flux
 
@@ -109,5 +116,25 @@ Fatty-acid-activated proton current in mouse skeletal muscle mitoplasts. Three m
 Calculated sample SEMs are 1.92, 1.82 and 6.70 mV (n = 6, 3 and 4). The workbook gives individual readings and sample SD. Group intervals use the 95% Student t interval for independent observations. The figure specifies 24 °C for the Nernst reference.
 
 The unfitted Cells roots were −58.96, −88.44 and +29.48 mV. Each lies within its group interval. This retrospective check concerns reversal of the observed proton current. It supplies no absolute permeability calibration. [Dataset manifest](../checks/data/bertholet2019_proton_reversal.json) · [Comparison verdict](../PROGRESS.md#mt1b-buffered-reversal)
+
+### cherny1995_alveolar
+
+Native rat alveolar epithelial proton current, whole-cell tails at 20 °C. Fig. 2. [Cherny, Markin and DeCoursey (1995)](https://doi.org/10.1085/jgp.105.6.861)
+
+- **Evidence role** descriptive
+
+Twelve pH combinations, 2–18 observations per point. SDs describe points. The slope has no reported interval.
+
+The fitted reversal slope was −52.4 mV per unit of bath minus pipette pH. Local proton activity during the tails was unmeasured. [Dataset manifest](../checks/data/paired_preparation_controls.json) · [Comparison verdict](../PROGRESS.md#preparation-evidence-review)
+
+### ramsey2006_hv1
+
+Human Hv1 in HEK cells, whole-cell tails at pipette pH 6.5 and 22–24 °C. Figs. 1e–f. [Ramsey et al. (2006)](https://doi.org/10.1038/nature04700)
+
+- **Evidence role** descriptive
+
+Group means ± SEM with 10, 14 and 5 recordings. Local membrane pH was unmeasured.
+
+Measured roots were +53.3, +0.9 and −56.5 mV at bath pH 5.5, 6.5 and 7.5. [Dataset manifest](../checks/data/paired_preparation_controls.json) · [Comparison verdict](../PROGRESS.md#preparation-evidence-review)
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

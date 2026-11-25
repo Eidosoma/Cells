@@ -15,6 +15,10 @@ from urllib.parse import quote
 
 LANE = Path(__file__).resolve().parents[1]
 REPOSITORY = "https://github.com/Eidosoma/Cells"
+D351 = (
+    f"{REPOSITORY}/blob/main/docs/DECISIONS.md#d351-the-wet-lab-gap-diagnosis-"
+    "three-rows-confirmed-none-wrong-inside-its-claimed-domain-fr-55-goes-to-normal-the-user"
+)
 BEGIN = "<!-- generated: claims-index -->"
 END = "<!-- /generated -->"
 NOTE = "<!-- Generated from lean/claims.json by scripts/generate_claims.py. -->"
@@ -26,6 +30,14 @@ PAIR_OUTCOMES = {
     "different_results": "Different experimental results",
     "inconclusive": "Comparison unresolved",
     "not_independent": "Independent replication unconfirmed",
+}
+REPLAY_STATUS = {
+    "missed": "Replay discrepancy",
+    "reproduced": "Shared observable reproduced",
+    "represented": "Representable with declared inputs",
+    "partial": "Partial replay or missing inputs",
+    "unconfirmed": "Replicated target unresolved",
+    "pending": "Awaiting replay",
 }
 
 
@@ -249,6 +261,8 @@ def biological_summary(biology, verdict):
 
 def wet_lab_register(claims):
     groups = {outcome: [] for outcome in PAIR_OUTCOMES}
+    replay_counts = Counter()
+    misses = []
     seen = set()
     reviewed_claims = 0
     pending = []
@@ -286,18 +300,37 @@ def wet_lab_register(claims):
             if not all(pair[k].strip() for k in ("assumption", "comparison", "independence")):
                 raise ValueError(f"{pair_id}: missing assumption, measurements or independence")
             sources = " · ".join(publication_link(e) for e in studies)
+            replay = pair.get("replay")
+            state = replay["status"] if replay else "pending"
+            note = replay["assessment"].strip() if replay else "Awaiting an engine comparison."
+            studies_agree = outcome in ("both_support", "both_challenge")
+            if state not in REPLAY_STATUS or not note:
+                raise ValueError(f"{pair_id}: invalid Cells replay status or assessment")
+            if (state in ("missed", "reproduced") and not studies_agree) or (
+                state == "unconfirmed" and studies_agree
+            ):
+                raise ValueError(f"{pair_id}: replay status conflicts with the paired evidence")
+            replay_counts[state] += 1
+            if state == "missed":
+                misses.append(f"- [{pair['assumption']}](#pair-{pair_id})")
             cells = [
                 f'<a id="pair-{pair_id}"></a>{pair["assumption"]} {claim_link}',
                 pair["comparison"],
                 pair["independence"] + " " + sources,
+                f"**{REPLAY_STATUS[state]}.** {note}",
             ]
             cells = [" ".join(c.splitlines()).replace("|", r"\|") for c in cells]
             groups[outcome].append("| " + " | ".join(cells) + " |")
 
     summary = (
-        f"[Paired wet-lab evidence](WET_LAB_EVIDENCE.md) covers {len(seen)} comparisons "
-        f"across {reviewed_claims} claims. In {len(groups['both_support'])} comparisons, "
-        "two independent studies support the stated assumption."
+        f"[Paired wet-lab evidence](WET_LAB_EVIDENCE.md) covers {reviewed_claims} of "
+        f"{len(claims)} claims. Across {len(seen)} comparisons, two independent studies support "
+        f"the stated assumption in {len(groups['both_support'])} and challenge it "
+        f"in {len(groups['both_challenge'])}. "
+        "[Cells replay results](WET_LAB_EVIDENCE.md#cells-replay-results) "
+        f"flag {len(misses)} discrepancies. Of the original eight, D351 confirmed three "
+        "findings and classified five as indications. It found no errors within the laws’ "
+        f"stated domains. [D351 ruling on main]({D351})"
     )
     parts = [
         NOTE,
@@ -309,13 +342,34 @@ def wet_lab_register(claims):
         "claim page identifies calibration data and gives the full biological verdict.",
         "| Outcome | Reviewed pairs |\n| --- | ---: |\n"
         + "\n".join(f"| {label} | {len(groups[k])} |" for k, label in PAIR_OUTCOMES.items()),
+        "## Cells replay results",
+        "The last column records what Cells predicts for the observable the studies share. "
+        "A fitted input or a synthetic control establishes representability. A partial replay "
+        "names the missing input or readout. Each claim links its source and numerical checks.",
+        "| Cells result | Pairs |\n| --- | ---: |\n"
+        + "\n".join(f"| {label} | {replay_counts[s]} |" for s, label in REPLAY_STATUS.items()),
     ]
+    if misses:
+        parts += [
+            '<a id="replicated-observations-missed-by-the-tested-law"></a>',
+            "### Observations missed in the tested replays",
+            "D351 requires at least two independent labs to measure the same quantity on the "
+            "same molecular system under comparable conditions to confirm a finding. Of the "
+            "original eight discrepancies, three met that rule. Acidification shifts Kv1.5 "
+            "activation toward more positive voltages, and the central estimates show POPC "
+            "expands on warming. Both findings concern direction. For Cx43, the confirmed "
+            "finding is the two-phase decay of junctional current. Five rows remained "
+            "indications. The review found no errors within the laws’ stated domains. "
+            f"[D351 definition and row-by-row ruling on main]({D351})",
+            "\n".join(misses),
+        ]
     for outcome, rows in groups.items():
         if rows:
             parts += [
                 f"## {PAIR_OUTCOMES[outcome]}",
-                "| Assumption and claim | Measurements and scope | Independence and sources |\n"
-                "| --- | --- | --- |\n" + "\n".join(rows),
+                "| Assumption and claim | Measurements and scope | Independence and sources | "
+                "Cells replay |\n"
+                "| --- | --- | --- | --- |\n" + "\n".join(rows),
             ]
     parts += [
         "## Awaiting paired review",
@@ -412,7 +466,7 @@ def live_inventory(lane):
     }
 
 
-def coverage(inventory, claims, comparisons, repo, category_sections):
+def coverage(inventory, claims, comparisons, repo, category_sections, wet_lab_summary):
     direct, exercised = {}, {}
     for claim in claims.values():
         for piece in claim["formal"].get("about", []):
@@ -445,6 +499,7 @@ def coverage(inventory, claims, comparisons, repo, category_sections):
         "Partial evidence covers a measured part of a claim. A result marked not assessable "
         "has too much uncertainty for a verdict. [Topic overview](README.md#proof-index) · "
         "[Registered laws](#registered-laws) · [Registered operators](#registered-operators)",
+        wet_lab_summary,
         "## Failing numerical checks",
         "\n".join(failing) or "The register lists zero numerical failures.",
         *category_sections,
@@ -575,7 +630,7 @@ def render(lane, live_registry=False):
                 )
             )
     outputs[lane / "COVERAGE.md"], registry_summary = coverage(
-        inventory, claims, register["comparisons"], lane.parent, sections
+        inventory, claims, register["comparisons"], lane.parent, sections, wet_lab_summary
     )
     readme = lane / "README.md"
     before, start, rest = readme.read_text(encoding="utf-8").partition(BEGIN)

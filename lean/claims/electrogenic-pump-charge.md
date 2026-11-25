@@ -37,10 +37,53 @@ Uses [Free energy sets ATP-driven transport direction and stall](atp-cycle.md)
 
 ## Biological evidence
 
-**Open.** Ion transfer per ATP, paired ion flux and outward current, and stall voltage under known fuel and ion activities.
+**Open.** Ion transfer per ATP, paired ion flux and outward current, and stall voltage under known fuel and ion activities. A separate erythrocyte measurement reports labelled phosphate incorporation into ATP.
+
+- [Opposing Na and K gradients increase ouabain-sensitive radiophosphate incorporation into ATP in red-cell ghosts.](../WET_LAB_EVIDENCE.md#pair-ghost-gradient-atp-label) · Supported by both studies
+- [The Na/K pump can carry inward electrical current under reverse-favouring conditions in voltage-clamped excitable cells.](../WET_LAB_EVIDENCE.md#pair-reverse-nak-inward-current) · Supported by both studies
 
 Squid axons gave 3.05 ± 0.13 Na⁺ per net charge from −60 to −90 mV in Na-free seawater and 2.72 ± 0.09 at 0 mV with 390 mM external Na⁺ (SEM). Cells predicts 3. Red-cell ghosts lost about 3 Na⁺ per ATP. In pig-brain calcium pumps, separate rate measurements imply 1.02 Ca²⁺ per ATP and about +1.4 net charges per ATP after inward H⁺ is included. Cells counts +2 from Ca²⁺ alone. The simulated stall voltages still lack a matched measurement. [Rakowski et al., Table I](https://doi.org/10.1085/jgp.93.5.903) · [Garrahan and Glynn](https://doi.org/10.1113/jphysiol.1967.sp008297) · [Salvador et al., Table I](https://doi.org/10.1074/jbc.273.29.18230)
 
-**Unit** ions per net elementary charge, ions and net elementary charges per ATP, mV for stall
+**Unit** ions per net elementary charge, ions and net elementary charges per ATP, mV for stall and direction of phosphate label incorporation
+
+### garrahan1967_ghost_phosphate_label@1
+
+Resealed erythrocyte ghosts under opposing sodium and potassium gradients. Primary report, nucleotide labelling in resealed human erythrocyte ghosts, 15 min incorporation. [Garrahan and Glynn (1967), nucleotide incorporation experiments](https://doi.org/10.1113/jphysiol.1967.sp008298)
+
+- **Evidence role** descriptive
+
+High internal K and external Na increased radiophosphate incorporation above background. Ouabain suppressed the extra signal. The measured quantity is isotope entering nucleotides.
+
+In five ouabain experiments the pump inhibitor largely suppressed the gradient-associated excess labelling above background. [Dataset manifest](../checks/data/paired_replay_measurements.json) · [Comparison verdict](../PROGRESS.md#paired-law-replays)
+
+### lant1968_ghost_phosphate_label@1
+
+A second group varied internal and external ions in resealed human erythrocyte membranes. Primary report, human erythrocyte ghosts, membrane and soluble nucleotide fractions. [Lant and Whittam (1968), erythrocyte ghost labelling](https://doi.org/10.1113/jphysiol.1968.sp008663)
+
+- **Evidence role** descriptive
+
+The gradient-dependent ATP label was ouabain-sensitive. Ion-independent incorporation persisted. A label can enter by exchange at zero net ATP production.
+
+Both ion gradients were needed for excess ATP labelling, which ouabain prevented. This measures isotope incorporation. Independent ATP pool-size changes would be needed for net synthesis. [Dataset manifest](../checks/data/paired_replay_measurements.json) · [Comparison verdict](../PROGRESS.md#paired-law-replays)
+
+### deweer1984_reverse_current
+
+Voltage-clamped squid giant axons under reverse-favouring pump conditions. Reverse-pump current in dialysed squid axons, pp. 450–452. [De Weer and Rakowski (1984)](https://doi.org/10.1038/309450a0)
+
+- **Evidence role** descriptive
+
+An inward current identifies direction. An absolute sign-change voltage requires a fixed-chemistry crossing.
+
+The squid preparation directly resolved inward current when the Na/K pump ran backward. [Dataset manifest](../checks/data/paired_preparation_controls.json) · [Comparison verdict](../PROGRESS.md#preparation-evidence-review)
+
+### glitsch1995_cardiac_current
+
+Sheep cardiac Purkinje cells with Cs as the K substitute, at a fixed ionic recipe in each voltage sweep. Fig. 5 and pp. 611–612. [Glitsch and Tappe (1995)](https://doi.org/10.1113/jphysiol.1995.sp020690)
+
+- **Evidence role** descriptive
+
+Five cells per curve. At about −39 kJ/mol the currents between −95 and −20 mV could not be distinguished from zero.
+
+Currents were significantly inward below −95 mV and outward above −20 mV. The authors’ approximate −60 mV and calculated −24 mV both lie in the unresolved interval. [Dataset manifest](../checks/data/paired_preparation_controls.json) · [Comparison verdict](../PROGRESS.md#preparation-evidence-review)
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

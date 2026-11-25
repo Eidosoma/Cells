@@ -1,4 +1,6 @@
 import CellsProofs.Tissue.RestrictedLumen
+import Mathlib.Algebra.BigOperators.Field
+import Mathlib.Algebra.BigOperators.Group.Finset.Piecewise
 import Mathlib.Logic.Function.Iterate
 import Mathlib.Tactic.Ring
 
@@ -61,5 +63,70 @@ theorem repeated (f n b : ℝ) (k : ℕ) :
     rw [Function.iterate_succ_apply', ih, pow_succ]
     unfold afterWash
     ring
+
+section Labels
+
+variable {ι : Type*} [DecidableEq ι]
+
+/-- Amount left in label `i` after a sample of size `r` and an unlabelled supply `a`.
+`s` is this label's share of the starting pool of size `n`. All amounts use one unit. -/
+noncomputable def labelAmount (base i : ι) (n r a s : ℝ) : ℝ :=
+  (n - r) * s + (if i = base then a else 0)
+
+/-- The engine normalizes occupied pools and keeps the previous share when the pool is empty. -/
+noncomputable def labelShare (base i : ι) (n r a s : ℝ) : ℝ :=
+  if 0 < n - r + a then labelAmount base i n r a s / (n - r + a) else s
+
+/-- Summing the amounts used by the normalizer recovers the physical post-wash amount. -/
+theorem label_total [Fintype ι] (base : ι) (n r a : ℝ) (s : ι → ℝ)
+    (hs : ∑ i, s i = 1) :
+    ∑ i, labelAmount base i n r a (s i) = n - r + a := by
+  simp [labelAmount, Finset.sum_add_distrib, ← Finset.mul_sum, hs]
+
+/-- The amount still in each label plus its collected sample equals its start plus its refill.
+This includes full removal with no refill, when the remaining physical amount is zero. -/
+theorem label_inventory (base i : ι) (n r a s : ℝ) (hr : r ≤ n) (ha : 0 ≤ a) :
+    (n - r + a) * labelShare base i n r a s + r * s =
+      n * s + (if i = base then a else 0) := by
+  by_cases ht : 0 < n - r + a
+  · rw [labelShare, if_pos ht, mul_comm _ (_ / _), div_mul_cancel₀ _ ht.ne']
+    unfold labelAmount
+    ring
+  · have hrn : r = n := by linarith
+    have haz : a = 0 := by linarith
+    subst r
+    subst a
+    simp
+
+/-- The normalized shares sum to one, including an empty pool's retained bookkeeping shares. -/
+theorem label_shares_sum [Fintype ι] (base : ι) (n r a : ℝ) (s : ι → ℝ)
+    (hs : ∑ i, s i = 1) :
+    ∑ i, labelShare base i n r a (s i) = 1 := by
+  by_cases ht : 0 < n - r + a
+  · simp only [labelShare, if_pos ht, ← Finset.sum_div]
+    rw [label_total base n r a s hs, div_self ht.ne']
+  · simpa only [labelShare, if_neg ht] using hs
+
+/-- A complete exchange with positive supply puts all material in the base label. -/
+theorem whole_label_share (base i : ι) (n s : ℝ) {a : ℝ} (ha : 0 < a) :
+    labelShare base i n n a s = if i = base then 1 else 0 := by
+  by_cases h : i = base <;> simp [labelShare, labelAmount, h, ha, ha.ne']
+
+/-- When nothing is exchanged every label keeps its previous share. -/
+theorem unchanged_label_share (base i : ι) (n s : ℝ) :
+    labelShare base i n 0 0 s = s := by
+  by_cases hn : 0 < n
+  · simp [labelShare, labelAmount, hn, mul_comm n s, hn.ne']
+  · simp [labelShare, hn]
+
+/-- For a carrier at the same concentration in the pool and refill, an old tracer
+share is diluted by the retained volume fraction. -/
+theorem dilution_of_nonbase {base i : ι} (hi : i ≠ base) {n : ℝ} (hn : 0 < n) (f s : ℝ) :
+    labelShare base i n (f * n) (f * n) s = (1 - f) * s := by
+  simp only [labelShare, sub_add_cancel, if_pos hn, labelAmount, if_neg hi, add_zero]
+  apply (div_eq_iff hn.ne').2
+  ring
+
+end Labels
 
 end CellsProofs.Tissue.CompartmentWash

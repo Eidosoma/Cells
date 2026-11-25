@@ -51,7 +51,7 @@ Proof sources [FR-42 design requirement](https://github.com/Eidosoma/Cells/blob/
 
 **Open.** The surviving fraction of an identified arrival cohort within the same physical pool, paired with that pool’s total at the observation time.
 
-In mock-treated mouse dendritic cells the 5 h Actn1 heavy fractions were 17.19% and 10.11%. The paired channel sum supplies the denominator. Recycling limits how precisely the heavy fraction measures newly made protein.
+In mock-treated mouse dendritic cells the 5 h Actn1 heavy fractions were 17.19% and 10.11%. The paired channel sum supplies the denominator. Recycling limits how precisely the heavy fraction measures newly made protein. For RNA pulse–chase assays, old nucleotide can still enter new RNA after a medium switch. Mapping that switch to a defined arrival cohort requires the incorporation history. [Pendleton, Fig. 2](https://rnajournal.cshlp.org/content/24/6/778.full) · [Gasser, Fig. 5](https://doi.org/10.1002/anie.201916272)
 
 **Unit** Fraction of paired isotope signal
 

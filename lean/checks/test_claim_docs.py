@@ -59,6 +59,9 @@ class ClaimDocsTests(unittest.TestCase):
         canonical = first.read_text()
         catalog = self.lane / "COVERAGE.md"
         self.assertIn("[All claims](COVERAGE.md#category-all)", self.readme.read_text())
+        _, summary = wet_lab_register({"first": self.claim})
+        for page in (self.readme, catalog):
+            self.assertIn(summary, page.read_text())
         self.assertIn('<a name="category-all"></a>', catalog.read_text())
         self.assertIn("**Measurement sought.** Amount", catalog.read_text())
         first.write_text(canonical + "stale\n")
@@ -153,12 +156,21 @@ class ClaimDocsTests(unittest.TestCase):
         pair["outcome"] = "not_independent"
         page, _ = wet_lab_register(claims)
         self.assertIn("| Independent replication unconfirmed | 1 |", page)
+        self.assertIn("| Awaiting replay | 1 |", page)
+        pair["replay"] = {"status": "missed", "assessment": "Both calibrated slopes miss."}
+        with self.assertRaisesRegex(ValueError, "conflicts with the paired evidence"):
+            wet_lab_register(claims)
         other["doi"] = "10.1234/different"
         pair["outcome"] = "both_support"
         page, summary = wet_lab_register(claims)
         self.assertIn('<a id="pair-uptake"></a>', page)
         self.assertIn("| Supported by both studies | 1 |", page)
-        self.assertIn("two independent studies support", summary)
+        self.assertIn("| Replay discrepancy | 1 |", page)
+        self.assertIn("[Uptake increases.](#pair-uptake)", page)
+        self.assertIn("support the stated assumption in 1 and challenge it in 0", summary)
+        pair["outcome"] = "both_challenge"
+        _, summary = wet_lab_register(claims)
+        self.assertIn("support the stated assumption in 0 and challenge it in 1", summary)
         for datasets in (["a", "a"], ["a", "unknown"]):
             with (
                 self.subTest(datasets=datasets),
@@ -277,7 +289,10 @@ class ClaimDocsTests(unittest.TestCase):
             "record": "lean/README.md",
             "record_revision": "1" * 40,
         }
-        page, _ = coverage(inventory, {"first": self.claim}, {"run": check}, self.lane.parent, [])
+        claims = {"first": self.claim}
+        _, summary = wet_lab_register(claims)
+        inputs = (inventory, claims, {"run": check}, self.lane.parent, [], summary)
+        page, _ = coverage(*inputs)
         rows = [line for line in page.splitlines() if line.startswith("| [")]
         self.assertIn("(claims/first.md) | [run]", rows[0])
         self.assertTrue(rows[1].endswith("| Open | Open |"))
@@ -287,13 +302,11 @@ class ClaimDocsTests(unittest.TestCase):
         target = "(claims/first.md#numerical-comparison)"
         for verdict in ("failed", "checked", "open"):
             self.claim["numerical"]["status"] = verdict
-            page, _ = coverage(
-                inventory, {"first": self.claim}, {"run": check}, self.lane.parent, []
-            )
+            page, _ = coverage(*inputs)
             self.assertEqual(target in page, verdict == "failed")
         check["laws"].append("balance@1")
         with self.assertRaisesRegex(ValueError, "wrong registry type"):
-            coverage(inventory, {"first": self.claim}, {"run": check}, self.lane.parent, [])
+            coverage(*inputs)
 
     def test_live_drift_check_preserves_inventory_until_refresh(self):
         generate(self.lane)

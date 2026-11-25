@@ -58,7 +58,7 @@ At −100 mV, fitted fast and slow times were 417 ± 175 ms and 7.06 ± 1.28 s. 
 
 ### desplantez2011_cx43_kinetics@1
 
-Homotypic untagged Cx43 in paired HeLa cells, dual whole-cell clamp at 22–25 °C. The fast and slow contributions are fractions of the initial decaying component. Results on current deactivation and Table 3, wt-Cx43/wt-Cx43 row [Desplantez et al. (2011), Table 3](https://doi.org/10.1007/s00232-011-9352-z)
+Homotypic untagged Cx43 in paired cells from a human cell line, dual whole-cell clamp at 22–25 °C. The fast and slow contributions are fractions of the initial decaying component. Results on current deactivation and Table 3, wt-Cx43/wt-Cx43 row [Desplantez et al. (2011), Table 3](https://doi.org/10.1007/s00232-011-9352-z)
 
 - **Evidence role** descriptive
 

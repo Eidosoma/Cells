@@ -1,0 +1,237 @@
+{
+  "ishihara2018": {
+    "doi": "10.1085/jgp.201711936",
+    "locator": "Table 2, solutions explicitly assigned to Fig. 4. Columns follow the Fig. 4C slope readings in paired_replay_measurements.json.",
+    "nominal_K_mM": [150, 50, 20, 50, 20],
+    "total_K_mM": [149.1, 48.4, 21.3, 50.0, 20.0],
+    "K_activity": [112.5, 38.9, 17.8, 37.7, 15.1]
+  },
+  "cherny1995": {
+    "doi": "10.1085/jgp.105.6.861",
+    "locator": "Cherny et al., Fig. 2. Native rat alveolar cells, whole cell, 12 pipette/bath combinations.",
+    "temperature_C": 20,
+    "measured_mV_per_bath_minus_pipette_pH": -52.4,
+    "scope": "Group points are means and SD. A slope uncertainty and membrane-face pH at the tails are unavailable."
+  },
+  "ramsey2006": {
+    "doi": "10.1038/nature04700",
+    "locator": "Figs. 1e–f. Human Hv1 expressed in HEK cells, whole cell, pipette pH 6.5.",
+    "temperature_range_C": [22, 24],
+    "pipette_pH": [6.5, 6.5, 6.5],
+    "bath_pH": [5.5, 6.5, 7.5],
+    "Erev_mV": [53.3, 0.9, -56.5],
+    "SEM_mV": [1.4, 0.7, 2.6],
+    "n": [10, 14, 5]
+  },
+  "rienmuller2012": {
+    "doi": "10.1074/jbc.M111.310367",
+    "locator": "Fig. 2. Arabidopsis mesophyll vacuoles, ATP-dependent difference current, symmetric 50 mM CsCl, 5 mM supplied ATP.",
+    "cytosolic_pH": 7.5,
+    "lumen_pH": [7.5, 6.5, 5.5],
+    "Erev_mV": [-94.5, -67.5, -49.6],
+    "reported_error_mV": [14, 10.6, 3.9],
+    "n": [5, 5, 3],
+    "scope": "The first voltage calibrates the free-energy offset. The 20 and 25 °C calculations are a sensitivity check. The recording does not establish a common measured ATP/ADP/Pi activity quotient."
+  },
+  "rossi1958": {
+    "doi": "10.1016/0003-9861(58)90094-8",
+    "locator": "Fig. 2, human myoglobin at 10 °C. Rounded readings and the original retrospective split are in claims/incoming/biological-evidence.md.",
+    "digitization": "https://bi1.caltech.edu/2017/code/t05_nonlinear_regression.html",
+    "pressure_Torr": [0.396, 0.397, 0.766, 0.967, 1.506],
+    "occupancy": [0.527, 0.560, 0.661, 0.768, 0.881],
+    "fit_indices": [0, 3],
+    "evaluation_indices": [1, 2, 4],
+    "fit_P50_Torr": 0.3311
+  },
+  "schenkman1997": {
+    "doi": "10.1152/jappl.1997.82.1.86",
+    "locator": "Equine myoglobin, Table 1, multiwavelength O₂ equilibria corrected for metmyoglobin, pH 7.0.",
+    "temperature_C": 37,
+    "P50_Torr": 2.39,
+    "scope": "The published affinity is fitted. The native half-occupancy control uses this input."
+  },
+  "ishihara2004": {
+    "doi": "10.1113/jphysiol.2003.055434",
+    "locator": "Fig. 3A,C and Eq. 4. High-affinity spermine dissociation constant fitted across voltages in excised Kir2.1 patches.",
+    "temperature_range_C": [24, 26],
+    "mV_per_efold": 4.8,
+    "blocker_charge": 4
+  },
+  "panama2006": {
+    "doi": "10.1113/jphysiol.2005.097741",
+    "locator": "Fig. 1 and Table 1. Kir2.1 high-symmetrical-K inside-out patches, 300 µM spermine, steep component of a two-component fit.",
+    "fit_temperature_K": 300,
+    "effective_valence": 5.0,
+    "SEM": 0.2,
+    "n": 7
+  },
+  "published_series": {
+    "baker1962_axon_perfused": {
+      "doi": "10.1113/jphysiol.1962.sp007026",
+      "locator": "Fig. 2 and Tables 1–3.",
+      "outside_K_mM": [
+        10,
+        100,
+        540
+      ],
+      "figure_Vrest_mV_ranges": [
+        [
+          -62,
+          -52
+        ],
+        [
+          -38,
+          -34
+        ],
+        [
+          -5,
+          -2
+        ]
+      ]
+    },
+    "lopatin1996_k_asymmetry": {
+      "doi": "10.1085/jgp.108.2.105",
+      "locator": "Figs. 2–3 and reversal-shift analysis.",
+      "external_shift_ratio": 0.91,
+      "internal_shift_ratio": -0.15
+    },
+    "benzinger1959_glutamine": {
+      "doi": "10.1042/bj0710400",
+      "locator": "pp. 405–406, calorimetric equilibrium and thermodynamic cycle.",
+      "temperature_C": 37,
+      "glutaminase_equilibrium_reported": 225,
+      "glutaminase_error": 22,
+      "derived_Mg_species_kcal_mol": -7,
+      "reported_error_kcal_mol": 0.17
+    },
+    "guynn1973_acetyl": {
+      "url": "https://pubmed.ncbi.nlm.nih.gov/4355193/",
+      "locator": "Combined acetate kinase and phosphate acetyltransferase equilibrium, pp. 6966–6972.",
+      "pH": 7,
+      "temperature_C": 38,
+      "ionic_strength_M": 0.25,
+      "free_Mg_mM": [
+        0,
+        1
+      ],
+      "derived_transformed_energy_kJ_mol": [
+        -35.69,
+        -31.8
+      ]
+    },
+    "brugnara1989_human_kcl": {
+      "doi": "10.1152/ajpcell.1989.256.5.C994",
+      "locator": "Net K flux under opposed gradients, pp. C994–C1003.",
+      "observable": "Net K efflux against an inward K gradient under an outward Cl gradient at fixed membrane potential."
+    },
+    "deweer1984_reverse_current": {
+      "doi": "10.1038/309450a0",
+      "locator": "Reverse-pump current in dialysed squid axons, pp. 450–452.",
+      "observable": "Inward pump current in dialysed squid axons."
+    },
+    "glitsch1995_cardiac_current": {
+      "doi": "10.1113/jphysiol.1995.sp020690",
+      "locator": "Fig. 5 and pp. 611–612.",
+      "fuel_kJ_mol_approx": -39,
+      "zero_unresolved_mV": [
+        -95,
+        -20
+      ],
+      "n": 5
+    },
+    "heo2018_cortical_lmnb1": {
+      "doi": "10.1073/pnas.1720956115",
+      "locator": "Table 2, control Lmnb1, and Fig. 5A.",
+      "fit_half_life_days": 8.4,
+      "time_days": [
+        0.25,
+        1,
+        3,
+        7
+      ]
+    },
+    "fornasiero2018_cortical_lmnb1": {
+      "doi": "10.1038/s41467-018-06519-0",
+      "locator": "Supplementary Data 1, Data sheet, P14733, row 530, columns E and P.",
+      "accession": "P14733",
+      "row": 530,
+      "cortex_days": 46.9791,
+      "neuronal_nuclei_days": 44.935,
+      "workbook": "https://static-content.springer-cdn.net/esm/art%3A10.1038%2Fs41467-018-06519-0/MediaObjects/41467_2018_6519_MOESM3_ESM.xlsx"
+    },
+    "tomdieck2015_bassoon": {
+      "doi": "10.1038/nmeth.3319",
+      "locator": "Fig. 3b–d, endogenous Bassoon pulse and chase.",
+      "observable": "Gain of dendrite-associated and loss of somatic Bassoon label after a culture-wide pulse."
+    },
+    "tsuriel2009_bassoon": {
+      "doi": "10.1523/JNEUROSCI.4777-08.2009",
+      "locator": "Fig. 5D,F.",
+      "observable": "Appearance of photoactivated Bassoon at previously unilluminated neighboring boutons."
+    },
+    "tan2004_splitting": {
+      "doi": "10.1039/B403280M",
+      "locator": "Fig. 5, sequential bifurcations.",
+      "dye_water_volume_ratio": [
+        1,
+        2
+      ],
+      "outlets_percent_stock": [
+        70.8,
+        61.1,
+        55
+      ]
+    },
+    "stephenson2018_collected_dye": {
+      "doi": "10.1186/s40486-018-0065-2",
+      "locator": "Figs. 5–6, two-stage device.",
+      "input_nM": 500,
+      "collected_nM": 35.5
+    },
+    "lagoy2018_tubing_wash": {
+      "doi": "10.1038/s41598-018-24504-x",
+      "locator": "Fig. 1i, printed bar labels.",
+      "wash_wells": [
+        0,
+        1,
+        4
+      ],
+      "carryover_percent": [
+        0.23,
+        0.07,
+        0.02
+      ],
+      "fill_delay_s": 30
+    },
+    "li2017_multiplexer_wash": {
+      "doi": "10.1039/C6LC01201A",
+      "locator": "Methods and Supplementary Fig. S-6A, also reproduced as Li’s dissertation Fig. 2.7A.",
+      "initial_dye_nM": 100,
+      "cycles": 2,
+      "rinses_per_cycle": 5,
+      "reported_carryover_percent_after_second_rinse": "<1",
+      "hold_s": 10,
+      "fifth_rinse_effluent_percent_approx": 0.1,
+      "figure_reprint": "https://hdl.handle.net/10415/5841"
+    },
+    "olbrich2000_tension_ramp": {
+      "doi": "10.1016/S0006-3495(00)76294-1",
+      "locator": "Micropipette pressurization and composition series at 21 °C.",
+      "temperature_C": 21,
+      "mono_and_dimono_PC_lysis_mN_m_approx": [
+        9,
+        10
+      ]
+    },
+    "pendleton2018_rna_wash": {
+      "url": "https://rnajournal.cshlp.org/content/24/6/778.full",
+      "locator": "Fig. 2A and Supplementary Fig. S2.",
+      "negligible_incorporation_after_h_approx": 1
+    },
+    "gasser2020_dual_label": {
+      "doi": "10.1002/anie.201916272",
+      "locator": "Fig. 5A–B, incorporation following the label switch.",
+      "post_switch_observation_h": 2
+    }
+  }
+}
