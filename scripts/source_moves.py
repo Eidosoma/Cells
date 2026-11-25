@@ -908,13 +908,14 @@ def path_table(mp, files):
     """The old-to-new path table of one map, for tools that read src/cells by place: one row
     per file the move relocates, the package files it creates, and the map's declared refactors
     (splits or merges, each with its own commit), and the package files dissolved (removed, every
-    module of their folder moving away)."""
+    module of their folder moving away). `to_legacy` is a key of the format, false since move 1."""
     moves, creates, done, removes = plan_files(mp, files)
     rows = [
         dict(
             old=old,
             new=new,
             kind="move",
+            to_legacy=False,
             old_module=dotted_of(old),
             new_module=dotted_of(new),
         )
@@ -925,6 +926,7 @@ def path_table(mp, files):
             old=None,
             new=path,
             kind="created",
+            to_legacy=False,
             old_module=None,
             new_module=dotted_of(path),
         )
@@ -935,6 +937,7 @@ def path_table(mp, files):
             old=path,
             new=None,
             kind="dissolved",
+            to_legacy=False,
             old_module=dotted_of(path),
             new_module=None,
         )
@@ -1436,6 +1439,7 @@ def cmd_selftest(args):
         "old": "src/cells/core/old_spec.py",
         "new": "src/cells/held/core/old_spec.py",
         "kind": "move",
+        "to_legacy": False,
         "old_module": "cells.core.old_spec",
         "new_module": "cells.held.core.old_spec",
     } in table and sum(r["kind"] == "created" for r in table) == 3
