@@ -1,0 +1,174 @@
+{
+ "names": {
+  "inputs": "inputs_rehearsal.json",
+  "legacy": "legacy_rehearsal.json",
+  "paths": "reference_paths_rehearsal.json",
+  "margins": "margins_rehearsal.json",
+  "manifest": "plants_manifest_rehearsal.json"
+ },
+ "captures": {
+  "inv_cluster": {
+   "set": "captures",
+   "kind": "windows",
+   "folder": "runs/inv_cluster-{step}"
+  },
+  "inv_release": {
+   "set": "captures",
+   "kind": "windows",
+   "folder": "runs/inv_release-{step}"
+  },
+  "inv_bound": {
+   "set": "captures",
+   "kind": "windows",
+   "folder": "runs/inv_bound-{step}"
+  },
+  "inv_cross": {
+   "set": "captures_cross",
+   "kind": "windows",
+   "folder": "runs/inv_cross-{step}"
+  },
+  "inv_amounts": {
+   "set": "captures",
+   "kind": "windows",
+   "folder": "runs/inv_amounts-{step}"
+  },
+  "inv_junctions": {
+   "set": "captures",
+   "kind": "windows",
+   "folder": "runs/inv_junctions-{step}"
+  },
+  "inv_imex": {
+   "set": "captures",
+   "kind": "windows",
+   "folder": "runs/inv_imex-{step}"
+  },
+  "inv_offgrid": {
+   "set": "captures",
+   "kind": "windows",
+   "folder": "runs/inv_offgrid-{step}"
+  },
+  "inv_stop": {
+   "set": "captures",
+   "kind": "windows",
+   "folder": "runs/inv_stop-{step}"
+  },
+  "inv_default_omitted": {
+   "set": "captures",
+   "kind": "windows",
+   "folder": "runs/inv_default_omitted-{step}"
+  },
+  "inv_default_written": {
+   "set": "captures",
+   "kind": "windows",
+   "folder": "runs/inv_default_written-{step}"
+  },
+  "inv_cell": {
+   "set": "captures",
+   "kind": "assembly",
+   "folder": "runs/inv_cell-{step}-s{seed}",
+   "summaries": "result"
+  },
+  "inv_base": {
+   "set": "captures",
+   "kind": "assembly",
+   "folder": "runs/inv_base-{step}-s{seed}",
+   "summaries": "ticks"
+  }
+ },
+ "engine_plants": {
+  "inv_EP1": {
+   "change": [],
+   "named": [
+    "channel_K"
+   ],
+   "planted_run": "PW-channel inv_cluster",
+   "distance": {
+    "world": "inv_cluster",
+    "entry": "channel_K",
+    "power_plant": "channel"
+   }
+  },
+  "EP1": {
+   "change": [
+    {
+     "path": [
+      "channels",
+      "*",
+      "max_permeability_m_per_s"
+     ],
+     "multiply": 1.01
+    }
+   ],
+   "named": [
+    "channel_K"
+   ],
+   "planted_run": "PW-channel inv_release",
+   "distance": {
+    "world": "inv_release",
+    "entry": "channel_K",
+    "power_plant": "channel"
+   }
+  },
+  "inv_EP2": {
+   "change": [],
+   "named": [
+    "channel_K"
+   ],
+   "planted_run": "ST6 availability on the other cell's channel",
+   "distance": {
+    "world": "inv_base",
+    "entry": "channel_K",
+    "structural": "ST6 availability on the other cell's channel"
+   }
+  },
+  "EP2": {
+   "change": [
+    {
+     "exchange_channels": [
+      "cell_0",
+      "cell_1"
+     ]
+    }
+   ],
+   "named": [
+    "channel_K"
+   ],
+   "planted_run": "ST6 availability on the other cell's channel",
+   "distance": {
+    "world": "inv_base",
+    "entry": "channel_K",
+    "structural": "ST6 availability on the other cell's channel"
+   }
+  }
+ },
+ "not_blind": {
+  "base": [
+   "inv_base s0 w0",
+   "inv_base s0 w1"
+  ]
+ },
+ "not_blind_pool_runs": [
+  "inv_base s0 pool"
+ ],
+ "notes": {},
+ "counts": {},
+ "runs": 0,
+ "off_grid_runs": [
+  "inv_offgrid h=8e-05"
+ ],
+ "plant_targets": {
+  "ionic": "inv_cluster",
+  "other_schedule": "inv_release",
+  "junctions": "inv_junctions",
+  "restart": "inv_cluster h=2.4e-05 restart",
+  "engine_plant": "inv_cluster plant channel",
+  "pool": "inv_base s1 pool",
+  "pool_path": [
+   "inv_base s0 pool",
+   "cell_0",
+   "2"
+  ],
+  "not_blind": "inv_base s0 w0",
+  "assembly": "inv_base s1 w0"
+ }
+}
