@@ -266,10 +266,10 @@ path (`visualizer/tests/laws_library.test.mjs`); the lead tells the viewer sessi
 
 **Decided (D371 Q2):** its own family, `channel_block`, and the interface `cells.channel_block_law@1`, whose name
 follows the word. The law and the interface are registered in the hand refactors (H1), so the table holds no seeded
-law row: H1 gives `open_channel_block.py` its Law record on a `ChannelBlockLaw` type, adds the module to @3's `law_homes` in the
-model table and the interface to its row, and the generator then maps `open_channel_block_weighted_modes@1` to
-`cells.channel_block.open_channel_block_weighted_modes@1` as it maps every other law. `fr51-slot-refusal` landed at
-f66fa681 without registering it.
+law row. H1 gives `open_channel_block.py` its Law record on a `ChannelBlockLaw` type, adds the module to @3's
+`law_homes` in the model table and the interface to its row. The generator then maps
+`open_channel_block_weighted_modes@1` to `cells.channel_block.open_channel_block_weighted_modes@1` as it maps every other
+law. `fr51-slot-refusal` landed at f66fa681 without registering it.
 - FR-51's tagged `cases.json` names no block ID (`engine.py` adds the constant), so registering it touches no tagged
   file.
 - H1's record gives it a citation (Woodhull 1973), its D187 test and a library page (a seventh page).
