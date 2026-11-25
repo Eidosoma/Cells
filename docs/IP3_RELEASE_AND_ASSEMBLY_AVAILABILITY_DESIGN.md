@@ -8,6 +8,23 @@ executed below. Two parts that can be built apart. Part I (G-5) is sections 1 to
 10 to 18. The re-expression map this note answers is section 14 of `docs/LEGACY_PORT_PLAN.md` at a1db6ab9
 ("the map").
 
+**As built (the lead, 25 November 2026).** Both parts are built, and differ from the text below in six places, where
+the code is right:
+
+- **The run inputs (13.2).** `cells run`, `windowed`, `batch`, `resume` and `branch` take `--inputs` and record it as
+  `provenance["inputs"]` with `definitions_sha256`. There is no `assembly-pool run` subcommand and no
+  `provenance["composed"]`.
+- **D147 in the driver.** A free-offset definition that declares field solver version 2 or the sparse solver is
+  refused by name before any pool runs.
+- **The compiled row (row 6).** It runs a small world on IMEX and states its seconds in the file; it is the only place
+  a driven world runs.
+- **The species source's layout (5.9)** has a seventh field, `species_condition_pair_condition`.
+- **Its law (19, 20.1)** is a registered `Law` record, `hill_product_factor@1`, on the interface
+  `cells.transfer_factor_law@1`, with provenance `parity` and its Citation kept.
+- **Its argument (5.2)** is ln N - ln V, the log of an amount and of a volume.
+
+Also as ruled: a driven world's pool declares its own seed, and its channels may sit on several cells.
+
 **Marks.** (M) I ran it. (R) I read it in code or a document at 43b22d40. (S) my own derivation or arithmetic.
 (G) a guess. File references are to `src/cells/` at 43b22d40 unless another place is named. On
 `legacy-cleanup` (149f9df9) 54 files of `src/cells` differ, among them `execution/grid.py`,
