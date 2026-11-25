@@ -6,7 +6,7 @@ over the registries.
 
     python -m cells declarations --out FILE
 
-**The contract is the file's format, `cells.declarations@2`.** Its specification is its format
+**The contract is the file's format, `cells.declarations@3`.** Its specification is its format
 page, docs/library/DECLARATIONS_FORMAT.md, whose key tables tests/unit/test_library_pages.py holds
 to this module's key sets; not this or any other Python module (cells.modules is provisional,
 D195). The viewer reads the file and never imports the engine. The same tree gives the same
@@ -15,8 +15,7 @@ its models in the static model table's order, and the registries load every home
 before they are read (registry/model_table.py), whatever was imported first.
 
 **In short** (the page has the rest):
-- top level: `kind`, `revision`, `dirty`, `origin`, `pieces`, `models`, `not_extracted` and
-  `legacy`;
+- top level: `kind`, `revision`, `dirty`, `origin`, `pieces`, `models` and `not_extracted`;
 - each piece: its identity (`id`, namespaced; `declared_id`, as definitions write it); where it
   runs (`host` and `declared_host`, `family`, `models`); where it is declared (`module`,
   `module_path`, `line`, `kernels`); its page (`doc`); what it rests on (`provenance`, with
@@ -53,9 +52,8 @@ from cells.registry import kind_registry, model_table
 from cells.registry import laws as law_registry
 from cells.registry import operators as operator_registry
 from cells.registry.kind_registry import qualified
-from cells.registry.legacy_entry import LEGACY
 
-FORMAT = "cells.declarations@2"
+FORMAT = "cells.declarations@3"
 KIND_INTERFACE = "cells.kind@1"
 OPERATOR_INTERFACE = operator_registry.COMPOSITE_INTERFACE
 # Runs @3's own laws and its kinds (registry/kind_registry.py).
@@ -71,7 +69,7 @@ SECTIONS = MappingProxyType(
 # always names a file. The commit that writes the last page sets it, with the library's check.
 PAGES_COMPLETE = False
 
-TOP_KEYS = ("dirty", "kind", "legacy", "models", "not_extracted", "origin", "pieces", "revision")
+TOP_KEYS = ("dirty", "kind", "models", "not_extracted", "origin", "pieces", "revision")
 PIECE_KEYS = (
     "changes",
     "controls",
@@ -115,7 +113,6 @@ PROVENANCE_KEYS = ("citation", "source", "tag")
 CITATION_KEYS = law_registry.Citation._fields
 WORK_KEYS = law_registry.CitedWork._fields
 NOT_EXTRACTED_KEYS = ("interface", "key")
-LEGACY_KEYS = ("id", "legacy", "piece")
 # The keys a contract has no field for yet (CORE_SEAMS §8.1, §15): written as null and listed in
 # `not_extracted`, never read as "not stated". Every law interface lacks the template's energy role,
 # and every family operator interface its operator's.
@@ -611,48 +608,6 @@ def model_entries(context):
     return out
 
 
-# ------------------------------------------------------------------ the legacy list
-
-
-def legacy_entries(path=None):
-    """The older model families by model ID (D196), read from the legacy registration's `parse`
-    dispatch (core/legacy_entry.LEGACY; `path` for another file) without importing it: each
-    comparison of the definition's model ID with a literal, a tuple of literals or a name imported
-    from an active module. Anything else refuses, so no family is dropped silently."""
-    if path is None:
-        path = Path(cells.__file__).parent.joinpath(*LEGACY.split(".")[1:]).with_suffix(".py")
-    path = Path(path)
-    tree = ast.parse(path.read_text())
-    legacy_package = LEGACY.rsplit(".", 1)[0]
-    names = {  # Names imported from active modules only: nothing here imports the legacy package.
-        alias.asname or alias.name: node.module
-        for node in tree.body
-        if isinstance(node, ast.ImportFrom)
-        and node.level == 0
-        and node.module != legacy_package
-        and not (node.module or "").startswith(legacy_package + ".")
-        for alias in node.names
-    }
-    (dispatch,) = [n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == "parse"]
-    found = set()
-    for node in ast.walk(dispatch):
-        if not isinstance(node, ast.Compare) or ast.unparse(node.left) != "data['model'].get('id')":
-            continue
-        for comparator in node.comparators:
-            items = comparator.elts if isinstance(comparator, ast.Tuple) else [comparator]
-            for item in items:
-                if isinstance(item, ast.Constant) and isinstance(item.value, str):
-                    found.add(item.value)
-                elif isinstance(item, ast.Name) and item.id in names:
-                    module = __import__(names[item.id], fromlist=[item.id])
-                    found.add(getattr(module, item.id))
-                else:
-                    raise ValueError(f"An unread model-ID form in {path.name}: {ast.unparse(item)}")
-    if not found:
-        raise ValueError(f"No older family found in {path.name}'s parse dispatch")
-    return [dict(id=model_id, legacy=True, piece="model") for model_id in sorted(found)]
-
-
 # ------------------------------------------------------------------ the manifest
 
 
@@ -676,7 +631,6 @@ def manifest():
         pieces=pieces,
         models=model_entries(context),
         not_extracted=not_extracted(pieces),
-        legacy=legacy_entries(),
     )
 
 
@@ -690,7 +644,7 @@ def _keys(item, keys):
 
 
 def format_errors(doc):
-    """Why `doc` is not a `cells.declarations@2` manifest (empty: it is one)."""
+    """Why `doc` is not a `cells.declarations@3` manifest (empty: it is one)."""
     if not isinstance(doc, dict) or doc.get("kind") != FORMAT:
         return [f"its kind is {FORMAT}"]
     out = []
@@ -744,9 +698,6 @@ def format_errors(doc):
                 out.append(f"a model has exactly the keys {', '.join(MODEL_KEYS)} and a type")
             elif any(not _keys(row, ROW_KEYS) for row in model["rows"]):
                 out.append(f"{model['id']}: each row has exactly the keys {', '.join(ROW_KEYS)}")
-    for entry in doc.get("legacy") or ():
-        if not _keys(entry, LEGACY_KEYS) or entry["legacy"] is not True:
-            out.append(f"a legacy entry is its model ID, flagged legacy: {entry!r:.120}")
     return out
 
 
@@ -806,7 +757,6 @@ def main(argv=None):
                 kind=FORMAT,
                 pieces=len(doc["pieces"]),
                 models=len(doc["models"]),
-                legacy=len(doc["legacy"]),
                 revision=doc["revision"],
                 dirty=doc["dirty"],
             )

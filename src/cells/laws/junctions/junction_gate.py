@@ -2,9 +2,8 @@
 
 The rate equations are cited from BETSE v1.5.0 (no BETSE code is used).
 
-The finite_extracellular@3 composition evaluates the rates at common solver
-stages. State g is relative intrinsic conductance in [minimum, 1]. Availability
-multiplies conductance without
+The rates are evaluated at common solver stages. State g is relative intrinsic
+conductance in [minimum, 1]. Availability multiplies conductance without
 changing g. Native per-ion updates, stored-state blocking and class initialization
 belong to the separate validation compatibility adapter, not this physical law.
 No temperature scaling, connexin catalog or biological fit is implied.

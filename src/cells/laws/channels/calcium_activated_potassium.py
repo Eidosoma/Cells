@@ -1,7 +1,7 @@
-"""Instantaneous legacy cagPotassium equation with an explicit free-Ca input.
+"""Instantaneous cagPotassium equation with an explicit free-Ca input.
 
-The source is a legacy function with no call site found in the pinned tree,
-not a current-runtime class or BK/SK fit. Retain its literal numeric-mM scale.
+The source is a function with no call site found in the pinned tree, not a
+current-runtime class or BK/SK fit. Retain its literal numeric-mM scale.
 No gating state, calcium consumption, ionic flux or invented relaxation clock.
 """
 

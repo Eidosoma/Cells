@@ -4,7 +4,7 @@ Every field of resolved_pump_tissue@2 keeps its meaning and is parsed by that
 identity's parser. The model adds ``channels``: populations on named membrane
 patches, each with one law of CHANNEL_LAWS, a maximal permeability (m/s), an
 abundance, its law's gate state and its law's permeant ion (the shared-gate
-population format of resolved_tissue@5 and later). The experiment adds
+population format of resolved_tissue@8). The experiment adds
 ``channel_controls`` (one availability schedule per population) and the
 execution ``channel_capacity``. With no channels the identity reproduces
 resolved_pump_tissue@2.

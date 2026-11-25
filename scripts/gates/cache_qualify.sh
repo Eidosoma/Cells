@@ -82,9 +82,7 @@ F4=${F4:-$FRR/fr4-quick} F5=${F5:-$FRR/fr5}
 FR_START=${FR_START:-$FR/rehearsal-20261117/run-e79b4232/fr5/start/start.json}
 FR_BEFORE=${FR_BEFORE:-$FRR/windowed}
 FR_SET=${FR_SET:-full}
-TIER3_FILES=${TIER3_FILES:-"tests/unit/test_integrated_ensemble.py tests/unit/test_vector_windows_bitwise.py
-tests/betse_physiology/integration/test_physiology_loop_checkpoint.py
-tests/betse_physiology/integration/test_physiology_protein_checkpoint.py"}
+TIER3_FILES=${TIER3_FILES:-"tests/unit/test_integrated_ensemble.py tests/unit/test_vector_windows_bitwise.py"}
 DEFAULT_CACHE=${DEFAULT_CACHE:-$W/cache/jax}
 GO=${GO:-$OUT/GO}
 case "${LANE:-B}" in

@@ -16,9 +16,9 @@ host, never in a table here: InnerStructure validates against it (§8.3). The mo
 laws/channels/{kv1p5_mh, kir2p1_mh2, nav1p2_m3h_regularized, kleak_always_open,
 naleak_always_open}.py, laws/junctions/junction_voltage_relaxation.py,
 laws/pumps/{nak_atp_mass_action_positive, ca_atp_mass_action_positive}.py and
-laws/routes/{constant_field, logmean_electrodiffusion}.py. The older kernel modules
+laws/routes/{constant_field, logmean_electrodiffusion}.py. The shared kernel modules
 (voltage_gates, potassium_channels, sodium_channels, junction_gate, kinetic_pump and
-calcium_atpase) re-import the moved names for the older families. Each opening keeps today's
+calcium_atpase) re-import their names for the other families. Each opening keeps today's
 operation order, which per-law dispatch needs to stay bitwise (probe P2 of the note): Kv1.5 m h,
 Kir2.1 (m h) h, NaV1.2 m^3 h.
 
@@ -65,9 +65,8 @@ FACE_ROUTE_LAW_ID = logmean_electrodiffusion.LAW_ID
 # .forms_faces); every other face keeps FACE_ROUTE_LAW_ID.
 FORMS_FACE_ROUTE_LAW_ID = logmean_electrodiffusion_forms.LAW_ID
 BASE_GATE_ROWS = 2  # Today's channel gate rows; a law with more gates adds rows where declared.
-# Reference RK4 step bounds of the resolved channel family (surface_kinetic.check_steps): 2.5 us
-# with NaV1.2, 25 us with Kv1.5 or Kir2.1, as their declarations hold them. surface_pump_v3's
-# RK4_*_STEP are these.
+# Reference RK4 step bounds: 2.5 us with NaV1.2, 25 us with Kv1.5 or Kir2.1, as their declarations
+# hold them. surface_pump_v3's RK4_*_STEP are these.
 RK4_SODIUM_STEP_S = nav1p2_m3h_regularized.RK4_STEP_S
 RK4_POTASSIUM_STEP_S = kv1p5_mh.RK4_STEP_S
 # Heat bookings (docs/CORE_SEAMS_DESIGN.md §6.1): the tableau books every mover class by default

@@ -128,8 +128,8 @@ def test_c5_the_format_page_s_key_tables_are_the_manifest_s(files):
     assert library.check_format(dropped, tables, declarations.FORMAT) == [
         f"C5 {library.FORMAT_PAGE}: 'Piece keys' lacks the code's key line"
     ]
-    assert library.check_format(text, tables, "cells.declarations@3") == [
-        f"C5 {library.FORMAT_PAGE}: it names the format cells.declarations@3"
+    assert library.check_format(text, tables, "cells.declarations@4") == [
+        f"C5 {library.FORMAT_PAGE}: it names the format cells.declarations@4"
     ]
 
 

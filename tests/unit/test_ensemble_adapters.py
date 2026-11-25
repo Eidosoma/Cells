@@ -14,8 +14,9 @@ planted error it must catch (D187):
   a missing object, an object that is not an adapter, an adapter without its aggregate hook, and
   an adapter taking one of today's kinds), and the summary refuses an adapter family's rows mixed
   with others, an aggregate writing the controller's own timing keys, and one dropping an arm;
-- today's five ensemble kinds keep their models and their chains: MODELS ends with them, and each
-  of today's models finds no adapter (their plan-and-run tests are tests/unit/test_ensemble*.py).
+- today's three ensemble kinds keep their models and their chains: MODELS ends with them, and each
+  of today's models finds no adapter (their plan-and-run tests are tests/unit/test_ensemble*.py); a
+  parked kind is refused by its name, and an adapter may take it.
 """
 
 import json
@@ -305,6 +306,10 @@ def test_the_table_s_ensemble_entries_are_held_to_the_protocol(planted, monkeypa
     )
     (error,) = families.adapter_errors(model_table.MODELS)
     assert "is taken" in error
+    parked = planted_ensemble.ADAPTER._replace(kind="assembly_cell_ensemble@1")
+    monkeypatch.setattr(planted_ensemble, "ADAPTER", parked)  # A parked kind is free to take.
+    assert families.adapter_errors(model_table.MODELS) == []
+    assert families.MODELS["assembly_cell_ensemble@1"] == MODEL
 
 
 def test_the_summary_refuses_an_adapter_family_mixed_with_others(planted, monkeypatch):
@@ -335,13 +340,11 @@ def test_the_summary_refuses_an_adapter_family_mixed_with_others(planted, monkey
             cli.aggregate([ours])
 
 
-def test_today_s_five_keep_their_models_and_their_chains():
+def test_today_s_three_keep_their_models_and_their_chains():
     assert dict(families.MODELS) == families.TODAY  # No row names an adapter today.
     assert list(families.TODAY) == [
         "assembly_ensemble@1",
         "finite_bond_ensemble@1",
-        "assembly_cell_ensemble@1",
-        "assembly_cluster_ensemble@1",
         "ionic_ensemble@1",
     ]
     assert all(families.adapter_of(model) is None for model in families.TODAY.values())
@@ -349,3 +352,6 @@ def test_today_s_five_keep_their_models_and_their_chains():
     bound = families.bind_definition(data, worlds=3, world_id_start=5, seed=9)
     assert bound == {"model": "capsid_graph@1", "worlds": 3, "world_id_start": 5, "seed": 9}
     assert families.model_of({"id": "capsid_graph@1"}) == families.model_of("capsid_graph@1")
+    for kind in ("assembly_cell_ensemble@1", "assembly_cluster_ensemble@1"):
+        with pytest.raises(ValueError, match=f"^{kind} is parked: .* resolved_pump_composite@1"):
+            plan(dict(plan_data(), kind=kind), 1)

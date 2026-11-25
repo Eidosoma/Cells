@@ -65,7 +65,6 @@ from cells.execution.batch import (
 from cells.execution.batch_windows import WindowedBatchResult
 from cells.execution.devices import execution_device
 from cells.execution.errors import NumericalError
-from cells.execution.grid import refinement_times
 from cells.execution.resources import fixed_bytes, row_bytes
 from cells.execution.runner import integration_steps, validate_checkpoint
 from cells.execution.schedule import control_values, event_index
@@ -191,9 +190,7 @@ def cohort_limits(spec):
     upper, storage = {}, {}
     for s in parsed:
         nominal = s.experiment.end_time / s.execution.dt
-        upper[id(s)] = (
-            max(1, math.ceil(nominal)) + len(s.experiment.changes) + len(refinement_times(s))
-        )
+        upper[id(s)] = max(1, math.ceil(nominal)) + len(s.experiment.changes)
         storage[id(s)] = (fixed_bytes(s), row_bytes(s, 0, 0))
     bound = len(worlds) * max(upper.values())
     if bound > reduced.max_padded_steps:

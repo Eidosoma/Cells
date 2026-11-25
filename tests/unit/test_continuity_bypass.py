@@ -35,7 +35,6 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 
 READ = "read-only comparison or audit, or a writer of its own output: nothing continues"
-PAIRED = "its own paired format with identity checks; the numeric part goes through the loaders"
 DIAGNOSTIC = (
     "rebuilds and executes outside the loaders as a diagnostic; no output is a continuation "
     "of the run (its rule (b) record of the snapshot digest and both identities is the lead's "
@@ -57,12 +56,7 @@ PROBE = (
     "under S0 and S1, keeps every other loader check, and never continues a run"
 )
 EXEMPT = {
-    # Read-only comparisons, audits and writers of their own output (22).
-    "scripts/audit_spatial_extracellular_build.py": READ,
-    "scripts/spatial_extracellular_production_audit.py": READ,
-    "scripts/verify_windows_build.py": READ
-    + " (CORE-005a: a baseline trace row as an explicit test fixture, checked against "
-    "load_snapshot restores)",
+    # Read-only comparisons, audits and writers of their own output (13).
     "validation/assembly/compare_throughput.py": READ,
     "validation/betse/channel_feedback_audit/feedback_audit_cells.py": READ,
     "validation/betse/channel_feedback_audit/feedback_audit_context.py": READ,
@@ -71,23 +65,11 @@ EXEMPT = {
     "validation/betse/channel_release_audit/release_audit_cells.py": READ,
     "validation/betse/channel_release_audit/release_audit_context.py": READ,
     "validation/betse/channel_release_pilot/timed_cells_check.py": READ,
-    "validation/betse/kinetic_family_audit/family_audit.py": READ,
     "validation/betse/live_recording/matched_windows.py": READ,
     "validation/betse/live_recording_audit/cells_review.py": READ,
     "validation/betse/pump_pilot_diagnosis/diagnose.py": READ,
     "validation/ensemble/jupiter_check.py": READ,
-    "validation/ensemble/parallel_cluster.py": READ,
-    "validation/ensemble/profile_cluster.py": READ,
     "validation/ensemble/spatial_matrix.py": READ,
-    "validation/ensemble/tile_benchmark.py": READ,
-    "validation/tissue/open_calcium_trajectory_compare.py": READ,
-    "validation/tissue/open_calcium_trajectory_production.py": READ + " (its own full-state.npz)",
-    # Own paired formats with identity checks (5).
-    "validation/betse/physiology/physiology_boundary_voltage_transition_io.py": PAIRED,
-    "validation/betse/physiology/physiology_checkpoint.py": PAIRED,
-    "validation/betse/physiology/physiology_protein_block_calendar_io.py": PAIRED,
-    "validation/betse/physiology/physiology_protein_checkpoint.py": PAIRED,
-    "validation/betse/physiology/physiology_protein_loop_io.py": PAIRED,
     # Rebuild and execute outside the loaders, as diagnostics (2).
     "scripts/profile_dispatch.py": DIAGNOSTIC + " (L4 timing on held states, other XLA flags)",
     "validation/tissue/field_floor_held.py": DIAGNOSTIC
@@ -96,8 +78,6 @@ EXEMPT = {
     "validation/tissue/heredity_turnover_literature.py": IMPORT
     + " (start_state: sheet70 states into resolved_pump_replacement@1, E07-v1's start; "
     "they predate the D148 ledger fix); also " + DRIVER + " (checkpoint.npz)",
-    "validation/tissue/open_calcium_bath_trajectory_production.py": DRIVER
-    + " (its last-state.npz handoff)",
     # A registered driver and a development tool (section 7's table).
     "validation/tissue/e07_v1_run.py": REGISTERED_DRIVER
     + " (E07-v1-B, validation/tissue/e07_v1_protocol.json: checkpoint.npz through the "
@@ -119,7 +99,6 @@ EXEMPT = {
     # Same-process restart and independent references.
     "validation/betse/fresh_rerun/workers.py": SAME
     + " (restart.npz written and read in one process)",
-    "validation/tissue/open_calcium_bath_trajectory_oracle.py": SAME + " (the oracle's own state)",
     "validation/mitochondria/references_r2/steady.py": SAME
     + " (R2, MT-1b's code-blind reference: start_state solves the anchored start state with R2's"
     " own solver from a freshly settled state; it reads no saved Cells state and runs no Cells "
