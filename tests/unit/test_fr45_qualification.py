@@ -15,6 +15,7 @@ import math
 
 import pytest
 
+from validation import id_table
 from validation.compartment_ph_engine import definitions as defs
 from validation.compartment_ph_engine import dt_study
 from validation.compartment_ph_engine.parameters import ARM_R, ARM_T, CHARGE_PER_FMOL
@@ -22,7 +23,7 @@ from validation.tissue import compartment_ph_judge as judge
 from validation.tissue import compartment_ph_protocol as drafter
 from validation.tissue import compartment_ph_qualification as generator
 
-PROTOCOLS = {k: json.loads(p.read_text()) for k, p in generator.PROTOCOLS.items()}
+PROTOCOLS = {k: id_table.load(p) for k, p in generator.PROTOCOLS.items()}
 
 
 # ------------------------------------------------------------------------ synthetic records
