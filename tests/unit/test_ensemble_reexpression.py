@@ -29,7 +29,6 @@ from validation.ensemble_reexpression import definitions, labels, refusals, samp
 from validation.ensemble_reexpression import run as driver
 from validation.ensemble_reexpression import table as exporter
 from validation.ensemble_reexpression.inputs import (
-    IONIC,
     REGISTERED,
     Inputs,
     InputsError,
@@ -273,7 +272,8 @@ def test_the_declared_changes_and_the_integrators_are_the_leads(registered, inve
 def test_a_definition_the_engine_refuses_to_parse_is_submitted_as_declared(invented):
     """The floor solver is declared by the block's own count where no parse can give one."""
     cold = invented.worlds["inv_sample_cold"]
-    assert definitions.submitted(cold, 4e-05)["execution"]["field_solver"].endswith("@2")
+    factored = labels.LABELS["field_solver"]
+    assert definitions.submitted(cold, 4e-05)["execution"]["field_solver"] == factored
     block = copy.deepcopy(invented.worlds["inv_sample_cluster"].raw)
     block["ionic"]["temperature_K"] = 150.0
     world = type(cold)("inv_cold_cluster", "jupiter", block)
@@ -922,6 +922,17 @@ def test_the_generators_own_refusals_come_before_any_run(invented, tmp_path, mon
     assert (entry["t"], entry["rows"], entry["potentials"]) == ([], {}, {})
 
 
+def test_a_worker_that_leaves_no_outcome_is_a_harness_refusal(tmp_path, monkeypatch):
+    monkeypatch.setattr(driver, "MODULE", "this")  # A module that ends well and writes nothing.
+    for name, limit, text in (
+        ("one", None, "the worker ended with exit code 0 and wrote no outcome"),
+        ("two", 0.0, "the run took more than 0.0 s"),
+    ):
+        attempt = tmp_path / name
+        attempt.mkdir()
+        assert driver.work_apart(attempt, limit) == text
+
+
 def test_a_campaign_makes_restarts_last_and_its_snapshot_holds_what_its_modules_import(registered):
     runs = driver.ordered(registered)
     assert [r.restart_time is not None for r in runs] == [False] * 211 + [True] * 3
@@ -957,7 +968,8 @@ def test_a_table_lists_what_is_missing_and_a_folders_sums_hold(invented, tmp_pat
     ionic_record(folder, invented, "inv_sample_sheet h=4e-05", times, [0.0, 8e-05, 0.00016])
     found = exporter.tables(invented, driver.Folders(folder))
     assert list(found) == ["jupiter", "cell", "base", "integrated"]
-    assert found["integrated"]["missing"] == [] and len(found["integrated"]["runs"]) == 1
+    assert found["integrated"]["missing"] == [sample.OFF_GRID]
+    assert list(found["integrated"]["runs"]) == ["inv_sample_sheet h=4e-05"]
     jupiter = [r.name for r in invented.runs.values() if r.consumer == "jupiter"]
     assert found["jupiter"]["missing"] == jupiter and found["jupiter"]["runs"] == {}
     out = tmp_path / "table"
@@ -985,9 +997,9 @@ def test_the_committed_format_sample_is_the_contracts_and_no_number_is_a_runs():
                 seen.add((part, kind, made["step_s"] is None, made["restart"] is not None))
                 numbers = [v for held in made["rows"].values() for vs in held.values() for v in vs]
                 assert set(numbers) <= {0.5}
+                seen |= {"off_grid"} & set(made)
     for kind in ("completed", "definition", "domain", "check", "harness"):
         assert ("table", kind, False, False) in seen
     assert {("table", "completed", True, r) for r in (False, True)} <= seen
     assert ("table", "completed", False, True) in seen
-    assert ("table-retry", "completed", False, False) in seen
-    assert IONIC == "ionic"
+    assert ("table-retry", "completed", False, False) in seen and "off_grid" in seen

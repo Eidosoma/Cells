@@ -260,13 +260,13 @@ def pool(channel_id, position, seeds):
     }
 
 
-def world(consumer, ionic, **more):
+def world(consumer, ionic, *, order=4, **more):
     return {
         "consumer": consumer,
         "ionic": ionic,
         **more,
         "scales": {},
-        "p": 4,
+        "p": order,
         "amount_refs": {},
         "closure_terms_V": {},
     }
@@ -291,15 +291,21 @@ def run(name, consumer, family, of, *, seed=None, at=None, step=None, role="judg
     }
 
 
+SLOW = "inv_sample_slow h=4e-05"  # Ended by the driver's own clock: a harness refusal.
+OFF_GRID = "inv_sample_off_grid h=4e-05"  # Made by the switch: a change that splits a step.
+
+
 def invented():
     """The invented inputs: one run of each kind, refused runs of each kind, a plant and a restart
-    of each kind."""
+    of each kind, one run off its grid and one on the second-order integrator."""
     coupling = {"law": "assembly_observable", "active": 1.0, "inactive": 0.0}
     summary = {"final_s": END_S, "coupling": coupling}
     unsupported, cold, tight = sheet(), sheet(), sheet(scale=3e3)
     for m in unsupported["membranes"].values():
         m["passive"]["law"] = "no_such_law"
     cold["temperature_K"] = 150.0
+    off = sheet()
+    off["controls"]["junction"]["j_ab"] = [[0.0, 1.0], [9.1e-05, 0.5]]
     plain = grid(4e-05, [0.0, 4e-05, 0.00012, 0.0002])
     worlds = {
         "inv_sample_cluster": world("jupiter", cluster({"k_a": ONES, "k_b": ONES}), **plain),
@@ -322,6 +328,8 @@ def invented():
             **summary,
         ),
         "inv_sample_sheet": world("integrated", sheet(), **grid(4e-05, [0.0, 8e-05, 0.00016])),
+        "inv_sample_off_grid": world("integrated", off, **grid(4e-05, [0.0, 8e-05, 0.00016])),
+        "inv_sample_imex": world("jupiter", cluster({"k_a": ONES, "k_b": ONES}), order=2, **plain),
     }
     step, coarse = 2e-05, 4e-05
     a, b, c, d = "inv_sample_cluster", "inv_sample_lone", "inv_sample_pair", "inv_sample_sheet"
@@ -389,6 +397,8 @@ def invented():
             variant="ionic",
         ),
         run(f"{d} h={coarse!r}", "integrated", d, d, step=coarse),
+        run(OFF_GRID, "integrated", None, "inv_sample_off_grid", step=coarse),
+        run("inv_sample_imex h=2e-05", "jupiter", None, "inv_sample_imex", step=step),
     ]
     runs.append(
         run(
@@ -407,9 +417,6 @@ def invented():
     return {"schema": SCHEMA, "part": 1, "constants": {}, "worlds": worlds, "runs": runs}
 
 
-SLOW = "inv_sample_slow h=4e-05"  # Ended by the driver's own clock: a harness refusal.
-
-
 def make(directory, workers=1):
     """Make the invented runs and their tables under a new folder, as a campaign is made."""
     directory.mkdir(parents=True)
@@ -421,6 +428,7 @@ def make(directory, workers=1):
     note = {"kind": "ensemble-reexpression retry owed, version 1", "part": 1, "runs": names}
     owed.write_text(json.dumps(note | {"why": {"inv_sample_sheet": ["voltage: order"]}}) + "\n")
     driver.one(inputs, inputs.run(SLOW), directory, max_seconds=0.05)
+    driver.one(inputs, inputs.run(OFF_GRID), directory, off_grid=True)
     command = ["all", "--inputs", str(path), "--runs", str(directory), "--workers", str(workers)]
     for more in ([], ["--owed", str(owed)]):
         driver.main([*command, *more])
@@ -437,12 +445,13 @@ def make(directory, workers=1):
 
 _VERSIONED = re.compile(r"(?:[A-Za-z][A-Za-z0-9_]*\.)*[A-Za-z][A-Za-z0-9_]*@[0-9]+")
 _HEX = re.compile(r"[0-9a-f]{40,64}")
+_UTC = re.compile(r"\d{4}-\d\d-\d\dT[0-9:.+Z]+")
 TIMES = ("t", "potential_t")
 
 
 def scrubbed(table):
     """A table with every number replaced by a meaningless one of its type, every registered string
-    by a placeholder, and every fingerprint by a run of zeros."""
+    by a placeholder, every fingerprint by a run of zeros, and what a source is by its key."""
     named = {}
 
     def placeholder(text):
@@ -453,7 +462,7 @@ def scrubbed(table):
             return placeholder(text)
         if _HEX.fullmatch(text):
             return "0" * len(text)
-        return text
+        return "a time" if _UTC.fullmatch(text) else text
 
     def walk(value):
         if isinstance(value, bool) or value is None:
@@ -474,7 +483,10 @@ def scrubbed(table):
             first = 0 if made["restart"] is None else 1
             made[key] = [0.75 * (k + first) for k in range(len(made[key]))]
         made["declared_strings"] = sorted(made["declared_strings"])
-        made["checks"] = {key: walk(v) for key, v in made["checks"].items()}
+        made["source"] = {
+            key: value if not isinstance(value, str) or _HEX.fullmatch(value) else f"a {key}"
+            for key, value in made["source"].items()
+        }
     return out
 
 

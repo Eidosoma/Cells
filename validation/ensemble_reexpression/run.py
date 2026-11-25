@@ -26,6 +26,7 @@ import hashlib
 import json
 import os
 import platform
+import shlex
 import subprocess
 import sys
 import time
@@ -618,8 +619,8 @@ def one(inputs, run, runs, *, tag=None, off_grid=False, max_seconds=None, again=
                 "started_utc": utc(),
             },
         )
-        ended = work_apart(attempt, max_seconds)
-        record = made(inputs, run, attempt, ended, tag=tag, off_grid=off_grid)
+        crash = work_apart(attempt, max_seconds)
+        record = made(inputs, run, attempt, crash, tag=tag, off_grid=off_grid)
         write_json(folder / RECORD, record)
         return record
 
@@ -644,14 +645,14 @@ def work_apart(attempt, max_seconds):
     return None
 
 
-def made(inputs, run, attempt, ended, *, tag, off_grid):
-    """A run's record, from its attempt's outcome or from what ended it."""
-    if ended is None:
+def made(inputs, run, attempt, crash, *, tag, off_grid):
+    """A run's record, from its attempt's outcome, or from what ended it where it has none."""
+    if crash is None:
         outcome = read_json(attempt / "outcome.json")
     else:
         outcome = {
             "status": "refused",
-            "refusal": {"kind": "harness", "message": ended, "time_s": None},
+            "refusal": {"kind": "harness", "message": crash, "time_s": None},
             "source": None,
             "facts": {"definition": {}, "resolution": None, "restart": None, "timings": {}},
         }
@@ -839,7 +840,7 @@ def main(argv=None):
         return 0
     if args.command == "commands":
         for run in ordered(inputs, consumers=args.consumer, owed=args.owed):
-            print(json.dumps(detached(run, args)))
+            print(shlex.join(detached(run, args)))
         return 0
     if args.command == "status":
         print(json.dumps(status(inputs, args)))

@@ -1,10 +1,10 @@
 """A world's block (spec/SPEC.md §2) and the engine's definition of it: each is written from the
 other, section by section.
 
-**write** makes a raw `resolved_pump_tissue@3` definition from a block. Every number in it is the
-block's own double. **read** makes a block from a definition the engine parsed (its canonical JSON
-form), in the block's own names, with a label for every registered string and every default written
-out. Nothing of inputs.json enters `read`.
+**write** makes a raw definition of the inner tissue model, version 3, from a block. Every number in
+it is the block's own double. **read** makes a block from a definition the engine parsed (its
+canonical JSON form), in the block's own names, with a label for every registered string and every
+default written out. Nothing of inputs.json enters `read`.
 
 **A section** holds one or more of the block's top keys, with how they are written and how they are
 read. Part 2 adds its sections to SECTIONS (in order: a later section may add to what an earlier one

@@ -11,7 +11,7 @@ initial voltage), each registered block to the literal one of SPEC §2.5, every 
 grid rule (SPEC §4), and the field solver to D147. `strings` prints each run's labels in the strings
 note's form, for the lead.
 
-- **An ionic world** is a closed `resolved_pump_tissue@3` definition (worlds.py).
+- **An ionic world** is a closed definition of the inner tissue model, version 3 (worlds.py).
 - **A driven world** (`cell`, `base`) is a composed file, which `cells assembly-pool resolve` turns
   into one ordinary definition for each of the pools' worlds (cells.assembly_pool.resolve).
 - **A pool run** is the pool's own definition, with its events recorded.

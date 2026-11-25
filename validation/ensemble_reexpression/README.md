@@ -2,10 +2,10 @@
 
 This folder makes the definitions, the runs and the tables that `spec/` registers (tag `ensemble-reexpression-criteria-part1-2026-11-25`).
 It judges nothing. Its builder read `spec/SPEC.md`, `spec/READOUTS.md`, `spec/TABLE.md`, `spec/inputs.json`, the rules of `spec/README.md`, and the engine with its documents.
-Since 25 November he also reads `spec/AMENDMENT-1-2026-11-25.md`, which holds what the lead answered ("Amendment 1" below).
-He read no other file of `spec/`, no capture, no legacy output and no code of the judge.
+From 25 November also `spec/AMENDMENT-1-2026-11-25.md`, which holds what the lead answered ("Amendment 1" below).
+The builder read no other file of `spec/`, no capture, no legacy output and no code of the judge.
 
-No registered world has been run by this folder's builder. Its run driver refuses to run one from a checkout.
+No registered world has been run by the builder. The run driver refuses to run one from a checkout.
 
 ## Files
 
@@ -25,7 +25,7 @@ The rows are `tests/unit/test_ensemble_reexpression.py` (parse only and fabricat
 
 ## How to use it
 
-From the registered head, in the checkout (parse only, about 40 s):
+From the registered head, in the checkout (parse and validate only, about 40 s):
 
     python -m validation.ensemble_reexpression.definitions check
     python -m validation.ensemble_reexpression.definitions strings
@@ -54,12 +54,12 @@ interruption and goes on. `commands` prints one `run_detached.sh` command for ea
 
 ## The definitions
 
-- **An ionic world** is a closed `resolved_pump_tissue@3` definition with no registry, kind, operator, label, reservoir or electrode. Every number in it is the block's own double. `definitions check` parses every run's definition, reads its block back, and compares leaf by leaf: by SPEC §2.4's rule, and by
+- **An ionic world** is a closed world of the inner tissue model, version 3, with no registry, kind, operator, label, reservoir or electrode. Every number in it is the block's own double. `definitions check` parses and validates every run's definition (as `cells validate` does), reads its block back, and compares leaf by leaf: by SPEC §2.4's rule, and by
   the doubles too, but for the derived `initial_voltage_V`. It compares each registered block with the literal one of SPEC §2.5.
 - **A driven world** is a composed file for `cells assembly-pool resolve`. Its ionic part declares the channel at 1 throughout, and the pool's path multiplies that. An ionic run's schedule comes from the resolution of its own composed file's pools (Amendment 1). The ionic runs of one seed and step have one composed file, and so one resolution.
 - **A pool run** submits its world's composed file at the first step and runs the file's pools with the function that `resolve` uses, so `channel` and `stream_id` are read back from that file (Amendment 1).
 - **The field solver** is D147's (`validation/tissue/field_solver_choice.py`). The count of free offsets is made on the floor variant, which parses every world, and `declare()` has the last word. `check` holds the count to the block's own topology.
-- **Part 2** adds sections to `worlds.SECTIONS`, labels to `labels.LABELS` (and their place in the strings note to `labels.PLACES`), and series to `readouts.SERIES` and `readouts.potentials`. Nothing else names a section, a label or a series. A key of a block that no section holds is refused by name
+- **Part 2** adds sections to `worlds.SECTIONS`, labels to `labels.LABELS` (and their place in the strings note to `labels.PLACES`), and series to `readouts.SERIES` and `readouts.POTENTIALS`. Nothing else names a section, a label or a series. A key of a block that no section holds is refused by name
   (`no_section`), and so is a field of an entity that has no place.
 
 **What the 214 runs parse to** (measured, `definitions check`, no fault): 10 ionic definitions for the 11 ionic runs (a restart has its judged run's); 25 composed files, of whose world definitions 193 are run; 15 pools in the 10 pool runs.
@@ -136,7 +136,7 @@ The exporter and the generator read `inputs_rehearsal.json` with the code that r
   - the IMEX family: `p` = 2 in its world's block;
   - a plant: `declared_change` in its run's entry (reading 10);
   - a refusal of kind `definition`: a block with a law that the engine does not have (an unknown label passes through as it is). `domain`: a value outside a law's domain, such as a temperature of 150 K. `check`: a world whose steps the engine's own energy check stops. `harness`: `one NAME --max-seconds 0.05`;
-  - the off-grid change: `one NAME --off-grid`. `all` refuses that run and makes the others;
+  - the off-grid change: `one NAME --off-grid`. Without the switch it gets a record that refuses it, and so does `all`. So this run and the `harness` one are made first, by name, or again with `--again`;
   - the strings note: `table check ... --strings registered_strings_rehearsal.json` holds every run's strings to it.
 - **The faulty tables that the judge's reader needs** beside these are not made here: this code writes what a run did.
 
