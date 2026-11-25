@@ -77,9 +77,10 @@ defaults on 25 November 2026. The two added keys (`change`, `reason`) can be ign
    terms, at the sample with the largest ratio, one entry per named check, family null. P5's tolerance is e_round with
    S = T/h_1 (LAWS §7: "every registered S is at least 1,000") plus the accuracy, at the judged event the farthest away.
 4. **P3's margin.** CRITERIA 6.2: "P3: the pooled RMS between the honest reference and the Lie emulation at its rungs",
-   and "at its best entry of the named check"; "S: the sizing model's τ of the family". Its three rungs give three
-   distances. The best entry is the largest, the coarsest rung's, over the family's expected τ of `t_events`. All three
-   stand under `mutant`.
+   "at its best entry of the named check", and "S: the sizing model's τ of the family". Its three rungs give three
+   distances, and the sentences leave open which of them the margin is read at, unless "best entry" settles it. It is read
+   so: the largest, the coarsest rung's, over the family's expected τ of `t_events`. All three stand under `mutant`, and
+   the finest's is above 10 τ as well.
 5. **The invented worlds' names** are the registered ones. SPEC §8: "`reference_invented.json` is one object, world name
    to §7's layout, for the three worlds".
 6. **The invented refused and stopped runs.** SPEC §8 asks for "a full set of runs (judged, restart, Lie plant, refused,
@@ -88,7 +89,8 @@ defaults on 25 November 2026. The two added keys (`change`, `reason`) can be ign
    added key `change` in the plants' style. The refused run is W5-exact at a step whose product with the largest
    propensity is above 1 (SPEC §2's placement); it alone does not keep the placement. The stopped run is W6 with another
    start amount of Pi: x of LAWS §3 starts below −1 and crosses it inside the run (the message to the lead said M and y;
-   Pi and x cross by more).
+   Pi and x cross by more). A reader that does not know `change` loses nothing it judges: no judged entry reads either
+   run.
 7. **The invented retry runs** are listed under `retry.runs`, not in `runs`. SPEC §8: "`inputs_invented.json` lists the
    retry runs of one family"; it leaves open where.
 8. **`reported` and `provenance`.** "The number of draws used per copy" is K_all + 1 (the pending event's threshold is
@@ -108,10 +110,25 @@ Others:
 14. W5-exact's families have an empty object under `sizing`, and a world without a Lie plant or a two-rung check has an
     empty `mutant` or `rungs`.
 
+## The invented set, for those who run and judge it
+
+- Its worlds are those of SPEC §1 in kind, with 4 copies, two stages and 280 residues in the gene unit, and its own
+  grid (multiples of 25/1024 s and of 0.46875 s). W6's `made` and `exits` are named in `at_rounding`, and the sizing shows
+  fewer than three used differences for them. Every other S entry is resolved, and its expected order is inside C0's
+  window.
+- `runs` holds 112 judged runs, 2 restarts, 12 Lie runs, 1 refused and 1 stopped, and `retry.runs` the 4 retry runs of
+  `W5 reactions-first`, whose expected orders over the finest six rungs are inside the window too.
+- The refused run's `change` repeats its `step_s`; the stopped run is the world's block with `rows_fmol.Pi` replaced by
+  the number of its `change` (its echo differs from the block in that number). Neither is a restart, and no judged entry
+  reads either.
+- `draws_invented.json` is the rule of LAWS §6 on the invented seeds, made by the references' own Threefry.
+- Every number of a kind is compared with the registered ones by the writer and again by the self-check. None is equal.
+
 ## Checks
 
 `checks` of each copy holds SPEC §9's, and copy 0 holds the world's (the relaxation, the totals, the sizing, the pairs, the
 margins). `self_check.py` then reads the files alone and, with code of its own, (1) forms every number C0 reads again from
 the published ones, (2) solves the exact process a third time with SciPy's DOP853 in doubles, the affinities from the
-laws' logarithms, (3) computes the split's first differences and the pairs again in plain doubles, and (4) checks the
-invented set's rules, the shared numbers among them.
+laws' logarithms, (3) computes the split's first differences, the pairs and the Lie errors again in plain doubles (at every
+rung with `--ladder`), and (4) checks the invented set's rules, the shared numbers among them. It also computes the draws
+again with a vectorised Threefry.
