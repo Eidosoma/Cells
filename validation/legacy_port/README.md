@@ -38,7 +38,8 @@ of a reference that Part 2's judge may use). After the deletion's commit:
 
 0. The user's word sets the rows' states: each `retires` row, and each row that says `open, before the second commit`, then says
    `approved by the user` with the date (the script reads only that), and the second state is no longer `open, ...`.
-1. Merge `legacy-open-retirements` (the rows of six files that stay).
+1. Merge `legacy-open-retirements` (the rows of six files that stay). It is prepared already, with the second commit on it
+   (below); after the user's word the script with `--branch` makes the same tree from the approved list.
 2. `python validation/legacy_port/make_deletion.py REPO HEAD validation/legacy_port/removal_list.tsv WORKTREE
    --retirements --out DIR`, with `--branch NAME` at the end. It removes the eleven files whose row says `retires`, their
    entries in the bypass guard's list and their rows of the tier record. It takes no other edits.
@@ -61,12 +62,21 @@ list is not a committed file. The batch without its edits is refused too, and so
 - A prepared text that no longer stood in its page stopped `make_edits.py` (a page rewritten at
   8d82e435).
 - At 62d5da58 this script and the scratch copy it came from stage one tree from one list (ad34ed59).
-- At abd78068 (legacy-cleanup f429ea4b with `legacy-retiring-rows`), the list at c07d1d91: 1,693 files removed and 42 edited (staged tree eaa1bb65). The library pages pass their check, all 17 rows
-  of `tests/unit/test_continuity_bypass.py` pass, the definitions that leave are the 129 of `removed_definitions.txt`, 11,012 tests collect, and 8 files fail to, all of
-  which would retire.
-- Test IDs, of 21,927 at the base: after the deletion 11,531 no longer collect (10,956 in files that go, 261 rows of files that stay, 138 of the two
-  files that the pump and symports work rewrote, 176 in the eight files that fail to import) and 616 are new, so 11,012 collect. After the second
-  commit 11,545 and 621, so 11,003 (`second_commit_test_ids.tsv`: 14 leave, and 5 are new, the same rows without the parked family's parameter).
-- On that commit with `legacy-open-retirements` 830ae93b merged (a detached commit, for the measurement), `--retirements`: 11 more files removed and 2 edited (staged tree c5f61ed0), 11,003 tests collect with 0 errors, the same 17 rows
-  pass, and the one import that resolves to nothing is the rehearsal driver's, which is of the frozen snapshot.
+- **The prepared branches** (25 November, late; not merged): `legacy-deletion` 3747bb3e is 61ebb75f (legacy-cleanup) and one commit made
+  by this script with its message, from the list at 742abcf0: 1,693 files removed and 42 edited (tree 8ae52c5f). `legacy-guard-list`
+  9818e4b8 adds three readers of captured states that legacy-cleanup gained at 61ebb75f to the bypass guard's read-only group: on the
+  deletion's tree the guard fails on them alone (16 of 17 rows pass), and with them all 17 pass. `legacy-open-retirements` 34e2e8c1 is
+  830ae93b, a merge of `legacy-guard-list` (59d40c8b) and the second commit, which `--retirements` staged on that merge (`--branch`
+  refuses it until the user's word, so its staged tree was committed by hand, with the script's message): 11 more files removed and 8
+  edited against `legacy-guard-list`, the six files' prepared rows among them (tree ed86a1fa). Merge them in that order.
+- Measured on those trees (m): after the deletion 11,140 tests collect and 8 files fail to, all of which would retire; of 21,927 base IDs
+  11,531 no longer collect (10,956 in files that go, 261 rows of files that stay, 138 of the two files that the pump and symports work
+  rewrote, 176 in the eight files that fail to import) and 744 are new. After the second commit 11,131 collect with no error: 11,545 of
+  the base and 749 new (`second_commit_test_ids.tsv`: 14 leave, and 5 are new, the same rows without the parked family's parameter).
+  The tier record loses 302 rows (114, 46 and 142), and 8 more (2 of tier 1, 6 of tier 3). The library pages pass their check, the
+  definitions that leave are the 129 of `removed_definitions.txt`, and nothing that the merges since abd78068 added is touched by
+  either commit or reached only by retiring files. The one import that resolves to nothing after both is the rehearsals' drivers',
+  which are of the frozen snapshot.
+- The rows that the commits change, run: on `legacy-deletion`, the guard and the files that read the law modules it edits (236 pass;
+  the guard's one row fails as said); on `legacy-open-retirements`, the guard and the six files (59 pass, two GPU rows skip).
 - `carrier_plants.py` at abd78068: all 39 plants fail their rows (33 passed with nothing planted): 28 by an assertion, 7 by a raise of the engine's while the row ran, and 4 by such a raise in a fixture. None is unseen, and none counts an import or collection error. The fresh reader's 168 plants (its file as it stood at 21:09:48 UTC), run on its own copies of the tree after the deletion (the staged tree bc40533b with seven newer files of d8920e5b): 116 fail a row by an assertion (one of them also by a raise), 12 only by a raise of the engine's (7 while the row ran, 5 in a fixture), and 40 fail no row that it ran (`carrier_plants_reader.tsv`; what they mean is in `open_rows.tsv`).
