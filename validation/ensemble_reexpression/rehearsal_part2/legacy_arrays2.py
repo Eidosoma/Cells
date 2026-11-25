@@ -57,13 +57,14 @@ def order(world):
     )
 
 
+def grid_times(first, last, spacing):
+    """A grid of `history_times`: i x spacing from its first to its last (SPEC section 4)."""
+    return [i * spacing for i in range(round(first / spacing), round(last / spacing) + 1)]
+
+
 def compared(world):
     """The compared times of a child's rows: the fine grid, then the coarse one (section 5)."""
-    out = []
-    for first, last, spacing in (world["fine"], world["coarse"]):
-        n = round((last - first) / spacing)
-        out += [first + i * spacing for i in range(n + 1)]
-    return out
+    return [t for grid in (world["fine"], world["coarse"]) for t in grid_times(*grid)]
 
 
 def entries(world, get):

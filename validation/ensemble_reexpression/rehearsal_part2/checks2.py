@@ -5,6 +5,9 @@
 
 - grid: every time of every world, against SPEC section 4's rule (2 eps t) at the four steps (the
   three and the retry's) and at the legacy steps; the horizon is the steps' product bit for bit;
+- histories: every grid's first and last are multiples of its spacing, the compared times (i x
+  spacing, SPEC section 4) increase over the two grids, none lies beyond the end and the last is the
+  end; in the registered worlds too;
 - ratios: `inv_amounts` against PART2.md section 15's thresholds, the fixed charges' residuals;
 - offsets: the geometry factors of section 8 in every world;
 - fuel: A of `inv_fuel`, and what its potentials leave of the pumps' number (section 2.4);
@@ -63,6 +66,38 @@ def grid():
               f"{worst:.2f} eps t off its grid point")  # fmt: skip
     for b in bad:
         print("  BAD", *b)
+    return not bad
+
+
+def history_faults(name, world):
+    """What a world's `history_times` break of the rule, as text."""
+    out, times, end = [], [], world["ionic"]["end_s"]
+    for what, g in world["history_times"].items():
+        first, last, spacing = g["first_s"], g["last_s"], g["spacing_s"]
+        for label, t in (("first", first), ("last", last)):
+            if not rules.on_grid(t, spacing):
+                out.append(f"{name} {what}: {label} {t!r} is no multiple of {spacing!r}")
+        times += la.grid_times(first, last, spacing)
+    if any(b <= a for a, b in zip(times, times[1:], strict=False)):
+        out.append(f"{name}: the compared times do not increase")
+    if any(t > end * (1 + 2 * rules.EPS) for t in times):
+        out.append(f"{name}: a compared time lies beyond the end")
+    if not rules.on_grid(times[-1], end) or abs(times[-1] - end) > 2 * rules.EPS * end:
+        out.append(f"{name}: the last compared time {times[-1]!r} is not the end {end!r}")
+    return out, len(times)
+
+
+def histories(spec):
+    registered = json.loads((spec / "inputs_part2.json").read_text())["worlds"]
+    bad = []
+    for label, worlds in (("rehearsal", inputs()["worlds"]), ("registered", registered)):
+        children = {k: w for k, w in worlds.items() if "history_times" in w}
+        faults = [history_faults(k, w) for k, w in children.items()]
+        bad += [f for found, _ in faults for f in found]
+        print(f"histories of the {len(children)} {label} children: {sum(n for _, n in faults)} "
+              f"compared times, {sum(len(f) for f, _ in faults)} faults")  # fmt: skip
+    for b in bad:
+        print("  BAD", b)
     return not bad
 
 
@@ -244,7 +279,9 @@ def definitions():
 
 
 def main(spec):
-    results = dict(grid=grid(), ratios=ratios(), offsets=offsets(), fuel=fuel())
+    results = dict(
+        grid=grid(), histories=histories(spec), ratios=ratios(), offsets=offsets(), fuel=fuel()
+    )
     print(results)
     rules2.check(spec / "inputs_part2.json")
     return 0 if all(results.values()) else 1

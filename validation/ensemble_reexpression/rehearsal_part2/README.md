@@ -4,7 +4,15 @@
 reference side, as `../rehearsal/` holds Part 1's: the worlds, the runs of the frozen legacy snapshot on them, and
 the files that the judge reads. A rehearsal is evidence for the harness and the bounds. It is none for or against a
 consumer. Nothing here is a registered number, and no registered world was run. The spec was read at the criteria's
-commit 74e3b8fd.
+commit 74e3b8fd. Between it and the tag (c8fdf306) Part 2's text changed in words alone, and no data file did.
+
+**A dated correction, 25 November 2026, after the engine's first runs on these worlds.** The coarse grid of `inv_amounts` began at 0.00102 s with a
+spacing of 0.00026 s, which is no multiple. SPEC section 4 has a grid as i × spacing from its first to its last, and this runner had read it as first + i × spacing, so the two
+sides' rows differed, and the builder's exporter refused that family's three runs. The grid now begins at 0.0012 s with a spacing of 0.0002 s (0.001 s is a registered time, so
+it is not used). The steps, the horizon, the potential times and the legacy definitions are as they were, and no legacy run was made again. The compared times are formed as SPEC has them, and `checks2.py` (`histories`)
+now checks that every grid's first and last are multiples of its spacing, that the times increase and end at the horizon, and that none lies beyond it. It finds four faults in the old inputs, none in the new ones and none in the four registered children.
+**What moved:** two leaves of the inputs (`inv_amounts` `history_times.coarse`), and 67 leaves of the legacy file, all in `inv_amounts` (`d1`, `d2` and `observed_order` at rounding; no class, threshold or
+largest value). The margins, the paths, the manifest, the profile and this runner's estimates did not move.
 
 **Three outcomes are meant at the consumers' level. None of them is a defect of the rehearsal:**
 
@@ -25,7 +33,7 @@ commit 74e3b8fd.
 | `profile_rehearsal_part2.json` | What the judge needs to read the rehearsal, in a **proposed** shape (below) |
 | `make_inputs2.py` | The generator: the worlds, their blocks, the legacy definitions and the runs |
 | `rules2.py` | `PART2.md` section 8 in standard-library arithmetic: scales, references, closures |
-| `exclusions2.py`, `checks2.py`, `verify2.py` | The checks: no number of either part; the grid, the ratios, the offsets, the fuel, the definitions; the files against each other |
+| `exclusions2.py`, `checks2.py`, `verify2.py` | The checks: no number of either part; the grid, the histories, the ratios, the offsets, the fuel, the definitions; the files against each other |
 | `plant_driver2.py`, `pool_paths2.py` | The planted runs and the pools alone |
 | `legacy_arrays2.py`, `reference2.py`, `make_profile2.py` | The legacy arrays by `PART2.md` section 6.1's names; the reference files; the profile |
 | `estimate2.py` | This runner's own estimate of the classes and of the stop's residual (no engine run) |
@@ -86,8 +94,8 @@ captured names, since the readouts are named by them.
 
 - **The worlds' numbers** are drawn once by a seeded generator about a round centre, and rounded to four digits (`make_inputs2.py`,
   `calcium`). The inputs file holds them.
-- **The compared rows** are a fine grid (the first steps, at h1) and a coarse one, 69 to 229 rows a world. Every declared time is on
-  the grid of all four steps and of the legacy steps (within 2 ε t), and every horizon is the steps' product bit for bit.
+- **The compared rows** are a fine grid (the first steps, at h1) and a coarse one, i × spacing from each one's first to its last, 69 to 229 rows a world.
+  Every declared time is on the grid of all four steps and of the legacy steps (within 2 ε t), and every horizon is the steps' product bit for bit.
 - **The Hill coefficients** are 4 (activation), 3 (inhibition) and 1 (IP3), so that a swapped pair shows. The registered ones are all 2.
 - **The stores' K** is the cytosol's concentration to seven digits, so that calcium's currents make the store's voltage, as in the
   registered worlds. In `inv_stop` it is 2.3 times.
@@ -237,7 +245,7 @@ The scratch folder is `/mnt/workspaces/Cells/ensemble-rehearsal-part2-20261125/`
 | `plan.json` | `eed5738dc27891179faeaa8fff48fa4b494b45801c748abc1ba2fb3552ffaa30` |
 | `pools.npz` | `adac90040d1578e67a2a9ace81f23c96eff47bf05f0c526740cecdc21b1a79d7` |
 
-- **The generator and the drivers are those of 8d7119ac** (`plant_driver2.py` 1930d2a7…). Every planted run's files have their sha256 in `plants_manifest_rehearsal_part2.json`. `verify2.py` checks every one of them, the 57
+- **The generator and the drivers are those of 8d7119ac** (`plant_driver2.py` 1930d2a7…). The dated correction changed no legacy definition (`verify2.py` makes all 57 again and compares them). Every planted run's files have their sha256 in `plants_manifest_rehearsal_part2.json`. `verify2.py` checks every one of them, the 57
   definitions against the generator, and the capture's 849 files.
 - **Every control equals the honest run at h bit for bit** (20 controls, 42 to 325 arrays each, the four children's once before their batch and once after it).
 - **A patched run had a process of its own.** The runs that change the definition alone ran one after another in one process a world, the control first, so that the program compiled once (the registered manifest's commands list several runs each too).

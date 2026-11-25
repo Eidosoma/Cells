@@ -4992,9 +4992,9 @@
      "spacing_s": 2e-05
     },
     "coarse": {
-     "first_s": 0.00102,
+     "first_s": 0.0012,
      "last_s": 0.0122,
-     "spacing_s": 0.00026
+     "spacing_s": 0.0002
     }
    },
    "potential_times_s": [
