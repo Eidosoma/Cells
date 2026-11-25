@@ -8,30 +8,24 @@ non-finite value, is a fault; any fault refuses the file. Unknown keys are ignor
 Q6). The invented family's inputs are its own, so they are checked for consistency, not against
 SPEC.md.
 
-**The engine's export** is amendment 4, §8's registered table (`read_tables`, `table_records`):
+**The engine's export** is the registered tables (amendment 4, §8; amendment 5):
 `table/table_<family>.json` for AF, AN, B, C and D with `table/SHA256SUMS`, and `table-retry/` for
 the retry.
 
-- **Runs.** `rungs` keyed by the step's repr, each with `dt_s` and `runs` by name: SPEC.md §1.3's
-  names (B's `p=0.55 returned` and `p=0.55 held`), `blank returned` and `blank held` (each judged
-  against the reference's one `blank`), and `<run> unlabelled` for a twin. Unknown names are
-  recorded and ignored.
-- **An entry** is a refusal (`refused`, `refusal`, `definition`) or holds `t`, `readouts`,
-  `route2`, `survival` (labelled runs), `excess_over_blank` (runs with a blank), `checks`,
-  `own_ledgers_at_end`, `steps`, `dt_s`, `definition`, `source`, `record` and `record_sha256`. A
-  completed run without `source`, `record` or `record_sha256` is refused (item 6).
-- **The restart** (AN) and **the plants** (rung "0.5", with `judged_as`; `P4 AN`, `P4 B`, `P8
-  blank`) are entries of the same form. Entries for P1, P1′, P1″ and P6 are excluded from scoring
-  and recorded: the judge forms those plants itself (item 5).
-- **The declaration** is read at §8.5's keys (`definitions.py`). The judge forms S from the
-  registered grid and g(ts) from the engine's counters; it never takes a tolerance term from the
-  export, and records `steps` and `grid_error` only.
-- **Open shapes.** Where §8 states a key but not its shape, the reader reads one narrow shape
-  (`TABLE_OPEN_SHAPES` here, `definitions.OPEN_SHAPES` for the declaration) and fails closed on any
-  other. Each needs a dated amendment before the judge's tag.
+- **Two passes.** The structure pass (`shapes.structure`) reads keys, nesting and types, by name,
+  as the format sample's check reads them. Where it finds no fault, the value pass here reads the
+  numbers, and C0's echo (`definitions`) the declaration.
+- **What refuses.** A missing or mistyped pinned key; a table that departs from `SHA256SUMS`, is not
+  listed there, or is the format sample's; a dirty checkout; a missing or doubled `route2` or
+  `survival` entry; a checkpoint or a V₀ patch that is not the registered one; a grid, readout or
+  declaration that is not SPEC.md's. Each is named by path. A refusal is never read as a gap.
+- **What is recorded** (amendment 5, item 4): extra keys, unregistered names, engine_run's other
+  exports, a blank's `route2` and `survival`, `blank`, `k_per_s`, `steps`, `host_patch`, the three
+  other keys of `checkpoint` and the four of `source`. What departs is flagged to the checker.
+- **What the judge forms itself:** S from the registered grid, g(ts) from the engine's counters, and
+  the plants P1, P1′, P1″ and P6, whose entries are excluded (amendment 4, item 5).
 - **Numbers** are finite, except a survival ratio, whose undefined, NaN or infinite values are
   judged by C1 at an idle fate (amendment 1, item 3); elsewhere a non-finite ratio is refused.
-- Extra keys are ignored. A refused record is never read as a gap.
 """
 
 import dataclasses
@@ -39,10 +33,11 @@ import hashlib
 import json
 import math
 import os
+import re
 
 import numpy as np
 
-from . import spec
+from . import definitions, shapes, spec
 
 REFERENCE_KIND = "cells.fr38_v2.reference@1"
 UNITS = {"amount": "fmol", "energy": "pJ", "time": "s", "volume": "pL", "copy_fmol": spec.COPY_FMOL}
@@ -68,9 +63,22 @@ def load_strict(path):
     ).hexdigest()
 
 
+def _unique(pairs):
+    out = dict(pairs)
+    if len(out) != len(pairs):
+        keys = [k for k, _ in pairs]
+        raise ValueError(f"a key is repeated: {sorted({k for k in keys if keys.count(k) > 1})}")
+    return out
+
+
 def load_lenient(path):
+    """An engine table: no key repeated (a repeated run would hide the other), and NaN and Infinity
+    tokens parsed, so that C0 can name them."""
     raw = open(path, "rb").read()
-    return json.loads(raw.decode("utf-8")), hashlib.sha256(raw).hexdigest()
+    return (
+        json.loads(raw.decode("utf-8"), object_pairs_hook=_unique),
+        hashlib.sha256(raw).hexdigest(),
+    )
 
 
 def close(a, b, rel=spec.REL_INPUT):
@@ -756,90 +764,91 @@ def _read_provenance(p, ref):
     ref.provenance = p
 
 
-# ------------------------------------------------------------------ the engine's tables (§8)
+# ------------------------------------------------------------------ the engine's tables
 
-TABLE_KIND = "cells.fr38_v2.engine_table@1"
+
 TABLE_DIRS = (("primary", "table"), ("retry", "table-retry"))
-RUNG_KEYS = {"primary": ("2.0", "1.0", "0.5"), "retry": ("1.0", "0.5", "0.25")}
 ROLES = ("honest", "blank", "twin", "restart", "plant")
 RECORD_PLANTS = ("P2", "P3a", "P3b", "P4", "P5", "P7", "P8", "P9")
-TABLE_PLANTS = {"P2": "P2", "P3a": "P3a", "P3b": "P3b", "P4 AN": "P4", "P4 B": "P4",
-                "P5": "P5", "P7": "P7", "P8": "P8", "P8 blank": "P8", "P9": "P9"}  # fmt: skip
-JUDGE_PLANTS = ("P1", "P1′", "P1″", "P6", "P1'", "P1''")  # formed by the judge (amendment 4, §5)
-TABLE_OPEN_SHAPES = (
-    "`route2`: a list of {fate, ts_s, value, grid_error}; `grid_error` is recorded beside the "
-    "judge's own g(ts), never used",
-    "`survival`: a list of {fate, t2_s, ts_s, alive_t2, alive_ts, ratio}",
-    '`excess_over_blank`: {"blank": <the matched blank\'s name>, "durable": [...], '
-    '"short_lived": [...]}',
-    '`plants`: under rung "0.5", an object keyed by the plant\'s name: P2, P3a, P3b, "P4 AN", '
-    '"P4 B", P5, P7, P8, "P8 blank" (judged_as "blank returned"), P9',
-    "`restart`: a top-level entry of AN's table; the checkpoint's identity under `checkpoint`, "
-    "required",
-    "provenance: `source` and `record` any non-empty value, `record_sha256` a sha256 string, all "
-    "three keys of the entry itself",
-    "`checks`: any JSON value; the restart and AF's two blanks compare it whole, the twin as a "
-    "recursive subset of its labelled run's (bit for bit)",
-    "a `SHA256SUMS` line: `<sha256>  <file name>`",
-)
 
 
 @dataclasses.dataclass
 class EngineRun:
+    """One entry of a table, read by the structure pass and, where it finds no fault, by value."""
+
     table: str
     table_sha256: str
     family: str
+    where: str
     name: str
+    kind: str
     run: str
     role: str
     plant: object
     attempt: str
     dt: float
     machine: str
-    status: str
-    refusal: object
-    definition: object
+    status: str = ""
+    refusal: object = None
+    record: object = None
+    definition: object = None
     series: dict = dataclasses.field(default_factory=dict)  # name -> np.ndarray
     route2: dict = dataclasses.field(default_factory=dict)  # (fate, ts) -> value
     route2_grid_error: dict = dataclasses.field(default_factory=dict)  # recorded, never used
+    route2_k: dict = dataclasses.field(default_factory=dict)  # recorded, flagged if it departs
     survival: dict = dataclasses.field(default_factory=dict)  # (fate, ts) -> (a2, a3, ratio)
     checks: object = None
+    own_ledgers: object = None
     faults: list = dataclasses.field(default_factory=list)
     notes: list = dataclasses.field(default_factory=list)
+    flags: list = dataclasses.field(default_factory=list)
     times: list = dataclasses.field(default_factory=list)
-    has_route2: bool = False
-    has_survival: bool = False
-    has_excess: bool = False
-    excess_blank: object = None
     steps: object = None
-    provenance: dict = dataclasses.field(default_factory=dict)
-    extras: dict = dataclasses.field(default_factory=dict)
-    unchecked: list = dataclasses.field(default_factory=list)
+    blank_name: object = None
+    source: dict = dataclasses.field(default_factory=dict)
+    recorded: dict = dataclasses.field(default_factory=dict)
+
+    @property
+    def blank(self):
+        return self.run == "blank"
 
     @property
     def key(self):
-        blankish = self.role == "blank" or (self.plant == "P8" and self.run == "blank")
         return (self.family, self.role, self.run, self.plant, self.attempt, self.dt,
-                self.machine if blankish else None)  # fmt: skip
+                self.machine if self.blank else None)  # fmt: skip
 
 
-def _read_sums(path):
-    sums = {}
+_SUM = re.compile(r"^([0-9a-fA-F]{64})  ([^/]+)$")
+
+
+def read_sums(path):
+    """A SHA256SUMS file (amendment 5, item 5): the digest, two spaces and the file's name. A
+    malformed line, or one name with two digests, leaves the table it should name unlisted."""
+    sums, bad, twice = {}, [], set()
     with open(path, encoding="utf-8") as fh:
-        for line in fh:
-            line = line.strip()
-            if not line:
+        for line in fh.read().splitlines():
+            if not line.strip():
                 continue
-            digest, _, name = line.partition("  ")
-            sums[name.strip().lstrip("*")] = digest.strip()
-    return sums
+            m = _SUM.match(line)
+            if not m:
+                bad.append(line)
+                continue
+            digest, name = m.group(1).lower(), m.group(2)
+            if name in sums and sums[name] != digest:
+                twice.add(name)
+            sums[name] = digest
+    for name in twice:
+        sums.pop(name)
+        bad.append(f"two digests for {name}")
+    return sums, bad
 
 
-def read_tables(export_dir, families):
-    """The engine's hashed tables: table/table_<family>.json with table/SHA256SUMS, and
-    table-retry/ for the retry (amendment 4, §8.1). A missing SHA256SUMS is recorded and flagged to
-    the checker (item 6); a table whose hash departs from an index that lists it is refused."""
-    out = {"tables": [], "faults": [], "notes": [], "index": {}}
+def read_tables(export_dir, families, sample=None):
+    """The hashed tables: table/table_<family>.json with table/SHA256SUMS, and table-retry/ for the
+    retry (amendment 4, §8.1; amendment 5, §4 (a) and §6). A missing SHA256SUMS is recorded and
+    flagged to the checker. A table whose hash departs from it, or that it does not list, is
+    refused, and so are a listed table that is missing and one whose hash is one of `sample`'s."""
+    out = {"tables": [], "faults": [], "notes": [], "flags": [], "index": {}}
     for attempt, sub in TABLE_DIRS:
         d = os.path.join(export_dir, sub)
         if not os.path.isdir(d):
@@ -847,307 +856,233 @@ def read_tables(export_dir, families):
                 out["faults"].append(f"{sub}/ is missing: every primary run is missing")
             continue
         sums_path = os.path.join(d, "SHA256SUMS")
-        sums = _read_sums(sums_path) if os.path.exists(sums_path) else None
-        out["index"][sub] = {"SHA256SUMS": sums is not None}
+        sums, bad = read_sums(sums_path) if os.path.exists(sums_path) else (None, [])
+        out["index"][sub] = {"SHA256SUMS": sums is not None, "malformed_lines": bad}
         if sums is None:
-            out["notes"].append(f"FLAG for the checker: {sub}/SHA256SUMS is missing (recorded, "
-                                "not refused; amendment 4, item 6)")  # fmt: skip
+            out["flags"].append(f"{sub}/SHA256SUMS is missing (recorded, not refused; amendment "
+                                "4, item 6)")  # fmt: skip
+        for fn in sorted(sums or ()):
+            if not os.path.exists(os.path.join(d, fn)):
+                out["faults"].append(f"{sub}/{fn} is listed in {sub}/SHA256SUMS and missing from "
+                                     "the folder (§4 (a): refused)")  # fmt: skip
+            elif not any(fn == f"table_{f}.json" for f in families):
+                out["notes"].append(f"{sub}/{fn} is listed and is not a table judged here")
         for fam in families:
             fn = f"table_{fam}.json"
             path = os.path.join(d, fn)
             if not os.path.exists(path):
                 out["notes"].append(f"{sub}/{fn} is absent")
                 continue
-            tab = {"family": fam, "attempt": attempt, "path": path, "faults": [], "doc": None}
+            tab = {"family": fam, "attempt": attempt, "path": path, "file": f"{sub}/{fn}",
+                   "faults": [], "doc": None, "sha256": ""}  # fmt: skip
             try:
                 tab["doc"], tab["sha256"] = load_lenient(path)
             except (OSError, ValueError) as exc:
                 tab["faults"].append(f"{sub}/{fn} unreadable: {exc}")
-                tab["sha256"] = ""
             if sums is not None:
                 if fn not in sums:
-                    tab["faults"].append(f"{sub}/{fn} is not in {sub}/SHA256SUMS")
+                    tab["faults"].append(f"{sub}/{fn} is not listed in {sub}/SHA256SUMS")
                 elif sums[fn] != tab["sha256"]:
-                    tab["faults"].append(f"{sub}/{fn}'s sha256 departs from {sub}/SHA256SUMS "
-                                         "(refused: a table changed after its index)")  # fmt: skip
+                    tab["faults"].append(f"{sub}/{fn}'s sha256 departs from {sub}/SHA256SUMS")
+            if sample and tab["sha256"] in sample.values():
+                tab["faults"].append(f"{sub}/{fn} is the registered format sample's, refused in "
+                                     "judgement (amendment 5, §6)")  # fmt: skip
             out["tables"].append(tab)
     return out
 
 
-def _classify(name, honest_runs):
-    if name in honest_runs:
-        return "honest", name, None
-    if name in ("blank returned", "blank held"):
-        return "blank", "blank", name.split()[1]
-    if name.endswith(" unlabelled") and name[: -len(" unlabelled")] in honest_runs:
-        return "twin", name[: -len(" unlabelled")], None
-    return None
+def table_structure(tab, profile, role, inputs, restart_run, table_shapes):
+    """The structure pass of one table (`shapes.structure`), as the judgement and the sample check
+    both run it."""
+    honest = [r for r in inputs["runs"] if r != "blank"]
+    return shapes.structure(tab["doc"], tab["family"], tab["attempt"], profile, role, honest,
+                            table_shapes, restart_run=restart_run)  # fmt: skip
 
 
-def table_records(tab, family_inputs):
-    """Every run entry of one table, as engine records; unknown names and the judge's own plants
-    are recorded and left out (amendment 4, items 5 and 8)."""
-    doc, fam, attempt = tab["doc"], tab["family"], tab["attempt"]
-    notes, recs = [], []
-    table_faults = list(tab["faults"])
-    if isinstance(doc, dict):
-        if doc.get("kind") != TABLE_KIND:
-            table_faults.append(f"kind {doc.get('kind')!r} is not {TABLE_KIND!r}")
-        if doc.get("family") != fam:
-            table_faults.append(f"family {doc.get('family')!r} in table_{fam}.json")
+def _finding(f):
+    kind, path, detail = f
+    return f"{path}: {kind}: {detail}"
+
+
+def table_records(tab, st, inputs, times, samples, window):
+    """Every entry of one table as an engine record: the structure pass's faults, then its values.
+    Returns (records, table faults)."""
+    table_faults = list(tab["faults"]) + [_finding(f) for f in st.faults]
+    doc = tab["doc"] if isinstance(tab["doc"], dict) else {}
+    if not st.faults:
         for key in ("window_s", "samples_s"):
-            want = [float(x) for x in family_inputs[key]]
-            got = doc.get(key)
-            if not (
-                isinstance(got, list)
-                and len(got) == len(want)
-                and all(_num(a) and float(a) == b for a, b in zip(got, want, strict=True))
+            want = [float(x) for x in inputs[key]]
+            got = doc[key]
+            if len(got) != len(want) or not all(
+                close(float(a), b) for a, b in zip(got, want, strict=True)
             ):
-                table_faults.append(f"{key} {got!r} is not SPEC.md's {want!r}")
-        if doc.get("missing"):
-            notes.append(f"the table lists missing records: {doc.get('missing')!r}")
-        rungs = doc.get("rungs")
-    else:
-        table_faults.append("the table is not an object")
-        rungs = None
-    if not isinstance(rungs, dict):
-        table_faults.append("rungs is not an object")
-        rungs = {}
-    honest = [r for r in family_inputs["runs"] if r != "blank"]
-
-    def make(entry, name, role, run, plant, dt, machine):
-        rec = EngineRun(tab["path"], tab.get("sha256", ""), fam, name, run, role, plant, attempt,
-                        dt, machine or "", "", None, None)  # fmt: skip
-        rec.faults += table_faults
-        _read_entry(rec, entry)
+                table_faults.append(f"{key}: {got!r} is not SPEC.md's {want!r}")
+        for key, rung in doc["rungs"].items():
+            if key in shapes.RUNG_KEYS[tab["attempt"]] and not close(
+                float(rung["dt_s"]), float(key)
+            ):
+                table_faults.append(f"rungs.{key}.dt_s: {rung['dt_s']!r} is not its key's step")
+    recs = []
+    for e in st.entries:
+        rec = EngineRun(tab["path"], tab["sha256"], tab["family"], e.where, e.name, e.kind, e.run,
+                        e.role, e.plant, tab["attempt"], e.dt, e.machine or "")  # fmt: skip
+        rec.faults += table_faults + [_finding(f) for f in e.faults]
+        rec.notes += [_finding(f) for f in e.findings if f[0] not in shapes.FAULTS]
+        if e.definition_findings:
+            rec.recorded["definition_shape"] = [_finding(f) for f in e.definition_findings]
+        if isinstance(e.obj, dict):
+            rec.definition = e.obj.get("definition")
+            rec.status = "refused" if e.kind == "refused" else "completed"
+        if not rec.faults and rec.status == "refused":
+            rec.refusal, rec.record = e.obj["refusal"], e.obj["record"]
+        elif not rec.faults:
+            _values(rec, e.obj, times, samples, window)
         recs.append(rec)
-        return rec
-
-    for key, rung in rungs.items():
-        if key not in RUNG_KEYS[attempt]:
-            notes.append(f"rung {key!r} is not a rung of the {attempt} attempt: ignored")
-            continue
-        dt = float(key)
-        if not isinstance(rung, dict) or not isinstance(rung.get("runs"), dict):
-            table_faults.append(f"rung {key}: no runs")
-            continue
-        if not (_num(rung.get("dt_s")) and float(rung["dt_s"]) == dt):
-            table_faults.append(f"rung {key}: dt_s {rung.get('dt_s')!r}")
-        for name, entry in rung["runs"].items():
-            c = _classify(name, honest)
-            if c is None:
-                notes.append(f"rung {key}: run {name!r} is not a registered name: ignored")
-                continue
-            role, run, machine = c
-            make(entry, name, role, run, None, dt, machine)
-        plants = rung.get("plants")
-        if plants is None:
-            continue
-        if key != "0.5" or attempt != "primary" or not isinstance(plants, dict):
-            notes.append(f"rung {key}: plants outside the primary rung 0.5, or not an object: "
-                         "ignored")  # fmt: skip
-            continue
-        for name, entry in plants.items():
-            if name in JUDGE_PLANTS:
-                notes.append(f"plant entry {name!r}: formed by the judge itself, excluded from "
-                             "scoring and recorded (amendment 4, item 5)")  # fmt: skip
-                continue
-            if name not in TABLE_PLANTS:
-                notes.append(f"plant entry {name!r} is not a registered name: ignored")
-                continue
-            plant = TABLE_PLANTS[name]
-            judged_as = entry.get("judged_as") if isinstance(entry, dict) else None
-            if name == "P8 blank":
-                run, machine = "blank", "returned"
-                ok = judged_as == "blank returned"
-            else:
-                run, machine = judged_as, None
-                ok = judged_as in honest
-            rec = make(entry, name, "plant", run if ok else str(judged_as), plant, dt, machine)
-            rec.extras["judged_as"] = judged_as
-            if not ok:
-                rec.faults.append(f"plant {name!r}: judged_as {judged_as!r} is not its honest run")
-    if attempt == "primary" and isinstance(doc, dict) and doc.get("restart") is not None:
-        rec = make(doc["restart"], "restart", "restart", "p_sched returned", None, 0.5, None)
-        cp = doc["restart"].get("checkpoint") if isinstance(doc["restart"], dict) else None
-        rec.extras["checkpoint"] = cp
-        if cp is None and rec.status == "completed":
-            rec.faults.append("the restart carries no checkpoint identity (`checkpoint`)")
-    return recs, notes
+    return recs, table_faults
 
 
-def _read_entry(rec, entry):
-    """One run's entry (§8.3): a refusal, or its records with their provenance."""
+def _matched(x, times):
+    """The registered time x is, at 10⁻¹² relative (amendment 5, item 4), or None."""
+    return next((t for t in times if close(float(x), t)), None)
+
+
+def _values(rec, obj, times, samples, window):
+    """The value pass of one completed entry, whose keys and types the structure pass accepted."""
     faults = rec.faults
-    if not isinstance(entry, dict):
-        faults.append("the entry is not an object")
+    for k, v in obj["readouts"].items():
+        rec.series[k] = np.asarray(v, dtype=np.float64)
+    for fate, v in obj.get("excess_over_blank", {}).items():
+        rec.series[f"excess_over_blank_{fate}"] = np.asarray(v, dtype=np.float64)
+    rec.times = [float(x) for x in obj["t"]]
+    rec.steps, rec.checks, rec.own_ledgers = obj["steps"], obj["checks"], obj["own_ledgers_at_end"]
+    rec.record, rec.source, rec.blank_name = obj["record"], obj["source"], obj["blank"]
+    rec.recorded["record_sha256"] = obj["record_sha256"]
+    for k in ("checkpoint", "host_patch", "judged_as"):
+        if k in obj:
+            rec.recorded[k] = obj[k]
+    if not close(float(obj["dt_s"]), rec.dt):
+        faults.append(f"{rec.where}.dt_s: {obj['dt_s']!r} is not its step {rec.dt!r}")
+    if obj["source"]["checkout_dirty"] is not False:
+        faults.append(f"{rec.where}.source.checkout_dirty: the run's checkout was dirty (item 5)")
+    if rec.blank:
+        return  # item 4: a blank's route2 and survival are recorded, never judged
+    for i, e in enumerate(obj["route2"]):
+        ts = _matched(e["ts_s"], samples)
+        if e["fate"] not in spec.FATES or ts is None:
+            faults.append(f"{rec.where}.route2[{i}]: no registered fate and sample time")
+            continue
+        if (e["fate"], ts) in rec.route2:
+            faults.append(f"{rec.where}.route2[{i}]: ({e['fate']}, {ts!r} s) is duplicated")
+        rec.route2[(e["fate"], ts)] = float(e["value"])
+        rec.route2_grid_error[(e["fate"], ts)] = float(e["grid_error"])
+        rec.route2_k[(e["fate"], ts)] = float(e["k_per_s"])
+    for fate in spec.FATES:
+        for ts in samples:
+            if (fate, ts) not in rec.route2:
+                faults.append(f"{rec.where}.route2: missing ({fate}, {ts!r} s)")
+    if "survival" not in obj:
         return
-    rec.definition = entry.get("definition")
-    if entry.get("refused"):
-        rec.status, rec.refusal = "refused", entry.get("refusal")
-        return
-    rec.status = "completed"
-    for k in ("source", "record", "record_sha256"):
-        v = entry.get(k)
-        empty = v is None or (isinstance(v, (str, list, dict)) and not v)
-        if empty or (k == "record_sha256" and not isinstance(v, str)):
-            faults.append(f"{k} is missing: a run without its provenance is refused")
-        rec.provenance[k] = v
-    sha = rec.provenance.get("record_sha256")
-    if (
-        isinstance(sha, str)
-        and sha
-        and not (len(sha) == 64 and all(c in "0123456789abcdef" for c in sha))
-    ):
-        faults.append(f"record_sha256 {sha!r} is not a sha256")
-    t = entry.get("t")
-    if not (isinstance(t, list) and all(_num(x) for x in t)):
-        faults.append("t is not a list of output times")
-    else:
-        rec.times = [float(x) for x in t]
-    if not (_num(entry.get("dt_s")) and float(entry["dt_s"]) == rec.dt):
-        faults.append(f"dt_s {entry.get('dt_s')!r} is not its rung's {rec.dt!r}")
-    steps = entry.get("steps")
-    rec.steps = steps if isinstance(steps, int) and not isinstance(steps, bool) else None
-    readouts = entry.get("readouts")
-    if not isinstance(readouts, dict):
-        faults.append("readouts is not an object")
-        readouts = {}
-    for k, v in readouts.items():
-        arr = _finite_array(v)
-        if arr is None:
-            faults.append(f"readouts/{k}: not a list of finite numbers")
-        else:
-            rec.series[k] = arr
-    ex = entry.get("excess_over_blank")
-    if ex is not None:
-        rec.has_excess = True
-        if not isinstance(ex, dict):
-            faults.append("excess_over_blank is not an object")
-        else:
-            rec.excess_blank = ex.get("blank")
-            for fate in spec.FATES:
-                arr = _finite_array(ex.get(fate))
-                if arr is None:
-                    faults.append(f"excess_over_blank/{fate}: not a list of finite numbers")
-                else:
-                    rec.series[f"excess_over_blank_{fate}"] = arr
-    r2 = entry.get("route2")
-    if r2 is not None:
-        rec.has_route2 = True
-        for e in r2 if isinstance(r2, list) else [None]:
-            if not (isinstance(e, dict) and e.get("fate") in spec.FATES and _num(e.get("ts_s"))
-                    and _num(e.get("value"))):  # fmt: skip
-                faults.append(f"route2 entry {e!r}: fate, ts_s and a finite value")
-                continue
-            rec.route2[(e["fate"], float(e["ts_s"]))] = float(e["value"])
-            rec.route2_grid_error[(e["fate"], float(e["ts_s"]))] = e.get("grid_error")
-    sv = entry.get("survival")
-    if sv is not None:
-        rec.has_survival = True
-        for e in sv if isinstance(sv, list) else [None]:
-            ok = (
-                isinstance(e, dict)
-                and e.get("fate") in spec.FATES
-                and _num(e.get("ts_s"))
-                and _num(e.get("t2_s"))
-                and _num(e.get("alive_t2"))
-                and _num(e.get("alive_ts"))
-                and (
-                    e.get("ratio") is None
-                    or (
-                        isinstance(e.get("ratio"), (int, float))
-                        and not isinstance(e.get("ratio"), bool)
-                    )
-                )
-            )
-            if not ok:
-                faults.append(f"survival entry {e!r}: fate, t2_s, ts_s, finite counts and a ratio")
-                continue
-            r = e["ratio"]
-            rec.survival[(e["fate"], float(e["ts_s"]))] = (
-                float(e["alive_t2"]),
-                float(e["alive_ts"]),
-                None if r is None else float(r),
-            )
-    rec.checks = entry.get("checks")
-    for k in ("own_ledgers_at_end", "source"):
-        if k in entry:
-            rec.extras[k] = entry[k] if k == "source" else "present"
+    for i, e in enumerate(obj["survival"]):
+        ts = _matched(e["ts_s"], samples[1:])
+        if e["fate"] not in spec.FATES or ts is None or _matched(e["t2_s"], [window[1]]) is None:
+            faults.append(f"{rec.where}.survival[{i}]: no registered fate, t2 and later sample")
+            continue
+        if (e["fate"], ts) in rec.survival:
+            faults.append(f"{rec.where}.survival[{i}]: ({e['fate']}, {ts!r} s) is duplicated")
+        r = e["ratio"]
+        rec.survival[(e["fate"], ts)] = (float(e["alive_t2"]), float(e["alive_ts"]),
+                                         None if r is None else float(r))  # fmt: skip
+    for fate in spec.FATES:
+        for ts in samples[1:]:
+            if (fate, ts) not in rec.survival:
+                faults.append(f"{rec.where}.survival: missing ({fate}, {ts!r} s)")
 
 
-def _finite_array(v):
-    if not isinstance(v, list) or any(isinstance(x, (bool, str)) or x is None for x in v):
-        return None
-    try:
-        arr = np.asarray(v, dtype=np.float64)
-    except (TypeError, ValueError):
-        return None
-    if arr.ndim != 1 or not np.all(np.isfinite(arr)):
-        return None
-    return arr
-
-
-def matched_blank_name(family_inputs, run, two_blanks):
-    machine = family_inputs["runs"][run]["machine"] if two_blanks else "returned"
-    return f"blank {machine}"
-
-
-def check_record(rec, family_inputs, times, mapping, profile, *, allowed_blank_machines,
-                 two_blanks):  # fmt: skip
-    """C0 on one engine record: its rung, grid, provenance, readouts and declaration (plants'
-    declarations are compared with their honest runs' in the judge, §8.5)."""
-    from . import definitions
-
+def check_record(rec, inputs, times, mapping, profile, *, blank_machines, two_blanks,
+                 checkpoint_s):  # fmt: skip
+    """C0 on one record's values: its grid, readouts and declaration. A plant's declaration is
+    compared with its honest run's in the judge (§8.5)."""
     faults = rec.faults
-    rungs = spec.PRIMARY_RUNGS if rec.attempt == "primary" else spec.RETRY_RUNGS
-    if rec.dt not in rungs:
-        faults.append(f"dt {rec.dt!r} is not a rung of the {rec.attempt} attempt {rungs}")
-    if rec.role in ("restart", "plant") and (rec.dt != spec.H_STEP_S or rec.attempt != "primary"):
-        faults.append("a restart or plant runs at h = 0.5 s, primary attempt only")
-    if rec.run == "blank" and rec.machine not in allowed_blank_machines:
-        faults.append(f"a blank {rec.machine!r}; this family runs {allowed_blank_machines}")
-    if rec.role != "plant" and rec.status in ("completed", "refused"):
-        df, unchecked = definitions.check_definition(
-            rec.definition, family_inputs, profile, rec.run, rec.role, rec.machine, rec.dt
+    if rec.role == "blank" and rec.machine not in blank_machines:
+        faults.append(f"{rec.where}: a blank {rec.machine!r}; this family runs {blank_machines}")
+    if rec.status not in ("completed", "refused"):
+        return
+    if rec.role != "plant" and isinstance(rec.definition, dict):
+        faults += definitions.check_definition(
+            rec.definition, inputs, profile, rec.run, rec.role, rec.machine, rec.dt
         )
-        faults += df
-        rec.unchecked = unchecked
-    if rec.status != "completed":
-        return
-    S = int(round(float(family_inputs["horizon_s"]) / rec.dt)) if rec.dt else None
-    if rec.steps is not None and rec.steps != S:
-        rec.notes.append(f"steps {rec.steps} where the registered grid gives S = {S}: C2 and C4 "
-                         "use the grid's S, never the export's")  # fmt: skip
-    if list(rec.times) != list(times):
-        faults.append("t is not the family's output grid (a missing output time)")
+        values, flags = definitions.recorded(rec.definition, inputs, profile)
+        rec.recorded["declaration"] = values
+        rec.flags += [f"definition.{x}" for x in flags]
+    if rec.status != "completed" or not rec.source:
         return
     n = len(times)
+    if len(rec.times) != n or any(not close(a, b) for a, b in zip(rec.times, times, strict=True)):
+        faults.append(f"{rec.where}.t: not the family's output grid (a missing output time)")
+        return
     for k, v in rec.series.items():
         if v.size != n:
-            faults.append(f"{k}: {v.size} values for {n} output times")
-    blank = rec.run == "blank"
-    p8_blank = rec.plant == "P8" and blank
-    for e in mapping_entries(mapping, profile, blank=True if blank else None):
+            faults.append(f"{rec.where}: {k} has {v.size} values for {n} output times")
+    S = int(round(float(inputs["horizon_s"]) / rec.dt))
+    if rec.steps != S:
+        rec.flags.append(f"{rec.where}.steps: {rec.steps}, where the registered grid gives S = {S} "
+                         "(§4 (d): S comes from the grid)")  # fmt: skip
+    _required(rec, mapping, profile)
+    _flag_rates(rec)
+    want = None
+    if rec.plant == "P8" and not rec.blank:
+        want = "P8 blank"
+    elif rec.role in ("honest", "twin", "restart") and spec.has_blank(profile):
+        want = f"blank {inputs['runs'][rec.run]['machine'] if two_blanks else 'returned'}"
+    if rec.blank_name != want:
+        rec.flags.append(f"{rec.where}.blank: {rec.blank_name!r}, where its matched blank is "
+                         f"{want!r} (recorded, never judged: item 4)")  # fmt: skip
+    if rec.source["snapshot_patch_sha256"] != shapes.EMPTY_SHA256:
+        rec.flags.append(f"{rec.where}.source.snapshot_patch_sha256: not an empty file's")
+    if rec.role == "restart":
+        got = rec.recorded["checkpoint"]["time_s"]
+        if not close(float(got), checkpoint_s):
+            faults.append(f"{rec.where}.checkpoint.time_s: {got!r}, not {checkpoint_s!r} s")
+    if rec.plant == "P9":
+        hp = rec.recorded["host_patch"]
+        if hp["id"] != "V0" or hp["operator"] != shapes.GENE_UNIT:
+            faults.append(f"{rec.where}.host_patch: {hp['id']!r} on {hp['operator']!r} is not the "
+                          "V₀ patch of the gene unit (item 7)")  # fmt: skip
+
+
+def _required(rec, mapping, profile):
+    """Every readout the kind of entry owes (READOUTS.md; the README's kinds); what a twin must not
+    carry (item 7); the engine's other exports are recorded only."""
+    kind_excess = rec.kind in ("labelled", "twin", "restart", "P8")
+    for e in mapping_entries(mapping, profile, blank=True if rec.blank else None):
         kind, _, name = e["engine"].partition("/")
-        if kind == "series":
-            if rec.role == "twin" and (
-                name.startswith("label_") or name.startswith("released_present_gross_")
-            ):
-                continue
-            if name not in rec.series:
-                faults.append(f"readouts/{name}: missing readout")
-        elif kind == "route2" and not blank and not rec.has_route2:
-            faults.append("route2: missing readout")
-        elif kind == "survival" and not blank and rec.role != "twin" and not rec.has_survival:
-            faults.append("survival: missing readout")
-    if spec.has_blank(profile) and not blank and not p8_blank:
-        if rec.role == "plant" and rec.plant == "P8":
-            want = "P8 blank"
-        elif rec.role == "plant":
-            want = None  # its excess enters no criterion: the name is recorded only
-        else:
-            want = matched_blank_name(family_inputs, rec.run, two_blanks)
-        if want is not None and rec.excess_blank != want:
-            faults.append(f"excess_over_blank names the blank {rec.excess_blank!r}, not "
-                          f"its matched {want!r}")  # fmt: skip
+        if kind != "series":
+            continue
+        if rec.role == "twin" and not physical(name):
+            continue
+        if name.startswith("excess_over_blank_") and not kind_excess:
+            continue
+        if name not in rec.series:
+            rec.faults.append(f"{rec.where}.readouts.{name}: missing readout")
+    if rec.role == "twin":
+        carried = sorted(k for k in rec.series if not physical(k))
+        if carried or rec.survival:
+            rec.faults.append(f"{rec.where}: a twin is unlabelled, yet it carries "
+                              f"{carried or ['survival']} (item 7)")  # fmt: skip
+
+
+def physical(name):
+    return not (name.startswith("label_") or name.startswith("released_present_gross_"))
+
+
+def _flag_rates(rec):
+    """route2's `k_per_s` against the entry's own declared k_f (item 4: recorded and flagged)."""
+    for fate in spec.FATES:
+        try:
+            k = definitions.declared_rate(rec.definition, fate)
+        except (definitions.Unreadable, IndexError, TypeError, ValueError):
+            continue
+        for (f, ts), got in sorted(rec.route2_k.items()):
+            if f == fate and not close(got, k):
+                rec.flags.append(f"{rec.where}.route2 ({fate}, {ts!r} s): k_per_s {got!r} is not "
+                                 f"the declared {k!r}")  # fmt: skip

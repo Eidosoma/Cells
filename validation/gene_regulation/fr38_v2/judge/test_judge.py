@@ -1,6 +1,6 @@
 """Host-only tests of FR-38's second comparison judge, on invented inputs only.
 
-**Seconds:** 37 s for its 24 tests on CPU 7 at load 25 (24 November 2026); 20 to 90 s with load.
+**Seconds:** 47 s of CPU for its 32 tests (53 s on CPU 7, 25 November 2026).
 **Reason (D224):** the judge decides FR-38's registered verdict, so each C0 refusal, each failure
 and inconclusive mode, the retry and each plant (caught and not caught) must be shown to move it
 the registered way before any engine run is judged.
@@ -10,9 +10,10 @@ the registered way before any engine run is judged.
   of profiles B, C and D derived from it here, and engine records invented here. The registered
   branches (AF's two blanks, AN's restart, the plants' runs, the arms) run on invented families
   given the registered roles.
-- **The engine's tables** (amendment 4, §8) are written by this file's own builder
-  (`engine_definition`, `Synth`), apart from the judge's expectations (`definitions.py`), in the
-  narrow shapes the judge reads where §8 is silent.
+- **The engine's tables** (amendments 4 and 5) are written by this file's own builder
+  (`engine_definition`, `Synth`), apart from the judge's expectations (`definitions.py`), with every
+  key the format sample's README lists and their lists backwards. The format sample itself is not
+  read here: the check on it is a command of its own (`sample`, amendment 5, §5).
 - **No engine** is compiled, imported or run, and no engine output is read.
 - **The honest invented engine** scales every deviation from t = 0 by 1 + C3 dt³, which keeps every
   linear identity and every structural zero and gives each readout an observed order of 3.
@@ -30,13 +31,21 @@ import types
 import numpy as np
 import pytest
 
-from validation.gene_regulation.fr38_v2.judge import definitions, records, rules, spec
+from validation.gene_regulation.fr38_v2.judge import (
+    definitions,
+    records,
+    rules,
+    sample,
+    shapes,
+    spec,
+)
 from validation.gene_regulation.fr38_v2.judge import judge as J
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(HERE, "..", "..", "..", ".."))
 TAG = "fr38-v2-references-2026-11-24"
 INVENTED = "validation/gene_regulation/fr38_v2/references/out/reference_invented.json"
+SHAPES = shapes.load_shapes()
 C3 = 1e-6  # the honest engine's step error, relative to each deviation, times dt³
 
 
@@ -81,285 +90,248 @@ def _shape(ref_values, times, t_e):
 
 
 COPY = 1e15 / 6.02214076e23  # the test's own: one copy, in fmol
+SPECIES = {"A": ["K", "Y", "N", "M", "Pi", "R", "R_s"],
+           "B": ["K", "Y", "X", "N", "M", "A", "ATP", "ADP", "Pi", "R", "P", "R_s"],
+           "C": ["K", "Y", "N", "M", "Pi", "R", "R_s", "Mx"],
+           "D": ["K", "Y", "N", "M", "Pi", "R", "R_s"]}  # fmt: skip
+
+
+def operator(defn, law):
+    return next(o for o in defn["model"]["operators"] if o.get("law") == law)
+
+
+def named(items, name, field="id"):
+    return next(x for x in items if x.get(field) == name)
 
 
 def _gene(defn):
-    return next(
-        o for o in defn["model"]["operators"] if o.get("law") == "templated_polymerisation@1"
-    )
+    return operator(defn, "templated_polymerisation@1")
 
 
 def release(rec):
     """The transcription chain's release block of a record's declaration."""
-    return _gene(rec["definition"])["chains"][0]["release"]
+    return named(_gene(rec["definition"])["chains"], "tx")["release"]
+
+
+def control(rec, route):
+    return named(rec["definition"]["experiment"]["polymerisation_controls"], route, "route_id")
+
+
+def _steps(*pairs, field="value"):
+    return [{"time": float(t), field: v} for t, v in pairs]
 
 
 def engine_definition(inputs, profile, run, role, plant, machine, dt):
-    """An engine declaration with SPEC.md's inputs where amendment 4, §8.5 puts them: the test's
-    own builder, written apart from the judge's expectations (definitions.py)."""
+    """An engine declaration with SPEC.md's inputs where amendments 4 and 5 put them and every key
+    the format sample's README lists: the test's own builder, written apart from the judge's
+    expectations (definitions.py). Its lists run backwards, since the reader matches by name."""
     V = float(inputs["volume_pL"])
-    blank = run == "blank"
-    mu0 = inputs["mu0_RT_at_1M"]
-    if profile == "B":
-        cell = {r: float(c) * V for r, c in inputs["initial_mM"].items()}
-    else:
-        cell = {r: float(c) * V for r, c in inputs["initial_mM"].items()}
+    blank, hold, sp = run == "blank", profile != "B", SPECIES[profile]
+    mu0 = {k: float(v) for k, v in inputs["mu0_RT_at_1M"].items()}
+    cell = {r: float(c) * V for r, c in inputs["initial_mM"].items()}
+    if hold:
         cell.update({r: float(n) * COPY for r, n in inputs["initial_copies"].items()})
         cell.update({i: float(c) * V for i, c in inputs["cell_background_mM"].items()})
-        if profile == "C":
-            cell["Mx"] = float(inputs["store"]["Mx_initial_mM"]) * V
-    gene_rows = ["N", "M", "Pi", "R", "R_s"] + (["A", "ATP", "ADP", "P"] if profile == "B" else [])
-    species = [{"id": r, "standard_mu_RT": float(mu0[r])} for r in gene_rows]
-    model_species = [dict(x) for x in species]
-    if profile != "B":
-        model_species += [
-            {"id": "K", "standard_mu_RT": 0.0, "charge": 1},
-            {"id": "Y", "standard_mu_RT": 0.0, "charge": -1},
-        ]
-    if profile == "C":
-        model_species.append(
-            {"id": "Mx", "standard_mu_RT": float(inputs["store"]["mu0_Mx_RT_at_1M"])}
-        )
-    moieties = []
-    for m, w in inputs["moieties"].items():
-        w = dict(w)
-        if profile == "C" and m in inputs["store"]["Mx_moieties"]:
-            w["Mx"] = inputs["store"]["Mx_moieties"][m]
-        moieties.append({"id": m, "weights": w})
-    model = {
-        "temperature_K": inputs["constants"]["T_K"],
-        "standard_concentration_mM": inputs["constants"]["c_standard_mM"],
-        "cells": [{"id": "cell_0", "volume_pL": V, "initial_amount_fmol": cell}],
-        "species": model_species,
-        "moieties": moieties,
-        "operators": [],
-    }
-    if profile != "B":
         vb = float(inputs["bath_volume_pL"])
-        bath = {i: float(c) * vb for i, c in inputs["bath_mM"].items()}
-        for r in ["N", "M", "Pi", "R", "R_s"] + (["Mx"] if profile == "C" else []):
-            bath[r] = float(inputs["bath_trace_mM"]) * vb
-        model["extracellular"] = [
-            {"id": "bath_0", "volume_pL": vb, "initial_amount_fmol": bath, "reservoir": True}
-        ]
-        model["membranes"] = [{"membrane_id": "patch_0", "area_m2": 1e-10}]
+        bath = {s: float(inputs["bath_trace_mM"]) * vb for s in sp}
+        bath.update({i: float(c) * vb for i, c in inputs["bath_mM"].items()})
+    else:
+        cell.update(K=140.0, Y=140.0)
+        vb, bath = 1.0, {s: 1e-15 for s in sp}
+    if profile == "C":
+        cell["Mx"] = float(inputs["store"]["Mx_initial_mM"]) * V
+        mu0["Mx"] = float(inputs["store"]["mu0_Mx_RT_at_1M"])
+    rows = ["N", "M", "Pi", "R", "R_s"] + ([] if hold else ["A", "ATP", "ADP", "P"])
     L = inputs.get("L_residues", inputs.get("L_R_nt"))
     if blank:
-        df, p_sched, m = 0.0, None, machine
+        ps, m = inputs["p_sched"], machine
     else:
         ps, m = inputs["runs"][run]["p"], inputs["runs"][run]["machine"]
-        if len(ps) == 1 and float(ps[0][0]) == 0.0:
-            df, p_sched = float(ps[0][1]), None
-        else:
-            df, p_sched = "scheduled", ps
-    chain = {
-        "id": "tx",
-        "template": {"copies": inputs["template_copies"]},
-        "product": "R",
-        "residues": L,
-        "stages": inputs.get("stages", inputs.get("m_tx")),
-        "speed_per_s": inputs.get("speed_nt_per_s", inputs.get("v_tx_nt_per_s")),
-        "draws": {"N": inputs.get("N_per_residue", 1)},
-        "releases": {"Pi": inputs.get("Pi_per_residue", 2)},
-        "saturation_mM": {"N": inputs.get("K_N_mM", inputs.get("K_N_tx_mM"))},
-        "release": {
-            "id": "tx_release",
-            "dwell_s": inputs["tau_s"],
-            "machine": m,
-            "durable_fraction": df,
-            "fates": {"durable": "R", "short_lived": "R_s"},
-            "label": {"at": "release"},
-            "initial_copies": [0 if blank else inputs["H0_copies"]],
-        },
-    }
-    gene = {
-        "law": "templated_polymerisation@1",
-        "species": species,
-        "pools": [
-            {
-                "id": "pol",
-                "machines": inputs.get("pool_machines_copies", inputs.get("M_pol_copies")),
-            }
-        ],
-        "chains": [chain],
-        "degradations": [
-            {"id": "deg_R", "polymer": "R", "residues": L, "monomers": "M"},
-            {"id": "deg_R_s", "polymer": "R_s", "residues": L, "monomers": "M"},
-        ],
-    }
-    k_i = inputs.get("k_I_tx_per_mM_s", inputs["k_I_per_mM_s"])
-    controls = [
-        {"route_id": "tx", "schedule": [{"time": 0.0, "value": 0.0 if blank else k_i}]},
-        {"route_id": "deg_R", "schedule": [{"time": 0.0, "value": inputs["k_d_per_s"]}]},
-        {"route_id": "deg_R_s", "schedule": [{"time": 0.0, "value": inputs["k_s_per_s"]}]},
-    ]
-    if p_sched is not None:
-        controls.append(
-            {"route_id": "tx_release", "schedule": [{"time": t, "value": v} for t, v in p_sched]}
-        )
-    if profile == "B" and "L_P_aa" in inputs:
-        gene["pools"].append({"id": "rib", "machines": inputs["M_rib_copies"]})
-        for c, tmpl in (("tl", "R"), ("tl_s", "R_s")):
-            gene["chains"].append(
-                {
-                    "id": c,
-                    "template": {"species": tmpl},
-                    "product": "P",
-                    "residues": inputs["L_P_aa"],
-                    "stages": inputs["m_tl"],
-                    "speed_per_s": inputs["v_tl_aa_per_s"],
-                    "draws": {"A": 1, "ATP": 4},
-                    "releases": {"ADP": 4, "Pi": 4},
-                    "saturation_mM": {"A": inputs["K_A_tl_mM"], "ATP": inputs["K_ATP_tl_mM"]},
-                }
-            )
-            controls.append(
-                {"route_id": c, "schedule": [{"time": 0.0, "value": inputs["k_I_tl_per_mM_s"]}]}
-            )
-        gene["degradations"].append(
-            {"id": "deg_P", "polymer": "P", "residues": inputs["L_P_aa"], "monomers": "A"}
-        )
-        controls.append(
-            {"route_id": "deg_P", "schedule": [{"time": 0.0, "value": inputs["k_P_per_s"]}]}
-        )
-        gene["transfers"] = [{"id": "rc", "capacity_mM_per_s": 0.01}]
-        model["operators"] += [
-            {"law": "scheduled_species_turnover@1", "species": "X"},
-            {"law": "hill_activation@1", "route": "tx"},
-        ]
-    model["operators"].append(gene)
-    times = [
-        float(inputs["output_interval_s"]) * i
-        for i in range(
-            int(round(float(inputs["horizon_s"]) / float(inputs["output_interval_s"]))) + 1
-        )
-    ]
-    exp = {
-        "end_time": inputs["horizon_s"],
-        "observation_times": times,
-        "polymerisation_controls": controls,
-    }
+    constant = len(ps) == 1 and float(ps[0][0]) == 0.0
+    free = {"dG_RT": -1.0} if hold else {"basis": "invented", "dG_RT_offset": 0.0,
+                                         "dG_kJ_mol": 0.0}  # fmt: skip
+    tx = {"id": "tx", "template": {"copies": inputs["template_copies"]}, "product": "R",
+          "pool": "pol", "residues": L, "stages": inputs.get("stages", inputs.get("m_tx")),
+          "speed_per_s": inputs.get("speed_nt_per_s", inputs.get("v_tx_nt_per_s")),
+          "draws": {"N": inputs.get("N_per_residue", 1)},
+          "releases": {"Pi": inputs.get("Pi_per_residue", 2)},
+          "saturation_mM": {"N": inputs.get("K_N_mM", inputs.get("K_N_tx_mM"))},
+          "release": {"id": "tx_release", "dwell_s": inputs["tau_s"], "machine": m,
+                      "durable_fraction": float(ps[0][1]) if constant else "scheduled",
+                      "fates": [{"durable": "R", "short_lived": "R_s"}],
+                      "label": {"at": "release"},
+                      "initial_copies": [
+                          0.0 if blank else float(inputs["H0_copies"])]}}  # fmt: skip
+
+    def deg(name, polymer, monomer, residues):
+        return {"id": name, "cell": "cell_0", "polymer": polymer, "monomers": {monomer: 1},
+                "residues": residues, "standard_free_energy": dict(free)}  # fmt: skip
+
+    gene = {"law": "templated_polymerisation@1", "chains": [tx],
+            "degradations": [deg("deg_R", "R", "M", L), deg("deg_R_s", "R_s", "M", L)],
+            "pools": [{"id": "pol", "cell": "cell_0", "machines": float(
+                inputs.get("pool_machines_copies", inputs.get("M_pol_copies")))}],
+            "species": [{"id": r, "catalogue": None, "evidence": None, "standard_mu_RT": mu0[r]}
+                        for r in rows],
+            "standard_concentration_mM": inputs["constants"]["c_standard_mM"],
+            "transfers": []}  # fmt: skip
+    k_i = 0.0 if blank else float(inputs.get("k_I_tx_per_mM_s", inputs["k_I_per_mM_s"]))
+    controls = [("tx", _steps((0, k_i))), ("deg_R", _steps((0, inputs["k_d_per_s"]))),
+                ("deg_R_s", _steps((0, inputs["k_s_per_s"])))]  # fmt: skip
+    if not constant:
+        controls.append(("tx_release", _steps(*ps)))
+    operators = [gene]
+    n = int(round(float(inputs["horizon_s"]) / float(inputs["output_interval_s"])))
+    exp = {"calcium_pump_controls": [], "channel_controls": [], "junction_controls": [],
+           "pump_controls": [], "end_time": inputs["horizon_s"],
+           "membrane_controls": [{"membrane_id": "patch_0",
+                                  "schedule": _steps((0, 1.0), field="availability")}],
+           "observation_times": [
+               float(inputs["output_interval_s"]) * i for i in range(n + 1)]}  # fmt: skip
+    if not hold:
+        _a1(inputs, gene, controls, operators, exp, deg)
+    exp["polymerisation_controls"] = [{"route_id": r, "schedule": s} for r, s in controls][::-1]
     if role != "twin":
-        sched = inputs["label_schedule_s"]
-        model["operators"].append(
-            {
-                "law": "neutral_arrival_labels@1",
-                "species": [
-                    {
-                        "id": r,
-                        "labels": ["resyn", "pool0", "pre", "win", "post"],
-                        "initial": [
-                            {"node": "cell_0", "shares": dict(inputs["initial_label_shares"])}
-                        ],
-                    }
-                    for r in ("R", "R_s")
-                ],
-            }
-        )
-        exp["label_arrivals"] = []
-        for r in ("R", "R_s"):
-            exp["label_arrivals"] += [
-                {"species": r, "schedule": [{"time": 0.0, "label": "resyn"}]},
-                {
-                    "species": r,
-                    "source": "tx",
-                    "schedule": [
-                        {"time": sched["pre"], "label": "pre"},
-                        {"time": sched["win"], "label": "win"},
-                        {"time": sched["post"], "label": "post"},
-                    ],
-                },
-            ]
+        s = inputs["label_schedule_s"]
+        operators.append({"law": "neutral_arrival_labels@1", "species": [
+            {"id": r, "labels": ["post", "win", "pre", "pool0", "resyn"],
+             "initial": [{"node": "cell_0", "shares": dict(inputs["initial_label_shares"])}]}
+            for r in ("R_s", "R")]})  # fmt: skip
+        exp["label_arrivals"] = [
+            {"species": "R", "source": "tx", "schedule": _steps(
+                (s["pre"], "pre"), (s["win"], "win"), (s["post"], "post"), field="label")},
+            {"species": "R_s", "schedule": _steps((0, "resyn"), field="label")},
+            {"species": "R", "schedule": _steps((0, "resyn"), field="label")},
+        ]  # fmt: skip
     if profile == "C":
         st = inputs["store"]
-        model["operators"].append(
-            {
-                "law": "local_species_reactions@1",
-                "standard_concentration_mM": st["network_c0_mM"],
-                "species": [
-                    {
-                        "id": "M",
-                        "moieties": {k: w["M"] for k, w in inputs["moieties"].items() if "M" in w},
-                        "standard_mu_RT": st["network_mu0_RT_at_c0"]["M"],
-                    },
-                    {
-                        "id": "Mx",
-                        "moieties": dict(st["Mx_moieties"]),
-                        "standard_mu_RT": st["network_mu0_RT_at_c0"]["Mx"],
-                    },
-                ],
-                "reactions": [
-                    {
-                        "id": "store_M",
-                        "sites": ["cell_0"],
-                        "reactants": {"M": 1},
-                        "products": {"Mx": 1},
-                        "law": "ideal_detailed_balance_mass_action@1",
-                        "forward_rate_per_s": st["forward_per_s_at_c0"],
-                    }
-                ],
-            }
-        )
-        exp["reaction_controls"] = [
-            {"route_id": "store_M", "schedule": [{"time": 0.0, "value": st["multiplier"]}]}
-        ]
+        weights = {"M": {k: w["M"] for k, w in inputs["moieties"].items()}, "Mx": st["Mx_moieties"]}
+        operators.append({
+            "law": "local_species_reactions@1", "standard_concentration_mM": st["network_c0_mM"],
+            "species": [{"id": r, "catalogue": None, "evidence": None, "moieties": dict(weights[r]),
+                         "standard_mu_RT": st["network_mu0_RT_at_c0"][r]} for r in ("Mx", "M")],
+            "reactions": [{"id": "store_M", "law": "ideal_detailed_balance_mass_action@1",
+                           "sites": {"cells": ["cell_0"]}, "reactants": {"M": 1},
+                           "products": {"Mx": 1}, "factors": [],
+                           "forward_rate_per_s": st["forward_per_s_at_c0"]}]})  # fmt: skip
+        exp["reaction_controls"] = [{"reaction_id": "store_M", "site": None, "schedule": _steps(
+            (0, st["multiplier"]), field="multiplier")}]  # fmt: skip
     if profile == "D":
         w = inputs["water"]
-        model["operators"].append(
-            {
-                "law": "ideal_osmosis_linear_compliance_water@1",
-                "compartments": [
-                    {
-                        "compartment_id": "cell_0",
-                        "reference_volume_pL": w["V_ref_pL"],
-                        "minimum_volume_pL": w["V_min_pL"],
-                        "maximum_volume_pL": w["V_max_pL"],
-                        "impermeant_amount_fmol": w["impermeant_fmol"],
-                        "bulk_modulus_Pa": w["bulk_modulus_Pa"],
-                        "pressure_offset_Pa": w["pressure_offset_Pa"],
-                    }
-                ],
-                "baths": [{"id": "bath_0", "hydrostatic_pressure_Pa": w["bath_pressure_Pa"]}],
-                "membranes": [
-                    {
-                        "membrane_id": "patch_0",
-                        "hydraulic_permeability_m_per_Pa_s": w["L_p_m_per_Pa_s"],
-                    }
-                ],
-            }
-        )
-        exp["water_controls"] = [{"time": 0.0, "availability": w["availability"]}]
-    defn = {"model": model, "experiment": exp, "execution": {"dt": dt}}
+        operators.append({
+            "law": "ideal_osmosis_linear_compliance_water@1",
+            "compartments": [{"compartment_id": "cell_0", "reference_volume_pL": w["V_ref_pL"],
+                              "minimum_volume_pL": w["V_min_pL"],
+                              "maximum_volume_pL": w["V_max_pL"],
+                              "impermeant_amount_fmol": w["impermeant_fmol"],
+                              "bulk_modulus_Pa": w["bulk_modulus_Pa"],
+                              "pressure_offset_Pa": w["pressure_offset_Pa"]}],
+            "baths": [{"compartment_id": "bath_0",
+                       "hydrostatic_pressure_Pa": w["bath_pressure_Pa"]}],
+            "membranes": [{"membrane_id": "patch_0",
+                           "hydraulic_permeability_m_per_Pa_s": w["L_p_m_per_Pa_s"]}]})  # fmt: skip
+        exp["water_controls"] = [{"membrane_id": "patch_0", "schedule": _steps(
+            (0, w["availability"]), field="availability")}]  # fmt: skip
+    moieties = []
+    for name, w in inputs["moieties"].items():
+        w = {k: int(v) for k, v in w.items()}
+        if profile == "C":
+            w["Mx"] = int(inputs["store"]["Mx_moieties"][name])
+        moieties.append({"id": name, "weights": w})
+    valence = {"K": 1, "Y": -1}
+    model = {
+        "id": "invented", "inner_model": "invented", "channels": [], "faces": [], "junctions": [],
+        "closure": {"gauge_reference": None, "law": "invented"},
+        "temperature_K": inputs["constants"]["T_K"],
+        "standard_concentration_mM": inputs["constants"]["c_standard_mM"],
+        "cells": [{"id": "cell_0", "volume_pL": V, "initial_amount_fmol": {s: cell[s] for s in sp},
+                   "fixed_charge_equivalent_fmol": 0.0, "initial_charge_C": 0.0}],
+        "extracellular": [{"id": "bath_0", "volume_pL": vb, "reservoir": True,
+                           "initial_amount_fmol": bath, "boundary_potential_V": 0.0,
+                           "fixed_charge_equivalent_fmol": 0.0, "initial_charge_C": 0.0}],
+        "membranes": [{"id": "patch_0", "law": "constant_field@1", "inside": "cell_0",
+                       "outside": "bath_0", "area_m2": float(inputs.get("patch_area_m2", 1e-10)),
+                       "capacitance_F": 1e-12, "calcium_pump": None, "pump": None,
+                       "permeability_m_per_s": {s: 0.0 for s in sp}}],
+        "moieties": moieties[::-1], "operators": operators[::-1],
+        "species": [dict({"id": s, "valence": valence.get(s, 0)}, **(
+            {} if s in ("K", "Y", "X") else {"standard_mu_RT": mu0[s]})) for s in sp][::-1],
+    }  # fmt: skip
+    execution = {"dt": dt, "backend": "invented", "precision": "float64", "jit": True,
+                 "solver": "invented", "field_solver": "invented", "max_steps": 100000,
+                 "max_trace_bytes": 1000,
+                 "material_balance_atol_fmol": {s: 1e-12 for s in sp}}  # fmt: skip
+    for k in ("capacity", "channel_capacity", "edge_capacity", "extracellular_capacity",
+              "face_capacity", "membrane_capacity"):  # fmt: skip
+        execution[k] = 1
+    defn = {"schema_version": 1, "execution": execution, "experiment": exp, "model": model}
     if plant is not None:
-        _plant_declaration(defn, plant)
+        _plant_declaration({"definition": defn}, plant)
     return defn
 
 
-def _plant_declaration(defn, plant):
+def _a1(inputs, gene, controls, operators, exp, deg):
+    """Arm B's own declarations: translation, the ribosomes, deg_P, recharging, the regulator."""
+    gene["pools"].append({"id": "rib", "cell": "cell_0", "machines": float(inputs["M_rib_copies"])})
+    for c, template in (("tl", "R"), ("tl_s", "R_s")):
+        gene["chains"].append({"id": c, "template": {"species": template}, "product": "P",
+                               "pool": "rib", "residues": inputs["L_P_aa"],
+                               "stages": inputs["m_tl"], "speed_per_s": inputs["v_tl_aa_per_s"],
+                               "draws": {"A": 1, "ATP": 4}, "releases": {"ADP": 4, "Pi": 4},
+                               "saturation_mM": {"A": inputs["K_A_tl_mM"],
+                                                 "ATP": inputs["K_ATP_tl_mM"]}})  # fmt: skip
+        controls.append((c, _steps((0, inputs["k_I_tl_per_mM_s"]))))
+    gene["degradations"].append(deg("deg_P", "P", "A", inputs["L_P_aa"]))
+    gene["transfers"].append({"id": "recharge", "cell": "cell_0", "share": 2,
+                              "saturation_mM": {"ATP": inputs["K_ATP_rc_mM"],
+                                                "M": inputs["K_M_rc_mM"]},
+                              "stoichiometry": {"N": 1, "M": -1, "ATP": -2, "ADP": 2},
+                              "standard_free_energy": {"dG_RT": -1.0}})  # fmt: skip
+    controls += [("deg_P", _steps((0, inputs["k_P_per_s"]))),
+                 ("recharge", _steps((0, inputs["V_C_mM_per_s"])))]  # fmt: skip
+    operators.append({
+        "law": "scheduled_species_turnover@1", "templates": [],
+        "routes": [{"id": r, "kind": k, "node": "cell_0", "species": "X"} for r, k in (
+            ("x_clearance", "clearance"), ("x_production", "production"))],
+        "species": [{"id": "X", "catalogue": None, "evidence": None}]})  # fmt: skip
+    exp["turnover_controls"] = [
+        {"route_id": "x_clearance", "carrier_id": "X", "schedule": _steps(
+            (0, inputs["k_X_per_s"]), (inputs["t_off_s"], inputs["k_X_per_s"]), field="rate")},
+        {"route_id": "x_production", "carrier_id": "X", "schedule": _steps(
+            (0, inputs["P_on_fmol_per_s"]), (inputs["t_off_s"], 0.0), field="rate")},
+    ]  # fmt: skip
+    operators.append({
+        "law": "species_regulated_availability@2", "states": [],
+        "couplings": [{"id": "c_regulator", "law": "hill_activation", "basal": inputs["b_X"],
+                       "half_saturation_mM": inputs["K_X_mM"],
+                       "hill_coefficient": float(inputs["n_X"]), "source": {"species": "X"},
+                       "target": {"operator": "templated_polymerisation@1", "ids": ["tx"],
+                                  "control": "initiation_rate", "evaluation": "invented",
+                                  "operating_range": [0.02, 1.0]}}],
+        "species": [{"id": "X", "catalogue": None, "evidence": None}]})  # fmt: skip
+    exp["coupling_controls"] = [{"coupling_id": "c_regulator", "schedule": [
+        {"time": 0.0, "enabled": 1}]}]  # fmt: skip
+    exp["regulatory_writes"] = []
+
+
+def _plant_declaration(rec, plant):
     """A world-data plant's registered change, written into its declaration (CRITERIA.md §6)."""
-    rel = _gene(defn)["chains"][0]["release"]
+    defn = rec["definition"]
     if plant == "P2":
-        rel["durable_fraction"] = 1.0 - 2.0**-30
+        release(rec)["durable_fraction"] = 1.0 - 2.0**-30
     elif plant in ("P3a", "P3b"):
-        lab = "win" if plant == "P3a" else "post"
-        for e in defn["experiment"]["label_arrivals"]:
-            if e.get("source") == "tx":
-                for x in e["schedule"]:
-                    if x["label"] == lab:
-                        x["time"] = x["time"] + 0.5
+        label = "win" if plant == "P3a" else "post"
+        source = named(defn["experiment"]["label_arrivals"], "tx", "source")
+        named(source["schedule"], label, "label")["time"] += 0.5
     elif plant == "P4":
-        rel["label"] = {"at": "completion"}
+        release(rec)["label"] = {"at": "completion"}
     elif plant == "P5":
-        for c in defn["experiment"]["polymerisation_controls"]:
-            if c["route_id"] == "deg_R_s":
-                c["schedule"][0]["value"] = c["schedule"][0]["value"] * (1 + 1e-4)
+        step = control(rec, "deg_R_s")["schedule"][0]
+        step["value"] = step["value"] * (1 + 1e-4)
     elif plant == "P7":
-        rel["machine"] = "returned"
+        release(rec)["machine"] = "returned"
     elif plant == "P8":
-        store = next(
-            o for o in defn["model"]["operators"] if o.get("law") == "local_species_reactions@1"
-        )
-        store["reactions"][0]["forward_rate_per_s"] *= 1.01
+        operator(defn, "local_species_reactions@1")["reactions"][0]["forward_rate_per_s"] *= 1.01
 
 
 def write_sums(folder):
@@ -372,8 +344,20 @@ def write_sums(folder):
         fh.write("".join(lines))
 
 
+SOURCE = {"checkout_dirty": False, "engine_revision": "invented revision",
+          "snapshot": "invented snapshot",
+          "snapshot_patch_sha256": hashlib.sha256(b"").hexdigest()}  # fmt: skip
+V0_PATCH = {"id": "V0", "operator": "templated_polymerisation@1", "change": "invented",
+            "code": "invented"}  # fmt: skip
+CHECKS = {k: 1e-20 for k in (
+    "G_identity_largest_pJ", "G_identity_over_sum_H_at_end", "H_total_at_end_pJ",
+    "energy_magnitude_at_end_pJ", "routes_minus_total_largest_pJ",
+    "routes_minus_total_over_magnitude")}  # fmt: skip
+LABELLED_ONLY = ("label_", "released_present_gross_")
+
+
 class Synth:
-    """Writes the engine's tables (amendment 4, §8) for one invented family from its reference."""
+    """Writes the engine's tables (amendments 4 and 5) for one invented family."""
 
     def __init__(self, doc, profile, mapping, role=None):
         self.doc, self.profile, self.mapping, self.role = doc, profile, mapping, role
@@ -385,6 +369,8 @@ class Synth:
         self.horizon = float(self.inputs["horizon_s"])
         self.two_blanks = False
         self.tweaks = []  # (predicate(rec), function(rec) or None to drop it) before writing
+        self.entry_tweaks = []  # (predicate(rec), function(entry)) on the entry as written
+        self.table_tweaks = []  # function(table, attempt) on the table as written
         self._base = None
 
     def base(self):
@@ -405,111 +391,85 @@ class Synth:
                 out[f"excess_over_blank_{fate}"] = out[f"n_{row}"] - b[f"n_{row}"]
         return out
 
-    def host(self, series):
+    def exports(self, role):
+        """engine_run's other exports, which no readout reads (item 4): recorded only."""
+        names = SHAPES["readouts"][{"A": "AF", "B": "B", "C": "C", "D": "D"}[self.profile]]
+        have = {e["engine"].partition("/")[2] for e in self.mapping["readouts"]
+                if e["engine"].startswith("series/")}  # fmt: skip
+        zero = np.zeros(len(self.times))
+        return {n: zero for n in names if n not in have
+                and not (role == "twin" and n.startswith(LABELLED_ONLY))}  # fmt: skip
+
+    def host(self, series, definition):
         t1, t2 = self.window
         route2, survival = [], []
-        for fate, row in (("durable", "R"), ("short_lived", "R_s")):
+        for fate, row, deg in (("short_lived", "R_s", "deg_R_s"), ("durable", "R", "deg_R")):
             A = series[f"int_Q_tx_release_{fate}"]
-            k = spec.fate_rate(self.inputs, fate)
-            for ts in self.samples:
-                route2.append(
-                    {
-                        "fate": fate,
-                        "ts_s": ts,
-                        "value": rules.known_rate(self.times, A, k, t1, t2, ts),
-                    }
-                )
+            k = float(control({"definition": definition}, deg)["schedule"][0]["value"])
+            for ts in self.samples[::-1]:
+                value = rules.known_rate(self.times, A, k, t1, t2, ts)
+                route2.append({"fate": fate, "ts_s": ts, "grid_error": 0.0, "k_per_s": k,
+                               "value": value})  # fmt: skip
             win = series[f"label_{row}_win"]
             a2 = float(win[self.times.index(t2)])
             for ts in self.samples[1:]:
                 a3 = float(win[self.times.index(ts)])
-                survival.append(
-                    {
-                        "fate": fate,
-                        "t2_s": t2,
-                        "ts_s": ts,
-                        "alive_t2": a2,
-                        "alive_ts": a3,
-                        "ratio": a3 / a2 if a2 != 0.0 else None,
-                    }
-                )
+                ratio = a3 / a2 if a2 != 0.0 else None
+                survival.append({"fate": fate, "t2_s": t2, "ts_s": ts, "alive_t2": a2,
+                                 "alive_ts": a3, "ratio": ratio})  # fmt: skip
         return route2, survival
 
     def plant_name(self, plant, run):
         if plant == "P4":
             return "P4 B" if self.profile == "B" else "P4 AN"
-        if plant == "P8" and run == "blank":
-            return "P8 blank"
-        return plant
+        return "P8 blank" if plant == "P8" and run == "blank" else plant
 
     def record(self, run, role, dt, *, attempt="primary", plant=None, machine="returned"):
-        base = "blank" if run == "blank" else run
-        series = self.series(base, dt, attempt)
-        if role == "blank":
-            name = f"blank {machine}"
-        elif role == "twin":
-            name = f"{run} unlabelled"
-        elif role == "restart":
-            name = "restart"
-        elif role == "plant":
-            name = self.plant_name(plant, run)
-        else:
-            name = run
-        rec = {
-            "family": self.family,
-            "name": name,
-            "run": run,
-            "role": role,
-            "plant": plant,
-            "attempt": attempt,
-            "dt_s": dt,
-            "machine": machine if run == "blank" else None,
-            "status": "completed",
-            "refusal": None,
-            "times_s": list(self.times),
-            "definition": engine_definition(
-                self.inputs, self.profile, run, role, plant, machine, dt
-            ),
-            "source": f"invented engine for {self.family}",
-            "record": f"records/{self.family}/{name}_{attempt}_{dt}.json",
-            "record_sha256": hashlib.sha256(
-                f"{self.family}/{name}/{attempt}/{dt}".encode()
-            ).hexdigest(),
-        }
+        series = self.series("blank" if run == "blank" else run, dt, attempt)
+        name = {"blank": f"blank {machine}", "twin": f"{run} unlabelled", "restart": "restart",
+                "plant": self.plant_name(plant, run)}.get(role, run)  # fmt: skip
+        definition = engine_definition(self.inputs, self.profile, run, role, plant, machine, dt)
+        rec = {"family": self.family, "name": name, "run": run, "role": role, "plant": plant,
+               "attempt": attempt, "dt_s": dt, "machine": machine if run == "blank" else None,
+               "status": "completed", "refusal": None, "times_s": list(self.times), "blank": None,
+               "definition": definition, "source": dict(SOURCE),
+               "record": f"records/{self.family}/{name}_{attempt}_{dt}.json",
+               "record_sha256": hashlib.sha256(
+                   f"{self.family}/{name}/{attempt}/{dt}".encode()).hexdigest(),
+               "steps": int(round(self.horizon / dt)),
+               "checks": dict(CHECKS, exported_cell="cell_0", smallest_class_increment={
+                   h: 0.0 for h in rules.HEATS["B" if self.profile == "B" else "A"]}),
+               "own": {"poly_machines": [0.0], "poly_residues": [0.0, 0.0]}}  # fmt: skip
+        route2, survival = self.host(self.series("blank" if run == "blank" else run, dt, attempt),
+                                     definition)  # fmt: skip
+        rec["route2"] = route2
+        if role != "twin":
+            rec["survival"] = survival
         if role == "twin":
-            series = {
-                k: v
-                for k, v in series.items()
-                if not k.startswith(("label_", "released_present_gross_"))
-            }
-        rec["series"] = series
-        if run != "blank" and self.has_blank():
-            two = self.two_blanks
-            rec["excess_blank"] = (
-                "P8 blank"
-                if plant == "P8"
-                else f"blank {self.inputs['runs'][run]['machine'] if two else 'returned'}"
-            )
-        if run != "blank":
-            r2, sv = self.host(self.series(base, dt, attempt))
-            rec["route2"] = r2
-            if role != "twin":
-                rec["survival"] = sv
-        rec["checks"] = {"invented_check": 1.0e-20}
+            series = {k: v for k, v in series.items() if not k.startswith(LABELLED_ONLY)}
+        if run == "blank" or (role == "plant" and plant != "P8"):
+            series = {k: v for k, v in series.items() if not k.startswith("excess_over_blank_")}
+        elif plant == "P8":
+            rec["blank"] = "P8 blank"
+        elif self.has_blank():
+            m = self.inputs["runs"][run]["machine"] if self.two_blanks else "returned"
+            rec["blank"] = f"blank {m}"
+        rec["series"] = {**series, **self.exports(role)}
+        if role == "restart":
+            rec["checkpoint"] = {"time_s": self.horizon / 2.0, "step_index": 600, "event_index": 0,
+                                 "through": "snapshot files"}  # fmt: skip
         if role == "plant":
-            rec["judged_as"] = "blank returned" if run == "blank" else run
+            rec["judged_as"] = run
+            rec["host_patch"] = dict(V0_PATCH) if plant == "P9" else None
             self.plant_change(rec, plant, run)
         return rec
 
     def plant_change(self, rec, plant, run):
         """A planted run that differs from the honest one as the reference predicts."""
         for readout in spec.plant_readouts(plant):
-            ents = [
-                e
-                for e in self.doc["plants"]
-                if e["plant"] == plant and e["run"] == run and e["quantity"] == readout
-            ]
-            if not ents:
+            ents = [e for e in self.doc["plants"] if e["plant"] == plant and e["run"] == run
+                    and e["quantity"] == readout]  # fmt: skip
+            if not ents or readout not in rec["series"]:
                 continue
             e = max(ents, key=lambda x: abs(x["planted"] - x["honest"]))
             ref = self.doc["runs"][run]["series"].get(readout)
@@ -534,13 +494,15 @@ class Synth:
             for r in honest if self.profile == "B" else ["p_sched returned"]:
                 if r in honest:
                     recs.append(self.record(r, "twin", dt))
-        if "p_sched returned" in honest and self.profile != "B" and self.role in (None, "AN"):
+        if "p_sched returned" in honest and self.role in (None, "AN"):
             recs.append(self.record("p_sched returned", "restart", 0.5))
+        allowed = shapes.PLANT_NAMES[self.role] if self.role else tuple(shapes.JUDGED_AS)
         for plant in sorted({e["plant"] for e in self.doc["plants"]}):
             if plant not in records.RECORD_PLANTS:
                 continue
             for run in sorted({e["run"] for e in self.doc["plants"] if e["plant"] == plant}):
-                recs.append(self.record(run, "plant", 0.5, plant=plant))
+                if self.plant_name(plant, run) in allowed:
+                    recs.append(self.record(run, "plant", 0.5, plant=plant))
             if plant == "P8":
                 recs.append(self.record("blank", "plant", 0.5, plant="P8"))
         return recs
@@ -558,42 +520,24 @@ class Synth:
         return recs
 
     def entry(self, rec):
+        """An entry as the tables write it: a refused one has exactly four keys (item 5)."""
         if rec["status"] == "refused":
-            out = {"refused": True, "refusal": rec["refusal"], "definition": rec["definition"]}
-            if rec["role"] == "plant":
-                out["judged_as"] = rec["judged_as"]
-            return out
-        out = {
-            "t": rec["times_s"],
-            "readouts": {
-                k: [float(x) for x in v]
-                for k, v in rec["series"].items()
-                if not k.startswith("excess_over_blank_")
-            },
-            "checks": rec["checks"],
-            "own_ledgers_at_end": {"invented": 0.0},
-            "steps": rec.get("steps", int(round(self.horizon / rec["dt_s"]))),
-            "dt_s": rec["dt_s"],
-            "definition": rec["definition"],
-        }
-        for k in ("source", "record", "record_sha256"):
-            if rec.get(k) is not None:
+            return {"refused": True, "refusal": rec["refusal"], "definition": rec["definition"],
+                    "record": rec["record"]}  # fmt: skip
+        out = {"t": rec["times_s"], "readouts": {
+                   k: [float(x) for x in v] for k, v in rec["series"].items()
+                   if not k.startswith("excess_over_blank_")},
+               "own_ledgers_at_end": rec["own"], "source": rec["source"]}  # fmt: skip
+        for k in ("blank", "checks", "definition", "dt_s", "record", "record_sha256", "route2",
+                  "steps", "survival", "checkpoint", "host_patch"):  # fmt: skip
+            if k in rec:
                 out[k] = rec[k]
-        ex = {
-            k[len("excess_over_blank_") :]: [float(x) for x in v]
-            for k, v in rec["series"].items()
-            if k.startswith("excess_over_blank_")
-        }
+        ex = {k[len("excess_over_blank_") :]: [float(x) for x in v]
+              for k, v in rec["series"].items() if k.startswith("excess_over_blank_")}  # fmt: skip
         if ex:
-            out["excess_over_blank"] = {"blank": rec.get("excess_blank"), **ex}
-        if "route2" in rec:
-            out["route2"] = [dict(e, grid_error=0.0) for e in rec["route2"]]
-        if "survival" in rec:
-            out["survival"] = rec["survival"]
+            out["excess_over_blank"] = ex
         if rec["role"] == "plant":
             out["judged_as"] = rec["judged_as"]
-        if rec["role"] == "restart":
-            out["checkpoint"] = {"time_s": self.horizon / 2.0, "files_sha256": "0" * 64}
         return out
 
     def write(self, folder, recs=None, extra_tweaks=()):
@@ -613,25 +557,24 @@ class Synth:
             rs = [r for r in kept if r["attempt"] == attempt]
             if not rs and attempt == "retry":
                 continue
-            table = {
-                "kind": "cells.fr38_v2.engine_table@1",
-                "family": self.family,
-                "window_s": list(self.window),
-                "samples_s": self.samples,
-                "missing": [],
-                "rungs": {},
-            }
+            table = {"kind": "cells.fr38_v2.engine_table@1", "family": self.family,
+                     "window_s": list(self.window), "samples_s": self.samples, "missing": [],
+                     "rungs": {}, "plants": {}}  # fmt: skip
             for r in rs:
-                rung = table["rungs"].setdefault(
-                    repr(float(r["dt_s"])), {"dt_s": float(r["dt_s"]), "runs": {}}
-                )
+                dt = float(r["dt_s"])
+                rung = table["rungs"].setdefault(repr(dt), {"dt_s": dt, "runs": {}})
                 e = self.entry(r)
+                for pred, fn in self.entry_tweaks:
+                    if pred(r):
+                        fn(e)
                 if r["role"] == "restart":
                     table["restart"] = e
                 elif r["role"] == "plant":
-                    rung.setdefault("plants", {})[r["name"]] = e
+                    table["plants"][r["name"]] = e
                 else:
                     rung["runs"][r["name"]] = e
+            for fn in self.table_tweaks:
+                fn(table, attempt)
             d = os.path.join(folder, sub)
             os.makedirs(d, exist_ok=True)
             with open(os.path.join(d, f"table_{self.family}.json"), "w") as fh:
@@ -944,7 +887,7 @@ def test_twin_restart_and_two_blank_mismatches_fail(invented, mapping, tmp_path)
     assert run["verdict"] == "fail" and run["equalities"]["restart"]["fails"]
 
     def check(rec):
-        rec["checks"] = {"invented_check": 2.0e-20}
+        rec["checks"] = dict(rec["checks"], G_identity_largest_pJ=2.0e-20)
 
     # a labelled run may carry label-only checks: the twin's checks need only be a subset of its
     # labelled run's, bit for bit; the restart's equal the uninterrupted run's whole
@@ -1101,75 +1044,40 @@ def test_retry(invented, mapping, tmp_path):
                 )
             )
         s.records_override = prim + retry
+        s.table_tweaks = [lambda t, attempt: attempt == "retry" and t.update(
+            plants={"P5": {}}, restart={})]  # fmt: skip
         v = run_judge(tmp_path, [invented], [s], name=f"retry_{name}")
+        notes = v["c0"]["engine"]["notes"]
+        assert any("a retry's is ignored" in n for n in notes)
+        assert any("invented retry: restart: only AN's" in n for n in notes)
         run = v["families"]["invented"]["runs"]["p_sched held"]
         assert run["primary"]["verdict"] == "inconclusive", name
         assert run["retry"]["rungs_s"] == [1.0, 0.5, 0.25] and run["verdict"] == expect, name
 
 
-def test_refused_runs(invented, mapping, tmp_path):
-    def refused(rec):
-        rec["status"], rec["refusal"] = "refused", "domain: y_f above X_DOM (invented)"
-        for k in ("series", "route2", "survival", "times_s"):
-            rec.pop(k, None)
-        rec["series"] = {}
+def refuse(rec):
+    rec["status"], rec["refusal"] = "refused", "domain: y_f above X_DOM (invented)"
 
+
+def test_refused_runs(invented, mapping, tmp_path):
     v = _perturbed(
-        invented, mapping, tmp_path, [(is_("p=0 returned", "honest", 1.0), refused)], "eng_refused"
+        invented, mapping, tmp_path, [(is_("p=0 returned", "honest", 1.0), refuse)], "eng_refused"
     )
     assert verdict_of(v, "invented", "p=0 returned") == "refused"
     assert v["families"]["invented"]["verdict"] == "inconclusive"
     assert v["comparison"]["invented"] == "inconclusive"
+    engine = v["c0"]["engine"]
+    assert [r["entry"] for r in engine["engine_refusals"]] == ["rungs.1.0.runs.p=0 returned"]
+    assert any("the checker's to confirm" in f for f in engine["flags_for_the_checker"])
 
-    # C0 refusals of table entries: a declaration off (a value beyond 10⁻¹², an extra schedule
-    # point, the gene unit not found or found twice), a missing output, a missing or non-finite
-    # readout, a run without its provenance, an excess against the wrong blank
+    # a run whose declaration is 10⁻⁹ off is refused by C0, and a missing rung's run is too
     def off(rec):
-        release(rec)["dwell_s"] = release(rec)["dwell_s"] * (1 + 1e-9)
+        release(rec)["dwell_s"] *= 1 + 1e-9
 
-    def extra_point(rec):
-        tx = rec["definition"]["experiment"]["polymerisation_controls"][0]
-        tx["schedule"] = tx["schedule"] + [{"time": 50.0, "value": tx["schedule"][0]["value"]}]
-
-    def no_gene(rec):
-        _gene(rec["definition"])["law"] = "templated_polymerisation@2"
-
-    def two_genes(rec):
-        rec["definition"]["model"]["operators"].append(copy.deepcopy(_gene(rec["definition"])))
-
-    def short(rec):
-        rec["times_s"] = rec["times_s"][:-1]
-
-    def missing(rec):
-        rec["series"].pop("H_deg_R_s")
-
-    def nonfinite(rec):
-        rec["series"]["n_M"] = rec["series"]["n_M"].copy()
-        rec["series"]["n_M"][3] = float("nan")
-
-    def no_provenance(rec):
-        rec.pop("record_sha256")
-
-    def wrong_blank(rec):
-        rec["excess_blank"] = "blank held"
-
-    for name, f, needle in (
-        ("definition", off, "τ"),
-        ("schedule", extra_point, "k_I"),
-        ("no gene unit", no_gene, "0 declarations name"),
-        ("two gene units", two_genes, "2 declarations name"),
-        ("short", short, "output grid"),
-        ("missing", missing, "missing readout"),
-        ("nonfinite", nonfinite, "finite"),
-        ("provenance", no_provenance, "provenance"),
-        ("blank name", wrong_blank, "matched"),
-    ):
-        v = _perturbed(
-            invented, mapping, tmp_path, [(is_("p=0 returned", "honest", 0.5), f)], f"c0_{name}"
-        )
-        assert verdict_of(v, "invented", "p=0 returned") == "refused", name
-        faults = [x for r in v["c0"]["engine"]["refused_records"] for x in r["faults"]]
-        assert any(needle in x for x in faults), (name, faults[:3])
+    v = _perturbed(
+        invented, mapping, tmp_path, [(is_("p=0 returned", "honest", 0.5), off)], "c0_definition"
+    )
+    assert verdict_of(v, "invented", "p=0 returned") == "refused"
 
     # an entry presenting itself as one of the judge's own plants (P1′ here) is excluded and
     # recorded, not refused (amendment 4, item 5); P5's own record is then missing
@@ -1182,48 +1090,357 @@ def test_refused_runs(invented, mapping, tmp_path):
     assert not v["c0"]["engine"]["refused_records"]
     assert any("formed by the judge itself" in n for n in v["c0"]["engine"]["notes"])
     assert plant_status(v, "P5") == "refused" and plant_status(v, "P1′") == "caught"
-    # an unknown run name is recorded and ignored; the export's step count is recorded only
+    # an unknown run name is recorded and ignored; the export's step count is flagged only
     s = Synth(invented, "A", mapping)
     recs = s.all_records()
-    extra = copy.deepcopy(
-        [r for r in recs if r["run"] == "p=1 returned" and r["role"] == "honest"][0]
-    )
+    extra = copy.deepcopy(next(r for r in recs if is_("p=1 returned", "honest")(r)))
     extra["name"] = "p=1 returned copy"
-    steps = [r for r in recs if r["run"] == "p=1 returned" and r["dt_s"] == 1.0][0]
-    steps["steps"] = 7
+    next(r for r in recs if is_("p=1 returned", "honest", 1.0)(r))["steps"] = 7
     s.records_override = recs + [extra]
     v = run_judge(tmp_path, [invented], [s], name="unknown")
     assert verdict_of(v, "invented", "p=1 returned") == "pass"
-    assert any("not a registered name" in n for n in v["c0"]["engine"]["notes"])
-    assert any("steps 7" in n for r in v["c0"]["engine"]["record_notes"] for n in r["notes"])
-    s.records_override = [
-        r
-        for r in recs
-        if not (r["run"] == "p=1 returned" and r["dt_s"] == 2.0 and r["role"] == "honest")
-    ]
+    assert any("not a registered run name" in n for n in v["c0"]["engine"]["notes"])
+    assert any(".steps: 7" in f for f in v["c0"]["engine"]["flags_for_the_checker"])
+    s.records_override = [r for r in recs if not is_("p=1 returned", "honest", 2.0)(r)]
     v = run_judge(tmp_path, [invented], [s], name="gap")
     assert verdict_of(v, "invented", "p=1 returned") == "refused"
 
 
-def test_index_and_table_hash(invented, mapping, tmp_path):
-    """A missing SHA256SUMS is recorded and flagged, not refused (amendment 4, item 6); a table
-    whose hash departs from an index that lists it is refused."""
+def test_a_refusal_never_masks_a_failure(invented, mapping, tmp_path):
+    """CRITERIA.md §4: a run fails if any C1 or C4 entry fails, before anything else of it is
+    refused. A refused twin, blank or rung beside a failing entry leaves the failure standing."""
+
+    def negzero(rec):
+        rec["series"]["label_R_win"] = rec["series"]["label_R_win"].copy()
+        rec["series"]["label_R_win"][0] = -0.0
+
+    bad = (is_("p_sched returned", "honest", 2.0), negzero)
+    for name, gone in (
+        ("twin", (is_("p_sched returned", "twin", 1.0), refuse)),
+        ("blank", (is_("blank", "blank", 0.5), refuse)),
+        ("rung", (is_("p_sched returned", "honest", 0.5), refuse)),
+    ):
+        v = _perturbed(invented, mapping, tmp_path, [gone], f"alone_{name}")
+        assert verdict_of(v, "invented", "p_sched returned") == "refused", name
+        v = _perturbed(invented, mapping, tmp_path, [bad, gone], f"both_{name}")
+        run = v["families"]["invented"]["runs"]["p_sched returned"]["primary"]
+        assert run["verdict"] == "fail" and run["refused"], name
+    # where the rungs are not all there, the plants on that run are unscorable
+    assert plant_status(v, "P4") == "refused"
+
+
+# ------------------------------------------------------------------ the tables (amendment 5)
+
+
+@pytest.fixture(scope="module")
+def read_once(invented, mapping, tmp_path_factory):
+    refs = write_refs(str(tmp_path_factory.mktemp("refs")), invented)
+    return J.read_references(refs, {"invented": "A"}, mapping)
+
+
+def c0_of(read_once, mapping, folder):
+    """C0 on an invented export, without the judgement."""
+    refs, _ = read_once
+    tables = records.read_tables(folder, ["invented"], sample=shapes.sample_hashes(SHAPES))
+    fams = {"invented": J.Family("invented", "A", refs["invented"])}
+    index, report = J.index_records(tables, fams, mapping, SHAPES)
+    return tables, report
+
+
+def faults_of(report, where):
+    return [x for r in report["refused_records"] if r["entry"] == where for x in r["faults"]]
+
+
+def test_structure_pass_reads_the_invented_tables(registered):
+    """The judgement's own structure pass on tables with every key the README lists, lists
+    backwards: no finding at all, and every entry read."""
+    for fam, s in registered.synths.items():
+        path = os.path.join(registered.export, "table", f"table_{fam}.json")
+        doc, _ = records.load_lenient(path)
+        tab = {"doc": doc, "family": fam, "attempt": "primary"}
+        st = records.table_structure(
+            tab, s.profile, s.role, s.inputs, "p_sched returned" if s.role == "AN" else None, SHAPES
+        )
+        found = st.findings + [f for e in st.entries for f in e.findings + e.definition_findings]
+        assert found == [] and st.notes == [] and st.present == len(st.entries), (fam, found[:3])
+
+
+# Each fault on its own entry of one export: (predicate, change to the entry as written, where the
+# refused entry sits, what its fault names)
+def _entry_faults():
+    def drop(key):
+        return lambda e: e.pop(key)
+
+    def put(value, *path):
+        def f(e):
+            for k in path[:-1]:
+                e = e[k]
+            e[path[-1]] = value
+
+        return f
+
+    def nan(e):
+        e["readouts"]["n_M"][3] = float("nan")
+
+    def late(e):
+        e["survival"][0]["ts_s"] = 451.0
+
+    def labelled(e):
+        e["readouts"]["label_R_win"] = [0.0] * len(e["t"])
+
+    def own_labels(e):
+        e["definition"]["model"]["operators"].append(
+            {"law": "neutral_arrival_labels@1", "species": []}
+        )
+
+    def constant_p(e):
+        rec = {"definition": e["definition"]}
+        release(rec)["durable_fraction"] = 0.0
+        e["definition"]["experiment"]["polymerisation_controls"].remove(control(rec, "tx_release"))
+
+    def transcribes(e):
+        control({"definition": e["definition"]}, "tx")["schedule"][0]["value"] = 50000.0
+
+    alive = {"fate": "durable", "t2_s": 300.0, "ts_s": 450.0, "alive_t2": 0.0, "alive_ts": 0.0,
+             "ratio": None}  # fmt: skip
+    h = "honest"
+    return [
+        (is_("p=0 returned", h, 2.0), drop("own_ledgers_at_end"), "own_ledgers_at_end: missing"),
+        (is_("p=0 returned", h, 1.0), put(600.0, "steps"), "steps: type: integer expected"),
+        (is_("p=0 returned", h, 0.5), put(None, "blank"), "blank: type: string expected"),
+        (is_("p=1 returned", h, 2.0), put("abc", "record_sha256"), "64 hexadecimal digits"),
+        (is_("p=1 returned", h, 1.0), lambda e: e["source"].pop("snapshot"),
+         "source.snapshot: missing"),
+        (is_("p=1 returned", h, 0.5), put(True, "source", "checkout_dirty"), "checkout was dirty"),
+        (is_("p_sched held", h, 2.0), put(None, "route2", 0, "grid_error"),
+         "route2[0].grid_error: type: float expected"),
+        (is_("p_sched held", h, 1.0), lambda e: e["route2"].pop(), "route2: missing (durable"),
+        (is_("p_sched held", h, 0.5), lambda e: e["route2"].append(dict(e["route2"][0])),
+         "is duplicated"),
+        (is_("p_sched returned", h, 2.0), late, "no registered fate, t2 and later sample"),
+        (is_("p_sched returned", h, 1.0), lambda e: e["checks"].pop("exported_cell"),
+         "checks.exported_cell: missing"),
+        (is_("p_sched returned", h, 0.5), nan, "readouts.n_M[3]: type: float expected"),
+        (is_("p_sched returned", "twin", 2.0), put([alive], "survival"), "a twin is unlabelled"),
+        (is_("p_sched returned", "twin", 1.0), labelled, "a twin is unlabelled"),
+        (is_("p_sched returned", "twin", 0.5), own_labels, "the operators"),
+        (is_("blank", "blank", 2.0), constant_p, "durable_fraction: p:"),
+        (is_("blank", "blank", 1.0), transcribes, "k_I:"),
+        (is_("blank", "blank", 0.5), lambda e: (e.pop("route2"), e.pop("survival")), None),
+        (is_(role="restart"), put(7200.0, "checkpoint", "time_s"), "checkpoint.time_s: 7200.0"),
+        (is_(plant="P2"), put(dict(V0_PATCH), "host_patch"), "host_patch: type: null expected"),
+        (is_(plant="P3a"), put("p_sched held", "judged_as"), "judged_as: type"),
+        (is_(plant="P3b"), lambda e: e["t"].pop(), "output grid"),
+        (is_(plant="P4"), put(1.0, "dt_s"), "dt_s: 1.0 is not its step"),
+        (is_(plant="P5"), put(1, "extra_key"), None),
+        (is_(plant="P7"), drop("survival"), "survival: missing"),
+    ]  # fmt: skip
+
+
+def test_c0_names_each_entry_fault(invented, mapping, read_once, tmp_path):
+    """Amendment 5, §2 to §4: a missing or mistyped pinned key, an incomplete or doubled route-2 or
+    survival list, a dirty checkout, a wrong checkpoint, `judged_as` or patch: each refuses its own
+    entry and names it by path. An extra key, and a blank without its lists, refuse nothing."""
     s = Synth(invented, "A", mapping)
-    refs = write_refs(str(tmp_path / "refs_idx"), invented)
-    export = s.write(str(tmp_path / "export_idx"))
-    os.remove(os.path.join(export, "table", "SHA256SUMS"))
-    v = J.judge(refs, export, families={"invented": "A"})
+    rows = _entry_faults()
+    s.entry_tweaks = [(pred, change) for pred, change, _ in rows]
+    tables, report = c0_of(read_once, mapping, s.write(str(tmp_path / "entries")))
+    for pred, _, needle in rows:
+        rec = next(r for r in s.base() if pred(r))
+        where = {"restart": "restart", "plant": f"plants.{rec['name']}"}.get(
+            rec["role"], f"rungs.{float(rec['dt_s'])!r}.runs.{rec['name']}")  # fmt: skip
+        faults = faults_of(report, where)
+        if needle is None:
+            assert faults == [], (where, faults)
+        else:
+            assert any(needle in x for x in faults), (where, needle, faults[:3])
+    assert any("extra_key" in m for m in report["extra_keys"])
+    # a null plant is a missing record, unscorable; a table's other plants are still read
+    s = Synth(invented, "A", mapping)
+    s.table_tweaks = [lambda t, attempt: t["plants"].update(P7=None)]
+    v = run_judge(tmp_path, [invented], [s], name="null_plant")
+    assert plant_status(v, "P7") == "refused" and plant_status(v, "P5") == "caught"
+    assert any("null, a missing record" in n for n in v["c0"]["engine"]["notes"])
+
+
+def _declaration_faults():
+    def model(e):
+        return e["definition"]["model"]
+
+    def rec(e):
+        return {"definition": e["definition"]}
+
+    def tx(e):
+        return named(_gene(e["definition"])["chains"], "tx")
+
+    def arrivals(e):
+        return e["definition"]["experiment"]["label_arrivals"]
+
+    def patch(e):
+        return model(e)["membranes"][0]
+
+    def labels(e):
+        return operator(e["definition"], "neutral_arrival_labels@1")["species"][0]["labels"]
+
+    runs = [(r, d) for r in ("p=0 returned", "p=1 returned", "p_sched held", "p_sched returned")
+            for d in (2.0, 1.0, 0.5)]  # fmt: skip
+    changes = [
+        (lambda e: model(e)["extracellular"][0].update(volume_pL=2.0), "the bath's volume"),
+        (lambda e: patch(e).update(area_m2=2e-10), "the patch's area"),
+        (lambda e: patch(e)["permeability_m_per_s"].update(M=1e-12), "permeabilities"),
+        (lambda e: named(model(e)["species"], "K").update(valence=2), "K's valence"),
+        (lambda e: tx(e).update(residues=1200.0), "the residues"),
+        (lambda e: _gene(e["definition"])["transfers"].append({"id": "recharge"}), "no recharging"),
+        (lambda e: arrivals(e).append(dict(arrivals(e)[0], species="R_s")), "the label arrivals"),
+        (lambda e: arrivals(e)[0]["schedule"][1].update(time=100.0000001), "the label arrivals"),
+        (lambda e: labels(e).remove("pre"), "labels"),
+        (lambda e: model(e)["operators"].append({"law": "scheduled_compartment_wash@1"}),
+         "the operators"),
+        (lambda e: control(rec(e), "tx")["schedule"].append({"time": 50.0, "value": 50000.0}),
+         "k_I"),
+        (lambda e: release(rec(e)).update(fates=[{"durable": "R_s", "short_lived": "R"}]),
+         "the fates"),
+    ]  # fmt: skip
+    return [(is_(r, "honest", d), f, what) for (r, d), (f, what) in zip(runs, changes, strict=True)]
+
+
+def test_c0_names_each_declaration_fault(invented, mapping, read_once, tmp_path):
+    """Items 6 and 7: the located inputs, integers as integers, the label arrivals, the operators
+    and routes by name. Keys no SPEC.md or §5.1 value covers are recorded, never refused."""
+    s = Synth(invented, "A", mapping)
+    rows = _declaration_faults()
+
+    def uncovered(e):
+        e["definition"]["execution"]["backend"] = 7
+        e["definition"]["execution"].pop("jit")
+
+    def monomers(e):
+        named(_gene(e["definition"])["degradations"], "deg_R")["monomers"]["M"] = 3
+
+    s.entry_tweaks = [(p, f) for p, f, _ in rows] + [
+        (is_("blank", "blank", 2.0), uncovered),
+        (is_("blank", "blank", 1.0), monomers),
+        (is_("p_sched returned", "twin", 2.0), uncovered),
+    ]
+    tables, report = c0_of(read_once, mapping, s.write(str(tmp_path / "declarations")))
+    for pred, _, what in rows:
+        rec = next(r for r in s.base() if pred(r))
+        where = f"rungs.{float(rec['dt_s'])!r}.runs.{rec['name']}"
+        assert any(what in x for x in faults_of(report, where)), (where, what)
+    assert len(report["refused_records"]) >= len(rows)
+    for where in ("rungs.2.0.runs.blank returned", "rungs.1.0.runs.blank returned",
+                  "rungs.2.0.runs.p_sched returned unlabelled"):  # fmt: skip
+        assert faults_of(report, where) == [], where
+    flags = report["flags_for_the_checker"]
+    assert any("monomers" in f and "the sheet reads" in f for f in flags)
+    assert any("beside its run's: execution/backend" in f for f in flags)
+    assert any(".execution.backend: type" in m for m in report["definition_shape"])
+    assert any(".execution.jit: missing" in m for m in report["definition_shape"])
+
+
+def test_flags_and_records_refuse_nothing(invented, mapping, tmp_path):
+    """Item 4 and item 5: recorded and flagged to the checker, never judged."""
+    s = Synth(invented, "A", mapping)
+    s.entry_tweaks = [
+        (is_("p=0 returned", "honest", 2.0), lambda e: e.update(blank="blank held")),
+        (is_("p=0 returned", "honest", 1.0), lambda e: e["route2"][0].update(k_per_s=1.0)),
+        (is_("p=1 returned", "honest", 2.0), lambda e: e["source"].update(snapshot="another")),
+        (is_("p=1 returned", "honest", 1.0),
+         lambda e: e["source"].update(snapshot_patch_sha256="0" * 64)),
+        (is_("p_sched returned", "twin", 2.0), lambda e: e["readouts"].update(
+            H_total=[1.0] * len(e["t"]))),
+        (is_("blank", "blank", 2.0), lambda e: e["route2"][0].update(grid_error="x")),
+    ]  # fmt: skip
+    v = run_judge(tmp_path, [invented], [s], name="flags")
     assert v["comparison"]["invented"] == "pass"
-    assert (
-        v["c0"]["engine"]["flags_for_the_checker"]
-        and not v["c0"]["engine"]["index"]["table"]["SHA256SUMS"]
-    )
-    export = s.write(str(tmp_path / "export_mis"))
-    with open(os.path.join(export, "table", "table_invented.json"), "a") as fh:
-        fh.write(" ")
-    v = J.judge(refs, export, families={"invented": "A"})
+    flags = v["c0"]["engine"]["flags_for_the_checker"]
+    for needle in (
+        "blank: 'blank held'",
+        "k_per_s 1.0 is not the declared",
+        "differ in source.snapshot",
+        "not an empty file's",
+        "twin@2.0: an export that is never judged differs: H_total",
+    ):
+        assert any(needle in f for f in flags), (needle, flags)
+    assert any("route2[0].grid_error: blank list" in m for m in v["c0"]["engine"]["extra_keys"])
+
+
+def test_index_and_table_hash(invented, mapping, read_once, tmp_path):
+    """Amendment 5, §2, §4 (a) and §6: a missing SHA256SUMS is flagged; a departing, unlisted or
+    malformed line's table, a missing top-level key, a repeated key, a wrong kind, window or rung,
+    and the format sample's own table are refused; a listed table that is gone is a fault."""
+    s = Synth(invented, "A", mapping)
+    base = s.write(str(tmp_path / "base"))
+    sums = os.path.join("table", "SHA256SUMS")
+    name = os.path.join("table", "table_invented.json")
+
+    def case(tag, edit=None, tweak=None):
+        folder = str(tmp_path / tag)
+        if tweak is not None:
+            t = Synth(invented, "A", mapping)
+            t._base = s.base()
+            t.table_tweaks = [tweak]
+            t.write(folder)
+        else:
+            shutil.copytree(base, folder)
+        if edit is not None:
+            edit(folder)
+        return c0_of(read_once, mapping, folder)
+
+    def rewrite(fn, text):
+        def f(folder):
+            with open(os.path.join(folder, fn), "w") as fh:
+                fh.write(text(open(os.path.join(base, fn)).read()))
+
+        return f
+
+    refs = write_refs(str(tmp_path / "refs_idx"), invented)
+    gone = str(tmp_path / "noindex")
+    shutil.copytree(base, gone)
+    os.remove(os.path.join(gone, sums))
+    v = J.judge(refs, gone, families={"invented": "A"})
+    assert v["comparison"]["invented"] == "pass"
+    assert any("SHA256SUMS is missing" in f for f in v["c0"]["engine"]["flags_for_the_checker"])
+    assert not v["c0"]["engine"]["index"]["table"]["SHA256SUMS"]
+    stray = "0" * 64 + "  table_AN.json\n"
+    one_space = lambda x: x.replace("  ", " ")  # noqa: E731
+    twice = lambda x: x + "0" * 64 + "  table_invented.json\n"  # noqa: E731
+
+    def dup_key(x):
+        return x.replace('"plants": {', '"plants": {"P5": null, ', 1)
+
+    for tag, kw, needle in (
+        ("departs", {"edit": rewrite(name, lambda x: x + " ")}, "departs from"),
+        ("unlisted", {"edit": rewrite(sums, lambda x: stray)}, "is not listed"),
+        ("malformed", {"edit": rewrite(sums, one_space)}, "is not listed"),
+        ("twice", {"edit": rewrite(sums, twice)}, "is not listed"),
+        ("repeated", {"edit": lambda f: (rewrite(name, dup_key)(f), write_sums(
+            os.path.join(f, "table")))}, "a key is repeated"),
+        ("no plants", {"tweak": lambda t, a: t.pop("plants")}, "plants: missing"),
+        ("kind", {"tweak": lambda t, a: t.update(kind="x")}, "kind: type"),
+        ("window", {"tweak": lambda t, a: t.update(window_s=[100.0, 310.0])}, "window_s"),
+        ("samples", {"tweak": lambda t, a: t.update(samples_s="x")}, "samples_s: type"),
+        ("rung", {"tweak": lambda t, a: t["rungs"]["2.0"].update(dt_s=1.0)}, "rungs.2.0.dt_s"),
+        ("restart", {"tweak": lambda t, a: t.update(restart=[])}, "restart: type"),
+    ):  # fmt: skip
+        tables, report = case(tag, **kw)
+        (tab,) = tables["tables"]
+        assert any(needle in x for x in tab["faults"]), (tag, tab["faults"])
+        assert all(r["faults"] for r in report["refused_records"])
+        assert len(report["refused_records"]) == report["entries"], tag
+    tables, _ = case("listed", edit=lambda f: open(os.path.join(f, sums), "a").write(stray))
+    assert any("missing from the folder" in x for x in tables["faults"])
+    # §6: a table whose hash is one of the sample's is refused in judgement
+    real = shapes.sample_hashes
+    with open(os.path.join(base, name), "rb") as fh:
+        digest = hashlib.sha256(fh.read()).hexdigest()
+    try:
+        shapes.sample_hashes = lambda s=None: {"table/table_AN.json": digest}
+        v = J.judge(refs, base, families={"invented": "A"})
+    finally:
+        shapes.sample_hashes = real
     assert verdict_of(v, "invented", "p_sched returned") == "refused"
-    assert any("departs from" in f for t in v["c0"]["engine"]["tables"] for f in t["faults"])
+    assert any("format sample" in x for t in v["c0"]["engine"]["tables"] for x in t["faults"])
 
 
 def test_route2_and_survival(invented, mapping, tmp_path):
@@ -1254,6 +1471,19 @@ def test_route2_and_survival(invented, mapping, tmp_path):
         run = v["families"]["invented"]["runs"]["p=0 returned"]["primary"]
         assert run["verdict"] == "fail", bad
         assert any(w.startswith("C1: survival_durable") for w in run["why"]), bad
+    # at an active fate a ratio of None fails, and a NaN or infinite one is refused (amendment 4)
+    for bad, expect in ((None, "fail"), (float("nan"), "refused"), (float("inf"), "refused")):
+
+        def active(rec, bad=bad):
+            for e in rec["survival"]:
+                if e["fate"] == "short_lived":
+                    e["ratio"] = bad
+
+        v = _perturbed(
+            invented, mapping, tmp_path, [(is_("p=0 returned", "honest", 0.5), active)],
+            f"active_{bad}",
+        )  # fmt: skip
+        assert verdict_of(v, "invented", "p=0 returned") == expect, bad
     # the grid error: no estimate where the window holds no output to drop
     t = [0.0, 10.0, 20.0, 30.0]
     assert rules.grid_error(t, [0.0, 1.0, 2.0, 3.0], 0.01, 10.0, 20.0, 30.0) is None
@@ -1327,8 +1557,8 @@ def test_plants_not_caught(invented, mapping, tmp_path):
     v = _perturbed(invented, mapping, tmp_path, [(is_(role="plant", plant="P5"), p5_factor)],
                    "p5def")  # fmt: skip
     faults = [x for r in v["c0"]["engine"]["refused_records"] for x in r["faults"]]
-    assert plant_status(v, "P5") == "refused" and any("registered change reads" in x
-                                                      for x in faults)  # fmt: skip
+    assert plant_status(v, "P5") == "refused" and any(
+        "its registered change at" in x for x in faults)  # fmt: skip
 
     # a judge-side refusal is not a catch: a plant whose definition carries an unregistered change
     def wrong(rec):
@@ -1516,19 +1746,21 @@ def derive_d(doc, mapping):
     return d
 
 
-def derive_b(doc, mapping, *, registered_names=False):
+def derive_b(doc, mapping, family="invented_B"):
+    """Arm B's shape with B's run names, on the invented file's two p_sched runs."""
     d = copy.deepcopy(doc)
-    d["family"] = "invented_B"
-    keep = ("p_sched returned", "p_sched held")
-    d["runs"] = {k: v for k, v in d["runs"].items() if k in keep}
-    d["inputs"]["runs"] = {k: v for k, v in d["inputs"]["runs"].items() if k in keep}
-    if registered_names:  # B's run names, so that the family can play role B
-        d["family"] = "inv_B"
-        names = {"p_sched returned": "p=0.55 returned", "p_sched held": "p=0.55 held"}
-        d["runs"] = {names[k]: v for k, v in d["runs"].items()}
-        d["inputs"]["runs"] = {names[k]: v for k, v in d["inputs"]["runs"].items()}
-        for e in d["plants"]:
-            e["run"] = names.get(e["run"], e["run"])
+    d["family"] = family
+    names = {"p_sched returned": "p=0.55 returned", "p_sched held": "p=0.55 held"}
+    d["runs"] = {names[k]: v for k, v in d["runs"].items() if k in names}
+    d["inputs"]["runs"] = {names[k]: v for k, v in d["inputs"]["runs"].items() if k in names}
+    for e in d["plants"]:
+        e["run"] = names.get(e["run"], e["run"])
+    d["inputs"]["p_sched"] = [[0.0, 0.55]]
+    for r in d["inputs"]["runs"].values():
+        r["p"] = [[0.0, 0.55]]
+    d["inputs"]["moieties"]["adenine"] = {"ATP": 1, "ADP": 1}
+    d["inputs"]["moieties"]["amino_acid"] = {"A": 1, "P": 400}
+    d["inputs"]["moieties"]["phosphorus"].update(ATP=3, ADP=2)
     d["inputs"]["M_rib_copies"] = 1000
     # arm B's own vocabulary (SPEC.md §2 with the sheet's §5.1 names), so that profile B's
     # declaration keys are read: translation's chains, the ribosomes, deg_P and their controls
@@ -1541,6 +1773,15 @@ def derive_b(doc, mapping, *, registered_names=False):
             "K_ATP_tl_mM": 0.02,
             "k_I_tl_per_mM_s": 120.0,
             "k_P_per_s": 5e-4,
+            "K_ATP_rc_mM": 0.1,
+            "K_M_rc_mM": 0.1,
+            "V_C_mM_per_s": 0.01,
+            "P_on_fmol_per_s": 2e-6,
+            "k_X_per_s": 2e-3,
+            "t_off_s": 300.0,
+            "K_X_mM": 1e-3,
+            "n_X": 2,
+            "b_X": 0.02,
         }
     )
     V = float(d["inputs"]["volume_pL"])
@@ -1723,11 +1964,11 @@ def test_profile_b_split_and_p4(invented, mapping, tmp_path):
     )
     fam = v["families"]["invented_B"]
     assert fam["verdict"] == "pass", {r: x["primary"].get("why") for r, x in fam["runs"].items()}
-    assert set(fam["runs"]) == {"p_sched returned", "p_sched held"}  # no blank in B
+    assert set(fam["runs"]) == {"p=0.55 returned", "p=0.55 held"}  # no blank in B
     assert plant_status(v, "P4") == "caught"
     items = {
         i["readout"]: i
-        for i in fam["runs"]["p_sched held"]["primary"]["readouts"]
+        for i in fam["runs"]["p=0.55 held"]["primary"]["readouts"]
         if "ts_s" not in i
     }
     assert items["n_N"]["status"] == "reported" and items["n_R"]["status"] == "judged"
@@ -1736,33 +1977,33 @@ def test_profile_b_split_and_p4(invented, mapping, tmp_path):
     s = Synth(db, "B", mapping)
     s.tweaks = [
         (
-            lambda r: r["run"] == "p_sched held" and r["dt_s"] == 0.5,
+            lambda r: r["run"] == "p=0.55 held" and r["dt_s"] == 0.5,
             lambda r: r["series"].update(n_ATP=r["series"]["n_ATP"] * (1 + 1e-6)),
         )
     ]
     v = run_judge(tmp_path, [invented, db], [Synth(invented, "A", mapping), s], name="b_rep")
-    assert v["families"]["invented_B"]["runs"]["p_sched held"]["verdict"] == "pass"
+    assert v["families"]["invented_B"]["runs"]["p=0.55 held"]["verdict"] == "pass"
     # the ribosomes' identity, B's second pool
     s = Synth(db, "B", mapping)
     s.tweaks = [
         (
-            is_("p_sched held", "honest", 0.5),
+            is_("p=0.55 held", "honest", 0.5),
             lambda r: r["series"].update(F_rib=r["series"]["F_rib"] * (1 + 1e-9)),
         )
     ]
     v = run_judge(tmp_path, [invented, db], [Synth(invented, "A", mapping), s], name="b_rib")
-    run = v["families"]["invented_B"]["runs"]["p_sched held"]["primary"]
+    run = v["families"]["invented_B"]["runs"]["p=0.55 held"]["primary"]
     assert any(r["identity"] == "machines_rib" and r["fails"] for r in run["identities"]["0.5"])
     # each run of B has its twin
     s = Synth(db, "B", mapping)
     s.tweaks = [
         (
-            is_("p_sched held", "twin", 1.0),
+            is_("p=0.55 held", "twin", 1.0),
             lambda r: r["series"].update(n_P=r["series"]["n_P"] * (1 + 1e-15) + 1e-30),
         )
     ]
     v = run_judge(tmp_path, [invented, db], [Synth(invented, "A", mapping), s], name="b_twin")
-    assert v["families"]["invented_B"]["runs"]["p_sched held"]["verdict"] == "fail"
+    assert v["families"]["invented_B"]["runs"]["p=0.55 held"]["verdict"] == "fail"
 
 
 def test_cli_writes_a_verdict(invented, mapping, tmp_path):
@@ -1815,7 +2056,7 @@ def registered(invented, mapping, tmp_path_factory):
     docs = {
         "invented": invented,
         "inv_AF": derive_af(invented, mapping),
-        "inv_B": derive_b(invented, mapping, registered_names=True),
+        "inv_B": derive_b(invented, mapping, "inv_B"),
         "invented_C": derive_c(invented, mapping),
         "invented_D": derive_d(invented, mapping),
     }
@@ -1854,15 +2095,32 @@ def judge_registered(reg, export=None):
     )
 
 
-def edited(reg, name, pred, fn=None):
-    """A copy of the registered export with matching records edited, or dropped (fn None): only
-    the tables those records sit in are written again, with their index."""
+def edited(reg, name, pred, fn=None, *, table=None, entry=None, only=None):
+    """The registered export with matching records edited, or dropped (fn None), or with their
+    entries (`entry`) or their family's table (`table`) changed as written: the tables those
+    records sit in are written again, with their index. `only` writes one family's table alone."""
     dst = str(reg.tmp / name)
-    shutil.copytree(reg.export, dst)
-    for s in reg.synths.values():
-        if any(pred(r) for r in s.base()):
-            s.write(dst, extra_tweaks=[(pred, fn)])
+    if only is None:
+        shutil.copytree(reg.export, dst)
+    for fam, s in reg.synths.items():
+        if fam == only or (only is None and any(pred(r) for r in s.base())):
+            s.table_tweaks = [table] if table else []
+            s.entry_tweaks = [(pred, entry)] if entry else []
+            s.write(dst, extra_tweaks=[] if table or entry else [(pred, fn)])
+            s.table_tweaks, s.entry_tweaks = [], []
     return dst
+
+
+def judge_one(reg, family, name, pred, fn=None, **kw):
+    """One family of the registered export judged alone, after an edit."""
+    refs, _ = reg.references
+    return J.judge(
+        reg.refs,
+        edited(reg, name, pred, fn, only=family, **kw),
+        families={family: reg.profiles[family]},
+        roles={family: reg.roles[family]},
+        references=({family: refs[family]}, [family]),
+    )
 
 
 def where(family, **kw):
@@ -1980,6 +2238,234 @@ def test_registered_af_p1_does_not_decide(registered):
     assert plant_status(v, "P1") == "caught" and v["comparison"]["FR-38"] == "pass"
 
 
+def test_registered_restart_and_patch(registered):
+    """Items 5 and 7 and §4 (b) and (c) in the registered roles: AN's restart and its checkpoint,
+    P9's patch, and what is ignored and recorded."""
+    an = where("invented", role="restart")
+    for name, kw in (
+        ("null", {"table": lambda t, a: t.update(restart=None)}),
+        ("refused", {"fn": refuse}),
+        ("late", {"entry": lambda e: e["checkpoint"].update(time_s=301.0)}),
+        ("bare", {"entry": lambda e: e.pop("checkpoint")}),
+        ("typed", {"entry": lambda e: e["checkpoint"].update(step_index=600.0)}),
+    ):
+        v = judge_one(registered, "invented", f"re_{name}", an, **kw)
+        assert verdict_of(v, "invented", "p_sched returned") == "refused", name
+        assert verdict_of(v, "invented", "p_sched held") == "pass", name
+        assert v["families"]["invented"]["verdict"] == "inconclusive", name
+    # a restart in any other table is ignored and recorded (§4 (b))
+    v = judge_one(registered, "inv_AF", "stray", where("inv_AF", run="p=0 held"),
+                  table=lambda t, a: t.update(restart={"x": 1}))  # fmt: skip
+    assert v["families"]["inv_AF"]["verdict"] == "pass"
+    assert any("only AN's primary table has one" in n for n in v["c0"]["engine"]["notes"])
+    # P9 without its patch, with another's, or refused (a refused entry names no patch): unscorable
+    p9 = where("invented_D", role="plant", plant="P9")
+    for name, kw in (
+        ("none", {"entry": lambda e: e.update(host_patch=None)}),
+        ("other", {"entry": lambda e: e["host_patch"].update(id="V1")}),
+        ("operator", {"entry": lambda e: e["host_patch"].update(operator="x")}),
+        ("refused", {"fn": refuse}),
+    ):
+        v = judge_one(registered, "invented_D", f"p9_{name}", p9, **kw)
+        assert plant_status(v, "P9") == "refused", name
+        assert v["comparison"]["D"] == "inconclusive", name
+    # P9's patch is recorded in the verdict
+    v = judge_one(registered, "invented_D", "p9_as_is", p9, entry=lambda e: None)
+    assert list(v["c0"]["engine"]["host_patches"].values()) == [V0_PATCH]
+    assert plant_status(v, "P9") == "caught" and v["comparison"]["D"] == "pass"
+
+
+def test_c0_names_b_c_and_d_declaration_faults(registered, mapping, tmp_path):
+    """Item 6 for arm B's chains, transfer, turnover and coupling, the store and the water. What no
+    SPEC.md or §5.1 text states in the declaration's own convention is flagged, not refused."""
+
+    def b(e, name):
+        return named(_gene(e["definition"])["chains"], name)
+
+    def op(e, law):
+        return operator(e["definition"], law)
+
+    def exp(e, key):
+        return e["definition"]["experiment"][key]
+
+    rc = "templated_polymerisation@1"
+    turnover, coupling = "scheduled_species_turnover@1", "species_regulated_availability@2"
+    store, water = "local_species_reactions@1", "ideal_osmosis_linear_compliance_water@1"
+    runs_b = [(f"p=0.55 {m}", r, d) for m in ("held", "returned") for r in ("honest", "twin")
+              for d in (2.0, 1.0, 0.5)]  # fmt: skip
+    rows_b = [
+        (lambda e: b(e, "tl").update(template={"species": "R_s"}), "tl's template"),
+        (lambda e: b(e, "tl_s").update(residues=400.0), "tl_s's residues"),
+        (lambda e: b(e, "tl").update(release={}), "tl has no release"),
+        (lambda e: b(e, "tl")["draws"].update(ATP=2), "tl's draws"),
+        (lambda e: op(e, rc)["transfers"][0]["saturation_mM"].update(M=0.2), "recharging's sat"),
+        (lambda e: exp(e, "turnover_controls")[1]["schedule"][1].update(time=299.0), "P_X"),
+        (lambda e: op(e, coupling)["couplings"][0].update(basal=0.03), "b_X"),
+        (lambda e: op(e, coupling).update(states=[{"id": "s"}]), "the coupling's states"),
+        (lambda e: op(e, turnover)["routes"].pop(), "the regulator's routes"),
+        (lambda e: op(e, rc)["transfers"][0].update(share=3), None),
+        (lambda e: op(e, coupling)["couplings"][0]["target"].update(ids=["tl"]), None),
+        (lambda e: exp(e, "coupling_controls")[0]["schedule"][0].update(enabled=0), None),
+    ]  # fmt: skip
+    runs = [("p=0 returned", "honest", d) for d in (2.0, 1.0, 0.5)]
+    rows_c = [
+        (lambda e: op(e, store)["reactions"][0].update(sites=["cell_0"]), "the store's sites"),
+        (lambda e: op(e, store)["reactions"][0].update(factors=[{"x": 1}]), "the store's factors"),
+        (lambda e: exp(e, "reaction_controls")[0].update(site="cell_0"), "the store's site"),
+    ]  # fmt: skip
+    rows_d = [
+        (lambda e: op(e, water)["compartments"][0].update(maximum_volume_pL=1.05), "maximum_vol"),
+        (lambda e: exp(e, "water_controls")[0]["schedule"][0].update(availability=0.5), "avail"),
+        (lambda e: op(e, water)["baths"][0].update(compartment_id="cell_0"), "water's baths"),
+    ]  # fmt: skip
+    for fam, rows, where_ in (
+        ("inv_B", rows_b, runs_b),
+        ("invented_C", rows_c, runs),
+        ("invented_D", rows_d, runs),
+    ):
+        s = registered.synths[fam]
+        pairs = zip(where_, rows, strict=True)
+        s.entry_tweaks = [(is_(r, role, d), f) for (r, role, d), (f, _) in pairs]
+        s.write(str(tmp_path / fam))
+        s.entry_tweaks = []
+        refs, _ = registered.references
+        tables = records.read_tables(str(tmp_path / fam), [fam])
+        fams = {fam: J.Family(fam, s.profile, refs[fam], role=s.role)}
+        _, report = J.index_records(tables, fams, mapping, SHAPES)
+        for (run, role, d), (_, what) in zip(where_, rows, strict=True):
+            at = f"rungs.{d!r}.runs.{run}" + (" unlabelled" if role == "twin" else "")
+            faults = faults_of(report, at)
+            if what is None:
+                assert faults == [], (at, faults)
+            else:
+                assert any(what in x for x in faults), (at, what, faults[:2])
+        if fam == "inv_B":
+            for path in ("share = 3", "target = ", "coupling_controls"):
+                assert any(path in f for f in report["flags_for_the_checker"]), path
+
+
+# ------------------------------------------------------------------ the sample check
+
+
+@pytest.fixture(scope="module")
+def invented_sample(registered, tmp_path_factory):
+    """Six invented tables in the sample's own layout, with the registered families' run names."""
+    root = tmp_path_factory.mktemp("sample")
+    of = {"AN": "invented", "AF": "inv_AF", "B": "inv_B", "C": "invented_C", "D": "invented_D"}
+    for sub in ("table", "table-retry"):
+        os.makedirs(root / sub)
+    for fam, inv in of.items():
+        s = registered.synths[inv]
+        names = [r for r in spec.spec_inputs(fam)["runs"] if r != "blank"]
+
+        def keep(table, attempt, fam=fam, names=names):
+            table["family"] = fam
+            for rung in table["rungs"].values():
+                for n in list(rung["runs"]):
+                    if shapes.classify(n, names) is None:
+                        rung["runs"].pop(n)
+            if fam == "D" and attempt == "primary":
+                e = table["rungs"]["2.0"]["runs"]["p_sched returned unlabelled"]
+                table["rungs"]["2.0"]["runs"]["p_sched returned unlabelled"] = {
+                    "refused": True, "refusal": "invented", "record": "invented",
+                    "definition": e["definition"]}  # fmt: skip
+
+        s.table_tweaks = [keep]
+        s.write(str(root / inv), s.base() + (s.retry_records(["p_sched returned"])
+                                             if fam == "C" else []))  # fmt: skip
+        s.table_tweaks = []
+        for sub in ("table", "table-retry"):
+            src = root / inv / sub / f"table_{inv}.json"
+            if src.exists():
+                shutil.copy(src, root / sub / f"table_{fam}.json")
+        shutil.rmtree(root / inv)
+    for sub in ("table", "table-retry"):
+        write_sums(str(root / sub))
+    (root / "README.md").write_text("invented")
+    return str(root)
+
+
+def _registered_as(root):
+    """The shapes with this invented sample's hashes in place of the registered ones."""
+    out = {}
+    for d, _, files in os.walk(root):
+        for fn in files:
+            path = os.path.join(d, fn)
+            with open(path, "rb") as fh:
+                out[os.path.relpath(path, root)] = hashlib.sha256(fh.read()).hexdigest()
+    return dict(SHAPES, sample_sha256=out)
+
+
+def test_sample_check_on_an_invented_sample(invented_sample, monkeypatch, tmp_path):
+    """Amendment 5, §5: the hashes first, then structure only, every kind of entry covered, and any
+    missing key, type departure, unlisted law or unread entry named by path."""
+    parts = ("entry", "kinds", "checkpoint", "host_patch", "readouts", "definition")
+    monkeypatch.setattr(shapes, "schema_from_readme", lambda text: {k: SHAPES[k] for k in parts})
+    r = sample.check(invented_sample, _registered_as(invented_sample))
+    assert r["passes"], (r["structural_faults"][:4], r["coverage"], r["unexpected_keys"][:3])
+    assert r["unexpected_keys"] == [] and r["files"]["table/table_AN.json"]["checkpoint"]
+    # a hash that differs stops the check before anything is read
+    stopped = sample.check(invented_sample, SHAPES)
+    assert stopped["stopped"] and not stopped["passes"] and "files" not in stopped
+
+    # nine faults in one table, each on its own entry, each named by path
+    root = str(tmp_path / "faulted")
+    shutil.copytree(invented_sample, root)
+    path = os.path.join(root, "table", "table_AN.json")
+    with open(path) as fh:
+        doc = json.loads(fh.read())
+    runs = doc["rungs"]["0.5"]["runs"]
+    runs["p_sched returned"].pop("steps")
+    runs["p_sched held"]["route2"][1].update(ts_s="x")
+    runs["p=0 returned"]["definition"]["model"]["cells"][0].update(volume_pL=True)
+    runs["p=1 returned"]["definition"]["model"]["operators"].append({"law": "x@1"})
+    runs["p_sched returned unlabelled"]["definition"]["experiment"].update(label_arrivals=[])
+    runs["blank returned"]["readouts"].pop("H_route_tx")
+    runs["stray"] = {}
+    doc["plants"]["P3a"]["refused"] = False
+    doc.pop("restart")
+    with open(path, "w") as fh:
+        fh.write(json.dumps(doc))
+    write_sums(os.path.dirname(path))
+    r = sample.check(root, _registered_as(root))
+    at = "rungs.0.5.runs"
+    for needle in (
+        f"{at}.p_sched returned.steps: missing",
+        f"{at}.p_sched held.route2[1].ts_s: type",
+        f"{at}.p=0 returned.definition.model.cells[id=cell_0].volume_pL: type",
+        f"{at}.p=1 returned.definition.model.operators[law=x@1]: forbidden",
+        f"{at}.p_sched returned unlabelled.definition.experiment.label_arrivals: forbidden",
+        f"{at}.blank returned.readouts.H_route_tx: missing",
+        "entries in the file",
+        "plants.P3a.refused: type",
+        "restart: absent",
+    ):
+        assert any(needle in x for x in r["structural_faults"]), needle
+    assert not r["passes"] and not r["coverage"]["the restart's checkpoint"]
+    # a README the committed shapes do not equal, and a kind of entry the sample lacks
+    with monkeypatch.context() as m:
+        m.setattr(shapes, "schema_from_readme", lambda text: {"kinds": {}})
+        assert not sample.check(invented_sample, _registered_as(invented_sample))["passes"]
+    gone = str(tmp_path / "gone")
+    shutil.copytree(invented_sample, gone)
+    path = os.path.join(gone, "table", "table_C.json")
+    with open(path) as fh:
+        doc = json.loads(fh.read())
+    doc["plants"] = {}
+    with open(path, "w") as fh:
+        fh.write(json.dumps(doc))
+    write_sums(os.path.join(gone, "table"))
+    r = sample.check(gone, _registered_as(gone))
+    assert not r["coverage"]["P8 blank"] and not r["passes"]
+    # the CLI's check stops on the registered hashes
+    from validation.gene_regulation.fr38_v2.judge import __main__ as cli
+
+    out = str(tmp_path / "report.json")
+    assert cli.main(["sample", "--sample", invented_sample, "--out", out]) == 1
+    with open(out) as fh:
+        assert json.loads(fh.read())["stopped"]
+
+
 def _honest_h(reg, family, run):
     return reg.synths[family].record(run, "honest", 0.5)
 
@@ -2066,10 +2552,11 @@ def test_registered_names_read_spec_inputs(mapping):
                 base = honest_def["blank returned" if run == "blank" else run]
                 assert definitions.plant_change_faults(plant, base, d, inputs) == [], (fam, plant)
                 continue
-            faults, _ = definitions.check_definition(
+            faults = definitions.check_definition(
                 d, inputs, profile, run, role, machine or "returned", 0.5
             )
             assert faults == [], (fam, run, role, faults[:3])
+            assert definitions.recorded(d, inputs, profile)[1] == [], (fam, run)
             if role in ("honest", "blank"):
                 honest_def[f"blank {machine}" if run == "blank" else run] = d
         for p in list(spec.CORE_PLANTS) + ["P8", "P9"]:

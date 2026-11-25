@@ -1,12 +1,12 @@
-"""The judge's transcription of the spec folder (tag `fr38-v2-amendment-3-2026-11-24`).
+"""The judge's transcription of the spec folder (tag `fr38-v2-amendment-5-2026-11-25`).
 
 Every value here is read from SPEC.md, its amendments, or the sheet sections LAWS.md names (the
 sheet's §1.4 moieties and §5.1 table for arm B). None is taken from a reference file, so C0's
 check of the references' echoed inputs is not circular.
 
 - **The key names** of the expected inputs follow the references' echo (SPEC.md §7 shows only
-  seven of them; the others are the references' own naming). The engine export's run definitions
-  use the same vocabulary (`records.py`).
+  seven of them; the others are the references' own naming). The engine's declarations have their
+  own keys (`definitions.py`).
 - **Profiles.** A family's rule set is its profile: `A` (AF, AN and the invented family), `B`, `C`
   and `D`. The tests pass invented families of each profile.
 """

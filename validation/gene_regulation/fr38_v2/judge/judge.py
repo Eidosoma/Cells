@@ -1,19 +1,26 @@
 """The verdicts of FR-38's second comparison: per run, family, arm and criterion, with the plants.
 
+- **The engine's export** is the registered tables (amendment 4, §8; amendment 5). The structure
+  pass reads every entry (`shapes`), the value pass its numbers (`records`), and C0's echo its
+  declaration (`definitions`).
 - **Runs.** Each judged run (the labelled runs and the blanks, against the reference's runs of the
   same name) is judged at the rungs 4h, 2h and h of its attempt: C1 at every rung, C2 and C3 at h
   from the three rungs, C4 at every rung with that rung's S. A run inconclusive at the primary
   attempt takes the retry when its retry records exist (judged at 0.25 s); otherwise it stays
   inconclusive, retry pending (CRITERIA.md §1, §4).
-- **Plants** (CRITERIA.md §6; amendment 4, items 5 and 7). P1 and P1″ act on copies of the
-  mapping file; P1′ (the net-rate host form) and P6 (G without the hold's standard term) on copies
-  of the honest records at h; the world-data plants and P9 are table entries at h, whose
-  declarations differ from their honest runs' only by their registered change. Each is scored
-  with the honest run's primary tolerance at h. A plant is caught by a failure of its own "By"
-  readouts, or by the engine's own refusal of its run; a C2 catch counts only where the honest
-  tolerance does not exceed the reference's largest predicted distance for that run and quantity.
-  A judge-side refusal is not a catch: an unscorable core plant leaves FR-38 at best inconclusive.
-- **The engine's export** is amendment 4, §8's table (`records.read_tables`).
+- **A refusal never masks a failure.** What C0 accepts is judged, so a failing C1, C2 or C4 entry
+  fails its run whatever else of it is refused (CRITERIA.md §4: "fails if any C1 or C4 entry
+  fails", before "otherwise"). A run with a refused or missing record, its blank, twin and restart
+  included, and no failing entry is refused: it cannot pass.
+- **Plants** (CRITERIA.md §6; amendment 4, items 5 and 7; amendment 5, items 1 to 3 and 6). P1 and
+  P1″ act on copies of the mapping file; P1′ (the net-rate host form) and P6 (G without the hold's
+  standard term) on copies of the honest records at h; the world-data plants and P9 are table
+  entries at h, whose declarations differ from their honest runs' only by their registered change.
+  Each is scored with the honest run's primary tolerance at h. A plant is caught by a failure of
+  its own "By" readouts, or by the engine's own refusal of its run; a C2 catch counts only where
+  the honest tolerance does not exceed the reference's largest predicted distance for that run and
+  quantity. A judge-side refusal is not a catch: an unscorable core plant leaves FR-38 at best
+  inconclusive.
 """
 
 import copy
@@ -26,7 +33,7 @@ import sys
 
 import numpy as np
 
-from . import records, rules, spec
+from . import definitions, records, rules, shapes, spec
 
 MAPPING_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mapping.json")
 VERDICT_KIND = "cells.fr38_v2.verdict@1"
@@ -232,72 +239,140 @@ def _largest_checks(ref):
 # ------------------------------------------------------------------ the engine records
 
 
-def index_records(tables, fams, mapping, index_faults):
-    """C0 on every table entry (amendment 4, §8), then an index by (family, role, run, plant,
-    attempt, dt, machine). Plants' declarations are compared with their honest runs' (§8.5)."""
-    from . import definitions
-
-    all_recs, notes = [], []
-    for tab in tables:
+def index_records(tables, fams, mapping, table_shapes):
+    """C0 on every entry of every table, then an index by (family, role, run, plant, attempt, dt,
+    machine). Returns (index, what C0 found)."""
+    passes = []
+    for tab in tables["tables"]:
         fam = fams.get(tab["family"])
         if fam is None:
             continue
-        recs, tnotes = records.table_records(tab, fam.inputs)
-        notes += [f"{tab['family']} {tab['attempt']}: {n}" for n in tnotes]
-        if fam.restart() is None and any(r.role == "restart" for r in recs):
-            notes.append(f"{tab['family']}: a restart entry where none is registered: ignored")
-            recs = [r for r in recs if r.role != "restart"]
-        for rec in recs:
+        restart = fam.restart()
+        st = records.table_structure(tab, fam.profile, fam.role, fam.inputs,
+                                     restart[0] if restart else None, table_shapes)  # fmt: skip
+        if fam.role is None and any(e.role == "blank" and e.machine == "held" for e in st.entries):
+            fam.held_blank_present = True
+        passes.append((tab, fam, st))
+    recs, notes = [], []
+    for tab, fam, st in passes:
+        got, tab["faults"] = records.table_records(tab, st, fam.inputs, fam.times, fam.samples,
+                                                   fam.window)  # fmt: skip
+        label = f"{tab['family']} {tab['attempt']}"
+        notes += [f"{label}: {n}" for n in st.notes]
+        notes += [f"{label}: {f[1]}: {f[2]} (recorded)" for f in st.findings
+                  if f[0] == "unexpected"]  # fmt: skip
+        if isinstance(tab["doc"], dict) and tab["doc"].get("missing"):
+            notes.append(f"{label}: the table lists missing records: {tab['doc']['missing']!r}")
+        restart = fam.restart()
+        for rec in got:
             records.check_record(rec, fam.inputs, fam.times, mapping, fam.profile,
-                                 allowed_blank_machines=fam.blank_machines(),
-                                 two_blanks=fam.role == "AF" or (
-                                     fam.role is None and fam.held_blank_present))  # fmt: skip
-        all_recs += recs
-    seen = {}
-    for rec in all_recs:
-        seen.setdefault(rec.key, []).append(rec)
+                                 blank_machines=fam.blank_machines(), two_blanks=two_blanks(fam),
+                                 checkpoint_s=restart[1] if restart else None)  # fmt: skip
+        recs += got
     index = {}
-    for key, recs in seen.items():
-        if len(recs) > 1:
-            for r in recs:
-                r.faults.append(f"{len(recs)} entries share the key {key!r}")
-        index[key] = recs[0]
-    for rec in all_recs:  # §8.5: a plant differs from its honest run only by its registered change
-        if rec.role != "plant" or rec.faults:
+    for rec in recs:  # a table's keys are unique, so no two entries share a key
+        index[rec.key] = rec
+    flags = _compare_declarations(recs, index, fams)
+    flags += _source_flags(recs)
+    return index, _c0_report(recs, notes, flags)
+
+
+def _compare_declarations(recs, index, fams):
+    """Amendment 5, item 6: a plant's declaration is its honest run's but for its registered change,
+    or it is refused; a twin's and a blank's are recorded and flagged where they depart from their
+    run's at a key the echo does not cover."""
+    flags = []
+    for rec in recs:
+        if rec.faults or not isinstance(rec.definition, dict):
             continue
-        fam = fams[rec.family]
-        if rec.plant == "P8" and rec.run == "blank":
-            honest = index.get((rec.family, "blank", "blank", None, "primary", 0.5, "returned"))
-        else:
-            honest = index.get((rec.family, "honest", rec.run, None, "primary", 0.5, None))
-        if honest is None or honest.definition is None:
-            rec.faults.append("its honest run's entry at 0.5 s, needed for the declaration check, "
-                              "is missing")  # fmt: skip
-            continue
-        rec.faults += definitions.plant_change_faults(rec.plant, honest.definition,
-                                                      rec.definition, fam.inputs)  # fmt: skip
-    faults = [{"table": r.table, "entry": r.name, "attempt": r.attempt, "dt": r.dt,
-               "faults": r.faults} for r in all_recs if r.faults]  # fmt: skip
-    rec_notes = [{"table": r.table, "entry": r.name, "dt": r.dt, "notes": r.notes}
-                 for r in all_recs if r.notes]  # fmt: skip
-    unchecked = {}
-    for r in all_recs:
-        for u in r.unchecked:
-            unchecked.setdefault(r.family, set()).add(u)
-        if r.role == "restart":  # §8.4 names the checkpoint's identity, not its time's key
-            unchecked.setdefault(r.family, set()).add("the restart's checkpoint time (7200 s)")
-        if r.plant == "P9":
-            unchecked.setdefault(r.family, set()).add(
-                f"P9's V₀ patch, which its record names (source {r.provenance.get('source')!r})"
+        if rec.role == "plant":
+            if rec.blank:
+                key = (rec.family, "blank", "blank", None, "primary", spec.H_STEP_S, "returned")
+            else:
+                key = (rec.family, "honest", rec.run, None, "primary", spec.H_STEP_S, None)
+            honest = index.get(key)
+            if honest is None or not isinstance(honest.definition, dict):
+                rec.faults.append(f"{rec.where}: its honest run's entry at 0.5 s, needed for the "
+                                  "declaration check, is missing")  # fmt: skip
+                continue
+            rec.faults += [f"{rec.where}.definition: {x}" for x in definitions.plant_change_faults(
+                rec.plant, honest.definition, rec.definition, fams[rec.family].inputs)]  # fmt: skip
+        elif rec.role in ("twin", "blank"):
+            run = rec.run if rec.role == "twin" else f"p_sched {rec.machine}"
+            other = index.get((rec.family, "honest", run, None, rec.attempt, rec.dt, None))
+            if other is None or not isinstance(other.definition, dict):
+                continue
+            compare = (definitions.twin_differences if rec.role == "twin"
+                       else definitions.blank_differences)  # fmt: skip
+            flags += [f"{rec.family} {rec.attempt}: {rec.where}.definition: beside its run's: {x}"
+                      for x in compare(other.definition, rec.definition)]  # fmt: skip
+    return flags
+
+
+def _source_flags(recs):
+    """Amendment 5, item 5: entries that differ in engine_revision or snapshot."""
+    flags = []
+    for key in ("engine_revision", "snapshot"):
+        seen = {}
+        for r in recs:
+            if r.source:
+                seen.setdefault(r.source[key], []).append(f"{r.family} {r.attempt} {r.where}")
+        if len(seen) > 1:
+            flags.append(
+                f"entries differ in source.{key}: "
+                + "; ".join(
+                    f"{v!r} in {len(w)} entries ({w[0]}, …)" for v, w in sorted(seen.items())
+                )
             )
-    return index, {"refused_records": faults, "notes": notes + index_faults, "record_notes":
-                   rec_notes, "unchecked": {f: sorted(u) for f, u in unchecked.items()},
-                   "entries": len(all_recs)}  # fmt: skip
+    return flags
+
+
+def _tally(pairs):
+    out = {}
+    for message, where in pairs:
+        out.setdefault(message, []).append(where)
+    return {m: {"entries": len(w), "first": w[:3]} for m, w in out.items()}
+
+
+def _c0_report(recs, notes, flags):
+    """What C0 found on the engine's entries: the refusals, the engine's own, and what is recorded
+    or flagged to the checker."""
+    values = {}
+    for r in recs:
+        for path, v in r.recorded.get("declaration", {}).items():
+            seen = values.setdefault(r.family, {}).setdefault(path, [])
+            if v not in seen:
+                seen.append(v)
+
+    def where(r):
+        return f"{r.family} {r.attempt} {r.where}"
+
+    return {
+        "entries": len(recs),
+        "refused_records": [{"table": r.table, "entry": r.where, "attempt": r.attempt,
+                             "dt": r.dt, "faults": r.faults} for r in recs if r.faults],
+        "engine_refusals": [{"table": r.table, "entry": r.where, "attempt": r.attempt,
+                             "refusal": r.refusal, "record": r.record}
+                            for r in recs if _engine_refused(r)],
+        "notes": notes,
+        "flags_for_the_checker": flags + [f for r in recs for f in r.flags] + [
+            f"{where(r)}: refused by the engine at run time; its record and log are the checker's "
+            f"to confirm ({r.record})" for r in recs if _engine_refused(r)],
+        "extra_keys": _tally((n, where(r)) for r in recs for n in r.notes),
+        "definition_shape": _tally((n.partition(".definition")[2], where(r)) for r in recs
+                                   for n in r.recorded.get("definition_shape", ())),
+        "recorded_declaration_values": values,
+        "checkpoints": {where(r): r.recorded["checkpoint"] for r in recs
+                        if "checkpoint" in r.recorded},
+        "host_patches": {where(r): r.recorded["host_patch"] for r in recs
+                         if r.recorded.get("host_patch") is not None},
+        "sources": sorted({json.dumps(r.source, sort_keys=True) for r in recs if r.source}),
+    }  # fmt: skip
 
 
 def _get(index, fam, role, run, attempt, dt, *, plant=None, machine=None):
-    m = machine if (role == "blank" or (plant == "P8" and run == "blank")) else None
-    return index.get((fam, role, run, plant, attempt, float(dt), m))
+    return index.get((fam, role, run, plant, attempt, float(dt),
+                      machine if run == "blank" else None))  # fmt: skip
 
 
 # ------------------------------------------------------------------ one run
@@ -318,16 +393,14 @@ def _engine_refused(rec):
     return rec is not None and not rec.faults and rec.status == "refused"
 
 
-def judge_series(entry, fam, rrun, rungs, ctx_h, steps_h):
-    """C1 at every rung, and C2 with C3 at h, for one series readout."""
+def judge_series(entry, fam, rrun, rungs, ctx_h, steps_h, formed=True):
+    """C1 at every rung, and C2 with C3 at h where the three rungs are there (`formed`), for one
+    series readout."""
     name = entry["engine"].partition("/")[2]
     rs = ref_side(rrun, entry)
     if rs is None:
-        return {
-            "readout": entry["name"],
-            "refused": "no reference series",
-            "refused_kind": "missing",
-        }
+        return {"readout": entry["name"], "refused": "no reference series",
+                "refused_kind": "missing"}  # fmt: skip
     ys = [rec.series[name] for rec in rungs]
     res = {
         "readout": entry["name"],
@@ -343,9 +416,14 @@ def judge_series(entry, fam, rrun, rungs, ctx_h, steps_h):
             res["C1"].append(r)
     res["C1_fails"] = any(r["fails"] for r in res["C1"])
     st = ~const
-    if st.any():
+    if st.any() and formed:
+        try:
+            s_y = ctx_h.scale(entry["scale"], name)
+        except (KeyError, ValueError) as exc:
+            res["refused"] = f"its scale cannot be formed ({exc})"
+            res["refused_kind"] = "missing"
+            return res
         p = spec.declared_order(fam.profile, entry["order"])
-        s_y = ctx_h.scale(entry["scale"], name)
         res["C2"] = rules.c2(
             ys[0][st], ys[1][st], ys[2][st], rs.value[st], rs.accuracy[st], p, s_y, steps_h
         )
@@ -355,48 +433,44 @@ def judge_series(entry, fam, rrun, rungs, ctx_h, steps_h):
     return res
 
 
-def judge_route2(fate, rrun, rungs, fam, steps_h):
+def judge_route2(fate, rrun, rungs, fam, steps_h, formed=True):
     """Route 2 at each sample time: τ = 3 g(ts) + e_ref + e_round, no order check."""
     out = []
-    rec_h = rungs[-1]
-    A = rec_h.series[f"int_Q_tx_release_{fate}"]
     k = spec.fate_rate(fam.inputs, fate)
     t1, t2 = fam.window
-    s_y = float(np.max(np.abs(A)))
-    e_round = rules.rounding(steps_h, s_y)
     row = spec.FATE_ROW[fate]
     for ts in fam.samples:
         e = rrun.route2[fate][ts]
-        vals = [rec.route2.get((fate, ts)) for rec in rungs]
         item = {"readout": f"route2_{fate}", "ts_s": ts}
-        if vals[-1] is None or (e["class"] == "constant" and any(v is None for v in vals)):
-            item["refused"] = "the engine's route-2 entry is missing"
-            item["refused_kind"] = "missing"
-            out.append(item)
-            continue
         if e["class"] == "constant":
-            item["C1"] = [
-                dict(rules.c1([v]), dt_s=rec.dt) for v, rec in zip(vals, rungs, strict=True)
-            ]
+            item["C1"] = [dict(rules.c1([rec.route2[(fate, ts)]]), dt_s=rec.dt) for rec in rungs]
             item["C1_fails"] = any(r["fails"] for r in item["C1"])
             out.append(item)
             continue
+        if not formed:
+            continue
+        rec_h = rungs[-1]
+        A = rec_h.series[f"int_Q_tx_release_{fate}"]
+        s_y = float(np.max(np.abs(A)))
+        e_round = rules.rounding(steps_h, s_y)
+        got = rec_h.route2[(fate, ts)]
         g = rules.grid_error(fam.times, A, k, t1, t2, ts)
         mine = rules.known_rate(fam.times, A, k, t1, t2, ts)
         route1 = float(rec_h.series[f"label_{row}_win"][fam.times.index(ts)])
         item["own_known_rate"] = mine
-        item["own_known_rate_minus_engine"] = mine - vals[-1]
+        item["own_known_rate_minus_engine"] = mine - got
         if g is None:
             item["refused"] = "insufficient resolution: the window holds no output to drop"
             item["refused_kind"] = "resolution"
             out.append(item)
             continue
         tau = 3.0 * g + float(e["accuracy"]) + e_round
-        gap = abs(vals[-1] - float(e["value"]))
+        gap = abs(got - float(e["value"]))
         split = k * rec_h.dt**2 / (12.0 * float(fam.inputs["tau_s"])) * abs(route1)
         item["C2"] = {
             "g_ts": g,
-            "engine_grid_error_recorded": rec_h.route2_grid_error.get((fate, ts)),
+            "engine_grid_error_recorded": rec_h.route2_grid_error[(fate, ts)],
+            "engine_k_per_s_recorded": rec_h.route2_k[(fate, ts)],
             "route2_bound": 3.0 * g,
             "e_ref": float(e["accuracy"]),
             "e_round": e_round,
@@ -410,34 +484,27 @@ def judge_route2(fate, rrun, rungs, fam, steps_h):
         }
         item["route1_vs_route2"] = {
             "route1": route1,
-            "route2": vals[-1],
-            "difference": abs(route1 - vals[-1]),
+            "route2": got,
+            "difference": abs(route1 - got),
             "bound": g + split,
-            "within": abs(route1 - vals[-1]) <= g + split,
+            "within": abs(route1 - got) <= g + split,
         }
         out.append(item)
     return out
 
 
-def judge_survival(fate, rrun, rungs, fam, ctx_h, steps_h):
+def judge_survival(fate, rrun, rungs, fam, ctx_h, steps_h, formed=True):
     """Survival: both counts by C2 over the sample times, the ratio by its counts' tolerances; at an
-    idle fate, C1 on both counts and an undefined ratio (amendment 1, item 3)."""
+    idle fate, C1 on both counts and an undefined ratio (amendment 1, item 3). None where the rungs
+    are not all there and nothing of it can be judged."""
     entries = [rrun.survival[fate][ts] for ts in fam.samples[1:]]
     item = {"readout": f"survival_{fate}"}
-    engine = []
-    for rec in rungs:
-        rows = [rec.survival.get((fate, ts)) for ts in fam.samples[1:]]
-        if any(r is None for r in rows):
-            item["refused"] = f"the engine's survival entries are missing at {rec.dt!r} s"
-            item["refused_kind"] = "missing"
-            return item
-        engine.append(rows)
+    engine = [[rec.survival[(fate, ts)] for ts in fam.samples[1:]] for rec in rungs]
     if all(e["ratio"] is None for e in entries):  # an idle fate: every entry constant
         item["C1"] = []
         for rec, rows in zip(rungs, engine, strict=True):
-            counts = [x for r in rows for x in r[:2]]
-            r = rules.c1(counts)
-            ratio_ok = all(r_[2] is None for r_ in rows)
+            r = rules.c1([x for row in rows for x in row[:2]])
+            ratio_ok = all(row[2] is None for row in rows)
             item["C1"].append(
                 {
                     **r,
@@ -449,6 +516,8 @@ def judge_survival(fate, rrun, rungs, fam, ctx_h, steps_h):
             )
         item["C1_fails"] = any(x["fails"] for x in item["C1"])
         return item
+    if not formed:
+        return None
     if any(r[2] is not None and not math.isfinite(r[2]) for rows in engine for r in rows):
         item["refused"] = "a non-finite survival ratio where the reference defines one (C0)"
         item["refused_kind"] = "missing"
@@ -479,10 +548,6 @@ def judge_survival(fate, rrun, rungs, fam, ctx_h, steps_h):
     item["ratio"] = ratios
     item["passes"] = bool(ok)
     return item
-
-
-def _physical(name):
-    return not (name.startswith("label_") or name.startswith("released_present_gross_"))
 
 
 def compare_records(a, b, *, names, route2=True, survival=False, checks="equal"):
@@ -543,11 +608,12 @@ def _deep_bit_equal(x, y):
 
 
 def judge_run(fam, unit, index, mapping, attempt):
-    """One run at one attempt: C0's needs, C1, C2, C3, C4 and the reported figures."""
+    """One run at one attempt: C0's needs, C1, C2, C3, C4 and the reported figures. What C0 accepts
+    is judged; what it refuses, or what is missing, is named in `refused`."""
     run, machine = unit
     blank = run == "blank"
     rungs_dt = spec.PRIMARY_RUNGS if attempt == "primary" else spec.RETRY_RUNGS
-    role = "blank" if blank else "honest"
+    h = rungs_dt[-1]
     out = {
         "run": run,
         "machine": machine if blank else None,
@@ -557,119 +623,150 @@ def judge_run(fam, unit, index, mapping, attempt):
         "equalities": {},
         "readouts": [],
         "identities": {},
+        "reported_equalities": {},
     }
-    rungs = [_get(index, fam.name, role, run, attempt, dt, machine=machine) for dt in rungs_dt]
-    blanks, twins = [], []
-    for dt, rec in zip(rungs_dt, rungs, strict=True):
-        why = _usable(rec, f"{run} at {dt!r} s")
+
+    def need(rec, what):
+        why = _usable(rec, what)
         if why:
             out["refused"].append(why)
-            out["engine_refused"] = out.get("engine_refused", False) or _engine_refused(rec)
+            return None
+        return rec
+
+    role = "blank" if blank else "honest"
+    have, blanks, twins = {}, {}, {}
+    for dt in rungs_dt:
+        rec = _get(index, fam.name, role, run, attempt, dt, machine=machine)
+        have[dt] = need(rec, f"{unit_name(unit)} at {dt!r} s")
         if not blank and spec.has_blank(fam.profile):
-            m = matched_blank_machine(fam, run, index)
+            m = matched_blank_machine(fam, run)
             b = _get(index, fam.name, "blank", "blank", attempt, dt, machine=m)
-            why = _usable(b, f"its blank ({m}) at {dt!r} s")
-            if why:
-                out["refused"].append(why)
-            blanks.append(b)
+            blanks[dt] = need(b, f"its blank ({m}) at {dt!r} s")
         if not blank and run in fam.twin_runs():
             t = _get(index, fam.name, "twin", run, attempt, dt)
-            why = _usable(t, f"its twin at {dt!r} s")
-            if why:
-                out["refused"].append(why)
-            twins.append(t)
-    if out["refused"]:
-        out["verdict"] = "refused"
-        return out
+            twins[dt] = need(t, f"its twin at {dt!r} s")
+    rungs = [have[dt] for dt in rungs_dt if have[dt] is not None]
+    formed = out["formed"] = len(rungs) == len(rungs_dt)
     rrun = fam.ref.runs[run]
-    steps_h = fam.steps(rungs_dt[-1])
-    rec_h = rungs[-1]
-    blank_h = blanks[-1] if blanks else None
-    try:
-        ctx_h = rules.ScaleContext(
-            fam.profile,
-            fam.inputs,
-            rec_h.series,
-            blank=blank,
-            blank_values=None if blank_h is None else blank_h.series,
-        )
-        # C1 and C2 (with C3) on every series readout; route 2 and survival per fate
-        for e in records.mapping_entries(mapping, fam.profile, blank=True if blank else None):
-            kind = e["engine"].partition("/")[0]
-            if kind == "series":
-                res = judge_series(e, fam, rrun, rungs, ctx_h, steps_h)
-                out["readouts"].append(res)
-            elif kind == "route2":
-                out["readouts"] += judge_route2(
-                    e["engine"].partition("/")[2], rrun, rungs, fam, steps_h
-                )
-            elif kind == "survival":
-                out["readouts"].append(
-                    judge_survival(e["engine"].partition("/")[2], rrun, rungs, fam, ctx_h, steps_h)
-                )
-        # family D's energy identity: stepped, e_ref = 0, p = 2 (amendment 3, item 1)
-        if fam.profile == "D":
-            r = [rules.d_identity_residual(rec.series) for rec in rungs]
-            s_d = ctx_h.d_identity_scale()
-            c = rules.c2(r[0], r[1], r[2], np.zeros_like(r[2]), np.zeros(0), 2, s_d, steps_h)
-            out["readouts"].append(
-                {
-                    "readout": "energy_identity_D",
-                    "status": "judged",
-                    "C1": [],
-                    "C1_fails": False,
-                    "C2": c,
-                }
-            )
-        # C4 at every rung, each with its own S (amendment 4, item 2); the machine option is the
-        # run's registered one (a blank's from its name)
-        option = machine if blank else fam.inputs["runs"][run]["machine"]
-        for rec in rungs:
-            ids = rules.identities(
+    steps_h = fam.steps(h)
+    if formed:
+        _judge_formed(out, fam, rrun, rungs, blanks.get(h), mapping, steps_h, blank)
+    elif rungs:
+        _judge_constants(out, fam, rrun, rungs, mapping, blank)
+    # C4 at every rung, each with its own S (amendment 4, item 2); the machine option is the run's
+    # registered one (a blank's from its name)
+    option = machine if blank else fam.inputs["runs"][run]["machine"]
+    for rec in rungs:
+        try:
+            out["identities"][repr(rec.dt)] = rules.identities(
                 rec.series, fam.inputs, fam.profile, option, fam.steps(rec.dt), blank=blank
             )
-            out["identities"][repr(rec.dt)] = ids
-    except (KeyError, ValueError) as exc:
-        out["refused"].append(f"a readout cannot be formed: {exc}")
-        out["verdict"] = "refused"
-        return out
-    # the engine-only equalities of C1
-    if twins:
-        for rec, tw in zip(rungs, twins, strict=True):
-            names = [n for n in tw.series if _physical(n)]
-            out["equalities"][f"twin@{rec.dt!r}"] = compare_records(
-                rec, tw, names=names, checks="subset"
-            )
+        except (KeyError, ValueError) as exc:
+            out["refused"].append(f"C4 at {rec.dt!r} s cannot be formed: {exc}")
+    _judge_equalities(out, fam, run, machine, have, twins, index, attempt, rungs_dt, mapping)
+    for item in out["readouts"]:
+        if item.get("refused_kind") == "missing":
+            out["refused"].append(f"{item['readout']}: {item['refused']}")
+    out["verdict"] = run_verdict(out)
+    return out
+
+
+def _entries(mapping, fam, blank):
+    return records.mapping_entries(mapping, fam.profile, blank=True if blank else None)
+
+
+def _judge_formed(out, fam, rrun, rungs, blank_h, mapping, steps_h, blank):
+    """C1, C2 and C3 of every readout, from the three rungs."""
+    ctx_h = rules.ScaleContext(
+        fam.profile,
+        fam.inputs,
+        rungs[-1].series,
+        blank=blank,
+        blank_values=None if blank_h is None else blank_h.series,
+    )
+    for e in _entries(mapping, fam, blank):
+        kind, _, name = e["engine"].partition("/")
+        if kind == "series":
+            out["readouts"].append(judge_series(e, fam, rrun, rungs, ctx_h, steps_h))
+        elif kind == "route2":
+            out["readouts"] += judge_route2(name, rrun, rungs, fam, steps_h)
+        elif kind == "survival":
+            out["readouts"].append(judge_survival(name, rrun, rungs, fam, ctx_h, steps_h))
+    # family D's energy identity: stepped, e_ref = 0, p = 2 (amendment 3, item 1)
+    if fam.profile == "D":
+        item = {"readout": "energy_identity_D", "status": "judged", "C1": [], "C1_fails": False}
+        try:
+            r = [rules.d_identity_residual(rec.series) for rec in rungs]
+            s_d = ctx_h.d_identity_scale()
+            item["C2"] = rules.c2(r[0], r[1], r[2], np.zeros_like(r[2]), np.zeros(0), 2, s_d,
+                                  steps_h)  # fmt: skip
+        except (KeyError, ValueError) as exc:
+            item.update(refused=f"it cannot be formed ({exc})", refused_kind="missing")
+        out["readouts"].append(item)
+
+
+def _judge_constants(out, fam, rrun, rungs, mapping, blank):
+    """C1 alone, at the rungs that are there: no C2 can be formed without the three."""
+    for e in _entries(mapping, fam, blank):
+        kind, _, name = e["engine"].partition("/")
+        if kind == "series":
+            out["readouts"].append(judge_series(e, fam, rrun, rungs, None, None, formed=False))
+        elif kind == "route2":
+            out["readouts"] += judge_route2(name, rrun, rungs, fam, None, formed=False)
+        elif kind == "survival":
+            item = judge_survival(name, rrun, rungs, fam, None, None, formed=False)
+            if item is not None:
+                out["readouts"].append(item)
+
+
+def _judge_equalities(out, fam, run, machine, have, twins, index, attempt, rungs_dt, mapping):
+    """The engine-only equalities of C1 (CRITERIA.md §2; amendment 4, item 7), over READOUTS.md's
+    series. engine_run's other exports are never judged (amendment 5, item 4): a difference in one
+    is reported, and flagged to the checker."""
+    series = {
+        e["engine"].partition("/")[2]
+        for e in _entries(mapping, fam, run == "blank")
+        if e["engine"].startswith("series/")
+    }
+
+    def exports(a, b, keep=lambda n: True):
+        return [n for n in sorted(set(a.series) | set(b.series)) if n not in series and keep(n)
+                and (n not in a.series or n not in b.series
+                     or rules.bit_equal(a.series[n], b.series[n])["fails"])]  # fmt: skip
+
+    for dt, tw in twins.items():
+        if tw is None or have[dt] is None:
+            continue
+        out["equalities"][f"twin@{dt!r}"] = compare_records(
+            have[dt], tw, names=sorted(filter(records.physical, series)), checks="subset"
+        )
+        out["reported_equalities"][f"twin@{dt!r}"] = exports(have[dt], tw, records.physical)
     restart = fam.restart()
     if attempt == "primary" and restart and restart[0] == run:
         rs = _get(index, fam.name, "restart", run, "primary", spec.H_STEP_S)
         why = _usable(rs, "the restart")
-        if why and fam.restart_optional() and rs is None:
-            pass  # optional for an invented family with no role
-        elif why:
+        if why and not (fam.restart_optional() and rs is None):
             out["refused"].append(why)
-        else:
+        elif not why and have[spec.H_STEP_S] is not None:
+            rec = have[spec.H_STEP_S]
             out["equalities"]["restart"] = compare_records(
-                rec_h, rs, names=list(rec_h.series), survival=True
+                rec, rs, names=sorted(series), survival=True
             )
-    if blank and machine == "held":
-        for dt, rec in zip(rungs_dt, rungs, strict=True):
+            out["reported_equalities"]["restart"] = exports(rec, rs) + (
+                [] if _deep_bit_equal(rec.own_ledgers, rs.own_ledgers) else ["own_ledgers_at_end"]
+            )
+    if run == "blank" and machine == "held":
+        for dt in rungs_dt:
             other = _get(index, fam.name, "blank", "blank", attempt, dt, machine="returned")
             why = _usable(other, f"the returned blank at {dt!r} s")
             if why:
                 out["refused"].append(why)
-            else:
+            elif have[dt] is not None:
+                rec = have[dt]
                 out["equalities"][f"two_blanks@{dt!r}"] = compare_records(
-                    other, rec, names=sorted(set(rec.series) | set(other.series)), route2=False
+                    other, rec, names=sorted(series), route2=False
                 )
-    for item in out["readouts"]:
-        if item.get("refused_kind") == "missing":
-            out["refused"].append(f"{item['readout']}: {item['refused']}")
-    if out["refused"]:
-        out["verdict"] = "refused"
-        return out
-    out["verdict"] = run_verdict(out)
-    return out
+                out["reported_equalities"][f"two_blanks@{dt!r}"] = exports(other, rec)
 
 
 def run_verdict(out):
@@ -734,7 +831,8 @@ def run_verdict(out):
     }
     out["reported"] = reported
     out["why"] = (
-        [f"C1: {x}" for x in c1]
+        [f"refused: {x}" for x in out.get("refused", ())]
+        + [f"C1: {x}" for x in c1]
         + [f"C2: {x}" for x in c2]
         + [f"C3: {x}" for x in c3]
         + [f"C4: {x}" for x in c4]
@@ -742,29 +840,31 @@ def run_verdict(out):
     )
     if c1 or c2 or c4:
         return "fail"
+    if out.get("refused"):
+        return "refused"
     if c3 or resolution:
         return "inconclusive"
     return "pass"
 
 
-def two_blanks(fam, index):
+def two_blanks(fam):
     """AF runs a blank per machine option; an invented family with no role may (optional)."""
     if fam.role is not None:
         return fam.role == "AF"
     return fam.held_blank_present
 
 
-def matched_blank_machine(fam, run, index):
-    if two_blanks(fam, index):
+def matched_blank_machine(fam, run):
+    if two_blanks(fam):
         return fam.inputs["runs"][run]["machine"]
     return "returned"
 
 
-def run_units(fam, index):
+def run_units(fam):
     units = [(r, None) for r in spec.honest_runs(fam.inputs)]
     if spec.has_blank(fam.profile):
         units.append(("blank", "returned"))
-        if two_blanks(fam, index):
+        if two_blanks(fam):
             units.append(("blank", "held"))
     return units
 
@@ -777,7 +877,7 @@ def unit_name(unit):
 def judge_family(fam, index, mapping):
     """Every run of one family, with the retry for its inconclusive runs."""
     runs = {}
-    for unit in run_units(fam, index):
+    for unit in run_units(fam):
         primary = judge_run(fam, unit, index, mapping, "primary")
         res = {"primary": primary, "verdict": primary["verdict"]}
         has_retry = any(
@@ -894,64 +994,76 @@ def plant_units(fam, plant):
 
 
 def judge_plant_unit(fam, plant, run, index, mapping, family_runs):
-    """The catches of one plant in one run: a list of readout items, or a refusal."""
+    """The catches of one plant in one run: a list of readout items, or why it is unscorable."""
     honest = family_runs.get(run, {}).get("primary")
-    if honest is None or honest["verdict"] == "refused":
+    if honest is None or honest["verdict"] == "refused" or not honest["formed"]:
         return {"refused": f"the honest run {run!r} is refused or missing"}
+    if spec.PLANT_KIND[plant] in ("world", "host_record"):
+        return _judge_record_plant(fam, plant, run, index, mapping, honest)
+    try:
+        return {"items": _judge_own_plant(fam, plant, run, index, mapping, honest)}
+    except (KeyError, ValueError) as exc:
+        return {"refused": f"{plant} cannot be formed from the honest records ({exc})"}
+
+
+def _judge_record_plant(fam, plant, run, index, mapping, honest):
+    """A plant the builder runs: its entry at h, against the reference with the honest tolerance."""
+    rrun = fam.ref.runs[run]
+    prec = _get(index, fam.name, "plant", run, "primary", spec.H_STEP_S, plant=plant)
+    if plant == "P8":
+        pb = _get(index, fam.name, "plant", "blank", "primary", spec.H_STEP_S, plant="P8",
+                  machine="returned")  # fmt: skip
+        if pb is None or pb.faults:
+            return {"refused": _usable(pb, "P8's planted blank")}
+        if _engine_refused(pb):
+            return {"items": [], "engine_refused": True}
+    if _engine_refused(prec):
+        if plant == "P9":  # a refused entry has no host_patch, so no V₀ patch is shown (item 7)
+            return {"refused": "P9's entry is refused by the engine and names no V₀ patch"}
+        return {"items": [], "engine_refused": True}
+    why = _usable(prec, f"{plant}'s record")
+    if why:
+        return {"refused": why}
+    items = []
+    for readout in spec.plant_readouts(plant):
+        entry = next(e for e in mapping["readouts"] if e["name"] == readout)
+        y = prec.series[entry["engine"].partition("/")[2]]
+        tau = _honest_tolerance(honest, readout)
+        scored = _score_readout(fam, plant, run, readout, y, ref_side(rrun, entry), tau)
+        items.append(_sized(scored, fam, plant, readout))
+    out = {"items": items}
+    if plant == "P8":
+        nc = []
+        for readout in spec.P8_NEGATIVE_CONTROL:
+            entry = next(e for e in mapping["readouts"] if e["name"] == readout)
+            it = _score_readout(
+                fam,
+                plant,
+                run,
+                readout,
+                prec.series[readout],
+                ref_side(rrun, entry),
+                _honest_tolerance(honest, readout),
+            )
+            it["passes"] = not (it["C1_fails"] or it["C2_fails"])
+            nc.append(it)
+        out["negative_control"] = nc
+        out["negative_control_passes"] = all(it["passes"] for it in nc)
+    return out
+
+
+def _judge_own_plant(fam, plant, run, index, mapping, honest):
+    """A plant the judge forms from the honest records (amendment 4, item 5): P1, P1″, P1′, P6."""
     rrun = fam.ref.runs[run]
     rec_h = _get(index, fam.name, "honest", run, "primary", spec.H_STEP_S)
+    idle = spec.idle_fate(fam.inputs["runs"][run]["p"])
     items = []
-    if spec.PLANT_KIND[plant] in ("world", "host_record"):
-        prec = _get(index, fam.name, "plant", run, "primary", spec.H_STEP_S, plant=plant)
-        if plant == "P8":
-            pb = _get(
-                index,
-                fam.name,
-                "plant",
-                "blank",
-                "primary",
-                spec.H_STEP_S,
-                plant="P8",
-                machine="returned",
-            )
-            if pb is None or pb.faults:
-                return {"refused": _usable(pb, "P8's planted blank")}
-            if _engine_refused(pb):
-                return {"items": [], "engine_refused": True}
-        if prec is not None and not prec.faults and prec.status == "refused":
-            return {"items": [], "engine_refused": True}
-        why = _usable(prec, f"{plant}'s record")
-        if why:
-            return {"refused": why}
-        for readout in spec.plant_readouts(plant):
-            entry = next(e for e in mapping["readouts"] if e["name"] == readout)
-            rs = ref_side(rrun, entry)
-            y = prec.series[entry["engine"].partition("/")[2]]
-            tau = _honest_tolerance(honest, readout)
-            items.append(
-                _sized(_score_readout(fam, plant, run, readout, y, rs, tau), fam, plant, readout)
-            )
-        out = {"items": items}
-        if plant == "P8":
-            nc = []
-            for readout in spec.P8_NEGATIVE_CONTROL:
-                entry = next(e for e in mapping["readouts"] if e["name"] == readout)
-                rs = ref_side(rrun, entry)
-                y = prec.series[readout]
-                it = _score_readout(
-                    fam, plant, run, readout, y, rs, _honest_tolerance(honest, readout)
-                )
-                it["passes"] = not (it["C1_fails"] or it["C2_fails"])
-                nc.append(it)
-            out["negative_control"] = nc
-            out["negative_control_passes"] = all(it["passes"] for it in nc)
-        return out
     if plant in ("P1", "P1″"):
         pm = planted_mapping(mapping, plant)
         rungs = [_get(index, fam.name, "honest", run, "primary", dt) for dt in spec.PRIMARY_RUNGS]
         blank = None
         if spec.has_blank(fam.profile):
-            m = matched_blank_machine(fam, run, index)
+            m = matched_blank_machine(fam, run)
             blank = _get(index, fam.name, "blank", "blank", "primary", spec.H_STEP_S, machine=m)
         ctx_h = rules.ScaleContext(
             fam.profile,
@@ -961,13 +1073,14 @@ def judge_plant_unit(fam, plant, run, index, mapping, family_runs):
             blank_values=None if blank is None else blank.series,
         )
         steps_h = fam.steps(spec.H_STEP_S)
-        idle = spec.idle_fate(fam.inputs["runs"][run]["p"])
         for readout in spec.plant_readouts(plant):
             fate = "durable" if readout.endswith(("R_win", "_durable")) else "short_lived"
             if plant == "P1" and fate == idle:
                 continue  # P1 acts where a fate releases (SPEC.md §6)
             entry = next(e for e in pm["readouts"] if e["name"] == readout)
             res = judge_series(entry, fam, rrun, rungs, ctx_h, steps_h)
+            if res.get("refused"):
+                raise ValueError(f"{readout}: {res['refused']}")
             quantity = readout if plant == "P1" else f"released_present_gross_{fate}"
             item = {
                 "plant": plant,
@@ -984,9 +1097,8 @@ def judge_plant_unit(fam, plant, run, index, mapping, family_runs):
                 item["planted_tolerance"] = res["C2"]["tolerance"]
             item["honest_tolerance"] = _honest_tolerance(honest, readout)
             items.append(_sized(item, fam, plant, quantity))
-        return {"items": items}
+        return items
     if plant == "P1′":
-        idle = spec.idle_fate(fam.inputs["runs"][run]["p"])
         t1, t2 = fam.window
         for fate in spec.FATES:
             if fate == idle:
@@ -1011,7 +1123,7 @@ def judge_plant_unit(fam, plant, run, index, mapping, family_runs):
                     "C2_fails": tau is not None and gap > tau,
                 }
                 items.append(_sized(item, fam, plant, f"route2_{fate}"))
-        return {"items": items}
+        return items
     if plant == "P6":
         L = spec.chain_length(fam.inputs)
         H = rec_h.series["H_tx_release"]
@@ -1019,12 +1131,9 @@ def judge_plant_unit(fam, plant, run, index, mapping, family_runs):
             fam.inputs
         ) * L * (H - H[0])
         entry = next(e for e in mapping["readouts"] if e["name"] == "G_minus_G0")
-        rs = ref_side(rrun, entry)
-        it = _score_readout(
-            fam, plant, run, "G_minus_G0", planted, rs, _honest_tolerance(honest, "G_minus_G0")
-        )
-        items.append(_sized(it, fam, plant, "G_minus_G0"))
-        return {"items": items}
+        tau = _honest_tolerance(honest, "G_minus_G0")
+        it = _score_readout(fam, plant, run, "G_minus_G0", planted, ref_side(rrun, entry), tau)
+        return [_sized(it, fam, plant, "G_minus_G0")]
     raise KeyError(plant)
 
 
@@ -1182,7 +1291,7 @@ def comparison(families, plants, fams):
 
 
 def provenance():
-    """The judge's own revision and dirty paths, and its mapping file's sha256, at run time."""
+    """The judge's own revision and dirty paths, and its two data files' sha256, at run time."""
     here = os.path.dirname(os.path.abspath(__file__))
 
     def git(*args):
@@ -1194,12 +1303,15 @@ def provenance():
 
     rev = git("rev-parse", "HEAD")
     status = git("status", "--porcelain", "--", ".", "../../../assembly_lineages_v2/agreement.py")
-    with open(MAPPING_PATH, "rb") as fh:
-        mapping_sha = hashlib.sha256(fh.read()).hexdigest()
+
+    def digest(path):
+        with open(path, "rb") as fh:
+            return hashlib.sha256(fh.read()).hexdigest()
+
     return {"revision": rev.strip() if rev else None,
             "dirty_paths": None if status is None else [x[3:] for x in status.splitlines()],
-            "mapping_sha256": mapping_sha, "python": sys.version.split()[0],
-            "numpy": np.__version__}  # fmt: skip
+            "mapping_sha256": digest(MAPPING_PATH), "shapes_sha256": digest(shapes.SHAPES_PATH),
+            "python": sys.version.split()[0], "numpy": np.__version__}  # fmt: skip
 
 
 def judge(ref_dir, export_dir, families=None, mapping=None, roles=None, references=None):
@@ -1236,9 +1348,12 @@ def judge(ref_dir, export_dir, families=None, mapping=None, roles=None, referenc
         return verdict
     if export_dir is None:
         return verdict
-    from . import definitions
-
-    tables = records.read_tables(export_dir, [f for f in order if refs[f].accepted])
+    table_shapes = shapes.load_shapes()
+    tables = records.read_tables(
+        export_dir,
+        [f for f in order if refs[f].accepted],
+        sample=shapes.sample_hashes(table_shapes),
+    )
     present = {t["family"] for t in tables["tables"]}
     # an invented family is judged only where the export carries its table; a registered family
     # always is, so that its missing runs are refusals, never gaps
@@ -1247,30 +1362,27 @@ def judge(ref_dir, export_dir, families=None, mapping=None, roles=None, referenc
         for f in order
         if refs[f].accepted and (f in spec.REAL_FAMILIES or f in present)
     }
-    for tab in tables["tables"]:  # an invented family with no role may carry a held blank
-        fam = fams.get(tab["family"])
-        doc = tab["doc"] if isinstance(tab["doc"], dict) else {}
-        rungs = doc.get("rungs") if isinstance(doc.get("rungs"), dict) else {}
-        if fam is not None and fam.role is None:
-            fam.held_blank_present = fam.held_blank_present or any(
-                isinstance(r, dict)
-                and isinstance(r.get("runs"), dict)
-                and "blank held" in r["runs"]
-                for r in rungs.values()
-            )
-    index, engine = index_records(tables["tables"], fams, mapping, tables["faults"])
+    index, engine = index_records(tables, fams, mapping, table_shapes)
+    engine["notes"] = tables["notes"] + engine["notes"]
+    engine["flags_for_the_checker"] = tables["flags"] + engine["flags_for_the_checker"]
     verdict["c0"]["engine"] = {
-        "tables": [{k: t.get(k) for k in ("family", "attempt", "path", "sha256", "faults")}
-                   for t in tables["tables"]],
+        "tables": [
+            {k: t.get(k) for k in ("family", "attempt", "path", "sha256", "faults")}
+            for t in tables["tables"]
+        ],
         "index": tables["index"],
         "faults": tables["faults"],
-        "flags_for_the_checker": [n for n in tables["notes"] if n.startswith("FLAG")],
-        "table_notes": [n for n in tables["notes"] if not n.startswith("FLAG")],
-        "open_shapes": {"table": list(records.TABLE_OPEN_SHAPES),
-                        "declaration": list(definitions.OPEN_SHAPES)},
         **engine,
-    }  # fmt: skip
+    }
     family_runs = {f: judge_family(fam, index, mapping) for f, fam in fams.items()}
+    verdict["c0"]["engine"]["flags_for_the_checker"] += [
+        f"{f} {a} {r}: {k}: an export that is never judged differs: {x}"
+        for f, runs in family_runs.items()
+        for r, v in runs.items()
+        for a in ("primary", "retry")
+        for k, names in v.get(a, {}).get("reported_equalities", {}).items()
+        for x in names
+    ]
     plants = judge_plants(fams, index, mapping, family_runs)
     verdict["families"] = {
         f: {"runs": runs, "verdict": aggregate(r["verdict"] for r in runs.values())}
