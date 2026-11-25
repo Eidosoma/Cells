@@ -1599,7 +1599,8 @@ def test_the_argument_rules_hold_exactly_what_was_traced(argv, cwd, asks):
 @pytest.mark.parametrize("fail", [False, True])
 def test_the_nightly_takes_a_free_lane_and_publishes_or_stops_selection(tmp_path, fail):
     """Lane A's lock is held, so the run takes lane B's. A passing run publishes its map; a file
-    that no longer matches its row writes the stop marker and keeps the last passing map."""
+    that no longer matches its row writes the stop marker and keeps the last passing map. The
+    second runs with TRACE=0."""
     out = tmp_path / "nightly"
     scope_snapshot(out / "snapshot", {"tests/unit/test_plain.py": "def test_plain():\n    assert 0\n"}
                    if fail else {})
@@ -1608,7 +1609,7 @@ def test_the_nightly_takes_a_free_lane_and_publishes_or_stops_selection(tmp_path
     (cache / "scope-map.json").write_text("{\"kind\": \"the last passing map\"}\n")
     env = clean_env(GATE_CACHE=str(cache), PY=sys.executable, HOSTPY=sys.executable,
                PRE_CPU=cpu, CPUS_A=cpu, CPUS_B=cpu, LOCK_A=str(tmp_path / "a.lock"),
-               LOCK_B=str(tmp_path / "b.lock"), POLL="1", WAIT_FREE="60")
+               LOCK_B=str(tmp_path / "b.lock"), POLL="1", WAIT_FREE="60", TRACE=str(int(not fail)))
     with open(tmp_path / "a.lock", "w") as held:
         fcntl.flock(held, fcntl.LOCK_EX)
         done = subprocess.run(["bash", str(out / "snapshot/scripts/gates/nightly_tiers.sh"), "--run",
@@ -1616,7 +1617,7 @@ def test_the_nightly_takes_a_free_lane_and_publishes_or_stops_selection(tmp_path
     log = (out / "nightly.log").read_text()
     assert "lane B, lock held" in log and done.returncode == int(fail), log
     trace = json.loads((out / "verdict.json").read_text())["trace"]  # What the trace found is recorded,
-    assert trace["traced"] == (4 if traceable() else 0) and trace["found"] == {}, trace
+    assert trace["traced"] == (4 if traceable() and not fail else 0) and trace["found"] == {}, trace
     assert not list((out / "tiers-1+2").glob("trace/*/t.*"))  # and a trace that found nothing goes.
     assert "compilation cache disabled in every process" in log and "cold check after the tiers: " in log
     published = json.loads((cache / "scope-map.json").read_text())
