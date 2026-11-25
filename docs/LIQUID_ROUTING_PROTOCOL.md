@@ -53,7 +53,8 @@ here qualifies by integration (D143): only the verdict does.
 faces, under the default face heat or `cells.heat.exact_free_energy_heat@1`. Arm 3 adds `cells.operator.neutral_arrival_labels@1`
 and `cells.operator.site_occupancy@1`. Arm 7 also runs `cells.operator.scheduled_compartment_wash@1`. Arm 2's
 exchange is the builder's to execute, by the operator the build provides. The registered strings note holds the exact
-operators of every registered run and the IDs in the new form, and the judge compares with it (amendment 5). The IDs
+operators of every registered run, the declared heat choice of each run of arms 1 to 6, and the IDs in the new form, and
+the judge compares with it (amendment 5). The IDs
 are the rename candidate's (2dd54f72), read through the rename's committed mapping at the registration tag.
 
 ## 3. The roles
@@ -76,8 +77,8 @@ Each is a different agent, and its work goes through the lead.
   alone. Neither reads the other's code.
 - The checker also confirms that each run's `inputs` is what its `definition` says, that P8's patches were
   on, and that a refused or stopped run is the engine's own. It recomputes the digests of one arm 7 pair from its two
-  record files (all six if cheap), confirms every `both_differ`, `wash_only` and `router_only` entry and its reason, and
-  the restart's checkpoint from its record.
+  record files (all six if cheap), confirms every `both_differ`, `wash_only` and `router_only` entry and its reason,
+  every mark, and the restart's checkpoint from its record.
 
 ## 4. Power, before any run (D366)
 
@@ -130,7 +131,7 @@ dated change, before the registration tag and never after a run.
 11. **The strings tag `liquid-routing-strings-2026-11-2x`,** on the next commit, which holds only
     `registered_strings.json`. A file inside the tagged commit cannot hold its own revision. `engine_revision` is the
     registration tag's. Before this tag the lead checks the note by parse against the builder's declared worlds and pairs,
-    with no run: one wrong operator ID would refuse every run of its world. The same is done at phase 2
+    with no run: one wrong operator ID or heat string would refuse every run of its world. The same is done at phase 2
     (`registered_strings_phase2.json`).
 12. **Phase 1:** arms 1, 2, 3, 4, 5 and 7 (nothing of arm 6), from a clean frozen snapshot of the registration tag
     (`scripts/gates/freeze_snapshot.py --scope full --require-clean`), detached, one thread each, cold (no compilation
@@ -173,14 +174,13 @@ dated change, before the registration tag and never after a run.
   for this registration. Its diagnosis is non-blind and labelled, by someone other than the author, the
   judge and the checker, and any new run is a new registration.
 
-## 7. Two departures from the precedent
+## 7. One departure from the precedent
 
 FR-38's amendment 6 scores a run that the engine itself stops as refused, at best inconclusive. Here an
 honest run that the engine's own energy, material or charge check stops **fails** (`CRITERIA.md` §3.7): the
 check's residual above its tolerance is the evidence. A refused definition, domain or harness failure stays
-refused. **The second** is amendment 5's V7: a class-S entry whose error exceeds τ fails even where its order lies outside
-the window, which D271 reads as inconclusive. Nothing else differs from amendment 6: a fail is never hidden by a refusal,
-every entry that can be formed is judged, and a refused or missing support run only makes its arm inconclusive.
+refused. Nothing else differs from amendment 6: a fail is never hidden by a refusal, every entry that can be
+formed is judged, and a refused or missing support run only makes its arm inconclusive.
 
 ## 8. Not judged here: tier rows
 
@@ -240,7 +240,7 @@ in §11.
 3. **The order window** is [p − ½, 2.5] for each class, the scheme's order 2 plus D271's half, narrower than
    D271's. A resolved order outside it is inconclusive, as D271 has it; an unresolved one is reported, not judged
    (`CRITERIA.md` §3.5). Adopted. Amendment 5's V7 governs since: where one difference alone is at rounding the entry is
-   inconclusive, and an error above τ fails whatever the order.
+   inconclusive.
 4. **The default heat's law** (LAWS.md §2) is declared from the study agent's reading of the engine at main
    0e563668, checked here for its algebra and its Taylor bound only. T4 tests it through the composite. Its class
    R is a scheme check whose pass is expected, since the law was transcribed from the engine; its class B is the
@@ -337,9 +337,9 @@ NumPy and decimal code, no engine, on CPU 6, in
 **Not read:** engine source, tests, any run output, any reference file, the judge's code, the builder's code.
 
 **Amendments 1 to 5** are in the spec folder, each with its own disclosures. Amendment 5 follows the lead's rulings on
-the spec audit, and its second rulings after the auditor's re-run. This author did not read the audit, its folder or its
-numbers; the lead read the references' README layout section and printed key names, and no value, to answer this
-author's questions about forms.
+the spec audit, its second rulings after the auditor's re-run, and its answers on that text. This author did not read
+the audit, its folder or its numbers; the lead read the references' README layout section and printed key names, and
+no value, to answer this author's questions about forms.
 
 **The advisor** answered this author on the plan. It was called three times on the draft, the last after the dt
 study's report was written in, and timed out each time. The lead's own advisor review of the protocol and the
