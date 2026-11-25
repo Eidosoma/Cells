@@ -45,16 +45,16 @@ CHANGED = "execution/phases.py"  # The file a simulated host-only landing change
 
 @pytest.fixture
 def scalar(tmp_path, spec):
-    """A step-0 snapshot of the single-cell definition (tests/conftest.py)."""
+    """A step-0 snapshot of the shared definition (tests/conftest.py)."""
     return io.write_snapshot(tmp_path / "scalar", spec, initialise(spec))
 
 
 @pytest.fixture
 def cohort(tmp_path):
-    """Two step-0 single-cell worlds (IDs 10 and 11) with different decay rates."""
-    first = short_spec("single_cell_pulse")
+    """Two step-0 single-cell worlds (IDs 10 and 11) with different forward rates."""
+    first = short_spec("reaction_transport_single")
     raw = first.to_dict()
-    raw["model"]["parameters"]["decay_rate"] = 0.5
+    raw["model"]["parameters"]["reaction"]["forward_rate"] = [0.5]
     batch = parse_batch(definition([first, parse_spec(raw)]).to_dict())
     starts = {w.world_id: initialise(w.simulation) for w in batch.worlds}
     return batch_io.write_batch_snapshot(tmp_path / "cohort", batch, starts)
@@ -470,9 +470,15 @@ def test_no_record_relaxes_the_fingerprint_or_the_state(scalar, monkeypatch, tmp
 def test_no_record_relaxes_a_renamed_model_id(scalar, monkeypatch, tmp_path):
     """D146: old configs and checkpoints are refused; no alias."""
     change_source(monkeypatch)
-    rewrite(scalar, lambda m: m["spec"]["model"].update(id="bitsey_source_decay@1"))
+
+    def rename(manifest):
+        model = manifest["spec"]["model"]
+        model["id"] = "renamed_reaction_transport@1"
+        del model["species"]  # An unknown model's fields, so its ID is what is refused.
+
+    rewrite(scalar, rename)
     record = build_record(scalar)
-    with pytest.raises(ConfigError, match="^Unknown model: 'bitsey_source_decay@1'"):
+    with pytest.raises(ConfigError, match="^Unknown model: 'renamed_reaction_transport@1'"):
         io.load_snapshot(scalar, continuity=request(tmp_path, record))
 
 

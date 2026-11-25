@@ -35,8 +35,8 @@ def test_batch_cli_validate_run_resume_branch_and_refusal(tmp_path):
     saved = tmp_path / "fresh/snapshots/checkpoint-000000"
     cli("resume", saved, "--output", tmp_path / "resumed")
     branch = spec.to_dict()
-    branch["worlds"][0]["simulation"]["experiment"]["source"]["schedule"].append(
-        {"time": 0.5, "rate": 0}
+    branch["worlds"][0]["simulation"]["experiment"]["contact"]["schedule"].append(
+        {"time": 0.5, "open_fractions": [0]}
     )
     _write_json(tmp_path / "branch.json", branch)
     cli("branch", saved, tmp_path / "branch.json", "--output", tmp_path / "branched")
@@ -46,8 +46,16 @@ def test_batch_cli_validate_run_resume_branch_and_refusal(tmp_path):
             np.load(tmp_path / f"resumed/worlds/world-{identity}/trajectory.npz") as b,
         ):
             at = np.flatnonzero(a["accepted_times"] == 0.5)[0]
-            for key in ("amount", "supplied", "degraded"):
+            for key in ("amount", "transferred", "converted"):
                 np.testing.assert_array_equal(a[key][at:], b[key])
+    with (
+        np.load(tmp_path / "resumed/worlds/world-10/trajectory.npz") as a,
+        np.load(tmp_path / "branched/worlds/world-10/trajectory.npz") as b,
+    ):  # The branch closes world 10's contact: nothing moves in it from there.
+        np.testing.assert_array_equal(
+            b["transferred"], np.broadcast_to(a["transferred"][0], b["transferred"].shape)
+        )
+        assert not np.array_equal(a["transferred"][-1], b["transferred"][-1])
     assert "already exists" in cli("run", config, "--output", tmp_path / "fresh", ok=False)
     assert "accepted time" in cli(
         "run", config, "--output", tmp_path / "invalid", "--checkpoint-at", 0.137, ok=False

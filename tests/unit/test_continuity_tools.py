@@ -198,7 +198,7 @@ def cohort_snapshot(tmp_path, jit=True):
     from cells.execution.state import initialise
     from tests.batch_fixtures import definition, short_spec
 
-    first = short_spec("single_cell_pulse", jit=jit)
+    first = short_spec("reaction_transport_single", jit=jit)
     batch = parse_batch(definition([first, first]).to_dict())
     starts = {w.world_id: initialise(w.simulation) for w in batch.worlds}
     return batch_io.write_batch_snapshot(tmp_path / f"cohort-{jit}", batch, starts)
@@ -246,7 +246,7 @@ def test_the_probe_cannot_decide_outside_the_first_landing(tmp_path):
     from cells.execution.state import initialise
     from tests.batch_fixtures import short_spec
 
-    one = short_spec("single_cell_pulse")
+    one = short_spec("reaction_transport_single")
     io.write_snapshot(scalar, one, initialise(one))
     with pytest.raises(probe.CannotDecide, match="names no cohort"):
         probe.read_cohort(scalar)
