@@ -35,11 +35,11 @@ patch, for one species.
 Its domain is the kind's for this form, |x| <= 80. Its moves are base rows, so a closure may hold
 its role: the kind reads it free.
 
-A known limit: it declares no step term, so refusal 4 (version 1.3,
-docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.4) refuses its moves at a compartment's node, fail-closed.
-The kind's per-stage charge slope holds a charged role at both its ends all the same. The kind's
-material term counts a neutral role and no charged row that crosses, so no per-stage rule bounds
-the relaxation of a scarce charged role through it.
+Its step terms are the kind's: a charged role's charge slope (stage_term) at both its ends, and its
+material rate (material_term), the sum over its role's two rows, on each of them, so a scarce role's
+relaxation is bounded at every stage, charged or neutral. By them refusal 4 (version 1.3,
+docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.4) admits its moves at a compartment's node. A role that
+version 1's proton buffer holds is refused by name: its read has no derivative for the term.
 """
 
 from cells.laws.cycles.forms import CycleForm, Parameter, Saturation
@@ -82,10 +82,12 @@ LAW = CycleLaw(
     DECLARED_ID,
     fuel_kinds=("maintained_held_rows@1",),
     reads=("rapid_binding@1",),  # Its rows at a closure node are read free (§5.2's admission).
+    stage_term="stage_term",  # The kind's: its charge slope at both ends.
+    material_term="material_term",  # The kind's: its rate over all the rows it moves.
     forms="base",  # One species moved: each move is a base row.
     cycle=CYCLE,
     host="cells.transporter@1",
-    provenance="cited",
+    provenance="parity",
     source=Citation(
         "an ATP-driven transporter of one species, in the Na/K law's mass-action form "
         "(laws/pumps/nak_atp_mass_action_positive.py; docs/KINETIC_PUMP_PROCESS.md): the engine's "

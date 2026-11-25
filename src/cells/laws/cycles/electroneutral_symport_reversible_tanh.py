@@ -28,10 +28,10 @@ more ions is a law of its own.
 Its domain is the kind's for this form, x <= 80, one-sided. Its moves are base rows, so a closure
 may hold them: the kind reads them free.
 
-A known limit: it declares no step term and moves charged rows with no net charge, so refusal 4
-(version 1.3, docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.4) refuses its moves at a compartment's node,
-fail-closed. It has no charge slope, and the kind's material term counts no charged row that
-crosses, so no per-stage rule bounds its rows' relaxation.
+Its step term is the kind's material rate (material_term), the sum over its four rows, on each of
+them, which bounds their relaxation at every stage. It moves no net charge, so it has no charge
+slope, and refusal 4 (version 1.3, docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.4) refuses its moves of
+charged rows at a compartment's node, fail-closed.
 """
 
 from cells.laws.cycles.forms import (
@@ -75,6 +75,7 @@ LAW = CycleLaw(
     DECLARED_ID,
     reads=("rapid_binding@1",),  # Its rows at a closure node are read free (§5.2's admission).
     forms="base",  # Two ions moved together: each move is a base row.
+    material_term="material_term",  # The kind's: its rate over all the rows it moves.
     electroneutral=True,
     cycle=CYCLE,
     host="cells.transporter@1",

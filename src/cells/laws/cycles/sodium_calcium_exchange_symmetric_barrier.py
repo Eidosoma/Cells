@@ -34,11 +34,10 @@ inactivation, no regulation, no leak mode and no temperature dependence beyond R
 Its domain is the kind's for this form, x <= 80, one-sided, with no voltage bound of its own. Its
 moves are its base rows, so a closure may hold them: the kind reads them free.
 
-A known limit: it declares no step term, so refusal 4 (version 1.3,
-docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.4) refuses its moves at a compartment's node, fail-closed.
-The kind's per-stage charge slope holds it at both its ends all the same. The kind's material term
-counts no charged row that crosses, so no per-stage rule bounds the relaxation of a scarce row
-(calcium's) through it.
+Its step terms are the kind's: its charge slope (stage_term) at both its ends, and its material rate
+(material_term), the sum over its four rows, on each of them, so a scarce calcium row's relaxation
+is bounded at every stage. By them refusal 4 (version 1.3, docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.4)
+admits its moves at a compartment's node.
 """
 
 from cells.laws.cycles.forms import (
@@ -103,6 +102,8 @@ CYCLE = CycleForm(
 LAW = CycleLaw(
     DECLARED_ID,
     reads=("rapid_binding@1",),  # Its rows at a closure node are read free (§5.2's admission).
+    stage_term="stage_term",  # The kind's: its charge slope at both ends.
+    material_term="material_term",  # The kind's: its rate over all the rows it moves.
     forms="base",  # Two ions exchanged: each move is a base row.
     cycle=CYCLE,
     host="cells.transporter@1",

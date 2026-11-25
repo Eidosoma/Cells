@@ -1,0 +1,2022 @@
+{
+ "schema": "ensemble-reexpression margins, version 1",
+ "part": 1,
+ "date": "2026-11-25",
+ "bands": "CRITERIA.md section 4.3 with U_c = 0 (the legacy side's own U_l, e_round, e_close, phi_out's own e_close, and e_store of the candidate's S_c)",
+ "rule": "distance: the largest difference between a planted run and the honest control of the frozen snapshot at the same captured step, over the entry's entities and compared times. ratio: distance over the largest magnitude of the readout in the control (assembly: the smallest over the worlds of seed 0). margin: distance over the band at U_c = 0.",
+ "worlds": {
+  "jupiter_baseline": {
+   "S_c": 3200,
+   "S_l": 800,
+   "entries": {
+    "n_cell_Na": {
+     "home": false,
+     "ratio": 0.01005,
+     "ratio_from": "pump",
+     "margin": 1582000.0,
+     "band_at_U_c_0": 1.873e-11,
+     "largest": 0.002948,
+     "home_plants": {}
+    },
+    "n_out_Na": {
+     "home": false,
+     "ratio": 0.009823,
+     "ratio_from": "face",
+     "margin": 5073000.0,
+     "band_at_U_c_0": 1.026e-09,
+     "largest": 0.5301,
+     "home_plants": {}
+    },
+    "leak_Na": {
+     "home": true,
+     "ratio": 0.01006,
+     "ratio_from": "leak",
+     "margin": 379900000.0,
+     "band_at_U_c_0": 6.35e-16,
+     "largest": 2.398e-05,
+     "home_plants": {
+      "leak": {
+       "ratio": 0.01006,
+       "margin": 379900000.0
+      }
+     }
+    },
+    "junction_Na": {
+     "home": true,
+     "ratio": 0.009321,
+     "ratio_from": "junction",
+     "margin": 52480000.0,
+     "band_at_U_c_0": 5.67e-16,
+     "largest": 3.192e-06,
+     "home_plants": {
+      "junction": {
+       "ratio": 0.009321,
+       "margin": 52480000.0
+      }
+     }
+    },
+    "face_Na": {
+     "home": true,
+     "ratio": 0.009842,
+     "ratio_from": "face",
+     "margin": 28090000.0,
+     "band_at_U_c_0": 1.134e-10,
+     "largest": 0.3236,
+     "home_plants": {
+      "face": {
+       "ratio": 0.009842,
+       "margin": 28090000.0
+      }
+     }
+    },
+    "n_cell_K": {
+     "home": false,
+     "ratio": 0.01059,
+     "ratio_from": "pump",
+     "margin": 124800.0,
+     "band_at_U_c_0": 1.618e-10,
+     "largest": 0.001906,
+     "home_plants": {}
+    },
+    "n_out_K": {
+     "home": false,
+     "ratio": 0.009802,
+     "ratio_from": "face",
+     "margin": 45420000.0,
+     "band_at_U_c_0": 3.313e-11,
+     "largest": 0.1535,
+     "home_plants": {}
+    },
+    "leak_K": {
+     "home": true,
+     "ratio": 0.009839,
+     "ratio_from": "leak",
+     "margin": 34530000.0,
+     "band_at_U_c_0": 1.179e-14,
+     "largest": 4.138e-05,
+     "home_plants": {
+      "leak": {
+       "ratio": 0.009839,
+       "margin": 34530000.0
+      }
+     }
+    },
+    "junction_K": {
+     "home": true,
+     "ratio": 0.008765,
+     "ratio_from": "junction",
+     "margin": 28590000.0,
+     "band_at_U_c_0": 8.819e-15,
+     "largest": 2.877e-05,
+     "home_plants": {
+      "junction": {
+       "ratio": 0.008765,
+       "margin": 28590000.0
+      }
+     }
+    },
+    "face_K": {
+     "home": true,
+     "ratio": 0.009818,
+     "ratio_from": "face",
+     "margin": 97550000.0,
+     "band_at_U_c_0": 8.567e-12,
+     "largest": 0.08512,
+     "home_plants": {
+      "face": {
+       "ratio": 0.009818,
+       "margin": 97550000.0
+      }
+     }
+    },
+    "n_cell_Cl": {
+     "home": false,
+     "ratio": 0.01443,
+     "ratio_from": "pump",
+     "margin": 7196.0,
+     "band_at_U_c_0": 1.244e-11,
+     "largest": 6.206e-06,
+     "home_plants": {}
+    },
+    "n_out_Cl": {
+     "home": false,
+     "ratio": 0.009831,
+     "ratio_from": "face",
+     "margin": 4101000.0,
+     "band_at_U_c_0": 9.028e-10,
+     "largest": 0.3766,
+     "home_plants": {}
+    },
+    "leak_Cl": {
+     "home": true,
+     "ratio": 0.009629,
+     "ratio_from": "leak",
+     "margin": 12750000.0,
+     "band_at_U_c_0": 3.991e-15,
+     "largest": 5.284e-06,
+     "home_plants": {
+      "leak": {
+       "ratio": 0.009629,
+       "margin": 12750000.0
+      }
+     },
+     "best_ratio": 0.01487,
+     "best_from": "pump",
+     "best_margin": 19690000.0
+    },
+    "junction_Cl": {
+     "home": true,
+     "ratio": 0.008632,
+     "ratio_from": "junction",
+     "margin": 15850000.0,
+     "band_at_U_c_0": 5.04e-16,
+     "largest": 9.254e-07,
+     "home_plants": {
+      "junction": {
+       "ratio": 0.008632,
+       "margin": 15850000.0
+      }
+     },
+     "best_ratio": 0.01186,
+     "best_from": "pump",
+     "best_margin": 21770000.0
+    },
+    "face_Cl": {
+     "home": true,
+     "ratio": 0.009852,
+     "ratio_from": "face",
+     "margin": 16260000.0,
+     "band_at_U_c_0": 1.449e-10,
+     "largest": 0.2391,
+     "home_plants": {
+      "face": {
+       "ratio": 0.009852,
+       "margin": 16260000.0
+      }
+     }
+    },
+    "channel_K": {
+     "home": true,
+     "ratio": 0.009985,
+     "ratio_from": "channel",
+     "margin": 2946000.0,
+     "band_at_U_c_0": 1.061e-14,
+     "largest": 3.131e-06,
+     "home_plants": {
+      "channel": {
+       "ratio": 0.009985,
+       "margin": 2946000.0
+      }
+     }
+    },
+    "gate_m": {
+     "home": true,
+     "ratio": 0.003659,
+     "ratio_from": "kinetics",
+     "margin": 65800000.0,
+     "band_at_U_c_0": 1.112e-11,
+     "largest": 0.2,
+     "home_plants": {
+      "kinetics": {
+       "ratio": 0.003659,
+       "margin": 65800000.0
+      }
+     }
+    },
+    "gate_h": {
+     "home": true,
+     "ratio": 3.395e-05,
+     "ratio_from": "kinetics",
+     "margin": 2146000.0,
+     "band_at_U_c_0": 1.111e-11,
+     "largest": 0.7024,
+     "home_plants": {
+      "kinetics": {
+       "ratio": 3.395e-05,
+       "margin": 2146000.0
+      }
+     }
+    },
+    "pump": {
+     "home": true,
+     "ratio": 0.009998,
+     "ratio_from": "pump",
+     "margin": 445300000.0,
+     "band_at_U_c_0": 2.222e-14,
+     "largest": 0.0009894,
+     "home_plants": {
+      "pump": {
+       "ratio": 0.009998,
+       "margin": 445300000.0
+      }
+     }
+    },
+    "junction_gate": {
+     "home": true,
+     "ratio": 0.0005564,
+     "ratio_from": "jgate",
+     "margin": 30360000.0,
+     "band_at_U_c_0": 1.111e-11,
+     "largest": 0.6062,
+     "home_plants": {
+      "jgate": {
+       "ratio": 0.0005564,
+       "margin": 30360000.0
+      }
+     }
+    },
+    "heat_junction": {
+     "home": false,
+     "ratio": 0.008542,
+     "ratio_from": "junction",
+     "margin": 2370000.0,
+     "band_at_U_c_0": 1.412e-13,
+     "largest": 3.919e-05,
+     "home_plants": {}
+    },
+    "heat_face": {
+     "home": false,
+     "ratio": 0.009677,
+     "ratio_from": "face",
+     "margin": 1084000.0,
+     "band_at_U_c_0": 3.867e-09,
+     "largest": 0.4332,
+     "home_plants": {}
+    },
+    "heat_membrane": {
+     "home": false,
+     "ratio": 0.009386,
+     "ratio_from": "pump",
+     "margin": 58940000.0,
+     "band_at_U_c_0": 4.393e-12,
+     "largest": 0.02759,
+     "home_plants": {}
+    },
+    "voltage": {
+     "home": true,
+     "ratio": 0.003526,
+     "ratio_from": "pump",
+     "margin": 48440.0,
+     "band_at_U_c_0": 5.172e-09,
+     "largest": 0.07105,
+     "home_plants": {
+      "pump": {
+       "ratio": 0.003526,
+       "margin": 48440.0
+      }
+     }
+    },
+    "phi_out": {
+     "home": true,
+     "ratio": 0.009207,
+     "ratio_from": "faceK",
+     "margin": 6707000.0,
+     "band_at_U_c_0": 6.986e-13,
+     "largest": 0.0005089,
+     "home_plants": {
+      "faceK": {
+       "ratio": 0.009207,
+       "margin": 6707000.0
+      }
+     }
+    }
+   },
+   "structural": {
+    "ST1 pump direction": {
+     "named": [
+      "n_cell_Na",
+      "n_cell_K",
+      "voltage"
+     ],
+     "run": "ST1 pump direction, own ledgers off",
+     "n_cell_Na": {
+      "distance": 0.005927,
+      "margin": 316500000.0
+     },
+     "n_cell_K": {
+      "distance": 0.004052,
+      "margin": 25050000.0
+     },
+     "voltage": {
+      "distance": 0.04968,
+      "margin": 9606000.0
+     }
+    },
+    "ST2 leak valence of Cl": {
+     "named": [
+      "leak_Cl"
+     ],
+     "run": "ST2 leak valence of Cl",
+     "leak_Cl": {
+      "distance": 0.00015,
+      "margin": 37580000000.0
+     }
+    },
+    "ST3 inactivation gate left out": {
+     "named": [
+      "channel_K"
+     ],
+     "run": "ST3 inactivation gate left out",
+     "channel_K": {
+      "distance": 1.334e-06,
+      "margin": 125700000.0
+     }
+    },
+    "ST4 junction voltage sign": {
+     "named": [
+      "junction_Na",
+      "junction_K",
+      "junction_Cl"
+     ],
+     "run": "ST4 junction voltage sign, own ledgers off",
+     "junction_Na": {
+      "distance": 4.745e-06,
+      "margin": 8369000000.0
+     },
+     "junction_K": {
+      "distance": 7.918e-05,
+      "margin": 8978000000.0
+     },
+     "junction_Cl": {
+      "distance": 4.225e-06,
+      "margin": 8384000000.0
+     }
+    },
+    "ST5 Na and K face diffusivities exchanged": {
+     "named": [
+      "face_Na",
+      "face_K"
+     ],
+     "run": "ST5 Na and K face diffusivities exchanged",
+     "face_Na": {
+      "distance": 0.05314,
+      "margin": 468600000.0
+     },
+     "face_K": {
+      "distance": 0.02258,
+      "margin": 2636000000.0
+     }
+    }
+   },
+   "mechanisms": {
+    "leak permeability": {
+     "leak_Na": {
+      "leak": {
+       "ratio": 0.01006,
+       "margin": 379900000.0
+      }
+     },
+     "leak_K": {
+      "leak": {
+       "ratio": 0.009839,
+       "margin": 34530000.0
+      }
+     },
+     "leak_Cl": {
+      "leak": {
+       "ratio": 0.009629,
+       "margin": 12750000.0
+      }
+     }
+    },
+    "channel permeability": {
+     "channel_K": {
+      "channel": {
+       "ratio": 0.009985,
+       "margin": 2946000.0
+      }
+     }
+    },
+    "channel kinetics": {
+     "gate_m": {
+      "kinetics": {
+       "ratio": 0.003659,
+       "margin": 65800000.0
+      }
+     },
+     "gate_h": {
+      "kinetics": {
+       "ratio": 3.395e-05,
+       "margin": 2146000.0
+      }
+     }
+    },
+    "Na/K pump": {
+     "pump": {
+      "pump": {
+       "ratio": 0.009998,
+       "margin": 445300000.0
+      }
+     }
+    },
+    "junction permeability": {
+     "junction_Na": {
+      "junction": {
+       "ratio": 0.009321,
+       "margin": 52480000.0
+      }
+     },
+     "junction_K": {
+      "junction": {
+       "ratio": 0.008765,
+       "margin": 28590000.0
+      }
+     },
+     "junction_Cl": {
+      "junction": {
+       "ratio": 0.008632,
+       "margin": 15850000.0
+      }
+     }
+    },
+    "junction gate": {
+     "junction_gate": {
+      "jgate": {
+       "ratio": 0.0005564,
+       "margin": 30360000.0
+      }
+     }
+    },
+    "faces": {
+     "face_Na": {
+      "face": {
+       "ratio": 0.009842,
+       "margin": 28090000.0
+      }
+     },
+     "face_K": {
+      "face": {
+       "ratio": 0.009818,
+       "margin": 97550000.0
+      }
+     },
+     "face_Cl": {
+      "face": {
+       "ratio": 0.009852,
+       "margin": 16260000.0
+      }
+     }
+    },
+    "electrical closure": {
+     "voltage": {
+      "pump": {
+       "ratio": 0.003526,
+       "margin": 48440.0
+      }
+     },
+     "phi_out": {
+      "faceK": {
+       "ratio": 0.009207,
+       "margin": 6707000.0
+      }
+     }
+    }
+   }
+  },
+  "jupiter_pump_release": {
+   "S_c": 3200,
+   "S_l": 800,
+   "entries": {
+    "n_cell_Na": {
+     "home": false,
+     "ratio": 0.01007,
+     "ratio_from": "pump",
+     "margin": 1187000.0,
+     "band_at_U_c_0": 1.873e-11,
+     "largest": 0.002207,
+     "home_plants": {}
+    },
+    "n_out_Na": {
+     "home": false,
+     "ratio": 0.009823,
+     "ratio_from": "face",
+     "margin": 5073000.0,
+     "band_at_U_c_0": 1.026e-09,
+     "largest": 0.5301,
+     "home_plants": {}
+    },
+    "leak_Na": {
+     "home": true,
+     "ratio": 0.01007,
+     "ratio_from": "leak",
+     "margin": 359700000.0,
+     "band_at_U_c_0": 6.35e-16,
+     "largest": 2.267e-05,
+     "home_plants": {
+      "leak": {
+       "ratio": 0.01007,
+       "margin": 359700000.0
+      }
+     }
+    },
+    "junction_Na": {
+     "home": true,
+     "ratio": 0.009329,
+     "ratio_from": "junction",
+     "margin": 58960000.0,
+     "band_at_U_c_0": 5.67e-16,
+     "largest": 3.583e-06,
+     "home_plants": {
+      "junction": {
+       "ratio": 0.009329,
+       "margin": 58960000.0
+      }
+     }
+    },
+    "face_Na": {
+     "home": true,
+     "ratio": 0.009842,
+     "ratio_from": "face",
+     "margin": 28090000.0,
+     "band_at_U_c_0": 1.134e-10,
+     "largest": 0.3236,
+     "home_plants": {
+      "face": {
+       "ratio": 0.009842,
+       "margin": 28090000.0
+      }
+     }
+    },
+    "n_cell_K": {
+     "home": false,
+     "ratio": 0.01082,
+     "ratio_from": "pump",
+     "margin": 93520.0,
+     "band_at_U_c_0": 1.618e-10,
+     "largest": 0.001398,
+     "home_plants": {}
+    },
+    "n_out_K": {
+     "home": false,
+     "ratio": 0.009802,
+     "ratio_from": "face",
+     "margin": 45420000.0,
+     "band_at_U_c_0": 3.313e-11,
+     "largest": 0.1535,
+     "home_plants": {}
+    },
+    "leak_K": {
+     "home": true,
+     "ratio": 0.009819,
+     "ratio_from": "leak",
+     "margin": 39530000.0,
+     "band_at_U_c_0": 1.179e-14,
+     "largest": 4.748e-05,
+     "home_plants": {
+      "leak": {
+       "ratio": 0.009819,
+       "margin": 39530000.0
+      }
+     }
+    },
+    "junction_K": {
+     "home": true,
+     "ratio": 0.008875,
+     "ratio_from": "junction",
+     "margin": 35450000.0,
+     "band_at_U_c_0": 8.819e-15,
+     "largest": 3.522e-05,
+     "home_plants": {
+      "junction": {
+       "ratio": 0.008875,
+       "margin": 35450000.0
+      }
+     }
+    },
+    "face_K": {
+     "home": true,
+     "ratio": 0.009818,
+     "ratio_from": "face",
+     "margin": 97550000.0,
+     "band_at_U_c_0": 8.567e-12,
+     "largest": 0.08512,
+     "home_plants": {
+      "face": {
+       "ratio": 0.009818,
+       "margin": 97550000.0
+      }
+     }
+    },
+    "n_cell_Cl": {
+     "home": false,
+     "ratio": 0.00811,
+     "ratio_from": "leak",
+     "margin": 5608.0,
+     "band_at_U_c_0": 1.244e-11,
+     "largest": 8.605e-06,
+     "home_plants": {}
+    },
+    "n_out_Cl": {
+     "home": false,
+     "ratio": 0.009831,
+     "ratio_from": "face",
+     "margin": 4101000.0,
+     "band_at_U_c_0": 9.028e-10,
+     "largest": 0.3766,
+     "home_plants": {}
+    },
+    "leak_Cl": {
+     "home": true,
+     "ratio": 0.009538,
+     "ratio_from": "leak",
+     "margin": 17640000.0,
+     "band_at_U_c_0": 3.991e-15,
+     "largest": 7.381e-06,
+     "home_plants": {
+      "leak": {
+       "ratio": 0.009538,
+       "margin": 17640000.0
+      }
+     }
+    },
+    "junction_Cl": {
+     "home": true,
+     "ratio": 0.008414,
+     "ratio_from": "junction",
+     "margin": 20450000.0,
+     "band_at_U_c_0": 5.04e-16,
+     "largest": 1.225e-06,
+     "home_plants": {
+      "junction": {
+       "ratio": 0.008414,
+       "margin": 20450000.0
+      }
+     }
+    },
+    "face_Cl": {
+     "home": true,
+     "ratio": 0.009852,
+     "ratio_from": "face",
+     "margin": 16260000.0,
+     "band_at_U_c_0": 1.449e-10,
+     "largest": 0.2391,
+     "home_plants": {
+      "face": {
+       "ratio": 0.009852,
+       "margin": 16260000.0
+      }
+     }
+    },
+    "channel_K": {
+     "home": true,
+     "ratio": 0.009985,
+     "ratio_from": "channel",
+     "margin": 3223000.0,
+     "band_at_U_c_0": 1.061e-14,
+     "largest": 3.425e-06,
+     "home_plants": {
+      "channel": {
+       "ratio": 0.009985,
+       "margin": 3223000.0
+      }
+     }
+    },
+    "gate_m": {
+     "home": true,
+     "ratio": 0.003658,
+     "ratio_from": "kinetics",
+     "margin": 65790000.0,
+     "band_at_U_c_0": 1.112e-11,
+     "largest": 0.2,
+     "home_plants": {
+      "kinetics": {
+       "ratio": 0.003658,
+       "margin": 65790000.0
+      }
+     }
+    },
+    "gate_h": {
+     "home": true,
+     "ratio": 3.473e-05,
+     "ratio_from": "kinetics",
+     "margin": 2196000.0,
+     "band_at_U_c_0": 1.111e-11,
+     "largest": 0.7025,
+     "home_plants": {
+      "kinetics": {
+       "ratio": 3.473e-05,
+       "margin": 2196000.0
+      }
+     }
+    },
+    "pump": {
+     "home": true,
+     "ratio": 0.009999,
+     "ratio_from": "pump",
+     "margin": 334000000.0,
+     "band_at_U_c_0": 2.222e-14,
+     "largest": 0.0007421,
+     "home_plants": {
+      "pump": {
+       "ratio": 0.009999,
+       "margin": 334000000.0
+      }
+     }
+    },
+    "junction_gate": {
+     "home": true,
+     "ratio": 0.0005699,
+     "ratio_from": "jgate",
+     "margin": 30880000.0,
+     "band_at_U_c_0": 1.111e-11,
+     "largest": 0.6019,
+     "home_plants": {
+      "jgate": {
+       "ratio": 0.0005699,
+       "margin": 30880000.0
+      }
+     }
+    },
+    "heat_junction": {
+     "home": false,
+     "ratio": 0.008326,
+     "ratio_from": "junction",
+     "margin": 2961000.0,
+     "band_at_U_c_0": 1.412e-13,
+     "largest": 5.023e-05,
+     "home_plants": {}
+    },
+    "heat_face": {
+     "home": false,
+     "ratio": 0.009677,
+     "ratio_from": "face",
+     "margin": 1084000.0,
+     "band_at_U_c_0": 3.867e-09,
+     "largest": 0.4332,
+     "home_plants": {}
+    },
+    "heat_membrane": {
+     "home": false,
+     "ratio": 0.009437,
+     "ratio_from": "pump",
+     "margin": 45190000.0,
+     "band_at_U_c_0": 4.393e-12,
+     "largest": 0.02104,
+     "home_plants": {}
+    },
+    "voltage": {
+     "home": true,
+     "ratio": 0.002774,
+     "ratio_from": "pump",
+     "margin": 36430.0,
+     "band_at_U_c_0": 5.172e-09,
+     "largest": 0.06793,
+     "home_plants": {
+      "pump": {
+       "ratio": 0.002774,
+       "margin": 36430.0
+      }
+     }
+    },
+    "phi_out": {
+     "home": true,
+     "ratio": 0.009207,
+     "ratio_from": "faceK",
+     "margin": 6707000.0,
+     "band_at_U_c_0": 6.986e-13,
+     "largest": 0.0005089,
+     "home_plants": {
+      "faceK": {
+       "ratio": 0.009207,
+       "margin": 6707000.0
+      }
+     }
+    }
+   },
+   "structural": {
+    "ST8 pump released on one membrane": {
+     "named": [
+      "pump"
+     ],
+     "run": "ST8 pump released on one membrane",
+     "pump": {
+      "distance": 0.0002474,
+      "margin": 11130000000.0
+     }
+    }
+   },
+   "mechanisms": {
+    "leak permeability": {
+     "leak_Na": {
+      "leak": {
+       "ratio": 0.01007,
+       "margin": 359700000.0
+      }
+     },
+     "leak_K": {
+      "leak": {
+       "ratio": 0.009819,
+       "margin": 39530000.0
+      }
+     },
+     "leak_Cl": {
+      "leak": {
+       "ratio": 0.009538,
+       "margin": 17640000.0
+      }
+     }
+    },
+    "channel permeability": {
+     "channel_K": {
+      "channel": {
+       "ratio": 0.009985,
+       "margin": 3223000.0
+      }
+     }
+    },
+    "channel kinetics": {
+     "gate_m": {
+      "kinetics": {
+       "ratio": 0.003658,
+       "margin": 65790000.0
+      }
+     },
+     "gate_h": {
+      "kinetics": {
+       "ratio": 3.473e-05,
+       "margin": 2196000.0
+      }
+     }
+    },
+    "Na/K pump": {
+     "pump": {
+      "pump": {
+       "ratio": 0.009999,
+       "margin": 334000000.0
+      }
+     }
+    },
+    "junction permeability": {
+     "junction_Na": {
+      "junction": {
+       "ratio": 0.009329,
+       "margin": 58960000.0
+      }
+     },
+     "junction_K": {
+      "junction": {
+       "ratio": 0.008875,
+       "margin": 35450000.0
+      }
+     },
+     "junction_Cl": {
+      "junction": {
+       "ratio": 0.008414,
+       "margin": 20450000.0
+      }
+     }
+    },
+    "junction gate": {
+     "junction_gate": {
+      "jgate": {
+       "ratio": 0.0005699,
+       "margin": 30880000.0
+      }
+     }
+    },
+    "faces": {
+     "face_Na": {
+      "face": {
+       "ratio": 0.009842,
+       "margin": 28090000.0
+      }
+     },
+     "face_K": {
+      "face": {
+       "ratio": 0.009818,
+       "margin": 97550000.0
+      }
+     },
+     "face_Cl": {
+      "face": {
+       "ratio": 0.009852,
+       "margin": 16260000.0
+      }
+     }
+    },
+    "electrical closure": {
+     "voltage": {
+      "pump": {
+       "ratio": 0.002774,
+       "margin": 36430.0
+      }
+     },
+     "phi_out": {
+      "faceK": {
+       "ratio": 0.009207,
+       "margin": 6707000.0
+      }
+     }
+    }
+   }
+  },
+  "integrated": {
+   "S_c": 800,
+   "S_l": 800,
+   "entries": {
+    "n_cell_Na": {
+     "home": false,
+     "ratio": 0.0089,
+     "ratio_from": "junction",
+     "margin": 24310.0,
+     "band_at_U_c_0": 6.089e-12,
+     "largest": 1.663e-05,
+     "home_plants": {}
+    },
+    "junction_Na": {
+     "home": true,
+     "ratio": 0.009376,
+     "ratio_from": "junction",
+     "margin": 122500000.0,
+     "band_at_U_c_0": 3.704e-16,
+     "largest": 4.84e-06,
+     "home_plants": {
+      "junction": {
+       "ratio": 0.009376,
+       "margin": 122500000.0
+      }
+     }
+    },
+    "n_cell_K": {
+     "home": false,
+     "ratio": 0.008306,
+     "ratio_from": "junction",
+     "margin": 25170.0,
+     "band_at_U_c_0": 5.07e-11,
+     "largest": 0.0001536,
+     "home_plants": {}
+    },
+    "junction_K": {
+     "home": true,
+     "ratio": 0.00925,
+     "ratio_from": "junction",
+     "margin": 92810000.0,
+     "band_at_U_c_0": 5.054e-15,
+     "largest": 5.071e-05,
+     "home_plants": {
+      "junction": {
+       "ratio": 0.00925,
+       "margin": 92810000.0
+      }
+     }
+    },
+    "n_cell_Cl": {
+     "home": false,
+     "ratio": 0.007752,
+     "ratio_from": "junction",
+     "margin": 16060.0,
+     "band_at_U_c_0": 4.579e-12,
+     "largest": 9.486e-06,
+     "home_plants": {}
+    },
+    "junction_Cl": {
+     "home": true,
+     "ratio": 0.008714,
+     "ratio_from": "junction",
+     "margin": 56860000.0,
+     "band_at_U_c_0": 4.25e-16,
+     "largest": 2.773e-06,
+     "home_plants": {
+      "junction": {
+       "ratio": 0.008714,
+       "margin": 56860000.0
+      }
+     }
+    },
+    "junction_gate": {
+     "home": true,
+     "ratio": 0.0009793,
+     "ratio_from": "jgate",
+     "margin": 137500000.0,
+     "band_at_U_c_0": 6.846e-12,
+     "largest": 0.961,
+     "home_plants": {
+      "jgate": {
+       "ratio": 0.0009793,
+       "margin": 137500000.0
+      }
+     }
+    },
+    "heat_junction": {
+     "home": false,
+     "ratio": 0.008498,
+     "ratio_from": "junction",
+     "margin": 16640000.0,
+     "band_at_U_c_0": 8.463e-14,
+     "largest": 0.0001657,
+     "home_plants": {}
+    },
+    "voltage": {
+     "home": true,
+     "ratio": 0.002032,
+     "ratio_from": "junction",
+     "margin": 24400.0,
+     "band_at_U_c_0": 1.713e-09,
+     "largest": 0.02057,
+     "home_plants": {
+      "junction": {
+       "ratio": 0.002032,
+       "margin": 24400.0
+      }
+     }
+    }
+   },
+   "structural": {
+    "ST9 the schedule is not applied": {
+     "named": [
+      "junction_Na",
+      "junction_K",
+      "junction_Cl"
+     ],
+     "run": "ST9 the schedule is not applied",
+     "junction_Na": {
+      "distance": 2.706e-06,
+      "margin": 7305000000.0
+     },
+     "junction_K": {
+      "distance": 2.808e-05,
+      "margin": 5556000000.0
+     },
+     "junction_Cl": {
+      "distance": 1.461e-06,
+      "margin": 3437000000.0
+     }
+    }
+   },
+   "mechanisms": {
+    "junction permeability": {
+     "junction_Na": {
+      "junction": {
+       "ratio": 0.009376,
+       "margin": 122500000.0
+      }
+     },
+     "junction_K": {
+      "junction": {
+       "ratio": 0.00925,
+       "margin": 92810000.0
+      }
+     },
+     "junction_Cl": {
+      "junction": {
+       "ratio": 0.008714,
+       "margin": 56860000.0
+      }
+     }
+    },
+    "junction gate": {
+     "junction_gate": {
+      "jgate": {
+       "ratio": 0.0009793,
+       "margin": 137500000.0
+      }
+     }
+    },
+    "electrical closure": {
+     "voltage": {
+      "junction": {
+       "ratio": 0.002032,
+       "margin": 24400.0
+      }
+     }
+    }
+   }
+  },
+  "base": {
+   "S_c": 3200,
+   "S_l": 1600,
+   "entries": {
+    "n_cell_Na": {
+     "home": false,
+     "ratio": 0.01005,
+     "ratio_from": "pump",
+     "margin": 1581000.0,
+     "band_at_U_c_0": 1.873e-11,
+     "largest": 0.002948,
+     "home_plants": {}
+    },
+    "n_out_Na": {
+     "home": false,
+     "ratio": 0.009823,
+     "ratio_from": "face",
+     "margin": 4934000.0,
+     "band_at_U_c_0": 1.055e-09,
+     "largest": 0.5301,
+     "home_plants": {}
+    },
+    "leak_Na": {
+     "home": true,
+     "ratio": 0.01006,
+     "ratio_from": "leak",
+     "margin": 336600000.0,
+     "band_at_U_c_0": 7.162e-16,
+     "largest": 2.396e-05,
+     "home_plants": {
+      "leak": {
+       "ratio": 0.01006,
+       "margin": 336600000.0
+      }
+     }
+    },
+    "junction_Na": {
+     "home": true,
+     "ratio": 0.009321,
+     "ratio_from": "junction",
+     "margin": 46540000.0,
+     "band_at_U_c_0": 6.395e-16,
+     "largest": 3.193e-06,
+     "home_plants": {
+      "junction": {
+       "ratio": 0.009321,
+       "margin": 46540000.0
+      }
+     }
+    },
+    "face_Na": {
+     "home": true,
+     "ratio": 0.009842,
+     "ratio_from": "face",
+     "margin": 24910000.0,
+     "band_at_U_c_0": 1.279e-10,
+     "largest": 0.3236,
+     "home_plants": {
+      "face": {
+       "ratio": 0.009842,
+       "margin": 24910000.0
+      }
+     }
+    },
+    "n_cell_K": {
+     "home": false,
+     "ratio": 0.01057,
+     "ratio_from": "pump",
+     "margin": 124700.0,
+     "band_at_U_c_0": 1.618e-10,
+     "largest": 0.001908,
+     "home_plants": {}
+    },
+    "n_out_K": {
+     "home": false,
+     "ratio": 0.009802,
+     "ratio_from": "face",
+     "margin": 42600000.0,
+     "band_at_U_c_0": 3.532e-11,
+     "largest": 0.1535,
+     "home_plants": {}
+    },
+    "leak_K": {
+     "home": true,
+     "ratio": 0.009839,
+     "ratio_from": "leak",
+     "margin": 30650000.0,
+     "band_at_U_c_0": 1.33e-14,
+     "largest": 4.143e-05,
+     "home_plants": {
+      "leak": {
+       "ratio": 0.009839,
+       "margin": 30650000.0
+      }
+     }
+    },
+    "junction_K": {
+     "home": true,
+     "ratio": 0.008752,
+     "ratio_from": "junction",
+     "margin": 25330000.0,
+     "band_at_U_c_0": 9.947e-15,
+     "largest": 2.879e-05,
+     "home_plants": {
+      "junction": {
+       "ratio": 0.008752,
+       "margin": 25330000.0
+      }
+     }
+    },
+    "face_K": {
+     "home": true,
+     "ratio": 0.009818,
+     "ratio_from": "face",
+     "margin": 86480000.0,
+     "band_at_U_c_0": 9.663e-12,
+     "largest": 0.08512,
+     "home_plants": {
+      "face": {
+       "ratio": 0.009818,
+       "margin": 86480000.0
+      }
+     }
+    },
+    "n_cell_Cl": {
+     "home": false,
+     "ratio": 0.01559,
+     "ratio_from": "pump",
+     "margin": 7206.0,
+     "band_at_U_c_0": 1.244e-11,
+     "largest": 5.737e-06,
+     "home_plants": {}
+    },
+    "n_out_Cl": {
+     "home": false,
+     "ratio": 0.009831,
+     "ratio_from": "face",
+     "margin": 3939000.0,
+     "band_at_U_c_0": 9.399e-10,
+     "largest": 0.3766,
+     "home_plants": {}
+    },
+    "leak_Cl": {
+     "home": true,
+     "ratio": 0.009425,
+     "ratio_from": "leak",
+     "margin": 10160000.0,
+     "band_at_U_c_0": 4.502e-15,
+     "largest": 4.854e-06,
+     "home_plants": {
+      "leak": {
+       "ratio": 0.009425,
+       "margin": 10160000.0
+      }
+     },
+     "best_ratio": 0.01617,
+     "best_from": "pump",
+     "best_margin": 17480000.0
+    },
+    "junction_Cl": {
+     "home": true,
+     "ratio": 0.007839,
+     "ratio_from": "junction",
+     "margin": 12190000.0,
+     "band_at_U_c_0": 5.684e-16,
+     "largest": 8.836e-07,
+     "home_plants": {
+      "junction": {
+       "ratio": 0.007839,
+       "margin": 12190000.0
+      }
+     },
+     "best_ratio": 0.01237,
+     "best_from": "pump",
+     "best_margin": 19320000.0
+    },
+    "face_Cl": {
+     "home": true,
+     "ratio": 0.009852,
+     "ratio_from": "face",
+     "margin": 14410000.0,
+     "band_at_U_c_0": 1.634e-10,
+     "largest": 0.2391,
+     "home_plants": {
+      "face": {
+       "ratio": 0.009852,
+       "margin": 14410000.0
+      }
+     }
+    },
+    "channel_K": {
+     "home": true,
+     "ratio": 0.009996,
+     "ratio_from": "channel",
+     "margin": 106300.0,
+     "band_at_U_c_0": 1.197e-14,
+     "largest": 1.272e-07,
+     "home_plants": {
+      "channel": {
+       "ratio": 0.009996,
+       "margin": 106300.0
+      }
+     }
+    },
+    "gate_m": {
+     "home": true,
+     "ratio": 0.01249,
+     "ratio_from": "kinetics",
+     "margin": 56870000.0,
+     "band_at_U_c_0": 1.253e-11,
+     "largest": 0.05704,
+     "home_plants": {
+      "kinetics": {
+       "ratio": 0.01249,
+       "margin": 56870000.0
+      }
+     }
+    },
+    "gate_h": {
+     "home": true,
+     "ratio": 3.395e-05,
+     "ratio_from": "kinetics",
+     "margin": 1903000.0,
+     "band_at_U_c_0": 1.253e-11,
+     "largest": 0.7024,
+     "home_plants": {
+      "kinetics": {
+       "ratio": 3.395e-05,
+       "margin": 1903000.0
+      }
+     }
+    },
+    "pump": {
+     "home": true,
+     "ratio": 0.009998,
+     "ratio_from": "pump",
+     "margin": 394800000.0,
+     "band_at_U_c_0": 2.506e-14,
+     "largest": 0.0009894,
+     "home_plants": {
+      "pump": {
+       "ratio": 0.009998,
+       "margin": 394800000.0
+      }
+     }
+    },
+    "junction_gate": {
+     "home": true,
+     "ratio": 0.0005563,
+     "ratio_from": "jgate",
+     "margin": 26910000.0,
+     "band_at_U_c_0": 1.253e-11,
+     "largest": 0.6061,
+     "home_plants": {
+      "jgate": {
+       "ratio": 0.0005563,
+       "margin": 26910000.0
+      }
+     }
+    },
+    "heat_junction": {
+     "home": false,
+     "ratio": 0.008538,
+     "ratio_from": "junction",
+     "margin": 2102000.0,
+     "band_at_U_c_0": 1.593e-13,
+     "largest": 3.92e-05,
+     "home_plants": {}
+    },
+    "heat_face": {
+     "home": false,
+     "ratio": 0.009677,
+     "ratio_from": "face",
+     "margin": 961000.0,
+     "band_at_U_c_0": 4.362e-09,
+     "largest": 0.4332,
+     "home_plants": {}
+    },
+    "heat_membrane": {
+     "home": false,
+     "ratio": 0.00939,
+     "ratio_from": "pump",
+     "margin": 52270000.0,
+     "band_at_U_c_0": 4.955e-12,
+     "largest": 0.02758,
+     "home_plants": {}
+    },
+    "voltage": {
+     "home": true,
+     "ratio": 0.003531,
+     "ratio_from": "pump",
+     "margin": 48470.0,
+     "band_at_U_c_0": 5.172e-09,
+     "largest": 0.071,
+     "home_plants": {
+      "pump": {
+       "ratio": 0.003531,
+       "margin": 48470.0
+      }
+     }
+    },
+    "channel_K_summary": {
+     "home": true,
+     "ratio": 0.009996,
+     "ratio_from": "channel",
+     "margin": 106300.0,
+     "band_at_U_c_0": 1.197e-14,
+     "largest": 1.272e-07,
+     "home_plants": {
+      "channel": {
+       "ratio": 0.009996,
+       "margin": 106300.0
+      }
+     }
+    }
+   },
+   "structural": {
+    "ST6 availability on the other cell's channel": {
+     "named": [
+      "channel_K"
+     ],
+     "world": 2,
+     "run": "ST6 availability on the other cell's channel",
+     "channel_K": {
+      "distance": 2.926e-07,
+      "margin": 24440000.0
+     },
+     "recorded_channel_K_relative_per_world": [
+      0.6614,
+      2.322,
+      0.6322,
+      0.1407,
+      1.117,
+      0.8976,
+      1.089,
+      0.6523
+     ]
+    },
+    "ST10 availability held over the step": {
+     "named": [
+      "channel_K"
+     ],
+     "world": 2,
+     "run": "ST10 availability held over the step, base",
+     "channel_K": {
+      "distance": 1.405e-09,
+      "margin": 117400.0
+     },
+     "recorded_channel_K_relative_per_world": [
+      0.01247,
+      0.006024,
+      0.003036,
+      0.008957,
+      0.01503,
+      0.002026,
+      0.02745,
+      0.003506
+     ]
+    }
+   },
+   "mechanisms": {
+    "leak permeability": {
+     "leak_Na": {
+      "leak": {
+       "ratio": 0.01006,
+       "margin": 336600000.0
+      }
+     },
+     "leak_K": {
+      "leak": {
+       "ratio": 0.009839,
+       "margin": 30650000.0
+      }
+     },
+     "leak_Cl": {
+      "leak": {
+       "ratio": 0.009425,
+       "margin": 10160000.0
+      }
+     }
+    },
+    "channel permeability": {
+     "channel_K": {
+      "channel": {
+       "ratio": 0.009996,
+       "margin": 106300.0
+      }
+     },
+     "channel_K_summary": {
+      "channel": {
+       "ratio": 0.009996,
+       "margin": 106300.0
+      }
+     }
+    },
+    "channel kinetics": {
+     "gate_m": {
+      "kinetics": {
+       "ratio": 0.01249,
+       "margin": 56870000.0
+      }
+     },
+     "gate_h": {
+      "kinetics": {
+       "ratio": 3.395e-05,
+       "margin": 1903000.0
+      }
+     }
+    },
+    "Na/K pump": {
+     "pump": {
+      "pump": {
+       "ratio": 0.009998,
+       "margin": 394800000.0
+      }
+     }
+    },
+    "junction permeability": {
+     "junction_Na": {
+      "junction": {
+       "ratio": 0.009321,
+       "margin": 46540000.0
+      }
+     },
+     "junction_K": {
+      "junction": {
+       "ratio": 0.008752,
+       "margin": 25330000.0
+      }
+     },
+     "junction_Cl": {
+      "junction": {
+       "ratio": 0.007839,
+       "margin": 12190000.0
+      }
+     }
+    },
+    "junction gate": {
+     "junction_gate": {
+      "jgate": {
+       "ratio": 0.0005563,
+       "margin": 26910000.0
+      }
+     }
+    },
+    "faces": {
+     "face_Na": {
+      "face": {
+       "ratio": 0.009842,
+       "margin": 24910000.0
+      }
+     },
+     "face_K": {
+      "face": {
+       "ratio": 0.009818,
+       "margin": 86480000.0
+      }
+     },
+     "face_Cl": {
+      "face": {
+       "ratio": 0.009852,
+       "margin": 14410000.0
+      }
+     }
+    },
+    "electrical closure": {
+     "voltage": {
+      "pump": {
+       "ratio": 0.003531,
+       "margin": 48470.0
+      }
+     }
+    }
+   }
+  },
+  "cell": {
+   "S_c": 3200,
+   "S_l": 800,
+   "entries": {
+    "n_cell_Na": {
+     "home": false,
+     "ratio": 0.01962,
+     "ratio_from": "leak",
+     "margin": 1533000.0,
+     "band_at_U_c_0": 2.148e-11,
+     "largest": 0.001669,
+     "home_plants": {}
+    },
+    "n_out_Na": {
+     "home": false,
+     "ratio": 0.01962,
+     "ratio_from": "leak",
+     "margin": 132300.0,
+     "band_at_U_c_0": 2.489e-10,
+     "largest": 0.001669,
+     "home_plants": {}
+    },
+    "leak_Na": {
+     "home": true,
+     "ratio": 0.008417,
+     "ratio_from": "leak",
+     "margin": 373400000.0,
+     "band_at_U_c_0": 8.821e-14,
+     "largest": 0.003914,
+     "home_plants": {
+      "leak": {
+       "ratio": 0.008417,
+       "margin": 373400000.0
+      }
+     }
+    },
+    "n_cell_K": {
+     "home": false,
+     "ratio": 0.0208,
+     "ratio_from": "pump",
+     "margin": 63750.0,
+     "band_at_U_c_0": 2.509e-10,
+     "largest": 0.0005694,
+     "home_plants": {}
+    },
+    "n_out_K": {
+     "home": false,
+     "ratio": 0.0208,
+     "ratio_from": "pump",
+     "margin": 1732000.0,
+     "band_at_U_c_0": 9.233e-12,
+     "largest": 0.0005694,
+     "home_plants": {}
+    },
+    "leak_K": {
+     "home": true,
+     "ratio": 0.01709,
+     "ratio_from": "leak",
+     "margin": 34170000.0,
+     "band_at_U_c_0": 3.175e-13,
+     "largest": 0.0006347,
+     "home_plants": {
+      "leak": {
+       "ratio": 0.01709,
+       "margin": 34170000.0
+      }
+     }
+    },
+    "n_cell_Cl": {
+     "home": false,
+     "ratio": 0.02835,
+     "ratio_from": "leak",
+     "margin": 15740.0,
+     "band_at_U_c_0": 1.779e-11,
+     "largest": 7.755e-06,
+     "home_plants": {}
+    },
+    "n_out_Cl": {
+     "home": false,
+     "ratio": 0.02835,
+     "ratio_from": "leak",
+     "margin": 1313.0,
+     "band_at_U_c_0": 2.133e-10,
+     "largest": 7.755e-06,
+     "home_plants": {}
+    },
+    "leak_Cl": {
+     "home": true,
+     "ratio": 0.02835,
+     "ratio_from": "leak",
+     "margin": 13230000.0,
+     "band_at_U_c_0": 2.117e-14,
+     "largest": 7.755e-06,
+     "home_plants": {
+      "leak": {
+       "ratio": 0.02835,
+       "margin": 13230000.0
+      }
+     }
+    },
+    "channel_K": {
+     "home": true,
+     "ratio": 0.009502,
+     "ratio_from": "channel",
+     "margin": 371700.0,
+     "band_at_U_c_0": 1.764e-12,
+     "largest": 6.702e-05,
+     "home_plants": {
+      "channel": {
+       "ratio": 0.009502,
+       "margin": 371700.0
+      }
+     }
+    },
+    "gate_m": {
+     "home": true,
+     "ratio": 0.01234,
+     "ratio_from": "kinetics",
+     "margin": 64210000.0,
+     "band_at_U_c_0": 1.112e-11,
+     "largest": 0.05771,
+     "home_plants": {
+      "kinetics": {
+       "ratio": 0.01234,
+       "margin": 64210000.0
+      }
+     }
+    },
+    "gate_h": {
+     "home": true,
+     "ratio": 1.846e-05,
+     "ratio_from": "kinetics",
+     "margin": 1332000.0,
+     "band_at_U_c_0": 1.111e-11,
+     "largest": 0.8015,
+     "home_plants": {
+      "kinetics": {
+       "ratio": 1.846e-05,
+       "margin": 1332000.0
+      }
+     }
+    },
+    "pump": {
+     "home": true,
+     "ratio": 0.009999,
+     "ratio_from": "pump",
+     "margin": 336700000.0,
+     "band_at_U_c_0": 2.222e-14,
+     "largest": 0.0007482,
+     "home_plants": {
+      "pump": {
+       "ratio": 0.009999,
+       "margin": 336700000.0
+      }
+     }
+    },
+    "heat_membrane": {
+     "home": false,
+     "ratio": 0.006051,
+     "ratio_from": "leak",
+     "margin": 7808000.0,
+     "band_at_U_c_0": 5.364e-11,
+     "largest": 0.06922,
+     "home_plants": {}
+    },
+    "voltage": {
+     "home": true,
+     "ratio": 0.003408,
+     "ratio_from": "leak",
+     "margin": 70570.0,
+     "band_at_U_c_0": 2.801e-09,
+     "largest": 0.0564,
+     "home_plants": {
+      "leak": {
+       "ratio": 0.003408,
+       "margin": 70570.0
+      }
+     }
+    }
+   },
+   "structural": {
+    "ST7 availability inverted": {
+     "named": [
+      "channel_K"
+     ],
+     "world": 1,
+     "run": "ST7 availability inverted",
+     "channel_K": {
+      "distance": 6.797e-06,
+      "margin": 3853000.0
+     },
+     "recorded_channel_K_relative_per_world": [
+      1.0,
+      0.0467,
+      0.2335,
+      1.0,
+      1.0,
+      2.426,
+      1.0,
+      1.0
+     ]
+    },
+    "ST10 availability held over the step": {
+     "named": [
+      "channel_K"
+     ],
+     "world": 1,
+     "run": "ST10 availability held over the step, cell",
+     "channel_K": {
+      "distance": 2.534e-07,
+      "margin": 143700.0
+     },
+     "recorded_channel_K_relative_per_world": [
+      0.0,
+      0.001741,
+      0.001728,
+      0.0,
+      0.0,
+      0.005324,
+      0.0,
+      0.0
+     ]
+    }
+   },
+   "mechanisms": {
+    "leak permeability": {
+     "leak_Na": {
+      "leak": {
+       "ratio": 0.008417,
+       "margin": 373400000.0
+      }
+     },
+     "leak_K": {
+      "leak": {
+       "ratio": 0.01709,
+       "margin": 34170000.0
+      }
+     },
+     "leak_Cl": {
+      "leak": {
+       "ratio": 0.02835,
+       "margin": 13230000.0
+      }
+     }
+    },
+    "channel permeability": {
+     "channel_K": {
+      "channel": {
+       "ratio": 0.009502,
+       "margin": 371700.0
+      }
+     }
+    },
+    "channel kinetics": {
+     "gate_m": {
+      "kinetics": {
+       "ratio": 0.01234,
+       "margin": 64210000.0
+      }
+     },
+     "gate_h": {
+      "kinetics": {
+       "ratio": 1.846e-05,
+       "margin": 1332000.0
+      }
+     }
+    },
+    "Na/K pump": {
+     "pump": {
+      "pump": {
+       "ratio": 0.009999,
+       "margin": 336700000.0
+      }
+     }
+    },
+    "electrical closure": {
+     "voltage": {
+      "leak": {
+       "ratio": 0.003408,
+       "margin": 70570.0
+      }
+     }
+    }
+   }
+  }
+ },
+ "pool_plants": {
+  "what": "PW-pool: the snapshot's own pool alone, on the captured definitions with one rate x 1.01. Class E has no margin: the distance is whether anything changes",
+  "cell cell_0 k_on_M_inv_s": {
+   "arrays_changed": [
+    "last_event_time_s",
+    "pending_time_s",
+    "dwell_completed_s",
+    "first_passage_s"
+   ],
+   "worlds_whose_event_count_differs": 0,
+   "worlds_whose_last_event_time_differs": 37,
+   "worlds": 64
+  },
+  "cell cell_0 k_off_s_inv": {
+   "arrays_changed": [
+    "last_event_time_s",
+    "pending_time_s",
+    "dwell_completed_s",
+    "first_passage_s"
+   ],
+   "worlds_whose_event_count_differs": 0,
+   "worlds_whose_last_event_time_differs": 37,
+   "worlds": 64
+  },
+  "cell cell_0 k_close_s_inv": {
+   "arrays_changed": [
+    "last_event_time_s",
+    "pending_time_s",
+    "dwell_completed_s",
+    "first_passage_s"
+   ],
+   "worlds_whose_event_count_differs": 0,
+   "worlds_whose_last_event_time_differs": 23,
+   "worlds": 64
+  },
+  "cell cell_0 k_fragment_dissolve_s_inv": {
+   "arrays_changed": [
+    "pending_time_s"
+   ],
+   "worlds_whose_event_count_differs": 0,
+   "worlds_whose_last_event_time_differs": 0,
+   "worlds": 64
+  },
+  "base cell_0 k_on_M_inv_s": {
+   "arrays_changed": [
+    "last_event_time_s",
+    "pending_time_s",
+    "dwell_completed_s",
+    "first_passage_s"
+   ],
+   "worlds_whose_event_count_differs": 0,
+   "worlds_whose_last_event_time_differs": 8,
+   "worlds": 8
+  },
+  "base cell_1 k_on_M_inv_s": {
+   "arrays_changed": [
+    "last_event_time_s",
+    "pending_time_s",
+    "dwell_completed_s",
+    "first_passage_s"
+   ],
+   "worlds_whose_event_count_differs": 0,
+   "worlds_whose_last_event_time_differs": 8,
+   "worlds": 8
+  },
+  "base cell_0 k_off_s_inv": {
+   "arrays_changed": [
+    "last_event_time_s",
+    "pending_time_s",
+    "dwell_completed_s",
+    "first_passage_s"
+   ],
+   "worlds_whose_event_count_differs": 0,
+   "worlds_whose_last_event_time_differs": 8,
+   "worlds": 8
+  },
+  "base cell_1 k_off_s_inv": {
+   "arrays_changed": [
+    "last_event_time_s",
+    "pending_time_s",
+    "dwell_completed_s",
+    "first_passage_s"
+   ],
+   "worlds_whose_event_count_differs": 0,
+   "worlds_whose_last_event_time_differs": 8,
+   "worlds": 8
+  },
+  "base cell_0 k_close_s_inv": {
+   "arrays_changed": [
+    "last_event_time_s",
+    "pending_time_s",
+    "dwell_completed_s",
+    "first_passage_s"
+   ],
+   "worlds_whose_event_count_differs": 0,
+   "worlds_whose_last_event_time_differs": 8,
+   "worlds": 8
+  },
+  "base cell_1 k_close_s_inv": {
+   "arrays_changed": [
+    "last_event_time_s",
+    "pending_time_s",
+    "dwell_completed_s",
+    "first_passage_s"
+   ],
+   "worlds_whose_event_count_differs": 0,
+   "worlds_whose_last_event_time_differs": 8,
+   "worlds": 8
+  },
+  "base cell_0 k_fragment_dissolve_s_inv": {
+   "arrays_changed": [
+    "last_event_time_s",
+    "pending_time_s",
+    "dwell_completed_s",
+    "first_passage_s"
+   ],
+   "worlds_whose_event_count_differs": 0,
+   "worlds_whose_last_event_time_differs": 4,
+   "worlds": 8
+  },
+  "base cell_1 k_fragment_dissolve_s_inv": {
+   "arrays_changed": [
+    "last_event_time_s",
+    "pending_time_s",
+    "dwell_completed_s",
+    "first_passage_s"
+   ],
+   "worlds_whose_event_count_differs": 0,
+   "worlds_whose_last_event_time_differs": 6,
+   "worlds": 8
+  }
+ },
+ "refused": {
+  "ST1 pump direction": "refused: NumericalError: Finite local/outside/global material, charge or resolved-energy accounting failed",
+  "ST4 junction voltage sign": "refused: NumericalError: Membrane/junction diagnostic dissipation must not decrease"
+ }
+}
