@@ -520,6 +520,10 @@ functions do not all leave: the live `laws/pumps/ca_atp_mass_action_positive.py`
 which calls `er_calcium.pump_rates`, and reads `plasma_calcium.MAX_VOLTAGE`. Those two functions and that constant
 stay, and the rest of the two modules goes (§13). The three older pump laws' docstrings name @2 (06681c8e). None has
 retired: @1's retirement, the proton law's fold and @3's own pumps wait for what the table names.
+**Corrected by use (25 November 2026, M, at legacy-cleanup 44b8e1da):** three more names of `er_calcium` stay,
+`PumpParameters` and `MAX_AFFINITY_RT`, which that live law reads, and `chemical_drive`, which `er_calcium.pump_rates`
+calls. Of `plasma_calcium` nothing more stays. `er_calcium.release_open` goes with its last user,
+`tests/unit/test_er_calcium.py`.
 
 **The kind's material bound, corrected (rows 2 and 13; kinds owner's file).** Where a population's law declares
 `material_term`, all its moved rows count, charged or neutral, crossing or not, protons included:
