@@ -27,7 +27,7 @@ from cells.legacy.core.spatial_calcium_spec import ionic_spec, store_spec
 from cells.legacy.models import spatial_calcium as model
 from cells.records.batch_io import load_batch_snapshot, write_batch_snapshot
 from cells.records.io import load_snapshot, write_run, write_snapshot
-from tests.batch_fixtures import definition
+from tests.batch_fixtures import definition, same
 from tests.reference_spatial_calcium import System, physical_energy_derivative, reference
 from tests.unit.test_assembly_cluster import ensemble_definition, event_histories
 
@@ -56,13 +56,6 @@ def evidence(name, record=None, arrays=None):
             )
         if arrays is not None:
             np.savez_compressed(path / (name + ".npz"), **arrays)
-
-
-def same(a, b):
-    for x, y in zip(jax.tree.leaves(a), jax.tree.leaves(b), strict=True):
-        assert np.asarray(x).dtype == np.asarray(y).dtype
-        assert np.asarray(x).shape == np.asarray(y).shape
-        assert np.asarray(x).tobytes() == np.asarray(y).tobytes()
 
 
 def compare(values, expected, system):
