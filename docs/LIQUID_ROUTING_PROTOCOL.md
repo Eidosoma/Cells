@@ -118,10 +118,10 @@ dated change, before the registration tag and never after a run.
    so that a fault has a remedy. At judgement it is repeated.
 9. **The rehearsal** (`CRITERIA.md` §10): the builder runs the invented worlds of `inputs_invented.json` through the
    registered exporter (labelled development runs; arm 6's from the lift branch, with its revision in the record), with
-   one invented arm 7 pair of its own, its map (`takeover_map_rehearsal.json`) and the lead's
-   `registered_strings_rehearsal.json`, and the judge scores the table end to end, every class, honest and planted,
-   against `reference_invented.json`. An honest miss is a defect to fix, or a bound to correct by §10's route
-   (re-derived, dated, disclosed), before any registered run.
+   one invented arm 7 pair of its own, its map (`takeover_map_rehearsal.json`), its declaration in
+   `takeover_pairs.json` and the lead's `registered_strings_rehearsal.json`, and the judge scores the table end to end,
+   every class, honest and planted, against `reference_invented.json`. An honest miss is a defect to fix, or a bound to
+   correct by §10's route (re-derived, dated, disclosed), before any registered run.
 10. **The registration tag `liquid-routing-registered-2026-11-2x`,** at the head that merges main, the spec, the
     references, the build and the judge, before any registered run. At that head the lead re-runs the builder's checks,
     the judge's tests and C0, regenerates the sample, and makes a trial merge. `takeover_map.json`'s content and
