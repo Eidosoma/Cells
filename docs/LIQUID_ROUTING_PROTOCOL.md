@@ -78,7 +78,7 @@ Each is a different agent, and its work goes through the lead.
 - The checker also confirms that each run's `inputs` is what its `definition` says, that P8's patches were
   on, and that a refused or stopped run is the engine's own. It recomputes the digests of one arm 7 pair from its two
   record files (all six if cheap), confirms every `both_differ`, `wash_only` and `router_only` entry and its reason,
-  every mark, and the restart's checkpoint from its record.
+  every entry of `records`, every mark, and the restart's checkpoint from its record.
 
 ## 4. Power, before any run (D366)
 
@@ -131,7 +131,8 @@ dated change, before the registration tag and never after a run.
 11. **The strings tag `liquid-routing-strings-2026-11-2x`,** on the next commit, which holds only
     `registered_strings.json`. A file inside the tagged commit cannot hold its own revision. `engine_revision` is the
     registration tag's. Before this tag the lead checks the note by parse against the builder's declared worlds and pairs,
-    with no run: one wrong operator ID or heat string would refuse every run of its world. The same is done at phase 2
+    with no run: one wrong operator ID or heat string would refuse every run of its world. A typo is corrected by a dated
+    second note with its own tag, before any table is hashed, and never after. The same is done at phase 2
     (`registered_strings_phase2.json`).
 12. **Phase 1:** arms 1, 2, 3, 4, 5 and 7 (nothing of arm 6), from a clean frozen snapshot of the registration tag
     (`scripts/gates/freeze_snapshot.py --scope full --require-clean`), detached, one thread each, cold (no compilation
@@ -337,9 +338,9 @@ NumPy and decimal code, no engine, on CPU 6, in
 **Not read:** engine source, tests, any run output, any reference file, the judge's code, the builder's code.
 
 **Amendments 1 to 5** are in the spec folder, each with its own disclosures. Amendment 5 follows the lead's rulings on
-the spec audit, its second rulings after the auditor's re-run, and its answers on that text. This author did not read
-the audit, its folder or its numbers; the lead read the references' README layout section and printed key names, and
-no value, to answer this author's questions about forms.
+the spec audit, its second rulings after the auditor's re-run, and its answers on that text, the last after the
+auditor's third pass. This author did not read the audit, its folder or its numbers; the lead read the references'
+README layout section and printed key names, and no value, to answer this author's questions about forms.
 
 **The advisor** answered this author on the plan. It was called three times on the draft, the last after the dt
 study's report was written in, and timed out each time. The lead's own advisor review of the protocol and the
