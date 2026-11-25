@@ -2276,14 +2276,6 @@
    "cls": [
     "cut"
    ],
-   "path": "validation/ool/references/refusals2.py",
-   "text": "p\\.name",
-   "reason": "a file name"
-  },
-  {
-   "cls": [
-    "cut"
-   ],
    "path": "validation/tissue/composition_matrix.py",
    "text": "law\\.split\\(\\\"@\\\"\\)|__module__",
    "reason": "whether two operators are one family's versions (their IDs up to the major, equal as before), and a module's last part"
@@ -2512,6 +2504,38 @@
    "path": "tests/reference_multispecies.py",
    "text": "text\\.replace\\(first",
    "reason": "the pinned panels' first spelling, kept by its marker, put in today's"
+  },
+  {
+   "cls": [
+    "partial"
+   ],
+   "path": "scripts/gates/scope.py",
+   "text": "\"(top|exec)\" in r",
+   "reason": "a record's key"
+  },
+  {
+   "cls": [
+    "cut"
+   ],
+   "path": "scripts/gates/scope.py",
+   "text": "KIND\\.partition",
+   "reason": "the scope map's own format, a schema's ID"
+  },
+  {
+   "cls": [
+    "cut"
+   ],
+   "path": "scripts/gates/scope_inject/sitecustomize.py",
+   "text": "name\\.rpartition",
+   "reason": "a module's name"
+  },
+  {
+   "cls": [
+    "cut"
+   ],
+   "path": "validation/legacy_port/capture_worlds.py",
+   "text": "k\\.split\\(\":\"\\)",
+   "reason": "an array's key"
   }
  ],
  "plants": {
