@@ -23,7 +23,7 @@ from cells.numerics.surface_field import FACTORED_SOLVER_ID, FLOOR_SOLVER_ID
 from cells.numerics.surface_field import LAW_ID as CLOSURE_ID
 from cells.numerics.surface_imex import ARS222_ID
 
-# {label: registered string}. "imex" is the rehearsal's alone (the lead's answer, 25 November).
+# {label: registered string}. "imex" is the rehearsal's alone (Amendment 1, item 5).
 LABELS = {
     "inner_model": INNER_MODEL_ID,
     "rk4": "rk4",
@@ -141,4 +141,6 @@ def note_entry(declared):
             entry[place].append(name)
         else:
             entry[place] = name
+    if entry["model"] is None and "pool_model" in entry["pool"]:
+        entry["model"] = "pool_model"  # A pool run's model; its solver and field solver are null.
     return {k: sorted(v) if isinstance(v, list) else v for k, v in entry.items()}

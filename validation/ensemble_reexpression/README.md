@@ -2,7 +2,8 @@
 
 This folder makes the definitions, the runs and the tables that `spec/` registers (tag `ensemble-reexpression-criteria-part1-2026-11-25`).
 It judges nothing. Its builder read `spec/SPEC.md`, `spec/READOUTS.md`, `spec/TABLE.md`, `spec/inputs.json`, the rules of `spec/README.md`, and the engine with its documents.
-He read no other file of `spec/`, no capture, no legacy output and no code of the judge. What the lead answered is marked "the lead, 25 November".
+Since 25 November he also reads `spec/AMENDMENT-1-2026-11-25.md`, which holds what the lead answered ("Amendment 1" below).
+He read no other file of `spec/`, no capture, no legacy output and no code of the judge.
 
 No registered world has been run by this folder's builder. Its run driver refuses to run one from a checkout.
 
@@ -48,15 +49,15 @@ interruption and goes on. `commands` prints one `run_detached.sh` command for ea
 - **What needs what:** a restart needs its judged run's record, and `all` makes the restarts last. A driven run needs its composed file's resolution, which the first run that needs it makes under a lock (`RUNS/resolutions`). Nothing else needs anything.
 - **A run's folder** is `RUNS/runs/<name>/`: `RUN.json` (its record, written last) and `attempt-N/` with `submitted.json` (what was submitted), `parsed.json` (what the engine parsed), `output/` (the engine's own record, or the pools'), `partial.npz` (a
   refused run's rows), `outcome.json` and `worker.log`. The record holds the run's name, the registered entry, the inputs file's sha256, the source, the fingerprints, the timings and the sha256 of every file of the attempt.
-- **Guards.** A run whose name does not begin with `inv_` is made only from a clean, complete frozen snapshot whose revision is the registration tag that the caller names (the lead, 25 November). Records stand outside the tree they are made from.
-- **Off the grid.** A declared time that is no grid point of the run's step is refused by name (`off_grid_change`, kind `harness`) before anything runs. `one NAME --off-grid` makes that one run all the same, and the flag stands in its record and, as the extra key `off_grid`, in its table entry, where no key means off (the lead, 25 November). The table then shows it as it is: more steps than its grid. A registered run made with the flag is refused (`harness`), by the driver and by the exporter.
+- **Guards.** A run whose name does not begin with `inv_` is made only from a clean, complete frozen snapshot whose revision is the registration tag that the caller names (Amendment 1). Records stand outside the tree they are made from.
+- **Off the grid.** A declared time that is no grid point of the run's step is refused by name (`off_grid_change`, kind `harness`) before anything runs. `one NAME --off-grid` makes that one run all the same, and the flag stands in its record and, as the extra key `off_grid`, in its table entry, where no key means off (Amendment 1). The table then shows it as it is: more steps than its grid. A registered run made with the flag is refused (`harness`), by the driver and by the exporter.
 
 ## The definitions
 
 - **An ionic world** is a closed `resolved_pump_tissue@3` definition with no registry, kind, operator, label, reservoir or electrode. Every number in it is the block's own double. `definitions check` parses every run's definition, reads its block back, and compares leaf by leaf: by SPEC §2.4's rule, and by
   the doubles too, but for the derived `initial_voltage_V`. It compares each registered block with the literal one of SPEC §2.5.
-- **A driven world** is a composed file for `cells assembly-pool resolve`. Its ionic part declares the channel at 1 throughout, and the pool's path multiplies that. An ionic run's schedule comes from the resolution of its own composed file's pools (the lead). The ionic runs of one seed and step have one composed file, and so one resolution.
-- **A pool run** submits its world's composed file at the first step and runs the file's pools with the function that `resolve` uses, so `channel` and `stream_id` are read back from that file (the lead, 25 November).
+- **A driven world** is a composed file for `cells assembly-pool resolve`. Its ionic part declares the channel at 1 throughout, and the pool's path multiplies that. An ionic run's schedule comes from the resolution of its own composed file's pools (Amendment 1). The ionic runs of one seed and step have one composed file, and so one resolution.
+- **A pool run** submits its world's composed file at the first step and runs the file's pools with the function that `resolve` uses, so `channel` and `stream_id` are read back from that file (Amendment 1).
 - **The field solver** is D147's (`validation/tissue/field_solver_choice.py`). The count of free offsets is made on the floor variant, which parses every world, and `declare()` has the last word. `check` holds the count to the block's own topology.
 - **Part 2** adds sections to `worlds.SECTIONS`, labels to `labels.LABELS` (and their place in the strings note to `labels.PLACES`), and series to `readouts.SERIES` and `readouts.potentials`. Nothing else names a section, a label or a series. A key of a block that no section holds is refused by name
   (`no_section`), and so is a field of an entity that has no place.
@@ -73,12 +74,12 @@ interruption and goes on. `commands` prints one `run_detached.sh` command for ea
 | `integrated` (3) | `inner_model` | `rk4` | `field_solver` | `closure`, `constant_field`, `junction_relaxation` | | null |
 | `cell` ionic (96) | `inner_model` | `rk4` | `field_solver` | `closure`, `constant_field`, `kv15_mh`, `maintained_fuel`, `nak_pump_positive` | | `assembly_observable` |
 | `base` ionic (97) | `inner_model` | `rk4` | `field_solver_floor` | as `jupiter` | | `assembly_observable` |
-| Pool runs (10) | null | null | null | | `pool_model`, `pool_topology` | `assembly_observable` |
+| Pool runs (10) | `pool_model` | null | null | | `pool_model`, `pool_topology` | `assembly_observable` |
 
 - **No run declares an operator or a kind.** The retry's runs declare their family's strings.
 - **The closure and the fuel stand among `laws`:** the note has no word of their own for them, and `kinds` holds declared kinds.
-- **The rehearsal's IMEX family** declares the label `imex` in place of `rk4` (the lead, 25 November).
-- **What counts as declared:** every string of the form `name@version` that the parsed definition holds, as a value or a key, and the execution's solver, which has no version today. For a driven run, the observable of its composed file's pools too. For a pool run, its pools' own definitions and their observable, and nothing of the ionic definition (the lead, 25 November).
+- **The rehearsal's IMEX family** declares the label `imex` in place of `rk4` (Amendment 1).
+- **What counts as declared:** every string of the form `name@version` that the parsed definition holds, as a value or a key, and the execution's solver, which has no version today. For a driven run, the observable of its composed file's pools too. For a pool run, its pools' own definitions and their observable, and nothing of the ionic definition (Amendment 1).
 
 ## The kinds of refusal (TABLE §4)
 
@@ -106,10 +107,10 @@ Each is this builder's, with the sentence it rests on. What the lead answered is
 5. **A channel's relative permeability** is its law's own for that species, which is 1 for K (SPEC §2.1). Its gate vector is in the law's order, m then h.
 6. **Levels:** the coupling's `active` is the level of the observable's true value and `inactive` that of its false one (SPEC §3.2, "1 if the number of set bits ...").
 7. **A pool's harness** is the block's, but `recording` is "events" (SPEC §2.4: "since a candidate's pool run records events").
-8. **A pool restart** is a first leg of the same definition and seed to the checkpoint's time, the checkpoint through a file, and a second leg to the end (the lead, 25 November; the live pool writes a checkpoint only at the end of a leg). Both legs are run by the two functions that `resolve` runs a pool with. The first leg is in the support run's own record (`first_legs`: the command it equals, its checkpoint, the sha256 of its files) and in no table entry. `step_index` is null (the lead).
-9. **`stream_id`** is the pool's position in the composed file, the first 0 (the lead). **A pool's cell**, for `pool`, `path`, `inputs` and `pool_seeds`, is the cell of that position among the cells that have a channel, in the definition's order. So the swapped plant's seeds are its honest run's (the lead).
-10. **EP1 and EP2** are the lead's: both channels' maximal permeability times 1.01; the two pools' channels exchanged. In the rehearsal a run's entry may carry `declared_change`, a list whose items are `{"path": [...], "value": ...}` over the block or `{"exchange_channels": [cell, cell]}`.
-11. **`p` = 4 is RK4 and `p` = 2 is ARS(2,2,2)**; any other is refused by the generator, by name (`unknown_order`), with kind `harness` (the lead).
+8. **A pool restart** is a first leg of the same definition and seed to the checkpoint's time, the checkpoint through a file, and a second leg to the end (Amendment 1; the live pool writes a checkpoint only at the end of a leg). Both legs are run by the two functions that `resolve` runs a pool with. The first leg is in the support run's own record (`first_legs`: the command it equals, its checkpoint, the sha256 of its files) and in no table entry. `step_index` is null (Amendment 1).
+9. **`stream_id`** is the pool's position in the composed file, the first 0 (Amendment 1). **A pool's cell**, for `pool`, `path`, `inputs` and `pool_seeds`, is the cell of that position among the cells that have a channel, in the definition's order. So the swapped plant's seeds are its honest run's (Amendment 1).
+10. **EP1 and EP2** are what the lead told: both channels' maximal permeability times 1.01; the two pools' channels exchanged. In the rehearsal a run's entry may carry `declared_change`, a list whose items are `{"path": [...], "value": ...}` over the block or `{"exchange_channels": [cell, cell]}`.
+11. **`p` = 4 is RK4 and `p` = 2 is ARS(2,2,2)**; any other is refused by the generator, by name (`unknown_order`), with kind `harness` (Amendment 1).
 12. **A route's series exist in a world that has the route** (READOUTS §2: "A series absent from a world counts as zero"). A leak exists where some membrane has a nonzero permeability, which is why `integrated` has none. A pump's series hold every membrane of a world that has a pump.
 13. **`phi_out`** is written for every region but the gauge, in `base` too, where it has no captured counterpart (READOUTS §2: "no captured `phi_out`").
 14. **`composed_file_fingerprint`** is the sha256 of the composed file's bytes, which a checker forms with `sha256sum` (TABLE §3: "The checker recomputes it from the composed file").

@@ -77,16 +77,16 @@ def ionic_definition(attempt):
 
 def driven_cells(definition):
     """The cells that have a channel, in the definition's order of cells: the k-th is the cell of
-    the k-th pool of a composed file (the lead's answer, 25 November)."""
+    the k-th pool of a composed file (Amendment 1, items 3 and 7)."""
     inside = {m["id"]: m["inside"] for m in definition["model"]["membranes"]}
     held = {inside.get(c["membrane_id"]) for c in definition["model"]["channels"]}
     return [c["id"] for c in definition["model"]["cells"] if c["id"] in held]
 
 
-def block(definition):
-    """The block of a definition, or why it has none (a declaration that was never parsed)."""
+def readable(read_back, *args):
+    """What is read back from a declaration, or why it cannot be (one that was never parsed)."""
     try:
-        return worlds.read(definition)
+        return read_back(*args)
     except Exception as error:
         return {"unreadable": f"{type(error).__name__}: {error}"}
 
@@ -168,7 +168,7 @@ def trajectory(world, run, record, attempt, definition):
 def ionic_entry(world, run, record, attempt):
     submitted = read(attempt / "submitted.json")
     definition = ionic_definition(attempt)
-    inputs, declared = block(definition), declared_strings(definition)
+    inputs, declared = readable(worlds.read, definition), declared_strings(definition)
     shown = {"ionic": definition}
     if run.kind == DRIVEN:
         manifest = read(attempt / "output/manifest.json") or {}
@@ -179,10 +179,8 @@ def ionic_entry(world, run, record, attempt):
             kept = {k: v for k, v in made_from.items() if k != "definitions_sha256"}
             shown["made_from"] = kept | {"worlds": own}
         else:
-            resolution = record["resolution"] or {}
-            inputs["assembly"] = submitted_assembly(
-                submitted, definition, resolution.get("composed_file_sha256")
-            )
+            sha256 = digest(attempt / "submitted.json")
+            inputs["assembly"] = readable(submitted_assembly, submitted, definition, sha256)
         declared = sorted({*declared, *(p["observable"] for p in submitted["pools"])})
     return trajectory(world, run, record, attempt, definition) | {
         "inputs": inputs,
@@ -307,6 +305,11 @@ def verified(folders, run, record):
         path = attempt / name
         if not path.is_file() or digest(path) != sha256:
             raise ExportError(f"{run.name!r}: {name} is not what its record lists")
+    resolution = record["resolution"]
+    if resolution is not None:
+        path = folders.root / resolution["record"]
+        if not path.is_file() or digest(path) != resolution["record_sha256"]:
+            raise ExportError(f"{run.name!r}: its resolution is not what its record lists")
     return attempt
 
 

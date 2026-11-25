@@ -30,7 +30,7 @@ RUN_KEYS = {
     "role",
     "variant",
 }
-DECLARED_CHANGE = "declared_change"  # An invented plant's change (the lead's answer, 25 November).
+DECLARED_CHANGE = "declared_change"  # An invented plant's change (Amendment 1, item 4).
 _RESTART = re.compile(r"(?:pool )?restart at (\S+)")
 _RETRY = re.compile(r"(?P<family>.+) h=(?P<step>\S+) retry")
 

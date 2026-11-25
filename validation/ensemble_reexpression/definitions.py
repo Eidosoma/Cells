@@ -1,14 +1,15 @@
 """The definitions of every registered run, made from inputs.json and spec/SPEC.md §2 alone, and
 their checks.
 
-    python -m validation.ensemble_reexpression.definitions check [--inputs FILE]
+    python -m validation.ensemble_reexpression.definitions check [--inputs FILE] [--owed FILE]
     python -m validation.ensemble_reexpression.definitions write NAME DIRECTORY [--inputs FILE]
     python -m validation.ensemble_reexpression.definitions strings [--inputs FILE]
 
-`check` parses the definitions of every run and runs none of them. It holds each to its block leaf
-by leaf (SPEC §2.4; by the doubles too, but for the derived initial voltage), each registered block
-to the literal one of SPEC §2.5, every declared time to the grid rule (SPEC §4), and the field
-solver to D147. `strings` prints each run's labels in the strings note's form, for the lead.
+`check` parses and validates the definitions of every run, as `cells validate` does, and runs none
+of them. It holds each to its block leaf by leaf (SPEC §2.4; by the doubles too, but for the derived
+initial voltage), each registered block to the literal one of SPEC §2.5, every declared time to the
+grid rule (SPEC §4), and the field solver to D147. `strings` prints each run's labels in the strings
+note's form, for the lead.
 
 - **An ionic world** is a closed `resolved_pump_tissue@3` definition (worlds.py).
 - **A driven world** (`cell`, `base`) is a composed file, which `cells assembly-pool resolve` turns
@@ -32,7 +33,7 @@ from pathlib import Path
 from cells.assembly_pool import observables
 from cells.assembly_pool.resolve import parse_composed
 from cells.definitions.specs import ConfigError, parse_spec
-from cells.execution.grid import EventGrid
+from cells.execution.runner import timeline
 from validation.ensemble_reexpression import worlds
 from validation.ensemble_reexpression.inputs import (
     DRIVEN,
@@ -359,9 +360,12 @@ def run_faults(inputs, run, parsed):
     refusal = grid_faults(inputs, run)
     if refusal is not None:
         out.append(f"{what}: {refusal}")
-    steps = len(EventGrid(spec)) - 1
-    if steps != steps_of(world.end, run.step_s):
-        out.append(f"{what}: its clock takes {steps} steps")
+    try:  # As `cells validate`: the clock, its steps' bounds and the trace's size; nothing runs.
+        steps = len(timeline(spec, energy_check=True)) - 1
+        if steps != steps_of(world.end, run.step_s):
+            out.append(f"{what}: its clock takes {steps} steps")
+    except ConfigError as error:
+        out.append(f"{what}: the engine's validation refuses it: {error}")
     if field_solver_choice.declare(raw) != raw:
         out.append(f"{what}: its field solver is not D147's")
     if field_solver_choice.free_field_offsets(raw) != floating(expected):
@@ -388,7 +392,7 @@ def _labels(inputs, run):
 
 
 def check(inputs, *, runs=None):
-    """(the faults of every definition, their counts): parse only."""
+    """(the faults of every definition, their counts): parse and validate only."""
     faults, parsed = [], {}
     selected = list(inputs.runs.values()) if runs is None else runs
     if inputs.path.resolve() == REGISTERED.resolve():
@@ -407,7 +411,10 @@ def check(inputs, *, runs=None):
         if world.pools and string(world.raw["coupling"]["law"]) not in laws:
             faults.append(f"{world.name}: its coupling names no registered observable")
     for run in selected:
-        faults += run_faults(inputs, run, parsed)
+        try:
+            faults += run_faults(inputs, run, parsed)
+        except Exception as error:  # A definition that is refused is a fault, and no end of it.
+            faults.append(f"{run.name}: {type(error).__name__}: {error}")
     kinds = Counter(r.kind for r in selected)
     counts = {
         "runs": len(selected),
@@ -425,7 +432,7 @@ def check(inputs, *, runs=None):
 def run_strings(inputs, run):
     """Every registered string that a run's definition declares, as its table entry lists them: an
     ionic definition's, with its pools' observable where pools drive it; a pool run's pools' and
-    their observable (the lead's answer, 25 November)."""
+    their observable (Amendment 1, item 8)."""
     parsed = definition(inputs, run)
     if run.kind == IONIC:
         return declared_strings(parse_spec(parsed).to_dict())
@@ -443,13 +450,16 @@ def main(argv=None):
     for name in ("check", "write", "strings"):
         command = commands.add_parser(name)
         command.add_argument("--inputs", type=Path, default=REGISTERED)
+        if name == "check":
+            command.add_argument("--owed", type=Path, help="retry_owed.json: the retry's runs")
         if name == "write":
             command.add_argument("name", help="a run's name")
             command.add_argument("directory", type=Path, help="a new folder")
     args = parser.parse_args(argv)
     inputs = Inputs(args.inputs)
     if args.command == "check":
-        faults, counts = check(inputs)
+        runs = None if args.owed is None else list(inputs.owed(args.owed))
+        faults, counts = check(inputs, runs=runs)
         print(json.dumps({"inputs_sha256": inputs.sha256, **counts, "faults": faults}, indent=2))
         return 1 if faults else 0
     if args.command == "strings":

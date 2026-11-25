@@ -639,6 +639,9 @@ def test_a_pool_entry_has_the_19_arrays_and_its_own_path(invented, tmp_path):
         pool_strings = {"pool_model", "pool_topology", "assembly_observable"}
         assert set(entry["strings"]) == pool_strings
         assert entry["declared_strings"] == sorted(labels.LABELS[n] for n in pool_strings)
+        noted = labels.note_entry(entry["declared_strings"])
+        assert (noted["model"], noted["observable"]) == ("pool_model", "assembly_observable")
+        assert noted["solver"] is None and noted["field_solver"] is None
     # An event that the checkpoint does not count is a fault of the record, and no entry.
     driver.write_json(attempt / "output/pools/pool-000/x.json", {})
     assert exporter.entry(invented, run, folders)["status"] == "completed"
@@ -682,7 +685,14 @@ def test_a_driven_entry_says_what_its_schedule_came_from(invented, tmp_path, pla
         ],
     }
     times = sorted({*(k * 2e-05 for k in range(11)), 3.3e-05, 5.1e-05, 9.7e-05})
-    folders, attempt = attempted(tmp_path, invented, run, composed, parsed=parsed)
+    resolved = tmp_path / "resolutions/one/RESOLUTION.json"
+    resolved.parent.mkdir(parents=True)
+    resolved.write_text("{}")
+    resolution = {"record": "resolutions/one/RESOLUTION.json"}
+    resolution["record_sha256"] = driver.digest(resolved)
+    folders, attempt = attempted(
+        tmp_path, invented, run, composed, parsed=parsed, facts={"resolution": resolution}
+    )
     driver.write_json(attempt / "inputs.json", made_from)
     (attempt / "output").mkdir()
     np.savez(attempt / "output/trajectory.npz", **arrays(parsed, times, [0.0, 8e-05, 0.0002]))
@@ -702,6 +712,22 @@ def test_a_driven_entry_says_what_its_schedule_came_from(invented, tmp_path, pla
     assert channel[driven[1]] == [[0.0, 1.0], *path[1]]
     assert observables.LAW_ID in entry["declared_strings"]
     assert entry["strings"]["assembly_observable"] == observables.LAW_ID
+    resolved.write_text("{} ")
+    changed = exporter.entry(invented, run, folders)
+    assert "its resolution is not what its record lists" in changed["refusal"]["message"]
+    # Refused before it had a schedule: what its composed file submits, and the engine's own kind.
+    refusal = {"kind": "definition", "message": "a near miss", "time_s": None}
+    folders, _ = attempted(
+        tmp_path / "r", invented, run, composed, status="refused", refusal=refusal
+    )
+    entry = exporter.entry(invented, run, folders)
+    assert exporter.entry_faults(name, entry) == [] and entry["refusal"] == refusal
+    given = entry["inputs"]["assembly"]
+    assert given["pool_seeds"] == {"c_a": 711, "c_b": 721}
+    assert given["switch_list"] == {"k_a": [], "k_b": []}
+    assert given["composed_file_fingerprint"] == driver.digest(
+        folders.attempt(run) / "submitted.json"
+    )
 
 
 # ------------------------------------------------------------------ strings, refusals, the guard
@@ -856,8 +882,8 @@ def worked(tmp_path, path, name, monkeypatch, *, off_grid=False):
     driver.write_json(attempt / "job.json", job)
     monkeypatch.setattr(driver.Worker, "execute", lambda self, *_: self.output.mkdir())
     driver.Worker(attempt).outcome()
-    made = (attempt / "output").exists()
-    return json.loads((attempt / "outcome.json").read_text()), made
+    found = {name: (attempt / name).exists() for name in ("output", "submitted.json")}
+    return json.loads((attempt / "outcome.json").read_text()), found
 
 
 def test_the_generators_own_refusals_come_before_any_run(invented, tmp_path, monkeypatch):
@@ -871,17 +897,19 @@ def test_the_generators_own_refusals_come_before_any_run(invented, tmp_path, mon
     path.write_text(json.dumps(raw))
     sheet = "inv_sample_sheet h=4e-05"
     outcome, made = worked(tmp_path, path, sheet, monkeypatch)
-    assert not made and outcome["refusal"]["kind"] == "harness"
+    assert made == {"output": False, "submitted.json": True}
+    assert outcome["refusal"]["kind"] == "harness"
     assert outcome["refusal"]["message"].startswith("off_grid_change: ")
     outcome, made = worked(tmp_path, path, sheet, monkeypatch, off_grid=True)
-    assert made and outcome["status"] == "completed"
+    assert made["output"] and outcome["status"] == "completed"
     assert outcome["facts"]["off_grid"].startswith("off_grid_change: ")
     outcome, made = worked(tmp_path, path, "inv_sample_slow h=4e-05", monkeypatch)
-    assert not made and outcome["refusal"]["kind"] == "harness"
+    assert made == {"output": False, "submitted.json": False}
+    assert outcome["refusal"]["kind"] == "harness"
     assert outcome["refusal"]["message"].startswith("unknown_order: p = 3")
     name = "integrated h=0.0001"
     outcome, made = worked(tmp_path, REGISTERED, name, monkeypatch, off_grid=True)
-    assert not made and outcome["refusal"]["kind"] == "harness"
+    assert not made["output"] and outcome["refusal"]["kind"] == "harness"
     run = dataclasses.replace(invented.run(sheet), name="sheet h=4e-05")
     folders, attempt = attempted(tmp_path / "told", invented, run, {})
     record = driver.made(invented, run, attempt, None, tag=None, off_grid=True)

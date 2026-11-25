@@ -336,6 +336,8 @@ class Worker:
     def make(self):
         from validation.ensemble_reexpression import definitions
 
+        raw = self.declaration(definitions)
+        path = self.submit(raw)  # The entry of a run refused from here on holds its declaration.
         if self.job["off_grid"] and not self.run.invented:
             raise refused("harness", "off_grid: a registered run is never made with --off-grid")
         fault = definitions.grid_faults(self.inputs, self.run)
@@ -343,26 +345,23 @@ class Worker:
             raise refused("harness", fault)
         self.facts["off_grid"] = fault
         if self.run.kind == IONIC:
-            return self.ionic(definitions)
+            return self.ionic(path)
         if self.run.kind == DRIVEN:
-            return self.driven(definitions)
-        return self.pools(definitions)
+            return self.driven(raw)
+        return self.pools(path)
 
-    def ionic(self, definitions):
+    def ionic(self, path):
         from cells.definitions.specs import load_spec
 
-        path = self.submit(self.declaration(definitions))
         with self.engine("parse"):
             spec = self.parsed(load_spec(path))
         if self.run.restart_time is not None:
             return self.resume(spec)
         return self.execute(spec, None, {"operation": "run"})
 
-    def driven(self, definitions):
+    def driven(self, raw):
         from cells.definitions.specs import load_spec
 
-        raw = self.declaration(definitions)
-        self.submit(raw)
         resolved = self.resolve(raw)
         with self.engine("parse"):
             spec = self.parsed(load_spec(resolved / f"worlds/world-{self.run.world_id}.json"))
@@ -374,10 +373,9 @@ class Worker:
             return self.resume(spec, made_from)
         return self.execute(spec, None, {"operation": "run", "inputs": made_from})
 
-    def pools(self, definitions):
+    def pools(self, path):
         from cells.assembly_pool import resolve
 
-        path = self.submit(self.declaration(definitions))
         with self.engine("parse"):
             composed = resolve.load_composed(path)
         self.facts["definition"]["composed_fingerprint"] = composed.fingerprint
