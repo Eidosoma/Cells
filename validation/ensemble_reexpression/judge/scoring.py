@@ -1449,7 +1449,12 @@ class Stage2:
             "members": {
                 "families": len(families),
                 "judged_runs": len(members),
-                "pool_runs": [r["name"] for r in shared if r["role"] == "judged"],
+                "pool_runs": [
+                    r["name"] for r in shared if r["role"] == "judged" and self.reg.is_pool(r)
+                ],
+                "runs_of_no_family": [
+                    r["name"] for r in shared if r["role"] == "judged" and not self.reg.is_pool(r)
+                ],
                 "support_runs": support,
                 "plants": [p["plant"] for p in its_plants],
             },

@@ -1,7 +1,7 @@
 # The judge of Part 1
 
 **What it is.** The reader and the scorer of `spec/` (`ensemble-reexpression-v1`, Part 1), with `spec/AMENDMENT-1-2026-11-25.md` and the lead's rulings of 25 November on the judge's questions (Amendment 2). It imports nothing of the engine: the standard library and numpy.
-It was written from the spec folder, the protocol, the captures and the planted legacy arrays alone. Its author has read no engine source, no test, no builder's branch, no candidate, and no table of a candidate. None existed. The builders' format sample (invented worlds, meaningless numbers) was read after the reader was written (§6).
+It was written from the spec folder, the protocol, the captures and the planted legacy arrays alone. Its author has read no engine source, no test, no builder's branch, no candidate, and no table of a candidate. None existed. The builders' format sample (invented worlds, meaningless numbers) was read after the reader was written, and the rehearsal's tables (invented worlds too) after that (§6). No table of a registered run has been read.
 
 ## 1. Files
 
@@ -47,7 +47,7 @@ It was written from the spec folder, the protocol, the captures and the planted 
 | 11 | `J plants` with stage 1's options, `--out O/plants.json` (any time after 5) | The tables, the captures and the planted runs | `plants.json`: JP1 to JP24 on altered copies of the registered tables |
 
 **Before the campaign:** `J selftest --out O/selftest.json` (C0, the fabricated tables, JP1 to JP24; about a minute), `J structure --tables <sample>/table --retry-tables <sample>/table-retry` (the format sample, TABLE section 7), and the tests:
-`PYTHONPATH=src:. JAX_ENABLE_X64=1 /mnt/workspaces/Cells/venv-cpu/bin/python -m pytest -q -p no:cacheprovider validation/ensemble_reexpression/judge/test_judge.py` (164 rows, about 30 s of one idle core and twice that on a busy machine; they read the captures, compile nothing, and skip where no capture is).
+`PYTHONPATH=src:. JAX_ENABLE_X64=1 /mnt/workspaces/Cells/venv-cpu/bin/python -m pytest -q -p no:cacheprovider validation/ensemble_reexpression/judge/test_judge.py` (176 rows, about 30 s of one idle core and twice that on a busy machine; they read the captures, compile nothing, and skip where no capture is).
 **They were tried on faults of the code:** some hundred one-line changes of the judge's own code, each in a scratch copy, were run against them. Eight survived at first: one was equivalent (a check that another one repeats), and the others led to stronger tests. **And on faults of a table:** two thousand random faults of a leaf raised nothing in the stages, and no judged leaf changed unseen.
 
 `J fabricate --out O/fab` writes the honest tables of the judge's own with their `SHA256SUMS` and a strings note. They are marked as fabricated and no engine ran.
@@ -88,7 +88,7 @@ Where the text left something open, this is what the code does. **[ruled]** is t
 26. **A structural zero** is read at every row of the run, and needs every compared time.
 27. **Power** reads the four-digit ratios of `margins.json` with max |L₃| at full precision. "2 U_c is the larger part of β" is 2 U_c > β − 2 U_c.
 28. **The retry** (CRITERIA 7, "a refused or stopped run takes no retry"): a family of which any run is refused for any cause, missing or stopped takes none. An entry judged again is owned by the retry run, and a plant's named entry is scored with its last triple.
-29. **The sets of `base`:** each set needs its own mechanisms tested by its own families. The pool runs, the support run and the plants count in both.
+29. **The sets of `base`:** each set needs its own mechanisms tested by its own families. The pool runs, their support run and the plants count in both. A restart of an ionic run, and its entries, are of the set that holds the family of the run that it is compared with (Part 1 registers no such restart in `base`. The rehearsal has one).
 30. **An order-2 world** (the rehearsal): its balances, capacitor and energy identity are formed and reported, and not judged.
 31. **An energy identity that is not finite on finite rows** (an amount at or below zero) is not formed. The entries that read the amount fail.
 32. **Flagged and not refused:** another `cpu_model` than the captures', a first time that is not 0, an unsorted `declared_strings`, a recorded leaf that is missing, mistyped or not finite, a pool run's `t` or `rows` that is not empty.
@@ -96,6 +96,11 @@ Where the text left something open, this is what the code does. **[ruled]** is t
 34. **A membrane without a pump [ruled]** in a world that has pumps (none is registered): `pump`, `heat_pump` and `work_pump` are read on the membranes that have one. Zero rows of the others are accepted, and a row of theirs that is not zero is flagged.
 35. **A second pass [ruled, provisional]** (Amendment 2, item 7): `second_pass_completed: true` in the table's `refusal` is flagged to the checker and refuses nothing. Any other key of a `refusal` beyond the contract's three is flagged too.
 36. **The format sample's** refused run without a declaration has empty `definition` and `checks` [ruled], and its refused runs all have empty `checks`. An empty one is flagged in a completed run alone.
+37. **A world of one run** (the rehearsal's `inv_offgrid`, `inv_stop`): C0 forms its classes, identities and padding from its captured runs, as for a family. No other run is needed for that.
+38. **A printed observed order** is the judge's at two decimals (`legacy_part1.json`) or at three digits (`legacy_rehearsal.json`).
+39. **A printed `largest` of an assembly entry** is the smallest over the worlds (Part 1) or the value of the world with the smallest margin (the rehearsal's file, nine entries). C0 accepts the second, notes it, and judges nothing by it.
+40. **A judge's plant's claim on a consumer's verdict** is not made where the consumer's honest verdict is not a pass, as the rehearsal's `integrated` is, by its designed faults. The plant's other claims are judged.
+41. **The rehearsal's two honest families with one constant schedule** (`inv_cell s0 w2`, `s1 w0`) are equal in every row, and the copy guard does not refuse them (CRITERIA 5: families are not compared with each other).
 
 ## 5. The rehearsal's profile
 
@@ -122,7 +127,7 @@ A rehearsal is read with `--profile FILE` (and `--spec` the rehearsal's folder).
   A run's own `declared_change` is used where it has one, and `change` otherwise. Their items are `{"path": [...], "value": v}` or `{"path": [...], "multiply": f}`, the path inside the ionic block and `"*"` for every key of a map, or `{"exchange_channels": [cell, cell]}`.
 - **`not_blind`** may be empty (`{}`): the consumer then has one set. `plant_targets.not_blind` is one of its families where it has some, and `plant_targets.assembly` is a family that is not among them.
 - **`margins_rehearsal.json`** needs, per world, `entries.<readout>.ratio` for every class S entry, `mechanisms` with a home each, and `structural` (it may be empty) in `margins.json`'s form. `legacy_rehearsal.json` needs `captured_steps_s` per world. Its `entries` may be left out.
-- **C0 leaves out, for a rehearsal,** what is Part 1's alone: the run list, the literal blocks, the captured definitions, the pins of the snapshot, the controls, the margins' re-formation, the mechanism list and the published numbers.
+- **C0 leaves out, for a rehearsal,** what is Part 1's alone: the keys of the data files, the run list, the literal blocks, the captured definitions, the pins of the snapshot and the published numbers. It forms everything else (17 clauses), the controls, the margins and the mechanisms among them.
 - **`judge_plants/`** (SPEC section 8): `fabricate --profile FILE --out <folder>` makes the honest tables from the rehearsal's `runs/`, always the same ones. None is committed, and the registered ones are made in the same way for `selftest`.
 - **An ionic assembly world with more than one summary time** has an entry `channel_<x>_summary`, as `base` does.
 
@@ -133,10 +138,21 @@ On the honest fabricated tables (every registered run, 214): the four consumers 
 **The format sample** (TABLE section 7; the lead's copy of 25 November, from b707a24d's tree) parses with no fault in the structure-only mode: the files and their sums by the registered reader, every key and type to the leaf, and the registered readers run on its rows, potentials, arrays, paths, schedules and block.
 No number of it was used. TABLE, READOUTS and Amendment 1 were enough to read it, with Amendment 2's item 7 for a refused run without a declaration.
 
-## 7. Not done
+## 7. The rehearsal, 25 November
+
+The path was run as in the campaign on the rehearsal's tables (invented worlds, 94 runs, engine revision cf6ed9e1) with `--spec` and `--profile`: hash, C0, stage 1 and its sha256, stage 2, the plants. It was run again at the committed heads: the hash record, C0, power, the retry list and the plants' scores are the same files, and the record and the verdict differ in one label alone (a judged run without a family was listed as a pool run).
+
+- **C0** (rehearsal mode) passes in all 17 clauses.
+- **Verdicts:** `jupiter` pass, `cell` pass, `base` pass in both sets, `integrated` fail. The last fails by design: `inv_stop` is stopped by the engine's own check, and its D fails. Nothing else of any consumer fails. What is not formed is of `inv_stop` and of the three refused runs.
+- **No honest run misses a bound.** The largest class S ratio is 8.6 × 10⁻³ (the order-2 family), 2.1 × 10⁻³ in an order-4 family (`inv_cross` `gate_m`). The largest class R ratio is 2.9 × 10⁻⁴ (an exposure, and 2.5 × 10⁻⁵ in a balance), and the largest energy ratio 1.6 × 10⁻⁷. Two non-home entries of `inv_cross` (`n_cell_K`, `n_out_Cl`) are not tested. No retry is owed.
+- **Plants:** the four engine plants (margins 5.8 × 10⁶ to 2.4 × 10⁸) and the eleven structural plants are caught. JP1 to JP24 score as stated (25 rows). The claim on the consumer's verdict is not made for `integrated` (reading 40).
+- **An independent script** (numpy and json alone, nothing of the judge imported) recomputed the 505 class S entries, 720 class R entries, 114 pool arrays and 248 paths, switch lists, schedules and seeds from the tables, the rehearsal's runs and the spec. It agrees with the record. The energy identities agree in class and outcome, and differ by about 10⁻¹⁵ in value by the order of the sums.
+- **Four defects of the judge's own** were found by the rehearsal, before any registered run, and each has a test that fails without its fix: C0 stopped at a world that has captures and no family of three, C0 compared a printed order at two decimals alone, a restart counted in both sets of `base`, and JP10 asked for a whole K amount of an outside region, where the rehearsal's world has it in a cell. No rule, band or class changed, and the registered plant is the same.
+
+## 8. Not done
 
 - The independent scalar reference and the pool plants' two outputs (reading 8). The author's runs of 25 November are the evidence for them.
 - The snapshot of `integrated_capture` lies outside the captures' root. Its recorded manifest sha256 is compared, and no file of it is opened.
 - What only the checker can do: that a restart reloaded a checkpoint, that the engine checked every accepted row, the fingerprint of the composed file, and that the off-grid switch was off.
-- The rehearsal: its files did not exist when this was written. Its mode was run on the registered files under a profile alone.
+- The retry's commands on an owed retry: none is owed on the rehearsal's tables. They ran on altered fabricated tables (the tests).
 - Part 2.

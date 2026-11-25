@@ -128,8 +128,12 @@ def test_honest_tables_pass(benches, name):
     assert {f["what"] for f in q.record["flags"]} <= {"restart to confirm"}
     assert q.record["retry_owed"]["runs"] == [] and block["final"]
     assert {s["verdict"] for s in q.record["runs"].values() if s["role"] == "judged"} == {PASS}
+    reg = benches(name).reg
+    pools = [n for n, r in reg.runs.items() if r["role"] == "judged" and reg.is_pool(r)]
     for part in block["sets"].values():
         assert all(n["formed"] == n["expected"] for n in part["counts"].values())
+        named = part["members"]
+        assert (named["pool_runs"], named["runs_of_no_family"]) == (pools, [])
 
 
 def test_the_honest_tables_are_the_reference_sides_within_one_unit(benches):
