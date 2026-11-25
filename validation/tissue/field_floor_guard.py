@@ -232,9 +232,17 @@ def _cond(eqn, ins, used):
     return [max(t, floor) for t in outs]
 
 
+def _scan_counts(params):
+    """(constants, carried values) of a scan (JAX 0.11 keeps them as the parts of ft_in)."""
+    if "num_consts" in params:
+        return params["num_consts"], params["num_carry"]
+    consts, carry, _ = params["ft_in"].unpack()
+    return len(consts), len(carry)
+
+
 def _scan(eqn, ins, used):
     p = eqn.params
-    nc, nk = p["num_consts"], p["num_carry"]
+    nc, nk = _scan_counts(p)
     consts, carry, xs = ins[:nc], list(ins[nc : nc + nk]), ins[nc + nk :]
     while True:
         result = taints(p["jaxpr"], consts + carry + xs, used)
@@ -368,9 +376,13 @@ def _hands_on(eqn):
     return eqn.primitive.name in IDENTITIES and len(eqn.invars) == len(eqn.outvars)
 
 
+def _drop(items, at):
+    return type(items)(v for i, v in enumerate(items) if i not in at)
+
+
 def _entries(eqn, at):
     """Where operands at positions `at` enter eqn's nested jaxprs: ({parameter: input positions},
-    {counting parameter: how many of them it counts})."""
+    {parameter that lists or counts operands: (version 2's, version 3's) as they must agree})."""
     p, name = eqn.params, eqn.primitive.name
     if name == "cond" and 0 not in at:
         return {"branches": [i - 1 for i in at]}, {}
@@ -379,17 +391,26 @@ def _entries(eqn, at):
         if all(i < nc + nb for i in at):
             cond = [i for i in at if i < nc]
             body = [i - nc for i in at if i >= nc]
-            counted = {"cond_nconsts": len(cond), "body_nconsts": len(body)}
-            return {"cond_jaxpr": cond, "body_jaxpr": body}, counted
+            return {"cond_jaxpr": cond, "body_jaxpr": body}, {
+                "cond_nconsts": lambda x, y: (x, y - len(cond)),
+                "body_nconsts": lambda x, y: (x, y - len(body)),
+            }
     elif name == "scan":
-        if all(i < p["num_consts"] for i in at):
-            return {"jaxpr": list(at)}, {"num_consts": len(at)}
+        if all(i < _scan_counts(p)[0] for i in at):
+
+            def parts(x, y):
+                x, y = ([len(part) for part in v.unpack()] for v in (x, y))
+                return x, [y[0] - len(at), *y[1:]]
+
+            return {"jaxpr": at}, {"num_consts": lambda x, y: (x, y - len(at)), "ft_in": parts}
     else:  # A call (jit, custom_jvp_call, checkpoint): one body, an input per operand.
         holders = {k: b[0] for k, v in p.items() if len(b := _bodies(v)) == 1}
         if len(holders) == 1:
             ((key, body),) = holders.items()
             if len(_inner(body).invars) == len(eqn.invars):
-                return {key: list(at)}, {"num_consts": sum(i < p.get("num_consts", 0) for i in at)}
+                lists = dict.fromkeys(PER_OPERAND, lambda x, y: (x, _drop(y, at)))
+                counts = {"num_consts": lambda x, y: (x, y - sum(i < y for i in at))}
+                return {key: at}, {**lists, **counts}
     raise NotComparable(f"{name} takes the floor leaf as operand {at} (a loop's carry, or a call)")
 
 
@@ -536,13 +557,11 @@ class Pairing:
         if two.params.keys() != three.params.keys():
             return self.differ(where, "other parameters", two, three)
         nested = any(map(_bodies, three.params.values()))
-        entries, counted = _entries(three, at) if at and nested else ({}, {})
+        entries, without = _entries(three, at) if at and nested else ({}, {})
         for key, x in two.params.items():
             y = three.params[key]
-            if key in PER_OPERAND:
-                y = type(y)(v for i, v in enumerate(y) if i not in at)
-            if counted.get(key):
-                y -= counted[key]
+            if key in without:
+                x, y = without[key](x, y)
             a, b = _bodies(x), _bodies(y)
             names = _function_name(x), _function_name(y)
             if a and list(map(_is_jaxpr, a)) == list(map(_is_jaxpr, b)):

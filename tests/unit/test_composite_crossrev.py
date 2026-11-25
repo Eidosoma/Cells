@@ -132,7 +132,7 @@ def test_compare_names_outputs_without_constants(tmp_path, capsys):
 
 
 def solve(leaf, target=0.01, accept=0.01, atol=1e-3, rtol=2e-3, table=(1.0, 2.0, 3.0)):
-    """Two steps of a field solve in miniature, the second from the first's result: a loop to its
+    """Field solves in miniature, each from the one before, two to a turn of a scan: a loop to the
     target, the solve's own convergence and, with the floor leaf, version 3's acceptance test."""
     table = np.asarray(table)
 
@@ -147,9 +147,13 @@ def solve(leaf, target=0.01, accept=0.01, atol=1e-3, rtol=2e-3, table=(1.0, 2.0,
         return jnp.where(rooted, r, x), rooted
 
     def f(x, *floor):
-        half, first = step(x, floor)
-        full, second = step(half, floor)
-        return full, first & second
+        def turn(x, _):
+            half, first = step(x, floor)
+            full, second = step(half, floor)
+            return full, first & second
+
+        full, ok = jax.lax.scan(turn, x, None, length=2)
+        return full, jnp.all(ok)
 
     return jax.make_jaxpr(f)(jnp.ones(3), *([np.asarray(1e3)] if leaf else []))
 
@@ -168,6 +172,8 @@ def test_the_floor_guard_compares_constants_where_they_sit(plant, named):
     two, three = solve(False), solve(True, **plant)
     program, constants, tests = floor_guard.compare_programs(two, three, [1], 0.01, gates=(1,))
     assert program["accounted"] and len(tests) == 2
+    taints = floor_guard.taints(three, [floor_guard.CLEAN, floor_guard.VALUE])
+    assert taints == [floor_guard.CONTROL] * 2
     assert constants["ok"] == (named is None or "atol" in plant)
     if named is None:
         assert program["result"] == "equal" and program["slice"]["equal"]
