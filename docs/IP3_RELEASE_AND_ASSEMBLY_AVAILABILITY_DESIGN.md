@@ -1063,5 +1063,6 @@ default field solver and was stopped once its first step was refused.
 - No claim about the receptor, IP3's charge in water, IP3 metabolism, assembly energetics, or the real cage.
 - No claim that a composite's calcium run meets any band: only a prototype ran (section 4.1).
 - No GPU claim. No claim above a few hundred cells for the composed run. No timing.
-- The hooks and the run-inputs option are specified, not built. The second reader's M2 results are its own.
+- The hooks and the composed run's inputs record are specified, not built. The second reader's M2 results are
+  its own.
 - Nothing here is judged. Both parts come back to the user with their price before any build (D383).
