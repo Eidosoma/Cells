@@ -17,6 +17,7 @@ import pytest
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.kinds import passive_routes
 from cells.laws.electrochemistry import CHARGE_PER_FMOL, R
+from cells.operators import OPERATORS
 from cells.registry.models import get_model
 from validation.ensemble_reexpression import (
     blocks,
@@ -595,6 +596,25 @@ def test_a_block_that_one_definition_cannot_hold_is_refused_by_name(whole, broke
         written(block)
 
 
+def test_a_volume_that_takes_no_round_trip_is_no_fault_of_the_held_fuel(whole):
+    """A pump's fuel is held as mM times the volume and read back over it: at 0.7 pL none of these
+    numbers comes back as its own double, and the rule's 1e-12 holds. Any other leaf is exact."""
+    assert all(mM * 0.7 / 0.7 != mM for mM in (1.5, 0.1))
+    block = copy.deepcopy(whole[0])
+    block["cells"]["c_b"]["volume_pL"] = 0.7
+    block["stores"]["c_b"]["compartments"]["cytosol"]["volume_pL"] = 0.7
+    pumps = [block["stores"]["c_b"]["membrane"]["pump"], block["plasma_transport"]["m_b"]["pump"]]
+    for pump in pumps:
+        pump.update(atp_mM=1.5, adp_mM=0.1, pi_mM=0.1)
+    found = worlds.read(parse_spec(written(block)).to_dict())
+    assert found["stores"]["c_b"]["membrane"]["pump"]["atp_mM"] != 1.5
+    assert definitions.block_faults(found, block, "run", driven=False) == []
+    for path, value in (("atp_mM", 1.5 * (1 + 2e-12)), ("km_atp_mM", np.nextafter(0.45, 1.0))):
+        moved = copy.deepcopy(found)
+        moved["plasma_transport"]["m_b"]["pump"][path] = value
+        assert definitions.block_faults(moved, block, "run", driven=False) != []
+
+
 def test_the_echo_of_a_pumps_energy_and_of_part_2s_defaults(whole):
     """PART2 §2.4: 1e-12 of itself plus 16 eps R T A, A at most 3,200; an omitted zero permeability
     and an omitted schedule refuse nothing, and a declared zero is exactly zero."""
@@ -1107,7 +1127,9 @@ def test_part_2s_literal_blocks_are_read_as_its_text_prints_them(tmp_path):
     printed = [last["ionic"], blocks_["gated"]["stores"], last["stores"], last["plasma_transport"]]
     printed += [last["calcium_channels"], last["ip3_release"], last["calcium_controls"], {"p": 1}]
     path = tmp_path / "PART2_BLOCKS.md"
-    path.write_text("\n\n".join(f"## x\n\n```json\n{json.dumps(b)}\n```" for b in printed))
+    sections = [f"## {k + 1}. x\n\n```json\n{json.dumps(b)}\n```" for k, b in enumerate(printed)]
+    sections[2] += "\n\n```json\n{}\n```"  # A second block, or a ninth section, moves nothing.
+    path.write_text("\n\n".join(["# x", *sections, "## 9. y\n\n```json\n{}\n```"]))
     found, pool_run = definitions.part2_literals(path)
     assert pool_run == {"p": 1}
     assert found == {f"{name}_calcium": value for name, value in blocks_.items()}
@@ -1132,6 +1154,22 @@ def test_part_2s_literal_blocks_are_read_as_its_text_prints_them(tmp_path):
 )
 def test_a_refusal_of_a_calcium_piece_is_mapped_to_a_kind(message, kind):
     assert refusals.kind_of(ConfigError(message), stage="parse") == kind
+
+
+def test_the_operators_of_part_2_have_no_ledger_of_their_own():
+    """So every ledger's failure in a composite has the inner model's words, which are a check's
+    (an operator's own ledger with an empty message would be read as a domain's)."""
+    for law in ("compartment_law", "local_reactions"):
+        operator = OPERATORS[labels.LABELS[law]]
+        assert operator.LEDGERS == () == operator.LEDGER_DIAGNOSTICS
+
+
+def test_no_readout_has_two_sources(whole):
+    _, _, parsed = whole
+    found = arrays(parse_spec(parsed), [0.0, 2e-05], [0.0])
+    twice = (*readouts.SERIES, readouts.Series("pump_cycles", "pump", readouts._plasma))
+    with pytest.raises(ValueError, match="pump has two sources"):
+        readouts._read(twice, Pieces(parsed), found, [0])
 
 
 def test_the_blocks_of_part_2_have_one_list_of_names():

@@ -250,7 +250,8 @@ def _columns(array, places, sign):
 
 
 def _read(family, pieces, arrays, indices):
-    """{readout: {entity ID: its values}} of a family of series at these rows of their arrays."""
+    """{readout: {entity ID: its values}} of a family of series at these rows of their arrays. No
+    readout has two sources."""
     out = {}
     for series in family:
         if series.present is not None and not series.present(pieces):
@@ -261,11 +262,14 @@ def _read(family, pieces, arrays, indices):
         array = np.asarray(arrays[series.array])[indices]
         if series.total:
             array = array.sum(axis=1)
-        if isinstance(series.names, str):
-            out[series.names] = _columns(array, places, series.sign)
-            continue
-        for name, place in series.names(pieces).items():
-            out[name] = _columns(array[:, place], places, series.sign)
+        names = series.names if isinstance(series.names, str) else series.names(pieces)
+        found = (
+            {names: array} if isinstance(names, str) else {n: array[:, k] for n, k in names.items()}
+        )
+        for name, column in found.items():
+            if name in out:
+                raise ValueError(f"The readout {name} has two sources")
+            out[name] = _columns(column, places, series.sign)
     return out
 
 

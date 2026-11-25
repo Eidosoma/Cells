@@ -450,6 +450,7 @@ def charge_scale(block, region):
 
 
 FIXED = "fixed_charge_equivalent_fmol"
+PUMPED = ("stores", "plasma_transport")  # Where the calcium pumps stand.
 LARGEST_A = 3200.0  # PART2 §2.4: "A is at most 3,200, and a larger one is a departing echo".
 
 
@@ -471,8 +472,9 @@ def departures(found, expected, *, exact=False, skip=()):
     """[(path, found, expected), ...]: the leaves of two blocks that differ, by SPEC §2.4's rule and
     PART2 §2.4's, or with exact=True by their doubles. `skip` names top-level paths left out (class
     E leaves). Keys that `expected` does not hold are no departure. A cell's fixed charge is
-    recorded and not compared where it has a store, and a pump's free energy, which is formed, has
-    no double of its own (PART2 §2.2)."""
+    recorded and not compared where it has a store (PART2 §2.2). A calcium pump's free energy and
+    its held fuel have no double of their own: the one is formed from potentials, and the other is
+    an amount of the cell over its volume. They are compared by the rule alone."""
     found, expected = _with_defaults(found), _with_defaults(expected)
     stored = [c for c, _ in entities(expected.get("stores"))]
     out = []
@@ -485,7 +487,7 @@ def departures(found, expected, *, exact=False, skip=()):
             for key in path[:-1]:
                 own = own[key]
             return abs(a - b) <= RELATIVE * abs(b) + energy_bound(own, found["temperature_K"])
-        if exact or b == 0:
+        if b == 0 or (exact and not (path[0] in PUMPED and path[-1] in stores.FUEL.values())):
             return a == b
         if path[0] == "outside" and path[-1] == "initial_charge_C":
             return abs(a - b) <= RELATIVE * charge_scale(expected, path[1])

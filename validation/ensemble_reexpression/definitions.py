@@ -328,9 +328,15 @@ def literals():
 def part2_literals(path=PART2_TEXT):
     """({world: its literal blocks} of the four children, the literal block of a pool run) of
     PART2_BLOCKS, whose §7 prints the last child's calcium_controls and what the others lack."""
-    text = Path(path).read_text()
-    found = [json.loads(m) for m in re.findall(r"```json\n(.*?)```", text, re.DOTALL)]
-    ionic, plain, ip3, transport, channels, further, controls, pool_run = found
+    parts = re.split(r"^## (\d+)\. ", Path(path).read_text(), flags=re.MULTILINE)
+    printed = {}  # The first block of each numbered section.
+    for number, text in zip(parts[1::2], parts[2::2], strict=True):
+        block = re.search(r"```json\n(.*?)```", text, re.DOTALL)
+        if block is not None:
+            printed[int(number)] = json.loads(block[1])
+    ionic, plain, ip3, transport, channels, further, controls, pool_run = (
+        printed[k] for k in range(1, 9)
+    )
     worlds_ = {}
     for name in ("spatial_calcium", "plasma_calcium", "gated_calcium", "ip3_calcium"):
         last = name == "ip3_calcium"
