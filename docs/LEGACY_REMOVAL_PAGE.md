@@ -11,7 +11,7 @@ the engine's own forms. The old code, its runs and its captures stay at the tag 
 **Status.** You approved the losses on 25 November (D386): yes to the table in section 3, the cell-zone transporter left at the tag,
 NKCC and the generic symport ported in the cleanup, and D211's other ports as the next step after it. The same day you agreed that two things which your earlier
 decisions held go too, kept at the tag: the network laws and the EMT-miRNA two-cell model (section 3). A second reader has read the list, the script and the optional
-batch: safe, with corrections, which are in. **The counts below are at 5429a49b, but for what the builders still add. The deletion (branch `legacy-deletion`, in
+batch: safe, with corrections, which are in. **The counts below are at e24daab6, but for what the builders still add. The deletion (branch `legacy-deletion`, in
 place of 9b0debe6) is merged only after you have seen them. One answer is left: the optional batch, yes or no.**
 
 ## 1. Counts, by area
@@ -33,16 +33,17 @@ place of 9b0debe6) is merged only after you have seen them. One answer is left: 
 | **Optional, your yes or no:** what the oldest families were checked with, a graph study that never ran, and the last REF-era folders | 165 files: 40 helpers, 37 tests, 68 scripts, 20 REF-era files | 49,055 | (m); 1,933 more test IDs, 192 more test-seconds in tiers 1 and 2, about 36 s of wall per full gate |
 
 On the tree without all of this, **12,922 tests collect and only the 8 files above fail to** (m). 58 of them are in seven more of the files being
-rewritten: 24 use what goes and are expected to fail until then, 6 run on a GPU only and use it too, and 28 do not use it (r). Apart from the retargeted tests, no
-remaining file imports or loads anything that goes, `lean/` and `visualizer/` included, by any way of importing (m). The nightly's record of the files that tests open
+rewritten: 24 use what goes and are expected to fail until then, 6 run on a GPU only and use it too, and 28 do not use it (r). Apart from the retargeted tests and
+the three validation scripts that are being rewritten, no remaining file imports or loads anything that goes, `lean/` and `visualizer/` included, by any way of importing (m). The nightly's record of the files that tests open
 (main, tiers 1 and 2) showed one test more, which is now on the list, and no other that still does (m, r); tier 3 is known by its imports only. The rename's tool, one
-guard and six of the viewer's files still name some of it. The deletion saves 2,574 of 13,784 test-seconds in tiers 1 and 2 (m), about 8 minutes of wall per full gate (e: 0.186 s of
+guard, the words of three parity files and six of the viewer's files still name some of it (m), and so do records (155 reports, 56 validation protocols and source maps) and
+documents. The deletion saves 2,574 of 13,784 test-seconds in tiers 1 and 2 (m), about 8 minutes of wall per full gate (e: 0.186 s of
 wall per test-second, measured 24 November). 142 of 222 tier-3 files go (m). The gate's fingerprints lose 129
 definitions in 125 files, of the 194 in the three folders (m, the tool's own enumeration). The tag has 173: the live engine's two batch configurations brought four, and
 the re-expression's format sample 17, which are placeholders that no parser accepts. G1's 113 worlds are unaffected (r). The fingerprint tool's comparison
 takes both lists now: `removed_definitions.txt` (129), and the additions, of which 4 are written and 21 are found; the lead makes that list again for the final head. The tier
 record loses 265 rows in the deletion's own commit, since the gate refuses a row without a file.
-**Measured where:** files and lines at 49529e71, the tag's commit; seconds in the tier record; IDs, imports and the last dry run at 5429a49b, which is `legacy-cleanup` 4075af79 with the documents;
+**Measured where:** files and lines at 49529e71, the tag's commit; seconds in the tier record; IDs and imports at 5429a49b, and the last dry runs at e24daab6, which is `legacy-cleanup` 8d82e435 with the documents (only documents changed between the two);
 the parity runs at 63c181fc, on a tree without 1,472 of the files (the other 63 are outside their import chain).
 
 **The optional batch** has four parts: 50 files of E02-SW1's graph study, a frozen protocol that never ran, for a model never built
@@ -61,7 +62,7 @@ that stays checks those pins. Its frozen panels stay as records. **The lead reco
 | The assembly command lines and ensemble kinds | CPU batch runs; the GPU path is **parked** | the same as their worlds |
 | NKCC and the generic symport | `na_k_2anion_symport_reversible_tanh@1` and `electroneutral_symport_reversible_tanh@1`, on the transporter kind | nothing: in |
 
-**In the engine now (r, at 5429a49b):** the Na/Ca exchanger; one pump law for an ion of any valence, `atp_driven_transporter_mass_action_positive@2`, for
+**In the engine now (r, at e24daab6):** the Na/Ca exchanger; one pump law for an ion of any valence, `atp_driven_transporter_mass_action_positive@2`, for
 the plasma's calcium pump and the store's, with the step terms that a store's node needs; the two symports; the release's factor and its source; the assembly
 coupling; calcium through a channel, with its step bound, and the CaV1.2 law; and the loop's bound. **Not yet:** a registered run of any of them. Part 1's 214 definitions
 parse, and none has been run; Part 2's criteria are being completed (D387).
@@ -135,11 +136,11 @@ registry, and one is a refusal that the calcium work replaced. `removed_rows.tsv
 
 - **Records stay:** 59 protocol, data and record files, the other results, the design notes and the decisions.
 - **Open:** the builders' 16 tests and three validation scripts; the rename's tool, table and note; the list of added definitions, made again for the final head; tier 3's record.
-- **The deletion is one commit,** made from the list by a script, in place of 9b0debe6. Its dry runs at f38f6789, c368c9f2, 34d173d7, 9c30104e, 36165b70, 1fec66a6 and 5429a49b found every path;
+- **The deletion is one commit,** made from the list by a script, in place of 9b0debe6. Its dry runs at f38f6789, c368c9f2, 34d173d7, 9c30104e, 36165b70, 1fec66a6, 5429a49b and e24daab6 found every path;
   the last removed 1,528 files (six are gone already), and broke no import but the retargeted tests', 8 of them (m). With the optional batch it removed 1,693, with the same 8 (m).
   The same commit takes one guard's list, the tier record's rows, the old exchanger's kernel and nine names that only legacy uses (`plasma_calcium.py`,
   `er_calcium.py`, `calcium_gates.py`), and the words of three library pages. On that tree the 15 library pages pass their check (m). One old function, the store's `release_open`,
-  stays unless the lead says that it goes: only a test that is being rewritten names it, and the roadmap calls it the older kernel of D211's store release.
+  stays unless the lead says that it goes: only a test that is being rewritten names it, and the roadmap calls it the older kernel of D211's store release, while the calcium note says that it goes. Both answers are prepared and were run.
 - **Documents:** 57 say what left, with seven folders of old drivers, and the run guides name live worlds. 420 relative links into removed files break, in 52 Markdown files
   (m), most of them under such a note.
 - **14 reference files stay** whose last test goes: each is imported by an old native probe or reference that stays and that no test runs at the tag either (m).

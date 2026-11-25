@@ -1576,12 +1576,13 @@ declared ones are capacity padding.
 deletion's own commit, three left already, five are dead after the core edits, eleven stay, three are rows that moved first, and one (`edge_flux`'s) waits for the lead. Every `goes_or_cut` row has a verdict: a reader read 462 files,
 and the 35 it asked about are resolved here. A second reader has read the list, the script and the optional batch (verdict: safe with named corrections, all in).
 - **The deletion is one commit,** made from the list by a script on one branch that takes the place of 9b0debe6. Its dry runs at
-  f38f6789, c368c9f2, 34d173d7, 9c30104e, 36165b70, 1fec66a6 and 5429a49b (`legacy-cleanup` 4075af79 with the documents) found every path, and stopped no import but the retargeted tests', with `lean/` and `visualizer/` read in the last four;
+  f38f6789, c368c9f2, 34d173d7, 9c30104e, 36165b70, 1fec66a6, 5429a49b and e24daab6 (`legacy-cleanup` 8d82e435 with the documents) found every path, and stopped no import but the retargeted tests', with `lean/` and `visualizer/` read in the last five;
   the last removed 1,528 files (six of the 1,534 are gone already). In the same commit: one guard's exemption list; 265 rows of `tests/test_tiers.json` (79, 44 and
   142), which the gate refuses without their files; the exchange kernel and nine names that only legacy uses in
   `laws/reactions/plasma_calcium.py`, `laws/reactions/er_calcium.py` and `laws/channels/calcium_gates.py`, with five docstrings; and the words of three library pages.
   `pump_rates` and `MAX_VOLTAGE` stay: `ca_atp_mass_action_positive@1` runs them. `release_open` stays unless the lead says: only `test_er_calcium.py`, which waits for its retarget,
-  names it, and the roadmap calls it the older kernel of D211's store release (the script takes the other answer as a second file of edits). The user approved the two things that earlier decisions held (the two network laws; the EMT-miRNA
+  names it, and the roadmap calls it the older kernel of D211's store release while the calcium note's step 8 says that the rest of the two modules goes (the script takes the other answer as a second file of edits; both were run at e24daab6). That note lists two
+  functions and a constant as staying: by use, `er_calcium`'s `PumpParameters`, `chemical_drive` and `MAX_AFFINITY_RT` stay too. The user approved the two things that earlier decisions held (the two network laws; the EMT-miRNA
   pair, D149) on 25 November; the script refuses the branch while such a row lacks its "approved by the user", or a row that had to move is missing.
 - **The fingerprints' definitions** (the tool's own enumeration): 129 in 125 files leave, of 194 in `configs/`, `examples/` and `validation/`; `removed_definitions.txt`
   lists them, since the comparison takes exact lists of what one side lacks (306edd69). An earlier count said 127 in 123. The tag has 173 (the second reader's number), 36165b70 had 177 and 1fec66a6 has
@@ -1604,9 +1605,10 @@ and the 35 it asked about are resolved here. A second reader has read the list, 
   captures equal the saved ones bit for bit (395 million array scalars).
 - **Four parity files could not start their run,** at the tag or before it: three stop in the check of the source they are bound to, which changed on
   11 October 2026, and one is skipped (D131). 70 rows that could only error leave; the 55 that pass stay.
-- **The fixed point** (measured at 903f821e, c368c9f2, 34d173d7, 9c30104e, 36165b70, 1fec66a6 and 5429a49b): on the head tree without what goes, the only remaining files with
-  an import that does not resolve are 8 of the 17 retargeted tests, and the only other mentions of a going path are the rename's tool and tables, one guard's exemption list, four
-  of the viewer's files and documents. Run-time imports and path loads were read one by one (75 sites). `test_surface_catalog_planning.py` reads two going configurations through
+- **The fixed point** (measured at 903f821e, c368c9f2, 34d173d7, 9c30104e, 36165b70, 1fec66a6, 5429a49b and e24daab6): on the head tree without what goes, the only remaining files with
+  an import that does not resolve are 8 of the 17 retargeted tests, and the only other mentions of a going path in code are the rename's tool and tables, one guard's exemption list, two
+  validation scripts that are being rewritten, the words of three parity files and four of the viewer's files. Records name them too: 155 reports, 56 validation protocols and source maps,
+  and 53 documents beside `PROGRESS.md`. Run-time imports and path loads were read one by one (75 sites). `test_surface_catalog_planning.py` reads two going configurations through
   `test_integrated_ensemble.py`'s helper, which neither imports nor collection show: it is the 17th retarget.
 - **Test IDs,** by collecting that tree at 5429a49b: 12,922 collect, and 8 files fail to (58 of the IDs that collect are in seven more retargeted files: read, 24 use what goes and are
   expected to fail until they are rewritten, 6 run on a GPU only and use it too, 28 do not use it). Of 21,927, 9,023 go with their files, 261 leave files that
