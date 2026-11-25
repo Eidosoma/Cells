@@ -18,9 +18,6 @@ from .settlements import Settlements
 from .table import NotFormed, RunRows, TableSet, assess, column, parse_schedule
 
 OUTSIDE = "resolved outside its window"
-CORNER = "untested outside its window"  # the corner of item 5 (a)
-AT_ZERO = "row at time 0"  # reading 12
-NOT_FINITE = "non-finite value"  # reading 24
 CUT = "a refused run: the refusal cut what it holds (Amendment 2, reading 14)"
 ANOTHER_PATH = (
     "a support run that a check stopped: its rows are another path's (Amendment 2, reading 13)"
@@ -619,7 +616,7 @@ class Stage2:
         best inconclusive until the flag is settled.
         """
         self.open_flag(
-            CORNER,
+            c.CORNER,
             (family.consumer, item["run"]),
             family.name,
             item["readout"],
@@ -931,12 +928,6 @@ class Stage2:
                 self.flag(name, "restart", "`through` is missing or mistyped")
             if good and not strictjson.is_integer(held.get("step_index")):
                 self.flag(name, "restart", "`step_index` is missing or mistyped")
-            self.flag(
-                name,
-                "restart to confirm",
-                "the checker confirms from the run's own record that it reloaded a written "
-                "checkpoint",
-            )
         differs = []
         for entry in world.entries:
             record = {
@@ -979,6 +970,24 @@ class Stage2:
             )
         if state.stopped:
             self._tell_differences(name, owner, [d for d in differs if d])
+        self._reload(name, state, owner)
+
+    def _reload(self, name, state, owner):
+        """A restart's entries are the checker's to confirm: the run's own record shows that it
+        reloaded a written checkpoint, and without that they are inconclusive (CRITERIA section 4.1,
+        Amendment 2, reading 25). A passing one waits.
+        """
+        mine = [e for e in self.entries if e.get("support") == name]
+        if any(e["outcome"] == c.PASS for e in mine):
+            held = state.entry.get("restart")
+            self.open_flag(
+                c.RELOAD,
+                (state.consumer, name),
+                name,
+                owner,
+                {"restart": held, "to_confirm": "its record shows the reload of a checkpoint"},
+                mine,
+            )
 
     def _tell_differences(self, name, owner, differs):
         """What a support run that a check stopped shows beside the run that it resumes: for the
@@ -1205,12 +1214,6 @@ class Stage2:
                     "restart",
                     "`step_index` is not null in a pool restart (Amendment 1, item 2)",
                 )
-            self.flag(
-                name,
-                "restart to confirm",
-                "the checker confirms from the run's own record that it reloaded a written "
-                "checkpoint",
-            )
             for cell, pool in world.pools.items():
                 if state.entry["inputs"][cell].get("seed") != pool["seeds"][run["seed_index"]]:
                     self.flag(name, "seed", f"inputs.{cell}.seed is not the registered seed")
@@ -1282,6 +1285,7 @@ class Stage2:
                 self.add(**record, outcome=c.NOT_FORMED, why=str(error))
         if state.stopped:
             self._tell_differences(name, owner, differs)
+        self._reload(name, state, owner)
 
     # ----- class D -----
 
@@ -1314,7 +1318,8 @@ class Stage2:
 
     def settle(self):
         """The flags that leave an entry at best inconclusive until the checker settles them
-        (Amendment 2, item 5 (a) and readings 12 and 24). A settled one counts as the checker says.
+        (Amendment 2, item 5 (a) and readings 12, 24 and 25). A settled one counts as the checker
+        says.
         """
         for name, state in self.tables.states.items():
             run = state.run
@@ -1343,6 +1348,7 @@ class Stage2:
         formed or inconclusive stays so but for a flag that the checker settles as a fail.
         """
         entry["by_rule"] = entry["outcome"]
+        entry["flags"] = [item["id"] for item in items]
         waiting = [item["id"] for item in items if item["settled"] is None]
         said = {item["settled"]["counts_as"] for item in items if item["settled"]}
         if entry["outcome"] == c.FAIL:
@@ -1383,7 +1389,7 @@ class Stage2:
                     found[cell] = values.tolist()
             if found:
                 self.open_flag(
-                    AT_ZERO,
+                    c.AT_ZERO,
                     (state.consumer, name),
                     name,
                     f"n_cell_{x}",
@@ -1487,22 +1493,22 @@ class Stage2:
                     found[entity] = [[float(times[i]), repr(held[i])] for i in others[:3]]
             if found:
                 self.open_flag(
-                    NOT_FINITE, (state.consumer, name), name, f"{where}.{series}", found, entries
+                    c.NOT_FINITE, (state.consumer, name), name, f"{where}.{series}", found, entries
                 )
 
     def _corners_again(self):
         """The corner of item 5 (a) on the retry's triple: an entry that the first pass flagged and
         that is judged again is at best inconclusive until its flag is settled.
         """
-        held = {item["id"]: item for item in self.to_settle if item["kind"] == CORNER}
+        held = {item["id"]: item for item in self.to_settle if item["kind"] == c.CORNER}
         for item in self.first["flags_to_settle"]:
-            if item["kind"] != CORNER:
+            if item["kind"] != c.CORNER:
                 continue
             again = [
                 e
                 for e in self.entries
                 if e["class"] == "S"
-                and f"{CORNER}; {e['family']}; {e['readout']}" == item["id"]
+                and f"{c.CORNER}; {e['family']}; {e['readout']}" == item["id"]
                 and e["pass_of_the_judgement"] == 2
             ]
             if item["id"] in held:  # it is there again, on the triple of the retry

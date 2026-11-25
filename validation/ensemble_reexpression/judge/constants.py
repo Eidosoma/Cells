@@ -126,6 +126,13 @@ AMENDMENTS = ("AMENDMENT-1-2026-11-25.md", "AMENDMENT-2-2026-11-25.md")
 EXPORTER_COPY = "AMENDMENT-2-2026-11-25_EXPORTER.md"
 EXPORTER_ITEMS = ("2", "4", "7", "8", "9.1", "10")
 
+# The flags that the checker settles (README section 6), by kind: the corner of item 5 (a), the
+# readings 12 and 24, and the reload of a restart (CRITERIA section 4.1 and reading 25).
+CORNER = "untested outside its window"
+AT_ZERO = "row at time 0"
+NOT_FINITE = "non-finite value"
+RELOAD = "restart to confirm"
+
 # What a settled flag counts as (README section 6). The checker says which.
 BY_THE_RULE = "by the rule"
 COUNTS_AS = (BY_THE_RULE, "fail", "inconclusive")

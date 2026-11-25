@@ -37,10 +37,12 @@ from validation.ensemble_reexpression.judge.registration import (
     changes,
 )
 from validation.ensemble_reexpression.judge.settlements import (
+    ReloadsConfirmed,
     SettlementFault,
     Settlements,
     fabricated_data,
 )
+from validation.ensemble_reexpression.judge.settlements import read as read_settlements
 from validation.ensemble_reexpression.judge.table import (
     Echo,
     RunRows,
@@ -72,6 +74,14 @@ KEEP = {
 }
 
 
+CONFIRMED = ReloadsConfirmed()
+
+
+def own(record) -> list:
+    """The flags of a record that a test makes, and no restart's reload."""
+    return [f for f in record["flags_to_settle"] if f["kind"] != c.RELOAD]
+
+
 class Bench:
     """A small set of the registered runs, with its honest fabricated tables."""
 
@@ -100,10 +110,19 @@ class Bench:
         tables[consumer] = dict(tables[consumer], runs=dict(runs), missing=list(missing))
         return tables
 
-    def judge(self, tables, **more):
-        """Both stages on tables."""
+    def judge(self, tables, settlements=CONFIRMED, **more):
+        """Both stages on tables. Every restart's reload is confirmed, unless other settlements, or
+        none, are given.
+        """
         return plants.judge(
-            self.reg, self.note, tables, self.c0, self.captures, self.planted, **more
+            self.reg,
+            self.note,
+            tables,
+            self.c0,
+            self.captures,
+            self.planted,
+            settlements=settlements,
+            **more,
         )
 
     def score(self, alter=lambda runs: None, consumer=None, missing=(), **more):
@@ -112,9 +131,14 @@ class Bench:
 
     def settled(self, record, counts_as=None, outcome=None):
         """Settlements of every flag and every copy guard's refusal of a record, as a file has them,
-        and the record that they name.
+        and the record that they name. A restart's reload is confirmed.
         """
-        return fabricated_data(record, counts_as, outcome)
+        data, records = fabricated_data(record, counts_as, outcome)
+        reloads = {f["id"] for f in record["flags_to_settle"] if f["kind"] == c.RELOAD}
+        for item in data["flags"]:
+            if item["flag"] in reloads:
+                item["counts_as"] = c.BY_THE_RULE
+        return data, records
 
 
 @pytest.fixture(scope="module")
@@ -1305,7 +1329,10 @@ FLAGS = {
 def assert_settled(record, name, entries, counts_as, rule=PASS):
     """The entries, the runs and the verdict with a flag that is open (None) or settled."""
     wanted = {None: OPEN, "by the rule": rule, "fail": FAIL, "inconclusive": OPEN}[counts_as]
-    found = {(e["run"], e["readout"]): e for e in record["entries"] if "by_rule" in e}
+    mine = {f["id"] for f in own(record)}
+    found = {
+        (e["run"], e["readout"]): e for e in record["entries"] if mine & set(e.get("flags", ()))
+    }
     assert set(found) == entries
     for item in found.values():
         assert (item["outcome"], item["by_rule"]) == (wanted, rule)
@@ -1319,8 +1346,7 @@ def assert_settled(record, name, entries, counts_as, rule=PASS):
     assert record["part_1"]["passes"] is (ends == PASS)
     assert "pass" not in cli.shown(block) or counts_as == "by the rule"
     assert scoring.verdict_of(record)["runs_pending_on_a_flag"] == sorted(waiting)
-    ids = {f["id"] for f in record["flags_to_settle"]}
-    assert block["pending"] == (sorted(ids) if counts_as is None else [])
+    assert block["pending"] == (sorted(mine) if counts_as is None else [])
 
 
 @pytest.mark.parametrize("case", FLAGS)
@@ -1328,18 +1354,51 @@ def test_a_flag_leaves_its_entries_open_until_the_checker_settles_it(benches, ca
     name, alter, flag, entries = FLAGS[case]
     bench = benches(name)
     record = bench.score(alter).record
-    assert [f["id"] for f in record["flags_to_settle"]] == [flag]
-    assert record["flags_to_settle"][0]["settled"] is None and record["retry_owed"]["runs"] == []
+    assert [f["id"] for f in own(record)] == [flag]
+    assert own(record)[0]["settled"] is None and record["retry_owed"]["runs"] == []
     assert not any(s["refused"] for s in record["runs"].values())
     assert_settled(record, name, entries, None)
     for counts_as in c.COUNTS_AS:
         data, records = bench.settled(record, counts_as=counts_as)
         settled = Settlements(data, "a sha256", records)
         again = bench.score(alter, settlements=settled).record
-        assert again["flags_to_settle"][0]["settled"]["counts_as"] == counts_as
+        assert own(again)[0]["settled"]["counts_as"] == counts_as
         assert_settled(again, name, entries, counts_as)
     with pytest.raises(scoring.OrderFault, match="that is not there"):
         bench.score(settlements=settled)  # the honest tables hold no such flag
+
+
+@pytest.mark.parametrize("name", ["jupiter", "base"])
+def test_a_restart_waits_for_the_checker(benches, name):
+    """CRITERIA section 4.1 and Amendment 2, reading 25: until the reload is confirmed, every
+    passing entry of a restart is at best inconclusive, and its consumer pending. A reload is shown
+    or not.
+    """
+    bench = benches(name)
+    record = bench.score(settlements=None).record
+    flags = record["flags_to_settle"]
+    support = RESTART if name == "jupiter" else POOL_RESTART
+    owner = H[0] if name == "jupiter" else POOL
+    assert [f["id"] for f in flags] == [f"{c.RELOAD}; {support}; {owner}"]
+    block = record["consumers"][name]
+    assert (block["verdict"], block["state"], block["final"]) == (OPEN, c.PENDING, False)
+    held = [e for e in record["entries"] if e.get("support") == support]
+    assert held and all(e["pending"] and e["by_rule"] == PASS for e in held)
+    assert record["runs_pending_on_a_flag"] == [owner]
+    for counts_as, verdict in (("by the rule", PASS), ("inconclusive", OPEN)):
+        data, records = fabricated_data(record, counts_as)
+        q = bench.score(settlements=Settlements(data, "x", records))
+        assert q.verdict(name) == verdict and q.record["consumers"][name]["final"]
+    data, records = fabricated_data(record, "fail")
+    data["flags"][0]["counts_as"] = "fail"
+    with pytest.raises(SettlementFault, match="counts_as"):
+        Settlements(data, "x", records)
+    # A restart that fails is no flag's: the fail stands.
+    q = bench.score(
+        lambda runs: runs[support].update(restart=dict(runs[support]["restart"], time_s=0.005)),
+        settlements=None,
+    )
+    assert q.record["flags_to_settle"] == []
 
 
 def test_what_a_flag_does_not_touch(benches):
@@ -1347,11 +1406,11 @@ def test_what_a_flag_does_not_touch(benches):
     and an entry that fails by the rule.
     """
     q = benches("base").score(lambda r: put("rows", "n_cell_K", "cell_0", 0, value=-0.0)(r[B[1]]))
-    assert q.record["flags_to_settle"] == [] and q.verdict("base") == PASS
+    assert own(q.record) == [] and q.verdict("base") == PASS
     q = benches("jupiter").score(
         lambda r: put("rows", "n_cell_K", "cell_0", 0, value=1e-300)(r[H[1]])
     )
-    assert q.record["flags_to_settle"] == []  # time 0 is one of jupiter's times
+    assert own(q.record) == []  # time 0 is one of jupiter's times
     q = benches("integrated").score(
         lambda r: put("rows", "junction_K", "junction_5", 100, value=math.nan)(r[J[2]])
     )
@@ -1443,7 +1502,7 @@ def test_a_corner_that_is_not_judged_again_stays_as_it_is():
     entries = [{**common, "pass_of_the_judgement": n} for n in (1, 2)]
     stage.first = {
         "flags_to_settle": [
-            {"id": f"{scoring.CORNER}; f; r", "kind": scoring.CORNER, "detail": {}, "entries": []}
+            {"id": f"{c.CORNER}; f; r", "kind": c.CORNER, "detail": {}, "entries": []}
         ]
     }
     for entry, touched in ((entries[0], []), (entries[1], [entries[1]])):
@@ -1686,6 +1745,31 @@ def test_a_lifted_refusal_needs_the_leads_note(benches):
         else:
             with pytest.raises(SettlementFault):
                 Settlements(data, "x", records)
+
+
+def test_the_leads_note_is_hashed(benches, tmp_path, monkeypatch):
+    """A lifted refusal names the lead's note by its path and sha256, in the settlements' file
+    (`--settlements`). The judge hashes the note's bytes, and opens it no further.
+    """
+    bench = benches("jupiter")
+    record = {"flags_to_settle": [], "copy_guard": [{"run": H[1], "comparison": "a"}]}
+    data, records = bench.settled(record, outcome="lifted")
+    note = tmp_path / "note.md"
+    note.write_text("lifted, by the lead")
+    monkeypatch.chdir(tmp_path)
+    for path, digest, good in (
+        ("note.md", strictjson.sha256(note.read_bytes()), True),
+        ("note.md", "0" * 64, False),
+        ("absent.md", "0" * 64, False),
+    ):
+        data["copy_guard"][0]["lead_note"].update(path=path, sha256=digest)
+        written = tmp_path / f"settlements-{path}-{digest[:4]}.json"
+        sha = strictjson.dump(written, data)
+        if good:
+            assert read_settlements(written, sha, records).guard
+        else:
+            with pytest.raises(SettlementFault):
+                read_settlements(written, sha, records)
 
 
 # ----- C0 -----
@@ -2409,10 +2493,11 @@ def test_judge_plants_score_as_stated(benches):
         "JP19": [(H[0], "restart junction_K")],
         "JP26": [(name, "balance of regions, Na")],
     }
-    # The self-test's rows of the three flag paths, which no judge's plant covers.
+    # The self-test's rows of the four flag paths, which no judge's plant covers.
     found = flag_rows.rows(*args, retry)
-    assert [r["where"] for r in found] == ["reading 12", "reading 24", "item 5 (a)"]
-    assert all(r["scores_as_stated"] for r in found) and {len(r["checks"]) for r in found} == {16}
+    assert [r["where"] for r in found] == ["reading 12", "reading 24", "item 5 (a)", "reading 25"]
+    assert all(r["scores_as_stated"] for r in found)
+    assert [len(r["checks"]) for r in found] == [16, 16, 16, 13]
     # Without a retry run JP26 is not formed, and that is no fault.
     (alone,) = plants.run_plants(*args, only={"JP26"})["plants"]
     assert alone["scores_as_stated"] is None and alone["not_formed"] == f"no {name} is there"

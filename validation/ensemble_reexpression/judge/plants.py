@@ -16,6 +16,7 @@ from . import constants as c
 from . import scoring
 from .legacy import Captures
 from .registration import Registration, StringsNote
+from .settlements import ReloadsConfirmed
 from .table import TableSet
 
 HEATS = ("heat_leak", "heat_pump", "heat_channel")
@@ -992,13 +993,16 @@ def run_plants(
     `retry` is a retry's honest tables by consumer, for the plant that needs one.
     """
     views = {consumer: registration.part(consumer) for consumer in registration.consumers}
+    confirmed = ReloadsConfirmed()  # so that a claim on a verdict can be read
 
     def score(consumer, table, retried=None):
         again = None if retried is None else {consumer: retried}
-        return judge(views[consumer], note, {consumer: table}, c0, captures, planted, again)
+        one = {consumer: table}
+        return judge(views[consumer], note, one, c0, captures, planted, again, confirmed)
 
     before = {consumer: score(consumer, tables[consumer]) for consumer in views}
     out = {
+        "restarts": confirmed.sha256,
         "baseline": {k: v["consumers"][k]["verdict"] for k, v in before.items()},
         "baseline_plants": [
             [p["plant"], p["consumer"], p["score"]]
@@ -1031,7 +1035,8 @@ def run_plants(
         """
         table = dict(tables[plant.consumer])
         plant.alter(table)
-        whole = judge(registration, note, {**tables, plant.consumer: table}, c0, captures, planted)
+        every = {**tables, plant.consumer: table}
+        whole = judge(registration, note, every, c0, captures, planted, settlements=confirmed)
         others = [k for k in before if k != plant.consumer]
         return all(whole["consumers"][k] == before[k]["consumers"][k] for k in others)
 
