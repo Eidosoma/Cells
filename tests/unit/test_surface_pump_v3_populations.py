@@ -27,9 +27,11 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
+from cells.definitions import pump_composite_spec as composite_spec
 from cells.definitions import surface_pump_v3_spec as spec_v3
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.definitions.surface_pump_v3_spec import control_values
+from cells.models import pump_composite
 from cells.models import pump_composite_adapter as adapter
 from cells.models import surface_pump_v3 as v3
 from cells.numerics import surface_imex as imex
@@ -625,23 +627,28 @@ FR51_SLOT_WRITERS = {
     "scheduled_membrane_insertion@1": lambda: insertion_fixtures.with_operators(
         insertion_fixtures.cleft_cell(), insertion=insertion_fixtures.furrow_insertion()
     ),
-    "scheduled_cell_replacement@1": lambda: replacement_fixtures.with_replacement(
-        replacement_fixtures.heredity_sheet(radius=1)
+    "scheduled_cell_replacement@1": lambda: composite_spec.frozen_definition(
+        replacement_fixtures.with_replacement(replacement_fixtures.heredity_sheet(radius=1))
     ),
 }
 
 
 @pytest.mark.parametrize("law", list(FR51_SLOT_WRITERS))
-def test_a_block_beside_an_operator_that_rewrites_channel_slots_is_refused(law):
+def test_a_block_beside_an_operator_that_rewrites_channel_slots_is_refused(law, monkeypatch):
     """FR-51's follow-up (parse only, about 1 s each; one row per operator family): replacement,
     partition and insertion rewrite channel slots but not the block's per-slot fields, so a blocked
-    population beside one is refused by name (pump_composite.SLOT_WRITERS, @1 and @2 alike)."""
+    population beside one is refused by name (pump_composite.SLOT_WRITERS, @1 and @2 alike). Every
+    row is the composite form, where that refusal is the only wall (D364; the standalone replacement
+    model meets @3's BLOCK_STRUCTURE_REFUSAL too): with it planted away, the world is admitted, its
+    block kept."""
     raw = FR51_SLOT_WRITERS[law]()
     raw["model"]["channels"][0]["block"] = fr51_block()["model"]["channels"][0]["block"] | {
         "reference": "membrane_voltage"
     }
     with pytest.raises(ConfigError, match=f"{law} rewrites channel slots"):
         parse_spec(raw)
+    monkeypatch.setattr(pump_composite, "block_slot_errors", lambda pairs, spec: [])  # The plant.
+    assert parse_spec(raw).model.channels[0].block is not None
 
 
 def test_a_block_round_trips_alone_and_beside_factors():
