@@ -2,8 +2,8 @@
 
 **Status: a design, written 24 November 2026 at main 05826ec1 on branch `fr54-57-design`. It was
 revised the same day with the user's decisions (Q1 and Q3) and the coordinator's rulings on the rest
-(§10), and corrected on 25 November with the recorded dt study (§8.2) and the coordinator's ruling on the
-flow's step (§3.3). Nothing is built.** Integration would grant no acceptance (D143). **S** marks this
+(§10), and corrected on 25 November with the recorded dt study (§8.2) and the coordinator's rulings of that
+day (§3.3, §4.3). Nothing is built.** Integration would grant no acceptance (D143). **S** marks this
 note's own reading, derivation or proposal. The desk sketches first written here were decimal and NumPy
 arithmetic on the note's reading of the code, not engine runs. The dt study has measured them, and its
 numbers replace them below.
@@ -324,7 +324,7 @@ fixes the record so that opening changes none of its meaning or bits.
       - The inlet's column was the dimensionless Q_in h/V_fed, bounded by ρ. A column in fmol would not be
         bounded by ρ, so the engine's call must use this form (S: a condition of the measured basis that
         the ruling does not state). An inlet into a collector feeds no node, so it has no V_fed, and it was
-        not swept.
+        not swept. Its closed form covers it (the protocol's `G5`; the coordinator, 25 November).
       - These families were measured and not proved. Another balanced network (Q4) has the host's column
         check at its own segment, which fails closed, and no entry check but the protocol's.
     - The registration re-measures both on the engine's own call before the tag.
@@ -581,7 +581,7 @@ sketch, kh · c_max/c_min ≲ 1, is contradicted.
   - **At a trace background** its first step stays a few percent off as h falls: T4 is −12.4% at h = 0.1 s,
     −5.65% at 10⁻² s, −3.89% at 10⁻³, −3.01% at 10⁻⁴ and −2.45% at 10⁻⁵. Neither W nor O is reached in the
     grid. That is FR-10's onset limit (BATH_SCHEDULE_DESIGN §3.2), recorded as such, not judged.
-- **The event check's bound** (§4.3) is fixed by the registration from this table. No number is set here.
+- **The event check** (§4.3) uses neither edge. It uses χ ≤ 0.25 and kh ≤ 0.2, two placement constants (Q7).
 - **The classes:** T1 and T3 are rounding class, at most 2.9 A and 5.7 A eps over the 672 one-step records,
   with A = 1 + |ln c_max| / |ln(c₁/c₂)|. T2, T4, the edges and the stops below are truncation class.
 
@@ -647,9 +647,26 @@ ledger refuses, within 1% of kh. It was checked against `check_values` in 240 ru
 - a node one face touches, the face carrying exactly one neutral species and no other row, with no other
   path across the node's surface (`surface_crossings`);
 - **under `exact_free_energy_heat@1`:** any event;
-- **under the default face heat:** only where the state after the event lies within §4.1's resolved
-  domain across that face. This is checked at the event and refused by name outside it (Q7);
+- **under the default face heat:** only where the state just after the event has χ ≤ 0.25 and kh ≤ 0.2 across
+  that face (Q7). Both are named constants of the router, with the study's folder cited beside them. The event
+  is checked against them and refused by name outside, with its χ and kh;
 - everything else stays refused, including a second neutral species, an ion on the face, or a patch.
+
+**Q7's two constants** (the coordinator, 25 November) are placement constants, taken from the dt study's
+placement rule after its grid was seen. They are not W.
+- **What they are:** χ, the lower well's relative change over a step (§4.1), at most 0.25, and kh at most 0.2,
+  with k that of the pair across the face. Both come from the state after the event, the volumes and the step.
+- **What holds inside them:** under ARS(2,2,2) the default heat's local error falls by a factor of at least
+  about 7 per halving of the step. On the study's grid (V₂/V₁ = 1 and 4) the smallest is 7.26, over 96 pairs. By
+  the booked law it is 7.15 between grid steps at r = 4 and V₂ = V₁ (kh 0.1835), and 6.98 at the least over
+  volume ratios from 10⁻⁴ to 10³ and r to 10⁶. Under IMEX Euler it is at least 3.85 by the law (3.87 on the
+  grid), where 4 is expected.
+- **Why they are not W:** at r = 4 and V₂ = V₁, W ends at χ = 0.23 (kh 0.169–0.170). By the booked law the
+  constants admit a step outside W at 61 of 123 starts (ERRATUM-1).
+- **Not covered:** the study ran isolated pairs, so a far node that another face also touches is outside it
+  (S).
+- **The evidence** is the study's `DT_STUDY.md` §12, `ERRATUM-1.txt` and `addendum-rho1/`
+  (`derived_numbers.out`, `placement_check.out`), and `addendum-q7/`, each with sums of its own (§8.2).
 
 **The native run.** Diffusion, a half wash of the first well (a sink and an inlet), then diffusion, under
 both heat laws. Three checks are read from the event's level records against the preceding row:
@@ -669,8 +686,8 @@ both heat laws. Three checks are read from the event's level records against the
 
 **The 8 and 2 fmol world and the domain** (measured, §4.1; class truncation):
 - **What the lift checks** is the state after the event: two wells at r = 2 (4 fmol plus the refill's trace,
-  against 2 fmol). It lies inside W to kh = 0.297–0.299 and inside O to 0.73. So at the declared steps,
-  kh ≤ 0.2, the event is admitted under either edge.
+  against 2 fmol). Its χ is 0.09 at kh = 0.2 and less at smaller steps, so at the declared steps, kh ≤ 0.2, the
+  event is admitted. It also lies inside W to kh = 0.297–0.299 and inside O to 0.73.
 - **Before the event** the wells stand at r = 4 with equal volumes. W ends at kh = 0.169–0.170 and O at 0.53,
   so at kh = 0.2 (χ = 0.27) that start is outside W: T4's halving ratio is 7.08. That places T4's cases only.
   The event does not read it.
@@ -756,7 +773,8 @@ sets its tolerance: a rounding bound or an order window, never the other.
 - a stale event count;
 - ions differing beyond rounding across a node-to-node link;
 - a flow whose throughput ρ exceeds 1 where the schedule changes Q, as that segment's P is computed (§3.3);
-- under the default face heat, a state after an event outside §4.1's domain at a faced node.
+- under the default face heat, a state after an event outside Q7's constants (χ ≤ 0.25 and kh ≤ 0.2, §4.3)
+  at a faced node, with its χ and kh named.
 
 **Domains:**
 - the liquid is ideal, dilute, incompressible and well mixed at every node, with no volume of mixing;
@@ -835,17 +853,20 @@ FR-54's T2 and T4 carry the tableau's own orders, with derived bounds and ratios
   - They compute P in decimal, and FR-57's equal-rate chain in its confluent form (§2).
 - **The dt study is recorded** (25 November, engine 0e563668, @3's own host step on `face_world`, no compiled
   world): `/mnt/workspaces/Cells/fr54-57-dt-study-20261125/`, its `DT_STUDY.md`, scripts, outputs and
-  `SHA256SUMS.txt`, its `ERRATUM-1.txt`, and `addendum-rho1/` with a `SHA256SUMS.txt` of its own. Its edges and
-  stops replace the sketched ones (§4.1, §4.3), and its addendum's thresholds replace §3.3's first probes.
+  `SHA256SUMS.txt`, its `ERRATUM-1.txt`, and `addendum-rho1/` and `addendum-q7/`, each with a `SHA256SUMS.txt`
+  of its own. Its edges and stops replace the sketched ones (§4.1, §4.3), and its addendum's thresholds
+  replace §3.3's first probes.
   - They are **engine-side measurements.** Seen before the edge criteria were written, as the study says: the
     design's desk figures, and a dry run of the 8 and 2 fmol world that showed its stop between kh = 0.05 and
-    0.1. Written before the grid: the bands of W and O. Chosen after the grid was seen: χ and the 1%
-    refinement. The propagator's numbers are scipy on the host against decimal references, not the engine's.
+    0.1. Written before the grid: the bands of W and O. Chosen after the grid was seen: χ, the 1% refinement
+    and Q7's constants. The propagator's numbers are scipy on the host against decimal references, and Q7's
+    law-based numbers (§4.3) are the booked law's, not the engine's.
   - The references' agent receives the edges through the coordinator, and reads neither this note nor that
     folder.
 - **Two verdicts.**
   - FR-54's verdict reads arms 1 and 2. Item 2's message is read on arm 2's stop cases.
   - FR-57's verdict reads arms 3 to 7. Arm 6 runs only once FR-54's arms pass (Q8).
+- **A recorded run's stop counts toward no arm** (the coordinator, 25 November).
 - **The run** is detached, with its evidence on disk. It is not a tier file.
 - **Arm 1, the two-well first step:** §4.1's cases, both heats.
 - **Arm 2, the native run:** diffusion, a half wash, then diffusion, at the declared steps. The three
@@ -901,7 +922,7 @@ The seconds below are priced from measured rows in `tests/test_tiers.json`. The 
 
 | File | Change | Seconds | Reason |
 | --- | --- | --- | --- |
-| `test_wash_schedule.py` (tier 1, 9.7 s; renamed with the operator when the wash is retired) | Kernel and refusal rows (the throughput's among them), NumPy | +3 | The operator's own rows, with no world compiled |
+| `test_wash_schedule.py` (tier 1, 9.7 s; renamed with the operator when the wash is retired) | Kernel and refusal rows (the throughput's and the event check's among them), NumPy | +3 | The operator's own rows, with no world compiled |
 | `test_heat_bookings_formula.py` (tier 2, 35 s) | §4.1's host one-step rows on `face_world`, both heats, placed by its measured edges; the trace-start row reads item 2's numbers | +20 | No runner needed |
 | `test_neutral_arrival_labels.py` (tier 2, 60 s) | The exact map with `carried` and `collected`, the chain row and plant 11; `same_physics` gains `label_collected_fmol` | +2 | NumPy |
 | One vector-window refusal test | Item 2's numbers | 0 | An extended row |
@@ -935,8 +956,8 @@ The seconds below are priced from measured rows in `tests/test_tiers.json`. The 
 ## 10. Decisions, the price and the order
 
 The decisions were made on 24 November 2026. The user decided Q1 and Q3, and the coordinator ruled the
-rest as this note recommended. The coordinator ruled the flow's step limit (Q11) on 25 November, after the
-dt study.
+rest as this note recommended. The coordinator ruled the flow's step limit (Q11) and Q7's constants on
+25 November, after the dt study.
 
 | Question | Decision | By |
 | --- | --- | --- |
@@ -946,7 +967,7 @@ dt study.
 | Q4. Networks | Any balanced network of at most 64 nodes, qualified on a chain, a split and merge, and a loop | The coordinator |
 | Q5. "Different per-portion losses" | Each delivery's loss, with a third delivery added: 1, 3 and 3 mM give (0, 0.523248, 0.137341); 3, 3 and 1 mM give (0, 0, 0.660589). The two-delivery resident and arriving split is recorded too. D362 corrects D352 | The coordinator |
 | Q6. The heat's form | Records outside the IMEX flow bound, as the wash's, with H ≥ 0 checked at every event and step | The coordinator |
-| Q7. The default face heat at a faced exchanged node | For events, admitted within §4.1's resolved domain and refused by name outside it. A flow's faced nodes take the exact heat. Both limits are measured (§4.1, §4.3): the 8 and 2 fmol world's state after the event lies inside W and O at kh ≤ 0.2, its state before it inside W only to kh ≈ 0.17 and inside O at kh ≤ 0.2, and it completes under the default heat only at kh ≤ 0.05. The domain's bound is the registration's to fix, and neither edge is selected | The coordinator |
+| Q7. The default face heat at a faced exchanged node | For events, admitted where the state after the event has χ ≤ 0.25 and kh ≤ 0.2 (two placement constants, not W, §4.3), checked at the event and refused by name outside. A flow's faced nodes take the exact heat. Both limits are measured (§4.1, §4.3): the 8 and 2 fmol world's state after the event has χ at most 0.09 at kh ≤ 0.2, its state before it is inside W only to kh ≈ 0.17, and it completes under the default heat only at kh ≤ 0.05 | The coordinator; the constants 25 November |
 | Q8. Flow beside diffusion | In the same build, once arms 1 and 2 pass | The coordinator |
 | Q9. Qualification | One registered protocol, with a verdict per request: FR-54's and FR-57's (§8.2) | The coordinator |
 | Q10. "With FR-10's schedule" | The events' grid form. Item 3 says "a withdrawal and a refill at a connected finite node" | The coordinator |
