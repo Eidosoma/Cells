@@ -1556,7 +1556,7 @@ def test_a_trace_that_is_not_whole_checks_nothing(tmp_path, plant, words):
     logs = {10: 'execve("/usr/bin/python", ["python"], 0x1 /* 2 vars */) = 0\n'
                 "clone3({flags=CLONE_VM|CLONE_THREAD, child_tid=0x1}, 88) = 12\nvfork() = 11\n",
             11: 'execve("/usr/bin/cat", ["cat"], 0x1 /* 2 vars */) = 0\n' + TREE_LINE,
-            12: "getdents64(3</t>, 0x1 /* 4 entries */, 32768) = 96\n"
+            12: 'openat(AT_FDCWD</t>, ".", O_RDONLY|O_DIRECTORY) = 3</t>\n'
                 'openat(AT_FDCWD</t>, "/tt/x", O_RDONLY) = 3</tt/x>\n'}
     if plant == "no trace":
         logs = {}
@@ -1570,7 +1570,8 @@ def test_a_trace_that_is_not_whole_checks_nothing(tmp_path, plant, words):
     trace, why = scope.read_trace(tmp_path, "/t")
     assert (why or "").startswith(words or "") and (trace is None) == bool(words), (trace, why)
     if plant == "whole":
-        assert trace["opened"] == {"docs/a.md": TREE_LINE.strip()} and trace["listed"] == {10: {"."}}
+        assert trace["opened"]["docs/a.md"] == TREE_LINE.strip() and len(trace["opened"]) == 2
+        assert trace["by"] == {10: {"."}, 11: {"docs/a.md"}}  # Thread 12's open is process 10's.
         assert trace["parent"] == {11: 10} and sorted(trace["ran"]) == [10, 11]
 
 

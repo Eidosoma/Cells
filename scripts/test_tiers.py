@@ -30,10 +30,10 @@ files are timed individually and grouped into tiers:
            row to re-measure), not changed. With --scope-map DIR (the nightly run only,
            D229), each file's processes also record what they read of the tree, into
            DIR/<file> (scripts/gates/scope_inject; scripts/gates/scope.py builds the map).
-           With --trace DIR as well (D358), strace also writes the opens, listings and
-           processes of each file into DIR/<file>, about 0.3 s a file, as scope.py's check
-           on the recorder; where strace cannot trace (absent, or the run is traced
-           already), the run goes on without it and its record says why
+           With --trace DIR as well (D358), strace also writes the opens and processes of each
+           file into DIR/<file>, as scope.py's check on the recorder; where strace cannot
+           trace (absent, or the run is traced already), the run goes on without it and its
+           record says why
 
 JAX's persistent compilation cache (D321 R1): every test process runs with it disabled
 (JAX_ENABLE_COMPILATION_CACHE=false, no cache folder), whatever the caller's environment, since tier
@@ -176,12 +176,13 @@ def cache_environment(env, jax_cache=None):
     return env
 
 
-# strace for the scope map's check (D358): only calls that succeed, of three kinds, with the path the
-# kernel opened (-y). -D keeps the test process this runner's own child, so a process that outlives
-# it does not hold the run up; --seccomp-bpf stops it at these calls alone.
+# strace for the scope map's check (D358): the opens that succeed (a folder is listed only through its
+# own), with the path the kernel opened (-y), and the processes. -D keeps the test process this
+# runner's own child, so a process that outlives it does not hold the run up; --seccomp-bpf stops it
+# at these calls alone.
 STRACE = ("strace", "-D", "-ff", "-y", "-z", "-q", "--seccomp-bpf", "-s", "200", "-e", "signal=!SIGCHLD", "-e",
-          "trace=open,openat,openat2,creat,getdents64,getdents,execve,execveat,clone,clone3,fork,vfork,"
-          "open_by_handle_at,io_uring_setup")
+          "trace=open,openat,openat2,creat,execve,execveat,clone,clone3,fork,vfork,open_by_handle_at,"
+          "io_uring_setup")
 
 
 def trace_refused():

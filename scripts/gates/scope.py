@@ -33,10 +33,11 @@ cells or JAX.
         a program, that neither recorded itself (matched by its process number and arguments) nor
         is accounted for by its arguments alone (answered: no program there, git outside the tree or
         asking for a repository in it, uname -p, fc-list).
-      - The trace (strace's view of the same run: opens, listings, processes) is a standing check
-        of the recorder. An entry that lacks a regular repository file a process opened, or a
-        folder one listed, is incomplete, and a program the recorder did not see leaves the file's
-        children unmapped. An entry whose trace is missing or not whole is not traced.
+      - The trace (strace's view of the same run: opens, of files and of folders to be listed, and
+        processes) is a standing check of the recorder. An entry that lacks a regular repository
+        file a process opened, or a folder one listed, is incomplete, and a program the recorder did
+        not see leaves the file's children unmapped. An entry whose trace is missing or not whole is
+        not traced.
       The map's verdict is the run's: passed when every file ran and matched its row. What the trace
       found, per file, is the map's trace key; --prune-traces removes the traces that found nothing.
   select HEAD BASE MAP OUT_DIR [--tiers REL] [--stopped FILE] [--python PY] [--max-age-hours H]
@@ -182,7 +183,6 @@ CLONES = ("clone", "clone3", "fork", "vfork")
 UNSEEN = ("open_by_handle_at", "io_uring_setup")  # They open files that no other traced call shows.
 CHILD = re.compile(r" = (\d+)$")
 OPENED = re.compile(r" = \d+<((?:[^<>\\]|\\.)*)>$")  # -y gives the path the kernel opened.
-LISTED = re.compile(r"^getdents(?:64)?\(\d+<((?:[^<>\\]|\\.)*)>, ")
 ESCAPE = re.compile(r"\\([0-7]{1,3}|.)")
 
 
@@ -198,14 +198,13 @@ def plain(path):
 
 def read_trace(folder, root):
     """(what strace saw of one test file's processes in the tree at ROOT, None), or (None, why its view
-    is not whole). Per process: the files it opened (with a line of the trace), the folders it
-    listed, the programs it ran and its parent."""
-    opened, listed, ran, parent, threads = {}, defaultdict(set), defaultdict(list), {}, set()
+    is not whole). The paths opened, with a line of the trace for each, and per process the paths it
+    opened, the programs it ran and its parent. A folder is listed only through its own open."""
+    opened, by, ran, parent, threads = {}, defaultdict(set), defaultdict(list), {}, set()
     logs = {int(p.name.split(".")[1]): p for p in Path(folder).glob("t.*")} if Path(folder).is_dir() else {}
     if not logs:
         return None, "no trace"
     root = str(root)
-    rows = []  # (thread, the tree's path, the line, whether it is a listing)
     for thread, log in sorted(logs.items()):
         lines = log.read_text(errors="surrogateescape").splitlines()
         if not lines or not lines[-1].startswith("+++ "):
@@ -223,10 +222,12 @@ def read_trace(folder, root):
             elif call in UNSEEN:
                 return None, f"{log.name} holds {call}"
             elif root in line:
-                found = LISTED.match(line) or OPENED.search(line)
+                found = OPENED.search(line)
                 path = plain(found.group(1)) if found else ""
                 if path == root or path.startswith(root + "/"):
-                    rows.append((thread, path[len(root) + 1:] or ".", line, bool(LISTED.match(line))))
+                    path = path[len(root) + 1:] or "."
+                    opened.setdefault(path, line)
+                    by[thread].add(path)
     gone = sorted(set(parent) - set(logs))
     if gone:
         return None, f"no trace of the process or thread {gone[0]}"
@@ -236,15 +237,12 @@ def read_trace(folder, root):
             thread = parent[thread]
         return thread
 
-    for thread, path, line, listing in rows:
-        if listing:
-            listed[process(thread)].add(path)
-        else:
-            opened.setdefault(path, line)
-    programs = defaultdict(list)
-    for thread, lines in sorted(ran.items()):
-        programs[process(thread)] += lines
-    return {"opened": opened, "listed": listed, "ran": programs,
+    paths, programs = defaultdict(set), defaultdict(list)
+    for thread in sorted(logs):
+        paths[process(thread)] |= by[thread]
+        programs[process(thread)] += ran[thread]
+    return {"opened": opened, "by": {k: v for k, v in paths.items() if v},
+            "ran": {k: v for k, v in programs.items() if v},
             "parent": {t: process(p) for t, p in parent.items() if t not in threads}}, None
 
 
@@ -420,16 +418,17 @@ def entry(logs, tree, trace=None):
 
 
 def trace_finds(trace, tree, processes, seen, content, lists, listed):
-    """What the trace shows and the entry lacks: regular files opened, folders listed (a process
-    without a record may have listed only what the test's own code did), and programs run by a
-    process that neither recorded itself nor was SEEN starting, nor descends from one that was."""
+    """What the trace shows and the entry lacks: regular files opened, folders opened to be listed (a
+    process without a record may have listed only what the test's own code did), and programs run by
+    a process that neither recorded itself nor was SEEN starting, nor descends from one that was."""
     recorded, found = defaultdict(int), {}
     for p in processes:
         recorded[p["pid"]] += not p["forked"]
     files = {p: line for p, line in trace["opened"].items()
              if useful(source_of(p)) and tree.kind(source_of(p)) == "f" and source_of(p) not in content}
-    folders = {f for pid, folders in trace["listed"].items() for f in folders
-               if useful(f) and f not in (listed if pid in recorded else lists)}
+    folders = {p for pid, paths in trace["by"].items() for p in paths
+               if useful(p) and (tree.kind(p) == "d" or p == ".")
+               and p not in (listed if pid in recorded else lists)}
 
     def known(pid):
         while pid is not None and pid not in seen:
