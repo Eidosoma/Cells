@@ -2,8 +2,9 @@
 
 Parse only, and fabricated records: no row compiles or runs a world. The records are made by the
 driver's own code around numbered arrays, so that every slot of every array differs and a swapped
-index, a turned sign or a shifted clock changes a number that a row holds. The 49 rows take about
-25 s on the shared CPUs, most of it the engine's parse of definitions.
+index, a turned sign or a shifted clock changes a number that a row holds. Where a row makes a
+worker's record, the engine's run, writer, windows and pools are stood in for, and its parse is its
+own. The 59 rows take about 16 s on the shared CPUs, most of it the engine's parse of definitions.
 """
 
 import ast
@@ -862,28 +863,30 @@ def test_a_declared_changes_gate_law_is_what_its_refusal_is_read_with(invented):
     assert worker.gates() == ()
 
 
+def _windows(spec, policy, checkpoint):
+    """The engine's windowed path, stood in for: two windows of one step, then a check's refusal."""
+    assert (policy.window_steps, policy.recording, policy.row_checks) == (1, "full", "host")
+    fields = get_model(spec.model).STATE_TYPE._fields
+    for k in range(3):
+        if k == 2:
+            raise NumericalError(LEDGER_MESSAGE + "energy")
+        history = get_model(spec.model).STATE_TYPE(
+            *(np.asarray([[k * 10.0 + j], [(k + 1) * 10.0 + j]]) for j in range(len(fields)))
+        )
+        observed = SimpleNamespace(times=np.asarray([k * 1.0]), voltage=np.asarray([[k * 2.0]]))
+        times = np.asarray([k * 4e-05, (k + 1) * 4e-05])
+        yield SimpleNamespace(history=history, times=times, observations=observed)
+
+
 def test_the_rows_before_a_refusal_and_the_row_that_failed(invented, monkeypatch):
     """A refused run's second pass, on windows that a stand-in yields: adjacent windows share a row,
     and the row that failed is the one after the last accepted window's."""
     raw = definitions.ionic(invented.worlds["inv_sample_sheet"], 4e-05)
     spec = parse_spec(raw)
     fields = get_model(spec.model).STATE_TYPE._fields
-
-    def windows(spec, policy, checkpoint):
-        assert (policy.window_steps, policy.recording) == (1, "full")
-        for k in range(3):
-            if k == 2:
-                raise NumericalError(LEDGER_MESSAGE + "energy")
-            history = get_model(spec.model).STATE_TYPE(
-                *(np.asarray([[k * 10.0 + j], [(k + 1) * 10.0 + j]]) for j in range(len(fields)))
-            )
-            observed = SimpleNamespace(times=np.asarray([k * 1.0]), voltage=np.asarray([[k * 2.0]]))
-            times = np.asarray([k * 4e-05, (k + 1) * 4e-05])
-            yield SimpleNamespace(history=history, times=times, observations=observed)
-
-    monkeypatch.setattr(refusals, "iter_windows", windows)
-    found, failed = refusals.rows_before(spec)
-    assert failed == 3 * 4e-05
+    monkeypatch.setattr(refusals, "iter_windows", _windows)
+    found, failed, raised = refusals.rows_before(spec)
+    assert failed == 3 * 4e-05 and raised == "cells.execution.errors.NumericalError"
     assert found["accepted_times"].tolist() == [0.0, 4e-05, 8e-05]
     for j, name in enumerate(fields):
         assert found[name].ravel().tolist() == [j, 10.0 + j, 20.0 + j]
@@ -899,15 +902,16 @@ def test_a_check_that_its_second_pass_does_not_meet_says_so(invented, tmp_path, 
     spec = SimpleNamespace(experiment=SimpleNamespace(end_time=0.0002))
     found = {}
     for kind, failed in (("check", None), ("check", 4e-05), ("domain", None), ("domain", 4e-05)):
-        monkeypatch.setattr(refusals, "rows_before", lambda *_, at=failed: (None, at))
+        monkeypatch.setattr(refusals, "rows_before", lambda *_, at=failed: (None, at, None))
         refusal = {"kind": kind, "message": LEDGER_MESSAGE + "energy", "time_s": None}
         worker.kept(spec, None, refusal)
         assert worker.facts["refused_row_found"] is (failed is not None)
-        told = {"window_steps": 1, "rows": None, "completed": failed is None}
+        told = refusals.policy() | {"rows": None, "completed": failed is None}
+        assert refusals.policy() == {"window_steps": 1, "recording": "full", "row_checks": "host"}
         assert worker.facts["second_pass"] == told
         found[kind, failed] = refusal
     rows = {"accepted_times": np.zeros(2)}
-    monkeypatch.setattr(refusals, "rows_before", lambda *_: (rows, 4e-05))
+    monkeypatch.setattr(refusals, "rows_before", lambda *_: (rows, 4e-05, None))
     worker.kept(spec, None, {"kind": "check", "message": "", "time_s": None})
     assert worker.facts["second_pass"]["rows"] == "partial.npz"
     assert (tmp_path / "partial.npz").is_file()
@@ -955,6 +959,114 @@ def test_a_second_pass_that_fails_hides_no_refusal_of_the_engines(invented, tmp_
             worker.execute(spec, None, {})
         assert found.value.refusal == {"kind": kind, "message": message, "time_s": time}
         assert worker.facts["second_pass"] == {"fault": "KeyError: 'a window'"}
+        assert worker.facts["raised"] == [
+            {"class": "cells.execution.errors.NumericalError", "stage": "run"},
+            {"class": "builtins.KeyError", "stage": "second pass"},
+        ]
+
+
+NUMERICAL = "cells.execution.errors.NumericalError"
+CONFIG = "cells.definitions.specs.ConfigError"
+RECORDS = {  # The run, and what its record says (README: path, rows, check_options, raised).
+    "completed": ("inv_sample_sheet h=4e-05", "run", {"executed_steps": 7}, None),
+    "restart": ("inv_sample_cluster h=2e-05 restart", "resume", {"executed_steps": 7}, None),
+    "pool": ("inv_sample_pair s0 pool", "pool", {}, None),
+    "definition": ("inv_sample_unsupported h=4e-05", None, None, [(CONFIG, "parse")]),
+    "domain": ("inv_sample_cold h=4e-05", None, None, [(CONFIG, "parse")]),
+    "check": (
+        "inv_sample_tight h=4e-05",
+        "run",
+        {"second_pass_windows": 2},
+        [(NUMERICAL, "run"), (NUMERICAL, "second pass")],
+    ),
+    "harness": (
+        "inv_sample_slow h=4e-05",
+        None,
+        None,
+        [("validation.ensemble_reexpression.labels.UnknownOrder", "declaration")],
+    ),
+}
+
+
+def _written(directory, result, *, checkpoint_times=(), provenance=None):
+    """The engine's writer of a run, stood in for: its summary's counts, which no row derives."""
+    directory.mkdir(parents=True)
+    driver.write_json(directory / "summary.json", {"executed_steps": 7, "global_step_index": 13})
+
+
+def _pooled(composed, k, output, *, backend, device_index):
+    """One pool's run, stood in for: its result's counts."""
+    output.mkdir()
+    driver.write_json(output / "result.json", {"committed_events": 10 + k, "chunks": 2})
+
+
+@pytest.mark.parametrize("case", RECORDS)
+def test_a_record_says_what_was_raised_its_path_and_the_engines_counts(
+    case, invented, tmp_path, monkeypatch
+):
+    """The lead's fix5: a record's `raised` (each class with its module, and its stage), the
+    parsed execution's every field and opt-in blocks, the path, and the counts that the engine
+    reports. The parse is the engine's; its run, writer, windows and pools are stood in for."""
+    name, path, counts, raised = RECORDS[case]
+    raw = copy.deepcopy(invented.raw)
+    raw["worlds"]["inv_sample_slow"]["p"] = 3  # The generator's own refusal (`unknown_order`).
+    inputs = tmp_path / "inputs.json"
+    inputs.write_text(json.dumps(raw))
+    run = invented.run(name)
+
+    def stepped(spec, checkpoint=None):
+        if case == "check":
+            raise NumericalError(LEDGER_MESSAGE + "energy")
+        return SimpleNamespace(times=np.asarray([0.0, 4e-05]), timings={}, snapped_events=())
+
+    monkeypatch.setattr("cells.execution.runner.run", stepped)
+    monkeypatch.setattr("cells.records.io.write_run", _written)
+    monkeypatch.setattr(refusals, "iter_windows", _windows)
+    monkeypatch.setattr("cells.assembly_pool.resolve.run_pool", _pooled)
+    folders = driver.Folders(tmp_path / "runs")
+    if case == "restart":  # Its judged run's record and checkpoint, and the engine's load of it.
+        judged = invented.run(run.judged_name)
+        saved = folders.run(judged) / "attempt-1/output/snapshots/step-000006"
+        saved.mkdir(parents=True)
+        driver.write_json(saved / "manifest.json", {"clock": {"time": run.restart_time}})
+        record = {"status": "completed", "attempt": "attempt-1"}
+        driver.write_json(folders.run(judged) / driver.RECORD, record)
+        spec = parse_spec(definitions.definition(invented, run))
+        checkpoint = SimpleNamespace(time=run.restart_time, step_index=6)
+        loaded = SimpleNamespace(spec=spec, checkpoint=checkpoint, fingerprint="0")
+        monkeypatch.setattr("cells.records.io.load_snapshot", lambda *_, **__: loaded)
+    attempt = driver.next_attempt(folders.run(run))
+    job = {"run": name, "inputs": str(inputs), "runs": str(folders.root), "off_grid": False}
+    driver.write_json(attempt / "job.json", job | {"started_utc": "then"})
+    driver.Worker(attempt).outcome()
+    record = driver.made(Inputs(inputs), run, attempt, None, tag=None, off_grid=False)
+    assert record["path"] == path
+    assert record["raised"] == (raised and [{"class": c, "stage": s} for c, s in raised])
+    if counts is None:
+        assert record["rows"] is None and record["check_options"] is None
+        return
+    rows = driver.no_rows() | counts
+    if case in ("completed", "restart"):
+        rows["global_step_index"] = 13
+    if case == "pool":  # A pool's own counts, of each of its pools; no execution block.
+        rows["pools"] = {
+            f"pools/pool-{k:03}": {"committed_events": 10 + k, "chunks": 2} for k in (0, 1)
+        }
+        assert record["check_options"] is None
+    else:
+        execution = parse_spec(definitions.definition(invented, run)).execution
+        fields = {f.name for f in dataclasses.fields(execution)}
+        options = record["check_options"]
+        assert set(options) == fields | set(driver.OPT_IN) and options["solver"] == execution.solver
+        assert all(options[name] == "absent" for name in driver.OPT_IN)
+    assert record["rows"] == rows
+    if case == "check":
+        told = {"window_steps": 1, "recording": "full", "row_checks": "host"}
+        assert record["second_pass"] == told | {"rows": "partial.npz", "completed": False}
+    crashed = driver.made(
+        Inputs(inputs), run, attempt, "the run took more than 1 s", tag=None, off_grid=False
+    )
+    assert [crashed[k] for k in ("path", "rows", "check_options", "raised")] == [None] * 4
 
 
 def test_a_judged_run_writes_the_checkpoint_that_its_restart_resumes(invented, tmp_path):
