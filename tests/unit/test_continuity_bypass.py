@@ -56,10 +56,9 @@ PROBE = (
     "under S0 and S1, keeps every other loader check, and never continues a run"
 )
 EXEMPT = {
-    # Read-only comparisons, audits and writers of their own output (9).
+    # Read-only comparisons, audits and writers of their own output (8).
     "validation/assembly/compare_throughput.py": READ,
     "validation/ensemble/jupiter_check.py": READ,
-    "validation/ensemble/spatial_matrix.py": READ,
     "validation/ensemble_reexpression/judge/legacy.py": READ,
     "validation/ensemble_reexpression/rehearsal/legacy_arrays.py": READ,
     "validation/ensemble_reexpression/rehearsal/reference.py": READ,

@@ -3428,14 +3428,6 @@
     }
    },
    {
-    "file": "tests/integration/test_assembly_cluster_gpu.py",
-    "seconds": 2.03,
-    "exit_code": 0,
-    "counts": {
-     "skipped": 1
-    }
-   },
-   {
     "file": "tests/integration/test_batch_cli.py",
     "seconds": 15.54,
     "exit_code": 0,
@@ -3497,14 +3489,6 @@
     "exit_code": 0,
     "counts": {
      "passed": 7
-    }
-   },
-   {
-    "file": "tests/unit/test_assembly_controls.py",
-    "seconds": 9.32,
-    "exit_code": 0,
-    "counts": {
-     "passed": 2
     }
    },
    {
@@ -7550,18 +7534,6 @@
     "counts": {}
    },
    {
-    "file": "tests/unit/test_assembly_cell.py",
-    "seconds": 90.21,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
-    "file": "tests/unit/test_assembly_cluster.py",
-    "seconds": 90.12,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
     "file": "tests/unit/test_batch.py",
     "seconds": 90.08,
     "exit_code": null,
@@ -7652,12 +7624,6 @@
     "counts": {}
    },
    {
-    "file": "tests/unit/test_er_calcium.py",
-    "seconds": 90.1,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
     "file": "tests/unit/test_event_world_adapter.py",
     "seconds": 90.25,
     "exit_code": null,
@@ -7688,12 +7654,6 @@
     "counts": {}
    },
    {
-    "file": "tests/unit/test_gated_calcium.py",
-    "seconds": 90.13,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
     "file": "tests/unit/test_inner_dispatch_steps_release.py",
     "seconds": 90.13,
     "exit_code": null,
@@ -7714,12 +7674,6 @@
    {
     "file": "tests/unit/test_integrated_ensemble.py",
     "seconds": 90.24,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
-    "file": "tests/unit/test_ip3_calcium.py",
-    "seconds": 90.13,
     "exit_code": null,
     "counts": {}
    },
@@ -7828,12 +7782,6 @@
    {
     "file": "tests/unit/test_shared_inventory_volume.py",
     "seconds": 90.07,
-    "exit_code": null,
-    "counts": {}
-   },
-   {
-    "file": "tests/unit/test_spatial_calcium.py",
-    "seconds": 90.18,
     "exit_code": null,
     "counts": {}
    },
