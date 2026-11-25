@@ -9,6 +9,9 @@ the calcium ensemble counts as done; its GPU path is parked.
   §7.3's live-side items are done or under way on stream B's branch, and §7.5's hand edits are split between B, C and the re-expression's builders.
 - **Where the work is now:** §14, the re-expression map; `validation/legacy_port/removal_list.tsv` on branch `legacy-removal-list`,
   with its test IDs; and the user's page, `docs/LEGACY_REMOVAL_PAGE.md`, on this branch.
+- **D386 (25 November): the user approved the losses.** The cell-zone transporter stays at the tag; NKCC and the generic symport are ported in
+  the cleanup; D211's other ports follow it. The page had set those laws among the lost ones, against D211 and against rows A3 to A6 here.
+  §14.7 has the final list and what D211 keeps.
 - **Nothing on the cleanup branch needs the old core** while the re-expression is written (my reading, and the lead's). Main, the
   tag `pre-cleanup-2026-11-25` and the captures hold it, and no canonical world reads it. The captures (`science-76a498ae`, and the
   integrated ensemble's world captured at the pre-cleanup tag) are the reference.
@@ -1561,6 +1564,40 @@ declared ones are capacity padding.
    formulas, not as legacy's cubic-interpolant proofs that every step stays in the domain.
 5. Old checkpoints of these worlds cannot be resumed. The pre-cleanup tag and the captures keep them.
 6. The assembly clusters' trajectories: not captured, so a difference between endpoints has no path to point at.
+
+### 14.7 The final removal list, and what D211 keeps (D386)
+
+**The list** (`validation/legacy_port/removal_list.tsv`, branch `legacy-removal-list`): 1,901 rows, of which 1,535 files go, 201 are edited,
+16 tests are retargeted and 149 are kept by name. Every `goes_or_cut` row has a verdict: a reader read 462 files, and the 35 it asked about are resolved here.
+- **The three live parity files keep their BETSE runs.** They now import `validation/betse/native_hooks.py`, and 19 REF-era modules go
+  (the lead's choice (C)). Measured on the tree without what goes, on the light CPUs: 16, 38 and 25 rows pass, each with one skip, and all 64 native
+  captures equal the saved ones bit for bit (395 million array scalars).
+- **Four parity files could not start their run,** at the tag or before it: three stop in the check of the source they are bound to, which changed on
+  11 October 2026, and one is skipped (D131). 70 rows that could only error leave; the 55 that pass stay.
+- **The fixed point:** on the head tree without what goes, the only remaining files with an import that does not resolve are 10 of the 16
+  retargeted tests, and the only other mentions of a going path are the rename's tool and tables, one guard's exemption list (which must change in the
+  deletion's own commit) and documents. Run-time imports and path loads were read one by one (75 sites).
+- **Test IDs,** by collecting that tree: 12,452 collect, and 10 files fail to. Of 21,927, 9,023 go with their files, 260 leave files that
+  stay, 314 wait for their builders, and 122 are new.
+
+**D211.** 44 of its 47 "port as is" laws keep their kernel, its reference and a kernel-level test:
+
+| Laws | Surviving test of the kernel |
+|---|---|
+| Kv2, Kv3, K_fast | `test_potassium_catalog.py` (146 rows) |
+| Nav1.3, the rat Navs, Nav1.6 | `test_sodium_catalog.py` (115) |
+| CaV1.2 to CaV3.3 | `test_cav_channels.py` (4) |
+| Ca_L2, Ca_L3, Cav_G | `test_calcium_catalog_extra.py` (82) |
+| Morris-Lecar | `test_morris_lecar_channels.py` (140) |
+| Calcium-activated K | `test_calcium_activated_potassium.py` (103) |
+| HCN1, HCN2, HCN4 | `test_channel_law_kernels.py`: the rows moved from `test_surface_hcn.py`; only the stage check of `resolved_tissue@8` would have been left |
+| HCN leak and the two cAMP laws | `test_channel_law_kernels.py`: new rows; none would have been left |
+| Kv1.1 to Kv1.4, Kv1.6 | `test_kv1_channel_laws.py` (registered on @3) |
+
+Two further pairs of kernel rows moved with them, Kv1.5 with Kir2.1 and Nav1.2, because `validation/betse/emulator/network.py` cites them. Nine planted
+errors in the kernels each fail at least one of the ten rows. The four tables of `resolved_tissue@9` to `@12` hold no kernel and no constant
+but code ranges and neutral fill values, and nothing that stays imports them, so they go; the rename's choice that reads
+one of them (`scripts/moves/id-rename-choices.json:186`) needs the law modules' own tables instead.
 
 ## Appendix A. The 11 families of D348: closures, physics, sources and targets
 
