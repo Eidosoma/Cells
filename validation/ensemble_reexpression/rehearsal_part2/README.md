@@ -115,7 +115,7 @@ captured names, since the readouts are named by them.
 | One run stopped by the engine's own check | `inv_stop h=4e-05` |
 | EP3 and EP4 | `inv_ip3 plant release` and `inv_cluster_gated plant swapped`, each by a declared change and once more by the registered variant alone |
 | The two sets of a cluster | seed index 0 is set A (`not_blind`), seed index 1 set B, which owns the cluster's plants and engine plant |
-| A thin store-voltage home, and a big capacitor (the lead's addition) | `inv_thin`; `inv_capacitor`. In the clusters the store's capacitor is listed `cluster_not_tested`, as registered, and in `inv_cluster_plasma` its margin at the end is above 10 all the same, so the list and not the number decides |
+| A thin store-voltage home, and a big capacitor (the lead's addition) | `inv_thin`: the store K leak's plant has a margin of 7.2 at `store_voltage` and the capacitor's 1.1 at `store_K`, so neither is tested there (and in `inv_slow` 1.2 and 1.7). `inv_capacitor`: both are tested, at 5.3e3 and more. In the clusters the store's capacitor is listed `cluster_not_tested`, as registered: its margins at the end are 75 to 1,234, above 10, so the list decides and not the number |
 | The faulty tables of JQ1 to JQ34 | the judge's, from these runs (below) |
 
 ## The runs, and what each is made to have
@@ -203,6 +203,50 @@ No step, horizon or time of either part is used, with no exception (Part 1's 25 
 - **The captured arrays were not read.** The legacy arrays read here are those of the invented worlds alone.
 - **Class E on another machine** is as in the protocol.
 
-## The legacy runs
+## What the judge needs: the profile, proposed
 
-Under way at this commit: the reference-side files come with the next one. The inputs, the profile and the run list above are final.
+`profile_rehearsal_part2.json` is Part 1's shape (the judge's README, section 5) with four additions, since the judge has not yet given its shape for
+Part 2. `make_profile2.py` forms it and checks that every world, run and plant that it names exists.
+
+- **`paths`:** for each cluster the key of its pools in the reference paths (`inv_pools` for all four; the registered clusters' is `base`).
+- **`engine_plants`:** `inv_EP3` and `inv_EP4` carry `declared_change` in the inputs, and `EP3` and `EP4` none, so the profile's `change` is the judge's. A path begins at the world's block. EP3's distance is a
+  power plant's (`release`, world `inv_ip3`): 1.1e-6 fmol, a margin of 1.3e6. EP4's is a cluster's structural plant, `SC14` of the margins' `cluster_gated_calcium`, seed index 1, world 0: 1.0e-6 fmol, a margin of 1.1e6.
+- **`retry_step_s`:** every world's retry step, half its last.
+- **`names_of`:** the invented name of each world, run and family that `PART2.md` section 14 names (`spatial_calcium` is `inv_spatial`, and so on).
+- `not_blind` and `not_blind_pool_runs` are Part 1's: families `s0 w0` and `s0 w1` and the pool run `s0 pool` of each cluster are set A.
+
+**The judge's plants on these worlds have room.** By the legacy arrays, at U_c = 0, the altered rows of JQ1 to JQ5 in `inv_spatial` are 5.5e3 (JQ5) to 6.6e8 bands, JQ6 in `inv_ip3` is
+2.3e5 bands of `heat_reactions_cytosol`, JQ7 in `inv_gated` 4.0e5, and JQ20's 1 % of `channel_K` 2.9e3 to 1.0e4 in the 16 cluster families. At the retry's widest band they are at least 2.7e3.
+
+## The legacy runs and their provenance
+
+All from the frozen snapshot `snapshot-76a498ae`, cold (no compilation cache), one thread a process, on the captures' CPU model, CPUs 12 to 15 and 28 to 31, niced, through
+`scripts/run_detached.sh`. The capture tool is `validation/legacy_port` (`capture.sh` ca2d9214…, `capture_worlds.py` 1ad4c593…), the one of Part 1's and the captures'.
+The scratch folder is `/mnt/workspaces/Cells/ensemble-rehearsal-part2-20261125/` (430 MB, the trials in `try/` with it; nothing in the committed files comes from them).
+
+| Runs | Folder | Count |
+| --- | --- | --- |
+| The honest runs, at h, h/2 and h/4 | `science/runs/<world>-{h,h2,h4}`, and `-s{0,1}` for the clusters. Origin `origin` | 57 (33 ionic, 24 coupled), all ok |
+| The planted runs and the controls, at h | `plants/<name>/`: `definition.json`, `run/`, `plant.json`. Plan `plan.json` | 303: 267 power, 16 structural, 20 controls |
+| The pools alone | `pools.npz` | 1 file, 2 pools of 2 seeds |
+
+| File | sha256 |
+| --- | --- |
+| `science/MANIFEST.json` (849 files of the capture) | `43bdb8ab6ed72d15f31ee301ef326a1aa5debeb3a68bc0c7e056348ee8892115` |
+| `origin/manifest.json` (57 definitions) | `9436e57fb97dffea5aaee091c79248f6a4afa632d3ea342d4ed7e0befa3d9a89` |
+| `plan.json` | `eed5738dc27891179faeaa8fff48fa4b494b45801c748abc1ba2fb3552ffaa30` |
+| `pools.npz` | `adac90040d1578e67a2a9ace81f23c96eff47bf05f0c526740cecdc21b1a79d7` |
+
+- **The generator and the drivers are those of 8d7119ac** (`plant_driver2.py` 1930d2a7…). Every planted run's files have their sha256 in `plants_manifest_rehearsal_part2.json`. `verify2.py` checks every one of them, the 57
+  definitions against the generator, and the capture's 849 files.
+- **Every control equals the honest run at h bit for bit** (20 controls, 42 to 325 arrays each, the four children's once before their batch and once after it).
+- **A patched run had a process of its own.** The runs that change the definition alone ran one after another in one process a world, the control first, so that the program compiled once (the registered manifest's commands list several runs each too).
+- **Two planted runs are refused, as the registered ones are:** SC3 by legacy's own domain check at 1.744 ms, and SC6-stoichiometry at parse. SC3b, SC4, SC5, SC6, SC7 and SC8 ran with
+  legacy's own ledgers off (`no_ledgers`, written here) and its domain checks on.
+- **The legacy classes:** 1,700 entries unresolved, and 6 mixed (`inv_single`: `store_leak_Ca`, `store_leak_K`, `store_release`, `cyt_K`, `store_K`, `heat_reactions_store`, d2 above θ and d1 below it, at orders 4.0 and 4.1). `CRITERIA.md` section 4.3
+  has no C0 fault in that (a fault is d1 above θ with d2 at most θ, or an order outside its window). None is resolved, so the reference side judges no order here either.
+- **The structural zeros** are zero at every time of every run: `store_Na` and `store_Cl` in every world, and `store_IP3`, `store_IP3_buffer` and `store_IP3_bound` where IP3 is.
+- **The reader's signs were checked on the legacy runs at h/4** (`reference2.py identities`): the whole-cell ledgers, every row's balance in cytosol and store, the moieties, calcium's total, the regions, the closed world and both capacitors, each at most 4e-4 of its rounding count.
+- **The pools alone equal the coupled runs'** at h, h/2 and h/4 in all four clusters (912 arrays), and their exposures are the captured ones exactly. 38 events.
+- **Every mechanism has a home in every world, and each of the four children tests all of its mechanisms** (the smallest margin of a home is 154, the capacitor's in `inv_ip3`; at the end 393 in `inv_ip3`'s cluster). `inv_slow` and `inv_thin` do not test the store's K leak and its
+  capacitor. The structural plants' smallest margin is 4.6e5 (SC5), and 3.1e5 at the retry's widest band.
