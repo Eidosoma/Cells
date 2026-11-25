@@ -865,10 +865,11 @@
    ],
    "pinned_by": [
     "validation/ensemble_reexpression/rehearsal/plants_manifest_rehearsal.json",
+    "validation/ensemble_reexpression/rehearsal_part2/plants_manifest_rehearsal_part2.json",
     "validation/ensemble_reexpression/spec/plants_manifest.json",
     "validation/ensemble_reexpression/spec/plants_manifest_part2.json"
    ],
-   "note": "the captures' tool as the registered plants' manifests name it (capture_tool_sha256); its four old spellings are comments that name the captured worlds, which it runs from a frozen snapshot that spells them so"
+   "note": "the captures' tool as the registered plants' manifests and both rehearsals' manifests name it (capture_tool_sha256); its four old spellings are comments that name the captured worlds, which it runs from a frozen snapshot that spells them so"
   },
   {
    "path": "validation/tissue/active_excision_reference.py",
@@ -2641,6 +2642,30 @@
    "path": "validation/ensemble_reexpression/worlds.py",
    "text": "\"kind\" in fuel\\b",
    "reason": "a fuel's own key, not a part of an ID"
+  },
+  {
+   "cls": [
+    "partial"
+   ],
+   "path": "tests/unit/test_batch_windows.py",
+   "text": "n\\.startswith\\(kind\\)",
+   "reason": "the field names of a parameters tuple (cycle_, passive_, species_condition, reaction_), not a part of an ID"
+  },
+  {
+   "cls": [
+    "partial"
+   ],
+   "path": "tests/unit/test_ensemble_reexpression_part2.py",
+   "text": "\"cells\" in at\\b",
+   "reason": "a site's own key (cells or outside), not a part of an ID"
+  },
+  {
+   "cls": [
+    "partial"
+   ],
+   "path": "tests/unit/test_ensemble_reexpression_part2.py",
+   "text": "\"assembly_observable\" in entry\\[\"strings\"\\]",
+   "reason": "a label of the strings note, a key of an entry's strings, not a part of an ID"
   }
  ]
 }
