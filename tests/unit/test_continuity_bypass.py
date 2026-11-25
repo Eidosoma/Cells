@@ -70,6 +70,7 @@ EXEMPT = {
     "validation/betse/pump_pilot_diagnosis/diagnose.py": READ,
     "validation/ensemble/jupiter_check.py": READ,
     "validation/ensemble/spatial_matrix.py": READ,
+    "validation/ensemble_reexpression/table.py": READ,
     # Rebuild and execute outside the loaders, as diagnostics (2).
     "scripts/profile_dispatch.py": DIAGNOSTIC + " (L4 timing on held states, other XLA flags)",
     "validation/tissue/field_floor_held.py": DIAGNOSTIC
