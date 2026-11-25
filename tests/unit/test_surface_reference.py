@@ -6,9 +6,10 @@ from decimal import Decimal, localcontext
 import numpy as np
 import pytest
 
-from validation.tissue import surface_calcium_fixtures as fixtures
-from validation.tissue import surface_calcium_reference as calcium
-from validation.tissue.surface_reference import logarithmic_mean
+from validation.tissue import surface_field_reference as electrical
+from validation.tissue import surface_kinetic_fixtures as fixtures
+from validation.tissue import surface_kinetic_reference as reference
+from validation.tissue.surface_reference import F, R, logarithmic_mean
 
 
 @pytest.mark.parametrize("right", [0.02, 1.0, 140.0, 1e-100, 1e100])
@@ -35,13 +36,43 @@ def test_reference_logarithmic_mean_against_decimal(right):
                 np.testing.assert_allclose(actual_mean, float(mean), rtol=5e-16, atol=0)
 
 
+def energy_balance(context, state, slope, phi):
+    """The stored power and the heat less the work, in pJ/s, with the capacitors' voltage rates
+    from the charge the rates move: zero for exact rates."""
+    p, rates = context["layout"], reference.unpack(context, slope)
+    raw = reference.base.stage(context, state, 0.0)
+    matrix, active, reservoir, _, floating, _ = electrical.topology(raw)
+    pins = ~active | reservoir
+    for members in floating:
+        pins[members[0]] = True
+    free = np.flatnonzero(~pins)
+    moved = np.c_[rates["amount_increment"], rates["extracellular_amount_increment"]]
+    current = 1e-15 * F * (np.asarray(p["valence"]).T @ moved)[0]
+    dv = np.zeros_like(phi)
+    dv[free] = np.linalg.solve(matrix[np.ix_(free, free)], current[free])
+    n = len(context["qi"])
+    electric = 1e12 * sum(
+        capacitance * (phi[i] - phi[n + o]) * (dv[i] - dv[n + o])
+        for i, o, capacitance in zip(
+            p["membrane_cell"], p["membrane_outside"], p["membrane_capacitance"], strict=True
+        )
+    )
+    logs = np.log(np.c_[raw["ci"], raw["co"]])
+    chemical = 1e-3 * R * p["temperature"] * np.sum(logs * moved)
+    heat = sum(np.sum(v) for k, v in rates.items() if k.endswith("_dissipated_energy_pJ"))
+    work = sum(np.sum(v) for k, v in rates.items() if k.endswith("_work_pJ"))
+    return float(chemical + electric + heat - work)
+
+
 @pytest.mark.parametrize("arm", fixtures.ARMS)
 @pytest.mark.parametrize("probe_dt", [1e-12, 1e-10, 1e-8, 1e-6])
 def test_reference_current_balance_at_small_initial_probes(arm, probe_dt):
-    context = calcium.bind(fixtures.definition(arm))
-    state = calcium.initial(context)
-    derivative, _, _ = calcium.evaluate(context, state, 0.0)
-    trial, phi, proof = calcium.evaluate(context, state + probe_dt * derivative, 0.0)
-    # evaluate enforces the unchanged per-node capacitor/current assertions.
+    """The kinetic tissue's independent reference one small step from its initial state."""
+    context = reference.bind(fixtures.definition(arm))
+    state = reference.initial(context)
+    derivative, _, _ = reference.evaluate(context, state, 0.0)
+    probe = state + probe_dt * derivative
+    # evaluate enforces the root's residuals and the per-node capacitor/current balance.
+    trial, phi, _ = reference.evaluate(context, probe, 0.0)
     assert np.isfinite(trial).all() and np.isfinite(phi).all()
-    assert abs(proof["physical_energy_balance_pJ_s"]) < 1e-10
+    assert abs(energy_balance(context, probe, trial, phi)) < 1e-10
