@@ -157,6 +157,17 @@ def reversed_maps(value):
     return [reversed_maps(v) for v in value] if isinstance(value, list) else value
 
 
+def whole_potassium(block: dict) -> dict:
+    """The first amounts of a block, of an outside region or else of a cell, whose K is a whole
+    number.
+    """
+    return next(
+        entity["initial_amount_fmol"]
+        for entity in [*block["outside"].values(), *block["cells"].values()]
+        if float(entity["initial_amount_fmol"]["K"]).is_integer()
+    )
+
+
 class Plant:
     """One judge's plant: the consumer whose table it alters, the alteration, and its checks."""
 
@@ -437,9 +448,8 @@ def plants(registration: Registration, captures: Captures) -> list:
 
     def jp10(runs):
         block = runs[I1]["inputs"]
-        amounts = next(r["initial_amount_fmol"] for r in block["outside"].values())
-        whole = next(x for x, value in amounts.items() if x == "K" and float(value).is_integer())
-        amounts[whole] = int(amounts[whole])
+        amounts = whole_potassium(block)
+        amounts["K"] = int(amounts["K"])
         bare = next(m for m, v in block["membranes"].items() if v["pump"] is None)
         del block["membranes"][bare]["pump"]
         del block["controls"]["pump"]

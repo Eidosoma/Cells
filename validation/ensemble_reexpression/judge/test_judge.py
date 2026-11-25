@@ -25,7 +25,7 @@ from validation.ensemble_reexpression.judge import (
     structure,
 )
 from validation.ensemble_reexpression.judge import constants as c
-from validation.ensemble_reexpression.judge.c0 import C0
+from validation.ensemble_reexpression.judge.c0 import C0, same_order
 from validation.ensemble_reexpression.judge.plants import Lazy, Query, refuse
 from validation.ensemble_reexpression.judge.registration import (
     PART1,
@@ -522,6 +522,30 @@ def test_structural_zeros(benches):
 
 
 # ----- restarts, pools and schedules (class E) -----
+
+
+def test_a_restart_is_of_the_set_that_holds_its_family(benches, monkeypatch):
+    """`base` is reported in two sets: the entries of an ionic restart, and the support run itself,
+    are of the one that holds the family of the run that it is compared with.
+    """
+    bench = benches("base")
+    owner = bench.reg.runs[B[0]]
+    extra = dict(owner, name=f"{B[0]} restart", role="support", family=None)
+    extra["variant"] = "restart at 0.005"
+    sets = scoring.sets_of(bench.reg, "base")
+    holds = {k: owner["family"] in {f.name for f in found} for k, found in sets.items()}
+    assert holds == {"blind": True, "not blind": False}
+
+    def listed():
+        return {k: scoring.expected_counts(bench.reg, "base", f)["E"] for k, f in sets.items()}
+
+    before = listed()
+    monkeypatch.setitem(bench.reg.runs, extra["name"], extra)
+    monkeypatch.setitem(bench.note.runs, extra["name"], bench.note.runs[B[0]])
+    assert {k: n - before[k] for k, n in listed().items()} == {"blind": 25, "not blind": 0}
+    found = bench.score().record["consumers"]["base"]["sets"]
+    assert {k: extra["name"] in t["members"]["support_runs"] for k, t in found.items()} == holds
+    assert {k: t["verdict"] for k, t in found.items()} == {"blind": OPEN, "not blind": PASS}
 
 
 def test_a_restart_equals_the_uninterrupted_run(benches):
@@ -1211,6 +1235,47 @@ C0_FAULT = {
 }
 
 
+def test_C0_reads_a_world_of_one_run(benches):
+    """A rehearsal's world may have captures and no family of three: the same classes, identities
+    and padding are read.
+    """
+    benches("integrated")
+    found = []
+    for families in (True, False):
+        reg = Registration()
+        reg.worlds = {"integrated": reg.worlds["integrated"]}
+        reg.families = {"integrated": reg.families["integrated"]} if families else {}
+        made = C0(reg)
+        made.legacy_classes()
+        made.reference_identities()
+        made.padding()
+        found.append([(k.name, k.checked, k.faults) for k in made.clauses])
+    assert found[0] == found[1]
+    assert [(name, faults) for name, _, faults in found[0]] == [
+        ("legacy_classes", []),
+        ("reference_identities", []),
+        ("padding", []),
+    ]
+
+
+@pytest.mark.parametrize(
+    "order, printed_as, expected",
+    [
+        (-0.4849, -0.485, True),  # three digits
+        (-0.4849, -0.48, True),  # two decimals
+        (-0.4849, -0.49, False),
+        (12.344, 12.34, True),
+        (12.344, 12.3, True),
+        (12.344, 12.4, False),
+        (None, None, True),
+        (2.0, None, False),
+        (None, 2.0, False),
+    ],
+)
+def test_an_order_is_printed_at_two_decimals_or_at_three_digits(order, printed_as, expected):
+    assert same_order(order, printed_as) is expected
+
+
 @pytest.mark.parametrize("case", C0_FAULT)
 def test_C0_names_a_fault(benches, case):
     """Every clause is able to fail: one changed datum, and its clause names it."""
@@ -1553,6 +1618,15 @@ def test_rows_are_matched_by_time_and_not_by_bits(benches):
 
 
 # ----- the judge's plants -----
+
+
+def test_a_whole_amount_is_a_regions_or_else_a_cells():
+    """What JP10 writes without its point: a rehearsal's regions may hold no whole amount."""
+    amounts = {k: {"initial_amount_fmol": {"K": v}} for k, v in {"a": 29.28, "b": 61.0}.items()}
+    block = {"outside": {"bath": amounts["a"]}, "cells": {"cell_0": amounts["b"]}}
+    assert plants.whole_potassium(block)["K"] == 61.0
+    block["outside"]["far"] = {"initial_amount_fmol": {"K": 9.0}}
+    assert plants.whole_potassium(block)["K"] == 9.0
 
 
 def test_judge_plants_score_as_stated(benches):

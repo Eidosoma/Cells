@@ -52,8 +52,18 @@ def expected_counts(registration: Registration, consumer: str, families=None) ->
                 out["R"] += ionic_R(world)
                 out["E"] += ionic_E(world)
         if run["role"] == "support" and registration.restart_time(run) is not None:
-            out["E"] += len(world.pools) * (len(c.POOL_ARRAYS) + 1) if pool else len(world.entries)
+            if supported_family(registration, run) in names | {None}:
+                per_pool = len(c.POOL_ARRAYS) + 1
+                out["E"] += len(world.pools) * per_pool if pool else len(world.entries)
     return out
+
+
+def supported_family(registration: Registration, run: dict):
+    """The family of the run that a restart is compared with, None where it has none (a pool run).
+    Its entries, and the support run, are of the set of `base` that holds that family.
+    """
+    owner = registration.restarted(run)
+    return registration.runs[owner]["family"] if owner is not None else None
 
 
 def ionic_R(world) -> int:
@@ -1381,7 +1391,11 @@ class Stage2:
         members = [n for f in families for n in self.tables.rungs(f)] + [
             r["name"] for r in shared if r["role"] == "judged"
         ]
-        support = [r["name"] for r in shared if r["role"] == "support"]
+        support = [
+            r["name"]
+            for r in shared
+            if r["role"] == "support" and supported_family(self.reg, r) in names | {None}
+        ]
         entries = [
             e
             for e in self.entries
