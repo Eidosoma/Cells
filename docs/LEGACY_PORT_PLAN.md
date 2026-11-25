@@ -1,18 +1,25 @@
 # Legacy port plan: everything Cells uses leaves legacy, in canonical forms
 
-**Status: a plan for the user's choice of route,** reworked after D369 and D374, corrected after the review
-(24 November 2026, night), and revised with the dry run's evidence (25 November, §2.1). Nothing in it is built. It was
-written read-only at main `ce4780d2`; the dry run ran at `c9da0fdb`.
-- **The route is the user's choice (§13).** The dry run informs it. It does not make it, and it leaves this plan's
-  recommendation as it was.
-- **Line citations are at `ce4780d2`,** with two exceptions.
-  - FR-50's landing (1939563e) moved lines in `kinds/transporter.py`, so those are given at main `c9da0fdb`, where
-    the cited refusals still stand.
-  - PROGRESS.md was refreshed on main at `0767867f` (D377), so its lines here hold at `ce4780d2` only.
-- By name, no other file cited by line has changed up to `c9da0fdb`. An earlier version of this note said
-  that of every cited file, without checking; it was wrong for `transporter.py`.
-- **D377 records this plan's figures at `ef344334`.** "15 direct edits, with another 50 fixture files open" is replaced
-  here (§7.5); the 58%, the widening and the user's choice stand.
+**Status: the route is decided (25 November 2026, D383).** The user chose to re-express, on one branch, with one deletion and one full test
+at its end: "Re-express and put everything else on hold and test just once after the re-expression". A CPU re-expression of
+the calcium ensemble counts as done; its GPU path is parked.
+- **The branch and the order** (`legacy-cleanup`, from 43b22d40, merged by the lead): the live side without legacy; the deletion, one, whole; the
+  four features; the re-expressed ensemble; the ID move last. No gate, tier or suite runs until it is coded.
+- **So C-1, C-3 and the gates between steps fall away.** §7 is kept as the record of the three routes: its prices, and its ordering, are not the plan now.
+  §7.3's live-side items are done or under way on stream B's branch, and §7.5's hand edits are split between B, C and the re-expression's builders.
+- **Where the work is now:** §14, the re-expression map; `validation/legacy_port/removal_list.tsv` on branch `legacy-removal-list`,
+  with its test IDs; and the user's page, `docs/LEGACY_REMOVAL_PAGE.md`, on this branch.
+- **Nothing on the cleanup branch needs the old core** while the re-expression is written (my reading, and the lead's). Main, the
+  tag `pre-cleanup-2026-11-25` and the captures hold it, and no canonical world reads it. The captures (`science-76a498ae`, and the
+  integrated ensemble's world captured at the pre-cleanup tag) are the reference.
+- **The measured parts of the plan still stand:** the dry run (§2.1), the coverage table (§3), the gaps (§4, with G-5 and G-7 now read as smaller, §14), and
+  the test evidence (§9). What changed since: rows B2 and I8, and §8's examples, were corrected on 25 November, and the removal list
+  replaces the counts of §9 and §10.
+- **Line citations are at `ce4780d2`,** except that §14 and `kinds/transporter.py`'s lines are at `43b22d40` or `c9da0fdb` as each says,
+  and that PROGRESS.md was refreshed on main at `0767867f` (D377), so its lines here hold at `ce4780d2` only. The earlier notes said no other cited
+  file had changed up to `c9da0fdb`, without checking; `transporter.py` had.
+- **D377 records this plan's figures at `ef344334`.** "15 direct edits, with another 50 fixture files open" is replaced by §7.5; the 58%, the widening and
+  the user's choice stand as the record.
 
 **What is decided:**
 - **D346 and D348:** port what is used, then delete `src/cells/legacy/` whole, in one deletion with one gate.
@@ -599,6 +606,9 @@ direct import. The two BETSE tests on the helpers retire with them.
 - D374 rules that nothing retires before the rename's move, so those files are re-spelled with the rest.
 
 ## 7. Three routes, priced, with the ensemble kept and the physiology retired
+
+**The record.** The user decided the route on 25 November (status above): route B's order without its gates, as one branch and one deletion. This section
+stays as the record of what was priced and why.
 
 ### 7.1 First, the user's choice that sets every date (§13, Q1)
 
@@ -1248,6 +1258,9 @@ was already covered, and it is the same case.
     they check, or the engine needs a feature first.
 
 ## 13. The user's questions
+
+**Answered on 25 November** (D383): Q1 (a CPU re-expression counts), the route (one branch, one deletion, one test at the end), and the four
+feature notes (yes, written). The questions below that were not asked again stand as the record.
 
 **Decided by D374, recorded here:**
 - the calcium ensemble is kept and re-expressed in canonical form;
