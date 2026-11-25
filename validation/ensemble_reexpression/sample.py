@@ -410,8 +410,8 @@ def invented():
 SLOW = "inv_sample_slow h=4e-05"  # Ended by the driver's own clock: a harness refusal.
 
 
-def make(directory):
-    """Make the invented runs and their tables under a new folder."""
+def make(directory, workers=1):
+    """Make the invented runs and their tables under a new folder, as a campaign is made."""
     directory.mkdir(parents=True)
     path = directory / "inputs_sample.json"
     path.write_text(json.dumps(invented(), indent=1) + "\n")
@@ -420,10 +420,10 @@ def make(directory):
     names = ["inv_sample_sheet h=2e-05 retry"]
     note = {"kind": "ensemble-reexpression retry owed, version 1", "part": 1, "runs": names}
     owed.write_text(json.dumps(note | {"why": {"inv_sample_sheet": ["voltage: order"]}}) + "\n")
-    for one in [*driver.ordered(inputs), *inputs.owed(owed)]:
-        limit = 0.05 if one.name == SLOW else None
-        record = driver.one(inputs, one, directory, max_seconds=limit)
-        print(json.dumps({k: record[k] for k in ("run", "status", "refusal")}), flush=True)
+    driver.one(inputs, inputs.run(SLOW), directory, max_seconds=0.05)
+    command = ["all", "--inputs", str(path), "--runs", str(directory), "--workers", str(workers)]
+    for more in ([], ["--owed", str(owed)]):
+        driver.main([*command, *more])
     folders = driver.Folders(directory)
     exporter.write(exporter.tables(inputs, folders), directory / "table")
     exporter.write(exporter.tables(inputs, folders, owed=owed), directory / "table-retry")
@@ -558,14 +558,16 @@ def keys(folder):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     commands = parser.add_subparsers(dest="command", required=True)
-    commands.add_parser("make").add_argument("directory", type=Path)
+    command = commands.add_parser("make")
+    command.add_argument("directory", type=Path)
+    command.add_argument("--workers", type=int, default=1)
     command = commands.add_parser("scrub")
     command.add_argument("directory", type=Path)
     command.add_argument("destination", type=Path)
     commands.add_parser("keys").add_argument("folder", type=Path)
     args = parser.parse_args(argv)
     if args.command == "make":
-        return 1 if make(args.directory) else 0
+        return 1 if make(args.directory, args.workers) else 0
     if args.command == "scrub":
         faults = scrub(args.directory, args.destination)
         print(json.dumps({"faults": faults}))
