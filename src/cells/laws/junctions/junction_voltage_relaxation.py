@@ -105,4 +105,6 @@ LAW = JunctionLaw(
     domain_valid,
     MAX_ABS_VOLTAGE_V,
     host="cells.resolved_pump_tissue@3",
+    test="tests/unit/test_junction_series_gates.py"
+    "::test_the_one_gate_law_meets_the_independent_decimals_and_each_plant_misses_them",
 )
