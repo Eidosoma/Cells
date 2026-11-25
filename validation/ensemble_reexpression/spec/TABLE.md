@@ -6,7 +6,7 @@ and that is not here is asked for through the lead and added by a dated change, 
 ## 1. Files
 
 - `table/table_<consumer>.json`, consumers `jupiter`, `cell`, `base`, `integrated` (Part 1) and, in Part 2, `PART2.md` §4's. One file per consumer. `table/SHA256SUMS`: one line per file, the sha256, two spaces, the name.
-- `table-retry/table_<consumer>.json` and its `SHA256SUMS`, with the judge's `retry_owed.json`. `table-rehearsal/table_<consumer>.json` and its `SHA256SUMS`.
+- `table-retry/table_<consumer>.json` and its `SHA256SUMS`, with the judge's `retry_owed.json`. The rehearsal's `table-rehearsal/table_<consumer>.json` and its `SHA256SUMS` are in the rehearsal folder (`SPEC.md` §8).
 - **A table whose sha256 is missing from its folder's `SHA256SUMS`, or departs from it, is refused,** with every run in it. An absent `SHA256SUMS` is recorded and flagged and refuses nothing by itself.
 - The lead records the sha256 of every file before any reference is read.
 - **A duplicate key anywhere refuses the file.** JSON is read with NaN and Infinity allowed. A non-finite number in a judged leaf leaves its entry not formed, and one in a recorded leaf is flagged.

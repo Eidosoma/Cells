@@ -26,7 +26,7 @@
        "Na": 6.0,
        "Ca": 0.001
       },
-      "fixed_charge_fmol": -72.00386556853812,
+      "fixed_charge_equivalent_fmol": -72.00386556853812,
       "initial_voltage_V": -0.06,
       "initial_charge_C": -1.8e-13
      },
@@ -38,7 +38,7 @@
        "Na": 10.5,
        "Ca": 0.0014
       },
-      "fixed_charge_fmol": -94.50429245483049,
+      "fixed_charge_equivalent_fmol": -94.50429245483049,
       "initial_voltage_V": -0.04,
       "initial_charge_C": -1.44e-13
      }
@@ -52,9 +52,8 @@
        "Na": 280.0,
        "Ca": 0.016
       },
-      "fixed_charge_fmol": -68.02864197663136,
-      "initial_charge_C": 3.24e-13,
-      "held": false
+      "fixed_charge_equivalent_fmol": -68.02864197663136,
+      "initial_charge_C": 3.24e-13
      },
      "near": {
       "volume_pL": 1.0,
@@ -64,9 +63,8 @@
        "Na": 120.0,
        "Ca": 0.01
       },
-      "fixed_charge_fmol": -23.02,
-      "initial_charge_C": 0.0,
-      "held": false
+      "fixed_charge_equivalent_fmol": -23.02,
+      "initial_charge_C": 0.0
      },
      "far": {
       "volume_pL": 3.0,
@@ -76,36 +74,44 @@
        "Na": 450.0,
        "Ca": 0.018000000000000002
       },
-      "fixed_charge_fmol": -114.036,
-      "initial_charge_C": 0.0,
-      "held": false
+      "fixed_charge_equivalent_fmol": -114.036,
+      "initial_charge_C": 0.0
      }
     },
-    "gauge": "local",
-    "gauge_potential_V": 0.0,
+    "closure": {
+     "gauge_reference": "local"
+    },
     "membranes": {
      "membrane_0": {
       "inside": "cell_0",
       "outside": "local",
       "area_m2": 3e-10,
       "capacitance_F": 3e-12,
-      "law": "constant_field",
-      "permeability_m_per_s": {
-       "Cl": 8e-11,
-       "K": 2e-10,
-       "Na": 1e-11,
-       "Ca": 5e-08
+      "passive": {
+       "law": "constant_field",
+       "permeability_m_per_s": {
+        "Cl": 8e-11,
+        "K": 2e-10,
+        "Na": 1e-11,
+        "Ca": 5e-08
+       }
       },
       "pump": {
        "law": "nak_pump_positive",
-       "sodium_out": 3,
-       "potassium_in": 2,
+       "roles": {
+        "sodium": "Na",
+        "potassium": "K"
+       },
+       "stoichiometry": {
+        "Na": -3,
+        "K": 2
+       },
        "capacity_fmol_per_s": 0.05,
        "km_na_mM": 12.0,
        "km_k_mM": 0.2,
        "km_atp_mM": 0.5,
-       "fuel": {
-        "law": "maintained_fuel",
+       "metabolism": {
+        "kind": "maintained_fuel",
         "atp_mM": 1.5,
         "adp_mM": 0.1,
         "pi_mM": 0.1,
@@ -118,23 +124,31 @@
       "outside": "local",
       "area_m2": 3.6e-10,
       "capacitance_F": 3.6e-12,
-      "law": "constant_field",
-      "permeability_m_per_s": {
-       "Cl": 8e-11,
-       "K": 2e-10,
-       "Na": 1e-11,
-       "Ca": 5e-08
+      "passive": {
+       "law": "constant_field",
+       "permeability_m_per_s": {
+        "Cl": 8e-11,
+        "K": 2e-10,
+        "Na": 1e-11,
+        "Ca": 5e-08
+       }
       },
       "pump": {
        "law": "nak_pump_positive",
-       "sodium_out": 3,
-       "potassium_in": 2,
+       "roles": {
+        "sodium": "Na",
+        "potassium": "K"
+       },
+       "stoichiometry": {
+        "Na": -3,
+        "K": 2
+       },
        "capacity_fmol_per_s": 0.1,
        "km_na_mM": 12.0,
        "km_k_mM": 0.2,
        "km_atp_mM": 0.5,
-       "fuel": {
-        "law": "maintained_fuel",
+       "metabolism": {
+        "kind": "maintained_fuel",
         "atp_mM": 1.5,
         "adp_mM": 0.1,
         "pi_mM": 0.1,
@@ -145,23 +159,23 @@
     },
     "channels": {
      "channel_0": {
-      "membrane": "membrane_0",
-      "law": "kv15_mh",
-      "species": "K",
+      "membrane_id": "membrane_0",
+      "species_id": "K",
+      "kinetic_law": "kv15_mh",
       "max_permeability_m_per_s": 3e-10,
       "abundance": 0.5,
-      "initial_gates": {
+      "initial_gate": {
        "m": 0.2,
        "h": 0.7
       }
      },
      "channel_1": {
-      "membrane": "membrane_1",
-      "law": "kv15_mh",
-      "species": "K",
+      "membrane_id": "membrane_1",
+      "species_id": "K",
+      "kinetic_law": "kv15_mh",
       "max_permeability_m_per_s": 3e-10,
       "abundance": 0.6,
-      "initial_gates": {
+      "initial_gate": {
        "m": 0.2,
        "h": 0.7
       }
@@ -169,10 +183,9 @@
     },
     "junctions": {
      "junction": {
-      "sender": "cell_0",
-      "receiver": "cell_1",
+      "from_cell": "cell_0",
+      "to_cell": "cell_1",
       "area_m2": 1e-10,
-      "law": "constant_field",
       "permeability_m_per_s": {
        "Cl": 4e-10,
        "K": 5e-10,
@@ -180,16 +193,15 @@
        "Ca": 2e-08
       },
       "gate": {
+       "initial_gate": 0.6,
        "law": "junction_relaxation",
-       "threshold_voltage_V": 0.015,
        "minimum_open_fraction": 0.1,
-       "initial_gate": 0.6
+       "threshold_voltage_V": 0.015
       }
      }
     },
     "faces": {
      "face_0": {
-      "law": "logmean_face",
       "sender": "local",
       "receiver": "near",
       "area_m2": 1e-11,
@@ -199,10 +211,10 @@
        "K": 1.7e-09,
        "Na": 1.2e-09,
        "Ca": 7e-10
-      }
+      },
+      "law": "logmean_face"
      },
      "face_1": {
-      "law": "logmean_face",
       "sender": "near",
       "receiver": "far",
       "area_m2": 1e-11,
@@ -212,10 +224,10 @@
        "K": 1.7e-09,
        "Na": 1.2e-09,
        "Ca": 7e-10
-      }
+      },
+      "law": "logmean_face"
      },
      "face_2": {
-      "law": "logmean_face",
       "sender": "far",
       "receiver": "local",
       "area_m2": 1e-11,
@@ -225,7 +237,8 @@
        "K": 1.7e-09,
        "Na": 1.2e-09,
        "Ca": 7e-10
-      }
+      },
+      "law": "logmean_face"
      }
     },
     "controls": {
@@ -678,7 +691,7 @@
        "Na": 6.0,
        "Ca": 0.001
       },
-      "fixed_charge_fmol": -72.00386556853812,
+      "fixed_charge_equivalent_fmol": -72.00386556853812,
       "initial_voltage_V": -0.06,
       "initial_charge_C": -1.8e-13
      },
@@ -690,7 +703,7 @@
        "Na": 10.5,
        "Ca": 0.0014
       },
-      "fixed_charge_fmol": -94.50429245483049,
+      "fixed_charge_equivalent_fmol": -94.50429245483049,
       "initial_voltage_V": -0.04,
       "initial_charge_C": -1.44e-13
      }
@@ -704,9 +717,8 @@
        "Na": 280.0,
        "Ca": 0.016
       },
-      "fixed_charge_fmol": -68.02864197663136,
-      "initial_charge_C": 3.24e-13,
-      "held": false
+      "fixed_charge_equivalent_fmol": -68.02864197663136,
+      "initial_charge_C": 3.24e-13
      },
      "near": {
       "volume_pL": 1.0,
@@ -716,9 +728,8 @@
        "Na": 120.0,
        "Ca": 0.01
       },
-      "fixed_charge_fmol": -23.02,
-      "initial_charge_C": 0.0,
-      "held": false
+      "fixed_charge_equivalent_fmol": -23.02,
+      "initial_charge_C": 0.0
      },
      "far": {
       "volume_pL": 3.0,
@@ -728,36 +739,44 @@
        "Na": 450.0,
        "Ca": 0.018000000000000002
       },
-      "fixed_charge_fmol": -114.036,
-      "initial_charge_C": 0.0,
-      "held": false
+      "fixed_charge_equivalent_fmol": -114.036,
+      "initial_charge_C": 0.0
      }
     },
-    "gauge": "local",
-    "gauge_potential_V": 0.0,
+    "closure": {
+     "gauge_reference": "local"
+    },
     "membranes": {
      "membrane_0": {
       "inside": "cell_0",
       "outside": "local",
       "area_m2": 3e-10,
       "capacitance_F": 3e-12,
-      "law": "constant_field",
-      "permeability_m_per_s": {
-       "Cl": 8e-11,
-       "K": 2e-10,
-       "Na": 1e-11,
-       "Ca": 5e-08
+      "passive": {
+       "law": "constant_field",
+       "permeability_m_per_s": {
+        "Cl": 8e-11,
+        "K": 2e-10,
+        "Na": 1e-11,
+        "Ca": 5e-08
+       }
       },
       "pump": {
        "law": "nak_pump_positive",
-       "sodium_out": 3,
-       "potassium_in": 2,
+       "roles": {
+        "sodium": "Na",
+        "potassium": "K"
+       },
+       "stoichiometry": {
+        "Na": -3,
+        "K": 2
+       },
        "capacity_fmol_per_s": 0.05,
        "km_na_mM": 12.0,
        "km_k_mM": 0.2,
        "km_atp_mM": 0.5,
-       "fuel": {
-        "law": "maintained_fuel",
+       "metabolism": {
+        "kind": "maintained_fuel",
         "atp_mM": 1.5,
         "adp_mM": 0.1,
         "pi_mM": 0.1,
@@ -770,23 +789,31 @@
       "outside": "local",
       "area_m2": 3.6e-10,
       "capacitance_F": 3.6e-12,
-      "law": "constant_field",
-      "permeability_m_per_s": {
-       "Cl": 8e-11,
-       "K": 2e-10,
-       "Na": 1e-11,
-       "Ca": 5e-08
+      "passive": {
+       "law": "constant_field",
+       "permeability_m_per_s": {
+        "Cl": 8e-11,
+        "K": 2e-10,
+        "Na": 1e-11,
+        "Ca": 5e-08
+       }
       },
       "pump": {
        "law": "nak_pump_positive",
-       "sodium_out": 3,
-       "potassium_in": 2,
+       "roles": {
+        "sodium": "Na",
+        "potassium": "K"
+       },
+       "stoichiometry": {
+        "Na": -3,
+        "K": 2
+       },
        "capacity_fmol_per_s": 0.1,
        "km_na_mM": 12.0,
        "km_k_mM": 0.2,
        "km_atp_mM": 0.5,
-       "fuel": {
-        "law": "maintained_fuel",
+       "metabolism": {
+        "kind": "maintained_fuel",
         "atp_mM": 1.5,
         "adp_mM": 0.1,
         "pi_mM": 0.1,
@@ -797,23 +824,23 @@
     },
     "channels": {
      "channel_0": {
-      "membrane": "membrane_0",
-      "law": "kv15_mh",
-      "species": "K",
+      "membrane_id": "membrane_0",
+      "species_id": "K",
+      "kinetic_law": "kv15_mh",
       "max_permeability_m_per_s": 3e-10,
       "abundance": 0.5,
-      "initial_gates": {
+      "initial_gate": {
        "m": 0.2,
        "h": 0.7
       }
      },
      "channel_1": {
-      "membrane": "membrane_1",
-      "law": "kv15_mh",
-      "species": "K",
+      "membrane_id": "membrane_1",
+      "species_id": "K",
+      "kinetic_law": "kv15_mh",
       "max_permeability_m_per_s": 3e-10,
       "abundance": 0.6,
-      "initial_gates": {
+      "initial_gate": {
        "m": 0.2,
        "h": 0.7
       }
@@ -821,10 +848,9 @@
     },
     "junctions": {
      "junction": {
-      "sender": "cell_0",
-      "receiver": "cell_1",
+      "from_cell": "cell_0",
+      "to_cell": "cell_1",
       "area_m2": 1e-10,
-      "law": "constant_field",
       "permeability_m_per_s": {
        "Cl": 4e-10,
        "K": 5e-10,
@@ -832,16 +858,15 @@
        "Ca": 2e-08
       },
       "gate": {
+       "initial_gate": 0.6,
        "law": "junction_relaxation",
-       "threshold_voltage_V": 0.015,
        "minimum_open_fraction": 0.1,
-       "initial_gate": 0.6
+       "threshold_voltage_V": 0.015
       }
      }
     },
     "faces": {
      "face_0": {
-      "law": "logmean_face",
       "sender": "local",
       "receiver": "near",
       "area_m2": 1e-11,
@@ -851,10 +876,10 @@
        "K": 1.7e-09,
        "Na": 1.2e-09,
        "Ca": 7e-10
-      }
+      },
+      "law": "logmean_face"
      },
      "face_1": {
-      "law": "logmean_face",
       "sender": "near",
       "receiver": "far",
       "area_m2": 1e-11,
@@ -864,10 +889,10 @@
        "K": 1.7e-09,
        "Na": 1.2e-09,
        "Ca": 7e-10
-      }
+      },
+      "law": "logmean_face"
      },
      "face_2": {
-      "law": "logmean_face",
       "sender": "far",
       "receiver": "local",
       "area_m2": 1e-11,
@@ -877,7 +902,8 @@
        "K": 1.7e-09,
        "Na": 1.2e-09,
        "Ca": 7e-10
-      }
+      },
+      "law": "logmean_face"
      }
     },
     "controls": {
@@ -1378,7 +1404,7 @@
        "Na": 6.0,
        "Ca": 0.001
       },
-      "fixed_charge_fmol": -72.00386556853812,
+      "fixed_charge_equivalent_fmol": -72.00386556853812,
       "initial_voltage_V": -0.06,
       "initial_charge_C": -1.8e-13
      },
@@ -1390,7 +1416,7 @@
        "Na": 10.5,
        "Ca": 0.0014
       },
-      "fixed_charge_fmol": -94.50429245483049,
+      "fixed_charge_equivalent_fmol": -94.50429245483049,
       "initial_voltage_V": -0.04,
       "initial_charge_C": -1.44e-13
      }
@@ -1404,9 +1430,8 @@
        "Na": 280.0,
        "Ca": 0.016
       },
-      "fixed_charge_fmol": -68.02864197663136,
-      "initial_charge_C": 3.24e-13,
-      "held": false
+      "fixed_charge_equivalent_fmol": -68.02864197663136,
+      "initial_charge_C": 3.24e-13
      },
      "near": {
       "volume_pL": 1.0,
@@ -1416,9 +1441,8 @@
        "Na": 120.0,
        "Ca": 0.01
       },
-      "fixed_charge_fmol": -23.02,
-      "initial_charge_C": 0.0,
-      "held": false
+      "fixed_charge_equivalent_fmol": -23.02,
+      "initial_charge_C": 0.0
      },
      "far": {
       "volume_pL": 3.0,
@@ -1428,36 +1452,44 @@
        "Na": 450.0,
        "Ca": 0.018000000000000002
       },
-      "fixed_charge_fmol": -114.036,
-      "initial_charge_C": 0.0,
-      "held": false
+      "fixed_charge_equivalent_fmol": -114.036,
+      "initial_charge_C": 0.0
      }
     },
-    "gauge": "local",
-    "gauge_potential_V": 0.0,
+    "closure": {
+     "gauge_reference": "local"
+    },
     "membranes": {
      "membrane_0": {
       "inside": "cell_0",
       "outside": "local",
       "area_m2": 3e-10,
       "capacitance_F": 3e-12,
-      "law": "constant_field",
-      "permeability_m_per_s": {
-       "Cl": 8e-11,
-       "K": 2e-10,
-       "Na": 1e-11,
-       "Ca": 5e-08
+      "passive": {
+       "law": "constant_field",
+       "permeability_m_per_s": {
+        "Cl": 8e-11,
+        "K": 2e-10,
+        "Na": 1e-11,
+        "Ca": 5e-08
+       }
       },
       "pump": {
        "law": "nak_pump_positive",
-       "sodium_out": 3,
-       "potassium_in": 2,
+       "roles": {
+        "sodium": "Na",
+        "potassium": "K"
+       },
+       "stoichiometry": {
+        "Na": -3,
+        "K": 2
+       },
        "capacity_fmol_per_s": 0.05,
        "km_na_mM": 12.0,
        "km_k_mM": 0.2,
        "km_atp_mM": 0.5,
-       "fuel": {
-        "law": "maintained_fuel",
+       "metabolism": {
+        "kind": "maintained_fuel",
         "atp_mM": 1.5,
         "adp_mM": 0.1,
         "pi_mM": 0.1,
@@ -1470,23 +1502,31 @@
       "outside": "local",
       "area_m2": 3.6e-10,
       "capacitance_F": 3.6e-12,
-      "law": "constant_field",
-      "permeability_m_per_s": {
-       "Cl": 8e-11,
-       "K": 2e-10,
-       "Na": 1e-11,
-       "Ca": 5e-08
+      "passive": {
+       "law": "constant_field",
+       "permeability_m_per_s": {
+        "Cl": 8e-11,
+        "K": 2e-10,
+        "Na": 1e-11,
+        "Ca": 5e-08
+       }
       },
       "pump": {
        "law": "nak_pump_positive",
-       "sodium_out": 3,
-       "potassium_in": 2,
+       "roles": {
+        "sodium": "Na",
+        "potassium": "K"
+       },
+       "stoichiometry": {
+        "Na": -3,
+        "K": 2
+       },
        "capacity_fmol_per_s": 0.1,
        "km_na_mM": 12.0,
        "km_k_mM": 0.2,
        "km_atp_mM": 0.5,
-       "fuel": {
-        "law": "maintained_fuel",
+       "metabolism": {
+        "kind": "maintained_fuel",
         "atp_mM": 1.5,
         "adp_mM": 0.1,
         "pi_mM": 0.1,
@@ -1497,23 +1537,23 @@
     },
     "channels": {
      "channel_0": {
-      "membrane": "membrane_0",
-      "law": "kv15_mh",
-      "species": "K",
+      "membrane_id": "membrane_0",
+      "species_id": "K",
+      "kinetic_law": "kv15_mh",
       "max_permeability_m_per_s": 3e-10,
       "abundance": 0.5,
-      "initial_gates": {
+      "initial_gate": {
        "m": 0.2,
        "h": 0.7
       }
      },
      "channel_1": {
-      "membrane": "membrane_1",
-      "law": "kv15_mh",
-      "species": "K",
+      "membrane_id": "membrane_1",
+      "species_id": "K",
+      "kinetic_law": "kv15_mh",
       "max_permeability_m_per_s": 3e-10,
       "abundance": 0.6,
-      "initial_gates": {
+      "initial_gate": {
        "m": 0.2,
        "h": 0.7
       }
@@ -1521,10 +1561,9 @@
     },
     "junctions": {
      "junction": {
-      "sender": "cell_0",
-      "receiver": "cell_1",
+      "from_cell": "cell_0",
+      "to_cell": "cell_1",
       "area_m2": 1e-10,
-      "law": "constant_field",
       "permeability_m_per_s": {
        "Cl": 4e-10,
        "K": 5e-10,
@@ -1532,16 +1571,15 @@
        "Ca": 2e-08
       },
       "gate": {
+       "initial_gate": 0.6,
        "law": "junction_relaxation",
-       "threshold_voltage_V": 0.015,
        "minimum_open_fraction": 0.1,
-       "initial_gate": 0.6
+       "threshold_voltage_V": 0.015
       }
      }
     },
     "faces": {
      "face_0": {
-      "law": "logmean_face",
       "sender": "local",
       "receiver": "near",
       "area_m2": 1e-11,
@@ -1551,10 +1589,10 @@
        "K": 1.7e-09,
        "Na": 1.2e-09,
        "Ca": 7e-10
-      }
+      },
+      "law": "logmean_face"
      },
      "face_1": {
-      "law": "logmean_face",
       "sender": "near",
       "receiver": "far",
       "area_m2": 1e-11,
@@ -1564,10 +1602,10 @@
        "K": 1.7e-09,
        "Na": 1.2e-09,
        "Ca": 7e-10
-      }
+      },
+      "law": "logmean_face"
      },
      "face_2": {
-      "law": "logmean_face",
       "sender": "far",
       "receiver": "local",
       "area_m2": 1e-11,
@@ -1577,7 +1615,8 @@
        "K": 1.7e-09,
        "Na": 1.2e-09,
        "Ca": 7e-10
-      }
+      },
+      "law": "logmean_face"
      }
     },
     "controls": {
@@ -2106,7 +2145,7 @@
        "Na": 6.0,
        "Ca": 0.001
       },
-      "fixed_charge_fmol": -72.00386556853812,
+      "fixed_charge_equivalent_fmol": -72.00386556853812,
       "initial_voltage_V": -0.06,
       "initial_charge_C": -1.8e-13
      },
@@ -2118,7 +2157,7 @@
        "Na": 10.5,
        "Ca": 0.0014
       },
-      "fixed_charge_fmol": -94.50429245483049,
+      "fixed_charge_equivalent_fmol": -94.50429245483049,
       "initial_voltage_V": -0.04,
       "initial_charge_C": -1.44e-13
      }
@@ -2132,9 +2171,8 @@
        "Na": 280.0,
        "Ca": 0.016
       },
-      "fixed_charge_fmol": -68.02864197663136,
-      "initial_charge_C": 3.24e-13,
-      "held": false
+      "fixed_charge_equivalent_fmol": -68.02864197663136,
+      "initial_charge_C": 3.24e-13
      },
      "near": {
       "volume_pL": 1.0,
@@ -2144,9 +2182,8 @@
        "Na": 120.0,
        "Ca": 0.01
       },
-      "fixed_charge_fmol": -23.02,
-      "initial_charge_C": 0.0,
-      "held": false
+      "fixed_charge_equivalent_fmol": -23.02,
+      "initial_charge_C": 0.0
      },
      "far": {
       "volume_pL": 3.0,
@@ -2156,36 +2193,44 @@
        "Na": 450.0,
        "Ca": 0.018000000000000002
       },
-      "fixed_charge_fmol": -114.036,
-      "initial_charge_C": 0.0,
-      "held": false
+      "fixed_charge_equivalent_fmol": -114.036,
+      "initial_charge_C": 0.0
      }
     },
-    "gauge": "local",
-    "gauge_potential_V": 0.0,
+    "closure": {
+     "gauge_reference": "local"
+    },
     "membranes": {
      "membrane_0": {
       "inside": "cell_0",
       "outside": "local",
       "area_m2": 3e-10,
       "capacitance_F": 3e-12,
-      "law": "constant_field",
-      "permeability_m_per_s": {
-       "Cl": 8e-11,
-       "K": 2e-10,
-       "Na": 1e-11,
-       "Ca": 5e-08
+      "passive": {
+       "law": "constant_field",
+       "permeability_m_per_s": {
+        "Cl": 8e-11,
+        "K": 2e-10,
+        "Na": 1e-11,
+        "Ca": 5e-08
+       }
       },
       "pump": {
        "law": "nak_pump_positive",
-       "sodium_out": 3,
-       "potassium_in": 2,
+       "roles": {
+        "sodium": "Na",
+        "potassium": "K"
+       },
+       "stoichiometry": {
+        "Na": -3,
+        "K": 2
+       },
        "capacity_fmol_per_s": 0.05,
        "km_na_mM": 12.0,
        "km_k_mM": 0.2,
        "km_atp_mM": 0.5,
-       "fuel": {
-        "law": "maintained_fuel",
+       "metabolism": {
+        "kind": "maintained_fuel",
         "atp_mM": 1.5,
         "adp_mM": 0.1,
         "pi_mM": 0.1,
@@ -2198,23 +2243,31 @@
       "outside": "local",
       "area_m2": 3.6e-10,
       "capacitance_F": 3.6e-12,
-      "law": "constant_field",
-      "permeability_m_per_s": {
-       "Cl": 8e-11,
-       "K": 2e-10,
-       "Na": 1e-11,
-       "Ca": 5e-08
+      "passive": {
+       "law": "constant_field",
+       "permeability_m_per_s": {
+        "Cl": 8e-11,
+        "K": 2e-10,
+        "Na": 1e-11,
+        "Ca": 5e-08
+       }
       },
       "pump": {
        "law": "nak_pump_positive",
-       "sodium_out": 3,
-       "potassium_in": 2,
+       "roles": {
+        "sodium": "Na",
+        "potassium": "K"
+       },
+       "stoichiometry": {
+        "Na": -3,
+        "K": 2
+       },
        "capacity_fmol_per_s": 0.1,
        "km_na_mM": 12.0,
        "km_k_mM": 0.2,
        "km_atp_mM": 0.5,
-       "fuel": {
-        "law": "maintained_fuel",
+       "metabolism": {
+        "kind": "maintained_fuel",
         "atp_mM": 1.5,
         "adp_mM": 0.1,
         "pi_mM": 0.1,
@@ -2225,23 +2278,23 @@
     },
     "channels": {
      "channel_0": {
-      "membrane": "membrane_0",
-      "law": "kv15_mh",
-      "species": "K",
+      "membrane_id": "membrane_0",
+      "species_id": "K",
+      "kinetic_law": "kv15_mh",
       "max_permeability_m_per_s": 3e-10,
       "abundance": 0.5,
-      "initial_gates": {
+      "initial_gate": {
        "m": 0.2,
        "h": 0.7
       }
      },
      "channel_1": {
-      "membrane": "membrane_1",
-      "law": "kv15_mh",
-      "species": "K",
+      "membrane_id": "membrane_1",
+      "species_id": "K",
+      "kinetic_law": "kv15_mh",
       "max_permeability_m_per_s": 3e-10,
       "abundance": 0.6,
-      "initial_gates": {
+      "initial_gate": {
        "m": 0.2,
        "h": 0.7
       }
@@ -2249,10 +2302,9 @@
     },
     "junctions": {
      "junction": {
-      "sender": "cell_0",
-      "receiver": "cell_1",
+      "from_cell": "cell_0",
+      "to_cell": "cell_1",
       "area_m2": 1e-10,
-      "law": "constant_field",
       "permeability_m_per_s": {
        "Cl": 4e-10,
        "K": 5e-10,
@@ -2260,16 +2312,15 @@
        "Ca": 2e-08
       },
       "gate": {
+       "initial_gate": 0.6,
        "law": "junction_relaxation",
-       "threshold_voltage_V": 0.015,
        "minimum_open_fraction": 0.1,
-       "initial_gate": 0.6
+       "threshold_voltage_V": 0.015
       }
      }
     },
     "faces": {
      "face_0": {
-      "law": "logmean_face",
       "sender": "local",
       "receiver": "near",
       "area_m2": 1e-11,
@@ -2279,10 +2330,10 @@
        "K": 1.7e-09,
        "Na": 1.2e-09,
        "Ca": 7e-10
-      }
+      },
+      "law": "logmean_face"
      },
      "face_1": {
-      "law": "logmean_face",
       "sender": "near",
       "receiver": "far",
       "area_m2": 1e-11,
@@ -2292,10 +2343,10 @@
        "K": 1.7e-09,
        "Na": 1.2e-09,
        "Ca": 7e-10
-      }
+      },
+      "law": "logmean_face"
      },
      "face_2": {
-      "law": "logmean_face",
       "sender": "far",
       "receiver": "local",
       "area_m2": 1e-11,
@@ -2305,7 +2356,8 @@
        "K": 1.7e-09,
        "Na": 1.2e-09,
        "Ca": 7e-10
-      }
+      },
+      "law": "logmean_face"
      }
     },
     "controls": {

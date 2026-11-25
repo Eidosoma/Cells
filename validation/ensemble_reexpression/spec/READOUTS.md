@@ -53,7 +53,7 @@ read. Entities are matched by their ID. The captured index of a cell, membrane, 
 | --- | --- | --- | --- |
 | `jupiter` (a family: one arm) | `n_cell_x` (3), `n_out_x` (3), `leak_x` (3), `channel_K`, `junction_x` (3), `face_x` (3), `pump`, `gate_m`, `gate_h`, `junction_gate`, `heat_membrane`, `heat_junction`, `heat_face`. 23 | `voltage`, `phi_out`. 2 | E (restart), R (§5), D. `energy_identity` is class S (§5) |
 | `cell` (a family: one seed, one world ID) | `n_cell_x` (3), `n_out_x` (3), `leak_x` (3), `channel_K`, `pump`, `gate_m`, `gate_h`, `heat_membrane`. 14 | `voltage`, at `summary_times_s`. 1 | E on the pool and the schedule (§4), R (§5: exposure and balances), D, `energy_identity` |
-| `base` (a family: one seed, one world ID) | the `jupiter` 23 at `end_s`. 23 | `voltage` at `summary_times_s`, and `channel_K` at `summary_times_s` (`channel_K_summary`, whose scale is `channel_K`'s). 2 | E on the pool and the schedule, R, D, `energy_identity` |
+| `base` (a family: one seed, one world ID) | the `jupiter` 23 at `end_s`. 23 | `voltage` at `summary_times_s`, and `channel_K` at `summary_times_s` (`channel_K_summary`, whose scale is `channel_K`'s; its row at `end_s` is also in `channel_K`, so one difference there fails both entries). 2 | E on the pool and the schedule, R, D, `energy_identity` |
 | `integrated` | `n_cell_x` (3), `junction_x` (3), `junction_gate`, `heat_junction`. 8 | `voltage`. 1 | E: `n_out_x` zero. R, D, `energy_identity` |
 
 - **The counts are per family.** Entries against captures: `jupiter` 25 (2 families, 50), `cell` 15 (32 families, 480), `base` 25 (32 families, 800), `integrated` 9 (1 family, 9). Each family has one `energy_identity`.
@@ -95,7 +95,7 @@ A pool run (`cell s<k> pool`, `base s<k> pool`) exports, per cell, the 19 final 
          + Σ heats (heat_leak, heat_pump, heat_channel, heat_junction, heat_face)  −  Σ work_pump  =  0
 
 - **The times of the identities** are: `jupiter` and `integrated`, every compared time; `cell` and `base`, `summary_times_s`. A run needs rows of every series that an identity reads at those times, and the run's `voltage` at time 0.
-- **e_store** is `SPEC.md` §6's term, 2.5 ε (S + 1) × `stores`, with S the run's own grid's. It is 0 for a series that an entry does not read.
+- **e_store** is `SPEC.md` §6's term, 2.5 ε (S + 1) × `amount_refs`, with S the run's own grid's. It is 0 for a series that an entry does not read.
 - **It is a property and not a comparison with legacy.** Where an integrator books its heats as integrals, it closes at the integrator's order and not at rounding. That is why it is class S (FR-38's amendment 3), and the balances are class R.
 - **The sign of `work_pump`:** the fuel's work enters the world, so it is subtracted from the stored and dissipated energy.
 - **Where an identity has zero scale** (a species with no route), the value is exactly zero.

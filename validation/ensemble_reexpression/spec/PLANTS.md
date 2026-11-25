@@ -89,7 +89,6 @@ A plant's block differs from its honest run's only by its change. Any other diff
 ## 6. The judge's plants (JP): altered copies of honest tables
 
 Each is an altered copy of an **honest table that the judge invents for its self-tests** (recorded as fabricated, from no engine run and no capture, the split of a heat among leak, pump and channel included; it is not a copy of a capture, since the copy guard would refuse that), and again of the registered tables. They cost no run.
-The author tried the plants that a JUPITER arm can carry, with a throwaway program, on fabricated tables made from the captured arrays at h, h/2 and h/4 with an invented heat split. Each scored as this table says.
 
 **How each is written.** A plant names the run it alters. It alters **rows only**, or the one leaf it names, and everything else of the table (echo, strings, `t`, `steps`, record, source) stays honest. "The path" is the reference path (`SPEC.md` §3.2), and the run's own path is named where it is meant. **A plant that the echo refuses is not a fail plant,** and its "must be" says refused. Where a plant says "in all three rungs" it alters h₁, h₂ and h₃ alike.
 
@@ -102,7 +101,7 @@ The author tried the plants that a JUPITER arm can carry, with a throwaway progr
 | JP5 | `jupiter_baseline`, h₃: its class S rows replaced by h₂'s class S rows, the potentials and the identities' other rows left as they are | both runs refused by the copy guard (a), their readouts judged, for the checker to settle |
 | JP6 | `jupiter_baseline`: h₁ refused (kind `harness`, no row), and one `n_cell_K` of h₃ raised by 10⁻⁶ of its largest value | the fail of h₃'s balances stands, and `jupiter` fails |
 | JP7 | `jupiter_baseline`, all three rungs: the rows `heat_junction` set to zero | a fail of `heat_junction` (S) and of `energy_identity` |
-| JP8 | `base s0 pool`: one event deleted from the run's own path of world 2, `cell_0` | a fail of class E of the run's own path for that run. The schedule entries of the ionic runs, which compare with the reference path, are not touched |
+| JP8 | `base s0 pool`: the last event deleted from the run's own path of world 2, `cell_0` (the availability is 0 before it and after it) | a fail of class E of the run's own path for that run. The exposure is unchanged and passes (R). The schedule entries of the ionic runs, which compare with the reference path, are not touched |
 | JP9 | `jupiter_baseline`, h₁: one number of `inputs` moved by 10⁻⁹ of itself | refused, and nothing of the run judged. Not a fail plant |
 | JP10 | `jupiter_baseline`, h₁: an echo with its maps in another order, a 4 for a 4.0, a default omitted, and a schedule with a repeated value | not refused |
 | JP11 | `jupiter_baseline`, h₁: `status` `"refused"`, kind `check` | a stop, and a fail (D). The rows it holds are judged |
