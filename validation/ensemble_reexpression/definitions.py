@@ -36,6 +36,7 @@ from cells.assembly_pool.resolve import parse_composed
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.execution.runner import timeline
 from validation.ensemble_reexpression import worlds
+from validation.ensemble_reexpression.blocks import NoSection
 from validation.ensemble_reexpression.inputs import (
     DRIVEN,
     FOLDER,
@@ -52,6 +53,7 @@ from validation.ensemble_reexpression.inputs import (
 )
 from validation.ensemble_reexpression.labels import (
     LABELS,
+    UnknownOrder,
     declared_strings,
     integrator,
     note_entry,
@@ -561,13 +563,19 @@ def strings_note(inputs):
     """The strings of every run's definition, for the lead's note (spec/TABLE.md §5): each kind of
     run's entry, labels and strings, every run's kind, and the labels' map. A step, a seed and a
     world ID change no string, so the runs of one world and change are parsed once; a retry's run
-    declares its family's."""
+    declares its family's. A run that the generator refuses has no declaration, and so no string."""
     kinds, of_run, named, parsed = {}, {}, {}, {}
     for run in inputs.runs.values():
         key = (run.world, run.kind, repr(declared_change(inputs, run)))
         if key not in parsed:
-            parsed[key] = run_strings(inputs, run)
+            try:
+                parsed[key] = run_strings(inputs, run)
+            except (NoSection, UnknownOrder) as refusal:
+                parsed[key] = str(refusal)
         declared = parsed[key]
+        if isinstance(declared, str):
+            of_run[run.name] = {"no_declaration": declared}
+            continue
         name = named.get(tuple(declared))
         if name is None:
             name = "pool" if run.kind == POOL else f"{run.consumer} ionic"

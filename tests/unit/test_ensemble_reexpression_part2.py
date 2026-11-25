@@ -1301,6 +1301,24 @@ def test_the_strings_of_every_run_are_one_file(invented, tmp_path):
                 {"assembly_observable"} if run.kind == "driven" else set()
             )
     assert found["labels"] == {k: v for k, v in labels.LABELS.items() if k in found["labels"]}
+    # A run that the generator refuses has no declaration, and one that the engine refuses to parse
+    # has the strings of what it submits.
+    refused, told = with_potentials(invented, TOLD["two numbers"]), f"{WHOLE} h=2e-05"
+    note = definitions.strings_note(refused)
+    assert "no_section" in note["runs"][told]["no_declaration"]
+    assert (
+        note["runs"][f"{PAIR} s1 pool"] == "pool" and "ip3_calcium ionic" not in note["run_kinds"]
+    )
+    raw = copy.deepcopy(invented.raw)
+    for store in raw["worlds"][SMALL]["stores"].values():
+        store["temperature_K"] = 151.0
+    raw["worlds"][SMALL]["ionic"]["temperature_K"] = 151.0
+    path = invented.path.with_name("cold.json")
+    path.write_text(json.dumps(raw))
+    with pytest.raises(ConfigError, match="200-400 K"):
+        parse_spec(definitions.definition(Inputs(path), Inputs(path).run(f"{SMALL} h=2e-05")))
+    cold = definitions.strings_note(Inputs(path))
+    assert cold["run_kinds"]["spatial_calcium ionic"] == found["run_kinds"]["spatial_calcium ionic"]
 
 
 def test_part_2s_literal_blocks_are_read_as_its_text_prints_them(tmp_path):
