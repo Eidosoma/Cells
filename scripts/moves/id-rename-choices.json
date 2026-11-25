@@ -2344,6 +2344,22 @@
    "path": "tests/unit/test_law_registry.py",
    "text": "value\\.split\\(\"\\.\", 2\\)",
    "reason": "H1b: the last part of a planted ID of three parts"
+  },
+  {
+   "cls": [
+    "message"
+   ],
+   "path": "tests/unit/test_fr5_source_kinds.py",
+   "text": "no set for its axis species_condition",
+   "reason": "the run view's axis (kinds/species_condition.py AXIS), a name of its own that the move keeps, not the start of an ID"
+  },
+  {
+   "cls": [
+    "partial"
+   ],
+   "path": "tests/unit/test_species_condition_kind.py",
+   "text": "f\\.startswith\\(\"species_condition",
+   "reason": "the start of the kind's field names, not a part of an ID"
   }
  ]
 }

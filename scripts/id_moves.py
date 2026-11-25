@@ -27,7 +27,8 @@ choices that the tool does not read; a seed whose constant or table is gone, who
 row or another seed holds, or whose family is no word; a kept ID that nothing live spells, or that
 a row, an interface or another entry holds; a plant that no file spells, or that a row holds; a
 pin that its file no longer quotes; a path that no tracked file has, as an entry's own, as a pattern
-or cited in a reason. A registry's row never overrides a choice in silence.
+or cited in a reason; and a family word that registry/ids.py gives two places, as a merge can. A
+registry's row never overrides a choice in silence.
 
 **The plants** (D371 Q8) are the pieces a test or a driver declares for itself. Each gets the
 three-part ID of its own family, in its own files only: the family comes from the type or the
@@ -711,6 +712,8 @@ def cmd_engine(args):
             piece=ids._PIECE.pattern,
         ),
     )
+    places = (*ids.FIXED_FAMILIES, *set(ids.LAW_FAMILIES.values()), *ids.SUBLAW_FAMILIES)
+    out["ids"]["twice"] = sorted(w for w, n in Counter(places).items() if n > 1)
     failed = {}
     for info in pkgutil.walk_packages(cells.__path__, "cells."):
         if not info.name.endswith("__main__"):
@@ -1140,7 +1143,7 @@ CITED = re.compile(r"(?<![\w./-])((?:[\w.-]+/)+[\w.-]+\.(?:py|json|sh|md|toml|ts
 def choices_problems(choices, rows, engine, source, files):
     """What the choices name that the tree has overtaken, beside the seeds (build_rows): a kept ID
     or a plant that is gone or that another holds, and a path that is gone."""
-    out = []
+    out = [f"registry/ids.py gives the word {w!r} two places" for w in engine["ids"]["twice"]]
     table = {s: row["source"] for row in rows for s in row["old"]}
     interfaces = {s for i in engine["interfaces"] for s in spellings(i)}
     live, spelled = live_ids(rows, engine, source)
@@ -3466,6 +3469,7 @@ def _plant_engine(**more):
             law_families={"cells.wave_law@1": "wave", "cells.pump_law@1": "pump"},
             families=["kind", "model", "operator", "pump", "solver", "wave"],
             piece=NEW.pattern,
+            twice=[],
         ),
         census={"wave_mh@1": ["cells.laws.wave.LAW_ID"], "imex_two@1": ["cells.steps.METHOD_ID"]},
         keys={},
@@ -4440,6 +4444,10 @@ def _selftest_overtaken(checks):
     }
     for what, (more, said) in planted.items():
         checks[f"overtaken: {what}"] = said in problems(**more)
+    ids = dict(_plant_engine()["ids"], twice=["wave"])
+    checks["overtaken: a family word that registry/ids.py gives two places"] = problems(
+        _plant_engine(ids=ids), **whole
+    ) == ["registry/ids.py gives the word 'wave' two places"]
     for registry in (
         dict(laws=[dict(declared="imex_two@1", interface="cells.wave_law@1", host="h",
                         module="m")]),
