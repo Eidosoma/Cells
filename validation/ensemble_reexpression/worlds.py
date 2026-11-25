@@ -20,6 +20,7 @@ import math
 from validation.ensemble_reexpression import stores
 from validation.ensemble_reexpression.blocks import (
     ONES,
+    RELATIVE,
     Section,
     channel_rows,
     entities,
@@ -32,11 +33,8 @@ from validation.ensemble_reexpression.blocks import (
     rest,
     taken,
 )
-from validation.ensemble_reexpression.inputs import BESIDE, EPS, INNER
+from validation.ensemble_reexpression.inputs import BESIDE, INNER
 from validation.ensemble_reexpression.labels import LABELS, label, string
-
-RELATIVE = 1e-12  # The echo's precision (spec/SPEC.md §2.4).
-
 
 # ------------------------------------------------------------------ the species and compartments
 
@@ -319,8 +317,9 @@ SIZES = {  # {an execution's capacity: the model's list it counts}.
 HARNESS = {"max_steps": 10**6, "max_trace_bytes": 2**32}  # No number of the spec's (SPEC §2.3).
 
 
-def write(block, *, step, observation_times, solver, field_solver, sections=SECTIONS):
-    """The raw definition of a block, with this step, these observation times and these strings."""
+def write(block, *, step, observation_times, solver, field_solver, told=None, sections=SECTIONS):
+    """The raw definition of a block, with this step, these observation times and these strings.
+    told: what a world's entry says of its declaration that is no part of the block (inputs.py)."""
     held = {key for section in sections for key in section.keys}
     unknown = sorted(set(block) - held)
     if unknown:
@@ -340,7 +339,7 @@ def write(block, *, step, observation_times, solver, field_solver, sections=SECT
         },
     }
     for section in sections:
-        section.write(block, raw)
+        section.write({**block, **(told or {})}, raw)
     for capacity, entity in SIZES.items():
         raw["execution"][capacity] = len(raw["model"][entity])
     return raw
@@ -451,21 +450,6 @@ def charge_scale(block, region):
 
 FIXED = "fixed_charge_equivalent_fmol"
 PUMPED = ("stores", "plasma_transport")  # Where the calcium pumps stand.
-LARGEST_A = 3200.0  # PART2 §2.4: "A is at most 3,200, and a larger one is a departing echo".
-
-
-def energy_bound(pump, temperature):
-    """What PART2 §2.4 adds to the tolerance of a pump's free energy at 1 M: 16 eps R T A of the
-    potentials that a read-back pump holds, 0 where it holds none, and nothing (a departure whatever
-    the number) where A is above 3,200."""
-    if not all(key in pump for key in stores.OWN):
-        return 0.0
-    concentration = pump["standard_concentration_mM"]
-    terms = [abs(mu) for mu in pump["fuel_standard_mu_RT"].values()]
-    size = math.fsum(terms) + abs(math.log(stores.ONE_MOLAR_MM / concentration))
-    if size > LARGEST_A:
-        return -math.inf
-    return 16 * EPS * stores.R * temperature * size
 
 
 def departures(found, expected, *, exact=False, skip=()):
@@ -486,7 +470,7 @@ def departures(found, expected, *, exact=False, skip=()):
             own = found
             for key in path[:-1]:
                 own = own[key]
-            return abs(a - b) <= RELATIVE * abs(b) + energy_bound(own, found["temperature_K"])
+            return stores.same_energy(a, b, own, found["temperature_K"])
         if b == 0 or (exact and not (path[0] in PUMPED and path[-1] in stores.FUEL.values())):
             return a == b
         if path[0] == "outside" and path[-1] == "initial_charge_C":

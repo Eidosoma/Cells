@@ -170,6 +170,7 @@ def _written(world, step, change, field_solver):
         observation_times=world.potential_times,
         solver=integrator(world.order),
         field_solver=string(field_solver),
+        told=world.told,
     )
 
 

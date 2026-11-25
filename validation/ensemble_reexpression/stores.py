@@ -18,6 +18,7 @@ import math
 from cells.laws.electrochemistry import CHARGE_PER_FMOL, R
 from validation.ensemble_reexpression.blocks import (
     ONES,
+    RELATIVE,
     Section,
     channel_rows,
     entities,
@@ -31,6 +32,7 @@ from validation.ensemble_reexpression.blocks import (
     schedule,
     taken,
 )
+from validation.ensemble_reexpression.inputs import EPS, FUEL_POTENTIALS
 from validation.ensemble_reexpression.labels import LABELS, label, string
 from validation.ensemble_reexpression.pieces import CALCIUM, CYTOSOL, FUEL, STORE, Pieces
 
@@ -172,7 +174,9 @@ def add_route(raw, name, host, species, permeability, factors=()):
 
 PUMP = ("law", "capacity_fmol_per_s", "km_ca_mM", "km_atp_mM", *FUEL.values())
 ENERGY = "delta_g0_at_1M_J_per_mol"
-OWN = ("fuel_standard_mu_RT", "standard_concentration_mM")  # The exporter's own keys of a pump.
+OWN = (FUEL_POTENTIALS, "standard_concentration_mM")  # The exporter's own keys of a pump.
+OURS = object()  # A world that gives no potentials: the generator's own are declared.
+LARGEST_A = 3200.0  # PART2 §2.4: "A is at most 3,200, and a larger one is a departing echo".
 PARAMETERS = {"km_ca_mM": "km_role_mM", "km_atp_mM": "km_atp_mM"}
 HELD = [[role, "N"] for role in FUEL]
 STANDING = {  # What every calcium pump declares and no block says.
@@ -198,15 +202,52 @@ def free_energy(potentials, temperature, concentration):
     return R * temperature * (difference + math.log(ONE_MOLAR_MM / concentration))
 
 
-def hold_fuel(raw, cell, pump, where):
-    """Hold a pump's fuel at its cell, as rows that every pump of the cell reads."""
+def energy_bound(pump, temperature):
+    """What PART2 §2.4 adds to the tolerance of a pump's free energy at 1 M: 16 eps R T A of the
+    potentials that a read-back pump holds, 0 where it holds none, and nothing (a departure whatever
+    the number) where A is above 3,200."""
+    if not all(key in pump for key in OWN):
+        return 0.0
+    terms = [abs(mu) for mu in pump[FUEL_POTENTIALS].values()]
+    size = math.fsum(terms) + abs(math.log(ONE_MOLAR_MM / pump["standard_concentration_mM"]))
+    if size > LARGEST_A:
+        return -math.inf
+    return 16 * EPS * R * temperature * size
+
+
+def same_energy(found, expected, pump, temperature):
+    """Whether a pump's free energy at 1 M is the expected one (PART2 §2.4)."""
+    return abs(found - expected) <= RELATIVE * abs(expected) + energy_bound(pump, temperature)
+
+
+def told_potentials(fuel, pump, temperature, concentration, where):
+    """The potentials that a world gives its fuel rows in place of the generator's own. They must
+    make the block's free energy at 1 M, by the echo's own rule."""
+    numbers = fuel.values() if isinstance(fuel, dict) and set(fuel) == set(FUEL) else ()
+    if not numbers or any(type(v) not in (int, float) for v in numbers):
+        raise no_section(f"{FUEL_POTENTIALS} is three numbers, {', '.join(FUEL)}")
+    found = free_energy(fuel, temperature, concentration)
+    own = dict(zip(OWN, (fuel, concentration), strict=True))
+    if not same_energy(found, pump[ENERGY], own, temperature):
+        raise no_section(
+            f"{where}: {FUEL_POTENTIALS} make {found!r} J/mol at 1 M and the block says "
+            f"{pump[ENERGY]!r} (PART2 §2.4's tolerance, A at most {LARGEST_A:g})"
+        )
+    return dict(fuel)
+
+
+def hold_fuel(raw, cell, pump, where, fuel):
+    """Hold a pump's fuel at its cell, as rows that every pump of the cell reads, with the world's
+    own potentials (`fuel`) or the generator's."""
     model = raw["model"]
     missing = sorted({*FUEL.values(), ENERGY} - set(pump))
     if missing:
         raise no_section(f"{where} names no {', '.join(missing)}")
-    potentials = fuel_potentials(
-        pump[ENERGY], model["temperature_K"], model["standard_concentration_mM"]
-    )
+    at = (model["temperature_K"], model["standard_concentration_mM"])
+    if fuel is OURS:
+        potentials = fuel_potentials(pump[ENERGY], *at)
+    else:
+        potentials = told_potentials(fuel, pump, *at, where)
     for species in FUEL:
         add_row(raw, species, 0, potentials[species])
     (node,) = (c for c in model["cells"] if c["id"] == cell)
@@ -217,9 +258,9 @@ def hold_fuel(raw, cell, pump, where):
         node["initial_amount_fmol"][species] = held
 
 
-def write_pump(raw, name, host, cell, pump, where):
+def write_pump(raw, name, host, cell, pump, where, fuel):
     known(pump, (*PUMP, ENERGY), where)
-    hold_fuel(raw, cell, pump, where)
+    hold_fuel(raw, cell, pump, where, fuel)
     raw["model"].setdefault("transporters", []).append(
         {
             "id": name,
@@ -247,7 +288,7 @@ def read_pump(raw, population, cell):
     for role, key in FUEL.items():
         out[key] = node["initial_amount_fmol"][roles[role]] / node["volume_pL"]
     out[ENERGY] = free_energy(fuel, model["temperature_K"], concentration)
-    out["fuel_standard_mu_RT"] = fuel
+    out[FUEL_POTENTIALS] = fuel
     out["standard_concentration_mM"] = concentration
     nothing_else(values, set(PARAMETERS.values()), {"stoichiometry": 1}, population["id"])
     named = {"id", "host", "law", "capacity_fmol_s", "parameters"}
@@ -292,7 +333,11 @@ def shared(stores, key):
 
 
 def _write_stores(block, raw):
-    stores = dict(entities(block.get("stores")))
+    stores, fuel = dict(entities(block.get("stores"))), block.get(FUEL_POTENTIALS, OURS)
+    pumps = [s["membrane"].get("pump") for s in stores.values()]
+    pumps += [t.get("pump") for _, t in entities(block.get("plasma_transport"))]
+    if fuel is not OURS and not any(pump is not None for pump in pumps):
+        raise no_section(f"a world without calcium pumps has {FUEL_POTENTIALS}")
     if not stores:
         return
     model = composite(raw)["model"]
@@ -318,7 +363,7 @@ def _write_stores(block, raw):
         pump = store["membrane"].get("pump")
         if pump is not None:
             where = f"the store's pump of {cell}"
-            write_pump(raw, store_pump_id(cell), patch_id(cell), cell, pump, where)
+            write_pump(raw, store_pump_id(cell), patch_id(cell), cell, pump, where, fuel)
     anchor(raw)
 
 
@@ -650,7 +695,13 @@ def _write_plasma_transport(block, raw):
         if entry.get("pump") is not None:
             where = f"the calcium pump of {membrane}"
             write_pump(
-                raw, plasma_pump_id(membrane), membrane, patch["inside"], entry["pump"], where
+                raw,
+                plasma_pump_id(membrane),
+                membrane,
+                patch["inside"],
+                entry["pump"],
+                where,
+                block.get(FUEL_POTENTIALS, OURS),
             )
         exchanger = entry.get("exchanger")
         if exchanger is not None:

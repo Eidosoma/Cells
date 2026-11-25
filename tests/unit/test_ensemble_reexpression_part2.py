@@ -664,6 +664,111 @@ def test_the_echo_of_a_pumps_energy_and_of_part_2s_defaults(whole):
         assert worlds.departures(moved, block) != []
 
 
+def told(atp, pi, *, off=0.0):
+    """Potentials of the fuel rows whose combination is the invented pumps' free energy at 1 M."""
+    adp = -19123.4 / (R * 301.0) - math.log(1000.0) + atp - pi
+    return {"ATP": atp, "ADP": adp + off, "Pi": pi}
+
+
+def with_potentials(invented, fuel, **more):
+    """The inputs, with a world's entry that gives its fuel's potentials beside `p`."""
+    raw = copy.deepcopy(invented.raw)
+    raw["worlds"][WHOLE] |= {"fuel_standard_mu_RT": fuel} | more
+    path = invented.path.with_name("told.json")
+    path.write_text(json.dumps(raw))
+    return Inputs(path)
+
+
+def test_a_world_may_give_its_fuel_rows_potentials(invented, whole):
+    """The lead's request for the rehearsal: potentials that are large against their difference (A
+    between a half and the whole of its cap) are declared as given, the engine's drive follows their
+    combination, the exporter echoes them, and nothing else of the definition moves."""
+    block, raw, parsed = whole
+    fuel = told(1000.0, 400.0)
+    size = sum(map(abs, fuel.values())) + math.log(1000.0)
+    assert 1600.0 <= size <= 3200.0
+    inputs = with_potentials(invented, fuel)
+    world = inputs.worlds[WHOLE]
+    assert world.block == block and "fuel_standard_mu_RT" not in world.root
+    own = definitions.ionic(world, 2e-05)
+    potentials = {s["id"]: s["standard_mu_RT"] for s in own["model"]["species"]}
+    assert {s: potentials[s] for s in FUEL} == fuel
+    plain = copy.deepcopy(own)
+    for entry in plain["model"]["species"]:
+        if entry["id"] in FUEL:
+            default = _entity(raw["model"]["species"], entry["id"])
+            entry["standard_mu_RT"] = default["standard_mu_RT"]
+    assert plain == raw
+    spec = parse_spec(own)
+    found = worlds.read(spec.to_dict())
+    pumps = [s["membrane"]["pump"] for s in found["stores"].values()]
+    pumps += [t["pump"] for t in found["plasma_transport"].values()]
+    assert len(pumps) == 4 and all(pump["fuel_standard_mu_RT"] == fuel for pump in pumps)
+    assert definitions.block_faults(found, block, "run", driven=False) == []
+    run = inputs.run(f"{WHOLE} h=2e-05")
+    assert definitions.check(inputs, runs=[run])[0] == []
+    # The engine's own drive, from the two declarations: the same within the tolerance's own term.
+    drives = []
+    for made in (spec, parse_spec(parsed)):
+        _, p = get_model(made.model).initial_values(made)
+        drives.append(np.asarray(p.cycle_held_standard_RT) + np.asarray(p.cycle_moved_standard_RT))
+    assert drives[0].shape == (1, 6) and np.abs(drives[0]).max() > 10.0
+    assert np.abs(drives[0] - drives[1]).max() <= 16 * 2.0**-52 * size
+    assert invented.worlds[WHOLE].told == {} and world.told == {"fuel_standard_mu_RT": fuel}
+
+
+TOLD = {
+    "a combination off by more than the tolerance": told(1000.0, 400.0, off=2e-11),
+    "A above its cap": told(1800.0, 200.0),
+    "two numbers": {"ATP": 0.0, "ADP": -14.5},
+    "a fourth number": told(10.0, 0.0) | {"AMP": 0.0},
+    "a number that is none": told(10.0, 0.0) | {"Pi": math.nan},
+    "a sentence": "as the engine's",
+    "none": None,
+}
+
+
+@pytest.mark.parametrize("fuel", TOLD)
+def test_potentials_that_do_not_make_the_blocks_energy_are_refused_by_name(invented, fuel):
+    """A world whose combination misses the block's energy at 1 M by more than PART2 §2.4's
+    tolerance, or whose A is above 3,200, is refused before the engine sees it."""
+    inputs = with_potentials(invented, TOLD[fuel])
+    with pytest.raises(blocks.NoSection, match="no_section: .*fuel_standard_mu_RT"):
+        definitions.definition(inputs, inputs.run(f"{WHOLE} h=2e-05"))
+
+
+def test_potentials_at_the_tolerances_edge_and_of_no_pump(invented, whole):
+    """The tolerance is the criteria's, not a smaller one; and potentials that nothing would read
+    are not passed over."""
+    fuel = told(1000.0, 400.0)
+    size = sum(map(abs, fuel.values())) + math.log(1000.0)
+    wide = 1e-12 * 19123.4 / (R * 301.0) + 16 * 2.0**-52 * size
+    inputs = with_potentials(invented, told(1000.0, 400.0, off=0.9 * wide))
+    definitions.definition(inputs, inputs.run(f"{WHOLE} h=2e-05"))
+    with pytest.raises(blocks.NoSection, match="make .* J/mol at 1 M"):
+        inputs = with_potentials(invented, told(1000.0, 400.0, off=1.1 * wide))
+        definitions.definition(inputs, inputs.run(f"{WHOLE} h=2e-05"))
+    for key in ("stores", "plasma_transport"):
+        block = copy.deepcopy(whole[0])
+        for store in block["stores"].values():
+            store["membrane"]["pump"] = None
+            block["calcium_controls"]["store_pump"] = {}
+        for transport in block["plasma_transport"].values():
+            transport["pump"] = None
+        block["calcium_controls"]["calcium_pump"] = {}
+        if key == "stores":
+            block = {k: v for k, v in block.items() if k not in BESIDE}
+        with pytest.raises(blocks.NoSection, match="without calcium pumps has fuel_standard_mu_RT"):
+            worlds.write(
+                block,
+                step=2e-05,
+                observation_times=[0.0],
+                solver="rk4",
+                field_solver="none",
+                told={"fuel_standard_mu_RT": fuel},
+            )
+
+
 # ------------------------------------------------------------------ the plants and the runs
 
 

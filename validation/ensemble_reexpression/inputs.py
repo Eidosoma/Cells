@@ -24,6 +24,9 @@ INVENTED = "inv_"  # The rehearsal's and the builder's own worlds and runs (spec
 # A world's blocks: the inner model's own, and those that Part 2 has beside it (PART2_BLOCKS).
 INNER = "ionic"
 BESIDE = ("stores", "plasma_transport", "calcium_channels", "ip3_release", "calcium_controls")
+# What a world's entry may say of its declaration that is no part of its block: the potentials of
+# its calcium pumps' fuel rows, which a rehearsal's world gives in place of the generator's own.
+FUEL_POTENTIALS = "fuel_standard_mu_RT"
 
 IONIC, DRIVEN, POOL = "ionic", "driven", "pool"
 RUN_KEYS = {
@@ -116,6 +119,11 @@ class World:
         of a world's blocks in Part 2."""
         blocks = {key: self.raw[key] for key in (INNER, *BESIDE) if key in self.raw}
         return blocks if len(blocks) > 1 else blocks[INNER]
+
+    @property
+    def told(self):
+        """What the entry says of the world's declaration that is no part of its block."""
+        return {key: self.raw[key] for key in (FUEL_POTENTIALS,) if key in self.raw}
 
     @property
     def pools(self):

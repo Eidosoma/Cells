@@ -216,3 +216,5 @@ laws and the condition's law namespaced and the others bare. The held fuel's kin
 28. **`definition`** also holds `species_rows` (every row declared), `release_conditions`, and `trace_mM` (each row's concentration at each node that the block does not name it at).
 29. **EP3** multiplies both stores' release permeability by 1.01 (the double product), and **EP4** exchanges the two pools' channels, as EP2.
 30. **A cluster's `switch_list`** is over the K channels alone, since no pool touches a calcium channel (the lead, 25 November).
+31. **A world's own potentials.** An entry of an inputs file may hold `fuel_standard_mu_RT` (`ATP`, `ADP`, `Pi`) beside `p`. It is no part of the block, and no registered world has it. The generator then declares those three for the calcium pumps' fuel rows, and the exporter echoes them as it does its own. A world is refused by name (`no_section`, kind `harness`) where they do not make the block's
+  `delta_g0_at_1M_J_per_mol` by PART2 §2.4's rule (10⁻¹² of itself plus 16 ε R T A, A at most 3,200), where they are not three numbers, and where it has no calcium pump. It is each world's own: a cluster does not take its child's.

@@ -7,6 +7,7 @@ from cells.definitions.surface_pump_v3_spec import channel_laws
 from validation.ensemble_reexpression.labels import label, string
 
 ONES = [[0.0, 1.0]]  # A schedule of 1 throughout, the default of every control.
+RELATIVE = 1e-12  # The echo's precision (spec/SPEC.md §2.4).
 
 
 class NoSection(ValueError):
