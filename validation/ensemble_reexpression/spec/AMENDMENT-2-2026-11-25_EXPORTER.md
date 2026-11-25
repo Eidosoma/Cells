@@ -10,7 +10,7 @@
 
 **Now also:** a cell, region, membrane, channel, junction, face or species that the registered block does not have is a departing echo. It refuses the run, and nothing of the run is judged (`CRITERIA.md` §5). The sentence above stays for a key inside an entity.
 
-**Where the rule is read:** in the echoed `inputs` alone. That is its sets of entities, its `species`, the IDs in `controls`, in `switch_list` and in `pool_seeds`, and a pool run's cells. In `cell` and `base` the values of `controls.channel`, `switch_list` and `pool_seeds` stay class E, and their IDs are read as echo.
+**Where the rule is read:** in the echoed `inputs` alone. That is its sets of entities, its `species`, the IDs in `controls`, in `switch_list` and in `pool_seeds`, and a pool run's cells. An ID in `controls`, `switch_list` or `pool_seeds` is extra where the block's own set of that kind does not hold it, and not where the block's `controls` leave it out. In `cell` and `base` the values of `controls.channel`, `switch_list` and `pool_seeds` stay class E, and their IDs are read as echo.
 
 **Unchanged,** at the head of `TABLE.md`:
 
