@@ -82,9 +82,11 @@ the species' [valence](../../GLOSSARY.md#valence) does not enter. The factor is
 - **Feedback.** A route that moves a row its own condition reads closes a loop. The kind names the
   rows each condition reads, and gives at a stage the slope $\partial \ln f / \partial \ln N$ of each
   (no unit, signed, finite at a zero amount): the sum over the condition's readings of that species.
-  The bound that uses them is the core's, and is not built yet. A loop through two routes is not
-  bounded, nor one through a source that reads an amount and has no such slopes (the pH condition);
-  and where a closure owns the row, the slope is in the free amount, without the closure's own.
+  The core adds $|J|\,|\partial \ln f / \partial \ln N| / N$ to the rate that limits the step, at both
+  ends of the row, with $J$ the gated flux. A loop through two routes is not bounded, nor one through
+  a source that reads an amount and has no such slopes (the pH condition); and where a closure owns
+  the row, the slope is in the free amount, without the closure's own. A route's kind that gives the
+  core no such flux is refused where it would close a loop.
 - **Beside operators:** water (the read takes the current volume), the compartment wash and arrival
   labels are admitted. An operator that closes, divides or retires slots refuses it, and so does one
   that builds the inner model's fields in a fixed layout, such as cell replacement.
@@ -121,8 +123,9 @@ error](../../GLOSSARY.md#planted-error) misses it: a wrong exponent, the forms e
 factor, a wrong node, a half-saturation in M, and another species' row. The released amount converges
 at second order, and a factor held at the step's start at first. A ligand of valence -3 and one of
 valence 0 give one run bit for bit. The door refuses a factor out of range and a reading that is not
-a number. The hooks' slopes agree with finite differences of the factor, and the core's rule, stubbed
-in the test, with the finite difference of the routed flux through the factor. A compiled world of a store in a composite runs
+a number. The hooks' slopes agree with finite differences of the factor, and the core's rule with the
+finite difference of the routed flux through the factor, at both ends; the held gate's flux, and the
+pair of a row the route does not move, must each miss. A compiled world of a store in a composite runs
 ten steps in which the route's heat never falls, and restarts from a checkpoint bit for bit.
 
 Its scope is those worlds. It says nothing about a receptor, or about the numbers of any one gate.

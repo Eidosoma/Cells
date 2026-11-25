@@ -63,6 +63,7 @@ Energy role: not yet extracted; the law template has no energy role yet.
 
 | Declared | Value | Unit |
 | --- | --- | --- |
+| Material term | `material_term` |  |
 | Fuel kinds | none |  |
 
 <!-- /generated -->
@@ -88,12 +89,15 @@ $$x = \ln\frac{[\text{Na}]_N}{[\text{Na}]_P} + \ln\frac{[\text{K}]_N}{[\text{K}]
   clipped. The older law of the same rate kept its own domain, with temperatures from 200 to 400 K;
   here the inner model's is the same.
 - **Step rules:** the law moves charged [species rows](../../GLOSSARY.md#species-row) and no net
-  charge, so it has no charge slope, and the kind's material term counts no charged row that
-  crosses. No per-stage rule bounds its rows' relaxation, so a definition must choose a step small
-  enough for it. It declares no step term, and its moves at a closed compartment's node are refused
-  ([refusal 4](../../../CLOSED_COMPARTMENT_DESIGN.md)). RK4 runs are refused, as for every kind.
+  charge, so it has no charge slope. The kind bounds the population's own material rate: over the
+  six rows it moves, the sum of $|\nu_k\, \partial J/\partial n_k|$ (1/s; $\nu_k$ the row's count
+  and $n_k$ its amount in fmol), given to each of them. A held bath's rows are left out. It declares
+  that term alone, which holds no charged row at a closed compartment's node, so its moves there are
+  refused ([refusal 4](../../../CLOSED_COMPARTMENT_DESIGN.md)). RK4 runs are refused, as for every
+  kind.
 - **At a binding closure:** it declares the read `rapid_binding@1` and base forms, so where a
-  closure holds one of its ions it reads the free amount and moves the total.
+  closure holds one of its ions it reads the free amount and moves the total, and the material rate
+  runs through the closure's derivative.
 - **Left out:** binding by each ion and any other saturation, regulation by volume, chloride or
   phosphorylation, the water carried with the salt, any isoform, and any temperature dependence (the
   rate reads no temperature).
@@ -142,7 +146,8 @@ affinity, the transport and the heat are that reference's to the protocol's tole
 
 Other rows run closed worlds: amounts follow the cycles at each end, no charge crosses, the heat
 grows and every [ledger](../../GLOSSARY.md#ledger) closes, and a neutral corruption of the amounts
-is refused by its ledger. Wrong species, valences and counts, and RK4, are refused by name. Beside a
+is refused by its ledger. The population's own material rate is the reference's at both ends. Wrong
+species, valences and counts, RK4, and a population at a store's node are refused by name. Beside a
 potassium binder under a closure it reads the free potassium. Each has a planted error. No run was
 compared with a measurement.
 

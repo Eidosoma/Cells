@@ -138,7 +138,6 @@ DECLARATION = {
     "reads": READS,
     "fuel": "maintained_held_rows@1",
     "stage_term": "electrogenic_conductance_S",
-    "loop_term": "loop_rates_per_s",
     "provenance": "cited",
     "b8": {},  # D175's four fields: reserved, empty
 }
@@ -156,7 +155,8 @@ def electrogenic_conductance_S(inputs, parameters, availability, *, xp=jnp):
 
 def loop_rates_per_s(inputs, parameters, availability, free_per_total_in, volume_in_pL,
                      free_per_total_out, volume_out_pL, *, xp=jnp):
-    """The loop terms (1/s) at both nodes: |d(n cycles)/dH_eq| through each closure's dh/dH.
+    """The loop terms (1/s) at both nodes: |d(n cycles)/dH_eq| through each closure's dh/dH. The
+    engine does not evaluate them.
 
     With cycles = M (1 - e^a): the outside proton enters through a only (da/dln h_out = n); the
     inside one through a (da/dln h_in = -n) and the saturation M
@@ -266,7 +266,6 @@ LAW = CycleLaw(
     domain_valid,
     reads=READS,
     stage_term=DECLARATION["stage_term"],
-    loop_term=DECLARATION["loop_term"],
     cycle=CYCLE,
     host="cells.transporter@1",
     provenance=DECLARATION["provenance"],

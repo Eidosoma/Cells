@@ -558,7 +558,7 @@ registry code.
 | `voltage_domain` | (−0.120, 0.060) V for all five |
 | `rk4_step_s` | 2.5e-6 for NaV1.2, 25e-6 for Kv1.5 and Kir2.1, none for the leaks (today's `RK4_*_STEP`) |
 | `stage_term` | `constant_field_slope`, today's `membrane_rate` term at the actual opening |
-| `reads`, `loop_term` | None for these five; (g) 1 below |
+| `reads` | None for these five; (g) 1 below. `loop_term`, reserved beside it, was removed on 25 November 2026: no law declared it (CALCIUM_STORE_AND_CHANNELS_DESIGN §6.5) |
 | `provenance` | `parity` |
 | B8's four fields | Reserved, empty (D175) |
 
@@ -793,6 +793,10 @@ registry code.
    - **The loop term:** a law whose flux moves a row its read depends on declares a loop term for
      the stage rule, dt × rate ≤ 1. The law's owner supplies it: for the proton pump, |∂J/∂H_eq|
      through dh/dH̄_eq.
+     **Superseded (25 November 2026; CALCIUM_STORE_AND_CHANNELS_DESIGN §6.5):** nothing evaluated
+     the reserved field `loop_term`, so it was removed. A closure's loop is the transporter's
+     material term with the closure's derivative (that note's §6.3); a loop that a routed slot
+     closes on its own gate is the core's (`surface_pump_v3.loop_material_rates`).
    - **Reads at a split** (FR-5's factors on the routing door) call the same pure `evaluate` on the
      split's state. They are first order in dt there, as FR-4's note says.
    - **Coverage and padding** (the FR-4/FR-5 owner's two notes, 15 November):
@@ -841,7 +845,8 @@ registry code.
        through a stage read, such as H at a buffered node) and electrochemical potential, the held
        fuel rows' concentrations, the patch voltage and the temperature;
      - `domain_valid(...)`: |ΔG_cyc/RT| ≤ 80, and the fuel node's pH band;
-     - `stage_term`, its electrogenic conductance for the stage rule, and `loop_term`;
+     - `stage_term`, its electrogenic conductance for the stage rule (and `loop_term` until 25
+       November 2026, when it was removed: nothing evaluated it);
      - its definition-time bound term, `provenance` and B8's fields.
    - **Fuel, two kinds, finite the default** (revised 15 November for D176 item 2's acceptance
      world). The population names its fuel node (the hydrolysing cell) and its fuel rows (ATP,

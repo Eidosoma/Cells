@@ -151,7 +151,8 @@ effort and the main risk.
   and does not qualify the laws.
 - **Older catalogues:** the channel catalogues in `laws/channels/` up to the 35-law one serve
   `resolved_tissue@8`, which stays as D167's parity reference. The four tables of
-  `resolved_tissue@9` to `@12` left with the legacy cleanup; they held no kernel.
+  `resolved_tissue@9` to `@12` left with the legacy cleanup; they held no kernel. Kv1.5's 19 kernel
+  cases moved beside the law, as its declared test, on 25 November 2026 (D196).
 - **D211's port programme: open, and it continues after the legacy cleanup** (D386, 25 November
   2026). Its 54 law IDs, by what each group waits for. Every kernel named here stays in live `laws/`
   with its reference and a kernel-level test. A law is registered on @3 when its module lands, and
@@ -162,13 +163,15 @@ effort and the main risk.
   | Kv1.1 to Kv1.4 and Kv1.6 | 5 | `kv1p1_mh2` to `kv1p6_mh` | done: registered on @3 |
   | Voltage-only K and Na: Kv2.1, Kv2.2, Kv3.1 to Kv3.4, K_fast; Nav1.3, the three rat Nav laws, Nav1.6 | 12 | `potassium_catalog`, `sodium_catalog` | one module each; no engine feature |
   | Voltage-only, one gate: the three dynamic Morris-Lecar K laws | 3 | `morris_lecar_channels` | one module each (not checked: whether @3's gate template takes one gate as it stands) |
-  | CaV1.2, 1.3, 2.1, 2.2, 2.3, 3.1, 3.3; Ca_L2, Ca_L3, Cav_G | 10 | `cav_channels`, `calcium_catalog_extra` | calcium through channels, being built |
-  | HCN1, HCN2, HCN4; the HCN leak and the two cAMP-shifted laws | 6 | `hcn_channels`, `hcn_extra_channels` | the same: they carry calcium |
+  | CaV1.2 | 1 | `cav1p2_m2h` | done: registered on @3, with its material term (the [calcium note](CALCIUM_STORE_AND_CHANNELS_DESIGN.md)'s steps 1 and 2) |
+  | CaV1.3, 2.1, 2.2, 2.3, 3.1, 3.3; Ca_L2, Ca_L3, Cav_G | 9 | `cav_channels`, `calcium_catalog_extra` | one module each |
+  | HCN1, HCN2, HCN4; the HCN leak and the two cAMP-shifted laws | 6 | `hcn_channels`, `hcn_extra_channels` | one module each; they carry calcium too |
   | The seven instantaneous Morris-Lecar laws | 7 | `morris_lecar_channels` | G-2, a law without a gate |
   | Calcium-activated K | 1 | `calcium_activated_potassium` | G-3, a channel that reads a species, which the cardiac plan's H1 holds |
-  | Store pump and release, IP3 release, the Na/Ca exchanger | 4 | `er_calcium`, `plasma_calcium`; IP3 release only at the tag | the calcium store, the release factor and the exchanger, being built |
+  | The Na/Ca exchanger and the store's pump | 2 | `sodium_calcium_exchange_symmetric_barrier`, `atp_transporter_v2` | registered on the transporter kind, with both step terms (the calcium note's step 5) |
+  | The store's release and the IP3 release | 2 | `hill_product_factor`, read by `species_condition@1`; the older kernels are `er_calcium`'s `release_open` and, for IP3, only at the tag | the factor and its source are registered; the store's worlds are the calcium note's step 7 |
   | The finite-ATP store pump | 1 | only at the tag | row fuel, a request the user may make |
-  | NKCC and the generic symport | 2 | only in legacy today | ported in the cleanup, as modules on the transporter kind |
+  | NKCC and the generic symport | 2 | `na_k_2anion_symport_reversible_tanh`, `electroneutral_symport_reversible_tanh` | registered on the transporter kind, in the older law's manufactured form; a store's node refuses them, and no consumer puts one there |
   | The cell-zone transporter | 1 | only at the tag | left there (the user, D386) |
   | Mitochondrial passive; `junction_flux()` | 2 | not a port | nothing |
 
