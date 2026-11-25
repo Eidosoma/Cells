@@ -282,6 +282,16 @@ def test_a_definition_the_engine_refuses_to_parse_is_submitted_as_declared(inven
     with pytest.raises(ConfigError, match="200-400 K"):
         parse_spec(raw)
     assert definitions.floating(block["ionic"]) == 2
+    lone = copy.deepcopy(invented.worlds["inv_sample_lone"].raw)
+    lone["ionic"]["temperature_K"] = 150.0
+    moved = copy.copy(invented)
+    moved.worlds = invented.worlds | {
+        "inv_sample_lone": type(cold)("inv_sample_lone", "cell", lone)
+    }
+    for name in ("inv_sample_lone s1 w2 h=2e-05", "inv_sample_lone s1 pool"):
+        composed = definitions.definition(moved, moved.run(name))
+        assert composed["ionic"]["model"]["temperature_K"] == 150.0
+        assert [p["pool"]["seed"] for p in composed["pools"]] == [612]
 
 
 # ------------------------------------------------------------------ the grid rule
@@ -701,7 +711,8 @@ def test_a_driven_entry_says_what_its_schedule_came_from(invented, tmp_path, pla
     )
     entry = exporter.entry(invented, run, folders)
     assert exporter.entry_faults(name, entry) == [] and entry["refusal"] is None
-    assert entry["steps"] == 13 and entry["t"] == [0.0, 8e-05, 0.0002]
+    assert entry["steps"] == 13 and entry["t"] == [0.0, 8e-05, 0.0002] == entry["potential_t"]
+    assert composed["ionic"]["experiment"]["observation_times"] == [0.0, 8e-05, 0.0002]
     assert entry["inputs"]["assembly"] == {
         "assembly_observable": "assembly_observable",
         "composed_file_fingerprint": "c" * 64,
@@ -1014,3 +1025,6 @@ def test_the_committed_format_sample_is_the_contracts_and_no_number_is_a_runs():
     assert {("table", "completed", True, r) for r in (False, True)} <= seen
     assert ("table", "completed", False, True) in seen
     assert ("table-retry", "completed", False, False) in seen and "off_grid" in seen
+    listed = (folder / "README.md").read_text().splitlines()
+    for path, types in sample.keys(folder / "table").items():
+        assert f"{path}: {', '.join(types)}" in listed

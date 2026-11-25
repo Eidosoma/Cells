@@ -480,7 +480,7 @@ def scrubbed(table):
             return [walk(v) for v in value]
         return {key: walk(v) for key, v in value.items()}
 
-    out = walk(table)
+    out = walk(table) | {"part": table["part"]}  # 1 or 2 by the contract, and no run's number.
     for made in out["runs"].values():
         for key in TIMES:  # A run's times still increase, and begin at 0 but for a restart's.
             first = 0 if made["restart"] is None else 1
@@ -539,6 +539,7 @@ MAPS = {
     ("controls", "junction"): ("<junction ID>",),
     "pool_seeds": ("<cell ID>",),
     "switch_list": ("<channel ID>",),
+    "channel_laws": ("<channel ID>",),
 }
 
 
@@ -550,8 +551,7 @@ def keys(folder):
     def walk(path, value, names):
         found.setdefault(path, set()).add(type(value).__name__)
         if isinstance(value, dict):
-            parent, own = path.split(".")[-2:] if "." in path else ("", path)
-            own = own.removesuffix("[]")
+            parent, own = path.split(".")[-2:]  # An item of a list is an object, never a map.
             levels = names or MAPS.get((parent, own)) or MAPS.get(own) or ()
             for key, item in value.items():
                 walk(f"{path}.{levels[0] if levels else key}", item, levels[1:])
