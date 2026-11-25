@@ -85,15 +85,20 @@ class W:
     def q_out(self, node):
         return sum((q for s, _, q in self.links if s == node), D(0))
 
-    def total(self, species, t):
+    def total(self, species, t, own=None):
+        """N_x to t: start plus supplied; `own` is an event's time whose own supply counts (Amendment 2, item 2)."""
         n = sum(self.n0[species].values(), D(0))
         for s, _, q in self.links:
             if s in self.inlet:
                 for a, b, c in self.pieces(s, species, t):
                     n += q * c * (b - a)
         for e in self.b["events"]:
-            if e["kind"] == "delivery" and D(e["time_s"]) < t:
-                n += D(e["volume_pL"]) * self.x(e["inlet"], species, D(e["time_s"]))
+            at = D(e["time_s"])
+            if at < t or at == own:
+                if e["kind"] == "delivery":
+                    n += D(e["volume_pL"]) * self.x(e["inlet"], species, at)
+                elif e["kind"] == "exchange" and species in e["buffer_mM"]:
+                    n += D(e["fraction"]) * self.V[e["node"]] * D(e["buffer_mM"][species])
         return n
 
     def pieces(self, inlet, species, t):
@@ -112,8 +117,15 @@ class W:
         levels += [D(c) for e in self.b["events"] if e["kind"] == "exchange" for c in e["buffer_mM"].values()]
         return max(abs(ln(c)) for c in levels)
 
-    def s_f(self, t):
-        return self.rt * (self.lam() + 1) * sum((self.total(x, t) for x in self.species), D(0))
+    def s_f(self, t, own=None):
+        return self.rt * (self.lam() + 1) * sum((self.total(x, t, own) for x in self.species), D(0))
+
+    def end_volume(self):
+        """The collector's volume at the end: the links' liquid and the portions'."""
+        total = D(0)
+        if isinstance(self.b["end_s"], (int, float)):
+            total += sum((q for _, target, q in self.links if target in self.b["collectors"]), D(0)) * D(self.b["end_s"])
+        return total + sum((D(e["volume_pL"]) for e in self.b["events"] if e["kind"] == "delivery"), D(0))
 
     # ---- flows by columns --------------------------------------------------------------------------------------------
     def columns(self, t):
@@ -448,7 +460,26 @@ def check_structure(path, document, inputs_bytes, arm):
     for plant in document["plants"]:
         required = {"plant", "check", "world", "time_s", "step_s", "honest", "planted", "distance", "expected_tolerance", "margin",
                     "no_margin", "class"}
-        fault(f"{label}: plant keys {plant['plant']} {plant['check']} {plant['world']}", required <= set(plant))
+        if plant["class"] == "S":
+            exact_keys = required <= set(plant)                 # Amendment 5, L4: a class-S row holds more
+        else:
+            exact_keys = set(plant) == (required | {"heat"} if plant["plant"] == "P16" else required)
+        fault(f"{label}: plant keys {plant['plant']} {plant['check']} {plant['world']}", exact_keys)
+    shapes = True
+    for case in document["cases"].values():
+        shapes &= set(case) == {"m_star", "m_R", "levels_exact", "levels_scheme", "D_star", "D_R", "A0", "H_def", "B_def", "accuracy"}
+        shapes &= set(case["accuracy"]) == set(case) - {"accuracy"}
+        shapes &= all(isinstance(case["accuracy"][k], list) and len(case["accuracy"][k]) == 2 for k in ("levels_exact", "levels_scheme"))
+    for block in document["events"].values():
+        if isinstance(block, list):
+            shapes &= all(set(b) == {"amount", "volume_pL", "loss", "resident", "arriving", "time_s", "accuracy", "class"}
+                          and set(b["accuracy"]) == {"amount", "volume_pL", "loss", "resident", "arriving"}
+                          and set(b["class"]) == {"amount", "loss", "volume_pL"} and isinstance(b["amount"], str) for b in block)
+        else:
+            shapes &= set(block) == {"before", "sample", "supplied", "heat", "class", "time_s", "accuracy"}
+            shapes &= set(block["accuracy"]) == set(block["class"]) == {"before", "sample", "supplied", "heat"}
+    fault(f"{label}: Amendment 5's L4 forms of cases and events", shapes)
+    for plant in document["plants"]:
         if plant["no_margin"]:
             fault(f"{label}: {plant['plant']} has no margin: tolerance \"0\", margin null, distance not zero",
                   plant["margin"] is None and plant["expected_tolerance"] == "0" and D(plant["distance"]) != 0
@@ -481,12 +512,15 @@ def expected_series(w, arm):
         for node in w.nodes:
             if b["sites"] and (x, node) == (b["sites"]["ligand"], b["sites"]["node"]):
                 continue
+            if still and x in crossing:
+                continue                                         # Amendment 5, V1: no class-S entry where no flow runs
             out[f"n_{x}_{node}"] = ["S" if arm == 6 and x in crossing else "R"] * n
         for k in b["collectors"]:
             out[f"n_{x}_{k}"] = ["E"] * n if still else later("S" if arm == 6 and x in crossing else "R")
         out[f"supplied_{x}"] = later("R")
     out["V_K"] = ["E"] * n if still else later("R")
-    out["H_tot"] = later("S" if arm == 6 else "R")
+    if not still:
+        out["H_tot"] = later("S" if arm == 6 else "R")
     if arm == 4:
         out["H_K"] = later("R")
     if arm == 5:
@@ -494,8 +528,9 @@ def expected_series(w, arm):
         for h in w.flow_nodes + list(b["collectors"]):
             out[f"H_{h}"] = later("U" if uniform else "S")
     if arm == 6:
-        out["H_face"] = later("S")
-        if still:
+        if not still:
+            out["H_face"] = later("S")
+        else:
             for h in w.flow_nodes + list(b["collectors"]):
                 out[f"H_{h}"] = ["E"] * n
     if b["labels"]:
@@ -690,14 +725,17 @@ def check_heats(document, w, series, times, label, arm, still):
                     state += levels[x].q * t * xlog(levels[x].x, levels[x].x)
         state *= w.rt
         scale = w.s_f(t)
+        if still:
+            for h in (names[0], names[1], "K"):
+                worst = max(worst, abs(D(series[f"H_{h}"][k][0])))
+            # no H_face and no H_tot of this world is published (V1); my own two routes to them must still agree
+            worst = max(worst, abs(totals["face"] - state) / scale)
+            continue
         published_total = D(series["H_tot"][k][0])
         worst = max(worst, abs(published_total - (D(0) if uniform else state)) / scale)
         checks = [(names[0], f"H_{names[0]}"), (names[1], f"H_{names[1]}"), ("K", "H_K")] if arm == 5 else [("face", "H_face")]
         for h, s in checks:
             worst = max(worst, abs(D(series[s][k][0]) - totals[h]) / scale)
-        if still:
-            for h in (names[0], names[1], "K"):
-                worst = max(worst, abs(D(series[f"H_{h}"][k][0])))
         if arm == 6:
             worst = max(worst, abs(sum(totals.values()) - published_total) / scale)
     note(f"{label}: {w.name}, holder and face heats by Clenshaw-Curtis, H_tot by logarithms (over s_F)", worst, D(10) ** -24)
@@ -1025,6 +1063,73 @@ def plan_for(arm, which):
     return {k: v for k, v in plan.items() if k in keep}
 
 
+def check_accuracies(document, worlds, arm_of, label):
+    """Amendment 5, R8, with Amendment 6's scale of B_def: every accuracy of `series`, `cases` and `events`.
+
+    1e-38 of the entry's scale for a propagator or closed form, 1e-12 of it for an integral (arm 5's H_holder, arm 6's H_face).
+    """
+    small, integral = D(10) ** -38, D(10) ** -12
+    worst, where, count = D(0), None, 0
+    apart = []
+
+    def see(tag, accuracy, bound):
+        nonlocal worst, where, count
+        count += 1
+        a = D(accuracy)
+        fraction = a / bound if bound != 0 else (D(0) if a == 0 else D(10) ** 9)
+        if fraction > worst:
+            worst, where = fraction, tag
+
+    for name, arm in sorted(arm_of.items()):
+        w, block = worlds[name], document["worlds"][name]
+        for s, series in block["series"].items():
+            parts = s.split("_")
+            for t, a in zip(block["times_s"], series["accuracy"]):
+                t = D(t)
+                if s == "V_K":
+                    bound = small * w.end_volume()
+                elif parts[0] in ("n", "supplied", "label"):
+                    bound = small * w.total(parts[1], t)
+                else:
+                    is_integral = (arm == 5 and s.startswith("H_") and s != "H_tot") or (arm == 6 and s == "H_face")
+                    bound = (integral if is_integral else small) * w.s_f(t)
+                see(f"{name} {s} at {t}", a, bound)
+    for key, case in document["cases"].items():
+        w = worlds[key.split("|")[0]]
+        total = sum((w.total(x, D(0)) for x in w.species), D(0))
+        heat = w.s_f(D(0))
+        for k, accuracy in case["accuracy"].items():
+            for a in (accuracy if isinstance(accuracy, list) else [accuracy]):
+                if k in ("m_star", "m_R", "levels_exact", "levels_scheme"):
+                    bound = small * total
+                elif k == "A0":
+                    bound = small * w.rt * (w.lam() + 1)
+                elif k == "B_def":
+                    bound = small * max(heat, D(case[k]))
+                    if D(a) > small * heat:
+                        apart.append(key)
+                else:
+                    bound = small * heat
+                see(f"case {key} {k}", a, bound)
+    for name, event in document["events"].items():
+        w = worlds[name]
+        for block in (event if isinstance(event, list) else [event]):
+            at = D(block["time_s"])
+            for k, a in block["accuracy"].items():
+                if k in ("before", "sample", "supplied"):
+                    bound = small * w.total("T", at)                         # without its own supply (C3)
+                elif k == "amount":
+                    bound = small * w.total("T", at, at)
+                elif k == "volume_pL":
+                    bound = small * w.end_volume()
+                else:
+                    bound = small * w.s_f(at, at)
+                see(f"event {name} {k}", a, bound)
+    note(f"{label}: R8, {count} accuracies inside their bounds, the largest fraction ({where})", worst, D(1))
+    fault(f"{label}: R8, the B_def entries that stand on their own value's scale alone are the trace starts: {sorted(set(apart))}",
+          all("eq-tr" in key for key in apart))
+
+
 def check_coverage(document, arm, label):
     arms = [arm] if arm else [1, 2, 3, 4, 5, 6]
     names = {p for a in arms for p in ARM_PLANTS[a]}
@@ -1091,6 +1196,7 @@ def main():
             fault(f"invented: classes used {sorted(classes)}", classes >= {"E", "R", "S", "U"})
         check_worlds(document, worlds, arm_of, label)
         check_coverage(document, arm, label)
+        check_accuracies(document, worlds, arm_of, label)
         check_values(document, worlds, arm_of, label, table["runs"])
         check_plants(document, worlds, label, plan_for(arm, which), table["runs"])
         print(f"{label}: {sum(r['passes'] for r in ROWS)} of {len(ROWS)} pass so far", flush=True)

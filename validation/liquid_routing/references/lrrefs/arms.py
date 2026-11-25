@@ -259,18 +259,24 @@ def flow_series(world, times, states, totals, arm, holder_heats=None, face_heats
                 collector = name in world.collectors
                 if collector and (t == 0 or still):
                     put(f"n_{x}_{name}", t, "E", states[t][x][name])
+                elif arm == 6 and x in crossing:
+                    if still:
+                        continue                   # no entry: its E twin and the R identities judge it (Amendment 5, V1)
+                    put(f"n_{x}_{name}", t, "S", states[t][x][name])
                 else:
-                    put(f"n_{x}_{name}", t, "S" if arm == 6 and x in crossing else "R", states[t][x][name])
+                    put(f"n_{x}_{name}", t, "R", states[t][x][name])
             put(f"supplied_{x}", t, "E" if t == 0 else "R", pr.supplied(world, x, t) + _portions_supplied(world, x, t))
         if world.collectors:
             volume = pr.collector_volume(world, t) + _portions_volume(world, t)
             put("V_K", t, "E" if t == 0 or still else "R", volume)
         if arm == 6:
-            put("H_tot", t, "E" if t == 0 else "S", totals[t])
-            put("H_face", t, "E" if t == 0 else "S", face_heats[t], heat_extra if t != 0 and heat_extra else ZERO)
             if still:
+                # no H_tot and no H_face of the world with every flow off (Amendment 5, V1), and its router's heats are E zeros
                 for name in world.flow_nodes + world.collectors:
                     put(f"H_{name}", t, "E", ZERO)
+            else:
+                put("H_tot", t, "E" if t == 0 else "S", totals[t])
+                put("H_face", t, "E" if t == 0 else "S", face_heats[t], heat_extra if t != 0 and heat_extra else ZERO)
         else:
             put("H_tot", t, "E" if t == 0 else "R", totals[t])
         if arm == 4:

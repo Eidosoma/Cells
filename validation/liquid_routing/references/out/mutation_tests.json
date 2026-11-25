@@ -1,6 +1,6 @@
 {
  "all_changes_flagged": true,
- "changes": 45,
+ "changes": 54,
  "rows": [
   {
    "change": "none",
@@ -232,9 +232,72 @@
    "flagged": true
   },
   {
-   "change": "the still face's total changed in its 22nd digit",
+   "change": "the still face's heat published again (V1 bars it)",
    "first": [
-    "invented: inv-J0, holder and face heats by Clenshaw-Curtis, H_tot by logarithms (over s_F)"
+    "invented: series names, times and classes re-derived: [('inv-J0', ['H_face'], [])]"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "the still face's total published again (V1 bars it)",
+   "first": [
+    "invented: series names, times and classes re-derived: [('inv-J0', ['H_tot'], [])]"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "the still face's amount published again (V1 bars it)",
+   "first": [
+    "invented: series names, times and classes re-derived: [('inv-J0', ['n_T_A'], [])]"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "the still collector's other species made R (it stays E)",
+   "first": [
+    "invented: series names, times and classes re-derived: [('inv-J0', [], ['n_U_K'])]"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "an amount's accuracy above R8's bound",
+   "first": [
+    "invented: R8, 2156 accuracies inside their bounds, the largest fraction (inv-F1 n_T_K at 5.15625)"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "a case's heat accuracy above R8's bound",
+   "first": [
+    "invented: R8, 2156 accuracies inside their bounds, the largest fraction (case inv-eq-mid|1.25 D_star)"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "a holder's heat accuracy above R8's integral bound",
+   "first": [
+    "invented: R8, 2156 accuracies inside their bounds, the largest fraction (inv-H1 H_B at 6.1875)"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "a plant's row with one key more (L4)",
+   "first": [
+    "reference_invented.json: plant keys P14 n_T_1 inv-r4-mid"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "P16's row without its heat (L4)",
+   "first": [
+    "reference_invented.json: plant keys P16 H_face inv-eq-mid"
+   ],
+   "flagged": true
+  },
+  {
+   "change": "a portion's class with a fourth key (L4)",
+   "first": [
+    "reference_invented.json: Amendment 5's L4 forms of cases and events"
    ],
    "flagged": true
   },

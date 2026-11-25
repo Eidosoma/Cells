@@ -224,10 +224,55 @@ def _(d):
     d["checks"][3]["passes"] = False
 
 
-@mutation("the still face's total changed in its 22nd digit")
+@mutation("the still face's heat published again (V1 bars it)")
 def _(d):
-    v = series(d, "inv-J0", "H_tot")["value"]
-    v[2] = bump(v[2], 22)
+    d["worlds"]["inv-J0"]["series"]["H_face"] = d["worlds"]["inv-J1"]["series"]["H_face"]
+
+
+@mutation("the still face's total published again (V1 bars it)")
+def _(d):
+    d["worlds"]["inv-J0"]["series"]["H_tot"] = d["worlds"]["inv-J1"]["series"]["H_tot"]
+
+
+@mutation("the still face's amount published again (V1 bars it)")
+def _(d):
+    d["worlds"]["inv-J0"]["series"]["n_T_A"] = d["worlds"]["inv-J1"]["series"]["n_T_A"]
+
+
+@mutation("the still collector's other species made R (it stays E)")
+def _(d):
+    s = series(d, "inv-J0", "n_U_K")
+    s["class"] = ["R"] * len(s["class"])
+
+
+@mutation("an amount's accuracy above R8's bound")
+def _(d):
+    series(d, "inv-F1", "n_T_K")["accuracy"][5] = "1.00E-35"
+
+
+@mutation("a case's heat accuracy above R8's bound")
+def _(d):
+    d["cases"]["inv-eq-mid|1.25"]["accuracy"]["D_star"] = "1.00E-30"
+
+
+@mutation("a holder's heat accuracy above R8's integral bound")
+def _(d):
+    series(d, "inv-H1", "H_B")["accuracy"][3] = "1.00E-6"
+
+
+@mutation("a plant's row with one key more (L4)")
+def _(d):
+    plant(d, "P14")["heat"] = "exact"
+
+
+@mutation("P16's row without its heat (L4)")
+def _(d):
+    del plant(d, "P16")["heat"]
+
+
+@mutation("a portion's class with a fourth key (L4)")
+def _(d):
+    d["events"]["inv-G1"][1]["class"]["resident"] = "R"
 
 
 @mutation("the face beside the flow: its heat left out of the total")

@@ -1,7 +1,8 @@
 # The decimal references of `liquid-routing-v1` (FR-54 and FR-57)
 
 Written by the code-blind references agent from `../spec/` alone (README, SPEC, LAWS, READOUTS, CRITERIA, TABLE,
-`inputs.json`, and Amendment 1 of 25 November 2026), before anyone ran the engine on these worlds. No engine code, test,
+`inputs.json`, and Amendments 1 to 6 of 25 November 2026: the first read before the references were finished, 2 to 6 after), before
+anyone ran the engine on these worlds. No engine code, test,
 protocol, design note, decision text or engine output was read. Standard library only: `decimal` at 110 digits (120 inside
 the quadratures, 260 in the few checks that need it), published at 40.
 
@@ -36,6 +37,8 @@ SPEC §7's keys are all present in every file, with these additions (the judge i
   `P8 flow` (the stop row is the run's to show).
 - `reported`: check 10's three clauses at the four default starts outside the expansion's domain (Amendment 1, item 1).
 - `worlds` of arm 1 hold t = 0 alone (the two levels, class R, and `H_face`, class E): a value at h belongs to a `case`.
+- `J0` and `inv-J0` hold no `n_T_A`, `n_T_B`, `H_face` and `H_tot` (Amendment 5, V1), as `F7`'s three site series are not published
+  either. Their other entries are unchanged: the collector's contents, `V_K` and the router's heats class E at every output.
 - `accuracy` is an absolute bound to three digits, rounded up. A published amount's or closed form's is 1e-39 of the value:
   publication rounds to 40 digits (5e-40), and the computation agrees with its second method to 1e-50 of the value or better
   (`checks`), so the bound is twice what is needed. An integral's adds four times the largest disagreement of its two quadratures.
@@ -67,7 +70,8 @@ relative accuracy, and every squaring is of a non-negative matrix (a compartment
    `n_L_S`, `free_sites_S` and `bound_L_S`: LAWS has no binding law.
 4. SPEC §7: `planted_series` is keyed `<world>|<step>` for P7, P11, P14, P15 and P19, `<world>` for P2, P3, P4, P5 and P9. P1, P10,
    P16, P17 and P18 have none.
-5. READOUTS §1 and §3: arm 6's `H_tot` is LAWS §8's total (Σ H_holder + H_face); `H5`'s H_A, H_B, H_K are class U, value 0.
+5. READOUTS §1 and §3: arm 6's `H_tot` is LAWS §8's total (Σ H_holder + H_face); `H5`'s H_A, H_B, H_K are class U, value 0. `J0`'s `n_U_K`
+   is class E (SPEC §4; Amendment 6, item 2).
 6. SPEC §8: every invented name has the prefix `inv-`, and `arm` is 0 in `reference_invented.json`.
 7. LAWS §0: N_A and k_B are read as their nearest doubles (the other reading, the exact decimals, differs by 4.5e-17 of RT).
 8. `levels_*` are amounts; `cases` carry H_def and B_def at every step; arm 4's events hold `amount`; rows after t = 0 and before the
@@ -87,17 +91,32 @@ relative accuracy, and every squaring is of a non-negative matrix (a compartment
     t = 0 ("the collector's contents").
 16. SPEC §9 check 11: the fractions are measured against LAWS §9's bounds with the registered steps; arm 6's crossing species are
     measured against the decimal Strang map (their truncation error is not a rounding error), and its energy identity on its own rows.
-17. `provenance.revision` is the commit of the Amendment 1 tag, the last spec I read.
-18. CRITERIA §2 ("the next halving … arm 1: j = 1 … 4"): arm 1's `cases` also hold the step a retry would add, so that its law is there
-    if it is needed: the exact retry's step, 0.125 s, is a case already; the default retry's, 0.0078125 s (`eq-mid`, `eq-hi`, `r4-mid`,
-    `r4-hi`), adds four. No plant, check, class or verdict depends on them, and they carry no run.
+17. `provenance.revision` in the files is the commit of the Amendment 1 tag, to which they were first written. Amendments 2 to 6 add no
+    number to them and take four series from `J0` and `inv-J0`, so the string stays; the last spec read (Amendment 6's tag) is in
+    `out/provenance.json` (`spec_revision_read_last`, `spec_files_sha256`).
+18. CRITERIA §2 ("the next halving … arm 1: j = 1 … 4"; Amendment 2, item 3): arm 1's `cases` also hold the step a retry would add: the
+    exact retry's step, 0.125 s, is a case already; the default retry's, 0.0078125 s (`eq-mid`, `eq-hi`, `r4-mid`, `r4-hi`), adds four.
 
-**Adopted by the lead for Amendment 2 (both concern the judge, and nothing here):**
+**Adopted in Amendment 2 (both concern the judge, and nothing here):**
 
 19. CRITERIA §3.2 and READOUTS §3's arm 2 "the sums": after the exchange n_T_1 + n_T_2 − supplied is not the start, because the sample has
     left; the sum is n_T_1 + n_T_2 + sample − supplied, over the exchanges before the row, with the run's own event numbers.
 20. READOUTS §2: a portion's or an exchange's own supplied amount counts in the scale of its `amount`, `loss` and `heat` (a literal "to
     that time" gives a first portion a scale of 0).
+
+**What amendments 2 to 6 ask of the references, and what was done:**
+
+- *Amendment 2:* item 3's cases (18 above) and item 4's two-well generators in checks 3 and 4 are here; the rest concerns the judge.
+- *Amendment 3:* item 4's near-tight start is `inv-eq-hi` (§7).
+- *Amendment 4:* nothing of the references.
+- *Amendment 5:* V1, the four series of `J0` and `inv-J0`. R8, every `accuracy` against its bound, is checked by `self_check.py` (`R8`
+  rows; 5,862 accuracies over the seven files, the largest at 0.102 of its bound): 1e-38 of the entry's scale for a propagator or a closed form, 1e-12 of it for an integral (arm 5's H_holder, arm 6's H_face), with
+  scales by READOUTS §2, Amendment 2 item 2 and C3, a case's amounts n₁ + n₂, its heats s_F, `A0` RT(Λ + 1). L4 is checked key by
+  key (`L4` row, and the plants' rows). C12 and C14 are as published.
+- *Amendment 6:* item 1, `B_def`'s scale is the larger of s_F and its own value: the six entries that need it are `eq-tr` (five steps) and
+  `inv-eq-tr`. Item 2, `n_U_K` (5 above). Item 3, P16's rows hold `heat`. Item 4, a plant's row reads the honest judged run of its `world`
+  and `step_s`, of the kind CRITERIA §6.1 names (P17: exact; P16: its `heat`). `P8 flow`, the two heats of one step and the restart share a
+  world and a step with an honest run, so (`world`, `step_s`) alone would not single one out.
 
 ## 5. Checks
 
@@ -157,8 +176,8 @@ heats by Clenshaw-Curtis with hyperbolic-function levels, and every plant with t
   start is read as its own double, and the propagator is used rather than a formula that assumes equality.
 - *The default heat's law* uses the scheme's transfer m_R, not m*, and levels half a step on; B_def takes |A′| at m/2 and at s*, |A″| at
   0 and at m.
-- *Arm 6:* the face is not a flow, so the holders' rates hold the links only; the total holds the face; `J0`'s router is zero and its total
-  is not.
+- *Arm 6:* the face is not a flow, so the holders' rates hold the links only; the total holds the face; `J0`'s router is zero and its total,
+  which is not published, is its face's heat.
 - *The sum over the species* in a heat scale (Σ N_x) and the (S + 1), once each.
 - *`H_tot` of `F7`* holds the router's holders alone; the site node is not one of them.
 
@@ -263,4 +282,4 @@ P8 has no margin (its missing heat is in `plants_reported`) and P18 no size. P19
 
 In the invented file the same plants have margins of at least 12.4.
 
-**Programs.** `component_tests.py`: 83 of 83 tests pass. `self_check.py`: 605 of 605 rows over the seven files. `mutation_tests.py`: each of 45 deliberate changes is flagged and the unchanged file is clean. The residuals are in `out/`.
+**Programs.** `component_tests.py`: 83 of 83 tests pass. `self_check.py`: 626 of 626 rows over the seven files. `mutation_tests.py`: each of 54 deliberate changes is flagged and the unchanged file is clean. The residuals are in `out/`.

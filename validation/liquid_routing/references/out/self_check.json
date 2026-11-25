@@ -1,5 +1,5 @@
 {
- "passed": 605,
+ "passed": 626,
  "rows": [
   {
    "bound": "0",
@@ -39,31 +39,7 @@
   },
   {
    "bound": "0",
-   "name": "reference_invented.json: P14 n_T_1 inv-r4-mid margin is distance over tolerance",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_invented.json: P14 n_T_1 inv-r4-mid distance is |planted - honest|",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
    "name": "reference_invented.json: plant keys P14 n_T_2 inv-r4-mid",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_invented.json: P14 n_T_2 inv-r4-mid margin is distance over tolerance",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_invented.json: P14 n_T_2 inv-r4-mid distance is |planted - honest|",
    "passes": true,
    "residual": "0"
   },
@@ -75,31 +51,7 @@
   },
   {
    "bound": "0",
-   "name": "reference_invented.json: P14 n_T_1 inv-r4-mid margin is distance over tolerance",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_invented.json: P14 n_T_1 inv-r4-mid distance is |planted - honest|",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
    "name": "reference_invented.json: plant keys P14 n_T_2 inv-r4-mid",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_invented.json: P14 n_T_2 inv-r4-mid margin is distance over tolerance",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_invented.json: P14 n_T_2 inv-r4-mid distance is |planted - honest|",
    "passes": true,
    "residual": "0"
   },
@@ -111,31 +63,7 @@
   },
   {
    "bound": "0",
-   "name": "reference_invented.json: P14 n_T_1 inv-r4-mid margin is distance over tolerance",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_invented.json: P14 n_T_1 inv-r4-mid distance is |planted - honest|",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
    "name": "reference_invented.json: plant keys P14 n_T_2 inv-r4-mid",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_invented.json: P14 n_T_2 inv-r4-mid margin is distance over tolerance",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_invented.json: P14 n_T_2 inv-r4-mid distance is |planted - honest|",
    "passes": true,
    "residual": "0"
   },
@@ -147,37 +75,277 @@
   },
   {
    "bound": "0",
-   "name": "reference_invented.json: P14 n_T_1 inv-r4-mid margin is distance over tolerance",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_invented.json: P14 n_T_1 inv-r4-mid distance is |planted - honest|",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
    "name": "reference_invented.json: plant keys P14 n_T_2 inv-r4-mid",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_invented.json: P14 n_T_2 inv-r4-mid margin is distance over tolerance",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_invented.json: P14 n_T_2 inv-r4-mid distance is |planted - honest|",
    "passes": true,
    "residual": "0"
   },
   {
    "bound": "0",
    "name": "reference_invented.json: plant keys P15 n_T_1 inv-eq-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P15 n_T_2 inv-eq-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P15 n_T_1 inv-eq-hi",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P15 n_T_2 inv-eq-hi",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P16 H_face inv-eq-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P16 H_face inv-eq-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P16 H_face inv-eq-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P16 H_face inv-eq-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P16 H_face inv-eq-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P17 sample inv-N-buffered",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P1 n_T_K inv-F1",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P1 n_T_K inv-F2",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P2 n_T_B inv-F1",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P2 n_T_K inv-F1",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P2 n_T_B inv-F3",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P2 n_T_K inv-F3",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P3 V_K inv-F1",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P3 n_T_B inv-F3",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P3 n_T_K inv-F3",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P3 V_K inv-F3",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P4 n_U_B inv-F1",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P4 n_U_K inv-F1",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P10 n_T_K inv-F1",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P11 label_T_tag_K inv-F1L",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P9 loss inv-G1",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P5 H_A inv-H1",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P7 H_tot inv-H2",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: plant keys P19 n_T_A inv-J1",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: Amendment 5's L4 forms of cases and events",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P14 n_T_1 inv-r4-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P14 n_T_1 inv-r4-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P14 n_T_2 inv-r4-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P14 n_T_2 inv-r4-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P14 n_T_1 inv-r4-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P14 n_T_1 inv-r4-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P14 n_T_2 inv-r4-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P14 n_T_2 inv-r4-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P14 n_T_1 inv-r4-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P14 n_T_1 inv-r4-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P14 n_T_2 inv-r4-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P14 n_T_2 inv-r4-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P14 n_T_1 inv-r4-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P14 n_T_1 inv-r4-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P14 n_T_2 inv-r4-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P14 n_T_2 inv-r4-mid distance is |planted - honest|",
    "passes": true,
    "residual": "0"
   },
@@ -195,12 +363,6 @@
   },
   {
    "bound": "0",
-   "name": "reference_invented.json: plant keys P15 n_T_2 inv-eq-mid",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
    "name": "reference_invented.json: P15 n_T_2 inv-eq-mid margin is distance over tolerance",
    "passes": true,
    "residual": "0"
@@ -208,12 +370,6 @@
   {
    "bound": "0",
    "name": "reference_invented.json: P15 n_T_2 inv-eq-mid distance is |planted - honest|",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_invented.json: plant keys P15 n_T_1 inv-eq-hi",
    "passes": true,
    "residual": "0"
   },
@@ -231,12 +387,6 @@
   },
   {
    "bound": "0",
-   "name": "reference_invented.json: plant keys P15 n_T_2 inv-eq-hi",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
    "name": "reference_invented.json: P15 n_T_2 inv-eq-hi margin is distance over tolerance",
    "passes": true,
    "residual": "0"
@@ -249,7 +399,13 @@
   },
   {
    "bound": "0",
-   "name": "reference_invented.json: plant keys P16 H_face inv-eq-mid",
+   "name": "reference_invented.json: P16 H_face inv-eq-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P16 H_face inv-eq-mid distance is |planted - honest|",
    "passes": true,
    "residual": "0"
   },
@@ -267,7 +423,13 @@
   },
   {
    "bound": "0",
-   "name": "reference_invented.json: plant keys P16 H_face inv-eq-mid",
+   "name": "reference_invented.json: P16 H_face inv-eq-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_invented.json: P16 H_face inv-eq-mid distance is |planted - honest|",
    "passes": true,
    "residual": "0"
   },
@@ -285,12 +447,6 @@
   },
   {
    "bound": "0",
-   "name": "reference_invented.json: plant keys P16 H_face inv-eq-mid",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
    "name": "reference_invented.json: P16 H_face inv-eq-mid margin is distance over tolerance",
    "passes": true,
    "residual": "0"
@@ -298,48 +454,6 @@
   {
    "bound": "0",
    "name": "reference_invented.json: P16 H_face inv-eq-mid distance is |planted - honest|",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_invented.json: plant keys P16 H_face inv-eq-mid",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_invented.json: P16 H_face inv-eq-mid margin is distance over tolerance",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_invented.json: P16 H_face inv-eq-mid distance is |planted - honest|",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_invented.json: plant keys P16 H_face inv-eq-mid",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_invented.json: P16 H_face inv-eq-mid margin is distance over tolerance",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_invented.json: P16 H_face inv-eq-mid distance is |planted - honest|",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_invented.json: plant keys P17 sample inv-N-buffered",
    "passes": true,
    "residual": "0"
   },
@@ -357,12 +471,6 @@
   },
   {
    "bound": "0",
-   "name": "reference_invented.json: plant keys P1 n_T_K inv-F1",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
    "name": "reference_invented.json: P1 n_T_K inv-F1 margin is distance over tolerance",
    "passes": true,
    "residual": "0"
@@ -370,12 +478,6 @@
   {
    "bound": "0",
    "name": "reference_invented.json: P1 n_T_K inv-F1 distance is |planted - honest|",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_invented.json: plant keys P1 n_T_K inv-F2",
    "passes": true,
    "residual": "0"
   },
@@ -393,12 +495,6 @@
   },
   {
    "bound": "0",
-   "name": "reference_invented.json: plant keys P2 n_T_B inv-F1",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
    "name": "reference_invented.json: P2 n_T_B inv-F1 margin is distance over tolerance",
    "passes": true,
    "residual": "0"
@@ -406,12 +502,6 @@
   {
    "bound": "0",
    "name": "reference_invented.json: P2 n_T_B inv-F1 distance is |planted - honest|",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_invented.json: plant keys P2 n_T_K inv-F1",
    "passes": true,
    "residual": "0"
   },
@@ -429,12 +519,6 @@
   },
   {
    "bound": "0",
-   "name": "reference_invented.json: plant keys P2 n_T_B inv-F3",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
    "name": "reference_invented.json: P2 n_T_B inv-F3 margin is distance over tolerance",
    "passes": true,
    "residual": "0"
@@ -442,12 +526,6 @@
   {
    "bound": "0",
    "name": "reference_invented.json: P2 n_T_B inv-F3 distance is |planted - honest|",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_invented.json: plant keys P2 n_T_K inv-F3",
    "passes": true,
    "residual": "0"
   },
@@ -465,12 +543,6 @@
   },
   {
    "bound": "0",
-   "name": "reference_invented.json: plant keys P3 V_K inv-F1",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
    "name": "reference_invented.json: P3 V_K inv-F1 margin is distance over tolerance",
    "passes": true,
    "residual": "0"
@@ -478,12 +550,6 @@
   {
    "bound": "0",
    "name": "reference_invented.json: P3 V_K inv-F1 distance is |planted - honest|",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_invented.json: plant keys P3 n_T_B inv-F3",
    "passes": true,
    "residual": "0"
   },
@@ -501,12 +567,6 @@
   },
   {
    "bound": "0",
-   "name": "reference_invented.json: plant keys P3 n_T_K inv-F3",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
    "name": "reference_invented.json: P3 n_T_K inv-F3 margin is distance over tolerance",
    "passes": true,
    "residual": "0"
@@ -514,12 +574,6 @@
   {
    "bound": "0",
    "name": "reference_invented.json: P3 n_T_K inv-F3 distance is |planted - honest|",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_invented.json: plant keys P3 V_K inv-F3",
    "passes": true,
    "residual": "0"
   },
@@ -537,12 +591,6 @@
   },
   {
    "bound": "0",
-   "name": "reference_invented.json: plant keys P4 n_U_B inv-F1",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
    "name": "reference_invented.json: P4 n_U_B inv-F1 margin is distance over tolerance",
    "passes": true,
    "residual": "0"
@@ -550,12 +598,6 @@
   {
    "bound": "0",
    "name": "reference_invented.json: P4 n_U_B inv-F1 distance is |planted - honest|",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_invented.json: plant keys P4 n_U_K inv-F1",
    "passes": true,
    "residual": "0"
   },
@@ -573,12 +615,6 @@
   },
   {
    "bound": "0",
-   "name": "reference_invented.json: plant keys P10 n_T_K inv-F1",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
    "name": "reference_invented.json: P10 n_T_K inv-F1 margin is distance over tolerance",
    "passes": true,
    "residual": "0"
@@ -586,12 +622,6 @@
   {
    "bound": "0",
    "name": "reference_invented.json: P10 n_T_K inv-F1 distance is |planted - honest|",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_invented.json: plant keys P11 label_T_tag_K inv-F1L",
    "passes": true,
    "residual": "0"
   },
@@ -609,19 +639,7 @@
   },
   {
    "bound": "0",
-   "name": "reference_invented.json: plant keys P9 loss inv-G1",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
    "name": "reference_invented.json: P9 has no margin: tolerance \"0\", margin null, distance not zero",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_invented.json: plant keys P5 H_A inv-H1",
    "passes": true,
    "residual": "0"
   },
@@ -639,12 +657,6 @@
   },
   {
    "bound": "0",
-   "name": "reference_invented.json: plant keys P7 H_tot inv-H2",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
    "name": "reference_invented.json: P7 H_tot inv-H2 margin is distance over tolerance",
    "passes": true,
    "residual": "0"
@@ -652,12 +664,6 @@
   {
    "bound": "0",
    "name": "reference_invented.json: P7 H_tot inv-H2 distance is |planted - honest|",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_invented.json: plant keys P19 n_T_A inv-J1",
    "passes": true,
    "residual": "0"
   },
@@ -748,6 +754,18 @@
   {
    "bound": "0",
    "name": "invented: inv-P8 flow's missing heat is the file's own event heat or H_tot",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "invented: R8, 2156 accuracies inside their bounds, the largest fraction (case inv-eq-tr|0.0390625 A0)",
+   "passes": true,
+   "residual": "1.016640E-1"
+  },
+  {
+   "bound": "0",
+   "name": "invented: R8, the B_def entries that stand on their own value's scale alone are the trace starts: ['inv-eq-tr|0.0390625']",
    "passes": true,
    "residual": "0"
   },
@@ -855,15 +873,15 @@
   },
   {
    "bound": "1.000E+0",
-   "name": "invented: inv-J0, amounts, volumes, supplied, labels: 81 values, the largest gap over accuracy plus the method's allowance",
+   "name": "invented: inv-J0, amounts, volumes, supplied, labels: 63 values, the largest gap over accuracy plus the method's allowance",
    "passes": true,
-   "residual": "5.940048E-2"
+   "residual": "0"
   },
   {
    "bound": "1.000E-24",
    "name": "invented: inv-J0, holder and face heats by Clenshaw-Curtis, H_tot by logarithms (over s_F)",
    "passes": true,
-   "residual": "2.433353E-42"
+   "residual": "3.768503E-79"
   },
   {
    "bound": "1.000E+0",
@@ -1467,31 +1485,7 @@
   },
   {
    "bound": "0",
-   "name": "reference_arm1.json: P14 n_T_1 r4-mid margin is distance over tolerance",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_arm1.json: P14 n_T_1 r4-mid distance is |planted - honest|",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
    "name": "reference_arm1.json: plant keys P14 n_T_2 r4-mid",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_arm1.json: P14 n_T_2 r4-mid margin is distance over tolerance",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_arm1.json: P14 n_T_2 r4-mid distance is |planted - honest|",
    "passes": true,
    "residual": "0"
   },
@@ -1503,31 +1497,7 @@
   },
   {
    "bound": "0",
-   "name": "reference_arm1.json: P14 n_T_1 r4-mid margin is distance over tolerance",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_arm1.json: P14 n_T_1 r4-mid distance is |planted - honest|",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
    "name": "reference_arm1.json: plant keys P14 n_T_2 r4-mid",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_arm1.json: P14 n_T_2 r4-mid margin is distance over tolerance",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_arm1.json: P14 n_T_2 r4-mid distance is |planted - honest|",
    "passes": true,
    "residual": "0"
   },
@@ -1539,31 +1509,7 @@
   },
   {
    "bound": "0",
-   "name": "reference_arm1.json: P14 n_T_1 r4-mid margin is distance over tolerance",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_arm1.json: P14 n_T_1 r4-mid distance is |planted - honest|",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
    "name": "reference_arm1.json: plant keys P14 n_T_2 r4-mid",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_arm1.json: P14 n_T_2 r4-mid margin is distance over tolerance",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_arm1.json: P14 n_T_2 r4-mid distance is |planted - honest|",
    "passes": true,
    "residual": "0"
   },
@@ -1575,37 +1521,175 @@
   },
   {
    "bound": "0",
-   "name": "reference_arm1.json: P14 n_T_1 r4-mid margin is distance over tolerance",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_arm1.json: P14 n_T_1 r4-mid distance is |planted - honest|",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
    "name": "reference_arm1.json: plant keys P14 n_T_2 r4-mid",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_arm1.json: P14 n_T_2 r4-mid margin is distance over tolerance",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_arm1.json: P14 n_T_2 r4-mid distance is |planted - honest|",
    "passes": true,
    "residual": "0"
   },
   {
    "bound": "0",
    "name": "reference_arm1.json: plant keys P15 n_T_1 eq-lo",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: plant keys P15 n_T_2 eq-lo",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: plant keys P15 n_T_1 eq-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: plant keys P15 n_T_2 eq-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: plant keys P15 n_T_1 eq-hi",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: plant keys P15 n_T_2 eq-hi",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: plant keys P16 H_face eq-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: plant keys P16 H_face eq-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: plant keys P16 H_face eq-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: plant keys P16 H_face eq-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: plant keys P16 H_face eq-mid",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: Amendment 5's L4 forms of cases and events",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P14 n_T_1 r4-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P14 n_T_1 r4-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P14 n_T_2 r4-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P14 n_T_2 r4-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P14 n_T_1 r4-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P14 n_T_1 r4-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P14 n_T_2 r4-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P14 n_T_2 r4-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P14 n_T_1 r4-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P14 n_T_1 r4-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P14 n_T_2 r4-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P14 n_T_2 r4-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P14 n_T_1 r4-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P14 n_T_1 r4-mid distance is |planted - honest|",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P14 n_T_2 r4-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P14 n_T_2 r4-mid distance is |planted - honest|",
    "passes": true,
    "residual": "0"
   },
@@ -1623,12 +1707,6 @@
   },
   {
    "bound": "0",
-   "name": "reference_arm1.json: plant keys P15 n_T_2 eq-lo",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
    "name": "reference_arm1.json: P15 n_T_2 eq-lo margin is distance over tolerance",
    "passes": true,
    "residual": "0"
@@ -1636,12 +1714,6 @@
   {
    "bound": "0",
    "name": "reference_arm1.json: P15 n_T_2 eq-lo distance is |planted - honest|",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_arm1.json: plant keys P15 n_T_1 eq-mid",
    "passes": true,
    "residual": "0"
   },
@@ -1659,12 +1731,6 @@
   },
   {
    "bound": "0",
-   "name": "reference_arm1.json: plant keys P15 n_T_2 eq-mid",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
    "name": "reference_arm1.json: P15 n_T_2 eq-mid margin is distance over tolerance",
    "passes": true,
    "residual": "0"
@@ -1672,12 +1738,6 @@
   {
    "bound": "0",
    "name": "reference_arm1.json: P15 n_T_2 eq-mid distance is |planted - honest|",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_arm1.json: plant keys P15 n_T_1 eq-hi",
    "passes": true,
    "residual": "0"
   },
@@ -1695,12 +1755,6 @@
   },
   {
    "bound": "0",
-   "name": "reference_arm1.json: plant keys P15 n_T_2 eq-hi",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
    "name": "reference_arm1.json: P15 n_T_2 eq-hi margin is distance over tolerance",
    "passes": true,
    "residual": "0"
@@ -1713,7 +1767,13 @@
   },
   {
    "bound": "0",
-   "name": "reference_arm1.json: plant keys P16 H_face eq-mid",
+   "name": "reference_arm1.json: P16 H_face eq-mid margin is distance over tolerance",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm1.json: P16 H_face eq-mid distance is |planted - honest|",
    "passes": true,
    "residual": "0"
   },
@@ -1731,12 +1791,6 @@
   },
   {
    "bound": "0",
-   "name": "reference_arm1.json: plant keys P16 H_face eq-mid",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
    "name": "reference_arm1.json: P16 H_face eq-mid margin is distance over tolerance",
    "passes": true,
    "residual": "0"
@@ -1749,12 +1803,6 @@
   },
   {
    "bound": "0",
-   "name": "reference_arm1.json: plant keys P16 H_face eq-mid",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
    "name": "reference_arm1.json: P16 H_face eq-mid margin is distance over tolerance",
    "passes": true,
    "residual": "0"
@@ -1762,30 +1810,6 @@
   {
    "bound": "0",
    "name": "reference_arm1.json: P16 H_face eq-mid distance is |planted - honest|",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_arm1.json: plant keys P16 H_face eq-mid",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_arm1.json: P16 H_face eq-mid margin is distance over tolerance",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_arm1.json: P16 H_face eq-mid distance is |planted - honest|",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_arm1.json: plant keys P16 H_face eq-mid",
    "passes": true,
    "residual": "0"
   },
@@ -1834,6 +1858,18 @@
   {
    "bound": "0",
    "name": "arm1: plants_reported holds []",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "arm1: R8, 582 accuracies inside their bounds, the largest fraction (case eq-lo|0.125 A0)",
+   "passes": true,
+   "residual": "1.024346E-1"
+  },
+  {
+   "bound": "0",
+   "name": "arm1: R8, the B_def entries that stand on their own value's scale alone are the trace starts: ['eq-tr|0.125', 'eq-tr|0.25', 'eq-tr|0.5', 'eq-tr|1.0', 'eq-tr|2.0']",
    "passes": true,
    "residual": "0"
   },
@@ -2397,6 +2433,12 @@
   },
   {
    "bound": "0",
+   "name": "reference_arm2.json: Amendment 5's L4 forms of cases and events",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
    "name": "reference_arm2.json: P17 sample N-buffered margin is distance over tolerance",
    "passes": true,
    "residual": "0"
@@ -2452,6 +2494,18 @@
   {
    "bound": "0",
    "name": "arm2: P8 event's missing heat is the file's own event heat or H_tot",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "arm2: R8, 233 accuracies inside their bounds, the largest fraction (N-buffered n_T_1 at 0)",
+   "passes": true,
+   "residual": "8.860000E-2"
+  },
+  {
+   "bound": "0",
+   "name": "arm2: R8, the B_def entries that stand on their own value's scale alone are the trace starts: []",
    "passes": true,
    "residual": "0"
   },
@@ -2535,6 +2589,90 @@
   },
   {
    "bound": "0",
+   "name": "reference_arm3.json: plant keys P1 n_T_K F2",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: plant keys P2 n_T_B F1",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: plant keys P2 n_T_K F1",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: plant keys P2 n_T_B F3",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: plant keys P2 n_T_K F3",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: plant keys P3 V_K F1",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: plant keys P3 n_T_B F3",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: plant keys P3 n_T_K F3",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: plant keys P3 V_K F3",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: plant keys P4 n_U_B F1",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: plant keys P4 n_U_K F1",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: plant keys P10 n_T_K F1",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: plant keys P11 label_T_tag_K F1L",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm3.json: Amendment 5's L4 forms of cases and events",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
    "name": "reference_arm3.json: P1 n_T_K F1 margin is distance over tolerance",
    "passes": true,
    "residual": "0"
@@ -2542,12 +2680,6 @@
   {
    "bound": "0",
    "name": "reference_arm3.json: P1 n_T_K F1 distance is |planted - honest|",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_arm3.json: plant keys P1 n_T_K F2",
    "passes": true,
    "residual": "0"
   },
@@ -2565,12 +2697,6 @@
   },
   {
    "bound": "0",
-   "name": "reference_arm3.json: plant keys P2 n_T_B F1",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
    "name": "reference_arm3.json: P2 n_T_B F1 margin is distance over tolerance",
    "passes": true,
    "residual": "0"
@@ -2578,12 +2704,6 @@
   {
    "bound": "0",
    "name": "reference_arm3.json: P2 n_T_B F1 distance is |planted - honest|",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_arm3.json: plant keys P2 n_T_K F1",
    "passes": true,
    "residual": "0"
   },
@@ -2601,12 +2721,6 @@
   },
   {
    "bound": "0",
-   "name": "reference_arm3.json: plant keys P2 n_T_B F3",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
    "name": "reference_arm3.json: P2 n_T_B F3 margin is distance over tolerance",
    "passes": true,
    "residual": "0"
@@ -2614,12 +2728,6 @@
   {
    "bound": "0",
    "name": "reference_arm3.json: P2 n_T_B F3 distance is |planted - honest|",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_arm3.json: plant keys P2 n_T_K F3",
    "passes": true,
    "residual": "0"
   },
@@ -2637,12 +2745,6 @@
   },
   {
    "bound": "0",
-   "name": "reference_arm3.json: plant keys P3 V_K F1",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
    "name": "reference_arm3.json: P3 V_K F1 margin is distance over tolerance",
    "passes": true,
    "residual": "0"
@@ -2650,12 +2752,6 @@
   {
    "bound": "0",
    "name": "reference_arm3.json: P3 V_K F1 distance is |planted - honest|",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_arm3.json: plant keys P3 n_T_B F3",
    "passes": true,
    "residual": "0"
   },
@@ -2673,12 +2769,6 @@
   },
   {
    "bound": "0",
-   "name": "reference_arm3.json: plant keys P3 n_T_K F3",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
    "name": "reference_arm3.json: P3 n_T_K F3 margin is distance over tolerance",
    "passes": true,
    "residual": "0"
@@ -2686,12 +2776,6 @@
   {
    "bound": "0",
    "name": "reference_arm3.json: P3 n_T_K F3 distance is |planted - honest|",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_arm3.json: plant keys P3 V_K F3",
    "passes": true,
    "residual": "0"
   },
@@ -2709,12 +2793,6 @@
   },
   {
    "bound": "0",
-   "name": "reference_arm3.json: plant keys P4 n_U_B F1",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
    "name": "reference_arm3.json: P4 n_U_B F1 margin is distance over tolerance",
    "passes": true,
    "residual": "0"
@@ -2722,12 +2800,6 @@
   {
    "bound": "0",
    "name": "reference_arm3.json: P4 n_U_B F1 distance is |planted - honest|",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_arm3.json: plant keys P4 n_U_K F1",
    "passes": true,
    "residual": "0"
   },
@@ -2745,12 +2817,6 @@
   },
   {
    "bound": "0",
-   "name": "reference_arm3.json: plant keys P10 n_T_K F1",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
    "name": "reference_arm3.json: P10 n_T_K F1 margin is distance over tolerance",
    "passes": true,
    "residual": "0"
@@ -2758,12 +2824,6 @@
   {
    "bound": "0",
    "name": "reference_arm3.json: P10 n_T_K F1 distance is |planted - honest|",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_arm3.json: plant keys P11 label_T_tag_K F1L",
    "passes": true,
    "residual": "0"
   },
@@ -2824,6 +2884,18 @@
   {
    "bound": "0",
    "name": "arm3: P8 flow's missing heat is the file's own event heat or H_tot",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "arm3: R8, 2006 accuracies inside their bounds, the largest fraction (F1 V_K at 16)",
+   "passes": true,
+   "residual": "1.000000E-1"
+  },
+  {
+   "bound": "0",
+   "name": "arm3: R8, the B_def entries that stand on their own value's scale alone are the trace starts: []",
    "passes": true,
    "residual": "0"
   },
@@ -3063,6 +3135,12 @@
   },
   {
    "bound": "0",
+   "name": "reference_arm4.json: Amendment 5's L4 forms of cases and events",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
    "name": "reference_arm4.json: P9 has no margin: tolerance \"0\", margin null, distance not zero",
    "passes": true,
    "residual": "0"
@@ -3100,6 +3178,18 @@
   {
    "bound": "0",
    "name": "arm4: plants_reported holds []",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "arm4: R8, 255 accuracies inside their bounds, the largest fraction (G1 V_K at 5)",
+   "passes": true,
+   "residual": "1.000000E-1"
+  },
+  {
+   "bound": "0",
+   "name": "arm4: R8, the B_def entries that stand on their own value's scale alone are the trace starts: []",
    "passes": true,
    "residual": "0"
   },
@@ -3267,6 +3357,30 @@
   },
   {
    "bound": "0",
+   "name": "reference_arm5.json: plant keys P7 H_tot H2",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm5.json: plant keys P7 H_tot H3",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm5.json: plant keys P7 H_tot H4",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
+   "name": "reference_arm5.json: Amendment 5's L4 forms of cases and events",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
    "name": "reference_arm5.json: P5 H_A H1 margin is distance over tolerance",
    "passes": true,
    "residual": "0"
@@ -3274,12 +3388,6 @@
   {
    "bound": "0",
    "name": "reference_arm5.json: P5 H_A H1 distance is |planted - honest|",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_arm5.json: plant keys P7 H_tot H2",
    "passes": true,
    "residual": "0"
   },
@@ -3297,12 +3405,6 @@
   },
   {
    "bound": "0",
-   "name": "reference_arm5.json: plant keys P7 H_tot H3",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
    "name": "reference_arm5.json: P7 H_tot H3 margin is distance over tolerance",
    "passes": true,
    "residual": "0"
@@ -3310,12 +3412,6 @@
   {
    "bound": "0",
    "name": "reference_arm5.json: P7 H_tot H3 distance is |planted - honest|",
-   "passes": true,
-   "residual": "0"
-  },
-  {
-   "bound": "0",
-   "name": "reference_arm5.json: plant keys P7 H_tot H4",
    "passes": true,
    "residual": "0"
   },
@@ -3364,6 +3460,18 @@
   {
    "bound": "0",
    "name": "arm5: plants_reported holds []",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "arm5: R8, 441 accuracies inside their bounds, the largest fraction (H1 V_K at 16)",
+   "passes": true,
+   "residual": "1.000000E-1"
+  },
+  {
+   "bound": "0",
+   "name": "arm5: R8, the B_def entries that stand on their own value's scale alone are the trace starts: []",
    "passes": true,
    "residual": "0"
   },
@@ -3537,6 +3645,12 @@
   },
   {
    "bound": "0",
+   "name": "reference_arm6.json: Amendment 5's L4 forms of cases and events",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "0",
    "name": "reference_arm6.json: P19 n_T_A J1 margin is distance over tolerance",
    "passes": true,
    "residual": "0"
@@ -3585,15 +3699,27 @@
   },
   {
    "bound": "1.000E+0",
-   "name": "arm6: J0, amounts, volumes, supplied, labels: 81 values, the largest gap over accuracy plus the method's allowance",
+   "name": "arm6: R8, 189 accuracies inside their bounds, the largest fraction (J1 V_K at 16)",
    "passes": true,
-   "residual": "6.139223E-2"
+   "residual": "1.000000E-1"
+  },
+  {
+   "bound": "0",
+   "name": "arm6: R8, the B_def entries that stand on their own value's scale alone are the trace starts: []",
+   "passes": true,
+   "residual": "0"
+  },
+  {
+   "bound": "1.000E+0",
+   "name": "arm6: J0, amounts, volumes, supplied, labels: 63 values, the largest gap over accuracy plus the method's allowance",
+   "passes": true,
+   "residual": "0"
   },
   {
    "bound": "1.000E-24",
    "name": "arm6: J0, holder and face heats by Clenshaw-Curtis, H_tot by logarithms (over s_F)",
    "passes": true,
-   "residual": "2.702189E-42"
+   "residual": "1.934945E-77"
   },
   {
    "bound": "1.000E+0",
@@ -3632,5 +3758,5 @@
    "residual": "0"
   }
  ],
- "total": 605
+ "total": 626
 }
