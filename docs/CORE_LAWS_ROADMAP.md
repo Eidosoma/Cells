@@ -152,7 +152,7 @@ effort and the main risk.
 - **Older catalogues:** the channel catalogues in `laws/channels/` up to the 35-law one serve
   `resolved_tissue@8`, which stays as D167's parity reference. The four tables of
   `resolved_tissue@9` to `@12` left with the legacy cleanup; they held no kernel. Kv1.5's 19 kernel
-  cases move beside the law before the cleanup's deletion (D196); they have not moved yet.
+  cases moved beside the law, as its declared test, on 25 November 2026 (D196).
 - **D211's port programme: open, and it continues after the legacy cleanup** (D386, 25 November
   2026). Its 54 law IDs, by what each group waits for. Every kernel named here stays in live `laws/`
   with its reference and a kernel-level test. A law is registered on @3 when its module lands, and
@@ -168,8 +168,8 @@ effort and the main risk.
   | HCN1, HCN2, HCN4; the HCN leak and the two cAMP-shifted laws | 6 | `hcn_channels`, `hcn_extra_channels` | the same: they carry calcium |
   | The seven instantaneous Morris-Lecar laws | 7 | `morris_lecar_channels` | G-2, a law without a gate |
   | Calcium-activated K | 1 | `calcium_activated_potassium` | G-3, a channel that reads a species, which the cardiac plan's H1 holds |
-  | The Na/Ca exchanger and the store's pump | 2 | `sodium_calcium_exchange_symmetric_barrier`, `atp_transporter_v2` | registered on the transporter kind; their moves at a store's node wait for the calcium note's step 5 |
-  | The store's release and the IP3 release | 2 | `hill_product_factor`, read by `species_condition@1`; the older kernels are `er_calcium`'s `release_open` and, for IP3, only at the tag | the factor and its source are registered; the store's worlds wait for the calcium note's steps 2, 5 and 6 |
+  | The Na/Ca exchanger and the store's pump | 2 | `sodium_calcium_exchange_symmetric_barrier`, `atp_transporter_v2` | registered on the transporter kind, with both step terms (the calcium note's step 5) |
+  | The store's release and the IP3 release | 2 | `hill_product_factor`, read by `species_condition@1`; the older kernels are `er_calcium`'s `release_open` and, for IP3, only at the tag | the factor and its source are registered; the store's worlds wait for the calcium note's steps 2 and 6 |
   | The finite-ATP store pump | 1 | only at the tag | row fuel, a request the user may make |
   | NKCC and the generic symport | 2 | `na_k_2anion_symport_reversible_tanh`, `electroneutral_symport_reversible_tanh` | registered on the transporter kind, in the older law's manufactured form; a store's node refuses them, and no consumer puts one there |
   | The cell-zone transporter | 1 | only at the tag | left there (the user, D386) |
