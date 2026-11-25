@@ -712,6 +712,10 @@ def test_a_driven_entry_says_what_its_schedule_came_from(invented, tmp_path, pla
     assert channel[driven[1]] == [[0.0, 1.0], *path[1]]
     assert observables.LAW_ID in entry["declared_strings"]
     assert entry["strings"]["assembly_observable"] == observables.LAW_ID
+    manifest = attempt / "output/manifest.json"
+    manifest.write_text(json.dumps({"definition_sha256": "another"}))
+    other = exporter.entry(invented, run, folders)
+    assert "is of another definition than the one parsed" in other["refusal"]["message"]
     resolved.write_text("{} ")
     changed = exporter.entry(invented, run, folders)
     assert "its resolution is not what its record lists" in changed["refusal"]["message"]
@@ -747,11 +751,18 @@ def test_an_extra_piece_shows_among_the_declared_strings(registered):
         keyed = copy.deepcopy(raw)
         keyed[place[0]][place[1]] = {"cells.kind.some_piece@3": {}}
         assert set(labels.declared_strings(keyed)) - set(honest) == {"cells.kind.some_piece@3"}
-    note = {"labels": labels.LABELS, "runs": {"r": labels.note_entry(honest)}}
-    table = {"runs": {"r": {"strings": labels.strings(honest), "declared_strings": honest}}}
-    assert exporter.string_faults(table, note) == []
-    table["runs"]["r"]["declared_strings"] = sorted([*honest, "some_piece@3"])
-    assert exporter.string_faults(table, note) == ["r: declared_strings"]
+    note = {"labels": labels.LABELS, "runs": {"r h=2e-05": labels.note_entry(honest)}}
+    entry = {"strings": labels.strings(honest), "declared_strings": honest}
+    table = {"runs": {"r h=2e-05": entry, "r h=1e-05 retry": entry, "other": entry}}
+    assert exporter.string_faults(table, note) == ["other: the note lists no such run"]
+    del table["runs"]["other"]
+    for strings, declared, text in (
+        (entry["strings"], sorted([*honest, "some_piece@3"]), "declared_strings"),
+        ({k: v for k, v in entry["strings"].items() if k != "closure"}, honest, "strings"),
+    ):
+        table["runs"]["r h=2e-05"] = {"strings": strings, "declared_strings": declared}
+        (fault,) = exporter.string_faults(table, note)
+        assert fault.startswith(f"r h=2e-05: {text}")
 
 
 THRESHOLD = (

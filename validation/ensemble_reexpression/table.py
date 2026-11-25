@@ -168,10 +168,13 @@ def trajectory(world, run, record, attempt, definition):
 def ionic_entry(world, run, record, attempt):
     submitted = read(attempt / "submitted.json")
     definition = ionic_definition(attempt)
+    manifest = read(attempt / "output/manifest.json") or {}
+    parsed = record["definition"].get("fingerprint")
+    if manifest.get("definition_sha256", parsed) != parsed:
+        raise ExportError("the engine's record is of another definition than the one parsed")
     inputs, declared = readable(worlds.read, definition), declared_strings(definition)
     shown = {"ionic": definition}
     if run.kind == DRIVEN:
-        manifest = read(attempt / "output/manifest.json") or {}
         made_from = manifest.get("provenance", {}).get("inputs") or read(attempt / "inputs.json")
         if made_from is not None:
             inputs["assembly"] = assembly(definition, made_from, run.world_id)
@@ -573,12 +576,14 @@ def table_faults(table):
 
 
 def string_faults(table, note):
-    """Where the runs of a table do not declare what a strings note lists (spec/TABLE.md §5)."""
+    """Where the runs of a table do not declare what a strings note lists (spec/TABLE.md §5); a
+    retry's, what its family's runs are listed with."""
     out = []
     for name, made in table["runs"].items():
         listed = note["runs"].get(name)
         if listed is None and name.endswith(" retry"):
-            listed = note["runs"].get(name.rsplit(" h=", 1)[0])
+            family = name.rsplit(" h=", 1)[0] + " h="
+            listed = next((v for k, v in note["runs"].items() if k.startswith(family)), None)
         if listed is None:
             out.append(f"{name}: the note lists no such run")
             continue
