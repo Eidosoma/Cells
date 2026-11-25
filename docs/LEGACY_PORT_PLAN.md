@@ -1576,12 +1576,12 @@ declared ones are capacity padding.
 in the deletion's own commit, four are dead after the core edits and three are rows that moved first. Every `goes_or_cut` row has a verdict: a reader read 462 files,
 and the 35 it asked about are resolved here. A second reader has read the list, the script and the optional batch (verdict: safe with named corrections, all in).
 - **The deletion is one commit,** made from the list by a script on one branch that takes the place of 9b0debe6. Its dry runs at
-  f38f6789, c368c9f2, 34d173d7 and 9c30104e found every path, and stopped no import but the retargeted tests', with `lean/` and `visualizer/` read since the last;
+  f38f6789, c368c9f2, 34d173d7, 9c30104e and 36165b70 (`legacy-cleanup` 96ec6faf with the documents) found every path, and stopped no import but the retargeted tests', with `lean/` and `visualizer/` read in the last two;
   the last removed 1,528 files (six of the 1,534 are gone already). In the same commit: one guard's exemption list; 265 rows of `tests/test_tiers.json` (79, 44 and
   142), which the gate refuses without their files; the exchange kernel, `release_open` (after `test_er_calcium.py`) and nine names that only legacy uses in
   `laws/reactions/plasma_calcium.py`, `laws/reactions/er_calcium.py` and `laws/channels/calcium_gates.py`, with five docstrings; and the words of three library pages.
-  `pump_rates` and `MAX_VOLTAGE` stay: `ca_atp_mass_action_positive@1` runs them. The script refuses the branch while a row waits for the user's word (the two network
-  laws, the EMT-miRNA pair) or a row that had to move is missing.
+  `pump_rates` and `MAX_VOLTAGE` stay: `ca_atp_mass_action_positive@1` runs them. The user approved the two things that earlier decisions held (the two network laws; the EMT-miRNA
+  pair, D149) on 25 November; the script refuses the branch while such a row lacks its "approved by the user", or a row that had to move is missing.
 - **The fingerprints' definitions** (the tool's own enumeration): 129 in 125 files leave, of 177 in `configs/`, `examples/` and `validation/`; `removed_definitions.txt`
   lists them, since the comparison needs the same keys on both sides. An earlier count said 127 in 123.
 - **D196's safeguard.** `law_reference_checks.tsv` has one row for each of 133 laws and kernels: its declared test (44 have one; all 44 are collected after the deletion),
@@ -1594,12 +1594,12 @@ and the 35 it asked about are resolved here. A second reader has read the list, 
   captures equal the saved ones bit for bit (395 million array scalars).
 - **Four parity files could not start their run,** at the tag or before it: three stop in the check of the source they are bound to, which changed on
   11 October 2026, and one is skipped (D131). 70 rows that could only error leave; the 55 that pass stay.
-- **The fixed point** (measured at 903f821e, c368c9f2, 34d173d7 and 9c30104e): on the head tree without what goes, the only remaining files with
+- **The fixed point** (measured at 903f821e, c368c9f2, 34d173d7, 9c30104e and 36165b70): on the head tree without what goes, the only remaining files with
   an import that does not resolve are 8 of the 17 retargeted tests, and the only other mentions of a going path are the rename's tool and tables, one guard's exemption list, four
   of the viewer's files and documents. Run-time imports and path loads were read one by one (75 sites). `test_surface_catalog_planning.py` reads two going configurations through
   `test_integrated_ensemble.py`'s helper, which neither imports nor collection show: it is the 17th retarget.
-- **Test IDs,** by collecting that tree at 9c30104e: 12,797 collect, and 8 files fail to. Of 21,927, 9,023 go with their files, 261 leave files that
-  stay, and 314 are in the retargeted files: 130 settled by the pump and symports builder, 8 left to the re-expression, 176 waiting in 8 files. 468 are new.
+- **Test IDs,** by collecting that tree at 36165b70: 12,844 collect, and 8 files fail to. Of 21,927, 9,023 go with their files, 261 leave files that
+  stay, and 314 are in the retargeted files: 130 settled by the pump and symports builder, 8 left to the re-expression, 176 waiting in 8 files. 515 are new.
   `removed_rows.tsv` names the group of each. The deletion's own collection gives the final ones.
 
 **D211.** 44 of its 47 "port as is" laws keep their kernel, its reference and a kernel-level test:
