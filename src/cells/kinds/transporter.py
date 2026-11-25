@@ -141,7 +141,8 @@ What the hooks do:
   (a > 0) counts its e^a, at a face-free compartment's node as at the cell. Called without
   potentials it takes the static head, the forward regime's maximum (a <= 0 while the pump runs
   forward or stalls). **bound_rate:** B7's definition-time term, the slope bounded with the role's
-  saturation and e^a at 1, over each free node's capacitance.
+  saturation and e^a at 1, over the capacitance of the cell's held patches or of the loose patch
+  it sits on (surface_pump.explicit_rate_bound's rows).
 - **held_rows** (gap 8): held fuel's rows at its node, which binding refuses any other writer of.
 - **ledger_terms:** the role's cumulative transfers (n x cycles at its two nodes), the heat and
   the held fuel's work, folded into @3's ledgers by role (rule (a)).
@@ -689,11 +690,11 @@ def held_rows(declaration):
 
 
 def bound_rate(spec, declaration):
-    """B7's definition-time term (1/s, gap 5): at each free node a charged population charges, the
-    populations' slopes over the node's capacitance, the largest. A pump's slope is bounded by
-    k S_ATP n² e F/(RT): the role's saturation and e^a at most 1 (forward or stalled), S_ATP at
-    the held fuel's declared amount. A node's capacitance sums its patches'. Held baths and nodes
-    that faces join are not free nodes (as in B7's own term)."""
+    """B7's definition-time term (1/s, gap 5) by the charge rule's rows (_charge_bound): the
+    charged populations' slopes on a cell's held patches over those patches' capacitance, and on a
+    loose patch over its own; the largest. A pump's slope is bounded by k S_ATP n² e F/(RT): the
+    role's saturation and e^a at most 1 (forward or stalled), S_ATP at the held fuel's declared
+    amount."""
     if isinstance(declaration, PopulationAxis):
         return _population_bound_rate(spec, declaration)
     m = spec.model
@@ -702,21 +703,33 @@ def bound_rate(spec, declaration):
         return 0.0
     ids = list(m.species_ids)
     nodes = {node.id: node for node in (*m.cells, *m.extracellular)}
-    held_bath = {o.id for o in m.extracellular if o.reservoir}
-    faced = {f.sender for f in m.faces} | {f.receiver for f in m.faces}
-    capacitance, conductance = {}, {}
-    for patch in m.membranes:
-        for node in (patch.inside, patch.outside):
-            capacitance[node] = capacitance.get(node, 0.0) + patch.capacitance_F
+    slopes = []
     for t in charged:
         fuel = nodes[t.fuel_node]
         atp = fuel.initial_amount_fmol[ids.index(t.fuel_rows[0])] / fuel.volume_pL
         cycles = t.capacity_fmol_s * atp / (atp + t.km_atp_mM)
         slope = t.stoichiometry**2 * F / (R * m.temperature_K) * CHARGE_PER_FMOL * cycles
-        for node in (t.inside, t.outside):
-            if node not in held_bath and node not in faced:
-                conductance[node] = conductance.get(node, 0.0) + slope
-    return max((g / capacitance[node] for node, g in conductance.items()), default=0.0)
+        slopes.append((t.patch, slope))
+    return _charge_bound(m, slopes)
+
+
+def _charge_bound(m, slopes):
+    """The charge rule's largest row (1/s; surface_pump.explicit_rate_bound) from `slopes`,
+    ((patch ID, S), ...) per population: a cell's held patches' slopes over the capacitance of all
+    its held patches, and a loose patch's, one that faces a floating node, over its own. No other
+    outside node has a row: a held bath, the gauge and a node that a face names are held."""
+    from cells.modules import floating_nodes
+
+    floating = floating_nodes(m)
+    row_of, capacitance, conductance = {}, {}, {}
+    for patch in m.membranes:
+        row = ("patch", patch.id) if patch.outside in floating else ("cell", patch.inside)
+        row_of[patch.id] = row
+        capacitance[row] = capacitance.get(row, 0.0) + patch.capacitance_F
+    for patch_id, slope in slopes:
+        row = row_of[patch_id]
+        conductance[row] = conductance.get(row, 0.0) + slope
+    return max((g / capacitance[row] for row, g in conductance.items()), default=0.0)
 
 
 # ---------------------------------------------------------------------------- the stage
@@ -2329,21 +2342,16 @@ def _population_domain(state, p, *, xp):
 
 def _population_bound_rate(spec, declaration):
     """B7's definition-time term on the population axis: as version 1's, for each factored
-    population with a charged mode, (F/RT) CHARGE sum_m q_m^2 k S_max_m at the free nodes among its
-    host's ends, over each node's capacitance; S_max takes a held row's saturation at its declared
-    amount and every other factor at 1, availability and e^x at most 1. Each saturation is taken
-    in log space, -log(1 + e^(h ln(K/c))), so a steep factor's (K/c)^h never overflows: where it
-    would, the population's term is e^(-huge) = 0."""
+    population with a charged mode, (F/RT) CHARGE sum_m q_m^2 k S_max_m on its host, by the charge
+    rule's rows (_charge_bound); S_max takes a held row's saturation at its declared amount and
+    every other factor at 1, availability and e^x at most 1. Each saturation is taken in log space,
+    -log(1 + e^(h ln(K/c))), so a steep factor's (K/c)^h never overflows: where it would, the
+    population's term is e^(-huge) = 0."""
     m = spec.model
     ids = list(m.species_ids)
     valence = dict(zip(m.species_ids, m.valence, strict=True))
     nodes = {node.id: node for node in (*m.cells, *m.extracellular)}
-    held_bath = {o.id for o in m.extracellular if o.reservoir}
-    faced = {f.sender for f in m.faces} | {f.receiver for f in m.faces}
-    capacitance, conductance = {}, {}
-    for patch in m.membranes:
-        for node in (patch.inside, patch.outside):
-            capacitance[node] = capacitance.get(node, 0.0) + patch.capacitance_F
+    slopes = []
     for t in declaration:
         form = cycle_form(t.law)
         if form.kinetics != "factored":
@@ -2364,10 +2372,9 @@ def _population_bound_rate(spec, declaration):
                     # In log space, as the rate path (probe) is: (K/c)^h can overflow a float.
                     log_s -= float(np.logaddexp(0.0, hill * (math.log(k_mM) - math.log(c))))
             slope += q * q * F / (R * m.temperature_K) * CHARGE_PER_FMOL * t.capacity_fmol_s * math.exp(log_s)
-        for node in (t.inside, t.outside):
-            if slope and node not in held_bath and node not in faced:
-                conductance[node] = conductance.get(node, 0.0) + slope
-    return max((g / capacitance[node] for node, g in conductance.items()), default=0.0)
+        if slope:
+            slopes.append((t.host, slope))
+    return _charge_bound(m, slopes)
 
 
 # ---------------------------------------------------------------------------- its checks

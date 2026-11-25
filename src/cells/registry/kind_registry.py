@@ -293,8 +293,14 @@ class Kind:
       node potentials (a pump's electrogenic slope, reversed past its head included; potentials
       is None when membrane_rate is called without them); a patch's slope goes to both of its
       ends (surface_pump_v3.patch_node_conductance). membrane_rate's per-stage refusal, dt x rate
-      <= EXPLICIT_STEP_BOUND, then holds at every cell and every free outside node (a face-free
-      compartment's included); `bound_rate(spec,
+      <= EXPLICIT_STEP_BOUND, then holds at every cell and at every patch that faces a floating
+      outside node (surface_pump.floating_nodes: a face-free compartment's included). Beside such a
+      node the core reads the hook twice (surface_pump_v3.charge_rows): as it is, for those
+      patches' rows, at their outside nodes; and for the cells' rows on the held view (held_view),
+      where those patches are closed, inactive in the layout and their availability
+      (control.membrane) at 0, so that their slopes are 0: such a patch relaxes a voltage of its
+      own and not its cell's. A hook that ignores both closures is counted at the cell too, which
+      is the safe side; `bound_rate(spec,
       declaration)` -> 1/s, a definition-time bound term the host step checks hold to the same
       bound (the passive law's dt L <= 1); `material_term(read, potentials, control, p, *, xp)`
       -> [cells, then outside nodes] the kind's material slope (1/s) at the stage's read amounts

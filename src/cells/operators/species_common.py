@@ -207,10 +207,14 @@ COUNTER_ION_COVERAGE = 100.0
 def counter_ion_margin(base, name):
     """(the smallest margin over species `name`'s @3 routes of its own charge-relaxation term
     over its own material term, that route) at the declared state; (inf, None) without a route.
-    Membranes and channels on patches, junctions between cells, as the bound reads them."""
+    Membranes and channels on patches, junctions between cells, each against the capacitance the
+    bound relaxes its charge over (surface_pump.explicit_rate_bound): a held patch's and a
+    junction's, the cell's held patches'; a loose patch's, one that faces a floating node, its
+    own. (A junction at a cell with no held patch has no such capacitance: the bound refuses it.)"""
     from cells.definitions.surface_pump_v3_spec import projection
     from cells.laws.electrochemistry import F, R
     from cells.models import surface_kinetic as kinetic
+    from cells.models.surface_pump import floating_nodes
 
     m = base.model
     row = m.species_ids.index(name)
@@ -222,8 +226,11 @@ def counter_ion_margin(base, name):
         p.outside_active, p.extracellular_amount_reference[row] / p.extracellular_volume, 0.0
     )
     n = p.active.size
+    own, floating = np.asarray(p.membrane_capacitance), floating_nodes(m)
+    loose = np.zeros(own.size, dtype=bool)
+    loose[: len(m.membranes)] = [patch.outside in floating for patch in m.membranes]
     capacitance = np.zeros(n)
-    np.add.at(capacitance, np.asarray(p.membrane_cell), np.asarray(p.membrane_capacitance))
+    np.add.at(capacitance, np.asarray(p.membrane_cell), np.where(loose, 0.0, own))
     cell_volume = np.where(p.active, p.volume * 1e-15, np.inf)
     outside_volume = np.where(
         p.outside_active & ~p.reservoir, p.extracellular_volume * 1e-15, np.inf
@@ -239,14 +246,15 @@ def counter_ion_margin(base, name):
         if patch.permeability_m_per_s[row] == 0 and patch.id not in channel_patches:
             continue
         i, o = int(p.membrane_cell[k]), int(p.membrane_outside[k])
-        charge = slope * z2 * max(ci[i], co[o]) / capacitance[i]
+        charge = slope * z2 * max(ci[i], co[o]) / (own[k] if loose[k] else capacitance[i])
         material = 1.0 / cell_volume[i] + 1.0 / outside_volume[o]
         margins.append((charge / material, f"membrane {names[k]}"))
     for j, junction in enumerate(m.junctions):
         if junction.permeability_m_per_s[row] == 0:
             continue
         a, b = int(p.junction_sender[j]), int(p.junction_receiver[j])
-        charge = 2 * slope * z2 * max(ci[a], ci[b]) / min(capacitance[a], capacitance[b])
+        behind = min(capacitance[a], capacitance[b])
+        charge = 2 * slope * z2 * max(ci[a], ci[b]) / behind if behind > 0 else math.inf
         material = 1.0 / cell_volume[a] + 1.0 / cell_volume[b]
         margins.append((charge / material, f"junction {junction.id}"))
     return min(margins, default=(math.inf, None))

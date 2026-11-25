@@ -1320,6 +1320,12 @@ undeclared built-in changes nothing:
      dt·ΣG/C ≤ 1; without kinds it is today's cells-only rate. `bound_rate(spec, declaration)` →
      1/s, a definition-time term the host step checks hold to the same bound (the passive law's
      dt·L ≤ 1).
+     **Amended 25 November 2026 (CALCIUM_STORE_AND_CHANNELS_DESIGN.md §8.3):** beside a floating
+     node (a finite node that no face names, no held bath and not the gauge) the rule holds, with
+     kinds or without, every cell over its held patches alone and every patch that faces such a
+     node over its own capacitance (`charge_rows`). It reads each `stage_term` twice, as it is for
+     those patches' rows and with them closed for the cells'. A world with no floating node keeps
+     the sentence above and its program.
    - **One writer (gap 8, 669f8ed6):** `held_rows(declaration)` → ((species, node ID), ...), rows
      the kind reads and never moves; binding refuses any inner route or other kind that moves
      one. The operators' writers are the composite's admission.
@@ -2621,7 +2627,20 @@ guard.
 | Term | Shape | Run-time half |
 | --- | --- | --- |
 | Finding 3's z = 0 material term | 2 × the maximum over neutral species and nodes of Σ P·A/V over junction and membrane routes, on R5's worst cases (water's minimum volumes, insertion's largest areas) | None needed (**S**): it depends on neither openings nor concentrations. The earlier ruling named both functions; the lead decides |
-| The face-free-node term | The maximum over **free** face-free finite nodes of Σ_m G_m / C_node at the declared state, with held baths, the gauge and the layout's fixed nodes excluded | None in this round, and the refusal R is not adopted (the lead's ruling, 15 November; below) |
+| The face-free-node term | The maximum over **free** face-free finite nodes of Σ_m G_m / C_node at the declared state, with held baths, the gauge and the layout's fixed nodes excluded. **Amended 25 November 2026** (below) | None in this round, and the refusal R is not adopted (the lead's ruling, 15 November; below). **Amended 25 November 2026** (below) |
+
+**The term's rows, amended 25 November 2026** (CALCIUM_STORE_AND_CHANNELS_DESIGN.md §8.3, with its
+derivation and its limits):
+- **One row per patch,** G_m / C_m, for each patch that faces a floating node (B7's free face-free
+  node), in place of the node's sum, which is no bound where several patches face the node. Where
+  one does, as at every compartment, the two are the same.
+- **A component's representative that no face names floats too:** the fixed-node exclusion left a
+  node out that the stage's operator solves like any other.
+- **The cell's row and the junction term** divide by the capacitance of the cell's other patches
+  alone. Dividing by its stores' as well read up to 1 + C_b/C_m times too low.
+- **The run-time half exists:** the per-stage rule holds the same rows, with kinds or without
+  (`surface_pump_v3.charge_rows`).
+- **A cell with no other patch** that a junction or a kind charges is refused by name.
 
 **Parking.**
 - CURRENT_PLAN's "parked D148 rounds" (after GH200) are FIELD_SOLVER_INTERFACE_DESIGN §6.5's
