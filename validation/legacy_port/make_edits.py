@@ -245,22 +245,6 @@ optional += [
 ]
 why = "pinned by hash; the scripts that read the pin are the batch's"
 optional += [dict(file=f"docs/{p}.md", note=PINNED, why=why) for p in PINNED_BATCH_PAGES]
-optional.append(
-    dict(
-        file="docs/ROADMAP.md",
-        names=[],
-        replace=[
-            [
-                "which the cleanup's optional batch would\n> take. After the cleanup the first two "
-                "are not on `main`, and with the batch none of the three is. The\n> EMT switch "
-                "itself",
-                "which left with the cleanup's optional\n> batch. None of the three is on `main`. "
-                "The EMT switch itself",
-            ]
-        ],
-        why="true once the batch is in",
-    )
-)
 # ----------------------------------------------------------------------------------- the checks
 for entry in edits + optional:
     text = show(entry["file"])

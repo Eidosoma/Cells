@@ -1,19 +1,20 @@
 """Prepare the legacy deletion from the removal list, in a throwaway worktree, uncommitted.
 
-Usage: make_deletion.py REPO REV LIST_TSV WORKTREE [--optional] [--edits JSON]
-[--optional-edits JSON] [--base LIST_HEAD] [--branch NAME] [--out DIR]
+Usage: make_deletion.py REPO REV LIST_TSV WORKTREE [--edits JSON] [--optional-edits JSON]
+[--without-optional] [--base LIST_HEAD] [--branch NAME] [--out DIR]
 
 It makes WORKTREE (detached at REV, or on a new branch NAME), removes every file whose row says
-`goes` (git rm), and those of the optional batch with --optional, applies the edits that belong to
-the deletion's own commit, stages them by path, and reports. Give a new WORKTREE for each head. It
-commits nothing and runs no test. Its report, the definitions that leave and the commit's message
-go to DIR (by default the current folder).
+`goes` (git rm), and those of the optional batch, which the user approved on 25 November 2026
+(--without-optional leaves it), applies the edits that belong to the deletion's own commit, stages
+them by path, and reports. Give a new WORKTREE for each head. It commits nothing and runs no test.
+Its report, the definitions that leave and the commit's message go to DIR (by default the current
+folder).
 
 The edits: (1) tests/unit/test_continuity_bypass.py, EXEMPT: every entry that names a file that
 goes, and the group counts in its comments; (2) --edits, a list that make_edits.py writes: top-level
 definitions to remove from a Python file that stays, texts to replace, and a note under a document's
 title; then the imports that only the removed code used (ruff F401) and the formatting;
-(3) --optional-edits, the same, only with --optional; (4) tests/test_tiers.json: the rows of files
+(3) --optional-edits, the same, for the optional batch; (4) tests/test_tiers.json: the rows of files
 that the staged tree lacks, in all three tiers (scripts/gates/gate_steps.py refuses a head with
 one). An edit that cannot be applied is reported, never skipped silently.
 
@@ -41,13 +42,16 @@ ap.add_argument("repo")
 ap.add_argument("rev")
 ap.add_argument("list")
 ap.add_argument("worktree")
-ap.add_argument("--optional", action="store_true")
+ap.add_argument("--without-optional", action="store_true")
 ap.add_argument("--branch")
 ap.add_argument("--edits")
 ap.add_argument("--optional-edits")
 ap.add_argument("--base", default="903f821e")
 ap.add_argument("--out", default=".")
 a = ap.parse_args()
+BATCH = not a.without_optional
+if BATCH and a.edits and not a.optional_edits:
+    sys.exit("the optional batch needs --optional-edits; --without-optional leaves the batch")
 W = pathlib.Path(a.worktree)
 
 
@@ -83,7 +87,7 @@ take = [
     r
     for r in rows
     if r["kind"] != "name"
-    and (r["action"] == "goes" or (a.optional and r["action"] == "optional_batch"))
+    and (r["action"] == "goes" or (BATCH and r["action"] == "optional_batch"))
 ]
 first = [r for r in rows if r["state"].startswith("open, before the deletion")]
 for st, n in collections.Counter(r["state"] for r in first).items():
@@ -96,18 +100,19 @@ for st, n in collections.Counter(r["state"] for r in first).items():
         [r["path"] for r in first if r["state"] == st],
     )
 asked = [
-    r["path"]
+    r
     for r in rows
-    if re.search(r"\bB[12]: ", r["reason"]) and "approved by the user" not in r["state"]
+    if re.search(r"\bB[12]: ", r["reason"]) or (BATCH and r["action"] == "optional_batch")
 ]
+unapproved = [r["path"] for r in asked if "approved by the user" not in r["state"]]
 say(
-    "rows on which the user was asked (B1, B2):",
-    sum(1 for r in rows if re.search(r"\bB[12]: ", r["reason"])),
+    "rows on which the user was asked (B1, B2, the optional batch):",
+    len(asked),
     "| not yet approved:",
-    asked,
+    unapproved,
 )
-if asked and a.branch:
-    sys.exit(f"refused: {len(asked)} rows are not approved by the user; no branch is made")
+if unapproved and a.branch:
+    sys.exit(f"refused: {len(unapproved)} rows are not approved by the user; no branch is made")
 if a.branch and not listed:
     sys.exit("refused: the list is not a committed file; no branch is made")
 if first and a.branch:
@@ -125,7 +130,7 @@ say(
     len(rows),
     "| to remove",
     len(take),
-    "(with the optional batch)" if a.optional else "",
+    "" if BATCH else "(without the optional batch)",
 )
 
 
@@ -237,7 +242,7 @@ if p.exists():
 else:
     say("EDIT NOT APPLIED: no tests/unit/test_continuity_bypass.py")
 for e in (json.load(open(a.edits)) if a.edits else []) + (
-    json.load(open(a.optional_edits)) if a.optional and a.optional_edits else []
+    json.load(open(a.optional_edits)) if BATCH and a.optional_edits else []
 ):
     q = W / e["file"]
     if not q.exists():
@@ -370,7 +375,7 @@ if edited:
     git("add", "--", *edited, cwd=W)
 # 3c. The definitions that left.
 lost = sorted(before_defs - definitions())
-NAME = f"{head[:8]}{'-optional' if a.optional else ''}"
+NAME = f"{head[:8]}{'' if BATCH else '-without-optional'}"
 D = OUT / f"removed_definitions-{NAME}.txt"
 D.write_text("".join(k + "\n" for k in lost))
 say(
@@ -631,7 +636,7 @@ say(
     f"Made by validation/legacy_port/make_deletion.py on {head[:8]}, from the list at "
     f"{listed[:8] if listed else 'no commit'}:\n"
     f"{len(present)} files removed, {len(edited)} edited"
-    f"{', the optional batch among them' if a.optional else ''}. The tag pre-cleanup-2026-11-25\n"
+    f"{', the optional batch among them' if BATCH else ''}. The tag pre-cleanup-2026-11-25\n"
     "keeps everything that leaves.\n\n"
     "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n"
 )

@@ -116,16 +116,5 @@
   "file": "docs/SELECTIVE_CONTACT_SPEC.md",
   "note": "> **Legacy cleanup (25 November 2026, D386).** The models, configurations, commands, tests and tools\n> that this page names for the older families left the tree, and the tag `pre-cleanup-2026-11-25` keeps\n> them. Old records pin this page's bytes by their hash: the pinned bytes are the tag's, without\n> this note.\n\n",
   "why": "pinned by hash; the scripts that read the pin are the batch's"
- },
- {
-  "file": "docs/ROADMAP.md",
-  "names": [],
-  "replace": [
-   [
-    "which the cleanup's optional batch would\n> take. After the cleanup the first two are not on `main`, and with the batch none of the three is. The\n> EMT switch itself",
-    "which left with the cleanup's optional\n> batch. None of the three is on `main`. The EMT switch itself"
-   ]
-  ],
-  "why": "true once the batch is in"
  }
 ]
