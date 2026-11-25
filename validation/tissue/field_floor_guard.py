@@ -764,9 +764,6 @@ def compare_check_constants(two, three):
     return out
 
 
-FUNCTIONS = ("checked_step", "rhs", "device_checks")
-
-
 def _setup(spec):
     """composite_crossrev._setup of a specification: (spec, model, (state, control, layout))."""
     import jax
