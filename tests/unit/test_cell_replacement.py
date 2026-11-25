@@ -186,10 +186,10 @@ def with_events(raw):
 
 V1, V2 = "scheduled_cell_replacement@1", "scheduled_cell_replacement@2"
 FORMS = {  # The operation's ID, and a definition of it on a raw @3 definition.
-    "replacement@1": (V1, with_events),
+    "the frozen family": (V1, with_events),
     "its composition": (V1, lambda raw: composite_spec.frozen_definition(with_events(raw))),
-    "replacement@2 over water": (V2, lambda raw: fx.over_water(raw, templates(raw), EVENTS)),
-    "replacement@2 without events": (V2, fx.over_water),
+    "over water": (V2, lambda raw: fx.over_water(raw, templates(raw), EVENTS)),
+    "over water, without events": (V2, fx.over_water),
 }
 
 

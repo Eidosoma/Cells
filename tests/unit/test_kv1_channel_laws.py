@@ -306,8 +306,10 @@ NO_TERM = (
 def twin(**changes):
     """A planted law with cav1p2_m2h@1's record and kernels that declares its material term, so @3
     admits its populations (code 99, reserved for plants); `changes` plant the rest."""
-    given = dict(law_id=TWIN, code=99, material_term="material_slope_per_s")
-    return dataclasses.replace(cav1p2_m2h.LAW, **(given | changes))
+    planted = dataclasses.replace(
+        cav1p2_m2h.LAW, law_id=TWIN, code=99, material_term="material_slope_per_s"
+    )
+    return dataclasses.replace(planted, **changes)
 
 
 def with_laws(*laws):
