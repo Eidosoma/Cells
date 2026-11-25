@@ -64,10 +64,10 @@ PACKAGE = "cells"
 SCOPE_DIRS = ("src/", "tests/", "validation/", "scripts/", "examples/")
 SCOPE_FILES = ("pyproject.toml",)
 TEXT_SUFFIXES = (".sh", ".toml", ".cfg", ".ini")
-SELF = ("scripts/source_moves.py", "scripts/source_moves_plan.py", "scripts/moves/")
+SELF = ("scripts/source_moves.py", "scripts/moves/")
 RUFF = Path(sys.executable).with_name("ruff")
 # First-party packages named explicitly: ruff otherwise decides by what exists on disk, and a
-# moved package (src/cells/legacy) does not exist yet when the rewriter sorts.
+# moved package does not exist yet when the rewriter sorts.
 ISORT = "lint.isort.known-first-party = ['cells', 'tests', 'validation']"
 DOTTED = re.compile(r"(?<![\w.])" + PACKAGE + r"(?:\.[A-Za-z_]\w*)+(?![\w@])")
 # A package prefix that run-time code completes: "cells.core." or "cells.core.".join(...)
@@ -906,16 +906,15 @@ def load_map(path):
 
 def path_table(mp, files):
     """The old-to-new path table of one map, for tools that read src/cells by place: one row
-    per file the move relocates (with whether it goes to legacy/), the package files it creates,
-    and the map's declared refactors (splits or merges, each with its own commit), and the
-    package files dissolved (removed, every module of their folder moving away)."""
+    per file the move relocates, the package files it creates, and the map's declared refactors
+    (splits or merges, each with its own commit), and the package files dissolved (removed, every
+    module of their folder moving away)."""
     moves, creates, done, removes = plan_files(mp, files)
     rows = [
         dict(
             old=old,
             new=new,
             kind="move",
-            to_legacy="/legacy/" in new and "/legacy/" not in old,
             old_module=dotted_of(old),
             new_module=dotted_of(new),
         )
@@ -926,7 +925,6 @@ def path_table(mp, files):
             old=None,
             new=path,
             kind="created",
-            to_legacy="/legacy/" in path,
             old_module=None,
             new_module=dotted_of(path),
         )
@@ -937,7 +935,6 @@ def path_table(mp, files):
             old=path,
             new=None,
             kind="dissolved",
-            to_legacy=False,
             old_module=dotted_of(path),
             new_module=None,
         )
@@ -960,15 +957,7 @@ def cmd_table(args):
     text = json.dumps(table, indent=1) + "\n"
     if args.out:
         Path(args.out).write_text(text)
-    print(
-        json.dumps(
-            dict(
-                move=mp.name,
-                rows=len(table["rows"]),
-                to_legacy=sum(bool(r.get("to_legacy")) for r in table["rows"]),
-            )
-        )
-    )
+    print(json.dumps(dict(move=mp.name, rows=len(table["rows"]))))
     return 0
 
 
@@ -1323,13 +1312,13 @@ SELFTEST_MAP = {
     "kind": MAP_KIND,
     "move": "selftest",
     "modules": [
-        ["cells.core.old_spec", "cells.legacy.core.old_spec"],
-        ["cells.models.old_model", "cells.legacy.models.old_model"],
+        ["cells.core.old_spec", "cells.held.core.old_spec"],
+        ["cells.models.old_model", "cells.held.models.old_model"],
     ],
     "packages": {
-        "cells.legacy": '"""Older families."""\n',
-        "cells.legacy.core": "",
-        "cells.legacy.models": "",
+        "cells.held": '"""Held."""\n',
+        "cells.held.core": "",
+        "cells.held.models": "",
     },
 }
 
@@ -1356,14 +1345,14 @@ def _selftest_kept_lines(mp, files, checks):
     got = out["src/cells/models/recorded.py"][1].decode()
     checks["keep marker: the marked line keeps its old name, the next line is rewritten"] = (
         'flux="cells.core.old_spec.parse, as recorded",  # source-moves: keep' in got
-        and 'live="cells.legacy.core.old_spec.parse"' in got
+        and 'live="cells.held.core.old_spec.parse"' in got
     )
     checks["keep marker: in a string it marks nothing"] = (
-        'IN_A_STRING = "cells.legacy.core.old_spec # source-moves: keep"' in got
+        'IN_A_STRING = "cells.held.core.old_spec # source-moves: keep"' in got
     )
     checks["keep marker: a shell line"] = out["scripts/kept.sh"][1] == (
         b"python -m cells.core.old_spec  # source-moves: keep\n"
-        b"python -m cells.legacy.core.old_spec\n"
+        b"python -m cells.held.core.old_spec\n"
     )
     checks["a registered protocol's JSON is never rewritten"] = (
         out["validation/pkg/pkg_protocol.json"][1] == protocol
@@ -1399,7 +1388,7 @@ def _selftest_kept_lines(mp, files, checks):
     checks["after the move: a from-import of a moved module by its old package is mapped"] = late[
         "tests/test_late.py"
     ][1] == (
-        b"from cells.legacy.core import old_spec\nfrom cells.legacy.models import old_model as om\n"
+        b"from cells.held.core import old_spec\nfrom cells.held.models import old_model as om\n"
     )
 
 
@@ -1409,55 +1398,54 @@ def cmd_selftest(args):
     out, report = transform(files, mp)
     text = {p: d.decode() for p, (_, d) in out.items()}
     checks = {
-        "moved": "src/cells/legacy/core/old_spec.py" in out
+        "moved": "src/cells/held/core/old_spec.py" in out
         and "src/cells/core/old_spec.py" not in out,
-        "package files": text.get("src/cells/legacy/__init__.py") == '"""Older families."""\n',
-        "from-import module": "from cells.legacy.models import old_model"
-        in text["src/cells/legacy/core/old_spec.py"],
-        "docstring path": "src/cells/legacy/models/old_model.py"
-        in text["src/cells/legacy/core/old_spec.py"],
-        "kind id kept": 'KIND = "cells.old_spec@1"' in text["src/cells/legacy/core/old_spec.py"],
-        "bare import and chain": "import cells.legacy.core.old_spec\n"
+        "package files": text.get("src/cells/held/__init__.py") == '"""Held."""\n',
+        "from-import module": "from cells.held.models import old_model"
+        in text["src/cells/held/core/old_spec.py"],
+        "docstring path": "src/cells/held/models/old_model.py"
+        in text["src/cells/held/core/old_spec.py"],
+        "kind id kept": 'KIND = "cells.old_spec@1"' in text["src/cells/held/core/old_spec.py"],
+        "bare import and chain": "import cells.held.core.old_spec\n"
         in text["src/cells/models/keep.py"]
-        and "return cells.legacy.core.old_spec.parse" in text["src/cells/models/keep.py"],
+        and "return cells.held.core.old_spec.parse" in text["src/cells/models/keep.py"],
         "split from-import": "from cells.core import specs" in text["src/cells/models/keep.py"]
-        and "from cells.legacy.core import old_spec" in text["src/cells/models/keep.py"]
-        and "from cells.legacy.core import old_spec as spec" in text["src/cells/models/keep.py"],
-        "comment": "# cells.legacy.core.old_spec.parse" in text["src/cells/models/keep.py"],
-        "importlib string": '"cells.legacy.core.old_spec")' in text["src/cells/models/keep.py"],
-        "mock target": 'mock.patch("cells.legacy.core.old_spec.parse")'
+        and "from cells.held.core import old_spec" in text["src/cells/models/keep.py"]
+        and "from cells.held.core import old_spec as spec" in text["src/cells/models/keep.py"],
+        "comment": "# cells.held.core.old_spec.parse" in text["src/cells/models/keep.py"],
+        "importlib string": '"cells.held.core.old_spec")' in text["src/cells/models/keep.py"],
+        "mock target": 'mock.patch("cells.held.core.old_spec.parse")'
         in text["tests/test_old.py"],
-        "paths": '"src/cells/legacy/core/old_spec.py"' in text["tests/test_old.py"]
-        and '"legacy/core/old_spec.py"' in text["tests/test_old.py"],
-        "entry point string": "cells.legacy.core.old_spec:parse"
+        "paths": '"src/cells/held/core/old_spec.py"' in text["tests/test_old.py"]
+        and '"held/core/old_spec.py"' in text["tests/test_old.py"],
+        "entry point string": "cells.held.core.old_spec:parse"
         in text["validation/pkg/helper.py"],
-        "embedded program": "from cells.legacy.core import old_spec as spec"
+        "embedded program": "from cells.held.core import old_spec as spec"
         in text["tests/test_program.py"],
         "relative import kept": text["validation/pkg/tool.py"]
         == SELFTEST_TREE["validation/pkg/tool.py"],
-        "shell": "-m cells.legacy.core.old_spec" in text["scripts/run.sh"],
+        "shell": "-m cells.held.core.old_spec" in text["scripts/run.sh"],
         "docs left alone": text["docs/NOTE.md"] == SELFTEST_TREE["docs/NOTE.md"],
         "imports sorted": text["src/cells/models/keep.py"].index("from cells.core import specs")
-        < text["src/cells/models/keep.py"].index("from cells.legacy.core import old_spec"),
+        < text["src/cells/models/keep.py"].index("from cells.held.core import old_spec"),
     }
     again, _ = transform(out, mp)
     checks["idempotent"] = again == out
     table = path_table(mp, files)["rows"]
     checks["path table"] = {
         "old": "src/cells/core/old_spec.py",
-        "new": "src/cells/legacy/core/old_spec.py",
+        "new": "src/cells/held/core/old_spec.py",
         "kind": "move",
-        "to_legacy": True,
         "old_module": "cells.core.old_spec",
-        "new_module": "cells.legacy.core.old_spec",
+        "new_module": "cells.held.core.old_spec",
     } in table and sum(r["kind"] == "created" for r in table) == 3
     planted = dict(out)
-    p = "src/cells/legacy/models/old_model.py"
+    p = "src/cells/held/models/old_model.py"
     planted[p] = (planted[p][0], planted[p][1].replace(b"None", b"0"))
     checks["hand edit refused"] = verify(mp, files, planted)["verdict"] == "refused"
     checks["clean move holds"] = verify(mp, files, out)["verdict"] == "holds"
     extra = dict(out)
-    extra["src/cells/legacy/models/extra.py"] = ("100644", b"X = 1\n")
+    extra["src/cells/held/models/extra.py"] = ("100644", b"X = 1\n")
     checks["extra file refused"] = verify(mp, files, extra)["verdict"] == "refused"
     pinned = dict(files)
     pinned["src/cells/models/pin.py"] = (
@@ -1467,7 +1455,7 @@ def cmd_selftest(args):
     moved_pin, _ = transform(pinned, mp)
     checks["pin path rewritten, hash kept"] = (
         moved_pin["src/cells/models/pin.py"][1]
-        == (b'P = {"src/cells/legacy/models/old_model.py": "' + b"a" * 64 + b'"}\n')
+        == (b'P = {"src/cells/held/models/old_model.py": "' + b"a" * 64 + b'"}\n')
         and verify(mp, pinned, moved_pin)["verdict"] == "holds"
     )
     edited_pin = dict(moved_pin)
@@ -1485,14 +1473,14 @@ def cmd_selftest(args):
     )
     got, _ = transform(branch, mp)
     checks["branch addition rewritten"] = (
-        b"from cells.legacy.core.old_spec import parse"
+        b"from cells.held.core.old_spec import parse"
         in got["src/cells/models/new_on_branch.py"][1]
     )
     pkg_map = MoveMap(
         dict(
             SELFTEST_MAP,
-            modules=[["cells.models", "cells.legacy.models"]],
-            packages={"cells.legacy": ""},
+            modules=[["cells.models", "cells.held.models"]],
+            packages={"cells.held": ""},
         )
     )
     try:
@@ -1500,27 +1488,27 @@ def cmd_selftest(args):
         checks["unlisted module in a moved package refused"] = False
     except Refused:
         checks["unlisted module in a moved package refused"] = True
-    # D188 R1 created src/cells/legacy/__init__.py with the map's exact text: an existing package
+    # D188 R1 created src/cells/held/__init__.py with the map's exact text: an existing package
     # file with the map's text is used as it is; one with other text is refused.
     existing = dict(files)
-    existing["src/cells/legacy/__init__.py"] = ("100644", b'"""Older families."""\n')
+    existing["src/cells/held/__init__.py"] = ("100644", b'"""Held."""\n')
     try:
         got, rep = transform(existing, mp)
         checks["an existing identical package file is used, not created"] = (
-            "src/cells/legacy/__init__.py" not in rep["created"]
-            and got["src/cells/legacy/__init__.py"] == existing["src/cells/legacy/__init__.py"]
-            and "src/cells/legacy/core/old_spec.py" in got
+            "src/cells/held/__init__.py" not in rep["created"]
+            and got["src/cells/held/__init__.py"] == existing["src/cells/held/__init__.py"]
+            and "src/cells/held/core/old_spec.py" in got
         )
     except Refused:
         checks["an existing identical package file is used, not created"] = False
-    existing["src/cells/legacy/__init__.py"] = ("100644", b'"""Other text."""\n')
+    existing["src/cells/held/__init__.py"] = ("100644", b'"""Other text."""\n')
     try:
         transform(existing, mp)
         checks["an existing package file with other text is refused"] = False
     except Refused:
         checks["an existing package file with other text is refused"] = True
     absent = MoveMap(
-        dict(SELFTEST_MAP, modules=[["cells.core.nowhere", "cells.legacy.core.nowhere"]])
+        dict(SELFTEST_MAP, modules=[["cells.core.nowhere", "cells.held.core.nowhere"]])
     )
     try:
         transform(files, absent)
@@ -1577,7 +1565,7 @@ def cmd_selftest(args):
     )
     checks["cells.modules reserved: an existing surface stays in place, its imports rewritten"] = (
         got["src/cells/modules/__init__.py"][1]
-        == b'"""Provisional surface."""\n\nfrom cells.legacy.core.old_spec import parse\n'
+        == b'"""Provisional surface."""\n\nfrom cells.held.core.old_spec import parse\n'
     )
     # A dissolved package (D188 move 2: processes/): its modules move to different homes, its
     # package file (a docstring only) is removed, and nothing may name the package afterwards.
@@ -1683,9 +1671,9 @@ def cmd_selftest(args):
     got, _ = transform(escaped, mp)
     t = got["tests/test_escaped.py"][1].decode()
     checks["text from-import: a moved submodule by its own home, the rest by the package's"] = (
-        "import sys\\nfrom cells.legacy.core import old_spec; from cells.core import specs\\n" in t
-        and '"from cells.legacy.core import old_spec as o\\n"' in t
-        and "# from cells.legacy.core import old_spec\n" in t
+        "import sys\\nfrom cells.held.core import old_spec; from cells.core import specs\\n" in t
+        and '"from cells.held.core import old_spec as o\\n"' in t
+        and "# from cells.held.core import old_spec\n" in t
         and transform(got, mp)[0] == got
     )
     split = {
@@ -1737,9 +1725,9 @@ def cmd_selftest(args):
     ]
     head_ids = [
         "tests/test_old.py::test_old",
-        "tests/test_pin.py::test_pin[src/cells/legacy/core/old_spec.py-aaaa]",
-        "tests/test_pin.py::test_pin[legacy/core/old_spec.py]",
-        "tests/test_mod.py::test_mod[cells.legacy.models.old_model]",
+        "tests/test_pin.py::test_pin[src/cells/held/core/old_spec.py-aaaa]",
+        "tests/test_pin.py::test_pin[held/core/old_spec.py]",
+        "tests/test_mod.py::test_mod[cells.held.models.old_model]",
         "tests/test_keep.py::test_keep[src/cells/core/specs.py]",
     ]
     same = compare_ids(mp, base_ids, head_ids)
@@ -1759,7 +1747,7 @@ def cmd_selftest(args):
     ]
     collide = compare_ids(
         mp,
-        [base_ids[1], "tests/test_pin.py::test_pin[src/cells/legacy/core/old_spec.py-aaaa]"],
+        [base_ids[1], "tests/test_pin.py::test_pin[src/cells/held/core/old_spec.py-aaaa]"],
         [head_ids[1]],
     )
     checks["ids: two tests that the map makes one are caught"] = len(collide["collisions"]) == 1
