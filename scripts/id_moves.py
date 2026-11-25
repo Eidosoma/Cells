@@ -105,6 +105,8 @@ TOKEN = re.compile(rf"(?<![A-Za-z0-9_.@-])({_ID})(?![A-Za-z0-9_])")
 TEST_TOKEN = re.compile(rf"(?<![A-Za-z0-9_.@])({_ID})(?![A-Za-z0-9_])")
 # A name and its major whatever stands before it: what the token rule may not see.
 LOOSE = re.compile(rf"(?<![A-Za-z0-9_])({WORD}@[1-9][0-9]*)(?![A-Za-z0-9_])")
+# An ID right after an escape's letter (a pattern's \\b, a string's \\n): no token starts there.
+ESCAPED = re.compile(rf"\\[A-Za-z]((?:{WORD}\.)*{WORD}@[1-9][0-9]*)(?![A-Za-z0-9_])")
 NEW = re.compile(r"[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*\.[a-z][A-Za-z0-9_]*@[1-9][0-9]*")
 # A recorded test ID, as a JSON string's content: no escape can stand in one that holds an ID.
 TEST_ID = re.compile(r'(?<=")((?:[A-Za-z0-9_./-]+::)*test_[A-Za-z0-9_]+(?:\[[^"\\]*\])?)(?=")')
@@ -416,6 +418,9 @@ class Map:
                 continue  # The tail of a new ID that the token cannot start at.
             before = line[max(0, m.start() - 1) : m.start()]
             out.append((f"after {before!r}", line[max(0, m.start() - 24) : m.end() + 6]))
+        for m in ESCAPED.finditer(line):
+            if m[1] in table:
+                out.append(("after an escape", line[max(0, m.start() - 24) : m.end() + 6]))
         return out
 
     def _in_page(self, line, m):
@@ -1547,6 +1552,7 @@ def cmd_frozen(args):
 # ------------------------------------------------------------------ plants
 
 DECLARERS = {"law_id": "law", "kind_id": "kind", "operator_id": "operator", "LAW_ID": "operator"}
+OPERATOR_FLAGS = {"EVENT", "SPLIT", "PROCESS", "RK4", "DECLARATION_ONLY"}
 
 
 class Plants:
@@ -1588,8 +1594,6 @@ class Plants:
         if not self.open(identifier):
             return
         site = f"{path}:{node.lineno}"
-        if identifier in self.hand:
-            family = self.hand[identifier]
         if family is None:
             self.rest[identifier].append((site, "its declaring type is not seen"))
         else:
@@ -1672,6 +1676,19 @@ class Plants:
                 return True
             return depth < 6 and any(is_operator(b, depth + 1) for b in classes.get(name, ()))
 
+        def law_family(name, depth=0):
+            if name in types["laws"]:
+                return types["laws"][name]
+            found = [law_family(b, depth + 1) for b in classes.get(name, ()) if depth < 6]
+            return next((f for f in found if f), None)
+
+        # A helper of the file's own: a function with a parameter that becomes a piece's ID.
+        helpers = {}
+        for n in ast.walk(tree):
+            if isinstance(n, ast.FunctionDef):
+                for param, kind in self.becomes(n, types, is_operator, family):
+                    helpers.setdefault(n.name, []).append((param, kind))
+
         for n in ast.walk(tree):
             if isinstance(n, ast.ClassDef):
                 for item in n.body:
@@ -1681,60 +1698,120 @@ class Plants:
                         kind = "operator" if is_operator(n.name) else None
                         if kind or n.bases:
                             self.place(path, item, text(item.value), kind)
+            elif isinstance(n, ast.Dict):
+                for k, v in zip(n.keys, n.values, strict=True):
+                    if isinstance(k, ast.Constant) and k.value == "LAW_ID":
+                        self.place(path, v, text(v), "operator")
             elif isinstance(n, ast.Call):
                 f = n.func
                 name = f.attr if isinstance(f, ast.Attribute) else getattr(f, "id", "")
                 given = {k.arg: k.value for k in n.keywords}
                 first = n.args[0] if n.args else None
+                if "LAW_ID" in given and (name == "dict" or OPERATOR_FLAGS & set(given)):
+                    self.place(path, n, text(given["LAW_ID"]), "operator")
                 if name in types["laws"]:
                     self.place(path, n, text(given.get("law_id", first)), types["laws"][name])
                 elif name in types["kinds"]:
                     self.place(path, n, text(given.get("kind_id", first)), "kind")
                 elif name in types["operators"] and name not in ("Operator",):
                     self.place(path, n, text(given.get("operator_id", first)), "operator")
-                elif name in classes and is_operator(name) is False and "law_id" in given:
-                    self.place(path, n, text(given["law_id"]), None)
+                elif name in classes:  # A type of the test's own, by its bases.
+                    own = law_family(name)
+                    if own or is_operator(name):
+                        self.place(path, n, text(given.get("law_id", first)), own or "operator")
                 elif name in ("replace", "_replace"):
                     base = first if name == "replace" else getattr(f, "value", None)
                     for key, what in DECLARERS.items():
                         if key in given and key != "LAW_ID":
                             found = what if what != "law" else family(base)
                             self.place(path, n, text(given[key]), found)
+                for (place, param), kind in helpers.get(name, ()):
+                    value = given.get(param, n.args[place] if place < len(n.args) else None)
+                    if value is not None:
+                        self.place(path, n, text(value), kind)
+
+    @staticmethod
+    def becomes(function, types, is_operator, family):
+        """((place, parameter), family) of each parameter of a function that its body makes a
+        piece's ID: LAW_ID = p in a class, LAW_ID=p or kind_id=p in a call, law_id=p of a law."""
+        params = {a.arg: i for i, a in enumerate(function.args.args)}
+        out = []
+        for n in ast.walk(function):
+            pairs = []
+            if isinstance(n, ast.ClassDef):
+                for item in n.body:
+                    if isinstance(item, ast.Assign) and is_operator(n.name):
+                        if any(getattr(x, "id", "") == "LAW_ID" for x in item.targets):
+                            pairs.append((item.value, "operator"))
+            elif isinstance(n, ast.Call):
+                name = (
+                    n.func.attr if isinstance(n.func, ast.Attribute) else getattr(n.func, "id", "")
+                )
+                given = {k.arg: k.value for k in n.keywords}
+                if "LAW_ID" in given and (name == "dict" or OPERATOR_FLAGS & set(given)):
+                    pairs.append((given["LAW_ID"], "operator"))
+                if "kind_id" in given:
+                    pairs.append((given["kind_id"], "kind"))
+                if "law_id" in given and name == "replace" and n.args:
+                    pairs.append((given["law_id"], family(n.args[0])))
+                if name in types["laws"]:
+                    first = n.args[0] if n.args else None
+                    pairs.append((given.get("law_id", first), types["laws"][name]))
+            for value, kind in pairs:
+                if isinstance(value, ast.Name) and value.id in params:
+                    out.append(((params[value.id], value.id), kind))
+        return out
+
+    def by_hand(self, identifier, path):
+        """The family that the choices give a plant, in a file or everywhere, or None."""
+        said = self.hand.get(identifier)
+        return said.get(path, said.get("*")) if isinstance(said, dict) else said
 
     def rows(self):
-        """([plant row], [by hand]): a row for each plant with one family; the others listed."""
-        rows, hand = [], []
-        for identifier, families in sorted(self.placed.items()):
-            if len(families) > 1:
-                said = f"declared in {len(families)} families: {sorted(families)}"
-                hand.append((identifier, said,
-                             [s for sites in families.values() for s in sites]))  # fmt: skip
-                continue
-            ((family, sites),) = families.items()
-            declared = {s.split(":")[0] for s in sites}
-            old, named = [identifier], self.named[identifier]
-            if "." not in identifier.split("@")[0]:  # A bare one: where it is declared or imported.
-                old = spellings(identifier)
+        """([plant row], [by hand]): one row for each plant and family, with the files where it is
+        that family's; and the plants whose family nothing gives, with why and where."""
+        rows, left = [], []
+        for identifier in sorted({*self.placed, *self.rest, *(set(self.hand) & set(self.named))}):
+            families = self.placed.get(identifier, {})
+            at = {f: {s.split(":")[0] for s in sites} for f, sites in families.items()}
+            declared = {p for paths in at.values() for p in paths}
+            declared |= {s.split(":")[0] for s, _ in self.rest.get(identifier, ())}
+            if isinstance(self.hand.get(identifier), dict):
+                declared |= set(self.hand[identifier]) & self.named[identifier]
+            named = self.named[identifier]
+            namespaced = "." in identifier.split("@")[0]
+            if not namespaced:  # A bare plant: where it is declared, and where that is imported.
                 named = {p for p in named if self.imports.get(p, set()) & declared}
-            rows.append(
-                dict(
-                    old=old,
-                    new=new_id(identifier, family),
-                    family=family,
-                    piece="plant",
-                    sites=sites,
-                    files=sorted(named | declared),
-                )  # fmt: skip
-            )
-        for identifier, sites in sorted(self.rest.items()):
-            if identifier not in self.placed:
-                hand.append((identifier, sites[0][1], [s for s, _ in sites]))
-        return rows, hand
+            files, unknown = defaultdict(set), []
+            for path in named | declared:
+                family = self.by_hand(identifier, path)
+                for found in ({f for f, paths in at.items() if path in paths}, set(at)):
+                    if family is None and len(found) == 1:
+                        (family,) = found
+                if family is None:
+                    unknown.append(path)
+                else:
+                    files[family].add(path)
+            if unknown:
+                why = f"declared in {sorted(families)}" if families else "its type is not seen"
+                left.append((identifier, why, sorted(unknown)))
+            for family, paths in sorted(files.items()):
+                rows.append(
+                    dict(
+                        old=[identifier] if namespaced else spellings(identifier),
+                        new=new_id(identifier, family),
+                        family=family,
+                        piece="plant",
+                        sites=sorted(families.get(family, [])),
+                        files=sorted(paths),
+                    )
+                )
+        return rows, left
 
     def undeclared(self):
         """The namespaced IDs, cells' own apart, that tests and drivers spell and no declaration
         places: refusal tests' values, and names of their own, for reading."""
-        known = {*self.placed, *self.rest}
+        known = {*self.placed, *self.rest, *self.hand}
         return {
             i: sorted(p)
             for i, p in sorted(self.named.items())
@@ -2236,19 +2313,12 @@ def run_scan(files, mp, choices):
         rows, by_hand = Plants(files, mp, mp.doc["types"], choices["plants"]["families"]).rows()
         held = {(o, p) for p, table in mp.plants.items() for o in table}
         for row in rows:
-            for site in row["sites"]:
-                path, line = site.rsplit(":", 1)
+            for path in row["files"]:
                 if (row["old"][0], path) not in held:
-                    scanner.add(
-                        "plant",
-                        path,
-                        int(line),
-                        row["old"][0],
-                        f"a {row['family']} plant that the map lacks",
-                    )
-        for identifier, why, sites in by_hand:
-            path, line = sites[0].rsplit(":", 1)
-            scanner.add("plant", path, int(line), identifier, f"a plant to place by hand: {why}")
+                    what = f"a {row['family']} plant that the map lacks"
+                    scanner.add("plant", path, 0, row["old"][0], what)
+        for identifier, why, paths in by_hand:
+            scanner.add("plant", paths[0], 0, identifier, f"a plant to place by hand: {why}")
     used = Counter()
     for h in hazards:
         i = reviewed_by(h, choices["reviewed"])
@@ -3199,6 +3269,7 @@ def _selftest_verify(checks, files, mp, out):
         ("an escaped dot", rb'R = r"cells\.wave_mh@1 x"'),
         ("a token after a hyphen", b'R = "a-wave_mh@1"'),
         ("another namespace's", b'R = "tests.wave_mh@1"'),
+        ("an ID after a pattern's escape", rb'R = r"\bwave_mh@1\b"'),
     ):
         odd = dict(plain, **{"tests/odd.py": ("100644", text + b"\n")})
         left = verify(mp, odd, transform(odd, mp)[0])["problems"]
@@ -3341,6 +3412,92 @@ def _selftest_scan(checks, mp):
         }
 
 
+def _selftest_plants(checks, mp):
+    """A test's own pieces, placed by their declaring types."""
+    types = dict(
+        laws={"WaveLaw": "wave", "PumpLaw": "pump"},
+        kinds=["Kind"],
+        operators=["LineageOperator", "Operator"],
+        modules={"cells.laws.wave": "wave"},
+    )
+    head = "from dataclasses import replace\n\nfrom cells.laws import wave\n\n"
+    cases = {
+        "a law's type": ('WaveLaw("tests.p@1")', "wave"),
+        "a kind": ('Kind(kind_id="tests.p@1")', "kind"),
+        "an operator's class": ('class X(Operator):\n    LAW_ID = "tests.p@1"', "operator"),
+        "a subclass of the test's own": (
+            'class Own(WaveLaw):\n    pass\n\n\nOwn("tests.p@1")',
+            "wave",
+        ),
+        "a copy of a module's law": ('replace(wave.LAW, law_id="tests.p@1")', "wave"),
+        "a copy of a law looked up": (
+            'law = active().lookup("cells.ion_pump@1")\nreplace(law, law_id="tests.p@1")',
+            "pump",
+        ),
+        "a helper's parameter": (
+            "def op(law):\n    class R(Operator):\n        LAW_ID = law\n\n    return R\n\n\n"
+            'op("tests.p@1")',
+            "operator",
+        ),
+        "a class made of a dict": (
+            'type("X", (Operator,), dict(LAW_ID="tests.p@1", EVENT=True))',
+            "operator",
+        ),
+        "a template": ('Kind(kind_id="tests.p@1".replace("p", name))', "kind"),
+        "a name": ('P = "tests.p@1"\nPumpLaw(P)', "pump"),
+    }
+    for name, (code, family) in cases.items():
+        files = {"tests/p.py": ("100644", (head + code + "\n").encode())}
+        rows, hand = Plants(files, mp, types).rows()
+        checks[f"plants: {name}"] = hand == [] and [r["new"] for r in rows] == [
+            f"tests.{family}.p@1"
+        ]
+    unseen = {"tests/p.py": ("100644", b'replace(mystery, law_id="tests.p@1")\n')}
+    checks["plants: a type that is not seen is left to hand, and a hand choice places it"] = [
+        h[:2] for h in Plants(unseen, mp, types).rows()[1]
+    ] == [("tests.p@1", "its type is not seen")] and Plants(
+        unseen, mp, types, {"tests.p@1": "wave"}
+    ).rows()[0][0]["new"] == "tests.wave.p@1"
+    two = {
+        "tests/a.py": ("100644", b'WaveLaw("tests.p@1")\n'),
+        "tests/b.py": ("100644", b'Kind(kind_id="tests.p@1")\n'),
+        "tests/c.py": ("100644", b'X = "tests.p@1"\n'),
+    }
+    rows, hand = Plants(two, mp, types).rows()
+    checks["plants: one ID in two families is each file's own, and a third file's by hand"] = {
+        r["new"]: r["files"] for r in rows
+    } == {"tests.wave.p@1": ["tests/a.py"], "tests.kind.p@1": ["tests/b.py"]} and [
+        (i, where) for i, _, where in hand
+    ] == [("tests.p@1", ["tests/c.py"])]
+    chosen = {"tests.p@1": {"tests/c.py": "pump"}}
+    checks["plants: a hand choice for one file"] = {
+        r["new"]: r["files"] for r in Plants(two, mp, types, chosen).rows()[0]
+    }.get("tests.pump.p@1") == ["tests/c.py"]
+    bare_files = {
+        "tests/a.py": ("100644", b'class X(Operator):\n    LAW_ID = "own@1"\n'),
+        "tests/b.py": ("100644", b'from tests.a import X\n\nM = "own@1 is refused"\n'),
+        "tests/c.py": ("100644", b'M = "own@1, a word of its own"\n'),
+    }
+    rows, _ = Plants(bare_files, mp, types).rows()
+    planted = Map(dict(mp.doc, plants=rows))
+    out, _ = transform(bare_files, planted)
+    checks["plants: a bare one is renamed where it is declared and imported, and nowhere else"] = (
+        out["tests/a.py"][1].endswith(b'LAW_ID = "cells.operator.own@1"\n')
+        and b"cells.operator.own@1 is refused" in out["tests/b.py"][1]
+        and out["tests/c.py"] == bare_files["tests/c.py"]
+        and b"own@1" not in out[RENAMED][1]
+        and transform(out, planted)[0] == out
+        and planted.test_id("tests/a.py::test_x[own@1-b]")
+        == ("tests/a.py::test_x[cells.operator.own@1-b]")
+        and planted.test_id("tests/c.py::test_x[own@1]") == "tests/c.py::test_x[own@1]"
+    )
+    lacking = Map(dict(mp.doc, types=types))
+    hazards, _, _ = run_scan(bare_files, lacking, _plant_choices())
+    checks["scan: a declared plant that the map does not rename"] = {
+        (h["cls"], h["path"]) for h in hazards
+    } == {("plant", "tests/a.py"), ("plant", "tests/b.py")}
+
+
 def _selftest_frozen(checks):
     """The three rules on a planted repository, both ways."""
     with tempfile.TemporaryDirectory() as folder:
@@ -3478,6 +3635,7 @@ def cmd_selftest(args):
     _selftest_verify(checks, files, mp, out)
     _selftest_ids(checks, mp)
     _selftest_scan(checks, mp)
+    _selftest_plants(checks, mp)
     _selftest_frozen(checks)
     _selftest_rewrap(checks)
     failed = [k for k, v in checks.items() if not v]

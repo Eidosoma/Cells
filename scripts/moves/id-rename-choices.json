@@ -2057,7 +2057,76 @@
    "tests.limit_off_by_a_constant@1": "reaction",
    "validation.ol6_plant_power_off_by_one@1": "reaction",
    "tests.steep_fuel@1": "cycle",
-   "tests.unregistered@1": "cycle"
+   "tests.unregistered@1": "cycle",
+   "seamtest.monomial_hydrolysis@1": "cycle",
+   "seamtest.monomial_off@1": "cycle",
+   "seamtest.monomial_total@1": "cycle",
+   "seamtest.monomial_mg@1": "cycle",
+   "seamtest.signed_basis@1": "cycle",
+   "seamtest.wrong_sign_basis@1": "cycle",
+   "tests.alpha@1": "kind",
+   "tests.beta@1": "kind",
+   "tests.b@1": "kind",
+   "tests.factor@1": "kind",
+   "tests.factor_b@1": "kind",
+   "tests.non_mover@1": "kind",
+   "tests.claimant@1": "operator",
+   "tests.event@1": "operator",
+   "tests.pools@1": "operator",
+   "tests.swap@1": "operator",
+   "tests.existing_operator@1": "operator",
+   "tests.new_operator@1": "operator",
+   "tests.newer_operator@1": "operator",
+   "tests.not_an_operator@1": "operator",
+   "tests.loose@1": "operator",
+   "tests.planted_reaction@1": "operator",
+   "tests.law_a@1": "binding",
+   "tests.law_b@1": "binding",
+   "tests.literal_last_molecule@1": "reaction",
+   "tests.one_sided@1": "reaction",
+   "tests.power_propensity@1": "reaction",
+   "tests.planted_ensemble@1": "model",
+   "tests.planted_exchange@1": "exchange",
+   "tests.planted_home_route@1": "route",
+   "tests.planted_inert_route@1": "route",
+   "tests.twice@1": "route",
+   "tests.x@1": "route",
+   "tests.y@1": "route",
+   "tests.planted_move@1": "planted",
+   "tests.pretender@1": "route",
+   "tests.undeclared@1": {
+    "tests/unit/test_model_table.py": "exchange",
+    "*": "kind"
+   },
+   "test_add0@1": {
+    "tests/unit/test_door_s.py": "operator"
+   },
+   "test_add1@1": {
+    "tests/unit/test_door_s.py": "operator"
+   },
+   "test_multiply0@1": {
+    "tests/unit/test_door_s.py": "operator"
+   },
+   "test_multiply1@1": {
+    "tests/unit/test_door_s.py": "operator"
+   },
+   "test_r0@1": {
+    "tests/unit/test_door_s.py": "operator"
+   },
+   "test_r1@1": {
+    "tests/unit/test_door_s.py": "operator"
+   },
+   "elementless@1": {
+    "tests/unit/test_pump_composite_contract.py": "operator"
+   },
+   "planted_author@1": {
+    "tests/unit/test_population_unit_turnover.py": "operator"
+   }
+  },
+  "not_plants": {
+   "tests.planted_ensemble_kind@1": "a plan document's kind",
+   "tests.planted_law@1": "an outside interface's ID",
+   "acme.a_law@1": "an example of the grammar"
   }
  },
  "artifacts_note": "D380: the outcomes are declared and the tests leave with legacy, unless regenerating them proves easy; the script re-spells the files (regenerate, declare) or leaves them (keep_on_snapshot)"
