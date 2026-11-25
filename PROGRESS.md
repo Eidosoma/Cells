@@ -11,7 +11,7 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
 ## Open FR and core work (25 November 2026, morning)
 
-Sources: [Decisions](docs/DECISIONS.md) D318 to D384, the [feature index](docs/FEATURE_REQUESTS.md) and the tags of 22 to
+Sources: [Decisions](docs/DECISIONS.md) D318 to D385, the [feature index](docs/FEATURE_REQUESTS.md) and the tags of 22 to
 25 November.
 
 - **On now: the legacy cleanup** (D383, the user's decision). One branch, `legacy-cleanup`: the live side without legacy, the

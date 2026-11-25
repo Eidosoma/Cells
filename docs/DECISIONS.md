@@ -13002,3 +13002,43 @@ registered worlds. The line holds here (D383).
 **Rulings (the lead):** the live side owns the ensemble families' file, the command line and the ionic list until its merge, with a refusal by
 name for the two assembly commands and the two kinds; the manifest's `legacy` key leaves under a new major (`cells.declarations@3`), which also
 covers the ID rule the move amends (D371, Q6); and the shared test worlds move to `reaction_transport@1`.
+
+## D385: a review the user relayed, checked: the rename's seam with the cleanup, FR-58's pump question and FR-61 and FR-62; rulings on the calcium store note
+
+2026-11-25, about 11:18 UTC. The lead, with the advisor; the two open points of the review were delegated by the user.
+
+**A review of the cleanup branch and five design notes** was relayed by the user and checked against the branches.
+- **The rename's seam with the cleanup: its four points hold,** none a fault of the cleanup branch, all of them due before the move, which runs
+  last. Two were known: the tool calls a manifest function that has left, and `cells.declarations@3` is in no kept list. Two are new: three seeds
+  of the choices file name constants that have left, and the models' rows now silently override the choice "bare" of the group
+  `three_models`, while `catalogue` still says bare. Minting is what D383 decides, so both groups are set to mint explicitly.
+- **What follows for the tool:** its whole legacy side leaves, the 11 kept constants whose reason is "read by legacy" are decided again, it refuses a seed,
+  path or ID in the choices that is gone or shadowed, and the rehearsal's counts are taken again on the final tree.
+- **The manifest's readers,** the viewer's two tools and Lean's `generate_claims.py`, refuse the new major. They are told before the landing. The
+  final test does not read the viewer's copy of the manifest.
+- **The five notes:** prices and recommendations agree with the notes. A "latent bug" that FR-58's note is said to have found is not one: a species
+  listed twice is refused at parse today.
+
+**FR-58's question 2, pump cycles, is ruled by the lead with the advisor:** option (b), a flux-force law carries the label in complete cycles, forward
+and reverse, about 1.5 to 2 agent-days more, with a limited claim. The label is a lower bound wherever partial steps of the cycle exchange it, and
+any comparison with a measurement of incorporation is one-sided. The note refused these laws "until a study needs it". Two labs' papers on the Na/K pump
+running in reverse in red cells are that study: one reports ouabain-sensitive incorporation of labelled phosphate in high-sodium,
+potassium-free media (doi:10.1113/jphysiol.1967.sp008298), the other ouabain-sensitive, sodium-dependent potassium efflux
+(doi:10.1113/jphysiol.1970.sp009062). Both were read as abstracts and search records only. Incorporation through partial steps at zero net
+flux is not what (b) carries. The state-resolved form (the note's (c)) is for diagram laws, and the live Na/K law is
+a mass-action cycle, so it would be a new law with sourced step rates: a separate request.
+- **What (b) does not reach on its own:** the live pump takes its fuel from maintained reservoirs, not species rows, so the label on ATP needs row fuel
+  for the Na/K pump. That is a candidate request, the user's to log, in the order FR-59, row fuel, then FR-58 with (b).
+
+**FR-61 and FR-62 leave the round of "accept the note's recommendations".** The note defers two requested items, the finite-reservoir version
+with the capacitor charge at each event (its Q4) and the calibration-range readout (its Q6). Both go to the user singly when those builds come
+off hold. The rest of the two requests is in the note. The part of the review that claims scope gaps was not in what the user relayed.
+
+**The calcium store note** (`calcium-store-design`, c5006ff6) measures that a one-cell store world already parses and steps on the composite with two
+planted law modules, and prices the missing pieces at 6 to 7.5 agent-days, against the plan's 7.5 to 13. No piece changes the ensemble's
+equations. **Rulings, as recommended:** a calcium channel stays a channel population on the pump tissue, its law the one authority for
+its ions' valences (L1); one ATP-driven transport law on the transporter kind serves both calcium pumps (L2); the bound on the feedback of a factor
+read by what it opens is built (L3); a compartment is admitted where its node is not its component's representative (L4); the door for
+buffered calcium rows is for `local_species_reactions@1` alone (L5); conservation is judged by the engine's own ledger rule (L6); no schedules for passive
+routes and no non-negative booking for them now (L7, L9); the independent calcium reference is kept (L8). One question goes to the user, the
+exchanger's two kinetic forms. The note has had no second reader yet; one is given before its build.
