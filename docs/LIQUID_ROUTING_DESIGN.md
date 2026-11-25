@@ -837,10 +837,10 @@ FR-54's T2 and T4 carry the tableau's own orders, with derived bounds and ratios
   world): `/mnt/workspaces/Cells/fr54-57-dt-study-20261125/`, its `DT_STUDY.md`, scripts, outputs and
   `SHA256SUMS.txt`, its `ERRATUM-1.txt`, and `addendum-rho1/` with a `SHA256SUMS.txt` of its own. Its edges and
   stops replace the sketched ones (§4.1, §4.3), and its addendum's thresholds replace §3.3's first probes.
-  - They are **engine-side measurements, seen before the edge criteria where the study says so**: the
+  - They are **engine-side measurements.** Seen before the edge criteria were written, as the study says: the
     design's desk figures, and a dry run of the 8 and 2 fmol world that showed its stop between kh = 0.05 and
-    0.1. χ and the 1% refinement were chosen after the grid was seen. The bands of W and O were written before
-    it. The propagator's numbers are scipy on the host against decimal references, not the engine's.
+    0.1. Written before the grid: the bands of W and O. Chosen after the grid was seen: χ and the 1%
+    refinement. The propagator's numbers are scipy on the host against decimal references, not the engine's.
   - The references' agent receives the edges through the coordinator, and reads neither this note nor that
     folder.
 - **Two verdicts.**
