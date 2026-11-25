@@ -1,7 +1,7 @@
 {
  "kind": "cells.id_moves.choices@1",
  "move": "id-rename",
- "description": "The scripted ID rename's choices (D345, D346, D348, D371; docs/ID_HIERARCHY_DESIGN.md, sections 2, 5, 6 and 11), read by scripts/id_moves.py. Seeded from the design's open_points.json at main 76a498ae; edited by hand since. A seed names a live module's constant (or, with keys, a lookup table whose keys are the IDs). A word is a seed whose family word waits for the user: decided is false until then. A group's switch mints its rows or leaves them bare, on the kept list.",
+ "description": "The scripted ID rename's choices (D345, D346, D348, D371; docs/ID_HIERARCHY_DESIGN.md, sections 2, 5, 6 and 11), read by scripts/id_moves.py. Seeded from the design's open_points.json at main 76a498ae; edited by hand since. A seed names a live module's constant (or, with keys, a lookup table whose keys are the IDs). A word is a seed whose family word waits for the user: decided is false until then. A group's switch mints its rows or leaves them bare, on the kept list. The groups' choices, the files declared frozen, and the pinned files' and the artifacts' choices are the lead's proposals: they wait for the user's words too.",
  "scope": {
   "dirs": [
    "src/",
@@ -415,7 +415,7 @@
    "confirmed": false,
    "status": "pending the lead",
    "with_group": "catalogue",
-   "ruling": "the lead: bare until C-1, to be confirmed by the user"
+   "ruling": "proposed by the lead: bare until C-1; it waits for the user's words"
   },
   "catalogue": {
    "choice": "bare",
@@ -426,7 +426,7 @@
    "confirmed": false,
    "status": "pending the lead: catalogue law",
    "with_group": "three_models",
-   "ruling": "the lead: bare until C-1, to be confirmed by the user"
+   "ruling": "proposed by the lead: bare until C-1; it waits for the user's words"
   },
   "ensemble_model": {
    "choice": "mint",
@@ -436,7 +436,7 @@
    ],
    "confirmed": false,
    "status": "pending the lead: ensemble model",
-   "ruling": "the lead: minted, to be confirmed by the user"
+   "ruling": "proposed by the lead: minted; it waits for the user's words"
   }
  },
  "keep": {
@@ -783,7 +783,7 @@
    "pinned_by": [
     "tests/tier3_record.json"
    ],
-   "note": "live: its only quote is a logged assertion line of tests/tier3_record.json, and three protocols' pins of it are already stale (the lead's ruling, 25 November)"
+   "note": "live: its only quote is a logged assertion line of tests/tier3_record.json, and three protocols' pins of it are already stale (proposed by the lead, 25 November; it waits for the user's words)"
   },
   {
    "path": "examples/tissue_geometry/irregular_native_radial.request.json",
@@ -797,7 +797,7 @@
     "tests/fixtures/tissue_geometry_cli/tissue_geometry_cli_contract.json",
     "validation/geometry/geometry_profile_preparation_protocol.json"
    ],
-   "note": "stays with the eight artifacts: left as it is, and its reader translates (the lead's ruling, 25 November)"
+   "note": "stays with the eight artifacts: left as it is, and its reader translates (proposed by the lead, 25 November; it waits for the user's words)"
   },
   {
    "path": "src/cells/assembly/__init__.py",
@@ -1310,6 +1310,14 @@
    {
     "path": "validation/tissue/composition_matrix.py",
     "reason": "the tag rule catches its blob, but it is a live tool: follow-ups edit it (D364) and a test runs it"
+   },
+   {
+    "path": "validation/gene_regulation/engine_run.py",
+    "reason": "the tag fr38-v2-registered-2026-11-25 catches its blob, but it is the gene unit's live driver: five of its tools and two test files import it"
+   },
+   {
+    "path": "validation/gene_regulation/release_check.py",
+    "reason": "the tag fr38-v2-registered-2026-11-25 catches its blob, but it is the release's live check: three test files import it"
    }
   ],
   "declared": [
@@ -2635,7 +2643,7 @@
    "acme.a_law@1": "an example of the grammar"
   }
  },
- "artifacts_note": "D380: the outcomes are declared and the tests leave with legacy, unless regenerating them proves easy; the script re-spells the files (regenerate, declare) or leaves them (keep_on_snapshot)",
+ "artifacts_note": "D380, a proposal that waits for the user's words: the outcomes are declared and the tests leave with legacy, unless regenerating them proves easy; the script re-spells the files (regenerate, declare) or leaves them (keep_on_snapshot)",
  "ids_kept": [
   {
    "test": "tests/unit/test_j2_bright_line.py::test_the_scan_sees_each_form",
