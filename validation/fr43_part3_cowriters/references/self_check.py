@@ -1,6 +1,6 @@
 """Read the written reference files as C0 reads them, and test them against separate code.
 
-    python -I self_check.py [--out DIR] [--fast]
+    python -I self_check.py [--out DIR] [--fast | --ladder] [--workers N] [--invented-only]
 
 It imports nothing of the writer.  Its parts, per world of the invented and of the registered set:
 
@@ -10,9 +10,9 @@ It imports nothing of the writer.  Its parts, per world of the invented and of t
    estimates, tolerances, pairs, margins, the Lie order);
 2. a third solution of the exact process, honest and planted, by SciPy's DOP853 in doubles with its own
    root finding, the affinities taken from the laws' logarithms;
-3. the split model again at the two coarsest rungs (and the Lie plant at its coarsest) in plain doubles,
-   the reactions' half-step by extrapolated Runge-Kutta steps and the gene unit's by SSPRK(3,3) in its
-   convex form;
+3. the split model again at the two coarsest rungs and the Lie plant at its coarsest (`--ladder`: at every
+   rung, the retry's among them) in plain doubles, the reactions' half-step by extrapolated Runge-Kutta
+   steps and the gene unit's by SSPRK(3,3) in its convex form;
 4. the invented set's own rules (SPEC 8): names, runs, no shared number, the refused and the stopped run.
 """
 
@@ -23,6 +23,7 @@ import hashlib
 import json
 import math
 import sys
+from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
 import numpy as np
@@ -137,6 +138,10 @@ SERIES = {
 }
 
 
+def hazard_thresholds(drawn, name, c):
+    return [-math.log(float.fromhex(u)) for u in drawn["worlds"][name]["copies"][c]["u1"]]
+
+
 class Files:
     """One world's reference object beside its inputs."""
 
@@ -172,6 +177,9 @@ class Files:
         if plant["families"] == "both":
             return [f["id"] for f in self.families]
         return plant["families"]
+
+    def thresholds(self, drawn, c):
+        return hazard_thresholds(drawn, self.name, c)
 
 
 def finite(value, path, files):
@@ -236,7 +244,8 @@ def copies_and_scales(files):
         events = c["events"]
         times = events["time_s"]
         expect(c["samples_s"] == samples, files.say("samples"))
-        expect(events["K_all"] == len(times) == len(events["channel"]) == len(events["counts_after"]), files.say("K_all"))
+        lengths = {len(times), len(events["channel"]), len(events["counts_after"])}
+        expect(lengths == {events["K_all"]}, files.say("K_all"))
         expect(events["K"] == sum(1 for t in times if t <= cut), files.say("K"))
         expect(all(b > a for a, b in zip(times, times[1:], strict=False)) and times[-1] <= end, files.say("times"))
         for k, (channel, counts) in enumerate(zip(events["channel"], events["counts_after"], strict=True)):
@@ -284,7 +293,8 @@ def copies_and_scales(files):
             last = {n: c["series"][n]["value"][-1] for n in names}
             first = {n: c["series"][n]["value"][0] for n in names}
             for book, key in (("xi_1", "X"), ("xi_2", "Y"), ("moved", "S node")):
-                size = sum(abs(k) * abs((last if w == "t" else first)[n]) for n, k, w in inputs["identities"][files.name][key])
+                terms = inputs["identities"][files.name][key]
+                size = sum(abs(k) * abs((last if w == "t" else first)[n]) for n, k, w in terms)
                 for h in files.rungs:
                     bound = 16 * (end / h + 1) * U * size
                     expect(abs(last[book]) > running["multiple"] * bound, files.say(f"running check {book} h={h}"))
@@ -319,7 +329,8 @@ def sizing(files):
             label = f"sizing {family['id']} {readout}"
             here = got[family["id"]][readout]
             used = one_statistic(files, here, files.rungs, entry, label)
-            one_statistic(files, here["retry"], files.rungs[1:] + [files.block["retry_rung_s"]], entry, label + " retry")
+            finest = files.rungs[1:] + [files.block["retry_rung_s"]]
+            one_statistic(files, here["retry"], finest, entry, label + " retry")
             if readout in files.judged["at_rounding"]:
                 expect(used < 3, files.say(f"{label}: named and resolved"))
             else:
@@ -491,9 +502,8 @@ class Law:
             return [1e-13] * 8 + [1e-13]
         rows = self.block["rows_fmol"]
         chain, machines = rows["N"] / self.L, self.start[5]
-        return (
-            [1e-13 * chain] * 2 + [1e-13 * rows["N"]] * 3 + [1e-13 * machines] * (self.m + 1) + [1e-13 * chain] * 5 + [1e-13]
-        )
+        weights = [chain] * 2 + [rows["N"]] * 3 + [machines] * (self.m + 1) + [chain] * 5 + [1.0]
+        return [1e-13 * weight for weight in weights]
 
     def readouts(self, y):
         if self.block["kind"] == "reactions":
@@ -508,10 +518,10 @@ class Law:
         }
 
 
-def planted_law(block, plant):
-    """The law with one reference plant's change (LAWS section 9)."""
+def planted_block(block, plant):
+    """The block with one reference plant's change (LAWS section 9), and the factors it drops."""
     changed = json.loads(json.dumps(block))
-    name, dropped = plant["id"], ()
+    name = plant["id"]
     channel = changed["population"]["channels"][0]
     if name == "P1":
         changed["reactions"][0]["rate_constant"] *= 1.01
@@ -527,12 +537,14 @@ def planted_law(block, plant):
     elif name == "P10-W6":
         changed["gene"]["initiation_per_mM_s"] = 0.0
     else:
-        dropped = {"P11": ("e^x",), "P12": ("e^y",)}[name]
-    return Law(changed, dropped)
+        return changed, {"P11": ("e^x",), "P12": ("e^y",)}[name]
+    return changed, ()
 
 
-def third_solution(law, thresholds, end, samples):
+def third_solution(task):
     """DOP853 from event to event; the hazard's threshold is its terminal event."""
+    block, dropped, thresholds = task
+    law, end, samples = Law(block, dropped), block["end_s"], block["samples_s"]
     tolerances = law.tolerances()
     y, t, active = list(law.start), 0.0, False
     times, rows, following = [], [law.readouts(y)], 1
@@ -560,31 +572,26 @@ def third_solution(law, thresholds, end, samples):
     return times, rows
 
 
-def threefry_thresholds(drawn, name, c):
-    return [-math.log(float.fromhex(u)) for u in drawn["worlds"][name]["copies"][c]["u1"]]
-
-
-def part_two(files, drawn, worst):
+def part_two(files, drawn, worst, run):
     """The third solution's distance from the published ones, over T and over each readout's scale."""
-    samples = files.block["samples_s"]
-    sets = [("", Law(files.block), files.copies)]
+    sets = [("", files.block, (), files.copies)]
     for plant in files.plants:
         series = [s for s in files.ref["planted"].get(plant["id"], {}).values() if isinstance(s, list)]
         if series:
             expect(all(s == series[0] for s in series), files.say(f"{plant['id']}: its families differ"))
-            sets.append((plant["id"] + " ", planted_law(files.block, plant), series[0]))
+            sets.append((plant["id"] + " ", *planted_block(files.block, plant), series[0]))
     cut = files.end - files.inputs["guard_steps"] * files.rungs[0]
-    for label, law, copies in sets:
-        for c, copy in enumerate(copies):
-            times, rows = third_solution(law, threefry_thresholds(drawn, files.name, c), files.end, samples)
-            events = copy["events"]
-            expect(len(times) == events["K_all"], files.say(f"{label}c{c}: the third solution's number of events"))
-            expect(events["K"] == sum(1 for t in events["time_s"] if t <= cut), files.say(f"{label}c{c}: K"))
-            far = max((abs(a - b) for a, b in zip(times, events["time_s"], strict=False)), default=0.0) / files.end
-            worst[f"{label}t_events / T"] = max(worst.get(f"{label}t_events / T", 0.0), far)
-            for n, s in copy["series"].items():
-                far = max(abs(a - row[n]) for a, row in zip(s["value"], rows, strict=True)) / files.ref["scales"][n]
-                worst[f"{label}{n} / scale"] = max(worst.get(f"{label}{n} / scale", 0.0), far)
+    entries = [(label, block, dropped, c, copy) for label, block, dropped, held in sets for c, copy in enumerate(held)]
+    found = run(third_solution, [(block, dropped, files.thresholds(drawn, c)) for _, block, dropped, c, _ in entries])
+    for (label, _, _, c, copy), (times, rows) in zip(entries, found, strict=True):
+        events = copy["events"]
+        expect(len(times) == events["K_all"], files.say(f"{label}c{c}: the third solution's number of events"))
+        expect(events["K"] == sum(1 for t in events["time_s"] if t <= cut), files.say(f"{label}c{c}: K"))
+        far = max((abs(a - b) for a, b in zip(times, events["time_s"], strict=False)), default=0.0) / files.end
+        worst[f"{label}t_events / T"] = max(worst.get(f"{label}t_events / T", 0.0), far)
+        for n, s in copy["series"].items():
+            far = max(abs(a - row[n]) for a, row in zip(s["value"], rows, strict=True)) / files.ref["scales"][n]
+            worst[f"{label}{n} / scale"] = max(worst.get(f"{label}{n} / scale", 0.0), far)
 
 
 # ------------------------------------------------------------------------- part 3: the split, again
@@ -655,16 +662,18 @@ def gene_flow(law, state, tau):
     return list(u / 3 + 2 / 3 * (two + tau * f(two)))
 
 
-def split_again(files, thresholds, first, h, lie=False):
-    law = Law(files.block)
-    tau, steps = h / 2, round(files.end / h)
+def split_again(task):
+    """One copy's split at h: the events' times, and the readouts at the samples with t > 0."""
+    block, thresholds, first, h, lie = task
+    law = Law(block)
+    tau, steps = h / 2, round(block["end_s"] / h)
     start = law.start
     site = SiteAgain(law, thresholds, start[0], start[1])
-    gene = files.block["kind"] == "gene"
+    gene = block["kind"] == "gene"
     # the co-writer's state without the cell's shared row, which the site holds
     state = list(start[2 : -2]) if gene else [start[2], start[3], start[4], 0.0, 0.0]
     forward = [first != "population", first == "population"]
-    marks = [round(t / h) for t in files.block["samples_s"][1:]]
+    marks = {round(t / h) for t in block["samples_s"][1:]}
     rows = []
     for step in range(steps):
         halves = 0
@@ -687,47 +696,57 @@ def split_again(files, thresholds, first, h, lie=False):
     return site.times, rows
 
 
-def part_three(files, drawn, worst):
-    """The first difference d_1 of every S readout and the pair at h_1, from plain doubles."""
-    rungs = files.rungs[:2]
+def part_three(files, drawn, worst, run, ladder):
+    """The model's differences, pairs and Lie errors again: the two coarsest rungs, or all of them."""
+    rungs = files.rungs + ([files.block["retry_rung_s"]] if files.block["retry_rung_s"] else [])
+    rungs = rungs if ladder else rungs[:2]
     firsts = [f["first"] for f in files.families]
-    runs = {}
-    for first in firsts:
-        for h in rungs:
-            runs[first, h] = [
-                split_again(files, threefry_thresholds(drawn, files.name, c), first, h) for c in range(len(files.copies))
-            ]
+    count = len(files.copies)
+    thresholds = [files.thresholds(drawn, c) for c in range(count)]
+    keys = [(first, h, False) for first in firsts for h in reversed(rungs)]
+    for family_id in files.ref["sizing"]["mutant"]:
+        first = next(f["first"] for f in files.families if f["id"] == family_id)
+        keys += [(first, h, True) for h in (reversed(files.rungs[-3:]) if ladder else files.rungs[-3:-2])]
+    tasks = [(files.block, thresholds[c], first, h, lie) for first, h, lie in keys for c in range(count)]
+    done = run(split_again, tasks)
+    runs = {key: done[i * count : (i + 1) * count] for i, key in enumerate(keys)}
 
-    def series(first, h, readout):
+    def series(first, h, readout, lie=False):
         if readout == "t_events":
-            return [run[0][:k] for run, k in zip(runs[first, h], files.K, strict=True)]
-        return [[row[readout] for row in run[1]] for run in runs[first, h]]
+            return [times[:k] for (times, _), k in zip(runs[first, h, lie], files.K, strict=True)]
+        return [[row[readout] for row in rows] for _, rows in runs[first, h, lie]]
+
+    def compare(name, again, given):
+        worst[name] = max(worst.get(name, 0.0), abs(again / given - 1))
 
     for family in files.families:
+        first = family["first"]
         for entry in files.judged["S"]:
             readout = entry["readout"]
             if readout in files.judged["at_rounding"]:
                 continue
-            again = rms(series(family["first"], rungs[1], readout), series(family["first"], rungs[0], readout))
-            given = files.ref["sizing"][family["id"]][readout]["d"][0]
-            worst[f"d_1 {readout}"] = max(worst.get(f"d_1 {readout}", 0.0), abs(again / given - 1))
+            got = files.ref["sizing"][family["id"]][readout]
+            for j in range(len(rungs) - 1):
+                again = rms(series(first, rungs[j + 1], readout), series(first, rungs[j], readout))
+                if j < len(got["d"]):
+                    compare(f"d_{j + 1} {readout}", again, got["d"][j])
+                if j > 0 and ladder:
+                    compare(f"retry d_{j} {readout}", again, got["retry"]["d"][j - 1])
+            if ladder:
+                for h, error in ((files.rungs[-1], got["E"]), (rungs[-1], got["retry"]["E"])):
+                    compare(f"E at h={h!r} {readout}", rms(series(first, h, readout), files.honest(readout)), error)
         for readout, got in files.ref["sizing"]["rungs"].get(family["id"], {}).items():
-            again = rms(series(family["first"], rungs[1], readout), series(family["first"], rungs[0], readout))
-            worst[f"rungs {readout}"] = max(worst.get(f"rungs {readout}", 0.0), abs(again / got["rms"] - 1))
+            apart = rms(series(first, rungs[1], readout), series(first, rungs[0], readout))
+            compare(f"rungs {readout}", apart, got["rms"])
     for readout, got in files.ref["sizing"]["pair"].items():
-        again = rms(series(firsts[0], rungs[0], readout), series(firsts[1], rungs[0], readout))
-        worst[f"pair {readout}"] = max(worst.get(f"pair {readout}", 0.0), abs(again / got["rms"] - 1))
+        apart = rms(series(firsts[0], rungs[0], readout), series(firsts[1], rungs[0], readout))
+        compare(f"pair {readout}", apart, got["rms"])
     for family_id, got in files.ref["sizing"]["mutant"].items():
         first = next(f["first"] for f in files.families if f["id"] == family_id)
-        h = files.rungs[-3]
-        again = rms(
-            [
-                split_again(files, threefry_thresholds(drawn, files.name, c), first, h, lie=True)[0][:k]
-                for c, k in enumerate(files.K)
-            ],
-            files.honest("t_events"),
-        )
-        worst["mutant E"] = abs(again / got["E"][0] - 1)
+        for h, error in zip(files.rungs[-3:], got["E"], strict=True):
+            if (first, h, True) in runs:
+                again = rms(series(first, h, "t_events", True), files.honest("t_events"))
+                compare(f"Lie E at h={h!r}", again, error)
 
 
 # ------------------------------------------------------------------- part 4: the invented set's rules
@@ -788,7 +807,8 @@ def part_four(invented, registered, drawn):
         for family in source["families"]:
             for h in family["rungs_s"]:
                 for c in range(source["copies"]):
-                    expect(f"{family['id']} h={h!r} c{c}" in names, f"{label}: a judged run of {family['id']} is missing")
+                    name = f"{family['id']} h={h!r} c{c}"
+                    expect(name in names, f"{label}: the judged run {name} is missing")
     for entry in invented["placement"]:
         rung = invented["worlds"][entry["world"]]["rungs_s"][0]
         expect(entry["dt_a0_max_at_the_coarsest_step"] == entry["largest_propensity_per_s"] * rung <= 0.25,
@@ -804,7 +824,7 @@ def part_four(invented, registered, drawn):
     expect(inner in block[outer], "the stopped run's change names a declared row")
     block[outer][inner] = number
     law = Law(block)
-    _, rows = third_solution(law, threefry_thresholds(drawn, stopped["world"], 0), block["end_s"], block["samples_s"])
+    _, rows = third_solution((block, (), hazard_thresholds(drawn, stopped["world"], 0)))
     x = [law.affinities(row["n_N"], row["n_Pi"], row["n_M"], row["n_R_c"])[0] for row in rows]
     expect(x[0] < -1.1 and x[-1] > -0.9, f"the stopped run's x goes from {x[0]} to {x[-1]}")
     return x
@@ -814,8 +834,17 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--out", type=Path, default=HERE / "out")
     parser.add_argument("--fast", action="store_true", help="part 1 and part 4 alone")
+    parser.add_argument("--ladder", action="store_true", help="part 3 at every rung (about an hour of one processor)")
+    parser.add_argument("--workers", type=int, default=1)
     parser.add_argument("--invented-only", action="store_true")
     arguments = parser.parse_args()
+
+    def run(function, tasks):
+        if arguments.workers == 1:
+            return [function(task) for task in tasks]
+        with ProcessPoolExecutor(arguments.workers) as pool:
+            return list(pool.map(function, tasks))
+
     registered_bytes = (SPEC / "inputs.json").read_bytes()
     registered = json.loads(registered_bytes)
     invented_bytes = (arguments.out / "inputs_invented.json").read_bytes()
@@ -840,13 +869,17 @@ def main():
             if arguments.fast:
                 continue
             exact, split = {}, {}
-            part_two(files, drawn[label], exact)
-            part_three(files, drawn[label], split)
+            part_two(files, drawn[label], exact, run)
+            part_three(files, drawn[label], split, run, arguments.ladder)
             print(f"{label} {name}: third solution, worst {max(exact.values()):.2e} "
                   f"({max(exact, key=exact.get)}); split again, worst relative {max(split.values()):.2e} "
                   f"({max(split, key=split.get)})")
             expect(max(exact.values()) <= 1e-9, f"{label} {name}: the third solution departs: {exact}")
-            expect(max(split.values()) <= 1e-3, f"{label} {name}: the split again departs: {split}")
+            expect(max(split.values()) <= (1e-2 if arguments.ladder else 1e-3),
+                   f"{label} {name}: the split again departs: {split}")
+            if arguments.ladder:
+                for key in sorted(split, key=split.get, reverse=True)[:8]:
+                    print(f"    {key}: {split[key]:.2e}")
     print(f"{COUNTS['checks']} checks, {len(PROBLEMS)} problems")
     for problem in PROBLEMS:
         print("PROBLEM", problem)

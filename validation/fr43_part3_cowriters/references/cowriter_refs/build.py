@@ -193,7 +193,7 @@ class WorldSet:
             return int(count)
 
     def tasks(self):
-        """(key, function, argument), the longest first."""
+        """(key, function, argument), roughly the longest first."""
         out = []
         for rung_index in reversed(range(len(self.all_rungs))):
             steps = self.steps(self.all_rungs[rung_index])

@@ -91,7 +91,8 @@ def copy_checks(world_set, c, draws_differ):
         out.append(entry("guard: 1e-9 T over the least distance of an event from T - g h_1", clear / nearest, 1))
         counts = inputs["minimum_events"][name]
         out.append(entry("minimum events per copy over K", Decimal(counts["per_copy"]) / copy.judged, 1))
-        out.append(entry("events to T against the pairs of draws", len(copy.times), inputs["draws"]["pairs_per_copy"] - 1))
+        pairs = inputs["draws"]["pairs_per_copy"]
+        out.append(entry("events to T against the pairs of draws", len(copy.times), pairs - 1))
         if copy.affinities is not None:
             for affinity in ("x", "y"):
                 out.append(entry(f"domain: the largest {affinity} over the run", copy.affinities[affinity], DOMAIN))
@@ -106,9 +107,8 @@ def closed_forms(world, copy, thresholds):
         abs(copy.times[k] - copy.times[k - 1] - thresholds[k] / world.site.dissolve_rate)
         for k in range(1, len(copy.times), 2)
     ]
-    out = [
-        entry("closed form: the active waits against E / k_dissolve, over T", max(waits, default=ZERO) / world.end, RELAXATION)
-    ]
+    worst = max(waits, default=ZERO) / world.end
+    out = [entry("closed form: the active waits against E / k_dissolve, over T", worst, RELAXATION)]
     if world.kind == "reactions":
         start, worst = world.start["n_X"], ZERO
         for i, t in enumerate(world.samples):
@@ -175,9 +175,8 @@ def world_checks(world_set):
             )
         )
         total = sum(copy.judged for copy in world_set.copies)
-        out.append(
-            entry("world: minimum events in all over their number", Decimal(inputs["minimum_events"][name]["total"]) / total, 1)
-        )
+        least = Decimal(inputs["minimum_events"][name]["total"])
+        out.append(entry("world: minimum events in all over their number", least / total, 1))
         for plant_id, copies in world_set.planted.items():
             worst = max(
                 [copy.time_accuracy / (EVENT_ACCURACY[event_class(world_set)] * world_set.world.end) for copy in copies]
@@ -207,7 +206,8 @@ def world_checks(world_set):
             out.append(entry(f"world: pair {readout}: 10 over the ratio", LEAST_RATIO / pair["ratio"], 1))
         for family_id, rows in world_set.sizing["rungs"].items():
             for readout, pair in rows.items():
-                out.append(entry(f"world: rungs {family_id} {readout}: 10 over the ratio", LEAST_RATIO / pair["ratio"], 1))
+                label = f"world: rungs {family_id} {readout}: 10 over the ratio"
+                out.append(entry(label, LEAST_RATIO / pair["ratio"], 1))
         for margin in world_set.margins:
             label = f"world: plant {margin['plant']} {margin['family'] or 'record'} {margin['check']}"
             if margin["no_margin"]:

@@ -237,7 +237,8 @@ def _step_length(coefficients, hazard, weights, order):
             if size == 0:
                 continue
             ratio = TOLERANCE * weight / size
-            length = math.exp((ratio.adjusted() * math.log(10.0) + math.log(float(ratio.scaleb(-ratio.adjusted())))) / j)
+            tens = ratio.adjusted() + math.log10(float(ratio.scaleb(-ratio.adjusted())))
+            length = 10.0 ** (tens / j)
             if shortest is None or length < shortest:
                 shortest = length
     return None if shortest is None else Decimal(f"{0.9 * shortest:.3g}")
