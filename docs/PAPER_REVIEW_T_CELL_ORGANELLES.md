@@ -1,5 +1,8 @@
 **T cell organelle coordination and Cells test planning — reviewed 3 November 2026**
 
+> **Legacy cleanup (25 November 2026, D386).** Paths under `src/cells/legacy/` and the older model
+> IDs named below left the engine. The tag `pre-cleanup-2026-11-25` keeps them.
+
 Akaash Kumar, Jane C. Stinchcombe and Gillian M. Griffiths, *Systems-level
 imaging reveals assembly and synaptic delivery of a multi-organelle ensemble
 during T cell killing*. [bioRxiv v1](https://www.biorxiv.org/content/10.64898/2026.10.30.763224v1),

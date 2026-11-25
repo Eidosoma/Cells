@@ -1,5 +1,8 @@
 # Source-compatible EMT pair: complete model contract
 
+> **Legacy cleanup (25 November 2026, D386).** `emt_mirna_pair@1` left the engine, and no model
+> replaces it as one piece. The tag `pre-cleanup-2026-11-25` keeps the code.
+
 SPEC-003 / D024, 2026-09-08. This document preserves the original design and
 instantaneous-reference contract. Subsequent [NUM-004 qualification](SOURCE_EMT_PAIR_NUMERICS.md)
 now validates the bounded independent trajectories and corresponding refined

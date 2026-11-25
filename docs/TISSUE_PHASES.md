@@ -1,5 +1,9 @@
 # Carrying INIT state into SIM
 
+> **Legacy cleanup (25 November 2026, D386).** `cells tissue-phase` and the families below left the
+> engine. Schedules on `resolved_pump_tissue@3` and `scheduled_bath_composition@1` carry what a live
+> model needs; nothing replaces the phase handoff. The tag `pre-cleanup-2026-11-25` keeps the code.
+
 `cells tissue-phase` prepares an explicit new SIM experiment from an accepted
 INIT checkpoint. Material, charge, geometry, intrinsic gates and accounting
 history carry forward exactly. The original accounting references remain in

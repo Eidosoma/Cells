@@ -401,7 +401,8 @@ note.
   `src/cells/legacy/` (move 1, 17 November) and the modular parts in their own folders (move 2,
   18 November, tag `d188-move2-landed-2026-11-18`): `laws/`, `kinds/`, `operators/`,
   `definitions/`, `execution/`, `registry/` and `records/`. The source paths named in this document
-  are post-move.
+  are post-move. The older families left in the legacy cleanup (25 November 2026, D386); the tag
+  `pre-cleanup-2026-11-25` keeps them.
 - **The accepted feature work continues in its order:** compartments, occupancy and delivery. Their
   real interactions exercise these contracts. The minimal-cell track supplies consumers and
   measured-data tests without displacing FR-4 and FR-5.
@@ -591,8 +592,8 @@ with a checkpoint or expand at a host-controlled boundary and recompile. It must
 never silently discard cells, contacts, or scientific events.
 
 M1c-a implements separate cell and edge axes, masks, stable IDs, safe neutral
-padding, and shape-aware checkpoint/resource checks; passive_pair@1 still accepts
-exactly two active cells and one contact. CORE-003 adds species-by-cell amounts,
+padding, and shape-aware checkpoint/resource checks; passive_pair@1, since removed,
+accepted exactly two active cells and one contact. CORE-003 adds species-by-cell amounts,
 species-by-edge transfer, and per-cell conversion. Its population and fixed
 topology are data, including zero contacts, disconnected cells, and parallel
 contacts with distinct IDs. Tiny reference cases extend through five cells;
@@ -665,8 +666,8 @@ compatible with later graph/field exchange and device-resident execution.
 D021's [physical-pair specification](SELECTIVE_CONTACT_SPEC.md) defines the
 bounded extension: two effective membrane capacitances to a common bath, one
 oriented selective flux/ledger, and one relaxing gate state. The gate continues
-evolving during prescribed transport block. This is implemented as
-[bioelectric_pair@1](BIOELECTRIC_PAIR.md) in D023. The
+evolving during prescribed transport block. It was implemented as
+[bioelectric_pair@1](BIOELECTRIC_PAIR.md) in D023, which left with the legacy cleanup. The
 [NUM-003 reference](SELECTIVE_CONTACT_NUMERICS.md) requires a new 1 ms/cubic
 candidate for its bounded panel, rather than inheriting the single-cell timestep.
 Boundary-aware implicit Jacobian probes keep the reference domain explicit.

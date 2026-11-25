@@ -1,5 +1,8 @@
 # Protein identity and atlas data in Cells: path
 
+> **Legacy cleanup (25 November 2026, D386).** Paths under `src/cells/legacy/` and the older model
+> IDs named below left the engine. The tag `pre-cleanup-2026-11-25` keeps them.
+
 Status: **stages 1 and 2 done, design not begun** (12 November 2026). Source:
 [SOTA_REVIEW_PROTEIN_ATLAS.md](SOTA_REVIEW_PROTEIN_ATLAS.md), user-supplied.
 Evidence: `/mnt/workspaces/Cells/protein-catalogue-20261111-01/`

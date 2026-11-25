@@ -1,5 +1,10 @@
 # Finite ATP, ADP and phosphate pools
 
+> **Legacy cleanup (25 November 2026, D386).** The finite ATP, ADP and phosphate pools, and the
+> families that used them, left the engine. Row fuel for the Na/K pump is a candidate request, not
+> made; the cycle kinds read ATP, ADP and phosphate as rows. The tag `pre-cleanup-2026-11-25` keeps
+> the code.
+
 `cells.legacy.processes.finite_energy` implements a standalone finite-energy component
 for the declared transformed law `finite_atp_adp_pi_transformed@1`. It supplies
 current metabolic concentrations to the existing Na/K process without changing

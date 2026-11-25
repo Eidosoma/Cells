@@ -1,5 +1,8 @@
 # Human cardiac laws: design (proposed)
 
+> **Legacy cleanup (25 November 2026, D386).** Paths under `src/cells/legacy/` and the older model
+> IDs named below left the engine. The tag `pre-cleanup-2026-11-25` keeps them.
+
 **Status: PROPOSED, 16 November 2026; its choices for the user decided by D184 the same day.**
 The user delegated the choices to the lead with the advisor and gave the go (D184, on main at
 98c49993). Decided:

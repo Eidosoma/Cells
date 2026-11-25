@@ -1,5 +1,9 @@
 # Finite-pool calcium-pump adapters
 
+> **Legacy cleanup (25 November 2026, D386).** The finite-fuel calcium pumps left the engine, with
+> their test and reference. Row fuel for pumps is a candidate request, not made. The tag
+> `pre-cleanup-2026-11-25` keeps the code.
+
 The two new laws `finite_atp_pmca_positive@1` and
 `finite_atp_er_1ca_positive@1` feed current finite ATP/ADP/Pi concentrations
 to the existing positive-domain PMCA and ER kernels. Each signed formal cycle

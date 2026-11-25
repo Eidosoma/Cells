@@ -1,5 +1,8 @@
 # A closed compartment owned by a cell (design)
 
+> **Legacy cleanup (25 November 2026, D386).** Paths under `src/cells/legacy/` and the older model
+> IDs named below left the engine. The tag `pre-cleanup-2026-11-25` keeps them.
+
 **Qualified, 18 November 2026.** The registered protocol `fr1-closed-compartment-v1`
 (`validation/tissue/compartment_acceptance_protocol.json`, registered at 05a8d193) was judged once
 from a clean snapshot of that commit: passed, 44 of 44 judged criteria (C1 to C13 with their
