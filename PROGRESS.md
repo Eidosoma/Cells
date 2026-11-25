@@ -11,15 +11,16 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
 ## Open FR and core work (25 November 2026, night)
 
-Sources: [Decisions](docs/DECISIONS.md) D318 to D381, the [feature index](docs/FEATURE_REQUESTS.md) and the tags of 22 to
+Sources: [Decisions](docs/DECISIONS.md) D318 to D382, the [feature index](docs/FEATURE_REQUESTS.md) and the tags of 22 to
 25 November.
 
 - **Scheduled, from the morning of 25 November:**
   - **The law-ID rename** (D345, D346, D371). Everything live becomes `cells.<family>.<name>@major`; one scripted
-    move with a committed mapping table, no aliases. Order: land what is gated, tag main, freeze the pre-rename
-    snapshot (D369), then the rename's three read-only checks and the mapping, then the rename with its own gate,
-    then re-merge the branches in flight. The family words are decided (D371); the design note comes before any
-    script (D350).
+    move with a committed mapping table, no aliases. The design note is on `rename-design` (2dd54f72) and the tool is
+    built, not landed (`id-rename-tool`, D382). Two landings: first the hand refactors and the tool with an empty table (in
+    preparation), then, after the user's words, the move with its own gate. Between them: the pre-rename tag, the snapshot
+    (D369) and the legacy captures' bitwise check. The law interfaces' words are decided (D371); 12 words for 17 further IDs
+    are open, with the lead's rulings to confirm (D382). The branches in flight are re-merged after the move.
   - **Legacy** (D346, D348, D369, D374). Everything actually used leaves legacy in canonical forms; relocation alone
     is ruled out as an end state. The calcium ensemble is kept and re-expressed (five engine features, about 16 to
     28 agent-days as a rough guess, candidate requests only). The physiology stack (17 drivers on five legacy BETSE
@@ -28,15 +29,16 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D381, the [feature index](docs/F
     (relocate first, re-express directly, or prune in place) and whether a CPU re-expression of the ensemble counts are
     the user's choice.
     BETSE parity stays on the live `resolved_pump_tissue@1` to `@3` ladder.
-  - **Gate speed** (D358, decided by the user): refresh the scope map after each engine landing, record the 37 files
-    with unmapped children, and narrow D229's always-run readers rule after a file-open check. The nightly full run
-    stays the backstop.
+  - **Gate speed** (D358, decided by the user) is landed (2c82a048, D382). A refresh of the scope map follows each engine
+    landing, by a nightly on demand, and the nightly full run stays the backstop. Open for the user: the 28 readers of
+    `SNAPSHOT.json`, and AGENTS.md's wording of D229's rule 3.
 - **Queued builds, in the order the decisions give:**
   - **FR-52** (high; D371, D375): cohort observations for integer units; an engine record at each event, chains in
     version 1, a split makes a new unit. Note on branch `fr52-design`; 4.25 to 5 agent-days, after the rename.
   - **FR-54 and FR-57** (high; D341, D362, D364): one `liquid_routing@1` operator that takes over the wash. Note
-    `docs/LIQUID_ROUTING_DESIGN.md` (f66a4828, branch `fr54-57-design`); 8.25 to 10.5 agent-days, after the
-    rename. The wash retires only after FR-49's World B and C1 and FR-45's W2 and W7 have run, or those runs are
+    `docs/LIQUID_ROUTING_DESIGN.md` (968bd182, branch `fr54-57-design`); 8.25 to 10.5 agent-days, after the
+    rename. The protocol and spec are tagged (`liquid-routing-criteria-2026-11-25`, amendments 1 to 4); the references are
+    built and wait for an independent auditor of the spec (D381, D382). The wash retires only after FR-49's World B and C1 and FR-45's W2 and W7 have run, or those runs are
     pinned to an earlier snapshot.
   - **FR-65** (high, part of FR-43; D365, D375): turnover beside a changing volume, with a lumen. Note `fr65-design`
     (df473a02); about 3.1 to 4.45 agent-days for the first build, 2 to 2.5 more for the volume-reading step.
@@ -47,16 +49,17 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D381, the [feature index](docs/F
     (774fdcd5); D370 corrects its premise for the pump-tissue family. FR-47's ledger limit: the
     evidence recommends keeping it, with the user to decide (D379).
   - **FR-55** (normal; D344, D351): its note recommends no build. **FR-58 to FR-62** (normal; D365) and **FR-66**
-    (medium; D372) have design notes on branches, with questions for the user (D379). **FR-56**'s note is being written.
+    (medium; D372) have design notes on branches, with questions for the user (D379); so does **FR-56** (172fce4c, D380).
   - **FR-39, FR-40, FR-41** (high, D286) and the architecture items (D299) are unchanged; no decision of 23 to 24
     November moves them.
 - **Registrations and judged runs still to come:**
   - **FR-51's two-potassium registration** (D353, D355, D356, D361, D378, D379) is tagged
     (`fr51-two-potassium-registered-2026-11-25`), pinned to FR-51's landing (955765ef). It is non-blind, and Panama's 10
-    and 20 mM levels are holdouts. Its engine check passes. Two readers wait on one question about the panel's label.
-  - **FR-38's second comparison has passed** (D381; tag `fr38-v2-registered-2026-11-25`), judged and independently
-    checked, beside D313's failed verdict. Its branch lands next. The three uncovered readout controls go to a later
-    registration, FR-38 v3 (D354).
+    and 20 mM levels are holdouts. Its engine check passes. Two readers wait on one question about the panel's label
+    (a correction on the drafted fallback: D382).
+  - **FR-38's second comparison has passed and is landed** (D381, D382; 4039dcba), beside D313's failed verdict. The three
+    uncovered readout controls go to a later registration, FR-38 v3 (D354).
+  - **FR-43 part 3's co-writers** (D328): the note is on `fr43-part3-cowriters` (c82d8d42), with four questions for the user.
   - **FR-45's judge** (D375, D376): written after the rename; W2 and W7 stay on the wash or are pinned.
   - **FR-49's World B and combination checks C1 and C2** (D331): after the site pairing and the wash narrowing;
     C4's four-way form by amendment once admission by species lands.
@@ -65,18 +68,18 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D381, the [feature index](docs/F
     recorded in D318 to D376.
   - **FR-30** (D343, D344, D350, D366): parked as development-only, narrowly reopened for two phases at a declared
     voltage. Ek-Vitorín 2016 is undetermined by structure (D341, D342), so nothing is fitted (D379); D366's
-    power check and multistart bind any later registered fit. The Revilla diagnostic lands by merge in the next no-src stack.
-  - **Follow-ups:** the docstring-only batch (scope lines of D337, D340, D344, D351, D355, D356); FR-43 part 3's
-    open items and the factor-width term (D328); FR-43's gaps 3 and 4 (D347: no registered criterion for part 1;
-    turnover in a swelling cell is FR-65); D349's restart row and per-solver support view are landed (260a9138).  The composite on a GPU through the plain `runner.run` is admitted with host checks; whether to require XLA's
-    deterministic flag, refuse it, or state the caveat is the user's (D380).
+    power check and multistart bind any later registered fit. The Revilla diagnostic is landed (260a9138).
+  - **Follow-ups:** FR-43 part 3's open items and the factor-width term (D328); FR-43's gaps 3 and 4 (D347: no
+    registered criterion for part 1; turnover in a swelling cell is FR-65). The docstring batch, D349's restart row and the
+    per-solver support view are landed (260a9138). The composite on a GPU through the plain `runner.run` is admitted with
+    host checks; whether to require XLA's deterministic flag, refuse it, or state the caveat is the user's (D380).
   - **Lean's rebuilt tip is merged** at 18198688 (D378); `lean-ready.sh` runs before every Lean merge.
 - **Open, unscheduled:** FR-1, FR-2, FR-3, FR-6, FR-11, FR-13, FR-14, FR-15, FR-16, FR-8's rung 2, F1 (after an
   MG0c rerun), crossrev renewal, and the Phase 0 runner's review. FR-17's stage 1 has landed (below); its GPU
   placement is closed (D336).
 - **Deferred:** FR-26's L, FR-36. **Parked:** FR-29 (D268), FR-30 (above).
 
-## Landed since 22 November (to 24 November 2026)
+## Landed since 22 November (to 25 November 2026)
 
 Each line gives the merge or tag commit, the tag, the decision and where the evidence is. Tags are named
 `<name>-<date>`; tags marked "reg" are registrations, tagged before the engine side reads them.
@@ -101,7 +104,11 @@ Each line gives the merge or tag commit, the tag, the decision and where the evi
 - **FR-38's second comparison, registered** (D334, D339, D354, D367): criteria 707014e4
   (`fr38-v2-criteria-2026-11-24`), spec amendments efb311fd, references 8bd81c7e (six files, 19,957,976 bytes,
   within the 20 MB limit), amendment 3 5859006b, amendment 4 b4af13df, sheet erratum I a55a2e12
-  (`gr1-sheet-fr38-erratum-i-2026-11-24`; no decision number located). No engine run yet.
+  (`gr1-sheet-fr38-erratum-i-2026-11-24`; no decision number located), amendments 5 and 6 (`fr38-v2-amendment-6-2026-11-25`),
+  registered at b0974a06 (`fr38-v2-registered-2026-11-25`), run and passed (D381), landed at 4039dcba
+  (`fr38-v2-landed-2026-11-25`, D382).
+- **D358, gate speed:** 2c82a048 (`d358-landed-2026-11-25`); the map is @3 from the nightly on demand at 2c82a048 (D382).
+- **The pre-rename stack:** 260a9138 (`pre-rename-stack-landed-2026-11-25`, D381).
 - **Fail-closed and rounding fixes, 23 November (validation only):** FR-38's retention-resolution and survival-rounding fixes
   (fd2bb88c, 4944314d), the cohort and release-check fail-closed fixes (275b508f, 1de0055b); decision numbers not
   traced.
