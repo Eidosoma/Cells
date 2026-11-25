@@ -421,16 +421,18 @@ def entry(logs, tree, trace=None):
 
 def trace_finds(trace, tree, processes, seen, content, lists, listed):
     """What the trace shows and the entry lacks: regular files opened, folders opened to be listed (a
-    process without a record may have listed only what the test's own code did), and programs run by
-    a process that neither recorded itself nor was SEEN starting, nor descends from one that was."""
+    process without a record, or replaced by a program, may have listed only what the test's own code
+    did), and programs run by a process that neither recorded itself nor was SEEN starting, nor
+    descends from one that was."""
     recorded, found = defaultdict(int), {}
     for p in processes:
         recorded[p["pid"]] += not p["forked"]
+    whole = set(recorded) - {p["pid"] for p in processes if any("exec" in r for r in p["starts"])}
     files = {p: line for p, line in trace["opened"].items()
              if useful(source_of(p)) and tree.kind(source_of(p)) == "f" and source_of(p) not in content}
     folders = {p for pid, paths in trace["by"].items() for p in paths
                if useful(p) and (tree.kind(p) == "d" or p == ".")
-               and p not in (listed if pid in recorded else lists)}
+               and p not in (listed if pid in whole else lists)}
 
     def known(pid):
         while pid is not None and pid not in seen:
