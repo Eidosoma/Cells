@@ -71,6 +71,7 @@ def copy_checks(world_set, c, draws_differ):
                     limit,
                 )
             )
+        out += closed_forms(world, copy, make_thresholds(world_set.u1[c]))
         values = {readout: published(series) for readout, series in copy.series.items()}
         for readout in sorted(copy.series):
             rounded = max(abs(a - b) for a, b in zip(values[readout], copy.series[readout], strict=True))
@@ -96,6 +97,25 @@ def copy_checks(world_set, c, draws_differ):
                 out.append(entry(f"domain: the largest {affinity} over the run", copy.affinities[affinity], DOMAIN))
         if "running" in inputs["judged"][name]:
             out.append(entry("running check: the worst bound over its book", running_residual(world_set, values), 1))
+    return out
+
+
+def closed_forms(world, copy, thresholds):
+    """The parts of the process that have one: the waits of the active site, and X of the reactions."""
+    waits = [
+        abs(copy.times[k] - copy.times[k - 1] - thresholds[k] / world.site.dissolve_rate)
+        for k in range(1, len(copy.times), 2)
+    ]
+    out = [
+        entry("closed form: the active waits against E / k_dissolve, over T", max(waits, default=ZERO) / world.end, RELAXATION)
+    ]
+    if world.kind == "reactions":
+        start, worst = world.start["n_X"], ZERO
+        for i, t in enumerate(world.samples):
+            turned = start * (1 - (-world.make_rate * t).exp())
+            apart = max(abs(copy.series["n_X"][i] - (start - turned)), abs(copy.series["xi_1"][i] - turned))
+            worst = max(worst, apart / start)
+        out.append(entry("closed form: n_X and xi_1 against the exponential, over n_X(0)", worst, RELAXATION))
     return out
 
 

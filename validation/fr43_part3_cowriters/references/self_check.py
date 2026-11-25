@@ -99,7 +99,7 @@ def part_zero(label, inputs, drawn):
 # --------------------------------------------------------------------------- part 1: the files alone
 
 
-def identity_text(world_name, world):
+def identity_text(world):
     """READOUTS section 4, written out from its text."""
     if world["kind"] == "reactions":
         return {
@@ -211,7 +211,7 @@ def part_one(files, digest):
     wanted = {item["readout"]: "S" for item in files.judged["S"]} or {"t_events": "R"}
     expect(ref["classes"] == wanted, files.say("classes"))
     expect([c["seed"] for c in files.copies] == files.block["seeds"], files.say("seeds"))
-    for key, text in identity_text(name, files.block).items():
+    for key, text in identity_text(files.block).items():
         given = sorted((n, float(k), w) for n, k, w in inputs["identities"][name][key])
         expect(given == sorted((n, float(k), w) for n, k, w in text), files.say(f"identity {key} in the inputs"))
     copies_and_scales(files)

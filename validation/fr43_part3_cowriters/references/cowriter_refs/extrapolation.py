@@ -131,9 +131,9 @@ def _coefficients():
     return table
 
 
-def _attempt(field, y, h, weights, table, first=None):
+def _attempt(field, y, h, weights, table):
     """One extrapolated step of the autonomous system y' = field(y): the end and the error over the weights."""
-    slope = field(y) if first is None else first
+    slope = field(y)
     size = len(y)
     previous = []
     for j in range(COLUMNS):

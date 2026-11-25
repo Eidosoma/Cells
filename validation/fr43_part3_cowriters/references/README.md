@@ -41,7 +41,7 @@ the declared decimal, so that a horizon is a whole number of steps.
   event's time comes from the hazard as the independent variable (dt/dH = 1/a_0), and from the closed form where a_0
   is constant.
 - **Closed forms.** W5-exact's published times are the decimal sums of LAWS §4, and method A's own hazard meets them.
-  The transfer alone meets its exponential.
+  The transfer alone meets its exponential, every active wait meets E_k/k_dissolve, and X and ξ_1 meet theirs.
 - **The sizing model** (`split.py`), LAWS §5 at 28 digits. A is exact: the free site conducts nothing, so the row it
   reads is fixed and the hazard is linear in time, and the active site's propensity is constant while the pools relax
   as an exponential. B is, for the reactions, a Taylor series whose remainder is below 10⁻²⁰ per half-step, and for
