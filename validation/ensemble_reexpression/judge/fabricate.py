@@ -14,7 +14,7 @@ import zlib
 import numpy as np
 
 from . import constants as c
-from . import identities
+from . import identities, strictjson
 from .legacy import STEPS, Captures, Planted
 from .registration import Registration, World, changes
 
@@ -515,6 +515,14 @@ class Fabricator:
             )
             table["runs"][name] = entry
         return tables
+
+
+def digests(tables: dict) -> dict:
+    """The sha256 of each table, by the bytes that `fabricate` writes."""
+    return {
+        f"table_{consumer}.json": strictjson.sha256(strictjson.encode(table))
+        for consumer, table in tables.items()
+    }
 
 
 def _digest(name: str) -> str:

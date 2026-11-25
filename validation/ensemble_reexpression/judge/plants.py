@@ -1,9 +1,10 @@
-"""The judge's plants JP1 to JP24 (PLANTS section 6, and Amendment 2 for JP14): altered copies of
-honest tables, and what each must score.
+"""The judge's plants JP1 to JP27 (PLANTS section 6, and Amendment 2 items 1 and 11): altered copies
+of honest tables, and what each must score.
 
 A plant alters rows only, or the one leaf that it names. Each is scored by the code that scores the
 registered tables. What a plant names (a family, a run) comes from the profile, so the rehearsal's
-worlds can stand in for the registered ones.
+worlds can stand in for the registered ones. What else fails by the rule is listed beside what a
+plant names (Amendment 2, item 1).
 """
 
 from __future__ import annotations
@@ -169,17 +170,26 @@ def whole_potassium(block: dict) -> dict:
 
 
 class Plant:
-    """One judge's plant: the consumer whose table it alters, the alteration, and its checks."""
+    """One judge's plant: the consumer whose table it alters, the alteration, and its checks.
 
-    def __init__(self, name, consumer, what, must, alter, check):
-        self.name, self.consumer, self.what, self.must, self.alter, self.check = (
-            name,
-            consumer,
-            what,
-            must,
-            alter,
-            check,
-        )
+    `scope` is what `alter` takes: the table's runs, the table itself, or the runs and a retry's
+    (`alter` and `check` then take both). `named` and `by_rule` are the (run, readout) that it must
+    fail, and those that fail besides by the rule.
+    """
+
+    def __init__(
+        self, name, consumer, what, must, alter, check, scope="runs", named=None, by_rule=()
+    ):
+        self.name, self.consumer, self.what, self.must = name, consumer, what, must
+        self.alter, self.check, self.scope = alter, check, scope
+        self.named, self.by_rule = named, tuple(by_rule)
+
+    def fails_as_listed(self, q) -> list:
+        """The check that what fails is what the plant names, and what the rule says besides."""
+        if self.named is None:
+            return []
+        wanted = {*self.named, *self.by_rule}
+        return [("what fails is what it names, and what fails by rule", set(q.fails()) == wanted)]
 
 
 def plants(registration: Registration, captures: Captures) -> list:
@@ -202,8 +212,18 @@ def plants(registration: Registration, captures: Captures) -> list:
     W3 = assembly.finest
     out = []
 
-    def add(name, consumer, what, must, alter, check):
-        out.append(Plant(name, consumer, what, must, alter, check))
+    def add(name, consumer, what, must, alter, check, **more):
+        out.append(Plant(name, consumer, what, must, alter, check, **more))
+
+    def resumed(run, readout):
+        """The E entries of a run's restarts that read a readout: they fail by the rule."""
+        return [
+            (run, f"restart {readout}")
+            for other in registration.runs.values()
+            if other["role"] == "support"
+            and registration.restarted(other) == run
+            and not registration.is_pool(other)
+        ]
 
     known = registration.profile.get("not_blind", {}).get(pools, [seen.name])
     others = [f.name for f in registration.by_consumer[pools] if f.name not in known]
@@ -243,6 +263,11 @@ def plants(registration: Registration, captures: Captures) -> list:
             ("no run is refused", not any(q.run(n)["refused"] for n in A.runs)),
             ("the consumer fails", q.reads(ionic, c.FAIL)),
         ],
+        named=[
+            (H3, "leak_K"),
+            *((n, f"balance of {kind}, K") for n in A.runs for kind in ("cells", "regions")),
+        ],
+        by_rule=resumed(H1, "leak_K"),
     )
 
     def jp2(runs):
@@ -266,6 +291,8 @@ def plants(registration: Registration, captures: Captures) -> list:
             ),
             ("no run is refused", not any(q.run(n)["refused"] for n in A.runs)),
         ],
+        named=[(H3, "heat_membrane"), (H3, "energy_identity")],
+        by_rule=resumed(H1, "heat_membrane"),
     )
 
     def jp3(runs):
@@ -393,6 +420,8 @@ def plants(registration: Registration, captures: Captures) -> list:
                 q.outcome(family=A.name, readout="energy_identity") == c.FAIL,
             ),
         ],
+        named=[(H3, "heat_junction"), (H3, "energy_identity")],
+        by_rule=resumed(H1, "heat_junction"),
     )
 
     def jp8(runs):
@@ -555,7 +584,7 @@ def plants(registration: Registration, captures: Captures) -> list:
         "JP14",
         ionic,
         f"{A.name}, h2: one series leak_K shifted by 2^-52 of its largest value, the other two "
-        f"rungs honest (Amendment 2)",
+        f"rungs honest (Amendment 2, item 1)",
         "the entry's class is by the rule, and no fail is invented",
         jp14,
         check14,
@@ -669,6 +698,8 @@ def plants(registration: Registration, captures: Captures) -> list:
                 q.balances_fail(A.runs, "K", ends),
             ),
         ],
+        named=[(H3, "junction_K"), *((n, "balance of cells, K") for n in A.runs)],
+        by_rule=resumed(H1, "junction_K"),
     )
 
     def jp20(runs):
@@ -780,18 +811,170 @@ def plants(registration: Registration, captures: Captures) -> list:
             ("the consumer is inconclusive", q.reads(ionic, c.INCONCLUSIVE)),
         ],
     )
+
+    # Amendment 2, item 11: one for each of its items 2, 3 and 4.
+    last_face = world.faces[-1]
+    new_face = f"face_{len(world.faces)}"
+
+    def jp25_face(runs):
+        faces = runs[H2]["inputs"]["faces"]
+        faces[new_face] = copy.deepcopy(faces[last_face])
+
+    add(
+        "JP25 (face)",
+        ionic,
+        f"{A.name}, h2: one more face in the echoed inputs.faces, {new_face}, a copy of "
+        f"{last_face}",
+        "refused, and nothing of the run judged. Not a fail plant",
+        jp25_face,
+        lambda q: [
+            ("refused by its echo", q.cause(H2, "departing echo", f"faces/{new_face}")),
+            ("nothing of the run is judged", q.nothing_judged(H2, A.name)),
+            ("no entry fails", not q.fails()),
+            ("the consumer is inconclusive", q.reads(ionic, c.INCONCLUSIVE)),
+        ],
+    )
+
+    def jp25_key(runs):
+        runs[H2]["inputs"]["faces"][last_face]["one_more_key"] = 1.0
+
+    add(
+        "JP25 (key)",
+        ionic,
+        f"{A.name}, h2: in a second copy, one more key inside {last_face} and no more face",
+        "not refused",
+        jp25_key,
+        lambda q: [
+            ("not refused", not q.run(H2)["refused"]),
+            (
+                "the key is recorded",
+                any(f"{last_face}/one_more_key" in str(flag) for flag in q.run(H2)["flags"]),
+            ),
+            ("no entry fails", not q.fails()),
+            ("the consumer passes", q.reads(ionic, c.PASS)),
+        ],
+    )
+
+    again = junctions.retry_name
+    zero = "n_out_Na"
+
+    def jp26(runs, retried):
+        table = runs[I1]["rows"]["junction_gate"]
+        runs[I1]["rows"]["junction_gate"] = {k: [v + 2e-11 for v in vs] for k, vs in table.items()}
+        next(iter(retried[again]["rows"][zero].values()))[-1] = 5e-324
+
+    def check26(first, q):
+        gate, gate2 = first.S(junctions.name, "junction_gate"), q.S(junctions.name, "junction_gate")
+        owed = first.record["retry_owed"]
+        return [
+            (
+                "junction_gate is inconclusive by order at the first triple",
+                len(gate) == 1
+                and gate[0]["outcome"] == c.INCONCLUSIVE
+                and gate[0]["order_class"] == "mixed",
+            ),
+            (
+                "it is named in retry_owed.json",
+                again in owed["runs"]
+                and "junction_gate: order" in owed["why"].get(junctions.name, ()),
+            ),
+            (
+                "it passes on the new triple",
+                len(gate2) == 1
+                and gate2[0]["outcome"] == c.PASS
+                and gate2[0]["pass_of_the_judgement"] == 2,
+            ),
+            (
+                f"{zero} of the retry run fails (E)",
+                q.outcome(run=again, readout=f"{zero} is zero") == c.FAIL,
+            ),
+            (f"{J} fails", q.reads(J, c.FAIL)),
+        ]
+
+    add(
+        "JP26",
+        J,
+        f"{junctions.name}, with a retry run: the rows junction_gate of h1 raised by 2e-11 (an "
+        f"invented error), and in the retry run one {zero} at the last time set to 5e-324",
+        "junction_gate inconclusive by order at the first triple, named in retry_owed.json, and a "
+        f"pass on the new triple. A fail of class E of {zero} of the retry run, and {J} fails. The "
+        "balance of its region in Na has zero scale, and fails besides, by rule",
+        jp26,
+        check26,
+        scope="retry",
+        named=[(again, f"{zero} is zero")],
+        by_rule=[(again, "balance of regions, Na"), *resumed(I1, "junction_gate")],
+    )
+
+    def jp27(table):
+        table["units"] = dict(table["units"], energy="J")
+
+    def check27(q):
+        verdicts = scoring.verdict_of(q.record)
+        runs = [s for s in q.record["runs"].values() if s["consumer"] == "cell"]
+        judged = [e for e in q.entries if e["judged"] and e["consumer"] == "cell"]
+        return [
+            (
+                "the file is refused whole, and the refusal is named in the verdict",
+                any("units" in reason for reason in verdicts["refused_files"].get("cell", ())),
+            ),
+            ("every run in it is unjudged", bool(runs) and not any(s["judged"] for s in runs)),
+            (
+                "its entries are unformed",
+                bool(judged) and all(e["outcome"] == c.NOT_FORMED for e in judged),
+            ),
+            ("cell is inconclusive", q.reads("cell", c.INCONCLUSIVE)),
+            ("no entry fails", not q.fails()),
+        ]
+
+    if "cell" in registration.consumers:
+        add(
+            "JP27",
+            "cell",
+            'table_cell.json: units.energy is "J" and not "pJ"',
+            "the file refused whole, and the refusal named in the verdict. Every run in it "
+            "unjudged, its entries unformed and inconclusive. cell at best inconclusive, and the "
+            "other consumers as without it",
+            jp27,
+            check27,
+            scope="table",
+        )
     return out
 
 
 def judge(
-    registration: Registration, note: StringsNote, tables: dict, c0: dict, captures, planted
+    registration: Registration,
+    note: StringsNote,
+    tables: dict,
+    c0: dict,
+    captures,
+    planted,
+    retry: dict | None = None,
+    settlements=None,
 ) -> dict:
-    """Both stages on parsed tables, in memory: the code that the registered tables go through."""
-    state = scoring.Tables(registration, note, TableSet.from_data(tables))
+    """Both stages on parsed tables, in memory: the code that the registered tables go through. With
+    a retry's tables, both passes, and the records of both. Settlements are read in the last pass.
+    """
+
+    def state(*more, settled=None):
+        return scoring.Tables(
+            registration, note, TableSet.from_data(tables), *more, settlements=settled
+        )
+
     hashes = {"tables": "in memory"}
-    power = scoring.stage1(state, c0, hashes)
-    scoring.check_power(state, c0, power, hashes)
-    return scoring.Stage2(state, c0, power, captures, planted).run()
+    power = scoring.stage1(state(), c0, hashes)
+    scoring.check_power(state(), c0, power, hashes)
+    here = state(settled=settlements if retry is None else None)
+    first = scoring.Stage2(here, c0, power, captures, planted).run()
+    if retry is None:
+        return first
+    again = (TableSet.from_data(retry, retry=True), first["retry_owed"]["runs"])
+    hashes = {"tables": "in memory", "retry": "in memory"}
+    power2 = scoring.stage1(state(*again), c0, hashes, first)
+    scoring.check_power(state(*again), c0, power2, hashes, first)
+    there = state(*again, settled=settlements)
+    second = scoring.Stage2(there, c0, power, captures, planted, power2, first).run()
+    return first, second
 
 
 def run_plants(
@@ -802,14 +985,17 @@ def run_plants(
     captures,
     planted,
     only=None,
+    retry: dict | None = None,
 ) -> dict:
     """Score every plant on altered copies of the tables. A plant whose checks do not all hold is
     named, and nothing is bent. A plant alters one consumer's table, and that consumer is judged.
+    `retry` is a retry's honest tables by consumer, for the plant that needs one.
     """
     views = {consumer: registration.part(consumer) for consumer in registration.consumers}
 
-    def score(consumer, table):
-        return judge(views[consumer], note, {consumer: table}, c0, captures, planted)
+    def score(consumer, table, retried=None):
+        again = None if retried is None else {consumer: retried}
+        return judge(views[consumer], note, {consumer: table}, c0, captures, planted, again)
 
     before = {consumer: score(consumer, tables[consumer]) for consumer in views}
     out = {
@@ -821,6 +1007,34 @@ def run_plants(
         ],
         "plants": [],
     }
+
+    def altered(plant):
+        """What the altered tables score: the record, or the first pass's and the second's."""
+        table = tables[plant.consumer]
+        if plant.scope == "table":
+            table = dict(table)
+            plant.alter(table)
+            return score(plant.consumer, table)
+        runs = Lazy(table["runs"])
+        if plant.scope == "retry":
+            held = retry[plant.consumer]
+            retried = Lazy(held["runs"])
+            plant.alter(runs, retried)
+            table = dict(table, runs=dict(runs))
+            return score(plant.consumer, table, dict(held, runs=dict(retried)))
+        plant.alter(runs)
+        return score(plant.consumer, dict(table, runs=dict(runs)))
+
+    def rest_as_without(plant):
+        """Every other consumer's verdict, with the altered table beside the honest ones, as it is
+        without it.
+        """
+        table = dict(tables[plant.consumer])
+        plant.alter(table)
+        whole = judge(registration, note, {**tables, plant.consumer: table}, c0, captures, planted)
+        others = [k for k in before if k != plant.consumer]
+        return all(whole["consumers"][k] == before[k]["consumers"][k] for k in others)
+
     for plant in plants(registration, captures):
         if only and plant.name.split()[0] not in only:
             continue
@@ -831,20 +1045,31 @@ def run_plants(
             "what": plant.what,
             "must_be": plant.must,
         }
-        runs = Lazy(tables[consumer]["runs"])
+        out["plants"].append(item)
+        family = registration.families.get(registration.profile["plant_targets"]["junctions"])
+        if plant.scope == "retry" and (
+            retry is None or family.retry_name not in retry.get(consumer, {}).get("runs", {})
+        ):
+            item.update(scores_as_stated=None, not_formed=f"no {family.retry_name} is there")
+            continue
         try:
-            plant.alter(runs)
+            record = altered(plant)
         except (KeyError, IndexError, StopIteration, TypeError) as error:
             item.update(scores_as_stated=False, cannot_be_formed=f"{type(error).__name__}: {error}")
-            out["plants"].append(item)
             continue
-        record = score(consumer, dict(tables[consumer], runs=dict(runs)))
-        checks = [
-            [what, good if good is None else bool(good)]
-            for what, good in plant.check(Query(record, before[consumer]))
-        ]
+        if plant.scope == "retry":
+            first, record = (Query(r, before[consumer]) for r in record)
+            found = plant.check(first, record)
+        else:
+            record = Query(record, before[consumer])
+            found = plant.check(record)
+        found += plant.fails_as_listed(record)
+        if plant.scope == "table":
+            found.append(("the other consumers are as without it", rest_as_without(plant)))
+        checks = [[what, good if good is None else bool(good)] for what, good in found]
         item.update(scores_as_stated=all(good is not False for _, good in checks), checks=checks)
-        item["verdict"] = record["consumers"][consumer]["verdict"]
-        out["plants"].append(item)
-    out["all_as_stated"] = all(p["scores_as_stated"] for p in out["plants"])
+        if plant.named is not None:
+            item["fails_besides_by_rule"] = [f for f in plant.by_rule if f in record.fails()]
+        item["verdict"] = record.record["consumers"][consumer]["verdict"]
+    out["all_as_stated"] = all(p["scores_as_stated"] is not False for p in out["plants"])
     return out

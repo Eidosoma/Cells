@@ -42,9 +42,14 @@ def read(path: Path):
     return loads(data), sha256(data)
 
 
+def encode(value) -> bytes:
+    """The bytes of a value as `dump` writes them."""
+    return (json.dumps(plain(value), indent=1, allow_nan=True) + "\n").encode("utf-8")
+
+
 def dump(path: Path, value) -> str:
     """Write a new JSON file and return its sha256. An existing file is never overwritten."""
-    data = (json.dumps(plain(value), indent=1, allow_nan=True) + "\n").encode("utf-8")
+    data = encode(value)
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "xb") as handle:

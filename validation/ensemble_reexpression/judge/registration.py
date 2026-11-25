@@ -106,8 +106,11 @@ PART1 = {
     },
     "runs": 214,
     # Amendment 1, item 6: the runs that may be made with the off-grid switch on. None is
-    # registered.
+    # registered. Amendment 2, items 6 and 9.1: the name of the switch's flag.
     "off_grid_runs": [],
+    "off_grid_flag": "off_grid",
+    # Amendment 2, item 6: what the path of a `declared_change` begins at.
+    "declared_change_begins_at": "ionic",
     # PLANTS section 6: what the judge's plants name.
     "plant_targets": {
         "ionic": "jupiter_baseline",
@@ -480,6 +483,11 @@ class Registration:
         """True for a pool run: a run of an assembly world that has no step."""
         return self.worlds[run["world"]].assembly and run["step_s"] is None
 
+    @property
+    def off_grid_flag(self) -> str:
+        """The key of the off-grid switch in a run's entry (Amendment 2, items 6 and 9.1)."""
+        return self.profile.get("off_grid_flag", PART1["off_grid_flag"])
+
     def declared_changes(self, run: dict) -> list:
         """What a plant or a rehearsal's run declares that its world's block does not hold."""
         if run.get("declared_change"):
@@ -492,10 +500,15 @@ class Registration:
     def expected_block(self, run: dict) -> dict:
         """The ionic block that a run's `inputs` echo, its declared changes made."""
         block = copy.deepcopy(self.worlds[run["world"]].block)
+        begins = self.profile.get("declared_change_begins_at", PART1["declared_change_begins_at"])
+        if begins != "ionic":
+            raise ValueError(
+                f"a declared change begins at {begins!r}, which this judge cannot read"
+            )
         for change in self.declared_changes(run):
             if "path" in change:
                 path = list(change["path"])
-                if path and path[0] == "ionic":
+                if path and path[0] == begins:
                     path = path[1:]
                 _apply(block, path, change)
         return block

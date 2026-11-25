@@ -11,6 +11,7 @@ import fnmatch
 import json
 import math
 import re
+import subprocess
 from fractions import Fraction
 from pathlib import Path
 
@@ -116,12 +117,15 @@ class C0:
         self.reg = registration
         self.captures = captures or Captures(registration)
         self.planted = planted or Planted(registration)
+        self.root = Path(__file__).resolve().parents[3]  # the checkout, for what C0 pins there
         self.clauses = []
         self.legacy = {}
+        self.pinned = {}  # what is hashed and not opened (Amendment 2, item 5 (f))
 
     def run(self) -> dict:
         """Every clause, and the record. A clause that cannot go on is a fault and not a crash."""
         steps = (
+            self.amendments,
             self.spec_keys,
             self.run_list,
             self.literal_blocks,
@@ -137,6 +141,7 @@ class C0:
             self.reference_identities,
             self.exposures,
             self.plant_files,
+            self.pinned_files,
             self.controls,
             self.margins,
             self.mechanisms,
@@ -146,6 +151,7 @@ class C0:
             self.counts,
         )
         registered_only = (
+            self.amendments,
             self.spec_keys,
             self.run_list,
             self.literal_blocks,
@@ -178,13 +184,20 @@ class C0:
             "clauses": records,
             "legacy": self.legacy,
             "opened": {**self.captures.opened, **self.planted.opened},
+            "pinned_by_sha256_alone": self.pinned,
             "not_done": NOT_DONE,
         }
 
+    def held_amendments(self) -> list:
+        """The amendments that the folder holds, by name."""
+        return sorted(p.name for p in self.reg.folder.glob("AMENDMENT-*.md"))
+
     def texts(self) -> list:
-        """The texts of Part 1 that the folder holds, by name."""
-        amendments = sorted(p.name for p in self.reg.folder.glob("AMENDMENT-*.md"))
-        return [n for n in (*TEXTS, *amendments) if (self.reg.folder / n).is_file()]
+        """The texts of Part 1 that the folder holds, by name: the six, the amendments, and the
+        exporter's copy of the second. Their sha256 is recorded. Nothing of Part 2 is among them,
+        and C0 opens none of its files: it takes every file by its name.
+        """
+        return [n for n in (*TEXTS, *self.held_amendments()) if (self.reg.folder / n).is_file()]
 
     def cases(self, world) -> list:
         """The captured cases of a world: its families, or an ionic world's own captured runs where
@@ -212,6 +225,34 @@ class C0:
         return self.clauses[-1]
 
     # ----- the spec folder -----
+
+    def amendments(self):
+        """The amendments of the folder are the ones that this judge's code was written from, and
+        the exporter's copy holds its items of the second word for word.
+        """
+        k = self.clause(
+            "amendments",
+            "AMENDMENT-1, AMENDMENT-2",
+            "the amendments are those that this judge's code names, and the exporter's copy holds "
+            "its items word for word",
+        )
+        held, known = self.held_amendments(), sorted([*c.AMENDMENTS, c.EXPORTER_COPY])
+        k.check(held == known, f"the folder holds {held}, and the judge's code names {known}")
+        wanted = items_of((self.reg.folder / c.AMENDMENTS[-1]).read_text())
+        found = items_of((self.reg.folder / c.EXPORTER_COPY).read_text())
+        k.check(
+            set(found) == set(c.EXPORTER_ITEMS),
+            f"the exporter's copy holds the items {sorted(found)}",
+        )
+        for name in c.EXPORTER_ITEMS:
+            k.check(
+                name in wanted and found.get(name) == wanted[name],
+                f"the exporter's copy of item {name} is not the amendment's, word for word",
+            )
+        k.notes.append(
+            "The exporter's copy is a text of Part 1: its sha256 is recorded with the others', and "
+            "its words are compared with the amendment's. C0 opens no file of Part 2."
+        )
 
     def spec_keys(self):
         """Every key of the five data files."""
@@ -1119,11 +1160,63 @@ class C0:
                 mine == theirs, f"{name}: its definition is not its base with the declared change"
             )
         k.numbers["runs"] = len(self.planted.runs)
+
+    def pinned_files(self):
+        """What C0 pins by its sha256 alone, and opens none of (Amendment 2, item 5 (f)): the
+        scalar reference's script and the pool plants' outputs.
+        """
+        k = self.clause(
+            "pinned_files",
+            "AMENDMENT-2, item 5 (f)",
+            "the scalar reference's script and the outputs of the pool plants, by their sha256. A "
+            "file that is absent, or whose sha256 is another, is a fault",
+        )
+        outputs = {}
         for pool in self.reg.manifest.get("pool_plants", []):
-            k.notes.append(
-                f"{pool['name']}: its output lies outside the folder that the judge may open, so "
-                f"its sha256 is not checked. Class E has no margin."
+            for name, digest in pool["outputs_sha256"].items():
+                outputs[name] = digest
+                path = Path(pool["output_folder"])
+                path = path if path.is_absolute() else self.root / path
+                self._pin(k, str(path / name), digest, lambda p=path / name: p.read_bytes())
+        if not self.reg.rehearsal:
+            k.check(
+                outputs == c.POOL_PLANT_OUTPUTS,
+                "the plants manifest does not name the two outputs that are pinned",
             )
+            script = c.SCALAR_REFERENCE
+            where = f"{script['path']} at {script['revision']}"
+            self._pin(k, where, script["sha256"], lambda: self._object(script))
+            here = self.root / script["path"]
+            if here.is_file():
+                self._pin(k, str(here), script["sha256"], here.read_bytes)
+            else:
+                k.notes.append(f"{script['path']} is not in this checkout")
+        k.notes.append(
+            "Each file's bytes were hashed, and none was opened. C0 runs no scalar reference: the "
+            "author's run of 25 November stands. The counts of the pool plants are not re-formed, "
+            "and they hold no margin."
+        )
+
+    def _pin(self, k, where, digest, read):
+        try:
+            found = strictjson.sha256(read())
+        except (OSError, Fault) as error:
+            k.check(False, f"{where}: {error}")
+            return
+        self.pinned[where] = found
+        k.check(found == digest, f"{where}: its sha256 is another")
+
+    def _object(self, script) -> bytes:
+        """The bytes of a file at a revision, from the repository's objects."""
+        done = subprocess.run(
+            ["git", "cat-file", "blob", f"{script['revision']}:{script['path']}"],
+            cwd=self.root,
+            capture_output=True,
+            check=False,
+        )
+        if done.returncode:
+            raise Fault(f"not in the repository: {done.stderr.decode(errors='replace').strip()}")
+        return done.stdout
 
     def controls(self):
         """The unpatched runs against the captures, bit for bit."""
@@ -1529,13 +1622,26 @@ class C0:
 
 TEXTS = ("README.md", "SPEC.md", "READOUTS.md", "CRITERIA.md", "TABLE.md", "PLANTS.md")
 NOT_DONE = [
-    "The independent scalar reference of SPEC section 7 was not run: its file is not in the "
-    "judge's reading list. The author's run of 25 November is the evidence (protocol section 11).",
-    "The pool plants' two output files (plants_manifest.json pool_plants) lie outside the planted "
-    "folder that the judge may open.",
+    "The independent scalar reference of SPEC section 7 was not run. Its script is pinned by its "
+    "sha256 (Amendment 2, item 5 (f)), and the author's run of 25 November is the evidence.",
+    "The pool plants' two outputs were not opened: they are pinned by their sha256. The counts of "
+    "margins.json pool_plants are not re-formed, and they hold no margin.",
     "The snapshot of integrated_capture lies outside the captures' root: its recorded manifest "
     "sha256 is compared, and no file is opened.",
 ]
+
+
+def items_of(text: str) -> dict:
+    """The items of an amendment, by number: the text from a heading that begins with a number to
+    the next heading of the second or the third level.
+    """
+    out = {}
+    heads = list(re.finditer(r"^#{2,3} (?:(\d+(?:\.\d+)?)[. ])?.*$", text, re.M))
+    for head, after in zip(heads, [*heads[1:], None], strict=True):
+        if head.group(1):
+            end = len(text) if after is None else after.start()
+            out[head.group(1)] = text[head.start() : end].rstrip()
+    return out
 
 
 def _load(data: bytes) -> dict:

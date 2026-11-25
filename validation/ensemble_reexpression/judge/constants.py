@@ -32,6 +32,7 @@ POWER_KIND = "ensemble-reexpression power, version 1"
 C0_KIND = "ensemble-reexpression judge C0, version 1"
 RECORD_KIND = "ensemble-reexpression judge record, version 1"
 HASHES_KIND = "ensemble-reexpression table hashes, version 1"
+SETTLEMENTS_KIND = "ensemble-reexpression settlements, version 1"
 
 UNITS = {"amount": "fmol", "energy": "pJ", "potential": "V", "time": "s"}
 EMPTY_SHA256 = hashlib.sha256(b"").hexdigest()
@@ -57,6 +58,8 @@ POOL_ARRAYS = (
     "full_dwell_completed_s",
     "fault",
 )
+
+BOOLEAN_ARRAY = "pending_valid"  # the only captured array of booleans (Amendment 2, item 7 (d))
 
 # TABLE section 3: every key of a run's entry.
 RUN_KEYS = (
@@ -116,6 +119,31 @@ LABELS = (
     "pool_topology",
     "assembly_observable",
 )
+
+# The texts of the spec folder that this judge's code was written from, beside its own (CRITERIA
+# section 5). The second is the exporter's copy: what its builder receives of Amendment 2.
+AMENDMENTS = ("AMENDMENT-1-2026-11-25.md", "AMENDMENT-2-2026-11-25.md")
+EXPORTER_COPY = "AMENDMENT-2-2026-11-25_EXPORTER.md"
+EXPORTER_ITEMS = ("2", "4", "7", "8", "9.1", "10")
+
+# Amendment 2, item 5 (f): what C0 pins by its sha256 alone, and opens none of. The script is the
+# repository's at this revision, and the two outputs are where the plants manifest says.
+SCALAR_REFERENCE = {
+    "path": "validation/betse/spatial_cluster/reference.py",
+    "revision": "49529e71",
+    "sha256": "7142fb93f92fb108a44af4faac7544404341d98ca019c8aa22a0239e2b8d8674",
+}
+POOL_PLANT_OUTPUTS = {
+    "pool_plants.json": "fe59ed4db16a0ba7117b1dfddb43b5cb570d3ce21d4f74a3fe2a481b9269b222",
+    "pool_plants2.json": "93351cba5ac67d09e8181ef7570be9bc51cfccb93976df4e4feca318d25eaaba",
+}
+
+# What a settled flag counts as (README section 6). The checker says which.
+BY_THE_RULE = "by the rule"
+COUNTS_AS = (BY_THE_RULE, "fail", "inconclusive")
+STANDS = "stands"
+LIFTED = "lifted"
+PENDING = "pending"  # a state of a verdict: nothing but unsettled flags keeps it from a pass
 
 # The outcomes of an entry.
 PASS = "pass"

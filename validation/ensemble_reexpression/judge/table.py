@@ -1,4 +1,4 @@
-"""The engine tables as the judge reads them (`spec/TABLE.md`, with `AMENDMENT-1-2026-11-25.md`).
+"""The engine tables as the judge reads them (`spec/TABLE.md`, with Amendments 1 and 2).
 
 This module parses a folder of tables and says what each run is: present, refused and why, stopped,
 or a departing echo. It opens no capture. What a run's rows hold is read through `RunRows`, which
@@ -60,15 +60,22 @@ def read_sums(folder: Path):
     return out, faults
 
 
+TOP_KEYS = ("kind", "part", "consumer", "runs", "missing", "units")
+
+
+def extra_top_keys(data) -> list:
+    """What the file holds beyond the contract's top-level keys: recorded, and ignored."""
+    more = sorted(set(data) - set(TOP_KEYS)) if isinstance(data, dict) else []
+    return [["extra top-level keys", more]] if more else []
+
+
 def contract_faults(data, consumer: str, part: int) -> list:
-    """What makes a parsed file not this consumer's table: its top-level keys (TABLE section 2)."""
+    """What makes a parsed file not this consumer's table: one of its six top-level keys is absent,
+    or departs from TABLE section 2. Such a file is refused whole (Amendment 2, item 4).
+    """
     if not isinstance(data, dict):
         return ["the file is not an object"]
-    out = [
-        f"the top-level key {key} is missing"
-        for key in ("kind", "part", "consumer", "runs", "missing", "units")
-        if key not in data
-    ]
+    out = [f"the top-level key {key} is missing" for key in TOP_KEYS if key not in data]
     if out:
         return out
     if data["kind"] != c.TABLE_KIND:
@@ -146,6 +153,7 @@ class TableSet:
                 file.refusals.append(str(error))
                 continue
             file.refusals += contract_faults(parsed, consumer, part)
+            file.flags += extra_top_keys(parsed)
             file.data = parsed
         return cls(files, flags, retry)
 
@@ -156,6 +164,7 @@ class TableSet:
         for consumer, data in tables.items():
             file = TableFile(consumer, f"table_{consumer}.json", "in memory", data)
             file.refusals += contract_faults(data, consumer, part)
+            file.flags += extra_top_keys(data)
             files[consumer] = file
         return cls(files, (), retry)
 
@@ -328,8 +337,8 @@ def compare_set(key, expected, got, world: World, out: Echo):
 
 
 def extra_entities(path, found, wanted, out: Echo):
-    """An entity that the registered block does not have is a departing echo (the lead's ruling,
-    Amendment 2).
+    """An entity that the registered block does not have is a departing echo (Amendment 2, item 2).
+    `wanted` is the block's own set of that kind, and not what its `controls` hold.
     """
     for name in found:
         if name not in wanted:
@@ -480,7 +489,12 @@ class RunState:
     guard: list = field(default_factory=list)  # [comparison, detail]
     refusal_kind: str | None = None
     refusal_message: str | None = None
+    twice: bool = False  # named in `runs` and in `missing` (Amendment 2, reading 20)
     completed: bool = False
+    status: str | None = None
+    second_pass: bool = False  # the second pass of its `check` refusal completed (item 8 (a))
+    nonfinite: dict = field(default_factory=dict)  # (where, series) to {entity: [row, ...]}
+    lifted: list = field(default_factory=list)  # [comparison, the settlement that lifts it]
     flags: list = field(default_factory=list)  # [what, detail]
 
     @property
@@ -500,7 +514,13 @@ class RunState:
         """True where it is refused or missing, whatever the cause."""
         kind = self.refusal_kind in ("definition", "domain", "harness")
         return bool(
-            self.missing or self.file_refused or self.echo or self.provenance or self.guard or kind
+            self.missing
+            or self.twice
+            or self.file_refused
+            or self.echo
+            or self.provenance
+            or self.guard
+            or kind
         )
 
     @property
@@ -509,14 +529,23 @@ class RunState:
         holds (CRITERIA section 5).
         """
         return self.judgable and bool(
-            self.refusal_kind is not None or self.provenance or self.guard
+            self.refusal_kind is not None or self.provenance or self.guard or self.twice
         )
+
+    @property
+    def cut(self) -> bool:
+        """True for a run whose `status` is refused, so that the refusal cut what it holds
+        (Amendment 2, reading 14).
+        """
+        return self.judgable and self.status == "refused"
 
     def causes(self) -> list:
         """Every cause of its refusal, stop or absence."""
         out = []
         if self.missing:
             out.append(f"missing: {self.missing}")
+        if self.twice:
+            out.append("named in `runs` and in `missing`")
         out += [f"its file is refused: {reason}" for reason in self.file_refused]
         out += [f"a departing echo: {path}" for path in self.echo]
         out += [f"provenance, {reason}: {detail}" for reason, detail in self.provenance]
@@ -529,6 +558,7 @@ class RunState:
 
     def record(self) -> dict:
         """The state as JSON."""
+        lifted = {"lifted": [comparison for comparison, _ in self.lifted]} if self.lifted else {}
         return {
             "consumer": self.consumer,
             "role": self.run["role"],
@@ -540,6 +570,7 @@ class RunState:
             "causes": self.causes(),
             "reasons": [reason for reason, _ in self.provenance],
             "flags": self.flags,
+            **lifted,
         }
 
 
@@ -640,7 +671,7 @@ def recorded_flags(registration: Registration, run: dict, entry: dict) -> list:
     world = registration.worlds[run["world"]]
     pool = registration.is_pool(run)
     out += [["a key is absent", key] for key in c.RUN_KEYS if key not in entry]
-    extra = [key for key in entry if key not in c.RUN_KEYS and key != "off_grid"]
+    extra = [key for key in entry if key not in c.RUN_KEYS and key != registration.off_grid_flag]
     if extra:
         out.append(
             [
@@ -671,8 +702,17 @@ def recorded_flags(registration: Registration, run: dict, entry: dict) -> list:
         more = {k: v for k, v in refusal.items() if k not in known}
         if more:
             out.append(["refusal, keys beyond the contract's", more])
-        if refusal.get("second_pass_completed") not in (None, False):  # Amendment 2, item 7
+        # Amendment 2, item 8 (a): the key is there, and true, only where the second pass of a
+        # `check` refusal completed.
+        if second_pass_completed(refusal):
             out.append(["second pass", "it completed where the run was refused"])
+        elif "second_pass_completed" in refusal:
+            out.append(
+                [
+                    "second pass",
+                    "`second_pass_completed` is there, and is not true of a `check` refusal",
+                ]
+            )
         if not isinstance(refusal.get("message"), str):
             out.append(["refusal", "its message is missing"])
         if (refusal.get("kind") == "check") != is_finite(refusal.get("time_s")):
@@ -736,11 +776,28 @@ def recorded_flags(registration: Registration, run: dict, entry: dict) -> list:
         and abs(held[0]) > c.TIME_TOL_S
     ):
         out.append(["potential_t", "its first time is not 0"])
-    for key, times, known in (
-        ("rows", t, set(world.row_series())),
-        ("potentials", held, {"voltage", "phi_out"}),
+    return out
+
+
+def second_pass_completed(refusal) -> bool:
+    """True where a `check` refusal says that its second pass completed (Amendment 2, item 8)."""
+    return (
+        isinstance(refusal, dict)
+        and refusal.get("kind") == "check"
+        and refusal.get("second_pass_completed") is True
+    )
+
+
+def row_faults(world: World, entry: dict) -> tuple:
+    """(flags, values that are no finite number) of an ionic run's rows and potentials. The second
+    is (`rows` or `potentials`, series) to {entity: [row, ...]}, for what is judged to read.
+    """
+    out, found = [], {}
+    for key, times_key, known in (
+        ("rows", "t", set(world.row_series())),
+        ("potentials", "potential_t", {"voltage", "phi_out"}),
     ):
-        values = entry.get(key)
+        values, times = entry.get(key), entry.get(times_key)
         if not isinstance(values, dict):
             continue
         extra = sorted(set(values) - known)
@@ -750,14 +807,15 @@ def recorded_flags(registration: Registration, run: dict, entry: dict) -> list:
             continue
         bad = []
         for series, table in values.items():
-            if isinstance(table, dict):
-                for entity, listed in table.items():
-                    if (
-                        not isinstance(listed, list)
-                        or len(listed) != len(times)
-                        or not np.all(np.isfinite(column(listed)))
-                    ):
-                        bad.append(f"{series}/{entity}")
+            for entity, listed in table.items() if isinstance(table, dict) else ():
+                if not isinstance(listed, list) or len(listed) != len(times):
+                    bad.append(f"{series}/{entity}")
+                    continue
+                wrong = np.flatnonzero(~np.isfinite(column(listed)))
+                if len(wrong):
+                    bad.append(f"{series}/{entity}")
+                    if series in known:
+                        found.setdefault((key, series), {})[entity] = wrong.tolist()
         if bad:
             out.append(
                 [
@@ -766,7 +824,7 @@ def recorded_flags(registration: Registration, run: dict, entry: dict) -> list:
                     f"finite: {bad[:5]} ({len(bad)})",
                 ]
             )
-    return out
+    return out, found
 
 
 def absent_pump_flags(world: World, rows) -> list:
@@ -882,6 +940,7 @@ def assess(
             state.missing = "in the table's `missing`" if listed else "in neither list of any table"
             continue
         if name in table.missing.get(consumer, ()):
+            state.twice = True
             state.flags.append(["missing", "the run stands in `runs` and in `missing`"])
         if not isinstance(entry, dict):
             state.entry = {}
@@ -898,7 +957,7 @@ def assess(
             kind = refusal.get("kind") if isinstance(refusal, dict) else None
             state.refusal_kind = kind if kind in c.REFUSAL_KINDS else "harness"
             state.refusal_message = refusal.get("message") if isinstance(refusal, dict) else None
-        switch = entry.get("off_grid")
+        switch = entry.get(registration.off_grid_flag)
         if switch is True and name not in registration.profile.get("off_grid_runs", ()):
             if state.refusal_kind != "check":
                 state.refusal_kind, state.refusal_message = (
@@ -908,8 +967,13 @@ def assess(
             state.flags.append(["off_grid", "the switch is on"])
         elif switch not in (None, False, True):
             state.flags.append(["off_grid", f"{switch!r} is no boolean"])
-        state.completed = entry.get("status") == "completed" and refusal is None
+        state.status = entry.get("status")
+        state.completed = state.status == "completed" and refusal is None
+        state.second_pass = second_pass_completed(refusal)
         state.flags += recorded_flags(registration, run, entry)
+        if not registration.is_pool(run):
+            flags, state.nonfinite = row_faults(registration.worlds[run["world"]], entry)
+            state.flags += flags
     return states, ignored
 
 

@@ -16,6 +16,8 @@ from .c0 import C0
 from .legacy import Captures, Fault, Planted
 from .registration import SPEC, Registration, StringsNote, load_profile
 from .scoring import OrderFault
+from .settlements import SettlementFault
+from .settlements import read as read_settlements
 from .table import TableSet, hash_folder
 
 
@@ -94,16 +96,43 @@ def cmd_stage1(args):
     print(strictjson.dump(args.out, power), args.out)
 
 
+def settled(args, hashes: dict, first=None) -> tuple:
+    """The settlements and the record that they settle, or (None, None). A record must be a
+    judgement of the same files. `first` is the first pass's record and its sha256, in a retry.
+    """
+    if not args.settlements:
+        if args.settlements_sha256 or args.settled_record:
+            raise OrderFault("a settlements' sha256 or record is given, and no settlements")
+        return None, None
+    if not args.settlements_sha256 or not args.settled_record:
+        raise OrderFault("settlements need their recorded sha256, and the record that they settle")
+    record, digest = strictjson.read(Path(args.settled_record))
+    records = {digest: record} if first is None else {digest: record, first[1]: first[0]}
+    for known in records.values():
+        if known.get("kind") != c.RECORD_KIND:
+            raise OrderFault("what is settled is no record of the judge's")
+        of = {k: known["hashes"].get(k) for k in ("spec", "tables", "strings_sha256", "c0_sha256")}
+        if of != {k: hashes[k] for k in of}:
+            raise OrderFault("what is settled is a judgement of other files")
+    return read_settlements(args.settlements, args.settlements_sha256, records), record
+
+
 def cmd_stage2(args):
     """Stage 2: the scores, the retry owed, the verdicts. Needs power.json's recorded sha256."""
     reg = registration(args)
     power = file_with_digest(args.power, args.power_sha256)
     tables, note, c0, hashes = first_inputs(args, reg)
-    state = scoring.Tables(reg, note, tables)
-    scoring.check_power(state, c0, power, hashes)
+    scoring.check_power(scoring.Tables(reg, note, tables), c0, power, hashes)
+    settlements, before = settled(args, hashes)
+    state = scoring.Tables(reg, note, tables, settlements=settlements)
     record = scoring.Stage2(state, c0, power, Captures(reg), Planted(reg)).run()
     record["hashes"]["power_sha256"] = args.power_sha256
-    write(args.out, record, owed=True)
+    written = before is not None and not before["retry_owed_waits_on"]
+    if settlements is not None:
+        record["hashes"]["settlements_sha256"] = settlements.sha256
+        if written and before["retry_owed"] != record["retry_owed"]:
+            raise OrderFault("what the retry is owed is not what is written already")
+    write(args.out, record, owed=not written)
 
 
 def cmd_retry_stage1(args):
@@ -121,8 +150,12 @@ def cmd_retry_stage2(args):
     first, owed, power, hashes, tables, note, c0, retry = retry_inputs(args, reg)
     state = scoring.Tables(reg, note, tables, retry, owed["runs"])
     scoring.check_power(state, c0, power2, hashes, first)
+    settlements, _ = settled(args, hashes, (first, hashes["first_record_sha256"]))
+    state = scoring.Tables(reg, note, tables, retry, owed["runs"], settlements)
     record = scoring.Stage2(state, c0, power, Captures(reg), Planted(reg), power2, first).run()
     record["hashes"]["power_retry_sha256"] = args.power_retry_sha256
+    if settlements is not None:
+        record["hashes"]["settlements_sha256"] = settlements.sha256
     write(args.out, record, owed=False)
 
 
@@ -157,44 +190,34 @@ def retry_inputs(args, reg):
 
 
 def write(folder, record, owed: bool):
-    """Write the record, the verdicts beside it, and (in the first pass) what the retry is owed."""
+    """Write the record, the verdicts beside it, and (in the first pass) what the retry is owed. The
+    last is written once, and after the copy guard's refusals are settled (Amendment 2, reading 28):
+    a judgement that settles a flag alone leaves the one that stands beside the settled record.
+    """
     folder = Path(folder)
     print(strictjson.dump(folder / "record.json", record), folder / "record.json")
-    if owed:
+    if owed and record["retry_owed_waits_on"]:
+        print(
+            f"retry_owed.json is not written: the copy guard's refusals "
+            f"{record['retry_owed_waits_on']} wait for the checker"
+        )
+    elif owed:
         print(
             strictjson.dump(folder / "retry_owed.json", record["retry_owed"]),
             folder / "retry_owed.json",
         )
-    print(strictjson.dump(folder / "verdict.json", verdict(record)), folder / "verdict.json")
+    verdicts = scoring.verdict_of(record)
+    print(strictjson.dump(folder / "verdict.json", verdicts), folder / "verdict.json")
     for consumer, block in record["consumers"].items():
-        print(f"{consumer}: {block['verdict']}")
+        print(f"{consumer}: {shown(block)}")
 
 
-def verdict(record) -> dict:
-    """The verdicts alone, with the causes that they name."""
-    return {
-        "kind": "ensemble-reexpression verdicts, version 1",
-        "protocol": record["protocol"],
-        "part": record["part"],
-        "pass_of_the_judgement": record["pass"],
-        "hashes": record["hashes"],
-        "consumers": record["consumers"],
-        "part_1": record["part_1"],
-        "plants": [
-            {
-                k: p.get(k)
-                for k in ("plant", "kind", "consumer", "family", "score", "why", "entries")
-            }
-            for p in record["plants"]["plants"]
-        ],
-        "refusals": {n: s["causes"] for n, s in record["runs"].items() if s["causes"]},
-        "refused_files": {k: f["refused"] for k, f in record["files"].items() if f["refused"]},
-        "ignored_runs": record["ignored"],
-        "where_nothing_is_judged": record["where_nothing_is_judged"],
-        "flags_to_the_checker": len(record["flags"])
-        + sum(len(s["flags"]) for s in record["runs"].values()),
-        "retry_owed": record["retry_owed"]["runs"],
-    }
+def shown(block) -> str:
+    """A consumer's verdict as it is printed. What is pending is never shown as a pass."""
+    if not block["pending"]:
+        return block["verdict"]
+    only = "pending on" if block["state"] == c.PENDING else "with"
+    return f"{block['verdict']}, {only} {len(block['pending'])} flag(s) to the checker"
 
 
 def cmd_structure(args):
@@ -241,17 +264,22 @@ def cmd_selftest(args):
     reg = registration(args)
     made = C0(reg)
     c0 = made.run()
-    tables, note_data = fabricate.Fabricator(reg, made.captures, made.planted).tables()
+    fabricator = fabricate.Fabricator(reg, made.captures, made.planted)
+    tables, note_data = fabricator.tables()
+    junctions = reg.families[reg.profile["plant_targets"]["junctions"]]
+    retry = fabricator.retry_tables([junctions.retry_name])
     note = StringsNote(note_data, "fabricated", reg.rehearsal)
-    record = plants.run_plants(reg, note, tables, c0, made.captures, made.planted)
+    record = plants.run_plants(reg, note, tables, c0, made.captures, made.planted, retry=retry)
     record = {
         "kind": "ensemble-reexpression judge self-test, version 1",
         "c0": c0["status"],
         **record,
     }
-    record["fabricated_tables_sha256"] = {
-        k: strictjson.sha256(repr(strictjson.plain(t)).encode()) for k, t in tables.items()
-    }
+    # Amendment 2, item 9.5: the sha256 of each table as it was made and used. `fabricate` writes
+    # the same bytes.
+    record["fabricated"] = fabricate.MARK
+    record["fabricated_tables_sha256"] = fabricate.digests(tables)
+    record["fabricated_retry_tables_sha256"] = fabricate.digests(retry)
     return report_plants(args, record) and c0["status"] == "pass"
 
 
@@ -263,7 +291,12 @@ def cmd_plants(args):
     if refused:
         raise OrderFault(f"a table is refused or absent, so no plant is formed: {refused}")
     data = {consumer: file.data for consumer, file in tables.files.items()}
-    record = plants.run_plants(reg, note, data, c0, Captures(reg), Planted(reg))
+    retry = None
+    if args.retry_tables:
+        hashes["retry_tables"] = recorded(args.retry_tables, args.retry_record)
+        held = TableSet.read(args.retry_tables, reg.consumers, retry=True).files
+        retry = {k: f.data for k, f in held.items() if f.data is not None and not f.refusals}
+    record = plants.run_plants(reg, note, data, c0, Captures(reg), Planted(reg), retry=retry)
     return report_plants(
         args,
         {
@@ -280,9 +313,10 @@ def report_plants(args, record) -> bool:
     print("baseline:", record["baseline"])
     for plant in record["plants"]:
         wrong = [what for what, good in plant.get("checks", []) if good is False]
+        said = {True: "as stated", False: "NOT as stated", None: "not formed"}
         print(
-            f"{plant['plant']:14s} {'as stated' if plant['scores_as_stated'] else 'NOT as stated'} "
-            f"{wrong or plant.get('cannot_be_formed') or ''}"
+            f"{plant['plant']:14s} {said[plant['scores_as_stated']]} "
+            f"{wrong or plant.get('cannot_be_formed') or plant.get('not_formed') or ''}"
         )
     print("all as stated:", record["all_as_stated"], digest, args.out)
     return record["all_as_stated"]
@@ -316,7 +350,8 @@ def parser() -> argparse.ArgumentParser:
     add("hash", cmd_hash, "--tables", "--out")
     add("c0", cmd_c0, "--out", "--tables-record?")
     add("stage1", cmd_stage1, *first, "--out")
-    add("stage2", cmd_stage2, *first, "--power", "--power-sha256", "--out")
+    settles = ("--settlements?", "--settlements-sha256?", "--settled-record?")
+    add("stage2", cmd_stage2, *first, "--power", "--power-sha256", *settles, "--out")
     add("retry-stage1", cmd_retry_stage1, *first, *again, "--out")
     add(
         "retry-stage2",
@@ -325,12 +360,13 @@ def parser() -> argparse.ArgumentParser:
         *again,
         "--power-retry",
         "--power-retry-sha256",
+        *settles,
         "--out",
     )
     add("structure", cmd_structure, "--tables", "--retry-tables?", "--out?")
     add("fabricate", cmd_fabricate, "--out")
     add("selftest", cmd_selftest, "--out")
-    add("plants", cmd_plants, *first, "--out")
+    add("plants", cmd_plants, *first, "--retry-tables?", "--retry-record?", "--out")
     return top
 
 
@@ -339,7 +375,7 @@ def main(argv=None) -> int:
     args = parser().parse_args(argv)
     try:
         good = args.run(args)
-    except (OrderFault, Fault) as error:
+    except (OrderFault, Fault, SettlementFault) as error:
         print(f"refused: {error}", file=sys.stderr)
         return 2
     return 0 if good is None or good else 1

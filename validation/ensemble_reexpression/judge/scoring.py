@@ -14,7 +14,23 @@ from . import bands, identities, strictjson
 from . import constants as c
 from .legacy import STEPS, Captures, Planted
 from .registration import Registration, StringsNote, changes
-from .table import NotFormed, RunRows, TableSet, assess, parse_schedule
+from .settlements import Settlements
+from .table import NotFormed, RunRows, TableSet, assess, column, parse_schedule
+
+OUTSIDE = "resolved outside its window"
+CORNER = "untested outside its window"  # the corner of item 5 (a)
+AT_ZERO = "row at time 0"  # reading 12
+NOT_FINITE = "non-finite value"  # reading 24
+CUT = "a refused run: the refusal cut what it holds (Amendment 2, reading 14)"
+ANOTHER_PATH = (
+    "a support run that a check stopped: its rows are another path's (Amendment 2, reading 13)"
+)
+
+
+def begins(a: list, b: list) -> bool:
+    """True where one list is a beginning of the other."""
+    short = min(len(a), len(b))
+    return a[:short] == b[:short]
 
 
 class OrderFault(Exception):
@@ -95,6 +111,7 @@ class Tables:
         tables: TableSet,
         retry: TableSet | None = None,
         owed=(),
+        settlements: Settlements | None = None,
     ):
         faults = note.faults(registration)
         if faults:
@@ -102,7 +119,9 @@ class Tables:
         self.reg, self.note, self.tables, self.retry = registration, note, tables, retry
         self.states, self.ignored = assess(registration, note, tables, retry, owed)
         self.owed = tuple(owed)
+        self.settlements = settlements
         self._rows, self._arrays = {}, {}
+        self.guard_hits = []  # every refusal by the copy guard, with its settlement
         self.guard_a = self._guard_a()
 
     def rows(self, name: str) -> RunRows:
@@ -159,9 +178,29 @@ class Tables:
                         np.array_equal(a, b) for a, b in zip(held[first], held[second], strict=True)
                     ):
                         out.append([family.name, first, second])
-                        self.states[first].guard.append(["a", f"its class S rows equal {second}'s"])
-                        self.states[second].guard.append(["a", f"its class S rows equal {first}'s"])
+                        self.refuse_copy(first, "a", f"its class S rows equal {second}'s")
+                        self.refuse_copy(second, "a", f"its class S rows equal {first}'s")
         return out
+
+    def refuse_copy(self, name: str, comparison: str, detail: str):
+        """Refuse a run by the copy guard, for the checker to settle. A refusal that the lead's
+        dated note has lifted is no refusal (Amendment 2, reading 28).
+        """
+        state = self.states[name]
+        settled = self.settlements.guard.get((name, comparison)) if self.settlements else None
+        self.guard_hits.append(
+            {
+                "run": name,
+                "consumer": state.consumer,
+                "comparison": comparison,
+                "detail": detail,
+                "settled": settled,
+            }
+        )
+        if settled is not None and settled["outcome"] == c.LIFTED:
+            state.lifted.append([comparison, settled["lead_note"]])
+        else:
+            state.guard.append([comparison, detail])
 
 
 def estimates(tables: Tables, family, names, steps_s, c0: dict) -> dict:
@@ -292,15 +331,39 @@ class Stage2:
         self.reg = tables.reg
         self.power2 = power2
         self.first = first
+        self.settled = tables.settlements.flags if tables.settlements else {}
         self.entries = []
         self.flags = []
+        self.to_settle = []  # the flags that leave an entry at best inconclusive
+        self.for_the_lead = []
         self._capture = {}
+        self._reads = {}
 
     # ----- small helpers -----
 
     def flag(self, run, what, detail):
         """Tell the checker."""
         self.flags.append({"run": run, "what": what, "detail": detail})
+
+    def tell(self, run, what, detail):
+        """Tell the lead."""
+        self.for_the_lead.append({"run": run, "what": what, "detail": detail})
+
+    def open_flag(self, kind, where, owner, subject, detail, entries):
+        """A flag to the checker that leaves `entries` at best inconclusive until it is settled
+        (Amendment 2, item 5 (a) and readings 12 and 24). `where` is the consumer and the run.
+        """
+        consumer, run = where
+        self.to_settle.append(
+            {
+                "id": f"{kind}; {owner}; {subject}",
+                "kind": kind,
+                "consumer": consumer,
+                "run": run,
+                "detail": detail,
+                "entries": entries,
+            }
+        )
 
     def add(self, **record):
         """Record one judged or reported entry."""
@@ -347,9 +410,22 @@ class Stage2:
                 self.restart(name, state)
         for name, state in self.tables.states.items():
             self.class_D(name, state)
+            if state.second_pass:  # Amendment 2, item 8 (a)
+                self.tell(
+                    name,
+                    "the second pass of a stop completed",
+                    f"the run was refused by the engine's check ({state.refusal_message}), and "
+                    f"stays refused. The second pass completed where it was refused",
+                )
+        self.settle()
         plants = self.plants()
         owed = self.retry_owed()
         verdicts = self.verdicts(plants, owed)
+        waits = self.guard_waits()
+        pending = {}
+        for item in self.entries:
+            for flag in item.get("pending", ()):
+                pending.setdefault(item["run"], []).append(flag)
         return strictjson.plain(
             {
                 "kind": c.RECORD_KIND,
@@ -361,7 +437,11 @@ class Stage2:
                     **({} if self.power2 is None else {"retry": self.power2["hashes"]}),
                 },
                 "runs": {
-                    name: dict(state.record(), verdict=verdicts["runs"].get(name))
+                    name: dict(
+                        state.record(),
+                        verdict=verdicts["runs"].get(name),
+                        **({"pending": sorted(set(pending[name]))} if name in pending else {}),
+                    )
                     for name, state in self.tables.states.items()
                 },
                 "ignored": self.tables.ignored,
@@ -379,7 +459,12 @@ class Stage2:
                 "entries": self.entries,
                 "plants": plants,
                 "flags": self.flags,
+                "flags_to_settle": self.to_settle,
+                "runs_pending_on_a_flag": sorted(pending),
+                "copy_guard": self.tables.guard_hits,
+                "for_the_lead": self.for_the_lead,
                 "retry_owed": owed,
+                "retry_owed_waits_on": waits,
                 "where_nothing_is_judged": self.unseen(),
                 "consumers": verdicts["consumers"],
                 "part_1": verdicts["part"],
@@ -427,7 +512,19 @@ class Stage2:
                     np.array_equal(mine, self.capture(family, step, entry))
                     for mine, entry in zip(rows, entries, strict=True)
                 ):
-                    state.guard.append(["b", f"its class S rows equal the captured rows at {step}"])
+                    self.tables.refuse_copy(
+                        name, "b", f"its class S rows equal the captured rows at {step}"
+                    )
+
+    def guard_waits(self) -> list:
+        """The copy guard's refusals that are not settled. `retry_owed.json` is written once, and
+        after them (Amendment 2, reading 28).
+        """
+        return [
+            [hit["run"], hit["comparison"]]
+            for hit in self.tables.guard_hits
+            if hit["settled"] is None
+        ]
 
     # ----- class S -----
 
@@ -483,8 +580,10 @@ class Stage2:
                 f"{family.name} {entry.name}: inside the band with e_store and outside the one "
                 f"without",
             )
-        self.add(
+        stopped = [n for n in names if self.tables.states[n].stopped]
+        item = self.add(
             **record,
+            **({"on_a_stopped_runs_rows": stopped} if stopped else {}),
             outcome=outcome if judged else c.REPORTED,
             reported=None if judged else outcome,
             why=why,
@@ -505,6 +604,34 @@ class Stage2:
             home=est["home"],
             runs=names,
             S_c=est["S_c"],
+        )
+        if (
+            judged
+            and est["tested"] is False
+            and est["class"] == OUTSIDE
+            and statistic > est["beta"]
+        ):
+            self._corner(family, item, est)
+
+    def _corner(self, family, item, est):
+        """An untested entry that is resolved outside its window and above beta: inconclusive by
+        order, flagged with its error (Amendment 2, item 5 (a)). What the retry's triple gives is at
+        best inconclusive until the flag is settled.
+        """
+        self.open_flag(
+            CORNER,
+            (family.consumer, item["run"]),
+            family.name,
+            item["readout"],
+            {
+                "pass_of_the_judgement": item["pass_of_the_judgement"],
+                "statistic": item["statistic"],
+                "band": item["band"],
+                "d1": est["d1"],
+                "d2": est["d2"],
+                "q": est["q"],
+            },
+            [],
         )
 
     # ----- class R -----
@@ -629,7 +756,7 @@ class Stage2:
         judged = run["role"] in (
             "judged",
             "retry",
-        )  # a retry's class E entries are judged (the lead's ruling, Amendment 2)
+        )  # a retry run's class E entries are judged (Amendment 2, item 3)
         for entry in world.zeros:
             record = {
                 "consumer": run["consumer"],
@@ -810,6 +937,7 @@ class Stage2:
                 "the checker confirms from the run's own record that it reloaded a written "
                 "checkpoint",
             )
+        differs = []
         for entry in world.entries:
             record = {
                 "consumer": run["consumer"],
@@ -822,6 +950,11 @@ class Stage2:
             }
             key = "potential_t" if entry.where == "potentials" else "t"
             after = [t for t in entry.times if t > start + c.TIME_TOL_S]
+            if state.stopped:
+                if not at_fault:
+                    differs.append(self._differences(name, owner, entry, after, key))
+                self.add(**record, outcome=c.NOT_FORMED, why=at_fault or ANOTHER_PATH)
+                continue
             try:
                 if at_fault:
                     raise NotFormed(at_fault)
@@ -844,6 +977,37 @@ class Stage2:
                 statistic=bands.largest(mine - whole),
                 band=0.0,
             )
+        if state.stopped:
+            self._tell_differences(name, owner, [d for d in differs if d])
+
+    def _tell_differences(self, name, owner, differs):
+        """What a support run that a check stopped shows beside the run that it resumes: for the
+        checker and for the lead (Amendment 2, reading 13).
+        """
+        what = "a support run that a check stopped: its rows are another path's"
+        detail = {"resumes": owner, "differences_on_the_rows_that_it_holds": differs}
+        self.flag(name, what, detail)
+        self.tell(name, what, detail)
+
+    def _differences(self, name, owner, entry, times, key):
+        """How the rows that two runs both hold differ, or None where nothing is held."""
+        mine, whole = self.tables.states[name], self.tables.states[owner]
+        if not (mine.judgable and whole.judgable):
+            return None
+        both = self.tables.rows(owner).held(times, key)
+        held = [t for t in self.tables.rows(name).held(times, key) if t in both]
+        try:
+            gap = self._at(name, entry, held) - self._at(owner, entry, held) if held else None
+        except NotFormed:
+            return None
+        if gap is None:
+            return None
+        return {
+            "readout": entry.name,
+            "compared_times": len(held),
+            "unequal_values": int(np.count_nonzero(gap)),
+            "largest": bands.largest(gap),
+        }
 
     def _at(self, name, entry, times):
         rows = self.tables.rows(name)
@@ -882,9 +1046,10 @@ class Stage2:
 
         def walk(item, depth):
             if depth == len(shape):
-                if isinstance(item, bool):
+                # One array is of booleans, and no other (Amendment 2, item 7 (d)).
+                if isinstance(item, bool) and name == c.BOOLEAN_ARRAY:
                     out.append(int(item))
-                elif strictjson.is_finite(item):
+                elif strictjson.is_finite(item) and name != c.BOOLEAN_ARRAY:
                     out.append(item)
                 else:
                     raise NotFormed(f"pool.{cell}.arrays.{name} holds {item!r}")
@@ -935,6 +1100,8 @@ class Stage2:
                 record = {**base, "readout": f"{cell} {array}", "class": "E"}
                 try:
                     self.tables.rows(name)
+                    if state.cut:
+                        raise NotFormed(CUT)
                     mine = self._array(state.entry, cell, array, captured[array].shape)
                 except NotFormed as error:
                     self.add(**record, outcome=c.NOT_FORMED, why=str(error))
@@ -958,15 +1125,12 @@ class Stage2:
                     wid: self.reg.reference_path(run["world"], seed, cell, wid) for wid in ids
                 }
                 wrong = [wid for wid in ids if path[wid] != reference[wid]]
-                if (
-                    wrong
-                    and state.partial
-                    and all(path[wid] == reference[wid][: len(path[wid])] for wid in ids)
-                ):
+                if state.cut:
+                    # What a refusal cut is not formed. Any other difference is a fail.
+                    wrong = [w for w in ids if path[w] != reference[w][: len(path[w])]]
                     path = None
-                    raise NotFormed(
-                        "a refused run's path, which is a beginning of the reference path"
-                    )
+                    if not wrong:
+                        raise NotFormed(CUT)
                 self.add(
                     **record,
                     outcome=c.FAIL if wrong else c.PASS,
@@ -987,7 +1151,8 @@ class Stage2:
                 self.add(**record, outcome=c.NOT_FORMED, why=str(error))
             record = {**base, "readout": f"{cell} exposure", "class": "R"}
             if path is None:
-                self.add(**record, outcome=c.NOT_FORMED, why="its path is not formed")
+                why = CUT if state.cut else "its path is not formed"
+                self.add(**record, outcome=c.NOT_FORMED, why=why)
                 continue
             exposure, segments = self.captures.exposure(run["world"], seed, cell)
             worst, missed, ratio = None, [], 0.0
@@ -1049,6 +1214,8 @@ class Stage2:
             for cell, pool in world.pools.items():
                 if state.entry["inputs"][cell].get("seed") != pool["seeds"][run["seed_index"]]:
                     self.flag(name, "seed", f"inputs.{cell}.seed is not the registered seed")
+        cut = state.cut or whole.cut
+        differs = []
         for cell, pool in world.pools.items():
             ids = [str(pool["pool"]["world_id_start"] + i) for i in range(pool["pool"]["worlds"])]
             base = {
@@ -1073,6 +1240,10 @@ class Stage2:
                         raise NotFormed(fault)
                     self.tables.rows(name)
                     self.tables.rows(owner)
+                    if state.stopped:
+                        raise NotFormed(ANOTHER_PATH)
+                    if cut:
+                        raise NotFormed(CUT)
                     mine = self._array(state.entry, cell, array, shapes[array])
                     theirs = self._array(whole.entry, cell, array, shapes[array])
                     self.add(**record, outcome=c.PASS if mine == theirs else c.FAIL, why=None)
@@ -1088,12 +1259,20 @@ class Stage2:
                     self._path(state.entry, cell, ids),
                     self._path(whole.entry, cell, ids),
                 )
-                wrong = [
-                    w
+                after = {
+                    w: tuple([e for e in path[w] if e[0] > start] for path in (mine, theirs))
                     for w in ids
-                    if [e for e in mine[w] if e[0] > start]
-                    != [e for e in theirs[w] if e[0] > start]
-                ]
+                }
+                wrong = [w for w, (a, b) in after.items() if a != b]
+                if state.stopped or cut:
+                    # What a refusal cut is not formed. Any other difference of a path is a fail,
+                    # but in a run that a check stopped, whose path is another execution's.
+                    wrong = [w for w, (a, b) in after.items() if not begins(a, b)]
+                    if state.stopped:
+                        differs.append({"cell": cell, "worlds_that_differ": wrong})
+                        raise NotFormed(ANOTHER_PATH)
+                    if not wrong:
+                        raise NotFormed(CUT)
                 self.add(
                     **record,
                     outcome=c.FAIL if wrong else c.PASS,
@@ -1101,12 +1280,15 @@ class Stage2:
                 )
             except NotFormed as error:
                 self.add(**record, outcome=c.NOT_FORMED, why=str(error))
+        if state.stopped:
+            self._tell_differences(name, owner, differs)
 
     # ----- class D -----
 
     def class_D(self, name, state):
-        """Completion (CRITERIA section 4.4). A stop fails; a refusal is not a stop, and D is not
-        judged there.
+        """Completion (CRITERIA section 4.4). A stop fails. D is not formed for a refusal of kind
+        `definition`, `domain` or `harness`. It is for a run that is refused for its provenance, by
+        the copy guard or for two lists (Amendment 2, reading 16): it passes if the run completed.
         """
         run = state.run
         if run["role"] not in ("judged", "retry"):
@@ -1123,10 +1305,211 @@ class Stage2:
             self.add(**record, outcome=c.NOT_FORMED, why="; ".join(state.causes()))
         elif state.stopped:
             self.add(**record, outcome=c.FAIL, why=state.refusal_message)
-        elif state.completed:
+        elif state.completed and state.refusal_kind is None:
             self.add(**record, outcome=c.PASS, why=None)
         else:
             self.add(**record, outcome=c.NOT_FORMED, why="refused: D is not judged")
+
+    # ----- the flags that the checker settles -----
+
+    def settle(self):
+        """The flags that leave an entry at best inconclusive until the checker settles them
+        (Amendment 2, item 5 (a) and readings 12 and 24). A settled one counts as the checker says.
+        """
+        for name, state in self.tables.states.items():
+            run = state.run
+            if not state.judgable or self.reg.is_pool(run) or run["role"] == "plant":
+                continue
+            if run["role"] in ("judged", "retry"):
+                self._rows_at_time_0(name, state)
+            self._values_not_finite(name, state)
+        if self.first is not None:
+            self._corners_again()
+        unknown = set(self.settled) - {item["id"] for item in self.to_settle}
+        if unknown:
+            raise OrderFault(f"a settlement of a flag that is not there: {sorted(unknown)[:3]}")
+        touched = {}
+        for item in self.to_settle:
+            item["settled"] = self.settled.get(item["id"])
+            for entry in item["entries"]:
+                touched.setdefault(id(entry), (entry, []))[1].append(item)
+            item["entries"] = [[e["run"], e["readout"], e["class"]] for e in item["entries"]]
+        for entry, items in touched.values():
+            self._settle(entry, items)
+
+    @staticmethod
+    def _settle(entry, items):
+        """What an entry counts as, with its flags. A fail by the rule stays a fail, and what is not
+        formed or inconclusive stays so but for a flag that the checker settles as a fail.
+        """
+        entry["by_rule"] = entry["outcome"]
+        waiting = [item["id"] for item in items if item["settled"] is None]
+        said = {item["settled"]["counts_as"] for item in items if item["settled"]}
+        if entry["outcome"] == c.FAIL:
+            return
+        if c.FAIL in said:
+            entry.update(outcome=c.FAIL, why="the checker settled a flag on it as a fail")
+        elif entry["outcome"] in (c.PASS, c.NOT_TESTED) and c.INCONCLUSIVE in said:
+            entry.update(
+                outcome=c.INCONCLUSIVE, why="the checker settled a flag on it as inconclusive"
+            )
+        elif entry["outcome"] in (c.PASS, c.NOT_TESTED) and waiting:
+            entry.update(
+                outcome=c.INCONCLUSIVE,
+                why=f"pending on {len(waiting)} flag(s) to the checker: {'; '.join(waiting)}",
+                pending=waiting,
+            )
+
+    def _rows_at_time_0(self, name, state):
+        """Reading 12: in a world whose capacitor is not read at time 0, a row of `n_cell_x` at time
+        0 that is not zero.
+        """
+        world = self.reg.worlds[state.run["world"]]
+        if any(abs(t) <= c.TIME_TOL_S for t in world.potential_times):
+            return
+        rows, times = state.entry.get("rows"), state.entry.get("t")
+        if not isinstance(rows, dict) or not isinstance(times, list):
+            return
+        at_zero = np.flatnonzero(np.abs(column(times)) <= c.TIME_TOL_S)
+        capacitor = [e for e in self.entries if e["run"] == name and e["readout"] == "capacitor"]
+        for x in world.species:
+            table, found = rows.get(f"n_cell_{x}"), {}
+            for cell in world.cells:
+                listed = table.get(cell) if isinstance(table, dict) else None
+                if not isinstance(listed, list) or len(listed) != len(times):
+                    continue
+                values = column(listed)[at_zero]
+                if np.any(np.isfinite(values) & (values != 0)):
+                    found[cell] = values.tolist()
+            if found:
+                self.open_flag(
+                    AT_ZERO,
+                    (state.consumer, name),
+                    name,
+                    f"n_cell_{x}",
+                    found,
+                    [e for e in capacitor if e["judged"]],
+                )
+
+    def _reads_of(self, world) -> dict:
+        """Readout to the series that it reads of a run, as (where, series) to its times."""
+        if world.name not in self._reads:
+            table = {}
+
+            def reads(readout, where, names, times):
+                for name in names:
+                    held = table.setdefault(readout, {}).setdefault((where, name), set())
+                    held.update(times)
+
+            heats = identities.heat_series(world)
+            amounts = [f"n_{side}_{x}" for side in ("cell", "out") for x in world.species]
+            for entry in [*world.entries, *world.zeros]:
+                names = [entry.series]
+                if entry.where == "formed":
+                    names = [h for h in heats if h in ("heat_leak", "heat_pump", "heat_channel")]
+                where = "potentials" if entry.where == "potentials" else "rows"
+                label = f"{entry.name} is zero" if entry in world.zeros else entry.name
+                reads(label, where, names, entry.times)
+            work = ["work_pump"] if world.pumps else []
+            times = world.identity_times
+            reads("energy_identity", "rows", [*amounts, *heats, *work], times)
+            reads("energy_identity", "potentials", ["voltage"], (0.0,))
+            for x in world.species:
+                routes = [] if world.zero_routes else [f"leak_{x}"]
+                if any(world.block["channels"][k]["species_id"] == x for k in world.channels):
+                    routes.append(f"channel_{x}")
+                routes += ["pump"] if world.pumps else []
+                inner = [f"junction_{x}"] if world.junctions else []
+                outer = [f"face_{x}"] if world.faces else []
+                reads(f"balance of cells, {x}", "rows", [f"n_cell_{x}", *routes, *inner], times)
+                reads(f"balance of regions, {x}", "rows", [f"n_out_{x}", *routes, *outer], times)
+                both = [f"n_cell_{x}", f"n_out_{x}"]
+                reads(f"balance of closed world, {x}", "rows", both, times)
+            cells = [f"n_cell_{x}" for x in world.species]
+            reads("capacitor", "rows", cells, world.potential_times)
+            reads("capacitor", "potentials", ["voltage"], (0.0, *world.potential_times))
+            self._reads[world.name] = table
+        return self._reads[world.name]
+
+    def _entries_of(self, name, state) -> list:
+        """(entry, the readout that it reads, the times after which) of every judged entry that
+        reads a run's rows: its family's S entries, its own R and E entries, and the E entries of a
+        restart of it or by it.
+        """
+        out = []
+        for entry in self.entries:
+            if not entry["judged"]:
+                continue
+            readout, after = entry["readout"], -np.inf
+            if entry.get("support"):
+                if name not in (entry["support"], entry["run"]):
+                    continue
+                readout = readout.removeprefix("restart ")
+                after = self.reg.restart_time(self.reg.runs[entry["support"]])
+            elif entry["class"] == "S":
+                if name not in entry.get("runs", ()):
+                    continue
+            elif entry["run"] != name or entry["class"] not in ("R", "E"):
+                continue
+            out.append((entry, readout, after))
+        return out
+
+    def _values_not_finite(self, name, state):
+        """Reading 24: a value of a judged series that is no finite number at a time that no
+        compared time is, and the entries that read the series of that run.
+        """
+        if not state.nonfinite:
+            return
+        world = self.reg.worlds[state.run["world"]]
+        reads, read_by = self._reads_of(world), self._entries_of(name, state)
+        for (where, series), table in state.nonfinite.items():
+            times_key = "potential_t" if where == "potentials" else "t"
+            times = column(state.entry[times_key])
+            if not np.all(np.isfinite(times)):
+                continue  # no compared time has a row
+            entries, compared = [], set()
+            for entry, readout, after in read_by:
+                needs = reads.get(readout, {}).get((where, series))
+                if needs is not None:
+                    entries.append(entry)
+                    compared |= {t for t in needs if t >= after - c.TIME_TOL_S}
+            if not entries:
+                continue
+            found = {}
+            for entity, rows in table.items():
+                if entity not in world.entities(series):
+                    continue
+                others = [
+                    i for i in rows if not any(abs(times[i] - t) <= c.TIME_TOL_S for t in compared)
+                ]
+                if others:
+                    held = state.entry[where][series][entity]
+                    found[entity] = [[float(times[i]), repr(held[i])] for i in others[:3]]
+            if found:
+                self.open_flag(
+                    NOT_FINITE, (state.consumer, name), name, f"{where}.{series}", found, entries
+                )
+
+    def _corners_again(self):
+        """The corner of item 5 (a) on the retry's triple: an entry that the first pass flagged and
+        that is judged again is at best inconclusive until its flag is settled.
+        """
+        held = {item["id"]: item for item in self.to_settle if item["kind"] == CORNER}
+        for item in self.first["flags_to_settle"]:
+            if item["kind"] != CORNER:
+                continue
+            again = [
+                e
+                for e in self.entries
+                if e["class"] == "S"
+                and f"{CORNER}; {e['family']}; {e['readout']}" == item["id"]
+                and e["pass_of_the_judgement"] == 2
+            ]
+            if item["id"] in held:  # it is there again, on the triple of the retry
+                held[item["id"]]["detail"]["first"] = item["detail"]
+                held[item["id"]]["entries"] = again
+            else:
+                self.to_settle.append(dict(item, entries=again))
 
     # ----- plants -----
 
@@ -1288,13 +1671,14 @@ class Stage2:
                     if item["class"] != "S" or item["family"] != family.name or not item["judged"]:
                         continue
                     est = self.power["families"][family.name][item["readout"]]
-                    if item["outcome"] == c.INCONCLUSIVE:
+                    outcome = item.get("by_rule", item["outcome"])  # a flag owes no retry
+                    if outcome == c.INCONCLUSIVE:
                         reasons.append(f"{item['readout']}: order")
                     elif (
                         est.get("formed")
                         and est["home"]
                         and est["tested"] is False
-                        and item["outcome"] != c.FAIL
+                        and outcome != c.FAIL
                         and est["truncation_is_larger"]
                     ):
                         reasons.append(f"{item['readout']}: power")
@@ -1338,8 +1722,10 @@ class Stage2:
                 which: self._set_verdict(consumer, families, runs, plants)
                 for which, families in sets.items()
             }
-            order = (c.FAIL, c.INCONCLUSIVE, c.PASS)
+            order = (c.FAIL, c.INCONCLUSIVE, c.PENDING, c.PASS)
             verdict = min((t["verdict"] for t in table.values()), key=order.index)
+            state = min((t["state"] for t in table.values()), key=order.index)
+            pending = sorted({flag for t in table.values() for flag in t["pending"]})
             judged = [e for e in self.entries if e["consumer"] == consumer and e["judged"]]
             counts = self._counts(consumer, self.reg.by_consumer[consumer], judged)
             published = self.reg.profile.get("counts", {}).get(consumer, {})
@@ -1347,9 +1733,18 @@ class Stage2:
                 numbers["published"] = published.get(key)
             families = self.reg.by_consumer[consumer]
             waiting = [f.retry_name for f in families if f.retry_name in owed["runs"]]
+            copies = [
+                hit["run"]
+                for hit in self.tables.guard_hits
+                if hit["consumer"] == consumer and hit["settled"] is None
+            ]
             consumers[consumer] = {
                 "verdict": verdict,
-                "final": not waiting,  # an owed retry leaves the first pass's verdict open
+                "state": state,  # pending: nothing but unsettled flags keeps it from a pass
+                "pending": pending,
+                # An owed retry, an unsettled flag and an unsettled refusal by the copy guard leave
+                # the verdict open.
+                "final": not (waiting or pending or copies),
                 "retry_owed": waiting,
                 "steps_covered": self._steps_covered(families),
                 "sets": table,
@@ -1360,6 +1755,7 @@ class Stage2:
                 consumers[consumer]["note"] = note
         whole = {"consumers": {k: v["verdict"] for k, v in consumers.items()}}
         whole["passes"] = all(v == c.PASS for v in whole["consumers"].values())
+        whole["pending"] = {k: v["pending"] for k, v in consumers.items() if v["pending"]}
         return {"runs": runs, "consumers": consumers, "part": whole}
 
     def _steps_covered(self, families) -> dict:
@@ -1404,7 +1800,7 @@ class Stage2:
             and (e["family"] in names or e["family"] is None)
         ]
         its_plants = [p for p in plants["plants"] if p["consumer"] == consumer]
-        reasons, fails = [], []
+        reasons, fails, others = [], [], 0
         for name in members:
             if runs[name] == c.FAIL:
                 fails.append(f"the run {name} fails")
@@ -1417,7 +1813,10 @@ class Stage2:
                 reasons.append(
                     f"the run {name} is refused, missing or stopped: {'; '.join(state.causes())}"
                 )
+        others += len(reasons)
         waiting = [e for e in entries if e["outcome"] in (c.INCONCLUSIVE, c.NOT_FORMED)]
+        pending = sorted({flag for e in waiting for flag in e.get("pending", ())})
+        others += sum(1 for e in waiting if not e.get("pending"))
         for item in waiting[:20]:
             reasons.append(
                 f"{item['run']}, {item['readout']}: {item['outcome']} ({item.get('why')})"
@@ -1427,6 +1826,7 @@ class Stage2:
                 f"and {len(waiting) - 20} more entries that are inconclusive or not formed"
             )
         found = self._mechanisms(families)
+        before = len(reasons)
         for mechanism, record in found.items():
             if not record["tested"]:
                 reasons.append(f"the mechanism {mechanism} is untested")
@@ -1440,9 +1840,13 @@ class Stage2:
                     f"{numbers['formed']} entries of class {name} were formed, and "
                     f"{numbers['expected']} are listed"
                 )
+        others += len(reasons) - before
         verdict = c.FAIL if fails else c.INCONCLUSIVE if reasons else c.PASS
+        only_pending = verdict == c.INCONCLUSIVE and pending and not others
         return {
             "verdict": verdict,
+            "state": c.PENDING if only_pending else verdict,
+            "pending": pending,
             "fails": fails,
             "inconclusive": reasons,
             "families": {f.name: self._family_summary(f, entries) for f in families},
@@ -1514,6 +1918,38 @@ class Stage2:
             "outcomes": Stage2._outcomes(mine),
             "largest_S_ratio": None if worst is None else [worst["readout"], worst["ratio"]],
         }
+
+
+def verdict_of(record) -> dict:
+    """The verdicts alone, with the causes that they name."""
+    return {
+        "kind": "ensemble-reexpression verdicts, version 1",
+        "protocol": record["protocol"],
+        "part": record["part"],
+        "pass_of_the_judgement": record["pass"],
+        "hashes": record["hashes"],
+        "consumers": record["consumers"],
+        "part_1": record["part_1"],
+        "plants": [
+            {
+                k: p.get(k)
+                for k in ("plant", "kind", "consumer", "family", "score", "why", "entries")
+            }
+            for p in record["plants"]["plants"]
+        ],
+        "refusals": {n: s["causes"] for n, s in record["runs"].items() if s["causes"]},
+        "refused_files": {k: f["refused"] for k, f in record["files"].items() if f["refused"]},
+        "ignored_runs": record["ignored"],
+        "where_nothing_is_judged": record["where_nothing_is_judged"],
+        "flags_to_the_checker": len(record["flags"])
+        + sum(len(s["flags"]) for s in record["runs"].values()),
+        "flags_to_settle": record["flags_to_settle"],
+        "runs_pending_on_a_flag": record["runs_pending_on_a_flag"],
+        "copy_guard": record["copy_guard"],
+        "for_the_lead": record["for_the_lead"],
+        "retry_owed": record["retry_owed"]["runs"],
+        "retry_owed_waits_on": record["retry_owed_waits_on"],
+    }
 
 
 def worst_of(entries) -> str:

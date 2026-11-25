@@ -1,8 +1,8 @@
 """The judge's own tests: the honest fabricated tables pass, each fault row does as CRITERIA section
-5 says, and the order of the stages holds.
+5 and Amendment 2 say, and the order of the stages holds.
 
-Seconds: about 30 in all on one idle core, and twice that on a busy machine (the judge's plants are
-10 of them). They read the captures and compile nothing.
+Seconds: about 40 in all on one idle core, and twice that on a busy machine (the judge's plants are
+15 of them). They read the captures and compile nothing.
 """
 
 from __future__ import annotations
@@ -10,6 +10,7 @@ from __future__ import annotations
 import copy
 import json
 import math
+import sys
 
 import numpy as np
 import pytest
@@ -29,10 +30,12 @@ from validation.ensemble_reexpression.judge.c0 import C0, same_order
 from validation.ensemble_reexpression.judge.plants import Lazy, Query, refuse
 from validation.ensemble_reexpression.judge.registration import (
     PART1,
+    SPEC,
     Registration,
     StringsNote,
     changes,
 )
+from validation.ensemble_reexpression.judge.settlements import SettlementFault, Settlements
 from validation.ensemble_reexpression.judge.table import (
     Echo,
     RunRows,
@@ -83,16 +86,59 @@ class Bench:
         ).tables()
         self.note = StringsNote(self.note_data, "fabricated")
 
-    def score(self, alter=lambda runs: None, consumer=None, missing=()):
-        """The record of the altered tables, as a query."""
+    def altered(self, alter, consumer=None, missing=()):
+        """The tables with one consumer's runs altered."""
         consumer = consumer or self.reg.consumers[0]
         runs = Lazy(self.tables[consumer]["runs"])
         alter(runs)
         tables = dict(self.tables)
         tables[consumer] = dict(tables[consumer], runs=dict(runs), missing=list(missing))
-        return Query(
-            plants.judge(self.reg, self.note, tables, self.c0, self.captures, self.planted)
+        return tables
+
+    def judge(self, tables, **more):
+        """Both stages on tables."""
+        return plants.judge(
+            self.reg, self.note, tables, self.c0, self.captures, self.planted, **more
         )
+
+    def score(self, alter=lambda runs: None, consumer=None, missing=(), **more):
+        """The record of the altered tables, as a query."""
+        return Query(self.judge(self.altered(alter, consumer, missing), **more))
+
+    def settled(self, record, **said):
+        """Settlements of every flag and every copy guard's refusal of a record. `counts_as` is for
+        the flags, `outcome` for the guard's.
+        """
+        digest = strictjson.sha256(strictjson.encode(record))
+        common = {
+            "record_sha256": digest,
+            "checker": "the checker",
+            "when": "2026-11-26T09:00:00Z",
+            "words": "read from the run's own record",
+            "evidence": ["runs/x/RUN.json"],
+        }
+        lifted = said.get("outcome") == c.LIFTED
+        note = {"path": "note.md", "sha256": "0" * 64, "date": "2026-11-26", "words": "lifted"}
+        data = {
+            "kind": c.SETTLEMENTS_KIND,
+            "protocol": c.PROTOCOL,
+            "part": 1,
+            "flags": [
+                {"flag": item["id"], "counts_as": said["counts_as"], **common}
+                for item in record["flags_to_settle"]
+            ],
+            "copy_guard": [
+                {
+                    "run": hit["run"],
+                    "comparison": hit["comparison"],
+                    "outcome": said["outcome"],
+                    "lead_note": note if lifted else None,
+                    **common,
+                }
+                for hit in record["copy_guard"]
+            ],
+        }
+        return data, {digest: record}
 
 
 @pytest.fixture(scope="module")
@@ -229,6 +275,34 @@ ECHO = {
 }
 
 
+ECHO_BASE = {  # Amendment 2, item 2: an ID that the block's own set of that kind does not hold
+    "controls.channel": lambda e: e["inputs"]["controls"]["channel"].update(channel_2=[[0.0, 1.0]]),
+    "controls.leak": lambda e: e["inputs"]["controls"]["leak"].update(membrane_2=[[0.0, 1.0]]),
+    "switch_list": lambda e: e["inputs"]["assembly"]["switch_list"].update(channel_2=[]),
+    "pool_seeds": lambda e: e["inputs"]["assembly"]["pool_seeds"].update(cell_2=1),
+    "a face": lambda e: e["inputs"]["faces"].update(
+        face_3=copy.deepcopy(e["inputs"]["faces"]["face_2"])
+    ),
+}
+
+
+@pytest.mark.parametrize("case", ECHO_BASE)
+def test_an_extra_id_of_an_assembly_run_is_a_departing_echo(benches, case):
+    """And an ID that the block's `controls` leave out, and its own set holds, is not."""
+    q = benches("base").score(lambda runs: ECHO_BASE[case](runs[B[2]]))
+    assert q.cause(B[2], "departing echo") and q.nothing_judged(B[2], "base s0 w2")
+    assert not q.fails() and q.verdict("base") == OPEN
+
+    def written_out(runs):
+        controls = runs[B[2]]["inputs"]["controls"]
+        controls["pump"] = {m: [[0.0, 1.0]] for m in ("membrane_0", "membrane_1")}
+        controls["leak"] = {}
+        controls["junction"] = {"junction": [[0.0, 1.0]]}
+
+    q = benches("base").score(written_out)
+    assert not q.run(B[2])["refused"] and q.verdict("base") == PASS
+
+
 @pytest.mark.parametrize("case", ECHO)
 def test_a_departing_echo_is_refused_and_nothing_of_it_is_judged(benches, case):
     q = benches("integrated").score(lambda runs: ECHO[case](runs[J[2]]))
@@ -270,12 +344,12 @@ NO_FAULT = {
 }
 
 
-def extra_row(entry):
-    """One more accepted row between two compared times."""
-    entry["t"].insert(1, 5e-05)
-    for table in entry["rows"].values():
-        for values in table.values():
-            values.insert(1, values[0])
+def extra_row(entry, series=None, entity=None, value=math.nan):
+    """One more accepted row between two compared times, with one value of it where it is named."""
+    entry["t"].insert(1, (entry["t"][0] + entry["t"][1]) / 2)
+    for name, table in entry["rows"].items():
+        for key, values in table.items():
+            values.insert(1, value if (name, key) == (series, entity) else values[0])
 
 
 @pytest.mark.parametrize("case", NO_FAULT)
@@ -318,22 +392,27 @@ PROVENANCE = {
     "status completed with a refusal": put(
         "refusal", value={"kind": "harness", "message": "x", "time_s": None}
     ),
+    "status, a refusal of no kind": lambda e: e.update(
+        status="refused", refusal={"kind": "crash", "message": "x", "time_s": None}
+    ),
 }
 
 
 @pytest.mark.parametrize("case", PROVENANCE)
 def test_provenance_refuses_the_run_and_its_readouts_are_judged(benches, case):
     q = benches("integrated").score(lambda runs: PROVENANCE[case](runs[J[2]]))
-    reason = {"steps mistyped": "steps", "status completed with a refusal": "status"}.get(
-        case, case
-    )
+    reason = "steps" if case == "steps mistyped" else case.split(",")[0].split(" completed")[0]
     assert q.run(J[2])["refused"] and reason in q.run(J[2])["reasons"], q.run(J[2])
+    assert q.cause(J[2], "kind harness") is (case.startswith("status") and case != "status")
     assert not q.fails() and q.verdict("integrated") == OPEN
     assert [q.run(name)["verdict"] for name in J] == [PASS, PASS, OPEN]
     R = {e["outcome"] for e in q.R(J[2])}
     assert R == (
         {UNFORMED} if case == "t" else {PASS}
     )  # a doubled time leaves the entries that need it not formed
+    # D is formed where the run completed, and not for a refusal of a kind (Amendment 2, reading 16)
+    completes = UNFORMED if case.startswith("status") else PASS
+    assert q.outcome(run=J[2], readout="completes") == completes
 
 
 @pytest.mark.parametrize(
@@ -396,6 +475,7 @@ def test_a_refused_run_is_judged_on_the_rows_it_holds(benches, kind):
     def early(runs, wrong):
         entry = runs[J[0]]
         refuse(entry, kind)
+        entry.update(checks={}, steps=49)
         entry["t"] = entry["t"][:50]
         for table in entry["rows"].values():
             for entity in table:
@@ -407,6 +487,7 @@ def test_a_refused_run_is_judged_on_the_rows_it_holds(benches, kind):
     assert q.run(J[0])["refused"] and not q.fails() and q.verdict("integrated") == OPEN
     assert {e["outcome"] for e in q.R(J[0])} == {UNFORMED}  # no time is dropped from a pass
     assert q.outcome(run=J[0], readout="completes") == UNFORMED  # D is not judged
+    assert q.run(J[0])["flags"] == [] and q.run(J[0])["reasons"] == []
     q = benches("integrated").score(lambda runs: early(runs, True))
     assert (J[0], "balance of cells, K") in q.fails() and q.verdict("integrated") == FAIL
 
@@ -455,6 +536,11 @@ def test_runs_that_are_not_registered_are_ignored(benches):
         "integrated h=1.25e-05 retry",
         "another run",
     }
+    # An unlisted run counts for a shared record_sha256 (Amendment 2, reading 21).
+    q = benches("integrated").score(
+        lambda runs: runs.update({"another run": copy.deepcopy(runs[J[2]])})
+    )
+    assert "a shared record_sha256" in q.run(J[2])["reasons"] and q.verdict("integrated") == OPEN
 
 
 def test_nothing_passes_empty(benches, monkeypatch):
@@ -476,6 +562,20 @@ def test_the_off_grid_switch_refuses_a_registered_run(benches):
     assert (
         q.run(J[0])["refused"] and q.cause(J[0], "kind harness") and q.verdict("integrated") == OPEN
     )
+    assert q.outcome(run=J[0], readout="completes") == UNFORMED  # a refusal of kind `harness`
+    assert {e["outcome"] for e in q.R(J[0])} == {PASS}
+
+
+def test_a_run_that_is_named_in_both_lists_is_refused(benches):
+    """Amendment 2, reading 20: its readouts are judged, a fail stands, and it cannot pass."""
+    q = benches("integrated").score(missing=[J[1]])
+    assert q.run(J[1])["refused"] and q.cause(J[1], "in `missing`") and not q.fails()
+    assert q.readouts_judged(J[1], "integrated") and q.verdict("integrated") == OPEN
+    assert q.outcome(run=J[1], readout="completes") == PASS
+    q = benches("integrated").score(
+        lambda runs: runs[J[1]]["rows"]["n_cell_K"]["cell_3"].__setitem__(-1, 1.0), missing=[J[1]]
+    )
+    assert (J[1], "balance of cells, K") in q.fails() and q.verdict("integrated") == FAIL
 
 
 def test_extra_series_and_keys_refuse_nothing(benches):
@@ -505,6 +605,19 @@ def test_extra_series_and_keys_refuse_nothing(benches):
     flags = q.run(J[0])["flags"]
     assert ["second pass", "it completed where the run was refused"] in flags
     assert ["refusal, keys beyond the contract's", {"more": 1}] in flags
+    assert [(f["run"], f["what"]) for f in q.record["for_the_lead"]] == [
+        (J[0], "the second pass of a stop completed")  # an engine finding (Amendment 2, item 8 (a))
+    ]
+    for kind, said in (("domain", True), ("check", False)):
+        q = benches("integrated").score(
+            lambda runs, k=kind, v=said: [
+                refuse(runs[J[0]], k),
+                runs[J[0]]["refusal"].update(second_pass_completed=v),
+            ]
+        )
+        assert q.record["for_the_lead"] == [] and any(
+            f[0] == "second pass" and "is not true" in f[1] for f in q.run(J[0])["flags"]
+        )
 
     def pumps(runs, value=0.0):
         for series in ("pump", "heat_pump", "work_pump"):
@@ -594,6 +707,67 @@ def test_a_restart_equals_the_uninterrupted_run(benches):
             assert q.verdict("jupiter") == (FAIL if wrong else OPEN)
 
 
+def test_a_restart_that_a_check_stopped_is_not_formed(benches):
+    """Amendment 2, reading 13: its rows are another path's. What differs goes to the checker and to
+    the lead, and is no fail.
+    """
+    bench = benches("jupiter")
+
+    def stop(runs, wrong=False):
+        refuse(runs[RESTART], "check")
+        if wrong:
+            runs[RESTART]["rows"]["pump"]["membrane_0"][20] *= 1 + 1e-3
+
+    for wrong in (False, True):
+        q = bench.score(lambda runs, w=wrong: stop(runs, w))
+        found = [e for e in q.entries if str(e["readout"]).startswith("restart ")]
+        assert {e["outcome"] for e in found} == {UNFORMED} and len(found) == 25
+        assert q.run(RESTART)["stopped"] and not q.run(H[0])["refused"]
+        assert not q.fails() and q.verdict("jupiter") == OPEN
+        (told,) = q.record["for_the_lead"]
+        assert told["run"] == RESTART and told["detail"]["resumes"] == H[0]
+        shown = told["detail"]["differences_on_the_rows_that_it_holds"]
+        unequal = {d["readout"]: d["unequal_values"] for d in shown if d["unequal_values"]}
+        assert unequal == ({"pump": 1} if wrong else {})
+        assert {"run": RESTART, "what": told["what"]}.items() <= q.record["flags"][-1].items()
+    # The pool's restart.
+    bench = benches("base")
+    held = bench.tables["base"]["runs"][POOL_RESTART]["path"]["cell_0"]
+    world = next(w for w, path in held.items() if path)
+
+    def stop_pool(runs, wrong):
+        refuse(runs[POOL_RESTART], "check")
+        if wrong:
+            runs[POOL_RESTART]["path"]["cell_0"][world][0][0] *= 1 + 1e-9
+
+    for wrong in (False, True):
+        q = bench.score(lambda runs, w=wrong: stop_pool(runs, w))
+        restarts = [e for e in q.entries if str(e["readout"]).startswith("restart ")]
+        assert {e["outcome"] for e in restarts} == {UNFORMED} and not q.fails()
+        assert q.verdict("base") == OPEN
+        (told,) = q.record["for_the_lead"]
+        shown = told["detail"]["differences_on_the_rows_that_it_holds"]
+        assert [d["worlds_that_differ"] for d in shown] == [[world] if wrong else [], []]
+
+    # A stop by its refusal alone: a `status` of completed beside it (reading 16).
+    def odd(runs):
+        stop_pool(runs, False)
+        runs[POOL_RESTART]["status"] = "completed"
+
+    q = bench.score(odd)
+    restarts = [e for e in q.entries if str(e["readout"]).startswith("restart ")]
+    assert {e["outcome"] for e in restarts} == {UNFORMED} and q.run(POOL_RESTART)["stopped"]
+
+
+def test_the_rows_of_a_stopped_run_are_marked(benches):
+    """Amendment 2, reading 15: S entries that are formed on them are marked in the record."""
+    q = benches("jupiter").score(lambda runs: refuse(runs[H[1]], "check"))
+    marked = [e for e in q.entries if "on_a_stopped_runs_rows" in e]
+    assert {e["family"] for e in marked} == {"jupiter_baseline"} and len(marked) == 26
+    assert {tuple(e["on_a_stopped_runs_rows"]) for e in marked} == {(H[1],)}
+    assert q.fails() == [(H[1], "completes")] and q.verdict("jupiter") == FAIL
+
+
 POOLS = {
     "path, an event's time": (
         lambda r: r[POOL]["path"]["cell_1"]["3"][0].__setitem__(
@@ -647,6 +821,12 @@ POOL_FORM = {
     "an array that is not finite": lambda r: r[POOL]["pool"]["cell_0"]["arrays"][
         "time_s"
     ].__setitem__(0, math.inf),
+    "a boolean in an array of integers": lambda r: r[POOL]["pool"]["cell_0"]["arrays"][
+        "fault"
+    ].__setitem__(0, False),
+    "an integer in the array of booleans": lambda r: r[POOL]["pool"]["cell_0"]["arrays"][
+        "pending_valid"
+    ].__setitem__(0, int(r[POOL]["pool"]["cell_0"]["arrays"]["pending_valid"][0])),
     "a path's world left out": lambda r: r[POOL]["path"]["cell_0"].pop("7"),
     "a switch list's channel left out": lambda r: r[B[0]]["inputs"]["assembly"]["switch_list"].pop(
         "channel_1"
@@ -666,22 +846,58 @@ def test_class_E_leaves_that_are_missing_or_mistyped(benches, case):
 
 
 def test_a_refused_pool_run_is_judged_on_the_events_it_holds(benches):
-    """A path that is a beginning of the reference's is not formed, and another one fails."""
+    """Amendment 2, reading 14: where the status is refused, the path, the exposure and the arrays
+    are not formed, and a path that is no beginning of the reference's fails. Where it is completed,
+    a path that ends early fails too.
+    """
+    bench = benches("base")
 
-    def early(runs, wrong):
-        refuse(runs[POOL], "harness")
+    def early(runs, wrong, kind="harness", cut=True):
+        if kind:
+            refuse(runs[POOL], kind)
+        else:
+            runs[POOL]["host_patch"] = "x"
         path = runs[POOL]["path"]["cell_0"]["2"]
-        path.pop()
+        if cut:
+            path.pop()
         if wrong:
             path[0][0] *= 1 + 1e-9
 
-    q = benches("base").score(lambda runs: early(runs, False))
-    for readout in ("cell_0 path", "cell_0 exposure"):
-        assert q.outcome(run=POOL, readout=readout) == UNFORMED
-    assert q.outcome(run=POOL, readout="cell_1 path") == PASS
-    assert not q.fails() and q.verdict("base") == OPEN
-    q = benches("base").score(lambda runs: early(runs, True))
+    for kind in ("harness", "check"):
+        for cut in (True, False):  # the path may even be whole
+            q = bench.score(lambda runs, k=kind, x=cut: early(runs, False, k, x))
+            mine = [e for e in q.entries if e["run"] == POOL and e["judged"] and "support" not in e]
+            formed = {e["readout"] for e in mine if e["outcome"] != UNFORMED}
+            assert formed == {"cell_0 seed", "cell_1 seed"} | (
+                {"completes"} if kind == "check" else set()
+            )
+            failed = [(POOL, "completes")] if kind == "check" else []
+            assert q.fails() == failed and q.verdict("base") == (FAIL if failed else OPEN)
+            # So are the arrays of the restart of it, and its path after the restart's time.
+            held = {e["outcome"] for e in q.entries if e.get("support") == POOL_RESTART}
+            assert held == {UNFORMED}
+    q = bench.score(lambda runs: early(runs, True))
     assert q.outcome(run=POOL, readout="cell_0 path") == FAIL and q.verdict("base") == FAIL
+    assert q.outcome(run=POOL, readout="cell_0 exposure") == UNFORMED
+    assert q.outcome(run=POOL, readout="cell_0 free") == UNFORMED
+    q = bench.score(lambda runs: early(runs, False, None))
+    assert q.run(POOL)["refused"] and (POOL, "cell_0 path") in q.fails()
+    assert q.outcome(run=POOL, readout="cell_0 free") == PASS and q.verdict("base") == FAIL
+
+    held = bench.tables["base"]["runs"][POOL_RESTART]["path"]["cell_0"]
+    world = next(w for w, path in held.items() if path)
+
+    def restart_cut(runs, wrong):
+        refuse(runs[POOL_RESTART], "harness")
+        path = runs[POOL_RESTART]["path"]["cell_0"][world]
+        path.pop()
+        if wrong:
+            path.insert(0, [0.0151, 1])
+
+    for wrong in (False, True):
+        q = bench.score(lambda runs, w=wrong: restart_cut(runs, w))
+        assert q.fails() == ([(POOL, "restart cell_0 path")] if wrong else [])
+        assert q.outcome(run=POOL, readout="restart cell_0 free") == UNFORMED
 
 
 def test_schedules_may_hold_the_initial_entry_and_repeats(benches):
@@ -740,6 +956,16 @@ PLANT = {
         "unscorable",
         OPEN,
     ),
+    "EP1 without its change, equal": (
+        "jupiter",
+        lambda r: [
+            r[EP1].update(rows=r[H[2]]["rows"]),
+            r[EP1]["inputs"]["channels"]["channel_0"].update(max_permeability_m_per_s=3e-10),
+        ],
+        "EP1",
+        "unscorable",
+        OPEN,
+    ),
     "EP1 refused and caught": (
         "jupiter",
         lambda r: r[EP1].update(host_patch="x"),
@@ -787,6 +1013,14 @@ PLANT = {
     ),
     "EP2 equal": ("base", lambda r: r[EP2].update(rows=r[B[2]]["rows"]), "EP2", "not caught", FAIL),
 }
+
+
+def test_a_plant_s_worst_entry_decides():
+    """Amendment 2, item 5 (b): one not caught makes it not caught, whatever else is unscorable."""
+    scores = lambda *names: scoring.overall([{"score": n} for n in names])  # noqa: E731
+    assert scores("unscorable", "not caught", "caught") == "not caught"
+    assert scores("caught", "unscorable") == "unscorable" == scores()
+    assert scores("caught", "caught") == "caught"
 
 
 @pytest.mark.parametrize("case", PLANT)
@@ -935,6 +1169,21 @@ def test_the_energy_identity_is_the_formula():
     assert float(identities.energy(world, rows, [0.0])[0, 0]) == pytest.approx(total, rel=1e-12)
 
 
+def test_an_amount_below_zero_leaves_the_identity_not_formed(benches):
+    """Amendment 2, reading 31: and no fail is hidden, since the S entries that read it fail."""
+    bench = benches("integrated")
+    world = bench.reg.worlds["integrated"]
+    n0 = world.block["cells"]["cell_0"]["initial_amount_fmol"]["K"]
+
+    def empty(runs):
+        for name in J:
+            runs[name]["rows"]["n_cell_K"]["cell_0"][-1] = -2 * n0
+
+    q = bench.score(empty)
+    assert q.S("integrated", "energy_identity")[0]["outcome"] == UNFORMED
+    assert q.S("integrated", "n_cell_K")[0]["outcome"] == FAIL and q.verdict("integrated") == FAIL
+
+
 def test_exposure_and_changes():
     assert changes([[0.0, 1], [0.2, 0], [0.3, 0], [0.4, 1]]) == [
         [0.2, 0],
@@ -1018,6 +1267,207 @@ def test_power_is_read_from_the_margins(benches):
         wrong
     )
     assert q.S("integrated", "heat_junction")[0]["outcome"] == FAIL  # untested, and above beta
+
+
+# ----- the flags that the checker settles (Amendment 2, item 5 (a) and readings 12 and 24) -----
+
+
+def extra_potential(entry):
+    """One more row of the potentials, whose voltage is not finite."""
+    entry["potential_t"].insert(1, entry["potential_t"][1] / 2)
+    for table in entry["potentials"].values():
+        for values in table.values():
+            values.insert(1, math.inf)
+
+
+FLAGS = {
+    "reading 12, a row at time 0": (
+        "base",
+        lambda r: put("rows", "n_cell_K", "cell_0", 0, value=5e-324)(r[B[1]]),
+        f"row at time 0; {B[1]}; n_cell_K",
+        {(B[1], "capacitor")},
+    ),
+    "reading 24, a series of S and R": (
+        "integrated",
+        lambda r: extra_row(r[J[2]], "junction_K", "junction_5"),
+        f"non-finite value; {J[2]}; rows.junction_K",
+        {(J[2], "junction_K"), (J[2], "balance of cells, K")},
+    ),
+    "reading 24, a mistyped value": (
+        "integrated",
+        lambda r: extra_row(r[J[2]], "junction_K", "junction_5", "0.0"),
+        f"non-finite value; {J[2]}; rows.junction_K",
+        {(J[2], "junction_K"), (J[2], "balance of cells, K")},
+    ),
+    "reading 24, a heat of h2": (
+        "jupiter",
+        lambda r: extra_row(r[H[1]], "heat_leak", "membrane_0"),
+        f"non-finite value; {H[1]}; rows.heat_leak",
+        {(H[2], "heat_membrane"), (H[2], "energy_identity")},
+    ),
+    "reading 24, a potential": (
+        "integrated",
+        lambda r: extra_potential(r[J[2]]),
+        f"non-finite value; {J[2]}; potentials.voltage",
+        {(J[2], "voltage"), (J[2], "capacitor"), (J[2], "energy_identity")},
+    ),
+    "reading 24, a restart": (
+        "jupiter",
+        lambda r: extra_row(r[RESTART], "pump", "membrane_1"),
+        f"non-finite value; {RESTART}; rows.pump",
+        {(H[0], "restart pump")},
+    ),
+}
+
+
+def assert_settled(record, name, entries, counts_as, rule=PASS):
+    """The entries, the runs and the verdict with a flag that is open (None) or settled."""
+    wanted = {None: OPEN, "by the rule": rule, "fail": FAIL, "inconclusive": OPEN}[counts_as]
+    found = {(e["run"], e["readout"]): e for e in record["entries"] if "by_rule" in e}
+    assert set(found) == entries
+    for item in found.values():
+        assert (item["outcome"], item["by_rule"]) == (wanted, rule)
+        assert bool(item.get("pending")) is (counts_as is None)
+    block = record["consumers"][name]
+    ends = {None: OPEN, "by the rule": PASS, "fail": FAIL, "inconclusive": OPEN}[counts_as]
+    assert block["verdict"] == ends and block["final"] is (counts_as is not None)
+    assert block["state"] == (c.PENDING if counts_as is None else ends)
+    waiting = {run for run, _ in entries} if counts_as is None else set()
+    assert set(record["runs_pending_on_a_flag"]) == waiting
+    assert record["part_1"]["passes"] is (ends == PASS)
+    assert "pass" not in cli.shown(block) or counts_as == "by the rule"
+    assert scoring.verdict_of(record)["runs_pending_on_a_flag"] == sorted(waiting)
+    ids = {f["id"] for f in record["flags_to_settle"]}
+    assert block["pending"] == (sorted(ids) if counts_as is None else [])
+
+
+@pytest.mark.parametrize("case", FLAGS)
+def test_a_flag_leaves_its_entries_open_until_the_checker_settles_it(benches, case):
+    name, alter, flag, entries = FLAGS[case]
+    bench = benches(name)
+    record = bench.score(alter).record
+    assert [f["id"] for f in record["flags_to_settle"]] == [flag]
+    assert record["flags_to_settle"][0]["settled"] is None and record["retry_owed"]["runs"] == []
+    assert not any(s["refused"] for s in record["runs"].values())
+    assert_settled(record, name, entries, None)
+    for counts_as in c.COUNTS_AS:
+        data, records = bench.settled(record, counts_as=counts_as)
+        settled = Settlements(data, "a sha256", records)
+        again = bench.score(alter, settlements=settled).record
+        assert again["flags_to_settle"][0]["settled"]["counts_as"] == counts_as
+        assert_settled(again, name, entries, counts_as)
+    with pytest.raises(scoring.OrderFault, match="that is not there"):
+        bench.score(settlements=settled)  # the honest tables hold no such flag
+
+
+def test_what_a_flag_does_not_touch(benches):
+    """An honest row at time 0 (even a negative zero), another world's or a compared time's value,
+    and an entry that fails by the rule.
+    """
+    q = benches("base").score(lambda r: put("rows", "n_cell_K", "cell_0", 0, value=-0.0)(r[B[1]]))
+    assert q.record["flags_to_settle"] == [] and q.verdict("base") == PASS
+    q = benches("jupiter").score(
+        lambda r: put("rows", "n_cell_K", "cell_0", 0, value=1e-300)(r[H[1]])
+    )
+    assert q.record["flags_to_settle"] == []  # time 0 is one of jupiter's times
+    q = benches("integrated").score(
+        lambda r: put("rows", "junction_K", "junction_5", 100, value=math.nan)(r[J[2]])
+    )
+    assert q.record["flags_to_settle"] == []  # a compared time: the entries are not formed
+    assert q.verdict("integrated") == OPEN
+
+    def failing(runs):
+        extra_row(runs[J[2]], "junction_K", "junction_5")
+        for values in runs[J[2]]["rows"]["junction_K"].values():
+            values[-1] += 1.0
+
+    bench = benches("integrated")
+    record = bench.score(failing).record
+    data, records = bench.settled(record, counts_as="by the rule")
+    again = bench.score(failing, settlements=Settlements(data, "x", records))
+    for q in (Query(record), again):  # a fail stays a fail, whatever the checker says
+        assert q.outcome(run=J[2], readout="balance of cells, K") == FAIL
+        assert q.verdict("integrated") == FAIL and q.record["runs_pending_on_a_flag"] == []
+
+
+def corner(bench):
+    """Tables of `integrated` in which `heat_junction`, which is untested, is resolved outside its
+    window and above beta on the first triple, and within both on the retry's.
+    """
+    a = 2e-12
+
+    def alter(runs):
+        for name, shift in zip(J, (a, -11 * a, a), strict=True):
+            runs[name]["rows"]["heat_junction"]["junction_0"][60] += shift
+
+    return bench.altered(alter)
+
+
+def test_the_corner_of_the_order_rule_is_flagged_and_the_retry_waits(benches):
+    """Amendment 2, item 5 (a): untested, outside its window and above beta: inconclusive by order,
+    flagged with its error, and owed the retry. What the retry's triple gives is at best
+    inconclusive until the flag is settled.
+    """
+    bench = with_margins(
+        benches("integrated"), lambda m: m["entries"]["heat_junction"].update(ratio=1e-12)
+    )
+    tables, name = corner(bench), "integrated h=1.25e-05 retry"
+    retry = fabricate.Fabricator(bench.reg, bench.captures, bench.planted).retry_tables([name])
+    first, second = bench.judge(tables, retry=retry)
+    item = Query(first).S("integrated", "heat_junction")[0]
+    assert item["statistic"] > item["band"] and item["tested"] is False
+    assert item["order_class"] == scoring.OUTSIDE and item["outcome"] == OPEN
+    assert first["retry_owed"]["why"] == {"integrated": ["heat_junction: order"]}
+    (flag,) = first["flags_to_settle"]
+    assert flag["id"] == "untested outside its window; integrated; heat_junction"
+    assert flag["detail"]["statistic"] == item["statistic"] and flag["entries"] == []
+    block = first["consumers"]["integrated"]
+    assert (block["verdict"], block["state"], block["pending"]) == (OPEN, OPEN, [])
+    again = Query(second).S("integrated", "heat_junction")[0]
+    assert again["order_class"] == "resolved" and again["pass_of_the_judgement"] == 2
+    entries = {(name, "heat_junction")}
+    assert_settled(second, "integrated", entries, None, rule=c.NOT_TESTED)
+    for counts_as in c.COUNTS_AS:
+        for record in (first, second):  # settled between the passes, or after them
+            data, records = bench.settled(record, counts_as=counts_as)
+            settled = Settlements(data, "x", records)
+            _, final = bench.judge(tables, retry=retry, settlements=settled)
+            assert_settled(final, "integrated", entries, counts_as, rule=c.NOT_TESTED)
+    # Without a retry it stays inconclusive, whatever is said.
+    data, records = bench.settled(first, counts_as="by the rule")
+    alone = bench.judge(tables, settlements=Settlements(data, "x", records))
+    assert Query(alone).verdict("integrated") == OPEN
+    # On the same triple an entry that is tested and above beta is inconclusive too, and no flag.
+    record = benches("integrated").judge(tables)
+    assert record["flags_to_settle"] == []
+    assert Query(record).S("integrated", "heat_junction")[0]["outcome"] == OPEN
+
+    # So is one that is untested, outside its window and within beta.
+    def within(runs):
+        runs[J[1]]["rows"]["heat_junction"]["junction_0"][60] += 2e-12
+
+    record = bench.judge(bench.altered(within))
+    item = Query(record).S("integrated", "heat_junction")[0]
+    assert item["order_class"] == scoring.OUTSIDE and item["statistic"] < item["band"]
+    assert record["flags_to_settle"] == [] and item["outcome"] == OPEN
+
+
+def test_a_corner_that_is_not_judged_again_stays_as_it_is():
+    """Amendment 2, item 5 (a), "Without a retry it stays inconclusive": the settled flag of an
+    entry that the retry did not judge again touches nothing.
+    """
+    stage = object.__new__(scoring.Stage2)
+    common = {"class": "S", "family": "f", "readout": "r", "judged": True, "outcome": OPEN}
+    entries = [{**common, "pass_of_the_judgement": n} for n in (1, 2)]
+    stage.first = {
+        "flags_to_settle": [
+            {"id": f"{scoring.CORNER}; f; r", "kind": scoring.CORNER, "detail": {}, "entries": []}
+        ]
+    }
+    for entry, touched in ((entries[0], []), (entries[1], [entries[1]])):
+        stage.entries, stage.to_settle = [entry], []
+        stage._corners_again()
+        assert stage.to_settle[0]["entries"] == touched
 
 
 def test_a_plant_whose_distance_is_at_most_two_bands_is_unscorable(benches):
@@ -1146,6 +1596,114 @@ def test_a_refused_run_takes_no_retry(benches):
     tables["integrated"]["runs"][J[1]] = entry
     record = plants.judge(bench.reg, bench.note, tables, bench.c0, bench.captures, bench.planted)
     assert record["retry_owed"]["runs"] == []
+
+
+def test_the_retry_list_waits_for_the_copy_guard(benches, tmp_path, capsys):
+    """Amendment 2, reading 28: `retry_owed.json` is written once, after the copy guard's refusals
+    are settled. A run whose refusal the lead's note has lifted is no refused run.
+    """
+    bench = benches("jupiter")
+
+    def copied(runs):
+        world = bench.reg.worlds["jupiter_baseline"]
+        for series in (*dict.fromkeys(e.series for e in world.guard_entries()), *plants.HEATS):
+            runs[H[2]]["rows"][series] = copy.deepcopy(runs[H[1]]["rows"][series])
+
+    def partly(runs):  # a partial copy is not compared (reading 19), and it cannot pass
+        copied(runs)
+        runs[H[2]]["t"].pop()
+        for table in runs[H[2]]["rows"].values():
+            for values in table.values():
+                values.pop()
+
+    q = bench.score(partly)
+    assert q.record["copy_guard"] == [] and q.verdict("jupiter") == OPEN and not q.fails()
+    record = bench.score(copied).record
+    assert record["retry_owed_waits_on"] == [[H[1], "a"], [H[2], "a"]]
+    assert not record["consumers"]["jupiter"]["final"]
+    cli.write(tmp_path / "first", record, owed=True)
+    assert "is not written" in capsys.readouterr().out
+    assert not (tmp_path / "first" / "retry_owed.json").exists()
+    for outcome, verdict in (("stands", OPEN), ("lifted", PASS)):
+        data, records = bench.settled(record, outcome=outcome)
+        q = bench.score(copied, settlements=Settlements(data, "x", records))
+        assert q.record["retry_owed_waits_on"] == [] and q.verdict("jupiter") == verdict
+        assert q.run(H[1])["refused"] is (outcome == "stands")
+        assert q.run(H[2]).get("lifted") == (["a"] if outcome == "lifted" else None)
+        assert q.record["consumers"]["jupiter"]["final"]
+        cli.write(tmp_path / outcome, q.record, owed=True)
+        owed = json.loads((tmp_path / outcome / "retry_owed.json").read_text())
+        assert owed == {"kind": c.RETRY_KIND, "part": 1, "runs": [], "why": {}}
+
+
+SETTLEMENT_FAULT = {
+    "another kind": lambda d: d.update(kind="x"),
+    "another part": lambda d: d.update(part=2),
+    "an extra key": lambda d: d.update(more=1),
+    "a flag's extra key": lambda d: d["flags"][0].update(more=1),
+    "a missing key": lambda d: d["flags"][0].pop("words"),
+    "no words": lambda d: d["flags"][0].update(words=" "),
+    "no checker": lambda d: d["flags"][0].update(checker=""),
+    "no time": lambda d: d["flags"][0].update(when="yesterday"),
+    "evidence": lambda d: d["flags"][0].update(evidence="x"),
+    "counts as a pass": lambda d: d["flags"][0].update(counts_as="pass"),
+    "a flag that is not there": lambda d: d["flags"][0].update(flag="x"),
+    "another record": lambda d: d["flags"][0].update(record_sha256="1" * 64),
+    "no record": lambda d: d["flags"][0].update(record_sha256="1"),
+    "a flag settled twice": lambda d: d["flags"].append(dict(d["flags"][0])),
+    "a guard that did not refuse": lambda d: d["copy_guard"].append(
+        {
+            "run": J[0],
+            "comparison": "a",
+            "outcome": "stands",
+            "lead_note": None,
+            **{
+                k: d["flags"][0][k]
+                for k in ("record_sha256", "checker", "when", "words", "evidence")
+            },
+        }
+    ),
+    "flags that are no list": lambda d: d.update(flags={}),
+}
+
+
+@pytest.mark.parametrize("case", SETTLEMENT_FAULT)
+def test_settlements_that_cannot_be_used(benches, case):
+    bench = benches("integrated")
+    record = bench.score(lambda r: extra_row(r[J[2]], "junction_K", "junction_5")).record
+    data, records = bench.settled(record, counts_as="fail")
+    assert Settlements(copy.deepcopy(data), "x", records).flags
+    SETTLEMENT_FAULT[case](data)
+    with pytest.raises(SettlementFault):
+        Settlements(data, "x", records)
+
+
+def test_a_lifted_refusal_needs_the_leads_note(benches):
+    bench = benches("jupiter")
+    record = {"flags_to_settle": [], "copy_guard": [{"run": H[1], "comparison": "a"}]}
+    for outcome, note, good in (
+        ("stands", False, True),
+        ("lifted", True, True),
+        ("stands", True, False),
+        ("lifted", False, False),
+        ("x", False, False),
+    ):
+        data, records = bench.settled(record, outcome=outcome if outcome != "x" else "stands")
+        data["copy_guard"][0]["outcome"] = outcome
+        if not note:
+            data["copy_guard"][0]["lead_note"] = None
+        elif data["copy_guard"][0]["lead_note"] is None:
+            data["copy_guard"][0]["lead_note"] = {
+                "path": "n.md",
+                "sha256": "0" * 64,
+                "date": "2026-11-26",
+                "words": "lifted",
+            }
+        if good:
+            Settlements(data, "x", records)
+        else:
+            with pytest.raises(SettlementFault):
+                Settlements(data, "x", records)
 
 
 # ----- C0 -----
@@ -1282,6 +1840,70 @@ def test_an_order_is_printed_at_two_decimals(order, printed_as, registered, rehe
     assert same_order(order, printed_as, True) is rehearsal
 
 
+OPENED, WATCHED = [], [False]
+PART_2 = ("PART2.md", "PART2_BLOCKS.md", "PART2_EXPORTER.md", "inputs_part2.json")
+
+
+def test_C0_reads_the_amendments_and_opens_nothing_of_part_2(tmp_path):
+    """The exporter's copy is a text of Part 1, and word for word the amendment's. The folder may
+    hold Part 2's files: C0 takes every file by its name, and opens none of them.
+    """
+    made = C0(Registration())
+    for name in made.texts():
+        (tmp_path / name).write_text((SPEC / name).read_text())
+    for name in PART_2:
+        (tmp_path / name).mkdir()  # to open one is an error
+    made.reg.folder = tmp_path
+    if not WATCHED[0]:
+        sys.addaudithook(lambda event, args: event == "open" and OPENED.append(str(args[0])))
+        WATCHED[0] = True
+    OPENED.clear()
+    assert sorted(made.held_amendments()) == sorted([*c.AMENDMENTS, c.EXPORTER_COPY])
+    for clause in (made.amendments, made.literal_blocks, made.run_list, made.spec_keys):
+        clause()
+    assert [k.faults for k in made.clauses] == [[], [], [], []]
+    assert any(c.EXPORTER_COPY in name for name in OPENED)
+    assert not any("part2" in name.lower() for name in OPENED)
+    copied, third = tmp_path / c.EXPORTER_COPY, tmp_path / "AMENDMENT-3-2026-11-26.md"
+    honest = copied.read_text()
+    for alter in (
+        lambda: copied.write_text(honest.replace("a departing echo", "an echo", 1)),
+        lambda: copied.write_text(honest + "\n## 3. A retry run\n\nOne more item.\n"),
+        lambda: third.write_text("# Amendment 3\n"),
+    ):
+        copied.write_text(honest)
+        third.unlink(missing_ok=True)
+        alter()
+        made.amendments()
+        assert len(made.clauses[-1].faults) == 1
+
+
+def test_C0_pins_three_files_and_opens_none_of_them(tmp_path, monkeypatch):
+    """Amendment 2, item 5 (f): by their sha256 alone, and an absent or another one is a fault."""
+    good = C0(Registration())
+    good.pinned_files()
+    if good.clauses[-1].faults:
+        pytest.skip("the outputs are not here")
+    assert len(good.pinned) >= 3
+
+    def faults(alter):
+        made = C0(Registration())
+        alter(made)
+        made.pinned_files()
+        return made.clauses[-1].faults
+
+    def outputs(made):
+        return made.reg.manifest["pool_plants"][0]
+
+    assert faults(lambda m: outputs(m)["outputs_sha256"].update({"pool_plants.json": "0" * 64}))
+    assert faults(lambda m: outputs(m).update(output_folder=str(tmp_path)))  # absent
+    assert faults(lambda m: m.reg.manifest["pool_plants"].pop())
+    monkeypatch.setattr(C0, "_object", lambda self, script: b"another script")
+    assert faults(lambda m: None)
+    monkeypatch.undo()
+    assert faults(lambda m: setattr(m, "root", tmp_path))  # no repository there
+
+
 @pytest.mark.parametrize("case", C0_FAULT)
 def test_C0_names_a_fault(benches, case):
     """Every clause is able to fail: one changed datum, and its clause names it."""
@@ -1346,8 +1968,16 @@ def test_files_that_are_refused_whole(benches, tmp_path):
         ('"consumer": "integrated"', '"consumer": "cell"'),
         (c.TABLE_KIND, "x"),
         ('"missing": []', '"absent": []'),
+        ('"runs": {', '"entries": {'),
+        ('"units": {', '"unit": {'),
+        ('"kind": ', '"kinds": '),
+        ('"part": 1', '"part": true'),
     ):
-        assert reasons(text.replace(old, new, 1), None)[1], new
+        assert old in text and reasons(text.replace(old, new, 1), None)[1], new
+    # A key beyond the six is recorded, and refuses nothing.
+    assert reasons(text, None)[0].files["integrated"].flags == [
+        ["extra top-level keys", ["fabricated"]]
+    ]
     assert reasons("{", None)[1]
     tables, _ = reasons(text + " ", sums)
     state = scoring.Tables(bench.reg, bench.note, tables)
@@ -1360,6 +1990,41 @@ def test_files_that_are_refused_whole(benches, tmp_path):
         and "its file is refused" in block["sets"]["all"]["inconclusive"][0]
     )
     assert {e["outcome"] for e in record["entries"] if e["judged"]} == {UNFORMED}
+
+
+def test_the_fabricated_tables_are_the_same_bytes_each_time(benches, tmp_path):
+    """Amendment 2, item 9.5: the judge keeps no folder of its honest tables. The program gives the
+    same bytes each time, each table says that it is fabricated, and the sha256 of what is used is
+    the sha256 of what is written.
+    """
+    bench = benches("integrated")
+    made = fabricate.Fabricator(bench.reg, bench.captures, bench.planted)
+    digests = fabricate.digests(made.tables()[0])
+    assert digests == fabricate.digests(bench.tables)
+    assert all(t["fabricated"] == fabricate.MARK for t in bench.tables.values())
+    cli.write_tables(tmp_path, bench.tables)
+    written_files = hash_folder(tmp_path)["files"]
+    assert written_files["table_integrated.json"] == digests["table_integrated.json"]
+    retry = [made.retry_tables(["integrated h=1.25e-05 retry"]) for _ in range(2)]
+    assert fabricate.digests(retry[0]) == fabricate.digests(retry[1])
+    assert retry[0]["integrated"]["fabricated"] == fabricate.MARK
+
+
+def test_the_profile_names_the_switch_and_where_a_change_begins(benches):
+    """Amendment 2, item 6. The registered runs have no profile: the names are 9.1's."""
+    bench = benches("integrated")
+    other = copy.copy(bench)
+    other.reg = copy.copy(bench.reg)
+    other.reg.profile = {**bench.reg.profile, "off_grid_flag": "switched"}
+    q = other.score(lambda runs: runs[J[0]].update(switched=True))
+    assert q.cause(J[0], "kind harness") and other.reg.off_grid_flag == "switched"
+    q = other.score(lambda runs: runs[J[0]].update(off_grid=True))
+    assert not q.run(J[0])["refused"]
+    bare = {k: v for k, v in PART1.items() if k != "off_grid_flag"}
+    assert Registration(profile=bare, only=KEEP["integrated"]).off_grid_flag == "off_grid"
+    other.reg.profile = {**bench.reg.profile, "declared_change_begins_at": "elsewhere"}
+    with pytest.raises(ValueError, match="begins at"):
+        other.reg.expected_block(bench.reg.runs[J[0]])
 
 
 def test_nan_and_infinity_are_read():
@@ -1525,6 +2190,71 @@ def test_the_retry_by_command(benches, tmp_path, monkeypatch, capsys):
     capsys.readouterr()
 
 
+def test_settlements_by_command(benches, tmp_path, monkeypatch, capsys):
+    """Stage 2 reads settlements by their recorded sha256, beside the record that they settle."""
+    bench = benches("integrated")
+    written(tmp_path, bench)
+    tables = bench.altered(lambda r: extra_row(r[J[2]], "junction_K", "junction_5"))
+    cli.write_tables(tmp_path / "flagged", tables)
+    monkeypatch.setattr(cli, "registration", lambda args: bench.reg)
+    T = tmp_path / "flagged"
+    common = [
+        "--tables",
+        str(T),
+        "--tables-record",
+        str(tmp_path / "h.json"),
+        "--strings",
+        str(tmp_path / "strings.json"),
+        "--c0",
+        str(tmp_path / "c0.json"),
+    ]
+    digest = lambda path: strictjson.sha256(path.read_bytes())  # noqa: E731
+    assert cli.main(["hash", "--tables", str(T), "--out", str(tmp_path / "h.json")]) == 0
+    assert cli.main(["stage1", *common, "--out", str(tmp_path / "power.json")]) == 0
+    power = ["--power", str(tmp_path / "power.json")]
+    power += ["--power-sha256", digest(tmp_path / "power.json")]
+
+    def stage2(where, *more):
+        out = str(tmp_path / where)
+        return cli.main(["stage2", *common, *power, *more, "--out", out])
+
+    assert stage2("judged") == 0
+    assert "pending on 1 flag(s)" in capsys.readouterr().out
+    record = tmp_path / "judged/record.json"
+    held = json.loads(record.read_text())
+    data, _ = bench.settled(held, counts_as="by the rule")
+    data["flags"][0]["record_sha256"] = digest(record)
+    strictjson.dump(tmp_path / "settlements.json", data)
+    sha = digest(tmp_path / "settlements.json")
+    path = ["--settlements", str(tmp_path / "settlements.json")]
+    said, beside = ["--settlements-sha256", sha], ["--settled-record", str(record)]
+    assert stage2("a", *path, "--settlements-sha256", "0" * 64, *beside) == 2
+    assert stage2("a", *path, *said) == 2  # no record beside it
+    assert stage2("a", *beside) == 2  # a record, and no settlements
+    strictjson.dump(tmp_path / "other.json", {**held, "hashes": {**held["hashes"], "spec": {}}})
+    data["flags"][0]["record_sha256"] = digest(tmp_path / "other.json")
+    strictjson.dump(tmp_path / "of_other.json", data)
+    other = ["--settlements", str(tmp_path / "of_other.json")]
+    other += ["--settlements-sha256", digest(tmp_path / "of_other.json")]
+    other += ["--settled-record", str(tmp_path / "other.json")]
+    assert stage2("a", *other) == 2  # a judgement of other files
+    assert stage2("final", *path, *said, *beside) == 0
+    # It is written once: the first judgement's stands, since no copy waited for the checker.
+    assert (tmp_path / "judged/retry_owed.json").exists()
+    assert not (tmp_path / "final/retry_owed.json").exists()
+    held["retry_owed"]["runs"] = ["x"]
+    record.write_bytes(strictjson.encode(held))
+    data["flags"][0]["record_sha256"] = digest(record)
+    strictjson.dump(tmp_path / "again.json", data)
+    again = ["--settlements", str(tmp_path / "again.json")]
+    again += ["--settlements-sha256", digest(tmp_path / "again.json")]
+    assert stage2("a", *again, *beside) == 2  # not what is written already
+    verdict = json.loads((tmp_path / "final/verdict.json").read_text())
+    assert verdict["consumers"]["integrated"]["verdict"] == PASS
+    assert verdict["hashes"]["settlements_sha256"] == sha and verdict["part_1"]["passes"]
+    capsys.readouterr()
+
+
 def test_stage_1_needs_a_passing_C0(benches):
     bench = benches("integrated")
     state = scoring.Tables(bench.reg, bench.note, TableSet.from_data(bench.tables))
@@ -1635,20 +2365,53 @@ def test_a_whole_amount_is_a_regions_or_else_a_cells():
     assert plants.whole_potassium(block)["K"] == 9.0
 
 
+def test_what_a_plant_fails_is_what_it_lists():
+    """Amendment 2, item 1: what a plant names, and what fails besides by the rule, and no more."""
+    named, by_rule = ("a", "x"), ("a", "y")
+    plant = plants.Plant("JP", "c", "", "", None, None, named=[named], by_rule=[by_rule])
+
+    class Found:
+        def __init__(self, *fails):
+            self.fails = lambda: list(fails)
+
+    for fails, good in (
+        ((named, by_rule), True),
+        ((named,), False),
+        ((by_rule,), False),
+        ((named, by_rule, ("b", "x")), False),
+    ):
+        ((_, found),) = plant.fails_as_listed(Found(*fails))
+        assert found is good
+    assert plants.Plant("JP", "c", "", "", None, None).fails_as_listed(Found(named)) == []
+
+
 def test_judge_plants_score_as_stated(benches):
-    """JP1 to JP24 (JP14 at h2, Amendment 2), on a subset of the registered runs."""
-    wanted = {"base s0 w0", "base s0 w1", "base s0 w2", "base s1 w0"}
+    """JP1 to JP27 (JP14 at h2, Amendment 2), on a subset of the registered runs."""
+    wanted = {"base s0 w0", "base s0 w1", "base s0 w2", "base s1 w0", "cell s0 w0", "cell s0 w1"}
     bench = Bench(
         lambda r: (
             r["consumer"] in ("jupiter", "integrated")
             or (
-                r["consumer"] == "base"
+                r["consumer"] in ("base", "cell")
                 and (r["family"] in wanted or (r["family"] is None and r["seed_index"] in (0, 1)))
             )
         )
     )
-    out = plants.run_plants(
-        bench.reg, bench.note, bench.tables, bench.c0, bench.captures, bench.planted
-    )
-    assert len(out["plants"]) == 25
+    name = "integrated h=1.25e-05 retry"
+    retry = fabricate.Fabricator(bench.reg, bench.captures, bench.planted).retry_tables([name])
+    args = (bench.reg, bench.note, bench.tables, bench.c0, bench.captures, bench.planted)
+    out = plants.run_plants(*args, retry=retry)
+    assert len(out["plants"]) == 29
     assert [p["plant"] for p in out["plants"] if not p["scores_as_stated"]] == []
+    # What fails besides, by rule, is listed (Amendment 2, items 1 and 11).
+    listed = [p for p in out["plants"] if "fails_besides_by_rule" in p]
+    assert {p["plant"]: p["fails_besides_by_rule"] for p in listed} == {
+        "JP1": [(H[0], "restart leak_K")],
+        "JP2": [(H[0], "restart heat_membrane")],
+        "JP7": [(H[0], "restart heat_junction")],
+        "JP19": [(H[0], "restart junction_K")],
+        "JP26": [(name, "balance of regions, Na")],
+    }
+    # Without a retry run JP26 is not formed, and that is no fault.
+    (alone,) = plants.run_plants(*args, only={"JP26"})["plants"]
+    assert alone["scores_as_stated"] is None and alone["not_formed"] == f"no {name} is there"
