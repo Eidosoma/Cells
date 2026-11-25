@@ -65,10 +65,12 @@ For a family and an entry, over its compared times and entities, with Y₁, Y₂
 
 **Pass:** max |Y* − L*| ≤ β.
 
-- **The band is §8's of the port plan,** with two changes, each before any run:
+- **The band is §8's of the port plan,** with four changes, each before any run:
   - **the floor of 64 ulp × max|X| is replaced** by e_round and e_close. Legacy's own runs refute that floor: between its own h/2 and h/4, arrays at rounding differ by up to about 3000 ulp of their
     largest entry. The two terms come from a count and from two declared acceptance constants (`SPEC.md` §6), and they are kept apart from the truncation term;
-  - the error estimates take the **larger of the two step-halving pairs** (D271, D334).
+  - the error estimates take the **larger of the two step-halving pairs** (D271, D334);
+  - the entries that read an amount carry **e_store** (`SPEC.md` §6), and so does θ;
+  - **`phi_out`** has its own closure (`SPEC.md` §6).
 - **`energy_identity`** (Part 1): L* = 0, U_l = 0, and β = 2 U_c + 8 ε (S_c + 1) s + 4 × 10⁻¹² s + e_store(S_c). Its θ is the order rule's, below.
 - **The state form.** An entry that reads an amount has a band with e_store and a band without it. The judge forms both. **Only the band with e_store decides.** A statistic inside it and outside the other is flagged to the checker as `state form`: the engine stores otherwise than its documentation says. In the rehearsal (`SPEC.md` §8) that flag is a finding to settle before the registration tag.
 - Every compared time needs one row in each run the entry needs (within 10⁻¹² s). Where one is missing, or there are two, the entry is not formed (§5), and no time is dropped from it.
@@ -122,7 +124,7 @@ writes `power.json`, and the lead records its sha256. Stage 2 forms the differen
 | Fault | What follows |
 | --- | --- |
 | The echo (`inputs`, but the items that `SPEC.md` §2.4 gives to class E; `strings`, `world`, `seed_index`, `world_id`, `step_s`) departs from the registered run (`SPEC.md` §2.4; the strings note exactly, `TABLE.md` §5) | The run is **refused, and nothing of it is judged.** It is not the registered one |
-| Provenance: `source` incomplete, `checkout_dirty` true, a missing `record_sha256` or snapshot, an `engine_revision` that is not the strings note's, a `snapshot_patch_sha256` other than an empty file's, a non-null `host_patch`, a `t` that does not strictly increase, `steps` outside its range (`TABLE.md` §3; a step list that splits at an off-grid change is refused with the reason `off_grid_change`), a status that disagrees with `refusal`, a shared `record_sha256` | The run is **refused,** its readouts are judged and a fail stands |
+| Provenance: `source` incomplete, `checkout_dirty` true, a missing `record_sha256` or snapshot, an `engine_revision` that is not the strings note's, a `snapshot_patch_sha256` other than an empty file's, a non-null `host_patch`, a `t` that does not strictly increase, `steps` outside its range (`TABLE.md` §3; a step list that splits at an off-grid change is refused with the reason `off_grid_change`), a status that disagrees with `refusal`, a shared `record_sha256`, a pool run whose `pool.<cell>.seed` differs from its `inputs.<cell>.seed` | The run is **refused,** its readouts are judged and a fail stands |
 | A judged leaf missing, mistyped or non-finite, or a registered time with no row, or with two | That **entry is not formed**. The rest of the run is judged |
 | A recorded-only leaf missing, mistyped or non-finite | Flagged to the checker |
 | **The copy guard** (below) | The run, or both runs, are **refused** for the checker to settle. Their readouts are judged |
