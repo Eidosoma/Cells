@@ -749,6 +749,9 @@ def test_the_built_in_kinds_hold_the_step_terms_their_laws_declare():
         "cells.na_anion_symport_factored@1": (),
         "cells.na2_anion_symport_diagram@1": (),  # Version 2: likewise, no step term.
         "cells.sodium_calcium_exchange_symmetric_barrier@1": (),  # Likewise: refused there.
+        "cells.atp_driven_transporter_mass_action_positive@2": (),  # Likewise: none yet.
+        "cells.na_k_2anion_symport_reversible_tanh@1": (),  # Likewise, and no charge to slope.
+        "cells.electroneutral_symport_reversible_tanh@1": (),  # Likewise.
         # The mitochondrion's inner-membrane laws: likewise.
         **dict.fromkeys(
             (
