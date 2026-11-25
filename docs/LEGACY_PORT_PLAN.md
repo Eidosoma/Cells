@@ -268,17 +268,20 @@ live code it drives on that code's own merits. Group V (§3) lists them.
     dictionary are live (`definitions/specs.py`). They need a new world too;
   - `test_continuity_bypass.py` lists retired drivers by path (five of the physiology stack's among them), and refuses
     an entry whose file is gone.
-- **Tests that pass without testing.** The result files keep no such list; these were found by reading each passing
-  file that reaches legacy, and the refusal rows of the files that fail in part:
+- **Tests that pass without testing.** The result files keep no such list. The dry run's author gave one in its report
+  (marked †). The rest were found here, by reading each passing file that reaches legacy and the refusal rows of the
+  files that fail in part. The list is not exhaustive:
   - 45 refusal rows are met by the parse miss, because they expect a `ConfigError` with no message: 3 in
-    `test_gpu_execution.py`, 14 in `test_surface_tissue.py` and 28 in `test_surface_kinetic.py`. In the last two they
+    `test_gpu_execution.py` †, 14 in `test_surface_tissue.py` and 28 in `test_surface_kinetic.py`. In the last two they
     are the only tests that pass. Five rows of `test_windows.py` have the same form, and I did not check which error
     met them;
-  - four files test pure functions or saved inputs of a driver whose run path imports legacy:
-    `test_open_calcium_bath_energy_diagnostic.py`, `test_open_calcium_bath_energy_upstream.py`,
-    `test_recovery_diagnostic_grid.py` and `test_environment_barrier_composition_transients.py`;
-  - `test_active_polygon_energy_contract.py` names legacy IDs as keys only;
-  - GPU tests skip on this CPU run (`test_ensemble_gpu.py`, `test_integrated_ensemble_gpu.py`).
+  - six passing files still reach legacy by static evidence †. Four test pure functions or saved inputs of a driver whose
+    run path imports legacy: `test_open_calcium_bath_energy_diagnostic.py`, `test_open_calcium_bath_energy_upstream.py`,
+    `test_recovery_diagnostic_grid.py` and `test_environment_barrier_composition_transients.py`.
+    `test_active_polygon_energy_contract.py` names legacy IDs as keys only. `test_integrated_ensemble_gpu.py` imports
+    legacy inside the functions of `test_integrated_ensemble.py`, and all its tests skip;
+  - three files ran no test, all skipped here and in the control †: `test_ensemble_gpu.py` (4),
+    `test_integrated_ensemble_gpu.py` (4) and `test_voltage_gated_artifact_audit.py` (7).
 - **References and drivers that never import legacy** pass whatever their subject is. §7.5's orphan lists find those.
 - **The rest of the gate:** the IDs, crossrev and G1 were not run on that tree, nor any script or validation driver.
 - **Any other revision.** It ran before the rename, so the tool's anchors must be re-read at the deletion's base.
