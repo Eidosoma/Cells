@@ -447,8 +447,12 @@ holds the same 81. D211's law-port inventory is `/mnt/workspaces/Cells/law-port-
 with 54 rows, and the viewer's table `visualizer/data/laws/law_port.json` is made from it. I mapped each record's file through D188's move tables (`scripts/moves/move1-table.json`,
 `move2-table.json`) to today's tree.
 
-**The count.** 11 still point into legacy. On 17 November there were 13, over U34, U36–U41 and U43–U47.
-U36's records are all live now, and U38 shares U37's record.
+**The count, corrected on 25 November** (the second reader; recomputed at `9c30104e` with the deletion's own edits). 13 units lose a record:
+U34 (`neutral_mobile_leak@1`), U36 (`symmetric_opposing_relaxation@1`), U37 and U38 (the pair's junction flux), U39 (`nak_atp_affinity_tanh@1` and the pair's pump
+term), U40 (`plasma_calcium_pump_positive@1`, `finite_atp_pmca_positive@1`), U41 (`er_calcium_pump_positive@1`, `finite_atp_er_1ca_positive@1`), U42
+(`ncx_3na_1ca_symmetric_barrier@1`), U43 (`er_calcium_release@1`, `ip3_er_release@1`), U44 (`kcc_reversible_tanh@1`), U45 (`nkcc_reversible_tanh@1`), U46
+(`cell_zone_transporter@1`) and U47 (`mitochondrial_passive_continuous_si@1`). This section had said that 11 records point into legacy and that U36's are all live;
+the kernels of two that leave, `gate_target` and `reversible_pump`, are dead names.
 
 **The D211 mark** is from the law-port table, `visualizer/data/laws/law_port.json`. The mapping was read here;
 it is in `inventory_records_now.json`.
@@ -457,9 +461,9 @@ it is in `inventory_records_now.json`.
 |---|---|---|---|---|---|---|
 | I1 | `neutral_mobile_leak@1` (U34, always-open leaks) | `legacy/core/surface_redistribution_spec.py` | — | none (row D5) | Drop | U34 keeps its six live leak laws |
 | I2 | The source pair's junction flux (U37, Cx45/Cx45; U38, Cx40/Cx37) | `legacy/processes/source_electrochemistry.py` | not a port | none. It carries BITSEY's reference conventions, admitted by D149 only through `emt_mirna_pair@1` (`source_electrochemistry.py:1–9`) | Drop | U37 and U38 are left with no law record; the viewer's inventory is updated |
-| I3 | The source pair's pump term (U39, Na/K-ATPase) | the same file | — | none | Drop | U39 keeps `nak_atp_mass_action_positive@1` and `nak_atp_affinity_tanh@1` |
-| I4 | `finite_atp_pmca_positive@1` (U40, PMCA) | `legacy/processes/finite_calcium_pumps.py` | — | none (row C2) | Drop, lost until G-6 | U40 keeps `plasma_calcium_pump_positive@1` and `ca_atp_mass_action_positive@1` |
-| I5 | `finite_atp_er_1ca_positive@1` (U41, SERCA family) | the same file | fold into an owner's planned law | none (row C2) | Drop, lost until G-6. D211 folds it into the cardiac lane | U41 keeps `er_calcium_pump_positive@1`, re-expressed with G-4 |
+| I3 | The source pair's pump term (U39, Na/K-ATPase) | the same file | — | none | Drop | U39 keeps `nak_atp_mass_action_positive@1`; `nak_atp_affinity_tanh@1` is an ID of legacy's only, and leaves too (corrected 25 November) |
+| I4 | `finite_atp_pmca_positive@1` (U40, PMCA) | `legacy/processes/finite_calcium_pumps.py` | — | none (row C2) | Drop, lost until G-6 | U40 keeps `ca_atp_mass_action_positive@1`; `plasma_calcium_pump_positive@1` leaves with the deletion's edits. The canonical pump is `atp_driven_transporter_mass_action_positive@2` |
+| I5 | `finite_atp_er_1ca_positive@1` (U41, SERCA family) | the same file | fold into an owner's planned law | none (row C2) | Drop, lost until G-6. D211 folds it into the cardiac lane | U41 keeps no record: `er_calcium_pump_positive@1` leaves with the deletion's edits. The canonical pump is `atp_driven_transporter_mass_action_positive@2` |
 | I6 | `ip3_er_release@1` (U43, IP3R-like release) | `legacy/processes/ip3_release.py` | fold into an owner's planned law | the calcium ensemble's IP3 cluster (row B5) | Feature | G-5, coordinated with the cardiac lane's release law (D211) |
 | I7 | `kcc_reversible_tanh@1` (U44, KCC) | `legacy/processes/cotransport.py` | — | none | Canonical; Drop the legacy form | `k_anion_symport_mass_action@1` (`laws/routes/k_anion_symport.py`) |
 | I8 | `nkcc_reversible_tanh@1` (U45, NKCC) | the same file | port as is | D211's port programme | Expressible | a cycle law on the transporter kind's population axis, which admits any mode that creates no charge (`kinds/transporter.py:1336–1339`; corrected 25 November, see B2). U45 has no other record |
@@ -1567,29 +1571,36 @@ declared ones are capacity padding.
 
 ### 14.7 The final removal list, and what D211 keeps (D386)
 
-**The list** (`validation/legacy_port/removal_list.tsv`, branch `legacy-removal-list`): 1,535 files go, 193 are edited, 16 tests are
-retargeted, 166 are kept by name, and 166 are an optional batch (the old families' own references, for the user's yes or no); 28 more rows are names, of which
-13 are dead after the core edits and two are rows that must move before the deletion. Every `goes_or_cut` row has a verdict: a reader read 462 files, and the
-35 it asked about are resolved here.
-- **The deletion is one commit,** made from the list by a script on one branch that takes the place of 9b0debe6. Its dry runs on `legacy-cleanup`
-  f38f6789, c368c9f2 and 34d173d7 removed 1,529 files (six of the 1,535 are gone already), found every path, and stopped no import but the retargeted tests'.
-  Two edits go in the same commit: one guard's exemption list, and the exchange kernel in `laws/reactions/plasma_calcium.py` (`EXCHANGER_LAW`,
-  `ExchangerParameters`, `exchange_rates`), which only legacy calls. `pump_rates` and `MAX_VOLTAGE` stay: `ca_atp_mass_action_positive@1` runs them.
-- **D196's safeguard, checked at 34d173d7** by the import graph of the staged deletion, with and without the optional batch (measured). No live law module
-  loses every test that reaches it but `laws/reactions/mass_action.py`, whose kernel the reactions operator's reference rows still check. One check that D196
-  names has not moved: Kv1.5's 19 cases (`test_voltage_gated_membrane.py:131`), and `kv1p5_mh@1` declares no test. The list holds both rows open, and the
-  script makes no branch while it does. Of the 104 registered pieces, the 42 that declare a test find it on the staged tree; 62 declare none.
+**The list** (`validation/legacy_port/removal_list.tsv`, branch `legacy-removal-list`): 1,534 files go, 212 are edited (and 18 documents more with the optional batch),
+17 tests are retargeted, 186 files are kept by name, and 165 are an optional batch, for the user's yes or no; 33 more rows are names, of which 13 leave files that stay
+in the deletion's own commit, four are dead after the core edits and three are rows that moved first. Every `goes_or_cut` row has a verdict: a reader read 462 files,
+and the 35 it asked about are resolved here. A second reader has read the list, the script and the optional batch (verdict: safe with named corrections, all in).
+- **The deletion is one commit,** made from the list by a script on one branch that takes the place of 9b0debe6. Its dry runs at
+  f38f6789, c368c9f2, 34d173d7 and 9c30104e found every path, and stopped no import but the retargeted tests', with `lean/` and `visualizer/` read since the last;
+  the last removed 1,528 files (six of the 1,534 are gone already). In the same commit: one guard's exemption list; 265 rows of `tests/test_tiers.json` (79, 44 and
+  142), which the gate refuses without their files; the exchange kernel, `release_open` (after `test_er_calcium.py`) and nine names that only legacy uses in
+  `laws/reactions/plasma_calcium.py`, `laws/reactions/er_calcium.py` and `laws/channels/calcium_gates.py`, with five docstrings; and the words of three library pages.
+  `pump_rates` and `MAX_VOLTAGE` stay: `ca_atp_mass_action_positive@1` runs them. The script refuses the branch while a row waits for the user's word (the two network
+  laws, the EMT-miRNA pair) or a row that had to move is missing.
+- **The fingerprints' definitions** (the tool's own enumeration): 129 in 125 files leave, of 177 in `configs/`, `examples/` and `validation/`; `removed_definitions.txt`
+  lists them, since the comparison needs the same keys on both sides. An earlier count said 127 in 123.
+- **D196's safeguard.** `law_reference_checks.tsv` has one row for each of 133 laws and kernels: its declared test (44 have one; all 44 are collected after the deletion),
+  the reference rows that check its kernel afterwards, with and without the optional batch, and those that go. An import graph had seen only `mass_action.py`; Kv1.5 and
+  `junction_voltage_relaxation@1` had kept importers and lost their only direct check. All three have a row beside the law now (`legacy-kernel-rows`).
+- **14 reference files stay** whose last test goes (the second reader's 13, and `validation/organelles/betse_mitochondria_reference.py`): old native probes and references that stay,
+  and that no test runs at the tag either, import them.
 - **The three live parity files keep their BETSE runs.** They now import `validation/betse/native_hooks.py`, and 19 REF-era modules go
   (the lead's choice (C)). Measured on the tree without what goes, on the light CPUs: 16, 38 and 25 rows pass, each with one skip, and all 64 native
   captures equal the saved ones bit for bit (395 million array scalars).
 - **Four parity files could not start their run,** at the tag or before it: three stop in the check of the source they are bound to, which changed on
   11 October 2026, and one is skipped (D131). 70 rows that could only error leave; the 55 that pass stay.
-- **The fixed point** (measured at 903f821e, and again at c368c9f2 and 34d173d7 by the dry run): on the head tree without what goes, the only remaining files with
-  an import that does not resolve are 8 of the 16 retargeted tests (10 at c368c9f2), and the only other mentions of a going path are the rename's tool and tables, one guard's exemption list (which must change in the
-  deletion's own commit) and documents. Run-time imports and path loads were read one by one (75 sites).
-- **Test IDs,** by collecting that tree at 34d173d7: 12,753 collect, and 8 files fail to. Of 21,927, 9,023 go with their files, 261 leave files that
-  stay, and 314 are in the retargeted files: 130 settled by the pump and symports builder, 8 left to the re-expression, 176 waiting in 8 files. 424 are new (at c368c9f2, 12,488 collected, 260
-  left files that stay and 158 were new). `removed_rows.tsv` names the group of each. The deletion's own collection gives the final ones.
+- **The fixed point** (measured at 903f821e, c368c9f2, 34d173d7 and 9c30104e): on the head tree without what goes, the only remaining files with
+  an import that does not resolve are 8 of the 17 retargeted tests, and the only other mentions of a going path are the rename's tool and tables, one guard's exemption list, four
+  of the viewer's files and documents. Run-time imports and path loads were read one by one (75 sites). `test_surface_catalog_planning.py` reads two going configurations through
+  `test_integrated_ensemble.py`'s helper, which neither imports nor collection show: it is the 17th retarget.
+- **Test IDs,** by collecting that tree at 9c30104e: 12,797 collect, and 8 files fail to. Of 21,927, 9,023 go with their files, 261 leave files that
+  stay, and 314 are in the retargeted files: 130 settled by the pump and symports builder, 8 left to the re-expression, 176 waiting in 8 files. 468 are new.
+  `removed_rows.tsv` names the group of each. The deletion's own collection gives the final ones.
 
 **D211.** 44 of its 47 "port as is" laws keep their kernel, its reference and a kernel-level test:
 
