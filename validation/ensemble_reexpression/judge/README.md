@@ -109,7 +109,7 @@ A rehearsal is read with `--profile FILE` (and `--spec` the rehearsal's folder).
               "inv_pools": {"set": "captures", "kind": "assembly", "folder": "runs/inv_pools-{step}-s{seed}", "summaries": "ticks"}},
  "engine_plants": {"EP1": {"change": [], "named": ["channel_K"], "planted_run": "<a run of the plants manifest>",
                            "distance": {"world": "inv_cluster", "entry": "channel_K", "power_plant": "channel"}}},
- "not_blind": {}, "not_blind_pool_runs": [], "notes": {}, "counts": {}, "runs": 0,
+ "not_blind": {"<consumer>": ["<a family>"]}, "not_blind_pool_runs": ["<a pool run>"], "notes": {}, "counts": {}, "runs": 0,
  "off_grid_runs": ["<the one named run made with the switch on>"],
  "plant_targets": {"ionic": "<a family>", "other_schedule": "<a family of the same world, another schedule>", "junctions": "<a family>",
                    "restart": "<a support run>", "engine_plant": "<a plant run>", "pool": "<a pool run with no restart>",
@@ -118,7 +118,9 @@ A rehearsal is read with `--profile FILE` (and `--spec` the rehearsal's folder).
 ```
 
 - **`captures`:** `{step}` is `h`, `h2` or `h4`, `{seed}` the seed index. `set` names a block of the legacy file that holds `root`, `science` and `science_manifest_sha256`, as `legacy_part1.json`'s do. That manifest's `files` gives every file's sha256. `cpu_model` is read from the block `captures`. `summaries` is `result` (`result.json`: `final_voltage_V` by world) or `ticks` (`observations/tick-<7 digits>.json` at 0 and at each of `summary_times_s`, with `cell_ids` and `channel_ids`).
-- **`engine_plants`:** a plant run's `variant` is its key. `distance` is a power plant's ratio times the entry's `largest`, or `{"world", "entry", "structural": "<plant>"}`. `change` may stay empty where the run's `declared_change` holds it. Its `path` begins inside the ionic block.
+- **`engine_plants`:** a plant run's `variant` is its key, its `family` the honest family that it was planted in, its step that family's h₃. `planted_run` is a run of the plants manifest that makes the same change on the legacy side. `distance` is a power plant's ratio times the entry's `largest`, or `{"world", "entry", "structural": "<plant>"}`.
+  A run's own `declared_change` is used where it has one, and `change` otherwise. Their items are `{"path": [...], "value": v}` or `{"path": [...], "multiply": f}`, the path inside the ionic block and `"*"` for every key of a map, or `{"exchange_channels": [cell, cell]}`.
+- **`not_blind`** may be empty (`{}`): the consumer then has one set. `plant_targets.not_blind` is one of its families where it has some, and `plant_targets.assembly` is a family that is not among them.
 - **`margins_rehearsal.json`** needs, per world, `entries.<readout>.ratio` for every class S entry, `mechanisms` with a home each, and `structural` (it may be empty) in `margins.json`'s form. `legacy_rehearsal.json` needs `captured_steps_s` per world. Its `entries` may be left out.
 - **C0 leaves out, for a rehearsal,** what is Part 1's alone: the run list, the literal blocks, the captured definitions, the pins of the snapshot, the controls, the margins' re-formation, the mechanism list and the published numbers.
 - **`judge_plants/`** (SPEC section 8): `fabricate --profile FILE --out <folder>` makes the honest tables from the rehearsal's `runs/`, always the same ones. None is committed, and the registered ones are made in the same way for `selftest`.

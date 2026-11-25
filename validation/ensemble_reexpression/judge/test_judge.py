@@ -1428,6 +1428,25 @@ def test_structure_only(benches, tmp_path):
         assert out.items
 
 
+def test_declared_changes_make_the_expected_run():
+    """Amendment 1, item 4: a run's own changes, else its plant's by `variant` (PLANTS 5)."""
+    reg = Registration(only=KEEP["base"])
+    run = reg.runs[B[2]]
+    honest, paths = reg.expected_block(run), reg.expected_paths(run)
+    item = {"path": ["channels", "channel_1", "abundance"], "value": 0.7}
+    changed = reg.expected_block({**run, "declared_change": [item]})
+    assert changed["channels"]["channel_1"]["abundance"] == 0.7 and changed != honest
+    changed["channels"]["channel_1"]["abundance"] = honest["channels"]["channel_1"]["abundance"]
+    assert changed == honest and reg.worlds["base"].block == honest
+    item = {"exchange_channels": ["cell_0", "cell_1"]}
+    swapped = reg.expected_paths({**run, "declared_change": [item]})
+    assert swapped == {"channel_0": paths["channel_1"], "channel_1": paths["channel_0"]}
+    assert reg.expected_paths(reg.runs[EP2]) == swapped
+    reg = Registration(only=KEEP["jupiter"])
+    found = reg.expected_block(reg.runs[EP1])["channels"]
+    assert all(v["max_permeability_m_per_s"] == 3e-10 * 1.01 for v in found.values())
+
+
 def test_a_profile_reads_a_rehearsal(tmp_path, benches):
     """The rehearsal's path, on the registered files under a profile: C0's general clauses pass, and
     the tables pass.
