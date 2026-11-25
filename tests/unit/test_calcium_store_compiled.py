@@ -1,0 +1,84 @@
+"""The one-cell store world, compiled (docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md, section 14, row
+13): validation/calcium_store/worlds.py's store_world, of the registered laws, its store starting
+at -5 mV. Ten steps in two windows meet every criterion of tests/calcium_store_fixtures.py; a
+restart from the written checkpoint repeats the second window bit for bit; and the first window's
+end, imported as a new definition, continues the run (planted: the store's charge anchor dropped,
+so its voltage starts at 0). Planted in the criteria, each missed: a pump without its voltage,
+the exchanger's two ions exchanged, one patch's capacitance 0.01% off.
+
+Seconds: about 25 on a quiet CPU, of which 20 are its one compile (a window's program, which the
+restart and the import reuse), so tier 2. The reason (D224): a closed world with a store, the
+store's charge anchor, a gated release and a restart are in no other row's one program.
+"""
+
+import copy
+import math
+
+import numpy as np
+import pytest
+
+from cells.definitions.specs import parse_spec
+from cells.execution.windows import iter_windows
+from tests import calcium_store_fixtures as rows
+from validation.calcium_store import worlds
+
+
+@pytest.fixture(scope="module")
+def one():
+    return rows.run_one()
+
+
+def test_the_store_world_moves_as_its_equations_and_restarts(one, tmp_path):
+    v = one.column("membrane_voltage_V")[:, list(one.patches).index("bounding_0")]
+    assert v[0] == pytest.approx(worlds.STORE_VOLTAGE_V, abs=1e-12)
+    assert abs(v[-1]) < abs(v[0])  # The store's voltage relaxes.
+    rows.agrees(one)
+    rows.restarts(one, tmp_path)
+
+
+def imported(run, *, anchor=True):
+    """A definition that starts at the run's first window's end: its amounts, charges and gates. The
+    store's charge is dropped where anchor is False, and the outside node takes what keeps the world
+    closed."""
+    raw, row = copy.deepcopy(run.raw), rows.WINDOW
+    amounts, v, charges = run.amounts(), run.potentials(), {}
+    for p in raw["model"]["membranes"]:
+        q = p["capacitance_F"] * (v[p["inside"]][row] - v[p["outside"]][row])
+        charges[p["inside"]] = charges.get(p["inside"], 0.0) + q
+        charges[p["outside"]] = charges.get(p["outside"], 0.0) - q
+    if not anchor:
+        charges["outside"] += charges["store_0"]
+        charges["store_0"] = 0.0
+    for node in (*raw["model"]["cells"], *raw["model"]["extracellular"]):
+        n = dict(zip(run.species, amounts[node["id"]][row].tolist(), strict=True))
+        node["initial_amount_fmol"], node["initial_charge_C"] = n, charges[node["id"]]
+        node["fixed_charge_equivalent_fmol"] = charges[node["id"]] / worlds.CHARGE_PER_FMOL
+        node["fixed_charge_equivalent_fmol"] -= math.fsum(
+            worlds.VALENCE[s] * amount for s, amount in n.items()
+        )
+    gates = run.column("channel_gate")[row]
+    for k, channel in enumerate(raw["model"]["channels"]):
+        channel["initial_gate"] = gates[:, k].tolist()
+    raw["experiment"]["end_time"] = rows.WINDOW * rows.DT
+    raw["experiment"]["observation_times"] = [k * rows.DT for k in range(rows.WINDOW + 1)]
+    return raw
+
+
+def test_the_first_windows_end_imports_with_its_store_charge(one):
+    """A world whose routes charge its store resumes from its own state, the store's charge with it
+    (refusal 5's reason)."""
+    later = one.column("membrane_voltage_V")[rows.WINDOW :]
+    amounts = one.column("extracellular_amount")[rows.WINDOW :]
+    for anchor in (True, False):
+        (window,) = iter_windows(parse_spec(imported(one, anchor=anchor)), rows.POLICY)
+        volts = np.max(np.abs(np.asarray(window.observations.membrane_voltage_V) - later))
+        assert (volts <= 1e-9) == anchor, volts
+        if anchor:
+            moved = np.abs(np.asarray(window.observations.extracellular_amount) - amounts)
+            assert np.max(moved) <= 1e-11
+
+
+def test_planted_criteria_of_the_store_world_miss(one):
+    assert "store_pump_0" in rows.misses_moved(one, voltage_dropped=True)
+    assert set(rows.misses_moved(one, ions_exchanged=True)) == {"exchanger_0"}
+    assert rows.misses_potentials(one, capacitance=1.0001)
