@@ -6,7 +6,7 @@ and that is not here is asked for through the lead and added by a dated change, 
 ## 1. Files
 
 - `table/table_<consumer>.json`, consumers `jupiter`, `cell`, `base`, `integrated` (Part 1) and, in Part 2, `PART2.md` §4's. One file per consumer. `table/SHA256SUMS`: one line per file, the sha256, two spaces, the name.
-- `table-retry/table_<consumer>.json` and its `SHA256SUMS`, with the judge's `retry_owed.json`. The rehearsal's `table-rehearsal/table_<consumer>.json` and its `SHA256SUMS` are in the rehearsal folder (`SPEC.md` §8).
+- `table-retry/table_<consumer>.json` and its `SHA256SUMS`, with the judge's `retry_owed.json`. The rehearsal's `table-rehearsal/table_<consumer>.json` and its `SHA256SUMS` are outside the checkout, pinned by sha256 (`SPEC.md` §8).
 - **A table whose sha256 is missing from its folder's `SHA256SUMS`, or departs from it, is refused,** with every run in it. An absent `SHA256SUMS` is recorded and flagged and refuses nothing by itself.
 - The lead records the sha256 of every file before any reference is read.
 - **A duplicate key anywhere refuses the file.** JSON is read with NaN and Infinity allowed. A non-finite number in a judged leaf leaves its entry not formed, and one in a recorded leaf is flagged.
@@ -37,7 +37,7 @@ Every entry holds all of these keys. A key that a kind of run does not use holds
 | `seed_index`, `world_id` | integers or null: the registered run's |
 | `step_s` | number, or null for a pool run |
 | `steps` | integer, or null for a pool run: the accepted steps of the run. For `jupiter` and `integrated` it equals end_s/step_s (a larger number means a change split a step, and the run is refused with the reason `off_grid_change`). For `cell` and `base` it is at least that and at most that plus the committed events of the world's two (or one) pool paths. **For a restart** it counts the accepted steps after the checkpoint, (end_s − the checkpoint's time)/step_s, with the same addition for `cell` and `base` |
-| `t` | list of numbers: the times of `rows`, strictly increasing, the first 0, every compared time there. **For a restart** it continues its judged run's clock: the first is the checkpoint's time and not 0, and every compared time after the checkpoint is there. `[]` for a pool run, whose `rows` and `potentials` are `{}` and `potential_t` `[]` |
+| `t` | list of numbers: the times of `rows`, strictly increasing, the first 0, every compared time there. **For a restart** it continues its judged run's clock: the first is at or after the checkpoint's time and not 0 (a row at the checkpoint's time is optional), and every compared time after the checkpoint is there. `[]` for a pool run, whose `rows` and `potentials` are `{}` and `potential_t` `[]` |
 | `rows` | object: READOUTS §2's name to an object, entity ID to a list as long as `t` |
 | `potential_t` | list of numbers: the times of `potentials`, 0 first (for `jupiter` and `integrated` the block's `potential_times_s`, for `base` and `cell` 0 and then `summary_times_s`). The voltage at 0 is the run's own V₀ (`READOUTS.md` §5). For a restart, the ones after the checkpoint |
 | `potentials` | object: `voltage` and `phi_out` to entity ID to a list as long as `potential_t`. A world without one omits it |

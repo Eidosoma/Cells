@@ -98,7 +98,7 @@ A pool run (`cell s<k> pool`, `base s<k> pool`) exports, per cell, the 19 final 
 - **e_store** is `SPEC.md` §6's term, 2.5 ε (S + 1) × `amount_refs`, with S the run's own grid's. It is 0 for a series that an entry does not read.
 - **It is a property and not a comparison with legacy.** Where an integrator books its heats as integrals, it closes at the integrator's order and not at rounding. That is why it is class S (FR-38's amendment 3), and the balances are class R.
 - **The sign of `work_pump`:** the fuel's work enters the world, so it is subtracted from the stored and dissipated energy.
-- **Where an identity has zero scale** (a species with no route), the value is exactly zero.
+- **Where an identity has zero scale** (a species with no route), the value is a class E zero. It stays among class R's entries in the counts (§3).
 - **Conservation is judged beside the engine's own rule, and not instead of it** (`CRITERIA.md` §4.4). These are Part 1's (the lead's ruling of 25 November, which reverses its earlier one for Part 1). In Part 2 the same formulas are reported and not judged.
 - **The formulas, signs and scales were checked on the reference side,** on the captured arrays of every Part 1 world at h/4: every balance is at most 5.3 × 10⁻⁴ of its bound, the capacitor at most 3.1 × 10⁻⁶ of its, and every energy identity at most 1.1 × 10⁻⁶ of its, with U_c = 0 and e_store taken as 0, which is the form legacy's state has (the author's check of 25 November, after the ruling and after the planted numbers had been read). No bound moved because of it.
 

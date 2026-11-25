@@ -104,7 +104,7 @@ allowance, and stops at the first that fails. That rule is a criterion. No absol
 
 ### 4.5 P, power, judged first (D366)
 
-**Stage 1 of the judgement. Stage 1 reads the tables' own rows to form scales, and forms no difference between a candidate and a capture; `power.json` is hashed before the first difference.** The scales it forms are the run's own step-halving estimates (U_c) and, from them and `inputs.json`'s scales and `amount_refs`, every entry's β and its class under §4.3's table. The copy guard's comparison (a) (§5) also reads rows alone. The captures' own refinement (U_l) is already in `legacy_part1.json`. It
+**Stage 1 of the judgement. Stage 1 reads the tables' own rows to form scales, and forms no difference between a candidate and a capture; `power.json` is hashed before the first difference.** The scales it forms are the run's own step-halving estimates (U_c) and, from them and `inputs.json`'s scales and `amount_refs`, every entry's β and its class under §4.3's table. The copy guard's comparison (a) (§5) also reads rows alone. U_l and max |L₃| are formed from the captured arrays. Stage 1
 writes `power.json`, and the lead records its sha256. Stage 2 forms the differences.
 
 - **The planted distance D(y)** of an entry is the size of the effect that a 1 % change in one rate constant has on it, on the legacy side alone. `margins.json` gives a ratio ρ(y) (a planted change's
@@ -134,15 +134,16 @@ writes `power.json`, and the lead records its sha256. Stage 2 forms the differen
 | A run name that `inputs.json` does not list, and the retry's rule does not register | Ignored, recorded and flagged |
 | A duplicated key anywhere in a file | The file is refused, and every run of it |
 
-- **The copy guard** is a harness check, not a fraud check. It reads class S rows alone (not the potentials, not the identities), at every compared time. It compares: (a) two rungs of one family, and (b) a run and its capture (the captured rows of its own world at each captured step). An **exact equality** of all of a run's class S rows is a refusal of that run (both runs in (a)), for the checker to settle: it reads the run's own record and reruns that run. If the rerun says the run is genuine, the lead's dated note lifts the refusal.
+- **The copy guard** is a harness check, not a fraud check. It reads class S rows alone (the rows of the table that READOUTS §3 names; `heat_membrane`, which the judge forms, is not compared), not the potentials and not the identities, at every compared time. It compares: (a) two rungs of one family, and (b) a run and its capture (the captured rows of its own world at each captured step). An **exact equality** of all of a run's class S rows is a refusal of that run (both runs in (a)), for the checker to settle: it reads the run's own record and reruns that run. If the rerun says the run is genuine, the lead's dated note lifts the refusal.
   **Comparison (a) reads the tables alone and may run in stage 1. Comparison (b) is a difference between a candidate and a capture, so it runs in stage 2, after `power.json` is hashed.** It does not compare families with each other: honest duplicates exist, where families share one constant schedule. It does not compare a plant with the run it was planted in: **a plant that equals the run it was planted in is not caught,** and not unscorable.
 - **Where a partial run is judged, by name.** A run that is refused, or whose rows are partial, is judged on what it holds, so that no refusal hides a fail:
   - **a departing echo:** nothing of the run is judged, and its family's S entries are not formed. Such a run is not the registered world, and the checker sees the departure and its cause;
+  - **a run in `missing`:** it has no rows, so nothing of it is judged, and the entries that need it are not formed;
   - **missing or doubled rows or leaves:** the entries that need them are not formed, and the rest of the run is judged;
   - **a refused run of kind `definition`, `domain` or `harness`:** its readouts are judged on the rows it holds. Every class R and E entry that can be formed is judged, and a fail stands. An S entry that needs rows it does not hold is not formed. It is inconclusive and is counted below. D is not judged, since a refusal is not a stop;
   - **a stop (kind `check`):** the run fails by D, and its rows are judged for R and E;
   - **a refused run of provenance or of the copy guard:** the same, with its D judged.
-- **A fail can go unseen in two places only:** a departing echo (nothing of the run is judged) and a missing or doubled row or leaf (the entry that needs it is not formed). Both leave the consumer at best inconclusive, and the checker sees both.
+- **A fail can go unseen in three places only:** a departing echo (nothing of the run is judged), a run in `missing` or in neither list (there is nothing of it to judge) and a missing or doubled row or leaf (the entry that needs it is not formed). Each leaves the consumer at best inconclusive, and the checker sees each.
 - **A refused run cannot pass.** With no failing entry its consumer is at best inconclusive.
 - **A refused or missing support run** leaves its consumer at best inconclusive. It does not refuse the run it supports.
 - **The owner of an entry.** An S entry and its `energy_identity` belong to the run at h₃. A D entry belongs to its own run, and so do a judged run's balances (class R). The exposure belongs to its pool run. A restart's E entry belongs to the judged run it resumes, never to the support run. The exposure, the path and the pool's arrays belong to the pool run. The switch list's, the channel schedule's and the recorded seeds' E entries belong to the ionic run that records them, and a pool run's seed to the pool run.
@@ -150,7 +151,7 @@ writes `power.json`, and the lead records its sha256. Stage 2 forms the differen
 
 **C0, before any table is read:** the judge reads `inputs.json`, `legacy_part1.json`, `reference_paths.json`, `margins.json` and the manifest, and the captures they name. It checks every sha256, every key, the scales and `amount_refs`
 against their rules, the legacy side's classes against the rule (§4.3), that every mechanism has a home entry with a ratio, and the power check with U_c = 0 (every margin of `margins.json` re-formed from the planted runs it names). A fault is named and refused. The order of reading is the lead's: the
-tables' hashes are recorded, then C0, then stage 1, then the tables are opened for stage 2. **Stage 1 reads the tables' own rows to form scales, and forms no difference between a candidate and a capture; `power.json` is hashed before the first difference.**
+tables' hashes are recorded, then C0, then stage 1, then stage 2. **Stage 1 reads the tables' own rows to form scales, and forms no difference between a candidate and a capture; `power.json` is hashed before the first difference.**
 
 ## 6. The plants
 

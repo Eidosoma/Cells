@@ -81,7 +81,7 @@ A candidate's block is compared with `inputs.json`'s block (`CRITERIA.md` §5). 
 - **a cell's `initial_voltage_V`** is derived by the exporter as `initial_charge_C` divided by the capacitance of its membrane, since a canonical definition declares a charge and not a voltage. It is compared to 10⁻¹² relative;
 - a number in a schedule or a time, to 10⁻¹² relative. Integers, strings and booleans, exactly;
 - **maps by key, never by order.** A JSON 4 equals 4.0. An empty set of entities is printed `[]` (`junctions`, `faces`, `channels`, an empty entry of `controls`), as the captured definition's canonical form does, and `{}` in its place refuses nothing;
-- **a default that one party writes out and the other omits refuses nothing.** The defaults are: a membrane's `pump` null, empty `junctions`, `faces`, `channels` and an empty entry of `controls`, and in a pool block `initial_bond_indices` (the bonds between initial nodes that the graph has), `root_node` 10 and `world_id_start` 0;
+- **a default that one party writes out and the other omits refuses nothing.** The defaults are: a membrane's `pump` null, empty `junctions`, `faces`, `channels` and an empty entry of `controls`, a schedule that is [[0.0, 1.0]] throughout, and in a pool block `initial_bond_indices` (the bonds between initial nodes that the graph has), `root_node` 10 and `world_id_start` 0;
 - **a schedule** is compared as §3.2 says, with the initial entry [0, 1] set apart;
 - **class E, not echo:** `controls.channel` of `cell` and `base` (`inputs.json` holds a sentence in its place), `inputs.assembly`'s `pool_seeds` and `switch_list`, and **a pool run's `seed`** (`CRITERIA.md` §4.1). `inputs.assembly`'s `assembly_observable` is an echo of a label, and its `composed_file_fingerprint` is recorded;
 - **recorded, not compared:** a pool's `harness` fields (`event_chunk_size`, `recording`, `max_output_bytes`, `max_wall_seconds`), since a candidate's pool run records events;
@@ -224,7 +224,7 @@ These are `inputs.json`'s blocks, in its own form. They are the captured definit
 }
 ```
 
-**A pool run** (`cell s<k> pool`; `base s<k> pool` has one block for each of `cell_0` and `cell_1`). Its echo is, per cell, the pool block with its `channel`, its `stream_id` and its `seed`, which is `seeds[k]`:
+**A pool run** (`cell s<k> pool`; `base s<k> pool` has one block for each of `cell_0` and `cell_1`). Its `inputs` hold, per cell, the pool block with its `channel`, its `stream_id` and its `seed` (class E, §2.4), which is `seeds[k]`:
 
 ```json
 {
@@ -305,8 +305,8 @@ before the first event.
 each event from that event's time on. An entry that repeats the value before it may be left in or left out. An off-grid change splits the step there.
 - **The initial entry [0, 1] is not a change.** It is the level before the first event, and every schedule begins with it. **A change** of a schedule is an entry after it whose value differs from the value before it. **The changes of the path** are its events whose availability differs from the availability before them, beginning with 1. So the path
   `[[0.2, 0], [0.3, 0], [0.4, 1]]` has two changes, at 0.2 and at 0.4. A schedule is compared with the path's changes after its first entry [0, 1] is set apart and the repeats are removed.
-- **The event times are the pool's doubles.** They are not rounded, shifted or snapped. No captured event lies within 1.8 × 10⁻⁴ of a step
-  from a grid point, at any step down to 1.5625 µs, so the clock's near-miss rule cannot refuse one (measured on the snapshot's own pool code).
+- **The event times are the pool's doubles.** They are not rounded, shifted or snapped. The smallest distance of a captured event from a grid point, over the steps 25, 12.5, 6.25, 3.125 and 1.5625 µs, is 1.779 × 10⁻⁴ of that step. So the clock's near-miss rule, which refuses up to 10⁻⁶ of a step, cannot refuse one.
+  The event is the first one of `cell`, seed index 2, `cell_0`, world 28, at 0.007676562222089895 s, beside 4913 steps of 1.5625 µs. A step's middle is a stage time too, and the smallest distance from any stage time is 8.893 × 10⁻⁵ of a step (the same event, from a middle at 3.125 µs). Both are formed from `reference_paths.json`, over its 683 events.
 - **The availability multiplies the channel only.** It touches no gate, pump, leak, junction or face.
 - **The pool never reads the ionic side.**
 
@@ -349,7 +349,7 @@ holds no form of it. A run of one departs from its strings note and is refused. 
 
 **The order of an index.** Wherever an index pairs rows with entities, the index is the entity's position in the captured definition's list, in **natural order** (the order in which the definition gives them). So `junction_2` comes before `junction_10`, and a text sort would be wrong. World IDs are the pool's, in order. (`READOUTS.md` §2 gives the index of each array.)
 
-**A restart** (a support run) resumes a checkpoint of its judged run at the checkpoint's time. It continues that run's clock, so its `t` starts at the checkpoint's time and not at 0, and its `steps` counts the accepted steps after the checkpoint. "Every compared time" for it is every compared time after that. The row at the checkpoint's time is needed only if the run holds one.
+**A restart** (a support run) resumes a checkpoint of its judged run at the checkpoint's time. It continues that run's clock, so its `t` starts at or after the checkpoint's time and not at 0, and its `steps` counts the accepted steps after the checkpoint. "Every compared time" for it is every compared time after that. A row at the checkpoint's time is optional, and is compared if the run holds one.
 
 ## 5. The scales
 
@@ -398,7 +398,7 @@ So **e_round(S) = 8 ε (S + 1) s**, FR-38's form (`8 ε S s`), with this derivat
 documentation of its state; the author read it at 49529e71, as protocol §11 says). **V₀ is the run's own voltage at time 0** (`READOUTS.md` §5), so a difference between a declared voltage and the voltage an engine formed from its charge anchor does not enter a band.
 
 **What a state that stored amounts would do,** by arithmetic on the inputs alone. Each addition to n₀ + d rounds by at most ε/2 of n₀, and there are at most 5 (S + 1) of them, so at most 2.5 ε (S + 1) n₀. A voltage formed from amounts and fixed charges rounds a few more times in each evaluation, at terms of size (F 10⁻¹⁵/C) Σ |z| n₀, which is less than 10⁻³ of the first. At S = 3,200 (or 800 in `integrated`) this is 1.2 × 10² to 2.8 × 10³ times the band of `n_cell_x` and `voltage` at U_c = 0, and 0.8 to 1.0 × 10⁴ times the band of `n_out_x`. A correct engine of that form would be refused by the bands without it.
-**So the bands of the entries that read an amount hold e_store(S) = 2.5 ε (S + 1) × `amount_refs`** (`inputs.json`; 0 for every other entry), for the candidate's own S_c alone, since legacy stores increments (its arrays are `amount_increment`). It admits both forms, and the margins of the C0 power check stay above 1.3 × 10³ (`PLANTS.md` §8). The rehearsal holds a world with amounts as large against its s as the registered ones (§8), so that an engine that stored amounts, or formed V from amounts plus fixed charges, is seen there and not in the campaign.
+**So the bands of the entries that read an amount hold e_store(S) = 2.5 ε (S + 1) × `amount_refs`** (`inputs.json`; 0 for every other entry), for the candidate's own S_c alone, since legacy stores increments (its arrays are `amount_increment`). It admits a state that stores amounts in the entries that read an amount. Its rounding also reaches the leak, junction and junction-gate entries through the potentials. Those carry no e_store, and such an engine can miss them; the rehearsal finds it. The margins of the C0 power check stay above 1.3 × 10³ (`PLANTS.md` §8). The rehearsal holds a world with amounts as large against its s as the registered ones (§8), so that an engine that stored amounts, or formed V from amounts plus fixed charges, is seen there and not in the campaign.
 
 **The closure bound** is on the potentials that a field solver leaves in error, and not on its current residual.
 - **A node's charge.** The live model accepts a node whose relative charge residual is at most 2 × 10⁻¹² (its declared `CHARGE_RTOL`). That is a potential error of at most 2 × 10⁻¹² of the potential, so at most 2 × 10⁻¹² V*. Legacy forms a membrane's voltage from its charges directly, with no solve to leave an error.
@@ -438,12 +438,12 @@ The author ran it on both JUPITER arms on 25 November: every state field agrees 
 rates, seeds or times. No step and no horizon of this folder is used, with one exception: a family that sits **exactly at the channel law's stated step bound** (h₁ = 25 µs), which a strict comparison in the engine would refuse. It holds, at least:
 - a two-cell cluster with a pump schedule **and free field offsets** (class S, R, D, the potentials; it is the one that exercises the floor variant of the solver and the closure of `phi_out`), with h₁ at that bound;
 - a one-cell assembly world and a two-pool assembly world (class E on the pool, the path, the schedule and a restart), and a small cluster of gated junctions with a schedule;
-- **one world whose amounts are as large against s as the registered ones,** so that an engine that stores amounts, or forms V from amounts plus fixed charges, is found here: `amount_refs`/`scales` at least 4.3 × 10⁴ for `n_cell_x`, 6.3 × 10⁴ for `n_out_x`, 2.5 × 10⁴ for `voltage` and 4.7 × 10⁴ for `energy_identity` (the largest of `inputs.json`), with a **fixed charge off the electroneutral rule** in the captured style: the decimal of the declared fixed charge is the rounded one, so that the rule and it disagree (up to 5.1 × 10⁻²⁴ C in the captures). Its honest run must pass every entry that reads an amount;
+- **one world whose amounts are as large against s as the registered ones,** so that an engine that stores amounts, or forms V from amounts plus fixed charges, is found here: `amount_refs`/`scales` at least 4.3 × 10⁴ for `n_cell_x`, 6.3 × 10⁴ for `n_out_x`, 2.5 × 10⁴ for `voltage` and 4.7 × 10⁴ for `energy_identity` (the largest of `inputs.json`), with a **fixed charge off the electroneutral rule** in the captured style: the decimal of the declared fixed charge is the rounded one, so that the rule and it disagree (up to 5.1 × 10⁻²⁴ C in the captures). Its honest run must pass every entry;
 - one family on the engine's IMEX integrator, with **`p` = 2 in its world's block**, at steps where its order is resolved. No RK4 family can be resolved at an admissible step, and the resolved branch of class S must be exercised. **Its identities are reported and not judged:** an honest order-2 run need not close `energy_identity` at the class of an order-4 run;
-- one restart, one refusal of each kind (`TABLE.md` §4), one run stopped by the engine's own check, one run whose declared change is off the grid (the reason `off_grid_change`), and one whose schedule writes out a default that the other party omits;
+- one restart, one refusal of each kind (`TABLE.md` §4), one run stopped by the engine's own check, one run whose declared change is off the grid (the reason `off_grid_change`), one declared change whose double differs from its k h by one unit in the last place, as the registered change of `integrated` at 0.015 s does at every step (its k h is 0.015000000000000001), and one whose schedule writes out a default that the other party omits;
 - one run of each consumer's kind whose `steps`, `t` and restart follow §4.
 
-**Files, makers and readers.** All of them are in `validation/ensemble_reexpression/rehearsal/`.
+**Files, makers and readers.** They are in `validation/ensemble_reexpression/rehearsal/`, but for two folders: `runs/` and `table-rehearsal/` are outside the checkout, pinned by sha256.
 
 | File | Holds | Maker | Reader |
 | --- | --- | --- | --- |
@@ -454,6 +454,6 @@ rates, seeds or times. No step and no horizon of this folder is used, with one e
 | `margins_rehearsal.json`, `plants_manifest_rehearsal.json` | The invented power and structural plants' distances, ratios, margins and provenance | Rehearsal runner | Judge |
 | `registered_strings_rehearsal.json` | The strings note of the rehearsal, with `rehearsal_revision` | Lead | Judge, and the exporter's check |
 | `table-rehearsal/table_<consumer>.json`, `SHA256SUMS` | The builders' tables of those runs (honest, and the faulty ones the rehearsal needs) | Builders | Judge |
-| `judge_plants/` | The **honest tables that the judge's plants need** (the split of a heat among leak, pump and channel among them): **invented by the judge, recorded as fabricated,** from no engine run and no capture | Judge | Judge |
+| `judge_plants/` | The **honest tables that the judge's plants need,** made from the reference side's arrays (the captures; in the rehearsal, its `runs/`), each moved by at most one unit in the last place so that the guard does not fire, with an invented heat split; recorded as fabricated | Judge | Judge |
 
 The reference side of the rehearsal is the frozen legacy snapshot, run on those definitions by the rehearsal's runner.

@@ -88,7 +88,7 @@ A plant's block differs from its honest run's only by its change. Any other diff
 
 ## 6. The judge's plants (JP): altered copies of honest tables
 
-Each is an altered copy of an **honest table that the judge invents for its self-tests** (recorded as fabricated, from no engine run and no capture, the split of a heat among leak, pump and channel included; it is not a copy of a capture, since the copy guard would refuse that), and again of the registered tables. They cost no run.
+Each is an altered copy of an **honest table of the judge's own, for its self-tests,** and again of the registered tables. The judge's own are made from the reference side's arrays (the captures; in the rehearsal, its `runs/`), each moved by at most one unit in the last place so that the guard does not fire, with an invented heat split; recorded as fabricated. Class E values are not moved, and where the reference side holds no row (in `base` at 5 and 10 ms it holds the voltage and the channel's transfer alone) the row is invented so that the identities close. They cost no run.
 
 **How each is written.** A plant names the run it alters. It alters **rows only**, or the one leaf it names, and everything else of the table (echo, strings, `t`, `steps`, record, source) stays honest. "The path" is the reference path (`SPEC.md` §3.2), and the run's own path is named where it is meant. **A plant that the echo refuses is not a fail plant,** and its "must be" says refused. Where a plant says "in all three rungs" it alters h₁, h₂ and h₃ alike.
 
@@ -98,12 +98,12 @@ Each is an altered copy of an **honest table that the judge invents for its self
 | JP2 | `jupiter_baseline`, all three rungs: the rows `heat_pump` set to zero | a fail of `heat_membrane` (S), and of `energy_identity` |
 | JP3 | `jupiter_pump_release`, all three rungs: the rows and potentials replaced by `jupiter_baseline`'s of the same step, the echo and the strings left honest | a fail of `pump` (S), and not refused |
 | JP4 | One pool run (`base s1 pool`): one value of one array moved by one unit (an integer by 1, a time by one unit in the last place) | a fail of class E of that array, for that run |
-| JP5 | `jupiter_baseline`, h₃: its class S rows replaced by h₂'s class S rows, the potentials and the identities' other rows left as they are | both runs refused by the copy guard (a), their readouts judged, for the checker to settle |
+| JP5 | `jupiter_baseline`, h₃: its class S rows replaced by h₂'s class S rows, and `heat_leak`, `heat_pump` and `heat_channel` by h₂'s too, the potentials and the identities' other rows left as they are | both runs refused by the copy guard (a), their readouts judged, for the checker to settle |
 | JP6 | `jupiter_baseline`: h₁ refused (kind `harness`, no row), and one `n_cell_K` of h₃ raised by 10⁻⁶ of its largest value | the fail of h₃'s balances stands, and `jupiter` fails |
 | JP7 | `jupiter_baseline`, all three rungs: the rows `heat_junction` set to zero | a fail of `heat_junction` (S) and of `energy_identity` |
 | JP8 | `base s0 pool`: the last event deleted from the run's own path of world 2, `cell_0` (the availability is 0 before it and after it) | a fail of class E of the run's own path for that run. The exposure is unchanged and passes (R). The schedule entries of the ionic runs, which compare with the reference path, are not touched |
 | JP9 | `jupiter_baseline`, h₁: one number of `inputs` moved by 10⁻⁹ of itself | refused, and nothing of the run judged. Not a fail plant |
-| JP10 | `jupiter_baseline`, h₁: an echo with its maps in another order, a 4 for a 4.0, a default omitted, and a schedule with a repeated value | not refused |
+| JP10 | `integrated`, h₁: an echo with its maps in another order, a 27 for a 27.0, a default omitted, and a schedule with a repeated value | not refused |
 | JP11 | `jupiter_baseline`, h₁: `status` `"refused"`, kind `check` | a stop, and a fail (D). The rows it holds are judged |
 | JP12 | The support run `jupiter_baseline h=2.5e-05 restart` missing | the consumer at best inconclusive |
 | JP13 | `integrated`, h₁ and h₂: the same `record_sha256` | both refused, readouts judged |
@@ -114,7 +114,7 @@ Each is an altered copy of an **honest table that the judge invents for its self
 | JP18 | `base s1 w0`, h₃: one character of the `assembly_observable` string changed, and the label kept | refused, and nothing of the run judged. Not a fail plant |
 | JP19 | `jupiter_baseline`, all three rungs: one `junction_K` (the last time) raised by 10⁻⁴ of its largest value | a fail of `junction_K` (S), and of the balances of the two cells (R) |
 | JP20 | `jupiter_baseline`, all three rungs: the rows `work_pump` multiplied by 1.01 | a fail of `energy_identity`, and of no S entry against a capture |
-| JP21 | `jupiter_baseline`, h₂: its class S rows replaced by the captured rows of `jupiter_baseline-h2` | refused by the copy guard (b), its readouts judged |
+| JP21 | `jupiter_baseline`, h₂: its class S rows replaced by the captured rows of `jupiter_baseline-h2`, and `heat_leak`, `heat_pump` and `heat_channel` too, by a split of the captured `dissipated_energy_pJ` (the captures hold the sum alone) | refused by the copy guard (b), its readouts judged |
 | JP22 | EP1's rows made equal to its honest run's (`jupiter_baseline`, h₃) | EP1 is not caught, and `jupiter` fails |
 | JP23 | `integrated`, h₃: an extra string in `declared_strings` | refused, and nothing of the run judged. Not a fail plant |
 | JP24 | `jupiter_baseline`, h₃: `steps` one more than end_s/step_s | refused (the reason `off_grid_change`), its readouts judged |

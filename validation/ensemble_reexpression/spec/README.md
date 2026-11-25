@@ -30,7 +30,7 @@ runs, taken on 25 November 2026 from frozen snapshots of the engine. It holds do
 | `PART2.md`, `inputs_part2.json`, `legacy_part2.json`, `margins_part2.json`, `plants_manifest_part2.json` | Part 2, the same files by part | Part 2 |
 | `AMENDMENT-<n>-<date>.md` | Dated changes, the latest first. None exists at the criteria tag | Over every file above |
 
-**Files outside this folder that the registration uses,** all in `validation/ensemble_reexpression/`: the lead's
+**Files outside this folder that the registration uses,** all in `validation/ensemble_reexpression/` but the rehearsal's `runs/` and `table-rehearsal/`: the lead's
 `registered_strings.json` (the strings note, §"No registered ID here"), and the rehearsal's files, which `SPEC.md` §8 lists with their makers and readers. In `table-retry/`, the judge's `retry_owed.json`. In the judge's record, `power.json`.
 
 ## Rules for every reader
@@ -52,7 +52,7 @@ runs, taken on 25 November 2026 from frozen snapshots of the engine. It holds do
   folder holds a registered ID.
 - **The strings note** maps every label to the exact string that a run declares. The lead writes it after the registration tag, with its own tag
   (`TABLE.md` §5), and it holds **today's IDs**. It is the one file through which a string enters the judgement.
-- **The runs are made before the deletion and the ID move** (the protocol's §5). So the registered strings are today's IDs, and after the move one run per consumer on the final head must equal its registered table bit for bit: values by value, the IDs through the move's table. **This folder is frozen for the move,** because it holds nothing for the move to rewrite. A match in it is a fault of the move.
+- **The runs are made before the deletion and the ID move** (the protocol's §5). So the registered strings are today's IDs, and after the move one run per consumer on the final head must equal its registered table bit for bit: values by value, the IDs through the move's table. **This folder is frozen for the move,** because it holds nothing for the move to rewrite. A match in it is a fault of the move. `registered_strings.json` and the rehearsal's files are frozen for the move; a mismatch of a repeated run stops the landing and goes to the user.
 
 **The order of work** is the protocol's §5. In short: the spec auditor, Part 1's criteria tag, the judge and its plants, the rehearsal, the registration tag, the strings tag, the floor guard with constants on the registered head's frozen snapshot, the campaign, the checker and the record, then what the user sees, then the deletion, the ID move and the full gate. Part 2's tag does not hold Part 1's.
 
