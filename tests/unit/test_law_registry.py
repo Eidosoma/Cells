@@ -226,7 +226,6 @@ def test_cycle_and_route_laws_name_their_step_terms():
         "domain_valid",
         "reads",
         "stage_term",
-        "loop_term",
         *laws.STEP_TERMS[1:],
         "forms",
         "cycle",

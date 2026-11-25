@@ -7,9 +7,13 @@ with a planted error it must catch (D187):
   declared work, a stray field, the tableau's unversioned ID, a repeated booking, a structural role
   without a fill, an intensive one with a fill, a non-finite fill, ledgers without their bounds,
   FR-42's label transfers without label refusals and a label refusal that is not a callable, and a
-  factor's feedback hooks alone, not callable, or without its factors); today's built-in kinds
-  declare none, but the transporter, which admits the trapezoid booking (K2), and register as
-  before;
+  factor's feedback hooks, a source's and a sink's, alone, not callable, or without the factors or
+  the routed controls they belong to); today's built-in kinds declare none, but the transporter,
+  which admits the trapezoid booking (K2), and register as before;
+- a sink's moved rows are checked when read (planted: a missing slot, a list, a row of two names, of
+  four or with an empty one, a repeated row), and a structure's loops are sorted positions of its
+  routes (planted: a list, unsorted, repeated, a route it has not, a kind that is no source of it, a
+  negative, a bool and a malformed position);
 - an undeclared state field takes today's suffix rule, a declaration overrides it (planted: a
   heat field declared non-monotone reads non-monotone; an unsuffixed field books no energy);
 - a kind's missing partition roles are its state, layout and control fields with none, on a bound
@@ -135,11 +139,20 @@ def test_seam_declarations_are_checked_at_registration():
     rows = dict(factor_rows=lambda declaration: ())
     slopes = dict(factor_log_slopes=lambda read, p, *, xp: ())
     assert kind_registry.declaration_errors(planted(**factors, **rows, **slopes)) == []
+    # And the sink's side of it, beside the controls its slots are.
+    slots = dict(routed_controls=lambda declaration: ())
+    moved = dict(routed_rows=lambda declaration: ())
+    flux = dict(routed_flux=lambda read, potentials, control, p, *, xp: {})
+    assert kind_registry.declaration_errors(planted(**slots, **moved, **flux)) == []
     plants = {
         "factor rows alone": dict(**factors, **rows),
         "factor slopes alone": dict(**factors, **slopes),
         "feedback hooks without factors": dict(**rows, **slopes),
         "factor rows not a callable": dict(**factors, **slopes, factor_rows=()),
+        "routed rows alone": dict(**slots, **moved),
+        "routed flux alone": dict(**slots, **flux),
+        "the sink's hooks without routed controls": dict(**moved, **flux),
+        "routed flux not a callable": dict(**slots, **moved, routed_flux={}),
         "unknown role": dict(energy_roles={"booked_moved_fmol": EnergyRole("light", True)}),
         "non-bool monotone": dict(energy_roles={"booked_moved_fmol": EnergyRole("stored", 1)}),
         "suffix contradicted": dict(energy_roles={"booked_work_pJ": EnergyRole("heat", True)}),
@@ -187,6 +200,35 @@ def test_an_undeclared_field_takes_the_suffix_rule_and_a_declaration_overrides_i
     assert role(stored, "booked_moved_fmol") == EnergyRole("stored", False)
 
 
+def test_a_sink_s_rows_are_checked_when_read():
+    """kind_routed_rows (a factor's feedback, the sink's side): one entry per routed slot, each of
+    distinct rows of three names; planted, each refused by name, the slot too."""
+    moved = (("Ca", "cell_0", "store_0"), ("K", "cell_0", "store_0"))
+
+    def sink(result):
+        return planted(
+            routed_controls=lambda declaration: (("booked_availability", 2, ("gate",)),),
+            routed_rows=lambda declaration: result,
+            routed_flux=lambda read, potentials, control, p, *, xp: {},
+        )
+
+    assert kind_registry.kind_routed_rows(planted(), ()) is None
+    for result in ((moved,), ((),)):
+        assert kind_registry.kind_routed_rows(sink(result), ()) == result
+    slot = re.escape("routed_rows, booked_availability[2]: ")
+    for result, match in (
+        ((), r"one entry per routed slot \(1\)"),
+        ([moved], r"one entry per routed slot \(1\)"),
+        ((list(moved),), slot + "a tuple of"),
+        ((moved[0],), slot + "a tuple of"),
+        ((((*moved[0], "end"),),), slot + "a tuple of"),
+        ((("Ca", "cell_0", ""),), slot + "a tuple of"),
+        ((moved + moved[:1],), slot + "it names a row twice"),
+    ):
+        with pytest.raises(ValueError, match=match):
+            kind_registry.kind_routed_rows(sink(result), ())
+
+
 def test_missing_partition_roles_name_each_field_left_undeclared():
     assert kind_registry.missing_partition_roles(planted(partition_roles=ROLES)) == ()
     fields = kind_registry.partition_fields(planted())
@@ -230,6 +272,33 @@ BASE = dict(
     fuel_kinds=(),
     junction_heat_booking=spec3.DEFAULT_JUNCTION_HEAT,
 )
+
+
+def test_a_structure_s_loops_are_sorted_positions_of_its_routes():
+    """InnerStructure.loops: () by default; (((route, row), (source kind ID, pair)), ...)."""
+    assert inner_laws.InnerStructure(**BASE).loops == ()
+    source, other = "tests.source@1", "tests.other@1"
+    routes = (
+        ("tests.sink@1", "gain", 0, ((source, 0),)),
+        ("tests.sink@1", "gain", 1, ((source, 1),)),
+    )
+    loops = (((0, 0), (source, 0)), ((0, 1), (source, 0)), ((1, 0), (source, 1)))
+    kept = inner_laws.InnerStructure(**BASE, routes=routes, loops=loops)
+    assert kept.loops == loops and surface_pump_v3.loops_declared(kept)
+    moves, pairs = surface_pump_v3.loop_positions(kept)
+    assert moves == ((0, 0), (0, 1), (1, 0)) and pairs == ((source, 0), (source, 1))
+    for planted_loops, words in (
+        (list(loops), "positions of the declared routes"),
+        (loops[::-1], "distinct and sorted"),
+        (loops[:1] * 2, "distinct and sorted"),
+        ((((2, 0), (source, 0)),), "positions of the declared routes"),
+        ((((0, 0), (other, 0)),), "positions of the declared routes"),
+        ((((0, -1), (source, 0)),), "positions of the declared routes"),
+        ((((0, 0), (source, True)),), "positions of the declared routes"),
+        ((((0, 0), source),), "positions of the declared routes"),
+    ):
+        with pytest.raises(ValueError, match=f"Loops of an inner structure: .*{words}"):
+            inner_laws.InnerStructure(**BASE, routes=routes, loops=planted_loops)
 
 
 def test_heat_bookings_default_to_none_listed_and_admit_each_class_s_own():

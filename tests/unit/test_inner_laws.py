@@ -150,7 +150,7 @@ def test_channel_declarations_match_todays_tables():
         assert {s: z for s, z, _ in law.permeant} in ({"K": 1}, {"Na": 1})
         assert law.voltage_domain_V == surface_pump_v3.VOLTAGE_DOMAIN_V
         assert (law.kinetics is None) == (law.opening is None) == (not law.gated)
-        assert law.reads == () and law.loop_term is None and law.provenance == "parity"
+        assert law.reads == () and law.provenance == "parity"
         assert law.material_term is None and set(spec3.MAJOR_IONS) >= {s for s, *_ in law.permeant}
         assert law.represents is law.preserves is law.supports is law.qualified is None
     steps = {law_id: law.rk4_step_s for law_id, law in TODAYS.items()}
