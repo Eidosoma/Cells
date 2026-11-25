@@ -457,6 +457,9 @@ the destination by merge.
   - Condensing face-free nodes (FR-1 §3.6) or FR-17 lifts it later.
 - **The held-bath topology.** Field-input providers refuse floating components, and so does the
   compartments declaration (refusal 6, `compartments.py`:320–326 **(code)**).
+  **Amended 25 November 2026:** the compartments declaration's version 1.1 refuses only a compartment
+  that is its component's representative (CLOSED_COMPARTMENT_DESIGN §3.5.1); the field-input
+  providers refuse floating components as before.
 - **Restart and windows.** The operator's records are state, and schedule changes lie on the dt grid,
   so restart is exact (R7). D195 holds: no checkpoint crosses move 2.
 
