@@ -56,7 +56,7 @@ PROBE = (
     "under S0 and S1, keeps every other loader check, and never continues a run"
 )
 EXEMPT = {
-    # Read-only comparisons, audits and writers of their own output (13).
+    # Read-only comparisons, audits and writers of their own output (16).
     "validation/assembly/compare_throughput.py": READ,
     "validation/betse/channel_feedback_audit/feedback_audit_cells.py": READ,
     "validation/betse/channel_feedback_audit/feedback_audit_context.py": READ,
@@ -70,6 +70,8 @@ EXEMPT = {
     "validation/betse/pump_pilot_diagnosis/diagnose.py": READ,
     "validation/ensemble/jupiter_check.py": READ,
     "validation/ensemble/spatial_matrix.py": READ,
+    "validation/ensemble_reexpression/rehearsal/legacy_arrays.py": READ,
+    "validation/ensemble_reexpression/rehearsal/reference.py": READ,
     "validation/ensemble_reexpression/table.py": READ,
     # Rebuild and execute outside the loaders, as diagnostics (2).
     "scripts/profile_dispatch.py": DIAGNOSTIC + " (L4 timing on held states, other XLA flags)",
@@ -104,6 +106,9 @@ EXEMPT = {
     + " (R2, MT-1b's code-blind reference: start_state solves the anchored start state with R2's"
     " own solver from a freshly settled state; it reads no saved Cells state and runs no Cells "
     "engine)",
+    "validation/gap_junction_tissue/references/neither_reference.py": SAME
+    + " (GJ-N1's code-blind references: start_state lays out stage 1's own steady states over the "
+    "network; it reads no saved Cells state and runs no Cells engine)",
     # The probe itself.
     "validation/continuity/probe.py": PROBE,
 }
