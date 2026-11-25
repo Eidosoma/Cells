@@ -1,8 +1,16 @@
 # FR-43 part 3: sharing a moved row with local reactions and the gene unit (design)
 
-**Status: a design, 25 November 2026, on branch `fr43-part3-cowriters` from main 0e563668. Nothing is built.** It is
+**Status: decided, 25 November 2026, on branch `fr43-part3-cowriters` from main 0e563668. Nothing is built.** It is
 the open item of FR-43 part 3. D328 keeps part 3 open "until D152 reactions and the gene unit can co-write a moved
 row". The build comes after the rename; the IDs below are today's (§6.1).
+
+**The decisions (25 November 2026).**
+- **The user accepted all four recommendations of §7:** question 1 (a), split writers; question 2 (a), one judged run
+  over W5, W6 and W5′ with code-blind references; question 3 (a), part 3 closes at this landing, and the population at
+  changing volume is logged as its own request; question 4 (a), the declared general rule.
+- **The lead ruled L1 to L4** (§7): L1 (a), since the search found no such pair; L2 as listed; L3 as stated; L4 (a).
+- **The build waits for the legacy cleanup:** the user put every other build on hold. The spec and the references may
+  start now, since they name no engine ID. They are on branch `fr43-part3-spec`.
 
 **Engine models:** `resolved_pump_composite@1` over `resolved_pump_tissue@3`, with `integer_unit_population@1`
 beside `local_species_reactions@1` (D152, "the reactions"), `templated_polymerisation@1` ("the gene unit"),
@@ -512,39 +520,45 @@ no-src stack for the spec, the criteria and the references, tagged before the bu
 **The order.**
 1. This note, with the rulings.
 2. The rename lands.
-3. The spec and criteria, then the references, each tagged. They name no engine ID, so they can start before step 2.
-4. The build, its tests and its gate.
+3. The spec and criteria, then the references, each tagged. They name no engine ID, so they can start before step 2,
+   and may start now (the lead, 25 November 2026). The spec's branch is `fr43-part3-spec`.
+4. The build, its tests and its gate. It waits for the legacy cleanup: the user put every other build on hold
+   (25 November 2026).
 5. The judged run from a clean snapshot of the gated head, then the landing.
 6. FR-52, then FR-65 (or FR-65 first, if its owner is free).
 7. The router's two steps (§4.1), after the router lands.
 
-### Questions for the user
+### Questions for the user (all decided on 25 November 2026)
 
 1. **The form.** (a) Split writers, as turnover and exchange are: second order, no program changes. (b) The step cut
    at each event: the same order, about 5 times smaller errors at one step size, second-order pools in the trace, 4
    to 6 agent-days, and every population program changes. (c) Only co-writers that no event rate depends on (§2.2).
-   **Recommended: (a).**
+   **Recommended: (a). Decided: (a).**
 2. **The judged comparison.** (a) One judged run over W5, W6 and W5′ with code-blind references. (b) W5 alone. (c)
    None: the builder's tests. **Recommended: (a).** It is FR-43's own claim, and nothing registered sees it.
+   **Decided: (a).**
 3. **When part 3 closes.** (a) At this landing, with the population at changing volume (§4.3) logged as a request of
    its own. (b) Part 3 stays open until then. **Recommended: (a).** D328 names the two co-writers only.
+   **Decided: (a).**
 4. **How general the rule is.** (a) The declared rule of §3.2, which also admits exchange beside the gene unit. (b)
    Two lifted pairs: about 1.25 agent-days less, and the next pair is another edit in three files. **Recommended:
-   (a).**
+   (a). Decided: (a).**
 
-### For the lead
+### For the lead (ruled on 25 November 2026)
 
 - **L1. `site_occupancy@1`** (§1.3). (a) Refuse it beside the gene unit's listed rows, and cover it beside the
   population in the five-writer run. (b) Leave it. **Recommended: (a),** after a search of every saved definition
   for the pair. It newly refuses a composition that is admitted today. So if a registered world binds sites to a row
-  the gene unit lists (none found; FR-49's C4 amendment is still to be written), L1 goes to the user.
-- **L2. FR-65's list** (§6.3): W3 in its pair check, and the four-operator composition.
+  the gene unit lists (none found; FR-49's C4 amendment is still to be written), L1 goes to the user. **Ruled: (a).**
+  The search found no such pair, so it is refused. The build still searches the saved definitions of G1 and crossrev
+  (§1.3), and a pair found there goes to the user.
+- **L2. FR-65's list** (§6.3): W3 in its pair check, and the four-operator composition. **Ruled: as listed.**
 - **L3. The bound on event rates** (§3.3): an unbounded producer leaves the site unchecked, as a read-only species
-  does. The other choice, refusing it, would refuse most reaction networks.
+  does. The other choice, refusing it, would refuse most reaction networks. **Ruled: as stated.**
 - **L4. G1 and crossrev** (D187 rule 2: each landed feature adds one world). (a) The tier-2 world, the population
   beside the reactions with no cohorts, joins both: one compile and run in each later gate (30 to 45 s, an estimate)
   and one set of jaxprs. FR-52's world then joins beside it, with its record. (b) None, since no program changes
-  here. **Recommended: (a).**
+  here. **Recommended: (a). Ruled: (a),** one co-writer world in G1 and crossrev.
 
 ## 8. What is not claimed
 
