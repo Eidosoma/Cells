@@ -213,6 +213,21 @@ def test_definition_errors_reject(fault):
         parse_spec(raw)
 
 
+def test_a_schedule_shared_with_the_junction_control_parses_as_separate_ones():
+    """A Python-built definition may use one schedule list object for a junction, a membrane
+    and a pump control; the junction's scaling by its initial gate must not reach the others."""
+    shared = fixtures.definition("clamped")
+    e = shared["experiment"]
+    one = [dict(time=0.0, availability=0.5)]
+    for key, name in (("junction", "junction_0"), ("membrane", "membrane_0"), ("pump", "pump_0")):
+        next(c for c in e[key + "_controls"] if c[key + "_id"] == name)["schedule"] = one
+    separate = json.loads(json.dumps(shared))
+    given = json.loads(json.dumps(shared))
+    assert shared["model"]["junctions"][0]["gate"]["initial_gate"] != 1.0
+    assert parse_spec(shared).to_dict() == parse_spec(separate).to_dict()
+    assert json.loads(json.dumps(shared)) == given and one == [dict(time=0.0, availability=0.5)]
+
+
 def test_temperature_domain_admits_physiological_temperature():
     spec = parse_spec(fixtures.definition("clamped", temperature_K=310.0))
     assert spec.model.temperature_K == 310.0
