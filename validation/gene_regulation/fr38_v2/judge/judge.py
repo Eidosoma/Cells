@@ -8,10 +8,10 @@
   from the three rungs, C4 at every rung with that rung's S. A run inconclusive at the primary
   attempt takes the retry when its retry records exist (judged at 0.25 s); otherwise it stays
   inconclusive, retry pending (CRITERIA.md §1, §4).
-- **A refusal never masks a failure.** What C0 accepts is judged, so a failing C1, C2 or C4 entry
-  fails its run whatever else of it is refused (CRITERIA.md §4: "fails if any C1 or C4 entry
-  fails", before "otherwise"). A run with a refused or missing record, its blank, twin and restart
-  included, and no failing entry is refused: it cannot pass.
+- **A refused run.** A run with a refused or missing record, its blank, twin and restart included,
+  is scored refused (CRITERIA.md §4): it cannot pass, and leaves its arm at best inconclusive. What
+  C0 accepts of it is judged all the same, and any failing C1, C2 or C4 entry is listed in the
+  verdict (`refused_with_failing_entries`), so that the refusal does not hide it.
 - **Plants** (CRITERIA.md §6; amendment 4, items 5 and 7; amendment 5, items 1 to 3 and 6). P1 and
   P1″ act on copies of the mapping file; P1′ (the net-rate host form) and P6 (G without the hold's
   standard term) on copies of the honest records at h; the world-data plants and P9 are table
@@ -839,10 +839,10 @@ def run_verdict(out):
         + [f"C4: {x}" for x in c4]
         + [f"route2 refused: {x}" for x in resolution]
     )
-    if c1 or c2 or c4:
-        return "fail"
     if out.get("refused"):
         return "refused"
+    if c1 or c2 or c4:
+        return "fail"
     if c3 or resolution:
         return "inconclusive"
     return "pass"
@@ -1397,6 +1397,15 @@ def judge(ref_dir, export_dir, families=None, mapping=None, roles=None, referenc
                 "why": "its reference is refused by C0",
             }
     verdict["plants"] = plants
+    verdict["refused_with_failing_entries"] = [
+        f"{f} {r} ({a}): {x}"
+        for f, runs in family_runs.items()
+        for r, v in runs.items()
+        for a in ("primary", "retry")
+        if v.get(a, {}).get("verdict") == "refused"
+        for x in v[a]["why"]
+        if x.startswith(("C1: ", "C2: ", "C4: "))
+    ]
     verdict["retry_pending"] = [
         f"{f} {r}"
         for f, runs in family_runs.items()

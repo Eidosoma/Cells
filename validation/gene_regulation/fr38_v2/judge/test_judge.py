@@ -1106,9 +1106,9 @@ def test_refused_runs(invented, mapping, tmp_path):
     assert verdict_of(v, "invented", "p=1 returned") == "refused"
 
 
-def test_a_refusal_never_masks_a_failure(invented, mapping, tmp_path):
-    """CRITERIA.md §4: a run fails if any C1 or C4 entry fails, before anything else of it is
-    refused. A refused twin, blank or rung beside a failing entry leaves the failure standing."""
+def test_a_refused_run_lists_its_failing_entries(invented, mapping, tmp_path):
+    """CRITERIA.md §4: a run with a refused rung, twin or blank is scored refused. What C0 accepts
+    of it is judged all the same, and a failing entry is listed beside the refusal, not hidden."""
 
     def negzero(rec):
         rec["series"]["label_R_win"] = rec["series"]["label_R_win"].copy()
@@ -1122,9 +1122,11 @@ def test_a_refusal_never_masks_a_failure(invented, mapping, tmp_path):
     ):
         v = _perturbed(invented, mapping, tmp_path, [gone], f"alone_{name}")
         assert verdict_of(v, "invented", "p_sched returned") == "refused", name
+        assert v["refused_with_failing_entries"] == [], name
         v = _perturbed(invented, mapping, tmp_path, [bad, gone], f"both_{name}")
-        run = v["families"]["invented"]["runs"]["p_sched returned"]["primary"]
-        assert run["verdict"] == "fail" and run["refused"], name
+        assert verdict_of(v, "invented", "p_sched returned") == "refused", name
+        listed = [x for x in v["refused_with_failing_entries"] if "p_sched returned (" in x]
+        assert any("C1: label_R_win" in x for x in listed), (name, listed)
     # where the rungs are not all there, the plants on that run are unscorable
     assert plant_status(v, "P4") == "refused"
 
