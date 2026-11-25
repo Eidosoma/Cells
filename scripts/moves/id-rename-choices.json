@@ -2536,6 +2536,14 @@
    "path": "validation/legacy_port/capture_worlds.py",
    "text": "k\\.split\\(\":\"\\)",
    "reason": "an array's key"
+  },
+  {
+   "cls": [
+    "cut"
+   ],
+   "path": "tests/unit/test_law_registry.py",
+   "text": "value\\.split\\(\"\\.\", 2\\)",
+   "reason": "H1b: the last part of a planted ID of three parts"
   }
  ],
  "plants": {

@@ -2691,6 +2691,11 @@ def reviewed_by(hazard, reviews):
     return None
 
 
+def moved(files):
+    """Whether the move has reached a tree: its table of renamed IDs holds some."""
+    return bool(A_MAJOR.search(files.get(RENAMED, ("", b""))[1]))
+
+
 def run_scan(files, mp, choices):
     """Every hazard of the map on the files, each with the review that settles it, if any."""
     _, report = transform(files, mp, renamed=False)
@@ -2720,7 +2725,7 @@ def run_scan(files, mp, choices):
         )
         if row is not None:
             hazards[-1]["choice"] = row["choice"]
-    if mp.doc.get("types"):
+    if mp.doc.get("types") and not moved(files):  # After it, the strict grammar asks for them.
         rows, by_hand = Plants(files, mp, mp.doc["types"], choices["plants"]["families"]).rows()
         held = {(o, p) for p, table in mp.plants.items() for o in table}
         for row in rows:
@@ -4103,6 +4108,12 @@ def _selftest_plants(checks, mp):
     checks["scan: a declared plant that the map does not rename"] = {
         (h["cls"], h["path"]) for h in hazards
     } == {("plant", "tests/a.py"), ("plant", "tests/b.py")}
+    after = dict(bare_files) | {
+        RENAMED: ("100644", b'RENAMED = {"wave_mh@1": "cells.wave.wave_mh@1"}\n')
+    }
+    checks["scan: after the move no plant is asked for"] = not any(
+        h["cls"] == "plant" for h in run_scan(after, lacking, _plant_choices())[0]
+    )
 
 
 def _selftest_frozen(checks):
