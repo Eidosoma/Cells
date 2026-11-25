@@ -1,5 +1,7 @@
 # FR-54 and FR-57, liquid routing: the references' spec folder
 
+**Read the amendments with this folder: they govern over it, the latest first** (below, Files).
+
 This folder is for the code-blind references agent of the registered comparison
 `liquid-routing-v1`. That agent writes the references **from this folder alone**. The registration is
 `docs/LIQUID_ROUTING_PROTOCOL.md`, which the references agent does not read. The judge, the builder and
@@ -40,6 +42,17 @@ the checker read this folder too (the protocol's roles).
 | `READOUTS.md` | Every compared series: its name, unit, definition, scale and class |
 | `CRITERIA.md` | Bands, classes, tolerances, plants, verdicts, refusals and the retry |
 | `TABLE.md` | The engine table's contract, for the builder and the judge |
+| `AMENDMENT-1-2026-11-25.md` | The references agent's first six readings, and the layout they settle |
+| `AMENDMENT-2-2026-11-25.md` | Two errors of the author's text, the retry's cases in arm 1, the references' readings |
+| `AMENDMENT-3-2026-11-25.md` | Which holders have a mixing heat, the exchange's interval, an M1 miss, the invented set's near-tight start |
+| `AMENDMENT-4-2026-11-25.md` | Arm 7's runs, retry runs, the restart and no-router runs, the spec auditor |
+| `AMENDMENT-5-2026-11-25.md` | The spec audit's findings as ruled, the layouts they give, what the references must do |
+
+**Files outside this folder that the registration uses:** `validation/liquid_routing/takeover_map.json` (the builder's),
+`registered_strings.json` and its phase-2 and rehearsal counterparts (the lead's). Layouts: amendment 5.
+
+**What this folder does not test.** A bound species at a node that a link touches is not tested here. `F7` has its
+sites at a node no link touches, and a builder's own row must test a linked one.
 
 Your work goes in `validation/liquid_routing/references/`: code, a README with your method and readings,
 your self-check, and `out/`.
