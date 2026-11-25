@@ -112,7 +112,7 @@ electrochemical gradient. Its gates decide when it is open.
 
 <!-- generated: used-by channel -->
 
-- **Used by:** [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md) and [`cells.open_channel_block_weighted_modes@1`](cells/laws/open_channel_block_weighted_modes@1.md).
+- **Used by:** [`cells.species_condition@1`](cells/kinds/species_condition@1.md), [`cells.hill_product_factor@1`](cells/laws/hill_product_factor@1.md), [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md) and [`cells.open_channel_block_weighted_modes@1`](cells/laws/open_channel_block_weighted_modes@1.md).
 
 <!-- /generated -->
 
@@ -355,7 +355,7 @@ by interface, and keeps their state.
 
 <!-- generated: used-by host -->
 
-- **Used by:** no page yet.
+- **Used by:** [`cells.hill_product_factor@1`](cells/laws/hill_product_factor@1.md).
 
 <!-- /generated -->
 
@@ -497,7 +497,7 @@ ATP-driven transporters. A definition declares it under a key of its own.
 
 <!-- generated: used-by kind -->
 
-- **Used by:** [`cells.transporter@1`](cells/kinds/transporter@1.md).
+- **Used by:** [`cells.species_condition@1`](cells/kinds/species_condition@1.md) and [`cells.transporter@1`](cells/kinds/transporter@1.md).
 
 <!-- /generated -->
 
@@ -512,7 +512,7 @@ host keeps its state.
 
 <!-- generated: used-by law -->
 
-- **Used by:** no page yet.
+- **Used by:** [`cells.species_condition@1`](cells/kinds/species_condition@1.md) and [`cells.hill_product_factor@1`](cells/laws/hill_product_factor@1.md).
 
 <!-- /generated -->
 
@@ -593,7 +593,7 @@ A well-mixed compartment: a cell, or a space outside the cells.
 
 <!-- generated: used-by node -->
 
-- **Used by:** no page yet.
+- **Used by:** [`cells.species_condition@1`](cells/kinds/species_condition@1.md).
 
 <!-- /generated -->
 
@@ -768,7 +768,7 @@ makes comes with one (D187).
 
 <!-- generated: used-by planted-error -->
 
-- **Used by:** no page yet.
+- **Used by:** [`cells.species_condition@1`](cells/kinds/species_condition@1.md) and [`cells.hill_product_factor@1`](cells/laws/hill_product_factor@1.md).
 
 <!-- /generated -->
 
@@ -823,7 +823,7 @@ rather than clipping a value or repairing a state. A refused step returns its st
 
 <!-- generated: used-by refusal -->
 
-- **Used by:** no page yet.
+- **Used by:** [`cells.species_condition@1`](cells/kinds/species_condition@1.md).
 
 <!-- /generated -->
 
@@ -835,7 +835,7 @@ One species at one node: an entry of the inventory.
 
 <!-- generated: used-by species-row -->
 
-- **Used by:** [`cells.open_channel_block_weighted_modes@1`](cells/laws/open_channel_block_weighted_modes@1.md) and [`cells.neutral_arrival_labels@1`](cells/operators/neutral_arrival_labels@1.md).
+- **Used by:** [`cells.species_condition@1`](cells/kinds/species_condition@1.md), [`cells.open_channel_block_weighted_modes@1`](cells/laws/open_channel_block_weighted_modes@1.md) and [`cells.neutral_arrival_labels@1`](cells/operators/neutral_arrival_labels@1.md).
 
 <!-- /generated -->
 
@@ -863,7 +863,7 @@ One evaluation of the rates within a step. A step method combines several stages
 
 <!-- generated: used-by stage -->
 
-- **Used by:** no page yet.
+- **Used by:** [`cells.species_condition@1`](cells/kinds/species_condition@1.md).
 
 <!-- /generated -->
 
@@ -917,7 +917,7 @@ chloride.
 
 <!-- generated: used-by valence -->
 
-- **Used by:** no page yet.
+- **Used by:** [`cells.species_condition@1`](cells/kinds/species_condition@1.md).
 
 <!-- /generated -->
 

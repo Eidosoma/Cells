@@ -150,10 +150,10 @@ LAW = TransferFactorLaw(
     host="cells.species_condition@1",
     provenance="cited",
     source=Citation(
-        "Hill's equation (A. V. Hill, 1910), as J. N. Weiss presents it (1997): one saturating "
-        "factor per read, and their product",
-        "the activation form x^n/(K^n + x^n) and the inhibition form K^n/(K^n + x^n); they are "
-        "evaluated in log space, as laws/reactions/hill_factors.py does",
+        "Hill's equation (A. V. Hill, 1910; reviewed by J. N. Weiss, 1997): one saturating factor "
+        "per read, and their product",
+        "the form x^n/(K^n + x^n) and its complement K^n/(K^n + x^n), as the engine's Hill helper "
+        "states them (laws/reactions/hill_factors.py), evaluated in log space",
         "no numbers taken: the law is a form, its half-saturations and coefficients a "
         "definition's values",
         (
