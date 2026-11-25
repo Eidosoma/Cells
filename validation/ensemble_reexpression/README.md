@@ -2,7 +2,7 @@
 
 This folder makes the definitions, the runs and the tables that `spec/` registers (tag `ensemble-reexpression-criteria-part1-2026-11-25`).
 It judges nothing. Its builder read `spec/SPEC.md`, `spec/READOUTS.md`, `spec/TABLE.md`, `spec/inputs.json`, the rules of `spec/README.md`, and the engine with its documents.
-From 25 November also `spec/AMENDMENT-1-2026-11-25.md`, which holds what the lead answered ("Amendment 1" below).
+From 25 November also `spec/AMENDMENT-1-2026-11-25.md`, which holds what the lead answered ("Amendment 1" below), and the exporter's copy of Amendment 2 (its items 2, 4, 7, 8, 9.1 and 10; "Amendment 2" below).
 The builder read no other file of `spec/`, no capture, no legacy output and no code of the judge.
 
 No registered world has been run by the builder. The run driver refuses to run one from a checkout.
@@ -93,7 +93,7 @@ interruption and goes on. `commands` prints one `run_detached.sh` command for ea
 | Anything else: memory, the disk, a signal, the driver's own clock (`--max-seconds`), the generator (`no_section`, `unknown_order`, `off_grid_change`), the exporter | `harness` |
 
 - **The message is the engine's**, as raised.
-- **`time_s` of a `check`.** The scalar runner keeps no row of a run that it refuses. So the driver runs the same definition again in windows of one step, by the engine's windowed path, keeps every row that it accepts (`partial.npz`), and takes the time of the first row that it refuses. If that pass completes, or for a pool, which has no rows, the time is the end of the run. Where it completes, the refusal also holds `second_pass_completed: true`, in the record and in the table entry (absent otherwise; provisional until Amendment 2 states it).
+- **`time_s` of a `check`.** The scalar runner keeps no row of a run that it refuses. So the driver runs the same definition again in windows of one step, by the engine's windowed path, keeps every row that it accepts (`partial.npz`), and takes the time of the first row that it refuses. These are the rows of the run's entry: another path of the engine's than the refused run's. The record says so (`second_pass`: the windows' length, the file, whether the pass completed) and holds the sha256 of that file among those of the attempt (`files_sha256`), which the exporter checks. If that pass completes, or for a pool, which has no rows, the time is the end of the run. Where it completes, the refusal also holds `second_pass_completed: true`, in the record and in the table entry (absent otherwise; Amendment 2, item 8).
 - **A refused run at run time** keeps its rows at the compared times that it reached, and `steps` counts the accepted steps before it.
 
 ## The readings taken
@@ -115,9 +115,9 @@ Each is this builder's, with the sentence it rests on. What the lead answered is
 13. **`phi_out`** is written for every region but the gauge, in `base` too, where it has no captured counterpart (READOUTS §2: "no captured `phi_out`").
 14. **`composed_file_fingerprint`** is the sha256 of the composed file's bytes, which a checker forms with `sha256sum` (TABLE §3: "The checker recomputes it from the composed file").
 15. **A restart's potentials** are those after the checkpoint, strictly (TABLE §3: "For a restart, the ones after the checkpoint"). Its row at the checkpoint's time is written (SPEC §4: optional).
-16. **`restart.through`** is the string "file". **`source.snapshot`** of a run from a checkout is "none".
+16. **`restart.through`** is the string "file". **`source.snapshot`** of a run from a checkout is "none". The `source` of a run whose worker was ended before it could say is the driver's own process's (`source_from` in the record).
 17. **`pending_valid`** is written as JSON booleans, as the array is. Every mask is an integer.
-18. **`switch_list`** leaves out the entry [0, 1] and holds an empty list for a channel without a change (TABLE §3: "may be written or left out").
+18. **`switch_list`** leaves out the entry [0, 1], and holds every channel of the world, an empty list for one without a change (TABLE §3: "may be written or left out"; Amendment 2, 9.1). A pool's `path` holds every world of the pool, an empty list for one without an event. `controls.channel` holds every channel, as the engine's definition does.
 19. **An extra field of a definition** that the block has no name for is read back under its own name (TABLE §3: extra keys are recorded), so nothing declared is hidden.
 20. **A definition that the engine refuses to parse** has no count of free offsets. Its field solver is declared by the block's own topology: the floor variant where a capacitor component is without the gauge.
 21. **`checks`** is the engine's `summary.json`, or each pool's `result.json`. `definition` is the engine's canonical form, and for a driven run also what the run recorded of its composed file.
