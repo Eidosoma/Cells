@@ -69,9 +69,7 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/F
   - **FR-45's judge** (D375, D376): written after the rename; W2 and W7 stay on the wash or are pinned.
   - **FR-49's World B and combination checks C1 and C2** (D331): after the site pairing and the wash narrowing;
     C4's four-way form by amendment once admission by species lands.
-  - **GJ-N1's field** (D330, D337, D338): the upper end was launched on CPU 13 under amendment 2 (about 23 h, and
-    45 to 73 h more if its half step is needed); the rest runs on a gate lane from 20:00 UTC. No field result is
-    recorded in D318 to D376.
+  - **GJ-N1** (D330, D337, D338, D388): judged on 25 November 2026, passed on the line and on the 2D field. The references land with the next landing; the 3D field is not run.
   - **FR-30** (D343, D344, D350, D366): parked as development-only, narrowly reopened for two phases at a declared
     voltage. Ek-Vitorín 2016 is undetermined by structure (D341, D342), so nothing is fitted (D379); D366's
     power check and multistart bind any later registered fit. The Revilla diagnostic is landed (260a9138).
