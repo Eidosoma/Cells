@@ -86,7 +86,8 @@ def test_an_exported_row_keeps_one_writer():
 
 
 def test_turnover_on_a_listed_row_stays_refused():
-    """Other authors keep the gene unit's one-writer rule: D150's turnover producing N."""
+    """Other conversions keep the gene unit's one-writer rule: D150's turnover producing N (FR-43
+    part 3: refused as a conversion of a listed row)."""
     raw = fx.with_turnover(
         gw.polymerase_limited(sif.COPIES),
         [("make_N", gw.CELL, "production")],
@@ -94,5 +95,5 @@ def test_turnover_on_a_listed_row_stays_refused():
         species=[dict(id="N", catalogue=None, evidence=None)],
     )
     raw["model"]["operators"][-1]["routes"][0]["species"] = "N"  # The fixture's routes name S.
-    with pytest.raises(ConfigError, match="also declares 'N'"):
+    with pytest.raises(ConfigError, match="converts 'N', a listed row"):
         parse_spec(raw)

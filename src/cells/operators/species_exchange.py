@@ -100,6 +100,7 @@ the source's shares. The physics is unchanged: the labelled call's state is bit 
 unlabelled one's, and without labels nothing of it is traced.
 """
 
+import math
 from collections import Counter
 from dataclasses import dataclass
 
@@ -558,6 +559,9 @@ def key_of(route):
 class ScheduledSpeciesExchange(Operator):
     LAW_ID = LAW_ID
     IDENTITY_ROLE = "author"  # Species registry (D176): it declares its species.
+    # FR-43 part 3: a transfer, moving each route's species between its patch's cell and outside
+    # node and booking both sides in exchange_moved_fmol (written_rows).
+    ROW_MOVES = "transfer"
     STEP_ID = STEP_ID
     SPLIT = True
     RK4 = "split"
@@ -648,6 +652,23 @@ class ScheduledSpeciesExchange(Operator):
 
     def species_identities(self, declaration):
         return declaration.species
+
+    def written_rows(self, spec, declaration):
+        """FR-43 part 3: each route's species at its patch's cell and outside node (a finite node:
+        a patch on a held bath is refused)."""
+        return tuple(
+            dict.fromkeys(
+                row
+                for r in declaration.routes
+                for row in ((r.species, r.cell), (r.species, r.outside))
+            )
+        )
+
+    def production_bound(self, spec, declaration):
+        """{(species, node): fmol/s}: a transfer's rate has no static bound at either of its rows
+        (math.inf), so a consumer that needs one, the unit producer's R5, refuses it there
+        (population_unit_turnover.check_writers; FR-43 part 3)."""
+        return dict.fromkeys(self.written_rows(spec, declaration), math.inf)
 
     def check_definition(self, spec, declaration, schedule, model):
         common.check_species_cap(spec, LAW_ID)
