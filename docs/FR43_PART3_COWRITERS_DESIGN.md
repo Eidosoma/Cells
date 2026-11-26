@@ -637,20 +637,28 @@ worlds, matrix and page (34928328). Form A with §3.2's rule and §3.3's edits, 
 
 **Where the build departs from §3.**
 - **A fourth optional declaration, `SHARED_ROW_POTENTIAL`** (the lead's Q1 (a)), on the reactions, the gene unit and
-  the unit producer. `check_shared_rows` reads their `written_rows` by species, so it asks exactly the writers it asked
-  before. Asking every conversion would have refused, where the registry gives no potential, turnover beside the
-  reactions at another node, turnover beside the producer, sites beside the reactions, and §1.1's five-writer world.
+  the unit producer. `check_shared_rows` reads their `written_rows` by species, so it asks the writers it asked before:
+  on every swept definition the askers are identical. One exception, in no swept definition: a gene unit with no pool,
+  chain, degradation, transfer or export writes no row, so it no longer asks (it asked for its listed species). Asking
+  every conversion would have refused, where the registry gives no potential, turnover beside the reactions at another
+  node, turnover beside the producer, sites beside the reactions, and §1.1's five-writer world.
+- **The gene unit's and the unit producer's branches read rows, not species** (§3.2): an operator that declares a
+  listed species, or the precursor, without writing it is now admitted, where an author that declared it was refused.
+  It is §1.1's quirk removed, and a loosening the lead rules on; no swept definition holds such an operator.
 - **The unit producer refuses site occupancy on its precursor by name,** by §3.2's "likewise": a new refusal, beside the
   gene unit's (L1). No saved or fixture definition holds the pair (the host sweep below).
 - **Turnover's `production_bound`** is R5's literal: each production route's largest rate over its schedules, summed
   per row. `check_hazard_bound`'s literal summed per schedule. The two differ only with a replacement's newcomer
-  schedules, and the population refuses replacement, so both consumers read what they read before.
+  schedules, and the population refuses replacement. Measured at base and head, bit for bit equal: `supply_bound` on
+  the producer's turnover-supply world and on part 2's unit pair, and dt a₀,max of part 3's W3 (two horizons) and W1,
+  found exactly by bisecting the check's bound.
 - **Written rows:** a lumen's are every species at its node, since a scheduled bath may hold any. A gene unit with no
   pool, chain, degradation, transfer or export writes no row, so it no longer asks for a registry potential; no saved
   definition holds one.
 - **L4:** the gate's crossrev verdict requires identical file listings, so the co-writer world in crossrev's reactions
   set (`reactions_integer_source`) is a listing difference until the record holds it. Its record files and its G1
-  save are in the evidence below, for the lead's renewal.
+  save are in the evidence below, for the lead's renewal. Its G1 window of 200 steps holds one event, the first
+  assembly, and the transfer after it.
 
 **Tests** (no new file; measured on the timed cores with lane A idle, against the record's rows: the registry file
 2.3 s against 0.5, the shared-inventory file 5.3 against 3.6, the population file 63.9 against 35.5, so its compiled
@@ -672,8 +680,9 @@ world stays in tier 2 under §5.2's 80 s rule; the producer's, the gene unit's a
   of 113 identical.
 - **The judges' derivative programs** (the stationary analysis's linearize and jvp programs over crossrev's
   qualification, acceptances and kinds sets and W1's P2 world, 36 worlds a side): 257 files identical.
-- **The worlds no crossrev set holds,** traced the same way (part 3's W1 and W3, part 2's pairs and unit pair, FR-2's
-  trafficking, S3's lumen@1 egg): 56 files identical.
+- **The worlds no crossrev set holds** (part 3's W1 and W3, part 2's pairs and unit pair, FR-2's trafficking, S3's
+  lumen@1 egg): their program texts and constant records, traced as crossrev traces them, 56 files identical; their
+  bindings were not compared.
 - **FR's bitwise set** (through its own holder on lane B): passed before and after, its nine quick parts identical and
   its windowed arms T and R bitwise.
 - **The host sweep** (238 definitions: crossrev's, G1's 113, parts 2 and 3, the co-writer worlds; then FR-49's World
