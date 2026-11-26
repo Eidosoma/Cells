@@ -13285,3 +13285,30 @@ It is a port check: it shows that the live engine computes legacy's written equa
   - Step 0's two follow-ups (the neutral-face gap, and a vector and batch-window check of the changed programs) come before any multi-cell store run of record.
   - The calcium laws re-expressed in Part 2 are ported and regression-sealed, not calibrated against data (D389, D390).
 - **To the user:** the order of the queue, and any new requests, which the user logs.
+
+## D393: the user's answers on the review's seven calls; Protocol D's development label lifted; FR-67 and FR-68 logged; ten cache folders removed
+
+2026-11-26, written at 16:32 UTC. The user: "sounds good on the calls but get adviser in on those as well if not already". The adviser was in on each call.
+
+- **The queue is kept:** FR-43 part 3 and FR-65 now; then FR-52, liquid routing (FR-54, FR-57) and FR-64. FR-61 and FR-62 follow them and still need the
+  user's answers to their note's Q4 and Q6. No third engine build starts before the co-writers land.
+- **Two requests are logged,** design first, with no build scheduled: FR-67 (pressure-driven flow on a network of compliant tubes) and FR-68 (a consistency
+  check on standard potentials). The commit checks stay as they are.
+- **Protocol D's development label is lifted** on D368's evidence: Protocol D v2 passed its independent check at its registered tag
+  `ol6-protocol-d-v2-registered-2026-11-24`. No earlier entry said so. The run record's wording changes with FR-47's (lifted by D373) and with the GPU
+  refusal message's (owed by D380, missed by the cleanup's landing), on one small branch that lands stacked with the next engine landing.
+- **The ten tier-1 and tier-2 failures,** none an engine fault:
+  - the five assembly command-line tests write under /tmp, which the command's output guard (there since 11 October) refuses. They are fixed on that
+    branch, keeping a check that the guard refuses;
+  - three tests of BETSE references (the calcium and sodium leak references, the native multi-cell environment) assert that the engine is not loaded in
+    their process, but `tests/conftest.py` imports it into every test process (its present import since D188's move of 18 November). The references
+    import clean in a fresh process. The fourth, the voltage-domain reference, fails because its catalogue no longer refuses one calcium channel at
+    0.2 V. All four are held for a keep-or-remove question on the BETSE modules they test;
+  - the unstimulated diagnostic differs from its field by 1.7e-10 relative where it asserts equality. It is looked at first.
+- **Ten cache-only folders** under `src/cells` (no tracked file in any) are removed from the main checkout, so `import cells.legacy` fails there as it does
+  in a snapshot.
+- **FR-45's judge** is briefed after the co-writers builder's host sweep covers FR-45's and FR-49's registered worlds, since sites on a listed row now refuse
+  (the build's L1).
+- **FR-43 part 3's judge:** C0 passes at the judge's head 3e8523dc with the lead's hash record of the eight registered files. The record was made on
+  26 November from the references tag, after the judge's first pass. Readings 4 and 13 are settled by published values; the other readings are ruled from
+  the criteria's text before any table exists.
