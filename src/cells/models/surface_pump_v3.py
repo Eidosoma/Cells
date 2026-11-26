@@ -68,6 +68,8 @@ from cells.definitions.surface_pump_v3_spec import (
     LAW_CODES,
     MODEL_ID,
     NAV1P2_LAW_ID,
+    ONE_WAY_ENTITIES,
+    ONE_WAY_RECORDS_KEY,
     SERIES_GATE_LAW_ID,
     TRAPEZOID_JUNCTION_HEAT,
     Control,
@@ -75,6 +77,7 @@ from cells.definitions.surface_pump_v3_spec import (
     channel_factors,
     channel_laws,
     law_codes,
+    one_way_pairs,
     projection,
 )
 from cells.execution.errors import NumericalError
@@ -83,7 +86,7 @@ from cells.laws.channels import sodium_channels, voltage_gates
 from cells.laws.electrochemistry import CHARGE_PER_FMOL, MOL_PER_FMOL, F, R, bernoulli
 from cells.laws.junctions import junction_gate
 from cells.laws.junctions import junction_series_gates as series_gates
-from cells.laws.junctions.selective import selective_flux
+from cells.laws.junctions.selective import selective_flux, selective_one_way
 from cells.laws.pumps import calcium_atpase
 from cells.laws.pumps import kinetic_pump as pump
 from cells.laws.pumps import kinetic_pump_binding as pumps
@@ -230,6 +233,42 @@ FORMS_PROJECTIVE_REFUSAL = (
     f"{forms_law.LAW_ID} runs on the fine engine in version 1: execution.projective's settling "
     "test reads no forms face"
 )
+# FR-50 phase 2 (D327; fr50-one-way-records-v1 §3): @3's own one-way records, on a compact pair axis
+# (one pair per declared entity and species, InnerStructure.one_way_records' order), present only
+# where the model key one_way_records is declared (_kind_types), so no other world's types,
+# layouts or programs carry anything of them (D148). Each pair's forward and backward records are
+# cumulative, in fmol of its row, in its net record's orientation (ONE_WAY_NETS: outward for a
+# patch's own routes and a channel population, sender to receiver for a junction and a face); its
+# gap is the running maximum of each step's relative gap (numerics/one_way_split.py). The layout
+# holds each pair's entity slot and species row; the entity kind is the structure's, static.
+ONE_WAY_PAIR_AXIS = "one_way_pair"
+ONE_WAY_STATE_AXES = {
+    "one_way_forward_fmol": [ONE_WAY_PAIR_AXIS],
+    "one_way_backward_fmol": [ONE_WAY_PAIR_AXIS],
+    "one_way_gap_relative": [ONE_WAY_PAIR_AXIS],
+}
+ONE_WAY_LAYOUT_FIELDS = (
+    "one_way_entity",  # [pair] the entity's slot (membrane, edge, face or channel slot)
+    "one_way_row",  # [pair] the recorded species row
+)
+ONE_WAY_NETS = MappingProxyType(
+    {
+        "channel": "channel_transferred",
+        "face": "face_transferred",
+        "junction": "junction_transferred",
+        "membrane": "membrane_transferred",
+    }
+)
+ONE_WAY_STRUCTURE_REFUSAL = (
+    f"{ONE_WAY_RECORDS_KEY} runs in @3 through its structure's implementation "
+    "(registry.get_model), which holds the record pairs' fields; a path without that structure "
+    "would drop them, so it refuses them (FR-50, version 1)"
+)
+ONE_WAY_PROJECTIVE_REFUSAL = (
+    "one_way records run on the fine engine in version 1: a projective jump extrapolates each "
+    "record and the running maximum of its gap, which then are no step rule's (FR-50; fails "
+    "closed)"
+)
 ENERGY_RTOL = first.ENERGY_RTOL
 EXPLICIT_STEP_BOUND = first.EXPLICIT_STEP_BOUND
 # The kernel a channel law's material_term names: the material slope of the constant-field flux,
@@ -281,8 +320,9 @@ class Values(NamedTuple):
 
 def working_size(spec):
     """Stored values per accepted step plus a margin (surface_pump.working_size): @2's, the
-    channel populations', the declared kinds' (kind_row_values) and a series world's junction
-    gates (FR-30), each with the margin 2."""
+    channel populations', the declared kinds' (kind_row_values), a series world's junction
+    gates (FR-30) and @3's own one-way records (FR-50 phase 2, three per pair), each with the
+    margin 2."""
     x, s = spec.execution, len(spec.model.species_ids)
     series = (
         series_gates.GATE_COUNT * x.edge_capacity if declares_series_junctions(spec.model) else 0
@@ -297,6 +337,7 @@ def working_size(spec):
         + 2 * kind_row_values(spec)
         + 2 * series
         + 2 * forms
+        + 2 * len(ONE_WAY_STATE_AXES) * len(one_way_pairs(spec.model))
     )
 
 
@@ -354,6 +395,11 @@ def initial_values(spec, *, structure=None):
     blocked = bool(channel_blocks(spec.model))  # FR-51.
     if blocked != block_declared(structure):
         raise ConfigError(BLOCK_STRUCTURE_REFUSAL)  # Fail closed, as the forms faces are.
+    recorded = bool(one_way_pairs(spec.model))  # FR-50 phase 2.
+    if recorded != records_declared(structure) or (
+        recorded and one_way_pairs(spec.model) != structure.one_way_records
+    ):
+        raise ConfigError(ONE_WAY_STRUCTURE_REFUSAL)  # Fail closed, as FR-51's block is.
     with forms_return_paths(spec.model):  # Left before anything else runs.
         state, layout = _todays_initial_values(spec)
     if (
@@ -361,6 +407,7 @@ def initial_values(spec, *, structure=None):
         and not series
         and not declared_forms
         and not blocked
+        and not recorded
     ):
         return state, layout
     # Schema A (§7.4 (j), (k)): each declared kind adds its state and layout fields, by name, in
@@ -390,8 +437,12 @@ def initial_values(spec, *, structure=None):
         entries |= own_layout
     if blocked:  # FR-51: the blocked populations' layout.
         entries |= block_initial_values(spec, structure)
-    if loops_declared(structure):  # The loops' layout, last (its kinds are declared: above).
+    if loops_declared(structure):  # The loops' layout (its kinds are declared: above).
         entries |= loop_initial_values(spec, structure)
+    if recorded:  # FR-50 phase 2: the record pairs' state and layout, last.
+        own_state, own_layout = one_way_initial_values(spec, structure)
+        fields |= own_state
+        entries |= own_layout
     kind = (
         types.FLOOR_LAYOUT_TYPE
         if "field_current_floor" in entries
@@ -522,6 +573,40 @@ def block_initial_values(spec, structure):
         channel_block_reversal=reversal,
         channel_block_ion=ion,
     )
+
+
+def records_declared(structure):
+    """Whether the structure declares @3's own one-way records (FR-50 phase 2; static)."""
+    return structure is not None and bool(structure.one_way_records)
+
+
+def one_way_slices(structure):
+    """{entity kind: (start, stop)}: each declared kind's contiguous run of the structure's record
+    pairs, in ONE_WAY_ENTITIES' order (static)."""
+    kinds = [kind for kind, _, _ in structure.one_way_records]
+    return {
+        kind: (kinds.index(kind), len(kinds) - kinds[::-1].index(kind))
+        for kind in ONE_WAY_ENTITIES
+        if kind in kinds
+    }
+
+
+def one_way_initial_values(spec, structure):
+    """(state, layout) of @3's own one-way records (ONE_WAY_STATE_AXES, ONE_WAY_LAYOUT_FIELDS):
+    zeros, and each pair's entity slot (its position in the model's list of that kind, the
+    layout's slot) and species row, in the structure's order."""
+    m = spec.model
+    slots = dict(
+        channel=[c.id for c in m.channels],
+        face=[f.id for f in m.faces],
+        junction=[j.id for j in m.junctions],
+        membrane=[p.id for p in m.membranes],
+    )
+    pairs = structure.one_way_records
+    entity = np.asarray([slots[k].index(e) for k, e, _ in pairs], dtype=np.int64)
+    row = np.asarray([m.species_ids.index(s) for _, _, s in pairs], dtype=np.int64)
+    state = {name: np.zeros(len(pairs)) for name in ONE_WAY_STATE_AXES}
+    return state, dict(one_way_entity=entity, one_way_row=row)
 
 
 def forms_initial_values(spec, layout):
@@ -665,9 +750,25 @@ def channel_domain_valid(voltage, target, tau, p, *, xp=jnp):
 
 
 def channel_rates(
-    gate, ci, co, membrane_voltage, delta_mu, availability, p, *, xp=jnp, structure=None
+    gate,
+    ci,
+    co,
+    membrane_voltage,
+    delta_mu,
+    availability,
+    p,
+    *,
+    xp=jnp,
+    structure=None,
+    one_way=False,
 ):
-    """Outward flux and heat [species, channel], kinetics and voltage of each population."""
+    """Outward flux and heat [species, channel], kinetics and voltage of each population.
+
+    one_way (FR-50 phase 2, D327): also, sixth, each population's one-way fluxes (outward, inward)
+    [species, channel], built from this call's own factors (channel_one_way_split): the same
+    concentrations, voltage, opening times availability and unblocked fraction u, so the opening,
+    the availability and the block are shared by construction. Without it the operations are
+    today's."""
     patch = p.channel_membranes
     voltage = channel_voltage(membrane_voltage, p, xp=xp)
     target, tau = channel_kinetics(voltage, p.channel_laws, xp=xp, structure=structure)
@@ -685,9 +786,39 @@ def channel_rates(
         xp=xp,
     )
     flux = xp.where(p.channel_active, flux, 0.0)
+    u = None
     if _has_block(p):  # FR-51 (static): the unblocked fraction u multiplies the population's flux.
-        flux = flux * channel_block(ci, co, voltage, p, xp=xp).u
-    return flux, 1e-3 * flux * delta_mu[:, patch], target, tau, voltage
+        u = channel_block(ci, co, voltage, p, xp=xp).u
+        flux = flux * u
+    rates = (flux, 1e-3 * flux * delta_mu[:, patch], target, tau, voltage)
+    if not one_way:
+        return rates
+    opening = channel_opening(gate, p.channel_laws, xp=xp, structure=structure)
+    split = channel_one_way_split(
+        ci[:, p.membrane_cell[patch]], co[:, p.membrane_outside[patch]], voltage, opening,
+        availability, u, p, xp=xp,
+    )  # fmt: skip
+    return (*rates, split)
+
+
+def channel_one_way_split(c_in, c_out, voltage, opening, availability, u, p, *, xp=jnp):
+    """FR-50 phase 2 (D327): each population's one-way fluxes (outward, inward) [species, channel]
+    (fmol/s, each >= 0) from channel_rates' own factors: the constant-field law's two terms
+    (laws/junctions/selective.selective_one_way) at the population's permeability, abundance and
+    opening times availability at its cell's and outside node's concentrations c_in and c_out
+    [species, channel], each times the unblocked fraction u where a block is declared (None: no
+    block). Outward less inward is channel_rates' flux at rounding: the kernel closure of
+    fr50-one-way-records-v1 §1. Inactive slots give zeros."""
+    forward, backward = selective_one_way(
+        c_in, c_out, voltage, p.valence, p.temperature, p.membrane_area[p.channel_membranes],
+        p.channel_permeability * p.channel_relative_permeability, 0.0, p.channel_abundance,
+        opening * availability, xp=xp,
+    )  # fmt: skip
+    forward = xp.where(p.channel_active, forward, 0.0)
+    backward = xp.where(p.channel_active, backward, 0.0)
+    if u is None:
+        return forward, backward
+    return forward * u, backward * u
 
 
 class ChannelBlockValues(NamedTuple):
@@ -951,7 +1082,9 @@ def channel_current_A(flux, p, *, xp=np):
     return CHARGE_PER_FMOL * species_sum(charge, xp=xp)
 
 
-def clamped_channel_flux(state, control, p, voltages_V, *, xp=np, structure=None, block=False):
+def clamped_channel_flux(
+    state, control, p, voltages_V, *, xp=np, structure=None, block=False, one_way=False
+):
     """FR-34, current at a declared voltage: each channel population's outward flux
     [species, channel] (fmol/s, the sign of channel_flux_fmol_s) and its current [channel] (A,
     outward-positive, channel_current_A) at the patch voltages phi_in - phi_out given [membrane]
@@ -971,7 +1104,10 @@ def clamped_channel_flux(state, control, p, voltages_V, *, xp=np, structure=None
 
     block (FR-51): where a population declares a block, also return, third, its
     ChannelBlockTerms at the same inputs (u, each mode's fractions, T_V, T_c,o and T_c,i), the
-    stability rules' own terms. Refused in a world without a block."""
+    stability rules' own terms. Refused in a world without a block.
+
+    one_way (FR-50 phase 2): also return, last, each population's one-way fluxes (outward, inward)
+    [species, channel] at the same inputs, channel_rates' own split (channel_one_way_split)."""
     if block and not _has_block(p):
         raise ConfigError("clamped_channel_flux(block=True) needs a world that declares a block")
     kinds = _kinds(structure)
@@ -984,7 +1120,7 @@ def clamped_channel_flux(state, control, p, voltages_V, *, xp=np, structure=None
         xp.where(p.outside_active, co / p.extracellular_volume, 1.0),
     )
     voltage = xp.broadcast_to(xp.asarray(voltages_V, dtype=float), p.membrane_area.shape)
-    flux = channel_rates(
+    rates = channel_rates(
         state.channel_gate,
         ci,
         co,
@@ -994,9 +1130,12 @@ def clamped_channel_flux(state, control, p, voltages_V, *, xp=np, structure=None
         p,
         xp=xp,
         structure=structure,
-    )[0]
+        one_way=one_way,
+    )
+    flux = rates[0]
+    split = (rates[5],) if one_way else ()
     if not block:
-        return flux, channel_current_A(flux, p, xp=xp)
+        return flux, channel_current_A(flux, p, xp=xp), *split
     terms = channel_block_terms(
         state.channel_gate,
         ci,
@@ -1007,7 +1146,7 @@ def clamped_channel_flux(state, control, p, voltages_V, *, xp=np, structure=None
         xp=xp,
         structure=structure,
     )
-    return flux, channel_current_A(flux, p, xp=xp), terms
+    return flux, channel_current_A(flux, p, xp=xp), terms, *split
 
 
 def nak_pump_rates(ci, co, delta_mu, control, p, *, xp=jnp, structure=None):
@@ -1942,7 +2081,8 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None
         ca_d,
         ca_metabolic,
     )
-    if kinds or series_rate is not None or forms is not None:
+    if kinds or series_rate is not None or forms is not None or records_declared(structure):
+        # FR-50 phase 2's records take no rate (zeros): the step books them after its tableau.
         extra = {} if series_rate is None else {SERIES_GATES: series_rate}
         if forms is not None:
             extra["forms_face_transferred"] = forms.flux_fmol_s
@@ -2244,7 +2384,8 @@ def explicit_rates(
         ca_d,
         ca_metabolic,
     )
-    if kinds or series_rate is not None or forms_diffusion is not None:
+    records = records_declared(structure)  # FR-50 phase 2: their rates are zeros (as readouts').
+    if kinds or series_rate is not None or forms_diffusion is not None or records:
         extra = {} if series_rate is None else {SERIES_GATES: series_rate}
         if forms_diffusion is not None:  # Their heat is the step's (imex_step).
             extra["forms_face_transferred"] = forms_diffusion
@@ -3013,16 +3154,122 @@ def one_way_records(
             split = one_way_split.close_one_way(
                 forward, backward, after[record.net] - before[record.net], xp=xp
             )
-            before_f, before_b = getattr(start, record.forward), getattr(start, record.backward)
-            after_f, after_b = before_f + split.forward, before_b + split.backward
-            relative = one_way_split.one_way_gap_relative(split, xp=xp)
-            ok = resolved & xp.isfinite(after_f) & xp.isfinite(after_b) & xp.isfinite(relative)
-            out[record.forward] = xp.where(ok, after_f, before_f)
-            out[record.backward] = xp.where(ok, after_b, before_b)
-            out[record.gap] = xp.maximum(
-                getattr(start, record.gap), xp.where(ok, relative, ONE_WAY_UNRESOLVED)
-            )
+            out[record.forward], out[record.backward], out[record.gap] = _record_step(
+                getattr(start, record.forward), getattr(start, record.backward),
+                getattr(start, record.gap), split, resolved, xp=xp,
+            )  # fmt: skip
     return out
+
+
+def _record_step(before_f, before_b, before_gap, split, resolved, *, xp):
+    """(F, B, gap) at a step's end from their values at its start and the step's closed split
+    (one_way_split.close_one_way): each record plus its closed amount, and the gap's running
+    maximum of the step's relative gap; where the step is unresolved or an amount is not finite,
+    the records stay and the gap becomes ONE_WAY_UNRESOLVED (see above)."""
+    after_f, after_b = before_f + split.forward, before_b + split.backward
+    relative = one_way_split.one_way_gap_relative(split, xp=xp)
+    ok = resolved & xp.isfinite(after_f) & xp.isfinite(after_b) & xp.isfinite(relative)
+    return (
+        xp.where(ok, after_f, before_f),
+        xp.where(ok, after_b, before_b),
+        xp.maximum(before_gap, xp.where(ok, relative, ONE_WAY_UNRESOLVED)),
+    )
+
+
+# --- FR-50 phase 2 (D327): @3's own one-way records over an inner step --------------------------
+#
+# The model key one_way_records declares pairs (an entity of @3's and a species row; the
+# structure's one_way_records, sorted, so each entity kind's pairs are contiguous: one_way_slices).
+# Each pair's one-way fluxes at one end of a step (own_one_way_fluxes) are its net record's two
+# directions at that end's LabelView, from @3's own kernels:
+# - a patch's own route, a junction and an uncharged face row: FR-42's kernel (one_way_fluxes,
+#   unchanged), read at the pair's row and entity;
+# - a channel population: channel_rates' own split (channel_one_way_split), with the gates, the
+#   read's concentrations, the end's potentials, the routed availability and the block's u there.
+# The step applies the shared rule at the ends the kinds' records and the labels read (_step_ends)
+# and writes after the tableau and the kinds' records: F += F_t + max(g, 0), B += B_t + max(-g, 0),
+# gap max(gap, r), with the kinds' passive semantics (_record_step). Nothing reads the records, so
+# a world's every other field is its twin's without the key.
+
+
+def own_one_way_fluxes(view, p, structure, *, xp=jnp):
+    """FR-50 phase 2: each declared pair's one-way fluxes (forward, backward) [pair] (fmol/s, each
+    >= 0, in its net record's orientation) at one end of a step (a LabelView), in the structure's
+    order (the comment above)."""
+    slices = one_way_slices(structure)
+    rows, entities = p.one_way_row, p.one_way_entity
+    routes = None
+    if set(slices) - {"channel"}:  # FR-42's kernel, over every row, where a route is recorded.
+        routes = one_way_fluxes(view, p, tuple(range(p.valence.shape[0])), xp=xp)
+    forward, backward = [], []
+    for kind, (start, stop) in slices.items():
+        if kind == "channel":
+            terms = channel_one_way_fluxes(view, p, structure, xp=xp)
+        else:
+            terms = routes[kind]
+        row, entity = rows[start:stop], entities[start:stop]
+        forward.append(terms[0][row, entity])
+        backward.append(terms[1][row, entity])
+    return xp.concatenate(forward), xp.concatenate(backward)
+
+
+def channel_one_way_fluxes(view, p, structure, *, xp=jnp):
+    """FR-50 phase 2: every population's one-way fluxes (outward, inward) [species, channel] at one
+    end of a step (a LabelView: its state's gates, its read's concentrations, its potentials and its
+    routed control), channel_rates' own split at that end."""
+    n = p.active.size
+    ci, co = physical_amounts(view.read, p)
+    ci = xp.where(p.active, ci / p.volume, 1.0)
+    co = xp.where(p.outside_active, co / p.extracellular_volume, 1.0)
+    voltage = xp.where(
+        p.membrane_active,
+        view.potentials[p.membrane_cell] - view.potentials[n + p.membrane_outside],
+        0.0,
+    )
+    return channel_rates(
+        view.state.channel_gate,
+        ci,
+        co,
+        voltage,
+        xp.zeros_like(p.membrane_permeability),  # No heat is asked for.
+        view.control.channel,
+        p,
+        xp=xp,
+        structure=structure,
+        one_way=True,
+    )[5]
+
+
+def own_one_way_nets(state, p, structure, *, xp=jnp):
+    """FR-50 phase 2: each declared pair's net record [pair] at a state (its entity kind's net
+    record, ONE_WAY_NETS, at the pair's row and entity), in the structure's order."""
+    rows, entities = p.one_way_row, p.one_way_entity
+    nets = []
+    for kind, (start, stop) in one_way_slices(structure).items():
+        net = getattr(state, ONE_WAY_NETS[kind])
+        nets.append(net[rows[start:stop], entities[start:stop]])
+    return xp.concatenate(nets)
+
+
+def own_one_way_records(
+    begin, end, start, stage, p, dt, *, structure, weight=None, resolved=True, xp=jnp
+):
+    """FR-50 phase 2: {record field: value at the step's end} of @3's own records, from each pair's
+    one-way fluxes at the step's two ends (LabelViews; under the Euler IMEX `weight` times the
+    start's) and its net record's change from `start` to `stage`, by the shared rule, with the
+    kinds' passive semantics (_record_step)."""
+    at_start = own_one_way_fluxes(begin, p, structure, xp=xp)
+    at_end = own_one_way_fluxes(end, p, structure, xp=xp) if weight is None else None
+    forward, backward = one_way_split.step_one_way_amounts(at_start, at_end, dt, weight=weight)
+    net = own_one_way_nets(stage, p, structure, xp=xp) - own_one_way_nets(
+        start, p, structure, xp=xp
+    )
+    split = one_way_split.close_one_way(forward, backward, net, xp=xp)
+    f, b, gap = _record_step(
+        start.one_way_forward_fmol, start.one_way_backward_fmol, start.one_way_gap_relative,
+        split, resolved, xp=xp,
+    )  # fmt: skip
+    return dict(one_way_forward_fmol=f, one_way_backward_fmol=b, one_way_gap_relative=gap)
 
 
 def crosses_floating(structure):
@@ -3375,19 +3622,26 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
     if kinds:  # §7.4 (k), book: a kind's bookings from the step's applied rates.
         booked, ok = _kind_bookings(kinds, applied, state, stage, control, p, dt, xp=xp)
         stage, valid = stage._replace(**booked), valid & ok
-    recording, ends = one_way_kinds(kinds), None
-    if recording:  # FR-50 (static): the kinds' one-way records, after they book.
+    recording, own, ends = one_way_kinds(kinds), records_declared(structure), None
+    if recording or own:  # FR-50 (static): the one-way records, after the kinds book.
         euler = stages == 2 and not n2  # The Euler IMEX: its one explicit stage, weights >= 0.
         ends = _step_ends(
             state, stage, read, start, control, p, xp=xp, kinds=kinds, structure=structure,
             euler=euler, weight=dt * explicit_matrix[last, 0] if euler else None,
         )  # fmt: skip
         begin, end, weight, solved = ends
+    if recording:  # The kinds' records (phase 1).
         gated = presence_gated(p, structure, xp=xp)  # The layout the kinds' rates see (Q2).
         records = one_way_records(
             recording, begin, end, state, stage, gated, dt, weight=weight, resolved=solved, xp=xp
         )
         stage = stage._replace(**records)  # Passive: the step's validity is its own.
+    if own:  # Phase 2: @3's own records, at the same ends; passive too.
+        records = own_one_way_records(
+            begin, end, state, stage, p, dt, structure=structure, weight=weight, resolved=solved,
+            xp=xp,
+        )  # fmt: skip
+        stage = stage._replace(**records)
     valid &= domain_valid(stage, p, p.active, xp=xp, structure=structure)
     for value in stage:
         valid &= xp.all(xp.isfinite(value))
@@ -3763,14 +4017,23 @@ def _check_presence(structure, kinds, state, p, controls):
                 )
 
 
+def one_way_owners(model):
+    """The owners of a parsed model's one-way records (FR-50): its declared kinds that keep them,
+    in canonical order, then @3 itself where one_way_records is declared (phase 2); [] without
+    any."""
+    declared = kind_registry.declared_kinds(getattr(model, "kinds", ()))
+    owners = [kind_id for kind_id, kind, _ in declared if kind.one_way_records]
+    return owners + ([MODEL_ID] if one_way_pairs(model) else [])
+
+
 def _check_one_way_solver(spec):
-    """FR-50 (fr50-one-way-records-v1's K5; erratum 1): a definition whose kinds keep one-way
-    records is refused under RK4, which has no end view of a step for the records' rule, as for
-    FR-42's labels. Checked ahead of the kinds' own RK4 refusal, so this reason is the one given."""
+    """FR-50 (fr50-one-way-records-v1's K5 and E5; erratum 1): a definition whose kinds keep one-way
+    records, or that declares @3's own (one_way_records), is refused under RK4, which has no end
+    view of a step for the records' rule, as for FR-42's labels. Checked ahead of the kinds' own
+    RK4 refusal, so this reason is the one given."""
     if spec.execution.solver != "rk4":
         return
-    declared = kind_registry.declared_kinds(getattr(spec.model, "kinds", ()))
-    recording = [kind_id for kind_id, kind, _ in declared if kind.one_way_records]
+    recording = one_way_owners(spec.model)
     if recording:
         raise ConfigError(
             f"one_way records ({', '.join(recording)}) are refused under RK4: the records' rule "
@@ -4604,6 +4867,10 @@ class StepChecks(first.StepChecks):
         if getattr(spec.model, "forms_faces", ()):  # The forms law, version 1.
             if getattr(spec, "projective", None) is not None:
                 raise ConfigError(FORMS_PROJECTIVE_REFUSAL)
+        if getattr(spec, "projective", None) is not None:  # FR-50, version 1: both phases'.
+            owners = one_way_owners(spec.model)
+            if owners:
+                raise ConfigError(f"{ONE_WAY_PROJECTIVE_REFUSAL} ({', '.join(owners)})")
             if spec.execution.solver not in (imex.EULER_ID, imex.ARS222_ID):
                 raise ConfigError(forms_law.LAW_ID + " runs on the plain IMEX tableaux (v1)")
         if spec.execution.solver == "rk4":
@@ -5344,16 +5611,96 @@ RECORD_REFERENCES = MappingProxyType(
 )
 _VIEW_MAPS = ("UNITS", "OBSERVATION_AXES", "RECORD_KINDS", "ORIENTATION", "RECORD_LAYERS")
 _RECORD_ROLES = ("RECORD_DIAGNOSTICS", "RECORD_REFERENCES")
+# FR-50 phase 2: @3's own one-way records in the run view, on their pair set (one_way_view_set),
+# whose roles name each pair's two ends: field -> (unit, record kind, orientation or None).
+_ONE_WAY_ORIGIN = (
+    "the end its net record's positive direction leaves: a membrane patch's or a channel "
+    "population's cell, a junction's or a face's sender"
+)
+_ONE_WAY_DESTINATION = (
+    "the end that direction enters: the patch's outside node, the junction's or the face's receiver"
+)
+ONE_WAY_VIEW = MappingProxyType(
+    {
+        "one_way_forward_fmol": (
+            "fmol",
+            "cumulative",
+            _flow(
+                "origin",
+                "destination",
+                "a positive amount crossed in the pair's net record's "
+                "positive direction, its row's",
+            ),  # fmt: skip
+        ),
+        "one_way_backward_fmol": (
+            "fmol",
+            "cumulative",
+            _flow(
+                "destination",
+                "origin",
+                "a positive amount crossed against the pair's net "
+                "record's positive direction, its row's",
+            ),  # fmt: skip
+        ),
+        "one_way_gap_relative": ("1", "level", None),
+    }
+)
+ONE_WAY_NOTES = MappingProxyType(
+    {
+        "one_way_forward_fmol": "the cumulative one-way amount of each declared pair (an entity of "
+        "@3's and a species row, one_way_records) in its net record's positive direction: the "
+        "trapezoid of the step's two ends' one-way fluxes, or the Euler IMEX's start, plus the gap "
+        "to the booked net where it is positive (numerics/one_way_split.py). Forward less backward "
+        "is the net record's change at rounding; the records are the declared laws' one-way "
+        "fluxes, which follow their independence assumption (FR-50)",
+        "one_way_backward_fmol": "as one_way_forward_fmol, against the net record's positive "
+        "direction",
+        "one_way_gap_relative": "the running maximum over the steps of |g| / max(F_t + B_t, |g|), "
+        "the step rule's gap to the booked net measured before its correction, in [0, 1]; 2.0 "
+        "marks a step whose end could not be solved, whose records were kept (FR-50)",
+    }
+)
+
+
+def one_way_view_set(structure):
+    """The run view's set of @3's own one-way record pairs (FR-50 phase 2): one ID per pair,
+    entity kind:entity ID:species ID, in the structure's order, the species each carries, its
+    entity kind and the entity it is at, and the roles its two records' orientations name."""
+    pairs = structure.one_way_records
+    return {
+        "id": ONE_WAY_PAIR_AXIS,
+        "ids": [f"{kind}:{entity}:{species}" for kind, entity, species in pairs],
+        "holds": "one-way record pair",
+        "roles": {"origin": _ONE_WAY_ORIGIN, "destination": _ONE_WAY_DESTINATION},
+        "carries": [species for _, _, species in pairs],
+        "kinds": [kind for kind, _, _ in pairs],
+        "at": [{kind: entity} for kind, entity, _ in pairs],
+    }
+
+
+def declares_view(structure):
+    """Whether the structure's run-view declarations are other than the module's own (static):
+    it declares kinds, FR-30's series gates, FR-51's block or FR-50's own one-way records, each of
+    whose records view_declarations adds. InnerImplementation folds them in exactly there (D402:
+    before, only where kinds were declared, so a blocked world without kinds lacked its unblocked
+    fraction's record and the run view refused it)."""
+    return bool(
+        _kinds(structure)
+        or series_junctions(structure)
+        or block_declared(structure)
+        or records_declared(structure)
+    )
 
 
 def view_declarations(structure):
     """The run view's declarations for a structure (D154): @3's own, then each declared kind's
     KindView entries for the fields its structure's types hold, its layers and its axis sets, its
     residual records (RECORD_DIAGNOSTICS) and its increments' references (RECORD_REFERENCES,
-    where the reference is a field of the structure's layout). A structure without kinds gets the
-    module's own objects."""
+    where the reference is a field of the structure's layout), and the records of FR-30's gates,
+    FR-51's block and FR-50's own one-way records where declared. A structure that declares none of
+    these gets the module's own objects (declares_view)."""
     kinds = _kinds(structure)
-    if not kinds and not series_junctions(structure) and not block_declared(structure):
+    if not declares_view(structure):
         names = (*_VIEW_MAPS, "VIEW_LAYERS", "VIEW_AXIS_SETS", *_RECORD_ROLES)
         return {name: globals()[name] for name in names}
     types = kind_types(structure)
@@ -5401,6 +5748,13 @@ def view_declarations(structure):
         for name, value in zip(("UNITS", "RECORD_KINDS", "RECORD_LAYERS", "OBSERVATION_AXES"),
                                declared, strict=True):  # fmt: skip
             merged[name][UNBLOCKED_FRACTION] = value
+    if records_declared(structure):  # FR-50 phase 2: @3's own one-way records (state fields).
+        for name, (unit, kind, sign) in ONE_WAY_VIEW.items():
+            merged["UNITS"][name], merged["RECORD_KINDS"][name] = unit, kind
+            merged["RECORD_LAYERS"][name] = "membrane"
+            if sign is not None:
+                merged["ORIENTATION"][name] = sign
+        notes |= ONE_WAY_NOTES
     out = {name: MappingProxyType(value) for name, value in merged.items()}
     return out | dict(
         VIEW_LAYERS=tuple(layers),
@@ -5620,6 +5974,7 @@ def structure(model):
         block_modes=max((len(b.modes) for _, _, b in channel_blocks(model)), default=0),
         floating_nodes=bool(first.floating_nodes(model)),  # False by default (the charge rule).
         loops=_loops(model, routes),  # () by default (a factor's feedback).
+        one_way_records=one_way_pairs(model),  # FR-50 phase 2: () by default.
     )
 
 
@@ -5904,7 +6259,9 @@ TODAYS_TYPES = KindTypes(
 
 
 @cache
-def _kind_types(fields, registry, series=False, forms=False, block=False, loops=False):
+def _kind_types(
+    fields, registry, series=False, forms=False, block=False, loops=False, records=False
+):
     """fields: ((kind ID, the bound kind's KindFields), ...) in canonical order. Classes are cached
     by field set (§7.4 (j); (n) 5): structures whose kinds carry the same fields share them, and a
     kind bound to fields other than its static ones (a declaration-dependent variant) names its
@@ -5915,8 +6272,11 @@ def _kind_types(fields, registry, series=False, forms=False, block=False, loops=
     layout fields (FORMS_LAYOUT_FIELDS) follow the others. block (FR-51): a population declares a
     block, whose layout fields (BLOCK_LAYOUT_FIELDS) follow those and whose readout column
     (UNBLOCKED_FRACTION) follows the kinds' readout columns. loops: a routed slot closes a loop on
-    its own gate, whose layout fields (LOOP_LAYOUT_FIELDS) come last (its kinds are in `fields`)."""
-    if not fields and not series and not forms and not block:
+    its own gate, whose layout fields (LOOP_LAYOUT_FIELDS) follow those (its kinds are in
+    `fields`). records (FR-50 phase 2): the model declares @3's own one-way records, whose state
+    fields (ONE_WAY_STATE_AXES) come last among the state fields and whose layout fields
+    (ONE_WAY_LAYOUT_FIELDS) last among the layout's."""
+    if not fields and not series and not forms and not block and not records:
         return TODAYS_TYPES
 
     def label(kind_id, own):
@@ -5937,6 +6297,7 @@ def _kind_types(fields, registry, series=False, forms=False, block=False, loops=
     suffix += "_forms_faces" if forms else ""
     suffix += "_channel_block" if block else ""
     suffix += "_feedback_loops" if loops else ""
+    suffix += "_one_way_records" if records else ""
     axes = dict(STATE_AXES)
     for kind_id, own in fields:
         for name, name_axes in own.state_axes:  # Not `field`: the field-solver module's name.
@@ -5949,12 +6310,16 @@ def _kind_types(fields, registry, series=False, forms=False, block=False, loops=
     forms_state = tuple(FORMS_STATE_AXES) if forms else ()
     for name in forms_state:
         axes[name] = list(FORMS_STATE_AXES[name])
+    records_state = tuple(ONE_WAY_STATE_AXES) if records else ()
+    for name in records_state:
+        axes[name] = list(ONE_WAY_STATE_AXES[name])
     state = NamedTuple("SurfacePumpChannelState" + suffix, [(k, object) for k in axes])
     layout_extra = [name for _, own in fields for name in own.layout_fields]
     layout_extra += [SERIES_PARAMETERS] if series else []
     layout_extra += list(FORMS_LAYOUT_FIELDS) if forms else []
     layout_extra += list(BLOCK_LAYOUT_FIELDS) if block else []
     layout_extra += list(LOOP_LAYOUT_FIELDS) if loops else []
+    layout_extra += list(ONE_WAY_LAYOUT_FIELDS) if records else []
     layout = NamedTuple(
         "SurfacePumpChannelLayout" + suffix,
         [(k, object) for k in (*LAYOUT_TYPE._fields, *layout_extra)],
@@ -5974,7 +6339,7 @@ def _kind_types(fields, registry, series=False, forms=False, block=False, loops=
             for k in (*Control._fields, *(f for _, own in fields for f in own.control_fields))
         ],
     )
-    if not fields and not series and not forms:  # FR-51's block alone adds no state or control.
+    if not fields and not series and not forms and not records:  # A block adds no state or control.
         state, control = STATE_TYPE, Control
     # Rule (b): a kind's state fields are observation columns right after today's state fields
     # (the windowed runner rebuilds states from observations by name); its readouts follow
@@ -5985,6 +6350,7 @@ def _kind_types(fields, registry, series=False, forms=False, block=False, loops=
         *(name for _, own in fields for name, _ in own.state_axes),
         *series_state,
         *forms_state,
+        *records_state,
         *OBSERVATION_FIELDS[today_state:],
         *(column for _, own in fields for column in own.readout_columns),
         *((UNBLOCKED_FRACTION,) if block else ()),
@@ -6011,15 +6377,18 @@ def kind_types(structure):
     series = series_junctions(structure)
     forms = forms_faces_declared(structure)
     block, loops = block_declared(structure), loops_declared(structure)  # FR-51; the feedback's.
+    records = records_declared(structure)  # FR-50 phase 2.
     if routes_into_channels(structure):
-        return _routed_kind_types(tuple(fields), registry, series, forms, block, loops)
-    return _kind_types(tuple(fields), registry, series, forms, block, loops)
+        return _routed_kind_types(tuple(fields), registry, series, forms, block, loops, records)
+    return _kind_types(tuple(fields), registry, series, forms, block, loops, records)
 
 
 @cache
-def _routed_kind_types(fields, registry, series=False, forms=False, block=False, loops=False):
+def _routed_kind_types(
+    fields, registry, series=False, forms=False, block=False, loops=False, records=False
+):
     """_kind_types' classes with one more observation column, EFFECTIVE_AVAILABILITY, last."""
-    types = _kind_types(fields, registry, series, forms, block, loops)
+    types = _kind_types(fields, registry, series, forms, block, loops, records)
     columns = (*types.OBSERVATION_FIELDS, EFFECTIVE_AVAILABILITY)
     observations = make_dataclass(
         types.Observations.__name__ + "_" + EFFECTIVE_AVAILABILITY,
@@ -6054,17 +6423,20 @@ class InnerImplementation:
             setattr(self, name, value)
         for name, value in vars(ledger_lists(structure)).items():  # The ledger protocol, (p).
             setattr(self, name, value)
-        if structure.kinds:  # The run view's declarations, the kinds' folded in (D154).
+        if declares_view(structure):  # The run view's declarations, wherever they add (D154, D402).
             for name, value in view_declarations(structure).items():
                 setattr(self, name, value)
 
     def view_sets(self, spec):
-        """{axis: view set} of the declared kinds' own axes (their view_sets hooks), for the run
-        view (D154): {"id", "ids", "roles", per-entity facts}; none without kinds."""
+        """{axis: view set} of the declared kinds' own axes (their view_sets hooks), and of @3's own
+        one-way record pairs where declared (FR-50 phase 2, one_way_view_set), for the run view
+        (D154): {"id", "ids", "roles", per-entity facts}; none without either."""
         out, declarations = {}, dict(getattr(spec.model, "kinds", ()))
         for kind in _kinds(self.structure):
             if kind.view_sets is not None:
                 out |= kind.view_sets(spec, declarations[kind_registry.qualified(kind.kind_id)])
+        if records_declared(self.structure):
+            out[ONE_WAY_PAIR_AXIS] = one_way_view_set(self.structure)
         return out
 
     def __getattr__(self, name):

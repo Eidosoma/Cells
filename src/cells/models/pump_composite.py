@@ -352,12 +352,20 @@ def refuse_kinds(model_id, declared):
     states, layouts and controls with today's fields (the replacement operator's arrival field
     solve among them), so a definition that declares a kind is refused, at its definition check
     and at binding, until each family has per-structure internals. declared: a parsed model block
-    or an InnerStructure; each carries `kinds`, ((kind ID, ...), ...)."""
+    or an InnerStructure; each carries `kinds`, ((kind ID, ...), ...). @3's own one-way records
+    (FR-50 phase 2; `one_way_records`, entries or pairs) are refused alike: today's fixed fields
+    drop them."""
     kinds = [kind_id for kind_id, _ in getattr(declared, "kinds", ())]
     if kinds:
         raise ConfigError(
             f"{model_id} does not run declared kinds ({', '.join(kinds)}): it builds the inner "
             "model's states, layouts and controls with today's fixed fields"
+        )
+    if getattr(declared, "one_way_records", ()):
+        raise ConfigError(
+            f"{model_id} does not run @3's own one_way records (one_way_records): it builds the "
+            "inner model's states, layouts and controls with today's fixed fields, which drop them "
+            "(FR-50; fails closed)"
         )
 
 
@@ -860,6 +868,10 @@ def structure_errors(inner, operators):
     # kind, so the lifecycle acts on none of it and it would go stale.
     kinds = tuple(getattr(inner, "KINDS", ()))
     loops = getattr(getattr(inner, "structure", None), "loops", ())
+    # FR-50 phase 2: @3's own one-way records ride its inner step and state; their pair axis is on
+    # no lifecycle, so a slot changer is refused beside them, and so is an operator that builds the
+    # inner fields with today's fixed fields, which drop them (fails closed).
+    records = getattr(getattr(inner, "structure", None), "one_way_records", ())
     declared, owners = set(kinds), getattr(inner, "KIND_FIELDS", {})
     masks = set(getattr(inner, "MASK_FIELDS", ()))
     blocked = _kinds_lifecycle(inner, kinds)
@@ -870,6 +882,18 @@ def structure_errors(inner, operators):
             errors.append(
                 f"{op.LAW_ID} builds the inner model's state, layout or control with today's "
                 f"fixed fields, so it does not run beside declared kinds ({', '.join(kinds)})"
+            )
+        if records and op.FIXED_INNER_FIELDS:
+            errors.append(
+                f"{op.LAW_ID} builds the inner model's state, layout or control with today's "
+                "fixed fields, which drop @3's own one_way records (one_way_records), so it does "
+                "not run beside them (FR-50; fails closed)"
+            )
+        if records and (op.CLOSES or op.RETIRES or masks & set(op.VIEW_FIELDS)):
+            errors.append(
+                f"{op.LAW_ID} opens, closes or retires slots, and @3 keeps its own one_way records "
+                "(one_way_records) on a pair axis no lifecycle acts on, which version 1 refuses "
+                "beside an operator that retires or closes slots (FR-50; fails closed)"
             )
         if kinds and (op.CLOSES or op.RETIRES or masks & set(op.VIEW_FIELDS)):
             errors.extend(_kinds_beside_closer(op, kinds, blocked, bound=bound, gated=gated))

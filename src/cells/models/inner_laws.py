@@ -41,6 +41,7 @@ from cells.definitions.surface_pump_v3_spec import (
     DEFAULT_JUNCTION_HEAT,
     EXACT_FREE_ENERGY_HEAT,
     MODEL_ID,
+    ONE_WAY_ENTITIES,
     TRAPEZOID_JUNCTION_HEAT,
 )
 from cells.laws.channels import kv1p5_mh, nav1p2_m3h_regularized
@@ -347,6 +348,12 @@ class InnerStructure:
     # (LOOP_LAYOUT_FIELDS), present only where this is not empty. () for every definition without
     # such a loop, so no structure, layout or program of those moves.
     loops: tuple = ()
+    # FR-50 phase 2 (D327, ruling 4): @3's own one-way record pairs, ((entity kind, entity ID,
+    # species ID), ...), sorted, names only (surface_pump_v3_spec.one_way_pairs), each entity kind
+    # one of ONE_WAY_ENTITIES, so the pairs of one kind are contiguous. () for every definition
+    # without the model key, so no structure, layout or program of those moves. Added by the @3
+    # owner at the lead's word (a recorded exception in this file).
+    one_way_records: tuple = ()
 
     def __post_init__(self):
         ids = [kind_id for kind_id, _ in self.kinds]
@@ -393,6 +400,22 @@ class InnerStructure:
             )
         if type(self.floating_nodes) is not bool:
             raise ValueError("A structure's floating_nodes is a bool (whether a node floats)")
+        pairs = self.one_way_records
+        if not (
+            isinstance(pairs, tuple)
+            and all(
+                isinstance(pair, tuple)
+                and len(pair) == 3
+                and all(isinstance(name, str) and name for name in pair)
+                and pair[0] in ONE_WAY_ENTITIES
+                for pair in pairs
+            )
+            and list(pairs) == sorted(set(pairs))
+        ):
+            raise ValueError(
+                "One-way records are a sorted tuple of distinct (entity kind, entity ID, species "
+                f"ID) pairs, each entity kind one of {', '.join(ONE_WAY_ENTITIES)}"
+            )
         problems = loop_errors(self.loops, self.routes)
         if problems:
             raise ValueError("Loops of an inner structure: " + "; ".join(problems))
