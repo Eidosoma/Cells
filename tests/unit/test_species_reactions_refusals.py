@@ -739,18 +739,54 @@ def test_water_is_admitted_before_the_network_and_refused_after():
     ],
 )
 def test_the_other_volume_changers_are_refused_by_name(changer, monkeypatch):
-    """Water is the one volume changer admitted beside the network (FR-43 / D315); a lumen (its
-    lumen volumes) and replacement@2 (a newcomer's volume into water's state) stay refused."""
+    """Water is the one volume changer admitted beside the network (FR-43 / D315), which reads the
+    volumes at every finite node: a lumen (its lumen volumes) and replacement@2 (a newcomer's
+    volume into water's state) stay refused (species_common.check_volume_changers). FR-65's route
+    B: a lumen names its nodes (changed_volume_nodes; on a parsed world, the cleft), so a reader of
+    other nodes admits it, and replacement@2 changes the cell volume, refused whatever nodes are
+    read. Planted: the hook's default, every node, refuses that reader too."""
+    from types import SimpleNamespace
+
+    from cells.operators.contract import Operator
+    from tests import membrane_insertion_fixtures as mfx
+    from tests import partition_fixtures as pfx
+
     water = "cells.operator.ideal_osmosis_linear_compliance_water@1"
+    nodes = [SimpleNamespace(id=k, reservoir=k == "bath") for k in ("bath", "cleft", "ecs")]
+    spec = SimpleNamespace(model=SimpleNamespace(extracellular=nodes))
+    lumen = SimpleNamespace(lumens=(SimpleNamespace(node_id="cleft"),))
 
     def entries(laws):
-        return lambda spec: tuple((OPERATORS[k], None, None) for k in laws)
+        return lambda _: tuple((OPERATORS[k], lumen if "lumen" in k else None, None) for k in laws)
 
-    monkeypatch.setattr(sr.composite_spec, "entries", entries((water, LAW)))
-    sr.check_volume_changers(None)
-    monkeypatch.setattr(sr.composite_spec, "entries", entries((water, changer, LAW)))
+    monkeypatch.setattr(common.composite_spec, "entries", entries((water, LAW)))
+    common.check_volume_changers(spec, LAW, common.finite_nodes(spec))
+    monkeypatch.setattr(common.composite_spec, "entries", entries((water, changer, LAW)))
     with pytest.raises(ConfigError, match=re.escape(f"{changer} changes the volumes it reads")):
-        sr.check_volume_changers(None)
+        common.check_volume_changers(spec, LAW, common.finite_nodes(spec))
+    if "lumen" not in changer:
+        with pytest.raises(ConfigError, match=re.escape(f"{changer} changes the volumes it reads")):
+            common.check_volume_changers(spec, LAW, ())
+        return
+    with pytest.raises(ConfigError, match=re.escape("the outside volume at cleft)")):
+        common.check_volume_changers(spec, LAW, (1,))
+    common.check_volume_changers(spec, LAW, (2,))  # Route B: a reader of ecs alone admits it.
+    default = Operator.changed_volume_nodes  # Planted: every node.
+    monkeypatch.setattr(type(OPERATORS[changer]), "changed_volume_nodes", default)
+    with pytest.raises(ConfigError, match=re.escape("the outside volume at ecs)")):
+        common.check_volume_changers(spec, LAW, (2,))
+    monkeypatch.undo()
+    if changer.endswith("@1"):  # The hook on a parsed world: the cleft, its one lumen node.
+        raw = mfx.with_operators(mfx.cleft_cell(), mfx.furrow_insertion())
+        raw["model"]["operators"].append(
+            dict(law=changer, lumens=[dict(node_id="cleft", source_id="bath_0", gap_width_m=2e-6)])
+        )
+    else:
+        raw = pfx.cleft_divided()
+    parsed = parse_spec(raw)
+    ((op, declaration, _),) = [e for e in cs.entries(parsed) if e[0].LAW_ID == changer]
+    cleft = [c.id for c in parsed.model.extracellular].index("cleft")
+    assert op.changed_volume_nodes(parsed, declaration) == (cleft,)
 
 
 # ------------------------------------------------------------------ the batch signature (Q11 (c))

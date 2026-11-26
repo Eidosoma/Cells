@@ -16,6 +16,8 @@ and compiled (kernels only, no world).
 """
 
 import contextlib
+import math
+import re
 from decimal import Decimal, getcontext
 from types import SimpleNamespace
 from typing import NamedTuple
@@ -66,8 +68,25 @@ def bound():
     return spec, model, model.operators[0], state, p, s
 
 
-def step(op, state, p, rates, h=H):
-    return op.half_step(state, h, SimpleNamespace(turnover_rate=np.asarray(rates)), p, xp=np)
+def step(op, state, p, rates, h=H, view=None):
+    control = SimpleNamespace(turnover_rate=np.asarray(rates))
+    return op.half_step(state, h, control, p, xp=np, view=view)
+
+
+VIEW_FIELDS = ("volume", "extracellular_volume", "active", "outside_active")  # Its current reads.
+SWOLLEN = (1.7, 0.6)  # FR-65: the view's cell and outside volumes over the declared ones.
+
+
+def viewed(p, *, scale=SWOLLEN, active=None, outside_active=None):
+    """The reader view the composite passes where an operator changes a field turnover reads
+    current (FR-65; pump_composite.reader_view): the volumes at `scale` times the declared ones,
+    and the masks given (the declared ones by default)."""
+    return pump_composite.reader_view_type(VIEW_FIELDS)(
+        np.asarray(p.volume) * scale[0],
+        np.asarray(p.extracellular_volume) * scale[1],
+        np.asarray(p.active) if active is None else active,
+        np.asarray(p.outside_active) if outside_active is None else outside_active,
+    )
 
 
 def amounts(state, p, s):
@@ -110,21 +129,54 @@ def test_the_half_step_is_the_closed_form_and_books_it(bound):
     assert node1[0] == node0[0]  # The held bath: never written.
 
 
-def test_booked_work_is_the_exact_free_energy_change(bound):
-    """The NumPy dG test of record for this law: W = G(n') - G(n) at each touched node."""
+@pytest.mark.parametrize("swollen", [False, True], ids=["declared", "view"])
+def test_booked_work_is_the_exact_free_energy_change(bound, swollen):
+    """The NumPy dG test of record for this law: W = G(n') - G(n) at each touched node.
+
+    FR-65's row (view): given a reader view whose volumes differ from the declared V0 (the cell at
+    1.7 V0, the node at 0.6 V0), the work is the exact change at the view's V. That equals @3's
+    term at V0 plus the change of water's dilution term -RT N ln(V/V0) (its node_free_energy_pJ's
+    expression), so the booking is the composite's stored free-energy change. The amounts and the
+    material bookings are bitwise the viewless call's, since the update reads no volume. Planted
+    (P1): the view dropped, the work booked at V0 misses the change at V by -RT dn ln(V/V0)."""
     _, _, op, state, p, s = bound
-    new, _ = step(op, state, p, RATES)
+    view = viewed(p) if swollen else None
+    new, _ = step(op, state, p, RATES, view=view)
     (cell0, node0), (cell1, node1) = amounts(state, p, s), amounts(new, p, s)
     volume, outside_volume = np.asarray(p.volume), np.asarray(p.extracellular_volume)
-    for booked, before, after, v in (
-        (new.turnover_work_pJ[0], cell0[0], cell1[0], volume[0]),
-        (new.turnover_outside_work_pJ[1], node0[1], node1[1], outside_volume[1]),
-    ):
+    scale = SWOLLEN if swollen else (1.0, 1.0)
+    rt = Decimal("1e-3") * R_SI * Decimal("310")
+    rows = (
+        ("turnover_work_pJ", 0, cell0[0], cell1[0], volume[0], scale[0]),
+        ("turnover_outside_work_pJ", 1, node0[1], node1[1], outside_volume[1], scale[1]),
+    )
+    for name, k, before, after, v0, factor in rows:
+        v = v0 * factor
+        booked = Decimal(float(getattr(new, name)[k]))
         exact = free_energy(after, v) - free_energy(before, v)
-        assert float(abs(Decimal(float(booked)) - exact) / abs(exact)) < 1e-11
+        assert float(abs(booked - exact) / abs(exact)) < 1e-11
+        moved = Decimal(float(after)) - Decimal(float(before))
+        dilution = -rt * moved * (Decimal(float(v)) / Decimal(float(v0))).ln()  # Water's term.
+        at_v0 = free_energy(after, v0) - free_energy(before, v0)
+        assert float(abs(booked - (at_v0 + dilution)) / abs(exact)) < 1e-11
+        if swollen:  # P1: booked at V0, the miss is the dilution term, far above the tolerance.
+            plain, _ = step(op, state, p, RATES)
+            missed = Decimal(float(getattr(plain, name)[k])) - exact
+            assert float(abs(missed - (-dilution)) / abs(dilution)) < 1e-9
+            assert float(abs(missed) / abs(exact)) > 1e-3
     # Both nodes lose material below 1 mM, which raises G: these laws can run uphill (signed work).
     assert cell1[0] < cell0[0] and node1[1] < node0[1]
     assert new.turnover_work_pJ[0] > 0 and new.turnover_outside_work_pJ[1] > 0
+    if swollen:  # The update reads no volume: amounts and material bookings bitwise.
+        plain, _ = step(op, state, p, RATES)
+        for name in (
+            "amount_increment",
+            "extracellular_amount_increment",
+            "turnover_produced_fmol",
+            "turnover_cleared_fmol",
+            "turnover_outside_cleared_fmol",
+        ):
+            assert getattr(new, name).tobytes() == getattr(plain, name).tobytes(), name
 
 
 def test_the_host_checks_close_at_the_species_scale(bound):
@@ -163,6 +215,24 @@ def test_zero_rates_select_the_start_state_and_untouched_entries_stay_bitwise(bo
     assert (
         moved.extracellular_amount_increment[s, 1] != planted.extracellular_amount_increment[s, 1]
     )
+    # FR-65: a view that closes the cell and the finite node (a pending daughter or retired parent,
+    # a closed onset node), with positive rates on both: every field bitwise the start's, and the
+    # held bath, where no route acts, keeps turnover's outside fields zero. Planted (P2): the view
+    # with the declared masks, the half-step writes the closed slots' rows.
+    outside = np.asarray(p.outside_active).copy()
+    outside[1] = False
+    closed = viewed(p, active=np.zeros_like(np.asarray(p.active)), outside_active=outside)
+    untouched, ok = step(op, planted, p, RATES, view=closed)
+    assert ok
+    for a, b in zip(untouched, planted, strict=True):
+        assert np.asarray(a).tobytes() == np.asarray(b).tobytes()
+    written, _ = step(op, planted, p, RATES, view=viewed(p))
+    assert written.amount_increment[s, 0] != planted.amount_increment[s, 0]
+    assert (
+        written.extracellular_amount_increment[s, 1] != planted.extracellular_amount_increment[s, 1]
+    )
+    assert not written.turnover_outside_cleared_fmol[:, 0].any()
+    assert written.turnover_outside_work_pJ[0] == 0.0
 
 
 class _Planted(Operator):
@@ -299,6 +369,342 @@ def test_definition_refusals(change, message):
     change(raw)
     with pytest.raises(ConfigError, match=message):
         parse_spec(raw)
+
+
+# ------------------------------------------------------------ the occupant rule's tables (FR-65)
+
+
+def test_the_occupant_tables_follow_the_partition_s_carriers_and_refuse_their_gaps(monkeypatch):
+    """FR-65 §3.4 (D150 §5.2), host side, about 0.3 s, no world compiled. On S5's divided world
+    (cell_0 into d1 and d2 at 2 ms, carriers c1 and c2), routes on all three slots: a daughter's
+    rate is zero before its birth and its own after, and the parent's is its own until its
+    retirement and zero after. Planted (P3): a table without the daughter's leading zero, and one
+    that keeps the parent's rate, each fails the row's check. Refused, with their reasons: a
+    daughter keyed by its slot (P4), a daughter without its own schedule or with one that starts
+    before its birth, a reader with no idle value, and a slot two operators fill. Without a
+    lifecycle operator every slot holds its founder, replacement@1's slots are its events' (the
+    occupants of today's rule), and replacement@2 fills none. An outside rate before its node's
+    onset (insertion@2's) is refused, at the onset admitted."""
+    from cells.operators import OPERATORS
+    from cells.operators import species_common as common
+    from cells.operators.contract import Occupant
+    from tests import membrane_insertion_fixtures as mfx
+    from tests import partition_fixtures as pfx
+
+    spec, birth = parse_spec(pfx.divided()), pfx.EVENT
+    routes = tuple(
+        turnover.Route(f"p_{c}", fx.SPECIES, c, "production", c) for c in ("cell_0", "d1", "d2")
+    )
+    rates = {"cell_0": 1e-6, "c1": 2e-6, "c2": 3e-6}
+    keys = (("p_cell_0", "cell_0", 0.0), ("p_d1", "c1", birth), ("p_d2", "c2", birth))
+
+    def tables(keys=keys, idle=turnover.IDLE):
+        schedules = tuple(
+            common.RouteSchedule(r, c, ((t, (rates.get(c, 5e-6),)),)) for r, c, t in keys
+        )
+        return common.route_tables(spec, routes, schedules, (), LAW_ID_TURNOVER, idle=idle)
+
+    times = [0.0, 0.001, birth, 0.003]
+    expected = np.array([[1e-6, 0, 0], [1e-6, 0, 0], [0, 2e-6, 3e-6], [0, 2e-6, 3e-6]])
+
+    def follows(tables):
+        return np.array_equal(common.control_arrays(tables, times, 1)[..., 0], expected)
+
+    built = tables()
+    assert follows(built)
+    assert not follows([built[0], built[1][1:], built[2]])  # P3: the leading zero dropped.
+    assert not follows([built[0][:-1], built[1], built[2]])  # P3: the parent's rate kept.
+    lives = common.occupants(spec)
+    assert lives["d1"] == (Occupant("c1", birth, math.inf, "daughter", None, None),)
+    assert lives["cell_0"] == (Occupant("cell_0", 0.0, birth, "founder", None, None),)
+    for keyed, words in (
+        ((*keys, ("p_d1", "d1", 0.0)), "names carrier d1, which never occupies its slot"),
+        ((keys[0], ("p_d1", "d1", 0.0), keys[2]), "carrier c1, a daughter born in slot d1"),
+        ((keys[0], ("p_d1", "c1", 0.001), keys[2]), "starts at its birth, 0.002 s"),
+    ):
+        with pytest.raises(ConfigError, match=re.escape(words)):
+            tables(keyed)
+    with pytest.raises(ConfigError, match="gives no idle rate for an empty slot"):
+        tables(idle=None)
+    # Without a lifecycle operator, founders alone; with replacement@1, its events' carriers.
+    plain = parse_spec(definition())
+    assert common.occupants(plain) == {
+        "cell_0": (Occupant("cell_0", 0.0, math.inf, "founder", None, None),)
+    }
+    raw = fx.secreting_cell()
+    raw = fx.with_replacement(raw, [fx.template(raw, "cell_0", "T")], [(0.002, "cell_0", "T", "n")])
+    replaced = parse_spec(
+        fx.with_turnover(
+            raw,
+            [("p", "cell_0", "production")],
+            [("p", "cell_0", [(0.0, 1e-6)])],
+            templates=[("T", {"p": 2e-6})],
+        )
+    )
+    assert common.occupants(replaced)["cell_0"] == (
+        Occupant("cell_0", 0.0, 0.002, "founder", None, None),
+        Occupant("n", 0.002, math.inf, "isolated_template", "T", None),
+    )
+    # A slot two operators fill is refused by name; replacement@2 fills none (its readers are
+    # refused beside it by the shared volume rule), so its slots keep their founders.
+    class Filler(Operator):
+        LAW_ID = "tests.operator.planted_filler@1"
+
+        def slot_occupants(self, spec, declaration, schedule):
+            return {"d1": (Occupant("x", 0.001, math.inf, "daughter", None, None),)}
+
+    entries = common.composite_spec.entries(spec)
+    monkeypatch.setattr(
+        common.composite_spec, "entries", lambda s: (*entries, (Filler(), None, None))
+    )
+    with pytest.raises(ConfigError, match="decided by both"):
+        common.occupants(spec)
+    over_water = OPERATORS["cells.operator.scheduled_cell_replacement@2"]
+    monkeypatch.setattr(common.composite_spec, "entries", lambda s: ((over_water, None, None),))
+    assert common.occupants(spec) == common.occupants(plain) | {
+        c.id: (Occupant(c.id, 0.0, math.inf, "founder", None, None),) for c in spec.model.cells
+    }
+    monkeypatch.undo()
+    # D150 §5.3: an outside route before its node's onset (insertion@2's furrow opens the cleft).
+    raw = mfx.with_operators(mfx.cleft_cell(), mfx.furrow_insertion(onset=0.002))
+    raw["model"]["operators"][-1]["law"] = "cells.operator.scheduled_membrane_insertion@2"
+    cleft = parse_spec(raw)
+    assert common.node_onsets(cleft) == {"cleft": 0.002}
+    route = (turnover.Route("c", fx.SPECIES, "cleft", "clearance", None),)
+    common.check_node_onsets(cleft, route, [((0.0, (0.0,)), (0.002, (0.5,)))], LAW_ID_TURNOVER)
+    with pytest.raises(ConfigError, match=r"before the node's onset at 0\.002 s"):
+        common.check_node_onsets(cleft, route, [((0.0, (0.5,)),)], LAW_ID_TURNOVER)
+
+
+# ------------------------------------------------------------ beside the changers it reads (FR-65)
+
+WATER = "cells.operator.ideal_osmosis_linear_compliance_water@1"
+LABELS = "cells.operator.neutral_arrival_labels@1"
+
+
+def _s(raw):
+    from cells.registry.inventory_species import add_inventory_species
+
+    return add_inventory_species(
+        raw, fx.SPECIES, trace_mM=fx.TRACE_mM, diffusivity_m2_per_s=fx.D_S, floor_fmol=fx.FLOOR_FMOL
+    )
+
+
+def _in_cell(raw, rate=1e-6):
+    """Turnover making S in the world's first cell, from its founder."""
+    cell = raw["model"]["cells"][0]["id"]
+    return fx.with_turnover(_s(raw), [("p", cell, "production")], [("p", cell, [(0.0, rate)])])
+
+
+def _first(raw, law):
+    """raw with `law`'s block moved to the front of the operator list."""
+    blocks = raw["model"]["operators"]
+    raw["model"]["operators"] = [b for b in blocks if b["law"] == law] + [
+        b for b in blocks if b["law"] != law
+    ]
+    return raw
+
+
+def _labelled(raw):
+    """raw with FR-42's label owner on S, every node at its base label."""
+    nodes = [c["id"] for c in raw["model"]["cells"]] + [
+        c["id"] for c in raw["model"]["extracellular"] if not c.get("reservoir", False)
+    ]
+    raw["model"]["operators"].append(
+        dict(
+            law=LABELS,
+            species=[
+                dict(
+                    id=fx.SPECIES,
+                    labels=["base", "t1"],
+                    initial=[dict(node=n, shares={"base": 1.0}) for n in nodes],
+                )
+            ],
+        )
+    )
+    raw["experiment"]["label_arrivals"] = [
+        dict(species=fx.SPECIES, schedule=[dict(time=0.0, label="base")])
+    ]
+    return raw
+
+
+def _bridged(s_crosses):
+    from tests import partition_fixtures as pfx
+
+    raw = _s(pfx.cleft_divided(bridge=("linear", 0.001)))
+    if s_crosses:  # S given the cytoplasmic diffusivity, and the junction permeability, it implies.
+        for junction in raw["model"]["junctions"]:
+            junction["permeability_m_per_s"][fx.SPECIES] = 1e-10
+        for entry in raw["model"]["operators"]:
+            for bridge in entry.get("bridges", []):
+                bridge["cytoplasmic_diffusivity_m2_per_s"][fx.SPECIES] = 1e-10
+    return fx.with_turnover(
+        raw, [("p", "cell_0", "production")], [("p", "cell_0", [(0.0, 1e-6)])]
+    )
+
+
+def _replaced_over_water():
+    """Replacement@2 over water, replacing cell_1, with turnover in cell_0, whose occupant tables
+    stand (its founder throughout): the shared volume rule refuses it by name."""
+    from tests import replacement_water_fixtures as rwfx
+
+    raw = rwfx.sheet(end=0.02)
+    return _in_cell(rwfx.over_water(raw, rwfx.templates(raw), ((0.01, "cell_1", "h", "n1"),)))
+
+
+def _companion(kind):
+    from validation.tissue import bath_schedule_fixtures as bfx
+    from validation.tissue import pump_water_fixtures as wfx
+
+    if kind == "symport":
+        world = wfx.with_symport(
+            wfx.with_water(wfx.heredity_cell("D", end_time=0.1), pf_m_s=5e-4), steepness=0.12
+        )
+        from cells.definitions import pump_composite_spec as cs
+
+        return _in_cell(cs.frozen_definition(world))
+    return _in_cell(bfx.water_world({"NaM": -10.0, "KM": 10.0}))
+
+
+def _worlds():
+    """{name: (builder, refusal words or None for admitted)}: §3.6's newly parsing sets and their
+    neighbours that stay refused (docs/TURNOVER_CHANGING_VOLUME_DESIGN.md)."""
+    from tests import membrane_insertion_fixtures as mfx
+    from tests import partition_fixtures as pfx
+    from validation.tissue import shared_inventory_fixtures as sif
+
+    swelling = lambda: sif.swelling_turnover(dt=0.01, end=0.1, every=0.05)  # noqa: E731
+    cleft = mfx.cleft_turnover
+    at_cleft = ("c", "cleft", "clearance")
+    in_cell = ("p", "cell_0", "production", [(0.0, 1e-6)])
+    order = "reads the view {} at stage split before {} changes it there"
+    return {
+        "water": (swelling, None),
+        "water after it": (
+            lambda: _first(swelling(), fx.TURNOVER),
+            order.format("volume", WATER),
+        ),
+        "the symport beside water": (lambda: _companion("symport"), None),
+        "the bath schedule beside water": (lambda: _companion("bath"), None),
+        "replacement@2 over water": (
+            _replaced_over_water,
+            "cells.operator.scheduled_cell_replacement@2 changes the volumes it reads",
+        ),
+        "the partition, daughters keyed by carriers": (
+            lambda: pfx.with_turnover(pfx.divided()),
+            None,
+        ),
+        "the partition, daughters keyed by slots (P4)": (
+            lambda: pfx.with_turnover(pfx.divided(), keyed="slots"),
+            "needs a schedule for carrier c1, a daughter born in slot d1",
+        ),
+        "insertion@2, clearance at the cleft from its onset": (
+            lambda: cleft(2, routes=[(*at_cleft, [(0.0, 0.0), (0.002, 0.5)])]),
+            None,
+        ),
+        "insertion@2, clearance at the cleft before its onset": (
+            lambda: cleft(2, routes=[(*at_cleft, [(0.0, 0.5)])]),
+            "before the node's onset at 0.002 s",
+        ),
+        "insertion@2 after it": (
+            lambda: _first(cleft(2, routes=[in_cell]), fx.TURNOVER),
+            order.format("outside_active", mfx.INSERTION_2),
+        ),
+        "insertion@1, cell routes": (lambda: cleft(1, routes=[in_cell]), None),
+        "insertion@1, clearance at the cleft (the anchor guard)": (
+            lambda: cleft(1, routes=[(*at_cleft, [(0.0, 0.5)])]),
+            f"{mfx.INSERTION} changes the outside anchors at cleft, where route c clears",
+        ),
+        "lumen@1 at a node it does not read": (
+            lambda: cleft(1, lumen=True, routes=[in_cell]),
+            None,
+        ),
+        "lumen@1 at the node it clears (P5)": (
+            lambda: cleft(1, lumen=True, routes=[(*at_cleft, [(0.0, 0.5)])]),
+            "changes the volumes it reads (the outside volume at cleft)",
+        ),
+        "lumen@2 at a node it does not read": (
+            lambda: cleft(2, lumen=True, routes=[in_cell]),
+            None,
+        ),
+        "lumen@2 at the node it clears (P5)": (
+            lambda: cleft(2, lumen=True, routes=[(*at_cleft, [(0.0, 0.0), (0.002, 0.5)])]),
+            "changes the volumes it reads (the outside volume at cleft)",
+        ),
+        "the furrow world with its lumen, daughters keyed by carriers": (
+            lambda: pfx.with_turnover(pfx.cleft_divided()),
+            None,
+        ),
+        "the furrow world, the lumen after it": (
+            lambda: _first(pfx.with_turnover(pfx.cleft_divided()), fx.TURNOVER),
+            order.format("extracellular_volume", pfx.LUMEN2),
+        ),
+        "the furrow world with an injection": (
+            lambda: pfx.with_turnover(pfx.cleft_divided(injection=1e-13)),
+            None,
+        ),
+        "the bridged furrow world, S impermeant on the bridge": (lambda: _bridged(False), None),
+        "the bridged furrow world, S on the bridge": (
+            lambda: _bridged(True),
+            "'S' has a route through junction bridge_1",
+        ),
+        "labels beside insertion@1": (
+            lambda: _labelled(cleft(1, routes=[in_cell])),
+            "its view changes species amounts",
+        ),
+        "labels beside insertion@2": (
+            lambda: _labelled(cleft(2, routes=[in_cell])),
+            "it closes or retires slots",
+        ),
+        "labels beside a lumen": (
+            lambda: _labelled(cleft(2, lumen=True, routes=[in_cell])),
+            "it writes species amounts without reporting its one-way moves",
+        ),
+        "A1 without the coupling, beside water": (lambda: sif.swelling_a1(end=60.0), None),
+        "A1 with the coupling, beside water (its second step)": (
+            lambda: sif.swelling_a1(coupling=True, end=60.0),
+            f"{sif.COUPLING_2} reads volume as declared",
+        ),
+    }
+
+
+WORLDS = _worlds()
+
+
+@pytest.mark.parametrize("name", list(WORLDS))
+def test_beside_the_changers_it_reads_by_name(name, monkeypatch):
+    """FR-65 §3.6, host side, about 0.1 s a world (parse only, nothing compiled): turnover beside
+    the changers of the volumes and masks it reads current. Admitted: water first, with the
+    symport or the bath schedule beside it; the partition, daughters keyed by their carriers;
+    insertion@2 with clearance at the cleft from its onset; insertion@1 with cell routes; a lumen
+    at a node it does not read; S5's furrow world with its lumen, with an injection, and with a
+    bridge S does not cross; A1 without the coupling. Refused, in the engine's words: a changer
+    declared after it (C2's order rule), replacement@2 and a lumen at a node it clears (the shared
+    volume rule; P5), a daughter keyed by its slot (P4), a rate before its node's onset, insertion@1
+    at a node it clears (the anchor guard), S on a bridge, labels beside insertion or a lumen (the
+    label owner), and A1 with the coupling, whose reads are its second step. Planted: today's
+    declarations (the shared static-tissue list) put back, every admitted world is refused."""
+    from cells.models import pump_composite as composite
+    from cells.operators import species_common as common
+
+    build, words = WORLDS[name]
+    if words is not None:
+        with pytest.raises(ConfigError, match=re.escape(words)):
+            parse_spec(build())
+        return
+    parse_spec(build())
+    cls = turnover.ScheduledSpeciesTurnover
+    monkeypatch.setattr(cls, "CONFLICTS_VIEW", common.CONFLICTS_VIEW)
+    monkeypatch.setattr(cls, "VIEW_READS", ())
+    monkeypatch.setattr(cls, "SCOPED_READS", {})
+    composite._implementation.cache_clear()  # Compositions are cached per operator list.
+    today = re.escape(LAW_ID_TURNOVER) + r" reads \w+ as declared"
+    try:
+        with pytest.raises(ConfigError, match=today):
+            parse_spec(build())
+    finally:
+        monkeypatch.undo()
+        composite._implementation.cache_clear()
 
 
 # ------------------------------------------------------------ the stored change at stiff rates

@@ -492,8 +492,15 @@ def test_a_change_at_a_stage_none_of_its_parts_runs_at_is_refused():
         )
     for law, op in OPERATORS.items():  # Every registered declaration keeps its stages.
         check_declarations(type(op))
-        for name in op.SCOPED_READS:
-            assert reads_of(op, name) == (op.scoped_read(name),), law
+        for name, declared in op.SCOPED_READS.items():
+            if isinstance(declared, Read):
+                assert reads_of(op, name) == (op.scoped_read(name),), law
+                continue
+            # C3's two-mode read (FR-65's turnover, the first registered one): every Read, in
+            # declared order, and no single Read (scoped_read fails closed).
+            assert reads_of(op, name) == declared, law
+            with pytest.raises(ValueError, match=f"reads {name} at {len(declared)} stages"):
+                op.scoped_read(name)
 
 
 # ------------------------------------------------------------------ C4, the reader view

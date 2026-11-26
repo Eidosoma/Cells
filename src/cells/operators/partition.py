@@ -56,6 +56,7 @@ Lineage (§6): carriers are declared per event and slots are storage. The summar
 records from the declaration, the schedule and the final division_applied.
 """
 
+import math
 from dataclasses import dataclass, replace
 
 import jax
@@ -72,7 +73,7 @@ from cells.numerics import surface_field
 from cells.numerics.extracellular_field import scatter
 from cells.numerics.species_sums import entity_sum
 from cells.operators import membrane_state
-from cells.operators.contract import Operator
+from cells.operators.contract import Occupant, Operator
 from cells.registry import kind_registry
 
 LAW_ID = "cells.operator.isopotential_partition@1"
@@ -1178,6 +1179,23 @@ class IsopotentialPartition(Operator):
     def living_intervals(self, spec, declaration, schedule):
         cells = {x for d in declaration.divisions for x in (d.parent, *d.daughters)}
         return {c: living_interval(declaration, schedule, c) for c in sorted(cells)}
+
+    def slot_occupants(self, spec, declaration, schedule):
+        """The occupant rule's carriers (D150 §5.2: a daughter is a new carrier with its own
+        rates; the contract's hook, FR-65 §3.4), from the lineage with every scheduled division
+        counted: a dividing founder from time 0 to its division, and each daughter, its event's
+        carrier, from its birth to its own division or the end. Each slot holds one carrier; a
+        pending slot has none before its daughter's birth. Founders that never divide are not
+        this operator's."""
+        out = {}
+        for r in lineage(spec, declaration, schedule):
+            if r["kind"] == "founder" and r["death_s"] is None:
+                continue
+            death = math.inf if r["death_s"] is None else float(r["death_s"])
+            out[r["slot"]] = (
+                Occupant(r["carrier_id"], float(r["birth_s"]), death, r["kind"], None, None),
+            )
+        return out
 
     def patch_maps(self, declaration):
         maps = {}

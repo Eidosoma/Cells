@@ -341,6 +341,13 @@ class RestrictedCleftLumenV2(Operator):
     def check_definition(self, spec, declaration, schedule, model):
         check_definition(spec, declaration)
 
+    def changed_volume_nodes(self, spec, declaration):
+        """FR-65 (route B): the outside volume it changes is its lumen nodes' alone (own_valid
+        refuses a volume increment at any other node), by index; the shared volume rule of the
+        current-volume readers reads them (species_common.check_volume_changers)."""
+        outside = [c.id for c in spec.model.extracellular]
+        return tuple(outside.index(x.node_id) for x in declaration.lumens)
+
     def batch_signature(self, declaration):
         return (LAW_ID, tuple((x.node_id, x.source_id) for x in declaration.lumens))
 

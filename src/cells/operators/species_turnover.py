@@ -51,18 +51,36 @@ percent off: in a mixed world that passes unseen under the ions' bound, a known 
 Under RK4 the bound is the absolute 2e-8 pJ (no solver tolerance); RK4 is guarded, not refused, and
 keeps exact half-steps around @3's RK4 step ("split").
 
+Volumes and masks (FR-65, docs/TURNOVER_CHANGING_VOLUME_DESIGN.md §3; option A, the same law
+ID). Its own reads, not species_common's shared list. The cell volumes, the outside volumes at its
+outside route nodes, and both activity masks are current reads at the split: where an operator
+changes them each half-step takes the view's, held over the half-step; where none does, the part
+receives no view and reads the declared ones (C1's fallback), so every such world keeps its
+program. Water (the volumes), the partition (the cell mask), insertion@2 (the outside mask) and a
+lumen (its node's volume) are its changers, each declared before it, as C2's order rule requires of
+a change at the split (the partition closes at its event, seen in any order). The update
+n' = n e^{-kh} + P g reads no volume, so its amounts stay exact; only the work booking reads the
+volume, and at the view's volume it is the exact change of the composite's stored free energy (@3's
+chemical term at V0 plus water's dilution term). A closed slot is untouched: a pending daughter, a
+retired parent, a closed onset node. The masks are also reference reads at the end (C3): the
+domain's existence checks read the declared slots. The outside anchors are a reference read, kept
+true by the anchor guard.
+
 Refusals. At the definition: a charged species (charged turnover routes wait for a turnover@2,
 FR-15 S1: a charged source is a source reaction), a production route on an outside node, a route on
 a held bath, a negative rate, a schedule change off the dt grid, more than 1,024 species per world
-(FR-43 / D315; species_common), an occupant without its rates, a donor copy whose route values
-differ from the slot's, and every provider or closer of the volumes and activity masks
-(CONFLICTS_VIEW: version 1 is transport on a static tissue, so water, the lumens, insertion and S5's
-partition and bridge are refused). At run time: non-finite values and any written amount that would
-not stay positive. Each half-step returns the finiteness and positivity of every amount it wrote as
-its validity, and the operator's own domain re-checks its species rows, since the composite re-runs
-@3's domain at the step end only for an operator whose view follows its split. The stationary
-analysis does not admit the composite (its own ID check), and version 1 keeps it so: trace and nM
-species need per-species Newton tolerances first (§8).
+(FR-43 / D315; species_common), an occupant without its rates (the occupant rule: a founder's or a
+daughter's own schedule from its birth, species_common.route_tables), a donor copy whose route
+values differ from the slot's, an outside route's positive rate before its node's onset (D150
+§5.3), a volume changer other than water at a volume it reads (replacement@2, a lumen at a node it
+clears: species_common.check_volume_changers), and a provider of the outside anchors whose change
+reaches a node it clears (the anchor guard: insertion@1 there; check_anchor_providers). At run
+time: non-finite values and any written amount that would not stay positive. Each half-step returns
+the finiteness and positivity of every amount it wrote as its validity, and the operator's own
+domain re-checks its species rows, since the composite re-runs @3's domain at the step end only for
+an operator whose view follows its split. The stationary analysis does not admit the composite (its
+own ID check), and version 1 keeps it so: trace and nM species need per-species Newton tolerances
+first (§8).
 
 Idle: no route, statically idle; no positive rate in a half-step, the start state is selected;
 untouched entries are selected, never offset by zero, so @3's ion rows are bitwise unchanged. The
@@ -81,12 +99,13 @@ from types import MappingProxyType
 import jax.numpy as jnp
 import numpy as np
 
+from cells.definitions import pump_composite_spec as composite_spec
 from cells.definitions.spec_values import identifier
 from cells.definitions.specs import ConfigError, _fields
 from cells.models import pump_composite_adapter as adapter
 from cells.numerics.species_sums import entity_sum, species_sum
 from cells.operators import species_common as common
-from cells.operators.contract import Operator
+from cells.operators.contract import Operator, Read
 
 LAW_ID = "cells.operator.scheduled_species_turnover@1"
 # FR-15 S1 (the lead's ruling of 19 November 2026): charged turnover routes are deferred. A charged
@@ -99,6 +118,9 @@ CHARGED_LIMIT = (
 )
 STEP_ID = "exact_production_clearance_half_steps@1"
 KINDS = ("production", "clearance")
+# A route's value where its slot has no occupant (the occupant rule's idle value, FR-65 §3.4): a
+# pending daughter's slot before its birth and a retired carrier's after its retirement.
+IDLE = (0.0,)
 # _node_update: the half-step clearance exponent kh above which the stored change is formed net,
 # (P/k - n) f, rather than as produced - cleared (the module docstring).
 NET_EXPONENT = 1.0
@@ -309,9 +331,19 @@ def _node_update(increment, anchor, volume, mask, production, clearance, h, temp
     )
 
 
-def turnover_half_step(state, rate, h, p, *, xp=jnp, labels=None):
+def turnover_half_step(state, rate, h, p, *, xp=jnp, labels=None, view=None):
     """(state after h of turnover, every written amount finite and positive); with labels (FR-42,
-    D289; static), also its one-way moves (one_way_moves)."""
+    D289; static), also its one-way moves (one_way_moves). view (FR-65; static): the reader view
+    the composite passes where an operator changes a field it reads current, whose volumes and
+    masks the half-step takes, held over it; None: the declared ones (today's program)."""
+    if view is None:
+        volume, outside_volume, active, outside_active = (
+            p.volume, p.extracellular_volume, p.active, p.outside_active,
+        )  # fmt: skip
+    else:
+        volume, outside_volume, active, outside_active = (
+            view.volume, view.extracellular_volume, view.active, view.outside_active,
+        )  # fmt: skip
     rows = p.turnover_rows
     k, n, o = rows.shape[0], p.active.size, p.outside_active.size
     row, node = p.turnover_route_row, p.turnover_route_node
@@ -330,19 +362,19 @@ def turnover_half_step(state, rate, h, p, *, xp=jnp, labels=None):
     inc, prod, clr, work, mag, touched, ok_cell = _node_update(
         state.amount_increment[rows],
         p.amount_reference[rows],
-        p.volume,
-        p.active,
+        volume,
+        active,
         produce,
         clear_cell,
         h,
         t,
         xp=xp,
     )
-    finite = p.outside_active & ~p.reservoir  # Held baths are refused at the definition.
+    finite = outside_active & ~p.reservoir  # Held baths are refused at the definition.
     out_inc, _, out_clr, out_work, out_mag, out_touched, ok_outside = _node_update(
         state.extracellular_amount_increment[rows],
         p.extracellular_amount_reference[rows],
-        p.extracellular_volume,
+        outside_volume,
         finite,
         xp.zeros((k, o)),
         clear_outside,
@@ -478,6 +510,47 @@ def key_of(route):
     return (route.species, route.kind)
 
 
+def outside_route_nodes(spec, declaration):
+    """The outside nodes its routes act at, by index into the definition's extracellular list,
+    in increasing order: the only outside nodes whose volume and anchors it reads (FR-65)."""
+    index = {c.id: i for i, c in enumerate(spec.model.extracellular)}
+    return tuple(sorted({index[r.node] for r in declaration.routes if r.cell is None}))
+
+
+def check_anchor_providers(spec, declaration):
+    """FR-65 §3.1 (i), the anchor guard. It reads an outside node's anchor as declared (a
+    reference read: n = anchor + increment at the finite nodes it clears), which holds while no
+    operator changes the anchor there. So a provider of extracellular_amount_reference whose change
+    reaches one of its outside route nodes is refused: an unscoped change reaches every node
+    (insertion@1's), a scoped one the slots its changed_slots names (the bath schedule's held baths,
+    where no route of this operator acts). A closer pads only closed nodes, where it writes nothing,
+    and the composite refuses an anchor provider beside a closer."""
+    nodes = set(outside_route_nodes(spec, declaration))
+    if not nodes:
+        return
+    ids = [c.id for c in spec.model.extracellular]
+    name = "extracellular_amount_reference"
+    for op, other, _ in composite_spec.entries(spec):
+        if op.LAW_ID == LAW_ID or name not in op.VIEW_FIELDS:
+            continue
+        reached = (
+            {int(k) for k in op.changed_slots(spec, other).get(name, ())}
+            if op.view_change(name).scoped
+            else set(range(len(ids)))
+        )
+        shared = sorted(nodes & reached)
+        if shared:
+            route = next(
+                r for r in declaration.routes if r.cell is None and ids.index(r.node) in shared
+            )
+            raise ConfigError(
+                f"{LAW_ID}: {op.LAW_ID} changes the outside anchors at "
+                f"{', '.join(ids[k] for k in shared)}, where route {route.id} clears; turnover "
+                "reads an outside node's anchor as declared (FR-65's anchor guard), so it acts "
+                "beside this provider at cells only"
+            )
+
+
 class ScheduledSpeciesTurnover(Operator):
     LAW_ID = LAW_ID
     IDENTITY_ROLE = "author"  # Species registry (D176): it declares its species.
@@ -493,7 +566,28 @@ class ScheduledSpeciesTurnover(Operator):
     # half-steps (docs/INVENTORY_COUPLING_DESIGN.md §2.1; the scheduled rate is the maximum).
     ROUTABLE_CONTROLS = MappingProxyType({"turnover_rate": "rate"})
     EXPERIMENT_KEYS = ("turnover_controls",)
-    CONFLICTS_VIEW = common.CONFLICTS_VIEW
+    # FR-65 (docs/TURNOVER_CHANGING_VOLUME_DESIGN.md §3.1; option A): its own reads, not
+    # species_common's shared list, which exchange, the coupling and the unit producer read. The
+    # volumes and masks are current reads at the split (the module docstring); the outside volume
+    # only at its outside route nodes (read_slots). The masks are also reference reads at the end
+    # (C3): the domain reads the declared slots for existence. The outside anchors are a reference
+    # read at the split and at the end, kept true by the anchor guard (check_anchor_providers).
+    # membrane_active is not read. Water is the one volume changer admitted at a volume it reads
+    # (species_common.check_volume_changers).
+    CONFLICTS_VIEW = ()
+    VIEW_READS = ("volume", "extracellular_volume", "active", "outside_active")
+    SCOPED_READS = MappingProxyType(
+        {
+            "volume": Read("current", "split"),
+            "extracellular_volume": Read("current", "split", scoped=True),
+            "active": (Read("current", "split"), Read("reference", "end")),
+            "outside_active": (Read("current", "split"), Read("reference", "end")),
+            "extracellular_amount_reference": (
+                Read("reference", "split"),
+                Read("reference", "end"),
+            ),
+        }
+    )
     ENTITY_WRITES = {
         "amount_increment": ("turnover_produced_fmol", "turnover_cleared_fmol"),
         "extracellular_amount_increment": ("turnover_outside_cleared_fmol",),
@@ -550,7 +644,7 @@ class ScheduledSpeciesTurnover(Operator):
 
     def control_values(self, spec, declaration, schedule, records, indices, times):
         tables = common.route_tables(
-            spec, declaration.routes, schedule, declaration.templates, LAW_ID
+            spec, declaration.routes, schedule, declaration.templates, LAW_ID, idle=IDLE
         )
         return (common.control_arrays(tables, times, 1)[..., 0],)
 
@@ -558,6 +652,11 @@ class ScheduledSpeciesTurnover(Operator):
         """B1′: turnover_rate's elements are its routes, by route ID, each at its cell (None for
         an outside node), in control order."""
         return tuple((route.id, route.cell) for route in declaration.routes)
+
+    def read_slots(self, spec, declaration):
+        """Door S: its outside volume read is at its outside route nodes only; the cells' volumes
+        and both masks are read on every slot."""
+        return {"extracellular_volume": outside_route_nodes(spec, declaration)}
 
     def half_step_rows(self, declaration):
         """B1′: each cell route's species at its cell (production and clearance both move it)."""
@@ -599,11 +698,14 @@ class ScheduledSpeciesTurnover(Operator):
     def check_definition(self, spec, declaration, schedule, model):
         common.check_species_cap(spec, LAW_ID)
         common.check_identities(spec, LAW_ID, declaration.species)
+        common.check_volume_changers(spec, LAW_ID, outside_route_nodes(spec, declaration))
+        check_anchor_providers(spec, declaration)
         common.check_templates(spec, declaration.templates, declaration.routes, LAW_ID)
         tables = common.route_tables(
-            spec, declaration.routes, schedule, declaration.templates, LAW_ID
+            spec, declaration.routes, schedule, declaration.templates, LAW_ID, idle=IDLE
         )
         common.check_donor_copies(spec, declaration.routes, tables, LAW_ID, key_of)
+        common.check_node_onsets(spec, declaration.routes, tables, LAW_ID)
 
     def batch_signature(self, declaration):
         """The static route structure; identities and rates are not part of it."""
@@ -637,12 +739,15 @@ class ScheduledSpeciesTurnover(Operator):
     def statically_idle(self, p):
         return p.turnover_route_node.shape[0] == 0
 
-    def half_step(self, state, h, control, p, *, xp, labels=None):
+    def half_step(self, state, h, control, p, *, xp, labels=None, view=None):
         """labels (FR-42, D289; static): (rows, arrival); the call then also returns its one-way
-        moves. Without it, today's call."""
+        moves. view (FR-65): the reader view the composite passes where an operator changes a
+        field it reads current. Without either, today's call."""
         if labels is None:
-            return turnover_half_step(state, control.turnover_rate, h, p, xp=xp)
-        return turnover_half_step(state, control.turnover_rate, h, p, xp=xp, labels=labels)
+            return turnover_half_step(state, control.turnover_rate, h, p, xp=xp, view=view)
+        return turnover_half_step(
+            state, control.turnover_rate, h, p, xp=xp, labels=labels, view=view
+        )
 
     def control_valid(self, control, p, *, xp):
         rate = control.turnover_rate

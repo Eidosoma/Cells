@@ -13425,3 +13425,40 @@ It is a port check: it shows that the live engine computes legacy's written equa
   goes to `/mnt/workspaces/Cells/weekly/DATE/verdict.json`.
 - **FR's baselines** (D392) are copied byte for byte to `/mnt/workspaces/Cells/fr-baselines/805c48a4-20261126`. The three gate scripts that read
   them now point there, and the old folder is left as it was.
+
+## D397: the BETSE file removal is landed; the user's answers on the rest of the cleanup; the per-event counts go into the engine
+
+2026-11-26, written at 18:06 UTC.
+
+- **Landed** at fc94f893 (tag `betse-cleanup-landed-2026-11-26`), from 3554c7eb. It changes no src file.
+  - Removed: 331 files, 322 of them validation files and 9 tests, and 132,008 lines. One module is renamed
+    (`betse_normal_channel_join_runtime.py` becomes `loaded_module_inventory.py`, for a test kept on 8 November).
+  - **Against D394's figures:**
+    - the files nothing runs are 302, not 307. One L3 module stays, because kept modules import it. Two protocol files moved to the
+      second commit. The geometry replay and its driver went, since nothing runs them;
+    - the ECM and material references are 20 files, not 18, with those two protocol files.
+    - The removal list's one "kept as a record" file was restored, and one orphaned geometry module was removed.
+  - Test IDs fall from 11,197 to 10,859 across all three tiers. Exactly the 338 declared IDs differ, all in tier 1.
+  - No `betse_normal_*` or `betse_native_*` file remains, so AGENTS.md's sentence holds as written. Nothing imports BETSE outside
+    `validation/betse/`.
+  - The rename tool's check gives 69 problems before and after. Those 69 predate the batch: the ID move's record lags the tree, and that is
+    a cleanup item of its own.
+  - The scoped gate ran on a trial merge onto a4646968: 102 passed.
+- **The user's answers on the rest of the cleanup** (verbatim "1. yes 2. as you suggest 3. yes 4. as you suggest 5. as you suggest"):
+  1. A list of branches and worktrees is prepared first, read-only. Anything a record cites stays, and nothing is deleted before the user
+     sees the list.
+  2. The re-hosting of the short decodability assays on Cells physics stays planned, so their nine switched-off tests stay. That is the
+     lead's reading of "as you suggest".
+  3. The docs are refreshed after FR-65 lands: the README, FR-55's retitle, the feature index, and D380's two owed labels. The README diff
+     is shown to the user before it is pushed.
+  4. After FR-65, the lead checks what uses the older major of each of the seven pieces that have two. Only what nothing uses is retired.
+  5. AGENTS.md's gate sentence now says that tier 3 runs weekly (Sundays 04:00 UTC, D396), and deliberately when a change needs it.
+- **FR-43 part 3's event counts** (the user, "1. sounds good"; the adviser agrees). The engine's trace records each event's time and channel
+  but not its counts, so an exporter would have had to derive them, and the registered check of counts against channel would hold by
+  construction. `integer_unit_population@1` gains a write-only trace field, `integer_trace_counts`.
+  - It stays in place under @1 (MODULE_SYSTEM §2.3).
+  - The field is written from the counts the loop carries after each event, never as counts before plus the jump.
+  - A plant row proves that a wrong but balanced jump breaks the channel rule.
+  - It gets its own round after FR-65, and every existing field must stay bit for bit. Crossrev's and G1's records for the co-writer world
+    are renewed.
+  - The rehearsal and the registration tag wait for it.

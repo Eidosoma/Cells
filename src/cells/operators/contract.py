@@ -317,6 +317,7 @@ Defaults below are the idle answers: no parts, no terms, no columns.
 
 import inspect
 from collections.abc import Mapping
+from dataclasses import dataclass
 from types import MappingProxyType
 from typing import NamedTuple
 
@@ -370,6 +371,21 @@ class Read(NamedTuple):
     mode: str
     stage: str
     scoped: bool = False
+
+
+@dataclass(frozen=True)
+class Occupant:
+    """One carrier's life in a slot (D150 §5.2, the occupant rule; FR-65 §3.4): an operator that
+    decides who occupies its slots gives them through slot_occupants, and the readers of carriers'
+    rates build their per-world controls from them (species_common.occupants and route_tables),
+    without importing that operator."""
+
+    carrier_id: str
+    birth: float
+    death: float  # math.inf for the last occupant.
+    kind: str  # "founder", a replacement's newcomer kind, or "daughter".
+    template: str | None
+    donor: str | None
 
 
 class LiquidExchange(NamedTuple):
@@ -676,6 +692,24 @@ class Operator:
         """{patch id: onset time} for the patches this operator opens at an onset (host side,
         as above)."""
         return {}
+
+    def slot_occupants(self, spec, declaration, schedule):
+        """{cell id: (Occupant, ...)} for the slots whose occupants this operator decides (host
+        side, as above), each slot's carriers in time order from its first: a founder from time 0,
+        or a daughter from its birth (a pending slot has no occupant before it). The readers of
+        carriers' rates merge them over the founders (species_common.occupants), and a slot two
+        operators fill is refused. {}: it decides none."""
+        return {}
+
+    def changed_volume_nodes(self, spec, declaration):
+        """The outside nodes, by index into the definition's extracellular list, whose volume
+        this operator changes where it provides extracellular_volume (host side, as above), or
+        None: every node. The shared volume rule of the current-volume readers reads it
+        (species_common.check_volume_changers; FR-65's route B,
+        docs/TURNOVER_CHANGING_VOLUME_DESIGN.md §3.5): a changer other than water is refused only
+        at a node its reader reads. A provider that changes the volume at its own nodes alone
+        names them, as a restricted lumen does; no program reads it."""
+        return None
 
     def charged_compartments(self, spec, declaration):
         """The compartments, by their declared IDs (operators/compartments.py), into which its

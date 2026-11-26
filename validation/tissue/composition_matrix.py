@@ -204,17 +204,11 @@ def matrix():
 # ------------------------------------------------------------------ the tags
 
 REAL, NOMINAL = "real", "nominal"
-TURNOVER_CODE = (OPS + "species_turnover.py::turnover_half_step",)
-TURNOVER_RUNTIME = (*TURNOVER_CODE, OPS + "species_turnover.py::turnover_domain_valid")
 COUPLING_CODE = (
     OPS + "species_regulated_availability.py::route_factors",
     OPS + "species_regulated_availability.py::state_inputs",
     OPS + "species_regulated_availability.py::state_half_step",
     OPS + "species_regulated_availability.py::event_map",
-)
-TURNOVER_NO_PATCH = (
-    "Turnover's runtime reads are cells, finite outside nodes and its own fields "
-    "(turnover_half_step, turnover_domain_valid): it reads no patch and acts on none"
 )
 COUPLING_CELLS = (
     "The coupling's runtime reads are cell amounts, cell volumes and its own fields "
@@ -225,20 +219,15 @@ ONSET_CHANNELS = {  # Insertion refuses channel populations on an onset patch.
     INSERTION_2: OPS + "membrane_insertion_v2.py::check_onsets",
 }
 DECLARED_VOLUMES = {
-    TURNOVER: "Turnover's exact update and work read the declared volumes at every cell and "
-    "finite outside node (turnover_half_step)",
     EXCHANGE: "Exchange's rates and free energy read the declared volumes",
     REACTIONS: "Concentrations and dG read the declared volumes",
 }
 OUTSIDE_MASK = {
-    TURNOVER: "Turnover reads the declared outside mask at its finite nodes (turnover_half_step)",
     EXCHANGE: "Exchange reads the declared outside mask at its route nodes",
     REACTIONS: "D152 reads the declared outside mask at its finite sites",
     REPLACEMENT_2: "Replacement@2 reads the masks as declared (not shown nominal)",
 }
 CELL_MASK = {
-    TURNOVER: "Turnover reads the declared cell mask (turnover_half_step); the partition retires "
-    "cells",
     EXCHANGE: "Exchange acts on route cells, which the partition can retire (not shown nominal)",
     REACTIONS: "D152's cell sites can be in a cell the partition retires (not shown nominal)",
     REPLACEMENT_2: "Replacement acts on cell slots, which the partition retires (not shown "
@@ -345,29 +334,26 @@ def _tags():
             "(not shown nominal)",
             (),
         )
-    for reader in (TURNOVER, EXCHANGE):
-        code = TURNOVER_CODE if reader == TURNOVER else ()
-        for name in ("volume", "extracellular_volume"):
-            tags[("reads", reader, WATER, name)] = (REAL, DECLARED_VOLUMES[reader], code)
-        for lumen in (LUMEN_1, LUMEN_2):
-            tags[("reads", reader, lumen, "extracellular_volume")] = (
-                REAL,
-                DECLARED_VOLUMES[reader] + "; a lumen changes its node's volume",
-                code,
-            )
-    for reader in (TURNOVER, EXCHANGE, REACTIONS, REPLACEMENT_2):
-        code = TURNOVER_CODE if reader == TURNOVER else ()
+    for name in ("volume", "extracellular_volume"):
+        tags[("reads", EXCHANGE, WATER, name)] = (REAL, DECLARED_VOLUMES[EXCHANGE], ())
+    for lumen in (LUMEN_1, LUMEN_2):
+        tags[("reads", EXCHANGE, lumen, "extracellular_volume")] = (
+            REAL,
+            DECLARED_VOLUMES[EXCHANGE] + "; a lumen changes its node's volume",
+            (),
+        )
+    for reader in (EXCHANGE, REACTIONS, REPLACEMENT_2):
         tags[("reads", reader, INSERTION_1, "outside_active")] = (
             REAL,
             OUTSIDE_MASK[reader] + "; insertion@1 opens onset nodes",
-            code,
+            (),
         )
         tags[("reads-closed", reader, INSERTION_2, "outside_active")] = (
             REAL,
             OUTSIDE_MASK[reader] + "; insertion@2 closes onset nodes until their onset",
-            code,
+            (),
         )
-        tags[("reads-closed", reader, PARTITION, "active")] = (REAL, CELL_MASK[reader], code)
+        tags[("reads-closed", reader, PARTITION, "active")] = (REAL, CELL_MASK[reader], ())
     for reader in (EXCHANGE, REPLACEMENT_2):
         acts = (
             "Exchange moves species across its route patches without reading the patch mask"
@@ -390,16 +376,6 @@ def _tags():
         "D152 reads finite nodes' anchors, which insertion@1 changes at its onset nodes "
         "(BATH_SCHEDULE_DESIGN.md §3.1)",
         (),
-    )
-    tags[("reads", TURNOVER, INSERTION_1, "membrane_active")] = (
-        NOMINAL,
-        TURNOVER_NO_PATCH,
-        TURNOVER_RUNTIME,
-    )
-    tags[("reads-closed", TURNOVER, INSERTION_2, "membrane_active")] = (
-        NOMINAL,
-        TURNOVER_NO_PATCH,
-        TURNOVER_RUNTIME,
     )
     tags[("reads", COUPLING, WATER, "volume")] = (
         REAL,
@@ -604,11 +580,6 @@ def _tags():
         REAL,
         tags[("reads-closed", SITES, PARTITION, "active")][1] + propagates,
         (),
-    )
-    tags[("reads-closed", TURNOVER, PARTITION, "membrane_active")] = (
-        NOMINAL,
-        TURNOVER_NO_PATCH,
-        TURNOVER_RUNTIME,
     )
     onset_populations = (
         "insertion@2 closes only onset patches and nodes, and refuses a channel population on an "
@@ -875,7 +846,7 @@ def _tags():
     )
     by_name = (
         "; whatever the order, the definition refuses it beside the network and the gene unit, "
-        "where water is the one volume changer admitted (species_reactions.check_volume_changers)"
+        "where water is the one volume changer admitted (species_common.check_volume_changers)"
     )
     for reader in (REACTIONS, poly):
         for name in ("volume", "extracellular_volume"):
@@ -893,6 +864,50 @@ def _tags():
                 "(C2's order rule)" + by_name,
                 (),
             )
+    # FR-65 (docs/TURNOVER_CHANGING_VOLUME_DESIGN.md §3): turnover reads the volumes and both masks
+    # current at its split part, so their changers are admitted declared before it and refused after
+    # it (C2's order rule; the partition closes at its event, seen in any order). At the definition
+    # replacement@2 and a lumen at a node it clears are refused by name (the shared volume rule),
+    # and so is insertion@1 where it clears at a node (the anchor guard): data rules.
+    lagged = (
+        "Its split part reads {what} current (FR-65): declared before {changer} it would read "
+        "{it} lagged by half a step (C2's order rule); declared after it, it is admitted"
+    )
+    for name in ("volume", "extracellular_volume"):
+        tags[("order", TURNOVER, WATER, name)] = (
+            REAL,
+            lagged.format(what="the volumes", changer="water", it="them"),
+            (),
+        )
+        tags[("order", TURNOVER, REPLACEMENT_2, name)] = (
+            REAL,
+            "Replacement@2 writes a newcomer's volume into water's state at its split part, after "
+            "turnover reads it (C2's order rule); whatever the order, the definition refuses it "
+            "beside turnover, where water is the one volume changer admitted "
+            "(species_common.check_volume_changers)",
+            (),
+        )
+    for lumen in (LUMEN_1, LUMEN_2):
+        tags[("order", TURNOVER, lumen, "extracellular_volume")] = (
+            REAL,
+            lagged.format(what="its outside route nodes' volumes", changer="a lumen", it="them")
+            + "; the definition refuses a lumen at a node it clears "
+            "(species_common.check_volume_changers, FR-65's route B)",
+            (),
+        )
+    for insertion in (INSERTION_1, INSERTION_2):
+        tags[("order", TURNOVER, insertion, "outside_active")] = (
+            REAL,
+            lagged.format(what="the outside mask", changer="insertion", it="it")
+            + (
+                "; the definition refuses insertion@1 where turnover clears at a node (the "
+                "anchor guard, species_turnover.check_anchor_providers)"
+                if insertion == INSERTION_1
+                else "; an outside rate before its node's onset is refused "
+                "(species_common.check_node_onsets)"
+            ),
+            (),
+        )
     for name in ("outside_active", "membrane_active"):
         tags[("reads", poly, INSERTION_1, name)] = (
             REAL,
@@ -1308,6 +1323,41 @@ RULES = (
         why="A carrier's rates are its own (D150 §5.2)",
     ),
     dict(
+        rule="the occupant rule: one operator decides a slot's occupants, a partition daughter's "
+        "rates are its own from its birth, and a slot with no occupant holds the reader's idle "
+        "value",
+        laws=(TURNOVER, EXCHANGE, REPLACEMENT_1, PARTITION),
+        level="data",
+        check=OPS + "species_common.py::route_tables",
+        test=TESTS + "test_species_turnover.py::"
+        "test_the_occupant_tables_follow_the_partition_s_carriers_and_refuse_their_gaps",
+        tag=REAL,
+        why="A pending daughter's slot and a retired parent's are no carrier's: their rates are "
+        "explicit zeros, and a reader with no idle value is refused there (D150 §5.2; FR-65 §3.4)",
+    ),
+    dict(
+        rule="no turnover route at an outside node carries a positive rate before the node's onset",
+        laws=(TURNOVER, INSERTION_2),
+        level="data",
+        check=OPS + "species_common.py::check_node_onsets",
+        test=TESTS + "test_species_turnover.py::"
+        "test_the_occupant_tables_follow_the_partition_s_carriers_and_refuse_their_gaps",
+        tag=REAL,
+        why="A node is environment from its onset; before it, a rate would act on its declared "
+        "content while the node is closed (D150 §5.3; FR-65 §3.4)",
+    ),
+    dict(
+        rule="turnover clears at no outside node whose anchors a provider changes",
+        laws=(TURNOVER, INSERTION_1),
+        level="data",
+        check=OPS + "species_turnover.py::check_anchor_providers",
+        test=TESTS + "test_species_turnover.py::test_beside_the_changers_it_reads_by_name",
+        tag=REAL,
+        why="Turnover reads an outside node's anchor as declared (a reference read), true while no "
+        "operator changes it there: insertion@1's unscoped change is refused where turnover "
+        "clears at a node, and admitted beside cell routes (FR-65 §3.1)",
+    ),
+    dict(
         rule="a cell route on a slot that replacement@1 replaces takes each newcomer's multiplier "
         "from the operator's templates",
         laws=(REACTIONS, REPLACEMENT_1),
@@ -1460,11 +1510,22 @@ RULES = (
             REPLACEMENT_2,
         ),
         level="data",
-        check=OPS + "species_reactions.py::check_volume_changers",
+        check=OPS + "species_common.py::check_volume_changers",
         test=TESTS
         + "test_species_reactions_refusals.py::test_the_other_volume_changers_are_refused_by_name",
         tag=REAL,
         why="Their current volume reads are probed beside water only (FR-43 / D315)",
+    ),
+    dict(
+        rule="beside turnover, water is the one volume changer admitted at a volume it reads: "
+        "replacement@2 is refused, and a lumen is admitted only at a node turnover does not read",
+        laws=(TURNOVER, LUMEN_1, LUMEN_2, REPLACEMENT_2),
+        level="data",
+        check=OPS + "species_common.py::check_volume_changers",
+        test=TESTS + "test_species_turnover.py::test_beside_the_changers_it_reads_by_name",
+        tag=REAL,
+        why="Turnover reads the cell volumes and its outside route nodes' volumes current (FR-65); "
+        "a lumen names its nodes (route B), so one at a node turnover never reads reaches no read",
     ),
     dict(
         rule="beside water@1 every bath step is isosmotic",

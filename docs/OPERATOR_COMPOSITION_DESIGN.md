@@ -760,6 +760,10 @@ The lead's two checks, read on main at 7c8bfa47.
 **A's cost here.**
 - Q5 is amended, or its test is split. The version-1 refusals stay in Q5's file for the static-tissue scope its verdict covers, and A's admissions are tested in a file outside Q5's list. The verdict judged at f7f0592 stands.
 - Q5's scope line already limits any qualified statement to a static tissue.
+- **Done for turnover by FR-65 (26 November 2026):** Q5's first two cases are amended in place and
+  disclosed in the test (turnover beside water is admitted; a lumen at the node it clears stays
+  refused by the shared volume rule, and insertion@1 at the node it clears by the anchor guard), and
+  the admissions are tested in `tests/unit/test_species_turnover.py`, outside Q5's list.
 - `test_membrane_state.py`, `test_pump_composite_contract.py` and `test_door_s.py` change their
   assertions to the admissions.
 - `test_composition_matrix.py` passes again once the matrix is regenerated and the lifted tags are
