@@ -208,11 +208,13 @@ def source(out, name):
 
 
 def kind_of(error, stage):
-    """The kind of what was raised at `stage` ("parse", "run" or "export"; module docstring)."""
+    """The kind of what was raised at `stage` (module docstring): "parse" and "plan" (the engine
+    reads, builds and plans the definition), "run" (its windows), "driver" and "export" (this
+    module's own work between and after them)."""
     from cells.definitions.specs import ConfigError
     from cells.execution.errors import NumericalError
 
-    if stage == "export" or isinstance(error, HarnessFault):
+    if stage in ("driver", "export") or isinstance(error, HarnessFault):
         return HARNESS
     message = str(error)
     frames = [frame.name for frame in traceback.extract_tb(error.__traceback__)]
@@ -281,7 +283,8 @@ def observe(spec, policy, progress, checkpoint=None, stop=None):
 
     dt = spec.execution.dt
     wanted = {round(float(t) / dt) for t in spec.experiment.observation_times}
-    windows = iter_windows(spec, policy, checkpoint)  # The preflight: still "parse".
+    progress.stage = "plan"
+    windows = iter_windows(spec, policy, checkpoint)  # The engine's preflight.
     progress.stage = "run"
     for window in windows:
         merge_diagnostics(progress.diagnostics, window.diagnostics)
@@ -793,6 +796,7 @@ class Run:
         self.model = get_model(spec.model)
         _, self.p = self.model.initial_values(spec)
         definition = spec.to_dict()
+        self.progress.stage = "driver"
         entry["definition"] = definition
         entry["operators"] = [op["law"] for op in definition["model"]["operators"]]
         entry["inputs"] = echo(definition, kind)
@@ -814,9 +818,11 @@ class Run:
         else:
             observe(spec, policy, self.progress, stop=join)
             checkpoint = self.progress.final
+            self.progress.stage = "driver"
             if abs(float(checkpoint.time) - join) > 1e-12 * join:
                 raise HarnessFault(f"the checkpoint is at {checkpoint.time} s, not {join} s")
             self.snapshots.parent.mkdir(parents=True, exist_ok=True)
+            self.progress.stage = "plan"  # The engine's snapshot files: read as its planning.
             write_snapshot(self.snapshots, spec, checkpoint)
             loaded = load_snapshot(self.snapshots)
             resumed = loaded.checkpoint
