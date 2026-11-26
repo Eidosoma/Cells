@@ -13496,3 +13496,24 @@ It is a port check: it shows that the live engine computes legacy's written equa
 - **`tests/tier3_record.json` is refrozen for those four files** (D398 in its `refrozen` header). It was built from main's runs plus the two new run
   folders under `/mnt/workspaces/Cells/tier3-records/fr65-20261126/`, and changes nothing else.
 - **Next:** the per-event counts fix's D148 round starts on main ae349721.
+
+## D399: FR-63 is checked by a calibration report, not a registered comparison (the user); FR-64's new design note
+
+2026-11-26, written at 19:44 UTC. The user: "sounds good as you suggest".
+
+- **FR-64's new design note.** It is `docs/FR64_VOLTAGE_SHIFT_DESIGN.md`, on branch `fr64-design-20261126`.
+  - It builds on the note D361 decided (`docs/VOLTAGE_SHIFT_DESIGN.md` on `fr64-design`, 377a1b34) and on the lead's rulings at fc899d3d, and
+    changes none of them.
+  - The lead's brief for it was written from a stale index row and missed the earlier note; the error is the lead's.
+  - **Its three gaps are not live defects.** In the stage path, the stored against free amounts, and the domain check, the new note found
+    places the shift must reach. No world on main reaches them today, FR-51's landed block included. The earlier note had already listed all
+    three.
+  - The designer did not open FR-51's reserved material (D391).
+- **FR-63, the user's decision.** FR-63 becomes a declared pH shift on Kv1.5's activation gate. Each preparation's shift per pH unit is a two-point
+  secant through that preparation's own points, so judging the engine against those points would be circular.
+  - FR-63 gets a calibration report: the shift each study implies, with its sources. There is no registered comparison.
+  - A registered comparison follows only if a held-out quantity exists. The lead asks the Lean track whether any of the three studies holds an
+    unscored third pH level, or another unscored readout.
+  - D361 labelled the pH gate pair "claimed". It stays an indication, unjudged, until such a quantity is found.
+- **Still the lead's to rule, before FR-64's build is briefed:** the new note's questions 1, 4 and 5, its options O1 to O4, and the retired 20-row
+  fallback. FR-64's build keeps its place in the queue (D393).
